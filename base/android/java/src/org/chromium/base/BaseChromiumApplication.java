@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Window;
 
 /**
@@ -46,6 +47,17 @@ public class BaseChromiumApplication extends Application {
                         for (WindowFocusChangedListener listener : mWindowFocusListeners) {
                             listener.onWindowFocusChanged(activity, hasFocus);
                         }
+                    }
+
+                    @Override
+                    public boolean dispatchKeyEvent(KeyEvent event) {
+                        // TODO(aurimas): remove this once AppCompatDelegateImpl no longer steals
+                        // KEYCODE_MENU. (see b/20529185)
+                        if (event.getKeyCode() == KeyEvent.KEYCODE_MENU
+                                && activity.dispatchKeyEvent(event)) {
+                            return true;
+                        }
+                        return super.dispatchKeyEvent(event);
                     }
                 });
             }
