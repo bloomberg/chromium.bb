@@ -626,8 +626,10 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 		amdgpu_bo_free_internal(bo);
 		return r;
 	}
+	pthread_mutex_lock(&dev->bo_table_mutex);
 	util_hash_table_set(dev->bo_vas,
 			    (void*)(uintptr_t)bo->virtual_mc_base_address, bo);
+	pthread_mutex_unlock(&dev->bo_table_mutex);
 	info->buf_handle = bo;
 	info->virtual_mc_base_address = bo->virtual_mc_base_address;
 	info->virtual_mc_base_address += off;
