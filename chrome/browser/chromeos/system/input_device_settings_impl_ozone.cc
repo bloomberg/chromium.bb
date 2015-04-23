@@ -60,7 +60,7 @@ InputDeviceSettingsImplOzone::InputDeviceSettingsImplOzone()
 
 void InputDeviceSettingsImplOzone::TouchpadExists(
     const DeviceExistsCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   callback.Run(input_controller_->HasTouchpad());
 }
 
@@ -99,7 +99,7 @@ void InputDeviceSettingsImplOzone::SetTapDragging(bool enabled) {
 
 void InputDeviceSettingsImplOzone::MouseExists(
     const DeviceExistsCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   callback.Run(input_controller_->HasMouse());
 }
 

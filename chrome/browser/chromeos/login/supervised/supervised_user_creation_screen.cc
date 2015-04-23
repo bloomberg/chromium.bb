@@ -591,7 +591,7 @@ void SupervisedUserCreationScreen::OnGetSupervisedUsers(
 
 void SupervisedUserCreationScreen::OnPhotoTaken(
     const std::string& raw_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   user_photo_ = gfx::ImageSkia();
   ImageDecoder::Cancel(this);
   ImageDecoder::Start(this, raw_data);

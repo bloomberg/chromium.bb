@@ -62,7 +62,7 @@ void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
 }
 
 void ExecuteScript(const std::vector<std::string>& argv) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (argv.size() == 1)
     return;
@@ -115,14 +115,14 @@ void DeviceExistsBlockingPool(const char* device_type,
 void RunCallbackUIThread(
     scoped_refptr<RefCountedBool> exists,
     const InputDeviceSettings::DeviceExistsCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "RunCallbackUIThread " << exists->data;
   callback.Run(exists->data);
 }
 
 void DeviceExists(const char* script,
                   const InputDeviceSettings::DeviceExistsCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // One or both of the control scripts can apparently hang during shutdown
   // (http://crbug.com/255546). Run the blocking pool task with

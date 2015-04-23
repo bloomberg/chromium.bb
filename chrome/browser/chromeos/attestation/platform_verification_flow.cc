@@ -141,7 +141,7 @@ PlatformVerificationFlow::PlatformVerificationFlow()
       cryptohome_client_(DBusThreadManager::Get()->GetCryptohomeClient()),
       delegate_(NULL),
       timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
   default_attestation_flow_.reset(new AttestationFlow(
       async_caller_,
@@ -162,7 +162,7 @@ PlatformVerificationFlow::PlatformVerificationFlow(
       cryptohome_client_(cryptohome_client),
       delegate_(delegate),
       timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!delegate_) {
     default_delegate_.reset(new DefaultDelegate());
     delegate_ = default_delegate_.get();
@@ -177,7 +177,7 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     const std::string& service_id,
     const std::string& challenge,
     const ChallengeCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!delegate_->GetURL(web_contents).is_valid()) {
     LOG(WARNING) << "PlatformVerificationFlow: Invalid URL.";

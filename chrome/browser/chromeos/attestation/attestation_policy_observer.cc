@@ -99,7 +99,7 @@ AttestationPolicyObserver::AttestationPolicyObserver(
       num_retries_(0),
       retry_delay_(kRetryDelay),
       weak_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   attestation_subscription_ = cros_settings_->AddSettingsObserver(
       kDeviceAttestationEnabled,
       base::Bind(&AttestationPolicyObserver::AttestationSettingChanged,
@@ -118,7 +118,7 @@ AttestationPolicyObserver::AttestationPolicyObserver(
       num_retries_(0),
       retry_delay_(kRetryDelay),
       weak_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   attestation_subscription_ = cros_settings_->AddSettingsObserver(
       kDeviceAttestationEnabled,
       base::Bind(&AttestationPolicyObserver::AttestationSettingChanged,
@@ -127,7 +127,7 @@ AttestationPolicyObserver::AttestationPolicyObserver(
 }
 
 AttestationPolicyObserver::~AttestationPolicyObserver() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void AttestationPolicyObserver::AttestationSettingChanged() {

@@ -136,7 +136,7 @@ void FileTaskExecutor::OnFileEntryFetched(FileError error,
 void FileTaskExecutor::OnAppAuthorized(const std::string& resource_id,
                                        google_apis::DriveApiErrorCode error,
                                        const GURL& open_link) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (error != google_apis::HTTP_SUCCESS || open_link.is_empty()) {
     Done(false);
@@ -153,7 +153,7 @@ void FileTaskExecutor::OnAppAuthorized(const std::string& resource_id,
 }
 
 void FileTaskExecutor::Done(bool success) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!done_.is_null())
     done_.Run(success
                   ? extensions::api::file_manager_private::TASK_RESULT_OPENED

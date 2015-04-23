@@ -437,7 +437,7 @@ void DriveFirstRunController::CleanUp() {
 }
 
 void DriveFirstRunController::OnOfflineInit(bool success, UMAOutcome outcome) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (success)
     ShowNotification();
   UMA_HISTOGRAM_ENUMERATION("DriveOffline.CrosAutoEnableOutcome",

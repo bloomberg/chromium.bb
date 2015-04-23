@@ -43,7 +43,7 @@ CertificateManagerDialog::CertificateManagerDialog(
                      window,
                      base::string16(),
                      GURL(chrome::kChromeUICertificateManagerDialogURL)) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   SetDialogSize(CalculateSize(screen_bounds.width(),

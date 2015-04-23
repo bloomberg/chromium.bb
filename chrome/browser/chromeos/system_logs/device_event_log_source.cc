@@ -20,7 +20,7 @@ DeviceEventLogSource::~DeviceEventLogSource() {
 }
 
 void DeviceEventLogSource::Fetch(const SysLogsSourceCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);

@@ -239,17 +239,17 @@ void MobileActivator::NetworkPropertiesUpdated(const NetworkState* network) {
 }
 
 void MobileActivator::AddObserver(MobileActivator::Observer* observer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.AddObserver(observer);
 }
 
 void MobileActivator::RemoveObserver(MobileActivator::Observer* observer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 }
 
 void MobileActivator::InitiateActivation(const std::string& service_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const NetworkState* network =  GetNetworkState(service_path);
   if (!network) {
     LOG(WARNING) << "Cellular service can't be found: " << service_path;

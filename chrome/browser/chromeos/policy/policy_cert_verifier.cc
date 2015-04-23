@@ -18,7 +18,7 @@ namespace {
 void MaybeSignalAnchorUse(int error,
                           const base::Closure& anchor_used_callback,
                           const net::CertVerifyResult& verify_result) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (error != net::OK || !verify_result.is_issued_by_additional_trust_anchor ||
       anchor_used_callback.is_null()) {
     return;
@@ -31,7 +31,7 @@ void CompleteAndSignalAnchorUse(
     const net::CompletionCallback& completion_callback,
     const net::CertVerifyResult* verify_result,
     int error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   MaybeSignalAnchorUse(error, anchor_used_callback, *verify_result);
   if (!completion_callback.is_null())
     completion_callback.Run(error);
@@ -42,7 +42,7 @@ void CompleteAndSignalAnchorUse(
 PolicyCertVerifier::PolicyCertVerifier(
     const base::Closure& anchor_used_callback)
     : anchor_used_callback_(anchor_used_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 PolicyCertVerifier::~PolicyCertVerifier() {

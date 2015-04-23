@@ -374,7 +374,7 @@ void NetworkScreen::OnLanguageListResolved(
     scoped_ptr<base::ListValue> new_language_list,
     std::string new_language_list_locale,
     std::string new_selected_language) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   language_list_.reset(new_language_list.release());
   language_list_locale_ = new_language_list_locale;

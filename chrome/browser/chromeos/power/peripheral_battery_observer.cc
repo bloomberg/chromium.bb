@@ -107,7 +107,7 @@ void PeripheralBatteryObserver::PeripheralBatteryStatusReceived(
     const std::string& path,
     const std::string& name,
     int level) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::string address;
   if (IsBluetoothHIDBattery(path)) {
     // For HID bluetooth device, device address is used as key to index
@@ -178,7 +178,7 @@ void PeripheralBatteryObserver::InitializeOnBluetoothReady(
 }
 
 void PeripheralBatteryObserver::RemoveBattery(const std::string& address) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::string address_lowercase = address;
   base::StringToLowerASCII(&address_lowercase);
   std::map<std::string, BatteryInfo>::iterator it =

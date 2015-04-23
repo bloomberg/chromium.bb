@@ -50,7 +50,7 @@ void SwitchLanguageDoReloadLocale(SwitchLanguageData* data) {
 
 // Callback after SwitchLanguageDoReloadLocale() back in UI thread.
 void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (data->result.success) {
     g_browser_process->SetApplicationLocale(data->result.loaded_locale);
 
@@ -107,7 +107,7 @@ void SwitchLanguage(const std::string& locale,
                     const bool enable_locale_keyboard_layouts,
                     const bool login_layouts_only,
                     const SwitchLanguageCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_ptr<SwitchLanguageData> data(new SwitchLanguageData(
       locale, enable_locale_keyboard_layouts, login_layouts_only, callback));
   base::Closure reloader(

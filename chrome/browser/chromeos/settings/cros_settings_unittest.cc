@@ -43,7 +43,7 @@ class CrosSettingsTest : public testing::Test {
   }
 
   void FetchPref(const std::string& pref) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (expected_props_.find(pref) == expected_props_.end())
       return;
 
@@ -65,7 +65,7 @@ class CrosSettingsTest : public testing::Test {
   }
 
   void SetPref(const std::string& pref_name, const base::Value* value) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     settings_.Set(pref_name, *value);
   }
 

@@ -20,13 +20,13 @@ static DeviceOAuth2TokenService* g_device_oauth2_token_service_ = NULL;
 
 // static
 DeviceOAuth2TokenService* DeviceOAuth2TokenServiceFactory::Get() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return g_device_oauth2_token_service_;
 }
 
 // static
 void DeviceOAuth2TokenServiceFactory::Initialize() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!g_device_oauth2_token_service_);
   g_device_oauth2_token_service_ = new DeviceOAuth2TokenService(
       g_browser_process->system_request_context(),
@@ -35,7 +35,7 @@ void DeviceOAuth2TokenServiceFactory::Initialize() {
 
 // static
 void DeviceOAuth2TokenServiceFactory::Shutdown() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (g_device_oauth2_token_service_) {
     delete g_device_oauth2_token_service_;
     g_device_oauth2_token_service_ = NULL;

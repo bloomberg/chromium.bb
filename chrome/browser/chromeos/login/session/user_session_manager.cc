@@ -476,12 +476,12 @@ void UserSessionManager::RestoreActiveSessions() {
 }
 
 bool UserSessionManager::UserSessionsRestored() const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return user_sessions_restored_;
 }
 
 bool UserSessionManager::UserSessionsRestoreInProgress() const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return user_sessions_restore_in_progress_;
 }
 
@@ -673,13 +673,13 @@ bool UserSessionManager::CheckEasyUnlockKeyOps(const base::Closure& callback) {
 
 void UserSessionManager::AddSessionStateObserver(
     chromeos::UserSessionStateObserver* observer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   session_state_observer_list_.AddObserver(observer);
 }
 
 void UserSessionManager::RemoveSessionStateObserver(
     chromeos::UserSessionStateObserver* observer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   session_state_observer_list_.RemoveObserver(observer);
 }
 

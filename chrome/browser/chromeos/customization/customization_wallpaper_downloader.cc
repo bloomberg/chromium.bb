@@ -75,15 +75,15 @@ CustomizationWallpaperDownloader::CustomizationWallpaperDownloader(
       retry_delay_(base::TimeDelta::FromSeconds(kRetrySleepSeconds)),
       on_wallpaper_fetch_completed_(on_wallpaper_fetch_completed),
       weak_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 CustomizationWallpaperDownloader::~CustomizationWallpaperDownloader() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void CustomizationWallpaperDownloader::StartRequest() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(wallpaper_url_.is_valid());
 
   url_fetcher_.reset(
@@ -103,7 +103,7 @@ void CustomizationWallpaperDownloader::StartRequest() {
 }
 
 void CustomizationWallpaperDownloader::Retry() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ++retries_;
 
   const double delay_seconds = std::min(
@@ -119,7 +119,7 @@ void CustomizationWallpaperDownloader::Retry() {
 }
 
 void CustomizationWallpaperDownloader::Start() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_ptr<bool> success(new bool(false));
 
   base::Closure mkdir_closure = base::Bind(&CreateWallpaperDirectory,
@@ -137,14 +137,14 @@ void CustomizationWallpaperDownloader::Start() {
 
 void CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated(
     scoped_ptr<bool> success) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (*success)
     StartRequest();
 }
 
 void CustomizationWallpaperDownloader::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(url_fetcher_.get(), source);
 
   const net::URLRequestStatus status = source->GetStatus();
@@ -188,7 +188,7 @@ void CustomizationWallpaperDownloader::OnURLFetchComplete(
 
 void CustomizationWallpaperDownloader::OnTemporaryFileRenamed(
     scoped_ptr<bool> success) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   on_wallpaper_fetch_completed_.Run(*success, wallpaper_url_);
 }
 

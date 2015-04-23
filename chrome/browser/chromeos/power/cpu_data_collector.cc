@@ -382,7 +382,7 @@ void CpuDataCollector::SaveCpuStateSamplesOnUIThread(
     const std::vector<CpuDataCollector::StateOccupancySample>* idle_samples,
     const std::vector<std::string>* cpu_freq_state_names,
     const std::vector<CpuDataCollector::StateOccupancySample>* freq_samples) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   cpu_count_ = *cpu_count;
 

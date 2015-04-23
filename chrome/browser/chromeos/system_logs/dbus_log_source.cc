@@ -19,7 +19,7 @@ DBusLogSource::~DBusLogSource() {
 }
 
 void DBusLogSource::Fetch(const SysLogsSourceCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   SystemLogsResponse response;

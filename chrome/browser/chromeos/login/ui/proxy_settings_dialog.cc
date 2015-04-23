@@ -62,7 +62,7 @@ ProxySettingsDialog::ProxySettingsDialog(
                      window,
                      base::string16(),
                      GetURLForProxySettings(network.guid())) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ++instance_count_;
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
@@ -84,7 +84,7 @@ ProxySettingsDialog::ProxySettingsDialog(
 }
 
 ProxySettingsDialog::~ProxySettingsDialog() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   --instance_count_;
 }
 

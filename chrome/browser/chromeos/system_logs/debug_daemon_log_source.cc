@@ -39,7 +39,7 @@ DebugDaemonLogSource::DebugDaemonLogSource(bool scrub)
 DebugDaemonLogSource::~DebugDaemonLogSource() {}
 
 void DebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
   DCHECK(callback_.is_null());
 
@@ -77,7 +77,7 @@ void DebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
 void DebugDaemonLogSource::OnGetRoutes(bool succeeded,
                                        const std::vector<std::string>& routes) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (succeeded)
     (*response_)[kRoutesKeyName] = JoinString(routes, '\n');
@@ -88,7 +88,7 @@ void DebugDaemonLogSource::OnGetRoutes(bool succeeded,
 
 void DebugDaemonLogSource::OnGetNetworkStatus(bool succeeded,
                                               const std::string& status) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (succeeded)
     (*response_)[kNetworkStatusKeyName] = status;
