@@ -53,7 +53,6 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
  public:
   MockTouchEventConverterEvdev(int fd,
                                base::FilePath path,
-                               const EventDeviceInfo& devinfo,
                                DeviceEventDispatcherEvdev* dispatcher);
   ~MockTouchEventConverterEvdev() override {}
 
@@ -112,14 +111,8 @@ class MockDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
 MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(
     int fd,
     base::FilePath path,
-    const EventDeviceInfo& devinfo,
     DeviceEventDispatcherEvdev* dispatcher)
-    : TouchEventConverterEvdev(fd,
-                               path,
-                               1,
-                               INPUT_DEVICE_UNKNOWN,
-                               devinfo,
-                               dispatcher) {
+    : TouchEventConverterEvdev(fd, path, 1, INPUT_DEVICE_UNKNOWN, dispatcher) {
   int fds[2];
 
   if (pipe(fds))
@@ -164,13 +157,11 @@ class TouchEventConverterEvdevTest : public testing::Test {
     // Device creation happens on a worker thread since it may involve blocking
     // operations. Simulate that by creating it before creating a UI message
     // loop.
-    EventDeviceInfo devinfo;
     dispatcher_.reset(new ui::MockDeviceEventDispatcherEvdev(
         base::Bind(&TouchEventConverterEvdevTest::DispatchCallback,
                    base::Unretained(this))));
     device_.reset(new ui::MockTouchEventConverterEvdev(
-        events_in_, base::FilePath(kTestDevicePath), devinfo,
-        dispatcher_.get()));
+        events_in_, base::FilePath(kTestDevicePath), dispatcher_.get()));
     loop_ = new base::MessageLoopForUI;
 
     ui::DeviceDataManager::CreateInstance();
@@ -189,7 +180,9 @@ class TouchEventConverterEvdevTest : public testing::Test {
     return dispatched_events_[index];
   }
 
-  void ClearDispatchedEvents() { dispatched_events_.clear(); }
+  void ClearDispatchedEvents() {
+    dispatched_events_.clear();
+  }
 
   void DestroyDevice() { device_.reset(); }
 

@@ -21,13 +21,7 @@ TabletEventConverterEvdev::TabletEventConverterEvdev(
     CursorDelegateEvdev* cursor,
     const EventDeviceInfo& info,
     DeviceEventDispatcherEvdev* dispatcher)
-    : EventConverterEvdev(fd,
-                          path,
-                          id,
-                          type,
-                          info.name(),
-                          info.vendor_id(),
-                          info.product_id()),
+    : EventConverterEvdev(fd, path, id, type),
       cursor_(cursor),
       dispatcher_(dispatcher),
       stylus_(0),
@@ -151,8 +145,8 @@ void TabletEventConverterEvdev::DispatchMouseButton(const input_event& input) {
   bool down = input.value;
 
   dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
-      input_device_.id, cursor_->GetLocation(), button, down,
-      false /* allow_remap */, TimeDeltaFromInputEvent(input)));
+      id_, cursor_->GetLocation(), button, down, false /* allow_remap */,
+      TimeDeltaFromInputEvent(input)));
 }
 
 void TabletEventConverterEvdev::FlushEvents(const input_event& input) {
@@ -170,9 +164,8 @@ void TabletEventConverterEvdev::FlushEvents(const input_event& input) {
 
   UpdateCursor();
 
-  dispatcher_->DispatchMouseMoveEvent(
-      MouseMoveEventParams(input_device_.id, cursor_->GetLocation(),
-                           TimeDeltaFromInputEvent(input)));
+  dispatcher_->DispatchMouseMoveEvent(MouseMoveEventParams(
+      id_, cursor_->GetLocation(), TimeDeltaFromInputEvent(input)));
 
   abs_value_dirty_ = false;
 }

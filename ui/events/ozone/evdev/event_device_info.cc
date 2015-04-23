@@ -17,11 +17,6 @@ namespace ui {
 
 namespace {
 
-// USB vendor and product strings are pragmatically limited to 126
-// characters each, so device names more than twice that should be
-// unusual.
-const size_t kMaximumDeviceNameLength = 256;
-
 bool GetEventBits(int fd, unsigned int type, void* buf, unsigned int size) {
   if (ioctl(fd, EVIOCGBIT(type, size), buf) < 0) {
     PLOG(ERROR) << "EVIOCGBIT(" << type << ", " << size << ") on fd " << fd;
@@ -45,27 +40,6 @@ bool GetAbsInfo(int fd, int code, struct input_absinfo* absinfo) {
     PLOG(ERROR) << "EVIOCGABS(" << code << ") on fd " << fd;
     return false;
   }
-  return true;
-}
-
-bool GetDeviceName(int fd, std::string* name) {
-  char device_name[kMaximumDeviceNameLength];
-  if (ioctl(fd, EVIOCGNAME(kMaximumDeviceNameLength - 1), &device_name) < 0) {
-    PLOG(INFO) << "Can't read device name on fd " << fd;
-    return false;
-  }
-  *name = device_name;
-  return true;
-}
-
-bool GetDeviceIdentifiers(int fd, uint16_t* vendor, uint16_t* product) {
-  struct input_id evdev_id;
-  if (ioctl(fd, EVIOCGID, &evdev_id) < 0) {
-    PLOG(INFO) << "Can't read device name on fd " << fd;
-    return false;
-  }
-  *vendor = evdev_id.vendor;
-  *product = evdev_id.product;
   return true;
 }
 
@@ -160,12 +134,6 @@ bool EventDeviceInfo::Initialize(int fd) {
     std::vector<int32_t>* slots = &slot_values_[i - EVDEV_ABS_MT_FIRST];
     slots->assign(request_slots, request_slots + max_num_slots);
   }
-
-  if (!GetDeviceName(fd, &name_))
-    return false;
-
-  if (!GetDeviceIdentifiers(fd, &vendor_id_, &product_id_))
-    return false;
 
   return true;
 }

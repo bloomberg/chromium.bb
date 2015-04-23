@@ -16,14 +16,8 @@ namespace ui {
 EventConverterEvdev::EventConverterEvdev(int fd,
                                          const base::FilePath& path,
                                          int id,
-                                         InputDeviceType type,
-                                         const std::string& name,
-                                         uint16_t vendor_id,
-                                         uint16_t product_id)
-    : fd_(fd),
-      path_(path),
-      input_device_(id, type, name, vendor_id, product_id),
-      ignore_events_(false) {
+                                         InputDeviceType type)
+    : fd_(fd), path_(path), id_(id), type_(type), ignore_events_(false) {
 }
 
 EventConverterEvdev::~EventConverterEvdev() {

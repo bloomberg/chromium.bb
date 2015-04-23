@@ -8,7 +8,6 @@
 #include <limits.h>
 #include <linux/input.h>
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -81,11 +80,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
                                        unsigned int slot,
                                        int32_t default_value) const;
 
-  // Device identification.
-  const std::string& name() const { return name_; }
-  uint16_t vendor_id() const { return vendor_id_; }
-  uint16_t product_id() const { return product_id_; }
-
   // Check input device properties.
   bool HasProp(unsigned int code) const;
 
@@ -155,11 +149,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
 
   // Store the values for the multi-touch properties for each slot.
   std::vector<int32_t> slot_values_[EVDEV_ABS_MT_COUNT];
-
-  // Device identification.
-  std::string name_;
-  uint16_t vendor_id_;
-  uint16_t product_id_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDeviceInfo);
 };

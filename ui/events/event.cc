@@ -246,10 +246,6 @@ Event::Event(const base::NativeEvent& native_event,
     source_device_id_ = xiev->sourceid;
   }
 #endif
-#if defined(USE_OZONE)
-  source_device_id_ =
-      static_cast<const Event*>(native_event)->source_device_id();
-#endif
 }
 
 Event::Event(const Event& copy)

@@ -14,8 +14,7 @@ namespace ui {
 
 // Represents a Keyboard device state.
 struct EVENTS_DEVICES_EXPORT KeyboardDevice : public InputDevice {
-  KeyboardDevice(int id, InputDeviceType type, const std::string& name);
-  explicit KeyboardDevice(const InputDevice& input_device);
+  KeyboardDevice(int id, InputDeviceType type);
 };
 
 }  // namespace ui

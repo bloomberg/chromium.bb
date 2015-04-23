@@ -26,19 +26,14 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   EventConverterEvdev(int fd,
                       const base::FilePath& path,
                       int id,
-                      InputDeviceType type,
-                      const std::string& name,
-                      uint16_t vendor_id,
-                      uint16_t product_id);
+                      InputDeviceType type);
   ~EventConverterEvdev() override;
 
-  int id() const { return input_device_.id; }
+  int id() const { return id_; }
 
   const base::FilePath& path() const { return path_; }
 
-  InputDeviceType type() const { return input_device_.type; }
-
-  const InputDevice& input_device() const { return input_device_; }
+  InputDeviceType type() const { return type_; }
 
   void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
 
@@ -96,9 +91,11 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // Path to input device.
   base::FilePath path_;
 
-  // Input device information, including id (which uniquely identifies an
-  // event converter) and type.
-  InputDevice input_device_;
+  // Uniquely identifies an event converter.
+  int id_;
+
+  // Type (internal or external).
+  InputDeviceType type_;
 
   // Whether events from the device should be ignored.
   bool ignore_events_;

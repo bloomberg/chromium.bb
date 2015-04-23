@@ -86,15 +86,8 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
     base::FilePath path,
     int id,
     InputDeviceType type,
-    const EventDeviceInfo& devinfo,
     DeviceEventDispatcherEvdev* dispatcher)
-    : EventConverterEvdev(fd,
-                          path,
-                          id,
-                          type,
-                          devinfo.name(),
-                          devinfo.vendor_id(),
-                          devinfo.product_id()),
+    : EventConverterEvdev(fd, path, id, type),
       dispatcher_(dispatcher),
       syn_dropped_(false),
       has_mt_(false),
@@ -368,7 +361,7 @@ void TouchEventConverterEvdev::ReportEvent(const InProgressTouchEvdev& event,
                                            EventType event_type,
                                            const base::TimeDelta& timestamp) {
   dispatcher_->DispatchTouchEvent(TouchEventParams(
-      input_device_.id, event.slot, event_type, gfx::PointF(event.x, event.y),
+      id_, event.slot, event_type, gfx::PointF(event.x, event.y),
       gfx::Vector2dF(event.radius_x, event.radius_y), event.pressure,
       timestamp));
 }
