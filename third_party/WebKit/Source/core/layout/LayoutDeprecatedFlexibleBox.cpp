@@ -1012,8 +1012,6 @@ const char* LayoutDeprecatedFlexibleBox::name() const
 {
     if (isAnonymous())
         return "LayoutDeprecatedFlexibleBox (anonymous)";
-    if (isRelPositioned())
-        return "LayoutDeprecatedFlexibleBox (relative positioned)";
     return "LayoutDeprecatedFlexibleBox";
 }
 

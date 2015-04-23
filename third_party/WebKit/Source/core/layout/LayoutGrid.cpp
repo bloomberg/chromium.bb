@@ -1843,8 +1843,6 @@ const char* LayoutGrid::name() const
 {
     if (isAnonymous())
         return "LayoutGrid (anonymous)";
-    if (isRelPositioned())
-        return "LayoutGrid (relative positioned)";
     return "LayoutGrid";
 }
 

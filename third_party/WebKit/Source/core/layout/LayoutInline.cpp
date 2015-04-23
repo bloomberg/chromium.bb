@@ -778,8 +778,6 @@ LayoutUnit LayoutInline::marginAfter(const ComputedStyle* otherStyle) const
 
 const char* LayoutInline::name() const
 {
-    if (isRelPositioned())
-        return "LayoutInline (relative positioned)";
     if (isAnonymous())
         return "LayoutInline (anonymous)";
     return "LayoutInline";
