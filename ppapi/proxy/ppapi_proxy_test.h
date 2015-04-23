@@ -120,7 +120,7 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
                              public PluginProxyDelegate {
    public:
     PluginDelegateMock() : ipc_message_loop_(NULL), shutdown_event_() {}
-    virtual ~PluginDelegateMock() {}
+    ~PluginDelegateMock() override {}
 
     void Init(base::MessageLoopProxy* ipc_message_loop,
               base::WaitableEvent* shutdown_event) {
@@ -133,24 +133,24 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
     }
 
     // ProxyChannel::Delegate implementation.
-    virtual base::MessageLoopProxy* GetIPCMessageLoop() override;
-    virtual base::WaitableEvent* GetShutdownEvent() override;
-    virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+    base::MessageLoopProxy* GetIPCMessageLoop() override;
+    base::WaitableEvent* GetShutdownEvent() override;
+    IPC::PlatformFileForTransit ShareHandleWithRemote(
         base::PlatformFile handle,
         base::ProcessId remote_pid,
         bool should_close_source) override;
 
     // PluginDispatcher::PluginDelegate implementation.
-    virtual std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
-    virtual uint32 Register(PluginDispatcher* plugin_dispatcher) override;
-    virtual void Unregister(uint32 plugin_dispatcher_id) override;
+    std::set<PP_Instance>* GetGloballySeenInstanceIDSet() override;
+    uint32 Register(PluginDispatcher* plugin_dispatcher) override;
+    void Unregister(uint32 plugin_dispatcher_id) override;
 
     // PluginProxyDelegate implementation.
-    virtual IPC::Sender* GetBrowserSender() override;
-    virtual std::string GetUILanguage() override;
-    virtual void PreCacheFont(const void* logfontw) override;
-    virtual void SetActiveURL(const std::string& url) override;
-    virtual PP_Resource CreateBrowserFont(
+    IPC::Sender* GetBrowserSender() override;
+    std::string GetUILanguage() override;
+    void PreCacheFont(const void* logfontw) override;
+    void SetActiveURL(const std::string& url) override;
+    PP_Resource CreateBrowserFont(
         Connection connection,
         PP_Instance instance,
         const PP_BrowserFont_Trusted_Description& desc,
@@ -198,7 +198,7 @@ class PluginProxyMultiThreadTest
       public base::DelegateSimpleThread::Delegate {
  public:
   PluginProxyMultiThreadTest();
-  virtual ~PluginProxyMultiThreadTest();
+  ~PluginProxyMultiThreadTest() override;
 
   // Called before the secondary thread is started, but after all the member
   // variables, including |secondary_thread_| and
@@ -226,7 +226,7 @@ class PluginProxyMultiThreadTest
 
  private:
   // base::DelegateSimpleThread::Delegate implementation.
-  virtual void Run() override;
+  void Run() override;
 
   void QuitNestedLoop();
 
@@ -264,7 +264,7 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
    public:
     DelegateMock() : ipc_message_loop_(NULL), shutdown_event_(NULL) {
     }
-    virtual ~DelegateMock() {}
+    ~DelegateMock() override {}
 
     void Init(base::MessageLoopProxy* ipc_message_loop,
               base::WaitableEvent* shutdown_event) {
@@ -273,9 +273,9 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
     }
 
     // ProxyChannel::Delegate implementation.
-    virtual base::MessageLoopProxy* GetIPCMessageLoop();
-    virtual base::WaitableEvent* GetShutdownEvent();
-    virtual IPC::PlatformFileForTransit ShareHandleWithRemote(
+    base::MessageLoopProxy* GetIPCMessageLoop() override;
+    base::WaitableEvent* GetShutdownEvent() override;
+    IPC::PlatformFileForTransit ShareHandleWithRemote(
         base::PlatformFile handle,
         base::ProcessId remote_pid,
         bool should_close_source) override;
