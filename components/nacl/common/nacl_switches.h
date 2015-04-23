@@ -13,7 +13,6 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kDisablePnaclCrashThrottling[];
 extern const char kEnableNaClDebug[];
-extern const char kEnableNaClMojo[];
 extern const char kEnableNaClNonSfiMode[];
 extern const char kEnablePNaClSubzero[];
 extern const char kNaClBrokerProcess[];

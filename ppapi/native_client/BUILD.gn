@@ -22,7 +22,6 @@ if (enable_nacl && enable_nacl_untrusted) {
       "//gpu/ipc",
       "//ipc",
       "//media:shared_memory_support",
-      "//mojo/nacl:irt_mojo_sources",
       "//native_client/src/untrusted/irt:irt_core_lib",
       "//native_client/src/shared/srpc",
       "//native_client/src/shared/platform",

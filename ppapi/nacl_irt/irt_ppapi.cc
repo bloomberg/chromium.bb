@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 #include "build/build_config.h"
-#include "mojo/nacl/mojo_irt.h"
 #include "native_client/src/public/irt_core.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/untrusted/irt/irt.h"
@@ -91,12 +90,6 @@ size_t chrome_irt_query(const char* interface_ident,
                                       sizeof(irt_interfaces));
   if (result != 0)
     return result;
-
-#if defined(OS_NACL_SFI)
-  result = mojo_irt_query(interface_ident, table, tablesize);
-  if (result != 0)
-    return result;
-#endif
 
   return nacl_irt_query_core(interface_ident, table, tablesize);
 }

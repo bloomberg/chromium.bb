@@ -20,8 +20,6 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
 #include "sandbox/win/src/sandbox_types.h"
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
 
 extern int NaClMain(const content::MainFunctionParams&);
 
@@ -64,8 +62,6 @@ int NaClWin64Main() {
   // Route stdio to parent console (if any) or create one.
   if (command_line.HasSwitch(switches::kEnableLogging))
     base::RouteStdioToConsole();
-  mojo::embedder::Init(
-      make_scoped_ptr(new mojo::embedder::SimplePlatformSupport()));
 
   // Initialize the sandbox for this process.
   bool sandbox_initialized_ok = content::InitializeSandbox(&sandbox_info);

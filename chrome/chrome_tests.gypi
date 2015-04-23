@@ -2106,7 +2106,6 @@
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_media_galleries',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_packaged_app',
                 '../ppapi/tests/extensions/extensions.gyp:ppapi_tests_extensions_socket_permissions',
-                '../ppapi/ppapi_tests_mojo.gyp:ppapi_tests_mojo',
               ],
               'conditions': [
                 ['chromeos==1', {

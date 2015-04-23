@@ -29,7 +29,5 @@ include_rules = [
   # For sending PpapiHostMsg_ChannelCreated in nacl_ipc_adapter.cc:
   "+ppapi/proxy/ppapi_messages.h",
 
-  # For supporting Mojo in plugins.
-  "+mojo/nacl",
   "+third_party/mojo/src/mojo/edk",
 ]

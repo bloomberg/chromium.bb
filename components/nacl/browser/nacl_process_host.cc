@@ -840,8 +840,6 @@ bool NaClProcessHost::StartNaClExecution() {
     params.validation_cache_key = nacl_browser->GetValidationCacheKey();
     params.version = NaClBrowser::GetDelegate()->GetVersionString();
     params.enable_debug_stub = enable_nacl_debug;
-    params.enable_mojo = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableNaClMojo);
 
     const ChildProcessData& data = process_->GetData();
     if (!ShareHandleToSelLdr(data.handle,

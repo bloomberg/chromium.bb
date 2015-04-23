@@ -43,11 +43,6 @@
 #include "ipc/ipc_switches.h"
 #include "sandbox/linux/services/libc_urandom_override.h"
 
-#if !defined(OS_NACL_NONSFI)
-#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
-#endif
-
 #if defined(OS_NACL_NONSFI)
 #include "native_client/src/public/nonsfi/irt_exception_handling.h"
 #else
@@ -462,12 +457,6 @@ int main(int argc, char* argv[]) {
 
 #if !defined(OS_NACL_NONSFI)
   CheckRDebug(argv[0]);
-#endif
-
-// TODO(teravest): Enable mojo for nonsfi. http://crbug.com/473418
-#if !defined(OS_NACL_NONSFI)
-  mojo::embedder::Init(
-      make_scoped_ptr(new mojo::embedder::SimplePlatformSupport()));
 #endif
 
   scoped_ptr<nacl::NaClSandbox> nacl_sandbox(new nacl::NaClSandbox);

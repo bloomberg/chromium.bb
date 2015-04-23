@@ -33,7 +33,6 @@ if (enable_nacl) {
       "//content/public/common",
       "//crypto",
       "//ipc",
-      "//mojo/nacl:monacl_sel",
       "//native_client/src/trusted/service_runtime:sel_main_chrome",
       "//ppapi/c",
       "//ppapi/proxy:ipc",
@@ -181,7 +180,6 @@ if (enable_nacl) {
         "//content/public/common",
         "//crypto",
         "//ipc",
-        "//mojo/nacl:monacl_sel",
         "//sandbox/linux:libc_urandom_override",
       ]
 
