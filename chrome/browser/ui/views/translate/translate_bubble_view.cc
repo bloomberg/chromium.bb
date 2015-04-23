@@ -762,4 +762,7 @@ void TranslateBubbleView::UpdateAdvancedView() {
   else
     label = l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT);
   advanced_done_button_->SetText(label);
+  advanced_done_button_->SizeToPreferredSize();
+  if (advanced_view_)
+    advanced_view_->Layout();
 }
