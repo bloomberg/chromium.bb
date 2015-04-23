@@ -68,7 +68,7 @@ class TestChangeDelegate : public SyncManager::ChangeDelegate {
 class SyncRollbackManagerTest : public testing::Test,
                                 public SyncManager::Observer {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     CHECK(temp_dir_.CreateUniqueTempDir());
 
     worker_ = new FakeModelWorker(GROUP_UI);

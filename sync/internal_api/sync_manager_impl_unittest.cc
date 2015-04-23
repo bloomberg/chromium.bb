@@ -903,13 +903,13 @@ class SyncManagerTest : public testing::Test,
     return GetRoutingInfoTypes(routing_info);
   }
 
-  virtual void OnChangesApplied(
+  void OnChangesApplied(
       ModelType model_type,
       int64 model_version,
       const BaseTransaction* trans,
       const ImmutableChangeRecordList& changes) override {}
 
-  virtual void OnChangesComplete(ModelType model_type) override {}
+  void OnChangesComplete(ModelType model_type) override {}
 
   // Helper methods.
   bool SetUpEncryption(NigoriStatus nigori_status,
