@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/blob/BlobRegistry.h"
 
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -55,46 +56,6 @@ class BlobOriginCache : public SecurityOriginCache {
 public:
     BlobOriginCache();
     virtual SecurityOrigin* cachedOrigin(const KURL&) override;
-};
-
-struct BlobRegistryContext {
-    WTF_MAKE_FAST_ALLOCATED(BlobRegistryContext);
-public:
-    BlobRegistryContext(const KURL& url, PassOwnPtr<BlobData> blobData)
-        : url(url.copy())
-        , blobData(blobData)
-    {
-        this->blobData->detachFromCurrentThread();
-    }
-
-    BlobRegistryContext(const KURL& url, const String& type)
-        : url(url.copy())
-        , type(type.isolatedCopy())
-    {
-    }
-
-    BlobRegistryContext(const KURL& url, const KURL& srcURL)
-        : url(url.copy())
-        , srcURL(srcURL.copy())
-    {
-    }
-
-    BlobRegistryContext(const KURL& url, PassRefPtr<RawData> streamData)
-        : url(url.copy())
-        , streamData(streamData)
-    {
-    }
-
-    BlobRegistryContext(const KURL& url)
-        : url(url.copy())
-    {
-    }
-
-    KURL url;
-    KURL srcURL;
-    OwnPtr<BlobData> blobData;
-    PassRefPtr<RawData> streamData;
-    String type;
 };
 
 static WebBlobRegistry* blobRegistry()
@@ -155,129 +116,106 @@ void BlobRegistry::revokePublicBlobURL(const KURL& url)
     blobRegistry()->revokePublicBlobURL(url);
 }
 
-static void registerStreamURLTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
+static void registerStreamURLTask(const KURL& url, const String& type)
 {
     if (WebBlobRegistry* registry = blobRegistry())
-        registry->registerStreamURL(blobRegistryContext->url, blobRegistryContext->type);
+        registry->registerStreamURL(url, type);
 }
 
 void BlobRegistry::registerStreamURL(const KURL& url, const String& type)
 {
-    if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry())
-            registry->registerStreamURL(url, type);
-    } else {
-        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, type));
-        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&registerStreamURLTask, context.release()));
-    }
+    if (isMainThread())
+        registerStreamURLTask(url, type);
+    else
+        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&registerStreamURLTask, url, type));
 }
 
-static void registerStreamURLFromTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
+static void registerStreamURLFromTask(const KURL& url, const KURL& srcURL)
 {
     if (WebBlobRegistry* registry = blobRegistry())
-        registry->registerStreamURL(blobRegistryContext->url, blobRegistryContext->srcURL);
+        registry->registerStreamURL(url, srcURL);
 }
 
 void BlobRegistry::registerStreamURL(SecurityOrigin* origin, const KURL& url, const KURL& srcURL)
 {
     saveToOriginMap(origin, url);
 
-    if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry())
-            registry->registerStreamURL(url, srcURL);
-    } else {
-        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, srcURL));
-        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&registerStreamURLFromTask, context.release()));
-    }
+    if (isMainThread())
+        registerStreamURLFromTask(url, srcURL);
+    else
+        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&registerStreamURLFromTask, url, srcURL));
 }
 
-static void addDataToStreamTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
+static void addDataToStreamTask(const KURL& url, PassRefPtr<RawData> streamData)
 {
-    if (WebBlobRegistry* registry = blobRegistry()) {
-        RefPtr<RawData> data(blobRegistryContext->streamData);
-        registry->addDataToStream(blobRegistryContext->url, data->data(), data->length());
-    }
+    if (WebBlobRegistry* registry = blobRegistry())
+        registry->addDataToStream(url, streamData->data(), streamData->length());
 }
 
 void BlobRegistry::addDataToStream(const KURL& url, PassRefPtr<RawData> streamData)
 {
-    if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry())
-            registry->addDataToStream(url, streamData->data(), streamData->length());
-    } else {
-        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, streamData));
-        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&addDataToStreamTask, context.release()));
-    }
+    if (isMainThread())
+        addDataToStreamTask(url, streamData);
+    else
+        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&addDataToStreamTask, url, streamData));
 }
 
-static void flushStreamTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
+static void flushStreamTask(const KURL& url)
 {
     if (WebBlobRegistry* registry = blobRegistry())
-        registry->flushStream(blobRegistryContext->url);
+        registry->flushStream(url);
 }
 
 void BlobRegistry::flushStream(const KURL& url)
 {
-    if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry())
-            registry->flushStream(url);
-    } else {
-        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
-        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&flushStreamTask, context.release()));
-    }
+    if (isMainThread())
+        flushStreamTask(url);
+    else
+        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&flushStreamTask, url));
 }
 
-static void finalizeStreamTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
+static void finalizeStreamTask(const KURL& url)
 {
     if (WebBlobRegistry* registry = blobRegistry())
-        registry->finalizeStream(blobRegistryContext->url);
+        registry->finalizeStream(url);
 }
 
 void BlobRegistry::finalizeStream(const KURL& url)
 {
-    if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry())
-            registry->finalizeStream(url);
-    } else {
-        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
-        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&finalizeStreamTask, context.release()));
-    }
+    if (isMainThread())
+        finalizeStreamTask(url);
+    else
+        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&finalizeStreamTask, url));
 }
 
-static void abortStreamTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
+static void abortStreamTask(const KURL& url)
 {
     if (WebBlobRegistry* registry = blobRegistry())
-        registry->abortStream(blobRegistryContext->url);
+        registry->abortStream(url);
 }
 
 void BlobRegistry::abortStream(const KURL& url)
 {
-    if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry())
-            registry->abortStream(url);
-    } else {
-        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
-        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&abortStreamTask, context.release()));
-    }
+    if (isMainThread())
+        abortStreamTask(url);
+    else
+        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&abortStreamTask, url));
 }
 
-static void unregisterStreamURLTask(PassOwnPtr<BlobRegistryContext> blobRegistryContext)
+static void unregisterStreamURLTask(const KURL& url)
 {
     if (WebBlobRegistry* registry = blobRegistry())
-        registry->unregisterStreamURL(blobRegistryContext->url);
+        registry->unregisterStreamURL(url);
 }
 
 void BlobRegistry::unregisterStreamURL(const KURL& url)
 {
     removeFromOriginMap(url);
 
-    if (isMainThread()) {
-        if (WebBlobRegistry* registry = blobRegistry())
-            registry->unregisterStreamURL(url);
-    } else {
-        OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
-        Platform::current()->mainThread()->postTask(FROM_HERE, bind(&unregisterStreamURLTask, context.release()));
-    }
+    if (isMainThread())
+        unregisterStreamURLTask(url);
+    else
+        Platform::current()->mainThread()->postTask(FROM_HERE, threadSafeBind(&unregisterStreamURLTask, url));
 }
 
 BlobOriginCache::BlobOriginCache()
