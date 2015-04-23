@@ -48,8 +48,11 @@ _CURRENT_FOCUS_CRASH_RE = re.compile(
 
 
 def _DismissCrashDialog(device):
+  # TODO(jbudorick): Try to grep the output on the device instead of using
+  # large_output if/when DeviceUtils exposes a public interface for piped
+  # shell command handling.
   for l in device.RunShellCommand(
-      ['dumpsys', 'window', 'windows'], check_return=True):
+      ['dumpsys', 'window', 'windows'], check_return=True, large_output=True):
     m = re.match(_CURRENT_FOCUS_CRASH_RE, l)
     if m:
       device.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
