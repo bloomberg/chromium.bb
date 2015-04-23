@@ -2006,8 +2006,6 @@ crbug.com/425345 [ Mac ] virtual/slimmingpaint/fast/text/line-break-after-questi
 
 crbug.com/401377 [ XP ] http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Pass Timeout ]
 
-crbug.com/430557 [ Win Linux Mac ] inspector/layers/layer-canvas-log.html [ Failure ]
-
 # Flaky image failures on all platforms; the gpu variant also times out on Win.
 crbug.com/477668 fast/canvas/yuv-video-on-accelerated-canvas.html [ Pass ImageOnlyFailure ]
 crbug.com/477668 virtual/display_list_2d_canvas/fast/canvas/yuv-video-on-accelerated-canvas.html [ Pass ImageOnlyFailure ]
