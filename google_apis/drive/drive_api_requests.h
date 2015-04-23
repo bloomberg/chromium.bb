@@ -113,11 +113,11 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
         weak_ptr_factory_(this) {
     DCHECK(!callback_.is_null());
   }
-  virtual ~DriveApiDataRequest() {}
+  ~DriveApiDataRequest() override {}
 
  protected:
   // UrlFetchRequestBase overrides.
-  virtual void ProcessURLFetchResults(const net::URLFetcher* source) override {
+  void ProcessURLFetchResults(const net::URLFetcher* source) override {
     DriveApiErrorCode error = GetErrorCode();
     switch (error) {
       case HTTP_SUCCESS:
@@ -136,7 +136,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
     }
   }
 
-  virtual void RunCallbackOnPrematureFailure(DriveApiErrorCode error) override {
+  void RunCallbackOnPrematureFailure(DriveApiErrorCode error) override {
     callback_.Run(error, scoped_ptr<DataType>());
   }
 
