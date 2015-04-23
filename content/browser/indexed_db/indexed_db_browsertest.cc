@@ -492,14 +492,22 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DiskFullOnCommit) {
   //       => IndexedDBBackingStore::SetUpMetadata
   //   #2: IndexedDBBackingStore::OpenBackingStore
   //       => IndexedDBBackingStore::CleanUpBlobJournal (no-op)
-  // * The test calls open(), to create a new database:
-  //   #3: IndexedDBFactoryImpl::Open
+  // * Then deletes the database:
+  //   #3: IndexedDBFactoryImpl::DeleteDatabase
   //       => IndexedDBDatabase::Create
   //       => IndexedDBBackingStore::CreateIDBDatabaseMetaData
-  //   #4: IndexedDBTransaction::Commit - initial "versionchange" transaction
+  //   #4: IndexedDBFactoryImpl::DeleteDatabase
+  //       => IndexedDBDatabase::DeleteDatabase
+  //       => IndexedDBBackingStore::DeleteDatabase
+  //       => IndexedDBBackingStore::CleanUpBlobJournal (no-op)
+  // * The test calls open(), to create a new database:
+  //   #5: IndexedDBFactoryImpl::Open
+  //       => IndexedDBDatabase::Create
+  //       => IndexedDBBackingStore::CreateIDBDatabaseMetaData
+  //   #6: IndexedDBTransaction::Commit - initial "versionchange" transaction
   // * Once the connection is opened, the test runs:
-  //   #5: IndexedDBTransaction::Commit - the test's "readwrite" transaction)
-  const int instance_num = 5;
+  //   #7: IndexedDBTransaction::Commit - the test's "readwrite" transaction)
+  const int instance_num = 7;
   const int call_num = 1;
   FailOperation(FAIL_CLASS_LEVELDB_TRANSACTION, FAIL_METHOD_COMMIT_DISK_FULL,
                 instance_num, call_num);
