@@ -487,6 +487,7 @@
            {
              "type": "function",
              "name": "callback",
+             "optional": true,
              "parameters": [
                {
                  "name": "window",
@@ -815,6 +816,7 @@
           {
             "type": "function",
             "name": "callback",
+            "optional": true,
             "description": "Called after the zoom settings have been changed.",
             "parameters": []
           }
