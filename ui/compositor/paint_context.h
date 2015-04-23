@@ -56,15 +56,20 @@ class COMPOSITOR_EXPORT PaintContext {
     return PaintContext(canvas_);
   }
 
-  // When true, IsRectInvalidated() can be called, otherwise its result would be
+  // When true, IsRectInvalid() can be called, otherwise its result would be
   // invalid.
-  bool CanCheckInvalidated() const { return !invalidation_.IsEmpty(); }
+  bool CanCheckInvalid() const { return !invalidation_.IsEmpty(); }
+
+  // When true, if a thing is not invalidated it does not need to paint itself.
+  // When false, everything should provide an output when painting regardless of
+  // being invalidated in order to remain visible.
+  bool ShouldEarlyOutOfPaintingWhenValid() const { return !!canvas_; }
 
   // When true, the |bounds| touches an invalidated area, so should be
   // re-painted. When false, re-painting can be skipped. Bounds should be in
   // the local space with offsets up to the painting root in the PaintContext.
-  bool IsRectInvalidated(const gfx::Rect& bounds) const {
-    DCHECK(CanCheckInvalidated());
+  bool IsRectInvalid(const gfx::Rect& bounds) const {
+    DCHECK(CanCheckInvalid());
     return invalidation_.Intersects(bounds + offset_);
   }
 
@@ -86,6 +91,9 @@ class COMPOSITOR_EXPORT PaintContext {
   friend class ClipTransformRecorder;
   friend class CompositingRecorder;
   friend class PaintRecorder;
+  // The Cache class also needs to access the DisplayItemList to append its
+  // cache contents.
+  friend class PaintCache;
 
   PaintContext& operator=(const PaintContext& other) = delete;
 

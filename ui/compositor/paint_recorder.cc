@@ -7,14 +7,15 @@
 #include "cc/resources/display_item_list.h"
 #include "cc/resources/drawing_display_item.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "ui/compositor/paint_cache.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ui {
 
-PaintRecorder::PaintRecorder(const PaintContext& context)
-    : context_(context), canvas_(context.canvas_) {
+PaintRecorder::PaintRecorder(const PaintContext& context, PaintCache* cache)
+    : context_(context), canvas_(context.canvas_), cache_(cache) {
 #if DCHECK_IS_ON()
   DCHECK(!context.inside_paint_recorder_);
   context.inside_paint_recorder_ = true;
@@ -34,15 +35,23 @@ PaintRecorder::PaintRecorder(const PaintContext& context)
   }
 }
 
+PaintRecorder::PaintRecorder(const PaintContext& context)
+    : PaintRecorder(context, nullptr) {
+}
+
 PaintRecorder::~PaintRecorder() {
 #if DCHECK_IS_ON()
   context_.inside_paint_recorder_ = false;
 #endif
 
-  if (context_.list_) {
-    context_.list_->AppendItem(cc::DrawingDisplayItem::Create(
-        skia::AdoptRef(context_.recorder_->endRecordingAsPicture())));
-  }
+  if (!context_.list_)
+    return;
+
+  scoped_ptr<cc::DrawingDisplayItem> item = cc::DrawingDisplayItem::Create(
+      skia::AdoptRef(context_.recorder_->endRecordingAsPicture()));
+  if (cache_)
+    cache_->SetCache(item->Clone());
+  context_.list_->AppendItem(item.Pass());
 }
 
 }  // namespace ui

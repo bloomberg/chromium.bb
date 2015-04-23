@@ -33,6 +33,8 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
   size_t PictureMemoryUsage() const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
+  scoped_ptr<DrawingDisplayItem> Clone();
+
  protected:
   explicit DrawingDisplayItem(skia::RefPtr<SkPicture> picture);
 

@@ -748,7 +748,8 @@ void View::Paint(const ui::PaintContext& parent_context) {
   ui::PaintContext context =
       parent_context.CloneWithPaintOffset(offset_to_parent);
 
-  if (context.CanCheckInvalidated()) {
+  bool is_invalidated = true;
+  if (context.CanCheckInvalid()) {
 #if DCHECK_IS_ON()
     gfx::Vector2d offset;
     context.Visited(this);
@@ -770,9 +771,11 @@ void View::Paint(const ui::PaintContext& parent_context) {
 
     // If the View wasn't invalidated, don't waste time painting it, the output
     // would be culled.
-    if (!context.IsRectInvalidated(GetLocalBounds()))
-      return;
+    is_invalidated = context.IsRectInvalid(GetLocalBounds());
   }
+
+  if (!is_invalidated && context.ShouldEarlyOutOfPaintingWhenValid())
+    return;
 
   TRACE_EVENT1("views", "View::Paint", "class", GetClassName());
 
@@ -803,8 +806,8 @@ void View::Paint(const ui::PaintContext& parent_context) {
     clip_transform_recorder->Transform(transform_from_parent);
   }
 
-  {
-    ui::PaintRecorder recorder(context);
+  if (is_invalidated || !paint_cache_.UseCache(context)) {
+    ui::PaintRecorder recorder(context, &paint_cache_);
     gfx::Canvas* canvas = recorder.canvas();
     gfx::ScopedCanvas scoped_canvas(canvas);
 
