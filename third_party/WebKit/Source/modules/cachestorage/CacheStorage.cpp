@@ -67,7 +67,7 @@ public:
             m_resolver->reject("not implemented");
             return;
         }
-        Cache* cache = Cache::create(webCache);
+        Cache* cache = Cache::create(m_cacheStorage->m_scopedFetcher, webCache);
         m_cacheStorage->m_nameToCacheMap.set(m_cacheName, cache);
         m_resolver->resolve(cache);
         m_resolver.clear();
@@ -172,9 +172,9 @@ private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
-CacheStorage* CacheStorage::create(WebServiceWorkerCacheStorage* webCacheStorage)
+CacheStorage* CacheStorage::create(WeakPtr<GlobalFetch::ScopedFetcher> fetcher, WebServiceWorkerCacheStorage* webCacheStorage)
 {
-    return new CacheStorage(adoptPtr(webCacheStorage));
+    return new CacheStorage(fetcher, adoptPtr(webCacheStorage));
 }
 
 ScriptPromise CacheStorage::open(ScriptState* scriptState, const String& cacheName)
@@ -273,8 +273,9 @@ DEFINE_TRACE(CacheStorage)
     visitor->trace(m_nameToCacheMap);
 }
 
-CacheStorage::CacheStorage(PassOwnPtr<WebServiceWorkerCacheStorage> webCacheStorage)
-    : m_webCacheStorage(webCacheStorage)
+CacheStorage::CacheStorage(WeakPtr<GlobalFetch::ScopedFetcher> fetcher, PassOwnPtr<WebServiceWorkerCacheStorage> webCacheStorage)
+    : m_scopedFetcher(fetcher)
+    , m_webCacheStorage(webCacheStorage)
 {
 }
 

@@ -346,6 +346,7 @@ interface CSSViewportRule
     getter style
     method constructor
 interface Cache
+    method add
     method constructor
     method delete
     method keys

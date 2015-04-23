@@ -9,8 +9,10 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "bindings/modules/v8/V8Response.h"
 #include "core/dom/DOMException.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/GlobalFetch.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
 #include "public/platform/WebServiceWorkerCache.h"
@@ -146,6 +148,40 @@ ScriptPromise rejectAsNotImplemented(ScriptState* scriptState)
 
 } // namespace
 
+class Cache::FetchResolvedForAdd final : public ScriptFunction {
+public:
+    static v8::Handle<v8::Function> create(ScriptState* scriptState, Cache* cache, Request* request)
+    {
+        FetchResolvedForAdd* self = new FetchResolvedForAdd(scriptState, cache, request);
+        return self->bindToV8Function();
+    }
+
+    ScriptValue call(ScriptValue value) override
+    {
+        Response* response = V8Response::toImplWithTypeCheck(scriptState()->isolate(), value.v8Value());
+        ScriptPromise putPromise = m_cache->putImpl(scriptState(), m_request, response);
+        return ScriptValue(scriptState(), putPromise.v8Value());
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_cache);
+        visitor->trace(m_request);
+        ScriptFunction::trace(visitor);
+    }
+
+private:
+    FetchResolvedForAdd(ScriptState* scriptState, Cache* cache, Request* request)
+        : ScriptFunction(scriptState)
+        , m_cache(cache)
+        , m_request(request)
+    {
+    }
+
+    Member<Cache> m_cache;
+    Member<Request> m_request;
+};
+
 class Cache::AsyncPutBatch final : public BodyStreamBuffer::BlobHandleCreatorClient {
 public:
     AsyncPutBatch(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, Cache* cache, Request* request, Response* response)
@@ -193,9 +229,9 @@ private:
     WebServiceWorkerResponse m_webResponse;
 };
 
-Cache* Cache::create(WebServiceWorkerCache* webCache)
+Cache* Cache::create(WeakPtr<GlobalFetch::ScopedFetcher> fetcher, WebServiceWorkerCache* webCache)
 {
-    return new Cache(webCache);
+    return new Cache(fetcher, webCache);
 }
 
 ScriptPromise Cache::match(ScriptState* scriptState, const RequestInfo& request, const CacheQueryOptions& options, ExceptionState& exceptionState)
@@ -223,12 +259,19 @@ ScriptPromise Cache::matchAll(ScriptState* scriptState, const RequestInfo& reque
 ScriptPromise Cache::add(ScriptState* scriptState, const RequestInfo& request, ExceptionState& exceptionState)
 {
     ASSERT(!request.isNull());
-    if (request.isRequest())
-        return addImpl(scriptState, request.getAsRequest());
-    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
-    if (exceptionState.hadException())
-        return ScriptPromise();
-    return addImpl(scriptState, newRequest);
+    Request* newRequest;
+    if (request.isRequest()) {
+        newRequest = request.getAsRequest();
+    } else {
+        newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
+
+        if (exceptionState.hadException())
+            return ScriptPromise();
+    }
+
+    Vector<Request*> requestVector;
+    requestVector.append(newRequest);
+    return addAllImpl(scriptState, requestVector, exceptionState);
 }
 
 ScriptPromise Cache::addAll(ScriptState* scriptState, const Vector<ScriptValue>& rawRequests)
@@ -286,8 +329,9 @@ WebServiceWorkerCache::QueryParams Cache::toWebQueryParams(const CacheQueryOptio
     return webQueryParams;
 }
 
-Cache::Cache(WebServiceWorkerCache* webCache)
-    : m_webCache(adoptPtr(webCache)) { }
+Cache::Cache(WeakPtr<GlobalFetch::ScopedFetcher> fetcher, WebServiceWorkerCache* webCache)
+    : m_scopedFetcher(fetcher)
+    , m_webCache(adoptPtr(webCache)) { }
 
 ScriptPromise Cache::matchImpl(ScriptState* scriptState, const Request* request, const CacheQueryOptions& options)
 {
@@ -311,16 +355,23 @@ ScriptPromise Cache::matchAllImpl(ScriptState* scriptState, const Request* reque
     return promise;
 }
 
-ScriptPromise Cache::addImpl(ScriptState* scriptState, const Request*)
+ScriptPromise Cache::addAllImpl(ScriptState* scriptState, const Vector<Request*>& requests, ExceptionState& exceptionState)
 {
-    // FIXME: Implement this.
-    return rejectAsNotImplemented(scriptState);
-}
+    // TODO(gavinp,nhiroki): Implement addAll for more than one element.
+    ASSERT(requests.size() == 1);
 
-ScriptPromise Cache::addAllImpl(ScriptState* scriptState, const Vector<const Request*>)
-{
-    // FIXME: Implement this.
-    return rejectAsNotImplemented(scriptState);
+    Vector<RequestInfo> requestInfos;
+    requestInfos.resize(requests.size());
+    for (size_t i = 0; i < requests.size(); ++i) {
+        if (!requests[i]->url().protocolIsInHTTPFamily())
+            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Add/AddAll does not support schemes other than \"http\" or \"https\""));
+        if (requests[i]->method() != "GET")
+            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Add/AddAll only supports the GET request method."));
+        requestInfos[i].setRequest(requests[i]);
+    }
+
+    ScriptPromise fetchPromise = m_scopedFetcher->fetch(scriptState, requestInfos[0], Dictionary(), exceptionState);
+    return fetchPromise.then(FetchResolvedForAdd::create(scriptState, this, requests[0]));
 }
 
 PassRefPtrWillBeRawPtr<DOMException> Cache::domExceptionForCacheError(WebServiceWorkerCacheError reason)

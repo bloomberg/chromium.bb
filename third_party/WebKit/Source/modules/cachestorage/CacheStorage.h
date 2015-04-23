@@ -10,6 +10,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/cachestorage/Cache.h"
 #include "modules/cachestorage/CacheQueryOptions.h"
+#include "modules/fetch/GlobalFetch.h"
 #include "public/platform/WebServiceWorkerCacheStorage.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -24,7 +25,7 @@ class CacheStorage final : public GarbageCollectedFinalized<CacheStorage>, publi
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CacheStorage);
 public:
-    static CacheStorage* create(WebServiceWorkerCacheStorage*);
+    static CacheStorage* create(WeakPtr<GlobalFetch::ScopedFetcher>, WebServiceWorkerCacheStorage*);
 
     ScriptPromise open(ScriptState*, const String& cacheName);
     ScriptPromise has(ScriptState*, const String& cacheName);
@@ -45,9 +46,10 @@ private:
     friend class WithCacheCallbacks;
     friend class DeleteCallbacks;
 
-    explicit CacheStorage(PassOwnPtr<WebServiceWorkerCacheStorage>);
+    CacheStorage(WeakPtr<GlobalFetch::ScopedFetcher>, PassOwnPtr<WebServiceWorkerCacheStorage>);
     ScriptPromise matchImpl(ScriptState*, const Request*, const CacheQueryOptions&);
 
+    WeakPtr<GlobalFetch::ScopedFetcher> m_scopedFetcher;
     OwnPtr<WebServiceWorkerCacheStorage> m_webCacheStorage;
     HeapHashMap<String, Member<Cache>> m_nameToCacheMap;
 };

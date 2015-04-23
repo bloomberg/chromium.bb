@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "modules/fetch/Request.h"
+#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -18,6 +19,18 @@ class WorkerGlobalScope;
 
 class GlobalFetch {
 public:
+    class ScopedFetcher {
+    public:
+        virtual ~ScopedFetcher();
+
+        virtual ScriptPromise fetch(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&) = 0;
+
+        static WeakPtr<ScopedFetcher> from(DOMWindow&);
+        static WeakPtr<ScopedFetcher> from(WorkerGlobalScope&);
+
+        DECLARE_VIRTUAL_TRACE();
+    };
+
     static ScriptPromise fetch(ScriptState*, DOMWindow&, const RequestInfo&, const Dictionary&, ExceptionState&);
     static ScriptPromise fetch(ScriptState*, WorkerGlobalScope&, const RequestInfo&, const Dictionary&, ExceptionState&);
 };

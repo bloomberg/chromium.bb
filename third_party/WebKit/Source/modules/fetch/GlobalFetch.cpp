@@ -20,20 +20,20 @@ namespace blink {
 namespace {
 
 template <typename T>
-class GlobalFetchImpl final : public NoBaseWillBeGarbageCollectedFinalized<GlobalFetchImpl<T>>, public WillBeHeapSupplement<T> {
+class GlobalFetchImpl final : public GlobalFetch::ScopedFetcher, public NoBaseWillBeGarbageCollectedFinalized<GlobalFetchImpl<T>>, public WillBeHeapSupplement<T> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GlobalFetchImpl);
 public:
-    static GlobalFetchImpl& from(T& supplementable, ExecutionContext* executionContext)
+    static WeakPtr<ScopedFetcher> from(T& supplementable, ExecutionContext* executionContext)
     {
         GlobalFetchImpl* supplement = static_cast<GlobalFetchImpl*>(WillBeHeapSupplement<T>::from(supplementable, name()));
         if (!supplement) {
             supplement = new GlobalFetchImpl(executionContext);
             WillBeHeapSupplement<T>::provideTo(supplementable, name(), adoptPtrWillBeNoop(supplement));
         }
-        return *supplement;
+        return supplement->m_weakFactory.createWeakPtr();
     }
 
-    ScriptPromise fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
+    ScriptPromise fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState) override
     {
         if (m_fetchManager->isStopped()) {
             exceptionState.throwTypeError("The global scope is shutting down.");
@@ -53,6 +53,7 @@ public:
     {
         visitor->trace(m_fetchManager);
         visitor->trace(m_stopDetector);
+        ScopedFetcher::trace(visitor);
         WillBeHeapSupplement<T>::trace(visitor);
     }
 
@@ -89,27 +90,47 @@ private:
     explicit GlobalFetchImpl(ExecutionContext* executionContext)
         : m_fetchManager(FetchManager::create(executionContext))
         , m_stopDetector(StopDetector::create(executionContext, m_fetchManager.get()))
+        , m_weakFactory(this)
     {
     }
     static const char* name() { return "GlobalFetch"; }
 
     OwnPtrWillBeMember<FetchManager> m_fetchManager;
     OwnPtrWillBeMember<StopDetector> m_stopDetector;
+    WeakPtrFactory<ScopedFetcher> m_weakFactory;
 };
 
 } // namespace
 
+GlobalFetch::ScopedFetcher::~ScopedFetcher()
+{
+}
+
+WeakPtr<GlobalFetch::ScopedFetcher> GlobalFetch::ScopedFetcher::from(DOMWindow& window)
+{
+    return GlobalFetchImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.executionContext());
+}
+
+WeakPtr<GlobalFetch::ScopedFetcher> GlobalFetch::ScopedFetcher::from(WorkerGlobalScope& worker)
+{
+    return GlobalFetchImpl<WorkerGlobalScope>::from(worker, worker.executionContext());
+}
+
+DEFINE_TRACE(GlobalFetch::ScopedFetcher)
+{
+}
+
 ScriptPromise GlobalFetch::fetch(ScriptState* scriptState, DOMWindow& window, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
 {
     UseCounter::count(window.executionContext(), UseCounter::Fetch);
-    return GlobalFetchImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.executionContext()).fetch(scriptState, input, init, exceptionState);
+    return ScopedFetcher::from(window)->fetch(scriptState, input, init, exceptionState);
 }
 
 ScriptPromise GlobalFetch::fetch(ScriptState* scriptState, WorkerGlobalScope& worker, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
 {
     // Note that UseCounter doesn't work with SharedWorker or ServiceWorker.
     UseCounter::count(worker.executionContext(), UseCounter::Fetch);
-    return GlobalFetchImpl<WorkerGlobalScope>::from(worker, worker.executionContext()).fetch(scriptState, input, init, exceptionState);
+    return ScopedFetcher::from(worker)->fetch(scriptState, input, init, exceptionState);
 }
 
 } // namespace blink

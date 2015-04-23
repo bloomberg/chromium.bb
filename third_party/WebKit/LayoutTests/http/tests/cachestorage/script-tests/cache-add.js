@@ -16,18 +16,28 @@ cache_test(function(cache) {
       .then(function(result) {
           assert_equals(result, undefined,
                         'Cache.add should resolve with undefined on success.');
+          return cache.match('../resources/simple.txt');
+        })
+        .then(function(response) {
+          assert_class_string(response, 'Response',
+                              'Cache.add should put a resource in the cache.');
+          return response.text();
+        })
+        .then(function(body) {
+          assert_equals(body, 'a simple text file\n',
+                        'Cache.add should retrieve the correct body.');
         });
   }, 'Cache.add called with relative URL specified as a string');
 
 cache_test(function(cache) {
     return assert_promise_rejects(
       cache.add('javascript://this-is-not-http-mmkay'),
-      'NetworkError',
-      'Cache.add should throw a NetworkError for non-HTTP/HTTPS URLs.');
+      new TypeError(),
+      'Cache.add should throw a TypeError for non-HTTP/HTTPS URLs.');
   }, 'Cache.add called with non-HTTP/HTTPS URL');
 
 cache_test(function(cache) {
-    var request = new Request('../resources/simple.txt', {method: 'POST', body: 'Hello'});
+    var request = new Request('../resources/simple.txt', {method: 'GET'});
     return cache.add(request)
       .then(function(result) {
           assert_equals(result, undefined,
@@ -36,7 +46,16 @@ cache_test(function(cache) {
   }, 'Cache.add called with Request object');
 
 cache_test(function(cache) {
-    var request = new Request('../resources/simple.txt', {method: 'POST', body: 'Hello'});
+    var request = new Request('../resources/simple.txt',
+                              {method: 'POST', body: 'This is a body.'});
+    return assert_promise_rejects(
+      cache.add(request),
+      new TypeError(),
+      'Cache.add should throw a TypeError for non-GET requests.');
+  }, 'Cache.add called with POST request');
+
+cache_test(function(cache) {
+    var request = new Request('../resources/simple.txt');
     return request.text()
       .then(function() {
           assert_false(request.bodyUsed);
@@ -45,21 +64,6 @@ cache_test(function(cache) {
           return cache.add(request);
         });
   }, 'Cache.add called with Request object with a used body');
-
-cache_test(function(cache) {
-    var request = new Request('../resources/simple.txt', {method: 'POST', body: 'Hello'});
-    return cache.add(request)
-      .then(function(result) {
-          assert_equals(result, undefined,
-                        'Cache.add should resolve with undefined on success.');
-        })
-      .then(function() {
-          return assert_promise_rejects(
-            cache.add(request),
-            new TypeError(),
-            'Cache.add should throw TypeError if same request is added twice.');
-        });
-  }, 'Cache.add called twice with the same Request object');
 
 cache_test(function(cache) {
     return cache.add('this-does-not-exist-please-dont-create-it')
@@ -132,14 +136,5 @@ cache_test(function(cache) {
                         'success.');
         });
   }, 'Cache.addAll with a mix of succeeding and failing requests');
-
-cache_test(function(cache) {
-    var request = new Request('../resources/simple.txt');
-    return assert_promise_rejects(
-      cache.addAll([request, request]),
-      new TypeError(),
-      'Cache.addAll should throw TypeError if the same request is added ' +
-      'twice.');
-  }, 'Cache.addAll called with the same Request object specified twice');
 
 done();
