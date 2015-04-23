@@ -2,15 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
-
 from telemetry.core import util
 from telemetry.value import histogram
 from telemetry.value import histogram_util
 
 from measurements import startup
 from metrics import cpu
-from metrics import startup_metric
 
 
 _HISTOGRAMS = [

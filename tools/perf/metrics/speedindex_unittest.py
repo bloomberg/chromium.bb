@@ -5,8 +5,6 @@
 # These tests access private methods in the speedindex module.
 # pylint: disable=W0212
 
-import json
-import os
 import unittest
 
 from telemetry.image_processing import histogram

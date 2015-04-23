@@ -12,7 +12,7 @@ from telemetry import decorators
 from telemetry.unittest_util import options_for_unittests
 
 util.AddDirToPythonPath(util.GetTelemetryDir(), 'third_party', 'mock')
-import mock
+import mock  # pylint: disable=import-error
 
 
 # Testing private method.

@@ -4,11 +4,9 @@
 
 from telemetry.core import wpr_modes
 from telemetry.page import page as page_module
-from telemetry.page import page_test
 from telemetry.results import page_test_results
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
-from telemetry.value import skip
 
 from measurements import v8_detached_context_age_in_gc
 

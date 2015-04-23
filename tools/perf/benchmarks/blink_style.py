@@ -5,7 +5,6 @@
 from telemetry import benchmark
 
 from measurements import blink_style
-from measurements import smoothness
 import page_sets
 
 @benchmark.Disabled # http://crbug.com/479048

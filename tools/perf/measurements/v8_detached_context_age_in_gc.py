@@ -5,7 +5,6 @@
 import json
 
 from telemetry.page import page_test
-from telemetry.value import histogram
 from telemetry.value import histogram_util
 from telemetry.value import scalar
 from telemetry.value import skip

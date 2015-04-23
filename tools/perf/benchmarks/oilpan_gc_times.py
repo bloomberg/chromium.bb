@@ -5,7 +5,6 @@
 import os
 
 from telemetry import benchmark
-from telemetry import page
 
 from benchmarks import blink_perf
 from benchmarks import silk_flags

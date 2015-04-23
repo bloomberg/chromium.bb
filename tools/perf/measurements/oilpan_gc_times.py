@@ -8,12 +8,9 @@ from telemetry.core.platform import tracing_category_filter
 from telemetry.core.platform import tracing_options
 from telemetry.page import action_runner
 from telemetry.page import page_test
-from telemetry.results import results_options
 from telemetry.timeline.model import TimelineModel
-from telemetry.util import statistics
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
-from telemetry.value import trace
 
 
 _CR_RENDERER_MAIN = 'CrRendererMain'

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 import sys
 
-from telemetry.core import exceptions
 from telemetry.core import wpr_modes
 from telemetry import decorators
 from telemetry.page import page

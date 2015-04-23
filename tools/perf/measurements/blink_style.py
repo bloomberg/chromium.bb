@@ -5,10 +5,8 @@
 from itertools import starmap
 from collections import defaultdict
 
-from telemetry.core.platform import tracing_options
 from telemetry.core import util
 from telemetry.page import page_test
-from telemetry.timeline.model import TimelineModel
 from telemetry.value import scalar
 
 from measurements import timeline_controller

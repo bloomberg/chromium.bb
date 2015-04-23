@@ -8,7 +8,6 @@ import sqlite3
 import page_sets
 
 from profile_creators import fast_navigation_profile_extender
-from profile_creators import profile_safe_url_list
 
 class CookieProfileExtender(
     fast_navigation_profile_extender.FastNavigationProfileExtender):

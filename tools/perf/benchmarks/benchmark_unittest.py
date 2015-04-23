@@ -5,7 +5,6 @@
 """For all the benchmarks that set options, test that the options are valid."""
 
 from collections import defaultdict
-import logging
 import os
 import unittest
 
