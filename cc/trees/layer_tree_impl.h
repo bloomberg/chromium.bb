@@ -51,7 +51,6 @@ class UIResourceRequest;
 class VideoFrameControllerClient;
 struct PendingPageScaleAnimation;
 struct RendererCapabilities;
-struct SelectionHandle;
 
 typedef std::vector<UIResourceRequest> UIResourceRequestQueue;
 typedef SyncedProperty<AdditionGroup<float>> SyncedTopControls;
@@ -317,13 +316,11 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* FindLayerThatIsHitByPointInTouchHandlerRegion(
       const gfx::PointF& screen_space_point);
 
-  void RegisterSelection(const LayerSelectionBound& start,
-                         const LayerSelectionBound& end);
+  void RegisterSelection(const LayerSelection& selection);
 
   // Compute the current selection handle location and visbility with respect to
   // the viewport.
-  void GetViewportSelection(ViewportSelectionBound* start,
-                            ViewportSelectionBound* end);
+  void GetViewportSelection(ViewportSelection* selection);
 
   void set_top_controls_shrink_blink_size(bool shrink);
   bool top_controls_shrink_blink_size() const {
@@ -376,8 +373,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* inner_viewport_scroll_layer_;
   LayerImpl* outer_viewport_scroll_layer_;
 
-  LayerSelectionBound selection_start_;
-  LayerSelectionBound selection_end_;
+  LayerSelection selection_;
 
   scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor_;
   float min_page_scale_factor_;

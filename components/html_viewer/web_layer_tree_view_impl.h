@@ -103,8 +103,7 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer);
   virtual void clearViewportLayers();
-  virtual void registerSelection(const blink::WebSelectionBound& start,
-                                 const blink::WebSelectionBound& end) {}
+  virtual void registerSelection(const blink::WebSelection& selection) {}
   virtual void clearSelection() {}
   virtual void setShowFPSCounter(bool) {}
   virtual void setShowPaintRects(bool) {}

@@ -226,7 +226,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->ClearViewportLayers();
   }
 
-  target_tree->RegisterSelection(selection_start_, selection_end_);
+  target_tree->RegisterSelection(selection_);
 
   // This should match the property synchronization in
   // LayerTreeHost::finishCommitOnImplThread().
@@ -1473,13 +1473,11 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
   return data_for_recursion.closest_match;
 }
 
-void LayerTreeImpl::RegisterSelection(const LayerSelectionBound& start,
-                                      const LayerSelectionBound& end) {
-  selection_start_ = start;
-  selection_end_ = end;
+void LayerTreeImpl::RegisterSelection(const LayerSelection& selection) {
+  selection_ = selection;
 }
 
-static ViewportSelectionBound ComputeViewportSelection(
+static ViewportSelectionBound ComputeViewportSelectionBound(
     const LayerSelectionBound& layer_bound,
     LayerImpl* layer,
     float device_scale_factor) {
@@ -1526,22 +1524,22 @@ static ViewportSelectionBound ComputeViewportSelection(
   return viewport_bound;
 }
 
-void LayerTreeImpl::GetViewportSelection(ViewportSelectionBound* start,
-                                         ViewportSelectionBound* end) {
-  DCHECK(start);
-  DCHECK(end);
+void LayerTreeImpl::GetViewportSelection(ViewportSelection* selection) {
+  DCHECK(selection);
 
-  *start = ComputeViewportSelection(
-      selection_start_,
-      selection_start_.layer_id ? LayerById(selection_start_.layer_id) : NULL,
+  selection->start = ComputeViewportSelectionBound(
+      selection_.start,
+      selection_.start.layer_id ? LayerById(selection_.start.layer_id) : NULL,
       device_scale_factor());
-  if (start->type == SELECTION_BOUND_CENTER ||
-      start->type == SELECTION_BOUND_EMPTY) {
-    *end = *start;
+  selection->is_editable = selection_.is_editable;
+  selection->is_empty_text_form_control = selection_.is_empty_text_form_control;
+  if (selection->start.type == SELECTION_BOUND_CENTER ||
+      selection->start.type == SELECTION_BOUND_EMPTY) {
+    selection->end = selection->start;
   } else {
-    *end = ComputeViewportSelection(
-        selection_end_,
-        selection_end_.layer_id ? LayerById(selection_end_.layer_id) : NULL,
+    selection->end = ComputeViewportSelectionBound(
+        selection_.end,
+        selection_.end.layer_id ? LayerById(selection_.end.layer_id) : NULL,
         device_scale_factor());
   }
 }

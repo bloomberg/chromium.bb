@@ -325,7 +325,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     sync_tree->ClearViewportLayers();
   }
 
-  sync_tree->RegisterSelection(selection_start_, selection_end_);
+  sync_tree->RegisterSelection(selection_);
 
   sync_tree->PushPageScaleFromMainThread(
       page_scale_factor_, min_page_scale_factor_, max_page_scale_factor_);
@@ -1222,13 +1222,11 @@ void LayerTreeHost::RegisterViewportLayers(
   outer_viewport_scroll_layer_ = outer_viewport_scroll_layer;
 }
 
-void LayerTreeHost::RegisterSelection(const LayerSelectionBound& start,
-                                      const LayerSelectionBound& end) {
-  if (selection_start_ == start && selection_end_ == end)
+void LayerTreeHost::RegisterSelection(const LayerSelection& selection) {
+  if (selection_ == selection)
     return;
 
-  selection_start_ = start;
-  selection_end_ = end;
+  selection_ = selection;
   SetNeedsCommit();
 }
 

@@ -182,8 +182,7 @@ class CC_EXPORT LayerTreeHost {
     return outer_viewport_scroll_layer_.get();
   }
 
-  void RegisterSelection(const LayerSelectionBound& start,
-                         const LayerSelectionBound& end);
+  void RegisterSelection(const LayerSelection& selection);
 
   const LayerTreeSettings& settings() const { return settings_; }
 
@@ -444,8 +443,7 @@ class CC_EXPORT LayerTreeHost {
   scoped_refptr<Layer> inner_viewport_scroll_layer_;
   scoped_refptr<Layer> outer_viewport_scroll_layer_;
 
-  LayerSelectionBound selection_start_;
-  LayerSelectionBound selection_end_;
+  LayerSelection selection_;
 
   SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;

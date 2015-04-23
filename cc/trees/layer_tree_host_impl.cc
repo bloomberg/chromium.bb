@@ -1435,8 +1435,7 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   metadata.location_bar_content_translation =
       gfx::Vector2dF(0.f, top_controls_manager_->ContentTopOffset());
 
-  active_tree_->GetViewportSelection(&metadata.selection_start,
-                                     &metadata.selection_end);
+  active_tree_->GetViewportSelection(&metadata.selection);
 
   LayerImpl* root_layer_for_overflow = OuterViewportScrollLayer()
                                            ? OuterViewportScrollLayer()

@@ -274,6 +274,13 @@ IPC_STRUCT_TRAITS_BEGIN(cc::ViewportSelectionBound)
   IPC_STRUCT_TRAITS_MEMBER(visible)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(cc::ViewportSelection)
+  IPC_STRUCT_TRAITS_MEMBER(start)
+  IPC_STRUCT_TRAITS_MEMBER(end)
+  IPC_STRUCT_TRAITS_MEMBER(is_editable)
+  IPC_STRUCT_TRAITS_MEMBER(is_empty_text_form_control)
+IPC_STRUCT_TRAITS_END()
+
 IPC_ENUM_TRAITS_MAX_VALUE( \
     cc::BeginFrameArgs::BeginFrameArgsType, \
     cc::BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX - 1)
@@ -297,8 +304,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(root_overflow_y_hidden)
   IPC_STRUCT_TRAITS_MEMBER(location_bar_offset)
   IPC_STRUCT_TRAITS_MEMBER(location_bar_content_translation)
-  IPC_STRUCT_TRAITS_MEMBER(selection_start)
-  IPC_STRUCT_TRAITS_MEMBER(selection_end)
+  IPC_STRUCT_TRAITS_MEMBER(selection)
   IPC_STRUCT_TRAITS_MEMBER(latency_info)
   IPC_STRUCT_TRAITS_MEMBER(satisfies_sequences)
 IPC_STRUCT_TRAITS_END()

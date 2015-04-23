@@ -726,15 +726,6 @@ long RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
 
 void RenderWidgetHostViewAndroid::OnTextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-  if (selection_controller_) {
-    // This call is semi-redundant with that in |OnFocusedNodeChanged|. The
-    // latter is guaranteed to be called before |OnSelectionBoundsChanged|,
-    // while this call is present to ensure consistency with IME after
-    // navigation and tab focus changes
-    const bool is_editable_node = params.type != ui::TEXT_INPUT_TYPE_NONE;
-    selection_controller_->OnSelectionEditable(is_editable_node);
-  }
-
   // If the change is not originated from IME (e.g. Javascript, autofill),
   // send back the renderer an acknowledgement, regardless of how we exit from
   // this method.
@@ -859,8 +850,6 @@ void RenderWidgetHostViewAndroid::ImeCompositionRangeChanged(
 
 void RenderWidgetHostViewAndroid::FocusedNodeChanged(bool is_editable_node) {
   ime_adapter_android_.FocusedNodeChanged(is_editable_node);
-  if (selection_controller_)
-    selection_controller_->OnSelectionEditable(is_editable_node);
 }
 
 void RenderWidgetHostViewAndroid::RenderProcessGone(
@@ -894,9 +883,6 @@ void RenderWidgetHostViewAndroid::SelectionChanged(const base::string16& text,
                                                    size_t offset,
                                                    const gfx::Range& range) {
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
-
-  if (selection_controller_)
-    selection_controller_->OnSelectionEmpty(text.empty());
 
   if (!content_view_core_)
     return;
@@ -1407,9 +1393,13 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     overscroll_controller_->OnFrameMetadataUpdated(frame_metadata);
 
   if (selection_controller_) {
+    selection_controller_->OnSelectionEditable(
+        frame_metadata.selection.is_editable);
+    selection_controller_->OnSelectionEmpty(
+        frame_metadata.selection.is_empty_text_form_control);
     selection_controller_->OnSelectionBoundsChanged(
-        ConvertSelectionBound(frame_metadata.selection_start),
-        ConvertSelectionBound(frame_metadata.selection_end));
+        ConvertSelectionBound(frame_metadata.selection.start),
+        ConvertSelectionBound(frame_metadata.selection.end));
   }
 
   // All offsets and sizes are in CSS pixels.

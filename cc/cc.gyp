@@ -153,6 +153,7 @@
         'input/scroll_elasticity_helper.cc',
         'input/scroll_elasticity_helper.h',
         'input/selection_bound_type.h',
+        'input/selection.h',
         'input/top_controls_manager.cc',
         'input/top_controls_manager.h',
         'input/top_controls_manager_client.h',

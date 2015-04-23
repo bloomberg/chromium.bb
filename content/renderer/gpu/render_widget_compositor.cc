@@ -37,10 +37,10 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
-#include "third_party/WebKit/public/platform/WebSelectionBound.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
+#include "third_party/WebKit/public/web/WebSelection.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gl/gl_switches.h"
@@ -62,7 +62,7 @@ class Layer;
 using blink::WebBeginFrameArgs;
 using blink::WebFloatPoint;
 using blink::WebRect;
-using blink::WebSelectionBound;
+using blink::WebSelection;
 using blink::WebSize;
 using blink::WebTopControlsState;
 
@@ -88,25 +88,39 @@ bool GetSwitchValueAsInt(const base::CommandLine& command_line,
 }
 
 cc::LayerSelectionBound ConvertWebSelectionBound(
-    const WebSelectionBound& web_bound) {
-  DCHECK(web_bound.layerId);
-
+    const WebSelection& web_selection,
+    bool is_start) {
   cc::LayerSelectionBound cc_bound;
-  switch (web_bound.type) {
-    case blink::WebSelectionBound::Caret:
-      cc_bound.type = cc::SELECTION_BOUND_CENTER;
-      break;
-    case blink::WebSelectionBound::SelectionLeft:
-      cc_bound.type = cc::SELECTION_BOUND_LEFT;
-      break;
-    case blink::WebSelectionBound::SelectionRight:
-      cc_bound.type = cc::SELECTION_BOUND_RIGHT;
-      break;
+  if (web_selection.isNone())
+    return cc_bound;
+
+  const blink::WebSelectionBound& web_bound =
+      is_start ? web_selection.start() : web_selection.end();
+  DCHECK(web_bound.layerId);
+  cc_bound.type = cc::SELECTION_BOUND_CENTER;
+  if (web_selection.isRange()) {
+    if (is_start) {
+      cc_bound.type = web_bound.isTextDirectionRTL ? cc::SELECTION_BOUND_RIGHT
+                                                   : cc::SELECTION_BOUND_LEFT;
+    } else {
+      cc_bound.type = web_bound.isTextDirectionRTL ? cc::SELECTION_BOUND_LEFT
+                                                   : cc::SELECTION_BOUND_RIGHT;
+    }
   }
   cc_bound.layer_id = web_bound.layerId;
   cc_bound.edge_top = gfx::Point(web_bound.edgeTopInLayer);
   cc_bound.edge_bottom = gfx::Point(web_bound.edgeBottomInLayer);
   return cc_bound;
+}
+
+cc::LayerSelection ConvertWebSelection(const WebSelection& web_selection) {
+  cc::LayerSelection cc_selection;
+  cc_selection.start = ConvertWebSelectionBound(web_selection, true);
+  cc_selection.end = ConvertWebSelectionBound(web_selection, false);
+  cc_selection.is_editable = web_selection.isEditable();
+  cc_selection.is_empty_text_form_control =
+      web_selection.isEmptyTextFormControl();
+  return cc_selection;
 }
 
 gfx::Size CalculateDefaultTileSize(RenderWidget* widget) {
@@ -681,15 +695,13 @@ void RenderWidgetCompositor::clearViewportLayers() {
 }
 
 void RenderWidgetCompositor::registerSelection(
-    const blink::WebSelectionBound& start,
-    const blink::WebSelectionBound& end) {
-  layer_tree_host_->RegisterSelection(ConvertWebSelectionBound(start),
-                                      ConvertWebSelectionBound(end));
+    const blink::WebSelection& selection) {
+  layer_tree_host_->RegisterSelection(ConvertWebSelection(selection));
 }
 
 void RenderWidgetCompositor::clearSelection() {
-  cc::LayerSelectionBound empty_selection;
-  layer_tree_host_->RegisterSelection(empty_selection, empty_selection);
+  cc::LayerSelection empty_selection;
+  layer_tree_host_->RegisterSelection(empty_selection);
 }
 
 void CompositeAndReadbackAsyncCallback(

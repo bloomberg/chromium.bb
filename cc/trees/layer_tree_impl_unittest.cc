@@ -1910,51 +1910,59 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForSingleLayer) {
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
   ASSERT_EQ(1u, root_layer()->render_surface()->layer_list().size());
 
-  LayerSelectionBound left_input;
-  left_input.type = SELECTION_BOUND_LEFT;
-  left_input.edge_top = gfx::PointF(10, 10);
-  left_input.edge_bottom = gfx::PointF(10, 20);
-  left_input.layer_id = root_layer_id;
+  LayerSelection input;
 
-  LayerSelectionBound right_input;
-  right_input.type = SELECTION_BOUND_RIGHT;
-  right_input.edge_top = gfx::PointF(50, 10);
-  right_input.edge_bottom = gfx::PointF(50, 30);
-  right_input.layer_id = root_layer_id;
+  input.start.type = SELECTION_BOUND_LEFT;
+  input.start.edge_top = gfx::PointF(10, 10);
+  input.start.edge_bottom = gfx::PointF(10, 20);
+  input.start.layer_id = root_layer_id;
 
-  ViewportSelectionBound left_output, right_output;
+  input.end.type = SELECTION_BOUND_RIGHT;
+  input.end.edge_top = gfx::PointF(50, 10);
+  input.end.edge_bottom = gfx::PointF(50, 30);
+  input.end.layer_id = root_layer_id;
+
+  ViewportSelection output;
 
   // Empty input bounds should produce empty output bounds.
-  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
-  EXPECT_EQ(ViewportSelectionBound(), left_output);
-  EXPECT_EQ(ViewportSelectionBound(), right_output);
+  host_impl().active_tree()->GetViewportSelection(&output);
+  EXPECT_EQ(ViewportSelectionBound(), output.start);
+  EXPECT_EQ(ViewportSelectionBound(), output.end);
 
   // Selection bounds should produce distinct left and right bounds.
-  host_impl().active_tree()->RegisterSelection(left_input, right_input);
-  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
-  EXPECT_EQ(left_input.type, left_output.type);
-  EXPECT_EQ(left_input.edge_bottom, left_output.edge_bottom);
-  EXPECT_EQ(left_input.edge_top, left_output.edge_top);
-  EXPECT_TRUE(left_output.visible);
-  EXPECT_EQ(right_input.type, right_output.type);
-  EXPECT_EQ(right_input.edge_bottom, right_output.edge_bottom);
-  EXPECT_EQ(right_input.edge_top, right_output.edge_top);
-  EXPECT_TRUE(right_output.visible);
+  host_impl().active_tree()->RegisterSelection(input);
+  host_impl().active_tree()->GetViewportSelection(&output);
+  EXPECT_EQ(input.start.type, output.start.type);
+  EXPECT_EQ(input.start.edge_bottom, output.start.edge_bottom);
+  EXPECT_EQ(input.start.edge_top, output.start.edge_top);
+  EXPECT_TRUE(output.start.visible);
+  EXPECT_EQ(input.end.type, output.end.type);
+  EXPECT_EQ(input.end.edge_bottom, output.end.edge_bottom);
+  EXPECT_EQ(input.end.edge_top, output.end.edge_top);
+  EXPECT_TRUE(output.end.visible);
+  EXPECT_EQ(input.is_editable, output.is_editable);
+  EXPECT_EQ(input.is_empty_text_form_control,
+            output.is_empty_text_form_control);
 
   // Insertion bounds should produce identical left and right bounds.
-  LayerSelectionBound insertion_input;
-  insertion_input.type = SELECTION_BOUND_CENTER;
-  insertion_input.edge_top = gfx::PointF(15, 10);
-  insertion_input.edge_bottom = gfx::PointF(15, 30);
-  insertion_input.layer_id = root_layer_id;
-  host_impl().active_tree()->RegisterSelection(insertion_input,
-                                               LayerSelectionBound());
-  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
-  EXPECT_EQ(insertion_input.type, left_output.type);
-  EXPECT_EQ(insertion_input.edge_bottom, left_output.edge_bottom);
-  EXPECT_EQ(insertion_input.edge_top, left_output.edge_top);
-  EXPECT_TRUE(left_output.visible);
-  EXPECT_EQ(left_output, right_output);
+  LayerSelection insertion_input;
+  insertion_input.start.type = SELECTION_BOUND_CENTER;
+  insertion_input.start.edge_top = gfx::PointF(15, 10);
+  insertion_input.start.edge_bottom = gfx::PointF(15, 30);
+  insertion_input.start.layer_id = root_layer_id;
+  insertion_input.is_editable = true;
+  insertion_input.is_empty_text_form_control = true;
+  insertion_input.end = insertion_input.start;
+  host_impl().active_tree()->RegisterSelection(insertion_input);
+  host_impl().active_tree()->GetViewportSelection(&output);
+  EXPECT_EQ(insertion_input.start.type, output.start.type);
+  EXPECT_EQ(insertion_input.start.edge_bottom, output.start.edge_bottom);
+  EXPECT_EQ(insertion_input.start.edge_top, output.start.edge_top);
+  EXPECT_EQ(insertion_input.is_editable, output.is_editable);
+  EXPECT_EQ(insertion_input.is_empty_text_form_control,
+            output.is_empty_text_form_control);
+  EXPECT_TRUE(output.start.visible);
+  EXPECT_EQ(output.start, output.end);
 }
 
 TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
@@ -2003,58 +2011,57 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForPartialOccludedLayers) {
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
 
-  LayerSelectionBound left_input;
-  left_input.type = SELECTION_BOUND_LEFT;
-  left_input.edge_top = gfx::PointF(25, 10);
-  left_input.edge_bottom = gfx::PointF(25, 30);
-  left_input.layer_id = clipped_layer_id;
+  LayerSelection input;
+  input.start.type = SELECTION_BOUND_LEFT;
+  input.start.edge_top = gfx::PointF(25, 10);
+  input.start.edge_bottom = gfx::PointF(25, 30);
+  input.start.layer_id = clipped_layer_id;
 
-  LayerSelectionBound right_input;
-  right_input.type = SELECTION_BOUND_RIGHT;
-  right_input.edge_top = gfx::PointF(75, 10);
-  right_input.edge_bottom = gfx::PointF(75, 30);
-  right_input.layer_id = clipped_layer_id;
-  host_impl().active_tree()->RegisterSelection(left_input, right_input);
+  input.end.type = SELECTION_BOUND_RIGHT;
+  input.end.edge_top = gfx::PointF(75, 10);
+  input.end.edge_bottom = gfx::PointF(75, 30);
+  input.end.layer_id = clipped_layer_id;
+  host_impl().active_tree()->RegisterSelection(input);
 
   // The left bound should be occluded by the clip layer.
-  ViewportSelectionBound left_output, right_output;
-  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
-  EXPECT_EQ(left_input.type, left_output.type);
-  gfx::PointF expected_left_output_top = left_input.edge_top;
-  gfx::PointF expected_left_output_bottom = left_input.edge_bottom;
-  expected_left_output_top.Offset(clipping_offset.x(), clipping_offset.y());
-  expected_left_output_bottom.Offset(clipping_offset.x(), clipping_offset.y());
-  EXPECT_EQ(expected_left_output_top, left_output.edge_top);
-  EXPECT_EQ(expected_left_output_bottom, left_output.edge_bottom);
-  EXPECT_TRUE(left_output.visible);
-  EXPECT_EQ(right_input.type, right_output.type);
-  gfx::PointF expected_right_output_top = right_input.edge_top;
-  gfx::PointF expected_right_output_bottom = right_input.edge_bottom;
-  expected_right_output_bottom.Offset(clipping_offset.x(), clipping_offset.y());
-  expected_right_output_top.Offset(clipping_offset.x(), clipping_offset.y());
-  EXPECT_EQ(expected_right_output_top, right_output.edge_top);
-  EXPECT_EQ(expected_right_output_bottom, right_output.edge_bottom);
-  EXPECT_FALSE(right_output.visible);
+  ViewportSelection output;
+  host_impl().active_tree()->GetViewportSelection(&output);
+  EXPECT_EQ(input.start.type, output.start.type);
+  gfx::PointF expected_output_start_top = input.start.edge_top;
+  gfx::PointF expected_output_edge_botom = input.start.edge_bottom;
+  expected_output_start_top.Offset(clipping_offset.x(), clipping_offset.y());
+  expected_output_edge_botom.Offset(clipping_offset.x(), clipping_offset.y());
+  EXPECT_EQ(expected_output_start_top, output.start.edge_top);
+  EXPECT_EQ(expected_output_edge_botom, output.start.edge_bottom);
+  EXPECT_TRUE(output.start.visible);
+  EXPECT_EQ(input.end.type, output.end.type);
+  gfx::PointF expected_output_end_top = input.end.edge_top;
+  gfx::PointF expected_output_end_bottom = input.end.edge_bottom;
+  expected_output_end_bottom.Offset(clipping_offset.x(), clipping_offset.y());
+  expected_output_end_top.Offset(clipping_offset.x(), clipping_offset.y());
+  EXPECT_EQ(expected_output_end_top, output.end.edge_top);
+  EXPECT_EQ(expected_output_end_bottom, output.end.edge_bottom);
+  EXPECT_FALSE(output.end.visible);
 
   // Handles outside the viewport bounds should be marked invisible.
-  left_input.edge_top = gfx::PointF(-25, 0);
-  left_input.edge_bottom = gfx::PointF(-25, 20);
-  host_impl().active_tree()->RegisterSelection(left_input, right_input);
-  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
-  EXPECT_FALSE(left_output.visible);
+  input.start.edge_top = gfx::PointF(-25, 0);
+  input.start.edge_bottom = gfx::PointF(-25, 20);
+  host_impl().active_tree()->RegisterSelection(input);
+  host_impl().active_tree()->GetViewportSelection(&output);
+  EXPECT_FALSE(output.start.visible);
 
-  left_input.edge_top = gfx::PointF(0, -25);
-  left_input.edge_bottom = gfx::PointF(0, -5);
-  host_impl().active_tree()->RegisterSelection(left_input, right_input);
-  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
-  EXPECT_FALSE(left_output.visible);
+  input.start.edge_top = gfx::PointF(0, -25);
+  input.start.edge_bottom = gfx::PointF(0, -5);
+  host_impl().active_tree()->RegisterSelection(input);
+  host_impl().active_tree()->GetViewportSelection(&output);
+  EXPECT_FALSE(output.start.visible);
 
   // If the handle bottom is partially visible, the handle is marked visible.
-  left_input.edge_top = gfx::PointF(0, -20);
-  left_input.edge_bottom = gfx::PointF(0, 1);
-  host_impl().active_tree()->RegisterSelection(left_input, right_input);
-  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
-  EXPECT_TRUE(left_output.visible);
+  input.start.edge_top = gfx::PointF(0, -20);
+  input.start.edge_bottom = gfx::PointF(0, 1);
+  host_impl().active_tree()->RegisterSelection(input);
+  host_impl().active_tree()->GetViewportSelection(&output);
+  EXPECT_TRUE(output.start.visible);
 }
 
 TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
@@ -2102,43 +2109,41 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
 
-  LayerSelectionBound left_input;
-  left_input.type = SELECTION_BOUND_LEFT;
-  left_input.edge_top = gfx::PointF(10, 10);
-  left_input.edge_bottom = gfx::PointF(10, 30);
-  left_input.layer_id = root_layer_id;
+  LayerSelection input;
+  input.start.type = SELECTION_BOUND_LEFT;
+  input.start.edge_top = gfx::PointF(10, 10);
+  input.start.edge_bottom = gfx::PointF(10, 30);
+  input.start.layer_id = root_layer_id;
 
-  LayerSelectionBound right_input;
-  right_input.type = SELECTION_BOUND_RIGHT;
-  right_input.edge_top = gfx::PointF(0, 0);
-  right_input.edge_bottom = gfx::PointF(0, 20);
-  right_input.layer_id = sub_layer_id;
-  host_impl().active_tree()->RegisterSelection(left_input, right_input);
+  input.end.type = SELECTION_BOUND_RIGHT;
+  input.end.edge_top = gfx::PointF(0, 0);
+  input.end.edge_bottom = gfx::PointF(0, 20);
+  input.end.layer_id = sub_layer_id;
+  host_impl().active_tree()->RegisterSelection(input);
 
   // The viewport bounds should be properly scaled by the page scale, but should
   // remain in DIP coordinates.
-  ViewportSelectionBound left_output, right_output;
-  host_impl().active_tree()->GetViewportSelection(&left_output, &right_output);
-  EXPECT_EQ(left_input.type, left_output.type);
-  gfx::PointF expected_left_output_top = left_input.edge_top;
-  gfx::PointF expected_left_output_bottom = left_input.edge_bottom;
-  expected_left_output_top.Scale(page_scale_factor);
-  expected_left_output_bottom.Scale(page_scale_factor);
-  EXPECT_EQ(left_input.edge_top, left_output.edge_top);
-  EXPECT_EQ(left_input.edge_bottom, left_output.edge_bottom);
-  EXPECT_TRUE(left_output.visible);
-  EXPECT_EQ(right_input.type, right_output.type);
+  ViewportSelection output;
+  host_impl().active_tree()->GetViewportSelection(&output);
+  EXPECT_EQ(input.start.type, output.start.type);
+  gfx::PointF expected_output_start_top = input.start.edge_top;
+  gfx::PointF expected_output_edge_botom = input.start.edge_bottom;
+  expected_output_start_top.Scale(page_scale_factor);
+  expected_output_edge_botom.Scale(page_scale_factor);
+  EXPECT_EQ(input.start.edge_top, output.start.edge_top);
+  EXPECT_EQ(input.start.edge_bottom, output.start.edge_bottom);
+  EXPECT_TRUE(output.start.visible);
+  EXPECT_EQ(input.end.type, output.end.type);
 
-  gfx::PointF expected_right_output_top = right_input.edge_top;
-  gfx::PointF expected_right_output_bottom = right_input.edge_bottom;
-  expected_right_output_top.Offset(sub_layer_offset.x(), sub_layer_offset.y());
-  expected_right_output_bottom.Offset(sub_layer_offset.x(),
-                                      sub_layer_offset.y());
-  expected_right_output_top.Scale(page_scale_factor);
-  expected_right_output_bottom.Scale(page_scale_factor);
-  EXPECT_EQ(expected_right_output_top, right_output.edge_top);
-  EXPECT_EQ(expected_right_output_bottom, right_output.edge_bottom);
-  EXPECT_TRUE(right_output.visible);
+  gfx::PointF expected_output_end_top = input.end.edge_top;
+  gfx::PointF expected_output_end_bottom = input.end.edge_bottom;
+  expected_output_end_top.Offset(sub_layer_offset.x(), sub_layer_offset.y());
+  expected_output_end_bottom.Offset(sub_layer_offset.x(), sub_layer_offset.y());
+  expected_output_end_top.Scale(page_scale_factor);
+  expected_output_end_bottom.Scale(page_scale_factor);
+  EXPECT_EQ(expected_output_end_top, output.end.edge_top);
+  EXPECT_EQ(expected_output_end_bottom, output.end.edge_bottom);
+  EXPECT_TRUE(output.end.visible);
 }
 
 TEST_F(LayerTreeImplTest, NumLayersTestOne) {

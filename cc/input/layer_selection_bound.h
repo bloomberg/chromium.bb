@@ -6,6 +6,7 @@
 #define CC_INPUT_LAYER_SELECTION_BOUND_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/input/selection.h"
 #include "cc/input/selection_bound_type.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -24,6 +25,8 @@ struct CC_EXPORT LayerSelectionBound {
 
 bool operator==(const LayerSelectionBound& lhs, const LayerSelectionBound& rhs);
 bool operator!=(const LayerSelectionBound& lhs, const LayerSelectionBound& rhs);
+
+typedef Selection<LayerSelectionBound> LayerSelection;
 
 }  // namespace cc
 

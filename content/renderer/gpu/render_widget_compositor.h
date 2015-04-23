@@ -117,8 +117,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) override;
   virtual void clearViewportLayers() override;
-  virtual void registerSelection(const blink::WebSelectionBound& start,
-                                 const blink::WebSelectionBound& end) override;
+  virtual void registerSelection(const blink::WebSelection& selection) override;
   virtual void clearSelection() override;
   virtual void setShowFPSCounter(bool show);
   virtual void setShowPaintRects(bool show);
