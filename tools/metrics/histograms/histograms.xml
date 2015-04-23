@@ -49437,8 +49437,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="16" label="Install attributes timeout">
     Lockbox initialization took too long to complete.
   </int>
-  <int value="17" label="Re-enrollment: lock domain mismatch">
-    Lockbox error at re-enrollment: domain does not match install attributes.
+  <int value="17" label="Lockbox domain mismatch on re-enrollment">
+    Lockbox error on re-enrollment: domain does not match install attributes.
   </int>
   <int value="18" label="Registration/fetch: missing licenses">
     Registration / policy fetch failed: DM server reports licenses expired or
@@ -49540,6 +49540,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </int>
   <int value="49" label="Lockbox inconsistent read back">
     Lockbox read back is inconsistent.
+  </int>
+  <int value="50" label="Device attributes update failed">
+    Failed to update device attributes.
+  </int>
+  <int value="51" label="Lockbox device mode mismatch on re-enrollment">
+    Lockbox error on re-enrollment: mode does not match install attributes.
   </int>
 </enum>
 

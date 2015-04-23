@@ -401,6 +401,9 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
         case policy::EnterpriseInstallAttributes::LOCK_WRONG_DOMAIN:
           UMA(policy::kMetricEnrollmentLockDomainMismatch);
           break;
+        case policy::EnterpriseInstallAttributes::LOCK_WRONG_MODE:
+          UMA(policy::kMetricEnrollmentLockModeMismatch);
+          break;
       }
       break;
     case policy::EnrollmentStatus::STATUS_ROBOT_AUTH_FETCH_FAILED:

@@ -436,6 +436,7 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
     case EnterpriseInstallAttributes::LOCK_FINALIZE_ERROR:
     case EnterpriseInstallAttributes::LOCK_READBACK_ERROR:
     case EnterpriseInstallAttributes::LOCK_WRONG_DOMAIN:
+    case EnterpriseInstallAttributes::LOCK_WRONG_MODE:
       ReportResult(EnrollmentStatus::ForLockError(lock_result));
       break;
   }

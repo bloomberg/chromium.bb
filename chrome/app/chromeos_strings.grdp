@@ -5951,6 +5951,9 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_USER" desc="Error message to show when the user used to re-enroll the device does not belong to the domain that the device was originally enrolled into.">
     This user account does not belong to the domain that the device is enrolled to.  If you want to enroll to a different domain you need to go through device recovery first.
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_MODE" desc="Error message to show upon attempting to re-enroll a device that is locked to a different operational mode.">
+    This device is locked in a mode that prevents enterprise enrollment.  If you want to enroll the device you need to go through device recovery first.
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_STORE_ERROR" desc="Error message shown on the enrollment screen when the installation of the policy on the device fails.">
     Failed to install policy settings on the device: <ph name="VALIDATION_ERROR">$1<ex>Policy parsing failed</ex></ph>.
   </message>

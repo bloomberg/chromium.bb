@@ -38,6 +38,7 @@ class EnterpriseInstallAttributes {
     LOCK_FINALIZE_ERROR = 6,   // Backend failed to lock.
     LOCK_READBACK_ERROR = 7,   // Inconsistency reading back registration data.
     LOCK_WRONG_DOMAIN = 8,     // Device already registered to another domain.
+    LOCK_WRONG_MODE = 9,       // Device already locked to a different mode.
   };
 
   // A callback to handle responses of methods returning a LockResult value.

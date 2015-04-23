@@ -318,6 +318,9 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
         case policy::EnterpriseInstallAttributes::LOCK_WRONG_DOMAIN:
           ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_USER, true);
           return;
+        case policy::EnterpriseInstallAttributes::LOCK_WRONG_MODE:
+          ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_MODE, true);
+          return;
       }
       NOTREACHED();
       return;

@@ -91,28 +91,28 @@ class EnterpriseInstallAttributesTest : public testing::Test {
 
 TEST_F(EnterpriseInstallAttributesTest, Lock) {
   EXPECT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            LockDeviceAndWaitForResult(
-                kTestUser,
-                DEVICE_MODE_ENTERPRISE,
-                kTestDeviceId));
+            LockDeviceAndWaitForResult(kTestUser, DEVICE_MODE_ENTERPRISE,
+                                       kTestDeviceId));
 
+  // Locking an already locked device should succeed if the parameters match.
   EXPECT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            LockDeviceAndWaitForResult(
-                kTestUser,
-                DEVICE_MODE_ENTERPRISE,
-                kTestDeviceId));
+            LockDeviceAndWaitForResult(kTestUser, DEVICE_MODE_ENTERPRISE,
+                                       kTestDeviceId));
+
   // Another user from the same domain should also succeed.
   EXPECT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
-            LockDeviceAndWaitForResult(
-                "test1@example.com",
-                DEVICE_MODE_ENTERPRISE,
-                kTestDeviceId));
+            LockDeviceAndWaitForResult("test1@example.com",
+                                       DEVICE_MODE_ENTERPRISE, kTestDeviceId));
+
   // But another domain should fail.
   EXPECT_EQ(EnterpriseInstallAttributes::LOCK_WRONG_DOMAIN,
-            LockDeviceAndWaitForResult(
-                "test@bluebears.com",
-                DEVICE_MODE_ENTERPRISE,
-                kTestDeviceId));
+            LockDeviceAndWaitForResult("test@bluebears.com",
+                                       DEVICE_MODE_ENTERPRISE, kTestDeviceId));
+
+  // A non-matching mode should fail as well.
+  EXPECT_EQ(EnterpriseInstallAttributes::LOCK_WRONG_MODE,
+            LockDeviceAndWaitForResult(kTestUser, DEVICE_MODE_CONSUMER,
+                                       kTestDeviceId));
 }
 
 TEST_F(EnterpriseInstallAttributesTest, LockCanonicalize) {

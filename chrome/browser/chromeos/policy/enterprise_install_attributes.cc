@@ -154,15 +154,35 @@ void EnterpriseInstallAttributes::LockDevice(
 
   // Check for existing lock first.
   if (device_locked_) {
-    if (device_mode == DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH) {
-      callback.Run((registration_mode_ == device_mode) ? LOCK_SUCCESS :
-                                                         LOCK_NOT_READY);
-    } else {
-      std::string domain = gaia::ExtractDomainName(user);
-      callback.Run(
-          (!registration_domain_.empty() && domain == registration_domain_) ?
-              LOCK_SUCCESS : LOCK_WRONG_DOMAIN);
+    if (device_mode != registration_mode_) {
+      callback.Run(LOCK_WRONG_MODE);
+      return;
     }
+
+    switch (registration_mode_) {
+      case DEVICE_MODE_ENTERPRISE:
+      case DEVICE_MODE_LEGACY_RETAIL_MODE: {
+        // Check domain match for enterprise devices.
+        std::string domain = gaia::ExtractDomainName(user);
+        if (registration_domain_.empty() || domain != registration_domain_) {
+          callback.Run(LOCK_WRONG_DOMAIN);
+          return;
+        }
+        break;
+      }
+      case DEVICE_MODE_NOT_SET:
+      case DEVICE_MODE_PENDING:
+        // This case can't happen due to the CHECK_NE asserts above.
+        NOTREACHED();
+        break;
+      case DEVICE_MODE_CONSUMER:
+      case DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
+        // The user parameter is ignored for consumer devices.
+        break;
+    }
+
+    // Already locked in the right mode, signal success.
+    callback.Run(LOCK_SUCCESS);
     return;
   }
 
