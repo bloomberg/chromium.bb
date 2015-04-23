@@ -32,12 +32,11 @@ namespace remoting {
 namespace protocol {
 
 namespace {
-// Delay after candidate creation before sending transport-info
-// message. This is neccessary to be able to pack multiple candidates
-// into one transport-info messages. The value needs to be greater
-// than zero because ports are opened asynchronously in the browser
-// process.
-const int kTransportInfoSendDelayMs = 2;
+
+// Delay after candidate creation before sending transport-info message to
+// accumulate multiple candidates. This is an optimization to reduce number of
+// transport-info messages.
+const int kTransportInfoSendDelayMs = 20;
 
 // How long we should wait for a response from the other end. This value is used
 // for all requests except |transport-info|.
@@ -74,7 +73,6 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
       event_handler_(nullptr),
       state_(INITIALIZING),
       error_(OK),
-      config_is_set_(false),
       weak_factory_(this) {
 }
 
@@ -149,7 +147,7 @@ void JingleSession::InitializeIncomingConnection(
 
 void JingleSession::AcceptIncomingConnection(
     const JingleMessage& initiate_message) {
-  DCHECK(config_is_set_);
+  DCHECK(config_);
 
   // Process the first authentication message.
   const buzz::XmlElement* first_auth_message =
@@ -184,7 +182,7 @@ void JingleSession::ContinueAcceptIncomingConnection() {
     auth_message = authenticator_->GetNextMessage();
 
   message.description.reset(
-      new ContentDescription(CandidateSessionConfig::CreateFrom(config_),
+      new ContentDescription(CandidateSessionConfig::CreateFrom(*config_),
                              auth_message.Pass()));
   SendMessage(message);
 
@@ -213,14 +211,13 @@ const CandidateSessionConfig* JingleSession::candidate_config() {
 
 const SessionConfig& JingleSession::config() {
   DCHECK(CalledOnValidThread());
-  return config_;
+  return *config_;
 }
 
-void JingleSession::set_config(const SessionConfig& config) {
+void JingleSession::set_config(scoped_ptr<SessionConfig> config) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!config_is_set_);
-  config_ = config;
-  config_is_set_ = true;
+  DCHECK(!config_);
+  config_ = config.Pass();
 }
 
 StreamChannelFactory* JingleSession::GetTransportChannelFactory() {
@@ -243,16 +240,26 @@ void JingleSession::Close() {
   CloseInternal(OK);
 }
 
-void JingleSession::AddPendingRemoteCandidates(Transport* channel,
-                                               const std::string& name) {
-  std::list<JingleMessage::NamedCandidate>::iterator it =
-      pending_remote_candidates_.begin();
-  while(it != pending_remote_candidates_.end()) {
-    if (it->name == name) {
-      channel->AddRemoteCandidate(it->candidate);
-      it = pending_remote_candidates_.erase(it);
+void JingleSession::AddPendingRemoteTransportInfo(Transport* channel) {
+  std::list<JingleMessage::IceCredentials>::iterator credentials =
+      pending_remote_ice_credentials_.begin();
+  while (credentials != pending_remote_ice_credentials_.end()) {
+    if (credentials->channel == channel->name()) {
+      channel->SetRemoteCredentials(credentials->ufrag, credentials->password);
+      credentials = pending_remote_ice_credentials_.erase(credentials);
     } else {
-      ++it;
+      ++credentials;
+    }
+  }
+
+  std::list<JingleMessage::NamedCandidate>::iterator candidate =
+      pending_remote_candidates_.begin();
+  while (candidate != pending_remote_candidates_.end()) {
+    if (candidate->name == channel->name()) {
+      channel->AddRemoteCandidate(candidate->candidate);
+      candidate = pending_remote_candidates_.erase(candidate);
+    } else {
+      ++candidate;
     }
   }
 }
@@ -263,8 +270,9 @@ void JingleSession::CreateChannel(const std::string& name,
 
   scoped_ptr<Transport> channel =
       session_manager_->transport_factory_->CreateTransport();
+  channel->SetUseStandardIce(config_->standard_ice());
   channel->Connect(name, this, callback);
-  AddPendingRemoteCandidates(channel.get(), name);
+  AddPendingRemoteTransportInfo(channel.get());
   channels_[name] = channel.release();
 }
 
@@ -277,18 +285,19 @@ void JingleSession::CancelChannelCreation(const std::string& name) {
   }
 }
 
+void JingleSession::OnTransportIceCredentials(Transport* transport,
+                                              const std::string& ufrag,
+                                              const std::string& password) {
+  EnsurePendingTransportInfoMessage();
+  pending_transport_info_message_->ice_credentials.push_back(
+      JingleMessage::IceCredentials(transport->name(), ufrag, password));
+}
+
 void JingleSession::OnTransportCandidate(Transport* transport,
                                          const cricket::Candidate& candidate) {
-  pending_candidates_.push_back(JingleMessage::NamedCandidate(
-      transport->name(), candidate));
-
-  if (!transport_infos_timer_.IsRunning()) {
-    // Delay sending the new candidates in case we get more candidates
-    // that we can send in one message.
-    transport_infos_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kTransportInfoSendDelayMs),
-        this, &JingleSession::SendTransportInfo);
-  }
+  EnsurePendingTransportInfoMessage();
+  pending_transport_info_message_->candidates.push_back(
+      JingleMessage::NamedCandidate(transport->name(), candidate));
 }
 
 void JingleSession::OnTransportRouteChange(Transport* transport,
@@ -362,14 +371,33 @@ void JingleSession::OnMessageResponse(
   }
 }
 
+void JingleSession::EnsurePendingTransportInfoMessage() {
+  // |transport_info_timer_| must be running iff
+  // |pending_transport_info_message_| exists.
+  DCHECK_EQ(pending_transport_info_message_ != nullptr,
+            transport_info_timer_.IsRunning());
+
+  if (!pending_transport_info_message_) {
+    pending_transport_info_message_.reset(new JingleMessage(
+        peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_));
+    pending_transport_info_message_->standard_ice = config_->standard_ice();
+
+    // Delay sending the new candidates in case we get more candidates
+    // that we can send in one message.
+    transport_info_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(kTransportInfoSendDelayMs),
+        this, &JingleSession::SendTransportInfo);
+  }
+}
+
 void JingleSession::SendTransportInfo() {
-  JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
-  message.candidates.swap(pending_candidates_);
+  DCHECK(pending_transport_info_message_);
 
   scoped_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
-      message.ToXml(),
+      pending_transport_info_message_->ToXml(),
       base::Bind(&JingleSession::OnTransportInfoResponse,
                  base::Unretained(this)));
+  pending_transport_info_message_.reset();
   if (request) {
     request->SetTimeout(base::TimeDelta::FromSeconds(kTransportInfoTimeout));
     transport_info_requests_.push_back(request.release());
@@ -463,9 +491,6 @@ void JingleSession::OnAccept(const JingleMessage& message,
     return;
   }
 
-  // In case there is transport information in the accept message.
-  ProcessTransportInfo(message);
-
   SetState(CONNECTED);
 
   DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
@@ -497,6 +522,27 @@ void JingleSession::OnSessionInfo(const JingleMessage& message,
 }
 
 void JingleSession::ProcessTransportInfo(const JingleMessage& message) {
+  // Check if the transport information version matches what was negotiated.
+  if (message.standard_ice != config_->standard_ice()) {
+    LOG(ERROR) << "Received transport-info message in format different from "
+                  "negotiated.";
+    CloseInternal(INCOMPATIBLE_PROTOCOL);
+    return;
+  }
+
+  for (std::list<JingleMessage::IceCredentials>::const_iterator it =
+           message.ice_credentials.begin();
+       it != message.ice_credentials.end(); ++it) {
+    ChannelsMap::iterator channel = channels_.find(it->channel);
+    if (channel != channels_.end()) {
+      channel->second->SetRemoteCredentials(it->ufrag, it->password);
+    } else {
+      // Transport info was received before the channel was created.
+      // This could happen due to messages being reordered on the wire.
+      pending_remote_ice_credentials_.push_back(*it);
+    }
+  }
+
   for (std::list<JingleMessage::NamedCandidate>::const_iterator it =
            message.candidates.begin();
        it != message.candidates.end(); ++it) {
@@ -555,12 +601,12 @@ void JingleSession::OnTerminate(const JingleMessage& message,
 bool JingleSession::InitializeConfigFromDescription(
     const ContentDescription* description) {
   DCHECK(description);
-
-  if (!description->config()->GetFinalConfig(&config_)) {
+  config_ = SessionConfig::GetFinalConfig(description->config());
+  if (!config_) {
     LOG(ERROR) << "session-accept does not specify configuration";
     return false;
   }
-  if (!candidate_config()->IsSupported(config_)) {
+  if (!candidate_config()->IsSupported(*config_)) {
     LOG(ERROR) << "session-accept specifies an invalid configuration";
     return false;
   }

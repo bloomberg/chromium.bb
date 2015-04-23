@@ -207,7 +207,10 @@ class MockSession : public Session {
   MOCK_METHOD0(jid, const std::string&());
   MOCK_METHOD0(candidate_config, const CandidateSessionConfig*());
   MOCK_METHOD0(config, const SessionConfig&());
-  MOCK_METHOD1(set_config, void(const SessionConfig& config));
+  MOCK_METHOD1(set_config_ptr, void(const SessionConfig* config));
+  void set_config(scoped_ptr<SessionConfig> config) override {
+    set_config_ptr(config.get());
+  }
   MOCK_METHOD0(initiator_token, const std::string&());
   MOCK_METHOD1(set_initiator_token, void(const std::string& initiator_token));
   MOCK_METHOD0(receiver_token, const std::string&());

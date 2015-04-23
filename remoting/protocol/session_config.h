@@ -42,7 +42,7 @@ struct ChannelConfig {
   static ChannelConfig None();
 
   // Default constructor. Equivalent to None().
-  ChannelConfig();
+  ChannelConfig() = default;
 
   // Creates a channel config with the specified parameters.
   ChannelConfig(TransportType transport, int version, Codec codec);
@@ -51,42 +51,53 @@ struct ChannelConfig {
   // std::list<ChannelConfig>.
   bool operator==(const ChannelConfig& b) const;
 
-  TransportType transport;
-  int version;
-  Codec codec;
+  TransportType transport = TRANSPORT_NONE;
+  int version = 0;
+  Codec codec = CODEC_UNDEFINED;
 };
+
+class CandidateSessionConfig;
 
 // SessionConfig is used by the chromoting Session to store negotiated
 // chromotocol configuration.
 class SessionConfig {
  public:
-  SessionConfig();
+  // Selects session configuration that is supported by both participants.
+  // nullptr is returned if such configuration doesn't exist. When selecting
+  // channel configuration priority is given to the configs listed first
+  // in |client_config|.
+  static scoped_ptr<SessionConfig> SelectCommon(
+      const CandidateSessionConfig* client_config,
+      const CandidateSessionConfig* host_config);
 
-  void set_control_config(const ChannelConfig& control_config) {
-    control_config_ = control_config;
-  }
+  // Extracts final protocol configuration. Must be used for the description
+  // received in the session-accept stanza. If the selection is ambiguous
+  // (e.g. there is more than one configuration for one of the channel)
+  // or undefined (e.g. no configurations for a channel) then nullptr is
+  // returned.
+  static scoped_ptr<SessionConfig> GetFinalConfig(
+      const CandidateSessionConfig* candidate_config);
+
+  // Returns a suitable session configuration for use in tests.
+  static scoped_ptr<SessionConfig> ForTest();
+  static scoped_ptr<SessionConfig> WithLegacyIceForTest();
+
+  bool standard_ice() const { return standard_ice_; }
+
   const ChannelConfig& control_config() const { return control_config_; }
-  void set_event_config(const ChannelConfig& event_config) {
-    event_config_ = event_config;
-  }
   const ChannelConfig& event_config() const { return event_config_; }
-  void set_video_config(const ChannelConfig& video_config) {
-    video_config_ = video_config;
-  }
   const ChannelConfig& video_config() const { return video_config_; }
-  void set_audio_config(const ChannelConfig& audio_config) {
-    audio_config_ = audio_config;
-  }
   const ChannelConfig& audio_config() const { return audio_config_; }
 
   bool is_audio_enabled() const {
     return audio_config_.transport != ChannelConfig::TRANSPORT_NONE;
   }
 
-  // Returns a suitable session configuration for use in tests.
-  static SessionConfig ForTest();
-
  private:
+  SessionConfig();
+
+  bool standard_ice_ = true;
+
   ChannelConfig control_config_;
   ChannelConfig event_config_;
   ChannelConfig video_config_;
@@ -104,6 +115,9 @@ class CandidateSessionConfig {
   static scoped_ptr<CandidateSessionConfig> CreateDefault();
 
   ~CandidateSessionConfig();
+
+  bool standard_ice() const { return standard_ice_; }
+  void set_standard_ice(bool standard_ice) { standard_ice_ = standard_ice; }
 
   const std::list<ChannelConfig>& control_configs() const {
     return control_configs_;
@@ -137,22 +151,8 @@ class CandidateSessionConfig {
     return &audio_configs_;
   }
 
-  // Selects session configuration that is supported by both participants.
-  // nullptr is returned if such configuration doesn't exist. When selecting
-  // channel configuration priority is given to the configs listed first
-  // in |client_config|.
-  bool Select(const CandidateSessionConfig* client_config,
-              SessionConfig* result);
-
   // Returns true if |config| is supported.
   bool IsSupported(const SessionConfig& config) const;
-
-  // Extracts final protocol configuration. Must be used for the description
-  // received in the session-accept stanza. If the selection is ambiguous
-  // (e.g. there is more than one configuration for one of the channel)
-  // or undefined (e.g. no configurations for a channel) then nullptr is
-  // returned.
-  bool GetFinalConfig(SessionConfig* result) const;
 
   scoped_ptr<CandidateSessionConfig> Clone() const;
 
@@ -165,12 +165,7 @@ class CandidateSessionConfig {
   explicit CandidateSessionConfig(const CandidateSessionConfig& config);
   CandidateSessionConfig& operator=(const CandidateSessionConfig& b);
 
-  static bool SelectCommonChannelConfig(
-      const std::list<ChannelConfig>& host_configs_,
-      const std::list<ChannelConfig>& client_configs_,
-      ChannelConfig* config);
-  static bool IsChannelConfigSupported(const std::list<ChannelConfig>& list,
-                                       const ChannelConfig& value);
+  bool standard_ice_ = true;
 
   std::list<ChannelConfig> control_configs_;
   std::list<ChannelConfig> event_configs_;

@@ -25,7 +25,8 @@ scoped_ptr<protocol::SessionManager> CreateHostSessionManager(
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
-          signal_strategy, port_allocator.Pass(), network_settings));
+          signal_strategy, port_allocator.Pass(), network_settings,
+          protocol::TransportRole::SERVER));
 
   scoped_ptr<protocol::JingleSessionManager> session_manager(
       new protocol::JingleSessionManager(transport_factory.Pass()));

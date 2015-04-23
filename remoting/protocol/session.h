@@ -94,7 +94,7 @@ class Session {
   // Set protocol configuration for an incoming session. Must be
   // called on the host before the connection is accepted, from
   // ChromotocolServer::IncomingConnectionCallback.
-  virtual void set_config(const SessionConfig& config) = 0;
+  virtual void set_config(scoped_ptr<SessionConfig> config) = 0;
 
   // GetTransportChannelFactory() returns a factory that creates a new transport
   // channel for each logical channel. GetMultiplexedChannelFactory() channels

@@ -12,15 +12,10 @@
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/p2p/base/candidate.h"
 
-
 namespace remoting {
 namespace protocol {
 
 class ContentDescription;
-
-extern const char kJabberNamespace[];
-extern const char kJingleNamespace[];
-extern const char kP2PTransportNamespace[];
 
 struct JingleMessage {
   enum ActionType {
@@ -42,12 +37,23 @@ struct JingleMessage {
   };
 
   struct NamedCandidate {
-    NamedCandidate();
+    NamedCandidate() =  default;
     NamedCandidate(const std::string& name,
                    const cricket::Candidate& candidate);
 
     std::string name;
     cricket::Candidate candidate;
+  };
+
+  struct IceCredentials {
+    IceCredentials() = default;
+    IceCredentials(std::string channel,
+                   std::string ufrag,
+                   std::string password);
+
+    std::string channel;
+    std::string ufrag;
+    std::string password;
   };
 
   JingleMessage();
@@ -68,12 +74,15 @@ struct JingleMessage {
 
   std::string from;
   std::string to;
-  ActionType action;
+  ActionType action = UNKNOWN_ACTION;
   std::string sid;
 
   std::string initiator;
 
   scoped_ptr<ContentDescription> description;
+
+  bool standard_ice = true;
+  std::list<IceCredentials> ice_credentials;
   std::list<NamedCandidate> candidates;
 
   // Content of session-info messages.
@@ -82,7 +91,7 @@ struct JingleMessage {
   // Value from the <reason> tag if it is present in the
   // message. Useful mainly for session-terminate messages, but Jingle
   // spec allows it in any message.
-  Reason reason;
+  Reason reason = UNKNOWN_REASON;
 };
 
 struct JingleMessageReply {

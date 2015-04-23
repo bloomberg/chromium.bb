@@ -36,11 +36,11 @@ const CandidateSessionConfig* FakeSession::candidate_config() {
 }
 
 const SessionConfig& FakeSession::config() {
-  return config_;
+  return *config_;
 }
 
-void FakeSession::set_config(const SessionConfig& config) {
-  config_ = config;
+void FakeSession::set_config(scoped_ptr<SessionConfig> config) {
+  config_ = config.Pass();
 }
 
 StreamChannelFactory* FakeSession::GetTransportChannelFactory() {
