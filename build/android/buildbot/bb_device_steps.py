@@ -94,9 +94,10 @@ INSTALLABLE_PACKAGES = dict((package.name, package) for package in (
                         'ChromeDriverWebViewShell.apk',
                         'org.chromium.chromedriver_webview_shell')]))
 
-VALID_TESTS = set(['chromedriver', 'chrome_proxy', 'gpu',
-                   'telemetry_unittests', 'telemetry_perf_unittests', 'ui',
-                   'unit', 'webkit', 'webkit_layout', 'python_unittests'])
+VALID_TESTS = set(['chromedriver', 'chrome_proxy', 'components_browsertests',
+                   'gpu', 'python_unittests', 'telemetry_unittests',
+                   'telemetry_perf_unittests', 'ui', 'unit', 'webkit',
+                   'webkit_layout'])
 
 RunCmd = bb_utils.RunCmd
 
@@ -172,7 +173,7 @@ def RunTestSuites(options, suites, suites_options=None):
     bb_annotations.PrintNamedStep(suite)
     cmd = [suite] + args
     cmd += suites_options.get(suite, [])
-    if suite == 'content_browsertests':
+    if suite == 'content_browsertests' or suite == 'components_browsertests':
       cmd.append('--num_retries=1')
     _RunTest(options, cmd, suite)
 
@@ -557,6 +558,8 @@ def GetTestStepCmds():
   return [
       ('chromedriver', RunChromeDriverTests),
       ('chrome_proxy', RunChromeProxyTests),
+      ('components_browsertests',
+          lambda options: RunTestSuites(options, ['components_browsertests'])),
       ('gpu', RunGPUTests),
       ('python_unittests', RunPythonUnitTests),
       ('telemetry_unittests', RunTelemetryUnitTests),
