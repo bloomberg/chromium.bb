@@ -26,6 +26,7 @@
 #ifndef NavigatorContentUtilsClient_h
 #define NavigatorContentUtilsClient_h
 
+#include "modules/ModulesExport.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
@@ -48,7 +49,7 @@ public:
     virtual void unregisterProtocolHandler(const String& scheme, const KURL&) = 0;
 };
 
-void provideNavigatorContentUtilsTo(Page&, PassOwnPtr<NavigatorContentUtilsClient>);
+MODULES_EXPORT void provideNavigatorContentUtilsTo(Page&, PassOwnPtr<NavigatorContentUtilsClient>);
 
 }
 

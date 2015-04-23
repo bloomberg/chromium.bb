@@ -26,6 +26,7 @@
 #define MediaStreamRegistry_h
 
 #include "core/html/URLRegistry.h"
+#include "modules/ModulesExport.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/StringHash.h"
@@ -35,7 +36,7 @@ namespace blink {
 class KURL;
 class MediaStreamDescriptor;
 
-class MediaStreamRegistry final : public URLRegistry {
+class MODULES_EXPORT MediaStreamRegistry final : public URLRegistry {
 public:
     // Returns a single instance of MediaStreamRegistry.
     static MediaStreamRegistry& registry();

@@ -33,13 +33,14 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "modules/EventModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/serviceworkers/ExtendableEventInit.h"
 
 namespace blink {
 
 class WaitUntilObserver;
 
-class ExtendableEvent : public Event {
+class MODULES_EXPORT ExtendableEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ExtendableEvent> create();

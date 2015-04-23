@@ -6,6 +6,7 @@
 #define CrossOriginConnectEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -16,7 +17,7 @@ class CrossOriginServiceWorkerClient;
 // A crossoriginconnect event is dispatched by the client to a service worker's
 // script. AcceptConnectionObserver can be used to notify the client about the
 // service worker's response.
-class CrossOriginConnectEvent final : public Event {
+class MODULES_EXPORT CrossOriginConnectEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CrossOriginConnectEvent> create();

@@ -37,6 +37,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "modules/EventModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
@@ -53,7 +54,7 @@ class IDBCursor;
 struct IDBDatabaseMetadata;
 class IDBValue;
 
-class IDBRequest
+class MODULES_EXPORT IDBRequest
     : public RefCountedGarbageCollectedEventTargetWithInlineData<IDBRequest>
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBRequest>);

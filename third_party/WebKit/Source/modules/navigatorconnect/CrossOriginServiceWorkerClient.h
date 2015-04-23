@@ -8,13 +8,14 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/events/EventTarget.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCrossOriginServiceWorkerClient.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class CrossOriginServiceWorkerClient final
+class MODULES_EXPORT CrossOriginServiceWorkerClient final
     : public GarbageCollectedFinalized<CrossOriginServiceWorkerClient>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:

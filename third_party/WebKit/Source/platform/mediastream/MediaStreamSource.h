@@ -46,7 +46,7 @@ namespace blink {
 
 class PLATFORM_EXPORT MediaStreamSource final : public RefCounted<MediaStreamSource> {
 public:
-    class Observer {
+    class PLATFORM_EXPORT Observer {
     public:
         virtual ~Observer() { }
         virtual void sourceChangedState() = 0;

@@ -29,6 +29,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/html/URLRegistry.h"
 #include "modules/EventTargetModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "platform/Timer.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
@@ -37,7 +38,7 @@ namespace blink {
 
 class ExceptionState;
 
-class MediaStream final
+class MODULES_EXPORT MediaStream final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaStream>
     , public URLRegistrable
     , public MediaStreamDescriptorClient

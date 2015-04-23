@@ -46,7 +46,7 @@ public:
     virtual URLRegistry& registry() const = 0;
 };
 
-class URLRegistry {
+class CORE_EXPORT URLRegistry {
     WTF_MAKE_FAST_ALLOCATED(URLRegistry);
 public:
     virtual ~URLRegistry() { }

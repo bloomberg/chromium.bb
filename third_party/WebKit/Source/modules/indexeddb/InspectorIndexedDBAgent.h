@@ -33,6 +33,7 @@
 
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "modules/ModulesExport.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -42,7 +43,7 @@ class Page;
 
 typedef String ErrorString;
 
-class InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, InspectorFrontend::IndexedDB>, public InspectorBackendDispatcher::IndexedDBCommandHandler {
+class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, InspectorFrontend::IndexedDB>, public InspectorBackendDispatcher::IndexedDBCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> create(Page*);
 

@@ -26,6 +26,7 @@
 #ifndef IDBKey_h
 #define IDBKey_h
 
+#include "modules/ModulesExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -34,7 +35,7 @@
 
 namespace blink {
 
-class IDBKey : public GarbageCollectedFinalized<IDBKey> {
+class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
 public:
     typedef HeapVector<Member<IDBKey>> KeyArray;
 

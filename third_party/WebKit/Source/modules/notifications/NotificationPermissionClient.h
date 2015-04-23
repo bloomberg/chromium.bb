@@ -5,6 +5,7 @@
 #ifndef NotificationPermissionClient_h
 #define NotificationPermissionClient_h
 
+#include "modules/ModulesExport.h"
 #include "modules/notifications/NotificationPermissionCallback.h"
 #include "platform/Supplementable.h"
 #include "wtf/PassOwnPtr.h"
@@ -28,7 +29,7 @@ public:
     static NotificationPermissionClient* from(ExecutionContext*);
 };
 
-void provideNotificationPermissionClientTo(LocalFrame&, PassOwnPtrWillBeRawPtr<NotificationPermissionClient>);
+MODULES_EXPORT void provideNotificationPermissionClientTo(LocalFrame&, PassOwnPtrWillBeRawPtr<NotificationPermissionClient>);
 
 } // namespace blink
 

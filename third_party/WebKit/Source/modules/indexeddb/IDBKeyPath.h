@@ -27,6 +27,7 @@
 #define IDBKeyPath_h
 
 #include "bindings/modules/v8/UnionTypesModules.h"
+#include "modules/ModulesExport.h"
 #include "public/platform/WebIDBKeyPath.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -42,7 +43,7 @@ enum IDBKeyPathParseError {
 
 void IDBParseKeyPath(const String&, Vector<String>&, IDBKeyPathParseError&);
 
-class IDBKeyPath {
+class MODULES_EXPORT IDBKeyPath {
 public:
     IDBKeyPath() : m_type(NullType) { }
     explicit IDBKeyPath(const String&);

@@ -6,6 +6,7 @@
 #define AcceptConnectionObserver_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -19,7 +20,7 @@ class ScriptValue;
 // This class observes the service worker's handling of a CrossOriginConnectEvent
 // and notified the client of the result. Created for each instance of
 // CrossOriginConnectEvent.
-class AcceptConnectionObserver final : public GarbageCollectedFinalized<AcceptConnectionObserver>, public ContextLifecycleObserver {
+class MODULES_EXPORT AcceptConnectionObserver final : public GarbageCollectedFinalized<AcceptConnectionObserver>, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AcceptConnectionObserver);
 public:
     static AcceptConnectionObserver* create(ExecutionContext*, int eventID);

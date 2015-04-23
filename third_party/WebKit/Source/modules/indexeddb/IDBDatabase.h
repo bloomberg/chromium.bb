@@ -32,6 +32,7 @@
 #include "core/dom/DOMStringList.h"
 #include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBObjectStore.h"
@@ -51,7 +52,7 @@ class DOMError;
 class ExceptionState;
 class ExecutionContext;
 
-class IDBDatabase final
+class MODULES_EXPORT IDBDatabase final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<IDBDatabase>
     , public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBDatabase>);

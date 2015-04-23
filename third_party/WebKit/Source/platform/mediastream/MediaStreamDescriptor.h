@@ -40,7 +40,7 @@
 
 namespace blink {
 
-class MediaStreamDescriptorClient {
+class PLATFORM_EXPORT MediaStreamDescriptorClient {
 public:
     virtual ~MediaStreamDescriptorClient() { }
 

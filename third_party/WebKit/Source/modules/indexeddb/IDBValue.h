@@ -5,6 +5,7 @@
 #ifndef IDBValue_h
 #define IDBValue_h
 
+#include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "platform/SharedBuffer.h"
@@ -17,7 +18,7 @@ namespace blink {
 class BlobDataHandle;
 class WebBlobInfo;
 
-class IDBValue final : public RefCounted<IDBValue> {
+class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
 public:
     static PassRefPtr<IDBValue> create();
     static PassRefPtr<IDBValue> create(PassRefPtr<SharedBuffer>, const WebVector<WebBlobInfo>&);

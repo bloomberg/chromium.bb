@@ -6,6 +6,7 @@
 #define NotificationEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationEventInit.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
@@ -13,7 +14,7 @@
 
 namespace blink {
 
-class NotificationEvent final : public ExtendableEvent {
+class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<NotificationEvent> create()

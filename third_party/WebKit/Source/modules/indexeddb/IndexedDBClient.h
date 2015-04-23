@@ -28,6 +28,7 @@
 #ifndef IndexedDBClient_h
 #define IndexedDBClient_h
 
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,7 +46,7 @@ public:
 
 typedef IndexedDBClient* CreateIndexedDBClient();
 
-void setIndexedDBClientCreateFunction(CreateIndexedDBClient);
+MODULES_EXPORT void setIndexedDBClientCreateFunction(CreateIndexedDBClient);
 
 } // namespace blink
 

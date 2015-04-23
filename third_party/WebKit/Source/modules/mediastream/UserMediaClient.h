@@ -31,6 +31,7 @@
 #ifndef UserMediaClient_h
 #define UserMediaClient_h
 
+#include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/UserMediaRequest.h"
 #include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
@@ -51,7 +52,7 @@ protected:
     virtual ~UserMediaClient() { }
 };
 
-void provideUserMediaTo(LocalFrame&, UserMediaClient*);
+MODULES_EXPORT void provideUserMediaTo(LocalFrame&, UserMediaClient*);
 
 } // namespace blink
 

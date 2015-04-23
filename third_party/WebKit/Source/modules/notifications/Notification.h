@@ -34,6 +34,7 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/vibration/NavigatorVibration.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"
@@ -56,7 +57,7 @@ class ScriptValue;
 class UnsignedLongOrUnsignedLongSequence;
 struct WebNotificationData;
 
-class Notification final : public RefCountedGarbageCollectedEventTargetWithInlineData<Notification>, public ActiveDOMObject, public WebNotificationDelegate {
+class MODULES_EXPORT Notification final : public RefCountedGarbageCollectedEventTargetWithInlineData<Notification>, public ActiveDOMObject, public WebNotificationDelegate {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Notification>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
     DEFINE_WRAPPERTYPEINFO();

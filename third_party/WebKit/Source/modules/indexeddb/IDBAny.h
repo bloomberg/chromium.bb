@@ -27,6 +27,7 @@
 #define IDBAny_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBValue.h"
 #include "wtf/Forward.h"
@@ -50,7 +51,7 @@ class WebBlobInfo;
 // This allows for lazy conversion to script values (via IDBBindingUtilities),
 // and avoids the need for many dedicated union types.
 
-class IDBAny : public GarbageCollectedFinalized<IDBAny> {
+class MODULES_EXPORT IDBAny : public GarbageCollectedFinalized<IDBAny> {
 public:
     static IDBAny* createUndefined();
     static IDBAny* createNull();
