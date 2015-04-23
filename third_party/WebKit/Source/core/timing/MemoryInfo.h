@@ -31,12 +31,24 @@
 #ifndef MemoryInfo_h
 #define MemoryInfo_h
 
-#include "bindings/core/v8/ScriptGCEvent.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
+
+struct HeapInfo {
+    HeapInfo()
+        : usedJSHeapSize(0)
+        , totalJSHeapSize(0)
+        , jsHeapSizeLimit(0)
+    {
+    }
+
+    size_t usedJSHeapSize;
+    size_t totalJSHeapSize;
+    size_t jsHeapSizeLimit;
+};
 
 class CORE_EXPORT MemoryInfo final : public GarbageCollected<MemoryInfo>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();

@@ -39,10 +39,20 @@
 #include "wtf/MathExtras.h"
 #include "wtf/ThreadSpecific.h"
 #include <limits>
+#include <v8.h>
 
 namespace blink {
 
 static const double TwentyMinutesInSeconds = 20 * 60;
+
+static void getHeapSize(HeapInfo& info)
+{
+    v8::HeapStatistics heapStatistics;
+    v8::Isolate::GetCurrent()->GetHeapStatistics(&heapStatistics);
+    info.usedJSHeapSize = heapStatistics.used_heap_size();
+    info.totalJSHeapSize = heapStatistics.total_physical_size();
+    info.jsHeapSizeLimit = heapStatistics.heap_size_limit();
+}
 
 class HeapSizeCache {
     WTF_MAKE_NONCOPYABLE(HeapSizeCache); WTF_MAKE_FAST_ALLOCATED(HeapSizeCache);
@@ -78,7 +88,7 @@ private:
 
     void update()
     {
-        ScriptGCEvent::getHeapSize(m_info);
+        getHeapSize(m_info);
         m_info.usedJSHeapSize = quantizeMemorySize(m_info.usedJSHeapSize);
         m_info.totalJSHeapSize = quantizeMemorySize(m_info.totalJSHeapSize);
         m_info.jsHeapSizeLimit = quantizeMemorySize(m_info.jsHeapSizeLimit);
@@ -140,7 +150,7 @@ size_t quantizeMemorySize(size_t size)
 MemoryInfo::MemoryInfo()
 {
     if (RuntimeEnabledFeatures::preciseMemoryInfoEnabled())
-        ScriptGCEvent::getHeapSize(m_info);
+        getHeapSize(m_info);
     else
         HeapSizeCache::forCurrentThread().getCachedHeapSize(m_info);
 }

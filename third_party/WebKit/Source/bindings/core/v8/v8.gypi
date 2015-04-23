@@ -71,8 +71,6 @@
             'ScriptFunction.h',
             'ScriptFunctionCall.cpp',
             'ScriptFunctionCall.h',
-            'ScriptGCEvent.cpp',
-            'ScriptGCEvent.h',
             'ScriptHeapSnapshot.cpp',
             'ScriptHeapSnapshot.h',
             'ScriptProfiler.cpp',

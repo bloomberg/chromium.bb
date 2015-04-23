@@ -1687,7 +1687,6 @@
             'inspector/ScriptCallStack.h',
             'inspector/ScriptDebugListener.cpp',
             'inspector/ScriptDebugListener.h',
-            'inspector/ScriptGCEventListener.h',
             'inspector/ScriptProfile.cpp',
             'inspector/ScriptProfile.h',
             'inspector/V8AsyncCallTracker.cpp',

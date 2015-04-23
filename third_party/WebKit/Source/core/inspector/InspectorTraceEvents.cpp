@@ -6,7 +6,6 @@
 #include "core/inspector/InspectorTraceEvents.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
-#include "bindings/core/v8/ScriptGCEvent.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationPlayer.h"
@@ -33,6 +32,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 #include <inttypes.h>
+#include <v8.h>
 
 namespace blink {
 
@@ -673,9 +673,9 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(
 
 static size_t usedHeapSize()
 {
-    HeapInfo info;
-    ScriptGCEvent::getHeapSize(info);
-    return info.usedJSHeapSize;
+    v8::HeapStatistics heapStatistics;
+    v8::Isolate::GetCurrent()->GetHeapStatistics(&heapStatistics);
+    return heapStatistics.used_heap_size();
 }
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorUpdateCountersEvent::data()
