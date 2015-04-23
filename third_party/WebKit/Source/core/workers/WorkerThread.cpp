@@ -40,6 +40,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/PlatformThreadData.h"
 #include "platform/Task.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/ThreadTimers.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
@@ -282,7 +283,7 @@ void WorkerThread::start()
         return;
 
     m_thread = createWebThreadSupportingGC();
-    m_thread->postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::initialize, this)));
+    m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this))));
 }
 
 void WorkerThread::interruptAndDispatchInspectorCommands()
