@@ -124,7 +124,7 @@ class Worker : public Listener, public Sender {
 
  protected:
   SyncChannel* channel() { return channel_.get(); }
-  // Functions for dervied classes to implement if they wish.
+  // Functions for derived classes to implement if they wish.
   virtual void Run() { }
   virtual void OnAnswer(int* answer) { NOTREACHED(); }
   virtual void OnAnswerDelay(Message* reply_msg) {
