@@ -136,8 +136,16 @@ bool V8Initializer::LoadV8Snapshot() {
     return false;
 
 #if defined(V8_VERIFY_EXTERNAL_STARTUP_DATA)
-  return VerifyV8SnapshotFile(g_mapped_natives, g_natives_fingerprint) &&
-         VerifyV8SnapshotFile(g_mapped_snapshot, g_snapshot_fingerprint);
+  // TODO(oth) Remove these temporary CHECKs once http://crbug.com/479537 is
+  // fixed. These are just here to identify whether canary failures are
+  // due to verification or file/vm failures.
+  bool natives_ok =
+      VerifyV8SnapshotFile(g_mapped_natives, g_natives_fingerprint);
+  CHECK(natives_ok);
+  bool snapshot_ok =
+      VerifyV8SnapshotFile(g_mapped_snapshot, g_snapshot_fingerprint);
+  CHECK(snapshot_ok);
+  return natives_ok && snapshot_ok;
 #else
   return true;
 #endif  // V8_VERIFY_EXTERNAL_STARTUP_DATA
