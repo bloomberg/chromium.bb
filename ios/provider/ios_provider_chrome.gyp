@@ -17,6 +17,8 @@
         '../public/provider/chrome/browser/string_provider.h',
         '../public/provider/chrome/browser/ui/infobar_view_delegate.h',
         '../public/provider/chrome/browser/ui/infobar_view_protocol.h',
+        '../public/provider/chrome/browser/updatable_resource_provider.h',
+        '../public/provider/chrome/browser/updatable_resource_provider.mm',
       ],
       'dependencies': [
         '../../base/base.gyp:base',

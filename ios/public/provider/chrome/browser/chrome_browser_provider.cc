@@ -35,6 +35,11 @@ PrefService* ChromeBrowserProvider::GetLocalState() {
   return nullptr;
 }
 
+UpdatableResourceProvider*
+ChromeBrowserProvider::GetUpdatableResourceProvider() {
+  return nullptr;
+}
+
 InfoBarViewPlaceholder* ChromeBrowserProvider::CreateInfoBarView() {
   return nullptr;
 }
