@@ -138,12 +138,6 @@ BluetoothAdapterChromeOS::~BluetoothAdapterChromeOS() {
   Shutdown();
 }
 
-void BluetoothAdapterChromeOS::DeleteOnCorrectThread() const {
-  if (ui_task_runner_->RunsTasksOnCurrentThread() ||
-      !ui_task_runner_->DeleteSoon(FROM_HERE, this))
-    delete this;
-}
-
 std::string BluetoothAdapterChromeOS::GetAddress() const {
   if (!IsPresent())
     return std::string();

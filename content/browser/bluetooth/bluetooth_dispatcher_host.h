@@ -18,6 +18,10 @@ namespace content {
 // Intended to be instantiated by the RenderProcessHost and installed as
 // a filter on the channel. BrowserMessageFilter is refcounted and typically
 // lives as long as it is installed on a channel.
+//
+// BluetoothDispatcherHost primarily operates on the UI thread because the
+// BluetoothAdapter and related objects live there. An exception is made for
+// Receiving IPC on the IO thread.
 class BluetoothDispatcherHost : public BrowserMessageFilter,
                                 public device::BluetoothAdapter::Observer {
  public:
@@ -25,6 +29,7 @@ class BluetoothDispatcherHost : public BrowserMessageFilter,
   static scoped_refptr<BluetoothDispatcherHost> Create();
 
   // BrowserMessageFilter:
+  void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
@@ -32,6 +37,9 @@ class BluetoothDispatcherHost : public BrowserMessageFilter,
   ~BluetoothDispatcherHost() override;
 
  private:
+  friend class base::DeleteHelper<BluetoothDispatcherHost>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+
   // Set |adapter_| to a BluetoothAdapter instance and register observers,
   // releasing references to previous |adapter_|.
   void set_adapter(scoped_refptr<device::BluetoothAdapter> adapter);

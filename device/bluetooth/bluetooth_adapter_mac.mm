@@ -163,12 +163,6 @@ void BluetoothAdapterMac::DeviceConnected(IOBluetoothDevice* device) {
   DeviceAdded(device);
 }
 
-void BluetoothAdapterMac::DeleteOnCorrectThread() const {
-  if (ui_task_runner_->RunsTasksOnCurrentThread() ||
-      !ui_task_runner_->DeleteSoon(FROM_HERE, this))
-    delete this;
-}
-
 void BluetoothAdapterMac::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,

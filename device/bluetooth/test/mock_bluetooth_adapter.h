@@ -100,7 +100,6 @@ class MockBluetoothAdapter : public BluetoothAdapter {
       const ErrorCallback& error_callback);
 
  protected:
-  void DeleteOnCorrectThread() const override;
   void AddDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
                            const base::Closure& callback,
                            const ErrorCallback& error_callback) override;

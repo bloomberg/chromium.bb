@@ -65,7 +65,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
 
   // BluetoothAdapter:
   void Shutdown() override;
-  void DeleteOnCorrectThread() const override;
   std::string GetAddress() const override;
   std::string GetName() const override;
   void SetName(const std::string& name,
@@ -154,7 +153,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
  private:
-  friend class base::DeleteHelper<BluetoothAdapterChromeOS>;
   friend class BluetoothChromeOSTest;
   friend class BluetoothChromeOSTest_Shutdown_Test;
   friend class BluetoothChromeOSTest_Shutdown_OnStartDiscovery_Test;

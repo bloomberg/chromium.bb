@@ -45,8 +45,6 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
   bool IsDiscovering() const override { return false; }
 
-  void DeleteOnCorrectThread() const override { delete this; }
-
   void StartDiscoverySessionWithFilter(
       scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
       const DiscoverySessionCallback& callback,

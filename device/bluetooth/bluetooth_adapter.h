@@ -36,8 +36,7 @@ struct BluetoothAdapterDeleter;
 // known to the adapter, discovering new devices, and providing notification of
 // updates to device information.
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
-    : public base::RefCountedThreadSafe<BluetoothAdapter,
-                                        BluetoothAdapterDeleter> {
+    : public base::RefCounted<BluetoothAdapter> {
  public:
   // Interface for observing changes from bluetooth adapters.
   class Observer {
@@ -371,9 +370,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const BluetoothAudioSink::ErrorCallback& error_callback) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<BluetoothAdapter,
-                                          BluetoothAdapterDeleter>;
-  friend struct BluetoothAdapterDeleter;
+  friend class base::RefCounted<BluetoothAdapter>;
   friend class BluetoothDiscoverySession;
 
   typedef std::map<const std::string, BluetoothDevice*> DevicesMap;
@@ -382,9 +379,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   BluetoothAdapter();
   virtual ~BluetoothAdapter();
-
-  // Called by RefCountedThreadSafeDeleteOnCorrectThread to destroy this.
-  virtual void DeleteOnCorrectThread() const = 0;
 
   // Internal methods for initiating and terminating device discovery sessions.
   // An implementation of BluetoothAdapter keeps an internal reference count to
@@ -483,13 +477,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAdapter> weak_ptr_factory_;
-};
-
-// Trait for RefCountedThreadSafe that deletes BluetoothAdapter.
-struct BluetoothAdapterDeleter {
-  static void Destruct(const BluetoothAdapter* adapter) {
-    adapter->DeleteOnCorrectThread();
-  }
 };
 
 }  // namespace device

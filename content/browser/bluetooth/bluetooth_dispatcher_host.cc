@@ -31,6 +31,10 @@ scoped_refptr<BluetoothDispatcherHost> BluetoothDispatcherHost::Create() {
   return host;
 }
 
+void BluetoothDispatcherHost::OnDestruct() const {
+  BrowserThread::DeleteOnUIThread::Destruct(this);
+}
+
 bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool handled = true;
@@ -52,12 +56,14 @@ BluetoothDispatcherHost::BluetoothDispatcherHost()
 }
 
 BluetoothDispatcherHost::~BluetoothDispatcherHost() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Clear adapter, releasing observer references.
   set_adapter(scoped_refptr<device::BluetoothAdapter>());
 }
 
 void BluetoothDispatcherHost::set_adapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (adapter_.get())
     adapter_->RemoveObserver(this);
   adapter_ = adapter;

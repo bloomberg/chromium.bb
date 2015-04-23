@@ -19,10 +19,6 @@ void MockBluetoothAdapter::Shutdown() {
 }
 #endif
 
-void MockBluetoothAdapter::DeleteOnCorrectThread() const {
-  delete this;
-};
-
 void MockBluetoothAdapter::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
