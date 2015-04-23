@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/functions.h"
@@ -16,6 +17,51 @@
 #include "tools/gn/scheduler.h"
 
 namespace functions {
+
+namespace {
+
+// On Windows, provide a custom implementation of base::WriteFile. Sometimes
+// the base version would fail, and this alternate implementation provides
+// additional logging. See http://crbug.com/468437
+#if defined(OS_WIN)
+int DoWriteFile(const base::FilePath& filename, const char* data, int size) {
+  base::win::ScopedHandle file(::CreateFile(
+      filename.value().c_str(),
+      GENERIC_WRITE,
+      FILE_SHARE_READ,  // Not present in the base version, speculative fix.
+      NULL,
+      CREATE_ALWAYS,
+      0,
+      NULL));
+  if (!file.IsValid()) {
+    PLOG(ERROR) << "CreateFile failed for path "
+                  << base::UTF16ToUTF8(filename.value());
+    return -1;
+  }
+
+  DWORD written;
+  BOOL result = ::WriteFile(file.Get(), data, size, &written, NULL);
+  if (result && static_cast<int>(written) == size)
+    return written;
+
+  if (!result) {
+    // WriteFile failed.
+    PLOG(ERROR) << "writing file " << base::UTF16ToUTF8(filename.value())
+                << " failed";
+  } else {
+    // Didn't write all the bytes.
+    LOG(ERROR) << "wrote" << written << " bytes to "
+               << base::UTF16ToUTF8(filename.value()) << " expected " << size;
+  }
+  return -1;
+}
+#else
+int DoWriteFile(const base::FilePath& filename, const char* data, int size) {
+  return base::WriteFile(filename, data, size);
+}
+#endif
+
+}  // namespace
 
 const char kWriteFile[] = "write_file";
 const char kWriteFile_HelpShort[] =
@@ -91,7 +137,7 @@ Value RunWriteFile(Scope* scope,
   }
 
   int int_size = static_cast<int>(new_contents.size());
-  if (base::WriteFile(file_path, new_contents.c_str(), int_size)
+  if (DoWriteFile(file_path, new_contents.c_str(), int_size)
       != int_size) {
     *err = Err(function->function(), "Unable to write file.",
                "I was writing \"" + FilePathToUTF8(file_path) + "\".");
