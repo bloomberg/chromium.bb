@@ -80,6 +80,11 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER" file="cros/status/status_bluetooth_disabled_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED" file="cros/status/status_bluetooth_enabled.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER" file="cros/status/status_bluetooth_enabled_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST" file="cros/status/status_cast.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST_DISABLED" file="cros/status/status_cast_disabled.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST_DISABLED_HOVER" file="cros/status/status_cast_disabled_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST_ENABLED" file="cros/status/status_cast_enabled.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST_ENABLED_HOVER" file="cros/status/status_cast_enabled_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE" file="cros/status/status_drive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL" file="cros/status/status_drive_item_cancel.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER" file="cros/status/status_drive_item_cancel_hover.png" />
