@@ -61,7 +61,6 @@
       'dependencies': [
         'chrome_watcher_client',
         'chrome_watcher_resources',
-        'installer_util',
         '../base/base.gyp:base',
         '../components/components.gyp:browser_watcher',
       ],

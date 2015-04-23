@@ -32,7 +32,6 @@ shared_library("chrome_watcher") {
   deps = [
     ":chrome_watcher_resources",
     ":client",
-    ":installer_util",
     "//base",
     "//components/browser_watcher",
   ]

@@ -1,6 +1,5 @@
 include_rules = [
   "+base",
-  "+chrome/installer/util",
   "+components/browser_watcher",
   "+syzygy/kasko/api",
 ]
