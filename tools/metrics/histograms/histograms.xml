@@ -9674,6 +9674,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.LoadContentPack">
   <owner>asargent@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 4/2015. Replaced by ManagedUsers.Whitelist.Count.
+  </obsolete>
   <summary>
     The number of content-pack extensions loaded at browser startup.
   </summary>

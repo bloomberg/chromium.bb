@@ -49,7 +49,7 @@ class SupervisedUserSiteList
     // A list of URL patterns that should be whitelisted for the site.
     std::vector<std::string> patterns;
 
-    // A list of SHA1 hashes of hostnames that should be whitelisted
+    // A list of hex-encoded SHA1 hashes of hostnames that should be whitelisted
     // for the site.
     std::vector<std::string> hostname_hashes;
 

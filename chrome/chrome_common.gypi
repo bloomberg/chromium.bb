@@ -147,8 +147,6 @@
       'common/extensions/api/spellcheck/spellcheck_handler.h',
       'common/extensions/api/storage/storage_schema_manifest_handler.cc',
       'common/extensions/api/storage/storage_schema_manifest_handler.h',
-      'common/extensions/api/supervised_user_private/supervised_user_handler.cc',
-      'common/extensions/api/supervised_user_private/supervised_user_handler.h',
       'common/extensions/api/system_indicator/system_indicator_handler.cc',
       'common/extensions/api/system_indicator/system_indicator_handler.h',
       'common/extensions/api/url_handlers/url_handlers_parser.cc',

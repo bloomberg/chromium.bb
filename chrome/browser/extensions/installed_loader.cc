@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/supervised_user_private/supervised_user_handler.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -322,7 +321,6 @@ void InstalledLoader::RecordExtensionsMetrics() {
   int legacy_packaged_app_count = 0;
   int platform_app_count = 0;
   int user_script_count = 0;
-  int content_pack_count = 0;
   int extension_user_count = 0;
   int extension_external_count = 0;
   int theme_count = 0;
@@ -498,9 +496,6 @@ void InstalledLoader::RecordExtensionsMetrics() {
     if (extension_action_manager->GetBrowserAction(*extension))
       ++browser_action_count;
 
-    if (SupervisedUserInfo::IsContentPack(extension))
-      ++content_pack_count;
-
     RecordCreationFlags(extension);
 
     ExtensionService::RecordPermissionMessagesHistogram(
@@ -590,7 +585,6 @@ void InstalledLoader::RecordExtensionsMetrics() {
                            page_action_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadBrowserAction",
                            browser_action_count);
-  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadContentPack", content_pack_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.DisabledForPermissions",
                            disabled_for_permissions_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.NonWebStoreNewTabPageOverrides",

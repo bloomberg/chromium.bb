@@ -43,9 +43,8 @@ void HandleError(const base::FilePath& path, const std::string& error) {
 // struct.
 void AddWhitelistEntries(const base::DictionaryValue* site_dict,
                          SupervisedUserSiteList::Site* site) {
-  std::vector<std::string>* patterns = &site->patterns;
-
   bool found = false;
+
   const base::ListValue* whitelist = nullptr;
   if (site_dict->GetList(kWhitelistKey, &whitelist)) {
     found = true;
@@ -56,22 +55,24 @@ void AddWhitelistEntries(const base::DictionaryValue* site_dict,
         continue;
       }
 
-      patterns->push_back(pattern);
+      site->patterns.push_back(pattern);
     }
   }
 
-  std::vector<std::string>* hashes = &site->hostname_hashes;
   const base::ListValue* hash_list = nullptr;
   if (site_dict->GetList(kHostnameHashesKey, &hash_list)) {
     found = true;
     for (const base::Value* entry : *hash_list) {
       std::string hash;
       if (!entry->GetAsString(&hash)) {
-        LOG(ERROR) << "Invalid whitelist entry";
+        LOG(ERROR) << "Invalid hostname_hashes entry";
         continue;
       }
+      // TODO(treib): Check that |hash| has exactly 40 (2*base::kSHA1Length)
+      // characters from [0-9a-fA-F]. Or just store the raw bytes (from
+      // base::HexStringToBytes).
 
-      hashes->push_back(hash);
+      site->hostname_hashes.push_back(hash);
     }
   }
 
@@ -91,7 +92,7 @@ void AddWhitelistEntries(const base::DictionaryValue* site_dict,
     return;
   }
 
-  patterns->push_back(url.host());
+  site->patterns.push_back(url.host());
 }
 
 }  // namespace
@@ -191,8 +192,7 @@ void SupervisedUserSiteList::OnJsonParseSucceeded(
 
   base::ListValue* sites = nullptr;
   if (!dict->GetList(kSitesKey, &sites)) {
-    LOG(ERROR) << "Site list " << path.value()
-               << " does not contain any sites";
+    LOG(ERROR) << "Site list " << path.value() << " does not contain any sites";
     return;
   }
 
