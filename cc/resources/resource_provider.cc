@@ -2046,9 +2046,8 @@ GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {
 
 void ResourceProvider::ValidateResource(ResourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK(id);
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
+  DCHECK(id);
+  DCHECK(resources_.find(id) != resources_.end());
 }
 
 GLES2Interface* ResourceProvider::ContextGL() const {
