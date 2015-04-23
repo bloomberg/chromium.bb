@@ -99,6 +99,9 @@ TEST_F(VisibleSelectionTest, ShadowCrossing)
     RefPtrWillBeRawPtr<Element> two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
     RefPtrWillBeRawPtr<Element> six = shadowRoot->querySelector("#s6", ASSERT_NO_EXCEPTION);
 
+    ASSERT_UNUSED(two, two);
+    (void)six;
+
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot.get()));
 
     EXPECT_EQ(Position(host.get(), Position::PositionIsBeforeAnchor), selection.start());
@@ -117,6 +120,9 @@ TEST_F(VisibleSelectionTest, ShadowDistributedNodes)
     RefPtrWillBeRawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
     RefPtrWillBeRawPtr<Element> two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
     RefPtrWillBeRawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
+
+    ASSERT_UNUSED(host, host);
+    ASSERT_UNUSED(five, five);
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(two.get()));
 
@@ -139,6 +145,10 @@ TEST_F(VisibleSelectionTest, ShadowNested)
     RefPtrWillBeRawPtr<Element> two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
     RefPtrWillBeRawPtr<Element> host2 = shadowRoot->querySelector("#host2", ASSERT_NO_EXCEPTION);
     RefPtrWillBeRawPtr<Element> eight = shadowRoot2->querySelector("#s8", ASSERT_NO_EXCEPTION);
+
+    ASSERT_UNUSED(two, two);
+    ASSERT_UNUSED(eight, eight);
+    (void)host2;
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot2.get()));
 
