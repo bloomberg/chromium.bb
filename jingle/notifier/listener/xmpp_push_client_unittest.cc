@@ -38,14 +38,14 @@ class XmppPushClientTest : public testing::Test {
             message_loop_.message_loop_proxy());
   }
 
-  virtual ~XmppPushClientTest() {}
+  ~XmppPushClientTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     xmpp_push_client_.reset(new XmppPushClient(notifier_options_));
     xmpp_push_client_->AddObserver(&mock_observer_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Clear out any messages posted by XmppPushClient.
     message_loop_.RunUntilIdle();
     xmpp_push_client_->RemoveObserver(&mock_observer_);
