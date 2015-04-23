@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.location.LocationSettingsTestUtil;
@@ -364,6 +366,7 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
      */
     @SmallTest
     @Feature({"Preferences"})
+    @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
     public void testCameraMicNotBlocked() throws Exception {
         setEnableCameraMic(true);
 
