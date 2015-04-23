@@ -9,7 +9,8 @@ LIBDRM_FILES := \
 	xf86atomic.h \
 	libdrm_macros.h \
 	libdrm_lists.h \
-	util_double_list.h
+	util_double_list.h \
+	util_math.h
 
 LIBDRM_H_FILES := \
 	xf86drm.h \
