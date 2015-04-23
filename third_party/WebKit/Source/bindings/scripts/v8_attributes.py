@@ -143,7 +143,6 @@ def attribute_context(interface, attribute):
         'measure_as': v8_utilities.measure_as(attribute, interface),  # [MeasureAs]
         'name': attribute.name,
         'only_exposed_to_private_script': is_only_exposed_to_private_script,
-        'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue', bailout_return_value='false', isolate='scriptState->isolate()'),
         'property_attributes': property_attributes(interface, attribute),

@@ -2877,38 +2877,6 @@ static void notEnumerableLongAttributeAttributeSetterCallback(v8::Local<v8::Name
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void perContextEnabledLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueInt(info, impl->perContextEnabledLongAttribute());
-}
-
-static void perContextEnabledLongAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::perContextEnabledLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void perContextEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "perContextEnabledLongAttribute", "TestObject", holder, info.GetIsolate());
-    TestObject* impl = V8TestObject::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    impl->setPerContextEnabledLongAttribute(cppValue);
-}
-
-static void perContextEnabledLongAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::perContextEnabledLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
 static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -4540,38 +4508,6 @@ static void runtimeEnabledLongAttributeAttributeSetterCallback(v8::Local<v8::Nam
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
     TestObjectV8Internal::runtimeEnabledLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void perContextEnabledRuntimeEnabledLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueInt(info, impl->perContextEnabledRuntimeEnabledLongAttribute());
-}
-
-static void perContextEnabledRuntimeEnabledLongAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::perContextEnabledRuntimeEnabledLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void perContextEnabledRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "perContextEnabledRuntimeEnabledLongAttribute", "TestObject", holder, info.GetIsolate());
-    TestObject* impl = V8TestObject::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    impl->setPerContextEnabledRuntimeEnabledLongAttribute(cppValue);
-}
-
-static void perContextEnabledRuntimeEnabledLongAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::perContextEnabledRuntimeEnabledLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
@@ -10667,19 +10603,6 @@ static void notEnumerableVoidMethodMethodCallback(const v8::FunctionCallbackInfo
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void perContextEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    impl->perContextEnabledVoidMethod();
-}
-
-static void perContextEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::perContextEnabledVoidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
 static void perWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -12800,21 +12723,6 @@ TestObject* V8TestObject::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8
     return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
 }
 
-void V8TestObject::installConditionallyEnabledProperties(v8::Local<v8::Object> instanceObject, v8::Isolate* isolate)
-{
-    v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(instanceObject->GetPrototype());
-    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
-
-    if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context))) {
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = {"perContextEnabledLongAttribute", TestObjectV8Internal::perContextEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::perContextEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
-        V8DOMConfiguration::installAttribute(isolate, instanceObject, prototypeObject, attributeConfiguration);
-    }
-    if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context))) {
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = {"perContextEnabledRuntimeEnabledLongAttribute", TestObjectV8Internal::perContextEnabledRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::perContextEnabledRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
-        V8DOMConfiguration::installAttribute(isolate, instanceObject, prototypeObject, attributeConfiguration);
-    }
-}
-
 void V8TestObject::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject)
 {
     v8::Local<v8::Context> v8Context(prototypeObject->CreationContext());
@@ -12827,12 +12735,6 @@ void V8TestObject::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Ob
     unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "unscopeableLongAttribute"), v8::True(isolate)).FromJust();
     unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "unscopeableVoidMethod"), v8::True(isolate)).FromJust();
     prototypeObject->ForceSet(v8Context, unscopablesSymbol, unscopeables).FromJust();
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
-    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
-    ASSERT(context);
-    if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context))) {
-        prototypeObject->Set(v8AtomicString(isolate, "perContextEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectV8Internal::perContextEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
-    }
 }
 
 void V8TestObject::refObject(ScriptWrappable* scriptWrappable)

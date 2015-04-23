@@ -296,6 +296,11 @@ static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
 
 } // namespace TestInterfaceImplementationPartialV8Internal
 
+static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
+    {"partialVoidTestEnumModulesArgMethod", TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
+    {"unscopeableVoidMethod", TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+};
+
 void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     V8TestInterface::installV8TestInterfaceTemplate(functionTemplate, isolate);
@@ -307,7 +312,7 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::Functi
         defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface", v8::Local<v8::FunctionTemplate>(), V8TestInterface::internalFieldCount,
             0, 0,
             0, 0,
-            0, 0);
+            V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
@@ -331,15 +336,6 @@ void V8TestInterfacePartial::preparePrototypeObject(v8::Isolate* isolate, v8::Lo
         unscopeables = v8::Object::New(isolate);
     unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "unscopeableVoidMethod"), v8::True(isolate)).FromJust();
     prototypeObject->ForceSet(v8Context, unscopablesSymbol, unscopeables).FromJust();
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
-    ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
-    ASSERT(context);
-    if (context && context->isDocument() && ContextFeatures::partialContextName3Enabled(toDocument(context))) {
-        prototypeObject->Set(v8AtomicString(isolate, "partialVoidTestEnumModulesArgMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
-    }
-    if (context && context->isDocument() && ContextFeatures::partialContextName3Enabled(toDocument(context))) {
-        prototypeObject->Set(v8AtomicString(isolate, "unscopeableVoidMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
-    }
 }
 
 bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestInterface* holderImpl, int value, int* result)

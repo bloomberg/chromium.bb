@@ -30,7 +30,6 @@
 
 [
     ImplementedAs=TestPartialInterfaceImplementation3,
-    PerContextEnabled=PartialContextName3,
 ] partial interface TestInterface {
     const unsigned short PARTIAL3_UNSIGNED_SHORT = 0;
 

@@ -631,14 +631,11 @@ V8DOMConfiguration::installMethod(isolate, {{method.function_template}}, {{metho
 {######################################}
 {% macro install_conditionally_enabled_methods() %}
 {% if conditionally_enabled_methods %}
-{# Define per-context enabled operations #}
+{# Define operations with limited exposure #}
 v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
 ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
 ASSERT(context);
 {% for method in conditionally_enabled_methods %}
-{% filter per_context_enabled(method.overloads.per_context_enabled_function_all
-                              if method.overloads else
-                              method.per_context_enabled_function) %}
 {% filter exposed(method.overloads.exposed_test_all
                   if method.overloads else
                   method.exposed_test) %}
@@ -648,7 +645,6 @@ ASSERT(context);
 prototypeObject->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{cpp_class_or_partial}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
 {% endfilter %}{# runtime_enabled() #}
 {% endfilter %}{# exposed() #}
-{% endfilter %}{# per_context_enabled() #}
 {% endfor %}
 {% endif %}
 {%- endmacro %}

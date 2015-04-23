@@ -209,7 +209,6 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[]
        if not (attribute.is_expose_js_accessors or
                attribute.is_static or
                attribute.runtime_enabled_function or
-               attribute.per_context_enabled_function or
                attribute.exposed_test or
                (interface_name == 'Window' and attribute.is_unforgeable))
            and attribute.should_be_exposed_to_script %}
@@ -230,7 +229,6 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] =
        if (attribute.is_expose_js_accessors and
            not (attribute.is_static or
                 attribute.runtime_enabled_function or
-                attribute.per_context_enabled_function or
                 attribute.exposed_test) and
            attribute.should_be_exposed_to_script) %}
     {{attribute_configuration(attribute)}},
@@ -325,7 +323,6 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% endif %}
     {% for attribute in attributes
        if attribute.runtime_enabled_function and
-          not attribute.per_context_enabled_function and
           not attribute.exposed_test and
           not attribute.is_static %}
     {% filter conditional(attribute.conditional_string) %}
@@ -408,14 +405,12 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     }
     {% endif %}
     {% if iterator_method %}
-    {% filter per_context_enabled(iterator_method.per_context_enabled_function) %}
     {% filter exposed(iterator_method.exposed_test) %}
     {% filter runtime_enabled(iterator_method.runtime_enabled_function) %}
     static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
     V8DOMConfiguration::installMethod(isolate, prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration);
     {% endfilter %}{# runtime_enabled() #}
     {% endfilter %}{# exposed() #}
-    {% endfilter %}{# per_context_enabled() #}
     {% endif %}
     {# End special operations #}
     {% if has_custom_legacy_call_as_function %}
@@ -428,9 +423,6 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% for method in custom_registration_methods %}
     {# install_custom_signature #}
     {% filter conditional(method.conditional_string) %}
-    {% filter per_context_enabled(method.overloads.per_context_enabled_function_all
-                                  if method.overloads else
-                                  method.per_context_enabled_function) %}
     {% filter exposed(method.overloads.exposed_test_all
                       if method.overloads else
                       method.exposed_test) %}
@@ -444,7 +436,6 @@ static void install{{v8_class}}Template(v8::Local<v8::FunctionTemplate> function
     {% endif %}{# is_do_not_check_security #}
     {% endfilter %}{# runtime_enabled() #}
     {% endfilter %}{# exposed() #}
-    {% endfilter %}{# per_context_enabled() #}
     {% endfilter %}{# conditional() #}
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}

@@ -180,7 +180,6 @@ def method_context(interface, method, is_visible=True):
             argument for argument in arguments
             if not argument.is_optional]),
         'only_exposed_to_private_script': is_only_exposed_to_private_script,
-        'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(method),  # [PerContextEnabled]
         'private_script_v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8Value', 'cppValue', isolate='scriptState->isolate()', bailout_return_value='false'),
         'property_attributes': property_attributes(interface, method),

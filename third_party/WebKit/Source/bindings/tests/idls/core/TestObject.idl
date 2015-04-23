@@ -195,7 +195,6 @@ interface TestObject {
     [Custom=Setter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customSetterImplementedAsLongAttribute;
     [MeasureAs=TestFeature] attribute long measureAsLongAttribute;
     [NotEnumerable] attribute long notEnumerableLongAttribute;
-    [PerContextEnabled=FeatureName] attribute long perContextEnabledLongAttribute;
     [PerWorldBindings] readonly attribute TestInterfaceEmpty perWorldBindingsReadonlyTestInterfaceEmptyAttribute;
     [LogActivity, LogAllWorlds, PerWorldBindings] attribute long activityLoggingAccessPerWorldBindingsLongAttribute;
     [LogActivity, PerWorldBindings] attribute long activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute;
@@ -242,7 +241,6 @@ interface TestObject {
     [Replaceable, ExposeJSAccessors] readonly attribute long replaceableReadonlyLongAccessor;
     [PutForwards=href] readonly attribute TestNode locationPutForwards;
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
-    [PerContextEnabled=FeatureName, RuntimeEnabled=FeatureName] attribute long perContextEnabledRuntimeEnabledLongAttribute;
     [Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
     [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
@@ -542,7 +540,6 @@ interface TestObject {
     [DeprecateAs=TestFeatureA, MeasureAs=TestFeatureB] void deprecateAsSameValueMeasureAsSameValueOverloadedMethod();
     [DeprecateAs=TestFeatureA, MeasureAs=TestFeatureB] void deprecateAsSameValueMeasureAsSameValueOverloadedMethod(long arg);
     [NotEnumerable] void notEnumerableVoidMethod();
-    [PerContextEnabled=FeatureName] void perContextEnabledVoidMethod();
     [PerWorldBindings] void perWorldBindingsVoidMethod();
     [PerWorldBindings] void perWorldBindingsVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [LogActivity, LogAllWorlds, PerWorldBindings] void activityLoggingForAllWorldsPerWorldBindingsVoidMethod();

@@ -906,8 +906,7 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
     v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(instanceObject->GetPrototype());
     ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
 
-    {% for attribute in attributes if attribute.per_context_enabled_function or attribute.exposed_test %}
-    {% filter per_context_enabled(attribute.per_context_enabled_function) %}
+    {% for attribute in attributes if attribute.exposed_test %}
     {% filter exposed(attribute.exposed_test) %}
     {% if attribute.is_expose_js_accessors %}
     static const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {{attribute_configuration(attribute)}};
@@ -916,7 +915,6 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
     static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = {{attribute_configuration(attribute)}};
     V8DOMConfiguration::installAttribute(isolate, instanceObject, prototypeObject, attributeConfiguration);
     {% endif %}
-    {% endfilter %}
     {% endfilter %}
     {% endfor %}
 }

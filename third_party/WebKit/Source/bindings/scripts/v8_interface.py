@@ -295,7 +295,7 @@ def interface_context(interface):
     attributes = [v8_attributes.attribute_context(interface, attribute)
                   for attribute in interface.attributes]
 
-    has_conditional_attributes = any(attribute['per_context_enabled_function'] or attribute['exposed_test'] for attribute in attributes)
+    has_conditional_attributes = any(attribute['exposed_test'] for attribute in attributes)
     if has_conditional_attributes and interface.is_partial:
         raise Exception('Conditional attributes between partial interfaces in modules and the original interfaces(%s) in core are not allowed.' % interface.name)
 
@@ -304,15 +304,13 @@ def interface_context(interface):
         'has_accessor_configuration': any(
             attribute['is_expose_js_accessors'] and
             not (attribute['is_static'] or
-                 attribute['runtime_enabled_function'] or
-                 attribute['per_context_enabled_function']) and
+                 attribute['runtime_enabled_function']) and
             attribute['should_be_exposed_to_script']
             for attribute in attributes),
         'has_attribute_configuration': any(
              not (attribute['is_expose_js_accessors'] or
                   attribute['is_static'] or
-                  attribute['runtime_enabled_function'] or
-                  attribute['per_context_enabled_function'])
+                  attribute['runtime_enabled_function'])
              and attribute['should_be_exposed_to_script']
              for attribute in attributes),
         'has_conditional_attributes': has_conditional_attributes,
@@ -526,7 +524,6 @@ def interface_context(interface):
             # original interface will register instead of partial interface.
             if overloads['has_partial_overloads'] and interface.is_partial:
                 continue
-            per_context_enabled_function = overloads['per_context_enabled_function_all']
             conditionally_exposed_function = overloads['exposed_test_all']
             runtime_enabled_function = overloads['runtime_enabled_function_all']
             has_custom_registration = (overloads['has_custom_registration_all'] or
@@ -534,7 +531,6 @@ def interface_context(interface):
         else:
             if not method['visible']:
                 continue
-            per_context_enabled_function = method['per_context_enabled_function']
             conditionally_exposed_function = method['exposed_test']
             runtime_enabled_function = method['runtime_enabled_function']
             has_custom_registration = method['has_custom_registration']
@@ -542,7 +538,7 @@ def interface_context(interface):
         if has_custom_registration:
             custom_registration_methods.append(method)
             continue
-        if per_context_enabled_function or conditionally_exposed_function:
+        if conditionally_exposed_function:
             conditionally_enabled_methods.append(method)
             continue
         if runtime_enabled_function:
@@ -740,7 +736,6 @@ def overloads_context(interface, overloads):
         'maxarg': lengths[-1],
         'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
         'minarg': lengths[0],
-        'per_context_enabled_function_all': common_value(overloads, 'per_context_enabled_function'),  # [PerContextEnabled]
         'returns_promise_all': promise_overload_count > 0,
         'runtime_determined_lengths': runtime_determined_lengths,
         'runtime_enabled_function_all': common_value(overloads, 'runtime_enabled_function'),  # [RuntimeEnabled]

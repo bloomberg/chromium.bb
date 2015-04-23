@@ -671,41 +671,6 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(v8::Loc
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-static void implementsPerContextEnabledNodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    v8SetReturnValueFast(info, WTF::getPtr(impl->implementsPerContextEnabledNodeAttribute()), impl);
-}
-
-static void implementsPerContextEnabledNodeAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestInterfaceImplementationV8Internal::implementsPerContextEnabledNodeAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
-static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "implementsPerContextEnabledNodeAttribute", "TestInterface", holder, info.GetIsolate());
-    TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'Node'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    impl->setImplementsPerContextEnabledNodeAttribute(WTF::getPtr(cppValue));
-}
-
-static void implementsPerContextEnabledNodeAttributeAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestInterfaceImplementationV8Internal::implementsPerContextEnabledNodeAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
 static void implements2StaticStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8SetReturnValueString(info, TestImplements2::implements2StaticStringAttribute(), info.GetIsolate());
@@ -2162,6 +2127,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceAttribute
     {"implementsNodeAttribute", TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"implementsEventHandlerAttribute", TestInterfaceImplementationV8Internal::implementsEventHandlerAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implementsEventHandlerAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"implements3StringAttribute", TestInterfaceImplementationV8Internal::implements3StringAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implements3StringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
+    {"partial2LongAttribute", TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
@@ -2406,18 +2372,6 @@ void V8TestInterface::installConditionallyEnabledProperties(v8::Local<v8::Object
     }
     if (context && (context->isDocument())) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = {"windowExposedAttribute", TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
-        V8DOMConfiguration::installAttribute(isolate, instanceObject, prototypeObject, attributeConfiguration);
-    }
-    if (context && context->isDocument() && ContextFeatures::implementsContextNameEnabled(toDocument(context))) {
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = {"implementsPerContextEnabledNodeAttribute", TestInterfaceImplementationV8Internal::implementsPerContextEnabledNodeAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::implementsPerContextEnabledNodeAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
-        V8DOMConfiguration::installAttribute(isolate, instanceObject, prototypeObject, attributeConfiguration);
-    }
-    if (context && context->isDocument() && ContextFeatures::partialContextNameEnabled(toDocument(context))) {
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = {"partial2LongAttribute", TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
-        V8DOMConfiguration::installAttribute(isolate, instanceObject, prototypeObject, attributeConfiguration);
-    }
-    if (context && context->isDocument() && ContextFeatures::partialContextNameEnabled(toDocument(context))) {
-        static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration = {"partial2StaticLongAttribute", TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance};
         V8DOMConfiguration::installAttribute(isolate, instanceObject, prototypeObject, attributeConfiguration);
     }
 }

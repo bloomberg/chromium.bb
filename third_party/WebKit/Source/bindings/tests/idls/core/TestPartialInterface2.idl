@@ -30,7 +30,6 @@
 
 [
     ImplementedAs=TestPartialInterfaceImplementation, // Conflicts with default partial interface class name
-    PerContextEnabled=PartialContextName, // Conflicts with [RuntimeEnabled]
 ] partial interface TestInterface {
     const unsigned short PARTIAL2_UNSIGNED_SHORT = 0;
 

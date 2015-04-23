@@ -387,7 +387,6 @@ def initialize_jinja_env(cache_dir):
         'blink_capitalize': capitalize,
         'conditional': conditional_if_endif,
         'exposed': exposed_if,
-        'per_context_enabled': per_context_enabled_if,
         'runtime_enabled': runtime_enabled_if,
         })
     return jinja_env
@@ -416,13 +415,6 @@ def exposed_if(code, exposed_test):
     if not exposed_test:
         return code
     return generate_indented_conditional(code, 'context && (%s)' % exposed_test)
-
-
-# [PerContextEnabled]
-def per_context_enabled_if(code, per_context_enabled_function):
-    if not per_context_enabled_function:
-        return code
-    return generate_indented_conditional(code, 'context && context->isDocument() && %s(toDocument(context))' % per_context_enabled_function)
 
 
 # [RuntimeEnabled]

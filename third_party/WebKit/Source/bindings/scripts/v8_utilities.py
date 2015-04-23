@@ -374,15 +374,6 @@ def measure_as(definition_or_member, interface):
     return None
 
 
-# [PerContextEnabled]
-def per_context_enabled_function_name(definition_or_member):
-    extended_attributes = definition_or_member.extended_attributes
-    if 'PerContextEnabled' not in extended_attributes:
-        return None
-    feature_name = extended_attributes['PerContextEnabled']
-    return 'ContextFeatures::%sEnabled' % uncapitalize(feature_name)
-
-
 # [RuntimeEnabled]
 def runtime_enabled_function_name(definition_or_member):
     """Returns the name of the RuntimeEnabledFeatures function.

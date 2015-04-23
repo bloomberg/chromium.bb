@@ -78,7 +78,7 @@ public:
     static void customGetterImplementedAsLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
     static void customSetterImplementedAsLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    static void installConditionallyEnabledProperties(v8::Local<v8::Object>, v8::Isolate*);
+    static void installConditionallyEnabledProperties(v8::Local<v8::Object>, v8::Isolate*) { }
     static void preparePrototypeObject(v8::Isolate*, v8::Local<v8::Object>);
 };
 

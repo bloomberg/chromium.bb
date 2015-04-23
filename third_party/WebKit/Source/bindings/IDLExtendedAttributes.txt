@@ -78,9 +78,6 @@ NotEnumerable
 OnlyExposedToPrivateScript
 OverrideBuiltins
 PartialInterfaceImplementedAs=*
-# Valid values for [PerContextEnabled] are Context Features, in
-# ContextFeatures::FeatureType in Source/core/dom/ContextFeatures.h
-PerContextEnabled=*
 PermissiveDictionaryConversion
 PerWorldBindings
 PrimaryGlobal=|*
