@@ -340,10 +340,11 @@
         case info_bubble::kTopLeft:
           origin.x -= offsets.width;
           break;
-        case info_bubble::kNoArrow:
-        // FALLTHROUGH.
         case info_bubble::kTopCenter:
           origin.x -= NSWidth([window frame]) / 2.0;
+          break;
+        case info_bubble::kNoArrow:
+          NOTREACHED();
           break;
       }
       break;
