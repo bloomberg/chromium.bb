@@ -19,11 +19,13 @@
         '../ios_tests.gyp:test_support_ios',
         '../web/ios_web.gyp:ios_web',
         '../web/ios_web.gyp:test_support_ios_web',
+        'ios_chrome.gyp:ios_chrome_app',
         'ios_chrome.gyp:ios_chrome_browser',
         'ios_chrome.gyp:ios_chrome_common',
         'ios_chrome_test_support',
       ],
       'sources': [
+        'app/safe_mode_util_unittest.cc',
         'browser/net/image_fetcher_unittest.mm',
         'browser/net/metrics_network_client_unittest.mm',
         'browser/net/retryable_url_fetcher_unittest.mm',

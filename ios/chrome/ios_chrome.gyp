@@ -8,6 +8,27 @@
    },
   'targets': [
     {
+      'target_name': 'ios_chrome_app',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'dependencies': [
+        'ios_chrome_browser',
+      ],
+      'link_settings': {
+        'libraries': [
+          '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+        ],
+      },
+      'sources': [
+        'app/safe_mode_crashing_modules_config.h',
+        'app/safe_mode_crashing_modules_config.mm',
+        'app/safe_mode_util.h',
+        'app/safe_mode_util.cc',
+      ],
+    },
+    {
       'target_name': 'ios_chrome_browser',
       'type': 'static_library',
       'include_dirs': [
