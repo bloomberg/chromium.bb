@@ -592,7 +592,7 @@ int MediaStreamDevicesController::FilterBlockedByDefaultDevices() {
 }
 
 bool MediaStreamDevicesController::IsDefaultMediaAccessBlocked() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return (profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
               CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, NULL)
           == CONTENT_SETTING_BLOCK &&
@@ -607,7 +607,7 @@ bool MediaStreamDevicesController::IsSchemeSecure() const {
 }
 
 void MediaStreamDevicesController::StorePermission(bool allowed) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ContentSettingsPattern primary_pattern =
       ContentSettingsPattern::FromURLNoWildcard(request_.security_origin);
   // Check the pattern is valid or not. When the request is from a file access,

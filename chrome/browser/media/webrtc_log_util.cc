@@ -44,7 +44,7 @@ void WebRtcLogUtil::DeleteOldWebRtcLogFiles(const base::FilePath& log_dir) {
 void WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles(
     const base::FilePath& log_dir,
     const base::Time& delete_begin_time) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   if (!base::PathExists(log_dir)) {
     // This will happen if no logs have been stored or uploaded.
@@ -102,7 +102,7 @@ void WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles(
 
 // static
 void WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ProfileInfoCache& profile_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();

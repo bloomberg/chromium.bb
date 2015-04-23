@@ -48,7 +48,7 @@ MediaStreamDevicePolicy GetDevicePolicy(Profile* profile,
                                         const GURL& security_origin,
                                         const char* policy_name,
                                         const char* whitelist_policy_name) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // If the security origin policy matches a value in the whitelist, allow it.
   // Otherwise, check the |policy_name| master switch for the default behavior.

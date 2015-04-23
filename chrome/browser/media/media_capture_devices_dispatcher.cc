@@ -182,7 +182,7 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     bool display_notification,
     const base::string16& application_title,
     const base::string16& registered_extension_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<content::MediaStreamUI> ui;
 
   // Add selected desktop source to the list.
@@ -271,7 +271,7 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
   // UI thread. Otherwise, it will not receive
   // content::NOTIFICATION_WEB_CONTENTS_DESTROYED, and that will result in
   // possible use after free.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   notifications_registrar_.Add(
       this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
@@ -301,19 +301,19 @@ void MediaCaptureDevicesDispatcher::RegisterProfilePrefs(
 }
 
 void MediaCaptureDevicesDispatcher::AddObserver(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!observers_.HasObserver(observer))
     observers_.AddObserver(observer);
 }
 
 void MediaCaptureDevicesDispatcher::RemoveObserver(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 }
 
 const MediaStreamDevices&
 MediaCaptureDevicesDispatcher::GetAudioCaptureDevices() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_device_enumeration_disabled_ || !test_audio_devices_.empty())
     return test_audio_devices_;
 
@@ -322,7 +322,7 @@ MediaCaptureDevicesDispatcher::GetAudioCaptureDevices() {
 
 const MediaStreamDevices&
 MediaCaptureDevicesDispatcher::GetVideoCaptureDevices() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_device_enumeration_disabled_ || !test_video_devices_.empty())
     return test_video_devices_;
 
@@ -333,7 +333,7 @@ void MediaCaptureDevicesDispatcher::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
     content::WebContents* web_contents =
         content::Source<content::WebContents>(source).ptr();
@@ -346,7 +346,7 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
     const extensions::Extension* extension) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE ||
       request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE) {
@@ -376,7 +376,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
     content::BrowserContext* browser_context,
     const GURL& security_origin,
     content::MediaStreamType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
@@ -433,7 +433,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
     content::WebContents* web_contents,
     const GURL& security_origin,
     content::MediaStreamType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
@@ -481,7 +481,7 @@ bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(
     const GURL& security_origin,
     content::MediaStreamType type,
     const extensions::Extension* extension) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
@@ -835,7 +835,7 @@ void MediaCaptureDevicesDispatcher::ProcessRegularMediaAccessRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RequestsQueue& queue = pending_requests_[web_contents];
   queue.push_back(PendingAccessRequest(request, callback));
@@ -847,7 +847,7 @@ void MediaCaptureDevicesDispatcher::ProcessRegularMediaAccessRequest(
 
 void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(
     content::WebContents* web_contents) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::map<content::WebContents*, RequestsQueue>::iterator it =
       pending_requests_.find(web_contents);
@@ -888,7 +888,7 @@ void MediaCaptureDevicesDispatcher::OnAccessRequestResponse(
     const content::MediaStreamDevices& devices,
     content::MediaStreamRequestResult result,
     scoped_ptr<content::MediaStreamUI> ui) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::map<content::WebContents*, RequestsQueue>::iterator it =
       pending_requests_.find(web_contents);
@@ -922,7 +922,7 @@ void MediaCaptureDevicesDispatcher::GetDefaultDevicesForProfile(
     bool audio,
     bool video,
     content::MediaStreamDevices* devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(audio || video);
 
   PrefService* prefs = profile->GetPrefs();
@@ -951,7 +951,7 @@ void MediaCaptureDevicesDispatcher::GetDefaultDevicesForProfile(
 const content::MediaStreamDevice*
 MediaCaptureDevicesDispatcher::GetRequestedAudioDevice(
     const std::string& requested_audio_device_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const content::MediaStreamDevices& audio_devices = GetAudioCaptureDevices();
   const content::MediaStreamDevice* const device =
       FindDeviceWithId(audio_devices, requested_audio_device_id);
@@ -960,7 +960,7 @@ MediaCaptureDevicesDispatcher::GetRequestedAudioDevice(
 
 const content::MediaStreamDevice*
 MediaCaptureDevicesDispatcher::GetFirstAvailableAudioDevice() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const content::MediaStreamDevices& audio_devices = GetAudioCaptureDevices();
   if (audio_devices.empty())
     return NULL;
@@ -970,7 +970,7 @@ MediaCaptureDevicesDispatcher::GetFirstAvailableAudioDevice() {
 const content::MediaStreamDevice*
 MediaCaptureDevicesDispatcher::GetRequestedVideoDevice(
     const std::string& requested_video_device_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const content::MediaStreamDevices& video_devices = GetVideoCaptureDevices();
   const content::MediaStreamDevice* const device =
       FindDeviceWithId(video_devices, requested_video_device_id);
@@ -979,7 +979,7 @@ MediaCaptureDevicesDispatcher::GetRequestedVideoDevice(
 
 const content::MediaStreamDevice*
 MediaCaptureDevicesDispatcher::GetFirstAvailableVideoDevice() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const content::MediaStreamDevices& video_devices = GetVideoCaptureDevices();
   if (video_devices.empty())
     return NULL;
@@ -1003,7 +1003,7 @@ MediaCaptureDevicesDispatcher::GetDesktopStreamsRegistry() {
 }
 
 void MediaCaptureDevicesDispatcher::OnAudioCaptureDevicesChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
@@ -1012,7 +1012,7 @@ void MediaCaptureDevicesDispatcher::OnAudioCaptureDevicesChanged() {
 }
 
 void MediaCaptureDevicesDispatcher::OnVideoCaptureDevicesChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
@@ -1027,7 +1027,7 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
     const GURL& security_origin,
     content::MediaStreamType stream_type,
     content::MediaRequestState state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
@@ -1039,7 +1039,7 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
 void MediaCaptureDevicesDispatcher::OnCreatingAudioStream(
     int render_process_id,
     int render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
@@ -1131,13 +1131,13 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
 void MediaCaptureDevicesDispatcher::OnCreatingAudioStreamOnUIThread(
     int render_process_id,
     int render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnCreatingAudioStream(render_process_id, render_frame_id));
 }
 
 bool MediaCaptureDevicesDispatcher::IsDesktopCaptureInProgress() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return desktop_capture_sessions_.size() > 0;
 }
 

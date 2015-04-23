@@ -27,7 +27,7 @@ void FireGenericDoneCallback(
     const WebRtcRtpDumpHandler::GenericDoneCallback& callback,
     bool success,
     const std::string& error_message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
   content::BrowserThread::PostTask(
@@ -51,11 +51,11 @@ WebRtcRtpDumpHandler::WebRtcRtpDumpHandler(const base::FilePath& dump_dir)
       incoming_state_(STATE_NONE),
       outgoing_state_(STATE_NONE),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 WebRtcRtpDumpHandler::~WebRtcRtpDumpHandler() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Reset dump writer first to stop writing.
   if (dump_writer_) {
@@ -82,7 +82,7 @@ WebRtcRtpDumpHandler::~WebRtcRtpDumpHandler() {
 
 bool WebRtcRtpDumpHandler::StartDump(RtpDumpType type,
                                      std::string* error_message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!dump_writer_ && g_ongoing_rtp_dumps >= kMaxOngoingRtpDumpsAllowed) {
     *error_message = "Max RTP dump limit reached.";
@@ -140,7 +140,7 @@ bool WebRtcRtpDumpHandler::StartDump(RtpDumpType type,
 
 void WebRtcRtpDumpHandler::StopDump(RtpDumpType type,
                                     const GenericDoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Returns an error if any type of dump specified by the caller cannot be
   // stopped.
@@ -178,7 +178,7 @@ void WebRtcRtpDumpHandler::StopDump(RtpDumpType type,
 }
 
 bool WebRtcRtpDumpHandler::ReadyToRelease() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return incoming_state_ != STATE_STARTED &&
          incoming_state_ != STATE_STOPPING &&
@@ -186,7 +186,7 @@ bool WebRtcRtpDumpHandler::ReadyToRelease() const {
 }
 
 WebRtcRtpDumpHandler::ReleasedDumps WebRtcRtpDumpHandler::ReleaseDumps() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(ReadyToRelease());
 
   base::FilePath incoming_dump, outgoing_dump;
@@ -211,7 +211,7 @@ void WebRtcRtpDumpHandler::OnRtpPacket(const uint8* packet_header,
                                        size_t header_length,
                                        size_t packet_length,
                                        bool incoming) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if ((incoming && incoming_state_ != STATE_STARTED) ||
       (!incoming && outgoing_state_ != STATE_STARTED)) {
@@ -223,7 +223,7 @@ void WebRtcRtpDumpHandler::OnRtpPacket(const uint8* packet_header,
 }
 
 void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
   // No ongoing dumps, return directly.
@@ -270,7 +270,7 @@ void WebRtcRtpDumpHandler::StopOngoingDumps(const base::Closure& callback) {
 
 void WebRtcRtpDumpHandler::SetDumpWriterForTesting(
     scoped_ptr<WebRtcRtpDumpWriter> writer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   dump_writer_ = writer.Pass();
   ++g_ongoing_rtp_dumps;
@@ -280,7 +280,7 @@ void WebRtcRtpDumpHandler::SetDumpWriterForTesting(
 }
 
 void WebRtcRtpDumpHandler::OnMaxDumpSizeReached() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   RtpDumpType type =
       (incoming_state_ == STATE_STARTED)
@@ -294,7 +294,7 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
                                        RtpDumpType ended_type,
                                        bool incoming_success,
                                        bool outgoing_success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (DumpTypeContainsIncoming(ended_type)) {
     DCHECK_EQ(STATE_STOPPING, incoming_state_);

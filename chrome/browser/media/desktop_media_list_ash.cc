@@ -149,7 +149,7 @@ void DesktopMediaListAsh::EnumerateWindowsForRoot(
     std::vector<DesktopMediaListAsh::SourceDescription>* sources,
     aura::Window* root_window,
     int container_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   aura::Window* container = ash::Shell::GetContainer(root_window, container_id);
   if (!container)
@@ -171,7 +171,7 @@ void DesktopMediaListAsh::EnumerateWindowsForRoot(
 
 void DesktopMediaListAsh::EnumerateSources(
     std::vector<DesktopMediaListAsh::SourceDescription>* sources) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 

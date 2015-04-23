@@ -25,7 +25,7 @@ std::string CreateSalt() {
 
 MediaDeviceIDSalt::MediaDeviceIDSalt(PrefService* pref_service,
                                      bool incognito) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (incognito) {
     incognito_salt_ = CreateSalt();
@@ -44,13 +44,13 @@ MediaDeviceIDSalt::~MediaDeviceIDSalt() {
 }
 
 void MediaDeviceIDSalt::ShutdownOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (incognito_salt_.empty())
     media_device_id_salt_.Destroy();
 }
 
 std::string MediaDeviceIDSalt::GetSalt() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (incognito_salt_.size())
     return incognito_salt_;
   return media_device_id_salt_.GetValue();
