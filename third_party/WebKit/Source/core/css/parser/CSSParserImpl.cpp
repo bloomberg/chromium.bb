@@ -125,15 +125,15 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& str
 void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext& context, StyleSheetContents* styleSheet)
 {
     TRACE_EVENT_BEGIN2(
-        "blink", "CSSParserImpl::parseStyleSheet",
+        "blink,blink_style", "CSSParserImpl::parseStyleSheet",
         "baseUrl", context.baseURL().string().utf8(),
         "mode", context.mode());
 
-    TRACE_EVENT_BEGIN0("blink", "CSSParserImpl::parseStyleSheet.tokenize");
+    TRACE_EVENT_BEGIN0("blink,blink_style", "CSSParserImpl::parseStyleSheet.tokenize");
     CSSTokenizer::Scope scope(string);
-    TRACE_EVENT_END0("blink", "CSSParserImpl::parseStyleSheet.tokenize");
+    TRACE_EVENT_END0("blink,blink_style", "CSSParserImpl::parseStyleSheet.tokenize");
 
-    TRACE_EVENT_BEGIN0("blink", "CSSParserImpl::parseStyleSheet.parse");
+    TRACE_EVENT_BEGIN0("blink,blink_style", "CSSParserImpl::parseStyleSheet.parse");
     CSSParserImpl parser(context, styleSheet);
     bool firstRuleValid = parser.consumeRuleList(scope.tokenRange(), TopLevelRuleList, [&styleSheet](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
         if (rule->isCharsetRule())
@@ -141,10 +141,10 @@ void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext
         styleSheet->parserAppendRule(rule);
     });
     styleSheet->setHasSyntacticallyValidCSSHeader(firstRuleValid);
-    TRACE_EVENT_END0("blink", "CSSParserImpl::parseStyleSheet.parse");
+    TRACE_EVENT_END0("blink,blink_style", "CSSParserImpl::parseStyleSheet.parse");
 
     TRACE_EVENT_END2(
-        "blink", "CSSParserImpl::parseStyleSheet",
+        "blink,blink_style", "CSSParserImpl::parseStyleSheet",
         "tokenCount", scope.tokenCount(),
         "length", string.length());
 }

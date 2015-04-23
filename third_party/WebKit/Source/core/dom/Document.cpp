@@ -1784,7 +1784,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
 
 void Document::updateStyle(StyleRecalcChange change)
 {
-    TRACE_EVENT_BEGIN0("blink", "Document::updateStyle");
+    TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
     unsigned initialResolverAccessCount = styleEngine().resolverAccessCount();
 
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
