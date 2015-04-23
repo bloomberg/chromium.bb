@@ -18,16 +18,6 @@ namespace {
 using namespace blink;
 using namespace WTF;
 
-// A port of hb_icu_script_to_script because harfbuzz on CrOS is built
-// without hb-icu. See http://crbug.com/356929
-static inline hb_script_t ICUScriptToHBScript(UScriptCode script)
-{
-    if (UNLIKELY(script == USCRIPT_INVALID_CODE))
-        return HB_SCRIPT_INVALID;
-
-    return hb_script_from_string(uscript_getShortName(script), -1);
-}
-
 class HarfBuzzShaperTest : public ::testing::Test {
 protected:
     virtual void SetUp()
@@ -61,7 +51,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLatin)
     ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 0u);
     ASSERT_EQ(numGlyphs, 8u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_LATIN));
+    ASSERT_EQ(script, HB_SCRIPT_LATIN);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon)
@@ -74,7 +64,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsLeadingCommon)
     ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 0u);
     ASSERT_EQ(numGlyphs, 8u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_LATIN));
+    ASSERT_EQ(script, HB_SCRIPT_LATIN);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon)
@@ -88,12 +78,12 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommon)
     ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 0u);
     ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_DEVANAGARI));
+    ASSERT_EQ(script, HB_SCRIPT_DEVANAGARI);
 
     ASSERT_EQ(shaper.runInfoForTesting(1, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 3u);
     ASSERT_EQ(numGlyphs, 3u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_DEVANAGARI));
+    ASSERT_EQ(script, HB_SCRIPT_DEVANAGARI);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon)
@@ -107,17 +97,17 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsDevanagariCommonLatinCommon)
     ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 0u);
     ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_DEVANAGARI));
+    ASSERT_EQ(script, HB_SCRIPT_DEVANAGARI);
 
     ASSERT_EQ(shaper.runInfoForTesting(1, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 3u);
     ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_DEVANAGARI));
+    ASSERT_EQ(script, HB_SCRIPT_DEVANAGARI);
 
     ASSERT_EQ(shaper.runInfoForTesting(2, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 4u);
     ASSERT_EQ(numGlyphs, 3u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_LATIN));
+    ASSERT_EQ(script, HB_SCRIPT_LATIN);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin)
@@ -131,22 +121,22 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabicThaiHanLatin)
     ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 0u);
     ASSERT_EQ(numGlyphs, 3u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_ARABIC));
+    ASSERT_EQ(script, HB_SCRIPT_ARABIC);
 
     ASSERT_EQ(shaper.runInfoForTesting(1, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 3u);
     ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_THAI));
+    ASSERT_EQ(script, HB_SCRIPT_THAI);
 
     ASSERT_EQ(shaper.runInfoForTesting(2, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 4u);
     ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_HAN));
+    ASSERT_EQ(script, HB_SCRIPT_HAN);
 
     ASSERT_EQ(shaper.runInfoForTesting(3, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 5u);
     ASSERT_EQ(numGlyphs, 1u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_LATIN));
+    ASSERT_EQ(script, HB_SCRIPT_LATIN);
 }
 
 TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic)
@@ -160,7 +150,7 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsArabic)
     ASSERT_EQ(shaper.runInfoForTesting(0, startIndex, numGlyphs, script), true);
     ASSERT_EQ(startIndex, 0u);
     ASSERT_EQ(numGlyphs, 3u);
-    ASSERT_EQ(script, ICUScriptToHBScript(USCRIPT_ARABIC));
+    ASSERT_EQ(script, HB_SCRIPT_ARABIC);
 }
 
 }
