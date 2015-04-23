@@ -599,8 +599,10 @@ void LayoutMenuList::popupDidHide()
 
 void LayoutMenuList::popupDidCancel()
 {
-    if (m_indexToSelectOnCancel >= 0)
+    if (m_indexToSelectOnCancel >= 0) {
         valueChanged(m_indexToSelectOnCancel);
+        setIndexToSelectOnCancel(-1);
+    }
 }
 
 bool LayoutMenuList::itemIsSeparator(unsigned listIndex) const
