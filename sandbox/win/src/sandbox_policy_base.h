@@ -37,45 +37,41 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   PolicyBase();
 
   // TargetPolicy:
-  virtual void AddRef() override;
-  virtual void Release() override;
-  virtual ResultCode SetTokenLevel(TokenLevel initial,
-                                   TokenLevel lockdown) override;
-  virtual TokenLevel GetInitialTokenLevel() const override;
-  virtual TokenLevel GetLockdownTokenLevel() const override;
-  virtual ResultCode SetJobLevel(JobLevel job_level,
-                                 uint32 ui_exceptions) override;
-  virtual ResultCode SetJobMemoryLimit(size_t memory_limit) override;
-  virtual ResultCode SetAlternateDesktop(bool alternate_winstation) override;
-  virtual base::string16 GetAlternateDesktop() const override;
-  virtual ResultCode CreateAlternateDesktop(bool alternate_winstation) override;
-  virtual void DestroyAlternateDesktop() override;
-  virtual ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) override;
-  virtual IntegrityLevel GetIntegrityLevel() const override;
-  virtual ResultCode SetDelayedIntegrityLevel(
-      IntegrityLevel integrity_level) override;
-  virtual ResultCode SetAppContainer(const wchar_t* sid) override;
-  virtual ResultCode SetCapability(const wchar_t* sid) override;
-  virtual ResultCode SetLowBox(const wchar_t* sid) override;
-  virtual ResultCode SetProcessMitigations(MitigationFlags flags) override;
-  virtual MitigationFlags GetProcessMitigations() override;
-  virtual ResultCode SetDelayedProcessMitigations(
-      MitigationFlags flags) override;
-  virtual MitigationFlags GetDelayedProcessMitigations() const override;
-  virtual void SetStrictInterceptions() override;
-  virtual ResultCode SetStdoutHandle(HANDLE handle) override;
-  virtual ResultCode SetStderrHandle(HANDLE handle) override;
-  virtual ResultCode AddRule(SubSystem subsystem, Semantics semantics,
-                             const wchar_t* pattern) override;
-  virtual ResultCode AddDllToUnload(const wchar_t* dll_name) override;
-  virtual ResultCode AddKernelObjectToClose(
-      const base::char16* handle_type,
-      const base::char16* handle_name) override;
+  void AddRef() override;
+  void Release() override;
+  ResultCode SetTokenLevel(TokenLevel initial, TokenLevel lockdown) override;
+  TokenLevel GetInitialTokenLevel() const override;
+  TokenLevel GetLockdownTokenLevel() const override;
+  ResultCode SetJobLevel(JobLevel job_level, uint32 ui_exceptions) override;
+  ResultCode SetJobMemoryLimit(size_t memory_limit) override;
+  ResultCode SetAlternateDesktop(bool alternate_winstation) override;
+  base::string16 GetAlternateDesktop() const override;
+  ResultCode CreateAlternateDesktop(bool alternate_winstation) override;
+  void DestroyAlternateDesktop() override;
+  ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) override;
+  IntegrityLevel GetIntegrityLevel() const override;
+  ResultCode SetDelayedIntegrityLevel(IntegrityLevel integrity_level) override;
+  ResultCode SetAppContainer(const wchar_t* sid) override;
+  ResultCode SetCapability(const wchar_t* sid) override;
+  ResultCode SetLowBox(const wchar_t* sid) override;
+  ResultCode SetProcessMitigations(MitigationFlags flags) override;
+  MitigationFlags GetProcessMitigations() override;
+  ResultCode SetDelayedProcessMitigations(MitigationFlags flags) override;
+  MitigationFlags GetDelayedProcessMitigations() const override;
+  void SetStrictInterceptions() override;
+  ResultCode SetStdoutHandle(HANDLE handle) override;
+  ResultCode SetStderrHandle(HANDLE handle) override;
+  ResultCode AddRule(SubSystem subsystem,
+                     Semantics semantics,
+                     const wchar_t* pattern) override;
+  ResultCode AddDllToUnload(const wchar_t* dll_name) override;
+  ResultCode AddKernelObjectToClose(const base::char16* handle_type,
+                                    const base::char16* handle_name) override;
 
   // Dispatcher:
-  virtual Dispatcher* OnMessageReady(IPCParams* ipc,
-                                     CallbackGeneric* callback) override;
-  virtual bool SetupService(InterceptionManager* manager, int service) override;
+  Dispatcher* OnMessageReady(IPCParams* ipc,
+                             CallbackGeneric* callback) override;
+  bool SetupService(InterceptionManager* manager, int service) override;
 
   // Creates a Job object with the level specified in a previous call to
   // SetJobLevel().
@@ -104,7 +100,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   HANDLE GetStderrHandle();
 
  private:
-  ~PolicyBase();
+  ~PolicyBase() override;
 
   // Test IPC providers.
   bool Ping(IPCInfo* ipc, void* cookie);

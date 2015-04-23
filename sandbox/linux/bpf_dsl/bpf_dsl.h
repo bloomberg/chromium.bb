@@ -33,8 +33,8 @@
 //      class SillyPolicy : public Policy {
 //       public:
 //        SillyPolicy() {}
-//        virtual ~SillyPolicy() {}
-//        virtual ResultExpr EvaluateSyscall(int sysno) const override {
+//        ~SillyPolicy() override {}
+//        ResultExpr EvaluateSyscall(int sysno) const override {
 //          if (sysno == __NR_fcntl) {
 //            Arg<int> fd(0), cmd(1);
 //            Arg<unsigned long> flags(2);

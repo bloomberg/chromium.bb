@@ -45,17 +45,17 @@ class BrokerServicesBase final : public BrokerServices,
   ~BrokerServicesBase();
 
   // BrokerServices interface.
-  virtual ResultCode Init() override;
-  virtual TargetPolicy* CreatePolicy() override;
-  virtual ResultCode SpawnTarget(const wchar_t* exe_path,
-                                 const wchar_t* command_line,
-                                 TargetPolicy* policy,
-                                 PROCESS_INFORMATION* target) override;
-  virtual ResultCode WaitForAllTargets() override;
-  virtual ResultCode AddTargetPeer(HANDLE peer_process) override;
-  virtual ResultCode InstallAppContainer(const wchar_t* sid,
-                                         const wchar_t* name) override;
-  virtual ResultCode UninstallAppContainer(const wchar_t* sid) override;
+  ResultCode Init() override;
+  TargetPolicy* CreatePolicy() override;
+  ResultCode SpawnTarget(const wchar_t* exe_path,
+                         const wchar_t* command_line,
+                         TargetPolicy* policy,
+                         PROCESS_INFORMATION* target) override;
+  ResultCode WaitForAllTargets() override;
+  ResultCode AddTargetPeer(HANDLE peer_process) override;
+  ResultCode InstallAppContainer(const wchar_t* sid,
+                                 const wchar_t* name) override;
+  ResultCode UninstallAppContainer(const wchar_t* sid) override;
 
   // Checks if the supplied process ID matches one of the broker's active
   // target processes
