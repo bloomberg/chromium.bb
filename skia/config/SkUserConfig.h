@@ -261,6 +261,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_ETC1_SUPPORT
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_RADIAL_GRADIENT_SQRT
+#   define SK_SUPPORT_LEGACY_RADIAL_GRADIENT_SQRT
+#endif
+
 #ifndef    SK_SUPPORT_LEGACY_BOOL_ONGETINFO
 #   define SK_SUPPORT_LEGACY_BOOL_ONGETINFO
 #endif
