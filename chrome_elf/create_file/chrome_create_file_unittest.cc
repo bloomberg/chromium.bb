@@ -76,7 +76,7 @@ class ChromeCreateFileTest : public PlatformTest {
         path);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     original_thread_ = base::PlatformThread::CurrentId();
     InitCache();
     PlatformTest::SetUp();

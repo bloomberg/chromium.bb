@@ -13,7 +13,7 @@ namespace {
 
 class NTDLLCacheTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     InitCache();
   }
 
