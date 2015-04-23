@@ -600,6 +600,20 @@ void GLES2TraceImplementation::GetInteger64v(GLenum pname, GLint64* params) {
   gl_->GetInteger64v(pname, params);
 }
 
+void GLES2TraceImplementation::GetIntegeri_v(GLenum pname,
+                                             GLuint index,
+                                             GLint* data) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetIntegeri_v");
+  gl_->GetIntegeri_v(pname, index, data);
+}
+
+void GLES2TraceImplementation::GetInteger64i_v(GLenum pname,
+                                               GLuint index,
+                                               GLint64* data) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetInteger64i_v");
+  gl_->GetInteger64i_v(pname, index, data);
+}
+
 void GLES2TraceImplementation::GetIntegerv(GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetIntegerv");
   gl_->GetIntegerv(pname, params);

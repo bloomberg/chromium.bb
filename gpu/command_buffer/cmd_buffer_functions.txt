@@ -91,6 +91,8 @@ GL_APICALL void         GL_APIENTRY glGetFloatv (GLenumGLState pname, GLfloat* p
 GL_APICALL GLint        GL_APIENTRY glGetFragDataLocation (GLidProgram program, const char* name);
 GL_APICALL void         GL_APIENTRY glGetFramebufferAttachmentParameteriv (GLenumFrameBufferTarget target, GLenumAttachment attachment, GLenumFrameBufferParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetInteger64v (GLenumGLState pname, GLint64* params);
+GL_APICALL void         GL_APIENTRY glGetIntegeri_v (GLenumIndexedGLState pname, GLuint index, GLint* data);
+GL_APICALL void         GL_APIENTRY glGetInteger64i_v (GLenumIndexedGLState pname, GLuint index, GLint64* data);
 GL_APICALL void         GL_APIENTRY glGetIntegerv (GLenumGLState pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetInternalformativ (GLenumRenderBufferTarget target, GLenumRenderBufferFormat format, GLenumRenderBufferParameter pname, GLsizeiNotNegative bufSize, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetProgramiv (GLidProgram program, GLenumProgramParameter pname, GLint* params);

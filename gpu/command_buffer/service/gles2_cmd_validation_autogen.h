@@ -41,6 +41,7 @@ ValueValidator<GLenum> image_internal_format;
 ValueValidator<GLenum> image_usage;
 ValueValidator<GLenum> index_type;
 ValueValidator<GLenum> indexed_buffer_target;
+ValueValidator<GLenum> indexed_g_l_state;
 ValueValidator<GLenum> map_buffer_access;
 ValueValidator<GLenum> matrix_mode;
 ValueValidator<GLenum> pixel_store;

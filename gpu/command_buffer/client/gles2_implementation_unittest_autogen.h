@@ -854,6 +854,42 @@ TEST_F(GLES2ImplementationTest, GetInteger64v) {
   EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
+TEST_F(GLES2ImplementationTest, GetIntegeri_v) {
+  struct Cmds {
+    cmds::GetIntegeri_v cmd;
+  };
+  typedef cmds::GetIntegeri_v::Result::Type ResultType;
+  ResultType result = 0;
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
+  expected.cmd.Init(123, 2, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
+      .RetiresOnSaturation();
+  gl_->GetIntegeri_v(123, 2, &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<ResultType>(1), result);
+}
+
+TEST_F(GLES2ImplementationTest, GetInteger64i_v) {
+  struct Cmds {
+    cmds::GetInteger64i_v cmd;
+  };
+  typedef cmds::GetInteger64i_v::Result::Type ResultType;
+  ResultType result = 0;
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
+  expected.cmd.Init(123, 2, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
+      .RetiresOnSaturation();
+  gl_->GetInteger64i_v(123, 2, &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<ResultType>(1), result);
+}
+
 TEST_F(GLES2ImplementationTest, GetIntegerv) {
   struct Cmds {
     cmds::GetIntegerv cmd;

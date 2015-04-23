@@ -4942,6 +4942,21 @@ std::string GLES2Util::GetStringIndexedBufferTarget(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringIndexedGLState(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_TRANSFORM_FEEDBACK_BUFFER_BINDING,
+       "GL_TRANSFORM_FEEDBACK_BUFFER_BINDING"},
+      {GL_TRANSFORM_FEEDBACK_BUFFER_SIZE, "GL_TRANSFORM_FEEDBACK_BUFFER_SIZE"},
+      {GL_TRANSFORM_FEEDBACK_BUFFER_START,
+       "GL_TRANSFORM_FEEDBACK_BUFFER_START"},
+      {GL_UNIFORM_BUFFER_BINDING, "GL_UNIFORM_BUFFER_BINDING"},
+      {GL_UNIFORM_BUFFER_SIZE, "GL_UNIFORM_BUFFER_SIZE"},
+      {GL_UNIFORM_BUFFER_START, "GL_UNIFORM_BUFFER_START"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringMapBufferAccess(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_MAP_READ_BIT, "GL_MAP_READ_BIT"},

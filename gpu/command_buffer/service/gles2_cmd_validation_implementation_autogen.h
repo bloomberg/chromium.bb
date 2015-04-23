@@ -377,6 +377,15 @@ static const GLenum valid_indexed_buffer_target_table[] = {
     GL_UNIFORM_BUFFER,
 };
 
+static const GLenum valid_indexed_g_l_state_table[] = {
+    GL_TRANSFORM_FEEDBACK_BUFFER_BINDING,
+    GL_TRANSFORM_FEEDBACK_BUFFER_SIZE,
+    GL_TRANSFORM_FEEDBACK_BUFFER_START,
+    GL_UNIFORM_BUFFER_BINDING,
+    GL_UNIFORM_BUFFER_SIZE,
+    GL_UNIFORM_BUFFER_START,
+};
+
 static const GLenum valid_map_buffer_access_table[] = {
     GL_MAP_READ_BIT,
     GL_MAP_WRITE_BIT,
@@ -929,6 +938,8 @@ Validators::Validators()
       index_type(valid_index_type_table, arraysize(valid_index_type_table)),
       indexed_buffer_target(valid_indexed_buffer_target_table,
                             arraysize(valid_indexed_buffer_target_table)),
+      indexed_g_l_state(valid_indexed_g_l_state_table,
+                        arraysize(valid_indexed_g_l_state_table)),
       map_buffer_access(valid_map_buffer_access_table,
                         arraysize(valid_map_buffer_access_table)),
       matrix_mode(valid_matrix_mode_table, arraysize(valid_matrix_mode_table)),

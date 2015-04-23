@@ -12,6 +12,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+// TODO(gman): GetShaderInfoLog
+// TODO(gman): GetShaderPrecisionFormat
+
 // TODO(gman): GetShaderSource
 // TODO(gman): GetString
 
@@ -1568,23 +1571,5 @@ TEST_P(GLES2DecoderTest2, UseProgramInvalidArgs0_0) {
   cmd.Init(kInvalidClientId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, ValidateProgramValidArgs) {
-  EXPECT_CALL(*gl_, ValidateProgram(kServiceProgramId));
-  SpecializedSetup<cmds::ValidateProgram, 0>(true);
-  cmds::ValidateProgram cmd;
-  cmd.Init(client_program_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, VertexAttrib1fValidArgs) {
-  EXPECT_CALL(*gl_, VertexAttrib1f(1, 2));
-  SpecializedSetup<cmds::VertexAttrib1f, 0>(true);
-  cmds::VertexAttrib1f cmd;
-  cmd.Init(1, 2);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

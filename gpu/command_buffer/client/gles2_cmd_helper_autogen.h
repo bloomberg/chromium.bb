@@ -842,6 +842,26 @@ void GetInteger64v(GLenum pname,
   }
 }
 
+void GetIntegeri_v(GLenum pname,
+                   GLuint index,
+                   uint32_t data_shm_id,
+                   uint32_t data_shm_offset) {
+  gles2::cmds::GetIntegeri_v* c = GetCmdSpace<gles2::cmds::GetIntegeri_v>();
+  if (c) {
+    c->Init(pname, index, data_shm_id, data_shm_offset);
+  }
+}
+
+void GetInteger64i_v(GLenum pname,
+                     GLuint index,
+                     uint32_t data_shm_id,
+                     uint32_t data_shm_offset) {
+  gles2::cmds::GetInteger64i_v* c = GetCmdSpace<gles2::cmds::GetInteger64i_v>();
+  if (c) {
+    c->Init(pname, index, data_shm_id, data_shm_offset);
+  }
+}
+
 void GetIntegerv(GLenum pname,
                  uint32_t params_shm_id,
                  uint32_t params_shm_offset) {

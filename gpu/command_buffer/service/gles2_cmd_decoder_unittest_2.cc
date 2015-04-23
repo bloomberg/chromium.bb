@@ -367,26 +367,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::UseProgram, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::ValidateProgram, 0>(
-    bool /* valid */) {
-  // Needs the same setup as LinkProgram.
-  SpecializedSetup<cmds::LinkProgram, 0>(false);
-
-  EXPECT_CALL(*gl_, LinkProgram(kServiceProgramId))
-      .Times(1)
-      .RetiresOnSaturation();
-
-  cmds::LinkProgram link_cmd;
-  link_cmd.Init(client_program_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(link_cmd));
-
-  EXPECT_CALL(*gl_,
-      GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
-      .WillOnce(SetArgumentPointee<2>(0))
-      .RetiresOnSaturation();
-};
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform1f, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT);

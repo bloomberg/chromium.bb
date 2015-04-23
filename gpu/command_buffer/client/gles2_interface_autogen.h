@@ -226,6 +226,8 @@ virtual void GetFramebufferAttachmentParameteriv(GLenum target,
                                                  GLenum pname,
                                                  GLint* params) = 0;
 virtual void GetInteger64v(GLenum pname, GLint64* params) = 0;
+virtual void GetIntegeri_v(GLenum pname, GLuint index, GLint* data) = 0;
+virtual void GetInteger64i_v(GLenum pname, GLuint index, GLint64* data) = 0;
 virtual void GetIntegerv(GLenum pname, GLint* params) = 0;
 virtual void GetInternalformativ(GLenum target,
                                  GLenum format,

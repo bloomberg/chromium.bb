@@ -36,6 +36,26 @@ class GLES2DecoderTest3 : public GLES2DecoderTestBase {
 
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest3, ::testing::Bool());
 
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<cmds::ValidateProgram, 0>(
+    bool /* valid */) {
+  // Needs the same setup as LinkProgram.
+  SpecializedSetup<cmds::LinkProgram, 0>(false);
+
+  EXPECT_CALL(*gl_, LinkProgram(kServiceProgramId))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  cmds::LinkProgram link_cmd;
+  link_cmd.Init(client_program_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(link_cmd));
+
+  EXPECT_CALL(*gl_,
+      GetProgramiv(kServiceProgramId, GL_INFO_LOG_LENGTH, _))
+      .WillOnce(SetArgumentPointee<2>(0))
+      .RetiresOnSaturation();
+};
+
 TEST_P(GLES2DecoderTest3, TraceBeginCHROMIUM) {
   const uint32 kCategoryBucketId = 123;
   const uint32 kNameBucketId = 234;

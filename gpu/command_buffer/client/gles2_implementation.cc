@@ -957,6 +957,18 @@ bool GLES2Implementation::GetIntegervHelper(GLenum pname, GLint* params) {
   return GetHelper(pname, params);
 }
 
+bool GLES2Implementation::GetIntegeri_vHelper(
+    GLenum pname, GLuint index, GLint* data) {
+  // TODO(zmo): Implement client side caching.
+  return false;
+}
+
+bool GLES2Implementation::GetInteger64i_vHelper(
+    GLenum pname, GLuint index, GLint64* data) {
+  // TODO(zmo): Implement client side caching.
+  return false;
+}
+
 bool GLES2Implementation::GetInternalformativHelper(
     GLenum target, GLenum format, GLenum pname, GLsizei bufSize,
     GLint* params) {

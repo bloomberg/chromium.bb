@@ -1524,6 +1524,73 @@ error::Error GLES2DecoderImpl::HandleGetInteger64v(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetIntegeri_v(uint32_t immediate_data_size,
+                                                   const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetIntegeri_v& c =
+      *static_cast<const gles2::cmds::GetIntegeri_v*>(cmd_data);
+  (void)c;
+  GLenum pname = static_cast<GLenum>(c.pname);
+  GLuint index = static_cast<GLuint>(c.index);
+  typedef cmds::GetIntegeri_v::Result Result;
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
+  Result* result = GetSharedMemoryAs<Result*>(c.data_shm_id, c.data_shm_offset,
+                                              Result::ComputeSize(num_values));
+  GLint* data = result ? result->GetData() : NULL;
+  if (data == NULL) {
+    return error::kOutOfBounds;
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetIntegeri_v");
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  glGetIntegeri_v(pname, index, data);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    LOCAL_SET_GL_ERROR(error, "GetIntegeri_v", "");
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGetInteger64i_v(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetInteger64i_v& c =
+      *static_cast<const gles2::cmds::GetInteger64i_v*>(cmd_data);
+  (void)c;
+  GLenum pname = static_cast<GLenum>(c.pname);
+  GLuint index = static_cast<GLuint>(c.index);
+  typedef cmds::GetInteger64i_v::Result Result;
+  GLsizei num_values = 0;
+  GetNumValuesReturnedForGLGet(pname, &num_values);
+  Result* result = GetSharedMemoryAs<Result*>(c.data_shm_id, c.data_shm_offset,
+                                              Result::ComputeSize(num_values));
+  GLint64* data = result ? result->GetData() : NULL;
+  if (data == NULL) {
+    return error::kOutOfBounds;
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("GetInteger64i_v");
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  glGetInteger64i_v(pname, index, data);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    result->SetNumResults(num_values);
+  } else {
+    LOCAL_SET_GL_ERROR(error, "GetInteger64i_v", "");
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetIntegerv(uint32_t immediate_data_size,
                                                  const void* cmd_data) {
   const gles2::cmds::GetIntegerv& c =

@@ -221,6 +221,8 @@ void GetFramebufferAttachmentParameteriv(GLenum target,
                                          GLenum pname,
                                          GLint* params) override;
 void GetInteger64v(GLenum pname, GLint64* params) override;
+void GetIntegeri_v(GLenum pname, GLuint index, GLint* data) override;
+void GetInteger64i_v(GLenum pname, GLuint index, GLint64* data) override;
 void GetIntegerv(GLenum pname, GLint* params) override;
 void GetInternalformativ(GLenum target,
                          GLenum format,
