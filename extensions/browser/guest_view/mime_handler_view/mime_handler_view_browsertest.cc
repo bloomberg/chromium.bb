@@ -86,3 +86,7 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlObject) {
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlEmbed) {
   RunTest("test_embedded_data_url_embed.html");
 }
+
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlLong) {
+  RunTest("test_embedded_data_url_long.html");
+}

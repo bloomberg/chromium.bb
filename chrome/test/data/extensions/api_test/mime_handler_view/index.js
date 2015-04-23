@@ -38,6 +38,11 @@ function expectSuccessfulRead(response) {
   chrome.test.assertEq('content to read\n', response.data);
 }
 
+function expectSuccessfulReadLong(response) {
+  chrome.test.assertEq(200, response.status);
+  chrome.test.assertTrue(response.data.indexOf('content to read\n') === 0);
+}
+
 function checkStreamDetails(name, embedded) {
   checkStreamDetailsNoFile();
   chrome.test.assertEq(embedded, streamDetails.embedded);
@@ -128,6 +133,13 @@ var tests = [
     fetchUrl(streamDetails.streamUrl)
         .then(expectSuccessfulRead)
         .then(chrome.test.succeed);
+  },
+
+  function testDataUrlLong() {
+    checkStreamDetailsNoFile();
+    fetchUrl(streamDetails.streamUrl)
+        .then(expectSuccessfulReadLong)
+        .then(chrome.test.succeed);
   }
 ];
 
@@ -153,6 +165,10 @@ chrome.mimeHandlerPrivate.getStreamInfo(function(streamInfo) {
   // Run the test for data URLs.
   if (streamInfo.originalUrl.indexOf("data:") === 0) {
     window.removeEventListener('message', queueMessage);
-    chrome.test.runTests([testsByName['testDataUrl']]);
+    // Long data URLs get truncated.
+    if (streamInfo.originalUrl == "data:")
+      chrome.test.runTests([testsByName['testDataUrlLong']]);
+    else
+      chrome.test.runTests([testsByName['testDataUrl']]);
   }
 });
