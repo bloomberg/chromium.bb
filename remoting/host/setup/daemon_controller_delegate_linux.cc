@@ -45,17 +45,9 @@ const int64 kDaemonTimeoutMs = 60000;
 // Timeout for commands that require password prompt - 5 minutes.
 const int64 kSudoTimeoutSeconds = 5 * 60;
 
-std::string GetMd5(const std::string& value) {
-  base::MD5Context ctx;
-  base::MD5Init(&ctx);
-  base::MD5Update(&ctx, value);
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &ctx);
-  return base::StringToLowerASCII(base::HexEncode(digest.a, sizeof(digest.a)));
-}
-
 base::FilePath GetConfigPath() {
-  std::string filename = "host#" + GetMd5(net::GetHostName()) + ".json";
+  std::string filename =
+      "host#" + base::MD5String(net::GetHostName()) + ".json";
   base::FilePath homedir;
   PathService::Get(base::DIR_HOME, &homedir);
   return homedir.Append(".config/chrome-remote-desktop").Append(filename);
