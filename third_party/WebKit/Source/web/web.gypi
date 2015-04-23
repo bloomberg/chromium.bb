@@ -193,7 +193,6 @@
       'WebLeakDetector.cpp',
       'WebLocalFrameImpl.cpp',
       'WebLocalFrameImpl.h',
-      'WebMIDIClientMock.cpp',
       'WebMIDIPermissionRequest.cpp',
       'WebMediaDevicesRequest.cpp',
       'WebMediaPlayerClientImpl.cpp',

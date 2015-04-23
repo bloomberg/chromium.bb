@@ -1326,8 +1326,6 @@
       'webmidi/MIDIAccessor.h',
       'webmidi/MIDIAccessorClient.h',
       'webmidi/MIDIClient.h',
-      'webmidi/MIDIClientMock.cpp',
-      'webmidi/MIDIClientMock.h',
       'webmidi/MIDIConnectionEvent.cpp',
       'webmidi/MIDIConnectionEvent.h',
       'webmidi/MIDIController.cpp',
