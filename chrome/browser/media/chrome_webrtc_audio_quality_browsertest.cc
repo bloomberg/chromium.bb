@@ -602,11 +602,11 @@ void ComputeAndPrintPesqResults(const base::FilePath& reference_file,
 // Sets up a two-way WebRTC call and records its output to |recording|, using
 // getUserMedia.
 //
-// |reference_file| should have at least two seconds of silence in the
+// |reference_file| should have at least five seconds of silence in the
 // beginning: otherwise all the reference audio will not be picked up by the
 // recording. Note that the reference file will start playing as soon as the
 // audio device is up following the getUserMedia call in the left tab. The time
-// it takes to negotiate a call isn't deterministic, but two seconds should be
+// it takes to negotiate a call isn't deterministic, but five seconds should be
 // plenty of time. Similarly, the recording time should be enough to catch the
 // whole reference file. If you then silence-trim the reference file and actual
 // file, you should end up with two time-synchronized files.
@@ -658,7 +658,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
 
   ASSERT_NO_FATAL_FAILURE(SetupAndRecordAudioCall(
       reference_file, recording, kAudioOnlyCallConstraints,
-      base::TimeDelta::FromSeconds(25)));
+      base::TimeDelta::FromSeconds(30)));
 
   ComputeAndPrintPesqResults(reference_file, recording, "_getusermedia");
   DeleteFileUnlessTestFailed(recording, false);
@@ -752,7 +752,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
 
   ASSERT_NO_FATAL_FAILURE(SetupAndRecordAudioCall(
       reference_file, recording, constraints,
-      base::TimeDelta::FromSeconds(25)));
+      base::TimeDelta::FromSeconds(30)));
 
   base::ScopedTempDir split_ref_files;
   ASSERT_TRUE(split_ref_files.CreateUniqueTempDir());
