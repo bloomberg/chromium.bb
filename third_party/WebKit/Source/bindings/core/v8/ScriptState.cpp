@@ -37,7 +37,9 @@ ScriptState::ScriptState(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperW
     , m_context(m_isolate, context)
     , m_world(world)
     , m_perContextData(V8PerContextData::create(context))
+#if ENABLE(ASSERT)
     , m_globalObjectDetached(false)
+#endif
 {
     ASSERT(m_world);
     m_context.setWeak(this, &weakCallback);
@@ -54,7 +56,9 @@ void ScriptState::detachGlobalObject()
 {
     ASSERT(!m_context.isEmpty());
     context()->DetachGlobal();
+#if ENABLE(ASSERT)
     m_globalObjectDetached = true;
+#endif
 }
 
 void ScriptState::disposePerContextData()

@@ -76,10 +76,12 @@ public:
 
     // This can return an empty handle if the v8::Context is gone.
     v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
-    bool contextIsValid() const { return !m_context.isEmpty() && !m_globalObjectDetached; }
+    bool contextIsValid() const { return !m_context.isEmpty() && m_perContextData; }
     void detachGlobalObject();
     void clearContext() { return m_context.clear(); }
+#if ENABLE(ASSERT)
     bool isGlobalObjectDetached() const { return m_globalObjectDetached; }
+#endif
 
     V8PerContextData* perContextData() const { return m_perContextData.get(); }
     void disposePerContextData();
@@ -113,7 +115,9 @@ private:
     // once you no longer need V8PerContextData. Otherwise, the v8::Context will leak.
     OwnPtr<V8PerContextData> m_perContextData;
 
+#if ENABLE(ASSERT)
     bool m_globalObjectDetached;
+#endif
     Vector<Observer*> m_observers;
 };
 

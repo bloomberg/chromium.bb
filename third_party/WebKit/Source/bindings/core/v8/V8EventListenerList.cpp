@@ -39,7 +39,6 @@ namespace blink {
 
 PassRefPtr<EventListener> V8EventListenerList::getEventListener(ScriptState* scriptState, v8::Local<v8::Value> value, bool isAttribute, ListenerLookupType lookup)
 {
-    ASSERT(scriptState->contextIsValid());
     if (lookup == ListenerFindOnly) {
         // Used by EventTarget::removeEventListener, specifically
         // EventTargetV8Internal::removeEventListenerMethod
