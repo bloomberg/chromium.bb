@@ -53,7 +53,7 @@ bool ContentHashReader::Init() {
 
   // Check that this is a valid resource to verify (i.e., it exists).
   base::FilePath content_path = extension_root_.Append(relative_path_);
-  if (!base::PathExists(content_path))
+  if (!base::PathExists(content_path) || base::DirectoryExists(content_path))
     return false;
 
   content_exists_ = true;
