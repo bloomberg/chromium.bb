@@ -24,6 +24,7 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/media/audio_state_provider.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/content_export.h"
@@ -59,7 +60,6 @@ class PluginContentOriginWhitelist;
 class PowerSaveBlocker;
 class RenderViewHost;
 class RenderViewHostDelegateView;
-class RenderViewHostImpl;
 class RenderWidgetHostImpl;
 class SavePackage;
 class ScreenOrientationDispatcherHost;
@@ -232,7 +232,7 @@ class CONTENT_EXPORT WebContentsImpl
   void ForEachFrame(
       const base::Callback<void(RenderFrameHost*)>& on_frame) override;
   void SendToAllFrames(IPC::Message* message) override;
-  RenderViewHost* GetRenderViewHost() const override;
+  RenderViewHostImpl* GetRenderViewHost() const override;
   int GetRoutingID() const override;
   RenderWidgetHostView* GetRenderWidgetHostView() const override;
   RenderWidgetHostView* GetFullscreenRenderWidgetHostView() const override;
@@ -941,8 +941,6 @@ class CONTENT_EXPORT WebContentsImpl
   // TODO(creis): This should take in a FrameTreeNode to know which node's
   // render manager to return.  For now, we just return the root's.
   RenderFrameHostManager* GetRenderManager() const;
-
-  RenderViewHostImpl* GetRenderViewHostImpl();
 
   // Removes browser plugin embedder if there is one.
   void RemoveBrowserPluginEmbedder();
