@@ -206,6 +206,9 @@ int MainDllLoader::Launch(HINSTANCE instance) {
     if (!PathService::Get(chrome::DIR_WATCHER_DATA, &watcher_data_directory))
       return chrome::RESULT_CODE_MISSING_DATA;
 
+    base::string16 channel_name = GoogleUpdateSettings::GetChromeChannel(
+        !InstallUtil::IsPerUserInstall(cmd_line.GetProgram()));
+
     // Intentionally leaked.
     HMODULE watcher_dll = Load(&version, &file);
     if (!watcher_dll)
@@ -217,7 +220,7 @@ int MainDllLoader::Launch(HINSTANCE instance) {
     return watcher_main(chrome::kBrowserExitCodesRegistryPath,
                         parent_process.Take(), on_initialized_event.Take(),
                         watcher_data_directory.value().c_str(),
-                        message_window_name.c_str());
+                        message_window_name.c_str(), channel_name.c_str());
   }
 
   // Initialize the sandbox services.

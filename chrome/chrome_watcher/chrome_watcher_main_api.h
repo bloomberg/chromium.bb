@@ -26,12 +26,15 @@ extern const base::FilePath::CharType kPermanentlyFailedReportsSubdir[];
 // reports. |on_initialized_event| will be signaled once the watcher process is
 // fully initialized. Takes ownership of |parent_process| and
 // |on_initialized_event|.
+// |channel_name| is the current Chrome distribution channel (one of
+// installer::kChromeChannelXXX).
 typedef int (*ChromeWatcherMainFunction)(
     const base::char16* registry_path,
     HANDLE parent_process,
     HANDLE on_initialized_event,
     const base::char16* browser_data_directory,
-    const base::char16* message_window_name);
+    const base::char16* message_window_name,
+    const base::char16* channel_name);
 
 // Returns an RPC endpoint name for the identified client process. This method
 // may be invoked in both the client and the watcher process with the PID of the
