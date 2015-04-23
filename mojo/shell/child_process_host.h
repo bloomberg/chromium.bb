@@ -30,7 +30,8 @@ class Context;
 // remained alive until the |on_app_complete| callback is called.
 class ChildProcessHost {
  public:
-  explicit ChildProcessHost(Context* context);
+  // |name| is just for debugging ease.
+  ChildProcessHost(Context* context, const std::string& name);
   virtual ~ChildProcessHost();
 
   // |Start()|s the child process; calls |DidStart()| (on the thread on which
@@ -65,6 +66,7 @@ class ChildProcessHost {
   void DidCreateChannel(embedder::ChannelInfo* channel_info);
 
   Context* const context_;
+  const std::string name_;
   base::Process child_process_;
   embedder::PlatformChannelPair platform_channel_pair_;
   ChildControllerPtr controller_;

@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -237,9 +236,6 @@ bool Context::Init() {
   TRACE_EVENT0("mojo_shell", "Context::Init");
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kWaitForDebugger))
-    base::debug::WaitForDebugger(60, true);
 
   EnsureEmbedderIsInitialized();
   task_runners_.reset(

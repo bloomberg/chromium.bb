@@ -8,6 +8,10 @@
 
 namespace switches {
 
+// Used just for debugging to make it easier to attach debuggers. The actual app
+// path that is used is sent over IPC.
+const char kApp[] = "app";
+
 // Used internally by the main process to indicate that a new process should be
 // a child process. Not for user use.
 const char kChildProcess[] = "child-process";

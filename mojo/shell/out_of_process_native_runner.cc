@@ -38,7 +38,8 @@ void OutOfProcessNativeRunner::Start(
   DCHECK(app_completed_callback_.is_null());
   app_completed_callback_ = app_completed_callback;
 
-  child_process_host_.reset(new ChildProcessHost(context_));
+  std::string name = app_path.BaseName().RemoveExtension().MaybeAsASCII();
+  child_process_host_.reset(new ChildProcessHost(context_, name));
   child_process_host_->Start();
 
   // TODO(vtl): |app_path.AsUTF8Unsafe()| is unsafe.

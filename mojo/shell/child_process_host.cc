@@ -13,6 +13,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -24,9 +26,10 @@
 namespace mojo {
 namespace shell {
 
-ChildProcessHost::ChildProcessHost(Context* context)
-    : context_(context), channel_info_(nullptr) {
+ChildProcessHost::ChildProcessHost(Context* context, const std::string& name)
+    : context_(context), name_(name), channel_info_(nullptr) {
   platform_channel_ = platform_channel_pair_.PassServerHandle();
+  DCHECK(!name.empty());
   CHECK(platform_channel_.is_valid());
 }
 
@@ -102,7 +105,16 @@ bool ChildProcessHost::DoLaunch() {
   base::CommandLine child_command_line(parent_command_line->GetProgram());
   child_command_line.CopySwitchesFrom(*parent_command_line, kForwardSwitches,
                                       arraysize(kForwardSwitches));
+  child_command_line.AppendSwitchASCII(switches::kApp, name_);
   child_command_line.AppendSwitch(switches::kChildProcess);
+  if (parent_command_line->HasSwitch(switches::kWaitForDebugger)) {
+    std::vector<std::string> apps_to_debug;
+    base::SplitString(
+        parent_command_line->GetSwitchValueASCII(switches::kWaitForDebugger),
+        ',', &apps_to_debug);
+    if (apps_to_debug.empty() || ContainsValue(apps_to_debug, name_))
+      child_command_line.AppendSwitch(switches::kWaitForDebugger);
+  }
 
   embedder::HandlePassingInformation handle_passing_info;
   platform_channel_pair_.PrepareToPassClientHandleToChildProcess(

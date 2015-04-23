@@ -4,9 +4,11 @@
 
 #include "mojo/shell/child_process.h"
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/debugger.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -279,6 +281,19 @@ int ChildProcessMain() {
   DVLOG(2) << "ChildProcessMain()";
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kWaitForDebugger)) {
+    std::string app = command_line.GetSwitchValueASCII(switches::kApp);
+#if defined(OS_WIN)
+    MessageBox(NULL, command_line.GetSwitchValueNative(switches::kApp).c_str(),
+               command_line.GetSwitchValueNative(switches::kApp).c_str(),
+               MB_OK | MB_SETFOREGROUND);
+#else
+    LOG(ERROR) << command_line.GetSwitchValueASCII(switches::kApp)
+               << " waiting for GDB. pid: " << getpid();
+    base::debug::WaitForDebugger(60, true);
+#endif
+  }
+
   embedder::ScopedPlatformHandle platform_channel =
       embedder::PlatformChannelPair::PassClientHandleFromParentProcess(
           command_line);

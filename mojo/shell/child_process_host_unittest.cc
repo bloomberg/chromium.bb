@@ -20,7 +20,8 @@ namespace {
 // Subclass just so we can observe |DidStart()|.
 class TestChildProcessHost : public ChildProcessHost {
  public:
-  explicit TestChildProcessHost(Context* context) : ChildProcessHost(context) {}
+  explicit TestChildProcessHost(Context* context)
+      : ChildProcessHost(context, "test") {}
   ~TestChildProcessHost() override {}
 
   void DidStart(bool success) override {
