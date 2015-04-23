@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -28,7 +29,6 @@ class ScopedCurrentChannel;
 
 namespace chromeos {
 
-class HTTPSForwarder;
 class NetworkPortalDetectorTestImpl;
 
 // Base class for OOBE, login, SAML and Kiosk tests.
@@ -104,7 +104,7 @@ class OobeBaseTest : public ExtensionApiTest {
 
   scoped_ptr<content::WindowedNotificationObserver> login_screen_load_observer_;
   scoped_ptr<extensions::ScopedCurrentChannel> scoped_channel_;
-  scoped_ptr<HTTPSForwarder> gaia_https_forwarder_;
+  HTTPSForwarder gaia_https_forwarder_;
   std::string gaia_frame_parent_;
   bool use_webview_;
   bool initialize_fake_merge_session_;

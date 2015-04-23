@@ -33,6 +33,10 @@
 
 namespace chromeos {
 
+namespace {
+const char kGAIAHost[] = "accounts.google.com";
+}
+
 // static
 const char OobeBaseTest::kFakeUserEmail[] = "fake-email@gmail.com";
 const char OobeBaseTest::kFakeUserPassword[] = "fake-password";
@@ -146,7 +150,7 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
     command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 
-  GURL gaia_url = gaia_https_forwarder_->GetURL(std::string());
+  GURL gaia_url = gaia_https_forwarder_.GetURLForSSLHost(std::string());
   command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
@@ -157,9 +161,8 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void OobeBaseTest::InitHttpsForwarders() {
-  gaia_https_forwarder_.reset(
-      new HTTPSForwarder(embedded_test_server()->base_url()));
-  ASSERT_TRUE(gaia_https_forwarder_->Start());
+  ASSERT_TRUE(gaia_https_forwarder_.Initialize(
+      kGAIAHost, embedded_test_server()->base_url()));
 }
 
 void OobeBaseTest::RegisterAdditionalRequestHandlers() {

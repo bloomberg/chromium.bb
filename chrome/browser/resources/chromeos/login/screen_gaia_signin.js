@@ -162,6 +162,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           this.missingGaiaInfo_.bind(this);
       this.gaiaAuthHost_.samlApiUsedCallback =
           this.samlApiUsed_.bind(this);
+      this.gaiaAuthHost_.addEventListener('authDomainChange',
+          this.onAuthDomainChange_.bind(this));
       this.gaiaAuthHost_.addEventListener('authFlowChange',
           this.onAuthFlowChange_.bind(this));
       this.gaiaAuthHost_.addEventListener('authCompleted',
@@ -529,16 +531,20 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
-     * Invoked when the authFlow property is changed no the gaia host.
+     * Invoked when the authDomain property is changed on the GAIA host.
      */
-    onAuthFlowChange_: function() {
-      var isSAML = this.isSAML();
+    onAuthDomainChange_: function() {
+      $('saml-notice-message').textContent = loadTimeData.getStringF(
+          'samlNotice',
+          this.gaiaAuthHost_.authDomain);
+    },
 
-      if (isSAML) {
-        $('saml-notice-message').textContent = loadTimeData.getStringF(
-            'samlNotice',
-            this.gaiaAuthHost_.authDomain);
-      }
+    /**
+     * Invoked when the authFlow property is changed on the GAIA host.
+     * @param {Event} e Property change event.
+     */
+    onAuthFlowChange_: function(e) {
+      var isSAML = this.isSAML();
 
       this.classList.toggle('no-right-panel', isSAML);
       this.classList.toggle('full-width', isSAML);

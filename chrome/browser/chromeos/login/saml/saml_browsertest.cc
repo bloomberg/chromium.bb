@@ -112,6 +112,9 @@ const char kHTTPSAMLUserEmail[] = "carol@example.com";
 const char kNonSAMLUserEmail[] = "dan@example.com";
 const char kDifferentDomainSAMLUserEmail[] = "eve@example.test";
 
+const char kIdPHost[] = "login.example.com";
+const char kAdditionalIdPHost[] = "login2.example.com";
+
 const char kSAMLIdPCookieName[] = "saml";
 const char kSAMLIdPCookieValue1[] = "value-1";
 const char kSAMLIdPCookieValue2[] = "value-2";
@@ -272,8 +275,8 @@ class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kOobeSkipPostLogin);
 
-    const GURL gaia_url = gaia_https_forwarder_->GetURL("");
-    const GURL saml_idp_url = saml_https_forwarder_->GetURL("SAML");
+    const GURL gaia_url = gaia_https_forwarder_.GetURLForSSLHost("");
+    const GURL saml_idp_url = saml_https_forwarder_.GetURLForSSLHost("SAML");
     fake_saml_idp_.SetUp(saml_idp_url.path(), gaia_url);
     fake_gaia_->RegisterSamlUser(kFirstSAMLUserEmail, saml_idp_url);
     fake_gaia_->RegisterSamlUser(kSecondSAMLUserEmail, saml_idp_url);
@@ -344,14 +347,12 @@ class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
 
  protected:
   void InitHttpsForwarders() override {
-    saml_https_forwarder_.reset(
-        new HTTPSForwarder(embedded_test_server()->base_url()));
-    ASSERT_TRUE(saml_https_forwarder_->Start());
-
+    ASSERT_TRUE(saml_https_forwarder_.Initialize(
+        kIdPHost, embedded_test_server()->base_url()));
     OobeBaseTest::InitHttpsForwarders();
   }
 
-  scoped_ptr<HTTPSForwarder> saml_https_forwarder_;
+  HTTPSForwarder saml_https_forwarder_;
 
  private:
   FakeSamlIdp fake_saml_idp_;
@@ -370,6 +371,10 @@ IN_PROC_BROWSER_TEST_P(SamlTest, SamlUI) {
 
   // Saml flow UI expectations.
   JsExpect("$('gaia-signin').classList.contains('full-width')");
+  JsExpect("!$('saml-notice-container').hidden");
+  std::string js = "$('saml-notice-message').textContent.indexOf('$Host') > -1";
+  ReplaceSubstringsAfterOffset(&js, 0, "$Host", kIdPHost);
+  JsExpect(js);
   if (!use_webview()) {
     JsExpect("!$('cancel-add-user-button').hidden");
   }
@@ -587,6 +592,54 @@ IN_PROC_BROWSER_TEST_P(SamlTest, PasswordConfirmFlow) {
       WaitForAndGetFatalErrorMessage());
 }
 
+// Verifies that when the login flow redirects from one host to another, the
+// notice shown to the user is updated. This guards against regressions of
+// http://crbug.com/447818.
+IN_PROC_BROWSER_TEST_P(SamlTest, NoticeUpdatedOnRedirect) {
+  // Start another https server at |kAdditionalIdPHost|.
+  HTTPSForwarder saml_https_forwarder_2;
+  ASSERT_TRUE(saml_https_forwarder_2.Initialize(
+      kAdditionalIdPHost, embedded_test_server()->base_url()));
+
+  // Make the login flow redirect to |kAdditionalIdPHost|.
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_login_instant_meta_refresh.html");
+  fake_saml_idp()->SetRefreshURL(
+      saml_https_forwarder_2.GetURLForSSLHost("simple.html"));
+  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
+
+  // Wait until the notice shown to the user is updated to contain
+  // |kAdditionalIdPHost|.
+  std::string js =
+      "var sendIfHostFound = function() {"
+      "  var found ="
+      "      $('saml-notice-message').textContent.indexOf('$Host') > -1;"
+      "  if (found)"
+      "    window.domAutomationController.send(true);"
+      "  return found;"
+      "};"
+      "var processEventsAndSendIfHostFound = function() {"
+      "  window.setTimeout(function() {"
+      "    if (sendIfHostFound()) {"
+      "      $('gaia-signin').gaiaAuthHost_.removeEventListener("
+      "          'authDomainChange',"
+      "          processEventsAndSendIfHostFound);"
+      "    }"
+      "  }, 0);"
+      "};"
+      "if (!sendIfHostFound()) {"
+      "  $('gaia-signin').gaiaAuthHost_.addEventListener("
+      "      'authDomainChange',"
+      "      processEventsAndSendIfHostFound);"
+      "}";
+  ReplaceSubstringsAfterOffset(&js, 0, "$Host", kAdditionalIdPHost);
+  bool dummy;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetLoginUI()->GetWebContents(), js, &dummy));
+
+  // Verify that the notice is visible.
+  JsExpect("!$('saml-notice-container').hidden");
+}
+
 // Verifies that when GAIA attempts to redirect to a SAML IdP served over http,
 // not https, the redirect is blocked and an error message is shown.
 IN_PROC_BROWSER_TEST_P(SamlTest, HTTPRedirectDisallowed) {
@@ -728,8 +781,8 @@ void SAMLEnrollmentTest::DidFinishLoad(
     return;
 
   const GURL origin = validated_url.GetOrigin();
-  if (origin != gaia_https_forwarder_->GetURL("") &&
-      origin != saml_https_forwarder_->GetURL("")) {
+  if (origin != gaia_https_forwarder_.GetURLForSSLHost(std::string()) &&
+      origin != saml_https_forwarder_.GetURLForSSLHost(std::string())) {
     return;
   }
 

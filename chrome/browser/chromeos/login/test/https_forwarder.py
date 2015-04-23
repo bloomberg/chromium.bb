@@ -7,7 +7,7 @@ server that supports http only to be accessed over https.
 """
 
 import BaseHTTPServer
-import os
+import minica
 import SocketServer
 import sys
 import urllib2
@@ -144,14 +144,15 @@ class ServerRunner(testserver_base.TestServerRunner):
     Returns:
       The started server.
     """
+    # The server binds to |host:port| but the certificate is issued to
+    # |ssl_host| instead.
     port = self.options.port
     host = self.options.host
+    ssl_host = self.options.ssl_host
 
-    if not os.path.isfile(self.options.cert_and_key_file):
-      raise testserver_base.OptionError(
-          'Specified server cert file not found: ' +
-          self.options.cert_and_key_file)
-    pem_cert_and_key = open(self.options.cert_and_key_file).read()
+    (pem_cert_and_key, ocsp_der) = minica.GenerateCertKeyAndOCSP(
+        subject = self.options.ssl_host,
+        ocsp_url = None)
 
     server = MultiThreadedHTTPSServer((host, port),
                                       RequestForwarder,
@@ -174,9 +175,10 @@ class ServerRunner(testserver_base.TestServerRunner):
     self.option_parser.add_option('--https', action='store_true',
                                   help='Ignored (provided for compatibility '
                                   'only).')
-    self.option_parser.add_option('--cert-and-key-file', help='The path to the '
-                                  'file containing the certificate and private '
-                                  'key for the server in PEM format.')
+    self.option_parser.add_option('--ocsp', help='Ignored (provided for'
+                                  'compatibility only).')
+    self.option_parser.add_option('--ssl-host', help='The host name that the '
+                                  'certificate should be issued to.')
     self.option_parser.add_option('--forward-target', help='The URL prefix to '
                                   'which requests will be forwarded.')
 

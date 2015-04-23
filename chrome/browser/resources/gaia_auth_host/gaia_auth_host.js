@@ -125,12 +125,6 @@ cr.define('cr.login', function() {
     reloadUrl_: null,
 
     /**
-     * The domain name of the current auth page.
-     * @type {string}
-     */
-    authDomain: '',
-
-    /**
      * Invoked when authentication is completed successfully with credential
      * data. A credential data object looks like this:
      * <pre>
@@ -438,6 +432,12 @@ cr.define('cr.login', function() {
       console.error('Unknown message method=' + msg.method);
     }
   };
+
+  /**
+   * The domain name of the current auth page.
+   * @type {string}
+   */
+  cr.defineProperty(GaiaAuthHost, 'authDomain');
 
   /**
    * The current auth flow of the hosted gaia_auth extension.

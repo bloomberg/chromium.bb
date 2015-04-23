@@ -105,6 +105,7 @@ cr.define('cr.login', function() {
     this.chooseWhatToSync_ = false;
     this.skipForNow_ = false;
     this.authFlow = AuthFlow.DEFAULT;
+    this.authDomain = '';
     this.loaded_ = false;
     this.idpOrigin_ = null;
     this.continueUrl_ = null;
@@ -130,12 +131,6 @@ cr.define('cr.login', function() {
     this.samlHandler_.addEventListener(
         'authPageLoaded',
         this.onAuthPageLoaded_.bind(this));
-    Object.defineProperty(this, 'authDomain', {
-      get: (function() {
-        return this.samlHandler_.authDomain;
-      }).bind(this),
-      enumerable: true
-    });
 
     this.webview_.addEventListener('droplink', this.onDropLink_.bind(this));
     this.webview_.addEventListener(
@@ -571,12 +566,8 @@ cr.define('cr.login', function() {
     if (!e.detail.isSAMLPage)
       return;
 
-    if (this.authFlow != AuthFlow.SAML) {
-      this.authFlow = AuthFlow.SAML;
-    } else {
-      // Force an authFlowChanged event to update UI with updated auth doamin.
-      cr.dispatchPropertyChange(this, 'authFlow');
-    }
+    this.authDomain = this.samlHandler_.authDomain;
+    this.authFlow = AuthFlow.SAML;
   };
 
   /**
@@ -669,6 +660,12 @@ cr.define('cr.login', function() {
    * @type {AuthFlow}
    */
   cr.defineProperty(Authenticator, 'authFlow');
+
+  /**
+   * The domain name of the current auth page.
+   * @type {string}
+   */
+  cr.defineProperty(Authenticator, 'authDomain');
 
   Authenticator.AuthFlow = AuthFlow;
   Authenticator.AuthMode = AuthMode;
