@@ -326,9 +326,16 @@ void Compositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
 void Compositor::BeginMainFrameNotExpectedSoon() {
 }
 
+static void SendDamagedRectsRecursive(ui::Layer* layer) {
+  layer->SendDamagedRects();
+  for (auto* child : layer->children())
+    SendDamagedRectsRecursive(child);
+}
+
 void Compositor::Layout() {
-  if (root_layer_)
-    root_layer_->SendDamagedRects();
+  if (!root_layer())
+    return;
+  SendDamagedRectsRecursive(root_layer());
 }
 
 void Compositor::RequestNewOutputSurface() {
