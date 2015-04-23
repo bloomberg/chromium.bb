@@ -45,6 +45,7 @@
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using testing::_;
+using testing::SaveArg;
 
 namespace autofill {
 
@@ -2417,11 +2418,8 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, NULL));
   autofill_manager_->set_autofill_enabled(false);
-  scoped_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager;
-  autocomplete_history_manager.reset(
+  autofill_manager_->autocomplete_history_manager_.reset(
       new MockAutocompleteHistoryManager(autofill_driver_.get(), &client));
-  autofill_manager_->autocomplete_history_manager_ =
-      autocomplete_history_manager.Pass();
 
   // Set up our form data.
   FormData form;
@@ -2471,11 +2469,8 @@ TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   autofill_manager_->set_autofill_enabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
-  scoped_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager;
-  autocomplete_history_manager.reset(
+  autofill_manager_->autocomplete_history_manager_.reset(
       new MockAutocompleteHistoryManager(autofill_driver_.get(), &client));
-  autofill_manager_->autocomplete_history_manager_ =
-      autocomplete_history_manager.Pass();
   MockAutocompleteHistoryManager* m = static_cast<
       MockAutocompleteHistoryManager*>(
           autofill_manager_->autocomplete_history_manager_.get());
@@ -3128,6 +3123,55 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsForNumberSpitAcrossFields) {
           "Visa\xC2\xA0\xE2\x8B\xAF"
           "3456",
           "04/12", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
+}
+
+// Test that inputs detected to be CVC inputs are forced to
+// !should_autocomplete for AutocompleteHistoryManager::OnFormSubmitted.
+TEST_F(AutofillManagerTest, DontSaveCvcInAutocompleteHistory) {
+  autofill_manager_->autocomplete_history_manager_.reset(
+      new MockAutocompleteHistoryManager(autofill_driver_.get(),
+                                         &autofill_client_));
+  FormData form_seen_by_ahm;
+  MockAutocompleteHistoryManager* mock_ahm =
+      static_cast<MockAutocompleteHistoryManager*>(
+          autofill_manager_->autocomplete_history_manager_.get());
+  EXPECT_CALL(*mock_ahm, OnFormSubmitted(_))
+      .WillOnce(SaveArg<0>(&form_seen_by_ahm));
+
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.user_submitted = true;
+
+  struct {
+    const char* label;
+    const char* name;
+    const char* value;
+    ServerFieldType expected_field_type;
+  } fields[] = {
+      {"Card number", "1", "4234-5678-9012-3456", CREDIT_CARD_NUMBER},
+      {"Card verification code", "2", "123", CREDIT_CARD_VERIFICATION_CODE},
+      {"expiration date", "3", "04/2020", CREDIT_CARD_EXP_4_DIGIT_YEAR},
+  };
+
+  for (size_t i = 0; i < arraysize(fields); ++i) {
+    FormFieldData field;
+    test::CreateTestFormField(fields[i].label, fields[i].name, fields[i].value,
+                              "text", &field);
+    form.fields.push_back(field);
+  }
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  FormSubmitted(form);
+
+  EXPECT_EQ(form.fields.size(), form_seen_by_ahm.fields.size());
+  ASSERT_EQ(arraysize(fields), form_seen_by_ahm.fields.size());
+  for (size_t i = 0; i < arraysize(fields); ++i) {
+    EXPECT_EQ(form_seen_by_ahm.fields[i].should_autocomplete,
+              fields[i].expected_field_type != CREDIT_CARD_VERIFICATION_CODE);
+  }
 }
 
 TEST_F(AutofillManagerTest, DontOfferToSaveWalletCard) {

@@ -124,6 +124,8 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
   //  - autocomplete is not disabled
   //  - value is not a credit card number
   //  - value is not a SSN
+  //  - field was not identified as a CVC field (this is handled in
+  //    AutofillManager)
   std::vector<FormFieldData> values;
   for (std::vector<FormFieldData>::const_iterator iter =
            form.fields.begin();
