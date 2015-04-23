@@ -387,7 +387,7 @@ void LayoutInline::splitInlines(LayoutBlock* fromBlock, LayoutBlock* toBlock,
     if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document())) {
         const Element* fullScreenElement = fullscreen->webkitCurrentFullScreenElement();
         if (fullScreenElement && beforeChild && beforeChild->node() == fullScreenElement)
-            beforeChild = fullscreen->fullScreenRenderer();
+            beforeChild = fullscreen->fullScreenLayoutObject();
     }
 
     // FIXME: Because splitting is O(n^2) as tags nest pathologically, we cap the depth at which we're willing to clone.

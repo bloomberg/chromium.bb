@@ -43,8 +43,8 @@ public:
     void createPlaceholder(PassRefPtr<ComputedStyle>, const LayoutRect& frameRect);
 
 
-    static LayoutObject* wrapRenderer(LayoutObject*, LayoutObject*, Document*);
-    void unwrapRenderer();
+    static LayoutObject* wrapLayoutObject(LayoutObject*, LayoutObject*, Document*);
+    void unwrapLayoutObject();
 
     void updateStyle();
 

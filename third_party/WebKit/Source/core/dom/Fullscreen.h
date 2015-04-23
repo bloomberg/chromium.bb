@@ -80,9 +80,9 @@ public:
     void didEnterFullScreenForElement(Element*);
     void didExitFullScreenForElement(Element*);
 
-    void setFullScreenRenderer(LayoutFullScreen*);
-    LayoutFullScreen* fullScreenRenderer() const { return m_fullScreenRenderer; }
-    void fullScreenRendererDestroyed();
+    void setFullScreenLayoutObject(LayoutFullScreen*);
+    LayoutFullScreen* fullScreenLayoutObject() const { return m_fullScreenLayoutObject; }
+    void fullScreenLayoutObjectDestroyed();
 
     void elementRemoved(Element&);
 
@@ -113,7 +113,7 @@ private:
 
     RefPtrWillBeMember<Element> m_fullScreenElement;
     WillBeHeapVector<std::pair<RefPtrWillBeMember<Element>, RequestType>> m_fullScreenElementStack;
-    LayoutFullScreen* m_fullScreenRenderer;
+    LayoutFullScreen* m_fullScreenLayoutObject;
     Timer<Fullscreen> m_eventQueueTimer;
     WillBeHeapDeque<RefPtrWillBeMember<Event>> m_eventQueue;
     LayoutRect m_savedPlaceholderFrameRect;

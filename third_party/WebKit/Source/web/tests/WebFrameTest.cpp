@@ -6162,17 +6162,17 @@ TEST_F(WebFrameTest, FullscreenLayerSize)
     ASSERT_TRUE(Fullscreen::isFullScreen(*document));
 
     // Verify that the element is sized to the viewport.
-    LayoutFullScreen* fullscreenRenderer = Fullscreen::from(*document).fullScreenRenderer();
-    EXPECT_EQ(viewportWidth, fullscreenRenderer->logicalWidth().toInt());
-    EXPECT_EQ(viewportHeight, fullscreenRenderer->logicalHeight().toInt());
+    LayoutFullScreen* fullscreenLayoutObject = Fullscreen::from(*document).fullScreenLayoutObject();
+    EXPECT_EQ(viewportWidth, fullscreenLayoutObject->logicalWidth().toInt());
+    EXPECT_EQ(viewportHeight, fullscreenLayoutObject->logicalHeight().toInt());
 
     // Verify it's updated after a device rotation.
     client.m_screenInfo.rect.width = viewportHeight;
     client.m_screenInfo.rect.height = viewportWidth;
     webViewImpl->resize(WebSize(viewportHeight, viewportWidth));
     webViewImpl->layout();
-    EXPECT_EQ(viewportHeight, fullscreenRenderer->logicalWidth().toInt());
-    EXPECT_EQ(viewportWidth, fullscreenRenderer->logicalHeight().toInt());
+    EXPECT_EQ(viewportHeight, fullscreenLayoutObject->logicalWidth().toInt());
+    EXPECT_EQ(viewportWidth, fullscreenLayoutObject->logicalHeight().toInt());
 }
 
 TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
@@ -6261,17 +6261,17 @@ TEST_F(WebFrameTest, FullscreenSubframe)
     webViewImpl->layout();
 
     // Verify that the element is sized to the viewport.
-    LayoutFullScreen* fullscreenRenderer = Fullscreen::from(*document).fullScreenRenderer();
-    EXPECT_EQ(viewportWidth, fullscreenRenderer->logicalWidth().toInt());
-    EXPECT_EQ(viewportHeight, fullscreenRenderer->logicalHeight().toInt());
+    LayoutFullScreen* fullscreenLayoutObject = Fullscreen::from(*document).fullScreenLayoutObject();
+    EXPECT_EQ(viewportWidth, fullscreenLayoutObject->logicalWidth().toInt());
+    EXPECT_EQ(viewportHeight, fullscreenLayoutObject->logicalHeight().toInt());
 
     // Verify it's updated after a device rotation.
     client.m_screenInfo.rect.width = viewportHeight;
     client.m_screenInfo.rect.height = viewportWidth;
     webViewImpl->resize(WebSize(viewportHeight, viewportWidth));
     webViewImpl->layout();
-    EXPECT_EQ(viewportHeight, fullscreenRenderer->logicalWidth().toInt());
-    EXPECT_EQ(viewportWidth, fullscreenRenderer->logicalHeight().toInt());
+    EXPECT_EQ(viewportHeight, fullscreenLayoutObject->logicalWidth().toInt());
+    EXPECT_EQ(viewportWidth, fullscreenLayoutObject->logicalHeight().toInt());
 }
 
 TEST_F(WebFrameTest, FullscreenMediaStreamVideo)

@@ -65,9 +65,9 @@ LayoutFullScreen::LayoutFullScreen()
 
 LayoutFullScreen* LayoutFullScreen::createAnonymous(Document* document)
 {
-    LayoutFullScreen* renderer = new LayoutFullScreen();
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
+    LayoutFullScreen* layoutObject = new LayoutFullScreen();
+    layoutObject->setDocumentForAnonymous(document);
+    return layoutObject;
 }
 
 void LayoutFullScreen::willBeDestroyed()
@@ -82,8 +82,8 @@ void LayoutFullScreen::willBeDestroyed()
     // LayoutObjects are unretained, so notify the document (which holds a pointer to a LayoutFullScreen)
     // if its LayoutFullScreen is destroyed.
     Fullscreen& fullscreen = Fullscreen::from(document());
-    if (fullscreen.fullScreenRenderer() == this)
-        fullscreen.fullScreenRendererDestroyed();
+    if (fullscreen.fullScreenLayoutObject() == this)
+        fullscreen.fullScreenLayoutObjectDestroyed();
 
     LayoutFlexibleBox::willBeDestroyed();
 }
@@ -115,16 +115,16 @@ void LayoutFullScreen::updateStyle()
     setStyle(fullscreenStyle);
 }
 
-LayoutObject* LayoutFullScreen::wrapRenderer(LayoutObject* object, LayoutObject* parent, Document* document)
+LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object, LayoutObject* parent, Document* document)
 {
-    // FIXME: We should not modify the structure of the render tree during
+    // FIXME: We should not modify the structure of the layout tree during
     // layout. crbug.com/370459
     DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
 
-    LayoutFullScreen* fullscreenRenderer = LayoutFullScreen::createAnonymous(document);
-    fullscreenRenderer->updateStyle();
-    if (parent && !parent->isChildAllowed(fullscreenRenderer, fullscreenRenderer->styleRef())) {
-        fullscreenRenderer->destroy();
+    LayoutFullScreen* fullscreenLayoutObject = LayoutFullScreen::createAnonymous(document);
+    fullscreenLayoutObject->updateStyle();
+    if (parent && !parent->isChildAllowed(fullscreenLayoutObject, fullscreenLayoutObject->styleRef())) {
+        fullscreenLayoutObject->destroy();
         return 0;
     }
     if (object) {
@@ -133,31 +133,31 @@ LayoutObject* LayoutFullScreen::wrapRenderer(LayoutObject* object, LayoutObject*
         if (LayoutObject* parent = object->parent()) {
             LayoutBlock* containingBlock = object->containingBlock();
             ASSERT(containingBlock);
-            // Since we are moving the |object| to a new parent |fullscreenRenderer|,
+            // Since we are moving the |object| to a new parent |fullscreenLayoutObject|,
             // the line box tree underneath our |containingBlock| is not longer valid.
             containingBlock->deleteLineBoxTree();
 
-            parent->addChild(fullscreenRenderer, object);
+            parent->addChild(fullscreenLayoutObject, object);
             object->remove();
 
             // Always just do a full layout to ensure that line boxes get deleted properly.
-            // Because objects moved from |parent| to |fullscreenRenderer|, we want to
+            // Because objects moved from |parent| to |fullscreenLayoutObject|, we want to
             // make new line boxes instead of leaving the old ones around.
             parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
             containingBlock->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
         }
-        fullscreenRenderer->addChild(object);
-        fullscreenRenderer->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
+        fullscreenLayoutObject->addChild(object);
+        fullscreenLayoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Fullscreen);
     }
 
     ASSERT(document);
-    Fullscreen::from(*document).setFullScreenRenderer(fullscreenRenderer);
-    return fullscreenRenderer;
+    Fullscreen::from(*document).setFullScreenLayoutObject(fullscreenLayoutObject);
+    return fullscreenLayoutObject;
 }
 
-void LayoutFullScreen::unwrapRenderer()
+void LayoutFullScreen::unwrapLayoutObject()
 {
-    // FIXME: We should not modify the structure of the render tree during
+    // FIXME: We should not modify the structure of the layout tree during
     // layout. crbug.com/370459
     DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
 

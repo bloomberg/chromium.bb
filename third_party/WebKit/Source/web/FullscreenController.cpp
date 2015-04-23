@@ -181,9 +181,9 @@ void FullscreenController::updateSize()
     if (!isFullscreen())
         return;
 
-    LayoutFullScreen* renderer = Fullscreen::from(*m_fullScreenFrame->document()).fullScreenRenderer();
-    if (renderer)
-        renderer->updateStyle();
+    LayoutFullScreen* layoutObject = Fullscreen::from(*m_fullScreenFrame->document()).fullScreenLayoutObject();
+    if (layoutObject)
+        layoutObject->updateStyle();
 }
 
 DEFINE_TRACE(FullscreenController)
