@@ -276,7 +276,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                        v8::Handle<v8::Function> callback);
   void SetPOSIXLocale(const std::string& locale);
   void SetMIDIAccessorResult(bool result);
-  void SetMIDISysexPermission(bool value);
   void GrantWebNotificationPermission(gin::Arguments* args);
   void ClearWebNotificationPermissions();
   void SimulateWebNotificationClick(const std::string& title);
@@ -523,8 +522,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setPOSIXLocale", &TestRunnerBindings::SetPOSIXLocale)
       .SetMethod("setMIDIAccessorResult",
                  &TestRunnerBindings::SetMIDIAccessorResult)
-      .SetMethod("setMIDISysexPermission",
-                 &TestRunnerBindings::SetMIDISysexPermission)
       .SetMethod("grantWebNotificationPermission",
                  &TestRunnerBindings::GrantWebNotificationPermission)
       .SetMethod("clearWebNotificationPermissions",
@@ -1321,9 +1318,6 @@ void TestRunnerBindings::SetPOSIXLocale(const std::string& locale) {
 void TestRunnerBindings::SetMIDIAccessorResult(bool result) {
   if (runner_)
     runner_->SetMIDIAccessorResult(result);
-}
-
-void TestRunnerBindings::SetMIDISysexPermission(bool value) {
 }
 
 void TestRunnerBindings::GrantWebNotificationPermission(gin::Arguments* args) {
