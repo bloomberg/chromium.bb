@@ -34,6 +34,20 @@ function ensureSilence(peerConnection) {
   }, 500);
 }
 
+// Not sure if this is a bug, but sometimes we get several audio ssrc's where
+// just reports audio level zero. Think of the nonzero level as the more
+// credible one here. http://crbug.com/479147.
+function workAroundSeveralReportsIssue(audioOutputLevels) {
+  if (audioOutputLevels.length == 1) {
+    return audioOutputLevels[0];
+  }
+
+  console.log("Hit issue where one report batch returns two or more reports " +
+              "with audioReportLevel; got " + audioOutputLevels);
+
+  return Math.max(audioOutputLevels[0], audioOutputLevels[1]);
+}
+
 // Gathers |numSamples| samples at |frequency| number of times per second and
 // calls back |callback| with an array with numbers in the [0, 32768] range.
 function gatherAudioLevelSamples(peerConnection, numSamples, frequency,
@@ -50,10 +64,8 @@ function gatherAudioLevelSamples(peerConnection, numSamples, frequency,
         // The call probably isn't up yet.
         return;
       }
-
-      // If more than one audio level is reported we get confused.
-      assertEquals(1, audioOutputLevels.length);
-      audioLevelSamples.push(audioOutputLevels[0]);
+      var outputLevel = workAroundSeveralReportsIssue(audioOutputLevels);
+      audioLevelSamples.push(outputLevel);
 
       if (audioLevelSamples.length == numSamples) {
         console.log('Gathered all samples.');
