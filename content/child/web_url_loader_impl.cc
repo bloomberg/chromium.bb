@@ -778,6 +778,11 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
   if (request_.downloadToFile())
     return false;
 
+  // Data url requests from object tags may need to be intercepted as streams
+  // and so need to be sent to the browser.
+  if (request_.requestContext() == WebURLRequest::RequestContextObject)
+    return false;
+
   // Optimize for the case where we can handle a data URL locally.  We must
   // skip this for data URLs targetted at frames since those could trigger a
   // download.

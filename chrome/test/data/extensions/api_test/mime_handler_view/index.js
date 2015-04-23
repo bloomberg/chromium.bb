@@ -39,12 +39,16 @@ function expectSuccessfulRead(response) {
 }
 
 function checkStreamDetails(name, embedded) {
-  chrome.test.assertTrue(streamDetails.originalUrl.indexOf(name) != -1);
-  chrome.test.assertEq('text/csv', streamDetails.mimeType);
-  chrome.test.assertTrue(streamDetails.tabId != -1);
+  checkStreamDetailsNoFile();
   chrome.test.assertEq(embedded, streamDetails.embedded);
+  chrome.test.assertTrue(streamDetails.originalUrl.indexOf(name) != -1);
   chrome.test.assertEq('text/csv',
                        streamDetails.responseHeaders['Content-Type']);
+}
+
+function checkStreamDetailsNoFile() {
+  chrome.test.assertEq('text/csv', streamDetails.mimeType);
+  chrome.test.assertTrue(streamDetails.tabId != -1);
 }
 
 var tests = [
@@ -116,6 +120,14 @@ var tests = [
       handleMessage(queuedMessages.shift());
     }
 
+  },
+
+  function testDataUrl() {
+    // TODO(raymes): have separate checks for embedded/unembedded data URLs.
+    checkStreamDetailsNoFile();
+    fetchUrl(streamDetails.streamUrl)
+        .then(expectSuccessfulRead)
+        .then(chrome.test.succeed);
   }
 ];
 
@@ -136,5 +148,11 @@ chrome.mimeHandlerPrivate.getStreamInfo(function(streamInfo) {
   if (testsByName[test]) {
     window.removeEventListener('message', queueMessage);
     chrome.test.runTests([testsByName[test]]);
+  }
+
+  // Run the test for data URLs.
+  if (streamInfo.originalUrl.indexOf("data:") === 0) {
+    window.removeEventListener('message', queueMessage);
+    chrome.test.runTests([testsByName['testDataUrl']]);
   }
 });
