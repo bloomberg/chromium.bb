@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "core/dom/DOMStringList.h"
+#include <algorithm>
 
 namespace blink {
 

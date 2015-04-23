@@ -33,6 +33,7 @@
 
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
+#include <algorithm>
 
 using namespace WTF;
 using namespace Unicode;

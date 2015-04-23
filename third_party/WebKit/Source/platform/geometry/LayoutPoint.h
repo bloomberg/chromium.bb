@@ -35,6 +35,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/LayoutSize.h"
 #include "wtf/MathExtras.h"
+#include <algorithm>
 
 namespace blink {
 

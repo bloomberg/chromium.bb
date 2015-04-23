@@ -33,6 +33,7 @@
 #include "platform/graphics/filters/SpotLightSource.h"
 
 #include "platform/text/TextStream.h"
+#include <algorithm>
 
 namespace blink {
 

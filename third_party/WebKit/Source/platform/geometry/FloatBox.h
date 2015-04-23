@@ -31,6 +31,7 @@
 #define FloatBox_h
 
 #include "platform/geometry/FloatPoint3D.h"
+#include <algorithm>
 #include <cmath>
 
 namespace blink {

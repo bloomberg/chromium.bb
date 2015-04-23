@@ -32,9 +32,10 @@
 #include "wtf/Atomics.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashSet.h"
+#include <algorithm>
 #include <limits.h>
-#include <math.h>
 #include <limits>
+#include <math.h>
 
 namespace blink {
 

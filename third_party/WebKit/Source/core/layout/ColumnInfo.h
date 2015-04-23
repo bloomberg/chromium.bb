@@ -29,6 +29,7 @@
 #include "platform/LayoutUnit.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
+#include <algorithm>
 
 namespace blink {
 

@@ -34,6 +34,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
+#include <algorithm>
 
 #ifndef NDEBUG
 #include <stdio.h>

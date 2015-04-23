@@ -34,6 +34,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include <algorithm>
 
 typedef Vector<SkScalar, 8> ColorStopOffsetVector;
 typedef Vector<SkColor, 8> ColorStopColorVector;

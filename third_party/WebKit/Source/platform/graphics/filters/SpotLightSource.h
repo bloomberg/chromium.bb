@@ -24,6 +24,7 @@
 #define SpotLightSource_h
 
 #include "platform/graphics/filters/LightSource.h"
+#include <algorithm>
 
 namespace blink {
 

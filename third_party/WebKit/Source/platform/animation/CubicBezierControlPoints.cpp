@@ -6,6 +6,7 @@
 #include "platform/animation/CubicBezierControlPoints.h"
 
 #include "platform/animation/AnimationUtilities.h"
+#include <algorithm>
 
 namespace blink {
 

@@ -30,6 +30,7 @@
 #include "wtf/text/ASCIIFastPath.h"
 #include "wtf/text/StringImpl.h"
 #include "wtf/text/StringView.h"
+#include <algorithm>
 
 #ifdef __OBJC__
 #include <objc/objc.h>

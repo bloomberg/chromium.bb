@@ -35,6 +35,7 @@
 
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "wtf/MathExtras.h"
+#include <algorithm>
 
 namespace blink {
 

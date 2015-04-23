@@ -23,10 +23,11 @@
 #ifndef WTF_RefPtr_h
 #define WTF_RefPtr_h
 
-#include <algorithm>
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RawPtr.h"
+#include <algorithm>
+#include <utility>
 
 namespace WTF {
 

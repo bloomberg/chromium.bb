@@ -32,6 +32,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 #include "wtf/text/StringHash.h"
+#include <algorithm>
 
 namespace blink {
 

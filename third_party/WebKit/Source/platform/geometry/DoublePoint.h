@@ -9,6 +9,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntPoint.h"
+#include <algorithm>
 
 namespace blink {
 

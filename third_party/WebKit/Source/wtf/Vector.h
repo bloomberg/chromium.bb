@@ -30,6 +30,8 @@
 #include "wtf/NotFound.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/VectorTraits.h"
+#include <algorithm>
+#include <iterator>
 #include <string.h>
 #include <utility>
 

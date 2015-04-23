@@ -28,7 +28,6 @@
 
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
-#include <algorithm>
 #include <cmath>
 #include <limits>
 

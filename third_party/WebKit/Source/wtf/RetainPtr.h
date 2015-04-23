@@ -26,6 +26,7 @@
 #include "wtf/NullPtr.h"
 #include "wtf/TypeTraits.h"
 #include <algorithm>
+#include <utility>
 
 #if USE(CF)
 #include <CoreFoundation/CoreFoundation.h>

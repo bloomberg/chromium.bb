@@ -36,7 +36,6 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
-#include <algorithm>
 
 namespace blink {
 
