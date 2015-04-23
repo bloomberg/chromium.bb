@@ -380,23 +380,6 @@ static jboolean GetFullscreenAllowed(JNIEnv* env, jobject obj) {
       CONTENT_SETTINGS_TYPE_FULLSCREEN, NULL) == CONTENT_SETTING_ALLOW;
 }
 
-static jboolean GetMetricsReportingEnabled(JNIEnv* env, jobject obj) {
-  PrefService* local_state = g_browser_process->local_state();
-  return local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-}
-
-static void SetMetricsReportingEnabled(JNIEnv* env,
-                                       jobject obj,
-                                       jboolean enabled) {
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(prefs::kMetricsReportingEnabled, enabled);
-}
-
-static jboolean HasSetMetricsReporting(JNIEnv* env, jobject obj) {
-  PrefService* local_state = g_browser_process->local_state();
-  return local_state->HasPrefPath(prefs::kMetricsReportingEnabled);
-}
-
 namespace {
 
 // Redirects a BrowsingDataRemover completion callback back into Java.

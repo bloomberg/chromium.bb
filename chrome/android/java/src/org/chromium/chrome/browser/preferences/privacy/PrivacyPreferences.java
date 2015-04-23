@@ -10,7 +10,6 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -47,7 +46,6 @@ public class PrivacyPreferences extends PreferenceFragment
             "crash_dump_upload_no_cellular";
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
     private static final String PREF_CLEAR_BROWSING_DATA = "clear_browsing_data";
-    private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
 
     private ClearBrowsingDataDialogFragment mClearBrowsingDataDialogFragment;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
@@ -55,9 +53,7 @@ public class PrivacyPreferences extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        PrivacyPreferencesManager privacyPrefManager =
-                PrivacyPreferencesManager.getInstance(getActivity());
-        privacyPrefManager.migrateNetworkPredictionPreferences();
+        PrivacyPreferencesManager.getInstance(getActivity()).migrateNetworkPredictionPreferences();
         addPreferencesFromResource(R.xml.privacy_preferences);
         getActivity().setTitle(R.string.prefs_privacy);
         setHasOptionsMenu(true);
@@ -71,15 +67,15 @@ public class PrivacyPreferences extends PreferenceFragment
         NetworkPredictionOptions networkPredictionOptions = PrefServiceBridge.getInstance()
                 .getNetworkPredictionOptions();
 
-        PreferenceScreen preferenceScreen = getPreferenceScreen();
-        boolean isMobileNetworkCapable = privacyPrefManager.isMobileNetworkCapable();
+        boolean isMobileNetworkCapable =
+                PrivacyPreferencesManager.getInstance(getActivity()).isMobileNetworkCapable();
         if (isMobileNetworkCapable) {
-            preferenceScreen.removePreference(networkPredictionNoCellularPref);
+            getPreferenceScreen().removePreference(networkPredictionNoCellularPref);
             networkPredictionPref.setValue(networkPredictionOptions.enumToString());
             networkPredictionPref.setOnPreferenceChangeListener(this);
             networkPredictionPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
         } else {
-            preferenceScreen.removePreference(networkPredictionPref);
+            getPreferenceScreen().removePreference(networkPredictionPref);
             networkPredictionNoCellularPref.setChecked(
                     networkPredictionOptions != NetworkPredictionOptions.NETWORK_PREDICTION_NEVER);
             networkPredictionNoCellularPref.setOnPreferenceChangeListener(this);
@@ -87,28 +83,19 @@ public class PrivacyPreferences extends PreferenceFragment
                     mManagedPreferenceDelegate);
         }
 
-        // Display the correct settings fragment according to the user experiment group and to type
-        // of the device, by removing not applicable preference fragments.
         CrashDumpUploadPreference uploadCrashDumpPref =
                 (CrashDumpUploadPreference) findPreference(PREF_CRASH_DUMP_UPLOAD);
         ChromeBaseCheckBoxPreference uploadCrashDumpNoCellularPref =
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR);
 
-        if (privacyPrefManager.isCellularExperimentEnabled()) {
-            preferenceScreen.removePreference(uploadCrashDumpNoCellularPref);
-            preferenceScreen.removePreference(uploadCrashDumpPref);
+        if (isMobileNetworkCapable) {
+            getPreferenceScreen().removePreference(uploadCrashDumpNoCellularPref);
+            uploadCrashDumpPref.setOnPreferenceChangeListener(this);
+            uploadCrashDumpPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
         } else {
-            preferenceScreen.removePreference(findPreference(PREF_USAGE_AND_CRASH_REPORTING));
-            if (isMobileNetworkCapable) {
-                preferenceScreen.removePreference(uploadCrashDumpNoCellularPref);
-                uploadCrashDumpPref.setOnPreferenceChangeListener(this);
-                uploadCrashDumpPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
-            } else {
-                preferenceScreen.removePreference(uploadCrashDumpPref);
-                uploadCrashDumpNoCellularPref.setOnPreferenceChangeListener(this);
-                uploadCrashDumpNoCellularPref.setManagedPreferenceDelegate(
-                        mManagedPreferenceDelegate);
-            }
+            getPreferenceScreen().removePreference(uploadCrashDumpPref);
+            uploadCrashDumpNoCellularPref.setOnPreferenceChangeListener(this);
+            uploadCrashDumpNoCellularPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
         }
 
         ChromeBaseCheckBoxPreference navigationErrorPref =
@@ -122,7 +109,7 @@ public class PrivacyPreferences extends PreferenceFragment
         searchSuggestionsPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         if (!((Preferences) getActivity()).isContextualSearchEnabled()) {
-            preferenceScreen.removePreference(findPreference(PREF_CONTEXTUAL_SEARCH));
+            getPreferenceScreen().removePreference(findPreference(PREF_CONTEXTUAL_SEARCH));
         }
 
         ButtonPreference clearBrowsingData =

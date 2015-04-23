@@ -842,11 +842,9 @@ void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
                                             &enable_metrics_);
 #elif defined(OS_ANDROID)
   // TODO(dwkang): rename or unify the pref for UMA once we have conclusion
-  // in crbug.com/246495.
+  // in crbugs.com/246495.
   // Android has it's own preferences for metrics / crash uploading.
   enable_metrics_.Init(prefs::kCrashReportingEnabled,
-                       g_browser_process->local_state());
-  enable_metrics_.Init(prefs::kMetricsReportingEnabled,
                        g_browser_process->local_state());
   enable_metrics_.MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));

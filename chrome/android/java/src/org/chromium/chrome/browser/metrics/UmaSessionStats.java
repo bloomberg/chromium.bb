@@ -8,18 +8,15 @@ import android.app.Activity;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.text.TextUtils;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.Tab;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.CrashReportingPermissionManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -105,7 +102,6 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
 
         nativeUmaResumeSession(sNativeUmaSessionStats);
         NetworkChangeNotifier.addConnectionTypeObserver(this);
-        updatePreferences();
         updateMetricsServiceState();
     }
 
@@ -161,32 +157,6 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
 
         // Re-start the MetricsService with the given parameters.
         nativeUpdateMetricsServiceState(mayRecordStats, mayUploadStats);
-    }
-
-    /**
-     * Updating Android preferences according to equivalent native preferences so that the values
-     * can be retrieved while native preferences are not accessible.
-     */
-    private void updatePreferences() {
-        // Update cellular experiment preference.
-        PrivacyPreferencesManager prefManager = PrivacyPreferencesManager.getInstance(mContext);
-        boolean cellularExperiment = TextUtils.equals("true",
-                VariationsAssociatedData.getVariationParamValue(
-                        "UMA_EnableCellularLogUpload", "Enabled"));
-        prefManager.setCellularExperiment(cellularExperiment);
-
-        // Update metrics reporting preference.
-        if (cellularExperiment) {
-            PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
-            // If the native preference metrics reporting has not been set, then initialize it
-            // based on the older android preference.
-            if (!prefBridge.hasSetMetricsReporting()) {
-                prefBridge.setMetricsReportingEnabled(prefManager.isUploadCrashDumpEnabled());
-            }
-
-            // Set new Android preference for usage and crash reporting.
-            prefManager.setUsageAndCrashReporting(prefBridge.isMetricsReportingEnabled());
-        }
     }
 
     @Override
