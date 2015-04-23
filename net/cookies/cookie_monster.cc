@@ -557,7 +557,7 @@ class CookieMonster::DeleteTask : public CookieMonsterTask {
       : CookieMonsterTask(cookie_monster), callback_(callback) {}
 
   // CookieMonsterTask:
-  virtual void Run() override;
+  void Run() override;
 
  protected:
   ~DeleteTask() override;

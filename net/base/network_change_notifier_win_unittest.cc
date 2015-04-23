@@ -24,15 +24,15 @@ class TestNetworkChangeNotifierWin : public NetworkChangeNotifierWin {
  public:
   TestNetworkChangeNotifierWin() {}
 
-  virtual ~TestNetworkChangeNotifierWin() {
+  ~TestNetworkChangeNotifierWin() override {
     // This is needed so we don't try to stop watching for IP address changes,
     // as we never actually started.
     set_is_watching(false);
   }
 
   // From NetworkChangeNotifierWin.
-  virtual NetworkChangeNotifier::ConnectionType
-      RecomputeCurrentConnectionType() const override {
+  NetworkChangeNotifier::ConnectionType RecomputeCurrentConnectionType()
+      const override {
     return NetworkChangeNotifier::CONNECTION_UNKNOWN;
   }
 

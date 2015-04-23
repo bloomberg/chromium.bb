@@ -60,15 +60,11 @@ class MockTransaction : public DnsTransaction,
     }
   }
 
-  virtual const std::string& GetHostname() const override {
-    return hostname_;
-  }
+  const std::string& GetHostname() const override { return hostname_; }
 
-  virtual uint16 GetType() const override {
-    return qtype_;
-  }
+  uint16 GetType() const override { return qtype_; }
 
-  virtual void Start() override {
+  void Start() override {
     EXPECT_FALSE(started_);
     started_ = true;
     if (delayed_)

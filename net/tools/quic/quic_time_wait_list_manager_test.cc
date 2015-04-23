@@ -188,7 +188,7 @@ class ValidatePublicResetPacketPredicate
       : connection_id_(connection_id), sequence_number_(number) {
   }
 
-  virtual bool MatchAndExplain(
+  bool MatchAndExplain(
       const std::tr1::tuple<const char*, int> packet_buffer,
       testing::MatchResultListener* /* listener */) const override {
     FramerVisitorCapturingPublicReset visitor;
@@ -206,9 +206,9 @@ class ValidatePublicResetPacketPredicate
         kTestPort == packet.client_address.port();
   }
 
-  virtual void DescribeTo(::std::ostream* os) const override {}
+  void DescribeTo(::std::ostream* os) const override {}
 
-  virtual void DescribeNegationTo(::std::ostream* os) const override {}
+  void DescribeNegationTo(::std::ostream* os) const override {}
 
  private:
   QuicConnectionId connection_id_;

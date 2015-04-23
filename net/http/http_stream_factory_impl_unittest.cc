@@ -320,51 +320,47 @@ class CapturePreconnectsSocketPool : public ParentPool {
     return last_num_streams_;
   }
 
-  virtual int RequestSocket(const std::string& group_name,
-                            const void* socket_params,
-                            RequestPriority priority,
-                            ClientSocketHandle* handle,
-                            const CompletionCallback& callback,
-                            const BoundNetLog& net_log) override {
+  int RequestSocket(const std::string& group_name,
+                    const void* socket_params,
+                    RequestPriority priority,
+                    ClientSocketHandle* handle,
+                    const CompletionCallback& callback,
+                    const BoundNetLog& net_log) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
 
-  virtual void RequestSockets(const std::string& group_name,
-                              const void* socket_params,
-                              int num_sockets,
-                              const BoundNetLog& net_log) override {
+  void RequestSockets(const std::string& group_name,
+                      const void* socket_params,
+                      int num_sockets,
+                      const BoundNetLog& net_log) override {
     last_num_streams_ = num_sockets;
   }
 
-  virtual void CancelRequest(const std::string& group_name,
-                             ClientSocketHandle* handle) override {
+  void CancelRequest(const std::string& group_name,
+                     ClientSocketHandle* handle) override {
     ADD_FAILURE();
   }
-  virtual void ReleaseSocket(const std::string& group_name,
-                             scoped_ptr<StreamSocket> socket,
-                             int id) override {
+  void ReleaseSocket(const std::string& group_name,
+                     scoped_ptr<StreamSocket> socket,
+                     int id) override {
     ADD_FAILURE();
   }
-  virtual void CloseIdleSockets() override {
-    ADD_FAILURE();
-  }
-  virtual int IdleSocketCount() const override {
+  void CloseIdleSockets() override { ADD_FAILURE(); }
+  int IdleSocketCount() const override {
     ADD_FAILURE();
     return 0;
   }
-  virtual int IdleSocketCountInGroup(
-      const std::string& group_name) const override {
+  int IdleSocketCountInGroup(const std::string& group_name) const override {
     ADD_FAILURE();
     return 0;
   }
-  virtual LoadState GetLoadState(
-      const std::string& group_name,
-      const ClientSocketHandle* handle) const override {
+  LoadState GetLoadState(const std::string& group_name,
+                         const ClientSocketHandle* handle) const override {
     ADD_FAILURE();
     return LOAD_STATE_IDLE;
   }
-  virtual base::TimeDelta ConnectionTimeout() const override {
+  base::TimeDelta ConnectionTimeout() const override {
     return base::TimeDelta();
   }
 

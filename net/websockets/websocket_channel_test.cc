@@ -173,7 +173,7 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
     OnFinishOpeningHandshakeCalled();
     return CHANNEL_ALIVE;
   }
-  virtual ChannelState OnSSLCertificateError(
+  ChannelState OnSSLCertificateError(
       scoped_ptr<SSLErrorCallbacks> ssl_error_callbacks,
       const GURL& url,
       const SSLInfo& ssl_info,

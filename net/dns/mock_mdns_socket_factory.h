@@ -15,7 +15,7 @@ namespace net {
 class MockMDnsDatagramServerSocket : public DatagramServerSocket {
  public:
   explicit MockMDnsDatagramServerSocket(AddressFamily address_family);
-  ~MockMDnsDatagramServerSocket();
+  ~MockMDnsDatagramServerSocket() override;
 
   // DatagramServerSocket implementation:
   MOCK_METHOD1(Listen, int(const IPEndPoint& address));
@@ -26,8 +26,10 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
                              IPEndPoint* address,
                              const CompletionCallback& callback));
 
-  virtual int SendTo(IOBuffer* buf, int buf_len, const IPEndPoint& address,
-                     const CompletionCallback& callback) override;
+  int SendTo(IOBuffer* buf,
+             int buf_len,
+             const IPEndPoint& address,
+             const CompletionCallback& callback) override;
 
   MOCK_METHOD3(SendToInternal, int(const std::string& packet,
                                    const std::string address,
@@ -39,7 +41,7 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
   MOCK_METHOD0(Close, void());
 
   MOCK_CONST_METHOD1(GetPeerAddress, int(IPEndPoint* address));
-  virtual int GetLocalAddress(IPEndPoint* address) const override;
+  int GetLocalAddress(IPEndPoint* address) const override;
   MOCK_CONST_METHOD0(NetLog, const BoundNetLog&());
 
   MOCK_METHOD0(AllowAddressReuse, void());
@@ -72,10 +74,9 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
 class MockMDnsSocketFactory : public MDnsSocketFactory {
  public:
   MockMDnsSocketFactory();
-  virtual ~MockMDnsSocketFactory();
+  ~MockMDnsSocketFactory() override;
 
-  virtual void CreateSockets(
-      ScopedVector<DatagramServerSocket>* sockets) override;
+  void CreateSockets(ScopedVector<DatagramServerSocket>* sockets) override;
 
   void SimulateReceive(const uint8* packet, int size);
 

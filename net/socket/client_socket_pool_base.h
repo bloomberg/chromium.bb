@@ -846,9 +846,9 @@ class ClientSocketPoolBase {
 
     explicit ConnectJobFactoryAdaptor(ConnectJobFactory* connect_job_factory)
         : connect_job_factory_(connect_job_factory) {}
-    virtual ~ConnectJobFactoryAdaptor() {}
+    ~ConnectJobFactoryAdaptor() override {}
 
-    virtual scoped_ptr<ConnectJob> NewConnectJob(
+    scoped_ptr<ConnectJob> NewConnectJob(
         const std::string& group_name,
         const internal::ClientSocketPoolBaseHelper::Request& request,
         ConnectJob::Delegate* delegate) const override {

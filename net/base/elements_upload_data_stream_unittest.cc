@@ -64,13 +64,13 @@ class MockUploadElementReader : public UploadElementReader {
         init_result_(OK),
         read_result_(OK) {}
 
-  virtual ~MockUploadElementReader() {}
+  ~MockUploadElementReader() override {}
 
   // UploadElementReader overrides.
   MOCK_METHOD1(Init, int(const CompletionCallback& callback));
-  virtual uint64 GetContentLength() const override { return content_length_; }
-  virtual uint64 BytesRemaining() const override { return bytes_remaining_; }
-  virtual bool IsInMemory() const override { return is_in_memory_; }
+  uint64 GetContentLength() const override { return content_length_; }
+  uint64 BytesRemaining() const override { return bytes_remaining_; }
+  bool IsInMemory() const override { return is_in_memory_; }
   MOCK_METHOD3(Read, int(IOBuffer* buf,
                          int buf_length,
                          const CompletionCallback& callback));

@@ -227,7 +227,7 @@ class MockCreateHelper : public WebSocketHandshakeStreamBase::CreateHelper {
  public:
   // GoogleMock does not appear to play nicely with move-only types like
   // scoped_ptr, so this forwarding method acts as a workaround.
-  virtual WebSocketHandshakeStreamBase* CreateBasicStream(
+  WebSocketHandshakeStreamBase* CreateBasicStream(
       scoped_ptr<ClientSocketHandle> connection,
       bool using_proxy) override {
     // Discard the arguments since we don't need them anyway.

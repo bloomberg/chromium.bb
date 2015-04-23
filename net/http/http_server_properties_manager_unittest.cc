@@ -40,15 +40,14 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
     InitializeOnNetworkThread();
   }
 
-  virtual ~TestingHttpServerPropertiesManager() {}
+  ~TestingHttpServerPropertiesManager() override {}
 
   // Make these methods public for testing.
   using HttpServerPropertiesManager::ScheduleUpdateCacheOnPrefThread;
   using HttpServerPropertiesManager::ScheduleUpdatePrefsOnNetworkThread;
 
   // Post tasks without a delay during tests.
-  virtual void StartPrefsUpdateTimerOnNetworkThread(
-      base::TimeDelta delay) override {
+  void StartPrefsUpdateTimerOnNetworkThread(base::TimeDelta delay) override {
     HttpServerPropertiesManager::StartPrefsUpdateTimerOnNetworkThread(
         base::TimeDelta());
   }
@@ -58,8 +57,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
   }
 
   // Post tasks without a delay during tests.
-  virtual void StartCacheUpdateTimerOnPrefThread(
-      base::TimeDelta delay) override {
+  void StartCacheUpdateTimerOnPrefThread(base::TimeDelta delay) override {
     HttpServerPropertiesManager::StartCacheUpdateTimerOnPrefThread(
         base::TimeDelta());
   }

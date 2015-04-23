@@ -43,14 +43,14 @@ QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
 class TestSession : public QuicSession {
  public:
   TestSession(QuicConnection* connection, const QuicConfig& config);
-  virtual ~TestSession();
+  ~TestSession() override;
 
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
   MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
 
   void SetCryptoStream(QuicCryptoStream* stream);
 
-  virtual QuicCryptoStream* GetCryptoStream() override;
+  QuicCryptoStream* GetCryptoStream() override;
 
  private:
   QuicCryptoStream* crypto_stream_;
