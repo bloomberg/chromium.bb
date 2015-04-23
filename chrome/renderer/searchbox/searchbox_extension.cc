@@ -117,27 +117,6 @@ v8::Handle<v8::String> GenerateThumbnailURL(
           "chrome-search://thumb/%d/%d", render_view_id, most_visited_item_id));
 }
 
-v8::Handle<v8::String> GenerateLargeIconURL(
-    v8::Isolate* isolate,
-    int render_view_id,
-    InstantRestrictedID most_visited_item_id) {
-  const int kIconSize = 96;  // To support high DPI; on screen it's 48 dp.
-  return UTF8ToV8String(
-      isolate,
-      base::StringPrintf("chrome-search://large-icon/%d/%d/%d",
-                         kIconSize, render_view_id, most_visited_item_id));
-}
-
-v8::Handle<v8::String> GenerateFallbackIconURL(
-    v8::Isolate* isolate,
-    int render_view_id,
-    InstantRestrictedID most_visited_item_id) {
-  return UTF8ToV8String(
-      isolate,
-      base::StringPrintf("chrome-search://fallback-icon/,,,,1/%d/%d",
-                         render_view_id, most_visited_item_id));
-}
-
 // Populates a Javascript MostVisitedItem object from |mv_item|.
 // NOTE: Includes "url", "title" and "domain" which are private data, so should
 // not be returned to the Instant page. These should be erased before returning
@@ -178,10 +157,13 @@ v8::Handle<v8::Object> GenerateMostVisitedItem(
   if (IsIconNTPEnabled()) {
     // Update website http://www.chromium.org/embeddedsearch when we make this
     // permanent.
+    // Large icon size is 48px * window.devicePixelRatio. This is easier to set
+    // from JS, where IsIconNTPEnabled() is not available. So we add stubs
+    // here, and let JS fill in details.
     obj->Set(v8::String::NewFromUtf8(isolate, "largeIconUrl"),
-             GenerateLargeIconURL(isolate, render_view_id, restricted_id));
+             v8::String::NewFromUtf8(isolate, "chrome-search://large-icon/"));
     obj->Set(v8::String::NewFromUtf8(isolate, "fallbackIconUrl"),
-             GenerateFallbackIconURL(isolate, render_view_id, restricted_id));
+        v8::String::NewFromUtf8(isolate, "chrome-search://fallback-icon/"));
   }
   obj->Set(v8::String::NewFromUtf8(isolate, "title"),
            UTF16ToV8String(isolate, title));
