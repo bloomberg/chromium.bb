@@ -263,8 +263,6 @@ eventBindings.registerArgumentMassager(
 eventBindings.registerArgumentMassager(
     'fileSystemProvider.onMountRequested',
     function(args, dispatch) {
-      var executionStart = Date.now();
-      var options = args[0];
       var onSuccessCallback = function() {
         // TODO(mtomasz): To be implemented.
       };
