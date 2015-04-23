@@ -16,7 +16,10 @@ enum PresentationSessionState {
     readonly attribute DOMString? id;
     readonly attribute PresentationSessionState state;
 
-    void postMessage(DOMString message);
+    [RaisesException] void send(DOMString message);
+    [RaisesException] void send(ArrayBuffer data);
+    [RaisesException] void send(ArrayBufferView data);
+    // TODO(s.singapati): Implement Blob support, crbug.com/459008.
     void close();
 
     attribute EventHandler onmessage;

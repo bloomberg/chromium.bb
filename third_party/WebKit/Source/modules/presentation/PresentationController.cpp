@@ -112,6 +112,20 @@ void PresentationController::joinSession(const String& presentationUrl, const St
     m_client->joinSession(presentationUrl, presentationId, callbacks);
 }
 
+void PresentationController::send(const String& presentationUrl, const String& presentationId, const String& message)
+{
+    if (!m_client)
+        return;
+    m_client->sendString(presentationUrl, presentationId, message);
+}
+
+void PresentationController::send(const String& presentationUrl, const String& presentationId, const uint8_t* data, size_t length)
+{
+    if (!m_client)
+        return;
+    m_client->sendArrayBuffer(presentationUrl, presentationId, data, length);
+}
+
 void PresentationController::closeSession(const String& url, const String& presentationId)
 {
     if (!m_client)

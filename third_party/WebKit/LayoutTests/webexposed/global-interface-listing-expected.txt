@@ -3671,7 +3671,7 @@ interface PresentationSession
     getter state
     method close
     method constructor
-    method postMessage
+    method send
     setter onmessage
     setter onstatechange
 interface ProcessingInstruction

@@ -16,6 +16,8 @@ class AtomicString;
 
 namespace blink {
 
+class DOMArrayBuffer;
+class DOMArrayBufferView;
 class Presentation;
 class PresentationController;
 
@@ -39,7 +41,9 @@ public:
     const String id() const { return m_id; }
     const WTF::AtomicString& state() const;
 
-    void postMessage(const String& message);
+    void send(const String& message, ExceptionState&);
+    void send(PassRefPtr<DOMArrayBuffer> data, ExceptionState&);
+    void send(PassRefPtr<DOMArrayBufferView> data, ExceptionState&);
     void close();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
@@ -58,6 +62,9 @@ private:
     // |Presentation| corresponds to. Can return |nullptr| if the frame is
     // detached from the document.
     PresentationController* presentationController();
+
+    // Common send method for both ArrayBufferView and ArrayBuffer.
+    void sendInternal(const uint8_t* data, size_t, ExceptionState&);
 
     String m_id;
     String m_url;
