@@ -1185,7 +1185,10 @@ def GetPackageTargets():
       raw_packages = shared_packages + platform_packages
       all_packages = raw_packages + sdk_lib_packages
 
-      glibc_raw_packages = platform_packages + ['glibc_' + target_arch]
+      glibc_raw_packages = platform_packages + [
+          'glibc_' + target_arch,
+          'gcc_libs_glibc_' + target_arch,
+          ]
       glibc_all_packages = glibc_raw_packages + ['sdk_libs_glibc_' +
                                                  target_arch]
 
