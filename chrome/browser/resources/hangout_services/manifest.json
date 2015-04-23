@@ -7,7 +7,10 @@
   "manifest_version": 2,
   "externally_connectable": {
     "matches": [
-      "https://*.google.com/hangouts*",
+      "https://hangouts.google.com/*",
+      "https://talkgadget.google.com/*",
+      "https://*.talkgadget.google.com/*",
+      "https://plus.google.com/hangouts*",
       // For tests.
       "*://localhost/*"
     ]
