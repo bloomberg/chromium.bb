@@ -130,11 +130,7 @@ pr22061-4.c
 
 # Failures specific to nacl-clang
 
-# divsc3 compiler-rt function needs libm
-complex-5.c
 # Passing struct of floats as va_arg
 pr44575.c x86-64,O0
-# https://code.google.com/p/nativeclient/issues/detail?id=4141
-ipa-sra-2.c arm,O0
 # Bogus pointer to array of structs passed as argument
 921113-1.c arm,O0
