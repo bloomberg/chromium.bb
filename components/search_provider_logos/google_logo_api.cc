@@ -94,16 +94,16 @@ scoped_ptr<EncodedLogo> GoogleParseLogoResponse(
     logo->encoded_image = encoded_image_string;
     if (!logo_dict->GetString("mime_type", &logo->metadata.mime_type))
       return scoped_ptr<EncodedLogo>();
-
-    // Existance of url indicates |data| is a call to action image for an
-    // animated doodle. |url| points to that animated doodle.
-    logo_dict->GetString("url", &logo->metadata.animated_url);
   }
 
   // Don't check return values since these fields are optional.
   logo_dict->GetString("target", &logo->metadata.on_click_url);
   logo_dict->GetString("fingerprint", &logo->metadata.fingerprint);
   logo_dict->GetString("alt", &logo->metadata.alt_text);
+
+  // Existance of url indicates |data| is a call to action image for an
+  // animated doodle. |url| points to that animated doodle.
+  logo_dict->GetString("url", &logo->metadata.animated_url);
 
   base::TimeDelta time_to_live;
   int time_to_live_ms;

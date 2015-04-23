@@ -111,7 +111,7 @@ Logo GetSampleLogo2(const GURL& logo_url, base::Time response_time) {
   logo.metadata.source_url = logo_url.spec();
   logo.metadata.on_click_url = "http://example.com/page25";
   logo.metadata.alt_text = "The logo for example.com";
-  logo.metadata.mime_type = "image/png";
+  logo.metadata.mime_type = "image/jpeg";
   return logo;
 }
 
@@ -124,16 +124,15 @@ std::string MakeServerResponse(
     const std::string& fingerprint,
     base::TimeDelta time_to_live) {
   base::DictionaryValue dict;
-  if (!image.isNull()) {
+  if (!image.isNull())
     dict.SetString("update.logo.data", EncodeBitmapAsPNGBase64(image));
-  }
 
   dict.SetString("update.logo.target", on_click_url);
   dict.SetString("update.logo.alt", alt_text);
-  if (!animated_url.empty()) {
+  if (!animated_url.empty())
     dict.SetString("update.logo.url", animated_url);
-  }
-  dict.SetString("update.logo.mime_type", mime_type);
+  if (!mime_type.empty())
+    dict.SetString("update.logo.mime_type", mime_type);
   dict.SetString("update.logo.fingerprint", fingerprint);
   if (time_to_live.ToInternalValue() != 0)
     dict.SetInteger("update.logo.time_to_live",
@@ -222,7 +221,11 @@ class MockLogoCache : public LogoCache {
   }
 
   void UpdateCachedLogoMetadataInternal(const LogoMetadata& metadata) {
+    ASSERT_TRUE(logo_.get());
+    ASSERT_TRUE(metadata_.get());
+    EXPECT_EQ(metadata_->fingerprint, metadata.fingerprint);
     metadata_.reset(new LogoMetadata(metadata));
+    logo_->metadata = metadata;
   }
 
   virtual const LogoMetadata* GetCachedLogoMetadataInternal() {
@@ -474,12 +477,14 @@ TEST_F(LogoTrackerTest, ReturnCachedLogo) {
   GetLogo();
 }
 
-TEST_F(LogoTrackerTest, ValidateCachedLogoFingerprint) {
+TEST_F(LogoTrackerTest, ValidateCachedLogo) {
   Logo cached_logo = GetSampleLogo(logo_url_, test_clock_->Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
 
+  // During revalidation, the image data and mime_type are absent.
   Logo fresh_logo = cached_logo;
   fresh_logo.image.reset();
+  fresh_logo.metadata.mime_type.clear();
   fresh_logo.metadata.expiration_time =
       test_clock_->Now() + base::TimeDelta::FromDays(8);
   SetServerResponseWhenFingerprint(fresh_logo.metadata.fingerprint,
@@ -489,12 +494,47 @@ TEST_F(LogoTrackerTest, ValidateCachedLogoFingerprint) {
   EXPECT_CALL(*logo_cache_, SetCachedLogo(_)).Times(0);
   EXPECT_CALL(*logo_cache_, OnGetCachedLogo()).Times(AtMost(1));
   observer_.ExpectCachedLogo(&cached_logo);
-
   GetLogo();
 
   EXPECT_TRUE(logo_cache_->GetCachedLogoMetadata() != NULL);
-  EXPECT_EQ(logo_cache_->GetCachedLogoMetadata()->expiration_time,
-            fresh_logo.metadata.expiration_time);
+  EXPECT_EQ(fresh_logo.metadata.expiration_time,
+            logo_cache_->GetCachedLogoMetadata()->expiration_time);
+
+  // Ensure that cached logo is still returned correctly on subsequent requests.
+  // In particular, the metadata should stay valid. http://crbug.com/480090
+  EXPECT_CALL(*logo_cache_, UpdateCachedLogoMetadata(_)).Times(1);
+  EXPECT_CALL(*logo_cache_, SetCachedLogo(_)).Times(0);
+  EXPECT_CALL(*logo_cache_, OnGetCachedLogo()).Times(AtMost(1));
+  observer_.ExpectCachedLogo(&cached_logo);
+  GetLogo();
+}
+
+TEST_F(LogoTrackerTest, UpdateCachedLogoMetadata) {
+  Logo cached_logo = GetSampleLogo(logo_url_, test_clock_->Now());
+  logo_cache_->EncodeAndSetCachedLogo(cached_logo);
+
+  Logo fresh_logo = cached_logo;
+  fresh_logo.image.reset();
+  fresh_logo.metadata.mime_type.clear();
+  fresh_logo.metadata.on_click_url = "http://new.onclick.url";
+  fresh_logo.metadata.alt_text = "new alt text";
+  fresh_logo.metadata.animated_url = "http://new.animated.url";
+  fresh_logo.metadata.expiration_time =
+      test_clock_->Now() + base::TimeDelta::FromDays(8);
+  SetServerResponseWhenFingerprint(fresh_logo.metadata.fingerprint,
+                                   ServerResponse(fresh_logo));
+
+  // On the first request, the cached logo should be used.
+  observer_.ExpectCachedLogo(&cached_logo);
+  GetLogo();
+
+  // Subsequently, the cached image should be returned along with the updated
+  // metadata.
+  Logo expected_logo = fresh_logo;
+  expected_logo.image = cached_logo.image;
+  expected_logo.metadata.mime_type = cached_logo.metadata.mime_type;
+  observer_.ExpectCachedLogo(&expected_logo);
+  GetLogo();
 }
 
 TEST_F(LogoTrackerTest, UpdateCachedLogo) {

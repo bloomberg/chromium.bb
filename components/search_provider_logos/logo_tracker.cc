@@ -243,6 +243,8 @@ void LogoTracker::OnFreshLogoAvailable(scoped_ptr<EncodedLogo> encoded_logo,
       encoded_logo->metadata.fingerprint ==
           cached_logo_->metadata.fingerprint) {
     // The cached logo was revalidated, i.e. its fingerprint was verified.
+    // mime_type isn't sent when revalidating, so copy it from the cached logo.
+    encoded_logo->metadata.mime_type = cached_logo_->metadata.mime_type;
     SetCachedMetadata(encoded_logo->metadata);
   } else if (encoded_logo && image.isNull()) {
     // Image decoding failed. Do nothing.
