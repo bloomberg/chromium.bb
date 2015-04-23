@@ -18,10 +18,10 @@ class MockDevicesCommand(command_unittest.MockCommand):
   TARGET = 'chromite.cli.cros.cros_devices.DevicesCommand'
   TARGET_CLASS = cros_devices.DevicesCommand
   COMMAND = 'devices'
-  ATTRS = ('_ListDevices', '_FullReset')
+  ATTRS = ('_PrintDeviceInfo', '_ListDevices', '_FullReset')
 
-  def __init__(self, *arg, **kwargs):
-    command_unittest.MockCommand.__init__(self, *arg, **kwargs)
+  def _PrintDeviceInfo(self, _inst, *_args, **_kwargs):
+    """Mock out _PrintDeviceInfo."""
 
   def _ListDevices(self, _inst, *_args, **_kwargs):
     """Mock out _ListDevices."""
@@ -47,13 +47,21 @@ class DevicesRunThroughTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     """Patches objects."""
     self.cmd_mock = None
-    self.device_mock = None
+    self.device_mock = self.PatchObject(remote_access,
+                                        'ChromiumOSDevice').return_value
 
   def testListDevices(self):
     """Test that listing devices works correctly."""
     self.SetupCommandMock([])
     self.cmd_mock.inst.Run()
     self.assertTrue(self.cmd_mock.patched['_ListDevices'].called)
+
+  def testPrintDeviceInfo(self):
+    """Test that printing specified device's info works correctly."""
+    self.SetupCommandMock(['--device', '1.1.1.1'])
+    self.cmd_mock.inst.Run()
+    self.assertTrue(self.cmd_mock.patched['_PrintDeviceInfo'].called)
+    self.assertFalse(self.cmd_mock.patched['_ListDevices'].called)
 
   def testInvalidSubcommand(self):
     """Test that command fails when the subcommand is invalid."""
@@ -68,8 +76,6 @@ class DevicesRunThroughTest(cros_test_lib.MockTempDirTestCase):
   def testSetAlias(self):
     """Test that setting alias works correctly."""
     self.SetupCommandMock(['alias', self.ALIAS_NAME])
-    self.device_mock = self.PatchObject(remote_access,
-                                        'ChromiumOSDevice').return_value
     self.cmd_mock.inst.Run()
     self.assertTrue(self.device_mock.SetAlias.called)
 
