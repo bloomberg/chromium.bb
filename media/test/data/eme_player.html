@@ -3,7 +3,7 @@
   <head>
     <title>EME playback test application</title>
   </head>
-  <body style='font-family:"Lucida Console", Monaco, monospace; font-size:14px'>
+  <body style='font-family:"Lucida Console", Monaco, monospace; font-size:14px' onload="start()">
     <i>Clearkey works only with content encrypted using bear key.</i><br><br>
     <table>
     <tr title='URL param mediaFile=...'>
@@ -58,11 +58,16 @@
   </body>
   <script src='eme_player_js/app_loader.js' type='text/javascript'></script>
   <script type='text/javascript'>
-    var testConfig = new TestConfig();
-    testConfig.loadQueryParams();
-    // Update document with test configuration values.
-    var emeApp = new EMEApp(testConfig);
+    var testConfig;
+    var emeApp;
     var player;
+
+    function initApp() {
+      testConfig = new TestConfig();
+      testConfig.loadQueryParams();
+      // Update document with test configuration values.
+      emeApp = new EMEApp(testConfig);
+    }
 
     function onTimeUpdate(e) {
       var video = e.target;
@@ -124,6 +129,7 @@
     }
 
     function start() {
+      initApp();  
       emeApp.createPlayer()
           .then(function(p) {
               player = p;
@@ -132,7 +138,5 @@
               Utils.failTest('Unable to play video.');
           });
     }
-
-    start();
   </script>
 </html>

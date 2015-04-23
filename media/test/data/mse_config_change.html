@@ -6,9 +6,8 @@
     <video controls></video>
     <script src='eme_player_js/app_loader.js' type='text/javascript'></script>
     <script type="text/javascript">
-      var testConfig = new TestConfig();
-      testConfig.loadQueryParams();
-      var runEncrypted = testConfig.runEncrypted == 1;
+      var testConfig;
+      var runEncrypted;
 
       var video = document.querySelector('video');
       var mediaType = 'video/webm; codecs="vorbis, vp8"';
@@ -34,6 +33,12 @@
       var DELTA = 0.1;
       // Append MEDIA_2 source at APPEND_TIME, so expected total duration is:
       var TOTAL_DURATION = APPEND_TIME + MEDIA_2_LENGTH;
+
+      function initTestConfig() {
+        testConfig = new TestConfig();
+        testConfig.loadQueryParams();
+        runEncrypted = testConfig.runEncrypted == 1;
+      }
 
       function appendNextSource(mediaSource) {
         console.log('Appending next media source at ' + APPEND_TIME + 'sec.');
@@ -117,6 +122,7 @@
       }
 
       function runTest() {
+        initTestConfig();
         testConfig.mediaFile = MEDIA_1;
         testConfig.mediaType = mediaType;
         video.addEventListener('timeupdate', onTimeUpdate);

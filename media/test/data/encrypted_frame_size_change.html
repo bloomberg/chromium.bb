@@ -10,10 +10,15 @@
       var firstVideoSeek = false;
       var video_fixed_size = document.getElementsByTagName("video")[0];
       var video = document.getElementsByTagName("video")[1];
-      var testConfig = new TestConfig();
-      testConfig.loadQueryParams();
+      var testConfig;
+
+      function initTestConfig() {
+        testConfig = new TestConfig();
+        testConfig.loadQueryParams();
+      }
 
       function load() {
+        initTestConfig();
         loadVideo(video_fixed_size).then(function() {
           loadVideo(video);
         });
