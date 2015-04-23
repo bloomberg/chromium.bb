@@ -5,7 +5,7 @@
 #include "components/window_manager/basic_focus_rules.h"
 
 #include "base/macros.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view.h"
+#include "components/view_manager/public/cpp/view.h"
 
 using mojo::View;
 

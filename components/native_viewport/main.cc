@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/gles2/gpu_impl.h"
 #include "components/native_viewport/native_viewport_impl.h"
+#include "components/native_viewport/public/cpp/args.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/common/tracing_impl.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
@@ -16,7 +17,6 @@
 #include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/interface_factory_impl.h"
-#include "third_party/mojo_services/src/native_viewport/public/cpp/args.h"
 #include "ui/events/event_switches.h"
 #include "ui/gl/gl_surface.h"
 

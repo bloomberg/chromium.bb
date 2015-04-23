@@ -5,12 +5,12 @@
 #include "components/window_manager/focus_controller.h"
 
 #include "base/auto_reset.h"
+#include "components/view_manager/public/cpp/view_property.h"
+#include "components/view_manager/public/cpp/view_tracker.h"
 #include "components/window_manager/focus_controller_observer.h"
 #include "components/window_manager/focus_rules.h"
 #include "components/window_manager/view_target.h"
 #include "components/window_manager/window_manager_app.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_property.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_tracker.h"
 #include "ui/events/event.h"
 
 DECLARE_VIEW_PROPERTY_TYPE(window_manager::FocusController*);

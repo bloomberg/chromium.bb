@@ -6,7 +6,7 @@
 #define COMPONENTS_WINDOW_MANAGER_CAPTURE_CONTROLLER_H_
 
 #include "base/observer_list.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_observer.h"
+#include "components/view_manager/public/cpp/view_observer.h"
 
 namespace window_manager {
 

@@ -6,9 +6,9 @@
 #define COMPONENTS_VIEW_MANAGER_CLIENT_CONNECTION_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
-#include "third_party/mojo_services/src/view_manager/public/interfaces/view_manager.mojom.h"
 
 namespace view_manager {
 

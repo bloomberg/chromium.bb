@@ -9,11 +9,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "components/gles2/gpu_state.h"
+#include "components/gpu/public/interfaces/command_buffer.mojom.h"
+#include "components/gpu/public/interfaces/gpu.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/mojo_services/src/geometry/public/interfaces/geometry.mojom.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/command_buffer.mojom.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/gpu.mojom.h"
+#include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace gfx {
 class GLShareGroup;

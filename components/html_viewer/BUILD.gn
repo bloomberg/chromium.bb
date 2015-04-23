@@ -103,6 +103,9 @@ source_set("lib") {
     "//cc",
     "//cc/blink",
     "//cc/surfaces",
+    "//components/clipboard/public/interfaces",
+    "//components/gpu/public/interfaces",
+    "//components/surfaces/public/interfaces",
     "//components/webcrypto",
     "//gin",
     "//media",
@@ -120,12 +123,9 @@ source_set("lib") {
     "//third_party/mojo/src/mojo/public/cpp/utility",
     "//third_party/mojo/src/mojo/public/interfaces/application",
     "//third_party/mojo_services/src/accessibility/public/interfaces",
-    "//third_party/mojo_services/src/clipboard/public/interfaces",
     "//third_party/mojo_services/src/content_handler/public/interfaces",
-    "//third_party/mojo_services/src/gpu/public/interfaces",
-    "//third_party/mojo_services/src/input_events/public/interfaces",
+    "//ui/mojo/events:interfaces",
     "//third_party/mojo_services/src/navigation/public/interfaces",
-    "//third_party/mojo_services/src/surfaces/public/interfaces",
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/events/blink",
@@ -137,9 +137,9 @@ source_set("lib") {
   ]
 
   public_deps = [
+    "//components/view_manager/public/cpp",
     "//third_party/WebKit/public:blink",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo_services/src/view_manager/public/cpp",
     ":generate_blink_resource_map",
   ]
 

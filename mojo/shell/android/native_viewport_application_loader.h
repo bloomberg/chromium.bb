@@ -6,11 +6,11 @@
 #define MOJO_SHELL_ANDROID_NATIVE_VIEWPORT_APPLICATION_LOADER_H_
 
 #include "components/gles2/gpu_impl.h"
+#include "components/gpu/public/interfaces/gpu.mojom.h"
+#include "components/native_viewport/public/interfaces/native_viewport.mojom.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/shell/application_manager/application_loader.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/gpu.mojom.h"
-#include "third_party/mojo_services/src/native_viewport/public/interfaces/native_viewport.mojom.h"
 
 namespace gles2 {
 class GpuState;

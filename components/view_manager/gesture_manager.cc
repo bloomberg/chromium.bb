@@ -7,12 +7,12 @@
 #include <algorithm>
 
 #include "components/view_manager/gesture_manager_delegate.h"
+#include "components/view_manager/public/cpp/keys.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
 #include "components/view_manager/view_locator.h"
-#include "third_party/mojo_services/src/input_events/public/interfaces/input_events.mojom.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/keys.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/mojo/events/input_events.mojom.h"
 
 namespace view_manager {
 

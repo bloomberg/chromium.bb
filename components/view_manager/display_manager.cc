@@ -5,6 +5,9 @@
 #include "components/view_manager/display_manager.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "components/gpu/public/interfaces/gpu.mojom.h"
+#include "components/surfaces/public/interfaces/quads.mojom.h"
+#include "components/surfaces/public/interfaces/surfaces.mojom.h"
 #include "components/view_manager/connection_manager.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
@@ -14,9 +17,6 @@
 #include "mojo/converters/transform/transform_type_converters.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/gpu.mojom.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/quads.mojom.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces.mojom.h"
 
 using mojo::Rect;
 using mojo::Size;

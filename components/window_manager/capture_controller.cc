@@ -4,9 +4,9 @@
 
 #include "components/window_manager/capture_controller.h"
 
+#include "components/view_manager/public/cpp/view_property.h"
+#include "components/view_manager/public/cpp/view_tracker.h"
 #include "components/window_manager/capture_controller_observer.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_property.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_tracker.h"
 
 DECLARE_VIEW_PROPERTY_TYPE(window_manager::CaptureController*);
 

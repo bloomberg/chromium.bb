@@ -1,4 +1,4 @@
 include_rules = [
-  "+third_party/mojo_services/src/input_events",
   "+ui/events",
+  "+ui/mojo/events",
 ]

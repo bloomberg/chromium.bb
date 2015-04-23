@@ -6,13 +6,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/view_manager/ids.h"
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/test_change_tracker.h"
+#include "components/window_manager/public/interfaces/window_manager.mojom.h"
+#include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
 #include "mojo/application/application_test_base_chromium.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
-#include "third_party/mojo_services/src/view_manager/public/interfaces/view_manager.mojom.h"
-#include "third_party/mojo_services/src/window_manager/public/interfaces/window_manager.mojom.h"
-#include "third_party/mojo_services/src/window_manager/public/interfaces/window_manager_internal.mojom.h"
 
 using mojo::ApplicationConnection;
 using mojo::ApplicationDelegate;

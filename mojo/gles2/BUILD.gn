@@ -37,6 +37,7 @@ source_set("gles2") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//components/gles2:lib",
+    "//components/gpu/public/interfaces",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
@@ -47,7 +48,6 @@ source_set("gles2") {
     "//third_party/mojo/src/mojo/public/c/system",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
-    "//third_party/mojo_services/src/gpu/public/interfaces",
   ]
 
   include_dirs = [ ".." ]

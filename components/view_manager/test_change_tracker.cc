@@ -6,8 +6,8 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/view_manager/public/cpp/util.h"
 #include "mojo/common/common_type_converters.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/util.h"
 
 using mojo::Array;
 using mojo::Id;

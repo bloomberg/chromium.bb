@@ -1,4 +1,4 @@
 include_rules = [
-  "+third_party/mojo_services/src/geometry",
   "+ui/gfx/geometry",
+  "+ui/mojo/geometry",
 ]

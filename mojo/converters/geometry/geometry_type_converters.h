@@ -6,11 +6,11 @@
 #define MOJO_CONVERTERS_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
 
 #include "mojo/converters/geometry/mojo_geometry_export.h"
-#include "third_party/mojo_services/src/geometry/public/interfaces/geometry.mojom.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace mojo {
 

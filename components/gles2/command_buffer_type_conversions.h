@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_GLES2_COMMAND_BUFFER_TYPE_CONVERSIONS_H_
 #define COMPONENTS_GLES2_COMMAND_BUFFER_TYPE_CONVERSIONS_H_
 
+#include "components/gpu/public/interfaces/command_buffer.mojom.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/command_buffer.mojom.h"
 
 namespace mojo {
 

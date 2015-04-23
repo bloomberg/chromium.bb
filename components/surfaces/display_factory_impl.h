@@ -6,8 +6,8 @@
 #define COMPONENTS_SURFACES_DISPLAY_FACTORY_IMPL_H_
 
 #include "components/surfaces/display_impl.h"
+#include "components/surfaces/public/interfaces/display.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/display.mojom.h"
 
 namespace cc {
 class SurfaceManager;

@@ -13,7 +13,7 @@ component("geometry") {
   deps = [
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
-    "//third_party/mojo_services/src/geometry/public/interfaces",
+    "//ui/mojo/geometry:interfaces",
   ]
 
   defines = [ "MOJO_GEOMETRY_IMPLEMENTATION" ]

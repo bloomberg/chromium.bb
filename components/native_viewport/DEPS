@@ -1,5 +1,6 @@
 include_rules = [
   "+components/gles2",
+  "+components/gpu",
   "+jni",
   "+mojo/application",
   "+mojo/common",

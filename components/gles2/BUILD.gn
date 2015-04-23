@@ -26,11 +26,11 @@ source_set("gles2") {
   ]
   deps = [
     "//base",
+    "//components/gpu/public/interfaces",
     "//gpu/command_buffer/service",
     "//mojo/converters/geometry",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo_services/src/geometry/public/interfaces",
-    "//third_party/mojo_services/src/gpu/public/interfaces",
+    "//ui/mojo/geometry:interfaces",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
@@ -49,10 +49,10 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//components/gpu/public/interfaces",
     "//gpu/command_buffer/common",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
-    "//third_party/mojo_services/src/gpu/public/interfaces",
   ]
 
   include_dirs = [ "../.." ]

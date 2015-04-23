@@ -11,10 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "components/native_viewport/public/interfaces/native_viewport.mojom.h"
+#include "components/surfaces/public/interfaces/display.mojom.h"
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
-#include "third_party/mojo_services/src/native_viewport/public/interfaces/native_viewport.mojom.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/display.mojom.h"
-#include "third_party/mojo_services/src/view_manager/public/interfaces/view_manager.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {

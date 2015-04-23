@@ -13,12 +13,12 @@ mojo_native_application("clipboard") {
 
   deps = [
     "//base",
+    "//components/clipboard/public/interfaces",
     "//mojo/application",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
-    "//third_party/mojo_services/src/clipboard/public/interfaces",
   ]
 }
 
@@ -33,11 +33,11 @@ mojo_native_application("apptests") {
 
   deps = [
     "//base",
+    "//components/clipboard/public/interfaces",
     "//mojo/application",
     "//mojo/application:test_support",
     "//mojo/common",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
-    "//third_party/mojo_services/src/clipboard/public/interfaces",
   ]
 
   data_deps = [ ":clipboard($default_toolchain)" ]

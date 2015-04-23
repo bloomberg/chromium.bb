@@ -8,12 +8,12 @@
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "components/gpu/public/interfaces/command_buffer.mojom.h"
+#include "components/gpu/public/interfaces/viewport_parameter_listener.mojom.h"
+#include "components/surfaces/public/interfaces/surfaces.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/command_buffer.mojom.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/viewport_parameter_listener.mojom.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces.mojom.h"
 
 namespace cc {
 class Display;

@@ -9,11 +9,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/gpu/public/interfaces/gpu.mojom.h"
 #include "components/native_viewport/onscreen_context_provider.h"
 #include "components/native_viewport/platform_viewport.h"
+#include "components/native_viewport/public/interfaces/native_viewport.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/gpu.mojom.h"
-#include "third_party/mojo_services/src/native_viewport/public/interfaces/native_viewport.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gles2 {

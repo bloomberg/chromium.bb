@@ -7,13 +7,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/connection_manager_delegate.h"
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
 #include "mojo/common/tracing_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
-#include "third_party/mojo_services/src/view_manager/public/interfaces/view_manager.mojom.h"
-#include "third_party/mojo_services/src/window_manager/public/interfaces/window_manager_internal.mojom.h"
 
 namespace mojo {
 class ApplicationImpl;

@@ -4,12 +4,12 @@
 
 #include "components/view_manager/scheduled_animation_group.h"
 
+#include "components/view_manager/public/interfaces/animations.mojom.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/test_server_view_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/transform/transform_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo_services/src/view_manager/public/interfaces/animations.mojom.h"
 
 using mojo::ANIMATION_PROPERTY_NONE;
 using mojo::ANIMATION_PROPERTY_OPACITY;

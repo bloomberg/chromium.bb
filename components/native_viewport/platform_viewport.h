@@ -6,10 +6,10 @@
 #define COMPONENTS_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "third_party/mojo_services/src/input_events/public/interfaces/input_events.mojom.h"
-#include "third_party/mojo_services/src/native_viewport/public/interfaces/native_viewport.mojom.h"
+#include "components/native_viewport/public/interfaces/native_viewport.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/mojo/events/input_events.mojom.h"
 
 namespace gfx {
 class Rect;

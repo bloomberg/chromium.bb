@@ -4,10 +4,10 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "mojo/application/application_test_base_chromium.h"
 #include "mojo/common/common_type_converters.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
-#include "third_party/mojo_services/src/clipboard/public/interfaces/clipboard.mojom.h"
 
 using mojo::Array;
 using mojo::Clipboard;

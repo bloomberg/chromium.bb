@@ -1,5 +1,5 @@
 include_rules = [
   "+components/gles2",
+  "+components/gpu",
   "+gpu",
-  "+third_party/mojo_services/src/gpu",
 ]

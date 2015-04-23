@@ -33,7 +33,7 @@ source_set("converters") {
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
-    "//third_party/mojo_services/src/geometry/public/interfaces",
+    "//ui/mojo/geometry:interfaces",
   ]
 }
 

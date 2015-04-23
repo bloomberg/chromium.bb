@@ -11,10 +11,10 @@
 #include "components/view_manager/display_manager.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/window_manager_access_policy.h"
+#include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
-#include "third_party/mojo_services/src/window_manager/public/interfaces/window_manager_internal.mojom.h"
 
 using mojo::Array;
 using mojo::Callback;

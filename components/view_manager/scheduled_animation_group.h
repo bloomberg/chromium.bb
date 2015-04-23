@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "third_party/mojo_services/src/view_manager/public/interfaces/animations.mojom.h"
+#include "components/view_manager/public/interfaces/animations.mojom.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/transform.h"
 

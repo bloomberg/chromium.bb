@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/window_manager/basic_focus_rules.h"
 #include "components/window_manager/window_manager_app.h"
 #include "components/window_manager/window_manager_delegate.h"
@@ -11,8 +13,6 @@
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_manager.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_manager_delegate.h"
 
 // ApplicationDelegate implementation file for WindowManager users (e.g.
 // core window manager tests) that do not want to provide their own

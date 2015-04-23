@@ -6,7 +6,7 @@
 #define COMPONENTS_VIEW_MANAGER_ACCESS_POLICY_H_
 
 #include "components/view_manager/ids.h"
-#include "third_party/mojo_services/src/view_manager/public/interfaces/view_manager_constants.mojom.h"
+#include "components/view_manager/public/interfaces/view_manager_constants.mojom.h"
 
 namespace view_manager {
 

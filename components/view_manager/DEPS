@@ -1,5 +1,9 @@
 include_rules = [
   "+cc",
+  "+components/gpu",
+  "+components/native_viewport",
+  "+components/surfaces",
+  "+components/window_manager",
   "+mojo/application",
   "+mojo/common",
   "+mojo/converters",

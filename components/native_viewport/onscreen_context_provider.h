@@ -6,8 +6,8 @@
 #define COMPONENTS_NATIVE_VIEWPORT_ONSCREEN_CONTEXT_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/context_provider.mojom.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/viewport_parameter_listener.mojom.h"
+#include "components/gpu/public/interfaces/context_provider.mojom.h"
+#include "components/gpu/public/interfaces/viewport_parameter_listener.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gles2 {

@@ -1,7 +1,7 @@
 include_rules = [
   "+cc",
   "-cc/blink",
+  "+components/surfaces",
   "+gpu/command_buffer/client",
   "+mojo/gpu",
-  "+third_party/mojo_services/src/surfaces",
 ]

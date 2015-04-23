@@ -7,11 +7,11 @@
 
 #include "base/macros.h"
 #include "cc/surfaces/surface_manager.h"
+#include "components/surfaces/public/interfaces/display.mojom.h"
+#include "components/surfaces/public/interfaces/surfaces.mojom.h"
 #include "mojo/common/tracing_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/interface_factory.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/display.mojom.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces.mojom.h"
 
 namespace mojo {
 class ApplicationConnection;

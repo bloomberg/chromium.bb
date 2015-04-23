@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/mojo_services/src/input_events/public/interfaces/input_event_constants.mojom.h"
+#include "ui/mojo/events/input_event_constants.mojom.h"
 
 namespace mojo {
 namespace {

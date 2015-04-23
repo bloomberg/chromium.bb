@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/converters/input_events/mojo_input_events_export.h"
-#include "third_party/mojo_services/src/input_events/public/interfaces/input_events.mojom.h"
 #include "ui/events/event.h"
+#include "ui/mojo/events/input_events.mojom.h"
 
 namespace mojo {
 

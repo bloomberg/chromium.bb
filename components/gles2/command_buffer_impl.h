@@ -8,9 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "components/gpu/public/interfaces/command_buffer.mojom.h"
+#include "components/gpu/public/interfaces/viewport_parameter_listener.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/command_buffer.mojom.h"
-#include "third_party/mojo_services/src/gpu/public/interfaces/viewport_parameter_listener.mojom.h"
 
 namespace gpu {
 class SyncPointManager;

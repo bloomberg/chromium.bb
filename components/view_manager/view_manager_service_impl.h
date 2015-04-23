@@ -12,10 +12,10 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/surfaces/public/interfaces/surface_id.mojom.h"
 #include "components/view_manager/access_policy_delegate.h"
 #include "components/view_manager/ids.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/surface_id.mojom.h"
-#include "third_party/mojo_services/src/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 
 namespace gfx {
 class Rect;

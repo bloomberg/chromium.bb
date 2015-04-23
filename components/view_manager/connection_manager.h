@@ -13,11 +13,11 @@
 #include "base/timer/timer.h"
 #include "components/view_manager/animation_runner.h"
 #include "components/view_manager/ids.h"
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/server_view_delegate.h"
 #include "components/view_manager/server_view_observer.h"
+#include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo_services/src/view_manager/public/interfaces/view_manager.mojom.h"
-#include "third_party/mojo_services/src/window_manager/public/interfaces/window_manager_internal.mojom.h"
 
 namespace view_manager {
 

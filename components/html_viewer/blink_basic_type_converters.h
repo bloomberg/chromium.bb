@@ -9,7 +9,7 @@
 
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo_services/src/geometry/public/interfaces/geometry.mojom.h"
+#include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace blink {
 struct WebRect;

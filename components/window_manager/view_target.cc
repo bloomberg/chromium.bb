@@ -4,11 +4,11 @@
 
 #include "components/window_manager/view_target.h"
 
+#include "components/view_manager/public/cpp/view.h"
+#include "components/view_manager/public/cpp/view_property.h"
 #include "components/window_manager/view_targeter.h"
 #include "components/window_manager/window_manager_app.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_property.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/event_targeter.h"

@@ -9,12 +9,12 @@
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
+#include "components/surfaces/public/interfaces/quads.mojom.h"
+#include "components/surfaces/public/interfaces/surface_id.mojom.h"
+#include "components/surfaces/public/interfaces/surfaces.mojom.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "mojo/converters/surfaces/mojo_surfaces_export.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/quads.mojom.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/surface_id.mojom.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/surfaces.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {

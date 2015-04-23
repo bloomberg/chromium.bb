@@ -37,19 +37,19 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//ui/base",
-    "//ui/events",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
+    "//components/native_viewport/public/interfaces",
+    "//components/view_manager/public/cpp",
+    "//components/window_manager/public/interfaces",
     "//mojo/application",
     "//mojo/common",
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
     "//third_party/mojo/src/mojo/public/interfaces/application",
-    "//third_party/mojo_services/src/native_viewport/public/interfaces",
-    "//third_party/mojo_services/src/view_manager/public/cpp",
-    "//third_party/mojo_services/src/window_manager/public/interfaces",
+    "//ui/base",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 }
 
@@ -69,13 +69,13 @@ test("window_manager_unittests") {
 
   deps = [
     "//base/test:test_support",
+    "//components/view_manager/public/cpp",
+    "//components/view_manager/public/interfaces",
+    "//components/window_manager/public/interfaces",
     "//mojo/converters/geometry",
-    "//third_party/mojo/src/mojo/edk/system",
     "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/edk/system",
     "//third_party/mojo/src/mojo/public/cpp/application",
-    "//third_party/mojo_services/src/view_manager/public/cpp",
-    "//third_party/mojo_services/src/view_manager/public/interfaces",
-    "//third_party/mojo_services/src/window_manager/public/interfaces",
     "//testing/gtest",
     "//ui/events:test_support",
     "//ui/gfx",
@@ -100,9 +100,9 @@ mojo_native_application("test_window_manager") {
 
   deps = [
     "//base",
+    "//components/view_manager/public/cpp",
     "//mojo/application",
     "//mojo/common:tracing_impl",
-    "//third_party/mojo_services/src/view_manager/public/cpp",
   ]
 }
 
@@ -116,12 +116,12 @@ mojo_native_application("apptests") {
 
   deps = [
     "//base",
+    "//components/view_manager/public/cpp",
+    "//components/window_manager/public/interfaces",
     "//mojo/application",
     "//mojo/application:test_support",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/cpp/system:system",
-    "//third_party/mojo_services/src/view_manager/public/cpp",
-    "//third_party/mojo_services/src/window_manager/public/interfaces",
   ]
 
   data_deps = [ ":test_window_manager($default_toolchain)" ]

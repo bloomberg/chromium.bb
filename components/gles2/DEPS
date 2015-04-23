@@ -1,8 +1,7 @@
 include_rules = [
+  "+components/gpu",
   "+gpu",
   "+mojo/converters",
   "+third_party/mojo/src/mojo/public",
-  "+third_party/mojo_services/src/geometry",
-  "+third_party/mojo_services/src/gpu",
   "+ui",
 ]

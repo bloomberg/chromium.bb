@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "components/view_manager/public/cpp/types.h"
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
-#include "third_party/mojo_services/src/geometry/public/interfaces/geometry.mojom.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/types.h"
-#include "third_party/mojo_services/src/view_manager/public/interfaces/view_manager.mojom.h"
+#include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace view_manager {
 

@@ -26,12 +26,12 @@ component("surfaces") {
     "//base",
     "//cc",
     "//cc/surfaces",
+    "//components/surfaces/public/interfaces:surface_id",
+    "//components/surfaces/public/interfaces",
     "//gpu",
     "//ui/gfx/geometry",
     "//mojo/environment:chromium",
     "//skia",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
-    "//third_party/mojo_services/src/surfaces/public/interfaces:surface_id",
-    "//third_party/mojo_services/src/surfaces/public/interfaces",
   ]
 }

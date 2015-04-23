@@ -28,6 +28,8 @@ mojo_native_application("surfaces") {
     "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
+    "//components/gpu/public/interfaces",
+    "//components/surfaces/public/interfaces",
     "//gpu/command_buffer/client:gles2_interface",
     "//mojo/application",
     "//mojo/common",
@@ -39,9 +41,7 @@ mojo_native_application("surfaces") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/environment",
     "//third_party/mojo/src/mojo/public/cpp/system",
-    "//third_party/mojo_services/src/geometry/public/interfaces",
-    "//third_party/mojo_services/src/gpu/public/interfaces",
-    "//third_party/mojo_services/src/surfaces/public/interfaces",
     "//ui/gfx/geometry",
+    "//ui/mojo/geometry:interfaces",
   ]
 }

@@ -9,8 +9,8 @@
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "components/surfaces/public/interfaces/display.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/mojo_services/src/surfaces/public/interfaces/display.mojom.h"
 
 namespace cc {
 class Display;

@@ -6,6 +6,8 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "components/view_manager/public/cpp/view.h"
+#include "components/view_manager/public/cpp/view_manager.h"
 #include "components/window_manager/capture_controller.h"
 #include "components/window_manager/focus_controller.h"
 #include "components/window_manager/focus_rules.h"
@@ -19,8 +21,6 @@
 #include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "third_party/mojo/src/mojo/public/interfaces/application/shell.mojom.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_manager.h"
 
 using mojo::ApplicationConnection;
 using mojo::Id;

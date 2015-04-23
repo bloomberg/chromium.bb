@@ -15,12 +15,12 @@ component("input_events") {
 
   deps = [
     "//base",
-    "//ui/events",
-    "//ui/gfx/geometry",
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
     "//third_party/mojo/src/mojo/public/c/system:for_component",
-    "//third_party/mojo_services/src/input_events/public/interfaces",
-    "//third_party/mojo_services/src/geometry/public/interfaces",
+    "//ui/events",
+    "//ui/gfx/geometry",
+    "//ui/mojo/events:interfaces",
+    "//ui/mojo/geometry:interfaces",
   ]
 }

@@ -8,8 +8,8 @@
 #include <base/memory/scoped_ptr.h>
 #include <string>
 
+#include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/mojo_services/src/clipboard/public/interfaces/clipboard.mojom.h"
 
 namespace clipboard {
 

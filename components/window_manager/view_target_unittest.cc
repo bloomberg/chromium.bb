@@ -6,9 +6,9 @@
 
 #include <set>
 
+#include "components/view_manager/public/cpp/view.h"
 #include "components/window_manager/window_manager_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace window_manager {

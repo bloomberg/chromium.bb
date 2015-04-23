@@ -4,15 +4,15 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "components/view_manager/public/cpp/view.h"
+#include "components/view_manager/public/cpp/view_manager_client_factory.h"
+#include "components/view_manager/public/cpp/view_manager_delegate.h"
+#include "components/window_manager/public/interfaces/window_manager.mojom.h"
 #include "mojo/application/application_test_base_chromium.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/macros.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_manager_client_factory.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view_manager_delegate.h"
-#include "third_party/mojo_services/src/window_manager/public/interfaces/window_manager.mojom.h"
 
 namespace mojo {
 namespace {

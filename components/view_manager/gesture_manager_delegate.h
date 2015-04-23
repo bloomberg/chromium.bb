@@ -7,8 +7,8 @@
 
 #include <set>
 
-#include "third_party/mojo_services/src/input_events/public/interfaces/input_events.mojom.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/types.h"
+#include "components/view_manager/public/cpp/types.h"
+#include "ui/mojo/events/input_events.mojom.h"
 
 namespace view_manager {
 

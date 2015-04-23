@@ -4,10 +4,10 @@
 
 #include "components/window_manager/window_manager_impl.h"
 
+#include "components/view_manager/public/cpp/view.h"
 #include "components/window_manager/capture_controller.h"
 #include "components/window_manager/focus_controller.h"
 #include "components/window_manager/window_manager_app.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view.h"
 
 using mojo::Callback;
 using mojo::Id;

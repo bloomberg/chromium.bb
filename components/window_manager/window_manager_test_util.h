@@ -7,9 +7,9 @@
 
 #include <set>
 
+#include "components/view_manager/public/cpp/lib/view_private.h"
+#include "components/view_manager/public/cpp/view.h"
 #include "components/window_manager/view_target.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/lib/view_private.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/view.h"
 
 namespace gfx {
 class Rect;

@@ -7,10 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "components/view_manager/public/cpp/types.h"
+#include "components/window_manager/public/interfaces/window_manager.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
-#include "third_party/mojo_services/src/view_manager/public/cpp/types.h"
-#include "third_party/mojo_services/src/window_manager/public/interfaces/window_manager.mojom.h"
 
 namespace window_manager {
 
