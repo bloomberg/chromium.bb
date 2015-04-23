@@ -10,10 +10,8 @@
     <script>
       // Tests that the "close" event on a Notification object will be fired asynchronously
       // when it's being closed programmatically by the developer.
-      if (window.testRunner) {
+      if (window.testRunner)
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-          testRunner.grantWebNotificationPermission(location.origin, true);
-      }
 
       async_test(function(test) {
           var eventOrderCounter = 0;

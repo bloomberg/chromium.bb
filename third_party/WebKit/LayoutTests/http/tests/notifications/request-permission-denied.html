@@ -11,11 +11,7 @@
       // permission has been granted, causing creation of notifications to fail
       // because of that. When running this test manually, deny permission
       // for displaying notifications prior to running the test.
-      if (window.testRunner)
-          testRunner.clearWebNotificationPermissions();
-
       async_test(function (test) {
-          testRunner.grantWebNotificationPermission(location.origin, false);
           Notification.requestPermission(function (status) {
               assert_equals(status, 'denied');
 

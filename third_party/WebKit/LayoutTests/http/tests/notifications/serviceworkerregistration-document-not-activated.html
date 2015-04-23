@@ -14,10 +14,8 @@
           var scope = 'resources/scope/service-worker-show-notification-not-activated',
               workerUrl = 'resources/empty-worker.js';
 
-          if (window.testRunner) {
+          if (window.testRunner)
               testRunner.setPermission('notifications', 'denied', location.origin, location.origin);
-              testRunner.grantWebNotificationPermission(location.origin, false);
-          }
 
           service_worker_unregister_and_register(test, workerUrl, scope).then(function(registration) {
               assert_inherits(registration, 'showNotification', 'showNotification() must be exposed.');

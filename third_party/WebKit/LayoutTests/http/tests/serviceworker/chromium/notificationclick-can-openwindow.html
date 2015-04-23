@@ -4,10 +4,8 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../resources/test-helpers.js"></script>
 <script>
-if (window.testRunner) {
+if (window.testRunner)
     testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-    testRunner.grantWebNotificationPermission(location.origin, true);
-}
 
 var t = async_test('notificationclick can open new WindowClient');
 t.step(function() {

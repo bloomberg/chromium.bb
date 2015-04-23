@@ -18,7 +18,6 @@
               script = 'resources/instrumentation-service-worker.js';
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-          testRunner.grantWebNotificationPermission(location.origin, true);
 
           var workerInfo = null;
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(info) {

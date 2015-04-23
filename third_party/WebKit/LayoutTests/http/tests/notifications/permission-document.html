@@ -14,19 +14,12 @@
       // is correctly updated before calling Notification.permission because
       // testRunner.setPermission() and Notification.permission might end up
       // in a race given the synchronous aspect of the latter.
-      if (window.testRunner) {
-          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-          testRunner.grantWebNotificationPermission(location.origin, true);
-      }
-
       var notificationsPermissionsTest = async_test("Notification.permission reflects th actual permission.");
 
       var testIndex = 0;
       var tests = [
         function() {
           testRunner.setPermission('notifications', 'prompt', location.origin, location.origin);
-          testRunner.clearWebNotificationPermissions();
-
           navigator.permissions.query({name:'notifications'}).then(function() {
             // "default" indicates that no permission request has been answered.
             assert_equals(Notification.permission, 'default');
@@ -36,8 +29,6 @@
         },
         function() {
           testRunner.setPermission('notifications', 'denied', location.origin, location.origin);
-          testRunner.grantWebNotificationPermission(location.origin, false);
-
           navigator.permissions.query({name:'notifications'}).then(function() {
             // "default" indicates that no permission request has been answered.
             assert_equals(Notification.permission, 'denied');
@@ -47,8 +38,6 @@
         },
         function () {
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-          testRunner.grantWebNotificationPermission(location.origin, true);
-
           navigator.permissions.query({name:'notifications'}).then(function() {
             // "default" indicates that no permission request has been answered.
             assert_equals(Notification.permission, 'granted');

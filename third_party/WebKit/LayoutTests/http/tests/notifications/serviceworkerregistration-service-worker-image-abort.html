@@ -18,7 +18,6 @@
               script = 'resources/instrumentation-service-worker.js';
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-          testRunner.grantWebNotificationPermission(location.origin, true);
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(info) {
               // (1) Display a Web Notification through the Service Worker with which
               // will take 200ms to load, and unregister the Service Worker immediately

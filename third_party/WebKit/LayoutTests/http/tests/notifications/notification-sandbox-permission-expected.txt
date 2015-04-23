@@ -23,4 +23,4 @@ granted
 --------
 Frame: '<!--framePath //<!--frame2-->-->'
 --------
-default
+denied

@@ -10,9 +10,6 @@
       // Tests that the Notification object exposes the properties per the
       // semantics defined by the specification. When the test is being ran
       // manually, grant Notification permission first.
-      if (window.testRunner)
-          testRunner.clearWebNotificationPermissions();
-
       test(function () {
           var options = {
                 dir: "rtl",

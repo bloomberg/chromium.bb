@@ -15,7 +15,6 @@
               workerUrl = 'resources/empty-worker.js';
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-          testRunner.grantWebNotificationPermission(location.origin, true);
 
           var registration = null;
           service_worker_unregister_and_register(test, workerUrl, scope).then(function(swRegistration) {

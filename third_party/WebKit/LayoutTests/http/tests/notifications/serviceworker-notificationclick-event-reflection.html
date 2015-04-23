@@ -36,7 +36,6 @@
           };
 
           testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-          testRunner.grantWebNotificationPermission(location.origin, true);
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
               // (1) Tell the Service Worker to display a Web Notification.
               workerInfo.port.postMessage({

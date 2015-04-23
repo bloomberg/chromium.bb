@@ -10,7 +10,6 @@ header("Content-Security-Policy: suborigin foobar");
 </head>
 <script>
   testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
-  testRunner.grantWebNotificationPermission(location.origin, true);
   Notification.requestPermission(function (status) {
       assert_equals(status, 'default', 'The notification permission request should not be granted.');
 
