@@ -92,14 +92,14 @@ class InputSourceImpl : public InputSource {
     monitor_->SetCallback(base::Bind(&InputSourceImpl::OnLanguageChanged,
                                      base::Unretained(this)));
   }
-  virtual ~InputSourceImpl() {
+  ~InputSourceImpl() override {
     monitor_->SetCallback(base::Closure());
     monitor_->Unadvise();
   }
 
  private:
   // InputSource overrides.
-  virtual bool GetActiveSource(LANGID* langid, bool* is_ime) override {
+  bool GetActiveSource(LANGID* langid, bool* is_ime) override {
     TF_INPUTPROCESSORPROFILE profile = {};
     HRESULT hr = profile_manager_->GetActiveProfile(GUID_TFCAT_TIP_KEYBOARD,
                                                     &profile);
@@ -112,10 +112,10 @@ class InputSourceImpl : public InputSource {
     *is_ime = profile.dwProfileType == TF_PROFILETYPE_INPUTPROCESSOR;
     return true;
   }
-  virtual void AddObserver(InputSourceObserver* observer) override {
+  void AddObserver(InputSourceObserver* observer) override {
     observer_list_.AddObserver(observer);
   }
-  virtual void RemoveObserver(InputSourceObserver* observer) override {
+  void RemoveObserver(InputSourceObserver* observer) override {
     observer_list_.RemoveObserver(observer);
   }
   void OnLanguageChanged() {

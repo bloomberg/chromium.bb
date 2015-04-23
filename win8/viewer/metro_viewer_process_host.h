@@ -57,7 +57,7 @@ class METRO_VIEWER_EXPORT MetroViewerProcessHost : public IPC::Listener,
   // LaunchViewerAndWaitForConnection().
   explicit MetroViewerProcessHost(
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
-  virtual ~MetroViewerProcessHost();
+  ~MetroViewerProcessHost() override;
 
   // Returns the process id of the viewer process if one is connected to this
   // host, returns base::kNullProcessId otherwise.
@@ -120,11 +120,11 @@ class METRO_VIEWER_EXPORT MetroViewerProcessHost : public IPC::Listener,
 
  protected:
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // IPC::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelError() override = 0;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override = 0;
 
  private:
   // The following are the implementation for the corresponding static methods
@@ -188,7 +188,7 @@ class METRO_VIEWER_EXPORT MetroViewerProcessHost : public IPC::Listener,
     InternalMessageFilter(MetroViewerProcessHost* owner);
 
     // IPC::MessageFilter implementation.
-    virtual void OnChannelConnected(int32 peer_pid) override;
+    void OnChannelConnected(int32 peer_pid) override;
 
    private:
     MetroViewerProcessHost* owner_;

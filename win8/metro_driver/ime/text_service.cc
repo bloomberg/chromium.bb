@@ -326,13 +326,13 @@ class TextServiceImpl : public TextService,
     DCHECK(window_handle != NULL);
     DCHECK(thread_manager_.get());
   }
-  virtual ~TextServiceImpl() {
+  ~TextServiceImpl() override {
     thread_manager_->Deactivate();
   }
 
  private:
   // TextService overrides:
-  virtual void CancelComposition() override {
+  void CancelComposition() override {
     if (!current_document_) {
       VLOG(0) << "|current_document_| is NULL due to the previous error.";
       return;
@@ -343,7 +343,7 @@ class TextServiceImpl : public TextService,
     text_store->CancelComposition();
   }
 
-  virtual void OnDocumentChanged(
+  void OnDocumentChanged(
       const std::vector<int32>& input_scopes,
       const std::vector<metro_viewer::CharacterBounds>& character_bounds)
       override {
@@ -354,7 +354,7 @@ class TextServiceImpl : public TextService,
       OnDocumentTypeChanged(input_scopes);
   }
 
-  virtual void OnWindowActivated() override {
+  void OnWindowActivated() override {
     if (!current_document_) {
       VLOG(0) << "|current_document_| is NULL due to the previous error.";
       return;
@@ -371,7 +371,7 @@ class TextServiceImpl : public TextService,
     }
   }
 
-  virtual void OnCompositionChanged(
+  void OnCompositionChanged(
       const base::string16& text,
       int32 selection_start,
       int32 selection_end,
@@ -384,13 +384,13 @@ class TextServiceImpl : public TextService,
                                     underlines);
   }
 
-  virtual void OnTextCommitted(const base::string16& text) override {
+  void OnTextCommitted(const base::string16& text) override {
     if (!delegate_)
       return;
     delegate_->OnTextCommitted(text);
   }
 
-  virtual RECT GetCaretBounds() override {
+  RECT GetCaretBounds() override {
     if (composition_character_bounds_.empty()) {
       const RECT rect = {};
       return rect;
@@ -410,8 +410,7 @@ class TextServiceImpl : public TextService,
     return rect;
   }
 
-  virtual bool GetCompositionCharacterBounds(uint32 index,
-                                             RECT* rect) override {
+  bool GetCompositionCharacterBounds(uint32 index, RECT* rect) override {
     if (index >= composition_character_bounds_.size()) {
       return false;
     }

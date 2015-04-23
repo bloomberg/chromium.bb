@@ -146,7 +146,7 @@ class ChromeChannelListener : public IPC::Listener {
       : ui_proxy_(ui_loop->message_loop_proxy()),
         app_view_(app_view) {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(ChromeChannelListener, message)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ActivateDesktop,
                           OnActivateDesktop)
@@ -170,7 +170,7 @@ class ChromeChannelListener : public IPC::Listener {
     return true;
   }
 
-  virtual void OnChannelError() override {
+  void OnChannelError() override {
     DVLOG(1) << "Channel error. Exiting.";
     ui_proxy_->PostTask(FROM_HERE,
         base::Bind(&ChromeAppViewAsh::OnMetroExit, base::Unretained(app_view_),
