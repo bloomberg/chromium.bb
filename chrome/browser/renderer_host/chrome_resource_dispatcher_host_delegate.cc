@@ -56,7 +56,7 @@
 #include "net/url_request/url_request.h"
 
 #if !defined(DISABLE_NACL)
-#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
+#include "chrome/browser/component_updater/pnacl_component_installer.h"
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)

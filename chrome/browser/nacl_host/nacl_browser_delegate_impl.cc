@@ -4,10 +4,12 @@
 
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
 
+#include <vector>
+
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
+#include "chrome/browser/component_updater/pnacl_component_installer.h"
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
 #endif
@@ -61,7 +63,7 @@ void OnKeepaliveOnUIThread(
 
   // Only one instance will exist for NaCl embeds, even when more than one
   // embed of the same plugin exists on the same page.
-  DCHECK(instance_data.size() == 1);
+  DCHECK_EQ(1U, instance_data.size());
   if (instance_data.size() < 1)
     return;
 

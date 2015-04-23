@@ -197,7 +197,7 @@
 #endif  // !defined(OS_IOS)
 
 #if !defined(DISABLE_NACL)
-#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
+#include "chrome/browser/component_updater/pnacl_component_installer.h"
 #include "components/nacl/browser/nacl_process_host.h"
 #endif  // !defined(DISABLE_NACL)
 

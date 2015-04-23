@@ -298,6 +298,8 @@
       'browser/component_updater/component_updater_resource_throttle.h',
       'browser/component_updater/ev_whitelist_component_installer.cc',
       'browser/component_updater/ev_whitelist_component_installer.h',
+      'browser/component_updater/pnacl_component_installer.cc',
+      'browser/component_updater/pnacl_component_installer.h',
       'browser/component_updater/recovery_component_installer.cc',
       'browser/component_updater/recovery_component_installer.h',
       'browser/component_updater/supervised_user_whitelist_installer.cc',
@@ -1790,8 +1792,6 @@
       'browser/metrics/variations/variations_service.h',
     ],
     'chrome_browser_nacl_sources': [
-      'browser/component_updater/pnacl/pnacl_component_installer.cc',
-      'browser/component_updater/pnacl/pnacl_component_installer.h',
       'browser/nacl_host/nacl_browser_delegate_impl.cc',
       'browser/nacl_host/nacl_browser_delegate_impl.h',
       'browser/nacl_host/nacl_infobar_delegate.cc',

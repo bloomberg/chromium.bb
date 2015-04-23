@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_
+#ifndef CHROME_BROWSER_COMPONENT_UPDATER_PNACL_COMPONENT_INSTALLER_H_
+#define CHROME_BROWSER_COMPONENT_UPDATER_PNACL_COMPONENT_INSTALLER_H_
 
 #include <list>
 #include <string>
@@ -83,4 +83,4 @@ class PnaclComponentInstaller : public update_client::CrxInstaller {
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_
+#endif  // CHROME_BROWSER_COMPONENT_UPDATER_PNACL_COMPONENT_INSTALLER_H_
