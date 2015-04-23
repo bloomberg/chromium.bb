@@ -473,7 +473,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
 #endif
 }
 
-// Disabled for flaky crashing: crbug.com/446575
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        NavigateRemoteFrame) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
@@ -530,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 #if defined(OS_WIN)
-// http://crbug.com/446575
+// http://crbug.com/465722
 #define MAYBE_NavigateRemoteFrameToBlankAndDataURLs \
     DISABLED_NavigateRemoteFrameToBlankAndDataURLs
 #else
