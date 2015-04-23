@@ -46,7 +46,6 @@ private:
     };
 
     NthIndexData& ensureNthIndexDataFor(Node&);
-    inline unsigned nthIndex(Element&);
 
     using ParentMap = WillBeHeapHashMap<RefPtrWillBeMember<Node>, OwnPtrWillBeMember<NthIndexData>>;
 
