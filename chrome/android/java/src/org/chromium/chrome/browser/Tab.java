@@ -476,7 +476,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * ContentViewClient that provides basic tab functionality and is meant to be extended
      * by child classes.
      */
-    protected class TabContentViewClient extends ChromeContentViewClient {
+    protected class TabContentViewClient extends ContentViewClient {
         @Override
         public void onUpdateTitle(String title) {
             updateTitle(title);
@@ -1488,10 +1488,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         updateTitle();
         removeSadTabIfPresent();
 
-        if (getContentViewCore() != null) {
-            getContentViewCore().stopCurrentAccessibilityNotifications();
-        }
-
         clearHungRendererState();
 
         for (TabObserver observer : mObservers) observer.onPageLoadStarted(this);
@@ -1547,7 +1543,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     protected void initContentViewCore(WebContents webContents) {
         ContentViewCore cvc = new ContentViewCore(mContext);
-        ContentView cv = ContentView.newInstance(mContext, cvc);
+        ContentView cv = new ContentView(mContext, cvc);
         cv.setContentDescription(mContext.getResources().getString(
                 R.string.accessibility_content_view));
         cvc.initialize(cv, cv, webContents, getWindowAndroid());
@@ -2165,7 +2161,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private void swapWebContents(
             WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
         ContentViewCore cvc = new ContentViewCore(mContext);
-        ContentView cv = ContentView.newInstance(mContext, cvc);
+        ContentView cv = new ContentView(mContext, cvc);
         cv.setContentDescription(mContext.getResources().getString(
                 R.string.accessibility_content_view));
         cvc.initialize(cv, cv, webContents, getWindowAndroid());

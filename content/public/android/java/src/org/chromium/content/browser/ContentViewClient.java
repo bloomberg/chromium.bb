@@ -171,15 +171,6 @@ public class ContentViewClient {
     }
 
     /**
-     * @return Whether javascript is enabled by the embedder.
-     */
-    // TODO(tedchoc): Only used for ICS accessibility injection, so remove this method when
-    //                that is no longer needed.
-    public boolean isJavascriptEnabled() {
-        return true;
-    }
-
-    /**
      * @return Whether an externally managed (i.e., not compositor-driven) fling
      *         of this ContentView is active.
      */

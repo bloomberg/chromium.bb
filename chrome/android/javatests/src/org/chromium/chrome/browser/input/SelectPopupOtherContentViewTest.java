@@ -77,7 +77,7 @@ public class SelectPopupOtherContentViewTest extends ChromeShellTestBase {
                 WindowAndroid windowAndroid = new ActivityWindowAndroid(getActivity());
 
                 ContentViewCore contentViewCore = new ContentViewCore(getActivity());
-                ContentView cv = ContentView.newInstance(getActivity(), contentViewCore);
+                ContentView cv = new ContentView(getActivity(), contentViewCore);
                 contentViewCore.initialize(cv, cv, webContents, windowAndroid);
                 contentViewCore.destroy();
             }

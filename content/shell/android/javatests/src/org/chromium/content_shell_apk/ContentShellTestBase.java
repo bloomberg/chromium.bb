@@ -200,7 +200,7 @@ public class ContentShellTestBase
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
             public void run() {
-                ContentView cv = ContentView.newInstance(getActivity(), getContentViewCore());
+                ContentView cv = new ContentView(getActivity(), getContentViewCore());
                 ((ViewGroup) getContentViewCore().getContainerView().getParent()).addView(cv);
                 getContentViewCore().setContainerView(cv);
                 getContentViewCore().setContainerViewInternals(cv);

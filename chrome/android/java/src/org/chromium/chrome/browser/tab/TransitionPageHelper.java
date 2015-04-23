@@ -24,11 +24,11 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.FieldTrialList;
-import org.chromium.chrome.browser.ChromeContentViewClient;
 import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -600,7 +600,7 @@ public class TransitionPageHelper extends EmptyTabObserver {
         if (mNativeTransitionPageHelperPtr == 0) return;
 
         mTransitionContentViewCore = new ContentViewCore(mContext);
-        ContentView cv = ContentView.newInstance(mContext, mTransitionContentViewCore);
+        ContentView cv = new ContentView(mContext, mTransitionContentViewCore);
         mTransitionContentViewCore.initialize(cv, cv,
                 ContentViewUtil.createWebContentsWithSharedSiteInstance(mSourceContentViewCore),
                 mWindowAndroid);
@@ -617,7 +617,7 @@ public class TransitionPageHelper extends EmptyTabObserver {
         nativeSetWebContents(mNativeTransitionPageHelperPtr, mTransitionContentViewCore);
         setTransitionOpacity(0.0f);
 
-        mTransitionContentViewCore.setContentViewClient(new ChromeContentViewClient() {
+        mTransitionContentViewCore.setContentViewClient(new ContentViewClient() {
             @Override
             public void onOffsetsForFullscreenChanged(
                     float topControlsOffsetYPix,

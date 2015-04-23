@@ -9,7 +9,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ClipboardManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -19,14 +18,12 @@ import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.provider.Browser;
-import android.provider.Settings;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.TextUtils;
@@ -38,10 +35,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
-import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -58,7 +53,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.R;
 import org.chromium.content.browser.ScreenOrientationListener.ScreenOrientationObserver;
-import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
 import org.chromium.content.browser.accessibility.captioning.CaptioningBridgeFactory;
 import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBridge;
@@ -89,7 +83,6 @@ import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -314,20 +307,6 @@ public class ContentViewCore
         }
 
         @Override
-        public void didStartLoading(String url) {
-            ContentViewCore contentViewCore = mWeakContentViewCore.get();
-            if (contentViewCore == null) return;
-            contentViewCore.mAccessibilityInjector.onPageLoadStarted();
-        }
-
-        @Override
-        public void didStopLoading(String url) {
-            ContentViewCore contentViewCore = mWeakContentViewCore.get();
-            if (contentViewCore == null) return;
-            contentViewCore.mAccessibilityInjector.onPageLoadStopped();
-        }
-
-        @Override
         public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
                 String description, String failingUrl) {
             // Navigation that fails the provisional load will have the strong binding removed
@@ -538,9 +517,6 @@ public class ContentViewCore
 
     // Delegate that will handle GET downloads, and be notified of completion of POST downloads.
     private ContentViewDownloadDelegate mDownloadDelegate;
-
-    // The AccessibilityInjector that handles loading Accessibility scripts into the web page.
-    private AccessibilityInjector mAccessibilityInjector;
 
     // Whether native accessibility, i.e. without any script injection, is allowed.
     private boolean mNativeAccessibilityAllowed;
@@ -836,8 +812,6 @@ public class ContentViewCore
         initPopupZoomer(mContext);
         mImeAdapter = createImeAdapter();
         attachImeAdapter();
-
-        mAccessibilityInjector = AccessibilityInjector.newInstance(this);
 
         mWebContentsObserver = new ContentViewWebContentsObserver(this);
     }
@@ -1442,7 +1416,6 @@ public class ContentViewCore
     public void onHide() {
         assert mWebContents != null;
         hidePopupsAndPreserveSelection();
-        setInjectedAccessibility(false);
         mWebContents.onHide();
     }
 
@@ -1514,7 +1487,6 @@ public class ContentViewCore
     @SuppressWarnings("javadoc")
     @SuppressLint("MissingSuperCall")
     public void onDetachedFromWindow() {
-        setInjectedAccessibility(false);
         mZoomControlsDelegate.dismissZoomPicker();
         unregisterAccessibilityContentObserver();
 
@@ -2878,7 +2850,8 @@ public class ContentViewCore
      * @return Whether or not this action is supported.
      */
     public boolean supportsAccessibilityAction(int action) {
-        return mAccessibilityInjector.supportsAccessibilityAction(action);
+        // TODO(dmazzoni): implement this in BrowserAccessibilityManager.
+        return false;
     }
 
     /**
@@ -2892,10 +2865,7 @@ public class ContentViewCore
      *         the super {@link View} class.
      */
     public boolean performAccessibilityAction(int action, Bundle arguments) {
-        if (mAccessibilityInjector.supportsAccessibilityAction(action)) {
-            return mAccessibilityInjector.performAccessibilityAction(action, arguments);
-        }
-
+        // TODO(dmazzoni): implement this in BrowserAccessibilityManager.
         return false;
     }
 
@@ -2956,96 +2926,6 @@ public class ContentViewCore
     }
 
     /**
-     * @see View#onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo)
-     */
-    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
-        // Note: this is only used by the script-injecting accessibility code.
-        mAccessibilityInjector.onInitializeAccessibilityNodeInfo(info);
-    }
-
-    /**
-     * @see View#onInitializeAccessibilityEvent(AccessibilityEvent)
-     */
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-    public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
-        // Note: this is only used by the script-injecting accessibility code.
-        event.setClassName(this.getClass().getName());
-
-        // Identify where the top-left of the screen currently points to.
-        event.setScrollX(mRenderCoordinates.getScrollXPixInt());
-        event.setScrollY(mRenderCoordinates.getScrollYPixInt());
-
-        // The maximum scroll values are determined by taking the content dimensions and
-        // subtracting off the actual dimensions of the ChromeView.
-        int maxScrollXPix = Math.max(0, mRenderCoordinates.getMaxHorizontalScrollPixInt());
-        int maxScrollYPix = Math.max(0, mRenderCoordinates.getMaxVerticalScrollPixInt());
-        event.setScrollable(maxScrollXPix > 0 || maxScrollYPix > 0);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-            event.setMaxScrollX(maxScrollXPix);
-            event.setMaxScrollY(maxScrollYPix);
-        }
-    }
-
-    /**
-     * Returns whether accessibility script injection is enabled on the device
-     */
-    public boolean isDeviceAccessibilityScriptInjectionEnabled() {
-        try {
-            // On JellyBean and higher, native accessibility is the default so script
-            // injection is only allowed if enabled via a flag.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
-                    && !CommandLine.getInstance().hasSwitch(
-                            ContentSwitches.ENABLE_ACCESSIBILITY_SCRIPT_INJECTION)) {
-                return false;
-            }
-
-            if (!mContentViewClient.isJavascriptEnabled()) {
-                return false;
-            }
-
-            int result = getContext().checkCallingOrSelfPermission(
-                    android.Manifest.permission.INTERNET);
-            if (result != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-
-            Field field = Settings.Secure.class.getField("ACCESSIBILITY_SCRIPT_INJECTION");
-            field.setAccessible(true);
-            String accessibilityScriptInjection = (String) field.get(null);
-            ContentResolver contentResolver = getContext().getContentResolver();
-
-            if (mAccessibilityScriptInjectionObserver == null) {
-                ContentObserver contentObserver = new ContentObserver(new Handler()) {
-                    @Override
-                    public void onChange(boolean selfChange, Uri uri) {
-                        setAccessibilityState(mAccessibilityManager.isEnabled());
-                    }
-                };
-                contentResolver.registerContentObserver(
-                        Settings.Secure.getUriFor(accessibilityScriptInjection),
-                        false,
-                        contentObserver);
-                mAccessibilityScriptInjectionObserver = contentObserver;
-            }
-
-            return Settings.Secure.getInt(contentResolver, accessibilityScriptInjection, 0) == 1;
-        } catch (NoSuchFieldException e) {
-            // Do nothing, default to false.
-        } catch (IllegalAccessException e) {
-            // Do nothing, default to false.
-        }
-        return false;
-    }
-
-    /**
-     * Returns whether or not accessibility injection is being used.
-     */
-    public boolean isInjectingAccessibilityScript() {
-        return mAccessibilityInjector.accessibilityIsAvailable();
-    }
-
-    /**
      * Returns true if accessibility is on and touch exploration is enabled.
      */
     public boolean isTouchExplorationEnabled() {
@@ -3060,30 +2940,12 @@ public class ContentViewCore
      */
     public void setAccessibilityState(boolean state) {
         if (!state) {
-            setInjectedAccessibility(false);
             mNativeAccessibilityAllowed = false;
             mTouchExplorationEnabled = false;
         } else {
-            boolean useScriptInjection = isDeviceAccessibilityScriptInjectionEnabled();
-            setInjectedAccessibility(useScriptInjection);
-            mNativeAccessibilityAllowed = !useScriptInjection;
+            mNativeAccessibilityAllowed = true;
             mTouchExplorationEnabled = mAccessibilityManager.isTouchExplorationEnabled();
         }
-    }
-
-    /**
-     * Enable or disable injected accessibility features
-     */
-    public void setInjectedAccessibility(boolean enabled) {
-        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
-        mAccessibilityInjector.setScriptEnabled(enabled);
-    }
-
-    /**
-     * Stop any TTS notifications that are currently going on.
-     */
-    public void stopCurrentAccessibilityNotifications() {
-        mAccessibilityInjector.onPageLostFocus();
     }
 
     /**
