@@ -164,17 +164,6 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
         false, false, net::COOKIE_PRIORITY_DEFAULT));
   }
 
-  void AddCookieWithExpiration(const std::string& name,
-                               const std::string& value,
-                               const std::string& domain,
-                               const std::string& path,
-                               const base::Time& creation,
-                               const base::Time& expiration) {
-    store_->AddCookie(net::CanonicalCookie(
-        GURL(), name, value, domain, path, creation, expiration, creation,
-        false, false, false, net::COOKIE_PRIORITY_DEFAULT));
-  }
-
   std::string ReadRawDBContents() {
     std::string contents;
     if (!base::ReadFileToString(temp_dir_.path().Append(kCookieFilename),
@@ -266,80 +255,6 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
   // Reload and check if the cookie has been removed.
   CreateAndLoad(false, false, &cookies);
   ASSERT_EQ(0U, cookies.size());
-}
-
-TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
-  // Initialize the cookie store with 3 persistent cookies, 5 transient
-  // cookies.
-  InitializeStore(false, false);
-  // Add persistent cookies.
-  AddCookieWithExpiration("A", "B", "a1.com", "/", base::Time::Now(),
-                          base::Time::Now());
-  AddCookieWithExpiration("A", "B", "a2.com", "/", base::Time::Now(),
-                          base::Time::Now());
-  AddCookieWithExpiration("A", "B", "a3.com", "/", base::Time::Now(),
-                          base::Time::Now());
-  // Add transient cookies.
-  AddCookieWithExpiration("A", "B", "b1.com", "/", base::Time::Now(),
-                          base::Time());
-  AddCookieWithExpiration("A", "B", "b2.com", "/", base::Time::Now(),
-                          base::Time());
-  AddCookieWithExpiration("A", "B", "b3.com", "/", base::Time::Now(),
-                          base::Time());
-  AddCookieWithExpiration("A", "B", "b4.com", "/", base::Time::Now(),
-                          base::Time());
-  AddCookieWithExpiration("A", "B", "b5.com", "/", base::Time::Now(),
-                          base::Time());
-  DestroyStore();
-
-  // Load the store a second time. Before the store finishes loading, add a
-  // transient cookie and flush it to disk.
-  store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(kCookieFilename),
-      client_task_runner(),
-      background_task_runner(),
-      false, NULL, NULL);
-
-  // Posting a blocking task to db_thread_ makes sure that the DB thread waits
-  // until both Load and Flush have been posted to its task queue.
-  background_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
-                 base::Unretained(this)));
-  store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)));
-  AddCookieWithExpiration("A", "B", "c.com", "/", base::Time::Now(),
-                          base::Time());
-  base::WaitableEvent event(false, false);
-  store_->Flush(base::Bind(&base::WaitableEvent::Signal,
-                           base::Unretained(&event)));
-
-  // Now the DB-thread queue contains:
-  // (active:)
-  // 1. Wait (on db_event)
-  // (pending:)
-  // 2. "Init And Chain-Load First Domain"
-  // 3. Add Cookie (c.com)
-  // 4. Flush Cookie (c.com)
-  db_thread_event_.Signal();
-  event.Wait();
-  loaded_event_.Wait();
-  STLDeleteElements(&cookies_);
-  DestroyStore();
-
-  // Load the store a third time, this time restoring session cookies. The
-  // store should contain exactly 4 cookies: the 3 persistent, and "c.com",
-  // which was added during the second cookie store load.
-  store_ = new SQLitePersistentCookieStore(
-      temp_dir_.path().Append(kCookieFilename),
-      client_task_runner(),
-      background_task_runner(),
-      true, NULL, NULL);
-  store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
-                          base::Unretained(this)));
-  loaded_event_.Wait();
-  ASSERT_EQ(4u, cookies_.size());
-  STLDeleteElements(&cookies_);
 }
 
 // Test that priority load of cookies for a specfic domain key could be
