@@ -156,7 +156,8 @@ void SupervisedUserCreationScreen::OnPortalDetectionCompleted(
   if (state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
     get_base_screen_delegate()->HideErrorScreen(this);
     histogram_helper_->OnErrorHide();
-  } else {
+  } else if (state.status !=
+             NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN) {
     on_error_screen_ = true;
     ErrorScreen* screen = get_base_screen_delegate()->GetErrorScreen();
     ConfigureErrorScreen(screen, network, state.status);
