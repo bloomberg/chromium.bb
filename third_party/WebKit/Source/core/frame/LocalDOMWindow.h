@@ -146,8 +146,6 @@ public:
     int webkitRequestAnimationFrame(FrameRequestCallback*) override;
     void cancelAnimationFrame(int id) override;
     void schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent>, LocalDOMWindow* source, SecurityOrigin* target, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace);
-    String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) override;
-    String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) override;
 
     void registerProperty(DOMWindowProperty*);
     void unregisterProperty(DOMWindowProperty*);
@@ -193,8 +191,6 @@ public:
     void sendOrientationChangeEvent();
 
     void willDetachDocumentFromFrame();
-
-    bool isInsecureScriptAccess(DOMWindow& callingWindow, const String& urlString) override;
 
     EventQueue* eventQueue() const;
     void enqueueWindowEvent(PassRefPtrWillBeRawPtr<Event>);

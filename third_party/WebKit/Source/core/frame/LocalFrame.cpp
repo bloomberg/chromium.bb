@@ -287,11 +287,10 @@ SecurityContext* LocalFrame::securityContext() const
 
 void LocalFrame::printNavigationErrorMessage(const Frame& targetFrame, const char* reason)
 {
-    if (!targetFrame.isLocalFrame())
-        return;
-
-    const LocalFrame& targetLocalFrame = toLocalFrameTemporary(targetFrame);
-    String message = "Unsafe JavaScript attempt to initiate navigation for frame with URL '" + targetLocalFrame.document()->url().string() + "' from frame with URL '" + document()->url().string() + "'. " + reason + "\n";
+    // URLs aren't available for RemoteFrames, so the error message uses their
+    // origin instead.
+    String targetFrameDescription = targetFrame.isLocalFrame() ? "with URL '" + toLocalFrame(targetFrame).document()->url().string() + "'" : "with origin '" + targetFrame.securityContext()->securityOrigin()->toString() + "'";
+    String message = "Unsafe JavaScript attempt to initiate navigation for frame " + targetFrameDescription + " from frame with URL '" + document()->url().string() + "'. " + reason + "\n";
 
     localDOMWindow()->printErrorMessage(message);
 }

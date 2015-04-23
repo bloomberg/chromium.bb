@@ -118,7 +118,7 @@ bool DOMWindow::isCurrentlyDisplayedInFrame() const
     return frame() && frame()->domWindow() == this && frame()->host();
 }
 
-bool DOMWindow::isInsecureScriptAccess(DOMWindow& callingWindow, const String& urlString)
+bool DOMWindow::isInsecureScriptAccess(LocalDOMWindow& callingWindow, const String& urlString)
 {
     if (!protocolIsJavaScript(urlString))
         return false;
@@ -135,6 +135,8 @@ bool DOMWindow::isInsecureScriptAccess(DOMWindow& callingWindow, const String& u
         if (callingWindow.frame()->securityContext()->securityOrigin()->canAccess(frame()->securityContext()->securityOrigin()))
             return false;
     }
+
+    callingWindow.printErrorMessage(crossDomainAccessErrorMessage(&callingWindow));
     return true;
 }
 
@@ -203,6 +205,78 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
 
         toLocalDOMWindow(this)->schedulePostMessage(event, source, target.get(), stackTrace.release());
     }
+}
+
+// FIXME: Once we're throwing exceptions for cross-origin access violations, we will always sanitize the target
+// frame details, so we can safely combine 'crossDomainAccessErrorMessage' with this method after considering
+// exactly which details may be exposed to JavaScript.
+//
+// http://crbug.com/17325
+String DOMWindow::sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow)
+{
+    if (!callingWindow || !callingWindow->document() || !frame())
+        return String();
+
+    const KURL& callingWindowURL = callingWindow->document()->url();
+    if (callingWindowURL.isNull())
+        return String();
+
+    ASSERT(!callingWindow->document()->securityOrigin()->canAccess(frame()->securityContext()->securityOrigin()));
+
+    SecurityOrigin* activeOrigin = callingWindow->document()->securityOrigin();
+    String message = "Blocked a frame with origin \"" + activeOrigin->toString() + "\" from accessing a cross-origin frame.";
+
+    // FIXME: Evaluate which details from 'crossDomainAccessErrorMessage' may safely be reported to JavaScript.
+
+    return message;
+}
+
+String DOMWindow::crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow)
+{
+    if (!callingWindow || !callingWindow->document() || !frame())
+        return String();
+
+    const KURL& callingWindowURL = callingWindow->document()->url();
+    if (callingWindowURL.isNull())
+        return String();
+
+    // FIXME: This message, and other console messages, have extra newlines. Should remove them.
+    SecurityOrigin* activeOrigin = callingWindow->document()->securityOrigin();
+    SecurityOrigin* targetOrigin = frame()->securityContext()->securityOrigin();
+    ASSERT(!activeOrigin->canAccess(targetOrigin));
+
+    String message = "Blocked a frame with origin \"" + activeOrigin->toString() + "\" from accessing a frame with origin \"" + targetOrigin->toString() + "\". ";
+
+    // Sandbox errors: Use the origin of the frames' location, rather than their actual origin (since we know that at least one will be "null").
+    KURL activeURL = callingWindow->document()->url();
+    // TODO(alexmos): RemoteFrames do not have a document, and their URLs
+    // aren't replicated.  For now, construct the URL using the replicated
+    // origin for RemoteFrames. If the target frame is remote and sandboxed,
+    // there isn't anything else to show other than "null" for its origin.
+    KURL targetURL = isLocalDOMWindow() ? document()->url() : KURL(KURL(), targetOrigin->toString());
+    if (frame()->securityContext()->isSandboxed(SandboxOrigin) || callingWindow->document()->isSandboxed(SandboxOrigin)) {
+        message = "Blocked a frame at \"" + SecurityOrigin::create(activeURL)->toString() + "\" from accessing a frame at \"" + SecurityOrigin::create(targetURL)->toString() + "\". ";
+        if (frame()->securityContext()->isSandboxed(SandboxOrigin) && callingWindow->document()->isSandboxed(SandboxOrigin))
+            return "Sandbox access violation: " + message + " Both frames are sandboxed and lack the \"allow-same-origin\" flag.";
+        if (frame()->securityContext()->isSandboxed(SandboxOrigin))
+            return "Sandbox access violation: " + message + " The frame being accessed is sandboxed and lacks the \"allow-same-origin\" flag.";
+        return "Sandbox access violation: " + message + " The frame requesting access is sandboxed and lacks the \"allow-same-origin\" flag.";
+    }
+
+    // Protocol errors: Use the URL's protocol rather than the origin's protocol so that we get a useful message for non-heirarchal URLs like 'data:'.
+    if (targetOrigin->protocol() != activeOrigin->protocol())
+        return message + " The frame requesting access has a protocol of \"" + activeURL.protocol() + "\", the frame being accessed has a protocol of \"" + targetURL.protocol() + "\". Protocols must match.\n";
+
+    // 'document.domain' errors.
+    if (targetOrigin->domainWasSetInDOM() && activeOrigin->domainWasSetInDOM())
+        return message + "The frame requesting access set \"document.domain\" to \"" + activeOrigin->domain() + "\", the frame being accessed set it to \"" + targetOrigin->domain() + "\". Both must set \"document.domain\" to the same value to allow access.";
+    if (activeOrigin->domainWasSetInDOM())
+        return message + "The frame requesting access set \"document.domain\" to \"" + activeOrigin->domain() + "\", but the frame being accessed did not. Both must set \"document.domain\" to the same value to allow access.";
+    if (targetOrigin->domainWasSetInDOM())
+        return message + "The frame being accessed set \"document.domain\" to \"" + targetOrigin->domain() + "\", but the frame requesting access did not. Both must set \"document.domain\" to the same value to allow access.";
+
+    // Default.
+    return message + "Protocols, domains, and ports must match.";
 }
 
 DEFINE_TRACE(DOMWindow)
