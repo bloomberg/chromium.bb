@@ -178,7 +178,7 @@ if (is_android) {
     sources = [
       "android/java/org/chromium/html_viewer/Main.java",
     ]
-    jni_package = "mojo/services/html_viewer"
+    jni_package = "components/html_viewer"
   }
 
   android_library("html_viewer_java_classes") {
