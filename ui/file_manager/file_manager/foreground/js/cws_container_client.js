@@ -194,13 +194,13 @@ CWSContainerClient.prototype.postInstallSuccessMessage_ = function(itemId) {
  */
 CWSContainerClient.prototype.postInitializeMessage_ = function() {
   new Promise(function(fulfill, reject) {
-    chrome.management.getAll(function(items) {
+    chrome.fileManagerPrivate.getProvidingExtensions(function(items) {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError.message);
         return;
       }
       fulfill(items.map(function(item) {
-        return item.id;
+        return item.extensionId;
       }));
     })
   }).then(

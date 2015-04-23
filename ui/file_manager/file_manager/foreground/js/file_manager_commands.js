@@ -1257,8 +1257,14 @@ CommandHandler.COMMANDS_['add-new-services'] = /** @type {Command} */ ({
         function(result, itemId) {
           // If a new provider is installed, then launch it so the configuration
           // dialog is shown (if it's available).
-          if (result === SuggestAppsDialog.Result.SUCCESS)
-            chrome.management.launchApp(assert(itemId), function() {});
+          if (result === SuggestAppsDialog.Result.SUCCESS) {
+            chrome.fileManagerPrivate.addProvidedFileSystem(function() {
+              if (chrome.runtime.lastError) {
+                // TODO(mtomasz): Handle the error and let users uninstall the
+                // extension easily.
+              }
+            });
+          }
         });
   },
   canExecute: CommandUtil.canExecuteAlways
