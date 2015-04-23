@@ -22,7 +22,7 @@ const char* GetComponentName(ui::LatencyComponentType type) {
   switch (type) {
     CASE_TYPE(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT);
-    CASE_TYPE(INPUT_EVENT_LATENCY_BEGIN_SCROLL_UPDATE_MAIN_COMPONENT);
+    CASE_TYPE(LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
@@ -71,7 +71,12 @@ bool IsTerminalComponent(ui::LatencyComponentType type) {
 bool IsBeginComponent(ui::LatencyComponentType type) {
   return (type == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
           type == ui::INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT ||
-          type == ui::INPUT_EVENT_LATENCY_BEGIN_SCROLL_UPDATE_MAIN_COMPONENT);
+          type == ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT);
+}
+
+bool IsInputLatencyBeginComponent(ui::LatencyComponentType type) {
+  return (type == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
+          type == ui::INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT);
 }
 
 // This class is for converting latency info to trace buffer friendly format.
@@ -251,9 +256,6 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
   const unsigned char* benchmark_enabled =
       g_benchmark_enabled.Get().benchmark_enabled;
 
-  if (*benchmark_enabled && trace_name_str)
-    trace_name = trace_name_str;
-
   if (IsBeginComponent(component)) {
     // Should only ever add begin component once.
     CHECK_EQ(-1, trace_id);
@@ -265,14 +267,14 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
       // for an input event, we want to draw the beginning as when the event is
       // originally created, e.g. the timestamp of its ORIGINAL/UI_COMPONENT,
       // not when we actually issue the ASYNC_BEGIN trace event.
-      LatencyComponent component;
+      LatencyComponent begin_component;
       int64 ts = 0;
       if (FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                       0,
-                      &component) ||
+                      &begin_component) ||
           FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT,
                       0,
-                      &component)) {
+                      &begin_component)) {
         // The timestamp stored in ORIGINAL/UI_COMPONENT is using clock
         // CLOCK_MONOTONIC while TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0
         // expects timestamp using CLOCK_MONOTONIC or CLOCK_SYSTEM_TRACE (on
@@ -281,13 +283,21 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
         // can't use a static value.
         int64 diff = base::TimeTicks::Now().ToInternalValue() -
             base::TimeTicks::NowFromSystemTraceTime().ToInternalValue();
-        ts = component.event_time.ToInternalValue() - diff;
+        ts = begin_component.event_time.ToInternalValue() - diff;
       } else {
         ts = base::TimeTicks::NowFromSystemTraceTime().ToInternalValue();
       }
+
+      if (trace_name_str) {
+        if (IsInputLatencyBeginComponent(component))
+          trace_name = std::string("InputLatency::") + trace_name_str;
+        else
+          trace_name = std::string("Latency::") + trace_name_str;
+      }
+
       TRACE_EVENT_COPY_ASYNC_BEGIN_WITH_TIMESTAMP0(
           "benchmark",
-          ("InputLatency::" + trace_name).c_str(),
+          trace_name.c_str(),
           TRACE_ID_DONT_MANGLE(trace_id),
           ts);
     }
@@ -322,7 +332,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
 
     if (*benchmark_enabled) {
       TRACE_EVENT_COPY_ASYNC_END1("benchmark",
-                                  ("InputLatency::" + trace_name).c_str(),
+                                  trace_name.c_str(),
                                   TRACE_ID_DONT_MANGLE(trace_id),
                                   "data", AsTraceableData(*this));
     }

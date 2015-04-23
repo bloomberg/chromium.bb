@@ -83,7 +83,7 @@ void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
       return;
     ui::LatencyInfo new_latency;
     new_latency.AddLatencyNumberWithTraceName(
-        ui::INPUT_EVENT_LATENCY_BEGIN_SCROLL_UPDATE_MAIN_COMPONENT, 0,
+        ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 0,
         new_sequence_number, "ScrollUpdate");
     new_latency.CopyLatencyFrom(
         *latency_,

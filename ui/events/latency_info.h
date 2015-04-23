@@ -23,8 +23,10 @@ enum LatencyComponentType {
   INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
   // Timestamp when the input event is received in plugin.
   INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT,
-  // Timestamp when a scroll update for the main thread is begun.
-  INPUT_EVENT_LATENCY_BEGIN_SCROLL_UPDATE_MAIN_COMPONENT,
+  // In threaded scrolling, main thread scroll listener update is async to
+  // scroll processing in impl thread. This is the timestamp when we consider
+  // the main thread scroll listener update is begun.
+  LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT,
   // ---------------------------NORMAL COMPONENT-------------------------------
   // The original timestamp of the touch event which converts to scroll update.
   INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
