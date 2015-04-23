@@ -313,6 +313,10 @@
     // Identifies a child tree which this node hosts.
     child_tree_id,
 
+    // Position or Number of items in current set of listitems or treeitems
+    set_size,
+    pos_in_set,
+
     // Indicates if a form control has invalid input or
     // if an element has an aria-invalid attribute.
     invalid_state

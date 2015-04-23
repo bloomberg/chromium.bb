@@ -445,7 +445,7 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
     case ui::AX_ROLE_LIST_ITEM:
     case ui::AX_ROLE_LIST_BOX_OPTION:
     case ui::AX_ROLE_TREE_ITEM:
-      index = GetIndexInParent();
+      index = GetIntAttribute(ui::AX_ATTR_POS_IN_SET) - 1;
       break;
     case ui::AX_ROLE_SLIDER:
     case ui::AX_ROLE_PROGRESS_INDICATOR: {

@@ -90,6 +90,8 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   bool IsValid();
   bool IsReadOnly();
   std::string Orientation();
+  int PosInSet();
+  int SetSize();
   int ClickPointX();
   int ClickPointY();
   int32_t RowCount();

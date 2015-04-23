@@ -108,6 +108,8 @@ NSDictionary* attributeToMethodNameMap = nil;
     { @"AXARIAAtomic", @"ariaAtomic" },
     { @"AXARIABusy", @"ariaBusy" },
     { @"AXARIALive", @"ariaLive" },
+    { @"AXARIASetSize", @"ariaSetSize" },
+    { @"AXARIAPosInSet", @"ariaPosInSet" },
     { @"AXARIARelevant", @"ariaRelevant" },
     { @"AXDropEffects", @"dropeffect" },
     { @"AXGrabbed", @"grabbed" },
@@ -168,6 +170,16 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSString*)ariaRelevant {
   return NSStringForStringAttribute(
       browserAccessibility_, ui::AX_ATTR_LIVE_RELEVANT);
+}
+
+- (NSNumber*)ariaPosInSet {
+  return [NSNumber numberWithInt:
+      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_POS_IN_SET)];
+}
+
+- (NSNumber*)ariaSetSize {
+  return [NSNumber numberWithInt:
+      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_SET_SIZE)];
 }
 
 // Returns an array of BrowserAccessibilityCocoa objects, representing the
@@ -1405,6 +1417,18 @@ NSDictionary* attributeToMethodNameMap = nil;
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityURLAttribute,
         nil]];
+  }
+
+  // Position in set and Set size
+  if (browserAccessibility_->HasIntAttribute(ui::AX_ATTR_POS_IN_SET)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+         @"AXARIAPosInSet",
+         nil]];
+  }
+  if (browserAccessibility_->HasIntAttribute(ui::AX_ATTR_SET_SIZE)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+         @"AXARIASetSize",
+         nil]];
   }
 
   // Live regions.

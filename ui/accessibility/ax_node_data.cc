@@ -242,6 +242,12 @@ std::string AXNodeData::ToString() const {
             break;
         }
         break;
+      case AX_ATTR_SET_SIZE:
+        result += " setsize=" + value;
+        break;
+      case AX_ATTR_POS_IN_SET:
+        result += " posinset=" + value;
+        break;
       case AX_ATTR_INVALID_STATE:
         switch (int_attributes[i].second) {
           case AX_INVALID_STATE_FALSE:

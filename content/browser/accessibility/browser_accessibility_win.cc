@@ -903,16 +903,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
   if (!group_level || !similar_items_in_group || !position_in_group)
     return E_INVALIDARG;
 
-  if (GetRole() == ui::AX_ROLE_LIST_BOX_OPTION &&
-      GetParent() &&
-      GetParent()->GetRole() == ui::AX_ROLE_LIST_BOX) {
-    *group_level = 0;
-    *similar_items_in_group = GetParent()->PlatformChildCount();
-    *position_in_group = GetIndexInParent() + 1;
-    return S_OK;
-  }
-
-  return E_NOTIMPL;
+  *group_level = 0;
+  *similar_items_in_group = GetIntAttribute(ui::AX_ATTR_SET_SIZE);
+  *position_in_group = GetIntAttribute(ui::AX_ATTR_POS_IN_SET);
+  return S_OK;
 }
 
 //
@@ -3002,15 +2996,9 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   // Expose "level" attribute for headings, trees, etc.
   IntAttributeToIA2(ui::AX_ATTR_HIERARCHICAL_LEVEL, "level");
 
-  // Expose the set size and position in set for listbox options.
-  if (GetRole() == ui::AX_ROLE_LIST_BOX_OPTION &&
-      GetParent() &&
-      GetParent()->GetRole() == ui::AX_ROLE_LIST_BOX) {
-    win_attributes_->ia2_attributes.push_back(
-        L"setsize:" + base::IntToString16(GetParent()->PlatformChildCount()));
-    win_attributes_->ia2_attributes.push_back(
-        L"setsize:" + base::IntToString16(GetIndexInParent() + 1));
-  }
+  // Expose the set size and position in set.
+  IntAttributeToIA2(ui::AX_ATTR_SET_SIZE, "setsize");
+  IntAttributeToIA2(ui::AX_ATTR_POS_IN_SET, "posinset");
 
   if (ia_role() == ROLE_SYSTEM_CHECKBUTTON ||
       ia_role() == ROLE_SYSTEM_RADIOBUTTON ||

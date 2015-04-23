@@ -510,6 +510,8 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("isValid", &WebAXObjectProxy::IsValid)
       .SetProperty("isReadOnly", &WebAXObjectProxy::IsReadOnly)
       .SetProperty("orientation", &WebAXObjectProxy::Orientation)
+      .SetProperty("posInSet", &WebAXObjectProxy::PosInSet)
+      .SetProperty("setSize", &WebAXObjectProxy::SetSize)
       .SetProperty("clickPointX", &WebAXObjectProxy::ClickPointX)
       .SetProperty("clickPointY", &WebAXObjectProxy::ClickPointY)
       .SetProperty("rowCount", &WebAXObjectProxy::RowCount)
@@ -831,6 +833,16 @@ std::string WebAXObjectProxy::Orientation() {
     return "AXOrientation: AXHorizontalOrientation";
 
   return std::string();
+}
+
+int WebAXObjectProxy::PosInSet() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.posInSet();
+}
+
+int WebAXObjectProxy::SetSize() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.setSize();
 }
 
 int WebAXObjectProxy::ClickPointX() {

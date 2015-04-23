@@ -335,6 +335,12 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                          src.hierarchicalLevel());
   }
 
+  if (src.setSize())
+    dst->AddIntAttribute(ui::AX_ATTR_SET_SIZE, src.setSize());
+
+  if (src.posInSet())
+    dst->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, src.posInSet());
+
   // Treat the active list box item as focused.
   if (dst->role == ui::AX_ROLE_LIST_BOX_OPTION &&
       src.isSelectedOptionActive()) {

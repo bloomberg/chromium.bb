@@ -161,6 +161,8 @@ NSArray* BuildAllAttributesArray() {
       @"AXARIABusy",
       @"AXARIALive",
       @"AXARIARelevant",
+      @"AXARIASetSize",
+      @"AXARIAPosInSet",
       NSAccessibilityColumnIndexRangeAttribute,
       @"AXDropEffects",
       NSAccessibilityEnabledAttribute,
