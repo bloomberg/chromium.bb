@@ -31,6 +31,7 @@ class MockBuildCommand(command_unittest.MockCommand):
   def Run(self, inst):
     self.PatchObject(chroot_util, 'UpdateChroot',
                      side_effect=self.OnChrootUpdate)
+    self.PatchObject(chroot_util, 'Emerge')
     with parallel_unittest.ParallelMock():
       command_unittest.MockCommand.Run(self, inst)
 
