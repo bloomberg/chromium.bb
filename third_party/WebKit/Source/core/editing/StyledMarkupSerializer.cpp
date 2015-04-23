@@ -54,6 +54,18 @@ const String& styleNodeCloseTag(bool isBlock)
     return isBlock ? divClose : styleSpanClose;
 }
 
+template<typename PositionType>
+TextOffset toTextOffset(const PositionType& position)
+{
+    if (position.isNull())
+        return TextOffset();
+
+    if (!position.containerNode()->isTextNode())
+        return TextOffset();
+
+    return TextOffset(toText(position.containerNode()), position.offsetInContainerNode());
+}
+
 } // namespace
 
 using namespace HTMLNames;
@@ -65,7 +77,7 @@ static Position toPositionInDOMTree(const Position& position)
 
 template<typename Strategy>
 StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const PositionType& start, const PositionType& end, Node* highestNodeToBeSerialized)
-    : m_markupAccumulator(shouldResolveURLs, toPositionInDOMTree(start), toPositionInDOMTree(end), shouldAnnotate, highestNodeToBeSerialized)
+    : m_markupAccumulator(shouldResolveURLs, toTextOffset(start.parentAnchoredEquivalent()), toTextOffset(end.parentAnchoredEquivalent()), start.document(), shouldAnnotate, highestNodeToBeSerialized)
     , m_start(start)
     , m_end(end)
 {

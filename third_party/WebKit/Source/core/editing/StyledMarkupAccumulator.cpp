@@ -50,14 +50,41 @@ const String& styleNodeCloseTag(bool isBlock)
 
 using namespace HTMLNames;
 
-StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const Position& start, const Position& end, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
+TextOffset::TextOffset()
+    : m_offset(0)
+{
+}
+
+TextOffset::TextOffset(PassRefPtrWillBeRawPtr<Text> text, int offset)
+    : m_text(text)
+    , m_offset(offset)
+{
+}
+
+TextOffset::TextOffset(const TextOffset& other)
+    : m_text(other.m_text)
+    , m_offset(other.m_offset)
+{
+}
+
+bool TextOffset::isNull() const
+{
+    return !m_text;
+}
+
+bool TextOffset::isNotNull() const
+{
+    return m_text;
+}
+
+StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
     : MarkupAccumulator(shouldResolveURLs)
-    , m_start(start.parentAnchoredEquivalent())
-    , m_end(end.parentAnchoredEquivalent())
+    , m_start(start)
+    , m_end(end)
+    , m_document(document)
     , m_shouldAnnotate(shouldAnnotate)
     , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
 {
-    ASSERT(m_start.isNull() == m_end.isNull());
 }
 
 void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
@@ -79,11 +106,13 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
         const String& str = text.data();
         unsigned length = str.length();
         unsigned start = 0;
-        if (m_start.isNotNull() && m_end.isNotNull()) {
-            if (text == m_end.containerNode())
-                length = m_end.offsetInContainerNode();
-            if (text == m_start.containerNode()) {
-                start = m_start.offsetInContainerNode();
+        if (m_end.isNotNull()) {
+            if (text == m_end.text())
+                length = m_end.offset();
+        }
+        if (m_start.isNotNull()) {
+            if (text == m_start.text()) {
+                start = m_start.offset();
                 length -= start;
             }
         }
@@ -169,8 +198,8 @@ void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePr
         out.appendLiteral("<div style=\"");
     else
         out.appendLiteral("<span style=\"");
-    ASSERT(m_start.isNotNull());
-    appendAttributeValue(out, style->asText(), m_start.document()->isHTMLDocument());
+    ASSERT(m_document);
+    appendAttributeValue(out, style->asText(), m_document->isHTMLDocument());
     out.appendLiteral("\">");
 }
 
@@ -178,28 +207,29 @@ String StyledMarkupAccumulator::renderedText(Text& textNode)
 {
     int startOffset = 0;
     int endOffset = textNode.length();
-    if (m_start.containerNode() == textNode)
-        startOffset = m_start.offsetInContainerNode();
-    if (m_end.containerNode() == textNode)
-        endOffset = m_end.offsetInContainerNode();
+    if (m_start.text() == textNode)
+        startOffset = m_start.offset();
+    if (m_end.text() == textNode)
+        endOffset = m_end.offset();
     return plainText(Position(&textNode, startOffset), Position(&textNode, endOffset));
 }
 
-String StyledMarkupAccumulator::stringValueForRange(const Node& node)
+String StyledMarkupAccumulator::stringValueForRange(const Text& node)
 {
     if (m_start.isNull())
-        return node.nodeValue();
+        return node.data();
 
-    String str = node.nodeValue();
-    if (m_start.containerNode() == node)
-        str.truncate(m_end.offsetInContainerNode());
-    if (m_end.containerNode() == node)
-        str.remove(0, m_start.offsetInContainerNode());
+    String str = node.data();
+    if (m_start.text() == node)
+        str.truncate(m_end.offset());
+    if (m_end.text() == node)
+        str.remove(0, m_start.offset());
     return str;
 }
 
 bool StyledMarkupAccumulator::shouldApplyWrappingStyle(const Node& node) const
 {
+    // TODO(hajimehoshi): Use Strategy
     return m_highestNodeToBeSerialized && m_highestNodeToBeSerialized->parentNode() == node.parentNode()
         && m_wrappingStyle && m_wrappingStyle->style();
 }

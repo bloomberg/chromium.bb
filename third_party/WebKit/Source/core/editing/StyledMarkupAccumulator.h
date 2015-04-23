@@ -29,21 +29,40 @@
 #ifndef StyledMarkupAccumulator_h
 #define StyledMarkupAccumulator_h
 
-#include "core/dom/Position.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/MarkupAccumulator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
+class Document;
 class StylePropertySet;
+class Text;
+
+class TextOffset {
+    STACK_ALLOCATED();
+public:
+    TextOffset();
+    TextOffset(PassRefPtrWillBeRawPtr<Text>, int);
+    TextOffset(const TextOffset&);
+
+    Text* text() const { return m_text.get(); }
+    int offset() const { return m_offset; }
+
+    bool isNull() const;
+    bool isNotNull() const;
+
+private:
+    RefPtrWillBeMember<Text> m_text;
+    int m_offset;
+};
 
 class StyledMarkupAccumulator final : public MarkupAccumulator {
     STACK_ALLOCATED();
 public:
     enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
 
-    StyledMarkupAccumulator(EAbsoluteURLs, const Position& start, const Position& end, EAnnotateForInterchange, Node*);
+    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*);
     virtual void appendText(StringBuilder&, Text&) override;
     virtual void appendElement(StringBuilder&, Element&, Namespaces*) override;
     void appendElement(StringBuilder&, Element&, bool, RangeFullySelectsNode);
@@ -60,12 +79,13 @@ public:
 
 private:
     String renderedText(Text&);
-    String stringValueForRange(const Node&);
+    String stringValueForRange(const Text&);
 
     bool shouldApplyWrappingStyle(const Node&) const;
 
-    const Position m_start;
-    const Position m_end;
+    const TextOffset m_start;
+    const TextOffset m_end;
+    const RefPtrWillBeMember<Document> m_document;
     const EAnnotateForInterchange m_shouldAnnotate;
     RawPtrWillBeMember<Node> m_highestNodeToBeSerialized;
     RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
