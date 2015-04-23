@@ -64,6 +64,7 @@ struct test {
 	int pointer_x;
 	int pointer_y;
 	uint32_t n_egl_buffers;
+	int buffer_copy_done;
 };
 
 struct input {

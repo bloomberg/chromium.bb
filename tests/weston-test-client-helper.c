@@ -446,9 +446,19 @@ test_handle_n_egl_buffers(void *data, struct weston_test *weston_test, uint32_t 
 	test->n_egl_buffers = n;
 }
 
+static void
+test_handle_capture_screenshot_done(void *data, struct weston_test *weston_test)
+{
+	struct test *test = data;
+
+	printf("Screenshot has been captured\n");
+	test->buffer_copy_done = 1;
+}
+
 static const struct weston_test_listener test_listener = {
 	test_handle_pointer_position,
 	test_handle_n_egl_buffers,
+	test_handle_capture_screenshot_done,
 };
 
 static void
