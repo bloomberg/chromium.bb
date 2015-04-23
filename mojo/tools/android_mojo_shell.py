@@ -7,13 +7,16 @@ import argparse
 import logging
 import sys
 
+from mopy.android import AndroidShell
 from mopy.config import Config
-from mopy import android
+from mopy.paths import Paths
+
+USAGE = ("android_mojo_shell.py [<shell-and-app-args>] [<mojo-app>]")
 
 def main():
   logging.basicConfig()
 
-  parser = argparse.ArgumentParser("Helper for running mojo_shell")
+  parser = argparse.ArgumentParser(usage=USAGE)
 
   debug_group = parser.add_mutually_exclusive_group()
   debug_group.add_argument('--debug', help='Debug build (default)',
@@ -23,18 +26,22 @@ def main():
   parser.add_argument('--target-cpu', help='CPU architecture to run for.',
                       choices=['x64', 'x86', 'arm'])
   parser.add_argument('--origin', help='Origin for mojo: URLs.')
+  parser.add_argument('--target-device', help='Device to run on.')
   launcher_args, args = parser.parse_known_args()
 
   config = Config(target_os=Config.OS_ANDROID,
                   target_cpu=launcher_args.target_cpu,
                   is_debug=launcher_args.debug)
+  paths = Paths(config)
+  shell = AndroidShell(paths.target_mojo_shell_path, paths.build_dir,
+                       paths.adb_path, launcher_args.target_device)
 
-  extra_shell_args = android.PrepareShellRun(config, launcher_args.origin)
+  extra_shell_args = shell.PrepareShellRun(launcher_args.origin)
   args.extend(extra_shell_args)
 
-  android.CleanLogs()
-  p = android.ShowLogs()
-  android.StartShell(args, sys.stdout, p.terminate)
+  shell.CleanLogs()
+  p = shell.ShowLogs()
+  shell.StartShell(args, sys.stdout, p.terminate)
   return 0
 
 
