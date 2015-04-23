@@ -1,0 +1,15 @@
+CONSOLE ERROR: line 1: Uncaught (in promise) Error: Handled error
+CONSOLE MESSAGE: Handler added to rejected promise
+Tests that console revokes lazily handled promise rejections.
+
+Creating worker with promise
+
+Message added: error log
+    1 errors
+    0 handled promise rejection
+    0 warning
+console-message-wrapper console-error-level
+
+Handling promise
+console-message-wrapper console-revokedError-level
+

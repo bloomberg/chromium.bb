@@ -51,6 +51,10 @@ public:
     void setTimestamp(double);
     WorkerGlobalScopeProxy* workerGlobalScopeProxy() { return m_workerProxy; }
     void setWorkerGlobalScopeProxy(WorkerGlobalScopeProxy* proxy) { m_workerProxy = proxy; }
+    unsigned assignMessageId();
+    unsigned messageId() const { return m_messageId; }
+    unsigned relatedMessageId() const { return m_relatedMessageId; }
+    void setRelatedMessageId(unsigned relatedMessageId) { m_relatedMessageId = relatedMessageId; }
 
     MessageSource source() const;
     MessageLevel level() const;
@@ -81,6 +85,8 @@ private:
     unsigned long m_requestIdentifier;
     double m_timestamp;
     WorkerGlobalScopeProxy* m_workerProxy;
+    unsigned m_messageId;
+    unsigned m_relatedMessageId;
 };
 
 } // namespace blink

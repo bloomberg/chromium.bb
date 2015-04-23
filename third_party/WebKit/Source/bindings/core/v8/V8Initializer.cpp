@@ -203,8 +203,13 @@ void V8Initializer::reportRejectedPromisesOnMainThread()
 static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
 {
     ASSERT(isMainThread());
-    if (data.GetEvent() != v8::kPromiseRejectWithNoHandler)
+    if (data.GetEvent() == v8::kPromiseHandlerAddedAfterReject) {
+        rejectedPromisesOnMainThread().handlerAdded(data);
         return;
+    }
+
+    ASSERT(data.GetEvent() == v8::kPromiseRejectWithNoHandler);
+
     v8::Handle<v8::Promise> promise = data.GetPromise();
 
     v8::Isolate* isolate = promise->GetIsolate();
@@ -249,14 +254,11 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
         errorMessage = "Uncaught " + messageForConsole;
 
     ScriptState* scriptState = ScriptState::current(isolate);
-    rejectedPromisesOnMainThread().add(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack);
+    rejectedPromisesOnMainThread().rejectedWithNoHandler(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack);
 }
 
 static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
 {
-    if (data.GetEvent() != v8::kPromiseRejectWithNoHandler)
-        return;
-
     v8::Handle<v8::Promise> promise = data.GetPromise();
 
     // Bail out if called during context initialization.
@@ -272,6 +274,13 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
     ASSERT(executionContext->isWorkerGlobalScope());
     WorkerScriptController* scriptController = toWorkerGlobalScope(executionContext)->script();
     ASSERT(scriptController);
+
+    if (data.GetEvent() == v8::kPromiseHandlerAddedAfterReject) {
+        scriptController->rejectedPromises()->handlerAdded(data);
+        return;
+    }
+
+    ASSERT(data.GetEvent() == v8::kPromiseRejectWithNoHandler);
 
     int scriptId = 0;
     int lineNumber = 0;
@@ -289,7 +298,7 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
         // message->Get() can be empty here. https://crbug.com/450330
         errorMessage = toCoreStringWithNullCheck(message->Get());
     }
-    scriptController->rejectedPromises()->add(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, nullptr);
+    scriptController->rejectedPromises()->rejectedWithNoHandler(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, nullptr);
 }
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
