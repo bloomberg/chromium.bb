@@ -38,6 +38,7 @@
       'sources': [
         'public/cast_egl_platform.h',
         'public/cast_egl_platform_shlib.h',
+        'public/cast_sys_info.h',
         'public/chromecast_export.h',
         'public/graphics_properties_shlib.h'
       ],
@@ -179,6 +180,7 @@
         'cast_net',
         'cast_shell_pak',
         'cast_shell_resources',
+        'cast_sys_info',
         'cast_version_header',
         'chromecast_locales.gyp:chromecast_locales_pak',
         'chromecast_locales.gyp:chromecast_settings',
@@ -315,6 +317,26 @@
         }],
       ],
     },
+    {
+      'target_name': 'cast_sys_info',
+      'type': '<(component)',
+      'dependencies': [
+        'cast_public_api',
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'base/cast_sys_info_util.h',
+        'base/cast_sys_info_dummy.cc',
+        'base/cast_sys_info_dummy.h',
+      ],
+      'conditions': [
+        ['chromecast_branding!="Chrome"', {
+          'sources': [
+            'base/cast_sys_info_util_simple.cc',
+          ],
+        }],
+      ],
+    },  # end of target 'cast_sys_info'
     {
       'target_name': 'cast_version_header',
       'type': 'none',
