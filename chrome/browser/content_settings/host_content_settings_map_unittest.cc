@@ -965,6 +965,7 @@ TEST_F(HostContentSettingsMapTest, IsSettingAllowedForType) {
                   prefs, CONTENT_SETTING_ASK,
                   CONTENT_SETTINGS_TYPE_FULLSCREEN));
 
+  // The mediastream setting is deprecated.
   EXPECT_FALSE(HostContentSettingsMap::IsSettingAllowedForType(
                    prefs, CONTENT_SETTING_ALLOW,
                    CONTENT_SETTINGS_TYPE_MEDIASTREAM));
@@ -974,6 +975,21 @@ TEST_F(HostContentSettingsMapTest, IsSettingAllowedForType) {
   EXPECT_FALSE(HostContentSettingsMap::IsSettingAllowedForType(
                    prefs, CONTENT_SETTING_BLOCK,
                    CONTENT_SETTINGS_TYPE_MEDIASTREAM));
+
+  // We support the ALLOW value for media permission exceptions,
+  // but not as the default setting.
+  EXPECT_TRUE(HostContentSettingsMap::IsSettingAllowedForType(
+                  prefs, CONTENT_SETTING_ALLOW,
+                  CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
+  EXPECT_TRUE(HostContentSettingsMap::IsSettingAllowedForType(
+                  prefs, CONTENT_SETTING_ALLOW,
+                  CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+  EXPECT_FALSE(HostContentSettingsMap::IsDefaultSettingAllowedForType(
+                   prefs, CONTENT_SETTING_ALLOW,
+                   CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
+  EXPECT_FALSE(HostContentSettingsMap::IsDefaultSettingAllowedForType(
+                   prefs, CONTENT_SETTING_ALLOW,
+                   CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
 
   // TODO(msramek): Add more checks for setting type - setting pairs where
   // it is not obvious whether or not they are allowed.

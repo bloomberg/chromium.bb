@@ -493,6 +493,14 @@ bool HostContentSettingsMap::IsDefaultSettingAllowedForType(
     return false;
   }
 #endif
+
+  // Don't support ALLOW for the default media settings.
+  if ((content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
+       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) &&
+      setting == CONTENT_SETTING_ALLOW) {
+    return false;
+  }
+
   return IsSettingAllowedForType(prefs, setting, content_type);
 }
 
