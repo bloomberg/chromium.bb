@@ -1377,7 +1377,9 @@ bool InspectorStyleSheet::deleteRule(const InspectorCSSId& id, const String& old
 void InspectorStyleSheet::updateText(const String& newText)
 {
     Element* element = ownerStyleElement();
-    if (!element)
+    if (element)
+        m_cssAgent->addEditedStyleElement(DOMNodeIds::idForNode(element), newText);
+    else
         m_cssAgent->addEditedStyleSheet(finalURL(), newText);
     m_parsedStyleSheet->setText(newText);
 }
@@ -1858,6 +1860,8 @@ bool InspectorStyleSheet::inlineStyleSheetText(String* result) const
     Element* ownerElement = ownerStyleElement();
     if (!ownerElement)
         return false;
+    if (m_cssAgent->getEditedStyleElement(DOMNodeIds::idForNode(ownerElement), result))
+        return true;
     *result = ownerElement->textContent();
     return true;
 }

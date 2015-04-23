@@ -528,6 +528,7 @@ void InspectorCSSAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
     if (frame == m_pageAgent->inspectedFrame()) {
         reset();
         m_editedStyleSheets.clear();
+        m_editedStyleElements.clear();
     }
 }
 
@@ -653,6 +654,19 @@ bool InspectorCSSAgent::getEditedStyleSheet(const String& url, String* content)
     if (!m_editedStyleSheets.contains(url))
         return false;
     *content = m_editedStyleSheets.get(url);
+    return true;
+}
+
+void InspectorCSSAgent::addEditedStyleElement(int backendNodeId, const String& content)
+{
+    m_editedStyleElements.set(backendNodeId, content);
+}
+
+bool InspectorCSSAgent::getEditedStyleElement(int backendNodeId, String* content)
+{
+    if (!m_editedStyleElements.contains(backendNodeId))
+        return false;
+    *content = m_editedStyleElements.get(backendNodeId);
     return true;
 }
 

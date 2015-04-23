@@ -6,6 +6,10 @@ Dump initial styles:
 element.style  { ()
 
 [expanded] 
+#testDiv  { (reattach-after-…-styles.html:7 -> reattach-after-editing-styles.html:7:1)
+  font-family: arial;
+
+[expanded] 
 #testDiv  { (style.css:1 -> style.css:1:1)
   color: red;
 
@@ -21,6 +25,10 @@ element.style  { ()
 #testDiv, my-custom-tag  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
 
 [expanded] 
+#testDiv  { (reattach-after-…-styles.html:7 -> reattach-after-editing-styles.html:7:1)
+  font-family: Helvetica;
+
+[expanded] 
 #testDiv  { (style.css:1 -> style.css:1:1)
   color: green;
 
@@ -34,7 +42,11 @@ Dump styles after inspector was reopened:
 element.style  { ()
 
 [expanded] 
-#testdiv, my-custom-tag  { (<style>…</style>)
+#testDiv, my-custom-tag  { (<style>…</style>)
+
+[expanded] 
+#testDiv  { (reattach-after-…-styles.html:7 -> reattach-after-editing-styles.html:7:1)
+  font-family: Helvetica;
 
 [expanded] 
 #testDiv  { (style.css:1 -> style.css:1:1)

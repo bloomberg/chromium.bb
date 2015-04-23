@@ -3,6 +3,11 @@
 <link rel="stylesheet" href="resources/style.css">
 <script src="../inspector/inspector-test.js"></script>
 <script src="../inspector/elements-test.js"></script>
+<style>
+#testDiv {
+    font-family: arial;
+}
+</style>
 <script>
 
 function reopenWebInspector(objectId)
@@ -57,10 +62,24 @@ function test()
             treeElement.valueElement.textContent = "green";
             treeElement.valueElement.firstChild.select();
             treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-            InspectorTest.waitForStyleApplied(onPropertyEdited);
+            InspectorTest.waitForStyleApplied(onStyleSheetPropertyEdited);
         }
 
-        function onPropertyEdited()
+        function onStyleSheetPropertyEdited()
+        {
+            treeElement = InspectorTest.getMatchedStylePropertyTreeItem("font-family");
+            treeElement.startEditing();
+            treeElement.nameElement.textContent = "font-family";
+            treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+
+            // Commit editing.
+            treeElement.valueElement.textContent = "Helvetica";
+            treeElement.valueElement.firstChild.select();
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            InspectorTest.waitForStyleApplied(onStyleTagPropertyEdited);
+        }
+
+        function onStyleTagPropertyEdited()
         {
             InspectorTest.addNewRule("#testDiv, my-custom-tag", onFirstRuleAdded);
         }
