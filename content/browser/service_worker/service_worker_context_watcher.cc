@@ -54,7 +54,7 @@ void ServiceWorkerContextWatcher::Stop() {
 
 void ServiceWorkerContextWatcher::GetStoredRegistrationsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  context_->context()->storage()->GetAllRegistrations(base::Bind(
+  context_->GetAllRegistrations(base::Bind(
       &ServiceWorkerContextWatcher::OnStoredRegistrationsOnIOThread, this));
 }
 
@@ -67,11 +67,9 @@ void ServiceWorkerContextWatcher::OnStoredRegistrationsOnIOThread(
       registration_info_map;
   for (const auto& registration : stored_registrations)
     StoreRegistrationInfo(registration, &registration_info_map);
-  for (const auto& registration :
-       context_->context()->GetAllLiveRegistrationInfo()) {
+  for (const auto& registration : context_->GetAllLiveRegistrationInfo())
     StoreRegistrationInfo(registration, &registration_info_map);
-  }
-  for (const auto& version : context_->context()->GetAllLiveVersionInfo())
+  for (const auto& version : context_->GetAllLiveVersionInfo())
     StoreVersionInfo(version);
 
   std::vector<ServiceWorkerRegistrationInfo> registrations;

@@ -49,7 +49,7 @@ void PushMessagingRouter::FindServiceWorkerRegistration(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Try to acquire the registration from storage. If it's already live we'll
   // receive it right away. If not, it will be revived from storage.
-  service_worker_context->context()->storage()->FindRegistrationForId(
+  service_worker_context->FindRegistrationForId(
       service_worker_registration_id,
       origin,
       base::Bind(&PushMessagingRouter::FindServiceWorkerRegistrationCallback,

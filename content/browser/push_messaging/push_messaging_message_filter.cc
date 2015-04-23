@@ -225,7 +225,7 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
   data.user_visible = user_visible;
 
   ServiceWorkerRegistration* service_worker_registration =
-      service_worker_context_->context()->GetLiveRegistration(
+      service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration ||
       !service_worker_registration->active_version()) {
@@ -234,7 +234,7 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
   }
   data.requesting_origin = service_worker_registration->pattern().GetOrigin();
 
-  service_worker_context_->context()->storage()->StoreUserData(
+  service_worker_context_->StoreRegistrationUserData(
       service_worker_registration_id,
       data.requesting_origin,
       kPushSenderIdServiceWorkerKey,
@@ -255,7 +255,7 @@ void PushMessagingMessageFilter::OnRegisterFromWorker(
   data.user_visible = user_visible;
 
   ServiceWorkerRegistration* service_worker_registration =
-      service_worker_context_->context()->GetLiveRegistration(
+      service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration) {
     SendRegisterError(data, PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER);
@@ -282,7 +282,7 @@ void PushMessagingMessageFilter::CheckForExistingRegistration(
     const RegisterData& data,
     const std::string& sender_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  service_worker_context_->context()->storage()->GetUserData(
+  service_worker_context_->GetRegistrationUserData(
       data.service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
       base::Bind(&PushMessagingMessageFilter::DidCheckForExistingRegistration,
@@ -311,7 +311,7 @@ void PushMessagingMessageFilter::DidCheckForExistingRegistration(
         base::Bind(&Core::RegisterOnUI, base::Unretained(ui_core_.get()),
                    data, sender_id));
   } else {
-    service_worker_context_->context()->storage()->GetUserData(
+    service_worker_context_->GetRegistrationUserData(
         data.service_worker_registration_id,
         kPushSenderIdServiceWorkerKey,
         base::Bind(&PushMessagingMessageFilter::DidGetSenderIdFromStorage,
@@ -403,7 +403,7 @@ void PushMessagingMessageFilter::PersistRegistrationOnIO(
     const RegisterData& data,
     const std::string& push_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  service_worker_context_->context()->storage()->StoreUserData(
+  service_worker_context_->StoreRegistrationUserData(
       data.service_worker_registration_id,
       data.requesting_origin,
       kPushRegistrationIdServiceWorkerKey,
@@ -474,14 +474,14 @@ void PushMessagingMessageFilter::OnUnregister(
     int request_id, int64_t service_worker_registration_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ServiceWorkerRegistration* service_worker_registration =
-      service_worker_context_->context()->GetLiveRegistration(
+      service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration) {
     DidUnregister(request_id, PUSH_UNREGISTRATION_STATUS_NO_SERVICE_WORKER);
     return;
   }
 
-  service_worker_context_->context()->storage()->GetUserData(
+  service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
       base::Bind(
@@ -500,7 +500,7 @@ void PushMessagingMessageFilter::UnregisterHavingGottenPushRegistrationId(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (service_worker_status == SERVICE_WORKER_OK) {
-    service_worker_context_->context()->storage()->GetUserData(
+    service_worker_context_->GetRegistrationUserData(
         service_worker_registration_id,
         kPushSenderIdServiceWorkerKey,
         base::Bind(
@@ -625,7 +625,7 @@ void PushMessagingMessageFilter::ClearRegistrationData(
     PushUnregistrationStatus unregistration_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  service_worker_context_->context()->storage()->ClearUserData(
+  service_worker_context_->ClearRegistrationUserData(
       service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
       base::Bind(&PushMessagingMessageFilter::DidClearRegistrationData,
@@ -686,7 +686,7 @@ void PushMessagingMessageFilter::OnGetRegistration(
     int64_t service_worker_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(johnme): Validate arguments?
-  service_worker_context_->context()->storage()->GetUserData(
+  service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
       base::Bind(&PushMessagingMessageFilter::DidGetRegistration,
@@ -754,7 +754,7 @@ void PushMessagingMessageFilter::OnGetPermissionStatus(
     bool user_visible) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ServiceWorkerRegistration* service_worker_registration =
-      service_worker_context_->context()->GetLiveRegistration(
+      service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration) {
     Send(new PushMessagingMsg_GetPermissionStatusError(request_id));

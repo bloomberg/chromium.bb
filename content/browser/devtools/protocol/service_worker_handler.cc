@@ -13,7 +13,6 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -151,11 +150,8 @@ bool CollectURLs(std::set<GURL>* urls, FrameTreeNode* tree_node) {
 
 void StopServiceWorkerOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
                            int64 version_id) {
-  ServiceWorkerContextCore* context_core = context->context();
-  if (!context_core)
-    return;
   if (content::ServiceWorkerVersion* version =
-          context_core->GetLiveVersion(version_id)) {
+          context->GetLiveVersion(version_id)) {
     version->StopWorker(base::Bind(&StatusNoOp));
   }
 }
@@ -164,11 +160,8 @@ void GetDevToolsRouteInfoOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     int64 version_id,
     const base::Callback<void(int, int)>& callback) {
-  ServiceWorkerContextCore* context_core = context->context();
-  if (!context_core)
-    return;
   if (content::ServiceWorkerVersion* version =
-          context_core->GetLiveVersion(version_id)) {
+          context->GetLiveVersion(version_id)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(

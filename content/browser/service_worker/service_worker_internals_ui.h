@@ -64,6 +64,10 @@ class ServiceWorkerInternalsUI
                    StoragePartition** result_partition,
                    StoragePartition* storage_partition) const;
 
+  void UnregisterWithScope(scoped_refptr<ServiceWorkerContextWrapper> context,
+                           const GURL& scope,
+                           const StatusCallback& callback) const;
+
   base::ScopedPtrHashMap<uintptr_t, PartitionObserver> observers_;
   int next_partition_id_;
 };

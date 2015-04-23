@@ -50,7 +50,7 @@ void GetUserDataOnIO(
     const std::string& key,
     const PushMessagingService::StringCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  service_worker_context_wrapper->context()->storage()->GetUserData(
+  service_worker_context_wrapper->GetRegistrationUserData(
       service_worker_registration_id, key,
       base::Bind(&CallStringCallbackFromIO, callback));
 }
@@ -61,7 +61,7 @@ void SetNotificationsShownOnIO(
     const std::string& data,
     const PushMessagingService::ResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  service_worker_context_wrapper->context()->storage()->StoreUserData(
+  service_worker_context_wrapper->StoreRegistrationUserData(
       service_worker_registration_id, origin,
       kNotificationsShownServiceWorkerKey, data,
       base::Bind(&CallResultCallbackFromIO, callback));
@@ -73,7 +73,7 @@ void ClearPushRegistrationIDOnIO(
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  service_worker_context->context()->storage()->ClearUserData(
+  service_worker_context->ClearRegistrationUserData(
       service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
       base::Bind(&CallClosureFromIO, callback));

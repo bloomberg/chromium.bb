@@ -147,11 +147,6 @@ void ServiceWorkerContextWrapper::DeleteAndStartOver() {
       base::Bind(&ServiceWorkerContextWrapper::DidDeleteAndStartOver, this));
 }
 
-ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return context_core_.get();
-}
-
 StoragePartitionImpl* ServiceWorkerContextWrapper::storage_partition() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return storage_partition_;
@@ -432,6 +427,125 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
                                this, other_url, callback));
 }
 
+ServiceWorkerRegistration* ServiceWorkerContextWrapper::GetLiveRegistration(
+    int64_t registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_)
+    return nullptr;
+  return context_core_->GetLiveRegistration(registration_id);
+}
+
+ServiceWorkerVersion* ServiceWorkerContextWrapper::GetLiveVersion(
+    int64_t version_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_)
+    return nullptr;
+  return context_core_->GetLiveVersion(version_id);
+}
+
+std::vector<ServiceWorkerRegistrationInfo>
+ServiceWorkerContextWrapper::GetAllLiveRegistrationInfo() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_)
+    return std::vector<ServiceWorkerRegistrationInfo>();
+  return context_core_->GetAllLiveRegistrationInfo();
+}
+
+std::vector<ServiceWorkerVersionInfo>
+ServiceWorkerContextWrapper::GetAllLiveVersionInfo() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_)
+    return std::vector<ServiceWorkerVersionInfo>();
+  return context_core_->GetAllLiveVersionInfo();
+}
+
+void ServiceWorkerContextWrapper::FindRegistrationForDocument(
+    const GURL& document_url,
+    const FindRegistrationCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    // FindRegistrationForDocument() can run the callback synchronously.
+    callback.Run(SERVICE_WORKER_ERROR_ABORT, nullptr);
+    return;
+  }
+  context_core_->storage()->FindRegistrationForDocument(document_url, callback);
+}
+
+void ServiceWorkerContextWrapper::FindRegistrationForId(
+    int64_t registration_id,
+    const GURL& origin,
+    const FindRegistrationCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    // FindRegistrationForId() can run the callback synchronously.
+    callback.Run(SERVICE_WORKER_ERROR_ABORT, nullptr);
+    return;
+  }
+  context_core_->storage()->FindRegistrationForId(registration_id, origin,
+                                                  callback);
+}
+
+void ServiceWorkerContextWrapper::GetAllRegistrations(
+    const GetRegistrationsInfosCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    RunSoon(base::Bind(callback, std::vector<ServiceWorkerRegistrationInfo>()));
+    return;
+  }
+  context_core_->storage()->GetAllRegistrations(callback);
+}
+
+void ServiceWorkerContextWrapper::GetRegistrationUserData(
+    int64_t registration_id,
+    const std::string& key,
+    const GetUserDataCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    RunSoon(base::Bind(callback, std::string(), SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+  context_core_->storage()->GetUserData(registration_id, key, callback);
+}
+
+void ServiceWorkerContextWrapper::StoreRegistrationUserData(
+    int64_t registration_id,
+    const GURL& origin,
+    const std::string& key,
+    const std::string& data,
+    const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+  context_core_->storage()->StoreUserData(registration_id, origin, key, data,
+                                          callback);
+}
+
+void ServiceWorkerContextWrapper::ClearRegistrationUserData(
+    int64_t registration_id,
+    const std::string& key,
+    const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+  context_core_->storage()->ClearUserData(registration_id, key, callback);
+}
+
+void ServiceWorkerContextWrapper::GetUserDataForAllRegistrations(
+    const std::string& key,
+    const GetUserDataForAllRegistrationsCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    RunSoon(base::Bind(callback, std::vector<std::pair<int64_t, std::string>>(),
+                       SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+  context_core_->storage()->GetUserDataForAllRegistrations(key, callback);
+}
+
 void ServiceWorkerContextWrapper::AddObserver(
     ServiceWorkerContextObserver* observer) {
   observer_list_->AddObserver(observer);
@@ -495,6 +609,11 @@ void ServiceWorkerContextWrapper::DidDeleteAndStartOver(
 
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextObserver::OnStorageWiped);
+}
+
+ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return context_core_.get();
 }
 
 }  // namespace content

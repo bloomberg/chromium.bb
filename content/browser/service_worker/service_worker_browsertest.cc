@@ -160,8 +160,7 @@ class WorkerActivatedObserver
   void OnVersionStateChanged(int64 version_id,
                              ServiceWorkerVersion::Status) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    const ServiceWorkerVersion* version =
-        context_->context()->GetLiveVersion(version_id);
+    const ServiceWorkerVersion* version = context_->GetLiveVersion(version_id);
     if (version->status() == ServiceWorkerVersion::ACTIVATED) {
       context_->RemoveObserver(this);
       BrowserThread::PostTask(BrowserThread::UI,
@@ -249,7 +248,7 @@ void CountScriptResources(
   *num_resources = -1;
 
   std::vector<ServiceWorkerRegistrationInfo> infos =
-     wrapper->context()->GetAllLiveRegistrationInfo();
+      wrapper->GetAllLiveRegistrationInfo();
   if (infos.empty())
     return;
 
@@ -267,8 +266,7 @@ void CountScriptResources(
   else
     return;
 
-  ServiceWorkerVersion* version =
-      wrapper->context()->GetLiveVersion(version_id);
+  ServiceWorkerVersion* version = wrapper->GetLiveVersion(version_id);
   *num_resources = static_cast<int>(version->script_cache_map()->size());
 }
 
@@ -1097,12 +1095,10 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
   void FindRegistrationOnIO(const GURL& document_url,
                             ServiceWorkerStatusCode* status,
                             const base::Closure& continuation) {
-    wrapper()->context()->storage()->FindRegistrationForDocument(
+    wrapper()->FindRegistrationForDocument(
         document_url,
         base::Bind(&ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO2,
-                   this,
-                   status,
-                   continuation));
+                   this, status, continuation));
   }
 
   void FindRegistrationOnIO2(

@@ -83,7 +83,7 @@ void NavigatorConnectServiceWorkerService::SendMessage(
   for (const auto& port : sent_message_ports)
     MessagePortService::GetInstance()->HoldMessages(port.id);
 
-  service_worker_context_->context()->storage()->FindRegistrationForId(
+  service_worker_context_->FindRegistrationForId(
       service_worker_registration_id_, service_worker_registration_origin_,
       base::Bind(&NavigatorConnectServiceWorkerService::DeliverMessage,
                  weak_factory_.GetWeakPtr(), message.message_as_string,
@@ -143,7 +143,7 @@ void NavigatorConnectServiceWorkerServiceFactory::Connect(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Find the right service worker to service this connection.
-  service_worker_context_->context()->storage()->FindRegistrationForDocument(
+  service_worker_context_->FindRegistrationForDocument(
       client.target_url,
       base::Bind(&NavigatorConnectServiceWorkerServiceFactory::
                      GotServiceWorkerRegistration,

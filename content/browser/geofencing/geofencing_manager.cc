@@ -110,7 +110,7 @@ void GeofencingManager::RegisterRegion(
 
   // Look up service worker.
   ServiceWorkerRegistration* service_worker_registration =
-      service_worker_context_->context()->GetLiveRegistration(
+      service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration) {
     callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER);
@@ -146,7 +146,7 @@ void GeofencingManager::UnregisterRegion(int64 service_worker_registration_id,
 
   // Look up service worker.
   ServiceWorkerRegistration* service_worker_registration =
-      service_worker_context_->context()->GetLiveRegistration(
+      service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration) {
     callback.Run(GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER);
@@ -185,7 +185,7 @@ GeofencingStatus GeofencingManager::GetRegisteredRegions(
 
   // Look up service worker.
   ServiceWorkerRegistration* service_worker_registration =
-      service_worker_context_->context()->GetLiveRegistration(
+      service_worker_context_->GetLiveRegistration(
           service_worker_registration_id);
   if (!service_worker_registration) {
     return GEOFENCING_STATUS_OPERATION_FAILED_NO_SERVICE_WORKER;
@@ -358,7 +358,7 @@ void GeofencingManager::DispatchGeofencingEvent(
     return;
   }
 
-  service_worker_context_->context()->storage()->FindRegistrationForId(
+  service_worker_context_->FindRegistrationForId(
       registration->service_worker_registration_id,
       registration->service_worker_origin,
       base::Bind(&GeofencingManager::DeliverGeofencingEvent,

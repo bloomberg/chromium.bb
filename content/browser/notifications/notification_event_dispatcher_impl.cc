@@ -134,7 +134,7 @@ void FindServiceWorkerRegistration(
     return;
   }
 
-  service_worker_context->context()->storage()->FindRegistrationForId(
+  service_worker_context->FindRegistrationForId(
       notification_database_data.service_worker_registration_id,
       origin,
       base::Bind(&DispatchNotificationClickEventOnRegistration,

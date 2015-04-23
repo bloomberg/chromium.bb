@@ -314,7 +314,7 @@ void BackgroundSyncManager::DisableAndClearDidGetRegistrations(
       base::BarrierClosure(user_data.size(), base::Bind(callback));
 
   for (const auto& sw_id_and_regs : user_data) {
-    service_worker_context_->context()->storage()->ClearUserData(
+    service_worker_context_->ClearRegistrationUserData(
         sw_id_and_regs.first, kBackgroundSyncUserDataKey,
         base::Bind(&BackgroundSyncManager::DisableAndClearManagerClearedOne,
                    weak_ptr_factory_.GetWeakPtr(), barrier_closure));
@@ -439,7 +439,7 @@ void BackgroundSyncManager::StoreDataInBackend(
     const std::string& backend_key,
     const std::string& data,
     const ServiceWorkerStorage::StatusCallback& callback) {
-  service_worker_context_->context()->storage()->StoreUserData(
+  service_worker_context_->StoreRegistrationUserData(
       sw_registration_id, origin, backend_key, data, callback);
 }
 
@@ -449,8 +449,8 @@ void BackgroundSyncManager::GetDataFromBackend(
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  service_worker_context_->context()->storage()->GetUserDataForAllRegistrations(
-      backend_key, callback);
+  service_worker_context_->GetUserDataForAllRegistrations(backend_key,
+                                                          callback);
 }
 
 void BackgroundSyncManager::UnregisterImpl(

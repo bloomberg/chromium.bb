@@ -40,7 +40,15 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
     : NON_EXPORTED_BASE(public ServiceWorkerContext),
       public base::RefCountedThreadSafe<ServiceWorkerContextWrapper> {
  public:
-  typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
+  using StatusCallback = base::Callback<void(ServiceWorkerStatusCode)>;
+  using FindRegistrationCallback =
+      ServiceWorkerStorage::FindRegistrationCallback;
+  using GetRegistrationsInfosCallback =
+      ServiceWorkerStorage::GetRegistrationsInfosCallback;
+  using GetUserDataCallback = ServiceWorkerStorage::GetUserDataCallback;
+  using GetUserDataForAllRegistrationsCallback =
+      ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback;
+
   ServiceWorkerContextWrapper(BrowserContext* browser_context);
 
   // Init and Shutdown are for use on the UI thread when the profile,
@@ -54,11 +62,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // leaves the system in a disabled state until it's done. This should be
   // called on the IO thread.
   void DeleteAndStartOver();
-
-  // The core context is only for use on the IO thread.
-  // Can be null before/during init, during/after shutdown, and after
-  // DeleteAndStartOver fails.
-  ServiceWorkerContextCore* context();
 
   // The StoragePartition should only be used on the UI thread.
   // Can be null before/during init and during/after shutdown.
@@ -88,6 +91,32 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const GURL& other_url,
       const CheckHasServiceWorkerCallback& callback) override;
 
+  ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);
+  ServiceWorkerVersion* GetLiveVersion(int64_t version_id);
+  std::vector<ServiceWorkerRegistrationInfo> GetAllLiveRegistrationInfo();
+  std::vector<ServiceWorkerVersionInfo> GetAllLiveVersionInfo();
+
+  void FindRegistrationForDocument(const GURL& document_url,
+                                   const FindRegistrationCallback& callback);
+  void FindRegistrationForId(int64_t registration_id,
+                             const GURL& origin,
+                             const FindRegistrationCallback& callback);
+  void GetAllRegistrations(const GetRegistrationsInfosCallback& callback);
+  void GetRegistrationUserData(int64_t registration_id,
+                               const std::string& key,
+                               const GetUserDataCallback& callback);
+  void StoreRegistrationUserData(int64_t registration_id,
+                                 const GURL& origin,
+                                 const std::string& key,
+                                 const std::string& data,
+                                 const StatusCallback& callback);
+  void ClearRegistrationUserData(int64_t registration_id,
+                                 const std::string& key,
+                                 const StatusCallback& callback);
+  void GetUserDataForAllRegistrations(
+      const std::string& key,
+      const GetUserDataForAllRegistrationsCallback& callback);
+
   // DeleteForOrigin with completion callback.  Does not exit early, and returns
   // false if one or more of the deletions fail.
   virtual void DeleteForOrigin(const GURL& origin_url,
@@ -104,7 +133,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   friend class BackgroundSyncManagerTest;
   friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
   friend class EmbeddedWorkerTestHelper;
+  friend class EmbeddedWorkerBrowserTest;
+  friend class ServiceWorkerDispatcherHost;
+  friend class ServiceWorkerInternalsUI;
   friend class ServiceWorkerProcessManager;
+  friend class ServiceWorkerRequestHandler;
+  friend class ServiceWorkerVersionBrowserTest;
   friend class MockServiceWorkerContextWrapper;
 
   ~ServiceWorkerContextWrapper() override;
@@ -132,6 +166,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void DidFindRegistrationForUpdate(
       ServiceWorkerStatusCode status,
       const scoped_refptr<content::ServiceWorkerRegistration>& registration);
+
+  // The core context is only for use on the IO thread.
+  // Can be null before/during init, during/after shutdown, and after
+  // DeleteAndStartOver fails.
+  ServiceWorkerContextCore* context();
 
   const scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
       observer_list_;
