@@ -132,25 +132,9 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
   TestPopupObserver observer_;
 };
 
-#if defined(USE_AURA)
-// Enabled on these platforms.
-// Disabled due to flakiness, see http://crbug.com/407998
-#define MAYBE_PopupShownAndPasswordSelected \
-  DISABLED_PopupShownAndPasswordSelected
-#define MAYBE_PopupShownAndDismissed DISABLED_PopupShownAndDismissed
-#define MAYBE_PopupShownAndDismissedByScrolling \
-  DISABLED_PopupShownAndDismissedByScrolling
-#else
-// Popup not enabled for these platforms yet.
-#define MAYBE_PopupShownAndPasswordSelected \
-  DISABLED_PopupShownAndPasswordSelected
-#define MAYBE_PopupShownAndDismissed DISABLED_PopupShownAndDismissed
-#define MAYBE_PopupShownAndDismissedByScrolling \
-  DISABLED_PopupShownAndDismissedByScrolling
-#endif
-
+// Disabled due to flakiness due to resizes, see http://crbug.com/407998.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
-                       MAYBE_PopupShownAndPasswordSelected) {
+                       DISABLED_PopupShownAndPasswordSelected) {
   FocusPasswordField();
   EXPECT_TRUE(GenerationPopupShowing());
   SendKeyToPopup(ui::VKEY_DOWN);
@@ -168,8 +152,9 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   EXPECT_TRUE(EditingPopupShowing());
 }
 
+// Disabled due to flakiness due to resizes, see http://crbug.com/407998.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
-                       MAYBE_PopupShownAndDismissed) {
+                       DISABLED_PopupShownAndDismissed) {
   FocusPasswordField();
   EXPECT_TRUE(GenerationPopupShowing());
 
@@ -179,8 +164,9 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   EXPECT_FALSE(GenerationPopupShowing());
 }
 
+// Disabled due to flakiness due to resizes, see http://crbug.com/407998.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
-                       MAYBE_PopupShownAndDismissedByScrolling) {
+                       DISABLED_PopupShownAndDismissedByScrolling) {
   FocusPasswordField();
   EXPECT_TRUE(GenerationPopupShowing());
 
@@ -188,4 +174,20 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                                      "window.scrollTo(100, 0);"));
 
   EXPECT_FALSE(GenerationPopupShowing());
+}
+
+// Disabled due to flakiness due to resizes, see http://crbug.com/407998.
+IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
+                       DISABLED_GenerationTriggeredInIFrame) {
+  GURL url = embedded_test_server()->GetURL(
+      "/password/framed_signup_form.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  std::string focus_script =
+      "var frame = document.getElementById('signup_iframe');"
+      "var frame_doc = frame.contentDocument;"
+      "frame_doc.getElementById('password_field').focus();";
+
+  ASSERT_TRUE(content::ExecuteScript(GetRenderViewHost(), focus_script));
+  EXPECT_TRUE(GenerationPopupShowing());
 }
