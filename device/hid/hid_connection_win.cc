@@ -40,10 +40,10 @@ struct PendingHidTransfer : public base::RefCounted<PendingHidTransfer>,
   OVERLAPPED* GetOverlapped() { return &overlapped_; }
 
   // Implements base::win::ObjectWatcher::Delegate.
-  virtual void OnObjectSignaled(HANDLE object) override;
+  void OnObjectSignaled(HANDLE object) override;
 
   // Implements base::MessageLoop::DestructionObserver
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
   // The buffer isn't used by this object but it's important that a reference
   // to it is held until the transfer completes.
@@ -56,7 +56,7 @@ struct PendingHidTransfer : public base::RefCounted<PendingHidTransfer>,
  private:
   friend class base::RefCounted<PendingHidTransfer>;
 
-  virtual ~PendingHidTransfer();
+  ~PendingHidTransfer() override;
 
   DISALLOW_COPY_AND_ASSIGN(PendingHidTransfer);
 };

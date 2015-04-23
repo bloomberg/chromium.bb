@@ -28,47 +28,44 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
       const scoped_refptr<BluetoothSocketThread>& socket_thread,
       net::NetLog* net_log,
       const net::NetLog::Source& net_log_source);
-  virtual ~BluetoothDeviceWin();
+  ~BluetoothDeviceWin() override;
 
   // BluetoothDevice override
-  virtual uint32 GetBluetoothClass() const override;
-  virtual std::string GetAddress() const override;
-  virtual VendorIDSource GetVendorIDSource() const override;
-  virtual uint16 GetVendorID() const override;
-  virtual uint16 GetProductID() const override;
-  virtual uint16 GetDeviceID() const override;
-  virtual bool IsPaired() const override;
-  virtual bool IsConnected() const override;
-  virtual bool IsConnectable() const override;
-  virtual bool IsConnecting() const override;
-  virtual UUIDList GetUUIDs() const override;
-  virtual bool ExpectingPinCode() const override;
-  virtual bool ExpectingPasskey() const override;
-  virtual bool ExpectingConfirmation() const override;
-  virtual void GetConnectionInfo(
-      const ConnectionInfoCallback& callback) override;
-  virtual void Connect(
-      PairingDelegate* pairing_delegate,
-      const base::Closure& callback,
-      const ConnectErrorCallback& error_callback) override;
-  virtual void SetPinCode(const std::string& pincode) override;
-  virtual void SetPasskey(uint32 passkey) override;
-  virtual void ConfirmPairing() override;
-  virtual void RejectPairing() override;
-  virtual void CancelPairing() override;
-  virtual void Disconnect(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void Forget(const ErrorCallback& error_callback) override;
-  virtual void ConnectToService(
+  uint32 GetBluetoothClass() const override;
+  std::string GetAddress() const override;
+  VendorIDSource GetVendorIDSource() const override;
+  uint16 GetVendorID() const override;
+  uint16 GetProductID() const override;
+  uint16 GetDeviceID() const override;
+  bool IsPaired() const override;
+  bool IsConnected() const override;
+  bool IsConnectable() const override;
+  bool IsConnecting() const override;
+  UUIDList GetUUIDs() const override;
+  bool ExpectingPinCode() const override;
+  bool ExpectingPasskey() const override;
+  bool ExpectingConfirmation() const override;
+  void GetConnectionInfo(const ConnectionInfoCallback& callback) override;
+  void Connect(PairingDelegate* pairing_delegate,
+               const base::Closure& callback,
+               const ConnectErrorCallback& error_callback) override;
+  void SetPinCode(const std::string& pincode) override;
+  void SetPasskey(uint32 passkey) override;
+  void ConfirmPairing() override;
+  void RejectPairing() override;
+  void CancelPairing() override;
+  void Disconnect(const base::Closure& callback,
+                  const ErrorCallback& error_callback) override;
+  void Forget(const ErrorCallback& error_callback) override;
+  void ConnectToService(
       const BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
-  virtual void ConnectToServiceInsecurely(
+  void ConnectToServiceInsecurely(
       const BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
-  virtual void CreateGattConnection(
+  void CreateGattConnection(
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
 
@@ -87,7 +84,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
 
  protected:
   // BluetoothDevice override
-  virtual std::string GetDeviceName() const override;
+  std::string GetDeviceName() const override;
 
  private:
   friend class BluetoothAdapterWin;

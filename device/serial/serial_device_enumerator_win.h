@@ -13,10 +13,10 @@ namespace device {
 class SerialDeviceEnumeratorWin : public SerialDeviceEnumerator {
  public:
   SerialDeviceEnumeratorWin();
-  virtual ~SerialDeviceEnumeratorWin();
+  ~SerialDeviceEnumeratorWin() override;
 
   // Implementation for SerialDeviceEnumerator.
-  virtual mojo::Array<serial::DeviceInfoPtr> GetDevices() override;
+  mojo::Array<serial::DeviceInfoPtr> GetDevices() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SerialDeviceEnumeratorWin);

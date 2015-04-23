@@ -33,11 +33,11 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
  public:
   HidServiceWin(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
-  virtual void Connect(const HidDeviceId& device_id,
-                       const ConnectCallback& callback) override;
+  void Connect(const HidDeviceId& device_id,
+               const ConnectCallback& callback) override;
 
  private:
-  virtual ~HidServiceWin();
+  ~HidServiceWin() override;
 
   static void EnumerateOnFileThread(
       base::WeakPtr<HidServiceWin> service,

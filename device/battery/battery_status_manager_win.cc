@@ -160,18 +160,16 @@ class BatteryStatusManagerWin : public BatteryStatusManager {
  public:
   explicit BatteryStatusManagerWin(const BatteryCallback& callback)
       : battery_observer_(new BatteryStatusObserver(callback)) {}
-  virtual ~BatteryStatusManagerWin() { battery_observer_->Stop(); }
+  ~BatteryStatusManagerWin() override { battery_observer_->Stop(); }
 
  public:
   // BatteryStatusManager:
-  virtual bool StartListeningBatteryChange() override {
+  bool StartListeningBatteryChange() override {
     battery_observer_->Start();
     return true;
   }
 
-  virtual void StopListeningBatteryChange() override {
-    battery_observer_->Stop();
-  }
+  void StopListeningBatteryChange() override { battery_observer_->Stop(); }
 
  private:
   scoped_ptr<BatteryStatusObserver> battery_observer_;

@@ -54,11 +54,11 @@ class BluetoothSocketWin : public BluetoothSocketNet {
   void ResetData();
 
   // BluetoothSocket:
-  virtual void Accept(const AcceptCompletionCallback& success_callback,
-                      const ErrorCompletionCallback& error_callback) override;
+  void Accept(const AcceptCompletionCallback& success_callback,
+              const ErrorCompletionCallback& error_callback) override;
 
  protected:
-  virtual ~BluetoothSocketWin();
+  ~BluetoothSocketWin() override;
 
  private:
   struct ServiceRegData;

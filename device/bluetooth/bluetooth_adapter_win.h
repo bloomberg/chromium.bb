@@ -41,30 +41,28 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
       const InitCallback& init_callback);
 
   // BluetoothAdapter:
-  virtual std::string GetAddress() const override;
-  virtual std::string GetName() const override;
-  virtual void SetName(const std::string& name,
+  std::string GetAddress() const override;
+  std::string GetName() const override;
+  void SetName(const std::string& name,
+               const base::Closure& callback,
+               const ErrorCallback& error_callback) override;
+  bool IsInitialized() const override;
+  bool IsPresent() const override;
+  bool IsPowered() const override;
+  void SetPowered(bool discoverable,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback) override;
+  bool IsDiscoverable() const override;
+  void SetDiscoverable(bool discoverable,
                        const base::Closure& callback,
                        const ErrorCallback& error_callback) override;
-  virtual bool IsInitialized() const override;
-  virtual bool IsPresent() const override;
-  virtual bool IsPowered() const override;
-  virtual void SetPowered(
-      bool discoverable,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual bool IsDiscoverable() const override;
-  virtual void SetDiscoverable(
-      bool discoverable,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual bool IsDiscovering() const override;
-  virtual void CreateRfcommService(
+  bool IsDiscovering() const override;
+  void CreateRfcommService(
       const BluetoothUUID& uuid,
       const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) override;
-  virtual void CreateL2capService(
+  void CreateL2capService(
       const BluetoothUUID& uuid,
       const ServiceOptions& options,
       const CreateServiceCallback& callback,
@@ -75,12 +73,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
       const BluetoothAudioSink::ErrorCallback& error_callback) override;
 
   // BluetoothTaskManagerWin::Observer override
-  virtual void AdapterStateChanged(
+  void AdapterStateChanged(
       const BluetoothTaskManagerWin::AdapterState& state) override;
-  virtual void DiscoveryStarted(bool success) override;
-  virtual void DiscoveryStopped() override;
-  virtual void DevicesPolled(const ScopedVector<
-      BluetoothTaskManagerWin::DeviceState>& devices) override;
+  void DiscoveryStarted(bool success) override;
+  void DiscoveryStopped() override;
+  void DevicesPolled(const ScopedVector<BluetoothTaskManagerWin::DeviceState>&
+                         devices) override;
 
   const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner() const {
     return ui_task_runner_;
@@ -91,7 +89,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
 
  protected:
   // BluetoothAdapter:
-  virtual void RemovePairingDelegateInternal(
+  void RemovePairingDelegateInternal(
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
  private:
@@ -105,21 +103,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   };
 
   explicit BluetoothAdapterWin(const InitCallback& init_callback);
-  virtual ~BluetoothAdapterWin();
+  ~BluetoothAdapterWin() override;
 
   // BluetoothAdapter:
-  virtual void AddDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void RemoveDiscoverySession(
-      BluetoothDiscoveryFilter* discovery_filter,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
-  virtual void SetDiscoveryFilter(
-      scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override;
+  void AddDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
+                           const base::Closure& callback,
+                           const ErrorCallback& error_callback) override;
+  void RemoveDiscoverySession(BluetoothDiscoveryFilter* discovery_filter,
+                              const base::Closure& callback,
+                              const ErrorCallback& error_callback) override;
+  void SetDiscoveryFilter(scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) override;
 
   void Init();
   void InitForTest(

@@ -50,34 +50,33 @@ class AdapterObserver : public device::BluetoothAdapter::Observer {
     num_device_changed_ = 0;
   }
 
-  virtual void AdapterPresentChanged(
-      device::BluetoothAdapter* adapter, bool present) override {
+  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                             bool present) override {
     num_present_changed_++;
   }
 
-  virtual void AdapterPoweredChanged(
-      device::BluetoothAdapter* adapter, bool powered) override {
+  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                             bool powered) override {
     num_powered_changed_++;
   }
 
-  virtual void AdapterDiscoveringChanged(
-      device::BluetoothAdapter* adapter, bool discovering) override {
+  void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
+                                 bool discovering) override {
     num_discovering_changed_++;
   }
 
-  virtual void DeviceAdded(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothDevice* device) override {
+  void DeviceAdded(device::BluetoothAdapter* adapter,
+                   device::BluetoothDevice* device) override {
     num_device_added_++;
   }
 
-  virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) override {
+  void DeviceRemoved(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override {
     num_device_removed_++;
   }
 
-  virtual void DeviceChanged(device::BluetoothAdapter* adapter,
-                             device::BluetoothDevice* device) override {
+  void DeviceChanged(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override {
     num_device_changed_++;
   }
 
@@ -119,7 +118,7 @@ class BluetoothAdapterWinTest : public testing::Test {
     adapter_win_->InitForTest(ui_task_runner_, bluetooth_task_runner_);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     adapter_win_->AddObserver(&adapter_observer_);
     num_start_discovery_callbacks_ = 0;
     num_start_discovery_error_callbacks_ = 0;
@@ -127,9 +126,7 @@ class BluetoothAdapterWinTest : public testing::Test {
     num_stop_discovery_error_callbacks_ = 0;
   }
 
-  virtual void TearDown() override {
-    adapter_win_->RemoveObserver(&adapter_observer_);
-  }
+  void TearDown() override { adapter_win_->RemoveObserver(&adapter_observer_); }
 
   void RunInitCallback() {
     init_callback_called_ = true;

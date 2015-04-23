@@ -20,21 +20,16 @@ class BluetoothTaskObserver : public device::BluetoothTaskManagerWin::Observer {
         num_discovery_stopped_(0) {
   }
 
-  virtual ~BluetoothTaskObserver() {
-  }
+  ~BluetoothTaskObserver() override {}
 
-  virtual void AdapterStateChanged(
-    const device::BluetoothTaskManagerWin::AdapterState& state) override {
+  void AdapterStateChanged(
+      const device::BluetoothTaskManagerWin::AdapterState& state) override {
     num_adapter_state_changed_++;
   }
 
-  virtual void DiscoveryStarted(bool success) override {
-    num_discovery_started_++;
-  }
+  void DiscoveryStarted(bool success) override { num_discovery_started_++; }
 
-  virtual void DiscoveryStopped() override {
-    num_discovery_stopped_++;
-  }
+  void DiscoveryStopped() override { num_discovery_stopped_++; }
 
   int num_adapter_state_changed() const {
     return num_adapter_state_changed_;
@@ -68,13 +63,9 @@ class BluetoothTaskManagerWinTest : public testing::Test {
     task_manager_->InitializeWithBluetoothTaskRunner(bluetooth_task_runner_);
   }
 
-  virtual void SetUp() {
-    task_manager_->AddObserver(&observer_);
-  }
+  void SetUp() override { task_manager_->AddObserver(&observer_); }
 
-  virtual void TearDown() {
-    task_manager_->RemoveObserver(&observer_);
-  }
+  void TearDown() override { task_manager_->RemoveObserver(&observer_); }
 
   int GetPollingIntervalMs() const {
     return BluetoothTaskManagerWin::kPollIntervalMs;
