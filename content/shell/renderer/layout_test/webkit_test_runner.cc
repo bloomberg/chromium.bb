@@ -425,16 +425,6 @@ void WebKitTestRunner::SetDatabaseQuota(int quota) {
   Send(new LayoutTestHostMsg_SetDatabaseQuota(routing_id(), quota));
 }
 
-void WebKitTestRunner::GrantWebNotificationPermission(const GURL& origin,
-                                                      bool permission_granted) {
-  Send(new LayoutTestHostMsg_GrantWebNotificationPermission(
-      routing_id(), origin, permission_granted));
-}
-
-void WebKitTestRunner::ClearWebNotificationPermissions() {
-  Send(new LayoutTestHostMsg_ClearWebNotificationPermissions(routing_id()));
-}
-
 void WebKitTestRunner::SimulateWebNotificationClick(const std::string& title) {
   Send(new LayoutTestHostMsg_SimulateWebNotificationClick(routing_id(), title));
 }

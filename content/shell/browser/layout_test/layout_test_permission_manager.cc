@@ -14,27 +14,6 @@
 
 namespace content {
 
-namespace {
-
-void RequestDesktopNotificationPermissionOnIO(
-    const GURL& origin,
-    const base::Callback<void(PermissionStatus)>& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  LayoutTestNotificationManager* manager =
-      LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
-  PermissionStatus result = manager ? manager->RequestPermission(origin)
-                                    : PERMISSION_STATUS_GRANTED;
-
-  // The callback came from the UI thread, we need to run it from there again.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, result));
-}
-
-}  // anonymous namespace
-
 LayoutTestPermissionManager::PermissionDescription::PermissionDescription(
     PermissionType type,
     const GURL& origin,
@@ -78,16 +57,6 @@ void LayoutTestPermissionManager::RequestPermission(
     const base::Callback<void(PermissionStatus)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (permission == PermissionType::NOTIFICATIONS) {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&RequestDesktopNotificationPermissionOnIO,
-                   requesting_origin,
-                   callback));
-    return;
-  }
-
   callback.Run(GetPermissionStatus(
       permission, requesting_origin,
       web_contents->GetLastCommittedURL().GetOrigin()));
@@ -98,12 +67,17 @@ void LayoutTestPermissionManager::CancelPermissionRequest(
     WebContents* web_contents,
     int request_id,
     const GURL& requesting_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void LayoutTestPermissionManager::ResetPermission(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::AutoLock lock(permissions_lock_);
+
   auto it = permissions_.find(
       PermissionDescription(permission, requesting_origin, embedding_origin));
   if (it == permissions_.end())
@@ -115,6 +89,10 @@ PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  base::AutoLock lock(permissions_lock_);
 
   auto it = permissions_.find(
       PermissionDescription(permission, requesting_origin, embedding_origin));
@@ -127,6 +105,7 @@ void LayoutTestPermissionManager::RegisterPermissionUsage(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 int LayoutTestPermissionManager::SubscribePermissionStatusChange(
@@ -134,12 +113,16 @@ int LayoutTestPermissionManager::SubscribePermissionStatusChange(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const base::Callback<void(PermissionStatus)>& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // TODO(mlamouri): to be implemented, see https://crbug.com/475141
   return -1;
 }
 
 void LayoutTestPermissionManager::UnsubscribePermissionStatusChange(
     int subscription_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // TODO(mlamouri): to be implemented, see https://crbug.com/475141
 }
 
@@ -147,7 +130,11 @@ void LayoutTestPermissionManager::SetPermission(PermissionType permission,
                                                 PermissionStatus status,
                                                 const GURL& origin,
                                                 const GURL& embedding_origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   PermissionDescription description(permission, origin, embedding_origin);
+
+  base::AutoLock lock(permissions_lock_);
 
   auto it = permissions_.find(description);
   if (it == permissions_.end()) {
@@ -159,6 +146,9 @@ void LayoutTestPermissionManager::SetPermission(PermissionType permission,
 }
 
 void LayoutTestPermissionManager::ResetPermissions() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::AutoLock lock(permissions_lock_);
   permissions_.clear();
 }
 

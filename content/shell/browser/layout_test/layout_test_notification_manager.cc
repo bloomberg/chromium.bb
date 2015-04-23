@@ -9,8 +9,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_event_dispatcher.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/common/persistent_notification_status.h"
 #include "content/public/common/platform_notification_data.h"
+#include "content/shell/browser/layout_test/layout_test_browser_context.h"
+#include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
+#include "content/shell/browser/layout_test/layout_test_permission_manager.h"
 
 namespace content {
 namespace {
@@ -19,43 +23,27 @@ namespace {
 // Service Worker when a notificationclick event has been dispatched.
 void OnEventDispatchComplete(PersistentNotificationStatus status) {}
 
+blink::WebNotificationPermission ToWebNotificationPermission(
+    PermissionStatus status) {
+  switch (status) {
+    case PERMISSION_STATUS_GRANTED:
+      return blink::WebNotificationPermissionAllowed;
+    case PERMISSION_STATUS_DENIED:
+      return blink::WebNotificationPermissionDenied;
+    case PERMISSION_STATUS_ASK:
+      return blink::WebNotificationPermissionDefault;
+  }
+
+  NOTREACHED();
+  return blink::WebNotificationPermissionLast;
+}
+
 }  // namespace
 
 LayoutTestNotificationManager::LayoutTestNotificationManager()
     : weak_factory_(this) {}
 
 LayoutTestNotificationManager::~LayoutTestNotificationManager() {}
-
-PermissionStatus LayoutTestNotificationManager::RequestPermission(
-    const GURL& origin) {
-  return GetPermissionStatus(origin);
-}
-
-blink::WebNotificationPermission
-LayoutTestNotificationManager::CheckPermission(const GURL& origin) {
-  base::AutoLock lock(permission_lock_);
-  const auto& iter = permission_map_.find(origin);
-  if (iter != permission_map_.end())
-    return iter->second;
-
-  return blink::WebNotificationPermissionDefault;
-}
-
-void LayoutTestNotificationManager::SetPermission(
-    const GURL& origin,
-    blink::WebNotificationPermission permission) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::AutoLock lock(permission_lock_);
-
-  permission_map_[origin] = permission;
-}
-
-void LayoutTestNotificationManager::ClearPermissions() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::AutoLock lock(permission_lock_);
-
-  permission_map_.clear();
-}
 
 void LayoutTestNotificationManager::DisplayNotification(
     BrowserContext* browser_context,
@@ -133,21 +121,6 @@ void LayoutTestNotificationManager::SimulateClick(const std::string& title) {
           base::Bind(&OnEventDispatchComplete));
 }
 
-PermissionStatus LayoutTestNotificationManager::GetPermissionStatus(
-    const GURL& origin) {
-  switch (CheckPermission(origin)) {
-    case blink::WebNotificationPermissionAllowed:
-      return PERMISSION_STATUS_GRANTED;
-    case blink::WebNotificationPermissionDenied:
-      return PERMISSION_STATUS_DENIED;
-    case blink::WebNotificationPermissionDefault:
-      return PERMISSION_STATUS_ASK;
-  }
-
-  NOTREACHED();
-  return PERMISSION_STATUS_DENIED;
-}
-
 blink::WebNotificationPermission
 LayoutTestNotificationManager::CheckPermissionOnUIThread(
     BrowserContext* browser_context,
@@ -204,6 +177,16 @@ void LayoutTestNotificationManager::ReplaceNotificationIfNeeded(
   }
 
   replacements_[tag] = base::UTF16ToUTF8(notification_data.title);
+}
+
+blink::WebNotificationPermission
+LayoutTestNotificationManager::CheckPermission(const GURL& origin) {
+  return ToWebNotificationPermission(LayoutTestContentBrowserClient::Get()
+      ->GetLayoutTestBrowserContext()
+      ->GetLayoutTestPermissionManager()
+      ->GetPermissionStatus(PermissionType::NOTIFICATIONS,
+                            origin,
+                            origin));
 }
 
 }  // namespace content

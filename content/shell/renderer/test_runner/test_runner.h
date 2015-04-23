@@ -548,13 +548,6 @@ class TestRunner : public WebTestRunner,
   // MIDI function to control permission handling.
   void SetMIDIAccessorResult(bool result);
 
-  // Grants permission for desktop notifications to an origin
-  void GrantWebNotificationPermission(const GURL& origin,
-                                      bool permission_granted);
-
-  // Clears all previously granted Web Notification permissions.
-  void ClearWebNotificationPermissions();
-
   // Simulates a click on a Web Notification.
   void SimulateWebNotificationClick(const std::string& title);
 

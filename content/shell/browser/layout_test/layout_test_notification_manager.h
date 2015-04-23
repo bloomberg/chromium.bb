@@ -11,9 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/synchronization/lock.h"
 #include "content/public/browser/platform_notification_service.h"
-#include "content/public/common/permission_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 #include "url/gurl.h"
 
@@ -28,26 +26,6 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
  public:
   LayoutTestNotificationManager();
   ~LayoutTestNotificationManager() override;
-
-  // Requests permission for |origin| to display notifications in layout tests.
-  // Must be called on the IO thread.
-  // Returns whether the permission is granted.
-  PermissionStatus RequestPermission(const GURL& origin);
-
-  // Checks if |origin| has permission to display notifications. May be called
-  // on both the IO and the UI threads.
-  blink::WebNotificationPermission CheckPermission(const GURL& origin);
-
-  // Similar to CheckPermission() above but returns a PermissionStatus object.
-  PermissionStatus GetPermissionStatus(const GURL& origin);
-
-  // Sets the permission to display notifications for |origin| to |permission|.
-  // Must be called on the IO thread.
-  void SetPermission(const GURL& origin,
-                     blink::WebNotificationPermission permission);
-
-  // Clears the currently granted permissions. Must be called on the IO thread.
-  void ClearPermissions();
 
   // Simulates a click on the notification titled |title|. Must be called on the
   // UI thread.
@@ -79,6 +57,13 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
       int64_t persistent_notification_id) override;
 
  private:
+  // Structure to represent the information of a persistent notification.
+  struct PersistentNotification {
+    BrowserContext* browser_context = nullptr;
+    GURL origin;
+    int64_t persistent_id = 0;
+  };
+
   // Closes the notification titled |title|. Must be called on the UI thread.
   void Close(const std::string& title);
 
@@ -88,15 +73,9 @@ class LayoutTestNotificationManager : public PlatformNotificationService {
   void ReplaceNotificationIfNeeded(
       const PlatformNotificationData& notification_data);
 
-  // Structure to represent the information of a persistent notification.
-  struct PersistentNotification {
-    BrowserContext* browser_context = nullptr;
-    GURL origin;
-    int64_t persistent_id = 0;
-  };
-
-  std::map<GURL, blink::WebNotificationPermission> permission_map_;
-  base::Lock permission_lock_;
+  // Checks if |origin| has permission to display notifications. May be called
+  // on both the IO and the UI threads.
+  blink::WebNotificationPermission CheckPermission(const GURL& origin);
 
   std::map<std::string, DesktopNotificationDelegate*> page_notifications_;
   std::map<std::string, PersistentNotification> persistent_notifications_;

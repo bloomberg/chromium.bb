@@ -60,10 +60,6 @@ bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ClearAllDatabases,
                         OnClearAllDatabases)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_GrantWebNotificationPermission,
-                        OnGrantWebNotificationPermission)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ClearWebNotificationPermissions,
-                        OnClearWebNotificationPermissions)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SimulateWebNotificationClick,
                         OnSimulateWebNotificationClick)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_AcceptAllCookies, OnAcceptAllCookies)
@@ -108,24 +104,6 @@ void LayoutTestMessageFilter::OnSetDatabaseQuota(int quota) {
   quota_manager_->SetTemporaryGlobalOverrideQuota(
       quota * storage::QuotaManager::kPerHostTemporaryPortion,
       storage::QuotaCallback());
-}
-
-void LayoutTestMessageFilter::OnGrantWebNotificationPermission(
-    const GURL& origin, bool permission_granted) {
-  LayoutTestNotificationManager* manager =
-      LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
-  if (manager) {
-    manager->SetPermission(origin, permission_granted ?
-        blink::WebNotificationPermissionAllowed :
-        blink::WebNotificationPermissionDenied);
-  }
-}
-
-void LayoutTestMessageFilter::OnClearWebNotificationPermissions() {
-  LayoutTestNotificationManager* manager =
-      LayoutTestContentBrowserClient::Get()->GetLayoutTestNotificationManager();
-  if (manager)
-    manager->ClearPermissions();
 }
 
 void LayoutTestMessageFilter::OnSimulateWebNotificationClick(

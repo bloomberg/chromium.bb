@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "content/public/browser/permission_manager.h"
 #include "url/gurl.h"
 
@@ -73,6 +74,10 @@ class LayoutTestPermissionManager : public PermissionManager {
   using PermissionsMap = base::hash_map<PermissionDescription,
                                         PermissionStatus,
                                         PermissionDescription::Hash>;
+
+  // Mutex for permissions access. Unfortunately, the permissions can be
+  // accessed from the IO thread because of Notifications' synchronous IPC.
+  base::Lock permissions_lock_;
 
   // List of permissions currently known by the LayoutTestPermissionManager and
   // their associated |PermissionStatus|.

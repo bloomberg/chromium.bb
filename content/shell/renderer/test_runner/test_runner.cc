@@ -1327,19 +1327,9 @@ void TestRunnerBindings::SetMIDISysexPermission(bool value) {
 }
 
 void TestRunnerBindings::GrantWebNotificationPermission(gin::Arguments* args) {
-  if (runner_) {
-    std::string origin;
-    bool permission_granted = true;
-    args->GetNext(&origin);
-    args->GetNext(&permission_granted);
-    return runner_->GrantWebNotificationPermission(GURL(origin),
-                                                   permission_granted);
-  }
 }
 
 void TestRunnerBindings::ClearWebNotificationPermissions() {
-  if (runner_)
-    runner_->ClearWebNotificationPermissions();
 }
 
 void TestRunnerBindings::SimulateWebNotificationClick(
@@ -2827,15 +2817,6 @@ void TestRunner::SetPOSIXLocale(const std::string& locale) {
 
 void TestRunner::SetMIDIAccessorResult(bool result) {
   midi_accessor_result_ = result;
-}
-
-void TestRunner::GrantWebNotificationPermission(const GURL& origin,
-                                                bool permission_granted) {
-  delegate_->GrantWebNotificationPermission(origin, permission_granted);
-}
-
-void TestRunner::ClearWebNotificationPermissions() {
-  delegate_->ClearWebNotificationPermissions();
 }
 
 void TestRunner::SimulateWebNotificationClick(const std::string& title) {
