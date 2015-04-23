@@ -2405,14 +2405,12 @@ TEST_F(SchedulerTest, SendBeginMainFrameNotExpectedSoon) {
   client_->Reset();
 }
 
-TEST_F(SchedulerTest, UsingSynchronousCompositor) {
+TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
   scheduler_settings_.use_external_begin_frame_source = true;
   scheduler_settings_.impl_side_painting = true;
   SetUpScheduler(true);
 
-  // Compositor thread initiated input/animation.
-  // --------------------------------------------
   scheduler_->SetNeedsAnimate();
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
   client_->Reset();
@@ -2458,9 +2456,14 @@ TEST_F(SchedulerTest, UsingSynchronousCompositor) {
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
+}
 
-  // Android onDraw after idle.
-  // --------------------------
+TEST_F(SchedulerTest, SynchronousCompositorOnDrawDuringIdle) {
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.impl_side_painting = true;
+  SetUpScheduler(true);
+
   scheduler_->SetNeedsRedraw();
   scheduler_->OnDrawForOutputSurface();
   EXPECT_ACTION("SetNeedsBeginFrames(true)", client_, 0, 3);
@@ -2476,9 +2479,14 @@ TEST_F(SchedulerTest, UsingSynchronousCompositor) {
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   client_->Reset();
+}
 
-  // Main thread initiated activity.
-  // -------------------------------
+TEST_F(SchedulerTest, SynchronousCompositorCommit) {
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.impl_side_painting = true;
+  SetUpScheduler(true);
+
   scheduler_->SetNeedsCommit();
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
   client_->Reset();
@@ -2528,6 +2536,54 @@ TEST_F(SchedulerTest, UsingSynchronousCompositor) {
   EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+}
+
+TEST_F(SchedulerTest, SynchronousCompositorDoubleCommitWithoutDraw) {
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.impl_side_painting = true;
+  SetUpScheduler(true);
+
+  scheduler_->SetNeedsCommit();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  client_->Reset();
+
+  // Next vsync.
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  scheduler_->NotifyBeginMainFrameStarted();
+  EXPECT_NO_ACTION(client_);
+
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
+  client_->Reset();
+
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
+  client_->Reset();
+
+  // Ask for another commit.
+  scheduler_->SetNeedsCommit();
+
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 4);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 4);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 2, 4);
+  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 3, 4);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+
+  scheduler_->NotifyBeginMainFrameStarted();
+  EXPECT_NO_ACTION(client_);
+
+  // Allow new commit even though previous commit hasn't been drawn.
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
   client_->Reset();
 }
 

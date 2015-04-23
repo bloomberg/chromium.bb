@@ -493,7 +493,26 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
 }
 
 void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
-  BeginImplFrame(args);
+  bool main_thread_is_in_high_latency_mode =
+      state_machine_.MainThreadIsInHighLatencyMode();
+  TRACE_EVENT2("cc,benchmark", "Scheduler::BeginImplFrame", "args",
+               args.AsValue(), "main_thread_is_high_latency",
+               main_thread_is_in_high_latency_mode);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
+                 "MainThreadLatency", main_thread_is_in_high_latency_mode);
+
+  advance_commit_state_task_.Cancel();
+
+  begin_impl_frame_args_ = args;
+  begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
+
+  if (!state_machine_.impl_latency_takes_priority() &&
+      main_thread_is_in_high_latency_mode &&
+      CanCommitAndActivateBeforeDeadline()) {
+    state_machine_.SetSkipNextBeginMainFrameToReduceLatency();
+  }
+
+  BeginImplFrame();
 
   // The deadline will be scheduled in ProcessScheduledActions.
   state_machine_.OnBeginImplFrameDeadlinePending();
@@ -501,7 +520,10 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
 }
 
 void Scheduler::BeginImplFrameSynchronous(const BeginFrameArgs& args) {
-  BeginImplFrame(args);
+  TRACE_EVENT1("cc,benchmark", "Scheduler::BeginImplFrame", "args",
+               args.AsValue());
+  begin_impl_frame_args_ = args;
+  BeginImplFrame();
   FinishImplFrame();
 }
 
@@ -516,33 +538,12 @@ void Scheduler::FinishImplFrame() {
 // BeginImplFrame starts a compositor frame that will wait up until a deadline
 // for a BeginMainFrame+activation to complete before it times out and draws
 // any asynchronous animation and scroll/pinch updates.
-void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
-  bool main_thread_is_in_high_latency_mode =
-      state_machine_.MainThreadIsInHighLatencyMode();
-  TRACE_EVENT2("cc,benchmark",
-               "Scheduler::BeginImplFrame",
-               "args",
-               args.AsValue(),
-               "main_thread_is_high_latency",
-               main_thread_is_in_high_latency_mode);
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
-                 "MainThreadLatency",
-                 main_thread_is_in_high_latency_mode);
+void Scheduler::BeginImplFrame() {
   DCHECK_EQ(state_machine_.begin_impl_frame_state(),
             SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(!BeginImplFrameDeadlinePending());
   DCHECK(state_machine_.HasInitializedOutputSurface());
-
-  advance_commit_state_task_.Cancel();
-
-  begin_impl_frame_args_ = args;
-  begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
-
-  if (!state_machine_.impl_latency_takes_priority() &&
-      main_thread_is_in_high_latency_mode &&
-      CanCommitAndActivateBeforeDeadline()) {
-    state_machine_.SetSkipNextBeginMainFrameToReduceLatency();
-  }
+  DCHECK(advance_commit_state_task_.IsCancelled());
 
   state_machine_.OnBeginImplFrame();
   devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);

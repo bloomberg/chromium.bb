@@ -713,6 +713,11 @@ void SchedulerStateMachine::UpdateStateOnInvalidateOutputSurface() {
   invalidate_output_surface_funnel_ = true;
   last_frame_number_invalidate_output_surface_performed_ =
       current_frame_number_;
+
+  // The synchronous compositor makes no guarantees about a draw coming in after
+  // an invalidate so clear any flags that would cause the compositor's pipeline
+  // to stall.
+  active_tree_needs_first_draw_ = false;  // blocks commit if true
 }
 
 void SchedulerStateMachine::SetSkipNextBeginMainFrameToReduceLatency() {
