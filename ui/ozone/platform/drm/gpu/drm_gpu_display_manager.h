@@ -54,6 +54,9 @@ class DrmGpuDisplayManager {
                          const base::FileDescriptor& fd);
   void RemoveGraphicsDevice(const base::FilePath& path);
 
+  bool GetHDCPState(int64_t display_id, HDCPState* state);
+  bool SetHDCPState(int64_t display_id, HDCPState state);
+
  private:
   DrmDisplaySnapshot* FindDisplaySnapshot(int64_t id);
   const DrmDisplayMode* FindDisplayMode(const gfx::Size& size,
@@ -64,9 +67,6 @@ class DrmGpuDisplayManager {
   bool Configure(const DrmDisplaySnapshot& output,
                  const DrmDisplayMode* mode,
                  const gfx::Point& origin);
-
-  bool GetHDCPState(const DrmDisplaySnapshot& output, HDCPState* state);
-  bool SetHDCPState(const DrmDisplaySnapshot& output, HDCPState state);
 
   // Notify ScreenManager of all the displays that were present before the
   // update but are gone after the update.

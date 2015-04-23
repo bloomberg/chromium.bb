@@ -336,17 +336,22 @@ bool DrmGpuDisplayManager::Configure(const DrmDisplaySnapshot& output,
   return true;
 }
 
-bool DrmGpuDisplayManager::GetHDCPState(const DrmDisplaySnapshot& output,
-                                        HDCPState* state) {
+bool DrmGpuDisplayManager::GetHDCPState(int64_t display_id, HDCPState* state) {
+  DrmDisplaySnapshot* output = FindDisplaySnapshot(display_id);
+  if (!output) {
+    LOG(ERROR) << "There is no display with ID " << display_id;
+    return false;
+  }
+
   ScopedDrmConnectorPtr connector(
-      output.drm()->GetConnector(output.connector()));
+      output->drm()->GetConnector(output->connector()));
   if (!connector) {
-    PLOG(ERROR) << "Failed to get connector " << output.connector();
+    PLOG(ERROR) << "Failed to get connector " << output->connector();
     return false;
   }
 
   ScopedDrmPropertyPtr hdcp_property(
-      output.drm()->GetProperty(connector.get(), kContentProtection));
+      output->drm()->GetProperty(connector.get(), kContentProtection));
   if (!hdcp_property) {
     PLOG(ERROR) << "'" << kContentProtection << "' property doesn't exist.";
     return false;
@@ -366,24 +371,29 @@ bool DrmGpuDisplayManager::GetHDCPState(const DrmDisplaySnapshot& output,
   return false;
 }
 
-bool DrmGpuDisplayManager::SetHDCPState(const DrmDisplaySnapshot& output,
-                                        HDCPState state) {
+bool DrmGpuDisplayManager::SetHDCPState(int64_t display_id, HDCPState state) {
+  DrmDisplaySnapshot* output = FindDisplaySnapshot(display_id);
+  if (!output) {
+    LOG(ERROR) << "There is no display with ID " << display_id;
+    return false;
+  }
+
   ScopedDrmConnectorPtr connector(
-      output.drm()->GetConnector(output.connector()));
+      output->drm()->GetConnector(output->connector()));
   if (!connector) {
-    PLOG(ERROR) << "Failed to get connector " << output.connector();
+    PLOG(ERROR) << "Failed to get connector " << output->connector();
     return false;
   }
 
   ScopedDrmPropertyPtr hdcp_property(
-      output.drm()->GetProperty(connector.get(), kContentProtection));
+      output->drm()->GetProperty(connector.get(), kContentProtection));
   if (!hdcp_property) {
     PLOG(ERROR) << "'" << kContentProtection << "' property doesn't exist.";
     return false;
   }
 
-  return output.drm()->SetProperty(
-      output.connector(), hdcp_property->prop_id,
+  return output->drm()->SetProperty(
+      output->connector(), hdcp_property->prop_id,
       GetContentProtectionValue(hdcp_property.get(), state));
 }
 

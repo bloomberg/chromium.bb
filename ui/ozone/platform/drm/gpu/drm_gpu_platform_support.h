@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ipc/message_filter.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 
@@ -75,6 +76,8 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
   void OnAddGraphicsDevice(const base::FilePath& path,
                            const base::FileDescriptor& fd);
   void OnRemoveGraphicsDevice(const base::FilePath& path);
+  void OnGetHDCPState(int64_t display_id);
+  void OnSetHDCPState(int64_t display_id, HDCPState state);
 
   void SetIOTaskRunner(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);

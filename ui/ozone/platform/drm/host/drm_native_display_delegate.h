@@ -84,6 +84,9 @@ class DrmNativeDisplayDelegate : public NativeDisplayDelegate,
 
   void OnNewGraphicsDevice(const base::FilePath& path, base::File file);
 
+  void OnHDCPStateReceived(int64_t display_id, bool status, HDCPState state);
+  void OnHDCPStateUpdated(int64_t display_id, bool status);
+
   void RunUpdateDisplaysCallback(const GetDisplaysCallback& callback) const;
 
   DrmGpuPlatformSupportHost* proxy_;  // Not owned.
@@ -106,6 +109,10 @@ class DrmNativeDisplayDelegate : public NativeDisplayDelegate,
 
   // Map between display_id and the configuration callback.
   std::map<int64_t, ConfigureCallback> configure_callback_map_;
+
+  std::map<int64_t, GetHDCPStateCallback> get_hdcp_state_callback_map_;
+
+  std::map<int64_t, SetHDCPStateCallback> set_hdcp_state_callback_map_;
 
   base::WeakPtrFactory<DrmNativeDisplayDelegate> weak_ptr_factory_;
 

@@ -213,6 +213,8 @@ bool DrmGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
                       OnRelinquishDisplayControl)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_AddGraphicsDevice, OnAddGraphicsDevice)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_RemoveGraphicsDevice, OnRemoveGraphicsDevice)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_GetHDCPState, OnGetHDCPState)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetHDCPState, OnSetHDCPState)
   IPC_MESSAGE_UNHANDLED(handled = false);
   IPC_END_MESSAGE_MAP()
 
@@ -294,6 +296,18 @@ void DrmGpuPlatformSupport::OnRemoveGraphicsDevice(const base::FilePath& path) {
 void DrmGpuPlatformSupport::RelinquishGpuResources(
     const base::Closure& callback) {
   callback.Run();
+}
+
+void DrmGpuPlatformSupport::OnGetHDCPState(int64_t display_id) {
+  HDCPState state = HDCP_STATE_UNDESIRED;
+  bool success = ndd_->GetHDCPState(display_id, &state);
+  sender_->Send(new OzoneHostMsg_HDCPStateReceived(display_id, success, state));
+}
+
+void DrmGpuPlatformSupport::OnSetHDCPState(int64_t display_id,
+                                           HDCPState state) {
+  sender_->Send(new OzoneHostMsg_HDCPStateUpdated(
+      display_id, ndd_->SetHDCPState(display_id, state)));
 }
 
 void DrmGpuPlatformSupport::SetIOTaskRunner(
