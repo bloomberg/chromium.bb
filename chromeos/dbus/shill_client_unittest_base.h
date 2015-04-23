@@ -45,10 +45,10 @@ class ValueMatcher : public MatcherInterface<const base::Value&> {
   explicit ValueMatcher(const base::Value& value);
 
   // MatcherInterface overrides.
-  virtual bool MatchAndExplain(const base::Value& value,
-                               MatchResultListener* listener) const override;
-  virtual void DescribeTo(::std::ostream* os) const override;
-  virtual void DescribeNegationTo(::std::ostream* os) const override;
+  bool MatchAndExplain(const base::Value& value,
+                       MatchResultListener* listener) const override;
+  void DescribeTo(::std::ostream* os) const override;
+  void DescribeNegationTo(::std::ostream* os) const override;
 
  private:
   scoped_ptr<base::Value> expected_value_;
