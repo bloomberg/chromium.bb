@@ -946,23 +946,17 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
 
           var previousDirEntry =
               this.currentDirContents_.getDirectoryEntry();
+          this.clearAndScan_(
+               newDirectoryContents,
+               function(result) {
+                 // Calls the callback of the method when successful.
+                 if (result && opt_callback)
+                   opt_callback();
 
-          var promises = [];
-
-          promises.push(
-              new Promise(
-                  /** @this {DirectoryModel} */
-                  function(resolve) {
-                    this.clearAndScan_(
-                        newDirectoryContents,
-                        function(result) {
-                          // Calls the callback of the method when successful.
-                          if (result && opt_callback)
-                            opt_callback();
-
-                          resolve(undefined);
-                        });
-                  }.bind(this)));
+                 // Notify that the current task of this.directoryChangeQueue_
+                 // is completed.
+                 setTimeout(queueTaskCallback, 0);
+               });
 
           // For tests that open the dialog to empty directories, everything
           // is loaded at this point.
@@ -976,13 +970,11 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
           event.previousDirEntry = previousDirEntry;
           event.newDirEntry = dirEntry;
           event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
+          this.dispatchEvent(event);
 
           if (event.volumeChanged) {
-            promises.push(this.onVolumeChanged_(assert(currentVolumeInfo)));
+            this.onVolumeChanged_(assert(currentVolumeInfo));
           }
-
-          this.dispatchEvent(event);
-          Promise.all(promises).then(queueTaskCallback);
         }.bind(this));
   }.bind(this, this.changeDirectorySequence_));
 };
