@@ -152,6 +152,7 @@ TestPlugin::TestPlugin(blink::WebFrame* frame,
       print_event_details_(false),
       print_user_gesture_status_(false),
       can_process_drag_(false),
+      supports_keyboard_focus_(false),
       is_persistent_(params.mimeType == PluginPersistsMimeType()),
       can_create_without_renderer_(params.mimeType ==
                                    CanCreateWithoutRendererMimeType()) {
@@ -171,6 +172,9 @@ TestPlugin::TestPlugin(blink::WebFrame* frame,
       blink::WebString, kAttributePrintEventDetails, ("print-event-details"));
   const CR_DEFINE_STATIC_LOCAL(
       blink::WebString, kAttributeCanProcessDrag, ("can-process-drag"));
+  const CR_DEFINE_STATIC_LOCAL(blink::WebString,
+                               kAttributeSupportsKeyboardFocus,
+                               ("supports-keyboard-focus"));
   const CR_DEFINE_STATIC_LOCAL(blink::WebString,
                                kAttributePrintUserGestureStatus,
                                ("print-user-gesture-status"));
@@ -197,6 +201,8 @@ TestPlugin::TestPlugin(blink::WebFrame* frame,
       print_event_details_ = ParseBoolean(attribute_value);
     else if (attribute_name == kAttributeCanProcessDrag)
       can_process_drag_ = ParseBoolean(attribute_value);
+    else if (attribute_name == kAttributeSupportsKeyboardFocus)
+      supports_keyboard_focus_ = ParseBoolean(attribute_value);
     else if (attribute_name == kAttributePrintUserGestureStatus)
       print_user_gesture_status_ = ParseBoolean(attribute_value);
   }
@@ -257,6 +263,10 @@ NPObject* TestPlugin::scriptableObject() {
 
 bool TestPlugin::canProcessDrag() const {
   return can_process_drag_;
+}
+
+bool TestPlugin::supportsKeyboardFocus() const {
+  return supports_keyboard_focus_;
 }
 
 void TestPlugin::updateGeometry(

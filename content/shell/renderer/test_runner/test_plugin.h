@@ -63,6 +63,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   virtual void destroy();
   virtual NPObject* scriptableObject();
   virtual bool canProcessDrag() const;
+  virtual bool supportsKeyboardFocus() const;
   virtual void paint(blink::WebCanvas* canvas, const blink::WebRect& rect) {}
   virtual void updateGeometry(
       const blink::WebRect& window_rect,
@@ -170,6 +171,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   bool print_event_details_;
   bool print_user_gesture_status_;
   bool can_process_drag_;
+  bool supports_keyboard_focus_;
 
   bool is_persistent_;
   bool can_create_without_renderer_;
