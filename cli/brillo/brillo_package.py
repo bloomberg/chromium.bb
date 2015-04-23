@@ -171,8 +171,8 @@ To enable building a package from latest or stable ebuilds:
     """Dispatch the call to the right handler."""
     self.options.Freeze()
     self._ReadOptions()
-    commandline.RunInsideChroot(self, auto_detect_brick=True)
     if self.options.create_source:
       self._CreateSource()
     if self.options.enable:
+      commandline.RunInsideChroot(self, auto_detect_brick=True)
       self._EnableBuild()
