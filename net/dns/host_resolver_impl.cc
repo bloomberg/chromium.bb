@@ -24,6 +24,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1871,6 +1872,10 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
                               const CompletionCallback& callback,
                               RequestHandle* out_req,
                               const BoundNetLog& source_net_log) {
+  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve"));
+
   DCHECK(addresses);
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(false, callback.is_null());
