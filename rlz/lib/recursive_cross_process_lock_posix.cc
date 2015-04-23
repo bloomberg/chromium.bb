@@ -43,7 +43,7 @@ bool RecursiveCrossProcessLock::TryGetCrossProcessLock(
     CHECK(file_lock_ == -1);
     file_lock_ = open(lock_filename.value().c_str(), O_RDWR | O_CREAT, 0666);
     if (file_lock_ == -1) {
-      perror("open");
+      VPLOG(1) << "Failed to open: " << lock_filename.value();
       return false;
     }
 
@@ -58,7 +58,7 @@ bool RecursiveCrossProcessLock::TryGetCrossProcessLock(
     }
 
     if (flock_result == -1) {
-      perror("flock");
+      VPLOG(1) << "Failed flock: " << lock_filename.value();
       close(file_lock_);
       file_lock_ = -1;
       return false;
