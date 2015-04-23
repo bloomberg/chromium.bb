@@ -10,6 +10,7 @@ This will crunch images and generate v14 compatible resources
 (see generate_v14_compatible_resources.py).
 """
 
+import codecs
 import optparse
 import os
 import re
@@ -112,14 +113,15 @@ def CreateExtraRJavaFiles(r_dir, extra_packages):
   if len(java_files) != 1:
     return
   r_java_file = java_files[0]
-  r_java_contents = open(r_java_file).read()
+  r_java_contents = codecs.open(r_java_file, encoding='utf-8').read()
 
   for package in extra_packages:
     package_r_java_dir = os.path.join(r_dir, *package.split('.'))
     build_utils.MakeDirectory(package_r_java_dir)
     package_r_java_path = os.path.join(package_r_java_dir, 'R.java')
-    open(package_r_java_path, 'w').write(
-        re.sub(r'package [.\w]*;', 'package %s;' % package, r_java_contents))
+    new_r_java = re.sub(r'package [.\w]*;', u'package %s;' % package,
+                        r_java_contents)
+    codecs.open(package_r_java_path, 'w', encoding='utf-8').write(new_r_java)
     # TODO(cjhopman): These extra package's R.java files should be filtered to
     # only contain the resources listed in their R.txt files. At this point, we
     # have already compiled those other libraries, so doing this would only
