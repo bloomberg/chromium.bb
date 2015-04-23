@@ -281,6 +281,19 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
     return;
 }
 
+static void unscopeableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    TestPartialInterfaceImplementation3::unscopeableVoidMethod(*impl);
+}
+
+static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 } // namespace TestInterfaceImplementationPartialV8Internal
 
 void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
@@ -306,15 +319,26 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Local<v8::Functi
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(V8TestInterface::legacyCallCustom);
 }
 
-void V8TestInterfacePartial::installConditionallyEnabledMethods(v8::Local<v8::Object> prototypeObject, v8::Isolate* isolate)
+void V8TestInterfacePartial::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject)
 {
-    V8TestInterface::installConditionallyEnabledMethods(prototypeObject, isolate);
+    V8TestInterface::preparePrototypeObject(isolate, prototypeObject);
+    v8::Local<v8::Context> v8Context(prototypeObject->CreationContext());
+    v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
+    v8::Local<v8::Object> unscopeables;
+    if (v8CallBoolean(prototypeObject->HasOwnProperty(v8Context, unscopablesSymbol)))
+        unscopeables = prototypeObject->Get(v8Context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
+    else
+        unscopeables = v8::Object::New(isolate);
+    unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "unscopeableVoidMethod"), v8::True(isolate)).FromJust();
+    prototypeObject->ForceSet(v8Context, unscopablesSymbol, unscopeables).FromJust();
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
     ExecutionContext* context = toExecutionContext(prototypeObject->CreationContext());
     ASSERT(context);
-
     if (context && context->isDocument() && ContextFeatures::partialContextName3Enabled(toDocument(context))) {
         prototypeObject->Set(v8AtomicString(isolate, "partialVoidTestEnumModulesArgMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationPartialV8Internal::partialVoidTestEnumModulesArgMethodMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
+    }
+    if (context && context->isDocument() && ContextFeatures::partialContextName3Enabled(toDocument(context))) {
+        prototypeObject->Set(v8AtomicString(isolate, "unscopeableVoidMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationPartialV8Internal::unscopeableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction(isolate->GetCurrentContext()).ToLocalChecked());
     }
 }
 
@@ -354,7 +378,7 @@ void V8TestInterfacePartial::initialize()
     // Should be invoked from initModules.
     V8TestInterface::updateWrapperTypeInfo(
         &V8TestInterfacePartial::installV8TestInterfaceTemplate,
-        &V8TestInterfacePartial::installConditionallyEnabledMethods);
+        &V8TestInterfacePartial::preparePrototypeObject);
     V8TestInterface::registerVoidMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::voidMethodPartialOverloadMethod);
     V8TestInterface::registerStaticVoidMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::staticVoidMethodPartialOverloadMethod);
     V8TestInterface::registerPromiseMethodPartialOverloadMethodForPartialInterface(&TestInterfaceImplementationPartialV8Internal::promiseMethodPartialOverloadMethod);

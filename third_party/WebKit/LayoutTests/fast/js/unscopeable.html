@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description('Test [Unscopeable] attributes and methods.');
+
+shouldBeTrue('"unscopeableAttribute" in internals');
+shouldBeTrue('"unscopeableMethod" in internals');
+
+shouldBe('internals.unscopeableAttribute', '"unscopeableAttribute"');
+shouldBe('internals.unscopeableMethod()', '"unscopeableMethod"');
+
+var unscopeableAttribute = 'variable';
+var unscopeableMethod = 'variable';
+
+with (internals) {
+    shouldBe('unscopeableAttribute', '"variable"');
+    shouldBe('unscopeableMethod', '"variable"');
+}
+
+</script>
+</body>
+</html>

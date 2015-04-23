@@ -474,7 +474,7 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::Name> name
 {% if named_constructor %}
 {% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class
                               if is_active_dom_object else '0' %}
-const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, 0, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, "{{interface_name}}", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{event_target_inheritance}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
+const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, 0, {{v8_class}}::preparePrototypeObject, {{v8_class}}::installConditionallyEnabledProperties, "{{interface_name}}", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{event_target_inheritance}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
 
 {{generate_constructor(named_constructor)}}
 v8::Local<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate)
@@ -926,6 +926,40 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Local<v8::Object> i
 
 
 {##############################################################################}
+{% block prepare_prototype_object %}
+{% from 'methods.cpp' import install_conditionally_enabled_methods with context %}
+{% if unscopeables or conditionally_enabled_methods %}
+void {{v8_class}}::preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeObject)
+{
+{% if unscopeables %}
+    {{install_unscopeables() | indent}}
+{% endif %}
+{% if conditionally_enabled_methods %}
+    {{install_conditionally_enabled_methods() | indent}}
+{% endif %}
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% macro install_unscopeables() %}
+v8::Local<v8::Context> v8Context(prototypeObject->CreationContext());
+v8::Local<v8::Name> unscopablesSymbol(v8::Symbol::GetUnscopables(isolate));
+v8::Local<v8::Object> unscopeables;
+if (v8CallBoolean(prototypeObject->HasOwnProperty(v8Context, unscopablesSymbol)))
+    unscopeables = prototypeObject->Get(v8Context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
+else
+    unscopeables = v8::Object::New(isolate);
+{% for name in unscopeables %}
+unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
+{% endfor %}
+prototypeObject->ForceSet(v8Context, unscopablesSymbol, unscopeables).FromJust();
+{% endmacro %}
+
+
+{##############################################################################}
 {% block to_active_dom_object %}
 {% if is_active_dom_object %}
 ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Local<v8::Object> wrapper)
@@ -1000,11 +1034,11 @@ void {{v8_class}}::derefObject(ScriptWrappable* scriptWrappable)
 {% if has_partial_interface %}
 InstallTemplateFunction {{v8_class}}::install{{v8_class}}TemplateFunction = (InstallTemplateFunction)&{{v8_class}}::install{{v8_class}}Template;
 
-void {{v8_class}}::updateWrapperTypeInfo(InstallTemplateFunction installTemplateFunction, InstallConditionallyEnabledMethodsFunction installConditionallyEnabledMethodsFunction)
+void {{v8_class}}::updateWrapperTypeInfo(InstallTemplateFunction installTemplateFunction, PreparePrototypeObjectFunction preparePrototypeObjectFunction)
 {
     {{v8_class}}::install{{v8_class}}TemplateFunction = installTemplateFunction;
-    if (installConditionallyEnabledMethodsFunction)
-        {{v8_class}}::wrapperTypeInfo.installConditionallyEnabledMethodsFunction = installConditionallyEnabledMethodsFunction;
+    if (preparePrototypeObjectFunction)
+        {{v8_class}}::wrapperTypeInfo.preparePrototypeObjectFunction = preparePrototypeObjectFunction;
 }
 
 {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}

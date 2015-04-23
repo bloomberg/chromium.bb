@@ -54,7 +54,7 @@ typedef void (*DerefObjectFunction)(ScriptWrappable*);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappable*);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Local<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
-typedef void (*InstallConditionallyEnabledMethodsFunction)(v8::Local<v8::Object>, v8::Isolate*);
+typedef void (*PreparePrototypeObjectFunction)(v8::Isolate*, v8::Local<v8::Object>);
 typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Local<v8::Object>, v8::Isolate*);
 
 inline void setObjectGroup(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
@@ -142,10 +142,10 @@ struct WrapperTypeInfo {
         return traceFunction(visitor, scriptWrappable);
     }
 
-    void installConditionallyEnabledMethods(v8::Local<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
+    void preparePrototypeObject(v8::Isolate* isolate, v8::Local<v8::Object> prototypeTemplate) const
     {
-        if (installConditionallyEnabledMethodsFunction)
-            installConditionallyEnabledMethodsFunction(prototypeTemplate, isolate);
+        if (preparePrototypeObjectFunction)
+            preparePrototypeObjectFunction(isolate, prototypeTemplate);
     }
 
     void installConditionallyEnabledProperties(v8::Local<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
@@ -180,7 +180,7 @@ struct WrapperTypeInfo {
     const TraceFunction traceFunction;
     const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
-    InstallConditionallyEnabledMethodsFunction installConditionallyEnabledMethodsFunction;
+    PreparePrototypeObjectFunction preparePrototypeObjectFunction;
     const InstallConditionallyEnabledPropertiesFunction installConditionallyEnabledPropertiesFunction;
     const char* const interfaceName;
     const WrapperTypeInfo* parentClass;

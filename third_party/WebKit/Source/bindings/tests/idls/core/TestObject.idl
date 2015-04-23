@@ -263,6 +263,8 @@ interface TestObject {
     [Unforgeable] attribute long unforgeableLongAttribute;
     [Measure] attribute long measuredLongAttribute;
     [SameObject] attribute TestInterface sameObjectAttribute;
+    [Unscopeable] attribute long unscopeableLongAttribute;
+    [Unscopeable] void unscopeableVoidMethod();
 
 
     // Methods

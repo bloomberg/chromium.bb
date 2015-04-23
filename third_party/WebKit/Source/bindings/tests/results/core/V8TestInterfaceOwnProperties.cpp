@@ -19,7 +19,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceOwnProperties::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceOwnProperties::domTemplate, V8TestInterfaceOwnProperties::refObject, V8TestInterfaceOwnProperties::derefObject, V8TestInterfaceOwnProperties::trace, 0, 0, V8TestInterfaceOwnProperties::installConditionallyEnabledMethods, V8TestInterfaceOwnProperties::installConditionallyEnabledProperties, "TestInterfaceOwnProperties", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceOwnProperties::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceOwnProperties::domTemplate, V8TestInterfaceOwnProperties::refObject, V8TestInterfaceOwnProperties::derefObject, V8TestInterfaceOwnProperties::trace, 0, 0, V8TestInterfaceOwnProperties::preparePrototypeObject, V8TestInterfaceOwnProperties::installConditionallyEnabledProperties, "TestInterfaceOwnProperties", &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::NotInheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::RefCountedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceOwnProperties.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
