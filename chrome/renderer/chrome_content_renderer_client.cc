@@ -42,7 +42,6 @@
 #include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "chrome/renderer/plugins/shadow_dom_plugin_placeholder.h"
-#include "chrome/renderer/prefetch_helper.h"
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerender_media_load_deferrer.h"
@@ -556,9 +555,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   if (render_frame->GetRenderView()->GetMainRenderFrame() == render_frame) {
     // Only attach NetErrorHelper to the main frame, since only the main frame
     // should get error pages.
-    // PrefetchHelper is also needed only for main frames.
     new NetErrorHelper(render_frame);
-    new prefetch::PrefetchHelper(render_frame);
   }
 
   PasswordGenerationAgent* password_generation_agent =
