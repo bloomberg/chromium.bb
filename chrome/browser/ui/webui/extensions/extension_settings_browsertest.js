@@ -29,6 +29,9 @@ ExtensionSettingsWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
+  isAsync: true,
+
+  /** @override */
   runAccessibilityChecks: true,
 
   /** @override */
@@ -43,26 +46,115 @@ ExtensionSettingsWebUITest.prototype = {
 
   /** @override */
   typedefCppFixture: 'ExtensionSettingsUIBrowserTest',
+
+  /** @override */
+  setUp: function() {
+    // Make all transitions take 0ms for testing purposes.
+    var noTransitionStyle = document.createElement('style');
+    noTransitionStyle.textContent =
+        '* {' +
+        '  -webkit-transition-duration: 0ms !important;' +
+        '  -webkit-transition-delay: 0ms !important;' +
+        '}';
+    document.querySelector('head').appendChild(noTransitionStyle);
+  },
+
+  /**
+   * Holds an array of steps that should happen in order during a test.
+   * The last step should be |testDone|.
+   * @protected {Array<!Function>}
+   * */
+  steps: [],
+
+  /**
+   * Advances to the next step in the test. Every step should call this.
+   * @protected
+   * */
+  nextStep: function() {
+    assertTrue(this.steps.length > 0);
+    this.steps.shift().call(this);
+  },
+
+  /**
+   * Will wait for the page to load before calling the next step. This should be
+   * the first step in every test.
+   * @protected
+   * */
+  waitForPageLoad: function() {
+    assertEquals(this.browsePreload, document.location.href);
+    var extensionList = getRequiredElement('extension-settings-list');
+    extensionList.loadFinished.then(this.nextStep.bind(this));
+  },
+
+  /** @protected */
+  verifyDeveloperModeWorks: function() {
+    var extensionSettings = getRequiredElement('extension-settings');
+    assertFalse(extensionSettings.classList.contains('dev-mode'));
+    $('toggle-dev-on').click();
+    assertTrue(extensionSettings.classList.contains('dev-mode'));
+    chrome.developerPrivate.getProfileConfiguration(function(profileInfo) {
+      assertTrue(profileInfo.inDeveloperMode);
+
+      // A 0ms timeout is necessary so that all the transitions can finish.
+      window.setTimeout(this.nextStep.bind(this), 0);
+    }.bind(this));
+  },
+
+  /** @protected */
+  testDeveloperMode: function() {
+    var next = this.nextStep.bind(this);
+    var checkDevModeIsOff = function() {
+      chrome.developerPrivate.getProfileConfiguration(function(profileInfo) {
+        assertFalse(profileInfo.inDeveloperMode);
+        next();
+      });
+    };
+    this.steps = [this.waitForPageLoad,
+                  checkDevModeIsOff,
+                  this.verifyDeveloperModeWorks,
+                  testDone];
+    this.nextStep();
+  }
 };
 
+// Verify that developer mode doesn't change behavior when the number of
+// extensions changes.
+TEST_F('ExtensionSettingsWebUITest', 'testDeveloperModeNoExtensions',
+       function() {
+  this.testDeveloperMode();
+});
+
+TEST_F('ExtensionSettingsWebUITest', 'testEmptyExtensionList', function() {
+  var verifyListIsHiddenAndEmpty = function() {
+    assertTrue($('extension-list-wrapper').hidden);
+    assertFalse($('no-extensions').hidden);
+    assertEquals(0, $('extension-settings-list').childNodes.length);
+    this.nextStep();
+  };
+
+  this.steps = [this.waitForPageLoad, verifyListIsHiddenAndEmpty, testDone];
+  this.nextStep();
+});
+
 TEST_F('ExtensionSettingsWebUITest', 'testChromeSendHandled', function() {
-  assertEquals(this.browsePreload, document.location.href);
+  var testPackExtenion = function() {
+    // This dialog should be hidden at first.
+    assertFalse($('pack-extension-overlay').classList.contains('showing'));
 
-  // This dialog should be hidden at first.
-  assertFalse($('pack-extension-overlay').classList.contains('showing'));
+    // Show the dialog, which triggers a chrome.send() for metrics purposes.
+    cr.dispatchSimpleEvent($('pack-extension'), 'click');
+    assertTrue($('pack-extension-overlay').classList.contains('showing'));
+    this.nextStep();
+  };
 
-  // Show the dialog, which triggers a chrome.send() for metrics purposes.
-  cr.dispatchSimpleEvent($('pack-extension'), 'click');
-  assertTrue($('pack-extension-overlay').classList.contains('showing'));
+  this.steps = [this.waitForPageLoad, testPackExtenion, testDone];
+  this.nextStep();
 });
 
 function BasicExtensionSettingsWebUITest() {}
 
 BasicExtensionSettingsWebUITest.prototype = {
   __proto__: ExtensionSettingsWebUITest.prototype,
-
-  /** @override */
-  isAsync: true,
 
   /** @override */
   testGenPreamble: function() {
@@ -74,21 +166,6 @@ BasicExtensionSettingsWebUITest.prototype = {
     GEN('  InstallPackagedApp();');
 
     GEN('  SetAutoConfirmUninstall();');
-  },
-
-  /** @protected {Array<!Function>} */
-  steps: [],
-
-  /** @protected */
-  nextStep: function() {
-    assertTrue(this.steps.length > 0);
-    this.steps.shift().call(this);
-  },
-
-  /** @protected */
-  waitForPageLoad: function() {
-    var extensionList = getRequiredElement('extension-settings-list');
-    extensionList.extensionsUpdated_.then(this.nextStep.bind(this));
   },
 
   /** @protected */
@@ -119,24 +196,18 @@ BasicExtensionSettingsWebUITest.prototype = {
       });
     });
   },
-
-  /** @protected */
-  verifyDeveloperModeWorks: function() {
-    var extensionSettings = getRequiredElement('extension-settings');
-    assertFalse(extensionSettings.classList.contains('dev-mode'));
-    $('toggle-dev-on').click();
-    assertTrue(extensionSettings.classList.contains('dev-mode'));
-    chrome.developerPrivate.getProfileConfiguration(function(profileInfo) {
-      assertTrue(profileInfo.inDeveloperMode);
-      this.nextStep();
-    }.bind(this));
-  },
 };
 
+// Verify that developer mode doesn't change behavior when the number of
+// extensions changes.
+TEST_F('BasicExtensionSettingsWebUITest', 'testDeveloperModeManyExtensions',
+       function() {
+  this.testDeveloperMode();
+});
+
+
 TEST_F('BasicExtensionSettingsWebUITest', 'testDisable', function() {
-  this.steps = [this.waitForPageLoad,
-                this.verifyDisabledWorks,
-                testDone];
+  this.steps = [this.waitForPageLoad, this.verifyDisabledWorks, testDone];
   this.nextStep();
 });
 
@@ -149,24 +220,21 @@ TEST_F('BasicExtensionSettingsWebUITest', 'testEnable', function() {
 });
 
 TEST_F('BasicExtensionSettingsWebUITest', 'testUninstall', function() {
-  this.steps = [this.waitForPageLoad,
-                this.verifyUninstallWorks,
-                testDone];
+  this.steps = [this.waitForPageLoad, this.verifyUninstallWorks, testDone];
   this.nextStep();
 });
 
-TEST_F('BasicExtensionSettingsWebUITest', 'testDeveloperMode', function() {
-  var next = this.nextStep.bind(this);
-  var checkDevModeIsOff = function() {
-    chrome.developerPrivate.getProfileConfiguration(function(profileInfo) {
-      assertFalse(profileInfo.inDeveloperMode);
-      next();
-    });
+TEST_F('BasicExtensionSettingsWebUITest', 'testNonEmptyExtensionList',
+       function() {
+  var verifyListIsNotHiddenAndEmpty = function() {
+    assertFalse($('extension-list-wrapper').hidden);
+    assertTrue($('no-extensions').hidden);
+    assertGT($('extension-settings-list').childNodes.length, 0);
+
+    this.nextStep();
   };
-  this.steps = [checkDevModeIsOff,
-                this.waitForPageLoad,
-                this.verifyDeveloperModeWorks,
-                testDone];
+
+  this.steps = [this.waitForPageLoad, verifyListIsNotHiddenAndEmpty, testDone];
   this.nextStep();
 });
 
@@ -176,44 +244,17 @@ AsyncExtensionSettingsWebUITest.prototype = {
   __proto__: ExtensionSettingsWebUITest.prototype,
 
   /** @override */
-  isAsync: true,
-
-  /** @override */
   testGenPreamble: function() {
     GEN('  InstallGoodExtension();');
     GEN('  InstallErrorsExtension();');
   },
-
-  enableDeveloperMode: function(callback) {
-    var devControls = $('dev-controls');
-
-    // Make sure developer controls are hidden before checkbox is clicked.
-    assertEquals(0, devControls.offsetHeight);
-    $('toggle-dev-on').click();
-
-    document.addEventListener('webkitTransitionEnd', function f(e) {
-      if (e.target == devControls) {
-        // Make sure developer controls are not hidden after checkbox is
-        // clicked.
-        assertGT(devControls.offsetHeight, 0);
-
-        document.removeEventListener(f, 'webkitTransitionEnd');
-        callback();
-      }
-    });
-    ensureTransitionEndEvent(devControls, 4000);
-  },
 };
-
-TEST_F('AsyncExtensionSettingsWebUITest', 'testDeveloperModeA11y', function() {
-  this.enableDeveloperMode(testDone);
-});
 
 // Often times out on all platforms: http://crbug.com/467528
 TEST_F('AsyncExtensionSettingsWebUITest',
        'DISABLED_testErrorListButtonVisibility',
     function() {
-  this.enableDeveloperMode(function() {
+  var testButtonVisibility = function() {
     // 2 extensions are loaded:
     //   The 'good' extension will have 0 errors wich means no error list
     //     buttons.
@@ -231,8 +272,14 @@ TEST_F('AsyncExtensionSettingsWebUITest',
     // Hidden buttons must NOT be part of the focusRow.
     assertFalse(hiddenButtons[0].hasAttribute('column-type'));
 
-    testDone();
-  });
+    this.nextStep();
+  };
+
+  this.steps = [this.waitForPageLoad,
+                this.verifyDeveloperModeWorks,
+                testButtonVisibility,
+                testDone];
+  this.nextStep();
 });
 
 /**
@@ -240,16 +287,10 @@ TEST_F('AsyncExtensionSettingsWebUITest',
  * @extends {testing.Test}
  * @constructor
  */
-function ExtensionSettingsCommandsConfigWebUITest() {}
+function SettingsCommandsExtensionSettingsWebUITest() {}
 
-ExtensionSettingsCommandsConfigWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
-
-  /** @override */
-  runAccessibilityChecks: true,
-
-  /** @override */
-  accessibilityIssuesAreErrors: true,
+SettingsCommandsExtensionSettingsWebUITest.prototype = {
+  __proto__: ExtensionSettingsWebUITest.prototype,
 
   /**
    * A URL to load before starting each test.
@@ -259,91 +300,93 @@ ExtensionSettingsCommandsConfigWebUITest.prototype = {
   browsePreload: 'chrome://extensions-frame/configureCommands',
 };
 
-TEST_F('ExtensionSettingsCommandsConfigWebUITest', 'testChromeSendHandler',
+TEST_F('SettingsCommandsExtensionSettingsWebUITest', 'testChromeSendHandler',
     function() {
   // Just navigating to the page should trigger the chrome.send().
-  assertEquals(this.browsePreload, document.location.href);
-  assertTrue($('extension-commands-overlay').classList.contains('showing'));
+  var assertOverlayVisible = function() {
+    assertTrue($('extension-commands-overlay').classList.contains('showing'));
+    this.nextStep();
+  };
+
+  this.steps = [this.waitForPageLoad, assertOverlayVisible, testDone];
+  this.nextStep();
 });
 
 /**
  * @constructor
  * @extends {ExtensionSettingsWebUITest}
  */
-function InstalledExtensionSettingsWebUITest() {}
+function InstallGoodExtensionSettingsWebUITest() {}
 
-InstalledExtensionSettingsWebUITest.prototype = {
+InstallGoodExtensionSettingsWebUITest.prototype = {
   __proto__: ExtensionSettingsWebUITest.prototype,
-
-  /** @override */
-  typedefCppFixture: 'ExtensionSettingsUIBrowserTest',
 
   /** @override */
   testGenPreamble: function() {
     GEN('  InstallGoodExtension();');
   },
+
+  emptyTestForAccessibility() {
+    this.steps = [this.waitForPageLoad, testDone];
+    this.nextStep();
+  },
 };
 
-/** @this {InstalledExtensionSettingsWebUITest} */
-function runAudit() {
-  assertEquals(this.browsePreload, document.location.href);
-  this.runAccessibilityAudit();
-}
+TEST_F('InstallGoodExtensionSettingsWebUITest', 'testAccessibility',
+       function() {
+  this.emptyTestForAccessibility();
+});
 
-TEST_F('InstalledExtensionSettingsWebUITest', 'baseAccessibilityOk', runAudit);
+TEST_F('InstallGoodExtensionSettingsWebUITest', 'showOptions', function() {
+  var showExtensionOptions = function() {
+    var optionsOverlay = extensions.ExtensionOptionsOverlay.getInstance();
+    optionsOverlay.setExtensionAndShowOverlay(GOOD_CRX_ID, 'GOOD!', '',
+                                              this.nextStep.bind(this));
 
-/**
- * @constructor
- * @extends {InstalledExtensionSettingsWebUITest}
- */
-function AsyncInstalledExtensionSettingsWebUITest() {}
+    // Preferred size changes don't happen in browser tests. Just fake it.
+    document.querySelector('extensionoptions').onpreferredsizechanged(
+        {width: 500, height: 500});
+  };
 
-AsyncInstalledExtensionSettingsWebUITest.prototype = {
-  __proto__: InstalledExtensionSettingsWebUITest.prototype,
-
-  /** @override */
-  isAsync: true,
-};
-
-TEST_F('AsyncInstalledExtensionSettingsWebUITest', 'showOptions', function() {
-  var optionsOverlay = extensions.ExtensionOptionsOverlay.getInstance();
-  optionsOverlay.setExtensionAndShowOverlay(GOOD_CRX_ID, 'GOOD!', '', testDone);
-
-  // Preferred size changes don't happen in browser tests. Just fake it.
-  var size = {width: 500, height: 500};
-  document.querySelector('extensionoptions').onpreferredsizechanged(size);
+  this.steps = [this.waitForPageLoad, showExtensionOptions, testDone];
+  this.nextStep();
 });
 
 /**
  * @constructor
- * @extends {InstalledExtensionSettingsWebUITest}
+ * @extends {InstallGoodExtensionSettingsWebUITest}
  */
 function ManagedExtensionSettingsWebUITest() {}
 
 ManagedExtensionSettingsWebUITest.prototype = {
-  __proto__: InstalledExtensionSettingsWebUITest.prototype,
+  __proto__: InstallGoodExtensionSettingsWebUITest.prototype,
 
   /** @override */
   testGenPreamble: function() {
     GEN('  AddManagedPolicyProvider();');
-    InstalledExtensionSettingsWebUITest.prototype.testGenPreamble.call(this);
+    InstallGoodExtensionSettingsWebUITest.prototype.testGenPreamble.call(this);
   },
 };
 
-TEST_F('ManagedExtensionSettingsWebUITest', 'testAccessibility', runAudit);
+TEST_F('ManagedExtensionSettingsWebUITest', 'testAccessibility', function() {
+  this.emptyTestForAccessibility();
+});
 
 /**
  * @constructor
- * @extends {InstalledExtensionSettingsWebUITest}
+ * @extends {InstallGoodExtensionSettingsWebUITest}
  */
-function ExtensionOptionsDialogWebUITest() {}
+function OptionsDialogExtensionSettingsWebUITest() {}
 
-ExtensionOptionsDialogWebUITest.prototype = {
-  __proto__: InstalledExtensionSettingsWebUITest.prototype,
+OptionsDialogExtensionSettingsWebUITest.prototype = {
+  __proto__: InstallGoodExtensionSettingsWebUITest.prototype,
 
   /** @override */
   browsePreload: ExtensionSettingsWebUITest.prototype.browsePreload +
       '?options=' + GOOD_CRX_ID,
 };
 
-TEST_F('ExtensionOptionsDialogWebUITest', 'testAccessibility', runAudit);
+TEST_F('OptionsDialogExtensionSettingsWebUITest', 'testAccessibility',
+       function() {
+  this.emptyTestForAccessibility();
+});
