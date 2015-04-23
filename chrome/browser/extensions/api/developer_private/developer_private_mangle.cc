@@ -51,8 +51,8 @@ linked_ptr<api::developer_private::ItemInfo> MangleExtensionInfo(
     default:
       NOTREACHED();
   }
-  result->allow_file_access = info.file_access.is_enabled;
-  result->wants_file_access = info.file_access.is_active;
+  result->allow_file_access = info.file_access.is_active;
+  result->wants_file_access = info.file_access.is_enabled;
 
   result->incognito_enabled = info.incognito_access.is_active;
   result->allow_incognito = info.incognito_access.is_enabled;
