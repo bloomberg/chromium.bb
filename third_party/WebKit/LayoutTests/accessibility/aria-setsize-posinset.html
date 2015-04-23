@@ -27,21 +27,21 @@ if (window.accessibilityController) {
 
     var list = accessibilityController.accessibleElementById("list");
 
-    shouldBe("list.childAtIndex[0].setSize", "10");
-    shouldBe("list.childAtIndex[1].setSize", "10");
-    shouldBe("list.childAtIndex[0].posInSet", "3");
-    shouldBe("list.childAtIndex[1].posInSet", "5");
+    shouldBe("list.childAtIndex(0).setSize", "10");
+    shouldBe("list.childAtIndex(1).setSize", "10");
+    shouldBe("list.childAtIndex(0).posInSet", "3");
+    shouldBe("list.childAtIndex(1).posInSet", "5");
 
-    var listbox = document.getElementById("listbox");
+    var listbox = accessibilityController.accessibleElementById("listbox");
 
-    shouldBe("listbox.childAtIndex[0].setSize", "4");
-    shouldBe("listbox.childAtIndex[1].setSize", "4");
-    shouldBe("listbox.childAtIndex[2].setSize", "4");
-    shouldBe("listbox.childAtIndex[3].setSize", "4");
-    shouldBe("listbox.childAtIndex[0].posInSet", "1");
-    shouldBe("listbox.childAtIndex[1].posInSet", "2");
-    shouldBe("listbox.childAtIndex[2].posInSet", "3");
-    shouldBe("listbox.childAtIndex[3].posInSet", "4");
+    shouldBe("listbox.childAtIndex(0).setSize", "4");
+    shouldBe("listbox.childAtIndex(1).setSize", "4");
+    shouldBe("listbox.childAtIndex(2).setSize", "4");
+    shouldBe("listbox.childAtIndex(3).setSize", "4");
+    shouldBe("listbox.childAtIndex(0).posInSet", "1");
+    shouldBe("listbox.childAtIndex(1).posInSet", "2");
+    shouldBe("listbox.childAtIndex(2).posInSet", "3");
+    shouldBe("listbox.childAtIndex(3).posInSet", "4");
 }
 </script>
 
