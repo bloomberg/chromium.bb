@@ -17,12 +17,14 @@ import json
 import netrc
 import os
 import socket
+import sys
 import urllib
 import urlparse
 from cStringIO import StringIO
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_logging as logging
+from chromite.lib import git
 from chromite.lib import retry_util
 
 
@@ -105,6 +107,13 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   if 'Cookie' not in headers:
     cookies = GetCookies(host, '/a/%s' % path)
     headers['Cookie'] = '; '.join('%s=%s' % (n, v) for n, v in cookies.items())
+
+  if 'User-Agent' not in headers:
+    headers['User-Agent'] = ' '.join((
+        'chromite.lib.gob_util',
+        os.path.basename(sys.argv[0]),
+        git.GetGitRepoRevision(os.path.dirname(os.path.realpath(__file__))),
+    ))
 
   if body:
     body = json.JSONEncoder().encode(body)
