@@ -516,6 +516,10 @@ void URLRequest::Start() {
     return;
   }
 
+  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequest::Start 2"));
+
   StartJob(URLRequestJobManager::GetInstance()->CreateJob(
       this, network_delegate_));
 }
@@ -589,6 +593,10 @@ void URLRequest::BeforeRequestComplete(int error) {
 }
 
 void URLRequest::StartJob(URLRequestJob* job) {
+  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequest::StartJob"));
+
   DCHECK(!is_pending_);
   DCHECK(!job_.get());
 

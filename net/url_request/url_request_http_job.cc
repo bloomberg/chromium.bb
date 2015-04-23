@@ -225,6 +225,10 @@ void URLRequestHttpJob::SetPriority(RequestPriority priority) {
 }
 
 void URLRequestHttpJob::Start() {
+  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("456327 URLRequestHttpJob::Start"));
+
   DCHECK(!transaction_.get());
 
   // URLRequest::SetReferrer ensures that we do not send username and password
@@ -398,6 +402,11 @@ void URLRequestHttpJob::DestroyTransaction() {
 }
 
 void URLRequestHttpJob::StartTransaction() {
+  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456327 URLRequestHttpJob::StartTransaction"));
+
   if (network_delegate()) {
     OnCallToDelegate();
     int rv = network_delegate()->NotifyBeforeSendHeaders(
@@ -421,6 +430,11 @@ void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(int result) {
 }
 
 void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
+  // TODO(mmenke): Remove ScopedTracker below once crbug.com/456327 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "456327 URLRequestHttpJob::MaybeStartTransactionInternal"));
+
   OnCallToDelegateComplete();
   if (result == OK) {
     StartTransactionInternal();
