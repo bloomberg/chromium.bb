@@ -21,7 +21,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,18 +31,12 @@
 #include "components/history/core/browser/top_sites_cache.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/history/core/common/thumbnail_score.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_util.h"
 
 using base::DictionaryValue;
-using content::NavigationController;
 
 namespace history {
 
@@ -71,28 +64,28 @@ bool ForcedURLComparator(const MostVisitedURL& first,
   return first.last_forced_time < second.last_forced_time;
 }
 
-}  // namespace
-
 // How many non-forced top sites to store in the cache.
-static const size_t kNonForcedTopSitesNumber = 20;
+const size_t kNonForcedTopSitesNumber = 20;
 
 // How many forced top sites to store in the cache.
-static const size_t kForcedTopSitesNumber = 20;
+const size_t kForcedTopSitesNumber = 20;
 
 // Max number of temporary images we'll cache. See comment above
 // temp_images_ for details.
-static const size_t kMaxTempTopImages = 8;
+const size_t kMaxTempTopImages = 8;
 
-static const int kDaysOfHistory = 90;
+const int kDaysOfHistory = 90;
 // Time from startup to first HistoryService query.
-static const int64 kUpdateIntervalSecs = 15;
+const int64 kUpdateIntervalSecs = 15;
 // Intervals between requests to HistoryService.
-static const int64 kMinUpdateIntervalMinutes = 1;
-static const int64 kMaxUpdateIntervalMinutes = 60;
+const int64 kMinUpdateIntervalMinutes = 1;
+const int64 kMaxUpdateIntervalMinutes = 60;
 
 // Use 100 quality (highest quality) because we're very sensitive to
 // artifacts for these small sized, highly detailed images.
-static const int kTopSitesImageQuality = 100;
+const int kTopSitesImageQuality = 100;
+
+}  // namespace
 
 // Initially, histogram is not recorded.
 bool TopSitesImpl::histogram_recorded_ = false;
@@ -107,15 +100,6 @@ TopSitesImpl::TopSitesImpl(Profile* profile,
       prepopulated_pages_(prepopulated_pages),
       loaded_(false),
       history_service_observer_(this) {
-  if (!profile_)
-    return;
-
-  if (content::NotificationService::current()) {
-    // Listen for any nav commits. We'll ignore those not related to this
-    // profile when we get the notification.
-    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                   content::NotificationService::AllSources());
-  }
 }
 
 void TopSitesImpl::Init(
@@ -378,7 +362,6 @@ void TopSitesImpl::ShutdownOnUIThread() {
   // invoked Shutdown (this could happen if we have a pending request and
   // Shutdown is invoked).
   cancelable_task_tracker_.TryCancelAll();
-  registrar_.RemoveAll();
   if (backend_)
     backend_->Shutdown();
 }
@@ -630,6 +613,18 @@ bool TopSitesImpl::AddForcedURL(const GURL& url, const base::Time& time) {
   return true;
 }
 
+void TopSitesImpl::OnNavigationCommitted(const GURL& url) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!loaded_ || IsNonForcedFull())
+    return;
+
+  if (!cache_->IsKnownURL(url) && CanAddURLToHistory(url)) {
+    // To avoid slamming history we throttle requests when the url updates. To
+    // do otherwise negatively impacts perf tests.
+    RestartQueryForTopSitesTimer(GetUpdateDelay());
+  }
+}
+
 bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls,
                                         size_t num_forced_urls) {
   bool added = false;
@@ -726,31 +721,6 @@ base::TimeDelta TopSitesImpl::GetUpdateDelay() {
   int64 minutes = kMaxUpdateIntervalMinutes -
       last_num_urls_changed_ * range / cache_->top_sites().size();
   return base::TimeDelta::FromMinutes(minutes);
-}
-
-void TopSitesImpl::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
-  if (!loaded_)
-    return;
-
-    NavigationController* controller =
-        content::Source<NavigationController>(source).ptr();
-    Profile* profile = Profile::FromBrowserContext(
-        controller->GetWebContents()->GetBrowserContext());
-    if (profile == profile_ && !IsNonForcedFull()) {
-      content::LoadCommittedDetails* load_details =
-          content::Details<content::LoadCommittedDetails>(details).ptr();
-      if (!load_details)
-        return;
-      const GURL& url = load_details->entry->GetURL();
-      if (!cache_->IsKnownURL(url) && CanAddURLToHistory(url)) {
-        // To avoid slamming history we throttle requests when the url updates.
-        // To do otherwise negatively impacts perf tests.
-        RestartQueryForTopSitesTimer(GetUpdateDelay());
-      }
-    }
 }
 
 void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,

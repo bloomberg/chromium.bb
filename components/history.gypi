@@ -182,6 +182,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
+            '../url/url.gyp:url_lib',
             'history_core_browser',
             'visitedlink_browser',
           ],
@@ -194,8 +195,31 @@
             'history/content/browser/history_context_helper.h',
             'history/content/browser/history_database_helper.cc',
             'history/content/browser/history_database_helper.h',
+            'history/content/browser/web_contents_top_sites_observer.cc',
+            'history/content/browser/web_contents_top_sites_observer.h',
           ],
         }
+      ],
+    }],
+    ['OS=="ios"', {
+      'targets': [
+        {
+          'target_name': 'history_ios_browser',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../ios/web/ios_web.gyp:ios_web',
+            '../url/url.gyp:url_lib',
+            'history_core_browser',
+          ],
+          'sources': [
+            'history/ios/browser/web_state_top_sites_observer.cc',
+            'history/ios/browser/web_state_top_sites_observer.h',
+          ],
+        },
       ],
     }],
   ],

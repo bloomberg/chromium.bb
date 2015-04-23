@@ -28,8 +28,6 @@
 #include "components/history/core/browser/top_sites.h"
 #include "components/history/core/browser/top_sites_backend.h"
 #include "components/history/core/common/thumbnail_score.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -52,9 +50,7 @@ class TopSitesImplTest;
 // thread. All other methods must be invoked on the UI thread. All mutations
 // to internal state happen on the UI thread and are scheduled to update the
 // db using TopSitesBackend.
-class TopSitesImpl : public TopSites,
-                     public HistoryServiceObserver,
-                     public content::NotificationObserver {
+class TopSitesImpl : public TopSites, public HistoryServiceObserver {
  public:
   TopSitesImpl(Profile* profile,
                const PrepopulatedPageList& prepopulated_pages);
@@ -63,6 +59,7 @@ class TopSitesImpl : public TopSites,
   void Init(const base::FilePath& db_name,
             const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner);
 
+  // TopSites implementation.
   bool SetPageThumbnail(const GURL& url,
                         const gfx::Image& thumbnail,
                         const ThumbnailScore& score) override;
@@ -91,6 +88,7 @@ class TopSitesImpl : public TopSites,
   PrepopulatedPageList GetPrepopulatedPages() override;
   bool loaded() const override;
   bool AddForcedURL(const GURL& url, const base::Time& time) override;
+  void OnNavigationCommitted(const GURL& url) override;
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;
@@ -199,11 +197,6 @@ class TopSitesImpl : public TopSites,
   // Uses num_urls_changed
   base::TimeDelta GetUpdateDelay();
 
-  // Implementation of content::NotificationObserver.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Updates URLs in |cache_| and the db (in the background).
   // The non-forced URLs in |new_top_sites| replace those in |cache_|.
   // The forced URLs of |new_top_sites| are merged with those in |cache_|,
@@ -273,8 +266,6 @@ class TopSitesImpl : public TopSites,
 
   // The time we started |timer_| at. Only valid if |timer_| is running.
   base::TimeTicks timer_start_time_;
-
-  content::NotificationRegistrar registrar_;
 
   // The number of URLs changed on the last update.
   size_t last_num_urls_changed_;

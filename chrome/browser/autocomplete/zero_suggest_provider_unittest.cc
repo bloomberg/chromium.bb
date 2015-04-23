@@ -90,6 +90,7 @@ class FakeEmptyTopSites : public history::TopSites {
   bool AddForcedURL(const GURL& url, const base::Time& time) override {
     return false;
   }
+  void OnNavigationCommitted(const GURL& url) override {}
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override {}

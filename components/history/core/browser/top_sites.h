@@ -167,6 +167,9 @@ class TopSites : public RefcountedKeyedService {
   // called from the UI thread.
   virtual bool AddForcedURL(const GURL& url, const base::Time& time) = 0;
 
+  // Called when user has navigated to |url|.
+  virtual void OnNavigationCommitted(const GURL& url) = 0;
+
   // Add Observer to the list.
   void AddObserver(TopSitesObserver* observer);
 
@@ -179,8 +182,11 @@ class TopSites : public RefcountedKeyedService {
   ~TopSites() override;
 
  private:
-  ObserverList<TopSitesObserver, true> observer_list_;
   friend class base::RefCountedThreadSafe<TopSites>;
+
+  ObserverList<TopSitesObserver, true> observer_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(TopSites);
 };
 
 }  // namespace history
