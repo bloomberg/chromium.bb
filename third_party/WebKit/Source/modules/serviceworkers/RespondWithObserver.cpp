@@ -26,7 +26,7 @@ namespace {
 
 class StreamUploader : public BodyStreamBuffer::Observer {
 public:
-    StreamUploader(BodyStreamBuffer* buffer, PassRefPtrWillBeRawPtr<Stream> outStream)
+    StreamUploader(BodyStreamBuffer* buffer, Stream* outStream)
         : m_buffer(buffer), m_outStream(outStream)
     {
     }
@@ -79,7 +79,7 @@ private:
         m_outStream.clear();
     }
     Member<BodyStreamBuffer> m_buffer;
-    RefPtrWillBeMember<Stream> m_outStream;
+    Member<Stream> m_outStream;
 };
 
 } // namespace
@@ -209,7 +209,7 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
             buffer = response->createDrainingStream();
         WebServiceWorkerResponse webResponse;
         response->populateWebServiceWorkerResponse(webResponse);
-        RefPtrWillBeMember<Stream> outStream(Stream::create(executionContext(), ""));
+        Stream* outStream = Stream::create(executionContext(), "");
         webResponse.setStreamURL(outStream->url());
         ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
         StreamUploader* uploader = new StreamUploader(buffer, outStream);

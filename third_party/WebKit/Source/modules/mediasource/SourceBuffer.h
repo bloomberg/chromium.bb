@@ -77,8 +77,8 @@ public:
     void setTimestampOffset(double, ExceptionState&);
     void appendBuffer(PassRefPtr<DOMArrayBuffer> data, ExceptionState&);
     void appendBuffer(PassRefPtr<DOMArrayBufferView> data, ExceptionState&);
-    void appendStream(PassRefPtrWillBeRawPtr<Stream>, ExceptionState&);
-    void appendStream(PassRefPtrWillBeRawPtr<Stream>, unsigned long long maxSize, ExceptionState&);
+    void appendStream(Stream*, ExceptionState&);
+    void appendStream(Stream*, unsigned long long maxSize, ExceptionState&);
     void abort(ExceptionState&);
     void remove(double start, double end, ExceptionState&);
     double appendWindowStart() const;
@@ -117,7 +117,7 @@ private:
 
     void removeAsyncPart();
 
-    void appendStreamInternal(PassRefPtrWillBeRawPtr<Stream>, ExceptionState&);
+    void appendStreamInternal(Stream*, ExceptionState&);
     void appendStreamAsyncPart();
     void appendStreamDone(bool success);
     void clearAppendStreamState();
@@ -151,7 +151,7 @@ private:
     bool m_streamMaxSizeValid;
     unsigned long long m_streamMaxSize;
     AsyncMethodRunner<SourceBuffer> m_appendStreamAsyncPartRunner;
-    RefPtrWillBeMember<Stream> m_stream;
+    Member<Stream> m_stream;
     OwnPtr<FileReaderLoader> m_loader;
 };
 

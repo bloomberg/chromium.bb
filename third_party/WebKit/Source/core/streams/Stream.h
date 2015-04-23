@@ -36,23 +36,21 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class ExecutionContext;
 
-class CORE_EXPORT Stream final : public RefCountedWillBeGarbageCollectedFinalized<Stream>, public ScriptWrappable, public ActiveDOMObject {
+class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>, public ScriptWrappable, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Stream);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Stream> create(ExecutionContext* context, const String& mediaType)
+    static Stream* create(ExecutionContext* context, const String& mediaType)
     {
-        RefPtrWillBeRawPtr<Stream> stream = adoptRefWillBeNoop(new Stream(context, mediaType));
+        Stream* stream = new Stream(context, mediaType);
         stream->suspendIfNeeded();
-        return stream.release();
+        return stream;
     }
 
     virtual ~Stream();

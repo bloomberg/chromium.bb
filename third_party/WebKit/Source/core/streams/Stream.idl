@@ -39,7 +39,7 @@
 [
     RuntimeEnabled=ExperimentalStream,
     ActiveDOMObject,
-    WillBeGarbageCollected
+    GarbageCollected
 ] interface Stream {
     readonly attribute DOMString type;
 };

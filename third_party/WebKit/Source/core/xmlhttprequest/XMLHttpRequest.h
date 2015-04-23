@@ -267,7 +267,7 @@ private:
     AtomicString m_mimeTypeOverride;
     unsigned long m_timeoutMilliseconds;
     PersistentWillBeMember<Blob> m_responseBlob;
-    RefPtrWillBeMember<Stream> m_responseLegacyStream;
+    PersistentWillBeMember<Stream> m_responseLegacyStream;
     PersistentWillBeMember<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>> m_responseStream;
     PersistentWillBeMember<ReadableStreamSource> m_responseStreamSource;
 
