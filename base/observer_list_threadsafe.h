@@ -111,7 +111,7 @@ class ObserverListThreadSafe
     if (!base::MessageLoop::current())
       return;
 
-    ObserverList<ObserverType>* list = NULL;
+    ObserverList<ObserverType>* list = nullptr;
     base::PlatformThreadId thread_id = base::PlatformThread::CurrentId();
     {
       base::AutoLock lock(list_lock_);
@@ -128,8 +128,8 @@ class ObserverListThreadSafe
   // If the observer to be removed is in the list, RemoveObserver MUST
   // be called from the same thread which called AddObserver.
   void RemoveObserver(ObserverType* obs) {
-    ObserverListContext* context = NULL;
-    ObserverList<ObserverType>* list = NULL;
+    ObserverListContext* context = nullptr;
+    ObserverList<ObserverType>* list = nullptr;
     base::PlatformThreadId thread_id = base::PlatformThread::CurrentId();
     {
       base::AutoLock lock(list_lock_);
@@ -230,7 +230,7 @@ class ObserverListThreadSafe
     {
       typename ObserverList<ObserverType>::Iterator it(&context->list);
       ObserverType* obs;
-      while ((obs = it.GetNext()) != NULL)
+      while ((obs = it.GetNext()) != nullptr)
         method.Run(obs);
     }
 
