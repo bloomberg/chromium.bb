@@ -18,14 +18,14 @@ class PPAPI_PROXY_EXPORT NetworkProxyResource
         public thunk::PPB_NetworkProxy_API {
  public:
   NetworkProxyResource(Connection connection, PP_Instance instance);
-  virtual ~NetworkProxyResource();
+  ~NetworkProxyResource() override;
 
  private:
   // Resource implementation.
-  virtual thunk::PPB_NetworkProxy_API* AsPPB_NetworkProxy_API() override;
+  thunk::PPB_NetworkProxy_API* AsPPB_NetworkProxy_API() override;
 
   // PPB_NetworkProxy_API implementation.
-  virtual int32_t GetProxyForURL(
+  int32_t GetProxyForURL(
       PP_Instance instance,
       PP_Var url,
       PP_Var* proxy_string,

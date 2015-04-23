@@ -29,8 +29,8 @@ class PPAPI_SHARED_EXPORT DictionaryVar : public Var {
   static DictionaryVar* FromPPVar(const PP_Var& var);
 
   // Var overrides.
-  virtual DictionaryVar* AsDictionaryVar() override;
-  virtual PP_VarType GetType() const override;
+  DictionaryVar* AsDictionaryVar() override;
+  PP_VarType GetType() const override;
 
   // The returned PP_Var has had a ref added on behalf of the caller.
   PP_Var Get(const PP_Var& key) const;
@@ -48,7 +48,7 @@ class PPAPI_SHARED_EXPORT DictionaryVar : public Var {
   const KeyValueMap& key_value_map() const { return key_value_map_; }
 
  protected:
-  virtual ~DictionaryVar();
+  ~DictionaryVar() override;
 
  private:
   KeyValueMap key_value_map_;

@@ -21,15 +21,15 @@ class MockStringVar : public StringVar {
   MockStringVar(const std::string& str) : StringVar(str) {
     mock_var_alive_count++;
   }
-  virtual ~MockStringVar() { mock_var_alive_count--; }
+  ~MockStringVar() override { mock_var_alive_count--; }
   bool HasValidVarID() { return GetExistingVarID() != 0; }
 };
 
 class MockObjectVar : public Var {
  public:
   MockObjectVar() : Var() { mock_var_alive_count++; }
-  virtual ~MockObjectVar() { mock_var_alive_count--; }
-  virtual PP_VarType GetType() const override { return PP_VARTYPE_OBJECT; }
+  ~MockObjectVar() override { mock_var_alive_count--; }
+  PP_VarType GetType() const override { return PP_VARTYPE_OBJECT; }
   bool HasValidVarID() { return GetExistingVarID() != 0; }
 };
 
@@ -40,10 +40,10 @@ class VarTrackerTest : public testing::Test {
   VarTrackerTest() {}
 
   // Test implementation.
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_EQ(0, mock_var_alive_count);
   }
-  virtual void TearDown() override {}
+  void TearDown() override {}
 
   VarTracker& var_tracker() { return *globals_.GetVarTracker(); }
 

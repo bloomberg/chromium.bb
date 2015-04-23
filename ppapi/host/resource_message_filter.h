@@ -48,16 +48,15 @@ struct PPAPI_HOST_EXPORT ResourceMessageFilterDeleteTraits {
 // subclass as follows:
 // class MyMessageFilter : public ResourceMessageFilter {
 //  protected:
-//   virtual scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
+//   scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
 //       const IPC::Message& message) override {
 //     if (message.type() == MyMessage::ID)
 //       return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
 //     return NULL;
 //   }
 //
-//   virtual int32_t OnResourceMessageReceived(
-//       const IPC::Message& msg,
-//       HostMessageContext* context) override {
+//   int32_t OnResourceMessageReceived(const IPC::Message& msg,
+//                                     HostMessageContext* context) override {
 //     IPC_BEGIN_MESSAGE_MAP(MyMessageFilter, msg)
 //       PPAPI_DISPATCH_HOST_RESOURCE_CALL(MyMessage, OnMyMessage)
 //     IPC_END_MESSAGE_MAP()
@@ -96,15 +95,15 @@ class PPAPI_HOST_EXPORT ResourceMessageFilter
 
   // This will dispatch the message handler on the target thread. It returns
   // true if the message was handled by this filter and false otherwise.
-  virtual bool HandleMessage(const IPC::Message& msg,
-                             HostMessageContext* context) override;
+  bool HandleMessage(const IPC::Message& msg,
+                     HostMessageContext* context) override;
 
   // This can be called from any thread.
-  virtual void SendReply(const ReplyMessageContext& context,
-      const IPC::Message& msg) override;
+  void SendReply(const ReplyMessageContext& context,
+                 const IPC::Message& msg) override;
 
  protected:
-  virtual ~ResourceMessageFilter();
+  ~ResourceMessageFilter() override;
 
   // Please see the comments of |resource_host_| for on which thread it can be
   // used and when it is NULL.

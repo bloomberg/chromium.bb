@@ -23,19 +23,19 @@ class FlashDRMResource
  public:
   FlashDRMResource(Connection connection,
                    PP_Instance instance);
-  virtual ~FlashDRMResource();
+  ~FlashDRMResource() override;
 
   // Resource override.
-  virtual thunk::PPB_Flash_DRM_API* AsPPB_Flash_DRM_API() override;
+  thunk::PPB_Flash_DRM_API* AsPPB_Flash_DRM_API() override;
 
   // PPB_Flash_DRM_API implementation.
-  virtual int32_t GetDeviceID(PP_Var* id,
-                              scoped_refptr<TrackedCallback> callback) override;
-  virtual PP_Bool GetHmonitor(int64_t* hmonitor) override;
-  virtual int32_t GetVoucherFile(
+  int32_t GetDeviceID(PP_Var* id,
+                      scoped_refptr<TrackedCallback> callback) override;
+  PP_Bool GetHmonitor(int64_t* hmonitor) override;
+  int32_t GetVoucherFile(
       PP_Resource* file_ref,
       scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t MonitorIsExternal(
+  int32_t MonitorIsExternal(
       PP_Bool* is_external,
       scoped_refptr<TrackedCallback> callback) override;
 

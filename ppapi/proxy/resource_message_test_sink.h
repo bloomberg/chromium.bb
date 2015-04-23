@@ -21,11 +21,11 @@ class SerializedHandle;
 class ResourceMessageTestSink : public IPC::TestSink {
  public:
   ResourceMessageTestSink();
-  virtual ~ResourceMessageTestSink();
+  ~ResourceMessageTestSink() override;
 
   // IPC::TestSink.
   // Overridden to handle sync messages.
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   // Sets the reply message that will be returned to the next sync message sent.
   // This test sink owns any reply messages passed into this method.
@@ -82,10 +82,10 @@ class ResourceSyncCallHandler : public IPC::Listener {
                           uint32 incoming_type,
                           int32_t result,
                           const IPC::Message& reply_msg);
-  virtual ~ResourceSyncCallHandler();
+  ~ResourceSyncCallHandler() override;
 
   // IPC::Listener.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   IPC::Message last_handled_msg() { return last_handled_msg_; }
 

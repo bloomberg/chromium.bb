@@ -28,12 +28,12 @@ class PPB_Flash_MessageLoop_Proxy
       public base::SupportsWeakPtr<PPB_Flash_MessageLoop_Proxy> {
  public:
   explicit PPB_Flash_MessageLoop_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_Flash_MessageLoop_Proxy();
+  ~PPB_Flash_MessageLoop_Proxy() override;
 
   static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   static const ApiID kApiID = API_ID_PPB_FLASH_MESSAGELOOP;
 

@@ -34,7 +34,7 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   };
 
   PluginResource(Connection connection, PP_Instance instance);
-  virtual ~PluginResource();
+  ~PluginResource() override;
 
   // Returns true if we've previously sent a create message to the browser
   // or renderer. Generally resources will use these to tell if they should
@@ -45,16 +45,15 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   // This handles a reply to a resource call. It works by looking up the
   // callback that was registered when CallBrowser/CallRenderer was called
   // and calling it with |params| and |msg|.
-  virtual void OnReplyReceived(const proxy::ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) override;
+  void OnReplyReceived(const proxy::ResourceMessageReplyParams& params,
+                       const IPC::Message& msg) override;
 
   // Resource overrides.
   // Note: Subclasses shouldn't override these methods directly. Instead, they
   // should implement LastPluginRefWasDeleted() or InstanceWasDeleted() to get
   // notified.
-  virtual void NotifyLastPluginRefWasDeleted() override;
-  virtual void NotifyInstanceWasDeleted() override;
-
+  void NotifyLastPluginRefWasDeleted() override;
+  void NotifyInstanceWasDeleted() override;
 
   // Sends a create message to the browser or renderer for the current resource.
   void SendCreate(Destination dest, const IPC::Message& msg);

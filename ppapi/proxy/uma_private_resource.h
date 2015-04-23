@@ -19,32 +19,32 @@ class PPAPI_PROXY_EXPORT UMAPrivateResource
       public thunk::PPB_UMA_Singleton_API {
  public:
   UMAPrivateResource(Connection connection, PP_Instance instance);
-  virtual ~UMAPrivateResource();
+  ~UMAPrivateResource() override;
 
   // Resource overrides.
-  virtual thunk::PPB_UMA_Singleton_API* AsPPB_UMA_Singleton_API() override;
+  thunk::PPB_UMA_Singleton_API* AsPPB_UMA_Singleton_API() override;
 
   // PPB_UMA_Singleton_API implementation.
-  virtual void HistogramCustomTimes(PP_Instance instance,
-                                    struct PP_Var name,
-                                    int64_t sample,
-                                    int64_t min,
-                                    int64_t max,
-                                    uint32_t bucket_count) override;
+  void HistogramCustomTimes(PP_Instance instance,
+                            struct PP_Var name,
+                            int64_t sample,
+                            int64_t min,
+                            int64_t max,
+                            uint32_t bucket_count) override;
 
-  virtual void HistogramCustomCounts(PP_Instance instance,
-                                     struct PP_Var name,
-                                     int32_t sample,
-                                     int32_t min,
-                                     int32_t max,
-                                     uint32_t bucket_count) override;
+  void HistogramCustomCounts(PP_Instance instance,
+                             struct PP_Var name,
+                             int32_t sample,
+                             int32_t min,
+                             int32_t max,
+                             uint32_t bucket_count) override;
 
-  virtual void HistogramEnumeration(PP_Instance instance,
-                                    struct PP_Var name,
-                                    int32_t sample,
-                                    int32_t boundary_value) override;
+  void HistogramEnumeration(PP_Instance instance,
+                            struct PP_Var name,
+                            int32_t sample,
+                            int32_t boundary_value) override;
 
-  virtual int32_t IsCrashReportingEnabled(
+  int32_t IsCrashReportingEnabled(
       PP_Instance instance,
       scoped_refptr<TrackedCallback> callback) override;
 

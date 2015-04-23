@@ -17,10 +17,10 @@ namespace {
 class X509CertificatePrivate : public PPB_X509Certificate_Private_Shared {
  public:
   X509CertificatePrivate(PP_Instance instance);
-  virtual ~X509CertificatePrivate();
+  ~X509CertificatePrivate() override;
 
-  virtual bool ParseDER(const std::vector<char>& der,
-                        PPB_X509Certificate_Fields* result) override;
+  bool ParseDER(const std::vector<char>& der,
+                PPB_X509Certificate_Fields* result) override;
 
  private:
   void SendToBrowser(IPC::Message* msg);

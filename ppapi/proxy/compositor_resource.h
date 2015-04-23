@@ -28,20 +28,19 @@ class PPAPI_PROXY_EXPORT CompositorResource
   int32_t GenerateResourceId() const;
 
  private:
-  virtual ~CompositorResource();
+  ~CompositorResource() override;
 
   // Resource overrides:
-  virtual thunk::PPB_Compositor_API* AsPPB_Compositor_API() override;
+  thunk::PPB_Compositor_API* AsPPB_Compositor_API() override;
 
   // PluginResource overrides:
-  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) override;
+  void OnReplyReceived(const ResourceMessageReplyParams& params,
+                       const IPC::Message& msg) override;
 
   // thunk::PPB_Compositor_API overrides:
-  virtual PP_Resource AddLayer() override;
-  virtual int32_t CommitLayers(
-      const scoped_refptr<TrackedCallback>& callback) override;
-  virtual int32_t ResetLayers() override;
+  PP_Resource AddLayer() override;
+  int32_t CommitLayers(const scoped_refptr<TrackedCallback>& callback) override;
+  int32_t ResetLayers() override;
 
   // IPC msg handlers:
   void OnPluginMsgCommitLayersReply(const ResourceMessageReplyParams& params);

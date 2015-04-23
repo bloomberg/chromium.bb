@@ -27,7 +27,7 @@ namespace proxy {
 class PPAPI_PROXY_EXPORT PluginResourceTracker : public ResourceTracker {
  public:
   PluginResourceTracker();
-  virtual ~PluginResourceTracker();
+  ~PluginResourceTracker() override;
 
   // Given a host resource, maps it to an existing plugin resource ID if it
   // exists, or returns 0 on failure.
@@ -36,8 +36,8 @@ class PPAPI_PROXY_EXPORT PluginResourceTracker : public ResourceTracker {
 
  protected:
   // ResourceTracker overrides.
-  virtual PP_Resource AddResource(Resource* object) override;
-  virtual void RemoveResource(Resource* object) override;
+  PP_Resource AddResource(Resource* object) override;
+  void RemoveResource(Resource* object) override;
 
  private:
   // Map of host instance/resource pairs to a plugin resource ID.

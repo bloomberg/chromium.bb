@@ -28,21 +28,21 @@ class VideoDecoder : public PPB_VideoDecoder_Shared {
  public:
   // You must call Init() before using this class.
   explicit VideoDecoder(const HostResource& resource);
-  virtual ~VideoDecoder();
+  ~VideoDecoder() override;
 
   static VideoDecoder* Create(const HostResource& resource,
                               PP_Resource graphics_context,
                               PP_VideoDecoder_Profile profile);
 
   // PPB_VideoDecoder_Dev_API implementation.
-  virtual int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
-                         scoped_refptr<TrackedCallback> callback) override;
-  virtual void AssignPictureBuffers(
-      uint32_t no_of_buffers, const PP_PictureBuffer_Dev* buffers) override;
-  virtual void ReusePictureBuffer(int32_t picture_buffer_id) override;
-  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t Reset(scoped_refptr<TrackedCallback> callback) override;
-  virtual void Destroy() override;
+  int32_t Decode(const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
+                 scoped_refptr<TrackedCallback> callback) override;
+  void AssignPictureBuffers(uint32_t no_of_buffers,
+                            const PP_PictureBuffer_Dev* buffers) override;
+  void ReusePictureBuffer(int32_t picture_buffer_id) override;
+  int32_t Flush(scoped_refptr<TrackedCallback> callback) override;
+  int32_t Reset(scoped_refptr<TrackedCallback> callback) override;
+  void Destroy() override;
 
  private:
   friend class PPB_VideoDecoder_Proxy;

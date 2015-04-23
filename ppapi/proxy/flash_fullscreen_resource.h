@@ -18,18 +18,16 @@ class FlashFullscreenResource
  public:
   FlashFullscreenResource(Connection connection,
                           PP_Instance instance);
-  virtual ~FlashFullscreenResource();
+  ~FlashFullscreenResource() override;
 
   // Resource overrides.
-  virtual thunk::PPB_Flash_Fullscreen_API*
-      AsPPB_Flash_Fullscreen_API() override;
+  thunk::PPB_Flash_Fullscreen_API* AsPPB_Flash_Fullscreen_API() override;
 
   // PPB_Flash_Fullscreen_API implementation.
-  virtual PP_Bool IsFullscreen(PP_Instance instance) override;
-  virtual PP_Bool SetFullscreen(PP_Instance instance,
-                                PP_Bool fullscreen) override;
-  virtual void SetLocalIsFullscreen(PP_Instance instance,
-                                    PP_Bool is_fullscreen) override;
+  PP_Bool IsFullscreen(PP_Instance instance) override;
+  PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) override;
+  void SetLocalIsFullscreen(PP_Instance instance,
+                            PP_Bool is_fullscreen) override;
 
  private:
   PP_Bool is_fullscreen_;

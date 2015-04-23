@@ -39,17 +39,17 @@ class PPAPI_PROXY_EXPORT ImageData
       public NON_EXPORTED_BASE(ppapi::thunk::PPB_ImageData_API),
       public ppapi::PPB_ImageData_Shared {
  public:
-  virtual ~ImageData();
+  ~ImageData() override;
 
   // Resource overrides.
-  virtual ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() override;
-  virtual void LastPluginRefWasDeleted() override;
-  virtual void InstanceWasDeleted() override;
+  ppapi::thunk::PPB_ImageData_API* AsPPB_ImageData_API() override;
+  void LastPluginRefWasDeleted() override;
+  void InstanceWasDeleted() override;
 
   // PPB_ImageData API.
-  virtual PP_Bool Describe(PP_ImageDataDesc* desc) override;
-  virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) override;
-  virtual void SetIsCandidateForReuse() override;
+  PP_Bool Describe(PP_ImageDataDesc* desc) override;
+  int32_t GetSharedMemory(int* handle, uint32_t* byte_count) override;
+  void SetIsCandidateForReuse() override;
 
   PPB_ImageData_Shared::ImageDataType type() const { return type_; }
   const PP_ImageDataDesc& desc() const { return desc_; }
@@ -81,13 +81,13 @@ class PPAPI_PROXY_EXPORT PlatformImageData : public ImageData {
   PlatformImageData(const ppapi::HostResource& resource,
                     const PP_ImageDataDesc& desc,
                     ImageHandle handle);
-  virtual ~PlatformImageData();
+  ~PlatformImageData() override;
 
   // PPB_ImageData API.
-  virtual void* Map() override;
-  virtual void Unmap() override;
-  virtual SkCanvas* GetPlatformCanvas() override;
-  virtual SkCanvas* GetCanvas() override;
+  void* Map() override;
+  void Unmap() override;
+  SkCanvas* GetPlatformCanvas() override;
+  SkCanvas* GetCanvas() override;
 
   static ImageHandle NullHandle();
   static ImageHandle HandleFromInt(int32_t i);
@@ -110,13 +110,13 @@ class PPAPI_PROXY_EXPORT SimpleImageData : public ImageData {
   SimpleImageData(const ppapi::HostResource& resource,
                   const PP_ImageDataDesc& desc,
                   const base::SharedMemoryHandle& handle);
-  virtual ~SimpleImageData();
+  ~SimpleImageData() override;
 
   // PPB_ImageData API.
-  virtual void* Map() override;
-  virtual void Unmap() override;
-  virtual SkCanvas* GetPlatformCanvas() override;
-  virtual SkCanvas* GetCanvas() override;
+  void* Map() override;
+  void Unmap() override;
+  SkCanvas* GetPlatformCanvas() override;
+  SkCanvas* GetCanvas() override;
 
  private:
   base::SharedMemory shm_;
@@ -129,7 +129,7 @@ class PPAPI_PROXY_EXPORT SimpleImageData : public ImageData {
 class PPB_ImageData_Proxy : public InterfaceProxy {
  public:
   PPB_ImageData_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_ImageData_Proxy();
+  ~PPB_ImageData_Proxy() override;
 
   static PP_Resource CreateProxyResource(
       PP_Instance instance,
@@ -139,7 +139,7 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
       PP_Bool init_to_zero);
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   // Utility for creating ImageData resources.
   // This can only be called on the host side of the proxy.

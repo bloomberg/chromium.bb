@@ -20,40 +20,40 @@ class FlashFileResource
       public thunk::PPB_Flash_File_API {
  public:
   FlashFileResource(Connection connection, PP_Instance instance);
-  virtual ~FlashFileResource();
+  ~FlashFileResource() override;
 
   // Resource overrides.
-  virtual thunk::PPB_Flash_File_API* AsPPB_Flash_File_API() override;
+  thunk::PPB_Flash_File_API* AsPPB_Flash_File_API() override;
 
   // PPB_Flash_Functions_API.
-  virtual int32_t OpenFile(PP_Instance instance,
-                           const char* path,
-                           int32_t mode,
-                           PP_FileHandle* file) override;
-  virtual int32_t RenameFile(PP_Instance instance,
-                             const char* path_from,
-                             const char* path_to) override;
-  virtual int32_t DeleteFileOrDir(PP_Instance instance,
-                                  const char* path,
-                                  PP_Bool recursive) override;
-  virtual int32_t CreateDir(PP_Instance instance, const char* path) override;
-  virtual int32_t QueryFile(PP_Instance instance,
-                            const char* path,
-                            PP_FileInfo* info) override;
-  virtual int32_t GetDirContents(PP_Instance instance,
-                                 const char* path,
-                                 PP_DirContents_Dev** contents) override;
-  virtual void FreeDirContents(PP_Instance instance,
-                               PP_DirContents_Dev* contents) override;
-  virtual int32_t CreateTemporaryFile(PP_Instance instance,
-                                      PP_FileHandle* file) override;
-  virtual int32_t OpenFileRef(PP_Instance instance,
-                              PP_Resource file_ref,
-                              int32_t mode,
+  int32_t OpenFile(PP_Instance instance,
+                   const char* path,
+                   int32_t mode,
+                   PP_FileHandle* file) override;
+  int32_t RenameFile(PP_Instance instance,
+                     const char* path_from,
+                     const char* path_to) override;
+  int32_t DeleteFileOrDir(PP_Instance instance,
+                          const char* path,
+                          PP_Bool recursive) override;
+  int32_t CreateDir(PP_Instance instance, const char* path) override;
+  int32_t QueryFile(PP_Instance instance,
+                    const char* path,
+                    PP_FileInfo* info) override;
+  int32_t GetDirContents(PP_Instance instance,
+                         const char* path,
+                         PP_DirContents_Dev** contents) override;
+  void FreeDirContents(PP_Instance instance,
+                       PP_DirContents_Dev* contents) override;
+  int32_t CreateTemporaryFile(PP_Instance instance,
                               PP_FileHandle* file) override;
-  virtual int32_t QueryFileRef(PP_Instance instance,
-                               PP_Resource file_ref,
-                               PP_FileInfo* info) override;
+  int32_t OpenFileRef(PP_Instance instance,
+                      PP_Resource file_ref,
+                      int32_t mode,
+                      PP_FileHandle* file) override;
+  int32_t QueryFileRef(PP_Instance instance,
+                       PP_Resource file_ref,
+                       PP_FileInfo* info) override;
 
  private:
   int32_t OpenFileHelper(const std::string& path,

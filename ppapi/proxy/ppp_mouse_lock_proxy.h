@@ -16,12 +16,12 @@ namespace proxy {
 class PPP_MouseLock_Proxy : public InterfaceProxy {
  public:
   PPP_MouseLock_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_MouseLock_Proxy();
+  ~PPP_MouseLock_Proxy() override;
 
   static const PPP_MouseLock* GetProxyInterface();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

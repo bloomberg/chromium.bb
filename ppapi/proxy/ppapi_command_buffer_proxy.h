@@ -31,41 +31,40 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
                           PluginDispatcher* dispatcher,
                           const gpu::Capabilities& capabilities,
                           const SerializedHandle& shared_state);
-  virtual ~PpapiCommandBufferProxy();
+  ~PpapiCommandBufferProxy() override;
 
   // gpu::CommandBuffer implementation:
-  virtual bool Initialize() override;
-  virtual State GetLastState() override;
-  virtual int32 GetLastToken() override;
-  virtual void Flush(int32 put_offset) override;
-  virtual void OrderingBarrier(int32 put_offset) override;
-  virtual void WaitForTokenInRange(int32 start, int32 end) override;
-  virtual void WaitForGetOffsetInRange(int32 start, int32 end) override;
-  virtual void SetGetBuffer(int32 transfer_buffer_id) override;
-  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
-                                                          int32* id) override;
-  virtual void DestroyTransferBuffer(int32 id) override;
+  bool Initialize() override;
+  State GetLastState() override;
+  int32 GetLastToken() override;
+  void Flush(int32 put_offset) override;
+  void OrderingBarrier(int32 put_offset) override;
+  void WaitForTokenInRange(int32 start, int32 end) override;
+  void WaitForGetOffsetInRange(int32 start, int32 end) override;
+  void SetGetBuffer(int32 transfer_buffer_id) override;
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+                                                  int32* id) override;
+  void DestroyTransferBuffer(int32 id) override;
 
   // gpu::GpuControl implementation:
-  virtual gpu::Capabilities GetCapabilities() override;
-  virtual int32 CreateImage(ClientBuffer buffer,
-                            size_t width,
-                            size_t height,
-                            unsigned internalformat) override;
-  virtual void DestroyImage(int32 id) override;
-  virtual int32 CreateGpuMemoryBufferImage(size_t width,
-                                           size_t height,
-                                           unsigned internalformat,
-                                           unsigned usage) override;
-  virtual uint32 InsertSyncPoint() override;
-  virtual uint32 InsertFutureSyncPoint() override;
-  virtual void RetireSyncPoint(uint32 sync_point) override;
-  virtual void SignalSyncPoint(uint32 sync_point,
-                               const base::Closure& callback) override;
-  virtual void SignalQuery(uint32 query,
-                           const base::Closure& callback) override;
-  virtual void SetSurfaceVisible(bool visible) override;
-  virtual uint32 CreateStreamTexture(uint32 texture_id) override;
+  gpu::Capabilities GetCapabilities() override;
+  int32 CreateImage(ClientBuffer buffer,
+                    size_t width,
+                    size_t height,
+                    unsigned internalformat) override;
+  void DestroyImage(int32 id) override;
+  int32 CreateGpuMemoryBufferImage(size_t width,
+                                   size_t height,
+                                   unsigned internalformat,
+                                   unsigned usage) override;
+  uint32 InsertSyncPoint() override;
+  uint32 InsertFutureSyncPoint() override;
+  void RetireSyncPoint(uint32 sync_point) override;
+  void SignalSyncPoint(uint32 sync_point,
+                       const base::Closure& callback) override;
+  void SignalQuery(uint32 query, const base::Closure& callback) override;
+  void SetSurfaceVisible(bool visible) override;
+  uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock*) override;
 
  private:

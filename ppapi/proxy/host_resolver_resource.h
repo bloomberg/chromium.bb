@@ -19,19 +19,19 @@ class PPAPI_PROXY_EXPORT HostResolverResource
       public thunk::PPB_HostResolver_API {
  public:
   HostResolverResource(Connection connection, PP_Instance instance);
-  virtual ~HostResolverResource();
+  ~HostResolverResource() override;
 
   // PluginResource overrides.
-  virtual thunk::PPB_HostResolver_API* AsPPB_HostResolver_API() override;
+  thunk::PPB_HostResolver_API* AsPPB_HostResolver_API() override;
 
   // thunk::PPB_HostResolver_API implementation.
-  virtual int32_t Resolve(const char* host,
-                          uint16_t port,
-                          const PP_HostResolver_Hint* hint,
-                          scoped_refptr<TrackedCallback> callback) override;
-  virtual PP_Var GetCanonicalName() override;
-  virtual uint32_t GetNetAddressCount() override;
-  virtual PP_Resource GetNetAddress(uint32_t index) override;
+  int32_t Resolve(const char* host,
+                  uint16_t port,
+                  const PP_HostResolver_Hint* hint,
+                  scoped_refptr<TrackedCallback> callback) override;
+  PP_Var GetCanonicalName() override;
+  uint32_t GetNetAddressCount() override;
+  PP_Resource GetNetAddress(uint32_t index) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostResolverResource);

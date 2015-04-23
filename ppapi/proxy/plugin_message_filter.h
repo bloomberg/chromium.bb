@@ -40,15 +40,15 @@ class PPAPI_PROXY_EXPORT PluginMessageFilter : public IPC::MessageFilter,
   PluginMessageFilter(
       std::set<PP_Instance>* seen_instance_ids,
       scoped_refptr<ResourceReplyThreadRegistrar> thread_registrar);
-  virtual ~PluginMessageFilter();
+  ~PluginMessageFilter() override;
 
   // MessageFilter implementation.
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual void OnFilterRemoved() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  void OnFilterRemoved() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* msg) override;
+  bool Send(IPC::Message* msg) override;
 
   void AddResourceMessageFilter(
       const scoped_refptr<ResourceMessageFilter>& filter);

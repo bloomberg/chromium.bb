@@ -27,15 +27,14 @@ namespace proxy {
 class Broker : public PPB_Broker_API, public Resource {
  public:
   explicit Broker(const HostResource& resource);
-  virtual ~Broker();
+  ~Broker() override;
 
   // Resource overrides.
-  virtual PPB_Broker_API* AsPPB_Broker_API() override;
+  PPB_Broker_API* AsPPB_Broker_API() override;
 
   // PPB_Broker_API implementation.
-  virtual int32_t Connect(
-      scoped_refptr<TrackedCallback> connect_callback) override;
-  virtual int32_t GetHandle(int32_t* handle) override;
+  int32_t Connect(scoped_refptr<TrackedCallback> connect_callback) override;
+  int32_t GetHandle(int32_t* handle) override;
 
   // Called by the proxy when the host side has completed the request.
   void ConnectComplete(IPC::PlatformFileForTransit socket_handle,

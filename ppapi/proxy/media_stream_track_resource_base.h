@@ -23,7 +23,7 @@ class PPAPI_PROXY_EXPORT MediaStreamTrackResourceBase
 
   MediaStreamTrackResourceBase(Connection connection, PP_Instance instance);
 
-  virtual ~MediaStreamTrackResourceBase();
+  ~MediaStreamTrackResourceBase() override;
 
   std::string id() const { return id_; }
 
@@ -42,8 +42,8 @@ class PPAPI_PROXY_EXPORT MediaStreamTrackResourceBase
   void SendEnqueueBufferMessageToHost(int32_t index);
 
   // PluginResource overrides:
-  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) override;
+  void OnReplyReceived(const ResourceMessageReplyParams& params,
+                       const IPC::Message& msg) override;
 
  private:
   // Message handlers:

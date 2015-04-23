@@ -18,10 +18,10 @@ class SerializedVarReceiveInput;
 class PPP_Messaging_Proxy : public InterfaceProxy {
  public:
   PPP_Messaging_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_Messaging_Proxy();
+  ~PPP_Messaging_Proxy() override;
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

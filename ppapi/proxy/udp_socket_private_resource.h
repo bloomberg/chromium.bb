@@ -19,27 +19,26 @@ class PPAPI_PROXY_EXPORT UDPSocketPrivateResource
       public thunk::PPB_UDPSocket_Private_API {
  public:
   UDPSocketPrivateResource(Connection connection, PP_Instance instance);
-  virtual ~UDPSocketPrivateResource();
+  ~UDPSocketPrivateResource() override;
 
   // PluginResource implementation.
-  virtual thunk::PPB_UDPSocket_Private_API*
-      AsPPB_UDPSocket_Private_API() override;
+  thunk::PPB_UDPSocket_Private_API* AsPPB_UDPSocket_Private_API() override;
 
   // PPB_UDPSocket_Private_API implementation.
-  virtual int32_t SetSocketFeature(PP_UDPSocketFeature_Private name,
-                                   PP_Var value) override;
-  virtual int32_t Bind(const PP_NetAddress_Private* addr,
-                       scoped_refptr<TrackedCallback> callback) override;
-  virtual PP_Bool GetBoundAddress(PP_NetAddress_Private* addr) override;
-  virtual int32_t RecvFrom(char* buffer,
-                           int32_t num_bytes,
-                           scoped_refptr<TrackedCallback> callback) override;
-  virtual PP_Bool GetRecvFromAddress(PP_NetAddress_Private* addr) override;
-  virtual int32_t SendTo(const char* buffer,
-                         int32_t num_bytes,
-                         const PP_NetAddress_Private* addr,
-                         scoped_refptr<TrackedCallback> callback) override;
-  virtual void Close() override;
+  int32_t SetSocketFeature(PP_UDPSocketFeature_Private name,
+                           PP_Var value) override;
+  int32_t Bind(const PP_NetAddress_Private* addr,
+               scoped_refptr<TrackedCallback> callback) override;
+  PP_Bool GetBoundAddress(PP_NetAddress_Private* addr) override;
+  int32_t RecvFrom(char* buffer,
+                   int32_t num_bytes,
+                   scoped_refptr<TrackedCallback> callback) override;
+  PP_Bool GetRecvFromAddress(PP_NetAddress_Private* addr) override;
+  int32_t SendTo(const char* buffer,
+                 int32_t num_bytes,
+                 const PP_NetAddress_Private* addr,
+                 scoped_refptr<TrackedCallback> callback) override;
+  void Close() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UDPSocketPrivateResource);

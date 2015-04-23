@@ -16,12 +16,12 @@ namespace proxy {
 class PPP_TextInput_Proxy : public InterfaceProxy {
  public:
   PPP_TextInput_Proxy(Dispatcher* dispatcher);
-  virtual ~PPP_TextInput_Proxy();
+  ~PPP_TextInput_Proxy() override;
 
   static const PPP_TextInput_Dev* GetProxyInterface();
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.

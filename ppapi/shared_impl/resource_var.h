@@ -41,8 +41,8 @@ class PPAPI_SHARED_EXPORT ResourceVar : public Var {
   virtual bool IsPending() const = 0;
 
   // Var override.
-  virtual ResourceVar* AsResourceVar() override;
-  virtual PP_VarType GetType() const override;
+  ResourceVar* AsResourceVar() override;
+  PP_VarType GetType() const override;
 
   // Helper function that converts a PP_Var to a ResourceVar. This will
   // return NULL if the PP_Var is not of Resource type.
@@ -51,7 +51,7 @@ class PPAPI_SHARED_EXPORT ResourceVar : public Var {
  protected:
   ResourceVar();
 
-  virtual ~ResourceVar();
+  ~ResourceVar() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceVar);

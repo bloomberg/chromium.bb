@@ -139,14 +139,13 @@ class PPAPI_PROXY_EXPORT ResourceMessageCallParams
  public:
   ResourceMessageCallParams();
   ResourceMessageCallParams(PP_Resource resource, int32_t sequence);
-  virtual ~ResourceMessageCallParams();
+  ~ResourceMessageCallParams() override;
 
   void set_has_callback() { has_callback_ = true; }
   bool has_callback() const { return has_callback_; }
 
-  virtual void Serialize(IPC::Message* msg) const override;
-  virtual bool Deserialize(const IPC::Message* msg,
-                           PickleIterator* iter) override;
+  void Serialize(IPC::Message* msg) const override;
+  bool Deserialize(const IPC::Message* msg, PickleIterator* iter) override;
 
  private:
   bool has_callback_;
@@ -158,14 +157,13 @@ class PPAPI_PROXY_EXPORT ResourceMessageReplyParams
  public:
   ResourceMessageReplyParams();
   ResourceMessageReplyParams(PP_Resource resource, int32_t sequence);
-  virtual ~ResourceMessageReplyParams();
+  ~ResourceMessageReplyParams() override;
 
   void set_result(int32_t r) { result_ = r; }
   int32_t result() const { return result_; }
 
-  virtual void Serialize(IPC::Message* msg) const override;
-  virtual bool Deserialize(const IPC::Message* msg,
-                           PickleIterator* iter) override;
+  void Serialize(IPC::Message* msg) const override;
+  bool Deserialize(const IPC::Message* msg, PickleIterator* iter) override;
 
   // Writes everything except the handles to |msg|.
   void WriteReplyHeader(IPC::Message* msg) const;

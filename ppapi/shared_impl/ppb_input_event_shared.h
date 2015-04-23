@@ -72,35 +72,33 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
                         const InputEventData& data);
 
   // Resource overrides.
-  virtual PPB_InputEvent_API* AsPPB_InputEvent_API() override;
+  PPB_InputEvent_API* AsPPB_InputEvent_API() override;
 
   // PPB_InputEvent_API implementation.
-  virtual const InputEventData& GetInputEventData() const override;
-  virtual PP_InputEvent_Type GetType() override;
-  virtual PP_TimeTicks GetTimeStamp() override;
-  virtual uint32_t GetModifiers() override;
-  virtual PP_InputEvent_MouseButton GetMouseButton() override;
-  virtual PP_Point GetMousePosition() override;
-  virtual int32_t GetMouseClickCount() override;
-  virtual PP_Point GetMouseMovement() override;
-  virtual PP_FloatPoint GetWheelDelta() override;
-  virtual PP_FloatPoint GetWheelTicks() override;
-  virtual PP_Bool GetWheelScrollByPage() override;
-  virtual uint32_t GetKeyCode() override;
-  virtual PP_Var GetCharacterText() override;
-  virtual PP_Var GetCode() override;
-  virtual uint32_t GetIMESegmentNumber() override;
-  virtual uint32_t GetIMESegmentOffset(uint32_t index) override;
-  virtual int32_t GetIMETargetSegment() override;
-  virtual void GetIMESelection(uint32_t* start, uint32_t* end) override;
-  virtual void AddTouchPoint(PP_TouchListType list,
-                             const PP_TouchPoint& point) override;
-  virtual uint32_t GetTouchCount(PP_TouchListType list) override;
-  virtual PP_TouchPoint GetTouchByIndex(PP_TouchListType list,
-                                        uint32_t index) override;
-  virtual PP_TouchPoint GetTouchById(PP_TouchListType list,
-                                     uint32_t id) override;
-  virtual PP_Bool TraceInputLatency(PP_Bool has_damage) override;
+  const InputEventData& GetInputEventData() const override;
+  PP_InputEvent_Type GetType() override;
+  PP_TimeTicks GetTimeStamp() override;
+  uint32_t GetModifiers() override;
+  PP_InputEvent_MouseButton GetMouseButton() override;
+  PP_Point GetMousePosition() override;
+  int32_t GetMouseClickCount() override;
+  PP_Point GetMouseMovement() override;
+  PP_FloatPoint GetWheelDelta() override;
+  PP_FloatPoint GetWheelTicks() override;
+  PP_Bool GetWheelScrollByPage() override;
+  uint32_t GetKeyCode() override;
+  PP_Var GetCharacterText() override;
+  PP_Var GetCode() override;
+  uint32_t GetIMESegmentNumber() override;
+  uint32_t GetIMESegmentOffset(uint32_t index) override;
+  int32_t GetIMETargetSegment() override;
+  void GetIMESelection(uint32_t* start, uint32_t* end) override;
+  void AddTouchPoint(PP_TouchListType list,
+                     const PP_TouchPoint& point) override;
+  uint32_t GetTouchCount(PP_TouchListType list) override;
+  PP_TouchPoint GetTouchByIndex(PP_TouchListType list, uint32_t index) override;
+  PP_TouchPoint GetTouchById(PP_TouchListType list, uint32_t id) override;
+  PP_Bool TraceInputLatency(PP_Bool has_damage) override;
 
   // Implementations for event creation.
   static PP_Resource CreateIMEInputEvent(ResourceObjectType type,

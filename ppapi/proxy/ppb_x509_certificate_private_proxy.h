@@ -18,11 +18,11 @@ class PPB_X509Certificate_Private_Proxy
     : public InterfaceProxy {
  public:
   explicit PPB_X509Certificate_Private_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_X509Certificate_Private_Proxy();
+  ~PPB_X509Certificate_Private_Proxy() override;
   static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   static const ApiID kApiID = API_ID_PPB_X509_CERTIFICATE_PRIVATE;
 

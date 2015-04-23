@@ -30,44 +30,42 @@ class PPAPI_PROXY_EXPORT FileIOResource
       public thunk::PPB_FileIO_API {
  public:
   FileIOResource(Connection connection, PP_Instance instance);
-  virtual ~FileIOResource();
+  ~FileIOResource() override;
 
   // Resource overrides.
-  virtual thunk::PPB_FileIO_API* AsPPB_FileIO_API() override;
+  thunk::PPB_FileIO_API* AsPPB_FileIO_API() override;
 
   // PPB_FileIO_API implementation.
-  virtual int32_t Open(PP_Resource file_ref,
-                       int32_t open_flags,
-                       scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t Query(PP_FileInfo* info,
-                        scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t Touch(PP_Time last_access_time,
-                        PP_Time last_modified_time,
-                        scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t Read(int64_t offset,
-                       char* buffer,
-                       int32_t bytes_to_read,
-                       scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t ReadToArray(int64_t offset,
-                              int32_t max_read_length,
-                              PP_ArrayOutput* array_output,
+  int32_t Open(PP_Resource file_ref,
+               int32_t open_flags,
+               scoped_refptr<TrackedCallback> callback) override;
+  int32_t Query(PP_FileInfo* info,
+                scoped_refptr<TrackedCallback> callback) override;
+  int32_t Touch(PP_Time last_access_time,
+                PP_Time last_modified_time,
+                scoped_refptr<TrackedCallback> callback) override;
+  int32_t Read(int64_t offset,
+               char* buffer,
+               int32_t bytes_to_read,
+               scoped_refptr<TrackedCallback> callback) override;
+  int32_t ReadToArray(int64_t offset,
+                      int32_t max_read_length,
+                      PP_ArrayOutput* array_output,
+                      scoped_refptr<TrackedCallback> callback) override;
+  int32_t Write(int64_t offset,
+                const char* buffer,
+                int32_t bytes_to_write,
+                scoped_refptr<TrackedCallback> callback) override;
+  int32_t SetLength(int64_t length,
+                    scoped_refptr<TrackedCallback> callback) override;
+  int64_t GetMaxWrittenOffset() const override;
+  int64_t GetAppendModeWriteAmount() const override;
+  void SetMaxWrittenOffset(int64_t max_written_offset) override;
+  void SetAppendModeWriteAmount(int64_t append_mode_write_amount) override;
+  int32_t Flush(scoped_refptr<TrackedCallback> callback) override;
+  void Close() override;
+  int32_t RequestOSFileHandle(PP_FileHandle* handle,
                               scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t Write(int64_t offset,
-                        const char* buffer,
-                        int32_t bytes_to_write,
-                        scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t SetLength(int64_t length,
-                            scoped_refptr<TrackedCallback> callback) override;
-  virtual int64_t GetMaxWrittenOffset() const override;
-  virtual int64_t GetAppendModeWriteAmount() const override;
-  virtual void SetMaxWrittenOffset(int64_t max_written_offset) override;
-  virtual void SetAppendModeWriteAmount(
-      int64_t append_mode_write_amount) override;
-  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) override;
-  virtual void Close() override;
-  virtual int32_t RequestOSFileHandle(
-      PP_FileHandle* handle,
-      scoped_refptr<TrackedCallback> callback) override;
 
   // FileHolder is used to guarantee that file operations will have a valid FD
   // to operate on, even if they're in a different thread.

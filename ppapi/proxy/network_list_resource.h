@@ -25,20 +25,19 @@ class NetworkListResource
  public:
   NetworkListResource(PP_Instance instance,
                       const SerializedNetworkList& list);
-  virtual ~NetworkListResource();
+  ~NetworkListResource() override;
 
   // Resource override.
-  virtual thunk::PPB_NetworkList_API* AsPPB_NetworkList_API() override;
+  thunk::PPB_NetworkList_API* AsPPB_NetworkList_API() override;
 
   // PPB_NetworkList_API implementation.
-  virtual uint32_t GetCount() override;
-  virtual PP_Var GetName(uint32_t index) override;
-  virtual PP_NetworkList_Type GetType(uint32_t index) override;
-  virtual PP_NetworkList_State GetState(uint32_t index) override;
-  virtual int32_t GetIpAddresses(uint32_t index,
-                                 const PP_ArrayOutput& output) override;
-  virtual PP_Var GetDisplayName(uint32_t index) override;
-  virtual uint32_t GetMTU(uint32_t index) override;
+  uint32_t GetCount() override;
+  PP_Var GetName(uint32_t index) override;
+  PP_NetworkList_Type GetType(uint32_t index) override;
+  PP_NetworkList_State GetState(uint32_t index) override;
+  int32_t GetIpAddresses(uint32_t index, const PP_ArrayOutput& output) override;
+  PP_Var GetDisplayName(uint32_t index) override;
+  uint32_t GetMTU(uint32_t index) override;
 
  private:
   SerializedNetworkList list_;

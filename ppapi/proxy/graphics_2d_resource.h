@@ -25,24 +25,22 @@ class PPAPI_PROXY_EXPORT Graphics2DResource
                      const PP_Size& size,
                      PP_Bool is_always_opaque);
 
-  virtual ~Graphics2DResource();
+  ~Graphics2DResource() override;
 
   // Resource overrides.
-  virtual thunk::PPB_Graphics2D_API* AsPPB_Graphics2D_API() override;
+  thunk::PPB_Graphics2D_API* AsPPB_Graphics2D_API() override;
 
   // PPB_Graphics2D_API overrides.
-  virtual PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque) override;
-  virtual void PaintImageData(PP_Resource image_data,
-                              const PP_Point* top_left,
-                              const PP_Rect* src_rect) override;
-  virtual void Scroll(const PP_Rect* clip_rect,
-                      const PP_Point* amount) override;
-  virtual void ReplaceContents(PP_Resource image_data) override;
-  virtual PP_Bool SetScale(float scale) override;
-  virtual float GetScale() override;
-  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) override;
-  virtual bool ReadImageData(PP_Resource image,
-                             const PP_Point* top_left) override;
+  PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque) override;
+  void PaintImageData(PP_Resource image_data,
+                      const PP_Point* top_left,
+                      const PP_Rect* src_rect) override;
+  void Scroll(const PP_Rect* clip_rect, const PP_Point* amount) override;
+  void ReplaceContents(PP_Resource image_data) override;
+  PP_Bool SetScale(float scale) override;
+  float GetScale() override;
+  int32_t Flush(scoped_refptr<TrackedCallback> callback) override;
+  bool ReadImageData(PP_Resource image, const PP_Point* top_left) override;
 
  private:
   void OnPluginMsgFlushACK(const ResourceMessageReplyParams& params);

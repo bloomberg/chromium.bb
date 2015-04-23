@@ -30,19 +30,19 @@ class PPAPI_PROXY_EXPORT TrueTypeFontResource
   TrueTypeFontResource(Connection connection,
                        PP_Instance instance,
                        const PP_TrueTypeFontDesc_Dev& desc);
-  virtual ~TrueTypeFontResource();
+  ~TrueTypeFontResource() override;
 
   // Resource implementation.
-  virtual thunk::PPB_TrueTypeFont_API* AsPPB_TrueTypeFont_API() override;
+  thunk::PPB_TrueTypeFont_API* AsPPB_TrueTypeFont_API() override;
 
   // PPB_TrueTypeFont_API implementation.
-  virtual int32_t Describe(
+  int32_t Describe(
       PP_TrueTypeFontDesc_Dev* desc,
       scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t GetTableTags(
+  int32_t GetTableTags(
       const PP_ArrayOutput& output,
       scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t GetTable(
+  int32_t GetTable(
       uint32_t table,
       int32_t offset,
       int32_t max_data_length,
@@ -50,8 +50,8 @@ class PPAPI_PROXY_EXPORT TrueTypeFontResource
       scoped_refptr<TrackedCallback> callback) override;
 
   // PluginResource implementation.
-  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) override;
+  void OnReplyReceived(const ResourceMessageReplyParams& params,
+                       const IPC::Message& msg) override;
 
  private:
   void OnPluginMsgCreateComplete(

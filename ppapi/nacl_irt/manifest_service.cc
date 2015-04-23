@@ -33,7 +33,7 @@ class ManifestMessageFilter : public IPC::SyncMessageFilter {
             true /* manual_reset */, false /* initially_signaled */) {
   }
 
-  virtual bool Send(IPC::Message* message) override {
+  bool Send(IPC::Message* message) override {
     // Wait until set up is actually done.
     connected_event_.Wait();
     return SyncMessageFilter::Send(message);
@@ -41,19 +41,19 @@ class ManifestMessageFilter : public IPC::SyncMessageFilter {
 
   // When set up is done, OnFilterAdded is called on IO thread. Unblocks the
   // Send().
-  virtual void OnFilterAdded(IPC::Sender* sender) override {
+  void OnFilterAdded(IPC::Sender* sender) override {
     SyncMessageFilter::OnFilterAdded(sender);
     connected_event_.Signal();
   }
 
   // If an error is found, unblocks the Send(), too, to return an error.
-  virtual void OnChannelError() override {
+  void OnChannelError() override {
     SyncMessageFilter::OnChannelError();
     connected_event_.Signal();
   }
 
   // Similar to OnChannelError, unblocks the Send() on the channel closing.
-  virtual void OnChannelClosing() override {
+  void OnChannelClosing() override {
     SyncMessageFilter::OnChannelClosing();
     connected_event_.Signal();
   }

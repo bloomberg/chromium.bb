@@ -129,19 +129,18 @@ class RawVarData {
 class BasicRawVarData : public RawVarData {
  public:
   BasicRawVarData();
-  virtual ~BasicRawVarData();
+  ~BasicRawVarData() override;
 
   // RawVarData implementation.
-  virtual PP_VarType Type() override;
-  virtual bool Init(const PP_Var& var, PP_Instance instance) override;
-  virtual PP_Var CreatePPVar(PP_Instance instance) override;
-  virtual void PopulatePPVar(const PP_Var& var,
-                             const std::vector<PP_Var>& graph) override;
-  virtual void Write(IPC::Message* m,
-                     const HandleWriter& handle_writer) override;
-  virtual bool Read(PP_VarType type,
-                    const IPC::Message* m,
-                    PickleIterator* iter) override;
+  PP_VarType Type() override;
+  bool Init(const PP_Var& var, PP_Instance instance) override;
+  PP_Var CreatePPVar(PP_Instance instance) override;
+  void PopulatePPVar(const PP_Var& var,
+                     const std::vector<PP_Var>& graph) override;
+  void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
+  bool Read(PP_VarType type,
+            const IPC::Message* m,
+            PickleIterator* iter) override;
 
  private:
   PP_Var var_;
@@ -151,19 +150,18 @@ class BasicRawVarData : public RawVarData {
 class StringRawVarData : public RawVarData {
  public:
   StringRawVarData();
-  virtual ~StringRawVarData();
+  ~StringRawVarData() override;
 
   // RawVarData implementation.
-  virtual PP_VarType Type() override;
-  virtual bool Init(const PP_Var& var, PP_Instance instance) override;
-  virtual PP_Var CreatePPVar(PP_Instance instance) override;
-  virtual void PopulatePPVar(const PP_Var& var,
-                             const std::vector<PP_Var>& graph) override;
-  virtual void Write(IPC::Message* m,
-                     const HandleWriter& handle_writer) override;
-  virtual bool Read(PP_VarType type,
-                    const IPC::Message* m,
-                    PickleIterator* iter) override;
+  PP_VarType Type() override;
+  bool Init(const PP_Var& var, PP_Instance instance) override;
+  PP_Var CreatePPVar(PP_Instance instance) override;
+  void PopulatePPVar(const PP_Var& var,
+                     const std::vector<PP_Var>& graph) override;
+  void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
+  bool Read(PP_VarType type,
+            const IPC::Message* m,
+            PickleIterator* iter) override;
 
  private:
   // The data in the string.
@@ -181,20 +179,19 @@ class ArrayBufferRawVarData : public RawVarData {
   };
 
   ArrayBufferRawVarData();
-  virtual ~ArrayBufferRawVarData();
+  ~ArrayBufferRawVarData() override;
 
   // RawVarData implementation.
-  virtual PP_VarType Type() override;
-  virtual bool Init(const PP_Var& var, PP_Instance instance) override;
-  virtual PP_Var CreatePPVar(PP_Instance instance) override;
-  virtual void PopulatePPVar(const PP_Var& var,
-                             const std::vector<PP_Var>& graph) override;
-  virtual void Write(IPC::Message* m,
-                     const HandleWriter& handle_writer) override;
-  virtual bool Read(PP_VarType type,
-                    const IPC::Message* m,
-                    PickleIterator* iter) override;
-  virtual SerializedHandle* GetHandle() override;
+  PP_VarType Type() override;
+  bool Init(const PP_Var& var, PP_Instance instance) override;
+  PP_Var CreatePPVar(PP_Instance instance) override;
+  void PopulatePPVar(const PP_Var& var,
+                     const std::vector<PP_Var>& graph) override;
+  void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
+  bool Read(PP_VarType type,
+            const IPC::Message* m,
+            PickleIterator* iter) override;
+  SerializedHandle* GetHandle() override;
 
  private:
   // The type of the storage underlying the array buffer.
@@ -211,21 +208,20 @@ class ArrayBufferRawVarData : public RawVarData {
 class ArrayRawVarData : public RawVarData {
  public:
   ArrayRawVarData();
-  virtual ~ArrayRawVarData();
+  ~ArrayRawVarData() override;
 
   void AddChild(size_t element);
 
   // RawVarData implementation.
-  virtual PP_VarType Type() override;
-  virtual bool Init(const PP_Var& var, PP_Instance instance) override;
-  virtual PP_Var CreatePPVar(PP_Instance instance) override;
-  virtual void PopulatePPVar(const PP_Var& var,
-                             const std::vector<PP_Var>& graph) override;
-  virtual void Write(IPC::Message* m,
-                     const HandleWriter& handle_writer) override;
-  virtual bool Read(PP_VarType type,
-                    const IPC::Message* m,
-                    PickleIterator* iter) override;
+  PP_VarType Type() override;
+  bool Init(const PP_Var& var, PP_Instance instance) override;
+  PP_Var CreatePPVar(PP_Instance instance) override;
+  void PopulatePPVar(const PP_Var& var,
+                     const std::vector<PP_Var>& graph) override;
+  void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
+  bool Read(PP_VarType type,
+            const IPC::Message* m,
+            PickleIterator* iter) override;
 
  private:
   std::vector<size_t> children_;
@@ -235,21 +231,20 @@ class ArrayRawVarData : public RawVarData {
 class DictionaryRawVarData : public RawVarData {
  public:
   DictionaryRawVarData();
-  virtual ~DictionaryRawVarData();
+  ~DictionaryRawVarData() override;
 
   void AddChild(const std::string& key, size_t value);
 
   // RawVarData implementation.
-  virtual PP_VarType Type() override;
-  virtual bool Init(const PP_Var& var, PP_Instance instance) override;
-  virtual PP_Var CreatePPVar(PP_Instance instance) override;
-  virtual void PopulatePPVar(const PP_Var& var,
-                             const std::vector<PP_Var>& graph) override;
-  virtual void Write(IPC::Message* m,
-                     const HandleWriter& handle_writer) override;
-  virtual bool Read(PP_VarType type,
-                    const IPC::Message* m,
-                    PickleIterator* iter) override;
+  PP_VarType Type() override;
+  bool Init(const PP_Var& var, PP_Instance instance) override;
+  PP_Var CreatePPVar(PP_Instance instance) override;
+  void PopulatePPVar(const PP_Var& var,
+                     const std::vector<PP_Var>& graph) override;
+  void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
+  bool Read(PP_VarType type,
+            const IPC::Message* m,
+            PickleIterator* iter) override;
 
  private:
   std::vector<std::pair<std::string, size_t> > children_;
@@ -264,19 +259,18 @@ class DictionaryRawVarData : public RawVarData {
 class ResourceRawVarData : public RawVarData {
  public:
   ResourceRawVarData();
-  virtual ~ResourceRawVarData();
+  ~ResourceRawVarData() override;
 
   // RawVarData implementation.
-  virtual PP_VarType Type() override;
-  virtual bool Init(const PP_Var& var, PP_Instance instance) override;
-  virtual PP_Var CreatePPVar(PP_Instance instance) override;
-  virtual void PopulatePPVar(const PP_Var& var,
-                             const std::vector<PP_Var>& graph) override;
-  virtual void Write(IPC::Message* m,
-                     const HandleWriter& handle_writer) override;
-  virtual bool Read(PP_VarType type,
-                    const IPC::Message* m,
-                    PickleIterator* iter) override;
+  PP_VarType Type() override;
+  bool Init(const PP_Var& var, PP_Instance instance) override;
+  PP_Var CreatePPVar(PP_Instance instance) override;
+  void PopulatePPVar(const PP_Var& var,
+                     const std::vector<PP_Var>& graph) override;
+  void Write(IPC::Message* m, const HandleWriter& handle_writer) override;
+  bool Read(PP_VarType type,
+            const IPC::Message* m,
+            PickleIterator* iter) override;
 
  private:
   // Resource ID in the plugin. If one has not yet been created, this is 0.

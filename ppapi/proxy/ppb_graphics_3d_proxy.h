@@ -34,32 +34,31 @@ class PpapiCommandBufferProxy;
 class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
  public:
   explicit Graphics3D(const HostResource& resource);
-  virtual ~Graphics3D();
+  ~Graphics3D() override;
 
   bool Init(gpu::gles2::GLES2Implementation* share_gles2,
             const gpu::Capabilities& capabilities,
             const SerializedHandle& shared_state);
 
   // Graphics3DTrusted API. These are not implemented in the proxy.
-  virtual PP_Bool SetGetBuffer(int32_t shm_id) override;
-  virtual PP_Bool Flush(int32_t put_offset) override;
-  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
-                                                          int32* id) override;
-  virtual PP_Bool DestroyTransferBuffer(int32_t id) override;
-  virtual gpu::CommandBuffer::State WaitForTokenInRange(int32_t start,
-                                                        int32_t end) override;
-  virtual gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
-                                                            int32_t end)
-      override;
-  virtual uint32_t InsertSyncPoint() override;
-  virtual uint32_t InsertFutureSyncPoint() override;
-  virtual void RetireSyncPoint(uint32_t sync_point) override;
+  PP_Bool SetGetBuffer(int32_t shm_id) override;
+  PP_Bool Flush(int32_t put_offset) override;
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
+                                                  int32* id) override;
+  PP_Bool DestroyTransferBuffer(int32_t id) override;
+  gpu::CommandBuffer::State WaitForTokenInRange(int32_t start,
+                                                int32_t end) override;
+  gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
+                                                    int32_t end) override;
+  uint32_t InsertSyncPoint() override;
+  uint32_t InsertFutureSyncPoint() override;
+  void RetireSyncPoint(uint32_t sync_point) override;
 
  private:
   // PPB_Graphics3D_Shared overrides.
-  virtual gpu::CommandBuffer* GetCommandBuffer() override;
-  virtual gpu::GpuControl* GetGpuControl() override;
-  virtual int32 DoSwapBuffers() override;
+  gpu::CommandBuffer* GetCommandBuffer() override;
+  gpu::GpuControl* GetGpuControl() override;
+  int32 DoSwapBuffers() override;
 
   scoped_ptr<PpapiCommandBufferProxy> command_buffer_;
 
@@ -69,7 +68,7 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
 class PPB_Graphics3D_Proxy : public InterfaceProxy {
  public:
   PPB_Graphics3D_Proxy(Dispatcher* dispatcher);
-  virtual ~PPB_Graphics3D_Proxy();
+  ~PPB_Graphics3D_Proxy();
 
   static PP_Resource CreateProxyResource(
       PP_Instance instance,
@@ -77,7 +76,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
       const int32_t* attrib_list);
 
   // InterfaceProxy implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   static const ApiID kApiID = API_ID_PPB_GRAPHICS_3D;
 

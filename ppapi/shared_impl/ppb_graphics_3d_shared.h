@@ -30,26 +30,26 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
       public thunk::PPB_Graphics3D_API {
  public:
   // Resource overrides.
-  virtual thunk::PPB_Graphics3D_API* AsPPB_Graphics3D_API() override;
+  thunk::PPB_Graphics3D_API* AsPPB_Graphics3D_API() override;
 
   // PPB_Graphics3D_API implementation.
-  virtual int32_t GetAttribs(int32_t attrib_list[]) override;
-  virtual int32_t SetAttribs(const int32_t attrib_list[]) override;
-  virtual int32_t GetError() override;
-  virtual int32_t ResizeBuffers(int32_t width, int32_t height) override;
-  virtual int32_t SwapBuffers(scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t GetAttribMaxValue(int32_t attribute, int32_t* value) override;
+  int32_t GetAttribs(int32_t attrib_list[]) override;
+  int32_t SetAttribs(const int32_t attrib_list[]) override;
+  int32_t GetError() override;
+  int32_t ResizeBuffers(int32_t width, int32_t height) override;
+  int32_t SwapBuffers(scoped_refptr<TrackedCallback> callback) override;
+  int32_t GetAttribMaxValue(int32_t attribute, int32_t* value) override;
 
-  virtual void* MapTexSubImage2DCHROMIUM(GLenum target,
-                                         GLint level,
-                                         GLint xoffset,
-                                         GLint yoffset,
-                                         GLsizei width,
-                                         GLsizei height,
-                                         GLenum format,
-                                         GLenum type,
-                                         GLenum access) override;
-  virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) override;
+  void* MapTexSubImage2DCHROMIUM(GLenum target,
+                                 GLint level,
+                                 GLint xoffset,
+                                 GLint yoffset,
+                                 GLsizei width,
+                                 GLsizei height,
+                                 GLenum format,
+                                 GLenum type,
+                                 GLenum access) override;
+  void UnmapTexSubImage2DCHROMIUM(const void* mem) override;
 
   gpu::gles2::GLES2Implementation* gles2_impl() { return gles2_impl_.get(); }
 
@@ -59,7 +59,7 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
  protected:
   PPB_Graphics3D_Shared(PP_Instance instance);
   PPB_Graphics3D_Shared(const HostResource& host_resource);
-  virtual ~PPB_Graphics3D_Shared();
+  ~PPB_Graphics3D_Shared() override;
 
   virtual gpu::CommandBuffer* GetCommandBuffer() = 0;
   virtual gpu::GpuControl* GetGpuControl() = 0;

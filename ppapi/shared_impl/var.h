@@ -101,7 +101,7 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
  public:
   explicit StringVar(const std::string& str);
   StringVar(const char* str, uint32 len);
-  virtual ~StringVar();
+  ~StringVar() override;
 
   const std::string& value() const { return value_; }
   // Return a pointer to the internal string. This allows other objects to
@@ -112,8 +112,8 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
   const std::string* ptr() const { return &value_; }
 
   // Var override.
-  virtual StringVar* AsStringVar() override;
-  virtual PP_VarType GetType() const override;
+  StringVar* AsStringVar() override;
+  PP_VarType GetType() const override;
 
   // Helper function to create a PP_Var of type string that contains a copy of
   // the given string. The input data must be valid UTF-8 encoded text, if it
@@ -158,7 +158,7 @@ class PPAPI_SHARED_EXPORT StringVar : public Var {
 class PPAPI_SHARED_EXPORT ArrayBufferVar : public Var {
  public:
   ArrayBufferVar();
-  virtual ~ArrayBufferVar();
+  ~ArrayBufferVar() override;
 
   virtual void* Map() = 0;
   virtual void Unmap() = 0;
@@ -176,8 +176,8 @@ class PPAPI_SHARED_EXPORT ArrayBufferVar : public Var {
                               base::SharedMemoryHandle* plugin_shm_handle) = 0;
 
   // Var override.
-  virtual ArrayBufferVar* AsArrayBufferVar() override;
-  virtual PP_VarType GetType() const override;
+  ArrayBufferVar* AsArrayBufferVar() override;
+  PP_VarType GetType() const override;
 
   // Helper function that converts a PP_Var to an ArrayBufferVar. This will
   // return NULL if the PP_Var is not of ArrayBuffer type.

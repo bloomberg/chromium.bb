@@ -37,37 +37,37 @@ class PPAPI_PROXY_EXPORT VideoDecoderResource
       public thunk::PPB_VideoDecoder_API {
  public:
   VideoDecoderResource(Connection connection, PP_Instance instance);
-  virtual ~VideoDecoderResource();
+  ~VideoDecoderResource() override;
 
   // Resource overrides.
-  virtual thunk::PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() override;
+  thunk::PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() override;
 
   // PPB_VideoDecoder_API implementation.
-  virtual int32_t Initialize0_1(
+  int32_t Initialize0_1(
       PP_Resource graphics_context,
       PP_VideoProfile profile,
       PP_Bool allow_software_fallback,
       scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t Initialize(PP_Resource graphics_context,
-                             PP_VideoProfile profile,
-                             PP_HardwareAcceleration acceleration,
-                             scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t Decode(uint32_t decode_id,
-                         uint32_t size,
-                         const void* buffer,
-                         scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t GetPicture0_1(
+  int32_t Initialize(PP_Resource graphics_context,
+                     PP_VideoProfile profile,
+                     PP_HardwareAcceleration acceleration,
+                     scoped_refptr<TrackedCallback> callback) override;
+  int32_t Decode(uint32_t decode_id,
+                 uint32_t size,
+                 const void* buffer,
+                 scoped_refptr<TrackedCallback> callback) override;
+  int32_t GetPicture0_1(
       PP_VideoPicture_0_1* picture,
       scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t GetPicture(PP_VideoPicture* picture,
-                             scoped_refptr<TrackedCallback> callback) override;
-  virtual void RecyclePicture(const PP_VideoPicture* picture) override;
-  virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t Reset(scoped_refptr<TrackedCallback> callback) override;
+  int32_t GetPicture(PP_VideoPicture* picture,
+                     scoped_refptr<TrackedCallback> callback) override;
+  void RecyclePicture(const PP_VideoPicture* picture) override;
+  int32_t Flush(scoped_refptr<TrackedCallback> callback) override;
+  int32_t Reset(scoped_refptr<TrackedCallback> callback) override;
 
   // PluginResource implementation.
-  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) override;
+  void OnReplyReceived(const ResourceMessageReplyParams& params,
+                       const IPC::Message& msg) override;
 
   // Called only by unit tests. This bypasses Graphics3D setup, which doesn't
   // work in ppapi::proxy::PluginProxyTest.

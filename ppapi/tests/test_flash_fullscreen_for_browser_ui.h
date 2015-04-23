@@ -29,13 +29,13 @@
 class TestFlashFullscreenForBrowserUI : public TestCase {
  public:
   explicit TestFlashFullscreenForBrowserUI(TestingInstance* instance);
-  virtual ~TestFlashFullscreenForBrowserUI();
+  ~TestFlashFullscreenForBrowserUI() override;
 
   // TestCase implementation.
-  virtual bool Init() override;
-  virtual void RunTests(const std::string& filter) override;
-  virtual void DidChangeView(const pp::View& view) override;
-  virtual bool HandleInputEvent(const pp::InputEvent& event) override;
+  bool Init() override;
+  void RunTests(const std::string& filter) override;
+  void DidChangeView(const pp::View& view) override;
+  bool HandleInputEvent(const pp::InputEvent& event) override;
 
  private:
   std::string TestEnterFullscreen();

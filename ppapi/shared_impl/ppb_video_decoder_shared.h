@@ -31,14 +31,13 @@ class PPAPI_SHARED_EXPORT PPB_VideoDecoder_Shared
  public:
   explicit PPB_VideoDecoder_Shared(PP_Instance instance);
   explicit PPB_VideoDecoder_Shared(const HostResource& host_resource);
-  virtual ~PPB_VideoDecoder_Shared();
+  ~PPB_VideoDecoder_Shared() override;
 
   // Resource overrides.
-  virtual thunk::PPB_VideoDecoder_Dev_API* AsPPB_VideoDecoder_Dev_API()
-      override;
+  thunk::PPB_VideoDecoder_Dev_API* AsPPB_VideoDecoder_Dev_API() override;
 
   // PPB_VideoDecoder_Dev_API implementation.
-  virtual void Destroy() override;
+  void Destroy() override;
 
  protected:
   bool SetFlushCallback(scoped_refptr<TrackedCallback> callback);

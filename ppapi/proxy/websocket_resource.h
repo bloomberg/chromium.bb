@@ -26,36 +26,36 @@ class PPAPI_PROXY_EXPORT WebSocketResource
       public NON_EXPORTED_BASE(thunk::PPB_WebSocket_API) {
  public:
   WebSocketResource(Connection connection, PP_Instance instance);
-  virtual ~WebSocketResource();
+  ~WebSocketResource() override;
 
   // PluginResource implementation.
-  virtual thunk::PPB_WebSocket_API* AsPPB_WebSocket_API() override;
+  thunk::PPB_WebSocket_API* AsPPB_WebSocket_API() override;
 
   // PPB_WebSocket_API implementation.
-  virtual int32_t Connect(const PP_Var& url,
-                          const PP_Var protocols[],
-                          uint32_t protocol_count,
-                          scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t Close(uint16_t code,
-                        const PP_Var& reason,
-                        scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t ReceiveMessage(
+  int32_t Connect(const PP_Var& url,
+                  const PP_Var protocols[],
+                  uint32_t protocol_count,
+                  scoped_refptr<TrackedCallback> callback) override;
+  int32_t Close(uint16_t code,
+                const PP_Var& reason,
+                scoped_refptr<TrackedCallback> callback) override;
+  int32_t ReceiveMessage(
       PP_Var* message,
       scoped_refptr<TrackedCallback> callback) override;
-  virtual int32_t SendMessage(const PP_Var& message) override;
-  virtual uint64_t GetBufferedAmount() override;
-  virtual uint16_t GetCloseCode() override;
-  virtual PP_Var GetCloseReason() override;
-  virtual PP_Bool GetCloseWasClean() override;
-  virtual PP_Var GetExtensions() override;
-  virtual PP_Var GetProtocol() override;
-  virtual PP_WebSocketReadyState GetReadyState() override;
-  virtual PP_Var GetURL() override;
+  int32_t SendMessage(const PP_Var& message) override;
+  uint64_t GetBufferedAmount() override;
+  uint16_t GetCloseCode() override;
+  PP_Var GetCloseReason() override;
+  PP_Bool GetCloseWasClean() override;
+  PP_Var GetExtensions() override;
+  PP_Var GetProtocol() override;
+  PP_WebSocketReadyState GetReadyState() override;
+  PP_Var GetURL() override;
 
  private:
   // PluginResource override.
-  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) override;
+  void OnReplyReceived(const ResourceMessageReplyParams& params,
+                       const IPC::Message& msg) override;
 
   // IPC message handlers.
   void OnPluginMsgConnectReply(const ResourceMessageReplyParams& params,

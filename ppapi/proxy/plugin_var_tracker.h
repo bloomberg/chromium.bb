@@ -32,7 +32,7 @@ class PluginDispatcher;
 class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
  public:
   PluginVarTracker();
-  ~PluginVarTracker();
+  ~PluginVarTracker() override;
 
   // Manages tracking for receiving a VARTYPE_OBJECT from the remote side
   // (either the plugin or the renderer) that has already had its reference
@@ -59,20 +59,19 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
                          const PP_Var& host_object);
 
   // VarTracker public overrides.
-  virtual PP_Var MakeResourcePPVarFromMessage(
-      PP_Instance instance,
-      const IPC::Message& creation_message,
-      int pending_renderer_id,
-      int pending_browser_id) override;
-  virtual ResourceVar* MakeResourceVar(PP_Resource pp_resource) override;
-  virtual void DidDeleteInstance(PP_Instance instance) override;
-  virtual int TrackSharedMemoryHandle(PP_Instance instance,
-                                      base::SharedMemoryHandle file,
-                                      uint32 size_in_bytes) override;
-  virtual bool StopTrackingSharedMemoryHandle(int id,
-                                              PP_Instance instance,
-                                              base::SharedMemoryHandle* handle,
-                                              uint32* size_in_bytes) override;
+  PP_Var MakeResourcePPVarFromMessage(PP_Instance instance,
+                                      const IPC::Message& creation_message,
+                                      int pending_renderer_id,
+                                      int pending_browser_id) override;
+  ResourceVar* MakeResourceVar(PP_Resource pp_resource) override;
+  void DidDeleteInstance(PP_Instance instance) override;
+  int TrackSharedMemoryHandle(PP_Instance instance,
+                              base::SharedMemoryHandle file,
+                              uint32 size_in_bytes) override;
+  bool StopTrackingSharedMemoryHandle(int id,
+                                      PP_Instance instance,
+                                      base::SharedMemoryHandle* handle,
+                                      uint32* size_in_bytes) override;
 
   // Notification that a plugin-implemented object (PPP_Class) was created by
   // the plugin or deallocated by WebKit over IPC.
@@ -97,12 +96,12 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
 
  private:
   // VarTracker protected overrides.
-  virtual int32 AddVarInternal(Var* var, AddVarRefMode mode) override;
-  virtual void TrackedObjectGettingOneRef(VarMap::const_iterator iter) override;
-  virtual void ObjectGettingZeroRef(VarMap::iterator iter) override;
-  virtual bool DeleteObjectInfoIfNecessary(VarMap::iterator iter) override;
-  virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) override;
-  virtual ArrayBufferVar* CreateShmArrayBuffer(
+  int32 AddVarInternal(Var* var, AddVarRefMode mode) override;
+  void TrackedObjectGettingOneRef(VarMap::const_iterator iter) override;
+  void ObjectGettingZeroRef(VarMap::iterator iter) override;
+  bool DeleteObjectInfoIfNecessary(VarMap::iterator iter) override;
+  ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) override;
+  ArrayBufferVar* CreateShmArrayBuffer(
       uint32 size_in_bytes,
       base::SharedMemoryHandle handle) override;
 

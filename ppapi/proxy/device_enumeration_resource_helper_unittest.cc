@@ -71,10 +71,10 @@ class TestResource : public PluginResource {
         device_enumeration_(this) {
   }
 
-  virtual ~TestResource() {}
+  ~TestResource() override {}
 
-  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
-                               const IPC::Message& msg) override {
+  void OnReplyReceived(const ResourceMessageReplyParams& params,
+                       const IPC::Message& msg) override {
     if (!device_enumeration_.HandleReply(params, msg))
       PluginResource::OnReplyReceived(params, msg);
   }

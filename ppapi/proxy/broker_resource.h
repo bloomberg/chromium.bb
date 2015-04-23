@@ -17,13 +17,13 @@ class BrokerResource
       public thunk::PPB_Broker_Instance_API {
  public:
   BrokerResource(Connection connection, PP_Instance instance);
-  virtual ~BrokerResource();
+  ~BrokerResource() override;
 
   // Resource override.
-  virtual thunk::PPB_Broker_Instance_API* AsPPB_Broker_Instance_API() override;
+  thunk::PPB_Broker_Instance_API* AsPPB_Broker_Instance_API() override;
 
   // thunk::PPB_Broker_Instance_API implementation.
-  virtual PP_Bool IsAllowed() override;
+  PP_Bool IsAllowed() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrokerResource);

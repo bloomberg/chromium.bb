@@ -25,7 +25,7 @@ class PPAPI_PROXY_EXPORT PDFResource
       public thunk::PPB_PDF_API {
  public:
   PDFResource(Connection connection, PP_Instance instance);
-  virtual ~PDFResource();
+  ~PDFResource() override;
 
   // For unittesting with a given locale.
   void SetLocaleForTest(const std::string& locale) {
@@ -33,34 +33,34 @@ class PPAPI_PROXY_EXPORT PDFResource
   }
 
   // Resource override.
-  virtual thunk::PPB_PDF_API* AsPPB_PDF_API() override;
+  thunk::PPB_PDF_API* AsPPB_PDF_API() override;
 
   // PPB_PDF_API implementation.
   PP_Var GetLocalizedString(PP_ResourceString string_id) override;
-  virtual void SearchString(const unsigned short* input_string,
-                            const unsigned short* input_term,
-                            bool case_sensitive,
-                            PP_PrivateFindResult** results,
-                            int* count) override;
-  virtual void DidStartLoading() override;
-  virtual void DidStopLoading() override;
-  virtual void SetContentRestriction(int restrictions) override;
-  virtual void HistogramPDFPageCount(int count) override;
-  virtual void UserMetricsRecordAction(const PP_Var& action) override;
-  virtual void HasUnsupportedFeature() override;
-  virtual void Print() override;
-  virtual void SaveAs() override;
-  virtual PP_Bool IsFeatureEnabled(PP_PDFFeature feature) override;
-  virtual PP_Resource GetResourceImageForScale(PP_ResourceImage image_id,
-                                               float scale) override;
-  virtual PP_Resource GetResourceImage(PP_ResourceImage image_id) override;
-  virtual PP_Bool IsOutOfProcess() override;
-  virtual void SetSelectedText(const char* selected_text) override;
-  virtual void SetLinkUnderCursor(const char* url) override;
-  virtual void GetV8ExternalSnapshotData(const char** natives_data_out,
-                                         int* natives_size_out,
-                                         const char** snapshot_data_out,
-                                         int* snapshot_size_out) override;
+  void SearchString(const unsigned short* input_string,
+                    const unsigned short* input_term,
+                    bool case_sensitive,
+                    PP_PrivateFindResult** results,
+                    int* count) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
+  void SetContentRestriction(int restrictions) override;
+  void HistogramPDFPageCount(int count) override;
+  void UserMetricsRecordAction(const PP_Var& action) override;
+  void HasUnsupportedFeature() override;
+  void Print() override;
+  void SaveAs() override;
+  PP_Bool IsFeatureEnabled(PP_PDFFeature feature) override;
+  PP_Resource GetResourceImageForScale(PP_ResourceImage image_id,
+                                       float scale) override;
+  PP_Resource GetResourceImage(PP_ResourceImage image_id) override;
+  PP_Bool IsOutOfProcess() override;
+  void SetSelectedText(const char* selected_text) override;
+  void SetLinkUnderCursor(const char* url) override;
+  void GetV8ExternalSnapshotData(const char** natives_data_out,
+                                 int* natives_size_out,
+                                 const char** snapshot_data_out,
+                                 int* snapshot_size_out) override;
 
  private:
   std::string locale_;
