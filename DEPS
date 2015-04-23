@@ -108,7 +108,7 @@ allowed_hosts = [
 
 deps = {
   'src/breakpad/src':
-   Var('chromium_git') + '/external/google-breakpad/src.git' + '@' + 'ad88d965aa35dabdfe0cded39f72dde9e4a3591e', # from svn revision 1447
+   Var('chromium_git') + '/external/google-breakpad/src.git' + '@' + 'fa5a6b3449dbe77a107a891b96c0e47387302e2e', # from svn revision 1453
 
   'src/buildtools':
    Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
