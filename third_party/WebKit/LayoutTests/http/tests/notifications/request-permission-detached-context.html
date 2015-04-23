@@ -11,6 +11,7 @@
       // Tests that notifications created in a different context do not crash when said
       // context gets detached, and events are still being fired on it.
       if (window.testRunner) {
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           testRunner.grantWebNotificationPermission(location.origin, true);
           testRunner.setCanOpenWindows();
       }

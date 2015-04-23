@@ -11,6 +11,7 @@
       // Tests that closing a displayed Web Notification in the unload event does not
       // cause the browser to crash.
       if (window.testRunner) {
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           testRunner.grantWebNotificationPermission(location.origin, true);
           testRunner.setCanOpenWindows();
       }

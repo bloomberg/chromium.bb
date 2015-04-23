@@ -17,6 +17,7 @@
           var scope = 'resources/scope/serviceworkerregistration-document-click',
               script = 'resources/instrumentation-service-worker.js';
 
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           testRunner.grantWebNotificationPermission(location.origin, true);
 
           var workerInfo = null;

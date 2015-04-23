@@ -7,8 +7,10 @@
 // This test is using testRunner to grant itself the notification permission and
 // to simulate a click on a notification. A couple of changes would allow it to
 // be run as a manual test by other browser vendors.
-if (window.testRunner)
+if (window.testRunner) {
+    testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
     testRunner.grantWebNotificationPermission(location.origin, true);
+}
 
 var t = async_test('WindowClient.focus() behaved as expected');
 t.step(function() {

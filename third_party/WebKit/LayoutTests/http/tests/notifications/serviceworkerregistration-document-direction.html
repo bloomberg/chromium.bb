@@ -17,6 +17,7 @@
           var scope = 'resources/spec/' + location.pathname,
               script = 'resources/instrumentation-service-worker.js';
 
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           testRunner.grantWebNotificationPermission(location.origin, true);
 
           var workerInfo = null;
@@ -38,7 +39,7 @@
                   }
 
                   // (3) Verify that the click event was received by the Service Worker,
-                  // and that the correct direction was passed along. 
+                  // and that the correct direction was passed along.
                   assert_equals(event.data.command, 'click');
                   assert_equals(event.data.notification.dir, 'rtl');
 

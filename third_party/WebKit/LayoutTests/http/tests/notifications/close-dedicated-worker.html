@@ -11,8 +11,10 @@
       // Tests that Dedicated Worker-bound notifications will fire the onclose
       // event when they have their close() method called. When the test is being
       // ran manually, grant Notification permission first.
-      if (window.testRunner)
+      if (window.testRunner) {
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           testRunner.grantWebNotificationPermission(location.origin, true);
+      }
 
       dedicatedWorkerTest("resources/close-event-test.js");
     </script>

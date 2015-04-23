@@ -16,6 +16,7 @@
           var scope = 'resources/scope/' + location.pathname,
               script = 'resources/instrumentation-service-worker.js';
 
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           testRunner.grantWebNotificationPermission(location.origin, true);
 
           var registration = null;

@@ -16,6 +16,7 @@
           var scope = 'resources/scope/' + location.pathname,
               script = 'resources/instrumentation-service-worker.js';
 
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           testRunner.grantWebNotificationPermission(location.origin, true);
           getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(info) {
               // (1) Display a Web Notification with an image that 404s.

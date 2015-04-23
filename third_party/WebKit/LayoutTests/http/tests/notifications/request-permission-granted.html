@@ -15,6 +15,7 @@
           testRunner.clearWebNotificationPermissions();
 
       async_test(function (test) {
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
           testRunner.grantWebNotificationPermission(location.origin, true);
           Notification.requestPermission(function (status) {
               assert_equals(status, 'granted');
