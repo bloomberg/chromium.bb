@@ -49,7 +49,7 @@ base::Value* NetLogHttpStreamJobCallback(
     const GURL* url,
     const AlternativeService* alternative_service,
     RequestPriority priority,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("original_url", original_url->GetOrigin().spec());
   dict->SetString("url", url->GetOrigin().spec());
@@ -63,7 +63,7 @@ base::Value* NetLogHttpStreamJobCallback(
 base::Value* NetLogHttpStreamProtoCallback(
     const SSLClientSocket::NextProtoStatus status,
     const std::string* proto,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("next_proto_status",

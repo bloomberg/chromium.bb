@@ -31,8 +31,8 @@ class NET_EXPORT WriteToFileNetLogObserver : public NetLog::ThreadSafeObserver {
   WriteToFileNetLogObserver();
   ~WriteToFileNetLogObserver() override;
 
-  // Sets the log level to log at. Must be called before StartObserving.
-  void set_log_level(NetLog::LogLevel log_level);
+  // Sets the capture mode to log at. Must be called before StartObserving.
+  void set_capture_mode(NetLogCaptureMode capture_mode);
 
   // Starts observing |net_log| and writes output to |file|.  Must not already
   // be watching a NetLog.  Separate from constructor to enforce thread safety.
@@ -65,8 +65,8 @@ class NET_EXPORT WriteToFileNetLogObserver : public NetLog::ThreadSafeObserver {
  private:
   base::ScopedFILE file_;
 
-  // The LogLevel to log at.
-  NetLog::LogLevel log_level_;
+  // The capture mode to log at.
+  NetLogCaptureMode capture_mode_;
 
   // True if OnAddEntry() has been called at least once.
   bool added_events_;

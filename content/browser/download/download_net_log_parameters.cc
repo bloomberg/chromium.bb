@@ -41,11 +41,10 @@ static_assert(arraysize(download_danger_names) == DOWNLOAD_DANGER_TYPE_MAX,
 
 }  // namespace
 
-base::Value* ItemActivatedNetLogCallback(
-    const DownloadItem* download_item,
-    DownloadType download_type,
-    const std::string* file_name,
-    net::NetLog::LogLevel log_level) {
+base::Value* ItemActivatedNetLogCallback(const DownloadItem* download_item,
+                                         DownloadType download_type,
+                                         const std::string* file_name,
+                                         net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("type", download_type_names[download_type]);
@@ -62,9 +61,8 @@ base::Value* ItemActivatedNetLogCallback(
   return dict;
 }
 
-base::Value* ItemCheckedNetLogCallback(
-    DownloadDangerType danger_type,
-    net::NetLog::LogLevel log_level) {
+base::Value* ItemCheckedNetLogCallback(DownloadDangerType danger_type,
+                                       net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("danger_type", download_danger_names[danger_type]);
@@ -74,7 +72,7 @@ base::Value* ItemCheckedNetLogCallback(
 
 base::Value* ItemRenamedNetLogCallback(const base::FilePath* old_filename,
                                        const base::FilePath* new_filename,
-                                       net::NetLog::LogLevel log_level) {
+                                       net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("old_filename", old_filename->AsUTF8Unsafe());
@@ -83,10 +81,11 @@ base::Value* ItemRenamedNetLogCallback(const base::FilePath* old_filename,
   return dict;
 }
 
-base::Value* ItemInterruptedNetLogCallback(DownloadInterruptReason reason,
-                                           int64 bytes_so_far,
-                                           const std::string* hash_state,
-                                           net::NetLog::LogLevel log_level) {
+base::Value* ItemInterruptedNetLogCallback(
+    DownloadInterruptReason reason,
+    int64 bytes_so_far,
+    const std::string* hash_state,
+    net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("interrupt_reason", DownloadInterruptReasonToString(reason));
@@ -101,7 +100,7 @@ base::Value* ItemResumingNetLogCallback(bool user_initiated,
                                         DownloadInterruptReason reason,
                                         int64 bytes_so_far,
                                         const std::string* hash_state,
-                                        net::NetLog::LogLevel log_level) {
+                                        net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("user_initiated", user_initiated ? "true" : "false");
@@ -115,7 +114,7 @@ base::Value* ItemResumingNetLogCallback(bool user_initiated,
 
 base::Value* ItemCompletingNetLogCallback(int64 bytes_so_far,
                                           const std::string* final_hash,
-                                          net::NetLog::LogLevel log_level) {
+                                          net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
@@ -126,7 +125,7 @@ base::Value* ItemCompletingNetLogCallback(int64 bytes_so_far,
 }
 
 base::Value* ItemFinishedNetLogCallback(bool auto_opened,
-                                        net::NetLog::LogLevel log_level) {
+                                        net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("auto_opened", auto_opened ? "yes" : "no");
@@ -136,7 +135,7 @@ base::Value* ItemFinishedNetLogCallback(bool auto_opened,
 
 base::Value* ItemCanceledNetLogCallback(int64 bytes_so_far,
                                         const std::string* hash_state,
-                                        net::NetLog::LogLevel log_level) {
+                                        net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
@@ -148,7 +147,7 @@ base::Value* ItemCanceledNetLogCallback(int64 bytes_so_far,
 
 base::Value* FileOpenedNetLogCallback(const base::FilePath* file_name,
                                       int64 start_offset,
-                                      net::NetLog::LogLevel log_level) {
+                                      net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("file_name", file_name->AsUTF8Unsafe());
@@ -157,9 +156,10 @@ base::Value* FileOpenedNetLogCallback(const base::FilePath* file_name,
   return dict;
 }
 
-base::Value* FileStreamDrainedNetLogCallback(size_t stream_size,
-                                             size_t num_buffers,
-                                             net::NetLog::LogLevel log_level) {
+base::Value* FileStreamDrainedNetLogCallback(
+    size_t stream_size,
+    size_t num_buffers,
+    net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetInteger("stream_size", static_cast<int>(stream_size));
@@ -170,7 +170,7 @@ base::Value* FileStreamDrainedNetLogCallback(size_t stream_size,
 
 base::Value* FileRenamedNetLogCallback(const base::FilePath* old_filename,
                                        const base::FilePath* new_filename,
-                                       net::NetLog::LogLevel log_level) {
+                                       net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("old_filename", old_filename->AsUTF8Unsafe());
@@ -181,7 +181,7 @@ base::Value* FileRenamedNetLogCallback(const base::FilePath* old_filename,
 
 base::Value* FileErrorNetLogCallback(const char* operation,
                                      net::Error net_error,
-                                     net::NetLog::LogLevel log_level) {
+                                     net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("operation", operation);
@@ -190,10 +190,11 @@ base::Value* FileErrorNetLogCallback(const char* operation,
   return dict;
 }
 
-base::Value* FileInterruptedNetLogCallback(const char* operation,
-                                           int os_error,
-                                           DownloadInterruptReason reason,
-                                           net::NetLog::LogLevel log_level) {
+base::Value* FileInterruptedNetLogCallback(
+    const char* operation,
+    int os_error,
+    DownloadInterruptReason reason,
+    net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("operation", operation);

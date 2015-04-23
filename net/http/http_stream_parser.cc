@@ -74,10 +74,11 @@ bool HeadersContainMultipleCopiesOfField(const HttpResponseHeaders& headers,
   return false;
 }
 
-base::Value* NetLogSendRequestBodyCallback(uint64 length,
-                                           bool is_chunked,
-                                           bool did_merge,
-                                           NetLog::LogLevel /* log_level */) {
+base::Value* NetLogSendRequestBodyCallback(
+    uint64 length,
+    bool is_chunked,
+    bool did_merge,
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("length", static_cast<int>(length));
   dict->SetBoolean("is_chunked", is_chunked);

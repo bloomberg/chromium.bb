@@ -288,9 +288,10 @@ void LogPrivateAPI::StartObservingNetEvents(
     return;
 
   write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
-  write_to_file_observer_->set_log_level(net::NetLog::LOG_ALL_BUT_BYTES);
+  write_to_file_observer_->set_capture_mode(
+      net::NetLogCaptureMode::IncludeCookiesAndCredentials());
   write_to_file_observer_->StartObserving(io_thread->net_log(), file->Pass(),
-                                  nullptr, nullptr);
+                                          nullptr, nullptr);
 }
 
 void LogPrivateAPI::MaybeStartNetInternalLogging(
@@ -304,7 +305,7 @@ void LogPrivateAPI::MaybeStartNetInternalLogging(
     switch (event_sink_) {
       case api::log_private::EVENT_SINK_CAPTURE: {
         io_thread->net_log()->DeprecatedAddObserver(
-            this, net::NetLog::LOG_ALL_BUT_BYTES);
+            this, net::NetLogCaptureMode::IncludeCookiesAndCredentials());
         break;
       }
       case api::log_private::EVENT_SINK_FILE: {

@@ -228,7 +228,7 @@ void RecordNoStoreHeaderHistogram(int load_flags,
 base::Value* NetLogAsyncRevalidationInfoCallback(
     const net::NetLog::Source& source,
     const net::HttpRequestInfo* request,
-    net::NetLog::LogLevel log_level) {
+    net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   source.AddToEventParameters(dict);
 
@@ -1645,7 +1645,7 @@ int HttpCache::Transaction::DoTruncateCachedData() {
   next_state_ = STATE_TRUNCATE_CACHED_DATA_COMPLETE;
   if (!entry_)
     return OK;
-  if (net_log_.IsLogging())
+  if (net_log_.GetCaptureMode().enabled())
     net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_DATA);
   // Truncate the stream.
   return WriteToEntry(kResponseContentIndex, 0, NULL, 0, io_callback_);
@@ -1653,7 +1653,7 @@ int HttpCache::Transaction::DoTruncateCachedData() {
 
 int HttpCache::Transaction::DoTruncateCachedDataComplete(int result) {
   if (entry_) {
-    if (net_log_.IsLogging()) {
+    if (net_log_.GetCaptureMode().enabled()) {
       net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HTTP_CACHE_WRITE_DATA,
                                         result);
     }
@@ -1668,14 +1668,14 @@ int HttpCache::Transaction::DoTruncateCachedMetadata() {
   if (!entry_)
     return OK;
 
-  if (net_log_.IsLogging())
+  if (net_log_.GetCaptureMode().enabled())
     net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_INFO);
   return WriteToEntry(kMetadataIndex, 0, NULL, 0, io_callback_);
 }
 
 int HttpCache::Transaction::DoTruncateCachedMetadataComplete(int result) {
   if (entry_) {
-    if (net_log_.IsLogging()) {
+    if (net_log_.GetCaptureMode().enabled()) {
       net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HTTP_CACHE_WRITE_INFO,
                                         result);
     }
@@ -1812,7 +1812,7 @@ int HttpCache::Transaction::DoCacheWriteResponse() {
           "422516 HttpCache::Transaction::DoCacheWriteResponse"));
 
   if (entry_) {
-    if (net_log_.IsLogging())
+    if (net_log_.GetCaptureMode().enabled())
       net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_INFO);
   }
   return WriteResponseInfoToEntry(false);
@@ -1820,7 +1820,7 @@ int HttpCache::Transaction::DoCacheWriteResponse() {
 
 int HttpCache::Transaction::DoCacheWriteTruncatedResponse() {
   if (entry_) {
-    if (net_log_.IsLogging())
+    if (net_log_.GetCaptureMode().enabled())
       net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_INFO);
   }
   return WriteResponseInfoToEntry(true);
@@ -1831,7 +1831,7 @@ int HttpCache::Transaction::DoCacheWriteResponseComplete(int result) {
   target_state_ = STATE_NONE;
   if (!entry_)
     return OK;
-  if (net_log_.IsLogging()) {
+  if (net_log_.GetCaptureMode().enabled()) {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HTTP_CACHE_WRITE_INFO,
                                       result);
   }
@@ -1883,7 +1883,7 @@ int HttpCache::Transaction::DoCacheReadData() {
   DCHECK(entry_);
   next_state_ = STATE_CACHE_READ_DATA_COMPLETE;
 
-  if (net_log_.IsLogging())
+  if (net_log_.GetCaptureMode().enabled())
     net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_READ_DATA);
   if (partial_.get()) {
     return partial_->CacheRead(entry_->disk_entry, read_buf_.get(), io_buf_len_,
@@ -1896,7 +1896,7 @@ int HttpCache::Transaction::DoCacheReadData() {
 }
 
 int HttpCache::Transaction::DoCacheReadDataComplete(int result) {
-  if (net_log_.IsLogging()) {
+  if (net_log_.GetCaptureMode().enabled()) {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HTTP_CACHE_READ_DATA,
                                       result);
   }
@@ -1927,7 +1927,7 @@ int HttpCache::Transaction::DoCacheWriteData(int num_bytes) {
   next_state_ = STATE_CACHE_WRITE_DATA_COMPLETE;
   write_len_ = num_bytes;
   if (entry_) {
-    if (net_log_.IsLogging())
+    if (net_log_.GetCaptureMode().enabled())
       net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_DATA);
   }
 
@@ -1936,7 +1936,7 @@ int HttpCache::Transaction::DoCacheWriteData(int num_bytes) {
 
 int HttpCache::Transaction::DoCacheWriteDataComplete(int result) {
   if (entry_) {
-    if (net_log_.IsLogging()) {
+    if (net_log_.GetCaptureMode().enabled()) {
       net_log_.EndEventWithNetErrorCode(NetLog::TYPE_HTTP_CACHE_WRITE_DATA,
                                         result);
     }
@@ -2758,7 +2758,7 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
   if ((response_.headers->HasHeaderValue("cache-control", "no-store")) ||
       net::IsCertStatusError(response_.ssl_info.cert_status)) {
     DoneWritingToEntry(false);
-    if (net_log_.IsLogging())
+    if (net_log_.GetCaptureMode().enabled())
       net_log_.EndEvent(NetLog::TYPE_HTTP_CACHE_WRITE_INFO);
     return OK;
   }

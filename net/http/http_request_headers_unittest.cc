@@ -171,8 +171,8 @@ TEST(HttpRequestHeaders, ToNetLogParamAndBackAgain) {
   headers.SetHeader("A", "a");
   std::string request_line("GET /stuff");
 
-  scoped_ptr<base::Value> event_param(
-      headers.NetLogCallback(&request_line, NetLog::LOG_ALL_BUT_BYTES));
+  scoped_ptr<base::Value> event_param(headers.NetLogCallback(
+      &request_line, NetLogCaptureMode::IncludeCookiesAndCredentials()));
   HttpRequestHeaders headers2;
   std::string request_line2;
 

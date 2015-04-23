@@ -93,7 +93,7 @@ const char* ResponseCorruptionDetectionCauseToString(
 base::Value* NetLogSdchResponseCorruptionDetectionCallback(
     ResponseCorruptionDetectionCause cause,
     bool cached,
-    NetLog::LogLevel log_level) {
+    NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("cause", ResponseCorruptionDetectionCauseToString(cause));
   dict->SetBoolean("cached", cached);

@@ -15,7 +15,7 @@ namespace net {
 // Given an HTTP header |header| with value |value|, returns the elided version
 // of the header value at |log_level|.
 NET_EXPORT_PRIVATE std::string ElideHeaderValueForNetLog(
-    NetLog::LogLevel log_level,
+    NetLogCaptureMode capture_mode,
     const std::string& header,
     const std::string& value);
 

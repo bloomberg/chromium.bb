@@ -97,7 +97,7 @@ base::Value* NetLogSSLVersionFallbackCallback(
     int net_error,
     uint16 version_before,
     uint16 version_after,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host_and_port", GetHostAndPort(*url));
   dict->SetInteger("net_error", net_error);
@@ -106,9 +106,10 @@ base::Value* NetLogSSLVersionFallbackCallback(
   return dict;
 }
 
-base::Value* NetLogSSLCipherFallbackCallback(const GURL* url,
-                                             int net_error,
-                                             NetLog::LogLevel /* log_level */) {
+base::Value* NetLogSSLCipherFallbackCallback(
+    const GURL* url,
+    int net_error,
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host_and_port", GetHostAndPort(*url));
   dict->SetInteger("net_error", net_error);

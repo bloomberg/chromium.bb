@@ -26,7 +26,7 @@ NET_EXPORT base::Value* NetLogURLRequestStartCallback(
     int load_flags,
     RequestPriority priority,
     int64 upload_id,
-    NetLog::LogLevel /* log_level */);
+    NetLogCaptureMode /* capture_mode */);
 
 // Attempts to extract the load flags from a Value created by the above
 // function.  On success, sets |load_flags| accordingly and returns true.

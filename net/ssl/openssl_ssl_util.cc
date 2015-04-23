@@ -155,7 +155,7 @@ int MapOpenSSLErrorSSL(uint32_t error_code) {
 base::Value* NetLogOpenSSLErrorCallback(int net_error,
                                         int ssl_error,
                                         const OpenSSLErrorInfo& error_info,
-                                        NetLog::LogLevel /* log_level */) {
+                                        NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("ssl_error", ssl_error);

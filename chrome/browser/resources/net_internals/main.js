@@ -12,7 +12,6 @@ var EventTypeNames = null;
 var EventPhase = null;
 var EventSourceType = null;
 var EventSourceTypeNames = null;
-var LogLevelType = null;
 var ClientInfo = null;
 var NetError = null;
 var QuicError = null;
@@ -300,7 +299,6 @@ ConstantsObserver.prototype.onReceivedConstants = function(receivedConstants) {
   EventPhase = Constants.logEventPhase;
   EventSourceType = Constants.logSourceType;
   EventSourceTypeNames = makeInverseMap(EventSourceType);
-  LogLevelType = Constants.logLevelType;
   ClientInfo = Constants.clientInfo;
   LoadFlag = Constants.loadFlag;
   NetError = Constants.netError;
@@ -331,7 +329,6 @@ function areValidConstants(receivedConstants) {
          typeof(receivedConstants.clientInfo) == 'object' &&
          typeof(receivedConstants.logEventPhase) == 'object' &&
          typeof(receivedConstants.logSourceType) == 'object' &&
-         typeof(receivedConstants.logLevelType) == 'object' &&
          typeof(receivedConstants.loadFlag) == 'object' &&
          typeof(receivedConstants.netError) == 'object' &&
          typeof(receivedConstants.addressFamily) == 'object' &&

@@ -81,7 +81,7 @@ size_t CiphersCopy(const uint16* in, uint16* out) {
 
 base::Value* NetLogSSLErrorCallback(int net_error,
                                     int ssl_lib_error,
-                                    NetLog::LogLevel /* log_level */) {
+                                    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("net_error", net_error);
   if (ssl_lib_error)
@@ -385,7 +385,7 @@ base::Value* NetLogSSLFailedNSSFunctionCallback(
     const char* function,
     const char* param,
     int ssl_lib_error,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("function", function);
   if (param[0] != '\0')

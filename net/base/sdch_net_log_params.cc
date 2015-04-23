@@ -11,7 +11,7 @@
 namespace net {
 
 base::Value* NetLogSdchResourceProblemCallback(SdchProblemCode problem,
-                                               NetLog::LogLevel log_level) {
+                                               NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("sdch_problem_code", problem);
   dict->SetInteger("net_error", ERR_FAILED);
@@ -22,7 +22,7 @@ base::Value* NetLogSdchDictionaryFetchProblemCallback(
     SdchProblemCode problem,
     const GURL& url,
     bool is_error,
-    NetLog::LogLevel log_level) {
+    NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("sdch_problem_code", problem);
   dict->SetString("dictionary_url", url.spec());

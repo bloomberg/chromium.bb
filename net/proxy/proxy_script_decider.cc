@@ -56,7 +56,7 @@ const int kQuickCheckDelayMs = 1000;
 
 base::Value* ProxyScriptDecider::PacSource::NetLogCallback(
     const GURL* effective_pac_url,
-    NetLog::LogLevel /* log_level */) const {
+    NetLogCaptureMode /* capture_mode */) const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   std::string source;
   switch (type) {

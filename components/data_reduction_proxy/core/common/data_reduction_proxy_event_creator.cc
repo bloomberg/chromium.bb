@@ -20,7 +20,8 @@ scoped_ptr<base::Value> BuildDataReductionProxyEvent(
   base::TimeTicks ticks_now = base::TimeTicks::Now();
   net::NetLog::EntryData entry_data(type, source, phase, ticks_now,
                                     &parameters_callback);
-  net::NetLog::Entry entry(&entry_data, net::NetLog::LOG_ALL);
+  net::NetLog::Entry entry(&entry_data,
+                           net::NetLogCaptureMode::IncludeSocketBytes());
   scoped_ptr<base::Value> entry_value(entry.ToValue());
 
   return entry_value;
@@ -52,7 +53,7 @@ base::Value* EnableDataReductionProxyCallback(
     const std::string& primary_origin,
     const std::string& fallback_origin,
     const std::string& ssl_origin,
-    net::NetLog::LogLevel /* log_level */) {
+    net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean("enabled", true);
   dict->SetBoolean("primary_restricted", primary_restricted);
@@ -67,7 +68,7 @@ base::Value* EnableDataReductionProxyCallback(
 // the Data Reduction Proxy. Ownership of the base::Value is passed to the
 // caller.
 base::Value* DisableDataReductionProxyCallback(
-    net::NetLog::LogLevel /* log_level */) {
+    net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean("enabled", false);
   return dict;
@@ -76,11 +77,12 @@ base::Value* DisableDataReductionProxyCallback(
 // A callback which creates a base::Value containing information about bypassing
 // the Data Reduction Proxy. Ownership of the base::Value is passed to the
 // caller.
-base::Value* UrlBypassActionCallback(const std::string& action,
-                                     const GURL& url,
-                                     int bypass_seconds,
-                                     int64 expiration_ticks,
-                                     net::NetLog::LogLevel /* log_level */) {
+base::Value* UrlBypassActionCallback(
+    const std::string& action,
+    const GURL& url,
+    int bypass_seconds,
+    int64 expiration_ticks,
+    net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("action", action);
   dict->SetString("url", url.spec());
@@ -98,7 +100,7 @@ base::Value* UrlBypassTypeCallback(
     const GURL& url,
     int bypass_seconds,
     int64 expiration_ticks,
-    net::NetLog::LogLevel /* log_level */) {
+    net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("bypass_type", bypass_type);
   dict->SetString("url", url.spec());
@@ -111,10 +113,11 @@ base::Value* UrlBypassTypeCallback(
 // A callback which creates a base::Value containing information about
 // completing the Data Reduction Proxy secure proxy check. Ownership of the
 // base::Value is passed to the caller.
-base::Value* EndCanaryRequestCallback(int net_error,
-                                      int http_response_code,
-                                      bool succeeded,
-                                      net::NetLog::LogLevel /* log_level */) {
+base::Value* EndCanaryRequestCallback(
+    int net_error,
+    int http_response_code,
+    bool succeeded,
+    net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("http_response_code", http_response_code);

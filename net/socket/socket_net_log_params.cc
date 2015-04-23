@@ -16,7 +16,7 @@ namespace {
 
 base::Value* NetLogSocketErrorCallback(int net_error,
                                        int os_error,
-                                       NetLog::LogLevel /* log_level */) {
+                                       NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("os_error", os_error);
@@ -24,14 +24,14 @@ base::Value* NetLogSocketErrorCallback(int net_error,
 }
 
 base::Value* NetLogHostPortPairCallback(const HostPortPair* host_and_port,
-                                        NetLog::LogLevel /* log_level */) {
+                                        NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host_and_port", host_and_port->ToString());
   return dict;
 }
 
 base::Value* NetLogIPEndPointCallback(const IPEndPoint* address,
-                                      NetLog::LogLevel /* log_level */) {
+                                      NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("address", address->ToString());
   return dict;
@@ -39,7 +39,7 @@ base::Value* NetLogIPEndPointCallback(const IPEndPoint* address,
 
 base::Value* NetLogSourceAddressCallback(const struct sockaddr* net_address,
                                          socklen_t address_len,
-                                         NetLog::LogLevel /* log_level */) {
+                                         NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("source_address",
                   NetAddressToStringWithPort(net_address, address_len));

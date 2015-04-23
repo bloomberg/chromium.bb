@@ -100,8 +100,7 @@ void TraceNetLogObserver::StopWatchForTraceStart() {
 }
 
 void TraceNetLogObserver::OnTraceLogEnabled() {
-  net_log_to_watch_->DeprecatedAddObserver(this,
-                                           NetLog::LOG_STRIP_PRIVATE_DATA);
+  net_log_to_watch_->DeprecatedAddObserver(this, NetLogCaptureMode::Default());
 }
 
 void TraceNetLogObserver::OnTraceLogDisabled() {

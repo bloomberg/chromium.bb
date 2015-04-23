@@ -296,15 +296,17 @@ bool GDig::ParseCommandLine(int argc, const char* argv[]) {
 
   if (parsed_command_line.HasSwitch("net_log")) {
     std::string log_param = parsed_command_line.GetSwitchValueASCII("net_log");
-    NetLog::LogLevel level = NetLog::LOG_ALL_BUT_BYTES;
+    NetLogCaptureMode capture_mode =
+        NetLogCaptureMode::IncludeCookiesAndCredentials();
 
     if (log_param.length() > 0) {
-      std::map<std::string, NetLog::LogLevel> log_levels;
-      log_levels["all"] = NetLog::LOG_ALL;
-      log_levels["no_bytes"] = NetLog::LOG_ALL_BUT_BYTES;
+      std::map<std::string, NetLogCaptureMode> capture_modes;
+      capture_modes["all"] = NetLogCaptureMode::IncludeSocketBytes();
+      capture_modes["no_bytes"] =
+          NetLogCaptureMode::IncludeCookiesAndCredentials();
 
-      if (log_levels.find(log_param) != log_levels.end()) {
-        level = log_levels[log_param];
+      if (capture_modes.find(log_param) != capture_modes.end()) {
+        capture_mode = capture_modes[log_param];
       } else {
         fprintf(stderr, "Invalid net_log parameter\n");
         return false;
@@ -312,7 +314,7 @@ bool GDig::ParseCommandLine(int argc, const char* argv[]) {
     }
     log_.reset(new NetLog);
     log_observer_.reset(new FileNetLogObserver(stderr));
-    log_->DeprecatedAddObserver(log_observer_.get(), level);
+    log_->DeprecatedAddObserver(log_observer_.get(), capture_mode);
   }
 
   print_config_ = parsed_command_line.HasSwitch("print_config");

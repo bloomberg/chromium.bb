@@ -129,7 +129,7 @@ bool RequestCreatedBefore(const net::URLRequest* request1,
 // Returns a Value representing the state of a pre-existing URLRequest when
 // net-internals was opened.
 base::Value* GetRequestStateAsValue(const net::URLRequest* request,
-                                    net::NetLog::LogLevel log_level) {
+                                    net::NetLogCaptureMode capture_mode) {
   return request->GetStateAsValue();
 }
 
@@ -255,18 +255,10 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
   // their symbolic names.
   constants_dict->Set("logSourceType", net::NetLog::GetSourceTypesAsValue());
 
-  // Information about the relationship between LogLevel enums and their
-  // symbolic names.
-  {
-    base::DictionaryValue* dict = new base::DictionaryValue();
-
-    dict->SetInteger("LOG_ALL", net::NetLog::LOG_ALL);
-    dict->SetInteger("LOG_ALL_BUT_BYTES", net::NetLog::LOG_ALL_BUT_BYTES);
-    dict->SetInteger("LOG_STRIP_PRIVATE_DATA",
-                     net::NetLog::LOG_STRIP_PRIVATE_DATA);
-
-    constants_dict->Set("logLevelType", dict);
-  }
+  // TODO(eroman): This is here for compatibility in loading new log files with
+  // older builds of Chrome. Safe to remove this once M45 is on the stable
+  // channel.
+  constants_dict->Set("logLevelType", new base::DictionaryValue());
 
   // Information about the relationship between address family enums and
   // their symbolic names.
@@ -538,7 +530,7 @@ NET_EXPORT void CreateNetLogEntriesForActiveObjects(
     net::NetLog::EntryData entry_data(
         net::NetLog::TYPE_REQUEST_ALIVE, request->net_log().source(),
         net::NetLog::PHASE_BEGIN, request->creation_time(), &callback);
-    NetLog::Entry entry(&entry_data, request->net_log().GetLogLevel());
+    NetLog::Entry entry(&entry_data, request->net_log().GetCaptureMode());
     observer->OnAddEntry(entry);
   }
 }

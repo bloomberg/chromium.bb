@@ -129,7 +129,8 @@ base::ListValue* SCTListToPrintableValues(
 }  // namespace
 
 base::Value* NetLogSignedCertificateTimestampCallback(
-    const ct::CTVerifyResult* ct_result, NetLog::LogLevel log_level) {
+    const ct::CTVerifyResult* ct_result,
+    NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->Set("verified_scts",
@@ -148,7 +149,7 @@ base::Value* NetLogRawSignedCertificateTimestampCallback(
     const std::string* embedded_scts,
     const std::string* sct_list_from_ocsp,
     const std::string* sct_list_from_tls_extension,
-    NetLog::LogLevel log_level) {
+    NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   SetBinaryData("embedded_scts", *embedded_scts, dict);

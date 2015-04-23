@@ -681,7 +681,7 @@ void UDPSocketWin::LogRead(int result,
     return;
   }
 
-  if (net_log_.IsLogging()) {
+  if (net_log_.GetCaptureMode().enabled()) {
     net_log_.AddEvent(
         NetLog::TYPE_UDP_BYTES_RECEIVED,
         CreateNetLogUDPDataTranferCallback(result, bytes, address));
@@ -698,7 +698,7 @@ void UDPSocketWin::LogWrite(int result,
     return;
   }
 
-  if (net_log_.IsLogging()) {
+  if (net_log_.GetCaptureMode().enabled()) {
     net_log_.AddEvent(
         NetLog::TYPE_UDP_BYTES_SENT,
         CreateNetLogUDPDataTranferCallback(result, bytes, address));

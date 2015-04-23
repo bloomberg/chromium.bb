@@ -20,10 +20,11 @@ namespace net {
 
 namespace {
 
-base::Value* NetLogSpdyStreamErrorCallback(SpdyStreamId stream_id,
-                                           int status,
-                                           const std::string* description,
-                                           NetLog::LogLevel /* log_level */) {
+base::Value* NetLogSpdyStreamErrorCallback(
+    SpdyStreamId stream_id,
+    int status,
+    const std::string* description,
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("status", status);
@@ -35,7 +36,7 @@ base::Value* NetLogSpdyStreamWindowUpdateCallback(
     SpdyStreamId stream_id,
     int32 delta,
     int32 window_size,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", stream_id);
   dict->SetInteger("delta", delta);

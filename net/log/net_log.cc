@@ -17,22 +17,23 @@ namespace net {
 
 namespace {
 
-// Returns parameters for logging data transferred events. Includes number of
-// bytes transferred and, if the log level indicates bytes should be logged and
-// |byte_count| > 0, the bytes themselves.  The bytes are hex-encoded, since
-// base::StringValue only supports UTF-8.
+// Returns parameters for logging data transferred events. At a minum includes
+// the number of bytes transferred. If the capture mode allows logging byte
+// contents and |byte_count| > 0, then will include the actual bytes. The
+// bytes are hex-encoded, since base::StringValue only supports UTF-8.
 base::Value* BytesTransferredCallback(int byte_count,
                                       const char* bytes,
-                                      NetLog::LogLevel log_level) {
+                                      NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("byte_count", byte_count);
-  if (NetLog::IsLoggingBytes(log_level) && byte_count > 0)
+  if (capture_mode.include_socket_bytes() && byte_count > 0)
     dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, byte_count));
   return dict;
 }
 
-base::Value* SourceEventParametersCallback(const NetLog::Source source,
-                                           NetLog::LogLevel /* log_level */) {
+base::Value* SourceEventParametersCallback(
+    const NetLog::Source source,
+    NetLogCaptureMode /* capture_mode */) {
   if (!source.IsValid())
     return NULL;
   base::DictionaryValue* event_params = new base::DictionaryValue();
@@ -42,7 +43,7 @@ base::Value* SourceEventParametersCallback(const NetLog::Source source,
 
 base::Value* NetLogIntegerCallback(const char* name,
                                    int value,
-                                   NetLog::LogLevel /* log_level */) {
+                                   NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* event_params = new base::DictionaryValue();
   event_params->SetInteger(name, value);
   return event_params;
@@ -50,7 +51,7 @@ base::Value* NetLogIntegerCallback(const char* name,
 
 base::Value* NetLogInt64Callback(const char* name,
                                  int64 value,
-                                 NetLog::LogLevel /* log_level */) {
+                                 NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* event_params = new base::DictionaryValue();
   event_params->SetString(name, base::Int64ToString(value));
   return event_params;
@@ -58,7 +59,7 @@ base::Value* NetLogInt64Callback(const char* name,
 
 base::Value* NetLogStringCallback(const char* name,
                                   const std::string* value,
-                                  NetLog::LogLevel /* log_level */) {
+                                  NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* event_params = new base::DictionaryValue();
   event_params->SetString(name, *value);
   return event_params;
@@ -66,7 +67,7 @@ base::Value* NetLogStringCallback(const char* name,
 
 base::Value* NetLogString16Callback(const char* name,
                                     const base::string16* value,
-                                    NetLog::LogLevel /* log_level */) {
+                                    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* event_params = new base::DictionaryValue();
   event_params->SetString(name, *value);
   return event_params;
@@ -137,7 +138,7 @@ base::Value* NetLog::Entry::ToValue() const {
 
   // Set the event-specific parameters.
   if (data_->parameters_callback) {
-    base::Value* value = data_->parameters_callback->Run(log_level_);
+    base::Value* value = data_->parameters_callback->Run(capture_mode_);
     if (value)
       entry_dict->Set("params", value);
   }
@@ -147,7 +148,7 @@ base::Value* NetLog::Entry::ToValue() const {
 
 base::Value* NetLog::Entry::ParametersToValue() const {
   if (data_->parameters_callback)
-    return data_->parameters_callback->Run(log_level_);
+    return data_->parameters_callback->Run(capture_mode_);
   return NULL;
 }
 
@@ -166,15 +167,14 @@ NetLog::EntryData::EntryData(EventType type,
 NetLog::EntryData::~EntryData() {
 }
 
-NetLog::Entry::Entry(const EntryData* data, LogLevel log_level)
-    : data_(data), log_level_(log_level) {
+NetLog::Entry::Entry(const EntryData* data, NetLogCaptureMode capture_mode)
+    : data_(data), capture_mode_(capture_mode) {
 }
 
 NetLog::Entry::~Entry() {
 }
 
-NetLog::ThreadSafeObserver::ThreadSafeObserver()
-    : log_level_(LOG_NONE), net_log_(NULL) {
+NetLog::ThreadSafeObserver::ThreadSafeObserver() : net_log_(NULL) {
 }
 
 NetLog::ThreadSafeObserver::~ThreadSafeObserver() {
@@ -184,9 +184,9 @@ NetLog::ThreadSafeObserver::~ThreadSafeObserver() {
   DCHECK(!net_log_);
 }
 
-NetLog::LogLevel NetLog::ThreadSafeObserver::log_level() const {
+NetLogCaptureMode NetLog::ThreadSafeObserver::capture_mode() const {
   DCHECK(net_log_);
-  return log_level_;
+  return capture_mode_;
 }
 
 NetLog* NetLog::ThreadSafeObserver::net_log() const {
@@ -194,10 +194,13 @@ NetLog* NetLog::ThreadSafeObserver::net_log() const {
 }
 
 void NetLog::ThreadSafeObserver::OnAddEntryData(const EntryData& entry_data) {
-  OnAddEntry(Entry(&entry_data, log_level()));
+  OnAddEntry(Entry(&entry_data, capture_mode()));
 }
 
-NetLog::NetLog() : last_id_(0), effective_log_level_(LOG_NONE) {
+NetLog::NetLog()
+    : last_id_(0),
+      effective_capture_mode_int32_(
+          NetLogCaptureMode::None().ToInternalValue()) {
 }
 
 NetLog::~NetLog() {
@@ -219,35 +222,36 @@ uint32 NetLog::NextID() {
   return base::subtle::NoBarrier_AtomicIncrement(&last_id_, 1);
 }
 
-NetLog::LogLevel NetLog::GetLogLevel() const {
-  base::subtle::Atomic32 log_level =
-      base::subtle::NoBarrier_Load(&effective_log_level_);
-  return static_cast<net::NetLog::LogLevel>(log_level);
+NetLogCaptureMode NetLog::GetCaptureMode() const {
+  base::subtle::Atomic32 capture_mode =
+      base::subtle::NoBarrier_Load(&effective_capture_mode_int32_);
+  return NetLogCaptureMode::FromInternalValue(capture_mode);
 }
 
 void NetLog::DeprecatedAddObserver(net::NetLog::ThreadSafeObserver* observer,
-                                   LogLevel log_level) {
-  DCHECK_NE(LOG_NONE, log_level);
+                                   NetLogCaptureMode capture_mode) {
+  DCHECK(capture_mode.enabled());
+
   base::AutoLock lock(lock_);
 
   DCHECK(!observer->net_log_);
-  DCHECK_EQ(LOG_NONE, observer->log_level_);
+  DCHECK(!observer->capture_mode_.enabled());
   observers_.AddObserver(observer);
   observer->net_log_ = this;
-  observer->log_level_ = log_level;
-  UpdateLogLevel();
+  observer->capture_mode_ = capture_mode;
+  UpdateCaptureMode();
 }
 
-void NetLog::SetObserverLogLevel(net::NetLog::ThreadSafeObserver* observer,
-                                 LogLevel log_level) {
-  DCHECK_NE(LOG_NONE, log_level);
+void NetLog::SetObserverCaptureMode(net::NetLog::ThreadSafeObserver* observer,
+                                    NetLogCaptureMode capture_mode) {
+  DCHECK(capture_mode.enabled());
   base::AutoLock lock(lock_);
 
   DCHECK(observers_.HasObserver(observer));
   DCHECK_EQ(this, observer->net_log_);
-  DCHECK_NE(LOG_NONE, observer->log_level_);
-  observer->log_level_ = log_level;
-  UpdateLogLevel();
+  DCHECK(observer->capture_mode_.enabled());
+  observer->capture_mode_ = capture_mode;
+  UpdateCaptureMode();
 }
 
 void NetLog::DeprecatedRemoveObserver(
@@ -256,26 +260,26 @@ void NetLog::DeprecatedRemoveObserver(
 
   DCHECK(observers_.HasObserver(observer));
   DCHECK_EQ(this, observer->net_log_);
-  DCHECK_NE(LOG_NONE, observer->log_level_);
+  DCHECK(observer->capture_mode_.enabled());
   observers_.RemoveObserver(observer);
   observer->net_log_ = NULL;
-  observer->log_level_ = LOG_NONE;
-  UpdateLogLevel();
+  observer->capture_mode_ = NetLogCaptureMode();
+  UpdateCaptureMode();
 }
 
-void NetLog::UpdateLogLevel() {
+void NetLog::UpdateCaptureMode() {
   lock_.AssertAcquired();
 
-  // Look through all the observers and find the finest granularity
-  // log level (higher values of the enum imply *lower* log levels).
-  LogLevel new_effective_log_level = LOG_NONE;
+  // Accumulate the capture mode of all the observers to find the maximum level.
+  NetLogCaptureMode new_capture_mode = NetLogCaptureMode::None();
   ObserverListBase<ThreadSafeObserver>::Iterator it(&observers_);
   ThreadSafeObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
-    new_effective_log_level =
-        std::min(new_effective_log_level, observer->log_level());
+    new_capture_mode =
+        NetLogCaptureMode::Max(new_capture_mode, observer->capture_mode());
   }
-  base::subtle::NoBarrier_Store(&effective_log_level_, new_effective_log_level);
+  base::subtle::NoBarrier_Store(&effective_capture_mode_int32_,
+                                new_capture_mode.ToInternalValue());
 }
 
 // static
@@ -345,16 +349,6 @@ const char* NetLog::EventPhaseToString(EventPhase phase) {
 }
 
 // static
-bool NetLog::IsLoggingBytes(LogLevel log_level) {
-  return log_level == NetLog::LOG_ALL;
-}
-
-// static
-bool NetLog::IsLogging(LogLevel log_level) {
-  return log_level < NetLog::LOG_NONE;
-}
-
-// static
 NetLog::ParametersCallback NetLog::IntegerCallback(const char* name,
                                                    int value) {
   return base::Bind(&NetLogIntegerCallback, name, value);
@@ -384,7 +378,7 @@ void NetLog::AddEntry(EventType type,
                       const Source& source,
                       EventPhase phase,
                       const NetLog::ParametersCallback* parameters_callback) {
-  if (GetLogLevel() == LOG_NONE)
+  if (!GetCaptureMode().enabled())
     return;
   EntryData entry_data(type, source, phase, base::TimeTicks::Now(),
                        parameters_callback);
@@ -474,20 +468,12 @@ void BoundNetLog::AddByteTransferEvent(NetLog::EventType event_type,
   AddEvent(event_type, base::Bind(BytesTransferredCallback, byte_count, bytes));
 }
 
-NetLog::LogLevel BoundNetLog::GetLogLevel() const {
+NetLogCaptureMode BoundNetLog::GetCaptureMode() const {
   CrashIfInvalid();
 
   if (net_log_)
-    return net_log_->GetLogLevel();
-  return NetLog::LOG_NONE;
-}
-
-bool BoundNetLog::IsLoggingBytes() const {
-  return NetLog::IsLoggingBytes(GetLogLevel());
-}
-
-bool BoundNetLog::IsLogging() const {
-  return NetLog::IsLogging(GetLogLevel());
+    return net_log_->GetCaptureMode();
+  return NetLogCaptureMode();
 }
 
 // static

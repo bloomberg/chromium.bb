@@ -25,7 +25,7 @@ NET_EXPORT base::Value* QuicRequestNetLogCallback(
     QuicStreamId stream_id,
     const SpdyHeaderBlock* headers,
     QuicPriority priority,
-    NetLog::LogLevel log_level);
+    NetLogCaptureMode capture_mode);
 
 }  // namespace net
 

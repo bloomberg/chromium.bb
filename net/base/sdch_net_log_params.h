@@ -17,7 +17,7 @@ namespace net {
 
 NET_EXPORT base::Value* NetLogSdchResourceProblemCallback(
     SdchProblemCode problem,
-    NetLog::LogLevel log_level);
+    NetLogCaptureMode capture_mode);
 
 // If |is_error| is false, "net_error" field won't be added to the JSON and the
 // event won't be painted red in the netlog.
@@ -25,7 +25,7 @@ NET_EXPORT base::Value* NetLogSdchDictionaryFetchProblemCallback(
     SdchProblemCode problem,
     const GURL& url,
     bool is_error,
-    NetLog::LogLevel log_level);
+    NetLogCaptureMode capture_mode);
 
 }  // namespace net
 

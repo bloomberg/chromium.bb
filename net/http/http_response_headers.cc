@@ -1392,7 +1392,7 @@ bool HttpResponseHeaders::GetContentRange(int64* first_byte_position,
 }
 
 base::Value* HttpResponseHeaders::NetLogCallback(
-    NetLog::LogLevel log_level) const {
+    NetLogCaptureMode capture_mode) const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   base::ListValue* headers = new base::ListValue();
   headers->Append(new base::StringValue(GetStatusLine()));
@@ -1400,7 +1400,8 @@ base::Value* HttpResponseHeaders::NetLogCallback(
   std::string name;
   std::string value;
   while (EnumerateHeaderLines(&iterator, &name, &value)) {
-    std::string log_value = ElideHeaderValueForNetLog(log_level, name, value);
+    std::string log_value =
+        ElideHeaderValueForNetLog(capture_mode, name, value);
     std::string escaped_name = EscapeNonASCII(name);
     std::string escaped_value = EscapeNonASCII(log_value);
     headers->Append(

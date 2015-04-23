@@ -297,10 +297,11 @@ bool IsAllIPv4Loopback(const AddressList& addresses) {
 }
 
 // Creates NetLog parameters when the resolve failed.
-base::Value* NetLogProcTaskFailedCallback(uint32 attempt_number,
-                                          int net_error,
-                                          int os_error,
-                                          NetLog::LogLevel /* log_level */) {
+base::Value* NetLogProcTaskFailedCallback(
+    uint32 attempt_number,
+    int net_error,
+    int os_error,
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   if (attempt_number)
     dict->SetInteger("attempt_number", attempt_number);
@@ -332,7 +333,7 @@ base::Value* NetLogProcTaskFailedCallback(uint32 attempt_number,
 // Creates NetLog parameters when the DnsTask failed.
 base::Value* NetLogDnsTaskFailedCallback(int net_error,
                                          int dns_error,
-                                         NetLog::LogLevel /* log_level */) {
+                                         NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("net_error", net_error);
   if (dns_error)
@@ -343,7 +344,7 @@ base::Value* NetLogDnsTaskFailedCallback(int net_error,
 // Creates NetLog parameters containing the information in a RequestInfo object,
 // along with the associated NetLog::Source.
 base::Value* NetLogRequestInfoCallback(const HostResolver::RequestInfo* info,
-                                       NetLog::LogLevel /* log_level */) {
+                                       NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("host", info->host_port_pair().ToString());
@@ -357,7 +358,7 @@ base::Value* NetLogRequestInfoCallback(const HostResolver::RequestInfo* info,
 // Creates NetLog parameters for the creation of a HostResolverImpl::Job.
 base::Value* NetLogJobCreationCallback(const NetLog::Source& source,
                                        const std::string* host,
-                                       NetLog::LogLevel /* log_level */) {
+                                       NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   source.AddToEventParameters(dict);
   dict->SetString("host", *host);
@@ -367,7 +368,7 @@ base::Value* NetLogJobCreationCallback(const NetLog::Source& source,
 // Creates NetLog parameters for HOST_RESOLVER_IMPL_JOB_ATTACH/DETACH events.
 base::Value* NetLogJobAttachCallback(const NetLog::Source& source,
                                      RequestPriority priority,
-                                     NetLog::LogLevel /* log_level */) {
+                                     NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   source.AddToEventParameters(dict);
   dict->SetString("priority", RequestPriorityToString(priority));
@@ -376,7 +377,7 @@ base::Value* NetLogJobAttachCallback(const NetLog::Source& source,
 
 // Creates NetLog parameters for the DNS_CONFIG_CHANGED event.
 base::Value* NetLogDnsConfigCallback(const DnsConfig* config,
-                                     NetLog::LogLevel /* log_level */) {
+                                     NetLogCaptureMode /* capture_mode */) {
   return config->ToValue();
 }
 

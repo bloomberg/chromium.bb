@@ -299,7 +299,7 @@ class NetInternalsMessageHandler::IOThreadImpl
 #if defined(OS_WIN)
   void OnGetServiceProviders(const base::ListValue* list);
 #endif
-  void OnSetLogLevel(const base::ListValue* list);
+  void OnSetCaptureMode(const base::ListValue* list);
 
   // ChromeNetLog::ThreadSafeObserver implementation:
   void OnAddEntry(const net::NetLog::Entry& entry) override;
@@ -466,9 +466,8 @@ void NetInternalsMessageHandler::RegisterMessages() {
 #endif
 
   web_ui()->RegisterMessageCallback(
-      "setLogLevel",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnSetLogLevel, proxy_));
+      "setCaptureMode", base::Bind(&IOThreadImpl::CallbackHelper,
+                                   &IOThreadImpl::OnSetCaptureMode, proxy_));
   web_ui()->RegisterMessageCallback(
       "clearBrowserCache",
       base::Bind(&NetInternalsMessageHandler::OnClearBrowserCache,
@@ -683,8 +682,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   PrePopulateEventList();
 
   // Register with network stack to observe events.
-  io_thread_->net_log()->DeprecatedAddObserver(this,
-      net::NetLog::LOG_ALL_BUT_BYTES);
+  io_thread_->net_log()->DeprecatedAddObserver(
+      this, net::NetLogCaptureMode::IncludeCookiesAndCredentials());
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetNetInfo(
@@ -1070,20 +1069,25 @@ void NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted(
 }
 #endif  // defined(OS_CHROMEOS)
 
-void NetInternalsMessageHandler::IOThreadImpl::OnSetLogLevel(
+void NetInternalsMessageHandler::IOThreadImpl::OnSetCaptureMode(
     const base::ListValue* list) {
-  int log_level;
-  std::string log_level_string;
-  if (!list->GetString(0, &log_level_string) ||
-      !base::StringToInt(log_level_string, &log_level)) {
+  std::string capture_mode_string;
+  if (!list->GetString(0, &capture_mode_string)) {
     NOTREACHED();
     return;
   }
 
-  DCHECK_GE(log_level, net::NetLog::LOG_ALL);
-  DCHECK_LT(log_level, net::NetLog::LOG_NONE);
-  net_log()->SetObserverLogLevel(
-      this, static_cast<net::NetLog::LogLevel>(log_level));
+  // Convert the string to a NetLogCaptureMode.
+  net::NetLogCaptureMode mode;
+  if (capture_mode_string == "IncludeSocketBytes") {
+    mode = net::NetLogCaptureMode::IncludeSocketBytes();
+  } else if (capture_mode_string == "IncludeCookiesAndCredentials") {
+    mode = net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+  } else {
+    NOTREACHED();
+  }
+
+  net_log()->SetObserverCaptureMode(this, mode);
 }
 
 // Note that unlike other methods of IOThreadImpl, this function

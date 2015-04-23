@@ -102,7 +102,7 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
     // be non-NULL and point to the URL derived from information contained in
     // |this|, if Type is not WPAD_DHCP.
     base::Value* NetLogCallback(const GURL* effective_pac_url,
-                                NetLog::LogLevel log_level) const;
+                                NetLogCaptureMode capture_mode) const;
 
     Type type;
     GURL url;  // Empty unless |type == PAC_SOURCE_CUSTOM|.

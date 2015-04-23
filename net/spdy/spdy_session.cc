@@ -59,13 +59,13 @@ const int kMinPushedStreamLifetimeSeconds = 300;
 
 scoped_ptr<base::ListValue> SpdyHeaderBlockToListValue(
     const SpdyHeaderBlock& headers,
-    net::NetLog::LogLevel log_level) {
+    net::NetLogCaptureMode capture_mode) {
   scoped_ptr<base::ListValue> headers_list(new base::ListValue());
   for (SpdyHeaderBlock::const_iterator it = headers.begin();
        it != headers.end(); ++it) {
     headers_list->AppendString(
         it->first + ": " +
-        ElideHeaderValueForNetLog(log_level, it->first, it->second));
+        ElideHeaderValueForNetLog(capture_mode, it->first, it->second));
   }
   return headers_list.Pass();
 }
@@ -75,10 +75,10 @@ base::Value* NetLogSpdySynStreamSentCallback(const SpdyHeaderBlock* headers,
                                              bool unidirectional,
                                              SpdyPriority spdy_priority,
                                              SpdyStreamId stream_id,
-                                             NetLog::LogLevel log_level) {
+                                             NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("headers",
-            SpdyHeaderBlockToListValue(*headers, log_level).release());
+            SpdyHeaderBlockToListValue(*headers, capture_mode).release());
   dict->SetBoolean("fin", fin);
   dict->SetBoolean("unidirectional", unidirectional);
   dict->SetInteger("priority", static_cast<int>(spdy_priority));
@@ -93,10 +93,10 @@ base::Value* NetLogSpdySynStreamReceivedCallback(
     SpdyPriority spdy_priority,
     SpdyStreamId stream_id,
     SpdyStreamId associated_stream,
-    NetLog::LogLevel log_level) {
+    NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("headers",
-            SpdyHeaderBlockToListValue(*headers, log_level).release());
+            SpdyHeaderBlockToListValue(*headers, capture_mode).release());
   dict->SetBoolean("fin", fin);
   dict->SetBoolean("unidirectional", unidirectional);
   dict->SetInteger("priority", static_cast<int>(spdy_priority));
@@ -109,18 +109,19 @@ base::Value* NetLogSpdySynReplyOrHeadersReceivedCallback(
     const SpdyHeaderBlock* headers,
     bool fin,
     SpdyStreamId stream_id,
-    NetLog::LogLevel log_level) {
+    NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("headers",
-            SpdyHeaderBlockToListValue(*headers, log_level).release());
+            SpdyHeaderBlockToListValue(*headers, capture_mode).release());
   dict->SetBoolean("fin", fin);
   dict->SetInteger("stream_id", stream_id);
   return dict;
 }
 
-base::Value* NetLogSpdySessionCloseCallback(int net_error,
-                                            const std::string* description,
-                                            NetLog::LogLevel /* log_level */) {
+base::Value* NetLogSpdySessionCloseCallback(
+    int net_error,
+    const std::string* description,
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("net_error", net_error);
   dict->SetString("description", *description);
@@ -128,16 +129,17 @@ base::Value* NetLogSpdySessionCloseCallback(int net_error,
 }
 
 base::Value* NetLogSpdySessionCallback(const HostPortProxyPair* host_pair,
-                                       NetLog::LogLevel /* log_level */) {
+                                       NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host", host_pair->first.ToString());
   dict->SetString("proxy", host_pair->second.ToPacString());
   return dict;
 }
 
-base::Value* NetLogSpdyInitializedCallback(NetLog::Source source,
-                                           const NextProto protocol_version,
-                                           NetLog::LogLevel /* log_level */) {
+base::Value* NetLogSpdyInitializedCallback(
+    NetLog::Source source,
+    const NextProto protocol_version,
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   if (source.IsValid()) {
     source.AddToEventParameters(dict);
@@ -149,7 +151,7 @@ base::Value* NetLogSpdyInitializedCallback(NetLog::Source source,
 
 base::Value* NetLogSpdySettingsCallback(const HostPortPair& host_port_pair,
                                         bool clear_persisted,
-                                        NetLog::LogLevel /* log_level */) {
+                                        NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host", host_port_pair.ToString());
   dict->SetBoolean("clear_persisted", clear_persisted);
@@ -160,7 +162,7 @@ base::Value* NetLogSpdySettingCallback(SpdySettingsIds id,
                                        const SpdyMajorVersion protocol_version,
                                        SpdySettingsFlags flags,
                                        uint32 value,
-                                       NetLog::LogLevel /* log_level */) {
+                                       NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("id",
                    SpdyConstants::SerializeSettingId(protocol_version, id));
@@ -172,7 +174,7 @@ base::Value* NetLogSpdySettingCallback(SpdySettingsIds id,
 base::Value* NetLogSpdySendSettingsCallback(
     const SettingsMap* settings,
     const SpdyMajorVersion protocol_version,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   base::ListValue* settings_list = new base::ListValue();
   for (SettingsMap::const_iterator it = settings->begin();
@@ -193,7 +195,7 @@ base::Value* NetLogSpdySendSettingsCallback(
 base::Value* NetLogSpdyWindowUpdateFrameCallback(
     SpdyStreamId stream_id,
     uint32 delta,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("delta", delta);
@@ -203,7 +205,7 @@ base::Value* NetLogSpdyWindowUpdateFrameCallback(
 base::Value* NetLogSpdySessionWindowUpdateCallback(
     int32 delta,
     int32 window_size,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("delta", delta);
   dict->SetInteger("window_size", window_size);
@@ -213,7 +215,7 @@ base::Value* NetLogSpdySessionWindowUpdateCallback(
 base::Value* NetLogSpdyDataCallback(SpdyStreamId stream_id,
                                     int size,
                                     bool fin,
-                                    NetLog::LogLevel /* log_level */) {
+                                    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("size", size);
@@ -224,7 +226,7 @@ base::Value* NetLogSpdyDataCallback(SpdyStreamId stream_id,
 base::Value* NetLogSpdyRstCallback(SpdyStreamId stream_id,
                                    int status,
                                    const std::string* description,
-                                   NetLog::LogLevel /* log_level */) {
+                                   NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", static_cast<int>(stream_id));
   dict->SetInteger("status", status);
@@ -235,7 +237,7 @@ base::Value* NetLogSpdyRstCallback(SpdyStreamId stream_id,
 base::Value* NetLogSpdyPingCallback(SpdyPingId unique_id,
                                     bool is_ack,
                                     const char* type,
-                                    NetLog::LogLevel /* log_level */) {
+                                    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("unique_id", static_cast<int>(unique_id));
   dict->SetString("type", type);
@@ -247,7 +249,7 @@ base::Value* NetLogSpdyGoAwayCallback(SpdyStreamId last_stream_id,
                                       int active_streams,
                                       int unclaimed_streams,
                                       SpdyGoAwayStatus status,
-                                      NetLog::LogLevel /* log_level */) {
+                                      NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("last_accepted_stream_id",
                    static_cast<int>(last_stream_id));
@@ -261,17 +263,19 @@ base::Value* NetLogSpdyPushPromiseReceivedCallback(
     const SpdyHeaderBlock* headers,
     SpdyStreamId stream_id,
     SpdyStreamId promised_stream_id,
-    NetLog::LogLevel log_level) {
+    NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("headers",
-            SpdyHeaderBlockToListValue(*headers, log_level).release());
+            SpdyHeaderBlockToListValue(*headers, capture_mode).release());
   dict->SetInteger("id", stream_id);
   dict->SetInteger("promised_stream_id", promised_stream_id);
   return dict;
 }
 
 base::Value* NetLogSpdyAdoptedPushStreamCallback(
-    SpdyStreamId stream_id, const GURL* url, NetLog::LogLevel log_level) {
+    SpdyStreamId stream_id,
+    const GURL* url,
+    NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", stream_id);
   dict->SetString("url", url->spec());
@@ -1078,7 +1082,7 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
 
   streams_initiated_count_++;
 
-  if (net_log().IsLogging()) {
+  if (net_log().GetCaptureMode().enabled()) {
     const NetLog::EventType type =
         (GetProtocolVersion() <= SPDY3)
             ? NetLog::TYPE_HTTP2_SESSION_SYN_STREAM
@@ -1188,7 +1192,7 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
   if (effective_len < len)
     flags = static_cast<SpdyDataFlags>(flags & ~DATA_FLAG_FIN);
 
-  if (net_log().IsLogging()) {
+  if (net_log().GetCaptureMode().enabled()) {
     net_log().AddEvent(NetLog::TYPE_HTTP2_SESSION_SEND_DATA,
                        base::Bind(&NetLogSpdyDataCallback, stream_id,
                                   effective_len, (flags & DATA_FLAG_FIN) != 0));
@@ -2042,7 +2046,7 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
                                     bool fin) {
   CHECK(in_io_loop_);
   DCHECK_LT(len, 1u << 24);
-  if (net_log().IsLogging()) {
+  if (net_log().GetCaptureMode().enabled()) {
     net_log().AddEvent(
         NetLog::TYPE_HTTP2_SESSION_RECV_DATA,
         base::Bind(&NetLogSpdyDataCallback, stream_id, len, fin));
@@ -2115,7 +2119,7 @@ void SpdySession::OnSettings(bool clear_persisted) {
   if (clear_persisted)
     http_server_properties_->ClearSpdySettings(host_port_pair());
 
-  if (net_log_.IsLogging()) {
+  if (net_log_.GetCaptureMode().enabled()) {
     net_log_.AddEvent(NetLog::TYPE_HTTP2_SESSION_RECV_SETTINGS,
                       base::Bind(&NetLogSpdySettingsCallback, host_port_pair(),
                                  clear_persisted));
@@ -2228,7 +2232,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   base::Time response_time = base::Time::Now();
   base::TimeTicks recv_first_byte_time = time_func_();
 
-  if (net_log_.IsLogging()) {
+  if (net_log_.GetCaptureMode().enabled()) {
     net_log_.AddEvent(
         NetLog::TYPE_HTTP2_SESSION_PUSHED_SYN_STREAM,
         base::Bind(&NetLogSpdySynStreamReceivedCallback, &headers, fin,
@@ -2300,7 +2304,7 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
   base::Time response_time = base::Time::Now();
   base::TimeTicks recv_first_byte_time = time_func_();
 
-  if (net_log().IsLogging()) {
+  if (net_log().GetCaptureMode().enabled()) {
     net_log().AddEvent(NetLog::TYPE_HTTP2_SESSION_SYN_REPLY,
                        base::Bind(&NetLogSpdySynReplyOrHeadersReceivedCallback,
                                   &headers, fin, stream_id));
@@ -2345,7 +2349,7 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
                             const SpdyHeaderBlock& headers) {
   CHECK(in_io_loop_);
 
-  if (net_log().IsLogging()) {
+  if (net_log().GetCaptureMode().enabled()) {
     net_log().AddEvent(NetLog::TYPE_HTTP2_SESSION_RECV_HEADERS,
                        base::Bind(&NetLogSpdySynReplyOrHeadersReceivedCallback,
                                   &headers, fin, stream_id));
@@ -2728,7 +2732,7 @@ void SpdySession::OnPushPromise(SpdyStreamId stream_id,
                                 const SpdyHeaderBlock& headers) {
   CHECK(in_io_loop_);
 
-  if (net_log_.IsLogging()) {
+  if (net_log_.GetCaptureMode().enabled()) {
     net_log_.AddEvent(NetLog::TYPE_HTTP2_SESSION_RECV_PUSH_PROMISE,
                       base::Bind(&NetLogSpdyPushPromiseReceivedCallback,
                                  &headers, stream_id, promised_stream_id));
@@ -2922,7 +2926,7 @@ void SpdySession::WritePingFrame(SpdyPingId unique_id, bool is_ack) {
       buffered_spdy_framer_->CreatePingFrame(unique_id, is_ack));
   EnqueueSessionWrite(HIGHEST, PING, ping_frame.Pass());
 
-  if (net_log().IsLogging()) {
+  if (net_log().GetCaptureMode().enabled()) {
     net_log().AddEvent(
         NetLog::TYPE_HTTP2_SESSION_PING,
         base::Bind(&NetLogSpdyPingCallback, unique_id, is_ack, "sent"));

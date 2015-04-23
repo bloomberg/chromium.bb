@@ -215,8 +215,8 @@ var BrowserBridge = (function() {
       this.send('enableIPv6');
     },
 
-    setLogLevel: function(logLevel) {
-      this.send('setLogLevel', ['' + logLevel]);
+    setCaptureMode: function(captureMode) {
+      this.send('setCaptureMode', ['' + captureMode]);
     },
 
     importONCFile: function(fileContent, passcode) {

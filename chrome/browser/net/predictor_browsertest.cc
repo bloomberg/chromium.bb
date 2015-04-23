@@ -121,7 +121,7 @@ class ConnectNetLogObserver : public net::NetLog::ThreadSafeObserver {
 
   void Attach() {
     g_browser_process->net_log()->DeprecatedAddObserver(
-        this, net::NetLog::LOG_ALL_BUT_BYTES);
+        this, net::NetLogCaptureMode::IncludeCookiesAndCredentials());
   }
 
   void Detach() {

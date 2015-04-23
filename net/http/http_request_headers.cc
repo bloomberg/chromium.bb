@@ -190,14 +190,14 @@ std::string HttpRequestHeaders::ToString() const {
 
 base::Value* HttpRequestHeaders::NetLogCallback(
     const std::string* request_line,
-    NetLog::LogLevel log_level) const {
+    NetLogCaptureMode capture_mode) const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("line", *request_line);
   base::ListValue* headers = new base::ListValue();
   for (HeaderVector::const_iterator it = headers_.begin();
        it != headers_.end(); ++it) {
-    std::string log_value = ElideHeaderValueForNetLog(
-        log_level, it->key, it->value);
+    std::string log_value =
+        ElideHeaderValueForNetLog(capture_mode, it->key, it->value);
     headers->Append(new base::StringValue(
         base::StringPrintf("%s: %s",
                            it->key.c_str(), log_value.c_str())));

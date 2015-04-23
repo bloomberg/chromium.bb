@@ -85,7 +85,7 @@ var CaptureView = (function() {
       var byteLoggingCheckbox = $(CaptureView.BYTE_LOGGING_CHECKBOX_ID);
 
       if (byteLoggingCheckbox.checked) {
-        g_browser.setLogLevel(LogLevelType.LOG_ALL);
+        g_browser.setCaptureMode('IncludeSocketBytes');
 
         // Once we enable byte logging, all bets are off on what gets captured.
         // Have the export view warn that the "strip cookies" option is
@@ -97,7 +97,7 @@ var CaptureView = (function() {
         // reload.
         ExportView.getInstance().showPrivacyWarning();
       } else {
-        g_browser.setLogLevel(LogLevelType.LOG_ALL_BUT_BYTES);
+        g_browser.setCaptureMode('IncludeCookiesAndCredentials');
       }
     },
 

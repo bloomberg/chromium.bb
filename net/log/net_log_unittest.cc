@@ -18,9 +18,13 @@ namespace {
 const int kThreads = 10;
 const int kEvents = 100;
 
-base::Value* NetLogLevelCallback(NetLog::LogLevel log_level) {
+base::Value* CaptureModeToValue(NetLogCaptureMode capture_mode) {
+  return new base::FundamentalValue(capture_mode.ToInternalValueForTesting());
+}
+
+base::Value* NetCaptureModeCallback(NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetInteger("log_level", log_level);
+  dict->Set("capture_mode", CaptureModeToValue(capture_mode));
   return dict;
 }
 
@@ -42,16 +46,22 @@ TEST(NetLogTest, Basic) {
   EXPECT_FALSE(entries[0].params);
 }
 
-// Check that the correct LogLevel is sent to NetLog Value callbacks.
-TEST(NetLogTest, LogLevels) {
+// Check that the correct CaptureMode is sent to NetLog Value callbacks.
+TEST(NetLogTest, CaptureModes) {
+  NetLogCaptureMode kModes[] = {
+      NetLogCaptureMode::Default(),
+      NetLogCaptureMode::IncludeCookiesAndCredentials(),
+      NetLogCaptureMode::IncludeSocketBytes(),
+  };
+
   TestNetLog net_log;
-  for (int log_level = NetLog::LOG_ALL; log_level < NetLog::LOG_NONE;
-       ++log_level) {
-    net_log.SetLogLevel(static_cast<NetLog::LogLevel>(log_level));
-    EXPECT_EQ(log_level, net_log.GetLogLevel());
+
+  for (NetLogCaptureMode mode : kModes) {
+    net_log.SetCaptureMode(mode);
+    EXPECT_EQ(mode, net_log.GetCaptureMode());
 
     net_log.AddGlobalEntry(NetLog::TYPE_SOCKET_ALIVE,
-                           base::Bind(NetLogLevelCallback));
+                           base::Bind(NetCaptureModeCallback));
 
     TestNetLog::CapturedEntryList entries;
     net_log.GetEntries(&entries);
@@ -63,9 +73,10 @@ TEST(NetLogTest, LogLevels) {
     EXPECT_EQ(NetLog::PHASE_NONE, entries[0].phase);
     EXPECT_GE(base::TimeTicks::Now(), entries[0].time);
 
-    int logged_log_level;
-    ASSERT_TRUE(entries[0].GetIntegerValue("log_level", &logged_log_level));
-    EXPECT_EQ(log_level, logged_log_level);
+    int logged_capture_mode;
+    ASSERT_TRUE(
+        entries[0].GetIntegerValue("capture_mode", &logged_capture_mode));
+    EXPECT_EQ(mode.ToInternalValueForTesting(), logged_capture_mode);
 
     net_log.Clear();
   }
@@ -111,12 +122,9 @@ class LoggingObserver : public NetLog::ThreadSafeObserver {
   ScopedVector<base::DictionaryValue> values_;
 };
 
-base::Value* LogLevelToValue(NetLog::LogLevel log_level) {
-  return new base::FundamentalValue(log_level);
-}
-
 void AddEvent(NetLog* net_log) {
-  net_log->AddGlobalEntry(NetLog::TYPE_CANCELLED, base::Bind(LogLevelToValue));
+  net_log->AddGlobalEntry(NetLog::TYPE_CANCELLED,
+                          base::Bind(CaptureModeToValue));
 }
 
 // A thread that waits until an event has been signalled before calling
@@ -180,15 +188,17 @@ class AddRemoveObserverTestThread : public NetLogTestThread {
     for (int i = 0; i < kEvents; ++i) {
       ASSERT_FALSE(observer_.net_log());
 
-      net_log_->DeprecatedAddObserver(&observer_, NetLog::LOG_ALL_BUT_BYTES);
+      net_log_->DeprecatedAddObserver(
+          &observer_, NetLogCaptureMode::IncludeCookiesAndCredentials());
       ASSERT_EQ(net_log_, observer_.net_log());
-      ASSERT_EQ(NetLog::LOG_ALL_BUT_BYTES, observer_.log_level());
-      ASSERT_LE(net_log_->GetLogLevel(), NetLog::LOG_ALL_BUT_BYTES);
+      ASSERT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
+                observer_.capture_mode());
 
-      net_log_->SetObserverLogLevel(&observer_, NetLog::LOG_ALL);
+      net_log_->SetObserverCaptureMode(&observer_,
+                                       NetLogCaptureMode::IncludeSocketBytes());
       ASSERT_EQ(net_log_, observer_.net_log());
-      ASSERT_EQ(NetLog::LOG_ALL, observer_.log_level());
-      ASSERT_LE(net_log_->GetLogLevel(), NetLog::LOG_ALL);
+      ASSERT_EQ(NetLogCaptureMode::IncludeSocketBytes(),
+                observer_.capture_mode());
 
       net_log_->DeprecatedRemoveObserver(&observer_);
       ASSERT_TRUE(!observer_.net_log());
@@ -225,8 +235,10 @@ TEST(NetLogTest, NetLogEventThreads) {
   // Attach some observers.  Since they're created after |net_log|, they'll
   // safely detach themselves on destruction.
   CountingObserver observers[3];
-  for (size_t i = 0; i < arraysize(observers); ++i)
-    net_log.DeprecatedAddObserver(&observers[i], NetLog::LOG_ALL);
+  for (size_t i = 0; i < arraysize(observers); ++i) {
+    net_log.DeprecatedAddObserver(&observers[i],
+                                  NetLogCaptureMode::IncludeSocketBytes());
+  }
 
   // Run a bunch of threads to completion, each of which will emit events to
   // |net_log|.
@@ -246,22 +258,26 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
   AddEvent(&net_log);
   EXPECT_EQ(0, observer.count());
   EXPECT_EQ(NULL, observer.net_log());
-  EXPECT_EQ(NetLog::LOG_NONE, net_log.GetLogLevel());
+  EXPECT_FALSE(net_log.GetCaptureMode().enabled());
 
   // Add the observer and add an event.
-  net_log.DeprecatedAddObserver(&observer, NetLog::LOG_ALL_BUT_BYTES);
+  net_log.DeprecatedAddObserver(
+      &observer, NetLogCaptureMode::IncludeCookiesAndCredentials());
   EXPECT_EQ(&net_log, observer.net_log());
-  EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, observer.log_level());
-  EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, net_log.GetLogLevel());
+  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
+            observer.capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
+            net_log.GetCaptureMode());
 
   AddEvent(&net_log);
   EXPECT_EQ(1, observer.count());
 
   // Change the observer's logging level and add an event.
-  net_log.SetObserverLogLevel(&observer, NetLog::LOG_ALL);
+  net_log.SetObserverCaptureMode(&observer,
+                                 NetLogCaptureMode::IncludeSocketBytes());
   EXPECT_EQ(&net_log, observer.net_log());
-  EXPECT_EQ(NetLog::LOG_ALL, observer.log_level());
-  EXPECT_EQ(NetLog::LOG_ALL, net_log.GetLogLevel());
+  EXPECT_EQ(NetLogCaptureMode::IncludeSocketBytes(), observer.capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::IncludeSocketBytes(), net_log.GetCaptureMode());
 
   AddEvent(&net_log);
   EXPECT_EQ(2, observer.count());
@@ -269,16 +285,17 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
   // Remove observer and add an event.
   net_log.DeprecatedRemoveObserver(&observer);
   EXPECT_EQ(NULL, observer.net_log());
-  EXPECT_EQ(NetLog::LOG_NONE, net_log.GetLogLevel());
+  EXPECT_FALSE(net_log.GetCaptureMode().enabled());
 
   AddEvent(&net_log);
   EXPECT_EQ(2, observer.count());
 
   // Add the observer a final time, and add an event.
-  net_log.DeprecatedAddObserver(&observer, NetLog::LOG_ALL);
+  net_log.DeprecatedAddObserver(&observer,
+                                NetLogCaptureMode::IncludeSocketBytes());
   EXPECT_EQ(&net_log, observer.net_log());
-  EXPECT_EQ(NetLog::LOG_ALL, observer.log_level());
-  EXPECT_EQ(NetLog::LOG_ALL, net_log.GetLogLevel());
+  EXPECT_EQ(NetLogCaptureMode::IncludeSocketBytes(), observer.capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::IncludeSocketBytes(), net_log.GetCaptureMode());
 
   AddEvent(&net_log);
   EXPECT_EQ(3, observer.count());
@@ -290,19 +307,25 @@ TEST(NetLogTest, NetLogTwoObservers) {
   LoggingObserver observer[2];
 
   // Add first observer.
-  net_log.DeprecatedAddObserver(&observer[0], NetLog::LOG_ALL_BUT_BYTES);
+  net_log.DeprecatedAddObserver(
+      &observer[0], NetLogCaptureMode::IncludeCookiesAndCredentials());
   EXPECT_EQ(&net_log, observer[0].net_log());
   EXPECT_EQ(NULL, observer[1].net_log());
-  EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, observer[0].log_level());
-  EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, net_log.GetLogLevel());
+  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
+            observer[0].capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
+            net_log.GetCaptureMode());
 
   // Add second observer observer.
-  net_log.DeprecatedAddObserver(&observer[1], NetLog::LOG_ALL);
+  net_log.DeprecatedAddObserver(&observer[1],
+                                NetLogCaptureMode::IncludeSocketBytes());
   EXPECT_EQ(&net_log, observer[0].net_log());
   EXPECT_EQ(&net_log, observer[1].net_log());
-  EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, observer[0].log_level());
-  EXPECT_EQ(NetLog::LOG_ALL, observer[1].log_level());
-  EXPECT_EQ(NetLog::LOG_ALL, net_log.GetLogLevel());
+  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
+            observer[0].capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::IncludeSocketBytes(),
+            observer[1].capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::IncludeSocketBytes(), net_log.GetCaptureMode());
 
   // Add event and make sure both observers receive it at their respective log
   // levels.
@@ -310,17 +333,19 @@ TEST(NetLogTest, NetLogTwoObservers) {
   AddEvent(&net_log);
   ASSERT_EQ(1U, observer[0].GetNumValues());
   ASSERT_TRUE(observer[0].GetValue(0)->GetInteger("params", &param));
-  EXPECT_EQ(observer[0].log_level(), param);
+  EXPECT_EQ(observer[0].capture_mode().ToInternalValueForTesting(), param);
   ASSERT_EQ(1U, observer[1].GetNumValues());
   ASSERT_TRUE(observer[1].GetValue(0)->GetInteger("params", &param));
-  EXPECT_EQ(observer[1].log_level(), param);
+  EXPECT_EQ(observer[1].capture_mode().ToInternalValueForTesting(), param);
 
   // Remove second observer.
   net_log.DeprecatedRemoveObserver(&observer[1]);
   EXPECT_EQ(&net_log, observer[0].net_log());
   EXPECT_EQ(NULL, observer[1].net_log());
-  EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, observer[0].log_level());
-  EXPECT_EQ(NetLog::LOG_ALL_BUT_BYTES, net_log.GetLogLevel());
+  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
+            observer[0].capture_mode());
+  EXPECT_EQ(NetLogCaptureMode::IncludeCookiesAndCredentials(),
+            net_log.GetCaptureMode());
 
   // Add event and make sure only second observer gets it.
   AddEvent(&net_log);
@@ -331,7 +356,7 @@ TEST(NetLogTest, NetLogTwoObservers) {
   net_log.DeprecatedRemoveObserver(&observer[0]);
   EXPECT_EQ(NULL, observer[0].net_log());
   EXPECT_EQ(NULL, observer[1].net_log());
-  EXPECT_EQ(NetLog::LOG_NONE, net_log.GetLogLevel());
+  EXPECT_FALSE(net_log.GetCaptureMode().enabled());
 
   // Add event and make sure neither observer gets it.
   AddEvent(&net_log);

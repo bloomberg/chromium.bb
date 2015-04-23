@@ -148,19 +148,21 @@ class NetLogTempFileTest : public ::testing::Test {
   // initialized by a DO_START command of the given type.
 
   void VerifyFileAndStateAfterDoStart() {
-    VerifyFileAndStateAfterStart(NetLogTempFile::LOG_TYPE_NORMAL, "NORMAL",
-                                 net::NetLog::LOG_ALL_BUT_BYTES);
+    VerifyFileAndStateAfterStart(
+        NetLogTempFile::LOG_TYPE_NORMAL, "NORMAL",
+        net::NetLogCaptureMode::IncludeCookiesAndCredentials());
   }
 
   void VerifyFileAndStateAfterDoStartStripPrivateData() const {
     VerifyFileAndStateAfterStart(NetLogTempFile::LOG_TYPE_STRIP_PRIVATE_DATA,
                                  "STRIP_PRIVATE_DATA",
-                                 net::NetLog::LOG_STRIP_PRIVATE_DATA);
+                                 net::NetLogCaptureMode::Default());
   }
 
   void VerifyFileAndStateAfterDoStartLogBytes() const {
     VerifyFileAndStateAfterStart(NetLogTempFile::LOG_TYPE_LOG_BYTES,
-                                 "LOG_BYTES", net::NetLog::LOG_ALL);
+                                 "LOG_BYTES",
+                                 net::NetLogCaptureMode::IncludeSocketBytes());
   }
 
   // Make sure the export file has been successfully initialized after DO_STOP
@@ -191,13 +193,13 @@ class NetLogTempFileTest : public ::testing::Test {
   void VerifyFileAndStateAfterStart(
       NetLogTempFile::LogType expected_log_type,
       const std::string& expected_log_type_string,
-      net::NetLog::LogLevel expected_log_level) const {
+      net::NetLogCaptureMode expected_capture_mode) const {
     EXPECT_EQ(NetLogTempFile::STATE_LOGGING, net_log_temp_file_->state());
     EXPECT_EQ("LOGGING", GetStateString());
     EXPECT_EQ(expected_log_type, net_log_temp_file_->log_type());
     EXPECT_EQ(expected_log_type_string, GetLogTypeString());
 
-    EXPECT_EQ(expected_log_level, net_log_->GetLogLevel());
+    EXPECT_EQ(expected_capture_mode, net_log_->GetCaptureMode());
 
     // Check GetFilePath returns false when still writing to the file.
     base::FilePath net_export_file_path;

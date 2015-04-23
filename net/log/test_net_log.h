@@ -28,7 +28,7 @@ class TestNetLog : public NetLog {
   TestNetLog();
   ~TestNetLog() override;
 
-  void SetLogLevel(LogLevel log_level);
+  void SetCaptureMode(NetLogCaptureMode capture_mode);
 
   // Below methods are forwarded to capturing_net_log_observer_.
   void GetEntries(CapturedEntryList* entry_list) const;
@@ -67,8 +67,8 @@ class BoundTestNetLog {
 
   void Clear();
 
-  // Sets the log level of the underlying TestNetLog.
-  void SetLogLevel(NetLog::LogLevel log_level);
+  // Sets the capture mode of the underlying TestNetLog.
+  void SetCaptureMode(NetLogCaptureMode capture_mode);
 
  private:
   TestNetLog capturing_net_log_;

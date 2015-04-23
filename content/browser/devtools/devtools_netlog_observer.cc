@@ -169,7 +169,8 @@ void DevToolsNetLogObserver::Attach() {
   net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
   if (net_log) {
     instance_ = new DevToolsNetLogObserver();
-    net_log->DeprecatedAddObserver(instance_, net::NetLog::LOG_ALL_BUT_BYTES);
+    net_log->DeprecatedAddObserver(
+        instance_, net::NetLogCaptureMode::IncludeCookiesAndCredentials());
   }
 }
 

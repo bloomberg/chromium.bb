@@ -18,8 +18,8 @@ TEST(SpdyHeaderBlockTest, ToNetLogParamAndBackAgain) {
   headers["A"] = "a";
   headers["B"] = "b";
 
-  scoped_ptr<base::Value> event_param(
-      SpdyHeaderBlockNetLogCallback(&headers, NetLog::LOG_ALL_BUT_BYTES));
+  scoped_ptr<base::Value> event_param(SpdyHeaderBlockNetLogCallback(
+      &headers, NetLogCaptureMode::IncludeCookiesAndCredentials()));
 
   SpdyHeaderBlock headers2;
   ASSERT_TRUE(SpdyHeaderBlockFromNetLogParam(event_param.get(), &headers2));

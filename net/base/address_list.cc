@@ -15,7 +15,7 @@ namespace net {
 namespace {
 
 base::Value* NetLogAddressListCallback(const AddressList* address_list,
-                                       NetLog::LogLevel log_level) {
+                                       NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   base::ListValue* list = new base::ListValue();
 

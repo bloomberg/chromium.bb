@@ -18,7 +18,8 @@ struct CTVerifyResult;
 // See the documentation for SIGNED_CERTIFICATE_TIMESTAMPS_CHECKED
 // in net/log/net_log_event_type_list.h
 base::Value* NetLogSignedCertificateTimestampCallback(
-    const ct::CTVerifyResult* ct_result, NetLog::LogLevel log_level);
+    const ct::CTVerifyResult* ct_result,
+    NetLogCaptureMode capture_mode);
 
 // Creates a dictionary of raw Signed Certificate Timestamps to be logged
 // in the NetLog.
@@ -28,7 +29,7 @@ base::Value* NetLogRawSignedCertificateTimestampCallback(
     const std::string* embedded_scts,
     const std::string* sct_list_from_ocsp,
     const std::string* sct_list_from_tls_extension,
-    NetLog::LogLevel log_level);
+    NetLogCaptureMode capture_mode);
 
 }  // namespace net
 

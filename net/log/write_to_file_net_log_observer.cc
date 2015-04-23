@@ -18,15 +18,16 @@
 namespace net {
 
 WriteToFileNetLogObserver::WriteToFileNetLogObserver()
-    : log_level_(NetLog::LOG_STRIP_PRIVATE_DATA), added_events_(false) {
+    : capture_mode_(NetLogCaptureMode::Default()), added_events_(false) {
 }
 
 WriteToFileNetLogObserver::~WriteToFileNetLogObserver() {
 }
 
-void WriteToFileNetLogObserver::set_log_level(net::NetLog::LogLevel log_level) {
+void WriteToFileNetLogObserver::set_capture_mode(
+    net::NetLogCaptureMode capture_mode) {
   DCHECK(!net_log());
-  log_level_ = log_level;
+  capture_mode_ = capture_mode;
 }
 
 void WriteToFileNetLogObserver::StartObserving(
@@ -62,7 +63,7 @@ void WriteToFileNetLogObserver::StartObserving(
     CreateNetLogEntriesForActiveObjects(contexts, this);
   }
 
-  net_log->DeprecatedAddObserver(this, log_level_);
+  net_log->DeprecatedAddObserver(this, capture_mode_);
 }
 
 void WriteToFileNetLogObserver::StopObserving(

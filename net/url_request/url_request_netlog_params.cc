@@ -10,12 +10,13 @@
 
 namespace net {
 
-base::Value* NetLogURLRequestStartCallback(const GURL* url,
-                                           const std::string* method,
-                                           int load_flags,
-                                           RequestPriority priority,
-                                           int64 upload_id,
-                                           NetLog::LogLevel /* log_level */) {
+base::Value* NetLogURLRequestStartCallback(
+    const GURL* url,
+    const std::string* method,
+    int load_flags,
+    RequestPriority priority,
+    int64 upload_id,
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("url", url->possibly_invalid_spec());
   dict->SetString("method", *method);

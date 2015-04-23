@@ -18,6 +18,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/log/net_log_capture_mode.h"
 
 namespace base {
 class DictionaryValue;
@@ -66,33 +67,11 @@ class NET_EXPORT NetLog {
     SOURCE_COUNT
   };
 
-  // Specifies the granularity of events that should be emitted to the log.
-  //
-  // Since the LogLevel may be read and set on any thread without locking, it
-  // may be possible for an Observer to receive an event or parameters that
-  // normally wouldn't be logged at the currently active log level.
-  enum LogLevel {
-    // Log everything possible, even if it is slow and memory expensive.
-    // Includes logging of transferred bytes.
-    LOG_ALL,
-
-    // Log all events, but do not include the actual transferred bytes as
-    // parameters for bytes sent/received events.
-    LOG_ALL_BUT_BYTES,
-
-    // Log all events, but do not include the actual transferred bytes and
-    // remove cookies and HTTP credentials.
-    LOG_STRIP_PRIVATE_DATA,
-
-    // Don't log any events.
-    LOG_NONE,
-  };
-
   // A callback function that return a Value representation of the parameters
   // associated with an event.  If called, it will be called synchonously,
   // so it need not have owning references.  May be called more than once, or
   // not at all.  May return NULL.
-  typedef base::Callback<base::Value*(LogLevel)> ParametersCallback;
+  typedef base::Callback<base::Value*(NetLogCaptureMode)> ParametersCallback;
 
   // Identifies the entity that generated this log. The |id| field should
   // uniquely identify the source, and is used by log observers to infer
@@ -137,12 +116,12 @@ class NET_EXPORT NetLog {
     const ParametersCallback* const parameters_callback;
   };
 
-  // An Entry pre-binds EntryData to a LogLevel, so observers will observe the
-  // output of ToValue() and ParametersToValue() at their log level rather than
-  // current maximum.
+  // An Entry pre-binds EntryData to a capture mode, so observers will observe
+  // the output of ToValue() and ParametersToValue() at their log capture mode
+  // rather than the current maximum.
   class NET_EXPORT Entry {
    public:
-    Entry(const EntryData* data, LogLevel log_level);
+    Entry(const EntryData* data, NetLogCaptureMode capture_mode);
     ~Entry();
 
     EventType type() const { return data_->type; }
@@ -161,8 +140,8 @@ class NET_EXPORT NetLog {
    private:
     const EntryData* const data_;
 
-    // Log level when the event occurred.
-    const LogLevel log_level_;
+    // Log capture mode when the event occurred.
+    const NetLogCaptureMode capture_mode_;
 
     // It is not safe to copy this class, since |parameters_callback_| may
     // include pointers that become stale immediately after the event is added,
@@ -185,9 +164,9 @@ class NET_EXPORT NetLog {
     // NetLog is destroyed.
     ThreadSafeObserver();
 
-    // Returns the minimum log level for events this observer wants to
+    // Returns the capture mode for events this observer wants to
     // receive.  Must not be called when not watching a NetLog.
-    LogLevel log_level() const;
+    NetLogCaptureMode capture_mode() const;
 
     // Returns the NetLog we are currently watching, if any.  Returns NULL
     // otherwise.
@@ -210,7 +189,7 @@ class NET_EXPORT NetLog {
     void OnAddEntryData(const EntryData& entry_data);
 
     // Both of these values are only modified by the NetLog.
-    LogLevel log_level_;
+    NetLogCaptureMode capture_mode_;
     NetLog* net_log_;
 
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeObserver);
@@ -228,11 +207,11 @@ class NET_EXPORT NetLog {
   // will be unique and greater than 0.
   uint32 NextID();
 
-  // Returns the logging level for this NetLog. This is used to avoid computing
+  // Returns the capture mode for this NetLog. This is used to avoid computing
   // and saving expensive log entries.
-  LogLevel GetLogLevel() const;
+  NetLogCaptureMode GetCaptureMode() const;
 
-  // Adds an observer and sets its log level.  The observer must not be
+  // Adds an observer and sets its log capture mode.  The observer must not be
   // watching any NetLog, including this one, when this is called.
   //
   // NetLog implementations must call NetLog::OnAddObserver to update the
@@ -241,12 +220,14 @@ class NET_EXPORT NetLog {
   // DEPRECATED: The ability to watch the netlog stream is being phased out
   // (crbug.com/472693) as it can be misused in production code. Please consult
   // with a net/log OWNER before introducing a new dependency on this.
-  void DeprecatedAddObserver(ThreadSafeObserver* observer, LogLevel log_level);
+  void DeprecatedAddObserver(ThreadSafeObserver* observer,
+                             NetLogCaptureMode capture_mode);
 
-  // Sets the log level of |observer| to |log_level|.  |observer| must be
-  // watching |this|.  NetLog implementations must call
-  // NetLog::OnSetObserverLogLevel to update the observer's internal state.
-  void SetObserverLogLevel(ThreadSafeObserver* observer, LogLevel log_level);
+  // Sets the log capture mode of |observer| to |capture_mode|.  |observer| must
+  // be watching |this|.  NetLog implementations must call
+  // NetLog::OnSetObserverCaptureMode to update the observer's internal state.
+  void SetObserverCaptureMode(ThreadSafeObserver* observer,
+                              NetLogCaptureMode capture_mode);
 
   // Removes an observer.  NetLog implementations must call
   // NetLog::OnAddObserver to update the observer's internal state.
@@ -280,14 +261,6 @@ class NET_EXPORT NetLog {
   // Returns a C-String symbolic name for |event_phase|.
   static const char* EventPhaseToString(EventPhase event_phase);
 
-  // Returns true if |log_level| indicates the actual bytes transferred should
-  // be logged.  This is only the case when |log_level| is LOG_ALL.
-  static bool IsLoggingBytes(LogLevel log_level);
-
-  // Returns true if |log_level| indicates that events should be logged. This is
-  // the case when |log_level| is anything other than LOG_NONE.
-  static bool IsLogging(LogLevel log_level);
-
   // Creates a ParametersCallback that encapsulates a single integer.
   // Warning: |name| must remain valid for the life of the callback.
   // TODO(mmenke):  Rename this to be consistent with Int64Callback.
@@ -318,9 +291,9 @@ class NET_EXPORT NetLog {
                 EventPhase phase,
                 const NetLog::ParametersCallback* parameters_callback);
 
-  // Called whenever an observer is added or removed, or has its log level
-  // changed.  Must have acquired |lock_| prior to calling.
-  void UpdateLogLevel();
+  // Called whenever an observer is added or removed, or has its log
+  // capture mode changed.  Must have acquired |lock_| prior to calling.
+  void UpdateCaptureMode();
 
   // |lock_| protects access to |observers_|.
   base::Lock lock_;
@@ -328,8 +301,10 @@ class NET_EXPORT NetLog {
   // Last assigned source ID.  Incremented to get the next one.
   base::subtle::Atomic32 last_id_;
 
-  // The current log level.
-  base::subtle::Atomic32 effective_log_level_;
+  // The current capture mode. Note that the capture mode is stored as an
+  // integer rather than a NetLogCaptureMode so that it can be easily
+  // read/written without a lock using Atomic32.
+  base::subtle::Atomic32 effective_capture_mode_int32_;
 
   // |lock_| must be acquired whenever reading or writing to this.
   ObserverList<ThreadSafeObserver, true> observers_;
@@ -384,13 +359,7 @@ class NET_EXPORT BoundNetLog {
                             int byte_count,
                             const char* bytes) const;
 
-  NetLog::LogLevel GetLogLevel() const;
-
-  // Shortcut for NetLog::IsLoggingBytes(this->GetLogLevel()).
-  bool IsLoggingBytes() const;
-
-  // Shortcut for NetLog::IsLogging(this->GetLogLevel()).
-  bool IsLogging() const;
+  NetLogCaptureMode GetCaptureMode() const;
 
   // Helper to create a BoundNetLog given a NetLog and a SourceType. Takes care
   // of creating a unique source ID, and handles the case of NULL net_log.

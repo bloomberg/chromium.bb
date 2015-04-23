@@ -34,15 +34,14 @@ bool ShouldRedactChallenge(HttpAuthChallengeTokenizer* challenge) {
 
 }  // namespace
 
-std::string ElideHeaderValueForNetLog(NetLog::LogLevel log_level,
+std::string ElideHeaderValueForNetLog(NetLogCaptureMode capture_mode,
                                       const std::string& header,
                                       const std::string& value) {
   std::string::const_iterator redact_begin = value.begin();
   std::string::const_iterator redact_end = value.begin();
 
   if (redact_begin == redact_end &&
-      log_level >= NetLog::LOG_STRIP_PRIVATE_DATA) {
-
+      !capture_mode.include_cookies_and_credentials()) {
     // Note: this logic should be kept in sync with stripCookiesAndLoginInfo in
     // chrome/browser/resources/net_internals/log_view_painter.js.
 

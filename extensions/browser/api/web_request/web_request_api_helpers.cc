@@ -218,9 +218,8 @@ net::NetLog::ParametersCallback CreateNetLogExtensionIdCallback(
 
 // Creates NetLog parameters to indicate that an extension modified a request.
 // Caller takes ownership of returned value.
-base::Value* NetLogModificationCallback(
-    const EventResponseDelta* delta,
-    net::NetLog::LogLevel log_level) {
+base::Value* NetLogModificationCallback(const EventResponseDelta* delta,
+                                        net::NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("extension_id", delta->extension_id);
 

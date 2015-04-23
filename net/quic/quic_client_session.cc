@@ -99,7 +99,7 @@ void RecordHandshakeState(HandshakeState state) {
 base::Value* NetLogQuicClientSessionCallback(
     const QuicServerId* server_id,
     bool require_confirmation,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host", server_id->host());
   dict->SetInteger("port", server_id->port());

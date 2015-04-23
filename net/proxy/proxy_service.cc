@@ -316,7 +316,7 @@ class ProxyResolverFactoryForPacResult : public ProxyResolverFactory {
 base::Value* NetLogProxyConfigChangedCallback(
     const ProxyConfig* old_config,
     const ProxyConfig* new_config,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   // The "old_config" is optional -- the first notification will not have
   // any "previous" configuration.
@@ -327,7 +327,7 @@ base::Value* NetLogProxyConfigChangedCallback(
 }
 
 base::Value* NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
-                                        NetLog::LogLevel /* log_level */) {
+                                        NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   base::ListValue* list = new base::ListValue();
 
@@ -342,7 +342,7 @@ base::Value* NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
 // Returns NetLog parameters on a successfuly proxy resolution.
 base::Value* NetLogFinishedResolvingProxyCallback(
     const ProxyInfo* result,
-    NetLog::LogLevel /* log_level */) {
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("pac_string", result->ToPacString());
   return dict;
@@ -1389,7 +1389,7 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
       network_delegate->NotifyResolveProxy(url, load_flags, *this, result);
 
     // When logging all events is enabled, dump the proxy list.
-    if (net_log.IsLogging()) {
+    if (net_log.GetCaptureMode().enabled()) {
       net_log.AddEvent(
           NetLog::TYPE_PROXY_SERVICE_RESOLVED_PROXY_LIST,
           base::Bind(&NetLogFinishedResolvingProxyCallback, result));

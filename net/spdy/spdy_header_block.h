@@ -21,7 +21,7 @@ typedef std::map<std::string, std::string> SpdyHeaderBlock;
 // ownership of returned value.
 NET_EXPORT base::Value* SpdyHeaderBlockNetLogCallback(
     const SpdyHeaderBlock* headers,
-    NetLog::LogLevel log_level);
+    NetLogCaptureMode capture_mode);
 
 // Converts NetLog event parameters into a SPDY header block and writes them
 // to |headers|.  |event_param| must have been created by

@@ -16,7 +16,7 @@ namespace {
 base::Value* NetLogEntryCreationCallback(
     const disk_cache::Entry* entry,
     bool created,
-    net::NetLog::LogLevel /* log_level */) {
+    net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("key", entry->GetKey());
   dict->SetBoolean("created", created);
@@ -28,7 +28,7 @@ base::Value* NetLogReadWriteDataCallback(
     int offset,
     int buf_len,
     bool truncate,
-    net::NetLog::LogLevel /* log_level */) {
+    net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("index", index);
   dict->SetInteger("offset", offset);
@@ -40,7 +40,7 @@ base::Value* NetLogReadWriteDataCallback(
 
 base::Value* NetLogReadWriteCompleteCallback(
     int bytes_copied,
-    net::NetLog::LogLevel /* log_level */) {
+    net::NetLogCaptureMode /* capture_mode */) {
   DCHECK_NE(bytes_copied, net::ERR_IO_PENDING);
   base::DictionaryValue* dict = new base::DictionaryValue();
   if (bytes_copied < 0) {
@@ -54,7 +54,7 @@ base::Value* NetLogReadWriteCompleteCallback(
 base::Value* NetLogSparseOperationCallback(
     int64 offset,
     int buff_len,
-    net::NetLog::LogLevel /* log_level */) {
+    net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   // Values can only be created with at most 32-bit integers.  Using a string
   // instead circumvents that restriction.
@@ -66,7 +66,7 @@ base::Value* NetLogSparseOperationCallback(
 base::Value* NetLogSparseReadWriteCallback(
     const net::NetLog::Source& source,
     int child_len,
-    net::NetLog::LogLevel /* log_level */) {
+    net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   source.AddToEventParameters(dict);
   dict->SetInteger("child_len", child_len);
@@ -76,7 +76,7 @@ base::Value* NetLogSparseReadWriteCallback(
 base::Value* NetLogGetAvailableRangeResultCallback(
     int64 start,
     int result,
-    net::NetLog::LogLevel /* log_level */) {
+    net::NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   if (result > 0) {
     dict->SetInteger("length", result);

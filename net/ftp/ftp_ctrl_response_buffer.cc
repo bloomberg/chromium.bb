@@ -80,7 +80,7 @@ int FtpCtrlResponseBuffer::ConsumeData(const char* data, int data_length) {
 namespace {
 
 base::Value* NetLogFtpCtrlResponseCallback(const FtpCtrlResponse* response,
-                                           NetLog::LogLevel log_level) {
+                                           NetLogCaptureMode capture_mode) {
   base::ListValue* lines = new base::ListValue();
   lines->AppendStrings(response->lines);
 

@@ -1055,7 +1055,7 @@ void DownloadItemImpl::DestinationUpdate(int64 bytes_so_far,
   if (received_bytes_ > total_bytes_)
     total_bytes_ = 0;
 
-  if (bound_net_log_.IsLogging()) {
+  if (bound_net_log_.GetCaptureMode().enabled()) {
     bound_net_log_.AddEvent(
         net::NetLog::TYPE_DOWNLOAD_ITEM_UPDATED,
         net::NetLog::Int64Callback("bytes_so_far", received_bytes_));
@@ -1106,8 +1106,8 @@ void DownloadItemImpl::Init(bool active,
       file_name = GetURL().ExtractFileName();
   }
 
-  base::Callback<base::Value*(net::NetLog::LogLevel)> active_data = base::Bind(
-      &ItemActivatedNetLogCallback, this, download_type, &file_name);
+  net::NetLog::ParametersCallback active_data =
+      base::Bind(&ItemActivatedNetLogCallback, this, download_type, &file_name);
   if (active) {
     bound_net_log_.BeginEvent(
         net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE, active_data);

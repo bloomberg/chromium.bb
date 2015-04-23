@@ -77,8 +77,8 @@ public class ChromiumUrlRequestContext {
     }
 
     /**
-     * Starts NetLog logging to a file. The NetLog log level used is
-     * LOG_ALL_BUT_BYTES.
+     * Starts NetLog logging to a file. The NetLog capture mode is
+     * NetLogCaptureMode::Default().
      * @param fileName The complete file path. It must not be empty. If file
      *            exists, it is truncated before starting. If actively logging,
      *            this method is ignored.

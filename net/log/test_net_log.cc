@@ -7,15 +7,16 @@
 namespace net {
 
 TestNetLog::TestNetLog() {
-  DeprecatedAddObserver(&capturing_net_log_observer_, LOG_ALL_BUT_BYTES);
+  DeprecatedAddObserver(&capturing_net_log_observer_,
+                        NetLogCaptureMode::IncludeCookiesAndCredentials());
 }
 
 TestNetLog::~TestNetLog() {
   DeprecatedRemoveObserver(&capturing_net_log_observer_);
 }
 
-void TestNetLog::SetLogLevel(NetLog::LogLevel log_level) {
-  SetObserverLogLevel(&capturing_net_log_observer_, log_level);
+void TestNetLog::SetCaptureMode(NetLogCaptureMode capture_mode) {
+  SetObserverCaptureMode(&capturing_net_log_observer_, capture_mode);
 }
 
 void TestNetLog::GetEntries(TestNetLog::CapturedEntryList* entry_list) const {
@@ -62,8 +63,8 @@ void BoundTestNetLog::Clear() {
   capturing_net_log_.Clear();
 }
 
-void BoundTestNetLog::SetLogLevel(NetLog::LogLevel log_level) {
-  capturing_net_log_.SetLogLevel(log_level);
+void BoundTestNetLog::SetCaptureMode(NetLogCaptureMode capture_mode) {
+  capturing_net_log_.SetCaptureMode(capture_mode);
 }
 
 }  // namespace net

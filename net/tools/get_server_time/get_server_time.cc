@@ -226,7 +226,8 @@ int main(int argc, char* argv[]) {
   // printing_log_observer.
   net::NetLog net_log;
   PrintingLogObserver printing_log_observer;
-  net_log.DeprecatedAddObserver(&printing_log_observer, net::NetLog::LOG_ALL);
+  net_log.DeprecatedAddObserver(&printing_log_observer,
+                                net::NetLogCaptureMode::IncludeSocketBytes());
 
   QuitDelegate delegate;
   scoped_ptr<net::URLFetcher> fetcher(

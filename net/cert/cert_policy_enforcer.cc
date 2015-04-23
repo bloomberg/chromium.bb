@@ -185,11 +185,12 @@ struct ComplianceDetails {
   base::Version whitelist_version;
 };
 
-base::Value* NetLogComplianceCheckResultCallback(X509Certificate* cert,
-                                                 ComplianceDetails* details,
-                                                 NetLog::LogLevel log_level) {
+base::Value* NetLogComplianceCheckResultCallback(
+    X509Certificate* cert,
+    ComplianceDetails* details,
+    NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->Set("certificate", NetLogX509CertificateCallback(cert, log_level));
+  dict->Set("certificate", NetLogX509CertificateCallback(cert, capture_mode));
   dict->SetBoolean("policy_enforcement_required",
                    details->ct_presence_required);
   if (details->ct_presence_required) {

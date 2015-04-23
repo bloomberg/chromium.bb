@@ -2106,7 +2106,7 @@ TEST_F(SSLClientSocketTest, Read_FullLogging) {
 
   TestCompletionCallback callback;
   TestNetLog log;
-  log.SetLogLevel(NetLog::LOG_ALL);
+  log.SetCaptureMode(NetLogCaptureMode::IncludeSocketBytes());
   scoped_ptr<StreamSocket> transport(
       new TCPClientSocket(addr, &log, NetLog::Source()));
   int rv = transport->Connect(callback.callback());

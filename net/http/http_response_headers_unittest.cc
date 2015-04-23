@@ -2266,8 +2266,8 @@ TEST(HttpResponseHeadersTest, ToNetLogParamAndBackAgain) {
   scoped_refptr<net::HttpResponseHeaders> parsed(
       new net::HttpResponseHeaders(headers));
 
-  scoped_ptr<base::Value> event_param(
-      parsed->NetLogCallback(net::NetLog::LOG_ALL_BUT_BYTES));
+  scoped_ptr<base::Value> event_param(parsed->NetLogCallback(
+      net::NetLogCaptureMode::IncludeCookiesAndCredentials()));
   scoped_refptr<net::HttpResponseHeaders> recreated;
 
   ASSERT_TRUE(net::HttpResponseHeaders::FromNetLogParam(event_param.get(),

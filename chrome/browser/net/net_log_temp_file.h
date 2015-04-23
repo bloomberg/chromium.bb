@@ -113,8 +113,8 @@ class NetLogTempFile {
     LOG_TYPE_STRIP_PRIVATE_DATA,
   };
 
-  // Returns the NetLog::LogLevel corresponding to a LogType.
-  static net::NetLog::LogLevel GetLogLevelForLogType(LogType log_type);
+  // Returns the NetLog::CaptureMode corresponding to a LogType.
+  static net::NetLogCaptureMode GetCaptureModeForLogType(LogType log_type);
 
   // Initializes the |state_| to STATE_NOT_LOGGING and |log_type_| to
   // LOG_TYPE_NONE (if there is no temporary file from earlier run) or
@@ -123,8 +123,9 @@ class NetLogTempFile {
   bool EnsureInit();
 
   // Start collecting NetLog data into chrome-net-export-log.json file in
-  // base::GetTempDir() directory, using the specified log level. It is a no-op
-  // if we are already collecting data into a file, and |log_level| is ignored.
+  // base::GetTempDir() directory, using the specified capture mode. It is a
+  // no-op if we are already collecting data into a file, and |capture_mode| is
+  // ignored.
   // TODO(mmenke):  That's rather weird behavior, think about improving it.
   void StartNetLog(LogType log_type);
 

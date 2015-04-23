@@ -359,7 +359,8 @@ void MCSProbe::InitializeNetworkState() {
   }
   if (log_file.get()) {
     logger_.reset(new net::WriteToFileNetLogObserver());
-    logger_->set_log_level(net::NetLog::LOG_ALL_BUT_BYTES);
+    logger_->set_capture_mode(
+        net::NetLogCaptureMode::IncludeCookiesAndCredentials());
     logger_->StartObserving(&net_log_, log_file.Pass(), nullptr, nullptr);
   }
 

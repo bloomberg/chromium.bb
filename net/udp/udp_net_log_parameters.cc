@@ -16,10 +16,10 @@ namespace {
 base::Value* NetLogUDPDataTranferCallback(int byte_count,
                                           const char* bytes,
                                           const IPEndPoint* address,
-                                          NetLog::LogLevel log_level) {
+                                          NetLogCaptureMode capture_mode) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("byte_count", byte_count);
-  if (NetLog::IsLoggingBytes(log_level))
+  if (capture_mode.include_socket_bytes())
     dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, byte_count));
   if (address)
     dict->SetString("address", address->ToString());
@@ -27,7 +27,7 @@ base::Value* NetLogUDPDataTranferCallback(int byte_count,
 }
 
 base::Value* NetLogUDPConnectCallback(const IPEndPoint* address,
-                                      NetLog::LogLevel /* log_level */) {
+                                      NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("address", address->ToString());
   return dict;

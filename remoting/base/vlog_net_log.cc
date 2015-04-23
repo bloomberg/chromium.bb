@@ -42,7 +42,8 @@ void VlogNetLog::Observer::OnAddEntry(const net::NetLog::Entry& entry) {
 
 VlogNetLog::VlogNetLog()
     : observer_(new Observer()) {
-  DeprecatedAddObserver(observer_.get(), LOG_ALL_BUT_BYTES);
+  DeprecatedAddObserver(observer_.get(),
+                        net::NetLogCaptureMode::IncludeCookiesAndCredentials());
 }
 
 VlogNetLog::~VlogNetLog() {
