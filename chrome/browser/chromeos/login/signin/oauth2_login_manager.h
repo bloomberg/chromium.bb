@@ -58,8 +58,6 @@ class OAuth2LoginManager : public KeyedService,
     RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN,
     // Restore session from OAuth2 refresh token passed via command line.
     RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN,
-    // Restore session from authentication code passed via command line.
-    RESTORE_FROM_AUTH_CODE,
   };
 
   class Observer {
@@ -84,24 +82,20 @@ class OAuth2LoginManager : public KeyedService,
   void AddObserver(OAuth2LoginManager::Observer* observer);
   void RemoveObserver(OAuth2LoginManager::Observer* observer);
 
-  // Restores and verifies OAuth tokens either following specified
-  // |restore_strategy|. For |restore_strategy| with values
-  // RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN or
-  // RESTORE_FROM_AUTH_CODE, respectively
-  // parameters |oauth2_refresh_token| or |auth_code| need to have non-empty
-  // value.
-  // For |restore_strategy| with values RESTORE_FROM_COOKIE_JAR or
-  // RESTORE_FROM_AUTH_CODE |auth_request_context| must be initialized.
-  void RestoreSession(
-      net::URLRequestContextGetter* auth_request_context,
-      SessionRestoreStrategy restore_strategy,
-      const std::string& oauth2_refresh_token,
-      const std::string& auth_code);
+  // Restores and verifies OAuth tokens following specified |restore_strategy|.
+  // For |restore_strategy| RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN, parameter
+  // |oauth2_refresh_token| needs to have a non-empty value.
+  // For |restore_strategy| RESTORE_FROM_COOKIE_JAR |auth_request_context| must
+  // be initialized.
+  void RestoreSession(net::URLRequestContextGetter* auth_request_context,
+                      SessionRestoreStrategy restore_strategy,
+                      const std::string& oauth2_refresh_token,
+                      const std::string& oauth2_access_token);
 
   // Continues session restore after transient network errors.
   void ContinueSessionRestore();
 
-  // Start resporting session from saved OAuth2 refresh token.
+  // Start restoring session from saved OAuth2 refresh token.
   void RestoreSessionFromSavedTokens();
 
   // Stops all background authentication requests.
@@ -152,7 +146,7 @@ class OAuth2LoginManager : public KeyedService,
 
   // gaia::GaiaOAuthClient::Delegate overrides.
   void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds) override;
+                              int expires_in_seconds) override;
   void OnGetUserInfoResponse(
       scoped_ptr<base::DictionaryValue> user_info) override;
   void OnOAuthError() override;
@@ -249,9 +243,6 @@ class OAuth2LoginManager : public KeyedService,
 
   // OAuthLogin scoped access token.
   std::string oauthlogin_access_token_;
-
-  // Authorization code for fetching OAuth2 tokens.
-  std::string auth_code_;
 
   // Session restore start time.
   base::Time session_restore_start_;

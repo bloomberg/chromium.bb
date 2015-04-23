@@ -38,6 +38,7 @@ namespace chromeos {
 class BootstrapUserContextInitializer;
 class CrosSettings;
 class LoginDisplayHost;
+class OAuth2TokenInitializer;
 
 namespace login {
 class NetworkStateHelper;
@@ -238,6 +239,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void OnBootstrapUserContextInitialized(bool success,
                                          const UserContext& user_context);
 
+  // Callback invoked when |oauth2_token_initializer_| has finished.
+  void OnOAuth2TokensFetched(bool success, const UserContext& user_context);
+
   // Public session auto-login timer.
   scoped_ptr<base::OneShotTimer<ExistingUserController> > auto_login_timer_;
 
@@ -324,6 +328,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   scoped_ptr<BootstrapUserContextInitializer>
       bootstrap_user_context_initializer_;
+
+  scoped_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 
