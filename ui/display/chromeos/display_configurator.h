@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -17,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/display/chromeos/query_content_protection_task.h"
 #include "ui/display/display_export.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/native_display_observer.h"
@@ -283,9 +285,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   MultipleDisplayState ChooseDisplayState(
       chromeos::DisplayPowerState power_state) const;
 
-  // Returns true if in either hardware or software mirroring mode.
-  bool IsMirroring() const;
-
   // Applies display protections according to requests.
   bool ApplyProtections(const ContentProtections& requests);
 
@@ -312,6 +311,19 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // the configuration status used when calling the callbacks.
   void CallAndClearInProgressCallbacks(bool success);
   void CallAndClearQueuedCallbacks(bool success);
+
+  // Content protection callbacks called by the tasks when they finish. These
+  // are responsible for destroying the task, replying to the caller that made
+  // the task and starting the a new content protection task if one is queued.
+  void OnContentProtectionQueried(
+      ContentProtectionClientId client_id,
+      int64_t display_id,
+      QueryContentProtectionTask::Response response);
+  void OnContentProtectionEnabled(ContentProtectionClientId client_id,
+                                  int64_t display_id,
+                                  uint32_t desired_method_mask,
+                                  bool success);
+  void OnContentProtectionClientUnregistered(bool success);
 
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
@@ -355,6 +367,10 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // List of callbacks belonging to the currently running display configuration
   // task.
   std::vector<ConfigurationCallback> in_progress_configuration_callbacks_;
+
+  std::queue<base::Closure> content_protection_tasks_;
+  std::queue<QueryProtectionCallback> query_protection_callbacks_;
+  std::queue<EnableProtectionCallback> enable_protection_callbacks_;
 
   // True if the caller wants to force the display configuration process.
   bool force_configure_;

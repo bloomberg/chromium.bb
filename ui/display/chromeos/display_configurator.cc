@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "ui/display/chromeos/apply_content_protection_task.h"
 #include "ui/display/chromeos/display_layout_manager.h"
 #include "ui/display/chromeos/display_util.h"
 #include "ui/display/chromeos/update_display_configuration_task.h"
@@ -483,6 +484,16 @@ DisplayConfigurator::~DisplayConfigurator() {
 
   CallAndClearInProgressCallbacks(false);
   CallAndClearQueuedCallbacks(false);
+
+  while (!query_protection_callbacks_.empty()) {
+    query_protection_callbacks_.front().Run(QueryProtectionResponse());
+    query_protection_callbacks_.pop();
+  }
+
+  while (!enable_protection_callbacks_.empty()) {
+    enable_protection_callbacks_.front().Run(false);
+    enable_protection_callbacks_.pop();
+  }
 }
 
 void DisplayConfigurator::SetDelegateForTesting(
@@ -555,67 +566,6 @@ void DisplayConfigurator::ForceInitialConfigure(
   configuration_task_->Run();
 }
 
-bool DisplayConfigurator::IsMirroring() const {
-  return current_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR ||
-         (mirroring_controller_ &&
-          mirroring_controller_->SoftwareMirroringEnabled());
-}
-
-bool DisplayConfigurator::ApplyProtections(const ContentProtections& requests) {
-  for (const DisplaySnapshot* display : cached_displays_) {
-    uint32_t all_desired = 0;
-
-    // In mirror mode, protection request of all displays need to be fulfilled.
-    // In non-mirror mode, only request of client's display needs to be
-    // fulfilled.
-    if (IsMirroring()) {
-      for (const auto& protections_pair : requests)
-        all_desired |= protections_pair.second;
-    } else {
-      ContentProtections::const_iterator request_it =
-          requests.find(display->display_id());
-      if (request_it != requests.end())
-        all_desired = request_it->second;
-    }
-
-    switch (display->type()) {
-      case DISPLAY_CONNECTION_TYPE_UNKNOWN:
-        return false;
-      // DisplayPort, DVI, and HDMI all support HDCP.
-      case DISPLAY_CONNECTION_TYPE_DISPLAYPORT:
-      case DISPLAY_CONNECTION_TYPE_DVI:
-      case DISPLAY_CONNECTION_TYPE_HDMI: {
-        HDCPState current_state;
-        // Need to poll the driver for updates since other applications may
-        // have updated the state.
-        if (!native_display_delegate_->GetHDCPState(*display, &current_state))
-          return false;
-        bool current_desired = (current_state != HDCP_STATE_UNDESIRED);
-        bool new_desired = (all_desired & CONTENT_PROTECTION_METHOD_HDCP);
-        // Don't enable again if HDCP is already active. Some buggy drivers
-        // may disable and enable if setting "desired" in active state.
-        if (current_desired != new_desired) {
-          HDCPState new_state =
-              new_desired ? HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
-          if (!native_display_delegate_->SetHDCPState(*display, new_state))
-            return false;
-        }
-        break;
-      }
-      case DISPLAY_CONNECTION_TYPE_INTERNAL:
-      case DISPLAY_CONNECTION_TYPE_VGA:
-      case DISPLAY_CONNECTION_TYPE_NETWORK:
-        // No protections for these types. Do nothing.
-        break;
-      case DISPLAY_CONNECTION_TYPE_NONE:
-        NOTREACHED();
-        break;
-    }
-  }
-
-  return true;
-}
-
 DisplayConfigurator::ContentProtectionClientId
 DisplayConfigurator::RegisterContentProtectionClient() {
   if (!configure_display_ || display_externally_controlled_)
@@ -635,71 +585,78 @@ void DisplayConfigurator::UnregisterContentProtectionClient(
     }
   }
 
-  ApplyProtections(protections);
+  enable_protection_callbacks_.push(base::Bind(&DoNothing));
+  ApplyContentProtectionTask* task = new ApplyContentProtectionTask(
+      layout_manager_.get(), native_display_delegate_.get(), protections,
+      base::Bind(&DisplayConfigurator::OnContentProtectionClientUnregistered,
+                 weak_ptr_factory_.GetWeakPtr()));
+  content_protection_tasks_.push(
+      base::Bind(&ApplyContentProtectionTask::Run, base::Owned(task)));
+
+  if (content_protection_tasks_.size() == 1)
+    content_protection_tasks_.front().Run();
+}
+
+void DisplayConfigurator::OnContentProtectionClientUnregistered(bool success) {
+  DCHECK(!content_protection_tasks_.empty());
+  content_protection_tasks_.pop();
+
+  DCHECK(!enable_protection_callbacks_.empty());
+  EnableProtectionCallback callback = enable_protection_callbacks_.front();
+  enable_protection_callbacks_.pop();
+
+  if (!content_protection_tasks_.empty())
+    content_protection_tasks_.front().Run();
 }
 
 void DisplayConfigurator::QueryContentProtectionStatus(
     ContentProtectionClientId client_id,
     int64_t display_id,
     const QueryProtectionCallback& callback) {
-  QueryProtectionResponse response;
   if (!configure_display_ || display_externally_controlled_) {
-    callback.Run(response);
+    callback.Run(QueryProtectionResponse());
     return;
   }
 
-  uint32_t enabled = 0;
-  uint32_t unfulfilled = 0;
-  uint32_t link_mask = 0;
-  for (const DisplaySnapshot* display : cached_displays_) {
-    // Query display if it is in mirror mode or client on the same display.
-    if (!IsMirroring() && display->display_id() != display_id)
-      continue;
+  query_protection_callbacks_.push(callback);
+  QueryContentProtectionTask* task = new QueryContentProtectionTask(
+      layout_manager_.get(), native_display_delegate_.get(), display_id,
+      base::Bind(&DisplayConfigurator::OnContentProtectionQueried,
+                 weak_ptr_factory_.GetWeakPtr(), client_id, display_id));
+  content_protection_tasks_.push(
+      base::Bind(&QueryContentProtectionTask::Run, base::Owned(task)));
+  if (content_protection_tasks_.size() == 1)
+    content_protection_tasks_.front().Run();
+}
 
-    link_mask |= display->type();
-    switch (display->type()) {
-      case DISPLAY_CONNECTION_TYPE_UNKNOWN:
-        callback.Run(response);
-        return;
-      // DisplayPort, DVI, and HDMI all support HDCP.
-      case DISPLAY_CONNECTION_TYPE_DISPLAYPORT:
-      case DISPLAY_CONNECTION_TYPE_DVI:
-      case DISPLAY_CONNECTION_TYPE_HDMI: {
-        HDCPState state;
-        if (!native_display_delegate_->GetHDCPState(*display, &state)) {
-          callback.Run(response);
-          return;
-        }
-
-        if (state == HDCP_STATE_ENABLED)
-          enabled |= CONTENT_PROTECTION_METHOD_HDCP;
-        else
-          unfulfilled |= CONTENT_PROTECTION_METHOD_HDCP;
-        break;
-      }
-      case DISPLAY_CONNECTION_TYPE_INTERNAL:
-      case DISPLAY_CONNECTION_TYPE_VGA:
-      case DISPLAY_CONNECTION_TYPE_NETWORK:
-        // No protections for these types. Do nothing.
-        break;
-      case DISPLAY_CONNECTION_TYPE_NONE:
-        NOTREACHED();
-        break;
-    }
-  }
+void DisplayConfigurator::OnContentProtectionQueried(
+    ContentProtectionClientId client_id,
+    int64_t display_id,
+    QueryContentProtectionTask::Response task_response) {
+  QueryProtectionResponse response;
+  response.success = task_response.success;
+  response.link_mask = task_response.link_mask;
 
   // Don't reveal protections requested by other clients.
   ProtectionRequests::iterator it = client_protection_requests_.find(client_id);
-  if (it != client_protection_requests_.end()) {
+  if (response.success && it != client_protection_requests_.end()) {
     uint32_t requested_mask = 0;
     if (it->second.find(display_id) != it->second.end())
       requested_mask = it->second[display_id];
-    response.protection_mask = enabled & ~unfulfilled & requested_mask;
+    response.protection_mask =
+        task_response.enabled & ~task_response.unfulfilled & requested_mask;
   }
 
-  response.success = true;
-  response.link_mask = link_mask;
+  DCHECK(!content_protection_tasks_.empty());
+  content_protection_tasks_.pop();
+
+  DCHECK(!query_protection_callbacks_.empty());
+  QueryProtectionCallback callback = query_protection_callbacks_.front();
+  query_protection_callbacks_.pop();
   callback.Run(response);
+
+  if (!content_protection_tasks_.empty())
+    content_protection_tasks_.front().Run();
 }
 
 void DisplayConfigurator::EnableContentProtection(
@@ -724,7 +681,31 @@ void DisplayConfigurator::EnableContentProtection(
   }
   protections[display_id] |= desired_method_mask;
 
-  if (!ApplyProtections(protections)) {
+  enable_protection_callbacks_.push(callback);
+  ApplyContentProtectionTask* task = new ApplyContentProtectionTask(
+      layout_manager_.get(), native_display_delegate_.get(), protections,
+      base::Bind(&DisplayConfigurator::OnContentProtectionEnabled,
+                 weak_ptr_factory_.GetWeakPtr(), client_id, display_id,
+                 desired_method_mask));
+  content_protection_tasks_.push(
+      base::Bind(&ApplyContentProtectionTask::Run, base::Owned(task)));
+  if (content_protection_tasks_.size() == 1)
+    content_protection_tasks_.front().Run();
+}
+
+void DisplayConfigurator::OnContentProtectionEnabled(
+    ContentProtectionClientId client_id,
+    int64_t display_id,
+    uint32_t desired_method_mask,
+    bool success) {
+  DCHECK(!content_protection_tasks_.empty());
+  content_protection_tasks_.pop();
+
+  DCHECK(!enable_protection_callbacks_.empty());
+  EnableProtectionCallback callback = enable_protection_callbacks_.front();
+  enable_protection_callbacks_.pop();
+
+  if (!success) {
     callback.Run(false);
     return;
   }
@@ -741,6 +722,8 @@ void DisplayConfigurator::EnableContentProtection(
   }
 
   callback.Run(true);
+  if (!content_protection_tasks_.empty())
+    content_protection_tasks_.front().Run();
 }
 
 std::vector<ui::ColorCalibrationProfile>
