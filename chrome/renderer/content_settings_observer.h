@@ -12,7 +12,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "third_party/WebKit/public/platform/WebPermissionCallbacks.h"
 #include "third_party/WebKit/public/web/WebContentSettingsClient.h"
 
 class GURL;
@@ -63,8 +62,6 @@ class ContentSettingsObserver
                              unsigned long estimated_size);
   virtual void requestFileSystemAccessAsync(
       const blink::WebContentSettingCallbacks& callbacks);
-  virtual void requestFileSystemAccessAsync(
-      const blink::WebPermissionCallbacks& callbacks);
   virtual bool allowImage(bool enabled_per_settings,
                           const blink::WebURL& image_url);
   virtual bool allowIndexedDB(const blink::WebString& name,

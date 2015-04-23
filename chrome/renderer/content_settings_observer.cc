@@ -34,7 +34,6 @@ using blink::WebContentSettingCallbacks;
 using blink::WebDataSource;
 using blink::WebDocument;
 using blink::WebFrame;
-using blink::WebPermissionCallbacks;
 using blink::WebSecurityOrigin;
 using blink::WebString;
 using blink::WebURL;
@@ -283,29 +282,6 @@ bool ContentSettingsObserver::allowDatabase(const WebString& name,
       GURL(frame->top()->securityOrigin().toString()), name, display_name,
       &result));
   return result;
-}
-
-void ContentSettingsObserver::requestFileSystemAccessAsync(
-    const WebPermissionCallbacks& callbacks) {
-  WebFrame* frame = render_frame()->GetWebFrame();
-  if (frame->securityOrigin().isUnique() ||
-      frame->top()->securityOrigin().isUnique()) {
-    WebPermissionCallbacks permissionCallbacks(callbacks);
-    permissionCallbacks.doDeny();
-    return;
-  }
-  ++current_request_id_;
-  std::pair<PermissionRequestMap::iterator, bool> insert_result =
-      permission_requests_.insert(std::make_pair(current_request_id_,
-          reinterpret_cast<const WebContentSettingCallbacks&>(callbacks)));
-
-  // Verify there are no duplicate insertions.
-  DCHECK(insert_result.second);
-
-  Send(new ChromeViewHostMsg_RequestFileSystemAccessAsync(
-      routing_id(), current_request_id_,
-      GURL(frame->securityOrigin().toString()),
-      GURL(frame->top()->securityOrigin().toString())));
 }
 
 void ContentSettingsObserver::requestFileSystemAccessAsync(
