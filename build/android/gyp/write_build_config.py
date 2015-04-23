@@ -220,8 +220,9 @@ def main(argv):
     config['resources']['extra_package_names'] = [
         c['package_name'] for c in all_resources_deps if 'package_name' in c]
 
+  if options.type in ['android_apk', 'deps_dex']:
+    deps_dex_files = [c['dex_path'] for c in all_library_deps]
 
-  deps_dex_files = [c['dex_path'] for c in all_library_deps]
   # An instrumentation test apk should exclude the dex files that are in the apk
   # under test.
   if options.type == 'android_apk' and options.tested_apk_config:
