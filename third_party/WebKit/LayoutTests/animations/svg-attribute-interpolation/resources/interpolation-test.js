@@ -217,8 +217,12 @@
   var xlinkNamespace = 'http://www.w3.org/1999/xlink';
 
   var animatedNumberOptionalNumberAttributes = [
+    'baseFrequency',
     'filterRes',
+    'kernelUnitLength',
     'order',
+    'radius',
+    'stdDeviation',
   ];
 
   function namespacedAttributeName(attributeName) {

@@ -21,6 +21,7 @@
 #include "core/animation/LengthStyleInterpolation.h"
 #include "core/animation/ListSVGInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
+#include "core/animation/NumberOptionalNumberSVGInterpolation.h"
 #include "core/animation/NumberSVGInterpolation.h"
 #include "core/animation/PointSVGInterpolation.h"
 #include "core/animation/RectSVGInterpolation.h"
@@ -489,6 +490,8 @@ PassRefPtrWillBeRawPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fr
         SVGNumberNegativeValuesMode negativeValuesMode = &attribute->attributeName() == &SVGNames::pathLengthAttr ? ForbidNegativeNumbers : AllowNegativeNumbers;
         return NumberSVGInterpolation::create(fromValue, toValue, attribute, negativeValuesMode);
     }
+    case AnimatedNumberOptionalNumber:
+        return NumberOptionalNumberSVGInterpolation::create(fromValue, toValue, attribute);
     case AnimatedNumberList:
         interpolation = ListSVGInterpolation<NumberSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
         break;
