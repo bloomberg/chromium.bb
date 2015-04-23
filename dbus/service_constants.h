@@ -1226,6 +1226,7 @@ const char kAdapterProperty[] = "Adapter";
 const char kLegacyPairingProperty[] = "LegacyPairing";
 const char kModaliasProperty[] = "Modalias";
 const char kRSSIProperty[] = "RSSI";
+const char kTxPowerProperty[] = "TxPower";
 // TODO(tengs): Remove deprecated constants after they are removed in the Chrome
 // codebase. (See crbug.com/430665).
 const char kConnectionRSSI[] = "ConnectionRSSI";             // DEPRECATED
