@@ -97,6 +97,8 @@
         'browser/browser_state/browser_state_otr_helper.cc',
         'browser/browser_state/browser_state_otr_helper.h',
         'browser/browsing_data_change_listening.h',
+        'browser/chrome_paths.h',
+        'browser/chrome_paths.mm',
         'browser/chrome_switches.cc',
         'browser/chrome_switches.h',
         'browser/chrome_url_constants.cc',
