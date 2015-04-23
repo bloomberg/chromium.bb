@@ -13,11 +13,21 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
+#include "media/audio/audio_manager_factory.h"
 #include "media/audio/fake_audio_log_factory.h"
 
 namespace media {
 namespace {
+
+// The singleton instance of AudioManager. This is set when Create() is called.
 AudioManager* g_last_created = NULL;
+
+// The singleton instance of AudioManagerFactory. This is only set if
+// SetFactory() is called. If it is set when Create() is called, its
+// CreateInstance() function is used to set |g_last_created|. Otherwise, the
+// linked implementation of media::CreateAudioManager is used to set
+// |g_last_created|.
+AudioManagerFactory* g_audio_manager_factory = NULL;
 
 // Maximum number of failed pings to the audio thread allowed. A crash will be
 // issued once this count is reached.  We require at least two pings before
@@ -124,7 +134,7 @@ class AudioManagerHelper : public base::PowerObserver {
 
 static base::LazyInstance<AudioManagerHelper>::Leaky g_helper =
     LAZY_INSTANCE_INITIALIZER;
-}
+}  // namespace
 
 // Forward declaration of the platform specific AudioManager factory function.
 AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory);
@@ -137,9 +147,29 @@ AudioManager::~AudioManager() {
 }
 
 // static
+void AudioManager::SetFactory(AudioManagerFactory* factory) {
+  CHECK(factory);
+  CHECK(!g_last_created);
+  CHECK(!g_audio_manager_factory);
+  g_audio_manager_factory = factory;
+}
+
+// static
+void AudioManager::ResetFactoryForTesting() {
+  if (g_audio_manager_factory) {
+    delete g_audio_manager_factory;
+    g_audio_manager_factory = nullptr;
+  }
+}
+
+// static
 AudioManager* AudioManager::Create(AudioLogFactory* audio_log_factory) {
   CHECK(!g_last_created);
-  g_last_created = CreateAudioManager(audio_log_factory);
+  if (g_audio_manager_factory)
+    g_last_created = g_audio_manager_factory->CreateInstance(audio_log_factory);
+  else
+    g_last_created = CreateAudioManager(audio_log_factory);
+
   return g_last_created;
 }
 
