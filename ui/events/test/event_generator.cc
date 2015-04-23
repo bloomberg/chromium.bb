@@ -540,7 +540,8 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
                                       int flags) {
 #if defined(OS_WIN)
   UINT key_press = WM_KEYDOWN;
-  uint16 character = ui::GetCharacterFromKeyCode(key_code, flags);
+  uint16 character = ui::DomCodeToUsLayoutCharacter(
+      ui::UsLayoutKeyboardCodeToDomCode(key_code), flags);
   if (is_press && character) {
     MSG native_event = { NULL, WM_KEYDOWN, key_code, 0 };
     TestKeyEvent keyev(native_event, flags);
