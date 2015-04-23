@@ -701,6 +701,9 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
       50);
 
   initialized_ = true;
+
+  if (!restore_old_session_cookies_)
+    DeleteSessionCookiesOnStartup();
   return true;
 }
 
@@ -1296,7 +1299,7 @@ void SQLitePersistentCookieStore::Backend::SetForceKeepSessionState() {
 
 void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnStartup() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
-  if (!db_->Execute("DELETE FROM cookies WHERE persistent == 0"))
+  if (!db_->Execute("DELETE FROM cookies WHERE persistent != 1"))
     LOG(WARNING) << "Unable to delete session cookies.";
 }
 
@@ -1321,8 +1324,6 @@ void SQLitePersistentCookieStore::Backend::FinishedLoadingCookies(
     bool success) {
   PostClientTask(FROM_HERE, base::Bind(&Backend::CompleteLoadInForeground, this,
                                        loaded_callback, success));
-  if (success && !restore_old_session_cookies_)
-    DeleteSessionCookiesOnStartup();
 }
 
 SQLitePersistentCookieStore::SQLitePersistentCookieStore(
