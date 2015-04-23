@@ -17,13 +17,12 @@ class DictionaryValue;
 }
 
 namespace extensions {
-class Dispatcher;
 class EventMatcher;
 
 // This class deals with the javascript bindings related to Event objects.
 class EventBindings : public ObjectBackedNativeHandler {
  public:
-  EventBindings(Dispatcher* dispatcher, ScriptContext* context);
+  explicit EventBindings(ScriptContext* context);
   ~EventBindings() override;
 
  private:
@@ -71,8 +70,6 @@ class EventBindings : public ObjectBackedNativeHandler {
   // The set of attached events. Maintain this so that we can detch them on
   // unload.
   std::set<std::string> attached_event_names_;
-
-  Dispatcher* dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(EventBindings);
 };

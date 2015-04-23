@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/common/url_constants.h"
@@ -120,9 +121,8 @@ ScriptContext::~ScriptContext() {
 // static
 bool ScriptContext::IsSandboxedPage(const ExtensionSet& extensions,
                                     const GURL& url) {
-  // TODO(kalman): This is checking for the wrong thing, it should be checking
-  // if the frame's security origin is unique. The extension sandbox directive
-  // is checked for in extensions/common/manifest_handlers/csp_info.cc.
+  // TODO(kalman): This is checking the wrong thing. See comment in
+  // HasAccessOrThrowError.
   if (url.SchemeIs(kExtensionScheme)) {
     const Extension* extension = extensions.GetByID(url.host());
     if (extension) {
@@ -336,8 +336,41 @@ bool ScriptContext::HasAPIPermission(APIPermission::ID permission) const {
   return false;
 }
 
+bool ScriptContext::HasAccessOrThrowError(const std::string& name) {
+  // Theoretically[1] we could end up with bindings being injected into
+  // sandboxed frames, for example content scripts. Don't let them execute API
+  // functions.
+  //
+  // In any case, this check is silly. The frame's document's security origin
+  // already tells us if it's sandboxed. The only problem is that until
+  // crbug.com/466373 is fixed, we don't know the security origin up-front and
+  // may not know it here, either.
+  //
+  // [1] citation needed. This ScriptContext should already be in a state that
+  // doesn't allow this, from ScriptContextSet::ClassifyJavaScriptContext.
+  if (extension() &&
+      SandboxedPageInfo::IsSandboxedPage(extension(), url_.path())) {
+    static const char kMessage[] =
+        "%s cannot be used within a sandboxed frame.";
+    std::string error_msg = base::StringPrintf(kMessage, name.c_str());
+    isolate()->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate(), error_msg.c_str())));
+    return false;
+  }
+
+  Feature::Availability availability = GetAvailability(name);
+  if (!availability.is_available()) {
+    isolate()->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate(), availability.message().c_str())));
+    return false;
+  }
+
+  return true;
+}
+
 ScriptContext::Runner::Runner(ScriptContext* context) : context_(context) {
 }
+
 void ScriptContext::Runner::Run(const std::string& source,
                                 const std::string& resource_name) {
   context_->module_system()->RunString(source, resource_name);

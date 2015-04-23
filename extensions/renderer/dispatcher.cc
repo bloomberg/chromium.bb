@@ -380,37 +380,6 @@ void Dispatcher::OnExtensionResponse(int request_id,
   request_sender_->HandleResponse(request_id, success, response, error);
 }
 
-bool Dispatcher::CheckContextAccessToExtensionAPI(
-    const std::string& function_name,
-    ScriptContext* context) const {
-  if (!context) {
-    DLOG(ERROR) << "Not in a v8::Context";
-    return false;
-  }
-
-  // Theoretically we could end up with bindings being injected into sandboxed
-  // frames, for example content scripts. Don't let them execute API functions.
-  blink::WebFrame* frame = context->web_frame();
-  if (ScriptContext::IsSandboxedPage(
-          extensions_, ScriptContext::GetDataSourceURLForFrame(frame))) {
-    static const char kMessage[] =
-        "%s cannot be used within a sandboxed frame.";
-    std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
-    context->isolate()->ThrowException(v8::Exception::Error(
-        v8::String::NewFromUtf8(context->isolate(), error_msg.c_str())));
-    return false;
-  }
-
-  Feature::Availability availability = context->GetAvailability(function_name);
-  if (!availability.is_available()) {
-    context->isolate()->ThrowException(
-        v8::Exception::Error(v8::String::NewFromUtf8(
-            context->isolate(), availability.message().c_str())));
-  }
-
-  return availability.is_available();
-}
-
 void Dispatcher::DispatchEvent(const std::string& extension_id,
                                const std::string& event_name) const {
   base::ListValue args;
@@ -657,8 +626,7 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(
           new V8ContextNativeHandler(context, dispatcher)));
   module_system->RegisterNativeHandler(
-      "event_natives",
-      scoped_ptr<NativeHandler>(new EventBindings(dispatcher, context)));
+      "event_natives", scoped_ptr<NativeHandler>(new EventBindings(context)));
   module_system->RegisterNativeHandler(
       "messaging_natives",
       scoped_ptr<NativeHandler>(MessagingBindings::Get(dispatcher, context)));

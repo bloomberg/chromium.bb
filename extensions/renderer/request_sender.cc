@@ -93,7 +93,7 @@ void RequestSender::StartRequest(Source* source,
   }
 
   // TODO(koz): See if we can make this a CHECK.
-  if (!dispatcher_->CheckContextAccessToExtensionAPI(name, context))
+  if (!context->HasAccessOrThrowError(name))
     return;
 
   GURL source_url;

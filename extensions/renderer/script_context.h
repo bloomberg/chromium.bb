@@ -45,11 +45,10 @@ class ScriptContext : public RequestSender::Source {
                 Feature::Context effective_context_type);
   ~ScriptContext() override;
 
-  // Returns whether |url| is sandboxed (as declared in any Extension in
-  // |extension_set| as sandboxed).
-  //
-  // Declared in ScriptContext for lack of a better place, but this should
-  // become unnecessary at some point as crbug.com/466373 is worked on.
+  // Returns whether |url| from any Extension in |extension_set| is sandboxed,
+  // as declared in each Extension's manifest.
+  // TODO(kalman): Delete this when crbug.com/466373 is fixed.
+  // See comment in HasAccessOrThrowError.
   static bool IsSandboxedPage(const ExtensionSet& extension_set,
                               const GURL& url);
 
@@ -173,6 +172,11 @@ class ScriptContext : public RequestSender::Source {
   // context which has been granted the corresponding capability by an
   // extension.
   bool HasAPIPermission(APIPermission::ID permission) const;
+
+  // Throws an Error in this context's JavaScript context, if this context does
+  // not have access to |name|. Returns true if this context has access (i.e.
+  // no exception thrown), false if it does not (i.e. an exception was thrown).
+  bool HasAccessOrThrowError(const std::string& name);
 
  private:
   class Runner;

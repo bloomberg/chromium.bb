@@ -19,8 +19,8 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/value_counter.h"
-#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_helper.h"
+#include "extensions/renderer/script_context.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -136,8 +136,8 @@ bool RemoveFilter(const std::string& event_name,
 
 }  // namespace
 
-EventBindings::EventBindings(Dispatcher* dispatcher, ScriptContext* context)
-    : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
+EventBindings::EventBindings(ScriptContext* context)
+    : ObjectBackedNativeHandler(context) {
   RouteFunction("AttachEvent", base::Bind(&EventBindings::AttachEventHandler,
                                           base::Unretained(this)));
   RouteFunction("DetachEvent", base::Bind(&EventBindings::DetachEventHandler,
@@ -168,8 +168,7 @@ void EventBindings::AttachEventHandler(
 }
 
 void EventBindings::AttachEvent(const std::string& event_name) {
-  // This method throws an exception if it returns false.
-  if (!dispatcher_->CheckContextAccessToExtensionAPI(event_name, context()))
+  if (!context()->HasAccessOrThrowError(event_name))
     return;
 
   // Record the attachment for this context so that events can be detached when
@@ -239,9 +238,7 @@ void EventBindings::AttachFilteredEvent(
   CHECK(args[1]->IsObject());
 
   std::string event_name = *v8::String::Utf8Value(args[0]);
-
-  // This method throws an exception if it returns false.
-  if (!dispatcher_->CheckContextAccessToExtensionAPI(event_name, context()))
+  if (!context()->HasAccessOrThrowError(event_name))
     return;
 
   std::string extension_id = context()->GetExtensionID();

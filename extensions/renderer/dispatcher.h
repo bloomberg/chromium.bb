@@ -111,12 +111,6 @@ class Dispatcher : public content::RenderProcessObserver,
                            const base::ListValue& response,
                            const std::string& error);
 
-  // Checks that the current context contains an extension that has permission
-  // to execute the specified function. If it does not, a v8 exception is thrown
-  // and the method returns false. Otherwise returns true.
-  bool CheckContextAccessToExtensionAPI(const std::string& function_name,
-                                        ScriptContext* context) const;
-
   // Dispatches the event named |event_name| to all render views.
   void DispatchEvent(const std::string& extension_id,
                      const std::string& event_name) const;
