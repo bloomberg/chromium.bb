@@ -103,12 +103,6 @@ void ChromeExtensionsClient::Initialize() {
   // TODO(dmazzoni): remove this once we have an extension API that
   // allows any extension to request read-only access to webui pages.
   scripting_whitelist_.push_back(extension_misc::kChromeVoxExtensionId);
-
-  // Whitelist "Discover DevTools Companion" extension from Google that
-  // needs the ability to script DevTools pages. Companion will assist
-  // online courses and will be needed while the online educational programs
-  // are in place.
-  scripting_whitelist_.push_back("angkfkebojeancgemegoedelbnjgcgme");
 }
 
 const PermissionMessageProvider&
