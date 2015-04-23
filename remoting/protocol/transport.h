@@ -44,11 +44,6 @@ namespace protocol {
 
 class ChannelAuthenticator;
 
-enum class TransportRole {
-  SERVER,
-  CLIENT,
-};
-
 struct TransportRoute {
   enum RouteType {
     DIRECT,
@@ -73,12 +68,6 @@ class Transport : public base::NonThreadSafe {
    public:
     EventHandler() {};
     virtual ~EventHandler() {};
-
-    // Called to pass ICE credentials to the session. Used only for STANDARD
-    // version of ICE, see SetIceVersion().
-    virtual void OnTransportIceCredentials(Transport* transport,
-                                           const std::string& ufrag,
-                                           const std::string& password) = 0;
 
     // Called when the transport generates a new candidate that needs
     // to be passed to the AddRemoteCandidate() method on the remote
@@ -108,10 +97,6 @@ class Transport : public base::NonThreadSafe {
                        Transport::EventHandler* event_handler,
                        const ConnectedCallback& callback) = 0;
 
-  // Sets remote ICE credentials.
-  virtual void SetRemoteCredentials(const std::string& ufrag,
-                                    const std::string& password) = 0;
-
   // Adds |candidate| received from the peer.
   virtual void AddRemoteCandidate(const cricket::Candidate& candidate) = 0;
 
@@ -122,12 +107,6 @@ class Transport : public base::NonThreadSafe {
 
   // Returns true if the channel is already connected.
   virtual bool is_connected() const = 0;
-
-  // Sets ICE version for the transport.
-  //
-  // TODO(sergeyu): Remove this when support for legacy ICE is removed.
-  // crbug.com/473758
-  virtual void SetUseStandardIce(bool use_standard_ice) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Transport);

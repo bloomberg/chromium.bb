@@ -235,8 +235,9 @@ class ProtocolPerfTest
         GetParam().out_of_order_rate);
     scoped_ptr<protocol::TransportFactory> host_transport_factory(
         new protocol::LibjingleTransportFactory(
-            host_signaling_.get(), port_allocator.Pass(), network_settings,
-            protocol::TransportRole::SERVER));
+            host_signaling_.get(),
+            port_allocator.Pass(),
+            network_settings));
 
     scoped_ptr<protocol::SessionManager> session_manager(
         new protocol::JingleSessionManager(host_transport_factory.Pass()));
@@ -305,8 +306,9 @@ class ProtocolPerfTest
         GetParam().out_of_order_rate);
     scoped_ptr<protocol::TransportFactory> client_transport_factory(
         new protocol::LibjingleTransportFactory(
-            client_signaling_.get(), port_allocator.Pass(), network_settings,
-            protocol::TransportRole::CLIENT));
+            client_signaling_.get(),
+            port_allocator.Pass(),
+            network_settings));
 
     std::vector<protocol::AuthenticationMethod> auth_methods;
     auth_methods.push_back(protocol::AuthenticationMethod::Spake2(

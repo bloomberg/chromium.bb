@@ -191,8 +191,7 @@ void TestChromotingClient::StartConnection(
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
-          signal_strategy_.get(), port_allocator.Pass(), network_settings,
-          protocol::TransportRole::CLIENT));
+          signal_strategy_.get(), port_allocator.Pass(), network_settings));
 
   scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
       token_fetcher(new TokenFetcherProxy(
