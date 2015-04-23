@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -133,6 +134,7 @@ ComponentLoader::~ComponentLoader() {
 
 void ComponentLoader::LoadAll() {
   TRACE_EVENT0("browser,startup", "ComponentLoader::LoadAll");
+  TRACK_SCOPED_REGION("Startup", "ComponentLoader::LoadAll");
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.LoadAllComponentTime");
 
   for (RegisteredComponentExtensions::iterator it =

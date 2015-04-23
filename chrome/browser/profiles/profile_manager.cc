@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -990,6 +991,8 @@ void ProfileManager::OnProfileCreated(Profile* profile,
 
 void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
   TRACE_EVENT0("browser", "ProfileManager::DoFinalInit");
+  TRACK_SCOPED_REGION("Startup", "ProfileManager::DoFinalInit");
+
   DoFinalInitForServices(profile, go_off_the_record);
   AddProfileToCache(profile);
   DoFinalInitLogging(profile);
@@ -1004,6 +1007,8 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
 void ProfileManager::DoFinalInitForServices(Profile* profile,
                                             bool go_off_the_record) {
   TRACE_EVENT0("browser", "ProfileManager::DoFinalInitForServices");
+  TRACK_SCOPED_REGION("Startup", "ProfileManager::DoFinalInitForServices");
+
 #if defined(ENABLE_EXTENSIONS)
   ProfileInfoCache& cache = GetProfileInfoCache();
   extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
@@ -1070,6 +1075,7 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
 Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
   TRACE_EVENT0("browser", "ProfileManager::CreateProfileHelper");
   SCOPED_UMA_HISTOGRAM_TIMER("Profile.CreateProfileHelperTime");
+  TRACK_SCOPED_REGION("Startup", "ProfileManager::CreateProfileHelper");
 
   return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
 }
@@ -1120,6 +1126,8 @@ Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
 
 bool ProfileManager::AddProfile(Profile* profile) {
   TRACE_EVENT0("browser", "ProfileManager::AddProfile");
+  TRACK_SCOPED_REGION("Startup", "ProfileManager::AddProfile");
+
   DCHECK(profile);
 
   // Make sure that we're not loading a profile with the same ID as a profile
@@ -1140,6 +1148,8 @@ bool ProfileManager::AddProfile(Profile* profile) {
 Profile* ProfileManager::CreateAndInitializeProfile(
     const base::FilePath& profile_dir) {
   TRACE_EVENT0("browser", "ProfileManager::CreateAndInitializeProfile");
+  TRACK_SCOPED_REGION(
+      "Startup", "ProfileManager::CreateAndInitializeProfile");
   SCOPED_UMA_HISTOGRAM_LONG_TIMER("Profile.CreateAndInitializeProfile");
 
   // CHECK that we are not trying to load the same profile twice, to prevent

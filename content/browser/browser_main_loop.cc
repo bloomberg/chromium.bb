@@ -14,6 +14,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/process_metrics.h"
+#include "base/profiler/scoped_profile.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system_monitor/system_monitor.h"
@@ -381,6 +382,8 @@ BrowserMainLoop::~BrowserMainLoop() {
 
 void BrowserMainLoop::Init() {
   TRACE_EVENT0("startup", "BrowserMainLoop::Init");
+  TRACK_SCOPED_REGION("Startup", "BrowserMainLoop::Init");
+
   parts_.reset(
       GetContentClient()->browser()->CreateBrowserMainParts(parameters_));
 }
@@ -389,6 +392,7 @@ void BrowserMainLoop::Init() {
 
 void BrowserMainLoop::EarlyInitialization() {
   TRACE_EVENT0("startup", "BrowserMainLoop::EarlyInitialization");
+  TRACK_SCOPED_REGION("Startup", "BrowserMainLoop::EarlyInitialization");
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // No thread should be created before this call, as SetupSandbox()
@@ -471,6 +475,8 @@ void BrowserMainLoop::EarlyInitialization() {
 
 void BrowserMainLoop::MainMessageLoopStart() {
   TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart");
+  TRACK_SCOPED_REGION("Startup", "BrowserMainLoop::MainMessageLoopStart");
+
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::MainMessageLoopStart:PreMainMessageLoopStart");
@@ -588,6 +594,8 @@ int BrowserMainLoop::PreCreateThreads() {
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::CreateThreads:PreCreateThreads");
+    TRACK_SCOPED_REGION("Startup", "BrowserMainLoop::PreCreateThreads");
+
     result_code_ = parts_->PreCreateThreads();
   }
 
@@ -640,6 +648,7 @@ int BrowserMainLoop::PreCreateThreads() {
 
 void BrowserMainLoop::CreateStartupTasks() {
   TRACE_EVENT0("startup", "BrowserMainLoop::CreateStartupTasks");
+  TRACK_SCOPED_REGION("Startup", "BrowserMainLoop::CreateStartupTasks");
 
   // First time through, we really want to create all the tasks
   if (!startup_task_runner_.get()) {
@@ -690,6 +699,7 @@ void BrowserMainLoop::CreateStartupTasks() {
 
 int BrowserMainLoop::CreateThreads() {
   TRACE_EVENT0("startup", "BrowserMainLoop::CreateThreads");
+  TRACK_SCOPED_REGION("Startup", "BrowserMainLoop::CreateThreads");
 
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -786,6 +796,9 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::CreateThreads:PreMainMessageLoopRun");
+    TRACK_SCOPED_REGION(
+        "Startup", "BrowserMainLoop::PreMainMessageLoopRun");
+
     parts_->PreMainMessageLoopRun();
   }
 
@@ -1186,6 +1199,8 @@ bool BrowserMainLoop::UsingInProcessGpu() const {
 
 bool BrowserMainLoop::InitializeToolkit() {
   TRACE_EVENT0("startup", "BrowserMainLoop::InitializeToolkit");
+  TRACK_SCOPED_REGION("Startup", "BrowserMainLoop::InitializeToolkit");
+
   // TODO(evan): this function is rather subtle, due to the variety
   // of intersecting ifdefs we have.  To keep it easy to follow, there
   // are no #else branches on any #ifs.
