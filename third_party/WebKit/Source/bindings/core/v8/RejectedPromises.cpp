@@ -14,8 +14,6 @@
 
 namespace blink {
 
-static const unsigned maxReportedHandlersPendingResolution = 1000;
-
 class RejectedPromises::Message final : public NoBaseWillBeGarbageCollectedFinalized<RejectedPromises::Message> {
 public:
     static PassOwnPtrWillBeRawPtr<Message> create(const ScriptValue& promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
@@ -38,7 +36,6 @@ private:
         , m_lineNumber(lineNumber)
         , m_columnNumber(columnNumber)
         , m_callStack(callStack)
-        , m_consoleMessageId(0)
     {
     }
 
@@ -52,7 +49,6 @@ private:
     const int m_lineNumber;
     const int m_columnNumber;
     const RefPtrWillBeMember<ScriptCallStack> m_callStack;
-    unsigned m_consoleMessageId;
 };
 
 RejectedPromises::RejectedPromises()
@@ -64,55 +60,14 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RejectedPromises);
 DEFINE_TRACE(RejectedPromises)
 {
     visitor->trace(m_queue);
-    visitor->trace(m_reportedAsErrors);
 }
 
-void RejectedPromises::rejectedWithNoHandler(ScriptState* scriptState, v8::PromiseRejectMessage data, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+void RejectedPromises::add(ScriptState* scriptState, v8::PromiseRejectMessage data, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
     v8::Handle<v8::Promise> promise = data.GetPromise();
     OwnPtrWillBeRawPtr<Message> message = Message::create(ScriptValue(scriptState, promise), ScriptValue(scriptState, data.GetValue()), errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack);
 
     m_queue.append(message.release());
-}
-
-void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
-{
-    // First look it up in the pending messages and fast return, it'll be covered by processQueue().
-    for (auto it = m_queue.begin(); it != m_queue.end(); ++it) {
-        ScriptState* scriptState = (*it)->m_promise.scriptState();
-        if (!scriptState->contextIsValid())
-            continue;
-
-        ScriptState::Scope scope(scriptState);
-        v8::Handle<v8::Value> promise = (*it)->m_promise.v8Value();
-        if (promise == data.GetPromise())
-            return;
-    }
-
-    // Then look it up in the reported errors.
-    for (auto it = m_reportedAsErrors.begin(); it != m_reportedAsErrors.end(); ++it) {
-        ScriptState* scriptState = (*it)->m_promise.scriptState();
-        if (!scriptState->contextIsValid())
-            continue;
-
-        ScriptState::Scope scope(scriptState);
-        v8::Handle<v8::Value> promise = (*it)->m_promise.v8Value();
-        if (promise != data.GetPromise())
-            continue;
-
-        // If execution termination has been triggered, quietly bail out.
-        if (v8::V8::IsExecutionTerminating(scriptState->isolate()))
-            continue;
-        ExecutionContext* executionContext = scriptState->executionContext();
-        if (!executionContext)
-            continue;
-
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, RevokedErrorMessageLevel, "Handler added to rejected promise");
-        consoleMessage->setRelatedMessageId((*it)->m_consoleMessageId);
-        executionContext->addConsoleMessage(consoleMessage.release());
-        m_reportedAsErrors.remove(it);
-        break;
-    }
 }
 
 void RejectedPromises::dispose()
@@ -160,12 +115,7 @@ void RejectedPromises::processQueue()
         consoleMessage->setScriptArguments(arguments);
         consoleMessage->setCallStack(message->m_callStack);
         consoleMessage->setScriptId(message->m_scriptId);
-        message->m_consoleMessageId = consoleMessage->assignMessageId();
         executionContext->addConsoleMessage(consoleMessage.release());
-
-        m_reportedAsErrors.append(message.release());
-        if (m_reportedAsErrors.size() > maxReportedHandlersPendingResolution)
-            m_reportedAsErrors.removeFirst();
     }
 }
 

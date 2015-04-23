@@ -1,5 +1,4 @@
 CONSOLE ERROR: line 16: Uncaught (in promise) Error: EXPECTED
-CONSOLE MESSAGE: Handler added to rejected promise
 Tests promise pane view.
 
 Set timer for test function.

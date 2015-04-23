@@ -13,17 +13,6 @@
 
 namespace blink {
 
-unsigned nextMessageId()
-{
-    struct MessageId {
-        MessageId() : value(0) { }
-        unsigned value;
-    };
-
-    AtomicallyInitializedStaticReference(WTF::ThreadSpecific<MessageId>, messageId, new WTF::ThreadSpecific<MessageId>);
-    return ++messageId->value;
-}
-
 ConsoleMessage::ConsoleMessage(MessageSource source,
     MessageLevel level,
     const String& message,
@@ -41,8 +30,6 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     , m_requestIdentifier(0)
     , m_timestamp(WTF::currentTime())
     , m_workerProxy(nullptr)
-    , m_messageId(0)
-    , m_relatedMessageId(0)
 {
 }
 
@@ -146,13 +133,6 @@ double ConsoleMessage::timestamp() const
 void ConsoleMessage::setTimestamp(double timestamp)
 {
     m_timestamp = timestamp;
-}
-
-unsigned ConsoleMessage::assignMessageId()
-{
-    if (!m_messageId)
-        m_messageId = nextMessageId();
-    return m_messageId;
 }
 
 MessageSource ConsoleMessage::source() const
