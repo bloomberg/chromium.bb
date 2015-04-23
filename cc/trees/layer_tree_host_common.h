@@ -73,7 +73,7 @@ class CC_EXPORT LayerTreeHostCommon {
 
     LayerType* root_layer;
     gfx::Size device_viewport_size;
-    const gfx::Transform& device_transform;
+    gfx::Transform device_transform;
     float device_scale_factor;
     float page_scale_factor;
     const LayerType* page_scale_application_layer;
@@ -104,7 +104,6 @@ class CC_EXPORT LayerTreeHostCommon {
         RenderSurfaceLayerListType* render_surface_layer_list);
 
    private:
-    const gfx::Transform identity_transform_;
     PropertyTrees temporary_property_trees;
   };
 
@@ -280,7 +279,7 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
     : CalcDrawPropsInputs<LayerType, RenderSurfaceLayerListType>(
           root_layer,
           device_viewport_size,
-          identity_transform_,
+          gfx::Transform(),
           1.f,
           1.f,
           NULL,
