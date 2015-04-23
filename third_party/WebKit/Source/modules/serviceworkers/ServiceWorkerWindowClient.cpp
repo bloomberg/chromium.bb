@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/PageVisibilityState.h"
-#include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebString.h"

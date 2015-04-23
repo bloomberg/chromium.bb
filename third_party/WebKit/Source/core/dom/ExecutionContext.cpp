@@ -35,7 +35,6 @@
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "core/page/WindowFocusAllowedIndicator.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "wtf/MainThread.h"
@@ -246,10 +245,7 @@ void ExecutionContext::consumeWindowInteraction()
 
 bool ExecutionContext::isWindowInteractionAllowed() const
 {
-    // FIXME: WindowFocusAllowedIndicator::windowFocusAllowed() is temporary,
-    // it will be removed as soon as WebScopedWindowFocusAllowedIndicator will
-    // be updated to not use WindowFocusAllowedIndicator.
-    return m_windowInteractionTokens > 0 || WindowFocusAllowedIndicator::windowFocusAllowed();
+    return m_windowInteractionTokens > 0;
 }
 
 void ExecutionContext::removeURLFromMemoryCache(const KURL& url)
