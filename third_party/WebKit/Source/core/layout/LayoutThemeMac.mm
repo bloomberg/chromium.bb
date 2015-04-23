@@ -993,7 +993,7 @@ bool LayoutThemeMac::paintProgressBar(LayoutObject* layoutObject, const PaintInf
         return true;
 
     float zoomLevel = layoutObject->style()->effectiveZoom();
-    int controlSize = controlSizeForFont(layoutObject->styleRef());
+    NSControlSize controlSize = controlSizeForFont(layoutObject->styleRef());
     IntSize size = progressBarSizes()[controlSize];
     size.setHeight(size.height() * zoomLevel);
     size.setWidth(rect.width());

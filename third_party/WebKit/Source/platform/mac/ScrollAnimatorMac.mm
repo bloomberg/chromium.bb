@@ -670,7 +670,7 @@ ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
     if (ScrollbarThemeMacCommon::isOverlayAPIAvailable()) {
         m_scrollbarPainterControllerDelegate.adoptNS([[WebScrollbarPainterControllerDelegate alloc] initWithScrollableArea:scrollableArea]);
         m_scrollbarPainterController = [[[NSClassFromString(@"NSScrollerImpPair") alloc] init] autorelease];
-        [m_scrollbarPainterController.get() setDelegate:m_scrollbarPainterControllerDelegate.get()];
+        [m_scrollbarPainterController.get() performSelector:@selector(setDelegate:) withObject:m_scrollbarPainterControllerDelegate.get()];
         [m_scrollbarPainterController.get() setScrollerStyle:ScrollbarThemeMacCommon::recommendedScrollerStyle()];
     }
 }

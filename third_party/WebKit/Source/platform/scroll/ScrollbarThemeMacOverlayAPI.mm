@@ -131,7 +131,8 @@ void ScrollbarThemeMacOverlayAPI::paintThumb(GraphicsContext* context, Scrollbar
 
 int ScrollbarThemeMacOverlayAPI::scrollbarThickness(ScrollbarControlSize controlSize)
 {
-    ScrollbarPainter scrollbarPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:recommendedScrollerStyle() controlSize:controlSize horizontal:NO replacingScrollerImp:nil];
+    NSControlSize nsControlSize = static_cast<NSControlSize>(controlSize);
+    ScrollbarPainter scrollbarPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:recommendedScrollerStyle() controlSize:nsControlSize horizontal:NO replacingScrollerImp:nil];
     if (supportsExpandedScrollbars())
         [scrollbarPainter setExpanded:YES];
     return [scrollbarPainter trackBoxWidth];

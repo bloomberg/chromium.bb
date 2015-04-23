@@ -40,8 +40,8 @@ using namespace blink;
 
 namespace blink {
 
-static_assert(ScrollerStyleLegacy == NSScrollerStyleLegacy, "ScrollerStyleLegacy must match NSScrollerStyleLegacy");
-static_assert(ScrollerStyleOverlay == NSScrollerStyleOverlay, "ScrollerStyleOverlay must match NSScrollerStyleOverlay");
+static_assert(static_cast<NSScrollerStyle>(ScrollerStyleLegacy) == NSScrollerStyleLegacy, "ScrollerStyleLegacy must match NSScrollerStyleLegacy");
+static_assert(static_cast<NSScrollerStyle>(ScrollerStyleOverlay) == NSScrollerStyleOverlay, "ScrollerStyleOverlay must match NSScrollerStyleOverlay");
 
 void WebScrollbarTheme::updateScrollbars(
     float initialButtonDelay, float autoscrollButtonDelay,
@@ -52,7 +52,8 @@ void WebScrollbarTheme::updateScrollbars(
         return;
 
     static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
-        initialButtonDelay, autoscrollButtonDelay, preferredScrollerStyle, redraw);
+        initialButtonDelay, autoscrollButtonDelay,
+        static_cast<NSScrollerStyle>(preferredScrollerStyle), redraw);
 }
 
 } // namespace blink
