@@ -223,7 +223,7 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
   NSString* plist_path = base::mac::FilePathToNSString(
       shim_path_.Append("Contents").Append("Info.plist"));
   NSMutableDictionary* plist =
-      [NSDictionary dictionaryWithContentsOfFile:plist_path];
+      [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
   [plist setObject:@"fake_user_data_dir"
             forKey:app_mode::kCrAppModeUserDataDirKey];
   [plist writeToFile:plist_path

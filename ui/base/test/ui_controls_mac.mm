@@ -279,7 +279,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
     return (SendMouseEventsNotifyWhenDone(type, DOWN, base::Closure()) &&
             SendMouseEventsNotifyWhenDone(type, UP, task));
   }
-  NSEventType etype = 0;
+  NSEventType etype = NSLeftMouseDown;
   if (type == LEFT) {
     if (state == UP) {
       etype = NSLeftMouseUp;

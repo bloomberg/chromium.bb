@@ -78,8 +78,6 @@ NSEventType EventTypeToNative(ui::EventType ui_event_type,
   if (modifiers)
     *modifiers = EventFlagsToModifiers(flags);
   switch (ui_event_type) {
-    case ui::ET_UNKNOWN:
-      return 0;
     case ui::ET_KEY_PRESSED:
       return NSKeyDown;
     case ui::ET_KEY_RELEASED:
@@ -111,7 +109,7 @@ NSEventType EventTypeToNative(ui::EventType ui_event_type,
       return NSEventTypeSwipe;
     default:
       NOTREACHED();
-      return 0;
+      return NSApplicationDefined;
   }
 }
 
@@ -128,6 +126,8 @@ void EmulateSendEvent(NSWindow* window, NSEvent* event) {
     case NSKeyUp:
       [responder keyUp:event];
       return;
+    default:
+      break;
   }
 
   // For mouse events, NSWindow will use -[NSView hitTest:] for the initial

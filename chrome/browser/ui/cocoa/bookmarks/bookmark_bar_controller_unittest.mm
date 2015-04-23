@@ -94,7 +94,12 @@ using bookmarks::BookmarkNode;
  @private
   NSSize cellSize_;
 }
+#if !defined(MAC_OS_X_VERSION_10_10) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_10
+// In the OSX 10.10 SDK, cellSize became an atomic property, so there is no
+// need to redeclare it.
 @property (nonatomic, readonly) NSSize cellSize;
+#endif  // MAC_OS_X_VERSION_10_10
 @end
 
 @implementation CellWithDesiredSize
