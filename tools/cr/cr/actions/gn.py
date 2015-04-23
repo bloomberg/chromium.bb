@@ -5,8 +5,8 @@
 """A module to add gn support to cr."""
 
 import cr
-import shlex
 import os
+import re
 
 GN_ARG_PREFIX = 'GN_ARG_'
 
@@ -28,7 +28,7 @@ class GnPrepareOut(cr.PrepareOut):
     return not cr.AndroidPlatform.GetInstance().is_active
 
   def UpdateContext(self):
-    # Collapse GN_ARGS from all GN_ARG prefixes
+    # Collapse GN_ARGS from all GN_ARG prefixes.
     gn_args = cr.context.Find('GN_ARGS') or ''
     for key, value in cr.context.exported.items():
       if key.startswith(GN_ARG_PREFIX):
@@ -36,6 +36,16 @@ class GnPrepareOut(cr.PrepareOut):
 
     gn_args += (' is_debug=%s' %
         'true' if cr.context['CR_BUILDTYPE'] == 'Debug' else 'false')
+
+    # Detect goma.
+    goma_binaries = cr.Host.SearchPath('gomacc', [
+      '{GOMA_DIR}',
+      '/usr/local/google/code/goma',
+      os.path.expanduser('~/goma')
+    ])
+    if goma_binaries:
+      gn_args += ' use_goma=true'
+      gn_args += ' goma_dir="%s"' % os.path.dirname(goma_binaries[0])
 
     cr.context['GN_ARGS'] = gn_args.strip()
     if cr.context.verbose >= 1:
@@ -49,7 +59,10 @@ class GnPrepareOut(cr.PrepareOut):
                              cr.context['CR_OUT_FULL'],
                              'args.gn')
     args = {}
-    for arg in shlex.split(cr.context['GN_ARGS']):
+    # Split the argument list while preserving quotes,
+    # e.g., a="b c" becomes ('a', '"b c"').
+    split_re = r'(?:[^\s,"]|"(?:\\.|[^"])*")+'
+    for arg in re.findall(split_re, cr.context['GN_ARGS']):
       key, value = arg.split('=', 1)
       args[key] = value
 
