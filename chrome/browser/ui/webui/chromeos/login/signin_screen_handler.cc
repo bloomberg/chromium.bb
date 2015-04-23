@@ -27,6 +27,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/chromeos_utils.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
@@ -413,6 +414,16 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY);
   builder->Add("proceedAnywayButton",
                IDS_LOGIN_PASSWORD_CHANGED_PROCEED_ANYWAY_BUTTON);
+  builder->Add("nextButtonText", IDS_NEWGAIA_OFFLINE_NEXT_BUTTON_TEXT);
+  builder->Add("forgotOldPasswordButtonText",
+               IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_FORGOT_PASSWORD);
+  builder->AddF("passwordChangedTitle",
+                IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_TITLE,
+                GetChromeDeviceType());
+  builder->Add("passwordChangedProceedAnywayTitle",
+               IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_PROCEED_ANYWAY);
+  builder->Add("passwordChangedTryAgain",
+               IDS_LOGIN_NEWGAIA_PASSWORD_CHANGED_TRY_AGAIN);
   builder->Add("publicAccountInfoFormat", IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT);
   builder->Add("publicAccountReminder",
                IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER);
@@ -921,8 +932,9 @@ void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
          base::StringValue(""));
 }
 
-void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error) {
-  core_oobe_actor_->ShowPasswordChangedScreen(show_password_error);
+void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error,
+                                                    const std::string& email) {
+  core_oobe_actor_->ShowPasswordChangedScreen(show_password_error, email);
 }
 
 void SigninScreenHandler::ShowSigninScreenForCreds(

@@ -679,7 +679,8 @@ void ExistingUserController::OnPasswordChangeDetected() {
   // us to recover from a lost owner password/homedir.
   // TODO(gspencer): We shouldn't have to erase stateful data when
   // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
-  login_display_->ShowPasswordChangedDialog(show_invalid_old_password_error);
+  login_display_->ShowPasswordChangedDialog(show_invalid_old_password_error,
+                                            display_email_);
 
   if (auth_status_consumer_)
     auth_status_consumer_->OnPasswordChangeDetected();

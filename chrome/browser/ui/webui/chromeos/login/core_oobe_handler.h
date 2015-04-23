@@ -79,7 +79,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   void ResetSignInUI(bool force_online) override;
   void ClearUserPodPassword() override;
   void RefocusCurrentPod() override;
-  void ShowPasswordChangedScreen(bool show_password_error) override;
+  void ShowPasswordChangedScreen(bool show_password_error,
+                                 const std::string& email) override;
   void SetUsageStats(bool checked) override;
   void SetOemEulaUrl(const std::string& oem_eula_url) override;
   void SetTpmPassword(const std::string& tmp_password) override;

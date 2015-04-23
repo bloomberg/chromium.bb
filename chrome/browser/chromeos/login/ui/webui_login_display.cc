@@ -185,9 +185,10 @@ void WebUILoginDisplay::ShowGaiaPasswordChanged(const std::string& username) {
     webui_handler_->ShowGaiaPasswordChanged(username);
 }
 
-void WebUILoginDisplay::ShowPasswordChangedDialog(bool show_password_error) {
+void WebUILoginDisplay::ShowPasswordChangedDialog(bool show_password_error,
+                                                  const std::string& email) {
   if (webui_handler_)
-    webui_handler_->ShowPasswordChangedDialog(show_password_error);
+    webui_handler_->ShowPasswordChangedDialog(show_password_error, email);
 }
 
 void WebUILoginDisplay::ShowSigninUI(const std::string& email) {

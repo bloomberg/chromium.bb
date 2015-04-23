@@ -169,8 +169,8 @@ cr.define('cr.ui', function() {
    * Shows password changed screen that offers migration.
    * @param {boolean} showError Whether to show the incorrect password error.
    */
-  Oobe.showPasswordChangedScreen = function(showError) {
-    DisplayManager.showPasswordChangedScreen(showError);
+  Oobe.showPasswordChangedScreen = function(showError, email) {
+    DisplayManager.showPasswordChangedScreen(showError, email);
   };
 
   /**

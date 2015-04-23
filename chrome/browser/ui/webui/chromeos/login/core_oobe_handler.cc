@@ -207,8 +207,9 @@ void CoreOobeHandler::RefocusCurrentPod() {
   CallJS("refocusCurrentPod");
 }
 
-void CoreOobeHandler::ShowPasswordChangedScreen(bool show_password_error) {
-  CallJS("showPasswordChangedScreen", show_password_error);
+void CoreOobeHandler::ShowPasswordChangedScreen(bool show_password_error,
+                                                const std::string& email) {
+  CallJS("showPasswordChangedScreen", show_password_error, email);
 }
 
 void CoreOobeHandler::SetUsageStats(bool checked) {

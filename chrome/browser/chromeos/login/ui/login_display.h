@@ -133,7 +133,8 @@ class LoginDisplay {
 
   // Show password changed dialog. If |show_password_error| is not null
   // user already tried to enter old password but it turned out to be incorrect.
-  virtual void ShowPasswordChangedDialog(bool show_password_error) = 0;
+  virtual void ShowPasswordChangedDialog(bool show_password_error,
+                                         const std::string& email) = 0;
 
   // Shows signin UI with specified email.
   virtual void ShowSigninUI(const std::string& email) = 0;

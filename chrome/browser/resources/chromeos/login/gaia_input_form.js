@@ -12,8 +12,8 @@ Polymer('gaia-input-form', {
 
   onKeyDown: function(e) {
     this.setValid(true);
-    if (e.keyCode == 13)
-      return this.onButtonClicked();
+    if (e.keyCode == 13 && !this.$.button.disabled)
+      this.$.button.fire('tap');
   },
 
   onTap: function() {

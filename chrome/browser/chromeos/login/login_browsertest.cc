@@ -158,14 +158,13 @@ class LoginTest : public chromeos::LoginManagerTest {
         "document.querySelector('#offline-gaia /deep/ #emailInput')";
     const std::string email_next_button =
         "document.querySelector('#offline-gaia /deep/ #emailInput "
-        "/deep/"
-        " gaia-paper-button')";
+        "/deep/ .blue-button')";
     const std::string password_input =
         "document.querySelector('#offline-gaia /deep/ "
         "#passwordInput')";
     const std::string password_next_button =
         "document.querySelector('#offline-gaia /deep/ #passwordInput"
-        " /deep/ gaia-paper-button')";
+        " /deep/ .blue-button')";
 
     content::DOMMessageQueue message_queue;
     JSExpect("!document.querySelector('#offline-gaia').hidden");

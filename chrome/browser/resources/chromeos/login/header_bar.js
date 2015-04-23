@@ -323,6 +323,8 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.SAML_PASSWORD_CONFIRM);
       var isEnrollingConsumerManagement = (this.signinUIState_ ==
           SIGNIN_UI_STATE.CONSUMER_MANAGEMENT_ENROLLMENT);
+      var isPasswordChangedUI =
+          (this.signinUIState_ == SIGNIN_UI_STATE.PASSWORD_CHANGED);
       var isMultiProfilesUI =
           (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
       var isLockScreen =
@@ -346,7 +348,7 @@ cr.define('login', function() {
           isNewGaiaScreenWithBackButton ||
           supervisedUserCreationDialogIsActive;
       $('cancel-add-user-button').hidden =
-          (gaiaIsActive && this.isNewGaiaFlow_) ||
+          ((gaiaIsActive || isPasswordChangedUI) && this.isNewGaiaFlow_) ||
           accountPickerIsActive ||
           !this.allowCancel_ ||
           wrongHWIDWarningIsActive ||

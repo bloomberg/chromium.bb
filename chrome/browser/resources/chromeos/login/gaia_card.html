@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/polymer/layout.html">
+<link rel="import" href="chrome://resources/polymer/paper-progress/paper-progress.html">
 
 <!--
   Simple Gaia card which should be used for local UI elements that look like
@@ -21,10 +22,17 @@
   <template>
     <link rel="stylesheet" href="gaia_card.css">
     <div class="gaia-header" vertical layout>
-      <content select=".header"></content>
+      <div class="side-padding top-padding" flex vertical layout>
+        <content select=".header"></content>
+      </div>
     </div>
+    <paper-progress id="progress-bar" indeterminate></paper-progress>
     <div class="gaia-footer" flex vertical layout>
-      <content select=".footer"></content>
+      <div class="side-padding bottom-padding" flex vertical layout>
+        <content select=".footer"></content>
+      </div>
+      <div id="bottom-overlay">
+      </div>
     </div>
   </template>
 </polymer-element>

@@ -16,3 +16,13 @@ Polymer('gaia-core-icon-button', {
       this.fire('tap');
   }
 });
+
+Polymer('gaia-raised-on-focus-button', {
+  onButtonFocus: function() {
+    this.raised = true;
+  },
+
+  onButtonBlur: function() {
+    this.raised = false;
+  },
+});

@@ -63,6 +63,7 @@
   SUPERVISED_USER_CREATION_FLOW: 4,
   SAML_PASSWORD_CONFIRM: 5,
   CONSUMER_MANAGEMENT_ENROLLMENT: 6,
+  PASSWORD_CHANGED: 7,
 };
 
 /* Possible UI states of the error screen. */
@@ -1006,9 +1007,11 @@ cr.define('cr.ui.login', function() {
   /**
    * Shows password changed screen that offers migration.
    * @param {boolean} showError Whether to show the incorrect password error.
+   * @param {string} email What user does reauth. Being used for display in the
+   * new UI.
    */
-  DisplayManager.showPasswordChangedScreen = function(showError) {
-    login.PasswordChangedScreen.show(showError);
+  DisplayManager.showPasswordChangedScreen = function(showError, email) {
+    login.PasswordChangedScreen.show(showError, email);
   };
 
   /**

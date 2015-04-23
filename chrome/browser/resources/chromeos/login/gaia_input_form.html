@@ -37,10 +37,10 @@
              value="{{inputValue}}" required type="{{inputType}}">
     </paper-input-decorator>
     <div horizontal justified layout center reverse>
-      <gaia-paper-button raised class="blue-button"
-          on-tap="{{onButtonClicked}}" self-end tabindex="0">
+      <gaia-raised-on-focus-button id="button" class="blue-button"
+          on-tap="{{onButtonClicked}}" self-end>
         {{buttonText}}
-      </gaia-paper-button>
+      </gaia-raised-on-focus-button>
       <content> </content>
     </div>
   </template>

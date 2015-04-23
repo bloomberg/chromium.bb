@@ -7,16 +7,26 @@
   'Enter' and 'Space'.
 -->
 <polymer-element name="gaia-paper-button" extends="paper-button"
-    on-keydown="onKeyDown">
+    on-keydown="onKeyDown" tabindex="0">
   <template>
     <shadow></shadow>
   </template>
 </polymer-element>
 
 <polymer-element name="gaia-core-icon-button" extends="core-icon-button"
-    on-keydown="onKeyDown">
+    on-keydown="onKeyDown" tabindex="0">
   <template>
     <shadow></shadow>
   </template>
 </polymer-element>
 
+<!--
+  Paper-button which is raised when it's focused.
+  It also triggers 'tap' event on keys 'Enter' and 'Space'.
+-->
+<polymer-element name="gaia-raised-on-focus-button" extends="gaia-paper-button"
+    on-focus="{{onButtonFocus}}" on-blur="{{onButtonBlur}}">
+  <template>
+    <shadow></shadow>
+  </template>
+</polymer-element>

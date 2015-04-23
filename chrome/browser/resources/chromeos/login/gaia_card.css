@@ -12,16 +12,26 @@
   background-color: rgb(66, 133, 244);
   color: rgb(255, 255, 255);
   height: 164px;
+}
+
+.gaia-footer,
+#progress-bar::shadow #progressContainer {
+  background-color: rgb(238, 238, 238);
+}
+
+.gaia-footer {
+  position: relative;
+}
+
+.top-padding {
   padding-top: 34px;
 }
 
-.gaia-footer {
-  background-color: rgb(238, 238, 238);
+.bottom-padding {
   padding-bottom: 34px;
 }
 
-.gaia-header,
-.gaia-footer {
+.side-padding {
   padding-left: 40px;
   padding-right: 40px;
 }
@@ -32,8 +42,54 @@
   text-decoration: none;
 }
 
-::content /deep/ gaia-paper-button.blue-button {
+::content /deep/ .blue-button {
   background-color: rgb(66, 133, 244);
   color: rgb(255, 255, 255);
   min-width: 88px
+}
+
+::content /deep/ .link-button {
+  color: rgb(66, 133, 244);
+  font-size: 14px;
+  margin: 0;
+  text-align: left;
+  text-transform: none;
+}
+
+::content /deep/ .link-button:focus {
+  background: rgb(217, 221, 234);
+}
+
+::content /deep/ .link-button::shadow .button-content {
+  padding: 0;
+}
+
+::content /deep/ p.gaia-body-text {
+  color: rgb(0, 0, 0);
+  font-size: 15px;
+}
+
+#bottom-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  z-index: 11;
+}
+
+#progress-bar {
+  display: none;
+  width: 100%;
+}
+
+#progress-bar::shadow #activeProgress {
+  background-color: rgb(255, 184, 9);
+}
+
+:host(.disabled) #bottom-overlay,
+:host(.disabled) #progress-bar {
+  display: block;
 }
