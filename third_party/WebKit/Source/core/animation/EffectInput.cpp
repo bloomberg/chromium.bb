@@ -73,7 +73,7 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
         // Fill the set for the first use.
         // Animatable attributes from http://www.w3.org/TR/SVG/attindex.html
         const QualifiedName* attributes[] = {
-            // FIXME: Support all the animatable attributes.
+            // TODO(ericwilligers): Support all the animatable attributes.
             &HTMLNames::classAttr,
             &SVGNames::baseFrequencyAttr,
             &SVGNames::clipPathUnitsAttr,
@@ -88,6 +88,7 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
             &SVGNames::maskUnitsAttr,
             &SVGNames::methodAttr,
             &SVGNames::modeAttr,
+            &SVGNames::numOctavesAttr,
             &SVGNames::offsetAttr,
             &SVGNames::operatorAttr,
             &SVGNames::orderAttr,
@@ -105,6 +106,8 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
             &SVGNames::stdDeviationAttr,
             &SVGNames::stitchTilesAttr,
             &SVGNames::tableValuesAttr,
+            &SVGNames::targetXAttr,
+            &SVGNames::targetYAttr,
             &SVGNames::typeAttr,
             &SVGNames::valuesAttr,
             &SVGNames::viewBoxAttr,

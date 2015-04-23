@@ -15,6 +15,7 @@
 #include "core/animation/ImageSliceStyleInterpolation.h"
 #include "core/animation/ImageStyleInterpolation.h"
 #include "core/animation/IntegerOptionalIntegerSVGInterpolation.h"
+#include "core/animation/IntegerSVGInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthBoxStyleInterpolation.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
@@ -482,6 +483,8 @@ PassRefPtrWillBeRawPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fr
         if (AngleSVGInterpolation::canCreateFrom(fromValue) && AngleSVGInterpolation::canCreateFrom(toValue))
             return AngleSVGInterpolation::create(fromValue, toValue, attribute);
         break;
+    case AnimatedInteger:
+        return IntegerSVGInterpolation::create(fromValue, toValue, attribute);
     case AnimatedIntegerOptionalInteger: {
         int min = &attribute->attributeName() == &SVGNames::orderAttr ? 1 : 0;
         return IntegerOptionalIntegerSVGInterpolation::create(fromValue, toValue, attribute, min);

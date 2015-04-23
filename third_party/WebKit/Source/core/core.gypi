@@ -901,6 +901,7 @@
             'animation/InertAnimation.h',
             'animation/IntegerOptionalIntegerSVGInterpolation.cpp',
             'animation/IntegerOptionalIntegerSVGInterpolation.h',
+            'animation/IntegerSVGInterpolation.h',
             'animation/InterpolableValue.cpp',
             'animation/InterpolableValue.h',
             'animation/Interpolation.cpp',
