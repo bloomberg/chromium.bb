@@ -367,11 +367,11 @@ void InitLatencyInfo(ui::LatencyInfo* new_latency,
                      const ui::LatencyInfo* old_latency,
                      blink::WebInputEvent::Type type,
                      int64 input_sequence) {
-  new_latency->AddLatencyNumber(
+  new_latency->AddLatencyNumberWithTraceName(
       ui::INPUT_EVENT_LATENCY_BEGIN_PLUGIN_COMPONENT,
       0,
-      input_sequence);
-  new_latency->TraceEventType(WebInputEventTraits::GetName(type));
+      input_sequence,
+      WebInputEventTraits::GetName(type));
   if (old_latency) {
     new_latency->CopyLatencyFrom(*old_latency,
                                  ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);

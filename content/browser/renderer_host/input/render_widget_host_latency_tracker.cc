@@ -319,9 +319,11 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
         1);
   }
 
-  latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                            latency_component_id_, ++last_event_id_);
-  latency->TraceEventType(WebInputEventTraits::GetName(event.type));
+  latency->AddLatencyNumberWithTraceName(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+      latency_component_id_, ++last_event_id_,
+      WebInputEventTraits::GetName(event.type));
+
   UpdateLatencyCoordinates(event, device_scale_factor_, latency);
 
   if (event.type == blink::WebInputEvent::GestureScrollBegin) {

@@ -33,6 +33,7 @@ IPC_STRUCT_TRAITS_BEGIN(ui::LatencyInfo)
   IPC_STRUCT_TRAITS_MEMBER(input_coordinates_size)
   IPC_STRUCT_TRAITS_MEMBER(input_coordinates[0])
   IPC_STRUCT_TRAITS_MEMBER(input_coordinates[1])
+  IPC_STRUCT_TRAITS_MEMBER(trace_name)
 IPC_STRUCT_TRAITS_END()
 
 #endif // UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_H_

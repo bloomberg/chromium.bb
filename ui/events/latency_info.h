@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_LATENCY_INFO_H_
 #define UI_EVENTS_LATENCY_INFO_H_
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -143,6 +144,14 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
                         int64 id,
                         int64 component_sequence_number);
 
+  // Similar to |AddLatencyNumber|, and also appends |trace_name_str| to
+  // the trace event's name.
+  // This function should only be called when adding a BEGIN component.
+  void AddLatencyNumberWithTraceName(LatencyComponentType component,
+                                     int64 id,
+                                     int64 component_sequence_number,
+                                     const char* trace_name_str);
+
   // Modifies the current sequence number and adds a certain number of events
   // for a specific component.
   void AddLatencyNumberWithTimestamp(LatencyComponentType component,
@@ -150,6 +159,13 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
                                      int64 component_sequence_number,
                                      base::TimeTicks time,
                                      uint32 event_count);
+
+  void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
+                                         int64 id,
+                                         int64 component_sequence_number,
+                                         base::TimeTicks time,
+                                         uint32 event_count,
+                                         const char* trace_name_str);
 
   // Returns true if the a component with |type| and |id| is found in
   // the latency_components and the component is stored to |output| if
@@ -162,8 +178,9 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
 
   void Clear();
 
-  // Records the |event_type| in trace buffer as TRACE_EVENT_ASYNC_STEP.
-  void TraceEventType(const char* event_type);
+  // Shown as part of the name of the trace event for this LatencyInfo.
+  // String is empty if no tracing is enabled.
+  std::string trace_name;
 
   LatencyMap latency_components;
 

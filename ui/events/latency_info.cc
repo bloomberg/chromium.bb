@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/events/latency_info.h"
+
+#include <algorithm>
+#include <string>
+
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/events/latency_info.h"
-
-#include <algorithm>
 
 namespace {
 
@@ -216,8 +218,17 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
 void LatencyInfo::AddLatencyNumber(LatencyComponentType component,
                                    int64 id,
                                    int64 component_sequence_number) {
-  AddLatencyNumberWithTimestamp(component, id, component_sequence_number,
-                                base::TimeTicks::Now(), 1);
+  AddLatencyNumberWithTimestampImpl(component, id, component_sequence_number,
+                                    base::TimeTicks::Now(), 1, nullptr);
+}
+
+void LatencyInfo::AddLatencyNumberWithTraceName(
+    LatencyComponentType component,
+    int64 id,
+    int64 component_sequence_number,
+    const char* trace_name_str) {
+  AddLatencyNumberWithTimestampImpl(component, id, component_sequence_number,
+                                    base::TimeTicks::Now(), 1, trace_name_str);
 }
 
 void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
@@ -225,9 +236,23 @@ void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
                                                 int64 component_sequence_number,
                                                 base::TimeTicks time,
                                                 uint32 event_count) {
+  AddLatencyNumberWithTimestampImpl(component, id, component_sequence_number,
+                                    time, event_count, nullptr);
+}
+
+void LatencyInfo::AddLatencyNumberWithTimestampImpl(
+    LatencyComponentType component,
+    int64 id,
+    int64 component_sequence_number,
+    base::TimeTicks time,
+    uint32 event_count,
+    const char* trace_name_str) {
 
   const unsigned char* benchmark_enabled =
       g_benchmark_enabled.Get().benchmark_enabled;
+
+  if (*benchmark_enabled && trace_name_str)
+    trace_name = trace_name_str;
 
   if (IsBeginComponent(component)) {
     // Should only ever add begin component once.
@@ -260,9 +285,9 @@ void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
       } else {
         ts = base::TimeTicks::NowFromSystemTraceTime().ToInternalValue();
       }
-      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      TRACE_EVENT_COPY_ASYNC_BEGIN_WITH_TIMESTAMP0(
           "benchmark",
-          "InputLatency",
+          ("InputLatency::" + trace_name).c_str(),
           TRACE_ID_DONT_MANGLE(trace_id),
           ts);
     }
@@ -296,10 +321,10 @@ void LatencyInfo::AddLatencyNumberWithTimestamp(LatencyComponentType component,
     terminated = true;
 
     if (*benchmark_enabled) {
-      TRACE_EVENT_ASYNC_END1("benchmark",
-                             "InputLatency",
-                             TRACE_ID_DONT_MANGLE(trace_id),
-                             "data", AsTraceableData(*this));
+      TRACE_EVENT_COPY_ASYNC_END1("benchmark",
+                                  ("InputLatency::" + trace_name).c_str(),
+                                  TRACE_ID_DONT_MANGLE(trace_id),
+                                  "data", AsTraceableData(*this));
     }
 
     TRACE_EVENT_FLOW_END0(
@@ -334,13 +359,6 @@ void LatencyInfo::RemoveLatency(LatencyComponentType type) {
 
 void LatencyInfo::Clear() {
   latency_components.clear();
-}
-
-void LatencyInfo::TraceEventType(const char* event_type) {
-  TRACE_EVENT_ASYNC_STEP_INTO0("benchmark",
-                               "InputLatency",
-                               TRACE_ID_DONT_MANGLE(trace_id),
-                               event_type);
 }
 
 }  // namespace ui
