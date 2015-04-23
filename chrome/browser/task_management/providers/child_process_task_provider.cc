@@ -24,7 +24,7 @@ namespace {
 // |BrowserChildProcessObserver|.
 scoped_ptr<std::vector<ChildProcessData>> CollectChildProcessData() {
   // The |BrowserChildProcessHostIterator| must only be used on the IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   scoped_ptr<std::vector<ChildProcessData>> child_processes(
       new std::vector<ChildProcessData>());
@@ -55,7 +55,7 @@ ChildProcessTaskProvider::~ChildProcessTaskProvider() {
 Task* ChildProcessTaskProvider::GetTaskOfUrlRequest(int origin_pid,
                                                     int child_id,
                                                     int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto itr = tasks_by_pid_.find(static_cast<base::ProcessId>(origin_pid));
   if (itr == tasks_by_pid_.end())
     return nullptr;
@@ -65,7 +65,7 @@ Task* ChildProcessTaskProvider::GetTaskOfUrlRequest(int origin_pid,
 
 void ChildProcessTaskProvider::BrowserChildProcessHostConnected(
     const content::ChildProcessData& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (data.handle == base::kNullProcessHandle)
     return;
 
@@ -74,12 +74,12 @@ void ChildProcessTaskProvider::BrowserChildProcessHostConnected(
 
 void ChildProcessTaskProvider::BrowserChildProcessHostDisconnected(
     const content::ChildProcessData& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DeleteTask(data.handle);
 }
 
 void ChildProcessTaskProvider::StartUpdating() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(tasks_by_handle_.empty());
   DCHECK(tasks_by_pid_.empty());
 
@@ -93,7 +93,7 @@ void ChildProcessTaskProvider::StartUpdating() {
 }
 
 void ChildProcessTaskProvider::StopUpdating() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // ChildProcessDataCollected() should never be called after this, and hence
   // we must invalidate the weak pointers.
@@ -112,7 +112,7 @@ void ChildProcessTaskProvider::StopUpdating() {
 
 void ChildProcessTaskProvider::ChildProcessDataCollected(
     scoped_ptr<const std::vector<content::ChildProcessData>> child_processes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (auto& process_data : *child_processes)
     CreateTask(process_data);

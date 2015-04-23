@@ -41,7 +41,7 @@ void SimpleThumbnailCrop::ProcessBitmap(
     scoped_refptr<ThumbnailingContext> context,
     const ConsumerCallback& callback,
     const SkBitmap& bitmap) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (bitmap.isNull() || bitmap.empty())
     return;
 

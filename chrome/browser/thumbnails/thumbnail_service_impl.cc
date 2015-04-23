@@ -36,7 +36,7 @@ bool IsThumbnailRetargetingEnabled() {
 
 void AddForcedURLOnUIThread(scoped_refptr<history::TopSites> top_sites,
                             const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (top_sites)
     top_sites->AddForcedURL(url, base::Time::Now());

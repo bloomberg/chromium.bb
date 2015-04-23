@@ -60,7 +60,7 @@ void ContentBasedThumbnailingAlgorithm::ProcessBitmap(
     scoped_refptr<ThumbnailingContext> context,
     const ConsumerCallback& callback,
     const SkBitmap& bitmap) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context.get());
   if (bitmap.isNull() || bitmap.empty())
     return;
