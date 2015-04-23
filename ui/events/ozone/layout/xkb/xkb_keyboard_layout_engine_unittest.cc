@@ -142,7 +142,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // number sign, apostrophe, *
       /* 5 */ {0x0023, 0x0027, 0x2461, DomCode::BACKSLASH, VKEY_OEM_2},
       // number sign, tilde, unmapped
-      /* 6 */ {0x0023, 0x007E, 0x0000, DomCode::BACKSLASH, VKEY_OEM_7},
+      /* 6 */ {0x0023, 0x007E, 0x2461, DomCode::BACKSLASH, VKEY_OEM_7},
       // number sign, *, *
       /* 7 */ {0x0023, 0x2460, 0x2461, DomCode::BACKQUOTE, VKEY_OEM_7},
       // dollar sign, *, *
@@ -156,7 +156,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // apostrophe, unmapped, *
       /* 12 */ {0x0027, 0x0000, 0x2461, DomCode::BACKSLASH, VKEY_OEM_5},
       // apostrophe, quotation mark, unmapped
-      /* 13 */ {0x0027, 0x0022, 0x0000, DomCode::KEY_Z, VKEY_Z},
+      /* 13 */ {0x0027, 0x0022, 0x2461, DomCode::KEY_Z, VKEY_Z},
       // apostrophe, quotation mark, R caron
       /* 14 */ {0x0027, 0x0022, 0x0158, DomCode::KEY_Z, VKEY_OEM_7},
       // apostrophe, quotation mark, *
@@ -164,19 +164,19 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // apostrophe, quotation mark, *
       /* 16 */ {0x0027, 0x0022, 0x2461, DomCode::QUOTE, VKEY_OEM_7},
       // apostrophe, asterisk, unmapped
-      /* 17 */ {0x0027, 0x002A, 0x0000, DomCode::BACKSLASH, VKEY_OEM_2},
+      /* 17 */ {0x0027, 0x002A, 0x2461, DomCode::BACKSLASH, VKEY_OEM_2},
       // apostrophe, asterisk, unmapped
-      /* 18 */ {0x0027, 0x002A, 0x0000, DomCode::EQUAL, VKEY_OEM_PLUS},
+      /* 18 */ {0x0027, 0x002A, 0x2461, DomCode::EQUAL, VKEY_OEM_PLUS},
       // apostrophe, asterisk, vulgar fraction one half
       /* 19 */ {0x0027, 0x002A, 0x00BD, DomCode::BACKSLASH, VKEY_OEM_5},
       // apostrophe, asterisk, L stroke
       /* 20 */ {0x0027, 0x002A, 0x0141, DomCode::BACKSLASH, VKEY_OEM_2},
       // apostrophe, question mark, unmapped
-      /* 21 */ {0x0027, 0x003F, 0x0000, DomCode::MINUS, VKEY_OEM_4},
+      /* 21 */ {0x0027, 0x003F, 0x2461, DomCode::MINUS, VKEY_OEM_4},
       // apostrophe, question mark, Y acute
       /* 22 */ {0x0027, 0x003F, 0x00DD, DomCode::MINUS, VKEY_OEM_4},
       // apostrophe, commercial at, unmapped
-      /* 23 */ {0x0027, 0x0040, 0x0000, DomCode::QUOTE, VKEY_OEM_3},
+      /* 23 */ {0x0027, 0x0040, 0x2461, DomCode::QUOTE, VKEY_OEM_3},
       // apostrophe, middle dot, *
       /* 24 */ {0x0027, 0x00B7, 0x2461, DomCode::BACKQUOTE, VKEY_OEM_5},
       // apostrophe, *, *
@@ -204,7 +204,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // asterisk, *, *
       /* 36 */ {0x002A, 0x2460, 0x2461, DomCode::BRACKET_RIGHT, VKEY_OEM_1},
       // plus sign, question mark, unmapped
-      /* 37 */ {0x002B, 0x003F, 0x0000, DomCode::MINUS, VKEY_OEM_PLUS},
+      /* 37 */ {0x002B, 0x003F, 0x2461, DomCode::MINUS, VKEY_OEM_PLUS},
       // plus sign, question mark, reverse solidus
       /* 38 */ {0x002B, 0x003F, 0x005C, DomCode::MINUS, VKEY_OEM_MINUS},
       // plus sign, question mark, o double acute
@@ -240,9 +240,9 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // hyphen-minus, equals sign, *
       /* 54 */ {0x002D, 0x003D, 0x2461, DomCode::SLASH, VKEY_OEM_MINUS},
       // hyphen-minus, low line, unmapped
-      /* 55 */ {0x002D, 0x005F, 0x0000, DomCode::EQUAL, VKEY_OEM_MINUS},
+      /* 55 */ {0x002D, 0x005F, 0x2461, DomCode::EQUAL, VKEY_OEM_MINUS},
       // hyphen-minus, low line, unmapped
-      /* 56 */ {0x002D, 0x005F, 0x0000, DomCode::SLASH, VKEY_OEM_MINUS},
+      /* 56 */ {0x002D, 0x005F, 0x2461, DomCode::SLASH, VKEY_OEM_MINUS},
       // hyphen-minus, low line, asterisk
       /* 57 */ {0x002D, 0x005F, 0x002A, DomCode::SLASH, VKEY_OEM_MINUS},
       // hyphen-minus, low line, solidus
@@ -326,7 +326,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // less-than sign, *, *
       /* 97 */ {0x003C, 0x2460, 0x2461, DomCode::NONE, VKEY_OEM_5},
       // equals sign, percent sign, unmapped
-      /* 98 */ {0x003D, 0x0025, 0x0000, DomCode::MINUS, VKEY_OEM_PLUS},
+      /* 98 */ {0x003D, 0x0025, 0x2461, DomCode::MINUS, VKEY_OEM_PLUS},
       // equals sign, percent sign, hyphen-minus
       /* 99 */ {0x003D, 0x0025, 0x002D, DomCode::MINUS, VKEY_OEM_MINUS},
       // equals sign, percent sign, *
@@ -388,7 +388,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // grave accent, unmapped, *
       /* 128 */ {0x0060, 0x0000, 0x2461, DomCode::BACKQUOTE, VKEY_OEM_3},
       // grave accent, tilde, unmapped
-      /* 129 */ {0x0060, 0x007E, 0x0000, DomCode::BACKQUOTE, VKEY_OEM_3},
+      /* 129 */ {0x0060, 0x007E, 0x2461, DomCode::BACKQUOTE, VKEY_OEM_3},
       // grave accent, tilde, digit one
       /* 130 */ {0x0060, 0x007E, 0x0031, DomCode::BACKQUOTE, VKEY_OEM_3},
       // grave accent, tilde, semicolon
@@ -464,7 +464,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // a circumflex, *, *
       /* 166 */ {0x00E2, 0x2460, 0x2461, DomCode::DIGIT2, VKEY_2},
       // a diaeresis, A diaeresis, unmapped
-      /* 167 */ {0x00E4, 0x00C4, 0x0000, DomCode::QUOTE, VKEY_OEM_7},
+      /* 167 */ {0x00E4, 0x00C4, 0x2461, DomCode::QUOTE, VKEY_OEM_7},
       // a diaeresis, A diaeresis, r caron
       /* 168 */ {0x00E4, 0x00C4, 0x0159, DomCode::QUOTE, VKEY_OEM_7},
       // a diaeresis, A diaeresis, S acute
@@ -480,7 +480,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // ae, *, *
       /* 174 */ {0x00E6, 0x2460, 0x2461, DomCode::SEMICOLON, VKEY_OEM_3},
       // c cedilla, C cedilla, unmapped
-      /* 175 */ {0x00E7, 0x00C7, 0x0000, DomCode::SEMICOLON, VKEY_OEM_1},
+      /* 175 */ {0x00E7, 0x00C7, 0x2461, DomCode::SEMICOLON, VKEY_OEM_1},
       // c cedilla, C cedilla, Thorn
       /* 176 */ {0x00E7, 0x00C7, 0x00DE, DomCode::SEMICOLON, VKEY_OEM_3},
       // c cedilla, *, *
@@ -542,7 +542,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // o tilde, *, *
       /* 205 */ {0x00F5, 0x2460, 0x2461, DomCode::NONE, VKEY_OEM_4},
       // o diaeresis, O diaeresis, unmapped
-      /* 206 */ {0x00F6, 0x00D6, 0x0000, DomCode::SEMICOLON, VKEY_OEM_3},
+      /* 206 */ {0x00F6, 0x00D6, 0x2461, DomCode::SEMICOLON, VKEY_OEM_3},
       // o diaeresis, O diaeresis, T cedilla
       /* 207 */ {0x00F6, 0x00D6, 0x0162, DomCode::SEMICOLON, VKEY_OEM_3},
       // o diaeresis, e acute, *
@@ -568,9 +568,9 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // u acute, *, *
       /* 218 */ {0x00FA, 0x2460, 0x2461, DomCode::BRACKET_RIGHT, VKEY_OEM_6},
       // u diaeresis, U diaeresis, unmapped
-      /* 219 */ {0x00FC, 0x00DC, 0x0000, DomCode::BRACKET_LEFT, VKEY_OEM_1},
+      /* 219 */ {0x00FC, 0x00DC, 0x2461, DomCode::BRACKET_LEFT, VKEY_OEM_1},
       // u diaeresis, U diaeresis, unmapped
-      /* 220 */ {0x00FC, 0x00DC, 0x0000, DomCode::MINUS, VKEY_OEM_2},
+      /* 220 */ {0x00FC, 0x00DC, 0x2461, DomCode::MINUS, VKEY_OEM_2},
       // u diaeresis, U diaeresis, L stroke
       /* 221 */ {0x00FC, 0x00DC, 0x0141, DomCode::BRACKET_LEFT, VKEY_OEM_3},
       // u diaeresis, e grave, *
@@ -618,7 +618,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // e dot above, *, *
       /* 243 */ {0x0117, 0x2460, 0x2461, DomCode::QUOTE, VKEY_OEM_7},
       // e ogonek, E ogonek, unmapped
-      /* 244 */ {0x0119, 0x0118, 0x0000, DomCode::SLASH, VKEY_OEM_MINUS},
+      /* 244 */ {0x0119, 0x0118, 0x2461, DomCode::SLASH, VKEY_OEM_MINUS},
       // e ogonek, E ogonek, n
       /* 245 */ {0x0119, 0x0118, 0x006E, DomCode::SLASH, VKEY_OEM_2},
       // e ogonek, *, *
@@ -634,7 +634,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // i macron, *, *
       /* 251 */ {0x012B, 0x2460, 0x2461, DomCode::NONE, VKEY_OEM_6},
       // i ogonek, I ogonek, unmapped
-      /* 252 */ {0x012F, 0x012E, 0x0000, DomCode::BRACKET_LEFT, VKEY_OEM_4},
+      /* 252 */ {0x012F, 0x012E, 0x2461, DomCode::BRACKET_LEFT, VKEY_OEM_4},
       // i ogonek, *, *
       /* 253 */ {0x012F, 0x2460, 0x2461, DomCode::DIGIT5, VKEY_5},
       // dotless i, *, *
@@ -688,7 +688,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // u double acute, *, *
       /* 278 */ {0x0171, 0x2460, 0x2461, DomCode::NONE, VKEY_OEM_5},
       // u ogonek, U ogonek, unmapped
-      /* 279 */ {0x0173, 0x0172, 0x0000, DomCode::SEMICOLON, VKEY_OEM_3},
+      /* 279 */ {0x0173, 0x0172, 0x2461, DomCode::SEMICOLON, VKEY_OEM_3},
       // u ogonek, U ogonek, T cedilla
       /* 280 */ {0x0173, 0x0172, 0x0162, DomCode::SEMICOLON, VKEY_OEM_1},
       // u ogonek, *, *

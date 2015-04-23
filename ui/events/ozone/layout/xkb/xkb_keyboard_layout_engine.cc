@@ -96,7 +96,7 @@ const PrintableSubEntry kU0022[] = {
 const PrintableSubEntry kU0023[] = {
     {DomCode::BACKQUOTE, 0, 0, kAny, kAny, VKEY_OEM_7},
     {DomCode::BACKSLASH, 1, 0, 0x0027, kAny, VKEY_OEM_2},   // apostrophe
-    {DomCode::BACKSLASH, 1, 1, 0x007E, kNone, VKEY_OEM_7}};  // ~, NoSymbol
+    {DomCode::BACKSLASH, 1, 0, 0x007E, kAny, VKEY_OEM_7}};  // ~, NoSymbol
 
 // U+0024 dollar sign
 const PrintableSubEntry kU0024[] = {
@@ -109,19 +109,17 @@ const PrintableSubEntry kU0027[] = {
     {DomCode::KEY_Q, 0, 0, kAny, kAny, VKEY_OEM_7},
     {DomCode::BRACKET_RIGHT, 0, 0, kAny, kAny, VKEY_OEM_1},
     {DomCode::SLASH, 0, 0, kAny, kAny, VKEY_OEM_7},
-    {DomCode::QUOTE, 1, 0, 0x0022, kAny, VKEY_OEM_7},      // quote
-    {DomCode::BACKQUOTE, 1, 0, 0x0022, kAny, VKEY_OEM_3},  // quote
-    {DomCode::BACKQUOTE, 1, 0, 0x00B7, kAny, VKEY_OEM_5},  // middle dot
-    {DomCode::BACKSLASH, 1, 0, kNone, kAny, VKEY_OEM_5},  // NoSymbol
-    {DomCode::MINUS, 1, 1, 0x003F, kNone, VKEY_OEM_4},      // ?, NoSymbol
-    {DomCode::MINUS, 1, 1, 0x003F, 0x00DD, VKEY_OEM_4},      // ?, Y acute
-    {DomCode::EQUAL, 1, 1, 0x002A, kNone, VKEY_OEM_PLUS},   // *, NoSymbol
-    {DomCode::QUOTE, 1, 1, 0x0040, kNone, VKEY_OEM_3},      // @, NoSymbol
-    {DomCode::BACKSLASH, 1, 1, 0x002A, kNone, VKEY_OEM_2},  // *, NoSymbol
+    {DomCode::QUOTE, 1, 0, 0x0022, kAny, VKEY_OEM_7},        // quote
+    {DomCode::BACKQUOTE, 1, 0, 0x0022, kAny, VKEY_OEM_3},    // quote
+    {DomCode::BACKQUOTE, 1, 0, 0x00B7, kAny, VKEY_OEM_5},    // middle dot
+    {DomCode::BACKSLASH, 1, 0, kNone, kAny, VKEY_OEM_5},     // NoSymbol
+    {DomCode::MINUS, 1, 0, 0x003F, kAny, VKEY_OEM_4},        // ?
+    {DomCode::EQUAL, 1, 0, 0x002A, kAny, VKEY_OEM_PLUS},     // *
+    {DomCode::QUOTE, 1, 0, 0x0040, kAny, VKEY_OEM_3},        // @
     {DomCode::BACKSLASH, 1, 1, 0x002A, 0x00BD, VKEY_OEM_5},  // *, one half
-    {DomCode::BACKSLASH, 1, 1, 0x002A, 0x0141, VKEY_OEM_2},  // *, L stroke
-    {DomCode::KEY_Z, 1, 1, 0x0022, kNone, VKEY_Z},          // quote, NoSymbol
-    {DomCode::KEY_Z, 1, 1, 0x0022, 0x0158, VKEY_OEM_7}};     // quote, R caron
+    {DomCode::BACKSLASH, 1, 0, 0x002A, kAny, VKEY_OEM_2},    // *, NoSymbol
+    {DomCode::KEY_Z, 1, 1, 0x0022, 0x0158, VKEY_OEM_7},      // quote, R caron
+    {DomCode::KEY_Z, 1, 0, 0x0022, kAny, VKEY_Z}};           // quote
 
 // U+0028 left parenthesis
 const PrintableSubEntry kU0028[] = {
@@ -148,9 +146,8 @@ const PrintableSubEntry kU002B[] = {
     {DomCode::BRACKET_RIGHT, 0, 0, kAny, kAny, VKEY_OEM_PLUS},
     {DomCode::SEMICOLON, 0, 0, kAny, kAny, VKEY_OEM_PLUS},
     {DomCode::BACKSLASH, 0, 0, kAny, kAny, VKEY_OEM_2},
-    {DomCode::MINUS, 1, 1, 0x003F, kNone, VKEY_OEM_PLUS},   // ?, NoSymbol
     {DomCode::MINUS, 1, 1, 0x003F, 0x005C, VKEY_OEM_MINUS},  // ?, backslash
-    {DomCode::MINUS, 1, 1, 0x003F, 0x0151, VKEY_OEM_PLUS}};  // ?, o''
+    {DomCode::MINUS, 1, 0, 0x003F, kAny, VKEY_OEM_PLUS}};    // ?
 
 // U+002C comma
 const PrintableSubEntry kU002C[] = {
@@ -171,12 +168,10 @@ const PrintableSubEntry kU002D[] = {
     {DomCode::KEY_A, 0, 0, kAny, kAny, VKEY_OEM_MINUS},
     {DomCode::QUOTE, 0, 0, kAny, kAny, VKEY_OEM_MINUS},
     {DomCode::SLASH, 1, 0, 0x003D, kAny, VKEY_OEM_MINUS},   // =
-    {DomCode::EQUAL, 1, 1, 0x005F, kNone, VKEY_OEM_MINUS},   // _, NoSymbol
-    {DomCode::EQUAL, 1, 1, 0x005F, 0x0157, VKEY_OEM_4},       // _, r cedilla
-    {DomCode::SLASH, 1, 1, 0x005F, kNone, VKEY_OEM_MINUS},   // _, NoSymbol
-    {DomCode::SLASH, 1, 1, 0x005F, 0x002A, VKEY_OEM_MINUS},   // _, *
-    {DomCode::SLASH, 1, 1, 0x005F, 0x002F, VKEY_OEM_2},       // _, /
-    {DomCode::SLASH, 1, 1, 0x005F, 0x006E, VKEY_OEM_MINUS}};  // _, n
+    {DomCode::EQUAL, 1, 1, 0x005F, 0x0157, VKEY_OEM_4},     // _, r cedilla
+    {DomCode::EQUAL, 1, 0, 0x005F, kAny, VKEY_OEM_MINUS},   // _
+    {DomCode::SLASH, 1, 1, 0x005F, 0x002F, VKEY_OEM_2},     // _, /
+    {DomCode::SLASH, 1, 0, 0x005F, kAny, VKEY_OEM_MINUS}};  // _
 
 // U+002E full stop
 const PrintableSubEntry kU002E[] = {
@@ -220,16 +215,15 @@ const PrintableSubEntry kU003B[] = {
     {DomCode::KEY_Z, 0, 0, kAny, kAny, VKEY_OEM_1},
     {DomCode::COMMA, 0, 0, kAny, kAny, VKEY_OEM_PERIOD},
     {DomCode::SLASH, 0, 0, kAny, kAny, VKEY_OEM_2}};
-
 // U+003D =
 const PrintableSubEntry kU003D[] = {
     {DomCode::DIGIT8, 0, 0, kAny, kAny, VKEY_8},
     {DomCode::EQUAL, 0, 0, kAny, kAny, VKEY_OEM_PLUS},
     {DomCode::BRACKET_RIGHT, 0, 0, kAny, kAny, VKEY_OEM_PLUS},
-    {DomCode::SLASH, 1, 0, 0x0025, kAny, VKEY_OEM_8},       // %
-    {DomCode::SLASH, 1, 0, 0x002B, kAny, VKEY_OEM_PLUS},    // +
-    {DomCode::MINUS, 1, 1, 0x0025, kNone, VKEY_OEM_PLUS},    // %, NoSymbol
-    {DomCode::MINUS, 1, 1, 0x0025, 0x002D, VKEY_OEM_MINUS}};  // %, -
+    {DomCode::SLASH, 1, 0, 0x0025, kAny, VKEY_OEM_8},        // %
+    {DomCode::SLASH, 1, 0, 0x002B, kAny, VKEY_OEM_PLUS},     // +
+    {DomCode::MINUS, 1, 1, 0x0025, 0x002D, VKEY_OEM_MINUS},  // %, -
+    {DomCode::MINUS, 1, 0, 0x0025, kAny, VKEY_OEM_PLUS}};    // %, NoSymbol
 
 // U+003F ?
 const PrintableSubEntry kU003F[] = {
@@ -276,12 +270,7 @@ const PrintableSubEntry kU005F[] = {
 const PrintableSubEntry kU0060[] = {
     {DomCode::BACKQUOTE, 1, 0, kNone, kAny, VKEY_OEM_3},   // NoSymbol
     {DomCode::BACKQUOTE, 1, 0, 0x00AC, kAny, VKEY_OEM_8},   // not
-    {DomCode::BACKQUOTE, 1, 1, 0x007E, kNone, VKEY_OEM_3},   // ~, NoSymbol
-    {DomCode::BACKQUOTE, 1, 1, 0x007E, 0x0031, VKEY_OEM_3},   // ~, 1
-    {DomCode::BACKQUOTE, 1, 1, 0x007E, 0x003B, VKEY_OEM_3},   // ~, ;
-    {DomCode::BACKQUOTE, 1, 1, 0x007E, 0x0060, VKEY_OEM_3},   // ~, `
-    {DomCode::BACKQUOTE, 1, 1, 0x007E, 0x00BF, VKEY_OEM_3},   // ~, inverted ?
-    {DomCode::BACKQUOTE, 1, 1, 0x007E, 0x0151, VKEY_OEM_3}};  // ~, o''
+    {DomCode::BACKQUOTE, 1, 0, 0x007E, kAny, VKEY_OEM_3}};  // ~
 
 // U+00A7 section
 const PrintableSubEntry kU00A7[] = {
@@ -327,9 +316,7 @@ const PrintableSubEntry kU00E2[] = {
 const PrintableSubEntry kU00E4[] = {
     {DomCode::BRACKET_RIGHT, 0, 0, kAny, kAny, VKEY_OEM_6},
     {DomCode::QUOTE, 1, 0, 0x00E0, kAny, VKEY_OEM_5},   // a grave
-    {DomCode::QUOTE, 1, 1, 0x00C4, kNone, VKEY_OEM_7},   // A dia., NoSymbol
-    {DomCode::QUOTE, 1, 1, 0x00C4, 0x015A, VKEY_OEM_7},   // A dia., S acute
-    {DomCode::QUOTE, 1, 1, 0x00C4, 0x0159, VKEY_OEM_7}};  // A dia., r caron
+    {DomCode::QUOTE, 1, 0, 0x00C4, kAny, VKEY_OEM_7}};  // A dia.
 
 // U+00E6 ae
 const PrintableSubEntry kU00E6[] = {
@@ -344,8 +331,8 @@ const PrintableSubEntry kU00E7[] = {
     {DomCode::QUOTE, 0, 0, kAny, kAny, VKEY_OEM_7},
     {DomCode::BACKSLASH, 0, 0, kAny, kAny, VKEY_OEM_2},
     {DomCode::COMMA, 0, 0, kAny, kAny, VKEY_OEM_COMMA},
-    {DomCode::SEMICOLON, 1, 1, 0x00C7, kNone, VKEY_OEM_1},   // C ced., NoSy
-    {DomCode::SEMICOLON, 1, 1, 0x00C7, 0x00DE, VKEY_OEM_3}};  // C ced., Thorn
+    {DomCode::SEMICOLON, 1, 1, 0x00C7, 0x00DE, VKEY_OEM_3},  // C ced., Thorn
+    {DomCode::SEMICOLON, 1, 0, 0x00C7, kAny, VKEY_OEM_1}};   // C ced., NoSy
 
 // U+00E8 e grave
 const PrintableSubEntry kU00E8[] = {
@@ -386,9 +373,9 @@ const PrintableSubEntry kU00F6[] = {
     {DomCode::DIGIT0, 0, 0, kAny, kAny, VKEY_OEM_3},
     {DomCode::MINUS, 0, 0, kAny, kAny, VKEY_OEM_PLUS},
     {DomCode::BRACKET_LEFT, 0, 0, kAny, kAny, VKEY_OEM_4},
-    {DomCode::SEMICOLON, 1, 0, 0x00E9, kAny, VKEY_OEM_7},   // e acute
-    {DomCode::SEMICOLON, 1, 1, 0x00D6, kNone, VKEY_OEM_3},   // O dia., NoSy
-    {DomCode::SEMICOLON, 1, 1, 0x00D6, 0x0162, VKEY_OEM_3}};  // O dia., T ced.
+    {DomCode::SEMICOLON, 1, 0, 0x00E9, kAny, VKEY_OEM_7},    // e acute
+    {DomCode::SEMICOLON, 1, 1, 0x00D6, 0x0162, VKEY_OEM_3},  // O dia., T ced.
+    {DomCode::SEMICOLON, 1, 0, 0x00D6, kAny, VKEY_OEM_3}};   // O diaresis
 
 // U+00F8 o stroke
 const PrintableSubEntry kU00F8[] = {
@@ -408,10 +395,10 @@ const PrintableSubEntry kU00FA[] = {
 // U+00FC u diaeresis
 const PrintableSubEntry kU00FC[] = {
     {DomCode::KEY_W, 0, 0, kAny, kAny, VKEY_W},
-    {DomCode::BRACKET_LEFT, 1, 0, 0x00E8, kAny, VKEY_OEM_1},   // e grave
-    {DomCode::MINUS, 1, 1, 0x00DC, kNone, VKEY_OEM_2},          // U dia., NoSy
-    {DomCode::BRACKET_LEFT, 1, 1, 0x00DC, kNone, VKEY_OEM_1},   // U dia., NoSy
-    {DomCode::BRACKET_LEFT, 1, 1, 0x00DC, 0x0141, VKEY_OEM_3}};  // U dia., L-
+    {DomCode::BRACKET_LEFT, 1, 0, 0x00E8, kAny, VKEY_OEM_1},    // e grave
+    {DomCode::MINUS, 1, 0, 0x00DC, kAny, VKEY_OEM_2},           // U diaresis
+    {DomCode::BRACKET_LEFT, 1, 1, 0x00DC, 0x0141, VKEY_OEM_3},  // U dia., L-
+    {DomCode::BRACKET_LEFT, 1, 0, 0x00DC, kAny, VKEY_OEM_1}};   // U diaresis
 
 // U+0103 a breve
 const PrintableSubEntry kU0103[] = {
@@ -445,13 +432,13 @@ const PrintableSubEntry kU0117[] = {
 // U+0119 e ogonek
 const PrintableSubEntry kU0119[] = {
     {DomCode::DIGIT3, 0, 0, kAny, kAny, VKEY_3},
-    {DomCode::SLASH, 1, 1, 0x0118, kNone, VKEY_OEM_MINUS},  // E ogonek, NoSy
-    {DomCode::SLASH, 1, 1, 0x0118, 0x006E, VKEY_OEM_2}};     // E ogonek, n
+    {DomCode::SLASH, 1, 1, 0x0118, 0x006E, VKEY_OEM_2},     // E ogonek, n
+    {DomCode::SLASH, 1, 0, 0x0118, kAny, VKEY_OEM_MINUS}};  // E ogonek
 
 // U+012F i ogonek
 const PrintableSubEntry kU012F[] = {
     {DomCode::DIGIT5, 0, 0, kAny, kAny, VKEY_5},
-    {DomCode::BRACKET_LEFT, 1, 1, 0x012E, kNone, VKEY_OEM_4}};  // Iogonek, NoSy
+    {DomCode::BRACKET_LEFT, 1, 0, 0x012E, kAny, VKEY_OEM_4}};  // Iogonek
 
 // U+0142 l stroke
 const PrintableSubEntry kU0142[] = {
@@ -481,8 +468,8 @@ const PrintableSubEntry kU016B[] = {
 // U+0173 u ogonek
 const PrintableSubEntry kU0173[] = {
     {DomCode::DIGIT7, 0, 0, kAny, kAny, VKEY_7},
-    {DomCode::SEMICOLON, 1, 1, 0x0172, kNone, VKEY_OEM_3},   // U ogo., NoSy
-    {DomCode::SEMICOLON, 1, 1, 0x0172, 0x0162, VKEY_OEM_1}};  // U ogo., T ced.
+    {DomCode::SEMICOLON, 1, 1, 0x0172, 0x0162, VKEY_OEM_1},  // U ogo., T ced.
+    {DomCode::SEMICOLON, 1, 0, 0x0172, kAny, VKEY_OEM_3}};   // U ogonek
 
 // U+017C z dot above
 const PrintableSubEntry kU017C[] = {
@@ -973,4 +960,5 @@ void XkbKeyboardLayoutEngine::ParseLayoutName(const std::string& layout_name,
     *layout_variant = layout_name.substr(dash_index + 1);
   }
 }
+
 }  // namespace ui
