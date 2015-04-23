@@ -36,8 +36,10 @@ FileGrid.prototype = {
     if (this.dataModel)
       this.dataModel.removeEventListener('splice', this.onSplice_.bind(this));
     this.dataModelDescriptor_.set.call(this, model);
-    if (this.dataModel)
+    if (this.dataModel) {
       this.dataModel.addEventListener('splice', this.onSplice_.bind(this));
+      this.classList.toggle('image-dominant', this.dataModel.isImageDominant());
+    }
   }
 };
 
