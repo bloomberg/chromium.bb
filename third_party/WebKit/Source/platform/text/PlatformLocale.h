@@ -59,6 +59,10 @@ public:
     // resultant string.
     String convertFromLocalizedNumber(const String&);
 
+    // Remove characters from |input| if a character is not included in
+    // locale-specific number characters and |standardChars|.
+    String stripInvalidNumberCharacters(const String& input, const String& standardChars) const;
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     // Returns localized decimal separator, e.g. "." for English, "," for French.
     String localizedDecimalSeparator();
@@ -162,6 +166,7 @@ private:
     String m_positiveSuffix;
     String m_negativePrefix;
     String m_negativeSuffix;
+    String m_acceptableNumberCharacters;
     bool m_hasLocaleData;
 };
 

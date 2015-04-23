@@ -36,6 +36,7 @@
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/events/BeforeTextInsertedEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/html/HTMLInputElement.h"
@@ -186,6 +187,11 @@ void NumberInputType::handleKeydownEvent(KeyboardEvent* event)
     handleKeydownEventForSpinButton(event);
     if (!event->defaultHandled())
         TextFieldInputType::handleKeydownEvent(event);
+}
+
+void NumberInputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* event)
+{
+    event->setText(locale().stripInvalidNumberCharacters(event->text(), "0123456789.Ee-+"));
 }
 
 Decimal NumberInputType::parseToNumber(const String& src, const Decimal& defaultValue) const

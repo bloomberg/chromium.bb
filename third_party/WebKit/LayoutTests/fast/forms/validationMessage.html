@@ -79,7 +79,7 @@ var numberInput = document.createElement("input");
 numberInput.type = "number";
 form.appendChild(numberInput);
 numberInput.focus();
-document.execCommand("InsertText", false, "abc");
+document.execCommand("InsertText", false, "+++");
 debug("input badInput: " + numberInput.validationMessage);
 var nonRequiredBadInputMessage = numberInput.validationMessage;
 

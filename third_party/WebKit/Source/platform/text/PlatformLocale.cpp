@@ -248,6 +248,18 @@ void Locale::setLocaleData(const Vector<String, DecimalSymbolsSize>& symbols, co
     m_negativeSuffix = negativeSuffix;
     ASSERT(!m_positivePrefix.isEmpty() || !m_positiveSuffix.isEmpty() || !m_negativePrefix.isEmpty() || !m_negativeSuffix.isEmpty());
     m_hasLocaleData = true;
+
+    StringBuilder builder;
+    for (size_t i = 0; i < DecimalSymbolsSize; ++i) {
+        // We don't accept group separatros.
+        if (i != GroupSeparatorIndex)
+            builder.append(m_decimalSymbols[i]);
+    }
+    builder.append(m_positivePrefix);
+    builder.append(m_positiveSuffix);
+    builder.append(m_negativePrefix);
+    builder.append(m_negativeSuffix);
+    m_acceptableNumberCharacters = builder.toString();
 }
 
 String Locale::convertToLocalizedNumber(const String& input)
@@ -377,6 +389,20 @@ String Locale::convertFromLocalizedNumber(const String& localized)
             return input;
         else
             builder.append(static_cast<UChar>('0' + symbolIndex));
+    }
+    return builder.toString();
+}
+
+String Locale::stripInvalidNumberCharacters(const String& input, const String& standardChars) const
+{
+    StringBuilder builder;
+    builder.reserveCapacity(input.length());
+    for (unsigned i = 0; i < input.length(); ++i) {
+        UChar ch = input[i];
+        if (standardChars.find(ch) != kNotFound)
+            builder.append(ch);
+        else if (m_acceptableNumberCharacters.find(ch) != kNotFound)
+            builder.append(ch);
     }
     return builder.toString();
 }
