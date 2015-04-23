@@ -1,0 +1,14 @@
+{
+  "V8 Android GN (dbg)": {
+    "additional_compile_targets": [
+      "chrome_shell_apk"
+    ],
+    "gtest_tests": []
+  },
+  "V8 Linux GN": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": []
+  }
+}
