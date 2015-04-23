@@ -547,7 +547,6 @@ class TestRunner : public WebTestRunner,
 
   // MIDI function to control permission handling.
   void SetMIDIAccessorResult(bool result);
-  void SetMIDISysexPermission(bool value);
 
   // Grants permission for desktop notifications to an origin
   void GrantWebNotificationPermission(const GURL& origin,

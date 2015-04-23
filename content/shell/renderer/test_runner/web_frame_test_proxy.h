@@ -266,10 +266,6 @@ class WebFrameTestProxy : public Base {
     return base_proxy_->GetUserMediaClient();
   }
 
-  virtual blink::WebMIDIClient* webMIDIClient() {
-    return base_proxy_->GetWebMIDIClient();
-  }
-
   virtual bool willCheckAndDispatchMessageEvent(
       blink::WebLocalFrame* source_frame,
       blink::WebFrame* target_frame,

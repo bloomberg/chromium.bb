@@ -41,7 +41,6 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebMIDIClientMock.h"
 #include "third_party/WebKit/public/web/WebPageOverlay.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
@@ -1325,8 +1324,6 @@ void TestRunnerBindings::SetMIDIAccessorResult(bool result) {
 }
 
 void TestRunnerBindings::SetMIDISysexPermission(bool value) {
-  if (runner_)
-    runner_->SetMIDISysexPermission(value);
 }
 
 void TestRunnerBindings::GrantWebNotificationPermission(gin::Arguments* args) {
@@ -2830,11 +2827,6 @@ void TestRunner::SetPOSIXLocale(const std::string& locale) {
 
 void TestRunner::SetMIDIAccessorResult(bool result) {
   midi_accessor_result_ = result;
-}
-
-void TestRunner::SetMIDISysexPermission(bool value) {
-  for (auto* window : test_interfaces_->GetWindowList())
-    window->GetMIDIClientMock()->setSysexPermission(value);
 }
 
 void TestRunner::GrantWebNotificationPermission(const GURL& origin,

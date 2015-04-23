@@ -46,7 +46,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebMIDIClientMock.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
@@ -407,8 +406,6 @@ void WebTestProxyBase::Reset() {
   animate_scheduled_ = false;
   resource_identifier_map_.clear();
   log_console_output_ = true;
-  if (midi_client_.get())
-    midi_client_->resetMock();
   accept_languages_ = "";
 }
 
@@ -678,12 +675,6 @@ WebTestProxyBase::GetScreenOrientationClientMock() {
   return screen_orientation_client_.get();
 }
 
-blink::WebMIDIClientMock* WebTestProxyBase::GetMIDIClientMock() {
-  if (!midi_client_.get())
-    midi_client_.reset(new blink::WebMIDIClientMock);
-  return midi_client_.get();
-}
-
 MockWebSpeechRecognizer* WebTestProxyBase::GetSpeechRecognizerMock() {
   if (!speech_recognizer_.get()) {
     speech_recognizer_.reset(new MockWebSpeechRecognizer());
@@ -936,10 +927,6 @@ void WebTestProxyBase::PrintPage(blink::WebLocalFrame* frame) {
   blink::WebPrintParams printParams(page_size_in_pixels);
   frame->printBegin(printParams);
   frame->printEnd();
-}
-
-blink::WebMIDIClient* WebTestProxyBase::GetWebMIDIClient() {
-  return GetMIDIClientMock();
 }
 
 blink::WebSpeechRecognizer* WebTestProxyBase::GetSpeechRecognizer() {

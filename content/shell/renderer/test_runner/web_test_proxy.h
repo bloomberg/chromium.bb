@@ -48,8 +48,6 @@ class WebFrame;
 class WebLocalFrame;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
-class WebMIDIClient;
-class WebMIDIClientMock;
 class WebNode;
 class WebPlugin;
 class WebRange;
@@ -128,7 +126,6 @@ class WebTestProxyBase {
 
   void GetScreenOrientationForTesting(blink::WebScreenInfo&);
   MockScreenOrientationClient* GetScreenOrientationClientMock();
-  blink::WebMIDIClientMock* GetMIDIClientMock();
   MockWebSpeechRecognizer* GetSpeechRecognizerMock();
   MockCredentialManagerClient* GetCredentialManagerClientMock();
 
@@ -168,7 +165,6 @@ class WebTestProxyBase {
                        const blink::WebContextMenuData& data);
   blink::WebUserMediaClient* GetUserMediaClient();
   void PrintPage(blink::WebLocalFrame* frame);
-  blink::WebMIDIClient* GetWebMIDIClient();
   blink::WebSpeechRecognizer* GetSpeechRecognizer();
   bool RequestPointerLock();
   void RequestPointerUnlock();
@@ -268,7 +264,6 @@ class WebTestProxyBase {
   int chooser_count_;
 
   scoped_ptr<MockCredentialManagerClient> credential_manager_client_;
-  scoped_ptr<blink::WebMIDIClientMock> midi_client_;
   scoped_ptr<MockWebSpeechRecognizer> speech_recognizer_;
   scoped_ptr<MockScreenOrientationClient> screen_orientation_client_;
 
