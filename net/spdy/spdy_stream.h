@@ -263,8 +263,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Called by OnDataReceived or OnPaddingConsumed (which are in turn called by
   // the session) to decrease this stream's receive window size by
-  // |delta_window_size|, which must be at least 1 and must not cause
-  // this stream's receive window size to go negative.
+  // |delta_window_size|, which must be at least 1.  May close the stream on
+  // flow control error.
   //
   // If stream flow control is turned off or the stream is not active,
   // this must not be called.

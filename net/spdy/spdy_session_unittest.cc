@@ -3654,6 +3654,61 @@ TEST_P(SpdySessionTest, SessionFlowControlPadding) {
   data.RunFor(1);
 }
 
+// Peer sends more data than stream level receiving flow control window.
+TEST_P(SpdySessionTest, StreamFlowControlTooMuchData) {
+  const int32 stream_max_recv_window_size = 1024;
+  const int32 data_frame_size = 2 * stream_max_recv_window_size;
+
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0),
+  };
+
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  const std::string payload(data_frame_size, 'a');
+  scoped_ptr<SpdyFrame> data_frame(spdy_util_.ConstructSpdyBodyFrame(
+      1, payload.data(), data_frame_size, false));
+  MockRead reads[] = {
+      CreateMockRead(*resp, 1),
+      CreateMockRead(*data_frame, 2),
+      MockRead(ASYNC, 0, 3),
+  };
+
+  DeterministicSocketData data(reads, arraysize(reads), writes,
+                               arraysize(writes));
+  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+  CreateDeterministicNetworkSession();
+
+  SpdySessionPoolPeer pool_peer(spdy_session_pool_);
+  pool_peer.SetStreamInitialRecvWindowSize(stream_max_recv_window_size);
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+  EXPECT_LE(SpdySession::FLOW_CONTROL_STREAM, session->flow_control_state());
+
+  GURL url(kDefaultURL);
+  base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  EXPECT_EQ(stream_max_recv_window_size, spdy_stream->recv_window_size());
+
+  test::StreamDelegateDoNothing delegate(spdy_stream);
+  spdy_stream->SetDelegate(&delegate);
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
+  EXPECT_EQ(ERR_IO_PENDING, spdy_stream->SendRequestHeaders(
+                                headers.Pass(), NO_MORE_DATA_TO_SEND));
+
+  // Request and response.
+  data.RunFor(2);
+  EXPECT_EQ(1u, spdy_stream->stream_id());
+
+  // Too large data frame causes flow control error, should close stream.
+  data.RunFor(1);
+  EXPECT_EQ(nullptr, spdy_stream.get());
+}
+
 // A delegate that drops any received data.
 class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
  public:
