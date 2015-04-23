@@ -461,7 +461,9 @@ bool EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::RunAsync() {
       base::Bind(
           &EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::OnSeekFailure,
           this),
-      content::BrowserThread::GetBlockingPool());
+      content::BrowserThread::GetBlockingPool()->
+          GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get());
   return true;
 }
 
