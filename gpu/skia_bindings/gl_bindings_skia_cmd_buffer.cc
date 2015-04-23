@@ -30,6 +30,7 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   functions->fBindTexture = glBindTexture;
   functions->fBindVertexArray = glBindVertexArrayOES;
   functions->fBlendColor = glBlendColor;
+  functions->fBlendEquation = glBlendEquation;
   functions->fBlendFunc = glBlendFunc;
   functions->fBufferData = glBufferData;
   functions->fBufferSubData = glBufferSubData;
