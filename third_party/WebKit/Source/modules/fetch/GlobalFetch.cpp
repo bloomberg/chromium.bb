@@ -20,7 +20,7 @@ namespace blink {
 namespace {
 
 template <typename T>
-class GlobalFetchImpl final : public GlobalFetch::ScopedFetcher, public NoBaseWillBeGarbageCollectedFinalized<GlobalFetchImpl<T>>, public WillBeHeapSupplement<T> {
+class GlobalFetchImpl final : public NoBaseWillBeGarbageCollectedFinalized<GlobalFetchImpl<T>>, public GlobalFetch::ScopedFetcher, public WillBeHeapSupplement<T> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GlobalFetchImpl);
 public:
     static WeakPtr<ScopedFetcher> from(T& supplementable, ExecutionContext* executionContext)
