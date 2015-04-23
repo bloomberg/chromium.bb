@@ -479,10 +479,10 @@ void DisplayController::SetPrimaryDisplay(
     const gfx::Display& new_primary_display) {
   DisplayManager* display_manager = GetDisplayManager();
   DCHECK(new_primary_display.is_valid());
-  DCHECK(display_manager->IsActiveDisplay(new_primary_display));
+  DCHECK(display_manager->GetDisplayForId(new_primary_display.id()).is_valid());
 
   if (!new_primary_display.is_valid() ||
-      !display_manager->IsActiveDisplay(new_primary_display)) {
+      !display_manager->GetDisplayForId(new_primary_display.id()).is_valid()) {
     LOG(ERROR) << "Invalid or non-existent display is requested:"
                << new_primary_display.ToString();
     return;

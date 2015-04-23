@@ -79,6 +79,11 @@ class ASH_EXPORT DisplayManager
     MIRRORING
   };
 
+  // True if there is an internal display.
+  static bool HasInternalDisplay();
+
+  static bool IsInternalDisplayId(int64 id);
+
   DisplayManager();
 #if defined(OS_CHROMEOS)
   ~DisplayManager() override;
@@ -90,13 +95,9 @@ class ASH_EXPORT DisplayManager
     return layout_store_.get();
   }
 
-  gfx::Screen* screen() {
-    return screen_;
-  }
-
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
-  // When set to true, the MonitorManager calls OnDisplayMetricsChanged
+  // When set to true, the DisplayManager calls OnDisplayMetricsChanged
   // even if the display's bounds didn't change. Used to swap primary
   // display.
   void set_force_bounds_changed(bool force_bounds_changed) {
@@ -116,14 +117,6 @@ class ASH_EXPORT DisplayManager
   // Initializes font related params that depends on display
   // configuration.
   void RefreshFontParams();
-
-  // True if the given |display| is currently connected.
-  bool IsActiveDisplay(const gfx::Display& display) const;
-
-  // True if there is an internal display.
-  bool HasInternalDisplay() const;
-
-  bool IsInternalDisplayId(int64 id) const;
 
   // Returns the display layout used for current displays.
   DisplayLayout GetCurrentDisplayLayout();
@@ -369,9 +362,7 @@ private:
 
   Delegate* delegate_;  // not owned.
 
-  scoped_ptr<ScreenAsh> screen_ash_;
-  // This is to have an accessor without ScreenAsh definition.
-  gfx::Screen* screen_;
+  scoped_ptr<ScreenAsh> screen_;
 
   scoped_ptr<DisplayLayoutStore> layout_store_;
 

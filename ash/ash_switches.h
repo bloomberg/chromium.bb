@@ -47,15 +47,6 @@ ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_EXPORT extern const char kForceAshToDesktop[];
 #endif
 
-// Returns true if items can be dragged off the shelf to unpin.
-ASH_EXPORT bool UseDragOffShelf();
-
-#if defined(OS_CHROMEOS)
-// Returns true if a notification should appear when a low-power USB charger
-// is connected.
-ASH_EXPORT bool UseUsbChargerNotification();
-#endif
-
 }  // namespace switches
 }  // namespace ash
 
