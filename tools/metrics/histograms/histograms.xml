@@ -13211,6 +13211,57 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Layout.MicroSecondsPerComplexText" units="microseconds">
+  <owner>benjhayden@chromium.org</owner>
+  <summary>
+    For layouts that considered at least 100 nodes, at least half of which were
+    complex text fragments, the average number of microseconds spent laying out
+    each node.
+  </summary>
+</histogram>
+
+<histogram name="Layout.MicroSecondsPerFloat" units="microseconds">
+  <owner>benjhayden@chromium.org</owner>
+  <summary>
+    For layouts that considered at least 100 nodes, at least half of which were
+    floats, the average number of microseconds spent laying out each node.
+  </summary>
+</histogram>
+
+<histogram name="Layout.MicroSecondsPerNode" units="microseconds">
+  <owner>benjhayden@chromium.org</owner>
+  <summary>
+    For layouts that considered at least 100 nodes, the average number of
+    microseconds spent laying out each node.
+  </summary>
+</histogram>
+
+<histogram name="Layout.MicroSecondsPerPositioned" units="microseconds">
+  <owner>benjhayden@chromium.org</owner>
+  <summary>
+    For layouts that considered at least 100 nodes, at least half of which were
+    fixed or absolute positioned, the average number of microseconds spent
+    laying out each node.
+  </summary>
+</histogram>
+
+<histogram name="Layout.MicroSecondsPerSimpleText" units="microseconds">
+  <owner>benjhayden@chromium.org</owner>
+  <summary>
+    For layouts that considered at least 100 nodes, at least half of which were
+    simple text fragments, the average number of microseconds spent laying out
+    each node.
+  </summary>
+</histogram>
+
+<histogram name="Layout.MicroSecondsPerTD" units="microseconds">
+  <owner>benjhayden@chromium.org</owner>
+  <summary>
+    For layouts that considered at least 100 nodes, at least half of which were
+    table cells, the average number of microseconds spent laying out each node.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.All.SafeThreadAccess" units="accesses">
   <obsolete>
     Deprecated 2013-10. No thread-unsafety was found.
