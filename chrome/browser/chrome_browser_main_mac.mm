@@ -136,14 +136,7 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
       // in the window server, which is the default when not not using the
       // 10.9 SDK.
       // TODO: Remove this when we build with the 10.9 SDK.
-      @"NSWindowHostsLayersInWindowServer":
-          @(base::mac::IsOSMavericksOrLater()),
-      // This setting prevents views from ditching their layers when the view
-      // gets removed from the view hierarchy. It defaults to YES for
-      // applications linked against an OSX 10.8+ SDK. In Yosemite, failing to
-      // set this to YES causes an AppKit crash. http://crbug.com/428977
-      // TODO(erikchen): Remove this when we build with an OSX 10.8+ SDK.
-      @"NSViewKeepLayersAround": @(YES)
+      @"NSWindowHostsLayersInWindowServer": @(base::mac::IsOSMavericksOrLater())
   }];
 }
 
