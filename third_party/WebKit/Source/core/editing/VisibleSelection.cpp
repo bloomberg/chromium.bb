@@ -352,6 +352,9 @@ void VisibleSelection::setBaseAndExtentToDeepEquivalents()
 
 void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity)
 {
+    ASSERT(m_base.isNotNull());
+    ASSERT(m_extent.isNotNull());
+
     m_start = m_baseIsFirst ? m_base : m_extent;
 
     switch (granularity) {
@@ -400,13 +403,16 @@ void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity
         break;
     }
 
-    // Make sure we do not have a dangling start or end.
+    // Make sure we do not have a Null position.
     if (m_start.isNull())
-        m_start = m_end;
+        m_start = m_baseIsFirst ? m_base : m_extent;
 }
 
 void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity)
 {
+    ASSERT(m_base.isNotNull());
+    ASSERT(m_extent.isNotNull());
+
     m_end = m_baseIsFirst ? m_extent : m_base;
 
     switch (granularity) {
@@ -502,9 +508,9 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity)
         break;
     }
 
-    // Make sure we do not have a dangling start or end.
+    // Make sure we do not have a Null position.
     if (m_end.isNull())
-        m_end = m_start;
+        m_end = m_baseIsFirst ? m_extent : m_base;
 }
 
 SelectionType VisibleSelection::selectionType(const Position& start, const Position& end)
@@ -530,10 +536,16 @@ void VisibleSelection::updateSelectionType()
 void VisibleSelection::validate(TextGranularity granularity)
 {
     setBaseAndExtentToDeepEquivalents();
-    setStartRespectingGranularity(granularity);
-    setEndRespectingGranularity(granularity);
-    adjustSelectionToAvoidCrossingShadowBoundaries();
-    adjustSelectionToAvoidCrossingEditingBoundaries();
+    if (m_base.isNotNull() && m_extent.isNotNull()) {
+        setStartRespectingGranularity(granularity);
+        ASSERT(m_start.isNotNull());
+        setEndRespectingGranularity(granularity);
+        ASSERT(m_end.isNotNull());
+        adjustSelectionToAvoidCrossingShadowBoundaries();
+        adjustSelectionToAvoidCrossingEditingBoundaries();
+    } else {
+        m_base = m_extent = m_start = m_end = Position();
+    }
     updateSelectionType();
 
     if (selectionType() == RangeSelection) {
