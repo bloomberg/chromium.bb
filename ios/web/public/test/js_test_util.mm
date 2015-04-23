@@ -4,11 +4,13 @@
 
 #import "ios/web/public/test/js_test_util.h"
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
 
 #import "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/time/time.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
@@ -52,4 +54,22 @@ NSString* EvaluateJavaScriptAsString(CRWJSInjectionReceiver* receiver,
   return EvaluateJavaScriptAsString(manager, script);
 }
 
+NSString* EvaluateJavaScriptAsString(UIWebView* web_view, NSString* script) {
+  return [web_view stringByEvaluatingJavaScriptFromString:script];
+}
+
+id EvaluateJavaScript(WKWebView* web_view, NSString* script) {
+  __block base::scoped_nsobject<id> result;
+  [web_view evaluateJavaScript:script
+             completionHandler:^(id evaluationResult, NSError* error) {
+               DCHECK(!error);
+               result.reset([evaluationResult copy]);
+             }];
+  base::test::ios::WaitUntilCondition(^bool() {
+    return result;
+  });
+  return [[result retain] autorelease];
+}
+
 }  // namespace web
+

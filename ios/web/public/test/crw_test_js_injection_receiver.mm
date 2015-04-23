@@ -46,6 +46,8 @@
 
 - (void)injectScript:(NSString*)script
             forClass:(Class)jsInjectionManagerClass {
+  // Web layer guarantees that __gCrWeb object is always injected first.
+  [_webView stringByEvaluatingJavaScriptFromString:@"window.__gCrWeb = {};"];
   [_webView stringByEvaluatingJavaScriptFromString:script];
 }
 

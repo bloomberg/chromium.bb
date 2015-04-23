@@ -34,6 +34,7 @@
         'net/request_tracker_impl_unittest.mm',
         'net/web_http_protocol_handler_delegate_unittest.mm',
         'public/referrer_util_unittest.cc',
+        'public/test/http_server_unittest.mm',
         'string_util_unittest.cc',
         'ui_web_view_util_unittest.mm',
         'url_scheme_util_unittest.mm',
