@@ -57,8 +57,7 @@ DragWindowResizer::~DragWindowResizer() {
   if (window_state_)
     window_state_->DeleteDragDetails();
   Shell* shell = Shell::GetInstance();
-  shell->mouse_cursor_filter()->set_mouse_warp_mode(
-      MouseCursorEventFilter::WARP_ALWAYS);
+  shell->mouse_cursor_filter()->set_mouse_warp_enabled(true);
   shell->mouse_cursor_filter()->HideSharedEdgeIndicator();
   if (instance_ == this)
     instance_ = NULL;
@@ -156,9 +155,7 @@ DragWindowResizer::DragWindowResizer(WindowResizer* next_window_resizer,
   // window/tab to another display.
   MouseCursorEventFilter* mouse_cursor_filter =
       Shell::GetInstance()->mouse_cursor_filter();
-  mouse_cursor_filter->set_mouse_warp_mode(
-      ShouldAllowMouseWarp() ?
-      MouseCursorEventFilter::WARP_DRAG : MouseCursorEventFilter::WARP_NONE);
+  mouse_cursor_filter->set_mouse_warp_enabled(ShouldAllowMouseWarp());
   if (ShouldAllowMouseWarp())
     mouse_cursor_filter->ShowSharedEdgeIndicator(GetTarget()->GetRootWindow());
   instance_ = this;

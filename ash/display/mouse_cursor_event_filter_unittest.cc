@@ -172,13 +172,12 @@ TEST_F(MouseCursorEventFilterTest, SetMouseWarpModeFlag) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(1, 1));
 
-  event_filter()->set_mouse_warp_mode(MouseCursorEventFilter::WARP_NONE);
+  event_filter()->set_mouse_warp_enabled(false);
   EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[0],
                                           gfx::Point(499, 11)));
   EXPECT_EQ("1,1",
             aura::Env::GetInstance()->last_mouse_location().ToString());
-
-  event_filter()->set_mouse_warp_mode(MouseCursorEventFilter::WARP_ALWAYS);
+  event_filter()->set_mouse_warp_enabled(true);
   EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[0], gfx::Point(499, 11)));
   EXPECT_EQ("501,11",
             aura::Env::GetInstance()->last_mouse_location().ToString());

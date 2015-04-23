@@ -26,20 +26,10 @@ class SharedDisplayEdgeIndicator;
 class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
                                           public DisplayController::Observer {
  public:
-  enum MouseWarpMode {
-    WARP_ALWAYS,   // Always warp the mouse when possible.
-    WARP_DRAG,     // Used when dragging a window. Top and bottom
-                   // corner of the shared edge is reserved for window
-                   // snapping.
-    WARP_NONE,     // No mouse warping. Used when resizing the window.
-  };
-
   MouseCursorEventFilter();
   ~MouseCursorEventFilter() override;
 
-  void set_mouse_warp_mode(MouseWarpMode mouse_warp_mode) {
-    mouse_warp_mode_ = mouse_warp_mode;
-  }
+  void set_mouse_warp_enabled(bool enabled) { mouse_warp_enabled_ = enabled; }
 
   // Shows/Hide the indicator for window dragging. The |from|
   // is the window where the dragging started.
@@ -88,18 +78,17 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
   void UpdateHorizontalEdgeBounds();
   void UpdateVerticalEdgeBounds();
 
-  // Returns the source and destination window. When the
-  // mouse_warp_mode_ is WARP_DRAG, src_window is the root window
-  // where the drag starts. When the mouse_warp_mode_ is WARP_ALWAYS,
-  // the src_window is always the primary root window, because there
-  // is no difference between moving src to dst and moving dst to src.
+  // Returns the source and destination window. When |src_window| is
+  // |drag_soruce_root_| when it is set. Otherwise, the |src_window|
+  // is always the primary root window, because there is no difference
+  // between moving src to dst and moving dst to src.
   void GetSrcAndDstRootWindows(aura::Window** src_window,
                                aura::Window** dst_window);
 
   bool WarpMouseCursorIfNecessaryForTest(aura::Window* target_root,
                                          const gfx::Point& point_in_screen);
 
-  MouseWarpMode mouse_warp_mode_;
+  bool mouse_warp_enabled_;
 
   // The bounds for warp hole windows. |dst_indicator_bounds_| is kept
   // in the instance for testing.
@@ -111,8 +100,6 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
 
   // The root window in which the dragging started.
   aura::Window* drag_source_root_;
-
-  float scale_when_drag_started_;
 
   // Shows the area where a window can be dragged in to/out from
   // another display.

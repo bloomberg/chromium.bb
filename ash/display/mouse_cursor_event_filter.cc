@@ -109,9 +109,8 @@ void MovePointInside(const gfx::Rect& native_bounds,
 }  // namespace
 
 MouseCursorEventFilter::MouseCursorEventFilter()
-    : mouse_warp_mode_(WARP_ALWAYS),
+    : mouse_warp_enabled_(true),
       drag_source_root_(NULL),
-      scale_when_drag_started_(1.0f),
       shared_display_edge_indicator_(new SharedDisplayEdgeIndicator) {
   Shell::GetInstance()->display_controller()->AddObserver(this);
 }
@@ -174,14 +173,6 @@ void MouseCursorEventFilter::OnDisplayConfigurationChanged() {
 }
 
 void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-
-  if (event->type() == ui::ET_MOUSE_PRESSED) {
-    scale_when_drag_started_ = ui::GetDeviceScaleFactor(target->layer());
-  } else if (event->type() == ui::ET_MOUSE_RELEASED) {
-    scale_when_drag_started_ = 1.0f;
-  }
-
   // Handle both MOVED and DRAGGED events here because when the mouse pointer
   // enters the other root window while dragging, the underlying window system
   // (at least X11) stops generating a ui::ET_MOUSE_MOVED event.
@@ -246,8 +237,7 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(ui::MouseEvent* event) {
 bool MouseCursorEventFilter::WarpMouseCursorInNativeCoords(
     const gfx::Point& point_in_native,
     const gfx::Point& point_in_screen) {
-  if (Shell::GetScreen()->GetNumDisplays() <= 1 ||
-      mouse_warp_mode_ == WARP_NONE)
+  if (Shell::GetScreen()->GetNumDisplays() <= 1 || !mouse_warp_enabled_)
     return false;
 
   bool in_src_edge = src_edge_bounds_in_native_.Contains(point_in_native);

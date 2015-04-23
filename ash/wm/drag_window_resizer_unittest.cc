@@ -427,49 +427,40 @@ TEST_F(DragWindowResizerTest, WarpMousePointer) {
   ASSERT_TRUE(event_filter);
   window_->SetBounds(gfx::Rect(0, 0, 50, 60));
 
-  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
-            event_filter->mouse_warp_mode_);
+  EXPECT_TRUE(event_filter->mouse_warp_enabled_);
   {
     scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
         window_.get(), gfx::Point(), HTCAPTION));
     // While dragging a window, warp should be allowed.
-    EXPECT_EQ(MouseCursorEventFilter::WARP_DRAG,
-              event_filter->mouse_warp_mode_);
+    EXPECT_TRUE(event_filter->mouse_warp_enabled_);
     resizer->CompleteDrag();
   }
-  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
-            event_filter->mouse_warp_mode_);
+  EXPECT_TRUE(event_filter->mouse_warp_enabled_);
 
   {
     scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
         window_.get(), gfx::Point(), HTCAPTION));
-    EXPECT_EQ(MouseCursorEventFilter::WARP_DRAG,
-              event_filter->mouse_warp_mode_);
+    EXPECT_TRUE(event_filter->mouse_warp_enabled_);
     resizer->RevertDrag();
   }
-  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
-            event_filter->mouse_warp_mode_);
+  EXPECT_TRUE(event_filter->mouse_warp_enabled_);
 
   {
     scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
         window_.get(), gfx::Point(), HTRIGHT));
     // While resizing a window, warp should NOT be allowed.
-    EXPECT_EQ(MouseCursorEventFilter::WARP_NONE,
-              event_filter->mouse_warp_mode_);
+    EXPECT_FALSE(event_filter->mouse_warp_enabled_);
     resizer->CompleteDrag();
   }
-  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
-            event_filter->mouse_warp_mode_);
+  EXPECT_TRUE(event_filter->mouse_warp_enabled_);
 
   {
     scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
         window_.get(), gfx::Point(), HTRIGHT));
-    EXPECT_EQ(MouseCursorEventFilter::WARP_NONE,
-              event_filter->mouse_warp_mode_);
+    EXPECT_FALSE(event_filter->mouse_warp_enabled_);
     resizer->RevertDrag();
   }
-  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
-            event_filter->mouse_warp_mode_);
+  EXPECT_TRUE(event_filter->mouse_warp_enabled_);
 }
 
 // Verifies cursor's device scale factor is updated whe a window is moved across
