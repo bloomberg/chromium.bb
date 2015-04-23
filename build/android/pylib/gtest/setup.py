@@ -31,6 +31,7 @@ ISOLATE_FILE_PATHS = {
       'third_party/WebKit/Source/platform/heap/BlinkHeapUnitTests.isolate',
     'breakpad_unittests': 'breakpad/breakpad_unittests.isolate',
     'cc_perftests': 'cc/cc_perftests.isolate',
+    'components_browsertests': 'components/components_browsertests.isolate',
     'components_unittests': 'components/components_unittests.isolate',
     'content_browsertests': 'content/content_browsertests.isolate',
     'content_unittests': 'content/content_unittests.isolate',
@@ -236,7 +237,8 @@ def Setup(test_options, devices):
     tests = unittest_util.FilterTestNames(tests, test_options.gtest_filter)
 
   # Coalesce unit tests into a single test per device
-  if test_options.suite_name != 'content_browsertests':
+  if (test_options.suite_name != 'content_browsertests' and
+      test_options.suite_name != 'components_browsertests'):
     num_devices = len(devices)
     tests = [':'.join(tests[i::num_devices]) for i in xrange(num_devices)]
     tests = [t for t in tests if t]

@@ -248,22 +248,30 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTestBase);
 };
 
-class PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
+// RenderVIewTest-based tests crash on Android
+// http://crbug.com/187500
+#if defined(OS_ANDROID)
+#define MAYBE_PrintWebViewHelperTest DISABLED_PrintWebViewHelperTest
+#else
+#define MAYBE_PrintWebViewHelperTest PrintWebViewHelperTest
+#endif  // defined(OS_ANDROID)
+
+class MAYBE_PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
  public:
-  PrintWebViewHelperTest() {}
-  ~PrintWebViewHelperTest() override {}
+  MAYBE_PrintWebViewHelperTest() {}
+  ~MAYBE_PrintWebViewHelperTest() override {}
 
   void SetUp() override { PrintWebViewHelperTestBase::SetUp(); }
 
  protected:
-  DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTest);
+  DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintWebViewHelperTest);
 };
 
 // This tests only for platforms without print preview.
 #if !defined(ENABLE_PRINT_PREVIEW)
 // Tests that the renderer blocks window.print() calls if they occur too
 // frequently.
-TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
+TEST_F(MAYBE_PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
   // Pretend user will cancel printing.
   print_render_thread_->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
@@ -287,7 +295,7 @@ TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
 
 // Tests that the renderer always allows window.print() calls if they are user
 // initiated.
-TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
+TEST_F(MAYBE_PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
   // Pretend user will cancel printing.
   print_render_thread_->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
@@ -325,7 +333,7 @@ TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
 }
 
 // Duplicate of OnPrintPagesTest only using javascript to print.
-TEST_F(PrintWebViewHelperTest, PrintWithJavascript) {
+TEST_F(MAYBE_PrintWebViewHelperTest, PrintWithJavascript) {
   PrintWithJavaScript();
 
   VerifyPageCount(1);
@@ -336,7 +344,7 @@ TEST_F(PrintWebViewHelperTest, PrintWithJavascript) {
 #if defined(ENABLE_BASIC_PRINTING)
 // Tests that printing pages work and sending and receiving messages through
 // that channel all works.
-TEST_F(PrintWebViewHelperTest, OnPrintPages) {
+TEST_F(MAYBE_PrintWebViewHelperTest, OnPrintPages) {
   LoadHTML(kHelloWorldHTML);
   OnPrintPages();
 
@@ -350,7 +358,7 @@ TEST_F(PrintWebViewHelperTest, OnPrintPages) {
 // to rip out and replace most of the IPC code if we ever plan to improve
 // printing, and the comment below by sverrir suggests that it doesn't do much
 // for us anyway.
-TEST_F(PrintWebViewHelperTest, PrintWithIframe) {
+TEST_F(MAYBE_PrintWebViewHelperTest, PrintWithIframe) {
   // Document that populates an iframe.
   const char html[] =
       "<html><body>Lorem Ipsum:"
@@ -440,7 +448,7 @@ const TestPageData kTestPages[] = {
 // metafile directly.
 // Same for printing via PDF on Windows.
 #if defined(OS_MACOSX) && defined(ENABLE_BASIC_PRINTING)
-TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
+TEST_F(MAYBE_PrintWebViewHelperTest, PrintLayoutTest) {
   bool baseline = false;
 
   EXPECT_TRUE(print_render_thread_->printer() != NULL);
@@ -496,10 +504,20 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
 
 // These print preview tests do not work on Chrome OS yet.
 #if !defined(OS_CHROMEOS)
-class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
+
+// RenderVIewTest-based tests crash on Android
+// http://crbug.com/187500
+#if defined(OS_ANDROID)
+#define MAYBE_PrintWebViewHelperPreviewTest \
+  DISABLED_PrintWebViewHelperPreviewTest
+#else
+#define MAYBE_PrintWebViewHelperPreviewTest PrintWebViewHelperPreviewTest
+#endif  // defined(OS_ANDROID)
+
+class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
  public:
-  PrintWebViewHelperPreviewTest() {}
-  ~PrintWebViewHelperPreviewTest() override {}
+  MAYBE_PrintWebViewHelperPreviewTest() {}
+  ~MAYBE_PrintWebViewHelperPreviewTest() override {}
 
  protected:
   void VerifyPrintPreviewCancelled(bool did_cancel) {
@@ -591,11 +609,11 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
     }
   }
 
-  DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperPreviewTest);
+  DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintWebViewHelperPreviewTest);
 };
 
 #if defined(ENABLE_PRINT_PREVIEW)
-TEST_F(PrintWebViewHelperPreviewTest, BlockScriptInitiatedPrinting) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, BlockScriptInitiatedPrinting) {
   LoadHTML(kHelloWorldHTML);
   PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
   print_web_view_helper->SetScriptedPrintBlocked(true);
@@ -607,7 +625,7 @@ TEST_F(PrintWebViewHelperPreviewTest, BlockScriptInitiatedPrinting) {
   VerifyPreviewRequest(true);
 }
 
-TEST_F(PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
   LoadHTML(kPrintOnUserAction);
   gfx::Size new_size(200, 100);
   Resize(new_size, gfx::Rect(), false);
@@ -630,7 +648,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
 
 // Tests that print preview work and sending and receiving messages through
 // that channel all works.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreview) {
   LoadHTML(kHelloWorldHTML);
 
   // Fill in some dummy values.
@@ -646,7 +664,8 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
   VerifyPagesPrinted(false);
 }
 
-TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHTMLWithPageMarginsCss) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+       PrintPreviewHTMLWithPageMarginsCss) {
   // A simple web page with print margins css.
   const char kHTMLWithPageMarginsCss[] =
       "<html><head><style>"
@@ -677,7 +696,8 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHTMLWithPageMarginsCss) {
 
 // Test to verify that print preview ignores print media css when non-default
 // margin is selected.
-TEST_F(PrintWebViewHelperPreviewTest, NonDefaultMarginsSelectedIgnorePrintCss) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+       NonDefaultMarginsSelectedIgnorePrintCss) {
   LoadHTML(kHTMLWithPageSizeCss);
 
   // Fill in some dummy values.
@@ -697,7 +717,7 @@ TEST_F(PrintWebViewHelperPreviewTest, NonDefaultMarginsSelectedIgnorePrintCss) {
 
 // Test to verify that print preview honor print media size css when
 // PRINT_TO_PDF is selected and doesn't fit to printer default paper size.
-TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPrintCss) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPrintCss) {
   LoadHTML(kHTMLWithPageSizeCss);
 
   // Fill in some dummy values.
@@ -717,7 +737,8 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPrintCss) {
 
 // Test to verify that print preview honor print margin css when PRINT_TO_PDF
 // is selected and doesn't fit to printer default paper size.
-TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPageMarginsCss) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+       PrintToPDFSelectedHonorPageMarginsCss) {
   // A simple web page with print margins css.
   const char kHTMLWithPageCss[] =
       "<html><head><style>"
@@ -749,7 +770,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPageMarginsCss) {
 
 // Test to verify that print preview workflow center the html page contents to
 // fit the page size.
-TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewCenterToFitPage) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewCenterToFitPage) {
   LoadHTML(kHTMLWithPageSizeCss);
 
   // Fill in some dummy values.
@@ -768,7 +789,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewCenterToFitPage) {
 
 // Test to verify that print preview workflow scale the html page contents to
 // fit the page size.
-TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   // A simple web page with print margins css.
   const char kHTMLWithPageCss[] =
       "<html><head><style>"
@@ -797,7 +818,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
 
 // Test to verify that print preview workflow honor the orientation settings
 // specified in css.
-TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHonorsOrientationCss) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewHonorsOrientationCss) {
   LoadHTML(kHTMLWithLandscapePageCss);
 
   // Fill in some dummy values.
@@ -815,7 +836,8 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHonorsOrientationCss) {
 
 // Test to verify that print preview workflow honors the orientation settings
 // specified in css when PRINT_TO_PDF is selected.
-TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorOrientationCss) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+       PrintToPDFSelectedHonorOrientationCss) {
   LoadHTML(kHTMLWithLandscapePageCss);
 
   // Fill in some dummy values.
@@ -833,7 +855,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorOrientationCss) {
 
 // Test to verify that complete metafile is generated for a subset of pages
 // without creating draft pages.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
   LoadHTML(kMultipageHTML);
 
   // Fill in some dummy values.
@@ -866,7 +888,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
 }
 
 // Test to verify that preview generated only for one page.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedText) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedText) {
   LoadHTML(kMultipageHTML);
   GetMainFrame()->selectRange(
       blink::WebRange::fromDocumentRange(GetMainFrame(), 1, 3));
@@ -887,7 +909,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedText) {
 
 // Tests that print preview fails and receiving error messages through
 // that channel all works.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
   LoadHTML(kHelloWorldHTML);
 
   // An empty dictionary should fail.
@@ -902,7 +924,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
 }
 
 // Tests that cancelling print preview works.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
   LoadHTML(kLongPageHTML);
 
   const int kCancelPage = 3;
@@ -921,7 +943,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
 
 // Tests that printing from print preview works and sending and receiving
 // messages through that channel all works.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreview) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreview) {
   LoadHTML(kPrintPreviewHTML);
 
   // Fill in some dummy values.
@@ -935,7 +957,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreview) {
 
 // Tests that printing from print preview fails and receiving error messages
 // through that channel all works.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
   LoadHTML(kPrintPreviewHTML);
 
   // An empty dictionary should fail.
@@ -947,7 +969,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
 
 // Tests that when default printer has invalid printer settings, print preview
 // receives error message.
-TEST_F(PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
        OnPrintPreviewUsingInvalidPrinterSettings) {
   LoadHTML(kPrintPreviewHTML);
 
@@ -970,7 +992,8 @@ TEST_F(PrintWebViewHelperPreviewTest,
 
 // Tests that when the selected printer has invalid page settings, print preview
 // receives error message.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewUsingInvalidPageSize) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+       OnPrintPreviewUsingInvalidPageSize) {
   LoadHTML(kPrintPreviewHTML);
 
   print_render_thread_->printer()->UseInvalidPageSize();
@@ -989,7 +1012,8 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewUsingInvalidPageSize) {
 
 // Tests that when the selected printer has invalid content settings, print
 // preview receives error message.
-TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewUsingInvalidContentSize) {
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+       OnPrintPreviewUsingInvalidContentSize) {
   LoadHTML(kPrintPreviewHTML);
 
   print_render_thread_->printer()->UseInvalidContentSize();
@@ -1006,7 +1030,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewUsingInvalidContentSize) {
   VerifyPrintPreviewGenerated(false);
 }
 
-TEST_F(PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
        OnPrintForPrintPreviewUsingInvalidPrinterSettings) {
   LoadHTML(kPrintPreviewHTML);
 

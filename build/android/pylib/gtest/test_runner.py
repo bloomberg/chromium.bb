@@ -34,6 +34,7 @@ _INFRA_STDOUT_TIMEOUT = 20 * 60
 def _TestSuiteRequiresMockTestServer(suite_name):
   """Returns True if the test suite requires mock test server."""
   tests_require_net_test_server = ['unit_tests', 'net_unittests',
+                                   'components_browsertests',
                                    'content_unittests',
                                    'content_browsertests']
   return (suite_name in

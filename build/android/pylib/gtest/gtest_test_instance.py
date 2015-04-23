@@ -92,9 +92,10 @@ class GtestTestInstance(test_instance.TestInstance):
       raise ValueError('Platform mode currently supports only 1 gtest suite')
     self._suite = args.suite_name[0]
 
-    if self._suite == 'content_browsertests':
-      error_func('content_browsertests are not currently supported '
-                 'in platform mode.')
+    if (self._suite == 'content_browsertests' or
+        self._suite == 'components_browsertests'):
+      error_func('%s are not currently supported '
+                 'in platform mode.' % self._suite)
       self._apk_path = os.path.join(
           constants.GetOutDirectory(), 'apks', '%s.apk' % self._suite)
     else:

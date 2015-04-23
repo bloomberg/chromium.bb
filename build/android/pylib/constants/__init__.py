@@ -106,6 +106,13 @@ PACKAGE_INFO = {
         '/data/local/tmp/chrome-native-tests-command-line',
         None,
         None),
+    'components_browsertests': PackageInfo(
+        'org.chromium.components_browsertests_apk',
+        ('org.chromium.components_browsertests_apk' +
+         '.ComponentsBrowserTestsActivity'),
+        '/data/local/tmp/components-browser-tests-command-line',
+        None,
+        None),
     'content_browsertests': PackageInfo(
         'org.chromium.content_browsertests_apk',
         'org.chromium.content_browsertests_apk.ContentBrowserTestsActivity',

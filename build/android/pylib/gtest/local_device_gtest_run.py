@@ -30,7 +30,8 @@ _MAX_SHARD_SIZE = 256
 # TODO(jbudorick): Move this up to the test instance if the net test server is
 # handled outside of the APK for the remote_device environment.
 _SUITE_REQUIRES_TEST_SERVER_SPAWNER = [
-  'content_unittests', 'content_browsertests', 'net_unittests', 'unit_tests'
+  'components_browsertests', 'content_unittests', 'content_browsertests',
+  'net_unittests', 'unit_tests'
 ]
 
 class _ApkDelegate(object):

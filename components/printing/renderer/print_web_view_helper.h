@@ -26,6 +26,17 @@ struct PrintMsg_PrintPage_Params;
 struct PrintMsg_PrintPages_Params;
 struct PrintHostMsg_SetOptionsFromDocument_Params;
 
+// RenderVIewTest-based tests crash on Android
+// http://crbug.com/187500
+#if defined(OS_ANDROID)
+#define MAYBE_PrintWebViewHelperTest DISABLED_PrintWebViewHelperTest
+#define MAYBE_PrintWebViewHelperPreviewTest \
+    DISABLED_PrintWebViewHelperPreviewTest
+#else
+#define MAYBE_PrintWebViewHelperTest PrintWebViewHelperTest
+#define MAYBE_PrintWebViewHelperPreviewTest PrintWebViewHelperPreviewTest
+#endif  // defined(OS_ANDROID)
+
 namespace base {
 class DictionaryValue;
 }
@@ -115,16 +126,16 @@ class PrintWebViewHelper
 
  private:
   friend class PrintWebViewHelperTestBase;
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
+  FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintWebViewHelperPreviewTest,
                            BlockScriptInitiatedPrinting);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, OnPrintPages);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest,
+  FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintWebViewHelperTest, OnPrintPages);
+  FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintWebViewHelperTest,
                            BlockScriptInitiatedPrinting);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest,
+  FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintWebViewHelperTest,
                            BlockScriptInitiatedPrintingFromPopup);
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, PrintLayoutTest);
-  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, PrintWithIframe);
+  FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintWebViewHelperTest, PrintLayoutTest);
+  FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintWebViewHelperTest, PrintWithIframe);
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   enum PrintingResult {

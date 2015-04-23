@@ -76,8 +76,14 @@ class DomDistillerJsTest : public content::ContentBrowserTest {
   void AddComponentsResources() {
     base::FilePath pak_file;
     base::FilePath pak_dir;
+#if defined(OS_ANDROID)
+    CHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir));
+    pak_dir = pak_dir.Append(FILE_PATH_LITERAL("paks"));
+#else
     PathService::Get(base::DIR_MODULE, &pak_dir);
-    pak_file = pak_dir.Append(FILE_PATH_LITERAL("components_resources.pak"));
+#endif  // OS_ANDROID
+    pak_file =
+        pak_dir.Append(FILE_PATH_LITERAL("components_tests_resources.pak"));
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_file, ui::SCALE_FACTOR_NONE);
   }

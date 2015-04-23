@@ -1123,6 +1123,87 @@
     },
   ],
   'conditions': [
+    ['OS == "android"', {
+      'variables': {
+        'components_browsertests_pak_input_resources': [
+          '<(PRODUCT_DIR)/components_tests_resources.pak',
+          '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
+        ],
+        'conditions': [
+          ['icu_use_data_file_flag==1', {
+            'components_browsertests_pak_input_resources': [
+              '<(PRODUCT_DIR)/icudtl.dat',
+            ],
+          }],
+          ['v8_use_external_startup_data==1', {
+            'components_browsertests_pak_input_resources': [
+              '<(PRODUCT_DIR)/natives_blob.bin',
+              '<(PRODUCT_DIR)/snapshot_blob.bin',
+            ],
+          }],
+        ],
+      },
+      'targets': [
+        {
+          'target_name': 'components_browsertests_paks_copy',
+          'type': 'none',
+          'dependencies': [
+            'components_browsertests',
+          ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/components_browsertests_apk_shell/assets',
+              'files': [
+                '<@(components_browsertests_pak_input_resources)',
+              ],
+            }
+          ],
+        },
+        {
+          'target_name': 'components_browsertests_manifest',
+          'type': 'none',
+          'variables': {
+            'jinja_inputs': ['test/android/browsertests_apk/AndroidManifest.xml.jinja2'],
+            'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/components_browsertests_manifest/AndroidManifest.xml',
+          },
+          'includes': [ '../build/android/jinja_template.gypi' ],
+        },
+        {
+          'target_name': 'components_browsertests_jni_headers',
+          'type': 'none',
+          'sources': [
+            'test/android/browsertests_apk/src/org/chromium/components_browsertests_apk/ComponentsBrowserTestsActivity.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'content/shell',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
+          # TODO(GN)
+          'target_name': 'components_browsertests_apk',
+          'type': 'none',
+          'dependencies': [
+            '../content/content.gyp:content_icudata',
+            '../content/content.gyp:content_java',
+            '../content/content.gyp:content_v8_external_data',
+            '../content/content_shell_and_tests.gyp:content_java_test_support',
+            '../content/content_shell_and_tests.gyp:content_shell_java',
+            'components_browsertests_paks_copy',
+            'components_browsertests',
+          ],
+          'variables': {
+            'apk_name': 'components_browsertests',
+            'java_in_dir': 'test/android/browsertests_apk',
+            'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/components_browsertests_manifest/AndroidManifest.xml',
+            'resource_dir': 'test/android/browsertests_apk/res',
+            'native_lib_target': 'libcomponents_browsertests',
+            'asset_location': '<(PRODUCT_DIR)/components_browsertests_apk_shell/assets',
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        },
+      ],
+    }],
     ['OS != "ios"', {
       'targets': [
         {
@@ -1204,8 +1285,17 @@
           ],
           'conditions': [
             ['OS == "android"', {
+              'sources' : [
+                'test/android/browsertests_apk/components_browser_tests_android.cc',
+                'test/android/browsertests_apk/components_browser_tests_android.h',
+                'test/android/browsertests_apk/components_browser_tests_jni_onload.cc',
+              ],
               'sources!': [
                 'autofill/content/browser/risk/fingerprint_browsertest.cc',
+              ],
+              'dependencies': [
+                '../testing/android/native_test.gyp:native_test_util',
+                'components_browsertests_jni_headers',
               ],
             }],
             ['OS == "linux"', {

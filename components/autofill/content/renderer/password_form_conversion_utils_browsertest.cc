@@ -105,10 +105,19 @@ class PasswordFormBuilder {
   DISALLOW_COPY_AND_ASSIGN(PasswordFormBuilder);
 };
 
-class PasswordFormConversionUtilsTest : public content::RenderViewTest {
+// RenderVIewTest-based tests crash on Android
+// http://crbug.com/187500
+#if defined(OS_ANDROID)
+#define MAYBE_PasswordFormConversionUtilsTest \
+  DISABLED_PasswordFormConversionUtilsTest
+#else
+#define MAYBE_PasswordFormConversionUtilsTest PasswordFormConversionUtilsTest
+#endif  // defined(OS_ANDROID)
+
+class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
  public:
-  PasswordFormConversionUtilsTest() : content::RenderViewTest() {}
-  ~PasswordFormConversionUtilsTest() override {}
+  MAYBE_PasswordFormConversionUtilsTest() : content::RenderViewTest() {}
+  ~MAYBE_PasswordFormConversionUtilsTest() override {}
 
  protected:
   // Loads the given |html|, retrieves the sole WebFormElement from it, and then
@@ -138,12 +147,12 @@ class PasswordFormConversionUtilsTest : public content::RenderViewTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordFormConversionUtilsTest);
+  DISALLOW_COPY_AND_ASSIGN(MAYBE_PasswordFormConversionUtilsTest);
 };
 
 }  // namespace
 
-TEST_F(PasswordFormConversionUtilsTest, BasicFormAttributes) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, BasicFormAttributes) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddUsernameField("username", "johnsmith", NULL);
   builder.AddSubmitButton("inactive_submit", false);
@@ -170,7 +179,7 @@ TEST_F(PasswordFormConversionUtilsTest, BasicFormAttributes) {
   EXPECT_EQ(PasswordForm::TYPE_MANUAL, password_form->type);
 }
 
-TEST_F(PasswordFormConversionUtilsTest, DisabledFieldsAreIgnored) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, DisabledFieldsAreIgnored) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddUsernameField("username", "johnsmith", NULL);
   builder.AddDisabledUsernameField();
@@ -188,7 +197,7 @@ TEST_F(PasswordFormConversionUtilsTest, DisabledFieldsAreIgnored) {
   EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
 }
 
-TEST_F(PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
   // Each test case consists of a set of parameters to be plugged into the
   // PasswordFormBuilder below, plus the corresponding expectations.
   struct TestCase {
@@ -273,7 +282,7 @@ TEST_F(PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
   }
 }
 
-TEST_F(PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
   // Each test case consists of a set of parameters to be plugged into the
   // PasswordFormBuilder below, plus the corresponding expectations.
   struct TestCase {
@@ -328,7 +337,7 @@ TEST_F(PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
   }
 }
 
-TEST_F(PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
   // Each test case consists of a set of parameters to be plugged into the
   // PasswordFormBuilder below, plus the corresponding expectations.
   struct TestCase {
@@ -389,7 +398,7 @@ TEST_F(PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
   }
 }
 
-TEST_F(PasswordFormConversionUtilsTest,
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
        IdentifyingPasswordFieldsWithAutocompleteAttributes) {
   // Each test case consists of a set of parameters to be plugged into the
   // PasswordFormBuilder below, plus the corresponding expectations.
@@ -527,7 +536,7 @@ TEST_F(PasswordFormConversionUtilsTest,
   }
 }
 
-TEST_F(PasswordFormConversionUtilsTest, InvalidFormDueToBadActionURL) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, InvalidFormDueToBadActionURL) {
   PasswordFormBuilder builder("invalid_target");
   builder.AddUsernameField("username", "JohnSmith", NULL);
   builder.AddSubmitButton("submit", true);
@@ -539,7 +548,8 @@ TEST_F(PasswordFormConversionUtilsTest, InvalidFormDueToBadActionURL) {
   EXPECT_FALSE(password_form);
 }
 
-TEST_F(PasswordFormConversionUtilsTest, InvalidFormDueToNoPasswordFields) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       InvalidFormDueToNoPasswordFields) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddUsernameField("username1", "John", NULL);
   builder.AddUsernameField("username2", "Smith", NULL);
@@ -551,7 +561,7 @@ TEST_F(PasswordFormConversionUtilsTest, InvalidFormDueToNoPasswordFields) {
   EXPECT_FALSE(password_form);
 }
 
-TEST_F(PasswordFormConversionUtilsTest,
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
        InvalidFormsDueToConfusingPasswordFields) {
   // Each test case consists of a set of parameters to be plugged into the
   // PasswordFormBuilder below.
@@ -582,7 +592,7 @@ TEST_F(PasswordFormConversionUtilsTest,
   }
 }
 
-TEST_F(PasswordFormConversionUtilsTest,
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
        InvalidFormDueToTooManyPasswordFieldsWithoutAutocompleteAttributes) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddUsernameField("username1", "John", NULL);
@@ -598,7 +608,7 @@ TEST_F(PasswordFormConversionUtilsTest,
   EXPECT_FALSE(password_form);
 }
 
-TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationLogin) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationLogin) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddHiddenField();
   builder.AddUsernameField("username", "", nullptr);
@@ -612,7 +622,7 @@ TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationLogin) {
   EXPECT_EQ(PasswordForm::Layout::LAYOUT_OTHER, login_form->layout);
 }
 
-TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationSignup) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationSignup) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddUsernameField("someotherfield", "", nullptr);
   builder.AddUsernameField("username", "", nullptr);
@@ -628,7 +638,7 @@ TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationSignup) {
   EXPECT_EQ(PasswordForm::Layout::LAYOUT_OTHER, signup_form->layout);
 }
 
-TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationChange) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, LayoutClassificationChange) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddUsernameField("username", "", nullptr);
   builder.AddPasswordField("old_password", "", nullptr);
@@ -644,7 +654,8 @@ TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationChange) {
   EXPECT_EQ(PasswordForm::Layout::LAYOUT_OTHER, change_form->layout);
 }
 
-TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationLoginPlusSignup_A) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       LayoutClassificationLoginPlusSignup_A) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddUsernameField("username", "", nullptr);
   builder.AddHiddenField();
@@ -665,7 +676,8 @@ TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationLoginPlusSignup_A) {
             login_plus_signup_form->layout);
 }
 
-TEST_F(PasswordFormConversionUtilsTest, LayoutClassificationLoginPlusSignup_B) {
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       LayoutClassificationLoginPlusSignup_B) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddUsernameField("username", "", nullptr);
   builder.AddHiddenField();
