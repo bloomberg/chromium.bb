@@ -2079,7 +2079,13 @@ static String inputTypeToName(WebInputEvent::Type type)
 
 bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
-    WebAutofillClient* autofillClient = mainFrameImpl() ? mainFrameImpl()->autofillClient() : 0;
+    // TODO(dcheng): The fact that this is getting called when there is no local
+    // main frame is problematic and probably indicates a bug in the input event
+    // routing code.
+    if (!mainFrameImpl())
+        return false;
+
+    WebAutofillClient* autofillClient = mainFrameImpl()->autofillClient();
     UserGestureNotifier notifier(autofillClient, &m_userGestureObserved);
     // On the first input event since page load, |notifier| instructs the
     // autofill client to unblock values of password input fields of any forms
