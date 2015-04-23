@@ -75,15 +75,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, DisableFind) {
 
 // Note that a Browser's destructor, when the browser's profile is guest, will
 // create and execute a BrowsingDataRemover.
-// Flakes on Linux: http://crbug.com/471953
-#if defined(OS_LINUX)
-#define MAYBE_NewAvatarMenuEnabledInGuestMode \
-    DISABLED_NewAvatarMenuEnabledInGuestMode
-#else
-#define MAYBE_NewAvatarMenuEnabledInGuestMode NewAvatarMenuEnabledInGuestMode
-#endif
+// Flakes http://crbug.com/471953
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
-                       MAYBE_NewAvatarMenuEnabledInGuestMode) {
+                       DISABLED_NewAvatarMenuEnabledInGuestMode) {
   switches::EnableNewAvatarMenuForTesting(
       base::CommandLine::ForCurrentProcess());
 
