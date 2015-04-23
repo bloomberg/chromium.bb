@@ -373,7 +373,7 @@ void SpdyHttpStream::OnClose(int status) {
   }
   stream_.reset();
   bool invoked_callback = false;
-  if (status == net::OK) {
+  if (status == OK) {
     // We need to complete any pending buffered read now.
     invoked_callback = DoBufferedReadCallback();
   }

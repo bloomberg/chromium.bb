@@ -87,7 +87,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // Processes the Public-Key-Pins header, if one exists.
   void ProcessPublicKeyPinsHeader();
 
-  // |result| should be net::OK, or the request is canceled.
+  // |result| should be OK, or the request is canceled.
   void OnHeadersReceivedCallback(int result);
   void OnStartCompleted(int result);
   void OnReadCompleted(int result);
@@ -138,7 +138,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // Starts the transaction if extensions using the webrequest API do not
   // object.
   void StartTransaction();
-  // If |result| is net::OK, calls StartTransactionInternal. Otherwise notifies
+  // If |result| is OK, calls StartTransactionInternal. Otherwise notifies
   // cancellation.
   void MaybeStartTransactionInternal(int result);
   void StartTransactionInternal();

@@ -245,7 +245,7 @@ bool BaseTestServer::GetAddressList(AddressList* address_list) const {
                              BoundNetLog());
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
-  if (rv != net::OK) {
+  if (rv != OK) {
     LOG(ERROR) << "Failed to resolve hostname: " << host_port_pair_.host();
     return false;
   }

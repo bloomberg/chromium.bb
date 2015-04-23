@@ -178,12 +178,11 @@ void NSSCertDatabase::ListModules(CryptoModuleList* modules,
   }
 }
 
-int NSSCertDatabase::ImportFromPKCS12(
-    CryptoModule* module,
-    const std::string& data,
-    const base::string16& password,
-    bool is_extractable,
-    net::CertificateList* imported_certs) {
+int NSSCertDatabase::ImportFromPKCS12(CryptoModule* module,
+                                      const std::string& data,
+                                      const base::string16& password,
+                                      bool is_extractable,
+                                      CertificateList* imported_certs) {
   DVLOG(1) << __func__ << " "
            << PK11_GetModuleID(module->os_module_handle()) << ":"
            << PK11_GetSlotID(module->os_module_handle());
@@ -192,7 +191,7 @@ int NSSCertDatabase::ImportFromPKCS12(
                                         password,
                                         is_extractable,
                                         imported_certs);
-  if (result == net::OK)
+  if (result == OK)
     NotifyObserversOfCertAdded(NULL);
 
   return result;

@@ -225,8 +225,8 @@ void ProxyConfigServiceMac::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-net::ProxyConfigService::ConfigAvailability
-    ProxyConfigServiceMac::GetLatestProxyConfig(ProxyConfig* config) {
+ProxyConfigService::ConfigAvailability
+ProxyConfigServiceMac::GetLatestProxyConfig(ProxyConfig* config) {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
   // Lazy-initialize by fetching the proxy setting from this thread.

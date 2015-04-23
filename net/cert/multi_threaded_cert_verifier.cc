@@ -568,9 +568,8 @@ bool MultiThreadedCertVerifier::RequestParams::operator<(
   if (hostname != other.hostname)
     return hostname < other.hostname;
   return std::lexicographical_compare(
-      hash_values.begin(), hash_values.end(),
-      other.hash_values.begin(), other.hash_values.end(),
-      net::SHA1HashValueLessThan());
+      hash_values.begin(), hash_values.end(), other.hash_values.begin(),
+      other.hash_values.end(), SHA1HashValueLessThan());
 }
 
 // HandleResult is called by CertVerifierWorker on the origin message loop.

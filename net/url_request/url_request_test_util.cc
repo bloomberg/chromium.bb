@@ -394,9 +394,9 @@ int TestNetworkDelegate::OnBeforeSendHeaders(
 }
 
 void TestNetworkDelegate::OnBeforeSendProxyHeaders(
-    net::URLRequest* request,
-    const net::ProxyInfo& proxy_info,
-    net::HttpRequestHeaders* headers) {
+    URLRequest* request,
+    const ProxyInfo& proxy_info,
+    HttpRequestHeaders* headers) {
   ++observed_before_proxy_headers_sent_callbacks_;
   last_observed_proxy_ = proxy_info.proxy_server().host_port_pair();
 }
@@ -439,7 +439,7 @@ int TestNetworkDelegate::OnHeadersReceived(
 
   if (!redirect_on_headers_received_url_.is_empty()) {
     *override_response_headers =
-        new net::HttpResponseHeaders(original_response_headers->raw_headers());
+        new HttpResponseHeaders(original_response_headers->raw_headers());
     (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
     (*override_response_headers)->RemoveHeader("Location");
     (*override_response_headers)->AddHeader(

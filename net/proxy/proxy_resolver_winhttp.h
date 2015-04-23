@@ -23,7 +23,7 @@ class NET_EXPORT_PRIVATE ProxyResolverWinHttp : public ProxyResolver {
   // ProxyResolver implementation:
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
-                     const net::CompletionCallback& /*callback*/,
+                     const CompletionCallback& /*callback*/,
                      RequestHandle* /*request*/,
                      const BoundNetLog& /*net_log*/) override;
   void CancelRequest(RequestHandle request) override;
@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE ProxyResolverWinHttp : public ProxyResolver {
   void CancelSetPacScript() override;
 
   int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const net::CompletionCallback& /*callback*/) override;
+                   const CompletionCallback& /*callback*/) override;
 
  private:
   bool OpenWinHttpSession();

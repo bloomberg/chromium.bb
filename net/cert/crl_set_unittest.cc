@@ -6,6 +6,8 @@
 #include "net/cert/crl_set_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace net {
+
 // These data blocks were generated using a lot of code that is still in
 // development. For now, if you need to update them, you have to contact agl.
 static const uint8 kGIACRLSet[] = {
@@ -186,11 +188,11 @@ static const uint8 kGIASPKISHA256[32] = {
 TEST(CRLSetTest, Parse) {
   base::StringPiece s(reinterpret_cast<const char*>(kGIACRLSet),
                       sizeof(kGIACRLSet));
-  scoped_refptr<net::CRLSet> set;
-  EXPECT_TRUE(net::CRLSetStorage::Parse(s, &set));
+  scoped_refptr<CRLSet> set;
+  EXPECT_TRUE(CRLSetStorage::Parse(s, &set));
   ASSERT_TRUE(set.get() != NULL);
 
-  const net::CRLSet::CRLList& crls = set->crls();
+  const CRLSet::CRLList& crls = set->crls();
   ASSERT_EQ(1u, crls.size());
   const std::vector<std::string>& serials = crls[0].second;
   static const unsigned kExpectedNumSerials = 13;
@@ -203,12 +205,14 @@ TEST(CRLSetTest, Parse) {
   const std::string gia_spki_hash(
       reinterpret_cast<const char*>(kGIASPKISHA256),
       sizeof(kGIASPKISHA256));
-  EXPECT_EQ(net::CRLSet::REVOKED, set->CheckSerial(
-      std::string("\x16\x7D\x75\x9D\x00\x03\x00\x00\x14\x55", 10),
-      gia_spki_hash));
-  EXPECT_EQ(net::CRLSet::GOOD, set->CheckSerial(
-      std::string("\x47\x54\x3E\x79\x00\x03\x00\x00\x14\xF5", 10),
-      gia_spki_hash));
+  EXPECT_EQ(CRLSet::REVOKED,
+            set->CheckSerial(
+                std::string("\x16\x7D\x75\x9D\x00\x03\x00\x00\x14\x55", 10),
+                gia_spki_hash));
+  EXPECT_EQ(CRLSet::GOOD,
+            set->CheckSerial(
+                std::string("\x47\x54\x3E\x79\x00\x03\x00\x00\x14\xF5", 10),
+                gia_spki_hash));
 
   EXPECT_FALSE(set->IsExpired());
 }
@@ -216,34 +220,34 @@ TEST(CRLSetTest, Parse) {
 TEST(CRLSetTest, NoOpDeltaUpdate) {
   base::StringPiece s(reinterpret_cast<const char*>(kGIACRLSet),
                       sizeof(kGIACRLSet));
-  scoped_refptr<net::CRLSet> set;
-  EXPECT_TRUE(net::CRLSetStorage::Parse(s, &set));
+  scoped_refptr<CRLSet> set;
+  EXPECT_TRUE(CRLSetStorage::Parse(s, &set));
   ASSERT_TRUE(set.get() != NULL);
 
-  scoped_refptr<net::CRLSet> delta_set;
+  scoped_refptr<CRLSet> delta_set;
   base::StringPiece delta(reinterpret_cast<const char*>(kNoopDeltaCRL),
                           sizeof(kNoopDeltaCRL));
-  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
+  EXPECT_TRUE(CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
   ASSERT_TRUE(delta_set.get() != NULL);
 
-  std::string out = net::CRLSetStorage::Serialize(delta_set.get());
+  std::string out = CRLSetStorage::Serialize(delta_set.get());
   EXPECT_EQ(s.as_string(), out);
 }
 
 TEST(CRLSetTest, AddCRLDelta) {
   base::StringPiece s(reinterpret_cast<const char*>(kGIACRLSet),
                       sizeof(kGIACRLSet));
-  scoped_refptr<net::CRLSet> set;
-  EXPECT_TRUE(net::CRLSetStorage::Parse(s, &set));
+  scoped_refptr<CRLSet> set;
+  EXPECT_TRUE(CRLSetStorage::Parse(s, &set));
   ASSERT_TRUE(set.get() != NULL);
 
-  scoped_refptr<net::CRLSet> delta_set;
+  scoped_refptr<CRLSet> delta_set;
   base::StringPiece delta(reinterpret_cast<const char*>(kAddCRLDelta),
                           sizeof(kAddCRLDelta));
-  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
+  EXPECT_TRUE(CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
   ASSERT_TRUE(delta_set.get() != NULL);
 
-  const net::CRLSet::CRLList& crls = delta_set->crls();
+  const CRLSet::CRLList& crls = delta_set->crls();
   ASSERT_EQ(2u, crls.size());
   const std::vector<std::string>& serials = crls[1].second;
   ASSERT_EQ(12u, serials.size());
@@ -255,24 +259,23 @@ TEST(CRLSetTest, AddCRLDelta) {
 TEST(CRLSetTest, AddRemoveCRLDelta) {
   base::StringPiece s(reinterpret_cast<const char*>(kGIACRLSet),
                       sizeof(kGIACRLSet));
-  scoped_refptr<net::CRLSet> set;
-  EXPECT_TRUE(net::CRLSetStorage::Parse(s, &set));
+  scoped_refptr<CRLSet> set;
+  EXPECT_TRUE(CRLSetStorage::Parse(s, &set));
   ASSERT_TRUE(set.get() != NULL);
 
-  scoped_refptr<net::CRLSet> delta_set;
+  scoped_refptr<CRLSet> delta_set;
   base::StringPiece delta(reinterpret_cast<const char*>(kAddCRLDelta),
                           sizeof(kAddCRLDelta));
-  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
+  EXPECT_TRUE(CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
   ASSERT_TRUE(delta_set.get() != NULL);
 
-  scoped_refptr<net::CRLSet> delta2_set;
+  scoped_refptr<CRLSet> delta2_set;
   base::StringPiece delta2(reinterpret_cast<const char*>(kRemoveCRLDelta),
                            sizeof(kRemoveCRLDelta));
-  EXPECT_TRUE(
-      net::CRLSetStorage::ApplyDelta(delta_set.get(), delta2, &delta2_set));
+  EXPECT_TRUE(CRLSetStorage::ApplyDelta(delta_set.get(), delta2, &delta2_set));
   ASSERT_TRUE(delta2_set.get() != NULL);
 
-  const net::CRLSet::CRLList& crls = delta2_set->crls();
+  const CRLSet::CRLList& crls = delta2_set->crls();
   ASSERT_EQ(1u, crls.size());
   const std::vector<std::string>& serials = crls[0].second;
   ASSERT_EQ(13u, serials.size());
@@ -281,17 +284,17 @@ TEST(CRLSetTest, AddRemoveCRLDelta) {
 TEST(CRLSetTest, UpdateSerialsDelta) {
   base::StringPiece s(reinterpret_cast<const char*>(kGIACRLSet),
                       sizeof(kGIACRLSet));
-  scoped_refptr<net::CRLSet> set;
-  EXPECT_TRUE(net::CRLSetStorage::Parse(s, &set));
+  scoped_refptr<CRLSet> set;
+  EXPECT_TRUE(CRLSetStorage::Parse(s, &set));
   ASSERT_TRUE(set.get() != NULL);
 
-  scoped_refptr<net::CRLSet> delta_set;
+  scoped_refptr<CRLSet> delta_set;
   base::StringPiece delta(reinterpret_cast<const char*>(kUpdateSerialsDelta),
                           sizeof(kUpdateSerialsDelta));
-  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
+  EXPECT_TRUE(CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
   ASSERT_TRUE(delta_set.get() != NULL);
 
-  const net::CRLSet::CRLList& crls = delta_set->crls();
+  const CRLSet::CRLList& crls = delta_set->crls();
   ASSERT_EQ(1u, crls.size());
   const std::vector<std::string>& serials = crls[0].second;
   EXPECT_EQ(45u, serials.size());
@@ -300,8 +303,8 @@ TEST(CRLSetTest, UpdateSerialsDelta) {
 TEST(CRLSetTest, BlockedSPKIs) {
   base::StringPiece s(reinterpret_cast<const char*>(kBlockedSPKICRLSet),
                       sizeof(kBlockedSPKICRLSet));
-  scoped_refptr<net::CRLSet> set;
-  EXPECT_TRUE(net::CRLSetStorage::Parse(s, &set));
+  scoped_refptr<CRLSet> set;
+  EXPECT_TRUE(CRLSetStorage::Parse(s, &set));
   ASSERT_TRUE(set.get() != NULL);
 
   const uint8 spki_hash[] = {
@@ -310,9 +313,9 @@ TEST(CRLSetTest, BlockedSPKIs) {
     0,
   };
 
-  EXPECT_EQ(net::CRLSet::GOOD, set->CheckSPKI(""));
-  EXPECT_EQ(net::CRLSet::REVOKED, set->CheckSPKI(
-      reinterpret_cast<const char*>(spki_hash)));
+  EXPECT_EQ(CRLSet::GOOD, set->CheckSPKI(""));
+  EXPECT_EQ(CRLSet::REVOKED,
+            set->CheckSPKI(reinterpret_cast<const char*>(spki_hash)));
 }
 
 TEST(CRLSetTest, Expired) {
@@ -320,9 +323,11 @@ TEST(CRLSetTest, Expired) {
   // 1970.
   base::StringPiece s(reinterpret_cast<const char*>(kExpiredCRLSet),
                       sizeof(kExpiredCRLSet));
-  scoped_refptr<net::CRLSet> set;
-  EXPECT_TRUE(net::CRLSetStorage::Parse(s, &set));
+  scoped_refptr<CRLSet> set;
+  EXPECT_TRUE(CRLSetStorage::Parse(s, &set));
   ASSERT_TRUE(set.get() != NULL);
 
   EXPECT_TRUE(set->IsExpired());
 }
+
+}  // namespace net

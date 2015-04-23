@@ -125,8 +125,8 @@ TEST(EscapeTest, DataURLWithAccentedCharacters) {
       "%A9%20t'a-t-il%20%C3%B4t%C3%A9%20ta%20toux%20";
 
   base::OffsetAdjuster::Adjustments adjustments;
-  net::UnescapeAndDecodeUTF8URLComponentWithAdjustments(
-      url, UnescapeRule::SPACES, &adjustments);
+  UnescapeAndDecodeUTF8URLComponentWithAdjustments(url, UnescapeRule::SPACES,
+                                                   &adjustments);
 }
 
 TEST(EscapeTest, EscapeUrlEncodedData) {

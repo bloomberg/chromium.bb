@@ -231,7 +231,7 @@ ProxyServer ProxyServer::FromSchemeHostAndPort(
     std::string host;
     int port = -1;
     // If the scheme has a host/port, parse it.
-    bool ok = net::ParseHostAndPort(begin, end, &host, &port);
+    bool ok = ParseHostAndPort(begin, end, &host, &port);
     if (!ok)
       return ProxyServer();  // Invalid -- failed parsing <host>[":"<port>]
 

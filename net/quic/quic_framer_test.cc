@@ -166,7 +166,7 @@ class TestDecrypter : public QuicDecrypter {
   string ciphertext_;
 };
 
-class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
+class TestQuicVisitor : public QuicFramerVisitorInterface {
  public:
   TestQuicVisitor()
       : error_count_(0),

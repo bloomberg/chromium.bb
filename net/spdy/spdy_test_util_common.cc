@@ -417,7 +417,7 @@ SpdySessionDependencies::~SpdySessionDependencies() {}
 // static
 HttpNetworkSession* SpdySessionDependencies::SpdyCreateSession(
     SpdySessionDependencies* session_deps) {
-  net::HttpNetworkSession::Params params = CreateSessionParams(session_deps);
+  HttpNetworkSession::Params params = CreateSessionParams(session_deps);
   params.client_socket_factory = session_deps->socket_factory.get();
   HttpNetworkSession* http_session = new HttpNetworkSession(params);
   SpdySessionPoolPeer pool_peer(http_session->spdy_session_pool());
@@ -428,7 +428,7 @@ HttpNetworkSession* SpdySessionDependencies::SpdyCreateSession(
 // static
 HttpNetworkSession* SpdySessionDependencies::SpdyCreateSessionDeterministic(
     SpdySessionDependencies* session_deps) {
-  net::HttpNetworkSession::Params params = CreateSessionParams(session_deps);
+  HttpNetworkSession::Params params = CreateSessionParams(session_deps);
   params.client_socket_factory =
       session_deps->deterministic_socket_factory.get();
   HttpNetworkSession* http_session = new HttpNetworkSession(params);
@@ -438,12 +438,12 @@ HttpNetworkSession* SpdySessionDependencies::SpdyCreateSessionDeterministic(
 }
 
 // static
-net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
+HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
     SpdySessionDependencies* session_deps) {
   DCHECK(next_proto_is_spdy(session_deps->protocol)) <<
       "Invalid protocol: " << session_deps->protocol;
 
-  net::HttpNetworkSession::Params params;
+  HttpNetworkSession::Params params;
   params.host_resolver = session_deps->host_resolver.get();
   params.cert_verifier = session_deps->cert_verifier.get();
   params.transport_security_state =
@@ -485,7 +485,7 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
   storage_.set_http_server_properties(
       scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
   storage_.set_job_factory(new URLRequestJobFactoryImpl());
-  net::HttpNetworkSession::Params params;
+  HttpNetworkSession::Params params;
   params.client_socket_factory = &socket_factory_;
   params.host_resolver = host_resolver();
   params.cert_verifier = cert_verifier();

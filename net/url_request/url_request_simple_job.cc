@@ -77,12 +77,12 @@ bool URLRequestSimpleJob::ReadRawData(IOBuffer* buf, int buf_size,
       base::Bind(&URLRequestSimpleJob::OnReadCompleted,
                  weak_factory_.GetWeakPtr(), buf_size));
   next_data_offset_ += buf_size;
-  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
   return false;
 }
 
 void URLRequestSimpleJob::OnReadCompleted(int bytes_read) {
-  SetStatus(net::URLRequestStatus());
+  SetStatus(URLRequestStatus());
   NotifyReadComplete(bytes_read);
 }
 

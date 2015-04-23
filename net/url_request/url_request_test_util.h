@@ -300,9 +300,9 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int OnBeforeSendHeaders(URLRequest* request,
                           const CompletionCallback& callback,
                           HttpRequestHeaders* headers) override;
-  void OnBeforeSendProxyHeaders(net::URLRequest* request,
-                                const net::ProxyInfo& proxy_info,
-                                net::HttpRequestHeaders* headers) override;
+  void OnBeforeSendProxyHeaders(URLRequest* request,
+                                const ProxyInfo& proxy_info,
+                                HttpRequestHeaders* headers) override;
   void OnSendHeaders(URLRequest* request,
                      const HttpRequestHeaders& headers) override;
   int OnHeadersReceived(

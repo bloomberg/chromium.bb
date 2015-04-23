@@ -128,7 +128,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
 
   // The disk cache is initialized lazily (by CreateTransaction) in this case.
   // The HttpCache takes ownership of the |backend_factory|.
-  HttpCache(const net::HttpNetworkSession::Params& params,
+  HttpCache(const HttpNetworkSession::Params& params,
             BackendFactory* backend_factory);
 
   // The disk cache is initialized lazily (by CreateTransaction) in this case.
@@ -157,7 +157,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // |callback| will be notified when the operation completes. The pointer that
   // receives the |backend| must remain valid until the operation completes.
   int GetBackend(disk_cache::Backend** backend,
-                 const net::CompletionCallback& callback);
+                 const CompletionCallback& callback);
 
   // Returns the current backend (can be NULL).
   disk_cache::Backend* GetCurrentBackend() const;
@@ -285,7 +285,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   // Creates the |backend| object and notifies the |callback| when the operation
   // completes. Returns an error code.
   int CreateBackend(disk_cache::Backend** backend,
-                    const net::CompletionCallback& callback);
+                    const CompletionCallback& callback);
 
   // Makes sure that the backend creation is complete before allowing the
   // provided transaction to use the object. Returns an error code.  |trans|

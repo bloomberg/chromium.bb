@@ -21,26 +21,28 @@
 #include <CoreServices/CoreServices.h>
 #endif
 
+namespace net {
+
 namespace {
 
 // Utility function to map a CFProxyType to a ProxyServer::Scheme.
 // If the type is unknown, returns ProxyServer::SCHEME_INVALID.
-net::ProxyServer::Scheme GetProxyServerScheme(CFStringRef proxy_type) {
+ProxyServer::Scheme GetProxyServerScheme(CFStringRef proxy_type) {
   if (CFEqual(proxy_type, kCFProxyTypeNone))
-    return net::ProxyServer::SCHEME_DIRECT;
+    return ProxyServer::SCHEME_DIRECT;
   if (CFEqual(proxy_type, kCFProxyTypeHTTP))
-    return net::ProxyServer::SCHEME_HTTP;
+    return ProxyServer::SCHEME_HTTP;
   if (CFEqual(proxy_type, kCFProxyTypeHTTPS)) {
     // The "HTTPS" on the Mac side here means "proxy applies to https://" URLs;
     // the proxy itself is still expected to be an HTTP proxy.
-    return net::ProxyServer::SCHEME_HTTP;
+    return ProxyServer::SCHEME_HTTP;
   }
   if (CFEqual(proxy_type, kCFProxyTypeSOCKS)) {
     // We can't tell whether this was v4 or v5. We will assume it is
     // v5 since that is the only version OS X supports.
-    return net::ProxyServer::SCHEME_SOCKS5;
+    return ProxyServer::SCHEME_SOCKS5;
   }
-  return net::ProxyServer::SCHEME_INVALID;
+  return ProxyServer::SCHEME_INVALID;
 }
 
 // Callback for CFNetworkExecuteProxyAutoConfigurationURL. |client| is a pointer
@@ -61,8 +63,6 @@ void ResultCallback(void* client, CFArrayRef proxies, CFErrorRef error) {
 }
 
 }  // namespace
-
-namespace net {
 
 ProxyResolverMac::ProxyResolverMac()
     : ProxyResolver(false /*expects_pac_bytes*/) {

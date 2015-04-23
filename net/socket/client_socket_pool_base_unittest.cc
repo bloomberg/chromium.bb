@@ -116,9 +116,8 @@ class MockClientSocket : public StreamSocket {
   explicit MockClientSocket(net::NetLog* net_log)
       : connected_(false),
         has_unread_data_(false),
-        net_log_(BoundNetLog::Make(net_log, net::NetLog::SOURCE_SOCKET)),
-        was_used_to_convey_data_(false) {
-  }
+        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
+        was_used_to_convey_data_(false) {}
 
   // Sets whether the socket has unread data. If true, the next call to Read()
   // will return 1 byte and IsConnectedAndIdle() will return false.
@@ -295,8 +294,8 @@ class TestConnectJob : public ConnectJob {
 
   int ConnectInternal() override {
     AddressList ignored;
-    client_socket_factory_->CreateTransportClientSocket(
-        ignored, NULL, net::NetLog::Source());
+    client_socket_factory_->CreateTransportClientSocket(ignored, NULL,
+                                                        NetLog::Source());
     SetSocket(
         scoped_ptr<StreamSocket>(new MockClientSocket(net_log().net_log())));
     switch (job_type_) {
@@ -495,7 +494,7 @@ class TestClientSocketPool : public ClientSocketPool {
 
   int RequestSocket(const std::string& group_name,
                     const void* params,
-                    net::RequestPriority priority,
+                    RequestPriority priority,
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,
                     const BoundNetLog& net_log) override {

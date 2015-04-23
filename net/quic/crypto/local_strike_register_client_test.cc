@@ -63,7 +63,7 @@ class LocalStrikeRegisterClientTest : public ::testing::Test {
   void SetUp() override {
     strike_register_.reset(new LocalStrikeRegisterClient(
         kMaxEntries, kCurrentTimeExternalSecs, kWindowSecs, kOrbit,
-        net::StrikeRegister::NO_STARTUP_PERIOD_NEEDED));
+        StrikeRegister::NO_STARTUP_PERIOD_NEEDED));
   }
 
   scoped_ptr<LocalStrikeRegisterClient> strike_register_;

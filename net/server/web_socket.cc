@@ -40,12 +40,12 @@ static uint32 WebSocketKeyFingerprint(const std::string& str) {
   return base::HostToNet32(static_cast<uint32>(number / spaces));
 }
 
-class WebSocketHixie76 : public net::WebSocket {
+class WebSocketHixie76 : public WebSocket {
  public:
-  static net::WebSocket* Create(HttpServer* server,
-                                HttpConnection* connection,
-                                const HttpServerRequestInfo& request,
-                                size_t* pos) {
+  static WebSocket* Create(HttpServer* server,
+                           HttpConnection* connection,
+                           const HttpServerRequestInfo& request,
+                           size_t* pos) {
     if (connection->read_buf()->GetSize() <
         static_cast<int>(*pos + kWebSocketHandshakeBodyLen))
       return NULL;

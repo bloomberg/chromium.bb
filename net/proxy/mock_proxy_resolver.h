@@ -28,11 +28,11 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
     Request(MockAsyncProxyResolverBase* resolver,
             const GURL& url,
             ProxyInfo* results,
-            const net::CompletionCallback& callback);
+            const CompletionCallback& callback);
 
     const GURL& url() const { return url_; }
     ProxyInfo* results() const { return results_; }
-    const net::CompletionCallback& callback() const { return callback_; }
+    const CompletionCallback& callback() const { return callback_; }
 
     void CompleteNow(int rv);
 
@@ -44,7 +44,7 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
     MockAsyncProxyResolverBase* resolver_;
     const GURL url_;
     ProxyInfo* results_;
-    net::CompletionCallback callback_;
+    CompletionCallback callback_;
     base::MessageLoop* origin_loop_;
   };
 
@@ -53,7 +53,7 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
     SetPacScriptRequest(
         MockAsyncProxyResolverBase* resolver,
         const scoped_refptr<ProxyResolverScriptData>& script_data,
-        const net::CompletionCallback& callback);
+        const CompletionCallback& callback);
     ~SetPacScriptRequest();
 
     const ProxyResolverScriptData* script_data() const {
@@ -65,7 +65,7 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
    private:
     MockAsyncProxyResolverBase* resolver_;
     const scoped_refptr<ProxyResolverScriptData> script_data_;
-    net::CompletionCallback callback_;
+    CompletionCallback callback_;
     base::MessageLoop* origin_loop_;
   };
 
@@ -76,13 +76,13 @@ class MockAsyncProxyResolverBase : public ProxyResolver {
   // ProxyResolver implementation.
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
-                     const net::CompletionCallback& callback,
+                     const CompletionCallback& callback,
                      RequestHandle* request_handle,
                      const BoundNetLog& /*net_log*/) override;
   void CancelRequest(RequestHandle request_handle) override;
   LoadState GetLoadState(RequestHandle request_handle) const override;
   int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const net::CompletionCallback& callback) override;
+                   const CompletionCallback& callback) override;
   void CancelSetPacScript() override;
 
   const RequestsList& pending_requests() const {

@@ -26,10 +26,10 @@
 #include "net/log/net_log.h"
 
 namespace net {
+
 class HttpRequestHeaders;
 class IOBuffer;
 struct HttpRequestInfo;
-}
 
 //-----------------------------------------------------------------------------
 // mock transaction data
@@ -48,7 +48,7 @@ enum {
   TEST_MODE_SLOW_READ = 1 << 5
 };
 
-typedef void (*MockTransactionHandler)(const net::HttpRequestInfo* request,
+typedef void (*MockTransactionHandler)(const HttpRequestInfo* request,
                                        std::string* response_status,
                                        std::string* response_headers,
                                        std::string* response_data);
@@ -67,10 +67,10 @@ struct MockTransaction {
   const char* data;
   int test_mode;
   MockTransactionHandler handler;
-  net::CertStatus cert_status;
+  CertStatus cert_status;
   // Value returned by MockNetworkTransaction::Start (potentially
   // asynchronously if |!(test_mode & TEST_MODE_SYNC_NET_START)|.)
-  net::Error return_code;
+  Error return_code;
 };
 
 extern const MockTransaction kSimpleGET_Transaction;
@@ -103,7 +103,7 @@ struct ScopedMockTransaction : MockTransaction {
 //-----------------------------------------------------------------------------
 // mock http request
 
-class MockHttpRequest : public net::HttpRequestInfo {
+class MockHttpRequest : public HttpRequestInfo {
  public:
   explicit MockHttpRequest(const MockTransaction& t);
 };
@@ -113,17 +113,16 @@ class MockHttpRequest : public net::HttpRequestInfo {
 
 class TestTransactionConsumer {
  public:
-  TestTransactionConsumer(net::RequestPriority priority,
-                          net::HttpTransactionFactory* factory);
+  TestTransactionConsumer(RequestPriority priority,
+                          HttpTransactionFactory* factory);
   virtual ~TestTransactionConsumer();
 
-  void Start(const net::HttpRequestInfo* request,
-             const net::BoundNetLog& net_log);
+  void Start(const HttpRequestInfo* request, const BoundNetLog& net_log);
 
   bool is_done() const { return state_ == DONE; }
   int error() const { return error_; }
 
-  const net::HttpResponseInfo* response_info() const {
+  const HttpResponseInfo* response_info() const {
     return trans_->GetResponseInfo();
   }
   const std::string& content() const { return content_; }
@@ -144,9 +143,9 @@ class TestTransactionConsumer {
   void OnIOComplete(int result);
 
   State state_;
-  scoped_ptr<net::HttpTransaction> trans_;
+  scoped_ptr<HttpTransaction> trans_;
   std::string content_;
-  scoped_refptr<net::IOBuffer> read_buf_;
+  scoped_refptr<IOBuffer> read_buf_;
   int error_;
 
   static int quit_counter_;
@@ -162,52 +161,51 @@ class MockNetworkLayer;
 // synchronously or asynchronously to help exercise different code paths in the
 // HttpCache implementation.
 class MockNetworkTransaction
-    : public net::HttpTransaction,
+    : public HttpTransaction,
       public base::SupportsWeakPtr<MockNetworkTransaction> {
-  typedef net::WebSocketHandshakeStreamBase::CreateHelper CreateHelper;
+  typedef WebSocketHandshakeStreamBase::CreateHelper CreateHelper;
+
  public:
-  MockNetworkTransaction(net::RequestPriority priority,
-                         MockNetworkLayer* factory);
+  MockNetworkTransaction(RequestPriority priority, MockNetworkLayer* factory);
   ~MockNetworkTransaction() override;
 
-  int Start(const net::HttpRequestInfo* request,
-            const net::CompletionCallback& callback,
-            const net::BoundNetLog& net_log) override;
+  int Start(const HttpRequestInfo* request,
+            const CompletionCallback& callback,
+            const BoundNetLog& net_log) override;
 
-  int RestartIgnoringLastError(
-      const net::CompletionCallback& callback) override;
+  int RestartIgnoringLastError(const CompletionCallback& callback) override;
 
-  int RestartWithCertificate(net::X509Certificate* client_cert,
-                             const net::CompletionCallback& callback) override;
+  int RestartWithCertificate(X509Certificate* client_cert,
+                             const CompletionCallback& callback) override;
 
-  int RestartWithAuth(const net::AuthCredentials& credentials,
-                      const net::CompletionCallback& callback) override;
+  int RestartWithAuth(const AuthCredentials& credentials,
+                      const CompletionCallback& callback) override;
 
   bool IsReadyToRestartForAuth() override;
 
-  int Read(net::IOBuffer* buf,
+  int Read(IOBuffer* buf,
            int buf_len,
-           const net::CompletionCallback& callback) override;
+           const CompletionCallback& callback) override;
 
   void StopCaching() override;
 
-  bool GetFullRequestHeaders(net::HttpRequestHeaders* headers) const override;
+  bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
 
   int64 GetTotalReceivedBytes() const override;
 
   void DoneReading() override;
 
-  const net::HttpResponseInfo* GetResponseInfo() const override;
+  const HttpResponseInfo* GetResponseInfo() const override;
 
-  net::LoadState GetLoadState() const override;
+  LoadState GetLoadState() const override;
 
-  net::UploadProgress GetUploadProgress() const override;
+  UploadProgress GetUploadProgress() const override;
 
-  void SetQuicServerInfo(net::QuicServerInfo* quic_server_info) override;
+  void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
 
-  bool GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
+  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
 
-  void SetPriority(net::RequestPriority priority) override;
+  void SetPriority(RequestPriority priority) override;
 
   void SetWebSocketHandshakeStreamCreateHelper(
       CreateHelper* create_helper) override;
@@ -223,22 +221,22 @@ class MockNetworkTransaction
   CreateHelper* websocket_handshake_stream_create_helper() {
     return websocket_handshake_stream_create_helper_;
   }
-  net::RequestPriority priority() const { return priority_; }
-  const net::HttpRequestInfo* request() const { return request_; }
+  RequestPriority priority() const { return priority_; }
+  const HttpRequestInfo* request() const { return request_; }
 
  private:
-  int StartInternal(const net::HttpRequestInfo* request,
-                    const net::CompletionCallback& callback,
-                    const net::BoundNetLog& net_log);
-  void CallbackLater(const net::CompletionCallback& callback, int result);
-  void RunCallback(const net::CompletionCallback& callback, int result);
+  int StartInternal(const HttpRequestInfo* request,
+                    const CompletionCallback& callback,
+                    const BoundNetLog& net_log);
+  void CallbackLater(const CompletionCallback& callback, int result);
+  void RunCallback(const CompletionCallback& callback, int result);
 
-  const net::HttpRequestInfo* request_;
-  net::HttpResponseInfo response_;
+  const HttpRequestInfo* request_;
+  HttpResponseInfo response_;
   std::string data_;
   int data_cursor_;
   int test_mode_;
-  net::RequestPriority priority_;
+  RequestPriority priority_;
   CreateHelper* websocket_handshake_stream_create_helper_;
   base::WeakPtr<MockNetworkLayer> transaction_factory_;
   int64 received_bytes_;
@@ -252,7 +250,7 @@ class MockNetworkTransaction
 
 };
 
-class MockNetworkLayer : public net::HttpTransactionFactory,
+class MockNetworkLayer : public HttpTransactionFactory,
                          public base::SupportsWeakPtr<MockNetworkLayer> {
  public:
   MockNetworkLayer();
@@ -266,7 +264,7 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
 
   // Returns the last priority passed to CreateTransaction, or
   // DEFAULT_PRIORITY if it hasn't been called yet.
-  net::RequestPriority last_create_transaction_priority() const {
+  RequestPriority last_create_transaction_priority() const {
     return last_create_transaction_priority_;
   }
 
@@ -285,11 +283,11 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
     last_transaction_.reset();
   }
 
-  // net::HttpTransactionFactory:
-  int CreateTransaction(net::RequestPriority priority,
-                        scoped_ptr<net::HttpTransaction>* trans) override;
-  net::HttpCache* GetCache() override;
-  net::HttpNetworkSession* GetSession() override;
+  // HttpTransactionFactory:
+  int CreateTransaction(RequestPriority priority,
+                        scoped_ptr<HttpTransaction>* trans) override;
+  HttpCache* GetCache() override;
+  HttpNetworkSession* GetSession() override;
 
   // The caller must guarantee that |clock| will outlive this object.
   void SetClock(base::Clock* clock);
@@ -302,7 +300,7 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
   int transaction_count_;
   bool done_reading_called_;
   bool stop_caching_called_;
-  net::RequestPriority last_create_transaction_priority_;
+  RequestPriority last_create_transaction_priority_;
 
   // By default clock_ is NULL but it can be set to a custom clock by test
   // frameworks using SetClock.
@@ -315,6 +313,8 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
 // helpers
 
 // read the transaction completely
-int ReadTransaction(net::HttpTransaction* trans, std::string* result);
+int ReadTransaction(HttpTransaction* trans, std::string* result);
+
+}  // namespace net
 
 #endif  // NET_HTTP_HTTP_TRANSACTION_UNITTEST_H_

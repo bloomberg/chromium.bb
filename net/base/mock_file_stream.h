@@ -20,7 +20,7 @@ class IOBuffer;
 
 namespace testing {
 
-class MockFileStream : public net::FileStream {
+class MockFileStream : public FileStream {
  public:
   explicit MockFileStream(const scoped_refptr<base::TaskRunner>& task_runner);
   MockFileStream(base::File file,
@@ -48,7 +48,7 @@ class MockFileStream : public net::FileStream {
     async_error_ = false;
   }
   void clear_forced_error() {
-    forced_error_ = net::OK;
+    forced_error_ = OK;
     async_error_ = false;
   }
   int forced_error() const { return forced_error_; }
@@ -63,7 +63,7 @@ class MockFileStream : public net::FileStream {
 
  private:
   int ReturnError(int function_error) {
-    if (forced_error_ != net::OK) {
+    if (forced_error_ != OK) {
       int ret = forced_error_;
       clear_forced_error();
       return ret;
@@ -73,7 +73,7 @@ class MockFileStream : public net::FileStream {
   }
 
   int64 ReturnError64(int64 function_error) {
-    if (forced_error_ != net::OK) {
+    if (forced_error_ != OK) {
       int64 ret = forced_error_;
       clear_forced_error();
       return ret;

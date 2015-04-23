@@ -131,7 +131,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentSessions) {
   spdy_stream->SetDelegate(&delegate);
 
   // Close the current session.
-  spdy_session_pool_->CloseCurrentSessions(net::ERR_ABORTED);
+  spdy_session_pool_->CloseCurrentSessions(ERR_ABORTED);
 
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, test_key));
 }

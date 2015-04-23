@@ -19,7 +19,7 @@ class URLRequestContext;
 
 struct URLRequestContextGetterTraits;
 
-// Interface for retrieving an net::URLRequestContext.
+// Interface for retrieving an URLRequestContext.
 class NET_EXPORT URLRequestContextGetter
     : public base::RefCountedThreadSafe<URLRequestContextGetter,
                                         URLRequestContextGetterTraits> {
@@ -28,7 +28,7 @@ class NET_EXPORT URLRequestContextGetter
 
   // Returns a SingleThreadTaskRunner corresponding to the thread on
   // which the network IO happens (the thread on which the returned
-  // net::URLRequestContext may be used).
+  // URLRequestContext may be used).
   virtual scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const = 0;
 
@@ -57,12 +57,12 @@ struct URLRequestContextGetterTraits {
 class NET_EXPORT TrivialURLRequestContextGetter
     : public URLRequestContextGetter {
 public:
-  TrivialURLRequestContextGetter(
-      net::URLRequestContext* context,
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
+ TrivialURLRequestContextGetter(
+     URLRequestContext* context,
+     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
 
-  // net::URLRequestContextGetter implementation:
-  net::URLRequestContext* GetURLRequestContext() override;
+ // URLRequestContextGetter implementation:
+ URLRequestContext* GetURLRequestContext() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override;
@@ -70,7 +70,7 @@ public:
 private:
  ~TrivialURLRequestContextGetter() override;
 
-  net::URLRequestContext* context_;
+ URLRequestContext* context_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TrivialURLRequestContextGetter);

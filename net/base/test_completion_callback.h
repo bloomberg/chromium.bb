@@ -58,7 +58,7 @@ class TestCompletionCallbackTemplate
   }
 
   R GetResult(R result) {
-    if (net::ERR_IO_PENDING != result)
+    if (ERR_IO_PENDING != result)
       return result;
     return WaitForResult();
   }

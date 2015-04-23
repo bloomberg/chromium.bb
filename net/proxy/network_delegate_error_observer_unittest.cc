@@ -16,7 +16,7 @@ namespace net {
 
 namespace {
 
-class TestNetworkDelegate : public net::NetworkDelegateImpl {
+class TestNetworkDelegate : public NetworkDelegateImpl {
  public:
   TestNetworkDelegate() : got_pac_error_(false) {}
   ~TestNetworkDelegate() override {}
@@ -24,7 +24,7 @@ class TestNetworkDelegate : public net::NetworkDelegateImpl {
   bool got_pac_error() const { return got_pac_error_; }
 
  private:
-  // net::NetworkDelegate implementation.
+  // NetworkDelegate implementation.
   int OnBeforeURLRequest(URLRequest* request,
                          const CompletionCallback& callback,
                          GURL* new_url) override {
@@ -43,7 +43,7 @@ class TestNetworkDelegate : public net::NetworkDelegateImpl {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override {
-    return net::OK;
+    return OK;
   }
   void OnBeforeRedirect(URLRequest* request,
                         const GURL& new_location) override {}
@@ -70,7 +70,7 @@ class TestNetworkDelegate : public net::NetworkDelegateImpl {
                       CookieOptions* options) override {
     return true;
   }
-  bool OnCanAccessFile(const net::URLRequest& request,
+  bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& path) const override {
     return true;
   }
@@ -80,8 +80,6 @@ class TestNetworkDelegate : public net::NetworkDelegateImpl {
 
   bool got_pac_error_;
 };
-
-}  // namespace
 
 // Check that the OnPACScriptError method can be called from an arbitrary
 // thread.
@@ -118,5 +116,7 @@ TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
   base::MessageLoop::current()->RunUntilIdle();
   // Shouldn't have crashed until here...
 }
+
+}  // namespace
 
 }  // namespace net

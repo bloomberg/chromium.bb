@@ -32,15 +32,14 @@ class URLRequestContext;
 // exposes interface for setting SDCH policy.  It should be instantiated by
 // the net/ embedder.
 // TODO(rdsmith): Implement dictionary prioritization.
-class NET_EXPORT SdchOwner : public net::SdchObserver,
-                             public PrefStore::Observer {
+class NET_EXPORT SdchOwner : public SdchObserver, public PrefStore::Observer {
  public:
   static const size_t kMaxTotalDictionarySize;
   static const size_t kMinSpaceForDictionaryFetch;
 
   // Consumer must guarantee that |sdch_manager| and |context| outlive
   // this object.
-  SdchOwner(net::SdchManager* sdch_manager, net::URLRequestContext* context);
+  SdchOwner(SdchManager* sdch_manager, URLRequestContext* context);
   ~SdchOwner() override;
 
   // Enables use of pref persistence.  Note that |pref_store| is owned
@@ -59,10 +58,10 @@ class NET_EXPORT SdchOwner : public net::SdchObserver,
   // SdchObserver implementation.
   void OnDictionaryUsed(SdchManager* manager,
                         const std::string& server_hash) override;
-  void OnGetDictionary(net::SdchManager* manager,
+  void OnGetDictionary(SdchManager* manager,
                        const GURL& request_url,
                        const GURL& dictionary_url) override;
-  void OnClearDictionaries(net::SdchManager* manager) override;
+  void OnClearDictionaries(SdchManager* manager) override;
 
   // PrefStore::Observer implementation.
   void OnPrefValueChanged(const std::string& key) override;
@@ -76,7 +75,7 @@ class NET_EXPORT SdchOwner : public net::SdchObserver,
                            int use_count,
                            const std::string& dictionary_text,
                            const GURL& dictionary_url,
-                           const net::BoundNetLog& net_log,
+                           const BoundNetLog& net_log,
                            bool was_from_cache);
 
   void SetClockForTesting(scoped_ptr<base::Clock> clock);
@@ -117,8 +116,8 @@ class NET_EXPORT SdchOwner : public net::SdchObserver,
   bool IsPersistingDictionaries() const;
 
   // For investigation of http://crbug.com/454198; remove when resolved.
-  base::WeakPtr<net::SdchManager> manager_;
-  scoped_ptr<net::SdchDictionaryFetcher> fetcher_;
+  base::WeakPtr<SdchManager> manager_;
+  scoped_ptr<SdchDictionaryFetcher> fetcher_;
 
   size_t total_dictionary_bytes_;
 

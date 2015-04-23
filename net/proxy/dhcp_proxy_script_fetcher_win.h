@@ -39,7 +39,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
 
   // DhcpProxyScriptFetcher implementation.
   int Fetch(base::string16* utf16_text,
-            const net::CompletionCallback& callback) override;
+            const CompletionCallback& callback) override;
   void Cancel() override;
   const GURL& GetPacURL() const override;
   std::string GetFetcherName() const override;
@@ -148,7 +148,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
   int num_pending_fetchers_;
 
   // Lets our client know we're done. Not valid in states START or DONE.
-  net::CompletionCallback callback_;
+  CompletionCallback callback_;
 
   // Pointer to string we will write results to. Not valid in states
   // START and DONE.

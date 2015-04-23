@@ -112,7 +112,7 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
     return true;
   }
 
-  bool OnCanAccessFile(const net::URLRequest& request,
+  bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& path) const override {
     return true;
   }
@@ -189,7 +189,7 @@ URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
 
 URLRequestContextBuilder::SchemeFactory::SchemeFactory(
     const std::string& auth_scheme,
-    net::HttpAuthHandlerFactory* auth_handler_factory)
+    HttpAuthHandlerFactory* auth_handler_factory)
     : scheme(auth_scheme), factory(auth_handler_factory) {
 }
 
@@ -256,12 +256,11 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   if (net_log_) {
     storage->set_net_log(net_log_.release());
   } else {
-    storage->set_net_log(new net::NetLog);
+    storage->set_net_log(new NetLog);
   }
 
   if (!host_resolver_) {
-    host_resolver_ = net::HostResolver::CreateDefaultResolver(
-        context->net_log());
+    host_resolver_ = HostResolver::CreateDefaultResolver(context->net_log());
   }
   storage->set_host_resolver(host_resolver_.Pass());
 
@@ -288,10 +287,9 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   }
   storage->set_proxy_service(proxy_service_.release());
 
-  storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
+  storage->set_ssl_config_service(new SSLConfigServiceDefaults);
   HttpAuthHandlerRegistryFactory* http_auth_handler_registry_factory =
-      net::HttpAuthHandlerRegistryFactory::CreateDefault(
-           context->host_resolver());
+      HttpAuthHandlerRegistryFactory::CreateDefault(context->host_resolver());
   for (size_t i = 0; i < extra_http_auth_handlers_.size(); ++i) {
     http_auth_handler_registry_factory->RegisterSchemeFactory(
         extra_http_auth_handlers_[i].scheme,
@@ -310,7 +308,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
         new DefaultChannelIDStore(NULL), context->GetFileTaskRunner())));
   }
 
-  storage->set_transport_security_state(new net::TransportSecurityState());
+  storage->set_transport_security_state(new TransportSecurityState());
   if (!transport_security_persister_path_.empty()) {
     context->set_transport_security_persister(
         make_scoped_ptr<TransportSecurityPersister>(
@@ -321,14 +319,13 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   }
 
   storage->set_http_server_properties(
-      scoped_ptr<net::HttpServerProperties>(
-          new net::HttpServerPropertiesImpl()));
+      scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
   storage->set_cert_verifier(CertVerifier::CreateDefault());
 
   if (throttling_enabled_)
     storage->set_throttler_manager(new URLRequestThrottlerManager());
 
-  net::HttpNetworkSession::Params network_session_params;
+  HttpNetworkSession::Params network_session_params;
   network_session_params.host_resolver = context->host_resolver();
   network_session_params.cert_verifier = context->cert_verifier();
   network_session_params.transport_security_state =
@@ -367,7 +364,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     HttpCache::BackendFactory* http_cache_backend = NULL;
     if (http_cache_params_.type == HttpCacheParams::DISK) {
       http_cache_backend = new HttpCache::DefaultBackend(
-          DISK_CACHE, net::CACHE_BACKEND_DEFAULT, http_cache_params_.path,
+          DISK_CACHE, CACHE_BACKEND_DEFAULT, http_cache_params_.path,
           http_cache_params_.max_size, context->GetFileTaskRunner());
     } else {
       http_cache_backend =
@@ -377,8 +374,8 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     http_transaction_factory = new HttpCache(
         network_session_params, http_cache_backend);
   } else {
-    scoped_refptr<net::HttpNetworkSession> network_session(
-        new net::HttpNetworkSession(network_session_params));
+    scoped_refptr<HttpNetworkSession> network_session(
+        new HttpNetworkSession(network_session_params));
 
     http_transaction_factory = new HttpNetworkLayer(network_session.get());
   }

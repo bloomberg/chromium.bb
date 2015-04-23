@@ -31,12 +31,14 @@
 #include "testing/platform_test.h"
 
 using base::StringPiece;
-using net::tools::QuicInMemoryCache;
-using net::tools::QuicServer;
-using net::tools::test::QuicInMemoryCachePeer;
-using net::tools::test::ServerThread;
 
 namespace net {
+
+using tools::QuicInMemoryCache;
+using tools::QuicServer;
+using tools::test::QuicInMemoryCachePeer;
+using tools::test::ServerThread;
+
 namespace test {
 
 namespace {
@@ -127,8 +129,8 @@ class QuicEndToEndTest : public PlatformTest {
 
   // Starts the QUIC server listening on a random port.
   void StartServer() {
-    net::IPAddressNumber ip;
-    CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
+    IPAddressNumber ip;
+    CHECK(ParseIPLiteralToNumber("127.0.0.1", &ip));
     server_address_ = IPEndPoint(ip, 0);
     server_config_.SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);

@@ -37,8 +37,7 @@ void TestNetLog::Clear() {
 }
 
 BoundTestNetLog::BoundTestNetLog()
-    : net_log_(
-          BoundNetLog::Make(&capturing_net_log_, net::NetLog::SOURCE_NONE)) {
+    : net_log_(BoundNetLog::Make(&capturing_net_log_, NetLog::SOURCE_NONE)) {
 }
 
 BoundTestNetLog::~BoundTestNetLog() {

@@ -11,6 +11,8 @@
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
 
+namespace net {
+
 namespace {
 
 class URLConversionTest : public ::testing::Test {
@@ -211,7 +213,7 @@ TEST_F(URLConversionTest, TestNSURLCreationFromStrings) {
   for (NSUInteger i = 0; i < [testData_ count]; i += 2) {
     NSString* inputStr = [testData_ objectAtIndex:i];
     NSString* expected = [testData_ objectAtIndex:(i + 1)];
-    NSURL* url = net::NSURLWithGURL(GURL(base::SysNSStringToUTF8(inputStr)));
+    NSURL* url = NSURLWithGURL(GURL(base::SysNSStringToUTF8(inputStr)));
     EXPECT_NSEQ(expected, [url absoluteString]);
   }
 }
@@ -219,11 +221,13 @@ TEST_F(URLConversionTest, TestNSURLCreationFromStrings) {
 TEST_F(URLConversionTest, TestURLWithStringDoesNotModifyAlreadyEscapedURLs) {
   for (NSUInteger i = 0; i < [testData_ count]; i += 2) {
     NSString* inputStr = [testData_ objectAtIndex:i + 1];
-    NSURL* url = net::NSURLWithGURL(GURL(base::SysNSStringToUTF8(inputStr)));
+    NSURL* url = NSURLWithGURL(GURL(base::SysNSStringToUTF8(inputStr)));
     NSString* expected = [testData_ objectAtIndex:i + 1];
     // Test the expected URL is created.
     EXPECT_NSEQ(expected, [url absoluteString]);
   }
 }
 
-}  // anonymous namespace
+}  // namespace
+
+}  // namespace net

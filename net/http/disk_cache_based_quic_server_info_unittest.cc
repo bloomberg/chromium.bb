@@ -50,14 +50,14 @@ const MockTransaction kHostInfoTransaction2 = {
   0
 };
 
-class DeleteCacheCompletionCallback : public net::TestCompletionCallbackBase {
+class DeleteCacheCompletionCallback : public TestCompletionCallbackBase {
  public:
   explicit DeleteCacheCompletionCallback(QuicServerInfo* server_info)
       : server_info_(server_info),
         callback_(base::Bind(&DeleteCacheCompletionCallback::OnComplete,
                              base::Unretained(this))) {}
 
-  const net::CompletionCallback& callback() const { return callback_; }
+  const CompletionCallback& callback() const { return callback_; }
 
  private:
   void OnComplete(int result) {
@@ -66,7 +66,7 @@ class DeleteCacheCompletionCallback : public net::TestCompletionCallbackBase {
   }
 
   QuicServerInfo* server_info_;
-  net::CompletionCallback callback_;
+  CompletionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteCacheCompletionCallback);
 };

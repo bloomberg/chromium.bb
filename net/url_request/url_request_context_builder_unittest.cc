@@ -106,7 +106,7 @@ TEST_F(URLRequestContextBuilderTest, UserAgent) {
 
 TEST_F(URLRequestContextBuilderTest, ExtraHttpAuthHandlerFactory) {
   GURL gurl("www.google.com");
-  const int kBasicReturnCode = net::OK;
+  const int kBasicReturnCode = OK;
   MockHttpAuthHandlerFactory* mock_factory_basic =
       new MockHttpAuthHandlerFactory(kBasicReturnCode);
   scoped_ptr<HttpAuthHandler> handler;

@@ -13,6 +13,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+namespace net {
+
 namespace {
 
 const int kMagicResult = 8888;
@@ -36,7 +38,7 @@ class ExampleEmployer {
   // Do some imaginary work on a worker thread;
   // when done, worker posts callback on the original thread.
   // Returns true on success
-  bool DoSomething(const net::CompletionCallback& callback);
+  bool DoSomething(const CompletionCallback& callback);
 
  private:
   class ExampleWorker;
@@ -49,8 +51,7 @@ class ExampleEmployer {
 class ExampleEmployer::ExampleWorker
     : public base::RefCountedThreadSafe<ExampleWorker> {
  public:
-  ExampleWorker(ExampleEmployer* employer,
-                const net::CompletionCallback& callback)
+  ExampleWorker(ExampleEmployer* employer, const CompletionCallback& callback)
       : employer_(employer),
         callback_(callback),
         origin_loop_(base::MessageLoop::current()) {}
@@ -63,7 +64,7 @@ class ExampleEmployer::ExampleWorker
 
   // Only used on the origin thread (where DoSomething was called).
   ExampleEmployer* employer_;
-  net::CompletionCallback callback_;
+  CompletionCallback callback_;
   // Used to post ourselves onto the origin thread.
   base::Lock origin_loop_lock_;
   base::MessageLoop* origin_loop_;
@@ -101,7 +102,7 @@ ExampleEmployer::ExampleEmployer() {
 ExampleEmployer::~ExampleEmployer() {
 }
 
-bool ExampleEmployer::DoSomething(const net::CompletionCallback& callback) {
+bool ExampleEmployer::DoSomething(const CompletionCallback& callback) {
   DCHECK(!request_.get()) << "already in use";
 
   request_ = new ExampleWorker(this, callback);
@@ -125,7 +126,7 @@ typedef PlatformTest TestCompletionCallbackTest;
 
 TEST_F(TestCompletionCallbackTest, Simple) {
   ExampleEmployer boss;
-  net::TestCompletionCallback callback;
+  TestCompletionCallback callback;
   bool queued = boss.DoSomething(callback.callback());
   EXPECT_TRUE(queued);
   int result = callback.WaitForResult();
@@ -134,11 +135,11 @@ TEST_F(TestCompletionCallbackTest, Simple) {
 
 TEST_F(TestCompletionCallbackTest, Closure) {
   ExampleEmployer boss;
-  net::TestClosure closure;
+  TestClosure closure;
   bool did_check_result = false;
-  net::CompletionCallback completion_callback =
-      base::Bind(&CallClosureAfterCheckingResult,
-                 closure.closure(), base::Unretained(&did_check_result));
+  CompletionCallback completion_callback =
+      base::Bind(&CallClosureAfterCheckingResult, closure.closure(),
+                 base::Unretained(&did_check_result));
   bool queued = boss.DoSomething(completion_callback);
   EXPECT_TRUE(queued);
 
@@ -148,3 +149,5 @@ TEST_F(TestCompletionCallbackTest, Closure) {
 }
 
 // TODO: test deleting ExampleEmployer while work outstanding
+
+}  // namespace net

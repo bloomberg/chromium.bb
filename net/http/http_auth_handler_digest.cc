@@ -227,7 +227,7 @@ bool HttpAuthHandlerDigest::ParseChallengeProperty(const std::string& name,
                                                    const std::string& value) {
   if (LowerCaseEqualsASCII(name, "realm")) {
     std::string realm;
-    if (!net::ConvertToUtf8AndNormalize(value, kCharsetLatin1, &realm))
+    if (!ConvertToUtf8AndNormalize(value, kCharsetLatin1, &realm))
       return false;
     realm_ = realm;
     original_realm_ = value;

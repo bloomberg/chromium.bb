@@ -785,13 +785,13 @@ const ProxyService::PacPollPolicy*
 class ProxyService::PacRequest
     : public base::RefCounted<ProxyService::PacRequest> {
  public:
-    PacRequest(ProxyService* service,
-               const GURL& url,
-               int load_flags,
-               NetworkDelegate* network_delegate,
-               ProxyInfo* results,
-               const net::CompletionCallback& user_callback,
-               const BoundNetLog& net_log)
+  PacRequest(ProxyService* service,
+             const GURL& url,
+             int load_flags,
+             NetworkDelegate* network_delegate,
+             ProxyInfo* results,
+             const CompletionCallback& user_callback,
+             const BoundNetLog& net_log)
       : service_(service),
         user_callback_(user_callback),
         results_(results),
@@ -909,7 +909,7 @@ class ProxyService::PacRequest
     // Remove this completed PacRequest from the service's pending list.
     /// (which will probably cause deletion of |this|).
     if (!user_callback_.is_null()) {
-      net::CompletionCallback callback = user_callback_;
+      CompletionCallback callback = user_callback_;
       service_->RemovePendingRequest(this);
       callback.Run(result_code);
     }
@@ -921,7 +921,7 @@ class ProxyService::PacRequest
   // requests are cancelled during ~ProxyService, so this is guaranteed
   // to be valid throughout our lifetime.
   ProxyService* service_;
-  net::CompletionCallback user_callback_;
+  CompletionCallback user_callback_;
   ProxyInfo* results_;
   GURL url_;
   int load_flags_;
@@ -992,7 +992,7 @@ ProxyService* ProxyService::CreateFixed(const ProxyConfig& pc) {
 
 // static
 ProxyService* ProxyService::CreateFixed(const std::string& proxy) {
-  net::ProxyConfig proxy_config;
+  ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString(proxy);
   return ProxyService::CreateFixed(proxy_config);
 }
@@ -1026,7 +1026,7 @@ ProxyService* ProxyService::CreateFixedFromPacResult(
 int ProxyService::ResolveProxy(const GURL& raw_url,
                                int load_flags,
                                ProxyInfo* result,
-                               const net::CompletionCallback& callback,
+                               const CompletionCallback& callback,
                                PacRequest** pac_request,
                                NetworkDelegate* network_delegate,
                                const BoundNetLog& net_log) {
@@ -1043,7 +1043,7 @@ int ProxyService::ResolveProxy(const GURL& raw_url,
 int ProxyService::ResolveProxyHelper(const GURL& raw_url,
                                      int load_flags,
                                      ProxyInfo* result,
-                                     const net::CompletionCallback& callback,
+                                     const CompletionCallback& callback,
                                      PacRequest** pac_request,
                                      NetworkDelegate* network_delegate,
                                      const BoundNetLog& net_log) {
@@ -1105,7 +1105,7 @@ bool ProxyService:: TryResolveProxySynchronously(
     ProxyInfo* result,
     NetworkDelegate* network_delegate,
     const BoundNetLog& net_log) {
-  net::CompletionCallback null_callback;
+  CompletionCallback null_callback;
   return ResolveProxyHelper(raw_url,
                             load_flags,
                             result,
@@ -1557,10 +1557,9 @@ void ProxyService::OnProxyConfigChanged(
 
   // Emit the proxy settings change to the NetLog stream.
   if (net_log_) {
-    net_log_->AddGlobalEntry(
-        net::NetLog::TYPE_PROXY_CONFIG_CHANGED,
-        base::Bind(&NetLogProxyConfigChangedCallback,
-                   &fetched_config_, &effective_config));
+    net_log_->AddGlobalEntry(NetLog::TYPE_PROXY_CONFIG_CHANGED,
+                             base::Bind(&NetLogProxyConfigChangedCallback,
+                                        &fetched_config_, &effective_config));
   }
 
   // Set the new configuration as the most recently fetched one.

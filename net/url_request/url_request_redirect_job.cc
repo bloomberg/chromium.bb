@@ -91,8 +91,7 @@ void URLRequestRedirectJob::StartAsync() {
                          redirect_reason_.c_str());
 
   std::string http_origin;
-  const net::HttpRequestHeaders& request_headers =
-      request_->extra_request_headers();
+  const HttpRequestHeaders& request_headers = request_->extra_request_headers();
   if (request_headers.GetHeader("Origin", &http_origin)) {
     // If this redirect is used in a cross-origin request, add CORS headers to
     // make sure that the redirect gets through. Note that the destination URL

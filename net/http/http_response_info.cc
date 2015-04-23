@@ -324,17 +324,16 @@ void HttpResponseInfo::Persist(Pickle* pickle,
   pickle->WriteInt64(request_time.ToInternalValue());
   pickle->WriteInt64(response_time.ToInternalValue());
 
-  net::HttpResponseHeaders::PersistOptions persist_options =
-      net::HttpResponseHeaders::PERSIST_RAW;
+  HttpResponseHeaders::PersistOptions persist_options =
+      HttpResponseHeaders::PERSIST_RAW;
 
   if (skip_transient_headers) {
-    persist_options =
-        net::HttpResponseHeaders::PERSIST_SANS_COOKIES |
-        net::HttpResponseHeaders::PERSIST_SANS_CHALLENGES |
-        net::HttpResponseHeaders::PERSIST_SANS_HOP_BY_HOP |
-        net::HttpResponseHeaders::PERSIST_SANS_NON_CACHEABLE |
-        net::HttpResponseHeaders::PERSIST_SANS_RANGES |
-        net::HttpResponseHeaders::PERSIST_SANS_SECURITY_STATE;
+    persist_options = HttpResponseHeaders::PERSIST_SANS_COOKIES |
+                      HttpResponseHeaders::PERSIST_SANS_CHALLENGES |
+                      HttpResponseHeaders::PERSIST_SANS_HOP_BY_HOP |
+                      HttpResponseHeaders::PERSIST_SANS_NON_CACHEABLE |
+                      HttpResponseHeaders::PERSIST_SANS_RANGES |
+                      HttpResponseHeaders::PERSIST_SANS_SECURITY_STATE;
   }
 
   headers->Persist(pickle, persist_options);

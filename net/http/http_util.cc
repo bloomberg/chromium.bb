@@ -380,7 +380,7 @@ std::string HttpUtil::StripHeaders(const std::string& headers,
                                    const char* const headers_to_remove[],
                                    size_t headers_to_remove_len) {
   std::string stripped_headers;
-  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\r\n");
+  HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\r\n");
 
   while (it.GetNext()) {
     bool should_remove = false;
@@ -711,7 +711,7 @@ void HttpUtil::AppendHeaderIfMissing(const char* header_name,
                                      std::string* headers) {
   if (header_value.empty())
     return;
-  if (net::HttpUtil::HasHeader(*headers, header_name))
+  if (HttpUtil::HasHeader(*headers, header_name))
     return;
   *headers += std::string(header_name) + ": " + header_value + "\r\n";
 }

@@ -400,7 +400,7 @@ void DiskCacheBasedQuicServerInfo::RecordQuicServerInfoStatus(
   if (!backend_) {
     UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.APICall.NoBackend", call,
                               QUIC_SERVER_INFO_NUM_OF_API_CALLS);
-  } else if (backend_->GetCacheType() == net::MEMORY_CACHE) {
+  } else if (backend_->GetCacheType() == MEMORY_CACHE) {
     UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.APICall.MemoryCache", call,
                               QUIC_SERVER_INFO_NUM_OF_API_CALLS);
   } else {
@@ -425,7 +425,7 @@ void DiskCacheBasedQuicServerInfo::RecordQuicServerInfoFailure(
   if (!backend_) {
     UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.FailureReason.NoBackend",
                               failure, NUM_OF_FAILURES);
-  } else if (backend_->GetCacheType() == net::MEMORY_CACHE) {
+  } else if (backend_->GetCacheType() == MEMORY_CACHE) {
     UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.FailureReason.MemoryCache",
                               failure, NUM_OF_FAILURES);
   } else {

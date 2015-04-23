@@ -94,8 +94,7 @@ bool g_default_can_use_cookies = true;
 // completed.
 //
 // This functions fixes both those cases.
-void ConvertRealLoadTimesToBlockingTimes(
-    net::LoadTimingInfo* load_timing_info) {
+void ConvertRealLoadTimesToBlockingTimes(LoadTimingInfo* load_timing_info) {
   DCHECK(!load_timing_info->request_start.is_null());
 
   // Earliest time possible for the request to be blocking on connect events.
@@ -116,7 +115,7 @@ void ConvertRealLoadTimesToBlockingTimes(
 
   // Make sure connection times are after start and proxy times.
 
-  net::LoadTimingInfo::ConnectTiming* connect_timing =
+  LoadTimingInfo::ConnectTiming* connect_timing =
       &load_timing_info->connect_timing;
   if (!connect_timing->dns_start.is_null()) {
     DCHECK(!connect_timing->dns_end.is_null());

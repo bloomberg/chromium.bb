@@ -18,6 +18,12 @@
 
 namespace test {
 
+using net::kSimpleGET_Transaction;
+using net::MockHttpRequest;
+using net::MockNetworkLayer;
+using net::MockTransaction;
+using net::TEST_MODE_SYNC_NET_START;
+
 const char kClientId[] = "42";
 const char kAnotherClientId[] = "24";
 

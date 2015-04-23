@@ -15,8 +15,9 @@
 #include "net/http/transport_security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::TransportSecurityPersister;
-using net::TransportSecurityState;
+namespace net {
+
+namespace {
 
 class TransportSecurityPersisterTest : public testing::Test {
  public:
@@ -86,13 +87,13 @@ TEST_F(TransportSecurityPersisterTest, SerializeData2) {
 
 TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   // Add an entry.
-  net::HashValue fp1(net::HASH_VALUE_SHA1);
+  HashValue fp1(HASH_VALUE_SHA1);
   memset(fp1.data(), 0, fp1.size());
-  net::HashValue fp2(net::HASH_VALUE_SHA1);
+  HashValue fp2(HASH_VALUE_SHA1);
   memset(fp2.data(), 1, fp2.size());
   base::Time expiry =
       base::Time::Now() + base::TimeDelta::FromSeconds(1000);
-  net::HashValueVector dynamic_spki_hashes;
+  HashValueVector dynamic_spki_hashes;
   dynamic_spki_hashes.push_back(fp1);
   dynamic_spki_hashes.push_back(fp2);
   bool include_subdomains = false;
@@ -168,11 +169,11 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
   TransportSecurityState::DomainState domain_state;
   static const char kTestDomain[] = "example.com";
   EXPECT_FALSE(state_.GetDynamicDomainState(kTestDomain, &domain_state));
-  net::HashValueVector hashes;
+  HashValueVector hashes;
   std::string failure_log;
   EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
 
-  net::HashValue sha1(net::HASH_VALUE_SHA1);
+  HashValue sha1(HASH_VALUE_SHA1);
   memset(sha1.data(), '1', sha1.size());
   domain_state.pkp.spki_hashes.push_back(sha1);
 
@@ -204,3 +205,7 @@ TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
                    sha1.data(),
                    sha1.size()));
 }
+
+}  // namespace
+
+}  // namespace net

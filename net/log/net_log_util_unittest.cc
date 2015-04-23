@@ -31,7 +31,7 @@ TEST(NetLogUtil, GetNetConstants) {
 // caches, and they have the same number of elements.
 TEST(NetLogUtil, GetNetInfo) {
   TestURLRequestContext context;
-  net::HttpCache* http_cache = context.http_transaction_factory()->GetCache();
+  HttpCache* http_cache = context.http_transaction_factory()->GetCache();
 
   // Get NetInfo when there's no cache backend (It's only created on first use).
   EXPECT_FALSE(http_cache->GetCurrentBackend());

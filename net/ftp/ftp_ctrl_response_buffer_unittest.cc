@@ -9,28 +9,29 @@
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace net {
+
 namespace {
 
 class FtpCtrlResponseBufferTest : public testing::Test {
  public:
-  FtpCtrlResponseBufferTest() : buffer_(net::BoundNetLog()) {
-  }
+  FtpCtrlResponseBufferTest() : buffer_(BoundNetLog()) {}
 
  protected:
   int PushDataToBuffer(const char* data) {
     return buffer_.ConsumeData(data, strlen(data));
   }
 
-  net::FtpCtrlResponseBuffer buffer_;
+  FtpCtrlResponseBuffer buffer_;
 };
 
 TEST_F(FtpCtrlResponseBufferTest, Basic) {
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("200 Status Text\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("200 Status Text\r\n"));
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
-  net::FtpCtrlResponse response = buffer_.PopResponse();
+  FtpCtrlResponse response = buffer_.PopResponse();
   EXPECT_FALSE(buffer_.ResponseAvailable());
   EXPECT_EQ(200, response.status_code);
   ASSERT_EQ(1U, response.lines.size());
@@ -38,18 +39,18 @@ TEST_F(FtpCtrlResponseBufferTest, Basic) {
 }
 
 TEST_F(FtpCtrlResponseBufferTest, Chunks) {
-  EXPECT_EQ(net::OK, PushDataToBuffer("20"));
+  EXPECT_EQ(OK, PushDataToBuffer("20"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
-  EXPECT_EQ(net::OK, PushDataToBuffer("0 Status"));
+  EXPECT_EQ(OK, PushDataToBuffer("0 Status"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
-  EXPECT_EQ(net::OK, PushDataToBuffer(" Text"));
+  EXPECT_EQ(OK, PushDataToBuffer(" Text"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
-  EXPECT_EQ(net::OK, PushDataToBuffer("\r"));
+  EXPECT_EQ(OK, PushDataToBuffer("\r"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
-  EXPECT_EQ(net::OK, PushDataToBuffer("\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("\n"));
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
-  net::FtpCtrlResponse response = buffer_.PopResponse();
+  FtpCtrlResponse response = buffer_.PopResponse();
   EXPECT_FALSE(buffer_.ResponseAvailable());
   EXPECT_EQ(200, response.status_code);
   ASSERT_EQ(1U, response.lines.size());
@@ -57,16 +58,16 @@ TEST_F(FtpCtrlResponseBufferTest, Chunks) {
 }
 
 TEST_F(FtpCtrlResponseBufferTest, Continuation) {
-  EXPECT_EQ(net::OK, PushDataToBuffer("230-FirstLine\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230-FirstLine\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("230-SecondLine\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230-SecondLine\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("230 LastLine\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230 LastLine\r\n"));
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
-  net::FtpCtrlResponse response = buffer_.PopResponse();
+  FtpCtrlResponse response = buffer_.PopResponse();
   EXPECT_FALSE(buffer_.ResponseAvailable());
   EXPECT_EQ(230, response.status_code);
   ASSERT_EQ(3U, response.lines.size());
@@ -76,22 +77,22 @@ TEST_F(FtpCtrlResponseBufferTest, Continuation) {
 }
 
 TEST_F(FtpCtrlResponseBufferTest, MultilineContinuation) {
-  EXPECT_EQ(net::OK, PushDataToBuffer("230-FirstLine\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230-FirstLine\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("Continued\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("Continued\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("230-SecondLine\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230-SecondLine\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("215 Continued\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("215 Continued\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("230 LastLine\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230 LastLine\r\n"));
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
-  net::FtpCtrlResponse response = buffer_.PopResponse();
+  FtpCtrlResponse response = buffer_.PopResponse();
   EXPECT_FALSE(buffer_.ResponseAvailable());
   EXPECT_EQ(230, response.status_code);
   ASSERT_EQ(3U, response.lines.size());
@@ -102,16 +103,16 @@ TEST_F(FtpCtrlResponseBufferTest, MultilineContinuation) {
 
 TEST_F(FtpCtrlResponseBufferTest, MultilineContinuationZeroLength) {
   // For the corner case from bug 29322.
-  EXPECT_EQ(net::OK, PushDataToBuffer("230-\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230-\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("example.com\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("example.com\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("230 LastLine\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230 LastLine\r\n"));
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
-  net::FtpCtrlResponse response = buffer_.PopResponse();
+  FtpCtrlResponse response = buffer_.PopResponse();
   EXPECT_FALSE(buffer_.ResponseAvailable());
   EXPECT_EQ(230, response.status_code);
   ASSERT_EQ(2U, response.lines.size());
@@ -120,18 +121,18 @@ TEST_F(FtpCtrlResponseBufferTest, MultilineContinuationZeroLength) {
 }
 
 TEST_F(FtpCtrlResponseBufferTest, SimilarContinuation) {
-  EXPECT_EQ(net::OK, PushDataToBuffer("230-FirstLine\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230-FirstLine\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
   // Notice the space at the start of the line. It should be recognized
   // as a continuation, and not the last line.
-  EXPECT_EQ(net::OK, PushDataToBuffer(" 230 Continued\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer(" 230 Continued\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("230 TrueLastLine\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230 TrueLastLine\r\n"));
   EXPECT_TRUE(buffer_.ResponseAvailable());
 
-  net::FtpCtrlResponse response = buffer_.PopResponse();
+  FtpCtrlResponse response = buffer_.PopResponse();
   EXPECT_FALSE(buffer_.ResponseAvailable());
   EXPECT_EQ(230, response.status_code);
   ASSERT_EQ(2U, response.lines.size());
@@ -141,19 +142,19 @@ TEST_F(FtpCtrlResponseBufferTest, SimilarContinuation) {
 
 // The nesting of multi-line responses is not allowed.
 TEST_F(FtpCtrlResponseBufferTest, NoNesting) {
-  EXPECT_EQ(net::OK, PushDataToBuffer("230-FirstLine\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230-FirstLine\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("300-Continuation\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("300-Continuation\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("300 Still continuation\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("300 Still continuation\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 
-  EXPECT_EQ(net::OK, PushDataToBuffer("230 Real End\r\n"));
+  EXPECT_EQ(OK, PushDataToBuffer("230 Real End\r\n"));
   ASSERT_TRUE(buffer_.ResponseAvailable());
 
-  net::FtpCtrlResponse response = buffer_.PopResponse();
+  FtpCtrlResponse response = buffer_.PopResponse();
   EXPECT_FALSE(buffer_.ResponseAvailable());
   EXPECT_EQ(230, response.status_code);
   ASSERT_EQ(2U, response.lines.size());
@@ -163,13 +164,15 @@ TEST_F(FtpCtrlResponseBufferTest, NoNesting) {
 }
 
 TEST_F(FtpCtrlResponseBufferTest, NonNumericResponse) {
-  EXPECT_EQ(net::ERR_INVALID_RESPONSE, PushDataToBuffer("Non-numeric\r\n"));
+  EXPECT_EQ(ERR_INVALID_RESPONSE, PushDataToBuffer("Non-numeric\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 }
 
 TEST_F(FtpCtrlResponseBufferTest, OutOfRangeResponse) {
-  EXPECT_EQ(net::ERR_INVALID_RESPONSE, PushDataToBuffer("777 OK?\r\n"));
+  EXPECT_EQ(ERR_INVALID_RESPONSE, PushDataToBuffer("777 OK?\r\n"));
   EXPECT_FALSE(buffer_.ResponseAvailable());
 }
 
 }  // namespace
+
+}  // namespace net

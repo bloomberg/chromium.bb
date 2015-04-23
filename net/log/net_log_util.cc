@@ -67,8 +67,8 @@ const StringToConstant kLoadFlags[] = {
 };
 
 const StringToConstant kLoadStateTable[] = {
-#define LOAD_STATE(label)             \
-  { #label, net::LOAD_STATE_##label } \
+#define LOAD_STATE(label)        \
+  { #label, LOAD_STATE_##label } \
   ,
 #include "net/base/load_states_list.h"
 #undef LOAD_STATE
@@ -103,11 +103,11 @@ const char* NetInfoSourceToString(NetInfoSource source) {
 
 // Returns the disk cache backend for |context| if there is one, or NULL.
 // Despite the name, can return an in memory "disk cache".
-disk_cache::Backend* GetDiskCacheBackend(net::URLRequestContext* context) {
+disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
   if (!context->http_transaction_factory())
     return NULL;
 
-  net::HttpCache* http_cache = context->http_transaction_factory()->GetCache();
+  HttpCache* http_cache = context->http_transaction_factory()->GetCache();
   if (!http_cache)
     return NULL;
 
@@ -115,8 +115,8 @@ disk_cache::Backend* GetDiskCacheBackend(net::URLRequestContext* context) {
 }
 
 // Returns true if |request1| was created before |request2|.
-bool RequestCreatedBefore(const net::URLRequest* request1,
-                          const net::URLRequest* request2) {
+bool RequestCreatedBefore(const URLRequest* request1,
+                          const URLRequest* request2) {
   if (request1->creation_time() < request2->creation_time())
     return true;
   if (request1->creation_time() > request2->creation_time())
@@ -129,7 +129,7 @@ bool RequestCreatedBefore(const net::URLRequest* request1,
 // Returns a Value representing the state of a pre-existing URLRequest when
 // net-internals was opened.
 base::Value* GetRequestStateAsValue(const net::URLRequest* request,
-                                    net::NetLogCaptureMode capture_mode) {
+                                    NetLogCaptureMode capture_mode) {
   return request->GetStateAsValue();
 }
 
@@ -143,7 +143,7 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
 
   // Add a dictionary with information on the relationship between event type
   // enums and their symbolic names.
-  constants_dict->Set("logEventTypes", net::NetLog::GetEventTypesAsValue());
+  constants_dict->Set("logEventTypes", NetLog::GetEventTypesAsValue());
 
   // Add a dictionary with information about the relationship between CertStatus
   // flags and their symbolic names.
@@ -203,10 +203,9 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-    for (net::QuicErrorCode error = net::QUIC_NO_ERROR;
-         error < net::QUIC_LAST_ERROR;
-         error = static_cast<net::QuicErrorCode>(error + 1)) {
-      dict->SetInteger(net::QuicUtils::ErrorToString(error),
+    for (QuicErrorCode error = QUIC_NO_ERROR; error < QUIC_LAST_ERROR;
+         error = static_cast<QuicErrorCode>(error + 1)) {
+      dict->SetInteger(QuicUtils::ErrorToString(error),
                        static_cast<int>(error));
     }
 
@@ -218,10 +217,10 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-    for (net::QuicRstStreamErrorCode error = net::QUIC_STREAM_NO_ERROR;
-         error < net::QUIC_STREAM_LAST_ERROR;
-         error = static_cast<net::QuicRstStreamErrorCode>(error + 1)) {
-      dict->SetInteger(net::QuicUtils::StreamErrorToString(error),
+    for (QuicRstStreamErrorCode error = QUIC_STREAM_NO_ERROR;
+         error < QUIC_STREAM_LAST_ERROR;
+         error = static_cast<QuicRstStreamErrorCode>(error + 1)) {
+      dict->SetInteger(QuicUtils::StreamErrorToString(error),
                        static_cast<int>(error));
     }
 
@@ -244,16 +243,16 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-    dict->SetInteger("PHASE_BEGIN", net::NetLog::PHASE_BEGIN);
-    dict->SetInteger("PHASE_END", net::NetLog::PHASE_END);
-    dict->SetInteger("PHASE_NONE", net::NetLog::PHASE_NONE);
+    dict->SetInteger("PHASE_BEGIN", NetLog::PHASE_BEGIN);
+    dict->SetInteger("PHASE_END", NetLog::PHASE_END);
+    dict->SetInteger("PHASE_NONE", NetLog::PHASE_NONE);
 
     constants_dict->Set("logEventPhase", dict);
   }
 
   // Information about the relationship between source type enums and
   // their symbolic names.
-  constants_dict->Set("logSourceType", net::NetLog::GetSourceTypesAsValue());
+  constants_dict->Set("logSourceType", NetLog::GetSourceTypesAsValue());
 
   // TODO(eroman): This is here for compatibility in loading new log files with
   // older builds of Chrome. Safe to remove this once M45 is on the stable
@@ -265,10 +264,9 @@ scoped_ptr<base::DictionaryValue> GetNetConstants() {
   {
     base::DictionaryValue* dict = new base::DictionaryValue();
 
-    dict->SetInteger("ADDRESS_FAMILY_UNSPECIFIED",
-                     net::ADDRESS_FAMILY_UNSPECIFIED);
-    dict->SetInteger("ADDRESS_FAMILY_IPV4", net::ADDRESS_FAMILY_IPV4);
-    dict->SetInteger("ADDRESS_FAMILY_IPV6", net::ADDRESS_FAMILY_IPV6);
+    dict->SetInteger("ADDRESS_FAMILY_UNSPECIFIED", ADDRESS_FAMILY_UNSPECIFIED);
+    dict->SetInteger("ADDRESS_FAMILY_IPV4", ADDRESS_FAMILY_IPV4);
+    dict->SetInteger("ADDRESS_FAMILY_IPV6", ADDRESS_FAMILY_IPV6);
 
     constants_dict->Set("addressFamily", dict);
   }
@@ -328,7 +326,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
   // TODO(mmenke):  The code for most of these sources should probably be moved
   // into the sources themselves.
   if (info_sources & NET_INFO_PROXY_SETTINGS) {
-    net::ProxyService* proxy_service = context->proxy_service();
+    ProxyService* proxy_service = context->proxy_service();
 
     base::DictionaryValue* dict = new base::DictionaryValue();
     if (proxy_service->fetched_config().is_valid())
@@ -340,20 +338,20 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
   }
 
   if (info_sources & NET_INFO_BAD_PROXIES) {
-    const net::ProxyRetryInfoMap& bad_proxies_map =
+    const ProxyRetryInfoMap& bad_proxies_map =
         context->proxy_service()->proxy_retry_info();
 
     base::ListValue* list = new base::ListValue();
 
-    for (net::ProxyRetryInfoMap::const_iterator it = bad_proxies_map.begin();
+    for (ProxyRetryInfoMap::const_iterator it = bad_proxies_map.begin();
          it != bad_proxies_map.end(); ++it) {
       const std::string& proxy_uri = it->first;
-      const net::ProxyRetryInfo& retry_info = it->second;
+      const ProxyRetryInfo& retry_info = it->second;
 
       base::DictionaryValue* dict = new base::DictionaryValue();
       dict->SetString("proxy_uri", proxy_uri);
       dict->SetString("bad_until",
-                      net::NetLog::TickCountToString(retry_info.bad_until));
+                      NetLog::TickCountToString(retry_info.bad_until));
 
       list->Append(dict);
     }
@@ -362,9 +360,9 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
   }
 
   if (info_sources & NET_INFO_HOST_RESOLVER) {
-    net::HostResolver* host_resolver = context->host_resolver();
+    HostResolver* host_resolver = context->host_resolver();
     DCHECK(host_resolver);
-    net::HostCache* cache = host_resolver->GetHostCache();
+    HostCache* cache = host_resolver->GetHostCache();
     if (cache) {
       base::DictionaryValue* dict = new base::DictionaryValue();
       base::Value* dns_config = host_resolver->GetDnsConfigAsValue();
@@ -382,10 +380,10 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
 
       base::ListValue* entry_list = new base::ListValue();
 
-      net::HostCache::EntryMap::Iterator it(cache->entries());
+      HostCache::EntryMap::Iterator it(cache->entries());
       for (; it.HasNext(); it.Advance()) {
-        const net::HostCache::Key& key = it.key();
-        const net::HostCache::Entry& entry = it.value();
+        const HostCache::Key& key = it.key();
+        const HostCache::Entry& entry = it.value();
 
         base::DictionaryValue* entry_dict = new base::DictionaryValue();
 
@@ -393,9 +391,9 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
         entry_dict->SetInteger("address_family",
                                static_cast<int>(key.address_family));
         entry_dict->SetString("expiration",
-                              net::NetLog::TickCountToString(it.expiration()));
+                              NetLog::TickCountToString(it.expiration()));
 
-        if (entry.error != net::OK) {
+        if (entry.error != OK) {
           entry_dict->SetInteger("error", entry.error);
         } else {
           // Append all of the resolved addresses.
@@ -415,7 +413,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
     }
   }
 
-  net::HttpNetworkSession* http_network_session =
+  HttpNetworkSession* http_network_session =
       context->http_transaction_factory()->GetSession();
 
   if (info_sources & NET_INFO_SOCKET_POOL) {
@@ -431,8 +429,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
   if (info_sources & NET_INFO_SPDY_STATUS) {
     base::DictionaryValue* status_dict = new base::DictionaryValue();
 
-    status_dict->SetBoolean("spdy_enabled",
-                            net::HttpStreamFactory::spdy_enabled());
+    status_dict->SetBoolean("spdy_enabled", HttpStreamFactory::spdy_enabled());
     status_dict->SetBoolean(
         "use_alternate_protocols",
         http_network_session->params().use_alternate_protocols);
@@ -454,7 +451,7 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
   }
 
   if (info_sources & NET_INFO_SPDY_ALT_SVC_MAPPINGS) {
-    const net::HttpServerProperties& http_server_properties =
+    const HttpServerProperties& http_server_properties =
         *context->http_server_properties();
     net_info_dict->Set(
         NetInfoSourceToString(NET_INFO_SPDY_ALT_SVC_MAPPINGS),
@@ -524,12 +521,12 @@ NET_EXPORT void CreateNetLogEntriesForActiveObjects(
   // Create fake events.
   ScopedVector<NetLog::Entry> entries;
   for (const auto& request : requests) {
-    net::NetLog::ParametersCallback callback =
+    NetLog::ParametersCallback callback =
         base::Bind(&GetRequestStateAsValue, base::Unretained(request));
 
-    net::NetLog::EntryData entry_data(
-        net::NetLog::TYPE_REQUEST_ALIVE, request->net_log().source(),
-        net::NetLog::PHASE_BEGIN, request->creation_time(), &callback);
+    NetLog::EntryData entry_data(
+        NetLog::TYPE_REQUEST_ALIVE, request->net_log().source(),
+        NetLog::PHASE_BEGIN, request->creation_time(), &callback);
     NetLog::Entry entry(&entry_data, request->net_log().GetCaptureMode());
     observer->OnAddEntry(entry);
   }

@@ -51,7 +51,7 @@ bool StoreKeyPair(const uint8* public_key,
 
 // Helper used to pass the DER-encoded bytes of an X.509 certificate or
 // a PKCS#12 archive holding a private key to the CertInstaller activity.
-NET_EXPORT void StoreCertificate(net::CertificateMimeType cert_type,
+NET_EXPORT void StoreCertificate(CertificateMimeType cert_type,
                                  const void* data,
                                  size_t data_len);
 

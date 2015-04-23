@@ -908,8 +908,8 @@ scoped_ptr<DatagramClientSocket>
 MockClientSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
     const RandIntCallback& rand_int_cb,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source) {
+    NetLog* net_log,
+    const NetLog::Source& source) {
   SocketDataProvider* data_provider = mock_data_.GetNext();
   scoped_ptr<MockUDPClientSocket> socket(
       new MockUDPClientSocket(data_provider, net_log));
@@ -921,8 +921,8 @@ MockClientSocketFactory::CreateDatagramClientSocket(
 
 scoped_ptr<StreamSocket> MockClientSocketFactory::CreateTransportClientSocket(
     const AddressList& addresses,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source) {
+    NetLog* net_log,
+    const NetLog::Source& source) {
   SocketDataProvider* data_provider = mock_data_.GetNext();
   scoped_ptr<MockTCPClientSocket> socket(
       new MockTCPClientSocket(addresses, net_log, data_provider));
@@ -1048,7 +1048,7 @@ void MockClientSocket::RunCallbackAsync(const CompletionCallback& callback,
                  result));
 }
 
-void MockClientSocket::RunCallback(const net::CompletionCallback& callback,
+void MockClientSocket::RunCallback(const CompletionCallback& callback,
                                    int result) {
   if (!callback.is_null())
     callback.Run(result);
@@ -1057,7 +1057,7 @@ void MockClientSocket::RunCallback(const net::CompletionCallback& callback,
 MockTCPClientSocket::MockTCPClientSocket(const AddressList& addresses,
                                          net::NetLog* net_log,
                                          SocketDataProvider* data)
-    : MockClientSocket(BoundNetLog::Make(net_log, net::NetLog::SOURCE_NONE)),
+    : MockClientSocket(BoundNetLog::Make(net_log, NetLog::SOURCE_NONE)),
       addresses_(addresses),
       data_(data),
       read_offset_(0),
@@ -1267,7 +1267,7 @@ int MockTCPClientSocket::CompleteRead() {
 }
 
 DeterministicSocketHelper::DeterministicSocketHelper(
-    net::NetLog* net_log,
+    NetLog* net_log,
     DeterministicSocketData* data)
     : write_pending_(false),
       write_result_(0),
@@ -1278,7 +1278,7 @@ DeterministicSocketHelper::DeterministicSocketHelper(
       data_(data),
       was_used_to_convey_data_(false),
       peer_closed_connection_(false),
-      net_log_(BoundNetLog::Make(net_log, net::NetLog::SOURCE_NONE)) {
+      net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_NONE)) {
 }
 
 DeterministicSocketHelper::~DeterministicSocketHelper() {}
@@ -1469,7 +1469,7 @@ void DeterministicMockUDPClientSocket::OnConnectComplete(
 DeterministicMockTCPClientSocket::DeterministicMockTCPClientSocket(
     net::NetLog* net_log,
     DeterministicSocketData* data)
-    : MockClientSocket(BoundNetLog::Make(net_log, net::NetLog::SOURCE_NONE)),
+    : MockClientSocket(BoundNetLog::Make(net_log, NetLog::SOURCE_NONE)),
       helper_(net_log, data) {
   peer_addr_ = data->connect_data().peer_addr;
 }
@@ -1725,7 +1725,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       source_port_(123),
       pending_read_buf_(NULL),
       pending_read_buf_len_(0),
-      net_log_(BoundNetLog::Make(net_log, net::NetLog::SOURCE_NONE)),
+      net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_NONE)),
       weak_factory_(this) {
   DCHECK(data_);
   data_->Reset();
@@ -1837,7 +1837,7 @@ void MockUDPClientSocket::OnReadComplete(const MockRead& data) {
   // let CompleteRead() schedule a callback.
   read_data_.mode = SYNCHRONOUS;
 
-  net::CompletionCallback callback = pending_read_callback_;
+  CompletionCallback callback = pending_read_callback_;
   int rv = CompleteRead();
   RunCallback(callback, rv);
 }
@@ -2050,7 +2050,7 @@ int MockTransportClientSocketPool::RequestSocket(
   last_request_priority_ = priority;
   scoped_ptr<StreamSocket> socket =
       client_socket_factory_->CreateTransportClientSocket(
-          AddressList(), net_log.net_log(), net::NetLog::Source());
+          AddressList(), net_log.net_log(), NetLog::Source());
   MockConnectJob* job = new MockConnectJob(socket.Pass(), handle, callback);
   job_list_.push_back(job);
   handle->set_pool_id(1);
@@ -2105,7 +2105,7 @@ scoped_ptr<DatagramClientSocket>
 DeterministicMockClientSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
     const RandIntCallback& rand_int_cb,
-    net::NetLog* net_log,
+    NetLog* net_log,
     const NetLog::Source& source) {
   DeterministicSocketData* data_provider = mock_data().GetNext();
   scoped_ptr<DeterministicMockUDPClientSocket> socket(
@@ -2120,8 +2120,8 @@ DeterministicMockClientSocketFactory::CreateDatagramClientSocket(
 scoped_ptr<StreamSocket>
 DeterministicMockClientSocketFactory::CreateTransportClientSocket(
     const AddressList& addresses,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source) {
+    NetLog* net_log,
+    const NetLog::Source& source) {
   DeterministicSocketData* data_provider = mock_data().GetNext();
   scoped_ptr<DeterministicMockTCPClientSocket> socket(
       new DeterministicMockTCPClientSocket(net_log, data_provider));

@@ -44,8 +44,9 @@ class NET_EXPORT_PRIVATE ProxyScriptFetcher {
   // deleting |this|), then no callback is invoked.
   //
   // Only one fetch is allowed to be outstanding at a time.
-  virtual int Fetch(const GURL& url, base::string16* utf16_text,
-                    const net::CompletionCallback& callback) = 0;
+  virtual int Fetch(const GURL& url,
+                    base::string16* utf16_text,
+                    const CompletionCallback& callback) = 0;
 
   // Aborts the in-progress fetch (if any).
   virtual void Cancel() = 0;

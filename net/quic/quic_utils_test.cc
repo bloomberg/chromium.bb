@@ -91,10 +91,10 @@ TEST(QuicUtilsTest, ParseQuicConnectionOptions) {
   QuicTagVector parsed_options = QuicUtils::ParseQuicConnectionOptions(
       "PACE,TIMER,TBBR,REJ");
   QuicTagVector expected_options;
-  expected_options.push_back(net::kPACE);
-  expected_options.push_back(net::kTIME);
-  expected_options.push_back(net::kTBBR);
-  expected_options.push_back(net::kREJ);
+  expected_options.push_back(kPACE);
+  expected_options.push_back(kTIME);
+  expected_options.push_back(kTBBR);
+  expected_options.push_back(kREJ);
   EXPECT_EQ(expected_options, parsed_options);
 }
 

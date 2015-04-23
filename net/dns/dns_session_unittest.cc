@@ -29,8 +29,8 @@ class TestClientSocketFactory : public ClientSocketFactory {
   scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
-      net::NetLog* net_log,
-      const net::NetLog::Source& source) override;
+      NetLog* net_log,
+      const NetLog::Source& source) override;
 
   scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
@@ -182,8 +182,8 @@ scoped_ptr<DatagramClientSocket>
 TestClientSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
     const RandIntCallback& rand_int_cb,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source) {
+    NetLog* net_log,
+    const NetLog::Source& source) {
   // We're not actually expecting to send or receive any data, so use the
   // simplest SocketDataProvider with no data supplied.
   SocketDataProvider* data_provider = new StaticSocketDataProvider();

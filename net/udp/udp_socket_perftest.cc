@@ -21,14 +21,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+namespace net {
+
 namespace {
 
 class UDPSocketPerfTest : public PlatformTest {
  public:
   UDPSocketPerfTest()
-      : buffer_(new net::IOBufferWithSize(kPacketSize)), weak_factory_(this) {}
+      : buffer_(new IOBufferWithSize(kPacketSize)), weak_factory_(this) {}
 
-  void DoneWritePacketsToSocket(net::UDPClientSocket* socket,
+  void DoneWritePacketsToSocket(UDPClientSocket* socket,
                                 int num_of_packets,
                                 base::Closure done_callback,
                                 int error) {
@@ -36,7 +38,7 @@ class UDPSocketPerfTest : public PlatformTest {
   }
 
   // Send |num_of_packets| to |socket|. Invoke |done_callback| when done.
-  void WritePacketsToSocket(net::UDPClientSocket* socket,
+  void WritePacketsToSocket(UDPClientSocket* socket,
                             int num_of_packets,
                             base::Closure done_callback);
 
@@ -46,26 +48,23 @@ class UDPSocketPerfTest : public PlatformTest {
 
  protected:
   static const int kPacketSize = 1024;
-  scoped_refptr<net::IOBufferWithSize> buffer_;
+  scoped_refptr<IOBufferWithSize> buffer_;
   base::WeakPtrFactory<UDPSocketPerfTest> weak_factory_;
 };
 
 // Creates and address from an ip/port and returns it in |address|.
-void CreateUDPAddress(std::string ip_str,
-                      uint16 port,
-                      net::IPEndPoint* address) {
-  net::IPAddressNumber ip_number;
-  bool rv = net::ParseIPLiteralToNumber(ip_str, &ip_number);
+void CreateUDPAddress(std::string ip_str, uint16 port, IPEndPoint* address) {
+  IPAddressNumber ip_number;
+  bool rv = ParseIPLiteralToNumber(ip_str, &ip_number);
   if (!rv)
     return;
-  *address = net::IPEndPoint(ip_number, port);
+  *address = IPEndPoint(ip_number, port);
 }
 
-void UDPSocketPerfTest::WritePacketsToSocket(net::UDPClientSocket* socket,
+void UDPSocketPerfTest::WritePacketsToSocket(UDPClientSocket* socket,
                                              int num_of_packets,
                                              base::Closure done_callback) {
-  scoped_refptr<net::IOBufferWithSize> io_buffer(
-      new net::IOBufferWithSize(kPacketSize));
+  scoped_refptr<IOBufferWithSize> io_buffer(new IOBufferWithSize(kPacketSize));
   memset(io_buffer->data(), 'G', kPacketSize);
 
   while (num_of_packets) {
@@ -74,7 +73,7 @@ void UDPSocketPerfTest::WritePacketsToSocket(net::UDPClientSocket* socket,
                       base::Bind(&UDPSocketPerfTest::DoneWritePacketsToSocket,
                                  weak_factory_.GetWeakPtr(), socket,
                                  num_of_packets - 1, done_callback));
-    if (rv == net::ERR_IO_PENDING)
+    if (rv == ERR_IO_PENDING)
       break;
     --num_of_packets;
   }
@@ -89,31 +88,31 @@ void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
   const uint16 kPort = 9999;
 
   // Setup the server to listen.
-  net::IPEndPoint bind_address;
+  IPEndPoint bind_address;
   CreateUDPAddress("127.0.0.1", kPort, &bind_address);
-  net::TestNetLog server_log;
-  scoped_ptr<net::UDPServerSocket> server(
-      new net::UDPServerSocket(&server_log, net::NetLog::Source()));
+  TestNetLog server_log;
+  scoped_ptr<UDPServerSocket> server(
+      new UDPServerSocket(&server_log, NetLog::Source()));
 #if defined(OS_WIN)
   if (use_nonblocking_io)
     server->UseNonBlockingIO();
 #endif
   int rv = server->Listen(bind_address);
-  ASSERT_EQ(net::OK, rv);
+  ASSERT_EQ(OK, rv);
 
   // Setup the client.
-  net::IPEndPoint server_address;
+  IPEndPoint server_address;
   CreateUDPAddress("127.0.0.1", kPort, &server_address);
-  net::TestNetLog client_log;
-  scoped_ptr<net::UDPClientSocket> client(new net::UDPClientSocket(
-      net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(), &client_log,
-      net::NetLog::Source()));
+  TestNetLog client_log;
+  scoped_ptr<UDPClientSocket> client(
+      new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
+                          &client_log, NetLog::Source()));
 #if defined(OS_WIN)
   if (use_nonblocking_io)
     client->UseNonBlockingIO();
 #endif
   rv = client->Connect(server_address);
-  EXPECT_EQ(net::OK, rv);
+  EXPECT_EQ(OK, rv);
 
   base::RunLoop run_loop;
   base::TimeTicks start_ticks = base::TimeTicks::Now();
@@ -139,3 +138,5 @@ TEST_F(UDPSocketPerfTest, WriteNonBlocking) {
 #endif
 
 }  // namespace
+
+}  // namespace net

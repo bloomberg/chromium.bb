@@ -233,7 +233,7 @@ class SpdyURLRequestContext : public URLRequestContext {
 
  private:
   MockClientSocketFactory socket_factory_;
-  net::URLRequestContextStorage storage_;
+  URLRequestContextStorage storage_;
 };
 
 // Equivalent to pool->GetIfExists(spdy_session_key, BoundNetLog()) != NULL.

@@ -45,8 +45,8 @@ void MDnsSocketFactoryImpl::CreateSockets(
     ScopedVector<DatagramServerSocket>* sockets) {
   InterfaceIndexFamilyList interfaces(GetMDnsInterfacesToBind());
   for (size_t i = 0; i < interfaces.size(); ++i) {
-    DCHECK(interfaces[i].second == net::ADDRESS_FAMILY_IPV4 ||
-           interfaces[i].second == net::ADDRESS_FAMILY_IPV6);
+    DCHECK(interfaces[i].second == ADDRESS_FAMILY_IPV4 ||
+           interfaces[i].second == ADDRESS_FAMILY_IPV6);
     scoped_ptr<DatagramServerSocket> socket(
         CreateAndBindMDnsSocket(interfaces[i].second, interfaces[i].first));
     if (socket)
@@ -454,7 +454,7 @@ scoped_ptr<MDnsListener> MDnsClientImpl::CreateListener(
     uint16 rrtype,
     const std::string& name,
     MDnsListener::Delegate* delegate) {
-  return scoped_ptr<net::MDnsListener>(
+  return scoped_ptr<MDnsListener>(
       new MDnsListenerImpl(rrtype, name, clock_.get(), delegate, this));
 }
 

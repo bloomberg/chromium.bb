@@ -220,7 +220,7 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
 
 std::string GetWifiSSID() {
   NetworkInterfaceList networks;
-  if (GetNetworkList(&networks, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
+  if (GetNetworkList(&networks, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
     return internal::GetWifiSSIDFromInterfaceListInternal(
         networks, internal::GetInterfaceSSID);
   }

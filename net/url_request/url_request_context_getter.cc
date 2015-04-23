@@ -36,14 +36,14 @@ void URLRequestContextGetter::OnDestruct() const {
 }
 
 TrivialURLRequestContextGetter::TrivialURLRequestContextGetter(
-    net::URLRequestContext* context,
+    URLRequestContext* context,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
-    : context_(context), main_task_runner_(main_task_runner) {}
+    : context_(context), main_task_runner_(main_task_runner) {
+}
 
 TrivialURLRequestContextGetter::~TrivialURLRequestContextGetter() {}
 
-net::URLRequestContext*
-TrivialURLRequestContextGetter::GetURLRequestContext() {
+URLRequestContext* TrivialURLRequestContextGetter::GetURLRequestContext() {
   return context_;
 }
 

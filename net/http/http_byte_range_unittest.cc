@@ -5,6 +5,10 @@
 #include "net/http/http_byte_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace net {
+
+namespace {
+
 TEST(HttpByteRangeTest, ValidRanges) {
   const struct {
     int64 first_byte_position;
@@ -24,7 +28,7 @@ TEST(HttpByteRangeTest, ValidRanges) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    net::HttpByteRange range;
+    HttpByteRange range;
     range.set_first_byte_position(tests[i].first_byte_position);
     range.set_last_byte_position(tests[i].last_byte_position);
     range.set_suffix_length(tests[i].suffix_length);
@@ -56,7 +60,7 @@ TEST(HttpByteRangeTest, SetInstanceSize) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    net::HttpByteRange range;
+    HttpByteRange range;
     range.set_first_byte_position(tests[i].first_byte_position);
     range.set_last_byte_position(tests[i].last_byte_position);
     range.set_suffix_length(tests[i].suffix_length);
@@ -79,14 +83,20 @@ TEST(HttpByteRangeTest, SetInstanceSize) {
 
 TEST(HttpByteRangeTest, GetHeaderValue) {
   static const struct {
-    net::HttpByteRange range;
+    HttpByteRange range;
     const char* expected;
-  } tests[] = {{net::HttpByteRange::Bounded(0, 0),       "bytes=0-0"},
-               {net::HttpByteRange::Bounded(0, 100),     "bytes=0-100"},
-               {net::HttpByteRange::Bounded(0, -1),      "bytes=0-"},
-               {net::HttpByteRange::RightUnbounded(100), "bytes=100-"},
-               {net::HttpByteRange::Suffix(100),         "bytes=-100"}, };
+  } tests[] = {
+      {HttpByteRange::Bounded(0, 0), "bytes=0-0"},
+      {HttpByteRange::Bounded(0, 100), "bytes=0-100"},
+      {HttpByteRange::Bounded(0, -1), "bytes=0-"},
+      {HttpByteRange::RightUnbounded(100), "bytes=100-"},
+      {HttpByteRange::Suffix(100), "bytes=-100"},
+  };
   for (size_t i = 0; i < arraysize(tests); ++i) {
     EXPECT_EQ(tests[i].expected, tests[i].range.GetHeaderValue());
   }
 }
+
+}  // namespace
+
+}  // namespace net

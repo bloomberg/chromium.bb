@@ -875,15 +875,14 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
 };
 
 // DeterministicSocketHelper is a helper class that can be used
-// to simulate net::Socket::Read() and net::Socket::Write()
+// to simulate Socket::Read() and Socket::Write()
 // using deterministic |data|.
 // Note: This is provided as a common helper class because
 // of the inheritance hierarchy of DeterministicMock[UDP,TCP]ClientSocket and a
 // desire not to introduce an additional common base class.
 class DeterministicSocketHelper {
  public:
-  DeterministicSocketHelper(net::NetLog* net_log,
-                            DeterministicSocketData* data);
+  DeterministicSocketHelper(NetLog* net_log, DeterministicSocketData* data);
   virtual ~DeterministicSocketHelper();
 
   bool write_pending() const { return write_pending_; }
@@ -1143,7 +1142,7 @@ class TestSocketRequest : public TestCompletionCallbackBase {
 
   ClientSocketHandle* handle() { return &handle_; }
 
-  const net::CompletionCallback& callback() const { return callback_; }
+  const CompletionCallback& callback() const { return callback_; }
 
  private:
   void OnComplete(int result);

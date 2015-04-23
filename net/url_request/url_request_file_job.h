@@ -46,7 +46,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
 
   // An interface for subclasses who wish to monitor read operations.
   virtual void OnSeekComplete(int64 result);
-  virtual void OnReadComplete(net::IOBuffer* buf, int result);
+  virtual void OnReadComplete(IOBuffer* buf, int result);
 
  protected:
   ~URLRequestFileJob() override;
@@ -91,7 +91,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
   void DidSeek(int64 result);
 
   // Callback after data is asynchronously read from the file into |buf|.
-  void DidRead(scoped_refptr<net::IOBuffer> buf, int result);
+  void DidRead(scoped_refptr<IOBuffer> buf, int result);
 
   scoped_ptr<FileStream> stream_;
   FileMetaInfo meta_info_;

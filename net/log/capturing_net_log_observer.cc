@@ -43,7 +43,7 @@ void CapturingNetLogObserver::Clear() {
   captured_entries_.clear();
 }
 
-void CapturingNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
+void CapturingNetLogObserver::OnAddEntry(const NetLog::Entry& entry) {
   // Using Dictionaries instead of Values makes checking values a little
   // simpler.
   base::DictionaryValue* param_dict = nullptr;

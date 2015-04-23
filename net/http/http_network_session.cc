@@ -30,17 +30,19 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session_pool.h"
 
+namespace net {
+
 namespace {
 
-net::ClientSocketPoolManager* CreateSocketPoolManager(
-    net::HttpNetworkSession::SocketPoolType pool_type,
-    const net::HttpNetworkSession::Params& params) {
+ClientSocketPoolManager* CreateSocketPoolManager(
+    HttpNetworkSession::SocketPoolType pool_type,
+    const HttpNetworkSession::Params& params) {
   // TODO(yutak): Differentiate WebSocket pool manager and allow more
   // simultaneous connections for WebSockets.
-  return new net::ClientSocketPoolManagerImpl(
-      params.net_log, params.client_socket_factory
-                          ? params.client_socket_factory
-                          : net::ClientSocketFactory::GetDefaultFactory(),
+  return new ClientSocketPoolManagerImpl(
+      params.net_log,
+      params.client_socket_factory ? params.client_socket_factory
+                                   : ClientSocketFactory::GetDefaultFactory(),
       params.host_resolver, params.cert_verifier, params.channel_id_service,
       params.transport_security_state, params.cert_transparency_verifier,
       params.cert_policy_enforcer, params.ssl_session_cache_shard,
@@ -48,8 +50,6 @@ net::ClientSocketPoolManager* CreateSocketPoolManager(
 }
 
 }  // unnamed namespace
-
-namespace net {
 
 // The maximum receive window sizes for HTTP/2 sessions and streams.
 const int32 kSpdySessionMaxRecvWindowSize = 10 * 1024 * 1024;  // 10 MB
@@ -124,7 +124,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.host_resolver,
           params.client_socket_factory
               ? params.client_socket_factory
-              : net::ClientSocketFactory::GetDefaultFactory(),
+              : ClientSocketFactory::GetDefaultFactory(),
           params.http_server_properties,
           params.cert_verifier,
           params.channel_id_service,
@@ -323,4 +323,4 @@ ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(
   return NULL;
 }
 
-}  //  namespace net
+}  // namespace net

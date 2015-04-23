@@ -76,16 +76,15 @@ class WaitingURLFetcherDelegate : public URLFetcherDelegate {
   // Creates a URLFetcher that runs network tasks on the current message loop.
   void CreateFetcherWithContext(const GURL& url,
                                 URLFetcher::RequestType request_type,
-                                net::URLRequestContext* context) {
+                                URLRequestContext* context) {
     CreateFetcherWithContextGetter(
         url, request_type, new TrivialURLRequestContextGetter(
                                context, base::MessageLoopProxy::current()));
   }
 
-  void CreateFetcherWithContextGetter(
-      const GURL& url,
-      URLFetcher::RequestType request_type,
-      net::URLRequestContextGetter* context_getter) {
+  void CreateFetcherWithContextGetter(const GURL& url,
+                                      URLFetcher::RequestType request_type,
+                                      URLRequestContextGetter* context_getter) {
     fetcher_.reset(new URLFetcherImpl(url, request_type, this));
     fetcher_->SetRequestContext(context_getter);
   }

@@ -114,7 +114,7 @@ TEST(URLRequestFilter, BasicMatching) {
   EXPECT_EQ(0, filter->hit_count());
   filter->AddHostnameInterceptor(
       kUrl1.scheme(), kUrl1.host(),
-      scoped_ptr<net::URLRequestInterceptor>(new TestURLRequestInterceptor()));
+      scoped_ptr<URLRequestInterceptor>(new TestURLRequestInterceptor()));
   {
     scoped_refptr<URLRequestJob> found =
         filter->MaybeInterceptRequest(request1.get(), NULL);
@@ -127,9 +127,8 @@ TEST(URLRequestFilter, BasicMatching) {
   // Check URLRequestInterceptor URL matching.
   filter->ClearHandlers();
   EXPECT_EQ(0, filter->hit_count());
-  filter->AddUrlInterceptor(
-      kUrl2,
-      scoped_ptr<net::URLRequestInterceptor>(new TestURLRequestInterceptor()));
+  filter->AddUrlInterceptor(kUrl2, scoped_ptr<URLRequestInterceptor>(
+                                       new TestURLRequestInterceptor()));
   {
     scoped_refptr<URLRequestJob> found =
         filter->MaybeInterceptRequest(request2.get(), NULL);

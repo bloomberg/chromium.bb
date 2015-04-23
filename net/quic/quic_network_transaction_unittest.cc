@@ -412,22 +412,20 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   SendRequestAndExpectQuicResponse("hello!");
 
   // Check that the NetLog was filled reasonably.
-  net::TestNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   net_log_.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged a QUIC_SESSION_PACKET_RECEIVED.
-  int pos = net::ExpectLogContainsSomewhere(
-      entries, 0,
-      net::NetLog::TYPE_QUIC_SESSION_PACKET_RECEIVED,
-      net::NetLog::PHASE_NONE);
+  int pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_QUIC_SESSION_PACKET_RECEIVED,
+      NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
 
   // ... and also a TYPE_QUIC_SESSION_PACKET_HEADER_RECEIVED.
-  pos = net::ExpectLogContainsSomewhere(
-      entries, 0,
-      net::NetLog::TYPE_QUIC_SESSION_PACKET_HEADER_RECEIVED,
-      net::NetLog::PHASE_NONE);
+  pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_QUIC_SESSION_PACKET_HEADER_RECEIVED,
+      NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
 
   std::string packet_sequence_number;
@@ -436,10 +434,9 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   EXPECT_EQ("1", packet_sequence_number);
 
   // ... and also a QUIC_SESSION_STREAM_FRAME_RECEIVED.
-  pos = net::ExpectLogContainsSomewhere(
-      entries, 0,
-      net::NetLog::TYPE_QUIC_SESSION_STREAM_FRAME_RECEIVED,
-      net::NetLog::PHASE_NONE);
+  pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_QUIC_SESSION_STREAM_FRAME_RECEIVED,
+      NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
 
   int log_stream_id;

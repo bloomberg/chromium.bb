@@ -109,7 +109,7 @@ class NET_EXPORT SpdySessionPool
   // Close only the currently existing SpdySessions with |error|.
   // Let any new ones created while this method is running continue to
   // live.
-  void CloseCurrentSessions(net::Error error);
+  void CloseCurrentSessions(Error error);
 
   // Close only the currently existing SpdySessions that are idle.
   // Let any new ones created while this method is running continue to

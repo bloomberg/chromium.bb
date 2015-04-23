@@ -39,8 +39,8 @@ TEST(HttpAuthHandlerTest, NetLog) {
             challenge.begin(), challenge.end());
         HttpAuthHandlerMock mock_handler;
         TestNetLog capturing_net_log;
-        BoundNetLog bound_net_log(BoundNetLog::Make(&capturing_net_log,
-                                                    net::NetLog::SOURCE_NONE));
+        BoundNetLog bound_net_log(
+            BoundNetLog::Make(&capturing_net_log, NetLog::SOURCE_NONE));
 
         mock_handler.InitFromChallenge(&tokenizer, target,
                                        origin, bound_net_log);

@@ -16,7 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using net::test::a2b_hex;
 using std::string;
 using testing::ElementsAreArray;
 using testing::Pointwise;

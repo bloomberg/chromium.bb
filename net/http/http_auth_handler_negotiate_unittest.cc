@@ -19,13 +19,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-#if defined(OS_WIN)
-typedef net::MockSSPILibrary MockAuthLibrary;
-#elif defined(OS_POSIX)
-typedef net::test::MockGSSAPILibrary MockAuthLibrary;
-#endif
-
 namespace net {
+
+#if defined(OS_WIN)
+typedef MockSSPILibrary MockAuthLibrary;
+#elif defined(OS_POSIX)
+typedef test::MockGSSAPILibrary MockAuthLibrary;
+#endif
 
 class HttpAuthHandlerNegotiateTest : public PlatformTest {
  public:

@@ -198,7 +198,7 @@ void URLRequestFileJob::SetExtraRequestHeaders(
 void URLRequestFileJob::OnSeekComplete(int64 result) {
 }
 
-void URLRequestFileJob::OnReadComplete(net::IOBuffer* buf, int result) {
+void URLRequestFileJob::OnReadComplete(IOBuffer* buf, int result) {
 }
 
 URLRequestFileJob::~URLRequestFileJob() {
@@ -294,7 +294,7 @@ void URLRequestFileJob::DidSeek(int64 result) {
   NotifyHeadersComplete();
 }
 
-void URLRequestFileJob::DidRead(scoped_refptr<net::IOBuffer> buf, int result) {
+void URLRequestFileJob::DidRead(scoped_refptr<IOBuffer> buf, int result) {
   if (result > 0) {
     SetStatus(URLRequestStatus());  // Clear the IO_PENDING status
     remaining_bytes_ -= result;

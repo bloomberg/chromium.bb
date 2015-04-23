@@ -13,8 +13,8 @@ namespace testing {
 
 MockFileStream::MockFileStream(
     const scoped_refptr<base::TaskRunner>& task_runner)
-    : net::FileStream(task_runner),
-      forced_error_(net::OK),
+    : FileStream(task_runner),
+      forced_error_(OK),
       async_error_(false),
       throttled_(false),
       weak_factory_(this) {
@@ -23,8 +23,8 @@ MockFileStream::MockFileStream(
 MockFileStream::MockFileStream(
     base::File file,
     const scoped_refptr<base::TaskRunner>& task_runner)
-    : net::FileStream(file.Pass(), task_runner),
-      forced_error_(net::OK),
+    : FileStream(file.Pass(), task_runner),
+      forced_error_(OK),
       async_error_(false),
       throttled_(false),
       weak_factory_(this) {
@@ -38,7 +38,7 @@ int MockFileStream::Seek(base::File::Whence whence, int64 offset,
   Int64CompletionCallback wrapped_callback =
       base::Bind(&MockFileStream::DoCallback64,
                  weak_factory_.GetWeakPtr(), callback);
-  if (forced_error_ == net::OK)
+  if (forced_error_ == OK)
     return FileStream::Seek(whence, offset, wrapped_callback);
   return ErrorCallback64(wrapped_callback);
 }
@@ -49,7 +49,7 @@ int MockFileStream::Read(IOBuffer* buf,
   CompletionCallback wrapped_callback = base::Bind(&MockFileStream::DoCallback,
                                                    weak_factory_.GetWeakPtr(),
                                                    callback);
-  if (forced_error_ == net::OK)
+  if (forced_error_ == OK)
     return FileStream::Read(buf, buf_len, wrapped_callback);
   return ErrorCallback(wrapped_callback);
 }
@@ -60,7 +60,7 @@ int MockFileStream::Write(IOBuffer* buf,
   CompletionCallback wrapped_callback = base::Bind(&MockFileStream::DoCallback,
                                                    weak_factory_.GetWeakPtr(),
                                                    callback);
-  if (forced_error_ == net::OK)
+  if (forced_error_ == OK)
     return FileStream::Write(buf, buf_len, wrapped_callback);
   return ErrorCallback(wrapped_callback);
 }
@@ -69,7 +69,7 @@ int MockFileStream::Flush(const CompletionCallback& callback) {
   CompletionCallback wrapped_callback = base::Bind(&MockFileStream::DoCallback,
                                                    weak_factory_.GetWeakPtr(),
                                                    callback);
-  if (forced_error_ == net::OK)
+  if (forced_error_ == OK)
     return FileStream::Flush(wrapped_callback);
   return ErrorCallback(wrapped_callback);
 }
@@ -111,12 +111,12 @@ void MockFileStream::DoCallback64(const Int64CompletionCallback& callback,
 }
 
 int MockFileStream::ErrorCallback(const CompletionCallback& callback) {
-  CHECK_NE(net::OK, forced_error_);
+  CHECK_NE(OK, forced_error_);
   if (async_error_) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, forced_error_));
     clear_forced_error();
-    return net::ERR_IO_PENDING;
+    return ERR_IO_PENDING;
   }
   int ret = forced_error_;
   clear_forced_error();
@@ -124,12 +124,12 @@ int MockFileStream::ErrorCallback(const CompletionCallback& callback) {
 }
 
 int64 MockFileStream::ErrorCallback64(const Int64CompletionCallback& callback) {
-  CHECK_NE(net::OK, forced_error_);
+  CHECK_NE(OK, forced_error_);
   if (async_error_) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, forced_error_));
     clear_forced_error();
-    return net::ERR_IO_PENDING;
+    return ERR_IO_PENDING;
   }
   int64 ret = forced_error_;
   clear_forced_error();

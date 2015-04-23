@@ -15,6 +15,8 @@
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 
+namespace net {
+
 namespace {
 
 TEST(FtpUtilTest, UnixFilePathToVMS) {
@@ -36,7 +38,7 @@ TEST(FtpUtilTest, UnixFilePathToVMS) {
   };
   for (size_t i = 0; i < arraysize(kTestCases); i++) {
     EXPECT_EQ(kTestCases[i].expected_output,
-              net::FtpUtil::UnixFilePathToVMS(kTestCases[i].input))
+              FtpUtil::UnixFilePathToVMS(kTestCases[i].input))
         << kTestCases[i].input;
   }
 }
@@ -69,7 +71,7 @@ TEST(FtpUtilTest, UnixDirectoryPathToVMS) {
   };
   for (size_t i = 0; i < arraysize(kTestCases); i++) {
     EXPECT_EQ(kTestCases[i].expected_output,
-              net::FtpUtil::UnixDirectoryPathToVMS(kTestCases[i].input))
+              FtpUtil::UnixDirectoryPathToVMS(kTestCases[i].input))
         << kTestCases[i].input;
   }
 }
@@ -109,7 +111,7 @@ TEST(FtpUtilTest, VMSPathToUnix) {
   };
   for (size_t i = 0; i < arraysize(kTestCases); i++) {
     EXPECT_EQ(kTestCases[i].expected_output,
-              net::FtpUtil::VMSPathToUnix(kTestCases[i].input))
+              FtpUtil::VMSPathToUnix(kTestCases[i].input))
         << kTestCases[i].input;
   }
 }
@@ -169,7 +171,7 @@ TEST(FtpUtilTest, LsDateListingToTime) {
                                     kTestCases[i].rest));
 
     base::Time time;
-    ASSERT_TRUE(net::FtpUtil::LsDateListingToTime(
+    ASSERT_TRUE(FtpUtil::LsDateListingToTime(
         UTF8ToUTF16(kTestCases[i].month), UTF8ToUTF16(kTestCases[i].day),
         UTF8ToUTF16(kTestCases[i].rest), mock_current_time, &time));
 
@@ -209,10 +211,9 @@ TEST(FtpUtilTest, WindowsDateListingToTime) {
                                     kTestCases[i].date, kTestCases[i].time));
 
     base::Time time;
-    ASSERT_TRUE(net::FtpUtil::WindowsDateListingToTime(
-                    UTF8ToUTF16(kTestCases[i].date),
-                    UTF8ToUTF16(kTestCases[i].time),
-                    &time));
+    ASSERT_TRUE(FtpUtil::WindowsDateListingToTime(
+        UTF8ToUTF16(kTestCases[i].date), UTF8ToUTF16(kTestCases[i].time),
+        &time));
 
     base::Time::Exploded time_exploded;
     time.LocalExplode(&time_exploded);
@@ -248,9 +249,11 @@ TEST(FtpUtilTest, GetStringPartAfterColumns) {
                                     kTestCases[i].text, kTestCases[i].column));
 
     EXPECT_EQ(ASCIIToUTF16(kTestCases[i].expected_result),
-              net::FtpUtil::GetStringPartAfterColumns(
+              FtpUtil::GetStringPartAfterColumns(
                   ASCIIToUTF16(kTestCases[i].text), kTestCases[i].column));
   }
 }
 
 }  // namespace
+
+}  // namespace net

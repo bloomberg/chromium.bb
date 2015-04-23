@@ -47,7 +47,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
   // You may only call Fetch() once on a given instance of
   // DhcpProxyScriptAdapterFetcher.
   virtual void Fetch(const std::string& adapter_name,
-                     const net::CompletionCallback& callback);
+                     const CompletionCallback& callback);
 
   // Cancels the fetch on this adapter.
   virtual void Cancel();
@@ -170,7 +170,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
 
   // Callback to let our client know we're done. Invalid in states
   // START, FINISH and CANCEL.
-  net::CompletionCallback callback_;
+  CompletionCallback callback_;
 
   // Fetcher to retrieve PAC files once URL is known.
   scoped_ptr<ProxyScriptFetcher> script_fetcher_;

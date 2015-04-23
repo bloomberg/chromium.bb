@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE ProxyResolver {
   // |*request| is written to, and can be passed to CancelRequest().
   virtual int GetProxyForURL(const GURL& url,
                              ProxyInfo* results,
-                             const net::CompletionCallback& callback,
+                             const CompletionCallback& callback,
                              RequestHandle* request,
                              const BoundNetLog& net_log) = 0;
 
@@ -69,7 +69,7 @@ class NET_EXPORT_PRIVATE ProxyResolver {
   // the result through |callback|.
   virtual int SetPacScript(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
-      const net::CompletionCallback& callback) = 0;
+      const CompletionCallback& callback) = 0;
 
  private:
   const bool expects_pac_bytes_;

@@ -25,7 +25,7 @@ class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient,
   Job(ProxyResolverMojo* resolver,
       const GURL& url,
       ProxyInfo* results,
-      const net::CompletionCallback& callback);
+      const CompletionCallback& callback);
   ~Job() override;
 
   // Cancels the job and prevents the callback from being run.
@@ -47,7 +47,7 @@ class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient,
   ProxyResolverMojo* resolver_;
   const GURL url_;
   ProxyInfo* results_;
-  net::CompletionCallback callback_;
+  CompletionCallback callback_;
   LoadState load_state_ = LOAD_STATE_RESOLVING_PROXY_FOR_URL;
 
   base::ThreadChecker thread_checker_;
@@ -57,7 +57,7 @@ class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient,
 ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
                             const GURL& url,
                             ProxyInfo* results,
-                            const net::CompletionCallback& callback)
+                            const CompletionCallback& callback)
     : resolver_(resolver),
       url_(url),
       results_(results),
@@ -131,7 +131,7 @@ void ProxyResolverMojo::CancelSetPacScript() {
 
 int ProxyResolverMojo::SetPacScript(
     const scoped_refptr<ProxyResolverScriptData>& pac_script,
-    const net::CompletionCallback& callback) {
+    const CompletionCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(set_pac_script_callback_.IsCancelled());
   DCHECK(!callback.is_null());
@@ -157,7 +157,7 @@ int ProxyResolverMojo::SetPacScript(
 
 void ProxyResolverMojo::OnSetPacScriptDone(
     const scoped_refptr<ProxyResolverScriptData>& pac_script,
-    const net::CompletionCallback& callback,
+    const CompletionCallback& callback,
     int32_t result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!set_pac_script_callback_.IsCancelled());
@@ -225,7 +225,7 @@ void ProxyResolverMojo::RemoveJob(Job* job) {
 
 int ProxyResolverMojo::GetProxyForURL(const GURL& url,
                                       ProxyInfo* results,
-                                      const net::CompletionCallback& callback,
+                                      const CompletionCallback& callback,
                                       RequestHandle* request,
                                       const BoundNetLog& net_log) {
   DCHECK(thread_checker_.CalledOnValidThread());

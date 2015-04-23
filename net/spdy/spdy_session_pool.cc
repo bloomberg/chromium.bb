@@ -144,7 +144,7 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
   }
 
   // Look up the key's from the resolver's cache.
-  net::HostResolver::RequestInfo resolve_info(key.host_port_pair());
+  HostResolver::RequestInfo resolve_info(key.host_port_pair());
   AddressList addresses;
   int rv = resolver_->ResolveFromCache(resolve_info, &addresses, net_log);
   DCHECK_NE(rv, ERR_IO_PENDING);
@@ -234,7 +234,7 @@ void SpdySessionPool::RemoveUnavailableSession(
 // handlers, it doesn't suffice to simply increment the iterator
 // before closing.
 
-void SpdySessionPool::CloseCurrentSessions(net::Error error) {
+void SpdySessionPool::CloseCurrentSessions(Error error) {
   CloseCurrentSessionsHelper(error, "Closing current sessions.",
                              false /* idle_only */);
 }

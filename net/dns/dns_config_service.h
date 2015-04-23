@@ -50,7 +50,7 @@ class NET_EXPORT_PRIVATE NameServerClassifier {
   ~NameServerClassifier();
 
   NameServersType GetNameServersType(
-      const std::vector<net::IPEndPoint>& nameservers) const;
+      const std::vector<IPEndPoint>& nameservers) const;
 
  private:
   struct NameServerTypeRule;

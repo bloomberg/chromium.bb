@@ -1632,14 +1632,13 @@ TEST_P(SpdySessionTest, Initialize) {
   // Flush the read completion task.
   base::MessageLoop::current()->RunUntilIdle();
 
-  net::TestNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged TYPE_HTTP2_SESSION_INITIALIZED correctly.
-  int pos = net::ExpectLogContainsSomewhere(
-      entries, 0, net::NetLog::TYPE_HTTP2_SESSION_INITIALIZED,
-      net::NetLog::PHASE_NONE);
+  int pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_HTTP2_SESSION_INITIALIZED, NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
 
   TestNetLog::CapturedEntry entry = entries[pos];
@@ -1678,14 +1677,13 @@ TEST_P(SpdySessionTest, NetLogOnSessionGoaway) {
   EXPECT_TRUE(session == NULL);
 
   // Check that the NetLog was filled reasonably.
-  net::TestNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
-  int pos = net::ExpectLogContainsSomewhere(
-      entries, 0, net::NetLog::TYPE_HTTP2_SESSION_CLOSE,
-      net::NetLog::PHASE_NONE);
+  int pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_HTTP2_SESSION_CLOSE, NetLog::PHASE_NONE);
 
   if (pos < static_cast<int>(entries.size())) {
     TestNetLog::CapturedEntry entry = entries[pos];
@@ -1723,14 +1721,13 @@ TEST_P(SpdySessionTest, NetLogOnSessionEOF) {
   EXPECT_TRUE(session == NULL);
 
   // Check that the NetLog was filled reasonably.
-  net::TestNetLog::CapturedEntryList entries;
+  TestNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
-  int pos = net::ExpectLogContainsSomewhere(
-      entries, 0, net::NetLog::TYPE_HTTP2_SESSION_CLOSE,
-      net::NetLog::PHASE_NONE);
+  int pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_HTTP2_SESSION_CLOSE, NetLog::PHASE_NONE);
 
   if (pos < static_cast<int>(entries.size())) {
     TestNetLog::CapturedEntry entry = entries[pos];
@@ -2702,7 +2699,7 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
   const int kPayloadSize =
       kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
   TestDataStream test_stream;
-  scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(kPayloadSize));
+  scoped_refptr<IOBuffer> payload(new IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
   test_stream.GetBytes(payload_data, kPayloadSize);
 
@@ -2793,7 +2790,7 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   const int kPayloadSize =
       kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
   TestDataStream test_stream;
-  scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(kPayloadSize));
+  scoped_refptr<IOBuffer> payload(new IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
   test_stream.GetBytes(payload_data, kPayloadSize);
 
@@ -2891,16 +2888,14 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   TestDataStream test_stream;
   const int kEightKPayloadSize =
       kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
-  scoped_refptr<net::IOBuffer> eightk_payload(
-      new net::IOBuffer(kEightKPayloadSize));
+  scoped_refptr<IOBuffer> eightk_payload(new IOBuffer(kEightKPayloadSize));
   char* eightk_payload_data = eightk_payload->data();
   test_stream.GetBytes(eightk_payload_data, kEightKPayloadSize);
 
   // Build buffer of 2k size.
   TestDataStream test_stream2;
   const int kTwoKPayloadSize = kEightKPayloadSize - 6 * 1024;
-  scoped_refptr<net::IOBuffer> twok_payload(
-      new net::IOBuffer(kTwoKPayloadSize));
+  scoped_refptr<IOBuffer> twok_payload(new IOBuffer(kTwoKPayloadSize));
   char* twok_payload_data = twok_payload->data();
   test_stream2.GetBytes(twok_payload_data, kTwoKPayloadSize);
 

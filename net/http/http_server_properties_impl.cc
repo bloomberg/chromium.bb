@@ -185,7 +185,7 @@ void HttpServerPropertiesImpl::SetSupportsSpdy(
 }
 
 bool HttpServerPropertiesImpl::RequiresHTTP11(
-    const net::HostPortPair& host_port_pair) {
+    const HostPortPair& host_port_pair) {
   DCHECK(CalledOnValidThread());
   if (host_port_pair.host().empty())
     return false;
@@ -194,7 +194,7 @@ bool HttpServerPropertiesImpl::RequiresHTTP11(
 }
 
 void HttpServerPropertiesImpl::SetHTTP11Required(
-    const net::HostPortPair& host_port_pair) {
+    const HostPortPair& host_port_pair) {
   DCHECK(CalledOnValidThread());
   if (host_port_pair.host().empty())
     return;

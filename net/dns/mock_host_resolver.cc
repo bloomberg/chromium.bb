@@ -379,7 +379,7 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
           return ERR_NAME_NOT_RESOLVED;
         case Rule::kResolverTypeSystem:
 #if defined(OS_WIN)
-          net::EnsureWinsockInit();
+          EnsureWinsockInit();
 #endif
           return SystemHostResolverCall(effective_host,
                                         address_family,

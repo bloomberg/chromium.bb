@@ -110,7 +110,7 @@ class SpdyProxyClientSocketTest
     data_->Run();
   }
 
-  void CloseSpdySession(net::Error error, const std::string& description) {
+  void CloseSpdySession(Error error, const std::string& description) {
     spdy_session_->CloseSessionOnError(error, description);
   }
 
@@ -539,7 +539,7 @@ TEST_P(SpdyProxyClientSocketTest, GetPeerAddressReturnsCorrectValues) {
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
 
-  net::IPEndPoint addr;
+  IPEndPoint addr;
   EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED, sock_->GetPeerAddress(&addr));
 
   AssertConnectSucceeds();

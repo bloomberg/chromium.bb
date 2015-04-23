@@ -75,9 +75,7 @@ class CertDatabaseNSSTest : public testing::Test {
   }
 
  protected:
-  net::CryptoModule* GetPublicModule() {
-    return public_module_.get();
-  }
+  CryptoModule* GetPublicModule() { return public_module_.get(); }
 
   static std::string ReadTestFile(const std::string& name) {
     std::string result;
@@ -116,7 +114,7 @@ class CertDatabaseNSSTest : public testing::Test {
   scoped_ptr<NSSCertDatabase> cert_db_;
   const CertificateList empty_cert_list_;
   crypto::ScopedTestNSSDB test_nssdb_;
-  scoped_refptr<net::CryptoModule> public_module_;
+  scoped_refptr<CryptoModule> public_module_;
 };
 
 TEST_F(CertDatabaseNSSTest, ListCertsSync) {

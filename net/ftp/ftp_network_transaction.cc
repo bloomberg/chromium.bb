@@ -25,11 +25,13 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/stream_socket.h"
 
+namespace net {
+
+namespace {
+
 const char kCRLF[] = "\r\n";
 
 const int kCtrlBufLen = 1024;
-
-namespace {
 
 // Returns true if |input| can be safely used as a part of FTP command.
 bool IsValidFTPCommandString(const std::string& input) {
@@ -94,21 +96,21 @@ ErrorClass GetErrorClass(int response_code) {
 int GetNetErrorCodeForFtpResponseCode(int response_code) {
   switch (response_code) {
     case 421:
-      return net::ERR_FTP_SERVICE_UNAVAILABLE;
+      return ERR_FTP_SERVICE_UNAVAILABLE;
     case 426:
-      return net::ERR_FTP_TRANSFER_ABORTED;
+      return ERR_FTP_TRANSFER_ABORTED;
     case 450:
-      return net::ERR_FTP_FILE_BUSY;
+      return ERR_FTP_FILE_BUSY;
     case 500:
     case 501:
-      return net::ERR_FTP_SYNTAX_ERROR;
+      return ERR_FTP_SYNTAX_ERROR;
     case 502:
     case 504:
-      return net::ERR_FTP_COMMAND_NOT_SUPPORTED;
+      return ERR_FTP_COMMAND_NOT_SUPPORTED;
     case 503:
-      return net::ERR_FTP_BAD_COMMAND_SEQUENCE;
+      return ERR_FTP_BAD_COMMAND_SEQUENCE;
     default:
-      return net::ERR_FTP_FAILED;
+      return ERR_FTP_FAILED;
   }
 }
 
@@ -116,8 +118,7 @@ int GetNetErrorCodeForFtpResponseCode(int response_code) {
 //   The text returned in response to the EPSV command MUST be:
 //     <some text> (<d><d><d><tcp-port><d>)
 //   <d> is a delimiter character, ideally to be |
-bool ExtractPortFromEPSVResponse(const net::FtpCtrlResponse& response,
-                                 int* port) {
+bool ExtractPortFromEPSVResponse(const FtpCtrlResponse& response, int* port) {
   if (response.lines.size() != 1)
     return false;
   const char* ptr = response.lines[0].c_str();
@@ -146,8 +147,7 @@ bool ExtractPortFromEPSVResponse(const net::FtpCtrlResponse& response,
 // 127,0,0,1,23,21  IP address and port without ().
 //
 // See RFC 959, Section 4.1.2
-bool ExtractPortFromPASVResponse(const net::FtpCtrlResponse& response,
-                                 int* port) {
+bool ExtractPortFromPASVResponse(const FtpCtrlResponse& response, int* port) {
   if (response.lines.size() != 1)
     return false;
 
@@ -199,8 +199,6 @@ bool ExtractPortFromPASVResponse(const net::FtpCtrlResponse& response,
 }
 
 }  // namespace
-
-namespace net {
 
 FtpNetworkTransaction::FtpNetworkTransaction(
     FtpNetworkSession* session,
@@ -492,7 +490,7 @@ std::string FtpNetworkTransaction::GetRequestPathForFtpCommand(
                                       UnescapeRule::URL_SPECIAL_CHARS;
   // This may unescape to non-ASCII characters, but we allow that. See the
   // comment for IsValidFTPCommandString.
-  path = net::UnescapeURLComponent(path, unescape_rules);
+  path = UnescapeURLComponent(path, unescape_rules);
 
   if (system_type_ == SYSTEM_TYPE_VMS) {
     if (is_directory)

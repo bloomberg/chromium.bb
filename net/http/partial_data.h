@@ -96,13 +96,17 @@ class PartialData {
   // cache that provides the right arguments for the current range. When the IO
   // operation completes, OnCacheReadCompleted() must be called with the result
   // of the operation.
-  int CacheRead(disk_cache::Entry* entry, IOBuffer* data, int data_len,
-                const net::CompletionCallback& callback);
+  int CacheRead(disk_cache::Entry* entry,
+                IOBuffer* data,
+                int data_len,
+                const CompletionCallback& callback);
 
   // Writes |data_len| bytes to cache. This is basically a wrapper around the
   // API of the cache that provides the right arguments for the current range.
-  int CacheWrite(disk_cache::Entry* entry, IOBuffer* data, int data_len,
-                 const net::CompletionCallback& callback);
+  int CacheWrite(disk_cache::Entry* entry,
+                 IOBuffer* data,
+                 int data_len,
+                 const CompletionCallback& callback);
 
   // This method should be called when CacheRead() finishes the read, to update
   // the internal state about the current range.

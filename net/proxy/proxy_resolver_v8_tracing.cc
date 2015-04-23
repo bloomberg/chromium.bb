@@ -174,8 +174,10 @@ class ProxyResolverV8Tracing::Job
   bool GetDnsFromLocalCache(const std::string& host, ResolveDnsOperation op,
                             std::string* output, bool* return_value);
 
-  void SaveDnsToLocalCache(const std::string& host, ResolveDnsOperation op,
-                           int net_error, const net::AddressList& addresses);
+  void SaveDnsToLocalCache(const std::string& host,
+                           ResolveDnsOperation op,
+                           int net_error,
+                           const AddressList& addresses);
 
   // Builds a RequestInfo to service the specified PAC DNS operation.
   static HostResolver::RequestInfo MakeDnsRequestInfo(const std::string& host,
@@ -782,7 +784,7 @@ void ProxyResolverV8Tracing::Job::SaveDnsToLocalCache(
     const std::string& host,
     ResolveDnsOperation op,
     int net_error,
-    const net::AddressList& addresses) {
+    const AddressList& addresses) {
   CheckIsOnOriginThread();
 
   // Serialize the result into a string to save to the cache.

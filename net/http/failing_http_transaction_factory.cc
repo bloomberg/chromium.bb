@@ -51,7 +51,7 @@ class FailingHttpTransaction : public HttpTransaction {
   const HttpResponseInfo* GetResponseInfo() const override;
   LoadState GetLoadState() const override;
   UploadProgress GetUploadProgress() const override;
-  void SetQuicServerInfo(net::QuicServerInfo* quic_server_info) override;
+  void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
   void SetPriority(RequestPriority priority) override;
   void SetWebSocketHandshakeStreamCreateHelper(
@@ -135,7 +135,8 @@ UploadProgress FailingHttpTransaction::GetUploadProgress() const  {
 }
 
 void FailingHttpTransaction::SetQuicServerInfo(
-    net::QuicServerInfo* quic_server_info) {}
+    QuicServerInfo* quic_server_info) {
+}
 
 bool FailingHttpTransaction::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const  {

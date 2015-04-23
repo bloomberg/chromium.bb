@@ -19,10 +19,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 
-using net::HashValue;
-using net::HashValueTag;
-using net::HashValueVector;
-using net::TransportSecurityState;
+namespace net {
 
 namespace {
 
@@ -91,9 +88,6 @@ std::string LoadState(const base::FilePath& path) {
 
 }  // namespace
 
-
-namespace net {
-
 TransportSecurityPersister::TransportSecurityPersister(
     TransportSecurityState* state,
     const base::FilePath& profile_path,
@@ -108,9 +102,8 @@ TransportSecurityPersister::TransportSecurityPersister(
   transport_security_state_->SetDelegate(this);
 
   base::PostTaskAndReplyWithResult(
-      background_runner_.get(),
-      FROM_HERE,
-      base::Bind(&::LoadState, writer_.path()),
+      background_runner_.get(), FROM_HERE,
+      base::Bind(&LoadState, writer_.path()),
       base::Bind(&TransportSecurityPersister::CompleteLoad,
                  weak_ptr_factory_.GetWeakPtr()));
 }

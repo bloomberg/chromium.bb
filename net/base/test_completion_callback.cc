@@ -72,7 +72,7 @@ ReleaseBufferCompletionCallback::~ReleaseBufferCompletionCallback() {
 
 void ReleaseBufferCompletionCallback::SetResult(int result) {
   if (!buffer_->HasOneRef())
-    result = net::ERR_FAILED;
+    result = ERR_FAILED;
   TestCompletionCallback::SetResult(result);
 }
 

@@ -21,6 +21,10 @@
 #include "net/proxy/proxy_resolver_mac.h"
 #endif
 
+namespace net {
+
+namespace {
+
 // This class holds the URL to use for resolving, and the expected result.
 // We track the expected result in order to make sure the performance
 // test is actually resolving URLs properly, otherwise the perf numbers
@@ -81,16 +85,13 @@ const int kNumIterations = 500;
 class PacPerfSuiteRunner {
  public:
   // |resolver_name| is the label used when logging the results.
-  PacPerfSuiteRunner(net::ProxyResolver* resolver,
-                     const std::string& resolver_name)
+  PacPerfSuiteRunner(ProxyResolver* resolver, const std::string& resolver_name)
       : resolver_(resolver),
         resolver_name_(resolver_name),
-        test_server_(
-            net::SpawnedTestServer::TYPE_HTTP,
-            net::SpawnedTestServer::kLocalhost,
-            base::FilePath(
-                FILE_PATH_LITERAL("net/data/proxy_resolver_perftest"))) {
-  }
+        test_server_(SpawnedTestServer::TYPE_HTTP,
+                     SpawnedTestServer::kLocalhost,
+                     base::FilePath(FILE_PATH_LITERAL(
+                         "net/data/proxy_resolver_perftest"))) {}
 
   void RunAllTests() {
     ASSERT_TRUE(test_server_.Start());
@@ -110,9 +111,8 @@ class PacPerfSuiteRunner {
       GURL pac_url =
           test_server_.GetURL(std::string("files/") + script_name);
       int rv = resolver_->SetPacScript(
-          net::ProxyResolverScriptData::FromURL(pac_url),
-          net::CompletionCallback());
-      EXPECT_EQ(net::OK, rv);
+          ProxyResolverScriptData::FromURL(pac_url), CompletionCallback());
+      EXPECT_EQ(OK, rv);
     } else {
       LoadPacScriptIntoResolver(script_name);
     }
@@ -121,11 +121,11 @@ class PacPerfSuiteRunner {
     // resolvers, the first resolve will be slow since it has to download
     // the PAC script.
     {
-      net::ProxyInfo proxy_info;
-      int result = resolver_->GetProxyForURL(
-          GURL("http://www.warmup.com"), &proxy_info, net::CompletionCallback(),
-          NULL, net::BoundNetLog());
-      ASSERT_EQ(net::OK, result);
+      ProxyInfo proxy_info;
+      int result =
+          resolver_->GetProxyForURL(GURL("http://www.warmup.com"), &proxy_info,
+                                    CompletionCallback(), NULL, BoundNetLog());
+      ASSERT_EQ(OK, result);
     }
 
     // Start the perf timer.
@@ -137,14 +137,14 @@ class PacPerfSuiteRunner {
       const PacQuery& query = queries[i % queries_len];
 
       // Resolve.
-      net::ProxyInfo proxy_info;
-      int result = resolver_->GetProxyForURL(
-          GURL(query.query_url), &proxy_info, net::CompletionCallback(), NULL,
-          net::BoundNetLog());
+      ProxyInfo proxy_info;
+      int result =
+          resolver_->GetProxyForURL(GURL(query.query_url), &proxy_info,
+                                    CompletionCallback(), NULL, BoundNetLog());
 
       // Check that the result was correct. Note that ToPacString() and
       // ASSERT_EQ() are fast, so they won't skew the results.
-      ASSERT_EQ(net::OK, result);
+      ASSERT_EQ(OK, result);
       ASSERT_EQ(query.expected_result, proxy_info.ToPacString());
     }
 
@@ -171,31 +171,30 @@ class PacPerfSuiteRunner {
 
     // Load the PAC script into the ProxyResolver.
     int rv = resolver_->SetPacScript(
-        net::ProxyResolverScriptData::FromUTF8(file_contents),
-        net::CompletionCallback());
-    EXPECT_EQ(net::OK, rv);
+        ProxyResolverScriptData::FromUTF8(file_contents), CompletionCallback());
+    EXPECT_EQ(OK, rv);
   }
 
-  net::ProxyResolver* resolver_;
+  ProxyResolver* resolver_;
   std::string resolver_name_;
-  net::SpawnedTestServer test_server_;
+  SpawnedTestServer test_server_;
 };
 
 #if defined(OS_WIN)
 TEST(ProxyResolverPerfTest, ProxyResolverWinHttp) {
-  net::ProxyResolverWinHttp resolver;
+  ProxyResolverWinHttp resolver;
   PacPerfSuiteRunner runner(&resolver, "ProxyResolverWinHttp");
   runner.RunAllTests();
 }
 #elif defined(OS_MACOSX)
 TEST(ProxyResolverPerfTest, ProxyResolverMac) {
-  net::ProxyResolverMac resolver;
+  ProxyResolverMac resolver;
   PacPerfSuiteRunner runner(&resolver, "ProxyResolverMac");
   runner.RunAllTests();
 }
 #endif
 
-class MockJSBindings : public net::ProxyResolverV8::JSBindings {
+class MockJSBindings : public ProxyResolverV8::JSBindings {
  public:
   MockJSBindings() {}
 
@@ -216,8 +215,12 @@ class MockJSBindings : public net::ProxyResolverV8::JSBindings {
 
 TEST(ProxyResolverPerfTest, ProxyResolverV8) {
   MockJSBindings js_bindings;
-  net::ProxyResolverV8 resolver;
+  ProxyResolverV8 resolver;
   resolver.set_js_bindings(&js_bindings);
   PacPerfSuiteRunner runner(&resolver, "ProxyResolverV8");
   runner.RunAllTests();
 }
+
+}  // namespace
+
+}  // namespace net

@@ -1378,8 +1378,8 @@ CertificateMimeType GetCertificateMimeTypeForMimeType(
   // except on Android.
   for (size_t i = 0; i < arraysize(supported_certificate_types); ++i) {
     if (base::strcasecmp(mime_type.c_str(),
-                         net::supported_certificate_types[i].mime_type) == 0) {
-      return net::supported_certificate_types[i].cert_type;
+                         supported_certificate_types[i].mime_type) == 0) {
+      return supported_certificate_types[i].cert_type;
     }
   }
   return CERTIFICATE_MIME_TYPE_UNKNOWN;

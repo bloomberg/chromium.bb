@@ -20,7 +20,7 @@ namespace net {
 
 namespace {
 
-class TestCertFilter : public net::ClientCertStoreChromeOS::CertFilter {
+class TestCertFilter : public ClientCertStoreChromeOS::CertFilter {
  public:
   explicit TestCertFilter(bool init_finished)
       : init_finished_(init_finished), init_called_(false) {}
@@ -36,7 +36,7 @@ class TestCertFilter : public net::ClientCertStoreChromeOS::CertFilter {
   }
 
   bool IsCertAllowed(
-      const scoped_refptr<net::X509Certificate>& cert) const override {
+      const scoped_refptr<X509Certificate>& cert) const override {
     if (not_allowed_cert_.get() && cert->Equals(not_allowed_cert_.get()))
       return false;
     return true;

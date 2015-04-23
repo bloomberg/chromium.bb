@@ -104,8 +104,7 @@ std::string CanonPathWithString(const GURL& url,
 
 // Compares cookies using name, domain and path, so that "equivalent" cookies
 // (per RFC 2965) are equal to each other.
-int PartialCookieOrdering(const net::CanonicalCookie& a,
-                          const net::CanonicalCookie& b) {
+int PartialCookieOrdering(const CanonicalCookie& a, const CanonicalCookie& b) {
   int diff = a.Name().compare(b.Name());
   if (diff != 0)
     return diff;

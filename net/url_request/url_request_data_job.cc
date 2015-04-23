@@ -18,10 +18,10 @@ int URLRequestDataJob::BuildResponse(const GURL& url,
                                      std::string* charset,
                                      std::string* data,
                                      HttpResponseHeaders* headers) {
-  if (!net::DataURL::Parse(url, mime_type, charset, data))
-    return net::ERR_INVALID_URL;
+  if (!DataURL::Parse(url, mime_type, charset, data))
+    return ERR_INVALID_URL;
 
-  // |mime_type| set by net::DataURL::Parse() is guaranteed to be in
+  // |mime_type| set by DataURL::Parse() is guaranteed to be in
   //     token "/" token
   // form. |charset| is also guaranteed to be a token.
 
@@ -40,7 +40,7 @@ int URLRequestDataJob::BuildResponse(const GURL& url,
     headers->AddHeader("Access-Control-Allow-Origin: *");
   }
 
-  return net::OK;
+  return OK;
 }
 
 URLRequestDataJob::URLRequestDataJob(

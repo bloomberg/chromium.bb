@@ -660,7 +660,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   // End of the call started in OnStartCompleted.
   OnCallToDelegateComplete();
 
-  if (result != net::OK) {
+  if (result != OK) {
     std::string source("delegate");
     request_->net_log().AddEvent(NetLog::TYPE_CANCELLED,
                                  NetLog::StringCallback("source", &source));
@@ -708,11 +708,9 @@ void URLRequestHttpJob::SaveNextCookie() {
     options.set_include_httponly();
     options.set_server_time(response_date_);
 
-    net::CookieStore::SetCookiesCallback callback(
-        base::Bind(&URLRequestHttpJob::OnCookieSaved,
-                   weak_factory_.GetWeakPtr(),
-                   save_next_cookie_running,
-                   callback_pending));
+    CookieStore::SetCookiesCallback callback(base::Bind(
+        &URLRequestHttpJob::OnCookieSaved, weak_factory_.GetWeakPtr(),
+        save_next_cookie_running, callback_pending));
 
     // Loop through the cookies as long as SetCookieWithOptionsAsync completes
     // synchronously.
@@ -884,8 +882,8 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
           headers.get(),
           &override_response_headers_,
           &allowed_unsafe_redirect_url_);
-      if (error != net::OK) {
-        if (error == net::ERR_IO_PENDING) {
+      if (error != OK) {
+        if (error == ERR_IO_PENDING) {
           awaiting_callback_ = true;
         } else {
           std::string source("delegate");
@@ -899,7 +897,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       }
     }
 
-    SaveCookiesAndNotifyHeadersComplete(net::OK);
+    SaveCookiesAndNotifyHeadersComplete(OK);
   } else if (IsCertificateError(result)) {
     // We encountered an SSL certificate error.
     if (result == ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY ||
@@ -1255,8 +1253,8 @@ bool URLRequestHttpJob::ShouldFixMismatchedContentLength(int rv) const {
   // the uncompressed size. Although this violates the HTTP spec we want to
   // support it (as IE and FireFox do), but *only* for an exact match.
   // See http://crbug.com/79694.
-  if (rv == net::ERR_CONTENT_LENGTH_MISMATCH ||
-      rv == net::ERR_INCOMPLETE_CHUNKED_ENCODING) {
+  if (rv == ERR_CONTENT_LENGTH_MISMATCH ||
+      rv == ERR_INCOMPLETE_CHUNKED_ENCODING) {
     if (request_ && request_->response_headers()) {
       int64 expected_length = request_->response_headers()->GetContentLength();
       VLOG(1) << __FUNCTION__ << "() "

@@ -36,11 +36,11 @@
 
 using base::ASCIIToUTF16;
 
-namespace net {
-
 // TODO(eroman):
 //   - Test canceling an outstanding request.
 //   - Test deleting ProxyScriptFetcher while a request is in progress.
+
+namespace net {
 
 namespace {
 
@@ -172,7 +172,7 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
     return true;
   }
 
-  bool OnCanAccessFile(const net::URLRequest& request,
+  bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& path) const override {
     return true;
   }
@@ -183,13 +183,11 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
-}  // namespace
-
 class ProxyScriptFetcherImplTest : public PlatformTest {
  public:
   ProxyScriptFetcherImplTest()
       : test_server_(SpawnedTestServer::TYPE_HTTP,
-                     net::SpawnedTestServer::kLocalhost,
+                     SpawnedTestServer::kLocalhost,
                      base::FilePath(kDocRoot)) {
     context_.set_network_delegate(&network_delegate_);
   }
@@ -481,5 +479,7 @@ TEST_F(ProxyScriptFetcherImplTest, DataURLs) {
     EXPECT_EQ(ERR_FAILED, result);
   }
 }
+
+}  // namespace
 
 }  // namespace net

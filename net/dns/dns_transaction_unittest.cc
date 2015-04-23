@@ -187,8 +187,8 @@ class TestSocketFactory : public MockClientSocketFactory {
   scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
-      net::NetLog* net_log,
-      const net::NetLog::Source& source) override {
+      NetLog* net_log,
+      const NetLog::Source& source) override {
     if (fail_next_socket_) {
       fail_next_socket_ = false;
       return scoped_ptr<DatagramClientSocket>(

@@ -8,11 +8,12 @@
 #include "base/time/tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace net {
+
 namespace {
 
 using base::TimeDelta;
 using base::TimeTicks;
-using net::BackoffEntry;
 
 BackoffEntry::Policy base_policy = { 0, 1000, 2.0, 0.0, 20000, 2000, false };
 
@@ -311,3 +312,5 @@ TEST(BackoffEntryTest, OverflowProtection) {
 }
 
 }  // namespace
+
+}  // namespace net

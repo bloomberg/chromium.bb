@@ -136,7 +136,7 @@ class CertNetFetcherImplTest : public PlatformTest {
  public:
   CertNetFetcherImplTest()
       : test_server_(SpawnedTestServer::TYPE_HTTP,
-                     net::SpawnedTestServer::kLocalhost,
+                     SpawnedTestServer::kLocalhost,
                      base::FilePath(kDocRoot)) {
     context_.set_network_delegate(&network_delegate_);
   }

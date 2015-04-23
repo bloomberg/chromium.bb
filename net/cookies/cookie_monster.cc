@@ -165,15 +165,14 @@ bool LRACookieSorter(const CookieMonster::CookieMap::iterator& it1,
 
 // Compare cookies using name, domain and path, so that "equivalent" cookies
 // (per RFC 2965) are equal to each other.
-bool PartialDiffCookieSorter(const net::CanonicalCookie& a,
-                             const net::CanonicalCookie& b) {
+bool PartialDiffCookieSorter(const CanonicalCookie& a,
+                             const CanonicalCookie& b) {
   return a.PartialCompare(b);
 }
 
 // This is a stricter ordering than PartialDiffCookieOrdering, where all fields
 // are used.
-bool FullDiffCookieSorter(const net::CanonicalCookie& a,
-                          const net::CanonicalCookie& b) {
+bool FullDiffCookieSorter(const CanonicalCookie& a, const CanonicalCookie& b) {
   return a.FullCompare(b);
 }
 
@@ -1164,10 +1163,10 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
 bool CookieMonster::ImportCookies(const CookieList& list) {
   base::AutoLock autolock(lock_);
   InitIfNecessary();
-  for (net::CookieList::const_iterator iter = list.begin(); iter != list.end();
+  for (CookieList::const_iterator iter = list.begin(); iter != list.end();
        ++iter) {
     scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(*iter));
-    net::CookieOptions options;
+    CookieOptions options;
     options.set_include_httponly();
     options.set_include_first_party_only();
     if (!SetCanonicalCookie(&cookie, cookie->CreationDate(), options))
@@ -1930,7 +1929,7 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
 bool CookieMonster::SetCanonicalCookies(const CookieList& list) {
   base::AutoLock autolock(lock_);
 
-  net::CookieOptions options;
+  CookieOptions options;
   options.set_include_httponly();
 
   for (CookieList::const_iterator it = list.begin(); it != list.end(); ++it) {

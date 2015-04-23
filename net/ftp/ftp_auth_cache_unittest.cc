@@ -12,7 +12,8 @@
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
-using net::FtpAuthCache;
+
+namespace net {
 
 namespace {
 
@@ -40,7 +41,7 @@ TEST(FtpAuthCacheTest, LookupAddRemove) {
   EXPECT_TRUE(cache.Lookup(origin1) == NULL);
 
   // Add entry for origin1.
-  cache.Add(origin1, net::AuthCredentials(kUsername1, kPassword1));
+  cache.Add(origin1, AuthCredentials(kUsername1, kPassword1));
   FtpAuthCache::Entry* entry1 = cache.Lookup(origin1);
   ASSERT_TRUE(entry1);
   EXPECT_EQ(origin1, entry1->origin);
@@ -48,7 +49,7 @@ TEST(FtpAuthCacheTest, LookupAddRemove) {
   EXPECT_EQ(kPassword1, entry1->credentials.password());
 
   // Add an entry for origin2.
-  cache.Add(origin2, net::AuthCredentials(kUsername2, kPassword2));
+  cache.Add(origin2, AuthCredentials(kUsername2, kPassword2));
   FtpAuthCache::Entry* entry2 = cache.Lookup(origin2);
   ASSERT_TRUE(entry2);
   EXPECT_EQ(origin2, entry2->origin);
@@ -59,7 +60,7 @@ TEST(FtpAuthCacheTest, LookupAddRemove) {
   EXPECT_EQ(entry1, cache.Lookup(origin1));
 
   // Overwrite the entry for origin1.
-  cache.Add(origin1, net::AuthCredentials(kUsername3, kPassword3));
+  cache.Add(origin1, AuthCredentials(kUsername3, kPassword3));
   FtpAuthCache::Entry* entry3 = cache.Lookup(origin1);
   ASSERT_TRUE(entry3);
   EXPECT_EQ(origin1, entry3->origin);
@@ -67,11 +68,11 @@ TEST(FtpAuthCacheTest, LookupAddRemove) {
   EXPECT_EQ(kPassword3, entry3->credentials.password());
 
   // Remove entry of origin1.
-  cache.Remove(origin1, net::AuthCredentials(kUsername3, kPassword3));
+  cache.Remove(origin1, AuthCredentials(kUsername3, kPassword3));
   EXPECT_TRUE(cache.Lookup(origin1) == NULL);
 
   // Remove non-existent entry.
-  cache.Remove(origin1, net::AuthCredentials(kUsername3, kPassword3));
+  cache.Remove(origin1, AuthCredentials(kUsername3, kPassword3));
   EXPECT_TRUE(cache.Lookup(origin1) == NULL);
 }
 
@@ -83,8 +84,8 @@ TEST(FtpAuthCacheTest, LookupWithPort) {
   GURL origin1("ftp://foo:80");
   GURL origin2("ftp://foo:21");
 
-  cache.Add(origin1, net::AuthCredentials(kUsername, kPassword));
-  cache.Add(origin2, net::AuthCredentials(kUsername, kPassword));
+  cache.Add(origin1, AuthCredentials(kUsername, kPassword));
+  cache.Add(origin2, AuthCredentials(kUsername, kPassword));
 
   EXPECT_NE(cache.Lookup(origin1), cache.Lookup(origin2));
 }
@@ -97,7 +98,7 @@ TEST(FtpAuthCacheTest, NormalizedKey) {
   FtpAuthCache cache;
 
   // Add.
-  cache.Add(GURL("ftp://HoSt:21"), net::AuthCredentials(kUsername, kPassword));
+  cache.Add(GURL("ftp://HoSt:21"), AuthCredentials(kUsername, kPassword));
 
   // Lookup.
   FtpAuthCache::Entry* entry1 = cache.Lookup(GURL("ftp://HoSt:21"));
@@ -106,7 +107,7 @@ TEST(FtpAuthCacheTest, NormalizedKey) {
   EXPECT_EQ(entry1, cache.Lookup(GURL("ftp://host")));
 
   // Overwrite.
-  cache.Add(GURL("ftp://host"), net::AuthCredentials(kOthername, kOtherword));
+  cache.Add(GURL("ftp://host"), AuthCredentials(kOthername, kOtherword));
   FtpAuthCache::Entry* entry2 = cache.Lookup(GURL("ftp://HoSt:21"));
   ASSERT_TRUE(entry2);
   EXPECT_EQ(GURL("ftp://host"), entry2->origin);
@@ -114,23 +115,22 @@ TEST(FtpAuthCacheTest, NormalizedKey) {
   EXPECT_EQ(kOtherword, entry2->credentials.password());
 
   // Remove
-  cache.Remove(GURL("ftp://HOsT"),
-               net::AuthCredentials(kOthername, kOtherword));
+  cache.Remove(GURL("ftp://HOsT"), AuthCredentials(kOthername, kOtherword));
   EXPECT_TRUE(cache.Lookup(GURL("ftp://host")) == NULL);
 }
 
 TEST(FtpAuthCacheTest, OnlyRemoveMatching) {
   FtpAuthCache cache;
 
-  cache.Add(GURL("ftp://host"), net::AuthCredentials(kUsername, kPassword));
+  cache.Add(GURL("ftp://host"), AuthCredentials(kUsername, kPassword));
   EXPECT_TRUE(cache.Lookup(GURL("ftp://host")));
 
   // Auth data doesn't match, shouldn't remove.
-  cache.Remove(GURL("ftp://host"), net::AuthCredentials(kBogus, kBogus));
+  cache.Remove(GURL("ftp://host"), AuthCredentials(kBogus, kBogus));
   EXPECT_TRUE(cache.Lookup(GURL("ftp://host")));
 
   // Auth data matches, should remove.
-  cache.Remove(GURL("ftp://host"), net::AuthCredentials(kUsername, kPassword));
+  cache.Remove(GURL("ftp://host"), AuthCredentials(kUsername, kPassword));
   EXPECT_TRUE(cache.Lookup(GURL("ftp://host")) == NULL);
 }
 
@@ -139,7 +139,7 @@ TEST(FtpAuthCacheTest, EvictOldEntries) {
 
   for (size_t i = 0; i < FtpAuthCache::kMaxEntries; i++) {
     cache.Add(GURL("ftp://host" + base::IntToString(i)),
-              net::AuthCredentials(kUsername, kPassword));
+              AuthCredentials(kUsername, kPassword));
   }
 
   // No entries should be evicted before reaching the limit.
@@ -148,8 +148,7 @@ TEST(FtpAuthCacheTest, EvictOldEntries) {
   }
 
   // Adding one entry should cause eviction of the first entry.
-  cache.Add(GURL("ftp://last_host"),
-            net::AuthCredentials(kUsername, kPassword));
+  cache.Add(GURL("ftp://last_host"), AuthCredentials(kUsername, kPassword));
   EXPECT_TRUE(cache.Lookup(GURL("ftp://host0")) == NULL);
 
   // Remaining entries should not get evicted.
@@ -158,3 +157,5 @@ TEST(FtpAuthCacheTest, EvictOldEntries) {
   }
   EXPECT_TRUE(cache.Lookup(GURL("ftp://last_host")));
 }
+
+}  // namespace net

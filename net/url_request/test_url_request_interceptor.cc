@@ -17,18 +17,18 @@ namespace net {
 
 namespace {
 
-// This class is needed because net::URLRequestFileJob always returns a -1
+// This class is needed because URLRequestFileJob always returns a -1
 // HTTP response status code.
-class TestURLRequestJob : public net::URLRequestFileJob {
+class TestURLRequestJob : public URLRequestFileJob {
  public:
-  TestURLRequestJob(net::URLRequest* request,
-                    net::NetworkDelegate* network_delegate,
+  TestURLRequestJob(URLRequest* request,
+                    NetworkDelegate* network_delegate,
                     const base::FilePath& file_path,
                     const scoped_refptr<base::TaskRunner>& worker_task_runner)
-      : net::URLRequestFileJob(request,
-                               network_delegate,
-                               file_path,
-                               worker_task_runner) {}
+      : URLRequestFileJob(request,
+                          network_delegate,
+                          file_path,
+                          worker_task_runner) {}
 
   int GetResponseCode() const override { return 200; }
 
@@ -42,8 +42,8 @@ class TestURLRequestJob : public net::URLRequestFileJob {
 
 // This class handles the actual URL request interception. It may be constructed
 // on any thread, but all other methods are called on the |network_task_runner|
-// thread. It is destroyed by the net::URLRequestFilter singleton.
-class TestURLRequestInterceptor::Delegate : public net::URLRequestInterceptor {
+// thread. It is destroyed by the URLRequestFilter singleton.
+class TestURLRequestInterceptor::Delegate : public URLRequestInterceptor {
  public:
   Delegate(const std::string& scheme,
            const std::string& hostname,
@@ -57,14 +57,13 @@ class TestURLRequestInterceptor::Delegate : public net::URLRequestInterceptor {
   ~Delegate() override {}
 
   void Register() {
-    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        scheme_, hostname_, scoped_ptr<net::URLRequestInterceptor>(this));
+    URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        scheme_, hostname_, scoped_ptr<URLRequestInterceptor>(this));
   }
 
   static void Unregister(const std::string& scheme,
                          const std::string& hostname) {
-    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler(scheme,
-                                                                hostname);
+    URLRequestFilter::GetInstance()->RemoveHostnameHandler(scheme, hostname);
   }
 
   // When requests for |url| arrive, respond with the contents of |path|. The
@@ -91,9 +90,9 @@ class TestURLRequestInterceptor::Delegate : public net::URLRequestInterceptor {
   typedef std::map<GURL, base::FilePath> ResponseMap;
 
   // When computing matches, this ignores the query parameters of the url.
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
+  URLRequestJob* MaybeInterceptRequest(
+      URLRequest* request,
+      NetworkDelegate* network_delegate) const override {
     DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
     if (request->url().scheme() != scheme_ ||
         request->url().host() != hostname_) {

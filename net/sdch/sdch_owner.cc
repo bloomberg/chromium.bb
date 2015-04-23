@@ -345,7 +345,7 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
                                     int use_count,
                                     const std::string& dictionary_text,
                                     const GURL& dictionary_url,
-                                    const net::BoundNetLog& net_log,
+                                    const BoundNetLog& net_log,
                                     bool was_from_cache) {
   struct DictionaryItem {
     base::Time last_used;
@@ -411,9 +411,9 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
   if (total_dictionary_bytes_ + dictionary_text.size() - recoverable_bytes >
       max_total_dictionary_size_) {
     RecordDictionaryFate(DICTIONARY_FATE_FETCH_IGNORED_NO_SPACE);
-    net::SdchManager::SdchErrorRecovery(SDCH_DICTIONARY_NO_ROOM);
-    net_log.AddEvent(net::NetLog::TYPE_SDCH_DICTIONARY_ERROR,
-                     base::Bind(&net::NetLogSdchDictionaryFetchProblemCallback,
+    SdchManager::SdchErrorRecovery(SDCH_DICTIONARY_NO_ROOM);
+    net_log.AddEvent(NetLog::TYPE_SDCH_DICTIONARY_ERROR,
+                     base::Bind(&NetLogSdchDictionaryFetchProblemCallback,
                                 SDCH_DICTIONARY_NO_ROOM, dictionary_url, true));
     return;
   }
@@ -422,14 +422,14 @@ void SdchOwner::OnDictionaryFetched(base::Time last_used,
   // dictionaries so that no state change will occur if dictionary addition
   // fails.
   std::string server_hash;
-  net::SdchProblemCode rv = manager_->AddSdchDictionary(
+  SdchProblemCode rv = manager_->AddSdchDictionary(
       dictionary_text, dictionary_url, &server_hash);
-  if (rv != net::SDCH_OK) {
+  if (rv != SDCH_OK) {
     RecordDictionaryFate(DICTIONARY_FATE_FETCH_MANAGER_REFUSED);
-    net::SdchManager::SdchErrorRecovery(rv);
-    net_log.AddEvent(net::NetLog::TYPE_SDCH_DICTIONARY_ERROR,
-                     base::Bind(&net::NetLogSdchDictionaryFetchProblemCallback,
-                                rv, dictionary_url, true));
+    SdchManager::SdchErrorRecovery(rv);
+    net_log.AddEvent(NetLog::TYPE_SDCH_DICTIONARY_ERROR,
+                     base::Bind(&NetLogSdchDictionaryFetchProblemCallback, rv,
+                                dictionary_url, true));
     return;
   }
 
@@ -547,7 +547,7 @@ void SdchOwner::OnDictionaryUsed(SdchManager* manager,
   specific_dictionary_map->SetInteger(kDictionaryUseCountKey, use_count + 1);
 }
 
-void SdchOwner::OnGetDictionary(net::SdchManager* manager,
+void SdchOwner::OnGetDictionary(SdchManager* manager,
                                 const GURL& request_url,
                                 const GURL& dictionary_url) {
 #if defined(OS_CHROMEOS)
@@ -590,7 +590,7 @@ void SdchOwner::OnGetDictionary(net::SdchManager* manager,
                                 base::Unretained(this), base::Time(), 0));
 }
 
-void SdchOwner::OnClearDictionaries(net::SdchManager* manager) {
+void SdchOwner::OnClearDictionaries(SdchManager* manager) {
   total_dictionary_bytes_ = 0;
   fetcher_->Cancel();
 

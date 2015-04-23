@@ -40,20 +40,20 @@ const char kAiaHeaders[] = "HTTP/1.1 200 OK\0"
                            "Content-type: application/pkix-cert\0"
                            "\0";
 
-class AiaResponseHandler : public net::URLRequestInterceptor {
+class AiaResponseHandler : public URLRequestInterceptor {
  public:
   AiaResponseHandler(const std::string& headers, const std::string& cert_data)
       : headers_(headers), cert_data_(cert_data), request_count_(0) {}
   ~AiaResponseHandler() override {}
 
-  // net::URLRequestInterceptor implementation:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
+  // URLRequestInterceptor implementation:
+  URLRequestJob* MaybeInterceptRequest(
+      URLRequest* request,
+      NetworkDelegate* network_delegate) const override {
     ++const_cast<AiaResponseHandler*>(this)->request_count_;
 
-    return new net::URLRequestTestJob(
-        request, network_delegate, headers_, cert_data_, true);
+    return new URLRequestTestJob(request, network_delegate, headers_,
+                                 cert_data_, true);
   }
 
   int request_count() const { return request_count_; }

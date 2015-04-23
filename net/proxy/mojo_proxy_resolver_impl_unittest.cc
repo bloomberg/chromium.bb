@@ -120,12 +120,12 @@ class CallbackMockProxyResolver : public MockAsyncProxyResolverExpectsBytes {
   // MockAsyncProxyResolverExpectsBytes overrides.
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
-                     const net::CompletionCallback& callback,
+                     const CompletionCallback& callback,
                      RequestHandle* request_handle,
                      const BoundNetLog& net_log) override;
   void CancelRequest(RequestHandle request_handle) override;
   int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const net::CompletionCallback& callback) override;
+                   const CompletionCallback& callback) override;
 
   // Wait until the mock resolver has received a CancelRequest call.
   void WaitForCancel();
@@ -149,7 +149,7 @@ CallbackMockProxyResolver::~CallbackMockProxyResolver() {
 int CallbackMockProxyResolver::GetProxyForURL(
     const GURL& url,
     ProxyInfo* results,
-    const net::CompletionCallback& callback,
+    const CompletionCallback& callback,
     RequestHandle* request_handle,
     const BoundNetLog& net_log) {
   if (sync_result_) {
@@ -171,7 +171,7 @@ void CallbackMockProxyResolver::CancelRequest(RequestHandle request_handle) {
 
 int CallbackMockProxyResolver::SetPacScript(
     const scoped_refptr<ProxyResolverScriptData>& script_data,
-    const net::CompletionCallback& callback) {
+    const CompletionCallback& callback) {
   if (set_pac_script_sync_) {
     set_pac_script_sync_ = false;
     return OK;
@@ -244,9 +244,9 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
   request->CompleteNow(OK);
   client.WaitForResult();
 
-  EXPECT_EQ(net::OK, client.error());
-  std::vector<net::ProxyServer> servers =
-      client.results().To<std::vector<net::ProxyServer>>();
+  EXPECT_EQ(OK, client.error());
+  std::vector<ProxyServer> servers =
+      client.results().To<std::vector<ProxyServer>>();
   ASSERT_EQ(6u, servers.size());
   EXPECT_EQ(ProxyServer::SCHEME_HTTP, servers[0].scheme());
   EXPECT_EQ("proxy.example.com", servers[0].host_port_pair().host());
@@ -282,11 +282,11 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlSynchronous) {
   ASSERT_EQ(0u, mock_proxy_resolver_->pending_requests().size());
   client.WaitForResult();
 
-  EXPECT_EQ(net::OK, client.error());
-  std::vector<net::ProxyServer> proxy_servers =
-      client.results().To<std::vector<net::ProxyServer>>();
+  EXPECT_EQ(OK, client.error());
+  std::vector<ProxyServer> proxy_servers =
+      client.results().To<std::vector<ProxyServer>>();
   ASSERT_EQ(1u, proxy_servers.size());
-  net::ProxyServer& server = proxy_servers[0];
+  ProxyServer& server = proxy_servers[0];
   EXPECT_TRUE(server.is_direct());
 }
 
@@ -303,8 +303,8 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlFailure) {
   client.WaitForResult();
 
   EXPECT_EQ(ERR_FAILED, client.error());
-  std::vector<net::ProxyServer> proxy_servers =
-      client.results().To<std::vector<net::ProxyServer>>();
+  std::vector<ProxyServer> proxy_servers =
+      client.results().To<std::vector<ProxyServer>>();
   EXPECT_TRUE(proxy_servers.empty());
 }
 
@@ -330,20 +330,20 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlMultiple) {
   client1.WaitForResult();
   client2.WaitForResult();
 
-  EXPECT_EQ(net::OK, client1.error());
-  std::vector<net::ProxyServer> proxy_servers1 =
-      client1.results().To<std::vector<net::ProxyServer>>();
+  EXPECT_EQ(OK, client1.error());
+  std::vector<ProxyServer> proxy_servers1 =
+      client1.results().To<std::vector<ProxyServer>>();
   ASSERT_EQ(1u, proxy_servers1.size());
-  net::ProxyServer& server1 = proxy_servers1[0];
+  ProxyServer& server1 = proxy_servers1[0];
   EXPECT_EQ(ProxyServer::SCHEME_HTTPS, server1.scheme());
   EXPECT_EQ("proxy.example.com", server1.host_port_pair().host());
   EXPECT_EQ(12345, server1.host_port_pair().port());
 
-  EXPECT_EQ(net::OK, client2.error());
-  std::vector<net::ProxyServer> proxy_servers2 =
-      client2.results().To<std::vector<net::ProxyServer>>();
+  EXPECT_EQ(OK, client2.error());
+  std::vector<ProxyServer> proxy_servers2 =
+      client2.results().To<std::vector<ProxyServer>>();
   ASSERT_EQ(1u, proxy_servers1.size());
-  net::ProxyServer& server2 = proxy_servers2[0];
+  ProxyServer& server2 = proxy_servers2[0];
   EXPECT_EQ(ProxyServer::SCHEME_SOCKS5, server2.scheme());
   EXPECT_EQ("another-proxy.example.com", server2.host_port_pair().host());
   EXPECT_EQ(6789, server2.host_port_pair().port());

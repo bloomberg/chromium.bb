@@ -17,6 +17,8 @@
 #include "base/threading/thread_local_storage.h"
 #include "net/base/network_change_notifier.h"
 
+namespace net {
+
 namespace {
 
 // On Linux/BSD, changes to /etc/resolv.conf can go unnoticed thus resulting
@@ -39,7 +41,7 @@ namespace {
 // Android does not have /etc/resolv.conf. The system takes care of nameserver
 // changes, so none of this is needed.
 
-class DnsReloader : public net::NetworkChangeNotifier::DNSObserver {
+class DnsReloader : public NetworkChangeNotifier::DNSObserver {
  public:
   struct ReloadState {
     int resolver_generation;
@@ -81,7 +83,7 @@ class DnsReloader : public net::NetworkChangeNotifier::DNSObserver {
  private:
   DnsReloader() : resolver_generation_(0) {
     tls_index_.Initialize(SlotReturnFunction);
-    net::NetworkChangeNotifier::AddDNSObserver(this);
+    NetworkChangeNotifier::AddDNSObserver(this);
   }
 
   ~DnsReloader() override {
@@ -106,8 +108,6 @@ base::LazyInstance<DnsReloader>::Leaky
     g_dns_reloader = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-namespace net {
 
 void EnsureDnsReloaderInit() {
   g_dns_reloader.Pointer();

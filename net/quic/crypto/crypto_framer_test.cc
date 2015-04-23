@@ -29,7 +29,7 @@ char* AsChars(unsigned char* data) { return reinterpret_cast<char*>(data); }
 
 namespace test {
 
-class TestCryptoVisitor : public ::net::CryptoFramerVisitorInterface {
+class TestCryptoVisitor : public CryptoFramerVisitorInterface {
  public:
   TestCryptoVisitor() : error_count_(0) {}
 

@@ -106,8 +106,8 @@ class MockTransaction : public DnsTransaction,
           const uint32 kTTL = 86400;  // One day.
 
           // Size of RDATA which is a IPv4 or IPv6 address.
-          size_t rdata_size = qtype_ == net::dns_protocol::kTypeA ?
-                              net::kIPv4AddressSize : net::kIPv6AddressSize;
+          size_t rdata_size = qtype_ == dns_protocol::kTypeA ? kIPv4AddressSize
+                                                             : kIPv6AddressSize;
 
           // 12 is the sum of sizes of the compressed name reference, TYPE,
           // CLASS, TTL and RDLENGTH.
@@ -118,10 +118,10 @@ class MockTransaction : public DnsTransaction,
           base::BigEndianWriter writer(buffer + nbytes, answer_size);
           writer.WriteU16(kPointerToQueryName);
           writer.WriteU16(qtype_);
-          writer.WriteU16(net::dns_protocol::kClassIN);
+          writer.WriteU16(dns_protocol::kClassIN);
           writer.WriteU32(kTTL);
           writer.WriteU16(rdata_size);
-          if (qtype_ == net::dns_protocol::kTypeA) {
+          if (qtype_ == dns_protocol::kTypeA) {
             char kIPv4Loopback[] = { 0x7f, 0, 0, 1 };
             writer.WriteBytes(kIPv4Loopback, sizeof(kIPv4Loopback));
           } else {

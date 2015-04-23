@@ -120,8 +120,8 @@ class TestProxyDelegate : public ProxyDelegate {
                            const ProxyInfo& proxy_info,
                            HttpRequestHeaders* headers) override {}
 
-  void OnBeforeTunnelRequest(const net::HostPortPair& proxy_server,
-                             net::HttpRequestHeaders* extra_headers) override {
+  void OnBeforeTunnelRequest(const HostPortPair& proxy_server,
+                             HttpRequestHeaders* extra_headers) override {
     on_before_tunnel_request_called_ = true;
     if (extra_headers) {
       extra_headers->SetHeader("Foo", proxy_server.ToString());
@@ -129,9 +129,9 @@ class TestProxyDelegate : public ProxyDelegate {
   }
 
   void OnTunnelHeadersReceived(
-      const net::HostPortPair& origin,
-      const net::HostPortPair& proxy_server,
-      const net::HttpResponseHeaders& response_headers) override {
+      const HostPortPair& origin,
+      const HostPortPair& proxy_server,
+      const HttpResponseHeaders& response_headers) override {
     on_tunnel_headers_received_called_ = true;
     on_tunnel_headers_received_origin_ = origin;
     on_tunnel_headers_received_proxy_server_ = proxy_server;

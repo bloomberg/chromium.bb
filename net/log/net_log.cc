@@ -207,15 +207,15 @@ NetLog::~NetLog() {
 }
 
 void NetLog::AddGlobalEntry(EventType type) {
-  AddEntry(type, Source(net::NetLog::SOURCE_NONE, NextID()),
-           net::NetLog::PHASE_NONE, NULL);
+  AddEntry(type, Source(NetLog::SOURCE_NONE, NextID()), NetLog::PHASE_NONE,
+           NULL);
 }
 
 void NetLog::AddGlobalEntry(
     EventType type,
     const NetLog::ParametersCallback& parameters_callback) {
-  AddEntry(type, Source(net::NetLog::SOURCE_NONE, NextID()),
-           net::NetLog::PHASE_NONE, &parameters_callback);
+  AddEntry(type, Source(NetLog::SOURCE_NONE, NextID()), NetLog::PHASE_NONE,
+           &parameters_callback);
 }
 
 uint32 NetLog::NextID() {
@@ -228,7 +228,7 @@ NetLogCaptureMode NetLog::GetCaptureMode() const {
   return NetLogCaptureMode::FromInternalValue(capture_mode);
 }
 
-void NetLog::DeprecatedAddObserver(net::NetLog::ThreadSafeObserver* observer,
+void NetLog::DeprecatedAddObserver(NetLog::ThreadSafeObserver* observer,
                                    NetLogCaptureMode capture_mode) {
   DCHECK(capture_mode.enabled());
 
@@ -242,7 +242,7 @@ void NetLog::DeprecatedAddObserver(net::NetLog::ThreadSafeObserver* observer,
   UpdateCaptureMode();
 }
 
-void NetLog::SetObserverCaptureMode(net::NetLog::ThreadSafeObserver* observer,
+void NetLog::SetObserverCaptureMode(NetLog::ThreadSafeObserver* observer,
                                     NetLogCaptureMode capture_mode) {
   DCHECK(capture_mode.enabled());
   base::AutoLock lock(lock_);
@@ -254,8 +254,7 @@ void NetLog::SetObserverCaptureMode(net::NetLog::ThreadSafeObserver* observer,
   UpdateCaptureMode();
 }
 
-void NetLog::DeprecatedRemoveObserver(
-    net::NetLog::ThreadSafeObserver* observer) {
+void NetLog::DeprecatedRemoveObserver(NetLog::ThreadSafeObserver* observer) {
   base::AutoLock lock(lock_);
 
   DCHECK(observers_.HasObserver(observer));

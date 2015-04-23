@@ -185,7 +185,7 @@ class FileStream::Context {
   static void ReadAsync(
       FileStream::Context* context,
       HANDLE file,
-      scoped_refptr<net::IOBuffer> buf,
+      scoped_refptr<IOBuffer> buf,
       int buf_len,
       OVERLAPPED* overlapped,
       scoped_refptr<base::MessageLoopProxy> origin_thread_loop);

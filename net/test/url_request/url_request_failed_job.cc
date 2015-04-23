@@ -19,35 +19,36 @@ const char kMockHostname[] = "mock.failed.request";
 
 // Gets the numeric net error code from URL of the form:
 // scheme://kMockHostname/error_code.  The error code must be a valid
-// net error code, and not net::OK or net::ERR_IO_PENDING.
-int GetErrorCode(net::URLRequest* request) {
+// net error code, and not OK or ERR_IO_PENDING.
+int GetErrorCode(URLRequest* request) {
   int net_error;
   std::string path = request->url().path();
   if (path[0] == '/' && base::StringToInt(path.c_str() + 1, &net_error)) {
     CHECK_LT(net_error, 0);
-    CHECK_NE(net_error, net::ERR_IO_PENDING);
+    CHECK_NE(net_error, ERR_IO_PENDING);
     return net_error;
   }
   NOTREACHED();
-  return net::ERR_UNEXPECTED;
+  return ERR_UNEXPECTED;
 }
 
 GURL GetMockUrl(const std::string& scheme,
                 const std::string& hostname,
                 int net_error) {
   CHECK_LT(net_error, 0);
-  CHECK_NE(net_error, net::ERR_IO_PENDING);
+  CHECK_NE(net_error, ERR_IO_PENDING);
   return GURL(scheme + "://" + hostname + "/" + base::IntToString(net_error));
 }
 
 }  // namespace
 
-URLRequestFailedJob::URLRequestFailedJob(net::URLRequest* request,
-                                         net::NetworkDelegate* network_delegate,
+URLRequestFailedJob::URLRequestFailedJob(URLRequest* request,
+                                         NetworkDelegate* network_delegate,
                                          int net_error)
-    : net::URLRequestJob(request, network_delegate),
+    : URLRequestJob(request, network_delegate),
       net_error_(net_error),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 void URLRequestFailedJob::Start() {
   base::MessageLoop::current()->PostTask(
@@ -63,8 +64,8 @@ void URLRequestFailedJob::AddUrlHandler() {
 // static
 void URLRequestFailedJob::AddUrlHandlerForHostname(
     const std::string& hostname) {
-  // Add |hostname| to net::URLRequestFilter for HTTP and HTTPS.
-  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+  // Add |hostname| to URLRequestFilter for HTTP and HTTPS.
+  URLRequestFilter* filter = URLRequestFilter::GetInstance();
   filter->AddHostnameHandler("http", hostname, URLRequestFailedJob::Factory);
   filter->AddHostnameHandler("https", hostname, URLRequestFailedJob::Factory);
 }
@@ -94,17 +95,15 @@ GURL URLRequestFailedJob::GetMockHttpsUrlForHostname(
 URLRequestFailedJob::~URLRequestFailedJob() {}
 
 // static
-net::URLRequestJob* URLRequestFailedJob::Factory(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const std::string& scheme) {
+URLRequestJob* URLRequestFailedJob::Factory(URLRequest* request,
+                                            NetworkDelegate* network_delegate,
+                                            const std::string& scheme) {
   return new URLRequestFailedJob(
       request, network_delegate, GetErrorCode(request));
 }
 
 void URLRequestFailedJob::StartAsync() {
-  NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                         net_error_));
+  NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, net_error_));
 }
 
 }  // namespace net

@@ -611,8 +611,7 @@ void NetworkChangeNotifier::LogOperatorCodeHistogram(ConnectionType type) {
       type == NetworkChangeNotifier::CONNECTION_3G ||
       type == NetworkChangeNotifier::CONNECTION_4G) {
     // Log zero if not perfectly converted.
-    if (!base::StringToUint(
-        net::android::GetTelephonyNetworkOperator(), &mcc_mnc)) {
+    if (!base::StringToUint(android::GetTelephonyNetworkOperator(), &mcc_mnc)) {
       mcc_mnc = 0;
     }
   }

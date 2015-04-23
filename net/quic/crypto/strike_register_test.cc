@@ -11,10 +11,10 @@
 #include "base/rand_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace net {
+
 namespace {
 
-using net::InsertStatus;
-using net::StrikeRegister;
 using std::min;
 using std::pair;
 using std::set;
@@ -40,9 +40,9 @@ TEST(StrikeRegisterTest, SimpleHorizon) {
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
   SetNonce(nonce, 999, kOrbit);
-  EXPECT_EQ(net::NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1000));
+  EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1000));
   SetNonce(nonce, 1000, kOrbit);
-  EXPECT_EQ(net::NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1000));
+  EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1000));
 
   EXPECT_EQ(0u, set.GetCurrentValidWindowSecs(1000 /* current time */));
   EXPECT_EQ(0u, set.GetCurrentValidWindowSecs(1100 /* current time */));
@@ -60,8 +60,8 @@ TEST(StrikeRegisterTest, NoStartupMode) {
                      StrikeRegister::NO_STARTUP_PERIOD_NEEDED);
   uint8 nonce[32];
   SetNonce(nonce, 1000, kOrbit);
-  EXPECT_EQ(net::NONCE_OK, set.Insert(nonce, 1000));
-  EXPECT_EQ(net::NONCE_NOT_UNIQUE_FAILURE, set.Insert(nonce, 1000));
+  EXPECT_EQ(NONCE_OK, set.Insert(nonce, 1000));
+  EXPECT_EQ(NONCE_NOT_UNIQUE_FAILURE, set.Insert(nonce, 1000));
 
   EXPECT_EQ(101u, set.GetCurrentValidWindowSecs(1000 /* current time */));
   EXPECT_EQ(101u, set.GetCurrentValidWindowSecs(1050 /* current time */));
@@ -77,9 +77,9 @@ TEST(StrikeRegisterTest, WindowFuture) {
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
   SetNonce(nonce, 1101, kOrbit);
-  EXPECT_EQ(net::NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1000));
+  EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1000));
   SetNonce(nonce, 999, kOrbit);
-  EXPECT_EQ(net::NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1100));
+  EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1100));
 }
 
 TEST(StrikeRegisterTest, BadOrbit) {
@@ -90,7 +90,7 @@ TEST(StrikeRegisterTest, BadOrbit) {
   uint8 nonce[32];
   static const uint8 kBadOrbit[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
   SetNonce(nonce, 1101, kBadOrbit);
-  EXPECT_EQ(net::NONCE_INVALID_ORBIT_FAILURE, set.Insert(nonce, 1100));
+  EXPECT_EQ(NONCE_INVALID_ORBIT_FAILURE, set.Insert(nonce, 1100));
 }
 
 TEST(StrikeRegisterTest, OneValue) {
@@ -99,7 +99,7 @@ TEST(StrikeRegisterTest, OneValue) {
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
   SetNonce(nonce, 1101, kOrbit);
-  EXPECT_EQ(net::NONCE_OK, set.Insert(nonce, 1101));
+  EXPECT_EQ(NONCE_OK, set.Insert(nonce, 1101));
 }
 
 TEST(StrikeRegisterTest, RejectDuplicate) {
@@ -109,8 +109,8 @@ TEST(StrikeRegisterTest, RejectDuplicate) {
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
   SetNonce(nonce, 1101, kOrbit);
-  EXPECT_EQ(net::NONCE_OK, set.Insert(nonce, 1101));
-  EXPECT_EQ(net::NONCE_NOT_UNIQUE_FAILURE, set.Insert(nonce, 1101));
+  EXPECT_EQ(NONCE_OK, set.Insert(nonce, 1101));
+  EXPECT_EQ(NONCE_NOT_UNIQUE_FAILURE, set.Insert(nonce, 1101));
 }
 
 TEST(StrikeRegisterTest, HorizonUpdating) {
@@ -127,7 +127,7 @@ TEST(StrikeRegisterTest, HorizonUpdating) {
     for (unsigned i = 0; i < 5; i++) {
       SetNonce(nonce[i], 1101 + i, kOrbit);
       nonce[i][31] = i;
-      EXPECT_EQ(net::NONCE_OK, set.Insert(nonce[i], 1100));
+      EXPECT_EQ(NONCE_OK, set.Insert(nonce[i], 1100));
     }
 
     // Valid window is still equal to |window_secs + 1|.
@@ -136,34 +136,34 @@ TEST(StrikeRegisterTest, HorizonUpdating) {
     // This should push the oldest value out and force the horizon to
     // be updated.
     SetNonce(nonce[5], 1110, kOrbit);
-    EXPECT_EQ(net::NONCE_OK, set.Insert(nonce[5], 1110));
+    EXPECT_EQ(NONCE_OK, set.Insert(nonce[5], 1110));
     // Effective horizon is computed based on the timestamp of the
     // value that was pushed out.
     EXPECT_EQ(9u, set.GetCurrentValidWindowSecs(1110));
 
     SetNonce(nonce[5], 1111, kOrbit);
-    EXPECT_EQ(net::NONCE_OK, set.Insert(nonce[5], 1110));
+    EXPECT_EQ(NONCE_OK, set.Insert(nonce[5], 1110));
     EXPECT_EQ(8u, set.GetCurrentValidWindowSecs(1110));
 
     // This should be behind the horizon now:
     SetNonce(nonce[5], 1101, kOrbit);
     nonce[5][31] = 10;
-    EXPECT_EQ(net::NONCE_INVALID_TIME_FAILURE, set.Insert(nonce[5], 1110));
+    EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce[5], 1110));
 
     // Insert beyond the valid range.
     SetNonce(nonce[5], 1117, kOrbit);
     nonce[5][31] = 2;
-    EXPECT_EQ(net::NONCE_INVALID_TIME_FAILURE, set.Insert(nonce[5], 1110));
+    EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce[5], 1110));
 
     // Insert at the upper valid range.
     SetNonce(nonce[5], 1116, kOrbit);
     nonce[5][31] = 1;
-    EXPECT_EQ(net::NONCE_OK, set.Insert(nonce[5], 1110));
+    EXPECT_EQ(NONCE_OK, set.Insert(nonce[5], 1110));
 
     // This should be beyond the upper valid range now:
     SetNonce(nonce[5], 1116, kOrbit);
     nonce[5][31] = 2;
-    EXPECT_EQ(net::NONCE_INVALID_TIME_FAILURE, set.Insert(nonce[5], 1110));
+    EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce[5], 1110));
   }
 }
 
@@ -177,7 +177,7 @@ TEST(StrikeRegisterTest, InsertMany) {
   for (unsigned i = 0; i < 100000; i++) {
     SetNonce(nonce, 1101 + i/500, kOrbit);
     memcpy(nonce + 12, &i, sizeof(i));
-    EXPECT_EQ(net::NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1100));
+    EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, set.Insert(nonce, 1100));
   }
 }
 
@@ -212,7 +212,7 @@ class SlowStrikeRegister {
 
     // Check to see if the orbit is correct.
     if (memcmp(nonce_bytes + 4, orbit_, sizeof(orbit_))) {
-      return net::NONCE_INVALID_ORBIT_FAILURE;
+      return NONCE_INVALID_ORBIT_FAILURE;
     }
     const uint32 nonce_time =
         ExternalTimeToInternal(TimeFromBytes(nonce_bytes));
@@ -221,14 +221,14 @@ class SlowStrikeRegister {
     // so we have to reject anything with a timestamp less than or
     // equal to that.
     if (nonce_time < horizon_) {
-      return net::NONCE_INVALID_TIME_FAILURE;
+      return NONCE_INVALID_TIME_FAILURE;
     }
 
     // Check that the timestamp is in the current window.
     if ((current_time > window_secs_ &&
          nonce_time < (current_time - window_secs_)) ||
         nonce_time > (current_time + window_secs_)) {
-      return net::NONCE_INVALID_TIME_FAILURE;
+      return NONCE_INVALID_TIME_FAILURE;
     }
 
     pair<uint32, string> nonce = std::make_pair(
@@ -236,11 +236,11 @@ class SlowStrikeRegister {
 
     set<pair<uint32, string> >::const_iterator it = nonces_.find(nonce);
     if (it != nonces_.end()) {
-      return net::NONCE_NOT_UNIQUE_FAILURE;
+      return NONCE_NOT_UNIQUE_FAILURE;
     }
 
     nonces_.insert(nonce);
-    return net::NONCE_OK;
+    return NONCE_OK;
   }
 
   uint32 GetCurrentValidWindowSecs(const uint32 current_time_external) const {
@@ -319,9 +319,9 @@ TEST_F(StrikeRegisterStressTest, InOrderInsertion) {
 
     // Inserts succeed after the startup period.
     if (time > current_time + window) {
-      EXPECT_EQ(net::NONCE_OK, nonce_error1);
+      EXPECT_EQ(NONCE_OK, nonce_error1);
     } else {
-      EXPECT_EQ(net::NONCE_INVALID_TIME_FAILURE, nonce_error1);
+      EXPECT_EQ(NONCE_INVALID_TIME_FAILURE, nonce_error1);
     }
     EXPECT_EQ(s1->GetCurrentValidWindowSecs(time),
               s2->GetCurrentValidWindowSecs(time));
@@ -403,4 +403,6 @@ TEST_F(StrikeRegisterStressTest, Stress) {
   }
 }
 
-}  // anonymous namespace
+}  // namespace
+
+}  // namespace net

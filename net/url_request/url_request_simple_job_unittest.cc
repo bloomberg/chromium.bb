@@ -68,12 +68,12 @@ class MockSimpleJob : public URLRequestSimpleJob {
   DISALLOW_COPY_AND_ASSIGN(MockSimpleJob);
 };
 
-class CancelURLRequestDelegate : public net::URLRequest::Delegate {
+class CancelURLRequestDelegate : public URLRequest::Delegate {
  public:
   explicit CancelURLRequestDelegate()
       : buf_(new IOBuffer(kBufferSize)), run_loop_(new base::RunLoop) {}
 
-  void OnResponseStarted(net::URLRequest* request) override {
+  void OnResponseStarted(URLRequest* request) override {
     int bytes_read = 0;
     EXPECT_FALSE(request->Read(buf_.get(), kBufferSize, &bytes_read));
     EXPECT_TRUE(request->status().is_io_pending());

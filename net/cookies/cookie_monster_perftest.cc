@@ -73,7 +73,7 @@ class SetCookieCallback : public BaseCallback {
     EXPECT_TRUE(success);
     BaseCallback::Run();
   }
-  net::CookieOptions options_;
+  CookieOptions options_;
 };
 
 class GetCookiesCallback : public BaseCallback {
@@ -92,7 +92,7 @@ class GetCookiesCallback : public BaseCallback {
     BaseCallback::Run();
   }
   std::string cookies_;
-  net::CookieOptions options_;
+  CookieOptions options_;
 };
 
 }  // namespace

@@ -70,8 +70,8 @@ std::string GetFileNameFromURL(const GURL& url,
     // encoding detection.
     base::string16 utf16_output;
     if (!referrer_charset.empty() &&
-        net::ConvertToUTF16(
-            unescaped_url_filename, referrer_charset.c_str(), &utf16_output)) {
+        ConvertToUTF16(unescaped_url_filename, referrer_charset.c_str(),
+                       &utf16_output)) {
       decoded_filename = base::UTF16ToUTF8(utf16_output);
     } else {
       decoded_filename =
@@ -172,8 +172,8 @@ void EnsureSafeExtension(const std::string& mime_type,
   if ((ignore_extension || extension.empty()) && !mime_type.empty()) {
     base::FilePath::StringType preferred_mime_extension;
     std::vector<base::FilePath::StringType> all_mime_extensions;
-    net::GetPreferredExtensionForMimeType(mime_type, &preferred_mime_extension);
-    net::GetExtensionsForMimeType(mime_type, &all_mime_extensions);
+    GetPreferredExtensionForMimeType(mime_type, &preferred_mime_extension);
+    GetExtensionsForMimeType(mime_type, &all_mime_extensions);
     // If the existing extension is in the list of valid extensions for the
     // given type, use it. This avoids doing things like pointlessly renaming
     // "foo.jpg" to "foo.jpeg".

@@ -250,9 +250,8 @@ TEST_F(ProxyServiceTest, Direct) {
   ProxyInfo info;
   TestCompletionCallback callback;
   BoundTestNetLog log;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, NULL,
-      log.bound());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(),
+                                NULL, NULL, log.bound());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(resolver.pending_requests().empty());
 
@@ -290,16 +289,14 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackAddProxy) {
   BoundTestNetLog log;
 
   // First, warm up the ProxyService.
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, NULL,
-      log.bound());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(),
+                                NULL, NULL, log.bound());
   EXPECT_EQ(OK, rv);
 
   // Verify that network delegate is invoked.
   TestResolveProxyNetworkDelegate delegate;
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, &delegate,
-      log.bound());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(), NULL,
+                            &delegate, log.bound());
   EXPECT_TRUE(delegate.on_resolve_proxy_called());
   EXPECT_EQ(&service, delegate.proxy_service());
 
@@ -309,24 +306,21 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackAddProxy) {
   delegate.set_add_proxy(true);
 
   // Callback should interpose:
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, &delegate,
-      log.bound());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(), NULL,
+                            &delegate, log.bound());
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ(info.proxy_server().host_port_pair().host(), "delegate_proxy.com");
   delegate.set_add_proxy(false);
 
   // Check non-bypassed URL:
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, &delegate,
-      log.bound());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(), NULL,
+                            &delegate, log.bound());
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ(info.proxy_server().host_port_pair().host(), "foopy1");
 
   // Check bypassed URL:
-  rv = service.ResolveProxy(
-       bypass_url, net::LOAD_NORMAL, &info, callback.callback(), NULL,
-       &delegate, log.bound());
+  rv = service.ResolveProxy(bypass_url, LOAD_NORMAL, &info, callback.callback(),
+                            NULL, &delegate, log.bound());
   EXPECT_TRUE(info.is_direct());
 }
 
@@ -349,32 +343,28 @@ TEST_F(ProxyServiceTest, OnResolveProxyCallbackRemoveProxy) {
   BoundTestNetLog log;
 
   // First, warm up the ProxyService.
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, NULL,
-      log.bound());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(),
+                                NULL, NULL, log.bound());
   EXPECT_EQ(OK, rv);
 
   TestResolveProxyNetworkDelegate delegate;
   delegate.set_remove_proxy(true);
 
   // Callback should interpose:
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, &delegate,
-      log.bound());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(), NULL,
+                            &delegate, log.bound());
   EXPECT_TRUE(info.is_direct());
   delegate.set_remove_proxy(false);
 
   // Check non-bypassed URL:
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, &delegate,
-      log.bound());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(), NULL,
+                            &delegate, log.bound());
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ(info.proxy_server().host_port_pair().host(), "foopy1");
 
   // Check bypassed URL:
-  rv = service.ResolveProxy(
-       bypass_url, net::LOAD_NORMAL, &info, callback.callback(), NULL,
-       &delegate, log.bound());
+  rv = service.ResolveProxy(bypass_url, LOAD_NORMAL, &info, callback.callback(),
+                            NULL, &delegate, log.bound());
   EXPECT_TRUE(info.is_direct());
 }
 
@@ -395,9 +385,8 @@ TEST_F(ProxyServiceTest, PAC) {
   ProxyService::PacRequest* request;
   BoundTestNetLog log;
 
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), &request, NULL,
-      log.bound());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(),
+                                &request, NULL, log.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, service.GetLoadState(request));
@@ -453,9 +442,8 @@ TEST_F(ProxyServiceTest, PAC_NoIdentityOrHash) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -484,9 +472,8 @@ TEST_F(ProxyServiceTest, PAC_FailoverWithoutDirect) {
 
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -516,8 +503,8 @@ TEST_F(ProxyServiceTest, PAC_FailoverWithoutDirect) {
   TestCompletionCallback callback2;
   ProxyServer expected_proxy_server = info.proxy_server();
   rv = service.ReconsiderProxyAfterError(
-      url, net::LOAD_NORMAL, net::ERR_PROXY_CONNECTION_FAILED,
-      &info, callback2.callback(), NULL, &network_delegate, BoundNetLog());
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback2.callback(), NULL, &network_delegate, BoundNetLog());
   // ReconsiderProxyAfterError returns error indicating nothing left.
   EXPECT_EQ(ERR_FAILED, rv);
   EXPECT_TRUE(info.is_empty());
@@ -538,9 +525,8 @@ TEST_F(ProxyServiceTest, PAC_RuntimeError) {
 
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -596,9 +582,8 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
 
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -618,10 +603,9 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
 
   // Fallback 1.
   TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback2.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foobar:10", info.proxy_server().ToURI());
@@ -630,20 +614,18 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
   NetworkDelegateImpl network_delegate;
   ProxyServer expected_proxy_server3 = info.proxy_server();
   TestCompletionCallback callback3;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback3.callback(), NULL,
-                                         &network_delegate, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback3.callback(), NULL, &network_delegate, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(info.is_direct());
 
   // Fallback 3.
   ProxyServer expected_proxy_server4 = info.proxy_server();
   TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback4.callback(), NULL,
-                                         &network_delegate, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback4.callback(), NULL, &network_delegate, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foobar:20", info.proxy_server().ToURI());
@@ -651,10 +633,9 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
   // Fallback 4 -- Nothing to fall back to!
   ProxyServer expected_proxy_server5 = info.proxy_server();
   TestCompletionCallback callback5;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback5.callback(), NULL,
-                                         &network_delegate, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback5.callback(), NULL, &network_delegate, BoundNetLog());
   EXPECT_EQ(ERR_FAILED, rv);
   EXPECT_TRUE(info.is_empty());
 }
@@ -676,9 +657,8 @@ TEST_F(ProxyServiceTest, PAC_ConfigSourcePropagates) {
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(),
+                                NULL, NULL, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, rv);
   resolver.pending_set_pac_script_request()->CompleteNow(OK);
   ASSERT_EQ(1u, resolver.pending_requests().size());
@@ -714,9 +694,8 @@ TEST_F(ProxyServiceTest, ProxyResolverFails) {
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -742,9 +721,8 @@ TEST_F(ProxyServiceTest, ProxyResolverFails) {
   // The second resolve request will try to run through the proxy resolver,
   // regardless of whether the first request failed in it.
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback2.callback(), NULL, NULL,
-      BoundNetLog());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback2.callback(), NULL,
+                            NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ASSERT_EQ(1u, resolver.pending_requests().size());
@@ -780,9 +758,8 @@ TEST_F(ProxyServiceTest, ProxyScriptFetcherFailsDownloadingMandatoryPac) {
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -799,9 +776,8 @@ TEST_F(ProxyServiceTest, ProxyScriptFetcherFailsDownloadingMandatoryPac) {
   // As the proxy resolver failed the request and is configured for a mandatory
   // PAC script, ProxyService must not implicitly fall-back to DIRECT.
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback2.callback(), NULL, NULL,
-      BoundNetLog());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback2.callback(), NULL,
+                            NULL, BoundNetLog());
   EXPECT_EQ(ERR_MANDATORY_PROXY_CONFIGURATION_FAILED, rv);
   EXPECT_FALSE(info.is_direct());
 }
@@ -831,9 +807,8 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsParsingJavaScriptMandatoryPac) {
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Check that nothing has been sent to the proxy resolver yet.
@@ -877,9 +852,8 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsInJavaScriptMandatoryPac) {
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -901,9 +875,8 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsInJavaScriptMandatoryPac) {
   // The second resolve request will try to run through the proxy resolver,
   // regardless of whether the first request failed in it.
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback2.callback(), NULL, NULL,
-      BoundNetLog());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback2.callback(), NULL,
+                            NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ASSERT_EQ(1u, resolver.pending_requests().size());
@@ -937,9 +910,8 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
   // Get the proxy information.
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -967,10 +939,9 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
 
   // Fake an error on the proxy.
   TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback2.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
 
   // Proxy times should not have been modified by fallback.
@@ -984,13 +955,12 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
   TestProxyFallbackNetworkDelegate test_delegate;
   service.ReportSuccess(info, &test_delegate);
   EXPECT_EQ("foopy1:8080", test_delegate.proxy_server().ToURI());
-  EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED,
+  EXPECT_EQ(ERR_PROXY_CONNECTION_FAILED,
             test_delegate.proxy_fallback_net_error());
 
   TestCompletionCallback callback3;
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback3.callback(), NULL, NULL,
-      BoundNetLog());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback3.callback(), NULL,
+                            NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ASSERT_EQ(1u, resolver.pending_requests().size());
@@ -1016,10 +986,9 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
 
   // We fake another error. It should now try the third one.
   TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback4.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback4.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
 
@@ -1027,20 +996,18 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
   // proxy servers we thought were valid; next we try the proxy server
   // that was in our bad proxies map (foopy1:8080).
   TestCompletionCallback callback5;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback5.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback5.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
 
   // Fake another error, the last proxy is gone, the list should now be empty,
   // so there is nothing left to try.
   TestCompletionCallback callback6;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback6.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback6.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_FAILED, rv);
   EXPECT_FALSE(info.is_direct());
   EXPECT_TRUE(info.is_empty());
@@ -1051,8 +1018,8 @@ TEST_F(ProxyServiceTest, ProxyFallback) {
 
   // Look up proxies again
   TestCompletionCallback callback7;
-  rv = service.ResolveProxy(url, net::LOAD_NORMAL, &info, callback7.callback(),
-                            NULL, NULL, BoundNetLog());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback7.callback(), NULL,
+                            NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ASSERT_EQ(1u, resolver.pending_requests().size());
@@ -1092,9 +1059,8 @@ TEST_F(ProxyServiceTest, ProxyFallbackToDirect) {
   // Get the proxy information.
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -1116,10 +1082,9 @@ TEST_F(ProxyServiceTest, ProxyFallbackToDirect) {
 
   // Fake an error on the proxy.
   TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback2.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
 
   // Now we get back the second proxy.
@@ -1127,10 +1092,9 @@ TEST_F(ProxyServiceTest, ProxyFallbackToDirect) {
 
   // Fake an error on this proxy as well.
   TestCompletionCallback callback3;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback3.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback3.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
 
   // Finally, we get back DIRECT.
@@ -1142,10 +1106,9 @@ TEST_F(ProxyServiceTest, ProxyFallbackToDirect) {
 
   // Now we tell the proxy service that even DIRECT failed.
   TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback4.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback4.callback(), NULL, NULL, BoundNetLog());
   // There was nothing left to try after DIRECT, so we are out of
   // choices.
   EXPECT_EQ(ERR_FAILED, rv);
@@ -1168,9 +1131,8 @@ TEST_F(ProxyServiceTest, ProxyFallback_NewSettings) {
   // Get the proxy information.
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -1195,10 +1157,9 @@ TEST_F(ProxyServiceTest, ProxyFallback_NewSettings) {
       ProxyConfig::CreateFromCustomPacURL(GURL("http://foopy-new/proxy.pac")));
 
   TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback2.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy-new/proxy.pac"),
@@ -1218,10 +1179,9 @@ TEST_F(ProxyServiceTest, ProxyFallback_NewSettings) {
 
   // We fake another error. It should now ignore the first one.
   TestCompletionCallback callback3;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback3.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback3.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("foopy2:9090", info.proxy_server().ToURI());
 
@@ -1232,10 +1192,9 @@ TEST_F(ProxyServiceTest, ProxyFallback_NewSettings) {
 
   // We fake another error. It should go back to the first proxy.
   TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback4.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback4.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy-new2/proxy.pac"),
@@ -1274,9 +1233,8 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
   // Get the proxy information.
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -1296,10 +1254,9 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
 
   // Fake a proxy error.
   TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback2.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
 
   // The first proxy is ignored, and the second one is selected.
@@ -1309,9 +1266,8 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
   // Fake a PAC failure.
   ProxyInfo info2;
   TestCompletionCallback callback3;
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info2, callback3.callback(), NULL, NULL,
-      BoundNetLog());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info2, callback3.callback(),
+                            NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ASSERT_EQ(1u, resolver.pending_requests().size());
@@ -1331,10 +1287,9 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfig) {
   // "just work" the next time we call it.
   ProxyInfo info3;
   TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info3, callback4.callback(),
-                                         NULL, NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info3,
+      callback4.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ASSERT_EQ(1u, resolver.pending_requests().size());
@@ -1375,9 +1330,8 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
   // Get the proxy information.
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback1.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback1.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -1397,10 +1351,9 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
 
   // Fake a proxy error.
   TestCompletionCallback callback2;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info, callback2.callback(), NULL,
-                                         NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info,
+      callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
 
   // The first proxy is ignored, and the second one is selected.
@@ -1410,9 +1363,8 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
   // Fake a PAC failure.
   ProxyInfo info2;
   TestCompletionCallback callback3;
-  rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info2, callback3.callback(), NULL, NULL,
-      BoundNetLog());
+  rv = service.ResolveProxy(url, LOAD_NORMAL, &info2, callback3.callback(),
+                            NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ASSERT_EQ(1u, resolver.pending_requests().size());
@@ -1433,10 +1385,9 @@ TEST_F(ProxyServiceTest, ProxyFallback_BadConfigMandatory) {
   // "just work" the next time we call it.
   ProxyInfo info3;
   TestCompletionCallback callback4;
-  rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
-                                         net::ERR_PROXY_CONNECTION_FAILED,
-                                         &info3, callback4.callback(),
-                                         NULL, NULL, BoundNetLog());
+  rv = service.ReconsiderProxyAfterError(
+      url, LOAD_NORMAL, ERR_PROXY_CONNECTION_FAILED, &info3,
+      callback4.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ASSERT_EQ(1u, resolver.pending_requests().size());
@@ -1470,16 +1421,14 @@ TEST_F(ProxyServiceTest, ProxyBypassList) {
   GURL url2("http://www.webkit.com");
 
   // Request for a .org domain should bypass proxy.
-  rv = service.ResolveProxy(
-      url1, net::LOAD_NORMAL, &info[0], callback[0].callback(), NULL, NULL,
-      BoundNetLog());
+  rv = service.ResolveProxy(url1, LOAD_NORMAL, &info[0], callback[0].callback(),
+                            NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(info[0].is_direct());
 
   // Request for a .com domain hits the proxy.
-  rv = service.ResolveProxy(
-      url2, net::LOAD_NORMAL, &info[1], callback[1].callback(), NULL, NULL,
-      BoundNetLog());
+  rv = service.ResolveProxy(url2, LOAD_NORMAL, &info[1], callback[1].callback(),
+                            NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("foopy1:8080", info[1].proxy_server().ToURI());
 }
@@ -1494,9 +1443,9 @@ TEST_F(ProxyServiceTest, PerProtocolProxyTests) {
     GURL test_url("http://www.msn.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL, NULL,
-                                  BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     EXPECT_EQ(OK, rv);
     EXPECT_FALSE(info.is_direct());
     EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
@@ -1506,9 +1455,9 @@ TEST_F(ProxyServiceTest, PerProtocolProxyTests) {
     GURL test_url("ftp://ftp.google.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL,
-                                  NULL, BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     EXPECT_EQ(OK, rv);
     EXPECT_TRUE(info.is_direct());
     EXPECT_EQ("direct://", info.proxy_server().ToURI());
@@ -1518,9 +1467,9 @@ TEST_F(ProxyServiceTest, PerProtocolProxyTests) {
     GURL test_url("https://webbranch.techcu.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL,
-                                  NULL, BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     EXPECT_EQ(OK, rv);
     EXPECT_FALSE(info.is_direct());
     EXPECT_EQ("foopy2:8080", info.proxy_server().ToURI());
@@ -1531,9 +1480,9 @@ TEST_F(ProxyServiceTest, PerProtocolProxyTests) {
     GURL test_url("http://www.microsoft.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL,
-                                  NULL, BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     EXPECT_EQ(OK, rv);
     EXPECT_FALSE(info.is_direct());
     EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
@@ -1552,9 +1501,9 @@ TEST_F(ProxyServiceTest, ProxyConfigSourcePropagates) {
     GURL test_url("http://www.google.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL,
-                                  NULL, BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     ASSERT_EQ(OK, rv);
     // Should be SOURCE_TEST, even if there are no HTTP proxies configured.
     EXPECT_EQ(PROXY_CONFIG_SOURCE_TEST, info.config_source());
@@ -1567,9 +1516,9 @@ TEST_F(ProxyServiceTest, ProxyConfigSourcePropagates) {
     GURL test_url("https://www.google.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL,
-                                  NULL, BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     ASSERT_EQ(OK, rv);
     // Used the HTTPS proxy. So source should be TEST.
     EXPECT_EQ(PROXY_CONFIG_SOURCE_TEST, info.config_source());
@@ -1581,9 +1530,9 @@ TEST_F(ProxyServiceTest, ProxyConfigSourcePropagates) {
     GURL test_url("http://www.google.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL,
-                                  NULL, BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     ASSERT_EQ(OK, rv);
     // ProxyConfig is empty. Source should still be TEST.
     EXPECT_EQ(PROXY_CONFIG_SOURCE_TEST, info.config_source());
@@ -1604,9 +1553,9 @@ TEST_F(ProxyServiceTest, DefaultProxyFallbackToSOCKS) {
     GURL test_url("http://www.msn.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL,
-                                  NULL, BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     EXPECT_EQ(OK, rv);
     EXPECT_FALSE(info.is_direct());
     EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
@@ -1616,9 +1565,9 @@ TEST_F(ProxyServiceTest, DefaultProxyFallbackToSOCKS) {
     GURL test_url("ftp://ftp.google.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL,
-                                  NULL, BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     EXPECT_EQ(OK, rv);
     EXPECT_FALSE(info.is_direct());
     EXPECT_EQ("socks4://foopy2:1080", info.proxy_server().ToURI());
@@ -1628,9 +1577,9 @@ TEST_F(ProxyServiceTest, DefaultProxyFallbackToSOCKS) {
     GURL test_url("https://webbranch.techcu.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL,
-                                  NULL, BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     EXPECT_EQ(OK, rv);
     EXPECT_FALSE(info.is_direct());
     EXPECT_EQ("socks4://foopy2:1080", info.proxy_server().ToURI());
@@ -1640,9 +1589,9 @@ TEST_F(ProxyServiceTest, DefaultProxyFallbackToSOCKS) {
     GURL test_url("unknown://www.microsoft.com");
     ProxyInfo info;
     TestCompletionCallback callback;
-    int rv = service.ResolveProxy(test_url, net::LOAD_NORMAL, &info,
-                                  callback.callback(), NULL,
-                                  NULL, BoundNetLog());
+    int rv =
+        service.ResolveProxy(test_url, LOAD_NORMAL, &info, callback.callback(),
+                             NULL, NULL, BoundNetLog());
     EXPECT_EQ(OK, rv);
     EXPECT_FALSE(info.is_direct());
     EXPECT_EQ("socks4://foopy2:1080", info.proxy_server().ToURI());
@@ -1664,9 +1613,9 @@ TEST_F(ProxyServiceTest, CancelInProgressRequest) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(GURL("http://request1"), net::LOAD_NORMAL,
-                                &info1, callback1.callback(), NULL, NULL,
-                                BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Nothing has been sent to the proxy resolver yet, since the proxy
@@ -1684,7 +1633,7 @@ TEST_F(ProxyServiceTest, CancelInProgressRequest) {
   ProxyInfo info2;
   TestCompletionCallback callback2;
   ProxyService::PacRequest* request2;
-  rv = service.ResolveProxy(GURL("http://request2"), net::LOAD_NORMAL, &info2,
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
                             callback2.callback(), &request2, NULL,
                             BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -1693,7 +1642,7 @@ TEST_F(ProxyServiceTest, CancelInProgressRequest) {
 
   ProxyInfo info3;
   TestCompletionCallback callback3;
-  rv = service.ResolveProxy(GURL("http://request3"), net::LOAD_NORMAL, &info3,
+  rv = service.ResolveProxy(GURL("http://request3"), LOAD_NORMAL, &info3,
                             callback3.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   ASSERT_EQ(3u, resolver.pending_requests().size());
@@ -1746,8 +1695,8 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   ProxyInfo info1;
   TestCompletionCallback callback1;
   ProxyService::PacRequest* request1;
-  int rv = service.ResolveProxy(GURL("http://request1"), net::LOAD_NORMAL,
-                                &info1, callback1.callback(), &request1, NULL,
+  int rv = service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                                callback1.callback(), &request1, NULL,
                                 BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -1758,7 +1707,7 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   ProxyInfo info2;
   TestCompletionCallback callback2;
   ProxyService::PacRequest* request2;
-  rv = service.ResolveProxy(GURL("http://request2"), net::LOAD_NORMAL, &info2,
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
                             callback2.callback(), &request2, NULL,
                             BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -1766,7 +1715,7 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
   ProxyInfo info3;
   TestCompletionCallback callback3;
   ProxyService::PacRequest* request3;
-  rv = service.ResolveProxy(GURL("http://request3"), net::LOAD_NORMAL, &info3,
+  rv = service.ResolveProxy(GURL("http://request3"), LOAD_NORMAL, &info3,
                             callback3.callback(), &request3, NULL,
                             BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -1852,9 +1801,9 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(GURL("http://request1"), net::LOAD_NORMAL,
-                                &info1, callback1.callback(), NULL, NULL,
-                                BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // The first request should have triggered download of PAC script.
@@ -1863,7 +1812,7 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(GURL("http://request2"), net::LOAD_NORMAL, &info2,
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
                             callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -1914,9 +1863,9 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
   TestCompletionCallback callback1;
   ProxyService::PacRequest* request1;
   BoundTestNetLog log1;
-  int rv = service.ResolveProxy(GURL("http://request1"), net::LOAD_NORMAL,
-                                &info1, callback1.callback(), &request1, NULL,
-                                log1.bound());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), &request1, NULL, log1.bound());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // The first request should have triggered download of PAC script.
@@ -1926,14 +1875,14 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
   ProxyInfo info2;
   TestCompletionCallback callback2;
   ProxyService::PacRequest* request2;
-  rv = service.ResolveProxy(GURL("http://request2"), net::LOAD_NORMAL, &info2,
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
                             callback2.callback(), &request2, NULL,
                             BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ProxyInfo info3;
   TestCompletionCallback callback3;
-  rv = service.ResolveProxy(GURL("http://request3"), net::LOAD_NORMAL, &info3,
+  rv = service.ResolveProxy(GURL("http://request3"), LOAD_NORMAL, &info3,
                             callback3.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -2008,15 +1957,15 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(GURL("http://request1"), net::LOAD_NORMAL,
-                                &info1, callback1.callback(), NULL, NULL,
-                                BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
   ProxyService::PacRequest* request2;
-  rv = service.ResolveProxy(GURL("http://request2"), net::LOAD_NORMAL, &info2,
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
                             callback2.callback(), &request2, NULL,
                             BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2088,15 +2037,15 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac2) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(GURL("http://request1"), net::LOAD_NORMAL,
-                                &info1, callback1.callback(), NULL, NULL,
-                                BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
   ProxyService::PacRequest* request2;
-  rv = service.ResolveProxy(GURL("http://request2"), net::LOAD_NORMAL, &info2,
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
                             callback2.callback(), &request2, NULL,
                             BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2164,15 +2113,15 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomToManual) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(GURL("http://request1"), net::LOAD_NORMAL,
-                                &info1, callback1.callback(), NULL, NULL,
-                                BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
   ProxyService::PacRequest* request2;
-  rv = service.ResolveProxy(GURL("http://request2"), net::LOAD_NORMAL, &info2,
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
                             callback2.callback(), &request2, NULL,
                             BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -2225,9 +2174,9 @@ TEST_F(ProxyServiceTest, BypassDoesntApplyToPac) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      GURL("http://www.google.com"), net::LOAD_NORMAL, &info1,
-      callback1.callback(), NULL, NULL, BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://www.google.com"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Check that nothing has been sent to the proxy resolver yet.
@@ -2257,9 +2206,8 @@ TEST_F(ProxyServiceTest, BypassDoesntApplyToPac) {
   // Start another request, it should pickup the bypass item.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(GURL("http://www.google.com"), net::LOAD_NORMAL,
-                            &info2, callback2.callback(), NULL, NULL,
-                            BoundNetLog());
+  rv = service.ResolveProxy(GURL("http://www.google.com"), LOAD_NORMAL, &info2,
+                            callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ASSERT_EQ(1u, resolver.pending_requests().size());
@@ -2296,9 +2244,9 @@ TEST_F(ProxyServiceTest, DeleteWhileInitProxyResolverHasOutstandingFetch) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(GURL("http://www.google.com"), net::LOAD_NORMAL,
-                                &info1, callback1.callback(), NULL, NULL,
-                                BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://www.google.com"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Check that nothing has been sent to the proxy resolver yet.
@@ -2328,9 +2276,8 @@ TEST_F(ProxyServiceTest, DeleteWhileInitProxyResolverHasOutstandingSet) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  int rv = service.ResolveProxy(
-      url, net::LOAD_NORMAL, &info, callback.callback(), NULL, NULL,
-      BoundNetLog());
+  int rv = service.ResolveProxy(url, LOAD_NORMAL, &info, callback.callback(),
+                                NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   EXPECT_EQ(GURL("http://foopy/proxy.pac"),
@@ -2345,9 +2292,9 @@ TEST_F(ProxyServiceTest, ResetProxyConfigService) {
 
   ProxyInfo info;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(GURL("http://request1"), net::LOAD_NORMAL,
-                                &info, callback1.callback(), NULL, NULL,
-                                BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("foopy1:8080", info.proxy_server().ToURI());
 
@@ -2356,7 +2303,7 @@ TEST_F(ProxyServiceTest, ResetProxyConfigService) {
   config2.set_auto_detect(false);
   service.ResetConfigService(new MockProxyConfigService(config2));
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(GURL("http://request2"), net::LOAD_NORMAL, &info,
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info,
                             callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("foopy2:8080", info.proxy_server().ToURI());
@@ -2377,9 +2324,9 @@ TEST_F(ProxyServiceTest, UpdateConfigFromPACToDirect) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(GURL("http://www.google.com"), net::LOAD_NORMAL,
-                                &info1, callback1.callback(), NULL, NULL,
-                                BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://www.google.com"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Check that nothing has been sent to the proxy resolver yet.
@@ -2409,9 +2356,8 @@ TEST_F(ProxyServiceTest, UpdateConfigFromPACToDirect) {
   // Start another request -- the effective configuration has changed.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(GURL("http://www.google.com"), net::LOAD_NORMAL,
-                            &info2, callback2.callback(), NULL, NULL,
-                            BoundNetLog());
+  rv = service.ResolveProxy(GURL("http://www.google.com"), LOAD_NORMAL, &info2,
+                            callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
 
   EXPECT_TRUE(info2.is_direct());
@@ -2441,9 +2387,9 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(GURL("http://request1"), net::LOAD_NORMAL,
-                                &info1, callback1.callback(), NULL, NULL,
-                                BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // The first request should have triggered initial download of PAC script.
@@ -2484,7 +2430,7 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(GURL("http://request2"), net::LOAD_NORMAL, &info2,
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
                             callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -2557,9 +2503,9 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      GURL("http://request1"), net::LOAD_NORMAL, &info1, callback1.callback(),
-      NULL, NULL, BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // The first request should have triggered initial download of PAC script.
@@ -2618,9 +2564,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(
-      GURL("http://request2"), net::LOAD_NORMAL, &info2, callback2.callback(),
-      NULL, NULL, BoundNetLog());
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
+                            callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Check that it was sent to the resolver.
@@ -2663,9 +2608,9 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      GURL("http://request1"), net::LOAD_NORMAL, &info1, callback1.callback(),
-      NULL, NULL, BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // The first request should have triggered initial download of PAC script.
@@ -2729,9 +2674,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(
-      GURL("http://request2"), net::LOAD_NORMAL, &info2, callback2.callback(),
-      NULL, NULL, BoundNetLog());
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
+                            callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Check that it was sent to the resolver.
@@ -2774,9 +2718,9 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      GURL("http://request1"), net::LOAD_NORMAL, &info1, callback1.callback(),
-      NULL, NULL, BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // The first request should have triggered initial download of PAC script.
@@ -2836,9 +2780,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(
-      GURL("http://request2"), net::LOAD_NORMAL, &info2, callback2.callback(),
-      NULL, NULL, BoundNetLog());
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
+                            callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Check that it was sent to the resolver.
@@ -2881,9 +2824,9 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      GURL("http://request1"), net::LOAD_NORMAL, &info1, callback1.callback(),
-      NULL, NULL, BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // The first request should have triggered initial download of PAC script.
@@ -2941,9 +2884,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(
-      GURL("http://request2"), net::LOAD_NORMAL, &info2, callback2.callback(),
-      NULL, NULL, BoundNetLog());
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
+                            callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(info2.is_direct());
 }
@@ -3034,9 +2976,9 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  int rv = service.ResolveProxy(
-      GURL("http://request1"), net::LOAD_NORMAL, &info1, callback1.callback(),
-      NULL, NULL, BoundNetLog());
+  int rv =
+      service.ResolveProxy(GURL("http://request1"), LOAD_NORMAL, &info1,
+                           callback1.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // The first request should have triggered initial download of PAC script.
@@ -3078,9 +3020,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  rv = service.ResolveProxy(
-      GURL("http://request2"), net::LOAD_NORMAL, &info2, callback2.callback(),
-      NULL, NULL, BoundNetLog());
+  rv = service.ResolveProxy(GURL("http://request2"), LOAD_NORMAL, &info2,
+                            callback2.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // This request should have sent work to the resolver; complete it.
@@ -3109,9 +3050,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
   // since the PAC script poller experienced a failure.
   ProxyInfo info3;
   TestCompletionCallback callback3;
-  rv = service.ResolveProxy(
-      GURL("http://request3"), net::LOAD_NORMAL, &info3, callback3.callback(),
-      NULL, NULL, BoundNetLog());
+  rv = service.ResolveProxy(GURL("http://request3"), LOAD_NORMAL, &info3,
+                            callback3.callback(), NULL, NULL, BoundNetLog());
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(info3.is_direct());
 }
@@ -3134,7 +3074,7 @@ TEST_F(ProxyServiceTest, SynchronousWithPAC) {
   BoundTestNetLog log;
 
   bool synchronous_success = service.TryResolveProxySynchronously(
-      url, net::LOAD_NORMAL, &info, NULL, log.bound());
+      url, LOAD_NORMAL, &info, NULL, log.bound());
   EXPECT_FALSE(synchronous_success);
 
   // No request should have been queued.
@@ -3163,7 +3103,7 @@ TEST_F(ProxyServiceTest, SynchronousWithFixedConfiguration) {
   BoundTestNetLog log;
 
   bool synchronous_success = service.TryResolveProxySynchronously(
-      url, net::LOAD_NORMAL, &info, NULL, log.bound());
+      url, LOAD_NORMAL, &info, NULL, log.bound());
   EXPECT_TRUE(synchronous_success);
   EXPECT_FALSE(info.is_direct());
   EXPECT_EQ("foopy1", info.proxy_server().host_port_pair().host());

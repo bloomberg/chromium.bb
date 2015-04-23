@@ -29,7 +29,7 @@ class ScopedPortException;
 // themselves continue running on the device. To control the test server on the
 // host machine, a second HTTP server is started, the spawner server, which
 // controls the life cycle of remote test servers. Calls to start/kill the
-// net::SpawnedTestServer are then redirected to the spawner server via
+// SpawnedTestServer are then redirected to the spawner server via
 // this spawner communicator.
 //
 // Currently only three commands are supported by spawner.
@@ -58,7 +58,7 @@ class ScopedPortException;
 // The internal I/O thread is required by net stack to perform net I/O.
 // The Start/StopServer methods block the caller thread until result is
 // fetched from spawner server or timed-out.
-class SpawnerCommunicator : public net::URLRequest::Delegate {
+class SpawnerCommunicator : public URLRequest::Delegate {
  public:
   explicit SpawnerCommunicator(uint16 port);
   ~SpawnerCommunicator() override;

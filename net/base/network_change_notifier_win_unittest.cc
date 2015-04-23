@@ -43,8 +43,7 @@ class TestNetworkChangeNotifierWin : public NetworkChangeNotifierWin {
   DISALLOW_COPY_AND_ASSIGN(TestNetworkChangeNotifierWin);
 };
 
-class TestIPAddressObserver
-    : public net::NetworkChangeNotifier::IPAddressObserver {
+class TestIPAddressObserver : public NetworkChangeNotifier::IPAddressObserver {
  public:
   TestIPAddressObserver() {
     NetworkChangeNotifier::AddIPAddressObserver(this);

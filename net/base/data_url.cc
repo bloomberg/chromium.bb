@@ -60,7 +60,7 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
       charset->assign(iter->substr(kCharsetTagLength));
       // The grammar for charset is not specially defined in RFC2045 and
       // RFC2397. It just needs to be a token.
-      if (!net::HttpUtil::IsToken(*charset))
+      if (!HttpUtil::IsToken(*charset))
         return false;
     }
   }

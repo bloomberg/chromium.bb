@@ -9,7 +9,7 @@
 #include "net/http/http_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using net::HttpUtil;
+namespace net {
 
 namespace {
 class HttpUtilTest : public testing::Test {};
@@ -730,8 +730,8 @@ TEST(HttpUtilTest, ParseContentType) {
     std::string charset;
     bool had_charset = false;
     std::string boundary;
-    net::HttpUtil::ParseContentType(tests[i].content_type, &mime_type,
-                                    &charset, &had_charset, &boundary);
+    HttpUtil::ParseContentType(tests[i].content_type, &mime_type, &charset,
+                               &had_charset, &boundary);
     EXPECT_EQ(tests[i].expected_mime_type, mime_type) << "i=" << i;
     EXPECT_EQ(tests[i].expected_charset, charset) << "i=" << i;
     EXPECT_EQ(tests[i].expected_had_charset, had_charset) << "i=" << i;
@@ -854,7 +854,7 @@ TEST(HttpUtilTest, ParseRanges) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    std::vector<net::HttpByteRange> ranges;
+    std::vector<HttpByteRange> ranges;
     bool return_value = HttpUtil::ParseRanges(std::string(tests[i].headers),
                                               &ranges);
     EXPECT_EQ(tests[i].expected_return_value, return_value);
@@ -993,7 +993,7 @@ void CheckInvalidNameValuePair(std::string valid_part,
   ASSERT_FALSE(invalid_parser.valid());
 }
 
-}  // anonymous namespace
+}  // namespace
 
 TEST(HttpUtilTest, NameValuePairsIteratorCopyAndAssign) {
   std::string data = "alpha='\\'a\\''; beta=\" b \"; cappa='c;'; delta=\"d\"";
@@ -1114,3 +1114,5 @@ TEST(HttpUtilTest, NameValuePairsIteratorMissingEndQuote) {
   ASSERT_NO_FATAL_FAILURE(CheckNextNameValuePair(
       &parser, false, true, std::string(), std::string()));
 }
+
+}  // namespace net

@@ -8,22 +8,19 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+namespace net {
+namespace test {
 
 class WriteBlockedListPeer {
  public:
-  static std::deque<int>* GetWriteBlockedList(
-      int i,
-      net::WriteBlockedList<int>* list) {
+  static std::deque<int>* GetWriteBlockedList(int i,
+                                              WriteBlockedList<int>* list) {
     return &list->write_blocked_lists_[i];
   }
 };
 
-}  // namespace
-
-namespace net {
-namespace test {
 namespace {
+
 typedef WriteBlockedList<int> IntWriteBlockedList;
 
 class WriteBlockedListTest : public ::testing::TestWithParam<bool> {
@@ -166,5 +163,6 @@ TEST_P(WriteBlockedListTest, UpdateStreamPriorityInWriteBlockedList) {
 }
 
 }  // namespace
+
 }  // namespace test
 }  // namespace net

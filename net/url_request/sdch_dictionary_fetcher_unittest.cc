@@ -124,13 +124,12 @@ class SpecifiedResponseJobInterceptor : public URLRequestInterceptor {
         new SpecifiedResponseJobInterceptor(http_response_info,
                                             lifecycle_callback));
 
-    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "http", kTestDomain, interceptor.Pass());
+    URLRequestFilter::GetInstance()->AddHostnameInterceptor("http", kTestDomain,
+                                                            interceptor.Pass());
   }
 
   static void Unregister() {
-    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
-                                                                kTestDomain);
+    URLRequestFilter::GetInstance()->RemoveHostnameHandler("http", kTestDomain);
   }
 
  private:

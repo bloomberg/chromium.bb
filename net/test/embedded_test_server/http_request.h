@@ -111,7 +111,7 @@ class HttpRequestParser {
   // Content length of the request currently being parsed.
   size_t declared_content_length_;
 
-  scoped_ptr<net::HttpChunkedDecoder> chunked_decoder_;
+  scoped_ptr<HttpChunkedDecoder> chunked_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpRequestParser);
 };

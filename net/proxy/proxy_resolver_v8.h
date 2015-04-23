@@ -58,14 +58,14 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 : public ProxyResolver {
   // ProxyResolver implementation:
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
-                     const net::CompletionCallback& /*callback*/,
+                     const CompletionCallback& /*callback*/,
                      RequestHandle* /*request*/,
                      const BoundNetLog& net_log) override;
   void CancelRequest(RequestHandle request) override;
   LoadState GetLoadState(RequestHandle request) const override;
   void CancelSetPacScript() override;
   int SetPacScript(const scoped_refptr<ProxyResolverScriptData>& script_data,
-                   const net::CompletionCallback& /*callback*/) override;
+                   const CompletionCallback& /*callback*/) override;
 
   // Get total/ued heap memory usage of all v8 instances used by the proxy
   // resolver.
