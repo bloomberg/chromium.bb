@@ -57,10 +57,10 @@ namespace {
 class FakeDaemonSender : public IPC::Sender {
  public:
   FakeDaemonSender() {}
-  virtual ~FakeDaemonSender() {}
+  ~FakeDaemonSender() override {}
 
   // IPC::Sender implementation.
-  virtual bool Send(IPC::Message* message) override;
+  bool Send(IPC::Message* message) override;
 
   MOCK_METHOD3(ConnectTerminal, void(int, const ScreenResolution&, bool));
   MOCK_METHOD1(DisconnectTerminal, void(int));
@@ -76,9 +76,9 @@ class FakeDaemonSender : public IPC::Sender {
 class MockDaemonListener : public IPC::Listener {
  public:
   MockDaemonListener() {}
-  virtual ~MockDaemonListener() {}
+  ~MockDaemonListener() override {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   MOCK_METHOD1(OnDesktopAttached, void(IPC::PlatformFileForTransit));
   MOCK_METHOD1(OnChannelConnected, void(int32));

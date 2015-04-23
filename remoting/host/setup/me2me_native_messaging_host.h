@@ -135,8 +135,8 @@ class Me2MeNativeMessagingHost
    public:
     ElevatedChannelEventHandler(Me2MeNativeMessagingHost* host);
 
-    virtual void OnMessage(scoped_ptr<base::Value> message) override;
-    virtual void OnDisconnect() override;
+    void OnMessage(scoped_ptr<base::Value> message) override;
+    void OnDisconnect() override;
    private:
     Me2MeNativeMessagingHost* parent_;
   };

@@ -56,20 +56,20 @@ class SessionInputInjectorWin::Core
       const base::Closure& inject_sas);
 
   // InputInjector implementation.
-  virtual void Start(scoped_ptr<ClipboardStub> client_clipboard) override;
+  void Start(scoped_ptr<ClipboardStub> client_clipboard) override;
 
   // protocol::ClipboardStub implementation.
-  virtual void InjectClipboardEvent(const ClipboardEvent& event) override;
+  void InjectClipboardEvent(const ClipboardEvent& event) override;
 
   // protocol::InputStub implementation.
-  virtual void InjectKeyEvent(const KeyEvent& event) override;
-  virtual void InjectTextEvent(const TextEvent& event) override;
-  virtual void InjectMouseEvent(const MouseEvent& event) override;
-  virtual void InjectTouchEvent(const TouchEvent& event) override;
+  void InjectKeyEvent(const KeyEvent& event) override;
+  void InjectTextEvent(const TextEvent& event) override;
+  void InjectMouseEvent(const MouseEvent& event) override;
+  void InjectTouchEvent(const TouchEvent& event) override;
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
-  virtual ~Core();
+  ~Core() override;
 
   // Switches to the desktop receiving a user input if different from
   // the current one.

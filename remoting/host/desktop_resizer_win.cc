@@ -32,14 +32,14 @@ static inline bool operator <(const ScreenResolution& a,
 class DesktopResizerWin : public DesktopResizer {
  public:
   DesktopResizerWin();
-  virtual ~DesktopResizerWin();
+  ~DesktopResizerWin() override;
 
   // DesktopResizer interface.
-  virtual ScreenResolution GetCurrentResolution() override;
-  virtual std::list<ScreenResolution> GetSupportedResolutions(
+  ScreenResolution GetCurrentResolution() override;
+  std::list<ScreenResolution> GetSupportedResolutions(
       const ScreenResolution& preferred) override;
-  virtual void SetResolution(const ScreenResolution& resolution) override;
-  virtual void RestoreResolution(const ScreenResolution& original) override;
+  void SetResolution(const ScreenResolution& resolution) override;
+  void RestoreResolution(const ScreenResolution& original) override;
 
  private:
   static bool IsResizeSupported();

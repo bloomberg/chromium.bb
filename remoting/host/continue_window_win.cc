@@ -22,12 +22,12 @@ namespace {
 class ContinueWindowWin : public ContinueWindow {
  public:
   ContinueWindowWin();
-  virtual ~ContinueWindowWin();
+  ~ContinueWindowWin() override;
 
  protected:
   // ContinueWindow overrides.
-  virtual void ShowUi() override;
-  virtual void HideUi() override;
+  void ShowUi() override;
+  void HideUi() override;
 
  private:
   static BOOL CALLBACK DialogProc(HWND hwmd, UINT msg, WPARAM wParam,

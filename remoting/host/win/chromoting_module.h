@@ -36,7 +36,7 @@ class ChromotingModule : public ATL::CAtlModuleT<ChromotingModule> {
   // Initializes the module. |classes| and |classes_end| must outlive |this|.
   ChromotingModule(ATL::_ATL_OBJMAP_ENTRY* classes,
                    ATL::_ATL_OBJMAP_ENTRY* classes_end);
-  virtual ~ChromotingModule();
+  ~ChromotingModule() override;
 
   // Returns the task runner used by the module. Returns nullptr if the task
   // runner hasn't been registered yet or if the server is shutting down.
@@ -47,7 +47,7 @@ class ChromotingModule : public ATL::CAtlModuleT<ChromotingModule> {
   bool Run();
 
   // ATL::CAtlModuleT<> overrides
-  virtual LONG Unlock() override;
+  LONG Unlock() override;
 
   DECLARE_LIBID(LIBID_ChromotingLib)
 

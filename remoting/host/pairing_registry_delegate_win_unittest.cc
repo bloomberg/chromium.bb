@@ -18,7 +18,7 @@ using protocol::PairingRegistry;
 
 class PairingRegistryDelegateWinTest : public testing::Test {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     key_name_ = base::GenerateGUID();
 
     base::win::RegKey root;
@@ -32,7 +32,7 @@ class PairingRegistryDelegateWinTest : public testing::Test {
                                      KEY_READ | KEY_WRITE) == ERROR_SUCCESS);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     privileged_.Close();
     unprivileged_.Close();
     EXPECT_TRUE(

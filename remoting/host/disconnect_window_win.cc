@@ -35,10 +35,10 @@ const int kWindowTextMargin = 8;
 class DisconnectWindowWin : public HostWindow {
  public:
   DisconnectWindowWin();
-  virtual ~DisconnectWindowWin();
+  ~DisconnectWindowWin() override;
 
   // HostWindow overrides.
-  virtual void Start(
+  void Start(
       const base::WeakPtr<ClientSessionControl>& client_session_control)
       override;
 

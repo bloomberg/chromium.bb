@@ -54,15 +54,15 @@ class MockDaemonProcess : public DaemonProcess {
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       const base::Closure& stopped_callback);
-  virtual ~MockDaemonProcess();
+  ~MockDaemonProcess() override;
 
-  virtual scoped_ptr<DesktopSession> DoCreateDesktopSession(
+  scoped_ptr<DesktopSession> DoCreateDesktopSession(
       int terminal_id,
       const ScreenResolution& resolution,
       bool virtual_terminal) override;
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void SendToNetwork(IPC::Message* message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void SendToNetwork(IPC::Message* message) override;
 
   MOCK_METHOD1(Received, void(const IPC::Message&));
   MOCK_METHOD1(Sent, void(const IPC::Message&));

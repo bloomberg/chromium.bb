@@ -37,14 +37,14 @@ class HostService : public WtsTerminalMonitor {
   int Run();
 
   // WtsTerminalMonitor implementation
-  virtual bool AddWtsTerminalObserver(const std::string& terminal_id,
+  bool AddWtsTerminalObserver(const std::string& terminal_id,
                                       WtsTerminalObserver* observer) override;
-  virtual void RemoveWtsTerminalObserver(
+  void RemoveWtsTerminalObserver(
       WtsTerminalObserver* observer) override;
 
  private:
   HostService();
-  ~HostService();
+  ~HostService() override;
 
   // Notifies the service of changes in session state.
   void OnSessionChange(uint32 event, uint32 session_id);

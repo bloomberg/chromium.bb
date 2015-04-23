@@ -41,9 +41,9 @@ namespace {
 class MockDaemonListener : public IPC::Listener {
  public:
   MockDaemonListener() {}
-  virtual ~MockDaemonListener() {}
+  ~MockDaemonListener() override {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   MOCK_METHOD1(OnDesktopAttached, void(IPC::PlatformFileForTransit));
   MOCK_METHOD1(OnChannelConnected, void(int32));
@@ -56,9 +56,9 @@ class MockDaemonListener : public IPC::Listener {
 class MockNetworkListener : public IPC::Listener {
  public:
   MockNetworkListener() {}
-  virtual ~MockNetworkListener() {}
+  ~MockNetworkListener() override {}
 
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   MOCK_METHOD1(OnChannelConnected, void(int32));
   MOCK_METHOD0(OnChannelError, void());

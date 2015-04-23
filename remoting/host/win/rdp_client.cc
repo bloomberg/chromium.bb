@@ -56,12 +56,12 @@ class RdpClient::Core
   void InjectSas();
 
   // RdpClientWindow::EventHandler interface.
-  virtual void OnConnected() override;
-  virtual void OnDisconnected() override;
+  void OnConnected() override;
+  void OnDisconnected() override;
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
-  virtual ~Core();
+  ~Core() override;
 
   // Helpers for the event handler's methods that make sure that OnRdpClosed()
   // is the last notification delivered and is delevered only once.

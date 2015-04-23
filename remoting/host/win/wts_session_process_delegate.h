@@ -34,16 +34,16 @@ class WtsSessionProcessDelegate
       scoped_ptr<base::CommandLine> target,
       bool launch_elevated,
       const std::string& channel_security);
-  ~WtsSessionProcessDelegate();
+  ~WtsSessionProcessDelegate() override;
 
   // Initializes the object returning true on success.
   bool Initialize(uint32 session_id);
 
   // WorkerProcessLauncher::Delegate implementation.
-  virtual void LaunchProcess(WorkerProcessLauncher* event_handler) override;
-  virtual void Send(IPC::Message* message) override;
-  virtual void CloseChannel() override;
-  virtual void KillProcess() override;
+  void LaunchProcess(WorkerProcessLauncher* event_handler) override;
+  void Send(IPC::Message* message) override;
+  void CloseChannel() override;
+  void KillProcess() override;
 
  private:
   // The actual implementation resides in WtsSessionProcessDelegate::Core class.

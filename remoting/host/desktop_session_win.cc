@@ -91,14 +91,14 @@ class ConsoleSession : public DesktopSessionWin {
     DaemonProcess* daemon_process,
     int id,
     WtsTerminalMonitor* monitor);
-  virtual ~ConsoleSession();
+  ~ConsoleSession() override;
 
  protected:
   // DesktopSession overrides.
-  virtual void SetScreenResolution(const ScreenResolution& resolution) override;
+  void SetScreenResolution(const ScreenResolution& resolution) override;
 
   // DesktopSessionWin overrides.
-  virtual void InjectSas() override;
+  void InjectSas() override;
 
  private:
   scoped_ptr<SasInjector> sas_injector_;
@@ -119,7 +119,7 @@ class RdpSession : public DesktopSessionWin {
     DaemonProcess* daemon_process,
     int id,
     WtsTerminalMonitor* monitor);
-  virtual ~RdpSession();
+  ~RdpSession() override;
 
   // Performs the part of initialization that can fail.
   bool Initialize(const ScreenResolution& resolution);
@@ -130,10 +130,10 @@ class RdpSession : public DesktopSessionWin {
 
  protected:
   // DesktopSession overrides.
-  virtual void SetScreenResolution(const ScreenResolution& resolution) override;
+  void SetScreenResolution(const ScreenResolution& resolution) override;
 
   // DesktopSessionWin overrides.
-  virtual void InjectSas() override;
+  void InjectSas() override;
 
  private:
   // An implementation of IRdpDesktopSessionEventHandler interface that forwards

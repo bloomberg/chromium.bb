@@ -109,9 +109,9 @@ class ClipboardWin : public Clipboard {
   ClipboardWin();
   ~ClipboardWin() override;
 
-  virtual void Start(
+  void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
-  virtual void InjectClipboardEvent(
+  void InjectClipboardEvent(
       const protocol::ClipboardEvent& event) override;
 
  private:

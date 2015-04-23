@@ -13,9 +13,9 @@ namespace {
 class GnubbyAuthHandlerWin : public GnubbyAuthHandler {
  private:
   // GnubbyAuthHandler interface.
-  virtual void DeliverClientMessage(const std::string& message) override;
-  virtual void DeliverHostDataMessage(int connection_id,
-                                      const std::string& data) const override;
+  void DeliverClientMessage(const std::string& message) override;
+  void DeliverHostDataMessage(int connection_id,
+                              const std::string& data) const override;
 
   DISALLOW_COPY_AND_ASSIGN(GnubbyAuthHandlerWin);
 };

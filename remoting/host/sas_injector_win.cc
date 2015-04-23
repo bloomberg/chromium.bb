@@ -109,10 +109,10 @@ bool ScopedSoftwareSasPolicy::Apply() {
 class SasInjectorWin : public SasInjector {
  public:
   SasInjectorWin();
-  virtual ~SasInjectorWin();
+  ~SasInjectorWin() override;
 
   // SasInjector implementation.
-  virtual bool InjectSas() override;
+  bool InjectSas() override;
 
  private:
   base::ScopedNativeLibrary sas_dll_;
@@ -125,10 +125,10 @@ class SasInjectorWin : public SasInjector {
 class SasInjectorXp : public SasInjector {
  public:
   SasInjectorXp();
-  virtual ~SasInjectorXp();
+  ~SasInjectorXp() override;
 
   // SasInjector implementation.
-  virtual bool InjectSas() override;
+  bool InjectSas() override;
 };
 
 SasInjectorWin::SasInjectorWin() : send_sas_(nullptr) {

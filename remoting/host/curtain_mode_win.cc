@@ -16,7 +16,7 @@ class CurtainModeWin : public CurtainMode {
   CurtainModeWin();
 
   // Overriden from CurtainMode.
-  virtual bool Activate() override;
+  bool Activate() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CurtainModeWin);

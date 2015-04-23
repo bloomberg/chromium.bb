@@ -14,20 +14,20 @@ class DaemonInstallerWin;
 class DaemonControllerDelegateWin : public DaemonController::Delegate {
  public:
   DaemonControllerDelegateWin();
-  virtual ~DaemonControllerDelegateWin();
+  ~DaemonControllerDelegateWin() override;
 
   // DaemonController::Delegate interface.
-  virtual DaemonController::State GetState() override;
-  virtual scoped_ptr<base::DictionaryValue> GetConfig() override;
-  virtual void SetConfigAndStart(
+  DaemonController::State GetState() override;
+  scoped_ptr<base::DictionaryValue> GetConfig() override;
+  void SetConfigAndStart(
       scoped_ptr<base::DictionaryValue> config,
       bool consent,
       const DaemonController::CompletionCallback& done) override;
-  virtual void UpdateConfig(
+  void UpdateConfig(
       scoped_ptr<base::DictionaryValue> config,
       const DaemonController::CompletionCallback& done) override;
-  virtual void Stop(const DaemonController::CompletionCallback& done) override;
-  virtual DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
+  void Stop(const DaemonController::CompletionCallback& done) override;
+  DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerDelegateWin);
 };

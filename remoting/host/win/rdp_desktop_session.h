@@ -49,8 +49,8 @@ class __declspec(uuid(RDP_DESKTOP_SESSION_CLSID)) RdpDesktopSession
 
  private:
   // RdpClient::EventHandler interface.
-  virtual void OnRdpConnected() override;
-  virtual void OnRdpClosed() override;
+  void OnRdpConnected() override;
+  void OnRdpClosed() override;
 
   BEGIN_COM_MAP(RdpDesktopSession)
     COM_INTERFACE_ENTRY(IRdpDesktopSession)

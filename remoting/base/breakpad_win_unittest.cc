@@ -69,9 +69,9 @@ void InitializeCrashReportingForTest(const wchar_t* pipe_name);
 class BreakpadWinDeathTest : public testing::Test {
  public:
   BreakpadWinDeathTest();
-  virtual ~BreakpadWinDeathTest();
+  ~BreakpadWinDeathTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
  protected:
   scoped_ptr<google_breakpad::CrashGenerationServer> crash_server_;

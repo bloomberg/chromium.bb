@@ -68,28 +68,28 @@ class DaemonProcessWin : public DaemonProcess {
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       const base::Closure& stopped_callback);
-  virtual ~DaemonProcessWin();
+  ~DaemonProcessWin() override;
 
   // WorkerProcessIpcDelegate implementation.
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnPermanentError(int exit_code) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnPermanentError(int exit_code) override;
 
   // DaemonProcess overrides.
-  virtual void SendToNetwork(IPC::Message* message) override;
-  virtual bool OnDesktopSessionAgentAttached(
+  void SendToNetwork(IPC::Message* message) override;
+  bool OnDesktopSessionAgentAttached(
       int terminal_id,
       base::ProcessHandle desktop_process,
       IPC::PlatformFileForTransit desktop_pipe) override;
 
  protected:
   // DaemonProcess implementation.
-  virtual scoped_ptr<DesktopSession> DoCreateDesktopSession(
+  scoped_ptr<DesktopSession> DoCreateDesktopSession(
       int terminal_id,
       const ScreenResolution& resolution,
       bool virtual_terminal) override;
-  virtual void DoCrashNetworkProcess(
+  void DoCrashNetworkProcess(
       const tracked_objects::Location& location) override;
-  virtual void LaunchNetworkProcess() override;
+  void LaunchNetworkProcess() override;
 
   // Changes the service start type to 'manual'.
   void DisableAutoStart();

@@ -29,21 +29,21 @@ class SessionInputInjectorWin : public InputInjector {
       scoped_ptr<InputInjector> nested_executor,
       scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
       const base::Closure& inject_sas);
-  virtual ~SessionInputInjectorWin();
+  ~SessionInputInjectorWin() override;
 
   // InputInjector implementation.
-  virtual void Start(
+  void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
 
   // protocol::ClipboardStub implementation.
-  virtual void InjectClipboardEvent(
+  void InjectClipboardEvent(
       const protocol::ClipboardEvent& event) override;
 
   // protocol::InputStub implementation.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event) override;
-  virtual void InjectTextEvent(const protocol::TextEvent& event) override;
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event) override;
-  virtual void InjectTouchEvent(const protocol::TouchEvent& event) override;
+  void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  void InjectTextEvent(const protocol::TextEvent& event) override;
+  void InjectMouseEvent(const protocol::MouseEvent& event) override;
+  void InjectTouchEvent(const protocol::TouchEvent& event) override;
 
  private:
   // The actual implementation resides in SessionInputInjectorWin::Core class.

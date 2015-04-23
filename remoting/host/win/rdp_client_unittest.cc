@@ -79,10 +79,10 @@ RdpClientModule::~RdpClientModule() {
 class RdpClientTest : public testing::Test {
  public:
   RdpClientTest();
-  virtual ~RdpClientTest();
+  ~RdpClientTest() override;
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Caaled when an RDP connection is established.
   void OnRdpConnected();

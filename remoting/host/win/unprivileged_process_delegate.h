@@ -37,19 +37,19 @@ class UnprivilegedProcessDelegate
   UnprivilegedProcessDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_ptr<base::CommandLine> target_command);
-  virtual ~UnprivilegedProcessDelegate();
+  ~UnprivilegedProcessDelegate() override;
 
   // WorkerProcessLauncher::Delegate implementation.
-  virtual void LaunchProcess(WorkerProcessLauncher* event_handler) override;
-  virtual void Send(IPC::Message* message) override;
-  virtual void CloseChannel() override;
-  virtual void KillProcess() override;
+  void LaunchProcess(WorkerProcessLauncher* event_handler) override;
+  void Send(IPC::Message* message) override;
+  void CloseChannel() override;
+  void KillProcess() override;
 
  private:
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnChannelError() override;
 
   void ReportFatalError();
   void ReportProcessLaunched(base::win::ScopedHandle worker_process);

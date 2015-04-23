@@ -13,7 +13,7 @@ namespace remoting {
 class MockSignalStrategy : public SignalStrategy {
  public:
   MockSignalStrategy();
-  virtual ~MockSignalStrategy();
+  ~MockSignalStrategy() override;
 
   MOCK_METHOD0(Connect, void());
   MOCK_METHOD0(Disconnect, void());
@@ -27,7 +27,7 @@ class MockSignalStrategy : public SignalStrategy {
   // GMock currently doesn't support move-only arguments, so we have
   // to use this hack here.
   MOCK_METHOD1(SendStanzaPtr, bool(buzz::XmlElement* stanza));
-  virtual bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override {
+  bool SendStanza(scoped_ptr<buzz::XmlElement> stanza) override {
     return SendStanzaPtr(stanza.release());
   }
 };

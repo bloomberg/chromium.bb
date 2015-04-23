@@ -24,7 +24,7 @@ static const int64 kTestOverrideDelayMilliseconds = 1;
 
 class MonitoredVideoStubTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     packet_.reset(new VideoPacket());
     monitor_.reset(new MonitoredVideoStub(
         &video_stub_,
