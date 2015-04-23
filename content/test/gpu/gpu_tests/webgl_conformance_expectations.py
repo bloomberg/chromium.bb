@@ -198,6 +198,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', ('amd', 0x6779)], bug=436212)
     self.Fail('conformance/more/functions/uniformf.html',
         ['linux', ('amd', 0x6779)], bug=436212)
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+        ['linux', ('amd', 0x6779)], bug=479952)
+    self.Fail('conformance/textures/texture-mips.html',
+        ['linux', ('amd', 0x6779)], bug=479981)
+    self.Fail('conformance/textures/texture-size-cube-maps.html',
+        ['linux', ('amd', 0x6779)], bug=479983)
 
     # Android failures
     self.Fail('deqp/data/gles2/shaders/constants.html',

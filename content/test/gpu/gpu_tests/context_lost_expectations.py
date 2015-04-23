@@ -11,4 +11,7 @@ class ContextLostExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-    pass
+
+    # AMD Radeon 6450
+    self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
+        ['linux', ('amd', 0x6779)], bug=479975)
