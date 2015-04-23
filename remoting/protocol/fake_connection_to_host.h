@@ -54,7 +54,7 @@ class FakeConnectionToHost : public protocol::ConnectionToHost {
   testing::NiceMock<protocol::MockClipboardStub> mock_clipboard_stub_;
   testing::NiceMock<protocol::MockHostStub> mock_host_stub_;
   testing::NiceMock<protocol::MockInputStub> mock_input_stub_;
-  protocol::SessionConfig session_config_;
+  scoped_ptr<protocol::SessionConfig> session_config_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionToHost);
 };

@@ -178,7 +178,7 @@ class ClientSessionTest : public testing::Test {
   MockClientSessionEventHandler session_event_handler_;
 
   // Storage for values to be returned by the protocol::Session mock.
-  SessionConfig session_config_;
+  scoped_ptr<SessionConfig> session_config_;
   const std::string client_jid_;
 
   // Stubs returned to |client_session_| components by |connection_|.
@@ -224,7 +224,7 @@ void ClientSessionTest::TearDown() {
 void ClientSessionTest::CreateClientSession() {
   // Mock protocol::Session APIs called directly by ClientSession.
   protocol::MockSession* session = new MockSession();
-  EXPECT_CALL(*session, config()).WillRepeatedly(ReturnRef(session_config_));
+  EXPECT_CALL(*session, config()).WillRepeatedly(ReturnRef(*session_config_));
   EXPECT_CALL(*session, jid()).WillRepeatedly(ReturnRef(client_jid_));
   EXPECT_CALL(*session, SetEventHandler(_));
 

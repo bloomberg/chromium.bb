@@ -105,7 +105,8 @@ class JingleSessionTest : public testing::Test {
     host_session_.reset(session);
     host_session_->SetEventHandler(&host_session_event_handler_);
 
-    session->set_config(SessionConfig::ForTest());
+    session->set_config(standard_ice_ ? SessionConfig::ForTest()
+                                      : SessionConfig::WithLegacyIceForTest());
   }
 
   void DeleteSession() {
@@ -153,7 +154,7 @@ class JingleSessionTest : public testing::Test {
     scoped_ptr<TransportFactory> host_transport(new LibjingleTransportFactory(
         nullptr,
         ChromiumPortAllocator::Create(nullptr, network_settings).Pass(),
-        network_settings));
+        network_settings, TransportRole::SERVER));
     host_server_.reset(new JingleSessionManager(host_transport.Pass()));
     host_server_->Init(host_signal_strategy_.get(), &host_server_listener_);
 
@@ -167,7 +168,7 @@ class JingleSessionTest : public testing::Test {
     scoped_ptr<TransportFactory> client_transport(new LibjingleTransportFactory(
         nullptr,
         ChromiumPortAllocator::Create(nullptr, network_settings).Pass(),
-        network_settings));
+        network_settings, TransportRole::CLIENT));
     client_server_.reset(
         new JingleSessionManager(client_transport.Pass()));
     client_server_->Init(client_signal_strategy_.get(),
@@ -290,6 +291,8 @@ class JingleSessionTest : public testing::Test {
 
   scoped_ptr<base::MessageLoopForIO> message_loop_;
 
+  bool standard_ice_ = true;
+
   scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
 
@@ -352,7 +355,7 @@ TEST_F(JingleSessionTest, Connect) {
   const buzz::XmlElement* initiate_xml =
       host_signal_strategy_->received_messages().front();
   const buzz::XmlElement* jingle_element =
-      initiate_xml->FirstNamed(buzz::QName(kJingleNamespace, "jingle"));
+      initiate_xml->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
   ASSERT_TRUE(jingle_element);
   ASSERT_EQ(kClientJid,
             jingle_element->Attr(buzz::QName(std::string(), "initiator")));
@@ -378,6 +381,23 @@ TEST_F(JingleSessionTest, ConnectWithBadMultistepAuth) {
 
 // Verify that data can be sent over stream channel.
 TEST_F(JingleSessionTest, TestStreamChannel) {
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
+
+  ASSERT_NO_FATAL_FAILURE(CreateChannel());
+
+  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
+                                kMessageSize, kMessages);
+  tester.Start();
+  message_loop_->Run();
+  tester.CheckResults();
+}
+
+// Verify that we can still connect using legacy GICE transport.
+TEST_F(JingleSessionTest, TestLegacyIceConnection) {
+  standard_ice_ = false;
+
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));

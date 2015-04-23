@@ -39,7 +39,7 @@ class FakeSession : public Session {
   const std::string& jid() override;
   const CandidateSessionConfig* candidate_config() override;
   const SessionConfig& config() override;
-  void set_config(const SessionConfig& config) override;
+  void set_config(scoped_ptr<SessionConfig> config) override;
   StreamChannelFactory* GetTransportChannelFactory() override;
   StreamChannelFactory* GetMultiplexedChannelFactory() override;
   void Close() override;
@@ -47,7 +47,7 @@ class FakeSession : public Session {
  public:
   EventHandler* event_handler_;
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
-  SessionConfig config_;
+  scoped_ptr<SessionConfig> config_;
 
   FakeStreamChannelFactory channel_factory_;
 

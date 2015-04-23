@@ -434,7 +434,8 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
-          signaling_.get(), port_allocator.Pass(), network_settings));
+          signaling_.get(), port_allocator.Pass(), network_settings,
+          protocol::TransportRole::CLIENT));
 
   client_->Start(signaling_.get(), authenticator_.Pass(),
                  transport_factory.Pass(), host_jid_, capabilities_);
