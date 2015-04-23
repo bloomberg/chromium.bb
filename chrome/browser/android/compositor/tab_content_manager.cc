@@ -142,14 +142,14 @@ TabContentManager::TabContentManager(JNIEnv* env,
       disk_cache_path_str, (size_t)default_cache_size,
       (size_t)approximation_cache_size, (size_t)compression_queue_max_size,
       (size_t)write_queue_max_size, use_approximation_thumbnail));
-  thumbnail_cache_->AddThumbnailStoreObserver(this);
+  thumbnail_cache_->AddThumbnailCacheObserver(this);
 }
 
 TabContentManager::~TabContentManager() {
 }
 
 void TabContentManager::Destroy(JNIEnv* env, jobject obj) {
-  thumbnail_cache_->RemoveThumbnailStoreObserver(this);
+  thumbnail_cache_->RemoveThumbnailCacheObserver(this);
   delete this;
 }
 

@@ -13,7 +13,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/ui_resource_layer.h"
-#include "chrome/browser/android/thumbnail/thumbnail_store.h"
+#include "chrome/browser/android/thumbnail/thumbnail_cache.h"
 
 using base::android::ScopedJavaLocalRef;
 
@@ -32,7 +32,7 @@ namespace android {
 class ThumbnailLayer;
 
 // A native component of the Java TabContentManager class.
-class TabContentManager : public ThumbnailStoreObserver {
+class TabContentManager : public ThumbnailCacheObserver {
  public:
   static TabContentManager* FromJavaObject(jobject jobj);
 
@@ -92,7 +92,7 @@ class TabContentManager : public ThumbnailStoreObserver {
                                               jint min_forbidden_id);
   void GetDecompressedThumbnail(JNIEnv* env, jobject obj, jint tab_id);
 
-  // ThumbnailStoreObserver implementation;
+  // ThumbnailCacheObserver implementation;
   void OnFinishedThumbnailRead(TabId tab_id) override;
 
  private:
@@ -100,11 +100,6 @@ class TabContentManager : public ThumbnailStoreObserver {
   typedef base::hash_map<int, scoped_refptr<cc::Layer>> LayerMap;
   typedef base::hash_map<int, scoped_refptr<ThumbnailLayer>> ThumbnailLayerMap;
   typedef base::ScopedPtrHashMap<int, TabReadbackRequest> TabReadbackRequestMap;
-
-  // TODO(): The upstream ThumbnailCache class was temporarily renamed to
-  // ThumbnailStore to avoid conflict with downstream.  Please rename the
-  // upstream to ThumbnailCache once the downstream is in a good state.
-  typedef ThumbnailStore ThumbnailCache;
 
   void PutThumbnailIntoCache(int tab_id,
                              float thumbnail_scale,

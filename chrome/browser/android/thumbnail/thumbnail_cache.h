@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_THUMBNAIL_THUMBNAIL_STORE_H_
-#define CHROME_BROWSER_ANDROID_THUMBNAIL_THUMBNAIL_STORE_H_
+#ifndef CHROME_BROWSER_ANDROID_THUMBNAIL_THUMBNAIL_CACHE_H_
+#define CHROME_BROWSER_ANDROID_THUMBNAIL_THUMBNAIL_CACHE_H_
 
 #include <list>
 #include <set>
@@ -36,27 +36,27 @@ class ContentViewCore;
 
 typedef std::list<TabId> TabIdList;
 
-class ThumbnailStoreObserver {
+class ThumbnailCacheObserver {
  public:
   virtual void OnFinishedThumbnailRead(TabId tab_id) = 0;
 };
 
-class ThumbnailStore : ThumbnailDelegate {
+class ThumbnailCache : ThumbnailDelegate {
  public:
-  ThumbnailStore(const std::string& disk_cache_path_str,
+  ThumbnailCache(const std::string& disk_cache_path_str,
                  size_t default_cache_size,
                  size_t approximation_cache_size,
                  size_t compression_queue_max_size,
                  size_t write_queue_max_size,
                  bool use_approximation_thumbnail);
 
-  ~ThumbnailStore() override;
+  ~ThumbnailCache() override;
 
   void SetUIResourceProvider(ui::UIResourceProvider* ui_resource_provider);
 
-  void AddThumbnailStoreObserver(ThumbnailStoreObserver* observer);
-  void RemoveThumbnailStoreObserver(
-      ThumbnailStoreObserver* observer);
+  void AddThumbnailCacheObserver(ThumbnailCacheObserver* observer);
+  void RemoveThumbnailCacheObserver(
+      ThumbnailCacheObserver* observer);
 
   void Put(TabId tab_id, const SkBitmap& bitmap, float thumbnail_scale);
   void Remove(TabId tab_id);
@@ -154,16 +154,16 @@ class ThumbnailStore : ThumbnailDelegate {
 
   ExpiringThumbnailCache cache_;
   ExpiringThumbnailCache approximation_cache_;
-  ObserverList<ThumbnailStoreObserver> observers_;
+  ObserverList<ThumbnailCacheObserver> observers_;
   ThumbnailMetaDataMap thumbnail_meta_data_;
   TabIdList read_queue_;
   TabIdList visible_ids_;
 
   ui::UIResourceProvider* ui_resource_provider_;
 
-  base::WeakPtrFactory<ThumbnailStore> weak_factory_;
+  base::WeakPtrFactory<ThumbnailCache> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ThumbnailStore);
+  DISALLOW_COPY_AND_ASSIGN(ThumbnailCache);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_THUMBNAIL_THUMBNAIL_STORE_H_
+#endif  // CHROME_BROWSER_ANDROID_THUMBNAIL_THUMBNAIL_CACHE_H_
