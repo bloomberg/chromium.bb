@@ -325,14 +325,17 @@ void DisplayManager::SetOverscanInsets(int64 display_id,
 }
 
 void DisplayManager::SetDisplayRotation(int64 display_id,
-                                        gfx::Display::Rotation rotation) {
+                                        gfx::Display::Rotation rotation,
+                                        gfx::Display::RotationSource source) {
   DisplayInfoList display_info_list;
   for (const auto& display : active_display_list_) {
     DisplayInfo info = GetDisplayInfo(display.id());
     if (info.id() == display_id) {
-      if (info.rotation() == rotation)
+      if (info.GetRotation(source) == rotation &&
+          info.GetActiveRotation() == rotation) {
         return;
-      info.set_rotation(rotation);
+      }
+      info.SetRotation(rotation, source);
     }
     display_info_list.push_back(info);
   }
@@ -448,7 +451,8 @@ void DisplayManager::RegisterDisplayProperty(
   if (display_info_.find(display_id) == display_info_.end())
     display_info_[display_id] = DisplayInfo(display_id, std::string(), false);
 
-  display_info_[display_id].set_rotation(rotation);
+  display_info_[display_id].SetRotation(rotation,
+                                        gfx::Display::ROTATION_SOURCE_ACTIVE);
   display_info_[display_id].SetColorProfile(color_profile);
   // Just in case the preference file was corrupted.
   // TODO(mukai): register |display_modes_| here as well, so the lookup for the
@@ -1099,7 +1103,7 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
   // in |UpdateNonPrimaryDisplayBoundsForLayout| called in |UpdateDisplay|.
   new_display.SetScaleAndBounds(
       device_scale_factor, gfx::Rect(bounds_in_native.size()));
-  new_display.set_rotation(display_info.rotation());
+  new_display.set_rotation(display_info.GetActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
   return new_display;
 }

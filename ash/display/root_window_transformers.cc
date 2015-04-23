@@ -62,16 +62,18 @@ gfx::Transform CreateRotationTransform(aura::Window* root_window,
   // updating the transform results in incorrectly resizing
   // the root window. Don't apply the transform unless
   // necessary so that unit tests pass on win8 bots.
-  if (info.rotation() == root_window->GetProperty(kRotationPropertyKey))
+  if (info.GetActiveRotation() ==
+      root_window->GetProperty(kRotationPropertyKey)) {
     return gfx::Transform();
-  root_window->SetProperty(kRotationPropertyKey, info.rotation());
+  }
+  root_window->SetProperty(kRotationPropertyKey, info.GetActiveRotation());
 #endif
 
   gfx::Transform rotate;
   // The origin is (0, 0), so the translate width/height must be reduced by
   // 1 pixel.
   float one_pixel = 1.0f / display.device_scale_factor();
-  switch (info.rotation()) {
+  switch (info.GetActiveRotation()) {
     case gfx::Display::ROTATE_0:
       break;
     case gfx::Display::ROTATE_90:

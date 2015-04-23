@@ -69,8 +69,11 @@ class ASH_EXPORT ScreenOrientationController
   // display rotation.
   void SetRotationLocked(bool rotation_locked);
 
-  // Sets the display rotation and suppresses display notifications.
-  void SetDisplayRotation(gfx::Display::Rotation rotation);
+  // Sets the display rotation for the given |source|. The new |rotation| will
+  // also become active. Display changed notifications are surpressed for this
+  // change.
+  void SetDisplayRotation(gfx::Display::Rotation rotation,
+                          gfx::Display::RotationSource source);
 
   // aura::client::ActivationChangeObserver:
   void OnWindowActivated(aura::Window* gained_active,
@@ -102,7 +105,8 @@ class ASH_EXPORT ScreenOrientationController
   // Sets the display rotation to |rotation|. Future accelerometer updates
   // should not be used to change the rotation. SetRotationLocked(false) removes
   // the rotation lock.
-  void LockRotation(gfx::Display::Rotation rotation);
+  void LockRotation(gfx::Display::Rotation rotation,
+                    gfx::Display::RotationSource source);
 
   // Sets the display rotation based on |lock_orientation|. Future accelerometer
   // updates should not be used to change the rotation. SetRotationLocked(false)

@@ -189,7 +189,7 @@ TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
       new ui::ScopedAnimationDurationScaleMode(
           ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   ash::ScreenRotationAnimator(gfx::Display::InternalDisplayId())
-      .Rotate(gfx::Display::ROTATE_270);
+      .Rotate(gfx::Display::ROTATE_270, gfx::Display::ROTATION_SOURCE_ACTIVE);
 
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(GetTray()->visible());

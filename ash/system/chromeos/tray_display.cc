@@ -207,7 +207,7 @@ class DisplayView : public ActionableView {
     base::string16 name = GetDisplayName(external_id);
     const DisplayInfo& display_info =
         display_manager->GetDisplayInfo(external_id);
-    if (display_info.rotation() != gfx::Display::ROTATE_0 ||
+    if (display_info.GetActiveRotation() != gfx::Display::ROTATE_0 ||
         display_info.configured_ui_scale() != 1.0f ||
         !display_info.overscan_insets_in_dip().empty()) {
       name = l10n_util::GetStringFUTF16(
@@ -263,10 +263,10 @@ class DisplayView : public ActionableView {
   bool ShouldShowFirstDisplayInfo() const {
     const DisplayInfo& display_info = GetDisplayManager()->GetDisplayInfo(
         GetDisplayManager()->first_display_id());
-    return display_info.rotation() != gfx::Display::ROTATE_0 ||
-        display_info.configured_ui_scale() != 1.0f ||
-        !display_info.overscan_insets_in_dip().empty() ||
-        display_info.has_overscan();
+    return display_info.GetActiveRotation() != gfx::Display::ROTATE_0 ||
+           display_info.configured_ui_scale() != 1.0f ||
+           !display_info.overscan_insets_in_dip().empty() ||
+           display_info.has_overscan();
   }
 
   // Overridden from ActionableView.
@@ -340,9 +340,10 @@ bool TrayDisplay::GetDisplayMessageForNotification(
           GetDisplaySize(iter->first));
       return true;
     }
-    if (iter->second.rotation() != old_iter->second.rotation()) {
+    if (iter->second.GetActiveRotation() !=
+        old_iter->second.GetActiveRotation()) {
       int rotation_text_id = 0;
-      switch (iter->second.rotation()) {
+      switch (iter->second.GetActiveRotation()) {
         case gfx::Display::ROTATE_0:
           rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION;
           break;

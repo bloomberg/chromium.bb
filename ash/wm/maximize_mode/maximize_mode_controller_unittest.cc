@@ -112,16 +112,6 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     return maximize_mode_controller()->IsMaximizeModeWindowManagerEnabled();
   }
 
-  gfx::Display::Rotation GetInternalDisplayRotation() const {
-    return Shell::GetInstance()->display_manager()->GetDisplayInfo(
-        gfx::Display::InternalDisplayId()).rotation();
-  }
-
-  void SetInternalDisplayRotation(gfx::Display::Rotation rotation) const {
-    Shell::GetInstance()->display_manager()->
-        SetDisplayRotation(gfx::Display::InternalDisplayId(), rotation);
-  }
-
   // Attaches a SimpleTestTickClock to the MaximizeModeController with a non
   // null value initial value.
   void AttachTickClockForTest() {

@@ -30,6 +30,18 @@ class GFX_EXPORT Display {
     ROTATE_270,
   };
 
+  // The display rotation can have multiple causes for change. A user can set a
+  // preference. On devices with accelerometers, they can change the rotation.
+  // RotationSource allows for the tracking of a Rotation per source of the
+  // change. ROTATION_SOURCE_ACTIVE is the current rotation of the display.
+  // Rotation changes not due to an accelerometer, nor the user, are to use this
+  // source directly.
+  enum RotationSource {
+    ROTATION_SOURCE_ACCELEROMETER = 0,
+    ROTATION_SOURCE_ACTIVE,
+    ROTATION_SOURCE_USER,
+  };
+
   // Touch support for the display.
   enum TouchSupport {
     TOUCH_SUPPORT_UNKNOWN,

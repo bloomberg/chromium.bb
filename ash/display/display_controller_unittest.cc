@@ -346,10 +346,6 @@ class TestEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
-gfx::Display::Rotation GetStoredRotation(int64 id) {
-  return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).rotation();
-}
-
 float GetStoredUIScale(int64 id) {
   return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).
       GetEffectiveUIScale();
@@ -534,7 +530,7 @@ DisplayInfo CreateDisplayInfo(int64 id,
                               gfx::Display::Rotation rotation) {
   DisplayInfo info(id, "", false);
   info.SetBounds(gfx::Rect(0, y, 500, 500));
-  info.set_rotation(rotation);
+  info.SetRotation(rotation, gfx::Display::ROTATION_SOURCE_ACTIVE);
   return info;
 }
 
@@ -663,12 +659,14 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   // Rotation
   observer.GetRotationChangedCountAndReset();  // we only want to reset.
   int64 primary_id = GetPrimaryDisplay().id();
-  display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90);
+  display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
-  display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90);
+  display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ(0, observer.GetRotationChangedCountAndReset());
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
@@ -1023,20 +1021,20 @@ TEST_F(DisplayControllerTest, Rotate) {
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseToInHost(50, 40);
   EXPECT_EQ("50,40", event_handler.GetLocationAndReset());
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display1.id()));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetActiveDisplayRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
   EXPECT_EQ(0, observer.GetRotationChangedCountAndReset());
 
-  display_manager->SetDisplayRotation(display1.id(),
-                                      gfx::Display::ROTATE_90);
+  display_manager->SetDisplayRotation(display1.id(), gfx::Display::ROTATE_90,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("150x200", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("200,0 150x200",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseToInHost(50, 40);
   EXPECT_EQ("40,69", event_handler.GetLocationAndReset());
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetActiveDisplayRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
   DisplayLayout display_layout(DisplayLayout::BOTTOM, 50);
@@ -1044,30 +1042,30 @@ TEST_F(DisplayControllerTest, Rotate) {
   EXPECT_EQ("50,120 150x200",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
 
-  display_manager->SetDisplayRotation(display2_id,
-                                      gfx::Display::ROTATE_270);
+  display_manager->SetDisplayRotation(display2_id, gfx::Display::ROTATE_270,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
   EXPECT_EQ("200x120", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());
   EXPECT_EQ("50,120 200x150",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
-  EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetActiveDisplayRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_270, GetActiveDisplayRotation(display2_id));
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
 #if !defined(OS_WIN)
   ui::test::EventGenerator generator2(root_windows[1]);
   generator2.MoveMouseToInHost(50, 40);
   EXPECT_EQ("179,25", event_handler.GetLocationAndReset());
-  display_manager->SetDisplayRotation(display1.id(),
-                                      gfx::Display::ROTATE_180);
+  display_manager->SetDisplayRotation(display1.id(), gfx::Display::ROTATE_180,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
 
   EXPECT_EQ("120x200", root_windows[0]->bounds().size().ToString());
   EXPECT_EQ("200x150", root_windows[1]->bounds().size().ToString());
   // Dislay must share at least 100, so the x's offset becomes 20.
   EXPECT_EQ("20,200 200x150",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
-  EXPECT_EQ(gfx::Display::ROTATE_180, GetStoredRotation(display1.id()));
-  EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
+  EXPECT_EQ(gfx::Display::ROTATE_180, GetActiveDisplayRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_270, GetActiveDisplayRotation(display2_id));
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
   generator1.MoveMouseToInHost(50, 40);

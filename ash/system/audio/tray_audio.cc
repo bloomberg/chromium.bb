@@ -167,7 +167,7 @@ void TrayAudio::ChangeInternalSpeakerChannelMode() {
     const DisplayInfo& display_info =
         Shell::GetInstance()->display_manager()->GetDisplayInfo(
             gfx::Display::InternalDisplayId());
-    if (display_info.rotation() == gfx::Display::ROTATE_180)
+    if (display_info.GetActiveRotation() == gfx::Display::ROTATE_180)
       channel_mode = system::TrayAudioDelegate::LEFT_RIGHT_SWAPPED;
   }
 

@@ -5,6 +5,7 @@
 #ifndef ASH_DISPLAY_DISPLAY_INFO_H_
 #define ASH_DISPLAY_DISPLAY_INFO_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -103,9 +104,6 @@ class ASH_EXPORT DisplayInfo {
   // actual overscan automatically, but used in the message.
   bool has_overscan() const { return has_overscan_; }
 
-  void set_rotation(gfx::Display::Rotation rotation) { rotation_ = rotation; }
-  gfx::Display::Rotation rotation() const { return rotation_; }
-
   void set_touch_support(gfx::Display::TouchSupport support) {
     touch_support_ = support;
   }
@@ -138,6 +136,17 @@ class ASH_EXPORT DisplayInfo {
   // (the effective ui scale is 1.0 in this case).
   float configured_ui_scale() const { return configured_ui_scale_; }
   void set_configured_ui_scale(float scale) { configured_ui_scale_ = scale; }
+
+  // Sets the rotation for the given |source|. Setting a new rotation will also
+  // have it become the active rotation.
+  void SetRotation(gfx::Display::Rotation rotation,
+                   gfx::Display::RotationSource source);
+
+  // Returns the currently active rotation for this display.
+  gfx::Display::Rotation GetActiveRotation() const;
+
+  // Returns the rotation set by a given |source|.
+  gfx::Display::Rotation GetRotation(gfx::Display::RotationSource source) const;
 
   // Returns the ui scale and device scale factor actually used to create
   // display that chrome sees. This can be different from one obtained
@@ -231,7 +240,7 @@ class ASH_EXPORT DisplayInfo {
   int64 id_;
   std::string name_;
   bool has_overscan_;
-  gfx::Display::Rotation rotation_;
+  std::map<gfx::Display::RotationSource, gfx::Display::Rotation> rotations_;
   gfx::Display::TouchSupport touch_support_;
 
   // If the display is also a touch device, it will have a positive

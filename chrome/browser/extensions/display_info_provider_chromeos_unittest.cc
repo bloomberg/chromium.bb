@@ -121,7 +121,8 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
   EXPECT_EQ("0,0 600x500", SystemInfoDisplayBoundsToString(result[0]->bounds));
   EXPECT_EQ(90, result[0]->rotation);
 
-  GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_270);
+  GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_270,
+                                          gfx::Display::ROTATION_SOURCE_ACTIVE);
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -131,7 +132,8 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
   EXPECT_EQ("0,0 600x500", SystemInfoDisplayBoundsToString(result[0]->bounds));
   EXPECT_EQ(270, result[0]->rotation);
 
-  GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_180);
+  GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_180,
+                                          gfx::Display::ROTATION_SOURCE_ACTIVE);
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
@@ -141,7 +143,8 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
   EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
   EXPECT_EQ(180, result[0]->rotation);
 
-  GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_0);
+  GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_0,
+                                          gfx::Display::ROTATION_SOURCE_ACTIVE);
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 

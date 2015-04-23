@@ -109,7 +109,7 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
   const char kInternalProp[] = "_CHROME_DISPLAY_INTERNAL";
   const char kCARDINAL[] = "CARDINAL";
   int xrandr_rotation = RR_Rotate_0;
-  switch (info.rotation()) {
+  switch (info.GetActiveRotation()) {
     case gfx::Display::ROTATE_0:
       xrandr_rotation = RR_Rotate_0;
       break;
@@ -140,7 +140,7 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
     scale *= kCursorMultiplierForExternalDisplays;
 
   ui::CursorController::GetInstance()->SetCursorConfigForWindow(
-      host->GetAcceleratedWidget(), info.rotation(), scale);
+      host->GetAcceleratedWidget(), info.GetActiveRotation(), scale);
 #endif
 #endif
   scoped_ptr<RootWindowTransformer> transformer(

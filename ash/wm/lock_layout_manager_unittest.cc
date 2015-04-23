@@ -212,12 +212,14 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   ash::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
   display_manager->SetDisplayRotation(primary_display.id(),
-                                      gfx::Display::ROTATE_90);
+                                      gfx::Display::ROTATE_90,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
   primary_display = Shell::GetScreen()->GetPrimaryDisplay();
   screen_bounds = primary_display.bounds();
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
   display_manager->SetDisplayRotation(primary_display.id(),
-                                      gfx::Display::ROTATE_0);
+                                      gfx::Display::ROTATE_0,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
 
   // When virtual keyboard overscroll is disabled keyboard bounds do
   // affect window bounds.

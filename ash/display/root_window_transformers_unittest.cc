@@ -107,10 +107,6 @@ class TestEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
-gfx::Display::Rotation GetStoredRotation(int64 id) {
-  return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).rotation();
-}
-
 float GetStoredUIScale(int64 id) {
   return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).
       GetEffectiveUIScale();
@@ -158,12 +154,12 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ("50,90", event_handler.GetLocationAndReset());
   EXPECT_EQ("50,90",
             aura::Env::GetInstance()->last_mouse_location().ToString());
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display1.id()));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetActiveDisplayRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
   magnifier->SetEnabled(false);
 
-  display_manager->SetDisplayRotation(display1.id(),
-                                      gfx::Display::ROTATE_90);
+  display_manager->SetDisplayRotation(display1.id(), gfx::Display::ROTATE_90,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
   // Move the cursor to the center of the first root window.
   generator1.MoveMouseToInHost(59, 100);
 
@@ -177,8 +173,8 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ("110,70", event_handler.GetLocationAndReset());
   EXPECT_EQ("110,70",
             aura::Env::GetInstance()->last_mouse_location().ToString());
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
-  EXPECT_EQ(gfx::Display::ROTATE_0, GetStoredRotation(display2_id));
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetActiveDisplayRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
   magnifier->SetEnabled(false);
 
   DisplayLayout display_layout(DisplayLayout::BOTTOM, 50);
@@ -186,8 +182,8 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ("50,120 150x200",
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
 
-  display_manager->SetDisplayRotation(display2_id,
-                                      gfx::Display::ROTATE_270);
+  display_manager->SetDisplayRotation(display2_id, gfx::Display::ROTATE_270,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
   // Move the cursor to the center of the second root window.
   generator2.MoveMouseToInHost(151, 199);
 
@@ -200,12 +196,12 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   EXPECT_EQ("95,80", event_handler.GetLocationAndReset());
   EXPECT_EQ("145,200",
             aura::Env::GetInstance()->last_mouse_location().ToString());
-  EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
-  EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetActiveDisplayRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_270, GetActiveDisplayRotation(display2_id));
   magnifier->SetEnabled(false);
 
-  display_manager->SetDisplayRotation(display1.id(),
-                                      gfx::Display::ROTATE_180);
+  display_manager->SetDisplayRotation(display1.id(), gfx::Display::ROTATE_180,
+                                      gfx::Display::ROTATION_SOURCE_ACTIVE);
   // Move the cursor to the center of the first root window.
   generator1.MoveMouseToInHost(59, 99);
 
@@ -217,8 +213,8 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
             ScreenUtil::GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseToInHost(39, 59);
   EXPECT_EQ("70,120", event_handler.GetLocationAndReset());
-  EXPECT_EQ(gfx::Display::ROTATE_180, GetStoredRotation(display1.id()));
-  EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
+  EXPECT_EQ(gfx::Display::ROTATE_180, GetActiveDisplayRotation(display1.id()));
+  EXPECT_EQ(gfx::Display::ROTATE_270, GetActiveDisplayRotation(display2_id));
   magnifier->SetEnabled(false);
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);

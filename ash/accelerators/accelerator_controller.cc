@@ -295,7 +295,8 @@ void HandleRotateScreen() {
   const DisplayInfo& display_info =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display.id());
   ash::ScreenRotationAnimator(display.id())
-      .Rotate(GetNextRotation(display_info.rotation()));
+      .Rotate(GetNextRotation(display_info.GetActiveRotation()),
+              gfx::Display::ROTATION_SOURCE_USER);
 }
 
 // Rotate the active window.

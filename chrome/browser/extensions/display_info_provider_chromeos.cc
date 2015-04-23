@@ -334,7 +334,8 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
   // Process 'rotation' parameter.
   if (info.rotation) {
     display_manager->SetDisplayRotation(display_id,
-                                        DegreesToRotation(*info.rotation));
+                                        DegreesToRotation(*info.rotation),
+                                        gfx::Display::ROTATION_SOURCE_ACTIVE);
   }
 
   // Process new display origin parameters.

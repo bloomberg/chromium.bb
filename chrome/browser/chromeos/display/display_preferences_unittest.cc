@@ -245,7 +245,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_NE(dummy_id, ash::Shell::GetScreen()->GetPrimaryDisplay().id());
 
   display_controller->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
-  display_manager->SetDisplayRotation(id1, gfx::Display::ROTATE_90);
+  display_manager->SetDisplayRotation(id1, gfx::Display::ROTATE_90,
+                                      gfx::Display::ROTATION_SOURCE_USER);
   EXPECT_TRUE(display_manager->SetDisplayUIScale(id1, 1.25f));
   EXPECT_FALSE(display_manager->SetDisplayUIScale(id2, 1.25f));
 
@@ -576,7 +577,8 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   display_controller->SetOverscanInsets(
       new_primary,
       gfx::Insets(10, 11, 12, 13));
-  display_manager->SetDisplayRotation(new_primary, gfx::Display::ROTATE_90);
+  display_manager->SetDisplayRotation(new_primary, gfx::Display::ROTATE_90,
+                                      gfx::Display::ROTATION_SOURCE_USER);
 
   // Does not store the preferences locally.
   EXPECT_FALSE(local_state()->FindPreference(
@@ -599,7 +601,7 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
 
   const ash::DisplayInfo& info_primary =
       display_manager->GetDisplayInfo(new_primary);
-  EXPECT_EQ(gfx::Display::ROTATE_90, info_primary.rotation());
+  EXPECT_EQ(gfx::Display::ROTATE_90, info_primary.GetActiveRotation());
   EXPECT_EQ(1.0f, info_primary.configured_ui_scale());
 }
 
@@ -669,10 +671,12 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
   LoggedInAsUser();
   // Populate the properties.
   display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
-                                      gfx::Display::ROTATE_180);
+                                      gfx::Display::ROTATE_180,
+                                      gfx::Display::ROTATION_SOURCE_USER);
   // Reset property to avoid rotation lock
   display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
-                                      gfx::Display::ROTATE_0);
+                                      gfx::Display::ROTATE_0,
+                                      gfx::Display::ROTATION_SOURCE_USER);
 
   // Open up 270 degrees to trigger maximize mode
   scoped_refptr<chromeos::AccelerometerUpdate> update(
@@ -690,8 +694,7 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
   update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, -kMeanGravity, 0.0f, 0.0f);
   controller->OnAccelerometerUpdated(update);
   shell->screen_orientation_controller()->OnAccelerometerUpdated(update);
-  EXPECT_EQ(gfx::Display::ROTATE_90, display_manager->
-                GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation());
+  EXPECT_EQ(gfx::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
 
   const base::DictionaryValue* properties =
       local_state()->GetDictionary(prefs::kDisplayProperties);
@@ -699,6 +702,17 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
   EXPECT_TRUE(properties->GetDictionary(
       base::Int64ToString(gfx::Display::InternalDisplayId()), &property));
   int rotation = -1;
+  EXPECT_TRUE(property->GetInteger("rotation", &rotation));
+  EXPECT_EQ(gfx::Display::ROTATE_0, rotation);
+
+  // Trigger a save, the acceleration rotation should not be saved as the user
+  // rotation.
+  StoreDisplayPrefs();
+  properties = local_state()->GetDictionary(prefs::kDisplayProperties);
+  property = NULL;
+  EXPECT_TRUE(properties->GetDictionary(
+      base::Int64ToString(gfx::Display::InternalDisplayId()), &property));
+  rotation = -1;
   EXPECT_TRUE(property->GetInteger("rotation", &rotation));
   EXPECT_EQ(gfx::Display::ROTATE_0, rotation);
 }
@@ -720,9 +734,7 @@ TEST_F(DisplayPreferencesTest, StoreRotationStateNoLogin) {
   EXPECT_EQ(current_rotation_lock, rotation_lock);
 
   int orientation;
-  gfx::Display::Rotation current_rotation = ash::Shell::GetInstance()->
-      display_manager()->
-          GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  gfx::Display::Rotation current_rotation = GetCurrentInternalDisplayRotation();
   EXPECT_TRUE(properties->GetInteger("orientation", &orientation));
   EXPECT_EQ(current_rotation, orientation);
 }
@@ -745,9 +757,7 @@ TEST_F(DisplayPreferencesTest, StoreRotationStateGuest) {
   EXPECT_EQ(current_rotation_lock, rotation_lock);
 
   int orientation;
-  gfx::Display::Rotation current_rotation = ash::Shell::GetInstance()->
-      display_manager()->
-          GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  gfx::Display::Rotation current_rotation = GetCurrentInternalDisplayRotation();
   EXPECT_TRUE(properties->GetInteger("orientation", &orientation));
   EXPECT_EQ(current_rotation, orientation);
 }
@@ -770,9 +780,7 @@ TEST_F(DisplayPreferencesTest, StoreRotationStateNormalUser) {
   EXPECT_EQ(current_rotation_lock, rotation_lock);
 
   int orientation;
-  gfx::Display::Rotation current_rotation = ash::Shell::GetInstance()->
-      display_manager()->
-          GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  gfx::Display::Rotation current_rotation = GetCurrentInternalDisplayRotation();
   EXPECT_TRUE(properties->GetInteger("orientation", &orientation));
   EXPECT_EQ(current_rotation, orientation);
 }
@@ -788,8 +796,7 @@ TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
   bool initial_rotation_lock = IsRotationLocked();
   ASSERT_FALSE(initial_rotation_lock);
   ash::DisplayManager* display_manager = shell->display_manager();
-  gfx::Display::Rotation initial_rotation = display_manager->
-      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  gfx::Display::Rotation initial_rotation = GetCurrentInternalDisplayRotation();
   ASSERT_EQ(gfx::Display::ROTATE_0, initial_rotation);
 
   StoreDisplayRotationPrefs(initial_rotation_lock);
@@ -806,8 +813,8 @@ TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
   EXPECT_EQ(gfx::Display::ROTATE_90, display_rotation);
 
   bool rotation_lock = IsRotationLocked();
-  gfx::Display::Rotation before_maximize_mode_rotation = display_manager->
-      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  gfx::Display::Rotation before_maximize_mode_rotation =
+      GetCurrentInternalDisplayRotation();
 
   // Settings should not be applied until maximize mode activates
   EXPECT_FALSE(rotation_lock);
@@ -824,8 +831,8 @@ TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
   maximize_mode_controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(maximize_mode_controller->IsMaximizeModeWindowManagerEnabled());
   bool screen_orientation_rotation_lock = IsRotationLocked();
-  gfx::Display::Rotation maximize_mode_rotation = display_manager->
-      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  gfx::Display::Rotation maximize_mode_rotation =
+      GetCurrentInternalDisplayRotation();
   EXPECT_TRUE(screen_orientation_rotation_lock);
   EXPECT_EQ(gfx::Display::ROTATE_90, maximize_mode_rotation);
 }

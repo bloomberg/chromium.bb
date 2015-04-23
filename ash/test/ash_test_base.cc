@@ -202,6 +202,17 @@ ui::test::EventGenerator& AshTestBase::GetEventGenerator() {
   return *event_generator_.get();
 }
 
+gfx::Display::Rotation AshTestBase::GetActiveDisplayRotation(int64 id) {
+  return Shell::GetInstance()
+      ->display_manager()
+      ->GetDisplayInfo(id)
+      .GetActiveRotation();
+}
+
+gfx::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
+  return GetActiveDisplayRotation(gfx::Display::InternalDisplayId());
+}
+
 bool AshTestBase::SupportsMultipleDisplays() {
   return AshTestHelper::SupportsMultipleDisplays();
 }

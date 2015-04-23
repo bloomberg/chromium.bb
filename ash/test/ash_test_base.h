@@ -13,6 +13,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/display.h"
 #include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)
@@ -98,6 +99,12 @@ class AshTestBase : public testing::Test {
     BLOCKED_BY_USER_ADDING_SCREEN,
     NUMBER_OF_BLOCK_REASONS
   };
+
+  // Returns the rotation currentl active for the display |id|.
+  static gfx::Display::Rotation GetActiveDisplayRotation(int64 id);
+
+  // Returns the rotation currently active for the internal display.
+  static gfx::Display::Rotation GetCurrentInternalDisplayRotation();
 
   // Proxy to AshTestHelper::SupportsMultipleDisplays().
   static bool SupportsMultipleDisplays();

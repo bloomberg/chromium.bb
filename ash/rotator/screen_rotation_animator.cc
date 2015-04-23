@@ -67,7 +67,7 @@ gfx::Display::Rotation GetCurrentRotation(int64 display_id) {
   return Shell::GetInstance()
       ->display_manager()
       ->GetDisplayInfo(display_id)
-      .rotation();
+      .GetActiveRotation();
 }
 
 // Returns true if the rotation between |initial_rotation| and |new_rotation| is
@@ -154,6 +154,7 @@ void LayerCleanupObserver::OnDetachedFromSequence(
 // animate the change.
 void RotateScreen(int64 display_id,
                   gfx::Display::Rotation new_rotation,
+                  gfx::Display::RotationSource source,
                   base::TimeDelta duration,
                   int rotation_degrees,
                   int rotation_degree_offset,
@@ -181,8 +182,8 @@ void RotateScreen(int64 display_id,
   scoped_ptr<LayerCleanupObserver> layer_cleanup_observer(
       new LayerCleanupObserver(old_layer_tree.Pass()));
 
-  Shell::GetInstance()->display_manager()->SetDisplayRotation(display_id,
-                                                              new_rotation);
+  Shell::GetInstance()->display_manager()->SetDisplayRotation(
+      display_id, new_rotation, source);
 
   const gfx::RectF rotated_screen_bounds = root_window->GetTargetBounds();
   const gfx::Point pivot = gfx::Point(rotated_screen_bounds.width() / 2,
@@ -267,7 +268,8 @@ ScreenRotationAnimator::ScreenRotationAnimator(int64 display_id)
 ScreenRotationAnimator::~ScreenRotationAnimator() {
 }
 
-void ScreenRotationAnimator::Rotate(gfx::Display::Rotation new_rotation) {
+void ScreenRotationAnimator::Rotate(gfx::Display::Rotation new_rotation,
+                                    gfx::Display::RotationSource source) {
   const gfx::Display::Rotation current_rotation =
       GetCurrentRotation(display_id_);
 
@@ -279,8 +281,8 @@ void ScreenRotationAnimator::Rotate(gfx::Display::Rotation new_rotation) {
           switches::kAshEnableScreenRotationAnimation);
 
   if (switch_value == kRotationAnimation_None) {
-    Shell::GetInstance()->display_manager()->SetDisplayRotation(display_id_,
-                                                                new_rotation);
+    Shell::GetInstance()->display_manager()->SetDisplayRotation(
+        display_id_, new_rotation, source);
   } else if (kRotationAnimation_Default == switch_value ||
              kRotationAnimation_Partial == switch_value) {
     const int rotation_degree_offset =
@@ -288,7 +290,7 @@ void ScreenRotationAnimator::Rotate(gfx::Display::Rotation new_rotation) {
             ? 180 - kPartialRotationDegrees
             : 90 - kPartialRotationDegrees;
 
-    RotateScreen(display_id_, new_rotation,
+    RotateScreen(display_id_, new_rotation, source,
                  base::TimeDelta::FromMilliseconds(kRotationDurationInMs),
                  kPartialRotationDegrees, rotation_degree_offset,
                  gfx::Tween::FAST_OUT_LINEAR_IN, false /* should_scale */);
@@ -296,7 +298,7 @@ void ScreenRotationAnimator::Rotate(gfx::Display::Rotation new_rotation) {
     const int rotation_degrees =
         Is180DegreeFlip(current_rotation, new_rotation) ? 180 : 90;
 
-    RotateScreen(display_id_, new_rotation,
+    RotateScreen(display_id_, new_rotation, source,
                  base::TimeDelta::FromMilliseconds(kRotationDurationInMs),
                  rotation_degrees, 0 /* rotation_degree_offset */,
                  gfx::Tween::FAST_OUT_LINEAR_IN, true /* should_scale */);

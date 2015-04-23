@@ -17,8 +17,10 @@ class ASH_EXPORT ScreenRotationAnimator {
   explicit ScreenRotationAnimator(int64 display_id);
   ~ScreenRotationAnimator();
 
-  // Rotates |display_| to the |new_rotation| orientation.
-  void Rotate(gfx::Display::Rotation new_rotation);
+  // Rotates |display_| to the |new_rotation| orientation, for the given
+  // |source|. The rotation will also become active.
+  void Rotate(gfx::Display::Rotation new_rotation,
+              gfx::Display::RotationSource source);
 
  private:
   // The id of the display to rotate.

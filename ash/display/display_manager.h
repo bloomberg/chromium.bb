@@ -141,8 +141,11 @@ class ASH_EXPORT DisplayManager
   // display's bounds change.
   void SetOverscanInsets(int64 display_id, const gfx::Insets& insets_in_dip);
 
-  // Sets the display's rotation.
-  void SetDisplayRotation(int64 display_id, gfx::Display::Rotation rotation);
+  // Sets the display's rotation for the given |source|. The new |rotation| will
+  // also become active.
+  void SetDisplayRotation(int64 display_id,
+                          gfx::Display::Rotation rotation,
+                          gfx::Display::RotationSource source);
 
   // Sets the display's ui scale. Returns true if it's successful, or
   // false otherwise.  TODO(mukai): remove this and merge into
