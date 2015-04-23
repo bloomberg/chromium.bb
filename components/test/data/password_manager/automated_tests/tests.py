@@ -11,6 +11,9 @@ from environment import Environment
 from websitetest import WebsiteTest
 
 
+TEST_CASES = ("PromptFailTest", "PromptSuccessTest", "SaveAndAutofillTest")
+
+
 class Alexa(WebsiteTest):
 
   def Login(self):
@@ -504,8 +507,10 @@ def SaveResults(environment_tests_results, environment_save_path,
     with open(environment_save_path, "w") as save_file:
       save_file.write(xml)
 
+
 def RunTest(chrome_path, chromedriver_path, profile_path,
-            environment_passwords_path, website_test_name, test_case_name):
+            environment_passwords_path, website_test_name,
+            test_case_name):
   """Runs the test for the specified website.
 
   Args:
@@ -528,15 +533,16 @@ def RunTest(chrome_path, chromedriver_path, profile_path,
   environment = Environment(chrome_path, chromedriver_path, profile_path,
                             environment_passwords_path,
                             enable_automatic_password_saving)
+  try:
+    if website_test_name in all_tests:
+      environment.AddWebsiteTest(all_tests[website_test_name])
+    else:
+      raise Exception("Test name {} is unknown.".format(website_test_name))
 
-  if website_test_name in all_tests:
-    environment.AddWebsiteTest(all_tests[website_test_name])
-  else:
-    raise Exception("Test name {} is unknown.".format(website_test_name))
-
-  environment.RunTestsOnSites(test_case_name)
-  environment.Quit()
-  return environment.tests_results
+    environment.RunTestsOnSites(test_case_name)
+    return environment.tests_results
+  finally:
+    environment.Quit()
 
 def main():
   parser = argparse.ArgumentParser(
@@ -575,9 +581,7 @@ def main():
   if args.save_path:
     save_path = args.save_path
 
-  test_cases_to_run = args.test_cases_to_run or\
-      ("PromptFailTest", "PromptSuccessTest", "SaveAndAutofillTest")
-
+  test_cases_to_run = args.test_cases_to_run or TEST_CASES
   for test_case in test_cases_to_run:
     tests_results = RunTest(
         args.chrome_path, args.chromedriver_path, args.profile_path,

@@ -288,7 +288,12 @@ class Environment:
         getattr(websitetest, test_case_name)()
       except Exception as e:
         successful = False
-        error = e.message
+        # httplib.CannotSendRequest doesn't define a message,
+        # so type(e).__name__ will at least log exception name as a reason.
+        # TODO(melandory): logging.exception(e) produces meaningful result
+        # for httplib.CannotSendRequest, so we can try to propagate information
+        # that reason is an exception to the logging phase.
+        error = "Exception %s %s" % (type(e).__name__, e)
       self.tests_results.append(
           (websitetest.name, test_case_name, successful, error))
 

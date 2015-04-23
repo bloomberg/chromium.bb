@@ -35,14 +35,19 @@ descending order of severity):
 You have to set up appropriate logging handlers to have the logs appear.
 """
 
-import argparse
 import ConfigParser
+import Queue
+import argparse
 import logging
+import multiprocessing
 import os
 import shutil
-import subprocess
+import stopit
 import tempfile
 import time
+
+from threading import Thread
+from collections import defaultdict
 
 import tests
 
@@ -51,126 +56,90 @@ import tests
 # of logging.DEBUG, which is already used for detailed test debug messages.
 SCRIPT_DEBUG = 9
 
+class Config:
+  test_cases_to_run = tests.TEST_CASES
+  save_only_fails = False
+  tests_to_run = tests.all_tests.keys()
+  max_tests_in_parallel = 1
 
-class TestRunner(object):
-  """Runs tests for a single website."""
+  def __init__(self, config_path):
+    config = ConfigParser.ConfigParser()
+    config.read(config_path)
+    if config.has_option("run_options", "tests_in_parallel"):
+      self.max_tests_in_parallel = config.getint(
+          "run_options", "tests_in_parallel")
 
-  def __init__(self, test_cmd, test_name):
-    """Initialize the TestRunner.
+    self.chrome_path = config.get("binaries", "chrome-path")
+    self.chromedriver_path = config.get("binaries", "chromedriver-path")
+    self.passwords_path = config.get("data_files", "passwords_path")
 
-    Args:
-      test_cmd: List of command line arguments to be supplied to
-        every test run.
-      test_name: Test name (e.g., facebook).
-    """
-    self.logger = logging.getLogger("run_tests")
+    if config.has_option("run_options", "tests_to_run"):
+      self.tests_to_run = config.get("run_options", "tests_to_run").split(",")
 
-    self.profile_path = tempfile.mkdtemp()
-    results = tempfile.NamedTemporaryFile(delete=False)
-    self.results_path = results.name
-    results.close()
-    self.test_cmd = test_cmd + ["--profile-path", self.profile_path,
-                                "--save-path", self.results_path]
-    self.test_name = test_name
-    # TODO(vabr): Ideally we would replace timeout with something allowing
-    # calling tests directly inside Python, and working on other platforms.
-    #
-    # The website test runs multiple scenarios, each one has an internal
-    # timeout of 200s for waiting (see |remaining_time_to_wait| and
-    # Wait() in websitetest.py). Expecting that not every scenario should
-    # take 200s, the maximum time allocated for all of them is 300s.
-    self.test_cmd = ["timeout", "300"] + self.test_cmd
-
-    self.logger.log(SCRIPT_DEBUG,
-                    "TestRunner set up for test %s, command '%s', "
-                    "profile path %s, results file %s",
-                    self.test_name, self.test_cmd, self.profile_path,
-                    self.results_path)
-
-    self.runner_process = None
-    # The tests can be flaky. This is why we try to rerun up to 3 times.
-    self.max_test_runs_left = 3
-    self.failures = []
-    self._run_test()
-
-  def get_test_result(self):
-    """Return the test results.
-
-    Returns:
-      (True, []) if the test passed.
-      (False, list_of_failures) if the test failed.
-      None if the test is still running.
-    """
-
-    test_running = self.runner_process and self.runner_process.poll() is None
-    if test_running:
-      return None
-    # Test is not running, now we have to check if we want to start it again.
-    if self._check_if_test_passed():
-      self.logger.log(SCRIPT_DEBUG, "Test %s passed", self.test_name)
-      return True, []
-    if self.max_test_runs_left == 0:
-      self.logger.log(SCRIPT_DEBUG, "Test %s failed", self.test_name)
-      return False, self.failures
-    self._run_test()
-    return None
-
-  def _check_if_test_passed(self):
-    """Returns True if and only if the test passed."""
-
-    success = False
-    if os.path.isfile(self.results_path):
-      with open(self.results_path, "r") as results:
-        # TODO(vabr): Parse the results to make sure all scenarios succeeded
-        # instead of hard-coding here the number of tests scenarios from
-        # test.py:main.
-        NUMBER_OF_TEST_SCENARIOS = 3
-        passed_scenarios = 0
-        for line in results:
-          self.failures.append(line)
-          passed_scenarios += line.count("successful='True'")
-          success = passed_scenarios == NUMBER_OF_TEST_SCENARIOS
-          if success:
-            break
-
-    self.logger.log(
-        SCRIPT_DEBUG,
-        "Test run of {0} has succeeded: {1}".format(self.test_name, success))
-    return success
-
-  def _run_test(self):
-    """Executes the command to run the test."""
-    with open(self.results_path, "w"):
-      pass  # Just clear the results file.
-    shutil.rmtree(path=self.profile_path, ignore_errors=True)
-    self.max_test_runs_left -= 1
-    self.logger.log(SCRIPT_DEBUG, "Run of test %s started", self.test_name)
-    self.runner_process = subprocess.Popen(self.test_cmd)
+    if config.has_option("run_options", "test_cases_to_run"):
+      self.test_cases_to_run = config.get(
+          "run_options", "test_cases_to_run").split(",")
+    if (config.has_option("logging", "save-only-fails")):
+      self.save_only_fails = config.getboolean("logging", "save-only-fails")
 
 
-def _apply_defaults(config, defaults):
-  """Adds default values from |defaults| to |config|.
+def LogResultsOfTestRun(config, results):
+  """ Logs |results| of a test run. """
+  logger = logging.getLogger("run_tests")
+  failed_tests = []
+  failed_tests_num = 0
+  for result in results:
+    website, test_case, success, reason = result
+    if not (config.save_only_fails and success):
+      logger.debug("Test case %s has %s on Website %s", test_case,
+                  website, {True: "passed", False: "failed"}[success])
+      if not success:
+        logger.debug("Reason of failure: %s", reason)
 
-  Note: This differs from ConfigParser's mechanism for providing defaults in
-  two aspects:
-    * The "defaults" here become explicit, and are associated with sections.
-    * Sections get created for the added defaults where needed, that is, if
-      they do not exist before.
+    if not success:
+      failed_tests.append("%s.%s" % (website, test_case))
+      failed_tests_num += 1
 
-  Args:
-    config: A ConfigParser instance to be updated
-    defaults: A dictionary mapping (section_string, option_string) pairs
-      to string values. For every section/option combination not already
-      contained in |config|, the value from |defaults| is stored in |config|.
+  logger.info("%d failed test cases out of %d, failing test cases: %s",
+              failed_tests_num, len(results),
+              sorted([name for name in failed_tests]))
+
+
+def RunTestCaseOnWebsite((website, test_case, config)):
+  """ Runs a |test_case| on a |website|. In case when |test_case| has
+  failed it tries to rerun it. If run takes too long, then it is stopped.
   """
-  for (section, option) in defaults:
-    if not config.has_section(section):
-      config.add_section(section)
-    if not config.has_option(section, option):
-      config.set(section, option, defaults[(section, option)])
+
+  profile_path = tempfile.mkdtemp()
+  # The tests can be flaky. This is why we try to rerun up to 3 times.
+  attempts = 3
+  result = ("", "", False, "")
+  logger = logging.getLogger("run_tests")
+  for _ in xrange(attempts):
+    shutil.rmtree(path=profile_path, ignore_errors=True)
+    logger.log(SCRIPT_DEBUG, "Run of test case %s of website %s started",
+               test_case, website)
+    try:
+      with stopit.ThreadingTimeout(100) as timeout:
+        logger.log(SCRIPT_DEBUG,
+                   "Run test with parameters: %s %s %s %s %s %s",
+                   config.chrome_path, config.chromedriver_path,
+                   profile_path, config.passwords_path,
+                   website, test_case)
+        result = tests.RunTest(config.chrome_path, config.chromedriver_path,
+                               profile_path, config.passwords_path,
+                               website, test_case)[0]
+      if timeout != timeout.EXECUTED:
+        result =  (website, test_case, False, "Timeout")
+      _, _, success, _ = result
+      if success:
+        return result
+    except Exception as e:
+      result = (website, test_case, False, e)
+  return result
 
 
-def run_tests(config_path):
+def RunTests(config_path):
   """Runs automated tests.
 
   Runs the tests and returns the results through logging:
@@ -183,61 +152,21 @@ def run_tests(config_path):
     config_path: The path to the config INI file. See the top of the file
       for format description.
   """
-  def has_test_run_finished(runner, result):
-    result = runner.get_test_result()
-    if result:  # This test run is finished.
-      status, log = result
-      results.append((runner.test_name, status, log))
-      return True
-    else:
-      return False
-
-  defaults = {("run_options", "tests_in_parallel"): "1"}
-  config = ConfigParser.ConfigParser()
-  _apply_defaults(config, defaults)
-  config.read(config_path)
-  max_tests_in_parallel = config.getint("run_options", "tests_in_parallel")
-  full_path = os.path.realpath(__file__)
-  tests_dir = os.path.dirname(full_path)
-  tests_path = os.path.join(tests_dir, "tests.py")
-  test_name_idx = 2  # Index of "test_name_placeholder" below.
-  general_test_cmd = ["python", tests_path, "test_name_placeholder",
-                      "--chrome-path", config.get("binaries", "chrome-path"),
-                      "--chromedriver-path",
-                      config.get("binaries", "chromedriver-path"),
-                      "--passwords-path",
-                      config.get("data_files", "passwords_path")]
-  runners = []
-  if config.has_option("run_options", "tests_to_run"):
-    tests_to_run = config.get("run_options", "tests_to_run").split(",")
-  else:
-    tests_to_run = tests.all_tests.keys()
-  if (config.has_option("logging", "save-only-failures") and
-      config.getboolean("logging", "save-only-failures")):
-    general_test_cmd.append("--save-only-failures")
-
-  if config.has_option("run_options", "test_cases_to_run"):
-    general_test_cmd += ["--test-cases-to-run",
-        config.get("run_options", "test_cases_to_run").replace(",", " ")]
-
+  config = Config(config_path)
   logger = logging.getLogger("run_tests")
-  logger.log(SCRIPT_DEBUG, "%d tests to run: %s", len(tests_to_run),
-             tests_to_run)
-  results = []  # List of (name, bool_passed, failure_log).
-  while len(runners) + len(tests_to_run) > 0:
-    runners = [runner for runner in runners if not has_test_run_finished(
-        runner, results)]
-    while len(runners) < max_tests_in_parallel and len(tests_to_run):
-      test_name = tests_to_run.pop()
-      specific_test_cmd = list(general_test_cmd)
-      specific_test_cmd[test_name_idx] = test_name
-      runners.append(TestRunner(specific_test_cmd, test_name))
-    time.sleep(1)
-  failed_tests = [(name, log) for (name, passed, log) in results if not passed]
-  logger.info("%d failed tests out of %d, failing tests: %s",
-              len(failed_tests), len(results),
-              [name for (name, _) in failed_tests])
-  logger.debug("Logs of failing tests: %s", failed_tests)
+  logger.log(SCRIPT_DEBUG, "%d tests to run: %s", len(config.tests_to_run),
+             config.tests_to_run)
+  data = [(website, test_case, config)
+          for website in config.tests_to_run
+          for test_case in config.test_cases_to_run]
+  number_of_processes = min([config.max_tests_in_parallel,
+                             len(config.test_cases_to_run) *
+                             len(config.tests_to_run)])
+  p = multiprocessing.Pool(number_of_processes)
+  results = p.map(RunTestCaseOnWebsite, data)
+  p.close()
+  p.join()
+  LogResultsOfTestRun(config, results)
 
 
 def main():
@@ -245,7 +174,7 @@ def main():
   parser.add_argument("config_path", metavar="N",
                       help="Path to the config.ini file.")
   args = parser.parse_args()
-  run_tests(args.config_path)
+  RunTests(args.config_path)
 
 
 if __name__ == "__main__":
