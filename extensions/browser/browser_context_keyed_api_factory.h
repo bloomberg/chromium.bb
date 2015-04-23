@@ -98,7 +98,7 @@ class BrowserContextKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
     DeclareFactoryDependencies();
   }
 
-  virtual ~BrowserContextKeyedAPIFactory() {}
+  ~BrowserContextKeyedAPIFactory() override {}
 
  private:
   // BrowserContextKeyedServiceFactory implementation.
@@ -109,7 +109,7 @@ class BrowserContextKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedBaseFactory implementation.
   // These can be effectively overridden with template specializations.
-  virtual content::BrowserContext* GetBrowserContextToUse(
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override {
     if (T::kServiceRedirectedInIncognito)
       return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
@@ -120,11 +120,11 @@ class BrowserContextKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
     return BrowserContextKeyedServiceFactory::GetBrowserContextToUse(context);
   }
 
-  virtual bool ServiceIsCreatedWithBrowserContext() const override {
+  bool ServiceIsCreatedWithBrowserContext() const override {
     return T::kServiceIsCreatedWithBrowserContext;
   }
 
-  virtual bool ServiceIsNULLWhileTesting() const override {
+  bool ServiceIsNULLWhileTesting() const override {
     return T::kServiceIsNULLWhileTesting;
   }
 

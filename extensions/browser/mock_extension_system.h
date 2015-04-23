@@ -71,16 +71,16 @@ class MockExtensionSystemFactory : public ExtensionSystemProvider {
     DependsOn(ExtensionRegistryFactory::GetInstance());
   }
 
-  virtual ~MockExtensionSystemFactory() {}
+  ~MockExtensionSystemFactory() override {}
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual KeyedService* BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override {
     return new T(context);
   }
 
   // ExtensionSystemProvider overrides:
-  virtual ExtensionSystem* GetForBrowserContext(
+  ExtensionSystem* GetForBrowserContext(
       content::BrowserContext* context) override {
     return static_cast<ExtensionSystem*>(
         GetServiceForBrowserContext(context, true));

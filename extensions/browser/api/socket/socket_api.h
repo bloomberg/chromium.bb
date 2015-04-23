@@ -62,7 +62,7 @@ class SocketResourceManager : public SocketResourceManagerInterface {
  public:
   SocketResourceManager() : manager_(NULL) {}
 
-  virtual bool SetBrowserContext(content::BrowserContext* context) override {
+  bool SetBrowserContext(content::BrowserContext* context) override {
     manager_ = ApiResourceManager<T>::Get(context);
     DCHECK(manager_)
         << "There is no socket manager. "
@@ -72,29 +72,27 @@ class SocketResourceManager : public SocketResourceManagerInterface {
     return manager_ != NULL;
   }
 
-  virtual int Add(Socket* socket) override {
+  int Add(Socket* socket) override {
     // Note: Cast needed here, because "T" may be a subclass of "Socket".
     return manager_->Add(static_cast<T*>(socket));
   }
 
-  virtual Socket* Get(const std::string& extension_id,
-                      int api_resource_id) override {
+  Socket* Get(const std::string& extension_id, int api_resource_id) override {
     return manager_->Get(extension_id, api_resource_id);
   }
 
-  virtual void Replace(const std::string& extension_id,
-                       int api_resource_id,
-                       Socket* socket) override {
+  void Replace(const std::string& extension_id,
+               int api_resource_id,
+               Socket* socket) override {
     manager_->Replace(extension_id, api_resource_id, static_cast<T*>(socket));
   }
 
-  virtual void Remove(const std::string& extension_id,
-                      int api_resource_id) override {
+  void Remove(const std::string& extension_id, int api_resource_id) override {
     manager_->Remove(extension_id, api_resource_id);
   }
 
-  virtual base::hash_set<int>* GetResourceIds(const std::string& extension_id)
-      override {
+  base::hash_set<int>* GetResourceIds(
+      const std::string& extension_id) override {
     return manager_->GetResourceIds(extension_id);
   }
 
