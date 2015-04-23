@@ -26,6 +26,9 @@ class ExternalFeedbackReporterAndroid : public ExternalFeedbackReporter {
   DISALLOW_COPY_AND_ASSIGN(ExternalFeedbackReporterAndroid);
 };
 
+// Registers the FeedbackReporter's native methods through JNI.
+bool RegisterFeedbackReporter(JNIEnv* env);
+
 }  // namespace android
 
 }  // namespace dom_distiller

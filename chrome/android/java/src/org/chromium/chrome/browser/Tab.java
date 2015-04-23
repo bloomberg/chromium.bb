@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
 import org.chromium.chrome.browser.contextmenu.EmptyChromeContextMenuItemDelegate;
-import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
@@ -181,7 +180,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private ContentViewClient mContentViewClient;
     private WebContentsObserver mWebContentsObserver;
     private TabChromeWebContentsDelegateAndroid mWebContentsDelegate;
-    private DomDistillerFeedbackReporter mDomDistillerFeedbackReporter;
 
     /**
      * If this tab was opened from another tab, store the id of the tab that
@@ -1607,10 +1605,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         mSwipeRefreshHandler = new SwipeRefreshHandler(mContext);
         mSwipeRefreshHandler.setContentViewCore(mContentViewCore);
-
-        if (DomDistillerFeedbackReporter.isEnabled() && mDomDistillerFeedbackReporter == null) {
-            mDomDistillerFeedbackReporter = new DomDistillerFeedbackReporter(this);
-        }
 
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
 
