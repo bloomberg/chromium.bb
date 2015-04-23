@@ -115,8 +115,7 @@ var responseAsGcdDeviceListResponse = function(response) {
  * specific base URL, and OAuth2 client ID.
  * @param {{
  *   apiKey: string,
- *   apiBaseUrl: (string|undefined),
- *   oauthClientId: (string|undefined)
+ *   apiBaseUrl: (string|undefined)
  * }} options
  * @constructor
  */
@@ -126,9 +125,6 @@ remoting.gcd.Client = function(options) {
   /** @const */
   this.apiBaseUrl_ = options.apiBaseUrl ||
       'https://www.googleapis.com/clouddevices/v1';
-  /** @const */
-  this.oauthClientId_ = options.oauthClientId ||
-      remoting.settings.OAUTH2_CLIENT_ID;
 };
 
 /**
@@ -157,18 +153,21 @@ remoting.gcd.Client.prototype.insertRegistrationTicket = function() {
  * TODO: Add link to GCD docs.
  * @param {string} ticketId
  * @param {!Object<string,*>} deviceDraft
+ * @param {string} oauthClientId
  * @return {!Promise<remoting.gcd.RegistrationTicket>}
  */
 remoting.gcd.Client.prototype.patchRegistrationTicket = function(
-    ticketId, deviceDraft) {
+    ticketId, deviceDraft, oauthClientId) {
   return new remoting.Xhr({
-    method: 'POST',
+    method: 'PATCH',
     url: this.apiBaseUrl_ + '/registrationTickets/' +
         encodeURIComponent(ticketId),
-    useIdentity: true,
+    urlParams: {
+      'key': this.apiKey_
+    },
     jsonContent: {
       'deviceDraft': deviceDraft,
-      'oauthClientId': this.oauthClientId_
+      'oauthClientId': oauthClientId
     },
     acceptJson: true
   }).start().then(function(response) {
@@ -217,7 +216,7 @@ remoting.gcd.Client.prototype.listDevices = function() {
     acceptJson: true
   }).start().then(function(response) {
     if (response.isError()) {
-      console.error('error patching registration ticket');
+      console.error('error getting device list');
       throw remoting.Error.unexpected();
     }
     var hosts = responseAsGcdDeviceListResponse(response);

@@ -59,8 +59,7 @@ QUnit.module('gcd_client', {
     chromeMocks.identity.mock$setToken('fake_token');
     client = new remoting.gcd.Client({
       apiBaseUrl: 'https://fake.api',
-      apiKey: 'fake_key',
-      oauthClientId: 'fake_client_id'
+      apiKey: 'fake_key'
     });
   },
   teardown: function() {
@@ -110,12 +109,10 @@ QUnit.test('patchRegistrationTicket', function(assert) {
       200, {'Content-type': 'application/json'},
       JSON.stringify(FAKE_REGISTRATION_TICKET),
       function() {
-        assert.equal(fakeXhr.method, 'POST');
+        assert.equal(fakeXhr.method, 'PATCH');
         assert.equal(
             fakeXhr.url,
-            'https://fake.api/registrationTickets/fake_ticket_id');
-        assert.equal(fakeXhr.requestHeaders['Authorization'],
-                     'Bearer fake_token');
+            'https://fake.api/registrationTickets/fake_ticket_id?key=fake_key');
         assert.deepEqual(
             JSON.parse(fakeXhr.requestBody || ''), {
               deviceDraft: { 'fake_device_draft': true },
@@ -124,7 +121,7 @@ QUnit.test('patchRegistrationTicket', function(assert) {
       });
   return client.patchRegistrationTicket('fake_ticket_id', {
     'fake_device_draft': true
-  }).then(function(ticket) {
+  }, 'fake_client_id').then(function(ticket) {
     assert.deepEqual(ticket, FAKE_REGISTRATION_TICKET);
   });
 });

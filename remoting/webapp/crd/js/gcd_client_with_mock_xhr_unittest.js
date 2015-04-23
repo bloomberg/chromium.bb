@@ -45,8 +45,7 @@ QUnit.module('gcd_client with mock_xhr', {
     chromeMocks.identity.mock$setToken('fake_token');
     client = new remoting.gcd.Client({
       apiBaseUrl: 'https://fake.api',
-      apiKey: 'fake_key',
-      oauthClientId: 'fake_client_id'
+      apiKey: 'fake_key'
     });
   },
   afterEach: function() {
@@ -73,9 +72,13 @@ QUnit.test('insertRegistrationTicket', function(assert) {
 
 QUnit.test('patchRegistrationTicket', function(assert) {
   remoting.MockXhr.setResponseFor(
-      'POST', 'https://fake.api/registrationTickets/fake_ticket_id',
+      'PATCH', 'https://fake.api/registrationTickets/fake_ticket_id',
       function(/** remoting.MockXhr */ xhr) {
-        assert.equal(xhr.params.useIdentity, true);
+        assert.equal(xhr.params.useIdentity, false);
+        assert.deepEqual(
+            xhr.params.urlParams, {
+              key: 'fake_key'
+            });
         assert.deepEqual(
             xhr.params.jsonContent, {
               deviceDraft: { 'fake_device_draft': true },
@@ -85,12 +88,10 @@ QUnit.test('patchRegistrationTicket', function(assert) {
       });
   return client.patchRegistrationTicket('fake_ticket_id', {
     'fake_device_draft': true
-  }).then(function(ticket) {
+  }, 'fake_client_id').then(function(ticket) {
     assert.deepEqual(ticket, FAKE_REGISTRATION_TICKET);
   });
 });
-
-
 
 QUnit.test('finalizeRegistrationTicket', function(assert) {
   remoting.MockXhr.setResponseFor(
