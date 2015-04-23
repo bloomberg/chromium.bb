@@ -162,7 +162,6 @@ static TypeBuilder::Console::ConsoleMessage::Level::Enum messageLevelValue(Messa
     case WarningMessageLevel: return TypeBuilder::Console::ConsoleMessage::Level::Warning;
     case ErrorMessageLevel: return TypeBuilder::Console::ConsoleMessage::Level::Error;
     case InfoMessageLevel: return TypeBuilder::Console::ConsoleMessage::Level::Info;
-    case RevokedErrorMessageLevel: return TypeBuilder::Console::ConsoleMessage::Level::RevokedError;
     }
     return TypeBuilder::Console::ConsoleMessage::Level::Log;
 }
@@ -222,10 +221,6 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         if (asyncCallStack)
             jsonObj->setAsyncStackTrace(asyncCallStack->buildInspectorObject());
     }
-    if (consoleMessage->messageId())
-        jsonObj->setMessageId(consoleMessage->messageId());
-    if (consoleMessage->relatedMessageId())
-        jsonObj->setRelatedMessageId(consoleMessage->relatedMessageId());
     frontend()->messageAdded(jsonObj);
     frontend()->flush();
 }
