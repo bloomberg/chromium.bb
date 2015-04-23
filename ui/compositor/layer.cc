@@ -657,7 +657,11 @@ bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
       type_ == LAYER_NINE_PATCH || (!delegate_ && !mailbox_.IsValid()))
     return false;
 
-  damaged_region_.Union(invalid_rect);
+  damaged_region_.op(invalid_rect.x(),
+                     invalid_rect.y(),
+                     invalid_rect.right(),
+                     invalid_rect.bottom(),
+                     SkRegion::kUnion_Op);
   ScheduleDraw();
   return true;
 }
@@ -669,17 +673,20 @@ void Layer::ScheduleDraw() {
 }
 
 void Layer::SendDamagedRects() {
-  if (damaged_region_.IsEmpty())
-    return;
-  if (!delegate_ && !mailbox_.IsValid())
-    return;
-
-  for (cc::Region::Iterator iter(damaged_region_); iter.has_rect(); iter.next())
-    cc_layer_->SetNeedsDisplayRect(iter.rect());
-}
-
-void Layer::ClearDamagedRects() {
-  damaged_region_.Clear();
+  if ((delegate_ || mailbox_.IsValid()) && !damaged_region_.isEmpty()) {
+    for (SkRegion::Iterator iter(damaged_region_); !iter.done(); iter.next()) {
+      const SkIRect& sk_damaged = iter.rect();
+      gfx::Rect damaged(
+          sk_damaged.x(),
+          sk_damaged.y(),
+          sk_damaged.width(),
+          sk_damaged.height());
+      cc_layer_->SetNeedsDisplayRect(damaged);
+    }
+    damaged_region_.setEmpty();
+  }
+  for (size_t i = 0; i < children_.size(); ++i)
+    children_[i]->SendDamagedRects();
 }
 
 void Layer::CompleteAllAnimations() {
@@ -738,7 +745,6 @@ void Layer::PaintContents(
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
   TRACE_EVENT1("ui", "Layer::PaintContents", "name", name_);
-  ClearDamagedRects();
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
       sk_canvas, device_scale_factor_));
   if (delegate_)
@@ -750,16 +756,15 @@ void Layer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
   TRACE_EVENT1("ui", "Layer::PaintContentsToDisplayList", "name", name_);
-  ClearDamagedRects();
-  if (!delegate_)
-    return;
-  // TODO(danakj): Save the invalidation on the layer and pass that down
-  // instead of the |clip| here. That will break everything until View
-  // early-outs emit cached display items instead of nothing.
-  gfx::Rect invalidation = clip;
-  DCHECK(clip.Contains(invalidation));
-  delegate_->OnPaintLayer(
-      PaintContext(display_list, device_scale_factor_, clip, invalidation));
+  if (delegate_) {
+    // TODO(danakj): Save the invalidation on the layer and pass that down
+    // instead of the |clip| here. That will break everything until View
+    // early-outs emit cached display items instead of nothing.
+    gfx::Rect invalidation = clip;
+    DCHECK(clip.Contains(invalidation));
+    delegate_->OnPaintLayer(
+        PaintContext(display_list, device_scale_factor_, clip, invalidation));
+  }
 }
 
 bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }
