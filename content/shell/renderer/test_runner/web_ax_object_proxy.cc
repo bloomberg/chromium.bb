@@ -621,11 +621,7 @@ void WebAXObjectProxy::NotificationReceived(
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
 
-#ifdef WEB_FRAME_USES_V8_LOCAL
-  v8::Local<v8::Value> argv[] = {
-#else
   v8::Handle<v8::Value> argv[] = {
-#endif
     v8::String::NewFromUtf8(isolate, notification_name.data(),
                             v8::String::kNormalString,
                             notification_name.size()),

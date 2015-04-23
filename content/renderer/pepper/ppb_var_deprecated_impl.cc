@@ -248,14 +248,8 @@ PP_Var CallDeprecatedInternal(PP_Var var,
     return PP_MakeUndefined();
   }
 
-#ifdef WEB_FRAME_USES_V8_LOCAL
-  scoped_ptr<v8::Local<v8::Value>[]> converted_args(
-      new v8::Local<v8::Value>[argc]);
-#else
   scoped_ptr<v8::Handle<v8::Value>[] > converted_args(
       new v8::Handle<v8::Value>[argc]);
-#endif
-
   for (uint32_t i = 0; i < argc; ++i) {
     converted_args[i] = try_catch.ToV8(argv[i]);
     if (try_catch.HasException())

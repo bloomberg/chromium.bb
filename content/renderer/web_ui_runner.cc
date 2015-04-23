@@ -45,14 +45,8 @@ v8::Handle<v8::Value> WebUIRunner::Call(v8::Handle<v8::Function> function,
                                         v8::Handle<v8::Value> receiver,
                                         int argc,
                                         v8::Handle<v8::Value> argv[]) {
-#ifdef WEB_FRAME_USES_V8_LOCAL
-  v8::Local<v8::Value>* cast_argv =
-      reinterpret_cast<v8::Local<v8::Value>*>(argv);
-#else
-  v8::Handle<v8::Value>* cast_argv = argv;
-#endif
   return frame_->callFunctionEvenIfScriptDisabled(function, receiver, argc,
-                                                  cast_argv);
+                                                  argv);
 }
 
 gin::ContextHolder* WebUIRunner::GetContextHolder() {

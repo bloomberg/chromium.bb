@@ -254,11 +254,8 @@ void OnMicroBenchmarkCompleted(
     scoped_ptr<V8ValueConverter> converter =
         make_scoped_ptr(V8ValueConverter::create());
     v8::Handle<v8::Value> value = converter->ToV8Value(result.get(), context);
-#ifdef WEB_FRAME_USES_V8_LOCAL
-    v8::Local<v8::Value> argv[] = {value};
-#else
     v8::Handle<v8::Value> argv[] = { value };
-#endif
+
     frame->callFunctionEvenIfScriptDisabled(
         callback_and_context->GetCallback(),
         v8::Object::New(isolate),

@@ -191,11 +191,7 @@ void AccessibilityController::NotificationReceived(
     return;
 
   // Call global notification listeners.
-#ifdef WEB_FRAME_USES_V8_LOCAL
-  v8::Local<v8::Value> argv[] = {
-#else
   v8::Handle<v8::Value> argv[] = {
-#endif
     element_handle,
     v8::String::NewFromUtf8(isolate, notification_name.data(),
                             v8::String::kNormalString,
