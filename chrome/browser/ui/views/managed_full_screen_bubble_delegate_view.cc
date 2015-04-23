@@ -41,7 +41,9 @@ void ManagedFullScreenBubbleDelegateView::Observe(
 }
 
 void ManagedFullScreenBubbleDelegateView::Close() {
-  GetWidget()->Close();
+  views::Widget* widget = GetWidget();
+  if (!widget->IsClosed())
+    widget->Close();
 }
 
 void ManagedFullScreenBubbleDelegateView::AdjustForFullscreen(

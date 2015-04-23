@@ -1058,9 +1058,8 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
   DCHECK(browser->window());
-
-  if (IsShowing())
-    return;
+  DCHECK(!manage_passwords_bubble_ ||
+         !manage_passwords_bubble_->GetWidget()->IsVisible());
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   bool is_fullscreen = browser_view->IsFullscreen();
@@ -1095,16 +1094,9 @@ void ManagePasswordsBubbleView::CloseBubble() {
 
 // static
 void ManagePasswordsBubbleView::ActivateBubble() {
-  if (!IsShowing())
-    return;
+  DCHECK(manage_passwords_bubble_);
+  DCHECK(manage_passwords_bubble_->GetWidget()->IsVisible());
   manage_passwords_bubble_->GetWidget()->Activate();
-}
-
-// static
-bool ManagePasswordsBubbleView::IsShowing() {
-  // The bubble may be in the process of closing.
-  return (manage_passwords_bubble_ != NULL) &&
-      manage_passwords_bubble_->GetWidget()->IsVisible();
 }
 
 content::WebContents* ManagePasswordsBubbleView::web_contents() const {

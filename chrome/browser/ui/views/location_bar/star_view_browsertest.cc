@@ -50,11 +50,11 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
 
   // Verify that clicking once shows the bookmark bubble.
-  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
+  EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());
   star_view->OnMousePressed(pressed_event);
-  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
+  EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());
   star_view->OnMouseReleased(released_event);
-  EXPECT_TRUE(BookmarkBubbleView::IsShowing());
+  EXPECT_TRUE(BookmarkBubbleView::bookmark_bubble());
 
   // Verify that clicking again doesn't reshow it.
   star_view->OnMousePressed(pressed_event);
@@ -62,9 +62,9 @@ IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
   // the event processing.
   BookmarkBubbleView::Hide();
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
+  EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());
   star_view->OnMouseReleased(released_event);
-  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
+  EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());
 }
 
 #if defined(OS_WIN)
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(StarViewTestNoDWM, DISABLED_WindowedNPAPIPluginHidden) {
       runner->QuitClosure());
   runner->Run();
 
-  EXPECT_TRUE(BookmarkBubbleView::IsShowing());
+  EXPECT_TRUE(BookmarkBubbleView::bookmark_bubble());
 
   result = GetWindowRgnBox(child, &region_after);
   if (result == NULLREGION) {

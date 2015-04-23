@@ -47,10 +47,6 @@ void ZoomView::Update(ui_zoom::ZoomController* zoom_controller) {
   SetVisible(true);
 }
 
-bool ZoomView::IsBubbleShowing() const {
-  return ZoomBubbleView::IsShowing();
-}
-
 void ZoomView::OnExecuting(BubbleIconView::ExecuteSource source) {
   ZoomBubbleView::ShowBubble(location_bar_delegate_->GetWebContents(), false);
 }
@@ -58,4 +54,8 @@ void ZoomView::OnExecuting(BubbleIconView::ExecuteSource source) {
 void ZoomView::GetAccessibleState(ui::AXViewState* state) {
   BubbleIconView::GetAccessibleState(state);
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_ZOOM);
+}
+
+views::BubbleDelegateView* ZoomView::GetBubble() const {
+  return ZoomBubbleView::GetZoomBubble();
 }

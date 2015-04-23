@@ -29,10 +29,10 @@ void TranslateIconView::SetToggled(bool on) {
       on ? IDR_TRANSLATE_ACTIVE : IDR_TRANSLATE));
 }
 
-bool TranslateIconView::IsBubbleShowing() const {
-  return TranslateBubbleView::IsShowing();
+void TranslateIconView::OnExecuting(
+  BubbleIconView::ExecuteSource execute_source) {
 }
 
-void TranslateIconView::OnExecuting(
-    BubbleIconView::ExecuteSource execute_source) {
+views::BubbleDelegateView* TranslateIconView::GetBubble() const {
+  return TranslateBubbleView::GetCurrentBubble();
 }

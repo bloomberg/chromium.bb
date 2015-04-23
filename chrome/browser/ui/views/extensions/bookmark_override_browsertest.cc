@@ -58,11 +58,11 @@ IN_PROC_BROWSER_TEST_F(BookmarkOverrideTest, DISABLED_NonOverrideStarClick) {
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
 
   // Verify that clicking once shows the bookmark bubble.
-  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
+  EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());
   star_view->OnMousePressed(pressed_event);
-  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
+  EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());
   star_view->OnMouseReleased(released_event);
-  EXPECT_TRUE(BookmarkBubbleView::IsShowing());
+  EXPECT_TRUE(BookmarkBubbleView::bookmark_bubble());
 }
 
 // Test that invoking the IDC_BOOKMARK_PAGE command (as done by the wrench menu)
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkOverrideTest, DISABLED_NonOverrideBookmarkPage) {
 
   // Check that the BookmarkBubbleView is shown when executing
   // IDC_BOOKMARK_PAGE.
-  EXPECT_FALSE(BookmarkBubbleView::IsShowing());
+  EXPECT_FALSE(BookmarkBubbleView::bookmark_bubble());
   chrome::ExecuteCommand(browser(), IDC_BOOKMARK_PAGE);
-  EXPECT_TRUE(BookmarkBubbleView::IsShowing());
+  EXPECT_TRUE(BookmarkBubbleView::bookmark_bubble());
 }

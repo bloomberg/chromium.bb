@@ -43,12 +43,9 @@ class ZoomBubbleView : public ManagedFullScreenBubbleDelegateView,
   // Closes the showing bubble (if one exists).
   static void CloseBubble();
 
-  // Whether the zoom bubble is currently showing.
-  static bool IsShowing();
-
   // Returns the zoom bubble if the zoom bubble is showing. Returns NULL
   // otherwise.
-  static const ZoomBubbleView* GetZoomBubbleForTest();
+  static ZoomBubbleView* GetZoomBubble();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ZoomBubbleBrowserTest, ImmersiveFullscreen);

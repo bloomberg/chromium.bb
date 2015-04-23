@@ -29,9 +29,9 @@ class ZoomView : public BubbleIconView {
 
  protected:
   // BubbleIconView:
-  bool IsBubbleShowing() const override;
   void OnExecuting(BubbleIconView::ExecuteSource source) override;
   void GetAccessibleState(ui::AXViewState* state) override;
+  views::BubbleDelegateView* GetBubble() const override;
 
  private:
   // The delegate used to get the currently visible WebContents.

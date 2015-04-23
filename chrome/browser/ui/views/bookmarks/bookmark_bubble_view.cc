@@ -68,7 +68,7 @@ void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
                                     Profile* profile,
                                     const GURL& url,
                                     bool newly_bookmarked) {
-  if (IsShowing())
+  if (bookmark_bubble_)
     return;
 
   bookmark_bubble_ = new BookmarkBubbleView(anchor_view,
@@ -86,13 +86,8 @@ void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
     bookmark_bubble_->observer_->OnBookmarkBubbleShown(url);
 }
 
-// static
-bool BookmarkBubbleView::IsShowing() {
-  return bookmark_bubble_ != NULL;
-}
-
 void BookmarkBubbleView::Hide() {
-  if (IsShowing())
+  if (bookmark_bubble_)
     bookmark_bubble_->GetWidget()->Close();
 }
 

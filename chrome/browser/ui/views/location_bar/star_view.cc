@@ -32,10 +32,6 @@ void StarView::SetToggled(bool on) {
       on ? IDR_STAR_LIT : IDR_STAR));
 }
 
-bool StarView::IsBubbleShowing() const {
-  return BookmarkBubbleView::IsShowing();
-}
-
 void StarView::OnExecuting(
     BubbleIconView::ExecuteSource execute_source) {
   BookmarkEntryPoint entry_point = BOOKMARK_ENTRY_POINT_STAR_MOUSE;
@@ -62,4 +58,8 @@ void StarView::ExecuteCommand(ExecuteSource source) {
   } else {
     BubbleIconView::ExecuteCommand(source);
   }
+}
+
+views::BubbleDelegateView* StarView::GetBubble() const {
+  return BookmarkBubbleView::bookmark_bubble();
 }

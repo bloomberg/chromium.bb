@@ -101,14 +101,7 @@ void ZoomBubbleView::CloseBubble() {
 }
 
 // static
-bool ZoomBubbleView::IsShowing() {
-  // The bubble is considered showing while closing.
-  return zoom_bubble_ != NULL && (zoom_bubble_->GetWidget()->IsVisible() ||
-                                  zoom_bubble_->GetWidget()->IsClosed());
-}
-
-// static
-const ZoomBubbleView* ZoomBubbleView::GetZoomBubbleForTest() {
+ZoomBubbleView* ZoomBubbleView::GetZoomBubble() {
   return zoom_bubble_;
 }
 

@@ -48,6 +48,12 @@ class TestURLFetcherCallback {
   MOCK_METHOD1(OnRequestDone, void(const GURL&));
 };
 
+bool IsBubbleShowing() {
+  return ManagePasswordsBubbleView::manage_password_bubble() &&
+      ManagePasswordsBubbleView::manage_password_bubble()->
+          GetWidget()->IsVisible();
+}
+
 }  // namespace
 
 namespace metrics_util = password_manager::metrics_util;
@@ -69,18 +75,18 @@ class ManagePasswordsBubbleViewTest : public ManagePasswordsTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
   ManagePasswordsBubbleView::ShowBubble(
       browser()->tab_strip_model()->GetActiveWebContents(),
       ManagePasswordsBubble::USER_ACTION);
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   const ManagePasswordsBubbleView* bubble =
       ManagePasswordsBubbleView::manage_password_bubble();
   EXPECT_TRUE(bubble->initially_focused_view());
   EXPECT_EQ(bubble->initially_focused_view(),
             bubble->GetFocusManager()->GetFocusedView());
   ManagePasswordsBubbleView::CloseBubble();
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
 
   // And, just for grins, ensure that we can re-open the bubble.
   ManagePasswordsBubbleView::ShowBubble(
@@ -88,9 +94,9 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
       ManagePasswordsBubble::USER_ACTION);
   EXPECT_TRUE(ManagePasswordsBubbleView::manage_password_bubble()->
       GetFocusManager()->GetFocusedView());
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   ManagePasswordsBubbleView::CloseBubble();
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
 }
 
 // Same as 'BasicOpenAndClose', but use the command rather than the static
@@ -98,30 +104,30 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, BasicOpenAndClose) {
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CommandControlsBubble) {
   // The command only works if the icon is visible, so get into management mode.
   SetupManagingPasswords();
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
   ExecuteManagePasswordsCommand();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   const ManagePasswordsBubbleView* bubble =
       ManagePasswordsBubbleView::manage_password_bubble();
   EXPECT_TRUE(bubble->initially_focused_view());
   EXPECT_EQ(bubble->initially_focused_view(),
             bubble->GetFocusManager()->GetFocusedView());
   ManagePasswordsBubbleView::CloseBubble();
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
 
   // And, just for grins, ensure that we can re-open the bubble.
   ExecuteManagePasswordsCommand();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   ManagePasswordsBubbleView::CloseBubble();
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                        CommandExecutionInManagingState) {
   SetupManagingPasswords();
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
   ExecuteManagePasswordsCommand();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
 
   scoped_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
@@ -141,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                        CommandExecutionInAutomaticState) {
   // Open with pending password: automagical!
   SetupPendingPassword();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
 
   // Bubble should not be focused by default.
   EXPECT_FALSE(ManagePasswordsBubbleView::manage_password_bubble()->
@@ -168,11 +174,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                        CommandExecutionInPendingState) {
   // Open once with pending password: automagical!
   SetupPendingPassword();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   ManagePasswordsBubbleView::CloseBubble();
   // This opening should be measured as manual.
   ExecuteManagePasswordsCommand();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
 
   scoped_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
@@ -191,12 +197,12 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest,
                        CommandExecutionInAutomaticSaveState) {
   SetupAutomaticPassword();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   ManagePasswordsBubbleView::CloseBubble();
   content::RunAllPendingInMessageLoop();
   // Re-opening should count as manual.
   ExecuteManagePasswordsCommand();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
 
   scoped_ptr<base::HistogramSamples> samples(
       GetSamples(kDisplayDispositionMetric));
@@ -216,11 +222,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnClick) {
   ManagePasswordsBubbleView::ShowBubble(
       browser()->tab_strip_model()->GetActiveWebContents(),
       ManagePasswordsBubble::AUTOMATIC);
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   EXPECT_FALSE(ManagePasswordsBubbleView::manage_password_bubble()->
       GetFocusManager()->GetFocusedView());
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnKey) {
@@ -235,41 +241,41 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnKey) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ManagePasswordsBubbleView::ShowBubble(web_contents,
                                         ManagePasswordsBubble::AUTOMATIC);
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   EXPECT_FALSE(ManagePasswordsBubbleView::manage_password_bubble()->
       GetFocusManager()->GetFocusedView());
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
   EXPECT_TRUE(web_contents->GetRenderViewHost()->IsFocusedElementEditable());
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_K,
       false, false, false, false));
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnChangedState) {
   SetupPendingPassword();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   // User navigated very fast and landed on another page with an autofilled
   // password. The save password bubble should disappear.
   SetupManagingPasswords();
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubble) {
   // Set up the first tab with the bubble.
   SetupPendingPassword();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   // Set up the second tab.
   AddTabAtIndex(0, GURL("chrome://newtab"), ui::PAGE_TRANSITION_TYPED);
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
   ManagePasswordsBubbleView::ShowBubble(
       browser()->tab_strip_model()->GetActiveWebContents(),
       ManagePasswordsBubble::AUTOMATIC);
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   TabStripModel* tab_model = browser()->tab_strip_model();
   EXPECT_EQ(0, tab_model->active_index());
   // Back to the first tab.
   tab_model->ActivateTabAt(1, true);
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
@@ -299,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
 
   SetupChooseCredentials(local_credentials.Pass(), federated_credentials.Pass(),
                          origin);
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   EXPECT_CALL(*this, OnChooseCredential(
       Field(&password_manager::CredentialInfo::type,
             password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY)));
@@ -323,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredentialNoFocus) {
   EXPECT_FALSE(browser()->window()->IsActive());
   SetupChooseCredentials(local_credentials.Pass(), federated_credentials.Pass(),
                          origin);
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
@@ -349,11 +355,11 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   EXPECT_CALL(url_callback, OnRequestDone(avatar_url));
 
   SetupAutoSignin(local_credentials.Pass());
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
   ::testing::Mock::VerifyAndClearExpectations(&url_callback);
 
   ManagePasswordsBubbleView::CloseBubble();
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
   content::RunAllPendingInMessageLoop();
 
   // Open the bubble to manage accounts.
@@ -362,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   ManagePasswordsBubbleView::ShowBubble(
         browser()->tab_strip_model()->GetActiveWebContents(),
         ManagePasswordsBubble::USER_ACTION);
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
@@ -381,12 +387,12 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSigninNoFocus) {
   ManagePasswordsBubbleView::set_auto_signin_toast_timeout(0);
   SetupAutoSignin(local_credentials.Pass());
   content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_TRUE(IsBubbleShowing());
 
   // Bring the first window back. The toast closes by timeout.
   focused_window->window()->Close();
   browser()->window()->Activate();
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(browser()->window()->IsActive());
-  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  EXPECT_FALSE(IsBubbleShowing());
 }

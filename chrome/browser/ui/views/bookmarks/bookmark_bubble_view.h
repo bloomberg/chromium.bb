@@ -40,9 +40,9 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
                          const GURL& url,
                          bool newly_bookmarked);
 
-  static bool IsShowing();
-
   static void Hide();
+
+  static BookmarkBubbleView* bookmark_bubble() { return bookmark_bubble_; }
 
   ~BookmarkBubbleView() override;
 

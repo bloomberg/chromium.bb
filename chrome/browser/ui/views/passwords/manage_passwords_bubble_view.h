@@ -35,11 +35,8 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // Makes the bubble the foreground window.
   static void ActivateBubble();
 
-  // Whether the bubble is currently showing.
-  static bool IsShowing();
-
   // Returns a pointer to the bubble.
-  static const ManagePasswordsBubbleView* manage_password_bubble() {
+  static ManagePasswordsBubbleView* manage_password_bubble() {
     return manage_passwords_bubble_;
   }
 

@@ -21,9 +21,9 @@ class StarView : public BubbleIconView {
 
  protected:
   // BubbleIconView:
-  bool IsBubbleShowing() const override;
   void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
   void ExecuteCommand(ExecuteSource source) override;
+  views::BubbleDelegateView* GetBubble() const override;
 
  private:
   Browser* browser_;

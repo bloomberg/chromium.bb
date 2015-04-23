@@ -54,9 +54,6 @@ class TranslateBubbleView : public ManagedFullScreenBubbleDelegateView,
   // Closes the current bubble if existing.
   static void CloseBubble();
 
-  // If true, the Translate bubble is being shown.
-  static bool IsShowing();
-
   // Returns the bubble view currently shown. This may return NULL.
   static TranslateBubbleView* GetCurrentBubble();
 

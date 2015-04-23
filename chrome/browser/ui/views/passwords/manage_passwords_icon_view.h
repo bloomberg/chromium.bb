@@ -22,7 +22,6 @@ class ManagePasswordsIconView : public ManagePasswordsIcon,
   ~ManagePasswordsIconView() override;
 
   // BubbleIconView:
-  bool IsBubbleShowing() const override;
   void OnExecuting(BubbleIconView::ExecuteSource source) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -39,6 +38,9 @@ class ManagePasswordsIconView : public ManagePasswordsIcon,
   // ManagePasswordsIcon:
   void UpdateVisibleUI() override;
   void OnChangingState() override;
+
+  // BubbleIconView:
+  views::BubbleDelegateView* GetBubble() const override;
 
  private:
 

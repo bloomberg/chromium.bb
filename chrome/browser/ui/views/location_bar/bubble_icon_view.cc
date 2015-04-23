@@ -7,6 +7,7 @@
 #include "chrome/browser/command_updater.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event.h"
+#include "ui/views/bubble/bubble_delegate.h"
 
 BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
     : command_updater_(command_updater),
@@ -16,6 +17,12 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
 }
 
 BubbleIconView::~BubbleIconView() {
+}
+
+bool BubbleIconView::IsBubbleShowing() const {
+  // If the bubble is being destroyed, it's considered showing though it may be
+  // already invisible currently.
+  return GetBubble() != NULL;
 }
 
 void BubbleIconView::GetAccessibleState(ui::AXViewState* state) {
@@ -73,4 +80,10 @@ void BubbleIconView::ExecuteCommand(ExecuteSource source) {
   OnExecuting(source);
   if (command_updater_)
     command_updater_->ExecuteCommand(command_id_);
+}
+
+void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  views::BubbleDelegateView* bubble = GetBubble();
+  if (bubble)
+    bubble->OnAnchorBoundsChanged();
 }

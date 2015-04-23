@@ -53,7 +53,7 @@ void TabDialogsViews::ShowProfileSigninConfirmation(
 }
 
 void TabDialogsViews::ShowManagePasswordsBubble(bool user_action) {
-  if (ManagePasswordsBubbleView::IsShowing()) {
+  if (ManagePasswordsBubbleView::manage_password_bubble()) {
     // The bubble is currently shown for some other tab. We should close it now
     // and open for |web_contents_|.
     ManagePasswordsBubbleView::CloseBubble();
@@ -64,7 +64,7 @@ void TabDialogsViews::ShowManagePasswordsBubble(bool user_action) {
 }
 
 void TabDialogsViews::HideManagePasswordsBubble() {
-  if (!ManagePasswordsBubbleView::IsShowing())
+  if (!ManagePasswordsBubbleView::manage_password_bubble())
     return;
   content::WebContents* bubble_web_contents =
       ManagePasswordsBubbleView::manage_password_bubble()->web_contents();

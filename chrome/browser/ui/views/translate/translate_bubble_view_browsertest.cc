@@ -40,7 +40,7 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
 // Flaky: crbug.com/394066
 IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
                        DISABLED_CloseBrowserWithoutTranslating) {
-  EXPECT_FALSE(TranslateBubbleView::IsShowing());
+  EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 
   // Show a French page and wait until the bubble is shown.
   content::WebContents* current_web_contents =
@@ -54,17 +54,17 @@ IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("french_page.html")));
   ui_test_utils::NavigateToURL(browser(), french_url);
   fr_language_detected_signal.Wait();
-  EXPECT_TRUE(TranslateBubbleView::IsShowing());
+  EXPECT_TRUE(TranslateBubbleView::GetCurrentBubble());
 
   // Close the window without translating.
   chrome::CloseWindow(browser());
-  EXPECT_FALSE(TranslateBubbleView::IsShowing());
+  EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 }
 
 // http://crbug.com/378061
 IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
                        DISABLED_CloseLastTabWithoutTranslating) {
-  EXPECT_FALSE(TranslateBubbleView::IsShowing());
+  EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 
   // Show a French page and wait until the bubble is shown.
   content::WebContents* current_web_contents =
@@ -78,17 +78,17 @@ IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("french_page.html")));
   ui_test_utils::NavigateToURL(browser(), french_url);
   fr_language_detected_signal.Wait();
-  EXPECT_TRUE(TranslateBubbleView::IsShowing());
+  EXPECT_TRUE(TranslateBubbleView::GetCurrentBubble());
 
   // Close the tab without translating.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   chrome::CloseWebContents(browser(), current_web_contents, false);
-  EXPECT_FALSE(TranslateBubbleView::IsShowing());
+  EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
                        CloseAnotherTabWithoutTranslating) {
-  EXPECT_FALSE(TranslateBubbleView::IsShowing());
+  EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 
   int active_index = browser()->tab_strip_model()->active_index();
 
@@ -111,13 +111,13 @@ IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
   fr_language_detected_signal.Wait();
 
   // The bubble is not shown because the tab is not activated.
-  EXPECT_FALSE(TranslateBubbleView::IsShowing());
+  EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 
   // Close the French page tab immediately.
   chrome::CloseWebContents(browser(), web_contents, false);
   EXPECT_EQ(active_index, browser()->tab_strip_model()->active_index());
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_FALSE(TranslateBubbleView::IsShowing());
+  EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());
 
   // Close the last tab.
   chrome::CloseWebContents(browser(),

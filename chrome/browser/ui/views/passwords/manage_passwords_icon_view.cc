@@ -42,12 +42,6 @@ void ManagePasswordsIconView::OnChangingState() {
     ManagePasswordsBubbleView::CloseBubble();
 }
 
-bool ManagePasswordsIconView::IsBubbleShowing() const {
-  // If the bubble is being destroyed, it's considered showing though it may be
-  // already invisible currently.
-  return ManagePasswordsBubbleView::manage_password_bubble() != NULL;
-}
-
 void ManagePasswordsIconView::OnExecuting(
     BubbleIconView::ExecuteSource source) {
 }
@@ -77,4 +71,8 @@ void ManagePasswordsIconView::AboutToRequestFocusFromTabTraversal(
     bool reverse) {
   if (active())
     ManagePasswordsBubbleView::ActivateBubble();
+}
+
+views::BubbleDelegateView* ManagePasswordsIconView::GetBubble() const {
+  return ManagePasswordsBubbleView::manage_password_bubble();
 }
