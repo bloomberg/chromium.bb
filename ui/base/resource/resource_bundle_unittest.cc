@@ -59,7 +59,7 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
  public:
   MockResourceBundleDelegate() {
   }
-  virtual ~MockResourceBundleDelegate() {
+  ~MockResourceBundleDelegate() override {
   }
 
   MOCK_METHOD2(GetPathForResourcePack, base::FilePath(
@@ -76,22 +76,21 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
   MOCK_METHOD2(GetRawDataResourceMock, base::StringPiece(
       int resource_id,
       ui::ScaleFactor scale_factor));
-  virtual bool GetRawDataResource(int resource_id,
-                                  ui::ScaleFactor scale_factor,
-                                  base::StringPiece* value) override {
+  bool GetRawDataResource(int resource_id,
+                          ui::ScaleFactor scale_factor,
+                          base::StringPiece* value) override {
     *value = GetRawDataResourceMock(resource_id, scale_factor);
     return true;
   }
   MOCK_METHOD1(GetLocalizedStringMock, base::string16(int message_id));
-  virtual bool GetLocalizedString(int message_id,
-                                  base::string16* value) override {
+  bool GetLocalizedString(int message_id,
+                          base::string16* value) override {
     *value = GetLocalizedStringMock(message_id);
     return true;
   }
   MOCK_METHOD1(GetFontMock,
                gfx::Font*(ui::ResourceBundle::FontStyle style));
-  virtual scoped_ptr<gfx::Font> GetFont(
-      ui::ResourceBundle::FontStyle style) override {
+  scoped_ptr<gfx::Font> GetFont(ui::ResourceBundle::FontStyle style) override {
     return make_scoped_ptr(GetFontMock(style));
   }
 };

@@ -659,9 +659,9 @@ class WidgetActivationTest : public Widget {
   WidgetActivationTest()
       : active_(false) {}
 
-  virtual ~WidgetActivationTest() {}
+  ~WidgetActivationTest() override {}
 
-  virtual void OnNativeWidgetActivationChanged(bool active) override {
+  void OnNativeWidgetActivationChanged(bool active) override {
     active_ = active;
   }
 
@@ -1343,7 +1343,7 @@ namespace {
 class MouseEventTrackingWidget : public Widget {
  public:
   MouseEventTrackingWidget() : got_mouse_event_(false) {}
-  virtual ~MouseEventTrackingWidget() {}
+  ~MouseEventTrackingWidget() override {}
 
   bool GetAndClearGotMouseEvent() {
     bool value = got_mouse_event_;
@@ -1352,7 +1352,7 @@ class MouseEventTrackingWidget : public Widget {
   }
 
   // Widget:
-  virtual void OnMouseEvent(ui::MouseEvent* event) override {
+  void OnMouseEvent(ui::MouseEvent* event) override {
     got_mouse_event_ = true;
     Widget::OnMouseEvent(event);
   }

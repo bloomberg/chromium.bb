@@ -166,12 +166,12 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
       const base::Callback<bool(OPENFILENAME*)>& get_save_file_name_impl);
 
   // BaseShellDialog implementation:
-  virtual bool IsRunning(gfx::NativeWindow owning_window) const override;
-  virtual void ListenerDestroyed() override;
+  bool IsRunning(gfx::NativeWindow owning_window) const override;
+  void ListenerDestroyed() override;
 
  protected:
   // SelectFileDialog implementation:
-  virtual void SelectFileImpl(
+  void SelectFileImpl(
       Type type,
       const base::string16& title,
       const base::FilePath& default_path,
@@ -182,7 +182,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
       void* params) override;
 
  private:
-  virtual ~SelectFileDialogImpl();
+  ~SelectFileDialogImpl() override;
 
   // A struct for holding all the state necessary for displaying a Save dialog.
   struct ExecuteSelectParams {
@@ -287,7 +287,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
                                          LPARAM parameter,
                                          LPARAM data);
 
-  virtual bool HasMultipleFileTypeChoicesImpl() override;
+  bool HasMultipleFileTypeChoicesImpl() override;
 
   // Returns the filter to be used while displaying the open/save file dialog.
   // This is computed from the extensions for the file types being opened.

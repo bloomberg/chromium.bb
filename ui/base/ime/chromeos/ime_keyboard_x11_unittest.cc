@@ -27,18 +27,18 @@ class ImeKeyboardTest : public testing::Test,
   ImeKeyboardTest() {
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     xkey_.reset(ImeKeyboard::Create());
     xkey_->AddObserver(this);
     caps_changed_ = false;
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     xkey_->RemoveObserver(this);
     xkey_.reset();
   }
 
-  virtual void OnCapsLockChanged(bool enabled) override {
+  void OnCapsLockChanged(bool enabled) override {
     caps_changed_ = true;
   }
 

@@ -66,10 +66,10 @@ TEST_F(EventProcessorTest, Basic) {
 template<typename T>
 class BoundsEventTargeter : public EventTargeter {
  public:
-  virtual ~BoundsEventTargeter() {}
+  ~BoundsEventTargeter() override {}
 
  protected:
-  virtual bool SubtreeShouldBeExploredForEvent(
+  bool SubtreeShouldBeExploredForEvent(
       EventTarget* target, const LocatedEvent& event) override {
     T* t = static_cast<T*>(target);
     return (t->bounds().Contains(event.location()));

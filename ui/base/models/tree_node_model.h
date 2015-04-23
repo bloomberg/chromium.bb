@@ -68,7 +68,7 @@ class TreeNode : public TreeModelNode {
   explicit TreeNode(const base::string16& title)
       : title_(title), parent_(NULL) {}
 
-  virtual ~TreeNode() {}
+  ~TreeNode() override {}
 
   // Adds |node| as a child of this node, at |index|.
   virtual void Add(NodeType* node, int index) {
@@ -154,7 +154,7 @@ class TreeNode : public TreeModelNode {
   virtual void SetTitle(const base::string16& title) { title_ = title; }
 
   // TreeModelNode:
-  virtual const base::string16& GetTitle() const override { return title_; }
+  const base::string16& GetTitle() const override { return title_; }
 
   // Returns true if this == ancestor, or one of this nodes parents is
   // ancestor.
@@ -212,7 +212,7 @@ class TreeNodeModel : public TreeModel {
   // Creates a TreeNodeModel with the specified root node. The root is owned
   // by the TreeNodeModel.
   explicit TreeNodeModel(NodeType* root) : root_(root) {}
-  virtual ~TreeNodeModel() {}
+  virtual ~TreeNodeModel() override {}
 
   NodeType* AsNode(TreeModelNode* model_node) {
     return static_cast<NodeType*>(model_node);
@@ -251,40 +251,40 @@ class TreeNodeModel : public TreeModel {
   }
 
   // TreeModel:
-  virtual NodeType* GetRoot() override {
+  NodeType* GetRoot() override {
     return root_.get();
   }
 
-  virtual int GetChildCount(TreeModelNode* parent) override {
+  int GetChildCount(TreeModelNode* parent) override {
     DCHECK(parent);
     return AsNode(parent)->child_count();
   }
 
-  virtual NodeType* GetChild(TreeModelNode* parent, int index) override {
+  NodeType* GetChild(TreeModelNode* parent, int index) override {
     DCHECK(parent);
     return AsNode(parent)->GetChild(index);
   }
 
-  virtual int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) override {
+  int GetIndexOf(TreeModelNode* parent, TreeModelNode* child) override {
     DCHECK(parent);
     return AsNode(parent)->GetIndexOf(AsNode(child));
   }
 
-  virtual TreeModelNode* GetParent(TreeModelNode* node) override {
+  TreeModelNode* GetParent(TreeModelNode* node) override {
     DCHECK(node);
     return AsNode(node)->parent();
   }
 
-  virtual void AddObserver(TreeModelObserver* observer) override {
+  void AddObserver(TreeModelObserver* observer) override {
     observer_list_.AddObserver(observer);
   }
 
-  virtual void RemoveObserver(TreeModelObserver* observer) override {
+  void RemoveObserver(TreeModelObserver* observer) override {
     observer_list_.RemoveObserver(observer);
   }
 
-  virtual void SetTitle(TreeModelNode* node,
-                        const base::string16& title) override {
+  void SetTitle(TreeModelNode* node,
+                const base::string16& title) override {
     DCHECK(node);
     AsNode(node)->SetTitle(title);
     NotifyObserverTreeNodeChanged(node);

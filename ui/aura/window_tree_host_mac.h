@@ -26,28 +26,28 @@ class TouchEventCalibrate;
 class AURA_EXPORT WindowTreeHostMac : public WindowTreeHost {
  public:
   explicit WindowTreeHostMac(const gfx::Rect& bounds);
-  virtual ~WindowTreeHostMac();
+  ~WindowTreeHostMac() override;
 
  private:
   // WindowTreeHost Overrides.
-  virtual ui::EventSource* GetEventSource() override;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void ToggleFullScreen() override;
-  virtual gfx::Rect GetBounds() const override;
-  virtual void SetBounds(const gfx::Rect& bounds) override;
-  virtual gfx::Insets GetInsets() const override;
-  virtual void SetInsets(const gfx::Insets& insets) override;
-  virtual gfx::Point GetLocationOnNativeScreen() const override;
-  virtual void SetCapture() override;
-  virtual void ReleaseCapture() override;
-  virtual bool ConfineCursorToRootWindow() override;
-  virtual void UnConfineCursor() override;
-  virtual void SetCursorNative(gfx::NativeCursor cursor_type) override;
-  virtual void MoveCursorToNative(const gfx::Point& location) override;
-  virtual void OnCursorVisibilityChangedNative(bool show) override;
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+  ui::EventSource* GetEventSource() override;
+  gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  void Show() override;
+  void Hide() override;
+  void ToggleFullScreen() override;
+  gfx::Rect GetBounds() const override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Insets GetInsets() const override;
+  void SetInsets(const gfx::Insets& insets) override;
+  gfx::Point GetLocationOnNativeScreen() const override;
+  void SetCapture() override;
+  void ReleaseCapture() override;
+  bool ConfineCursorToRootWindow() override;
+  void UnConfineCursor() override;
+  void SetCursorNative(gfx::NativeCursor cursor_type) override;
+  void MoveCursorToNative(const gfx::Point& location) override;
+  void OnCursorVisibilityChangedNative(bool show) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
 
  private:
   base::scoped_nsobject<NSWindow> window_;

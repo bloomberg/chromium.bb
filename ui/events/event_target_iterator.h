@@ -28,9 +28,9 @@ class EventTargetIteratorImpl : public EventTargetIterator {
       : begin_(children.rbegin()),
         end_(children.rend()) {
   }
-  virtual ~EventTargetIteratorImpl() {}
+  ~EventTargetIteratorImpl() override {}
 
-  virtual EventTarget* GetNextTarget() override {
+  EventTarget* GetNextTarget() override {
     if (begin_ == end_)
       return NULL;
     EventTarget* target = *(begin_);
