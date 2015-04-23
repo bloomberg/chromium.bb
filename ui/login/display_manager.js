@@ -1052,7 +1052,7 @@ cr.define('cr.ui.login', function() {
    * @param {string} assetId The device asset ID.
    */
   DisplayManager.setEnterpriseInfo = function(messageText, assetId) {
-    $('newgaia-offline-login').enterpriseInfo = messageText;
+    $('offline-gaia').enterpriseInfo = messageText;
     $('enterprise-info-message').textContent = messageText;
     if (messageText) {
       $('enterprise-info').hidden = false;

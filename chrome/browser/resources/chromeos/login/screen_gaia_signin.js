@@ -137,7 +137,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         $('signin-frame').parentNode.replaceChild(webview, $('signin-frame'));
         this.gaiaAuthHost_ = new cr.login.GaiaAuthHost(webview);
 
-        $('newgaia-offline-login').addEventListener('authCompleted',
+        $('offline-gaia').addEventListener('authCompleted',
             this.onAuthCompletedMessage_.bind(this));
       } else {
         this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
@@ -220,7 +220,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.isLocal_ = value;
       if (this.isNewGaiaFlow) {
         $('signin-frame').hidden = this.isLocal_;
-        $('newgaia-offline-login').hidden = !this.isLocal_;
+        $('offline-gaia').hidden = !this.isLocal_;
       }
       chrome.send('updateOfflineLogin', [value]);
     },
@@ -233,7 +233,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     showLoadingUI_: function(show) {
       $('gaia-loading').hidden = !show;
       if (this.isNewGaiaFlow && this.isLocal) {
-        $('newgaia-offline-login').hidden = show;
+        $('offline-gaia').hidden = show;
       } else {
         $('signin-frame').hidden = show;
       }
@@ -365,7 +365,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     onAfterShow: function(data) {
       if (!this.loading && this.isWebviewSignin) {
         if (this.isLocal)
-          $('newgaia-offline-login').focus();
+          $('offline-gaia').focus();
         else
           $('signin-frame').focus();
       }
@@ -904,7 +904,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * should switch to the password screen with error.
      */
     loadOffline: function(params) {
-      var offlineLogin = $('newgaia-offline-login');
+      var offlineLogin = $('offline-gaia');
       var strings = params.localizedStrings;
       offlineLogin.enterpriseInfo = strings['stringEnterpriseInfo'];
       offlineLogin.setEmail(params.email);
