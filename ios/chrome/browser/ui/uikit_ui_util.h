@@ -101,6 +101,9 @@ UIImage* BlurImage(UIImage* image,
                    CGFloat saturationDeltaFactor,
                    UIImage* maskImage);
 
+// Returns a cropped image using |cropRect| on |image|.
+UIImage* CropImage(UIImage* image, const CGRect& cropRect);
+
 // Returns the interface orientation of the app.
 UIInterfaceOrientation GetInterfaceOrientation();
 
@@ -127,14 +130,26 @@ void ApplyVisualConstraints(NSArray* constraints,
                             NSDictionary* subviewsDictionary,
                             UIView* parentView);
 
+// Applies all |constraints| with |metrics| to all views in |subviewsDictionary|
+// in the superview |parentView|
+void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
+                                       NSDictionary* subviewsDictionary,
+                                       NSDictionary* metrics,
+                                       UIView* parentView);
+
 // Adds a constraint that |subview| is center aligned horizontally in
 // |parentView|.
-// |subview| must be a subiew of |parentView|.
+// |subview| must be a subview of |parentView|.
 void AddSameCenterXConstraint(UIView* parentView, UIView* subview);
+
+// Adds a constraint that |subview| is center aligned vertically in
+// |parentView|.
+// |subview| must be a subview of |parentView|.
+void AddSameCenterYConstraint(UIView* parentView, UIView* subview);
 
 // Adds a constraint that |subview1| and |subview2| are center aligned
 // vertically on |parentView|.
-// |subview1| and |subview2| must be subiews of |parentView|.
+// |subview1| and |subview2| must be subview of |parentView|.
 void AddSameCenterYConstraint(UIView* parentView,
                               UIView* subview1,
                               UIView* subview2);

@@ -353,6 +353,13 @@ UIImage* BlurImage(UIImage* image,
   return outputImage;
 }
 
+UIImage* CropImage(UIImage* image, const CGRect& cropRect) {
+  CGImageRef cgImage = CGImageCreateWithImageInRect([image CGImage], cropRect);
+  UIImage* result = [UIImage imageWithCGImage:cgImage];
+  CGImageRelease(cgImage);
+  return result;
+}
+
 UIInterfaceOrientation GetInterfaceOrientation() {
   return [[UIApplication sharedApplication] statusBarOrientation];
 }
@@ -419,13 +426,21 @@ UIColor* InterpolateFromColorToColor(UIColor* firstColor,
 void ApplyVisualConstraints(NSArray* constraints,
                             NSDictionary* subviewsDictionary,
                             UIView* parentView) {
+  ApplyVisualConstraintsWithMetrics(constraints, subviewsDictionary, nil,
+                                    parentView);
+}
+
+void ApplyVisualConstraintsWithMetrics(NSArray* constraints,
+                                       NSDictionary* subviewsDictionary,
+                                       NSDictionary* metrics,
+                                       UIView* parentView) {
   for (NSString* constraint in constraints) {
     DCHECK([constraint isKindOfClass:[NSString class]]);
     [parentView
         addConstraints:[NSLayoutConstraint
                            constraintsWithVisualFormat:constraint
                                                options:0
-                                               metrics:nil
+                                               metrics:metrics
                                                  views:subviewsDictionary]];
   }
 }
@@ -438,6 +453,18 @@ void AddSameCenterXConstraint(UIView* parentView, UIView* subview) {
                                          relatedBy:NSLayoutRelationEqual
                                             toItem:parentView
                                          attribute:NSLayoutAttributeCenterX
+                                        multiplier:1
+                                          constant:0]];
+}
+
+void AddSameCenterYConstraint(UIView* parentView, UIView* subview) {
+  DCHECK_EQ(parentView, [subview superview]);
+  [parentView addConstraint:[NSLayoutConstraint
+                                constraintWithItem:subview
+                                         attribute:NSLayoutAttributeCenterY
+                                         relatedBy:NSLayoutRelationEqual
+                                            toItem:parentView
+                                         attribute:NSLayoutAttributeCenterY
                                         multiplier:1
                                           constant:0]];
 }
