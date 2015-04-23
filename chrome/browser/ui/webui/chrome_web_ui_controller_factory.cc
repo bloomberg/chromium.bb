@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
-#include "chrome/browser/ui/webui/copresence_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/device_log_ui.h"
 #include "chrome/browser/ui/webui/domain_reliability_internals_ui.h"
@@ -104,8 +103,11 @@
 #include "chrome/browser/ui/webui/net_export_ui.h"
 #else
 #include "chrome/browser/devtools/device/webrtc/webrtc_device_provider.h"
+#include "chrome/browser/ui/webui/copresence_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
+#include "components/proximity_auth/webui/proximity_auth_ui.h"
+#include "components/proximity_auth/webui/url_constants.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -432,12 +434,16 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<KeyboardOverlayUI>;
   if (url.host() == chrome::kChromeUIMobileSetupHost)
     return &NewWebUI<MobileSetupUI>;
+  if (url.host() == chrome::kChromeUINetworkHost)
+    return &NewWebUI<chromeos::NetworkUI>;
   if (url.host() == chrome::kChromeUINfcDebugHost)
     return &NewWebUI<chromeos::NfcDebugUI>;
   if (url.host() == chrome::kChromeUIOobeHost)
     return &NewWebUI<chromeos::OobeUI>;
   if (url.host() == chrome::kChromeUIOobeMdHost)
     return &NewWebUI<OobeMdUI>;
+  if (url.host() == chrome::kChromeUIPowerHost)
+    return &NewWebUI<chromeos::PowerUI>;
   if (url.host() == chrome::kChromeUIProvidedFileSystemsHost)
     return &NewWebUI<chromeos::ProvidedFileSystemsUI>;
   if (url.host() == chrome::kChromeUIProxySettingsHost)
@@ -452,10 +458,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::SlowUI>;
   if (url.host() == chrome::kChromeUISlowTraceHost)
     return &NewWebUI<chromeos::SlowTraceController>;
-  if (url.host() == chrome::kChromeUINetworkHost)
-    return &NewWebUI<chromeos::NetworkUI>;
-  if (url.host() == chrome::kChromeUIPowerHost)
-    return &NewWebUI<chromeos::PowerUI>;
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_ANDROID) || defined(OS_IOS)
   if (url.host() == chrome::kChromeUINetExportHost)
@@ -467,6 +469,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InlineLoginUI>;
   if (url.SchemeIs(content::kChromeDevToolsScheme))
     return &NewWebUI<DevToolsUI>;
+  if (url.host() == proximity_auth::kChromeUIProximityAuthHost)
+    return &NewWebUI<proximity_auth::ProximityAuthUI>;
   if (url.host() == chrome::kChromeUIWebRTCDeviceProviderHost)
     return &NewWebUI<WebRTCDeviceProvider::WebUI>;
 

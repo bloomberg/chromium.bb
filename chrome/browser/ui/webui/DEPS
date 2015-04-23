@@ -20,4 +20,5 @@ include_rules = [
   "+components/dom_distiller/webui",
 
   "+components/invalidation",
+  "+components/proximity_auth",
 ]

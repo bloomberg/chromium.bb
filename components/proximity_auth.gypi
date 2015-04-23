@@ -114,5 +114,28 @@
         'cryptauth_proto',
       ],
     },
+    {
+      # GN version: //components/proximity_auth/webui
+      'target_name': 'proximity_auth_webui',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../content/content.gyp:content_browser',
+        'components_resources.gyp:components_resources',
+        'proximity_auth',
+        'cryptauth',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'proximity_auth/webui/proximity_auth_ui.cc',
+        'proximity_auth/webui/proximity_auth_ui.h',
+        'proximity_auth/webui/proximity_auth_webui_handler.cc',
+        'proximity_auth/webui/proximity_auth_webui_handler.h',
+        'proximity_auth/webui/url_constants.cc',
+        'proximity_auth/webui/url_constants.h',
+      ],
+    },
   ],
 }

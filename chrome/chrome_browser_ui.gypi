@@ -3165,6 +3165,7 @@
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
             '../components/components.gyp:feedback_proto',
+            '../components/components.gyp:proximity_auth_webui',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../third_party/libusb/libusb.gyp:libusb',
           ],

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <include name="IDR_PROXIMITY_AUTH_HTML" file="../proximity_auth/webui/resources/proximity_auth.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_CSS" file="../proximity_auth/webui/resources/proximity_auth.css" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_JS" file="../proximity_auth/webui/resources/proximity_auth.js" type="BINDATA" />
+</grit-part>
