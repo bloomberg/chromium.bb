@@ -43,12 +43,12 @@ syncer::ModelSafeGroup
 }
 
 void AutofillProfileDataTypeController::WebDatabaseLoaded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnModelLoaded();
 }
 
 void AutofillProfileDataTypeController::OnPersonalDataChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state(), MODEL_STARTING);
 
   personal_data_->RemoveObserver(this);
@@ -73,12 +73,12 @@ AutofillProfileDataTypeController::~AutofillProfileDataTypeController() {}
 bool AutofillProfileDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
 }
 
 bool AutofillProfileDataTypeController::StartModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state(), MODEL_STARTING);
   // Waiting for the personal data is subtle:  we do this as the PDM resets
   // its cache of unique IDs once it gets loaded. If we were to proceed with
@@ -110,7 +110,7 @@ bool AutofillProfileDataTypeController::StartModels() {
 }
 
 void AutofillProfileDataTypeController::StopModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   personal_data_->RemoveObserver(this);
 }
 

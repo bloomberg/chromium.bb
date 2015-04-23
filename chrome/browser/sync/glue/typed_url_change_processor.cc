@@ -323,7 +323,7 @@ void TypedUrlChangeProcessor::Disconnect() {
 }
 
 void TypedUrlChangeProcessor::StartImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(history_backend_);
   DCHECK(backend_loop_);
   backend_loop_->PostTask(FROM_HERE,

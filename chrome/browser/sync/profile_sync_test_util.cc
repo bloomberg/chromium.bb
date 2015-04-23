@@ -27,7 +27,7 @@ void ThreadNotifier::Notify(int type,
 void ThreadNotifier::Notify(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   notify_thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&ThreadNotifier::NotifyTask, this, type, source, details));

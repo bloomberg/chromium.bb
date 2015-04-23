@@ -158,7 +158,7 @@ class LocalSyncRunner : public SyncProcessRunner,
 
   // LocalFileSyncService::Observer overrides.
   void OnLocalChangeAvailable(int64 pending_changes) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     OnChangesUpdated(pending_changes);
 
@@ -208,7 +208,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
 
   // RemoteFileSyncService::Observer overrides.
   void OnRemoteChangeQueueUpdated(int64 pending_changes) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     OnChangesUpdated(pending_changes);
 
@@ -251,7 +251,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
 // SyncFileSystemService
 
 void SyncFileSystemService::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   local_sync_runners_.clear();
   remote_sync_runners_.clear();
@@ -272,7 +272,7 @@ void SyncFileSystemService::Shutdown() {
 }
 
 SyncFileSystemService::~SyncFileSystemService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_);
 }
 
@@ -446,7 +446,7 @@ SyncFileSystemService::SyncFileSystemService(Profile* profile)
 void SyncFileSystemService::Initialize(
     scoped_ptr<LocalFileSyncService> local_service,
     scoped_ptr<RemoteFileSyncService> remote_service) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(local_service);
   DCHECK(remote_service);
   DCHECK(profile_);
@@ -635,7 +635,7 @@ void SyncFileSystemService::DidGetLocalChangeStatus(
 void SyncFileSystemService::OnRemoteServiceStateUpdated(
     RemoteServiceState state,
     const std::string& description) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "OnRemoteServiceStateChanged: %d %s", state, description.c_str());
 

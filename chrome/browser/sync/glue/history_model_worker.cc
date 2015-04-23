@@ -70,7 +70,7 @@ void PostWorkerTask(
     base::CancelableTaskTracker* cancelable_tracker,
     WaitableEvent* done,
     syncer::SyncerError* error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (history_service.get()) {
     scoped_ptr<history::HistoryDBTask> task(new WorkerTask(work, done, error));
     history_service->ScheduleDBTask(task.Pass(), cancelable_tracker);

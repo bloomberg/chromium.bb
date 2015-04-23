@@ -54,7 +54,7 @@ BookmarkChangeProcessor::BookmarkChangeProcessor(
       bookmark_model_(NULL),
       profile_(profile),
       model_associator_(model_associator) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(model_associator);
   DCHECK(profile);
   DCHECK(error_handler);
@@ -66,7 +66,7 @@ BookmarkChangeProcessor::~BookmarkChangeProcessor() {
 }
 
 void BookmarkChangeProcessor::StartImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!bookmark_model_);
   bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
   DCHECK(bookmark_model_->loaded());
@@ -524,7 +524,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     const syncer::BaseTransaction* trans,
     int64 model_version,
     const syncer::ImmutableChangeRecordList& changes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // A note about ordering.  Sync backend is responsible for ordering the change
   // records in the following order:
   //

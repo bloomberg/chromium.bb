@@ -61,7 +61,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
     scoped_ptr<base::Thread> sync_thread) :
     name_(name),
     profile_(profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(profile_);
 
   // TODO(pavely): Remove ScopedTracker below once crbug.com/426272 is fixed.
@@ -148,7 +148,7 @@ void SyncBackendRegistrar::SetInitialTypes(syncer::ModelTypeSet initial_types) {
 }
 
 bool SyncBackendRegistrar::IsNigoriEnabled() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
   return routing_info_.find(syncer::NIGORI) != routing_info_.end();
 }
@@ -203,7 +203,7 @@ syncer::ModelTypeSet SyncBackendRegistrar::GetLastConfiguredTypes() const {
 }
 
 void SyncBackendRegistrar::RequestWorkerStopOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
   for (WorkerMap::const_iterator it = workers_.begin();
        it != workers_.end(); ++it) {

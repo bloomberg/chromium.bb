@@ -34,7 +34,7 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
       profile_(profile),
       callback_registered_(false),
       currently_enabled_(IsEnabled()) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   pref_registrar_.Init(profile->GetPrefs());
   pref_registrar_.Add(
       autofill::prefs::kAutofillWalletSyncExperimentEnabled,
@@ -61,12 +61,12 @@ syncer::ModelSafeGroup
 bool AutofillWalletDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
 }
 
 bool AutofillWalletDataTypeController::StartModels() {
-  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state(), MODEL_STARTING);
 
   autofill::AutofillWebDataService* web_data_service =
@@ -89,7 +89,7 @@ bool AutofillWalletDataTypeController::StartModels() {
 }
 
 void AutofillWalletDataTypeController::StopModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This function is called when shutting down (nothing is changing), when
   // sync is disabled completely, or when wallet sync is disabled. In the
@@ -115,7 +115,7 @@ void AutofillWalletDataTypeController::StopModels() {
 }
 
 bool AutofillWalletDataTypeController::ReadyForStart() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return currently_enabled_;
 }
 
@@ -124,7 +124,7 @@ void AutofillWalletDataTypeController::WebDatabaseLoaded() {
 }
 
 void AutofillWalletDataTypeController::OnSyncPrefChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   bool new_enabled = IsEnabled();
   if (currently_enabled_ == new_enabled)
@@ -154,7 +154,7 @@ void AutofillWalletDataTypeController::OnSyncPrefChanged() {
 }
 
 bool AutofillWalletDataTypeController::IsEnabled() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Require both the sync experiment and the user-visible pref to be
   // enabled to sync Wallet data.

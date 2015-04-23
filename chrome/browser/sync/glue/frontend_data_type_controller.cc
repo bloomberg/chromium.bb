@@ -35,7 +35,7 @@ FrontendDataTypeController::FrontendDataTypeController(
       profile_(profile),
       sync_service_(sync_service),
       state_(NOT_RUNNING) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_sync_factory);
   DCHECK(profile);
   DCHECK(sync_service);
@@ -43,7 +43,7 @@ FrontendDataTypeController::FrontendDataTypeController(
 
 void FrontendDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   model_load_callback_ = model_load_callback;
 
   if (state_ != NOT_RUNNING) {
@@ -68,7 +68,7 @@ void FrontendDataTypeController::LoadModels(
 }
 
 void FrontendDataTypeController::OnModelLoaded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state_, MODEL_STARTING);
 
   state_ = MODEL_LOADED;
@@ -77,7 +77,7 @@ void FrontendDataTypeController::OnModelLoaded() {
 
 void FrontendDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!start_callback.is_null());
   DCHECK_EQ(state_, MODEL_LOADED);
 
@@ -89,7 +89,7 @@ void FrontendDataTypeController::StartAssociating(
 }
 
 void FrontendDataTypeController::Stop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (state_ == NOT_RUNNING)
     return;
@@ -158,7 +158,7 @@ FrontendDataTypeController::FrontendDataTypeController()
 }
 
 FrontendDataTypeController::~FrontendDataTypeController() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 bool FrontendDataTypeController::StartModels() {
@@ -243,7 +243,7 @@ void FrontendDataTypeController::CleanUp() {
 }
 
 void FrontendDataTypeController::AbortModelLoad() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CleanUp();
   state_ = NOT_RUNNING;
 }
@@ -252,7 +252,7 @@ void FrontendDataTypeController::StartDone(
     ConfigureResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsSuccessfulResult(start_result)) {
     if (IsUnrecoverableResult(start_result))
       RecordUnrecoverableError(FROM_HERE, "StartFailed");
@@ -270,7 +270,7 @@ void FrontendDataTypeController::StartDone(
 }
 
 void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #define PER_DATA_TYPE_MACRO(type_str) \
     UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
   SYNC_DATA_TYPE_HISTOGRAM(type());
@@ -278,7 +278,7 @@ void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
 }
 
 void FrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);

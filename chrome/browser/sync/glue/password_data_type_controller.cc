@@ -43,14 +43,14 @@ PasswordDataTypeController::~PasswordDataTypeController() {}
 bool PasswordDataTypeController::PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!password_store_.get())
     return false;
   return password_store_->ScheduleTask(task);
 }
 
 bool PasswordDataTypeController::StartModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(MODEL_STARTING, state());
 
   ProfileSyncService* profile_sync_service =
@@ -66,7 +66,7 @@ bool PasswordDataTypeController::StartModels() {
 }
 
 void PasswordDataTypeController::StopModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   DCHECK(profile_sync_service);

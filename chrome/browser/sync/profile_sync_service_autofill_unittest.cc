@@ -173,7 +173,7 @@ class MockAutofillBackend : public autofill::AutofillWebDataBackend {
       autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
   void RemoveExpiredFormElements() override {}
   void NotifyOfMultipleAutofillChanges() override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    DCHECK_CURRENTLY_ON(BrowserThread::DB);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, on_changed_);
   }
 

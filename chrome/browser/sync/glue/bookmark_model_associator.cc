@@ -260,18 +260,18 @@ BookmarkModelAssociator::BookmarkModelAssociator(
       unrecoverable_error_handler_(unrecoverable_error_handler),
       expect_mobile_bookmarks_folder_(expect_mobile_bookmarks_folder),
       weak_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(bookmark_model_);
   DCHECK(user_share_);
   DCHECK(unrecoverable_error_handler_);
 }
 
 BookmarkModelAssociator::~BookmarkModelAssociator() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void BookmarkModelAssociator::UpdatePermanentNodeVisibility() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(bookmark_model_->loaded());
 
   BookmarkNode::Type bookmark_node_types[] = {
@@ -323,7 +323,7 @@ bool BookmarkModelAssociator::InitSyncNodeFromChromeId(
 
 void BookmarkModelAssociator::Associate(const BookmarkNode* node,
                                         int64 sync_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int64 node_id = node->id();
   DCHECK_NE(sync_id, syncer::kInvalidId);
   DCHECK(id_map_.find(node_id) == id_map_.end());
@@ -336,7 +336,7 @@ void BookmarkModelAssociator::Associate(const BookmarkNode* node,
 }
 
 void BookmarkModelAssociator::Disassociate(int64 sync_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SyncIdToBookmarkNodeMap::iterator iter = id_map_inverse_.find(sync_id);
   if (iter == id_map_inverse_.end())
     return;

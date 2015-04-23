@@ -114,7 +114,7 @@ void ProfileSyncServiceAndroid::OnStateChanged() {
 }
 
 void ProfileSyncServiceAndroid::EnableSync(JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Don't need to do anything if we're already enabled.
   if (sync_prefs_->IsStartSuppressed())
     sync_service_->UnsuppressAndStart();
@@ -123,7 +123,7 @@ void ProfileSyncServiceAndroid::EnableSync(JNIEnv* env, jobject) {
 }
 
 void ProfileSyncServiceAndroid::DisableSync(JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Don't need to do anything if we're already disabled.
   if (!sync_prefs_->IsStartSuppressed()) {
     sync_service_->StopAndSuppress();
@@ -134,7 +134,7 @@ void ProfileSyncServiceAndroid::DisableSync(JNIEnv* env, jobject) {
 }
 
 void ProfileSyncServiceAndroid::SignInSync(JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Just return if sync already has everything it needs to start up (sync
   // should start up automatically as long as it has credentials). This can
   // happen normally if (for example) the user closes and reopens the sync
@@ -151,7 +151,7 @@ void ProfileSyncServiceAndroid::SignInSync(JNIEnv* env, jobject) {
 }
 
 void ProfileSyncServiceAndroid::SignOutSync(JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_);
   sync_service_->DisableForUser();
 
@@ -160,13 +160,13 @@ void ProfileSyncServiceAndroid::SignOutSync(JNIEnv* env, jobject) {
 }
 
 void ProfileSyncServiceAndroid::FlushDirectory(JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   sync_service_->FlushDirectory();
 }
 
 ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::QuerySyncStatusSummary(
     JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_);
   std::string status(sync_service_->QuerySyncStatusSummaryString());
   return ConvertUTF8ToJavaString(env, status);
@@ -174,7 +174,7 @@ ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::QuerySyncStatusSummary(
 
 jboolean ProfileSyncServiceAndroid::SetSyncSessionsId(
     JNIEnv* env, jobject obj, jstring tag) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_);
   std::string machine_tag = ConvertJavaStringToUTF8(env, tag);
   sync_prefs_->SetSyncSessionsGUID(machine_tag);
@@ -182,41 +182,41 @@ jboolean ProfileSyncServiceAndroid::SetSyncSessionsId(
 }
 
 jint ProfileSyncServiceAndroid::GetAuthError(JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->GetAuthError().state();
 }
 
 jboolean ProfileSyncServiceAndroid::IsEncryptEverythingEnabled(
     JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->EncryptEverythingEnabled();
 }
 
 jboolean ProfileSyncServiceAndroid::IsSyncInitialized(JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->backend_initialized();
 }
 
 jboolean ProfileSyncServiceAndroid::IsFirstSetupInProgress(
     JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->FirstSetupInProgress();
 }
 
 jboolean ProfileSyncServiceAndroid::IsEncryptEverythingAllowed(
     JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->EncryptEverythingAllowed();
 }
 
 jboolean ProfileSyncServiceAndroid::IsPassphraseRequired(JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->IsPassphraseRequired();
 }
 
 jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForDecryption(
     JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // In case of CUSTOM_PASSPHRASE we always sync passwords. Prompt the user for
   // a passphrase if cryptographer has any pending keys.
   if (sync_service_->GetPassphraseType() == syncer::CUSTOM_PASSPHRASE) {
@@ -237,27 +237,27 @@ jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForDecryption(
 
 jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForExternalType(
     JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return
       sync_service_->passphrase_required_reason() == syncer::REASON_DECRYPTION;
 }
 
 jboolean ProfileSyncServiceAndroid::IsUsingSecondaryPassphrase(
     JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->IsUsingSecondaryPassphrase();
 }
 
 jboolean ProfileSyncServiceAndroid::SetDecryptionPassphrase(
     JNIEnv* env, jobject obj, jstring passphrase) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string key = ConvertJavaStringToUTF8(env, passphrase);
   return sync_service_->SetDecryptionPassphrase(key);
 }
 
 void ProfileSyncServiceAndroid::SetEncryptionPassphrase(
     JNIEnv* env, jobject obj, jstring passphrase, jboolean is_gaia) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string key = ConvertJavaStringToUTF8(env, passphrase);
   sync_service_->SetEncryptionPassphrase(
       key,
@@ -270,20 +270,20 @@ jboolean ProfileSyncServiceAndroid::IsCryptographerReady(JNIEnv* env, jobject) {
 }
 
 jint ProfileSyncServiceAndroid::GetPassphraseType(JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->GetPassphraseType();
 }
 
 jboolean ProfileSyncServiceAndroid::HasExplicitPassphraseTime(
     JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Time passphrase_time = sync_service_->GetExplicitPassphraseTime();
   return !passphrase_time.is_null();
 }
 
 jlong ProfileSyncServiceAndroid::GetExplicitPassphraseTime(
         JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Time passphrase_time = sync_service_->GetExplicitPassphraseTime();
   return passphrase_time.ToJavaTime();
 }
@@ -291,7 +291,7 @@ jlong ProfileSyncServiceAndroid::GetExplicitPassphraseTime(
 ScopedJavaLocalRef<jstring>
     ProfileSyncServiceAndroid::GetSyncEnterGooglePassphraseBodyWithDateText(
         JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Time passphrase_time = sync_service_->GetExplicitPassphraseTime();
   base::string16 passphrase_time_str =
       base::TimeFormatShortDate(passphrase_time);
@@ -304,7 +304,7 @@ ScopedJavaLocalRef<jstring>
 ScopedJavaLocalRef<jstring>
     ProfileSyncServiceAndroid::GetSyncEnterCustomPassphraseBodyWithDateText(
         JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Time passphrase_time = sync_service_->GetExplicitPassphraseTime();
   base::string16 passphrase_time_str =
       base::TimeFormatShortDate(passphrase_time);
@@ -316,7 +316,7 @@ ScopedJavaLocalRef<jstring>
 ScopedJavaLocalRef<jstring>
     ProfileSyncServiceAndroid::GetCurrentSignedInAccountText(
         JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::string& sync_username =
       SigninManagerFactory::GetForProfile(profile_)->GetAuthenticatedUsername();
   return base::android::ConvertUTF16ToJavaString(env,
@@ -328,14 +328,14 @@ ScopedJavaLocalRef<jstring>
 ScopedJavaLocalRef<jstring>
     ProfileSyncServiceAndroid::GetSyncEnterCustomPassphraseBodyText(
         JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return ConvertUTF8ToJavaString(
       env, l10n_util::GetStringUTF8(IDS_SYNC_ENTER_PASSPHRASE_BODY));
 }
 
 jboolean ProfileSyncServiceAndroid::IsSyncKeystoreMigrationDone(
       JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   syncer::SyncStatus status;
   bool is_status_valid = sync_service_->QueryDetailedSyncStatus(&status);
   return is_status_valid && !status.keystore_migration_time.is_null();
@@ -359,7 +359,7 @@ void ProfileSyncServiceAndroid::SetPreferredDataTypes(
     JNIEnv* env, jobject obj,
     jboolean sync_everything,
     jlong model_type_selection) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   syncer::ModelTypeSet types;
   // Note: only user selectable types should be included here.
   if (model_type_selection & AUTOFILL)
@@ -378,49 +378,49 @@ void ProfileSyncServiceAndroid::SetPreferredDataTypes(
 
 void ProfileSyncServiceAndroid::SetSetupInProgress(
     JNIEnv* env, jobject obj, jboolean in_progress) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   sync_service_->SetSetupInProgress(in_progress);
 }
 
 void ProfileSyncServiceAndroid::SetSyncSetupCompleted(
     JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   sync_service_->SetSyncSetupCompleted();
 }
 
 jboolean ProfileSyncServiceAndroid::HasSyncSetupCompleted(
     JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->HasSyncSetupCompleted();
 }
 
 jboolean ProfileSyncServiceAndroid::IsStartSuppressed(
     JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_prefs_->IsStartSuppressed();
 }
 
 void ProfileSyncServiceAndroid::EnableEncryptEverything(
     JNIEnv* env, jobject obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   sync_service_->EnableEncryptEverything();
 }
 
 jboolean ProfileSyncServiceAndroid::HasKeepEverythingSynced(
     JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_prefs_->HasKeepEverythingSynced();
 }
 
 jboolean ProfileSyncServiceAndroid::HasUnrecoverableError(
     JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->HasUnrecoverableError();
 }
 
 ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::GetAboutInfoForTest(
     JNIEnv* env, jobject) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_ptr<base::DictionaryValue> about_info =
       sync_ui_util::ConstructAboutInformation(sync_service_);

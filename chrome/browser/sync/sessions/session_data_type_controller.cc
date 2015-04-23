@@ -46,7 +46,7 @@ SessionDataTypeController::SessionDataTypeController(
 SessionDataTypeController::~SessionDataTypeController() {}
 
 bool SessionDataTypeController::StartModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::set<const browser_sync::SyncedWindowDelegate*> window =
       synced_window_getter_->GetSyncedWindowDelegates();
   for (std::set<const browser_sync::SyncedWindowDelegate*>::const_iterator i =
@@ -77,7 +77,7 @@ void SessionDataTypeController::StopModels() {
 }
 
 bool SessionDataTypeController::ReadyForStart() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return !profile_->GetPrefs()->GetBoolean(
       prefs::kSavingBrowserHistoryDisabled);
 }
@@ -96,7 +96,7 @@ void SessionDataTypeController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(chrome::NOTIFICATION_SESSION_RESTORE_COMPLETE, type);
   DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
   notification_registrar_.RemoveAll();
@@ -106,7 +106,7 @@ void SessionDataTypeController::Observe(
 }
 
 void SessionDataTypeController::OnLocalDeviceInfoInitialized() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   subscription_.reset();
 
   waiting_on_local_device_info_ = false;
@@ -114,7 +114,7 @@ void SessionDataTypeController::OnLocalDeviceInfoInitialized() {
 }
 
 void SessionDataTypeController::OnSavingBrowserHistoryPrefChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (profile_->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled)) {
     // If history and tabs persistence is turned off then generate an
     // unrecoverable error. SESSIONS won't be a registered type on the next

@@ -29,7 +29,7 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
           profile_sync_factory),
       type_(type),
       profile_(profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
 }
 
@@ -47,12 +47,12 @@ ExtensionSettingDataTypeController::~ExtensionSettingDataTypeController() {}
 bool ExtensionSettingDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return BrowserThread::PostTask(BrowserThread::FILE, from_here, task);
 }
 
 bool ExtensionSettingDataTypeController::StartModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   extensions::ExtensionSystem::Get(profile_)->InitForRegularProfile(true);
   return true;
 }

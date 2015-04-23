@@ -60,7 +60,7 @@ void SearchEngineDataTypeController::StopModels() {
 }
 
 void SearchEngineDataTypeController::OnTemplateURLServiceLoaded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state_, MODEL_STARTING);
   template_url_subscription_.reset();
   OnModelLoaded();

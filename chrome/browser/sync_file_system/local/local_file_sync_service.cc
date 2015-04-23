@@ -120,7 +120,7 @@ scoped_ptr<LocalFileSyncService> LocalFileSyncService::CreateForTesting(
 }
 
 LocalFileSyncService::~LocalFileSyncService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void LocalFileSyncService::Shutdown() {
@@ -350,7 +350,7 @@ LocalFileSyncService::LocalFileSyncService(Profile* profile,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)
               .get())),
       local_change_processor_(nullptr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   sync_context_->AddOriginChangeObserver(this);
 }
 

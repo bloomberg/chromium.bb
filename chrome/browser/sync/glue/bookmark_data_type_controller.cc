@@ -107,7 +107,7 @@ bool BookmarkDataTypeController::DependentsLoaded() {
 
 void BookmarkDataTypeController::OnHistoryServiceLoaded(
     history::HistoryService* service) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state_, MODEL_STARTING);
   history_service_observer_.RemoveAll();
 

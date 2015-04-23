@@ -40,25 +40,25 @@ syncer::ModelSafeGroup AutofillDataTypeController::model_safe_group() const {
 }
 
 void AutofillDataTypeController::WebDatabaseLoaded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(MODEL_STARTING, state());
 
   OnModelLoaded();
 }
 
 AutofillDataTypeController::~AutofillDataTypeController() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 bool AutofillDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
 }
 
 bool AutofillDataTypeController::StartModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(MODEL_STARTING, state());
 
   autofill::AutofillWebDataService* web_data_service =
@@ -79,7 +79,7 @@ bool AutofillDataTypeController::StartModels() {
 
 void AutofillDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state(), MODEL_LOADED);
   ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(
       profile_);

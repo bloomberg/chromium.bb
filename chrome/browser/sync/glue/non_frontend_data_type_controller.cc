@@ -53,7 +53,7 @@ BackendComponentsContainer::BackendComponentsContainer(
     NonFrontendDataTypeController* controller)
     : controller_(controller),
       type_(controller->type()) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   controller_handle_ =
       syncer::MakeWeakHandle(controller_->weak_ptr_factory_.GetWeakPtr());
 }
@@ -173,7 +173,7 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
       model_associator_(NULL),
       change_processor_(NULL),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_sync_factory_);
   DCHECK(profile_);
   DCHECK(profile_sync_service_);
@@ -181,7 +181,7 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
 
 void NonFrontendDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   model_load_callback_ = model_load_callback;
   if (state_ != NOT_RUNNING) {
     model_load_callback.Run(type(),
@@ -218,7 +218,7 @@ void NonFrontendDataTypeController::OnModelLoaded() {
 
 void NonFrontendDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!start_callback.is_null());
   DCHECK(!components_container_);
   DCHECK_EQ(state_, MODEL_LOADED);
@@ -251,7 +251,7 @@ void DestroyComponentsInBackend(
 }
 
 void NonFrontendDataTypeController::Stop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (state_ == NOT_RUNNING)
     return;
@@ -313,13 +313,13 @@ NonFrontendDataTypeController::NonFrontendDataTypeController()
 }
 
 NonFrontendDataTypeController::~NonFrontendDataTypeController() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!change_processor_);
   DCHECK(!model_associator_);
 }
 
 bool NonFrontendDataTypeController::StartModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state_, MODEL_STARTING);
   // By default, no additional services need to be started before we can proceed
   // with model association, so do nothing.
@@ -334,7 +334,7 @@ void NonFrontendDataTypeController::StartDone(
     DataTypeController::ConfigureResult start_result,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DataTypeController::State new_state;
 
   if (IsSuccessfulResult(start_result)) {
@@ -354,7 +354,7 @@ void NonFrontendDataTypeController::StartDoneImpl(
     DataTypeController::State new_state,
     const syncer::SyncMergeResult& local_merge_result,
     const syncer::SyncMergeResult& syncer_merge_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   state_ = new_state;
   if (state_ != RUNNING) {
@@ -367,7 +367,7 @@ void NonFrontendDataTypeController::StartDoneImpl(
 
 void NonFrontendDataTypeController::DisableImpl(
     const syncer::SyncError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!model_load_callback_.is_null()) {
     model_load_callback_.Run(type(), error);
   }
@@ -375,7 +375,7 @@ void NonFrontendDataTypeController::DisableImpl(
 
 void NonFrontendDataTypeController::RecordAssociationTime(
     base::TimeDelta time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #define PER_DATA_TYPE_MACRO(type_str) \
     UMA_HISTOGRAM_TIMES("Sync." type_str "AssociationTime", time);
   SYNC_DATA_TYPE_HISTOGRAM(type());
@@ -383,7 +383,7 @@ void NonFrontendDataTypeController::RecordAssociationTime(
 }
 
 void NonFrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
@@ -445,7 +445,7 @@ NonFrontendDataTypeController::GetChangeProcessor() const {
 
 void NonFrontendDataTypeController::AssociationCallback(
     AssociationResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (result.needs_crypto) {
     StartDone(NEEDS_CRYPTO,

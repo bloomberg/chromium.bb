@@ -101,14 +101,14 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
 
 void GetAllAutofillEntriesOnDBThread(AutofillWebDataService* wds,
                                      std::vector<AutofillEntry>* entries) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   AutofillTable::FromWebDatabase(
       wds->GetDatabase())->GetAllAutofillEntries(entries);
 }
 
 std::vector<AutofillEntry> GetAllAutofillEntries(AutofillWebDataService* wds) {
   std::vector<AutofillEntry> entries;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RunOnDBThreadAndBlock(Bind(&GetAllAutofillEntriesOnDBThread,
                              Unretained(wds),
                              &entries));

@@ -93,7 +93,7 @@ syncer::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
 }
 
 bool TypedUrlDataTypeController::ReadyForStart() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return !profile()->GetPrefs()->GetBoolean(
       prefs::kSavingBrowserHistoryDisabled);
 }
@@ -104,7 +104,7 @@ void TypedUrlDataTypeController::SetBackend(history::HistoryBackend* backend) {
 }
 
 void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (profile()->GetPrefs()->GetBoolean(
           prefs::kSavingBrowserHistoryDisabled)) {
     // We've turned off history persistence, so if we are running,
@@ -124,7 +124,7 @@ void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
 bool TypedUrlDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile(), ServiceAccessType::IMPLICIT_ACCESS);
   if (history) {

@@ -260,7 +260,7 @@ class SyncBackendHostTest : public testing::Test {
   }
 
   void IssueRefreshRequest(syncer::ModelTypeSet types) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
