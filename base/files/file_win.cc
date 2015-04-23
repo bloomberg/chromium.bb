@@ -19,7 +19,7 @@ COMPILE_ASSERT(File::FROM_BEGIN   == FILE_BEGIN &&
                File::FROM_END     == FILE_END, whence_matches_system);
 
 void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsValid());
 
   DWORD disposition = 0;
@@ -116,13 +116,13 @@ PlatformFile File::TakePlatformFile() {
 
 void File::Close() {
   if (file_.IsValid()) {
-    base::ThreadRestrictions::AssertIOAllowed();
+    ThreadRestrictions::AssertIOAllowed();
     file_.Close();
   }
 }
 
 int64 File::Seek(Whence whence, int64 offset) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
 
   LARGE_INTEGER distance, res;
@@ -134,7 +134,7 @@ int64 File::Seek(Whence whence, int64 offset) {
 }
 
 int File::Read(int64 offset, char* data, int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   DCHECK(!async_);
   if (size < 0)
@@ -157,7 +157,7 @@ int File::Read(int64 offset, char* data, int size) {
 }
 
 int File::ReadAtCurrentPos(char* data, int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   DCHECK(!async_);
   if (size < 0)
@@ -181,7 +181,7 @@ int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
 }
 
 int File::Write(int64 offset, const char* data, int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   DCHECK(!async_);
 
@@ -200,7 +200,7 @@ int File::Write(int64 offset, const char* data, int size) {
 }
 
 int File::WriteAtCurrentPos(const char* data, int size) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   DCHECK(!async_);
   if (size < 0)
@@ -218,7 +218,7 @@ int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
 }
 
 int64 File::GetLength() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   LARGE_INTEGER size;
   if (!::GetFileSizeEx(file_.Get(), &size))
@@ -228,7 +228,7 @@ int64 File::GetLength() {
 }
 
 bool File::SetLength(int64 length) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
 
   // Get the current file pointer.
@@ -257,7 +257,7 @@ bool File::SetLength(int64 length) {
 }
 
 bool File::SetTimes(Time last_access_time, Time last_modified_time) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
 
   FILETIME last_access_filetime = last_access_time.ToFileTime();
@@ -267,7 +267,7 @@ bool File::SetTimes(Time last_access_time, Time last_modified_time) {
 }
 
 bool File::GetInfo(Info* info) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
 
   BY_HANDLE_FILE_INFORMATION file_info;
@@ -281,13 +281,13 @@ bool File::GetInfo(Info* info) {
   info->is_directory =
       (file_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
   info->is_symbolic_link = false;  // Windows doesn't have symbolic links.
-  info->last_modified = base::Time::FromFileTime(file_info.ftLastWriteTime);
-  info->last_accessed = base::Time::FromFileTime(file_info.ftLastAccessTime);
-  info->creation_time = base::Time::FromFileTime(file_info.ftCreationTime);
+  info->last_modified = Time::FromFileTime(file_info.ftLastWriteTime);
+  info->last_accessed = Time::FromFileTime(file_info.ftLastAccessTime);
+  info->creation_time = Time::FromFileTime(file_info.ftCreationTime);
   return true;
 }
 
-File::Error base::File::Lock() {
+File::Error File::Lock() {
   DCHECK(IsValid());
   BOOL result = LockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
   if (!result)
@@ -363,7 +363,7 @@ File::Error File::OSErrorToFileError(DWORD last_error) {
 }
 
 bool File::DoFlush() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   return ::FlushFileBuffers(file_.Get()) != FALSE;
 }

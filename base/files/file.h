@@ -150,13 +150,13 @@ class BASE_EXPORT File {
     bool is_symbolic_link;
 
     // The last modified time of a file.
-    base::Time last_modified;
+    Time last_modified;
 
     // The last accessed time of a file.
-    base::Time last_accessed;
+    Time last_accessed;
 
     // The creation time of a file.
-    base::Time creation_time;
+    Time creation_time;
   };
 
   File();
