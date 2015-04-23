@@ -435,10 +435,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
       bar_child->current_frame_host()->GetSiteInstance();
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(), bar_site_instance);
 
-// TODO(nick): The following EXPECTs are disabled because of
-// http://crbug.com/476628, where the Site C node sometimes (flakily) has
-// children even though it's committed a nav to a page with no iframes.
-#if 0
   EXPECT_EQ(
       " Site A ------------ proxies for B C\n"
       "   |--Site B ------- proxies for A C\n"
@@ -447,7 +443,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
       "      B = http://foo.com/\n"
       "      C = http://bar.com/",
       DepictFrameTree(root));
-#endif
 
   // Simulate an attempt to detach the root frame from foo_site_instance.  This
   // should kill foo_site_instance's process.
@@ -461,7 +456,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
       foo_mainframe_rfph->GetProcess()->GetChannel(), evil_msg2);
   foo_terminated.Wait();
 
-#if 0
   EXPECT_EQ(
       " Site A ------------ proxies for B C\n"
       "   |--Site B ------- proxies for A C\n"
@@ -470,7 +464,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
       "      B = http://foo.com/ (no process)\n"
       "      C = http://bar.com/",
       DepictFrameTree(root));
-#endif
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
@@ -1159,16 +1152,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Ensure that when navigating a frame cross-process RenderFrameProxyHosts are
 // created in the FrameTree skipping the subtree of the navigating frame.
-//
-// Disabled on Mac due to flakiness on ASAN. http://crbug.com/425248
-// Disabled on Windows due to flakiness on Win 7 bot. http://crbug.com/444563
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_ProxyCreationSkipsSubtree DISABLED_ProxyCreationSkipsSubtree
-#else
-#define MAYBE_ProxyCreationSkipsSubtree ProxyCreationSkipsSubtree
-#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_ProxyCreationSkipsSubtree) {
+                       ProxyCreationSkipsSubtree) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
@@ -1237,6 +1222,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     EXPECT_FALSE(child->render_manager()->pending_frame_host());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_EQ(cross_site_url, observer.last_navigation_url());
+
+    EXPECT_EQ(
+        " Site A ------------ proxies for B\n"
+        "   |--Site A ------- proxies for B\n"
+        "   +--Site B ------- proxies for A\n"
+        "Where A = http://127.0.0.1/\n"
+        "      B = http://foo.com/",
+        DepictFrameTree(root));
   }
 
   // Load another cross-site page into the same iframe.
@@ -1264,9 +1257,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
         " Site A ------------ proxies for B C\n"
         "   |--Site A ------- proxies for B C\n"
         "   +--Site B (C pending) -- proxies for A\n"
-        "        |--Site A\n"
-        "        +--Site A\n"
-        "             +--Site A\n"
         "Where A = http://127.0.0.1/\n"
         "      B = http://foo.com/\n"
         "      C = http://bar.com/",

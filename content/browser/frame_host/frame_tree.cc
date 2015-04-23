@@ -213,11 +213,6 @@ void FrameTree::CreateProxiesForSiteInstance(
   ForEach(base::Bind(&CreateProxyForSiteInstance, instance), source);
 }
 
-void FrameTree::ResetForMainFrameSwap() {
-  root_->ResetForNewProcess();
-  focused_frame_tree_node_id_ = -1;
-}
-
 RenderFrameHostImpl* FrameTree::GetMainFrame() const {
   return root_->current_frame_host();
 }
@@ -336,6 +331,9 @@ void FrameTree::UnregisterRenderFrameHost(
 }
 
 void FrameTree::FrameRemoved(FrameTreeNode* frame) {
+  if (frame->frame_tree_node_id() == focused_frame_tree_node_id_)
+    focused_frame_tree_node_id_ = -1;
+
   // No notification for the root frame.
   if (!frame->parent()) {
     CHECK_EQ(frame, root_.get());

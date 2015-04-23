@@ -383,7 +383,7 @@ WebContentsImpl::~WebContentsImpl() {
       NotificationService::NoDetails());
 
   // Destroy all frame tree nodes except for the root; this notifies observers.
-  frame_tree_.ResetForMainFrameSwap();
+  frame_tree_.root()->ResetForNewProcess();
   GetRenderManager()->ResetProxyHosts();
 
   // Manually call the observer methods for the root frame tree node.
@@ -643,10 +643,11 @@ RenderFrameHostImpl* WebContentsImpl::GetMainFrame() {
   return frame_tree_.root()->current_frame_host();
 }
 
-RenderFrameHost* WebContentsImpl::GetFocusedFrame() {
-  if (!frame_tree_.GetFocusedFrame())
-    return NULL;
-  return frame_tree_.GetFocusedFrame()->current_frame_host();
+RenderFrameHostImpl* WebContentsImpl::GetFocusedFrame() {
+  FrameTreeNode* focused_node = frame_tree_.GetFocusedFrame();
+  if (!focused_node)
+    return nullptr;
+  return focused_node->current_frame_host();
 }
 
 void WebContentsImpl::ForEachFrame(

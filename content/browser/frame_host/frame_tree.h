@@ -85,13 +85,6 @@ class CONTENT_EXPORT FrameTree {
       FrameTreeNode* source,
       SiteInstance* site_instance);
 
-  // Clears process specific-state after a main frame process swap.
-  // This destroys most of the frame tree but retains the root node so that
-  // navigation state may be kept on it between process swaps. Used to
-  // support bookkeeping for top-level navigations.
-  // TODO(creis): Look into how we can remove the need for this method.
-  void ResetForMainFrameSwap();
-
   // Convenience accessor for the main frame's RenderFrameHostImpl.
   RenderFrameHostImpl* GetMainFrame() const;
 
@@ -143,6 +136,7 @@ class CONTENT_EXPORT FrameTree {
   bool IsLoading();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
   typedef base::hash_map<int, RenderViewHostImpl*> RenderViewHostMap;
   typedef std::multimap<int, RenderViewHostImpl*> RenderViewHostMultiMap;
 

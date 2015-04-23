@@ -295,13 +295,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                                           size_t start_offset,
                                           size_t end_offset);
 
-  // Update the FrameTree to use this RenderViewHost's main frame
-  // RenderFrameHost. Called when the RenderViewHost is committed.
-  //
-  // TODO(ajwong): Remove once RenderViewHost no longer owns the main frame
-  // RenderFrameHost.
-  void AttachToFrameTree();
-
   // Increases the refcounting on this RVH. This is done by the FrameTree on
   // creation of a RenderFrameHost.
   void increment_ref_count() { ++frames_ref_count_; }

@@ -245,7 +245,6 @@ void InterstitialPageImpl::Show() {
 
   DCHECK(!render_view_host_);
   render_view_host_ = CreateRenderViewHost();
-  render_view_host_->AttachToFrameTree();
   CreateWebContentsView();
 
   std::string data_url = "data:text/html;charset=utf-8," +
@@ -295,7 +294,7 @@ void InterstitialPageImpl::Hide() {
       base::Bind(&InterstitialPageImpl::Shutdown,
                  weak_ptr_factory_.GetWeakPtr()));
   render_view_host_ = NULL;
-  frame_tree_.ResetForMainFrameSwap();
+  frame_tree_.root()->ResetForNewProcess();
   controller_->delegate()->DetachInterstitialPage();
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = controller_->GetVisibleEntry();

@@ -1419,12 +1419,6 @@ void RenderViewHostImpl::GrantFileAccessFromPageState(const PageState& state) {
   }
 }
 
-void RenderViewHostImpl::AttachToFrameTree() {
-  FrameTree* frame_tree = delegate_->GetFrameTree();
-
-  frame_tree->ResetForMainFrameSwap();
-}
-
 void RenderViewHostImpl::SelectWordAroundCaret() {
   Send(new ViewMsg_SelectWordAroundCaret(GetRoutingID()));
 }

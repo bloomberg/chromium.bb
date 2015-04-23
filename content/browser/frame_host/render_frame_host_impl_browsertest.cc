@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -85,6 +86,38 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
     EXPECT_TRUE(ToRFHI(web_contents->GetMainFrame())->IsFocused());
     EXPECT_EQ(frame, web_contents->GetFocusedFrame()->GetFrameName());
   }
+}
+
+// Tests focus behavior when the focused frame is removed from the frame tree.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, RemoveFocusedFrame) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GetTestUrl("render_frame_host", "focus.html")));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "focusframe4()");
+
+  // TODO(nick,mlamouri): Add calls to RFHI::IsFocused here once they're not
+  // flaky. See http://crbug.com/452631, http://crbug.com/464033, etc.
+  EXPECT_NE(web_contents->GetMainFrame(), web_contents->GetFocusedFrame());
+  EXPECT_EQ("frame4", web_contents->GetFocusedFrame()->GetFrameName());
+  EXPECT_EQ("frame3",
+            web_contents->GetFocusedFrame()->GetParent()->GetFrameName());
+  EXPECT_NE(-1, web_contents->GetFrameTree()->focused_frame_tree_node_id_);
+
+  ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "detachframe(3)");
+  EXPECT_EQ(nullptr, web_contents->GetFocusedFrame());
+  EXPECT_EQ(-1, web_contents->GetFrameTree()->focused_frame_tree_node_id_);
+
+  ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "focusframe2()");
+  EXPECT_NE(nullptr, web_contents->GetFocusedFrame());
+  EXPECT_NE(web_contents->GetMainFrame(), web_contents->GetFocusedFrame());
+  EXPECT_NE(-1, web_contents->GetFrameTree()->focused_frame_tree_node_id_);
+
+  ExecuteScriptAndGetValue(web_contents->GetMainFrame(), "detachframe(2)");
+  EXPECT_EQ(nullptr, web_contents->GetFocusedFrame());
+  EXPECT_EQ(-1, web_contents->GetFrameTree()->focused_frame_tree_node_id_);
 }
 
 // Test that even if the frame is focused in the frame tree but its

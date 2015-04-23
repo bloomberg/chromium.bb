@@ -1737,8 +1737,8 @@ void RenderFrameHostManager::CommitPending() {
         SetRenderFrameHost(speculative_render_frame_host_.Pass());
   }
 
-  if (is_main_frame)
-    render_frame_host_->render_view_host()->AttachToFrameTree();
+  // Remove the children of the old frame from the tree.
+  frame_tree_node_->ResetForNewProcess();
 
   // The process will no longer try to exit, so we can decrement the count.
   render_frame_host_->GetProcess()->RemovePendingView();
