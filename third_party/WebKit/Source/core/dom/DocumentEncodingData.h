@@ -31,6 +31,7 @@
 #ifndef DocumentEncodingData_h
 #define DocumentEncodingData_h
 
+#include "platform/CrossThreadCopier.h"
 #include "wtf/text/TextEncoding.h"
 
 namespace blink {
@@ -50,6 +51,9 @@ private:
     WTF::TextEncoding m_encoding;
     bool m_wasDetectedHeuristically;
     bool m_sawDecodingError;
+};
+
+template<> struct CrossThreadCopierBase<false, false, false, DocumentEncodingData> : public CrossThreadCopierPassThrough<DocumentEncodingData> {
 };
 
 inline bool operator!=(const DocumentEncodingData& a, const DocumentEncodingData& b)
