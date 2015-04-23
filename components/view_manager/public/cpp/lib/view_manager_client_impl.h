@@ -9,7 +9,6 @@
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
-#include "components/window_manager/public/interfaces/window_manager.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
@@ -21,7 +20,6 @@ class ViewManagerTransaction;
 // Manages the connection with the View Manager service.
 class ViewManagerClientImpl : public ViewManager,
                               public ViewManagerClient,
-                              public WindowManagerObserver,
                               public ErrorHandler {
  public:
   ViewManagerClientImpl(ViewManagerDelegate* delegate,
@@ -96,7 +94,7 @@ class ViewManagerClientImpl : public ViewManager,
                ViewManagerServicePtr view_manager_service,
                InterfaceRequest<ServiceProvider> services,
                ServiceProviderPtr exposed_services,
-               ScopedMessagePipeHandle window_manager_pipe) override;
+               Id focused_view_id) override;
   void OnEmbeddedAppDisconnected(Id view_id) override;
   void OnViewBoundsChanged(Id view_id,
                            RectPtr old_bounds,
@@ -119,14 +117,7 @@ class ViewManagerClientImpl : public ViewManager,
   void OnViewInputEvent(Id view_id,
                         EventPtr event,
                         const Callback<void()>& callback) override;
-  void OnPerformAction(Id view_id,
-                       const String& name,
-                       const Callback<void(bool)>& callback) override;
-
-  // Overridden from WindowManagerObserver:
-  void OnCaptureChanged(Id capture_view_id) override;
-  void OnFocusChanged(Id focused_view_id) override;
-  void OnActiveWindowChanged(Id focused_view_id) override;
+  void OnViewFocused(Id focused_view_id) override;
 
   // ErrorHandler implementation.
   void OnConnectionError() override;
@@ -153,9 +144,6 @@ class ViewManagerClientImpl : public ViewManager,
   View* capture_view_;
   View* focused_view_;
   View* activated_view_;
-
-  WindowManagerPtr window_manager_;
-  Binding<WindowManagerObserver> wm_observer_binding_;
 
   Binding<ViewManagerClient> binding_;
   ViewManagerServicePtr service_;

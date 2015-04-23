@@ -94,6 +94,10 @@ std::string ChangeToDescription1(const Change& change) {
     case CHANGE_TYPE_DELEGATE_EMBED:
       return base::StringPrintf("DelegateEmbed url=%s",
                                 change.embed_url.data());
+
+    case CHANGE_TYPE_FOCUSED:
+      return base::StringPrintf("Focused id=%s",
+                                ViewIdToString(change.view_id).c_str());
   }
   return std::string();
 }
@@ -277,6 +281,13 @@ void TestChangeTracker::OnViewSharedPropertyChanged(Id view_id,
     change.property_value = "NULL";
   else
     change.property_value = data.To<std::string>();
+  AddChange(change);
+}
+
+void TestChangeTracker::OnViewFocused(mojo::Id view_id) {
+  Change change;
+  change.type = CHANGE_TYPE_FOCUSED;
+  change.view_id = view_id;
   AddChange(change);
 }
 

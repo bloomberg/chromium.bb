@@ -7,6 +7,8 @@
 
 #include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 #include "third_party/mojo/src/mojo/public/interfaces/application/service_provider.mojom.h"
+#include "ui/mojo/events/input_events.mojom.h"
+#include "ui/mojo/events/input_key_codes.mojom.h"
 
 namespace window_manager {
 
@@ -16,6 +18,10 @@ class WindowManagerDelegate {
   virtual void Embed(const mojo::String& url,
                      mojo::InterfaceRequest<mojo::ServiceProvider> services,
                      mojo::ServiceProviderPtr exposed_services) = 0;
+
+  virtual void OnAcceleratorPressed(mojo::View* view,
+                                    mojo::KeyboardCode keyboard_code,
+                                    mojo::EventFlags flags) {}
 
  protected:
   virtual ~WindowManagerDelegate() {}

@@ -59,10 +59,7 @@ class ViewObserver {
                                             const ViewportMetrics& new_bounds) {
   }
 
-  virtual void OnViewCaptureChanged(View* gained_capture, View* lost_capture) {}
   virtual void OnViewFocusChanged(View* gained_focus, View* lost_focus) {}
-  virtual void OnViewActivationChanged(View* gained_active, View* lost_active) {
-  }
 
   virtual void OnViewInputEvent(View* view, const EventPtr& event) {}
 

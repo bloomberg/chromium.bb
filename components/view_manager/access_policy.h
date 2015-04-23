@@ -37,6 +37,7 @@ class AccessPolicy {
   virtual bool CanSetViewSurfaceId(const ServerView* view) const = 0;
   virtual bool CanSetViewBounds(const ServerView* view) const = 0;
   virtual bool CanSetViewProperties(const ServerView* view) const = 0;
+  virtual bool CanSetFocus(const ServerView* view) const = 0;
 
   // Returns whether the connection should notify on a hierarchy change.
   // |new_parent| and |old_parent| are initially set to the new and old parents
@@ -45,6 +46,10 @@ class AccessPolicy {
       const ServerView* view,
       const ServerView** new_parent,
       const ServerView** old_parent) const = 0;
+
+  // Returns the view to supply to the client when focus changes to |focused|.
+  virtual const ServerView* GetViewForFocusChange(
+      const ServerView* focused) = 0;
 };
 
 }  // namespace view_manager

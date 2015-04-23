@@ -5,7 +5,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
-#include "components/window_manager/basic_focus_rules.h"
 #include "components/window_manager/window_manager_app.h"
 #include "components/window_manager/window_manager_delegate.h"
 #include "mojo/application/application_runner_chromium.h"
@@ -51,8 +50,6 @@ class DefaultWindowManager : public mojo::ApplicationDelegate,
                mojo::InterfaceRequest<mojo::ServiceProvider> services,
                mojo::ServiceProviderPtr exposed_services) override {
     root_ = root;
-    window_manager_app_->InitFocus(
-        make_scoped_ptr(new window_manager::BasicFocusRules(root_)));
   }
   void OnViewManagerDisconnected(ViewManager* view_manager) override {}
 

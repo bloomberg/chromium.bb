@@ -74,10 +74,8 @@ void DrawViewTree(mojo::Pass* pass,
 
 DefaultDisplayManager::DefaultDisplayManager(
     mojo::ApplicationImpl* app_impl,
-    mojo::ApplicationConnection* app_connection,
     const mojo::Callback<void()>& native_viewport_closed_callback)
     : app_impl_(app_impl),
-      app_connection_(app_connection),
       connection_manager_(nullptr),
       draw_timer_(false, false),
       frame_pending_(false),
@@ -88,7 +86,9 @@ DefaultDisplayManager::DefaultDisplayManager(
   metrics_.size->height = 600;
 }
 
-void DefaultDisplayManager::Init(ConnectionManager* connection_manager) {
+void DefaultDisplayManager::Init(
+    ConnectionManager* connection_manager,
+    mojo::NativeViewportEventDispatcherPtr event_dispatcher) {
   connection_manager_ = connection_manager;
   app_impl_->ConnectToService("mojo:native_viewport_service",
                               &native_viewport_);
@@ -106,8 +106,6 @@ void DefaultDisplayManager::Init(ConnectionManager* connection_manager) {
                           nullptr,  // returner - we never submit resources.
                           GetProxy(&display_));
 
-  mojo::NativeViewportEventDispatcherPtr event_dispatcher;
-  app_connection_->ConnectToService(&event_dispatcher);
   native_viewport_->SetEventDispatcher(event_dispatcher.Pass());
 }
 

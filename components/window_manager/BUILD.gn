@@ -8,28 +8,8 @@ import("//testing/test.gni")
 
 source_set("lib") {
   sources = [
-    "basic_focus_rules.cc",
-    "basic_focus_rules.h",
-    "capture_controller.cc",
-    "capture_controller.h",
-    "capture_controller_observer.h",
-    "focus_controller.cc",
-    "focus_controller.h",
-    "focus_controller_observer.h",
-    "focus_rules.h",
-    "native_viewport_event_dispatcher_impl.cc",
-    "native_viewport_event_dispatcher_impl.h",
-    "view_event_dispatcher.cc",
-    "view_event_dispatcher.h",
-    "view_target.cc",
-    "view_target.h",
-    "view_targeter.cc",
-    "view_targeter.h",
     "window_manager_app.cc",
     "window_manager_app.h",
-    "window_manager_app_android.cc",
-    "window_manager_app_linux.cc",
-    "window_manager_app_win.cc",
     "window_manager_delegate.h",
     "window_manager_impl.cc",
     "window_manager_impl.h",
@@ -37,55 +17,16 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/native_viewport/public/interfaces",
     "//components/view_manager/public/cpp",
     "//components/window_manager/public/interfaces",
     "//mojo/application",
     "//mojo/common",
     "//mojo/converters/geometry",
-    "//mojo/converters/input_events",
     "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
     "//third_party/mojo/src/mojo/public/interfaces/application",
-    "//ui/base",
-    "//ui/events",
-    "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/mojo/events:interfaces",
   ]
-}
-
-test("window_manager_unittests") {
-  sources = [
-    "focus_controller_unittest.cc",
-    "run_all_unittests.cc",
-    "view_target_unittest.cc",
-    "view_targeter_unittest.cc",
-    "window_manager_test_util.cc",
-    "window_manager_test_util.h",
-  ]
-
-  public_deps = [
-    ":lib",
-  ]
-
-  deps = [
-    "//base/test:test_support",
-    "//components/view_manager/public/cpp",
-    "//components/view_manager/public/interfaces",
-    "//components/window_manager/public/interfaces",
-    "//mojo/converters/geometry",
-    "//mojo/environment:chromium",
-    "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/public/cpp/application",
-    "//testing/gtest",
-    "//ui/events:test_support",
-    "//ui/gfx",
-    "//ui/gfx:test_support",
-    "//ui/gl",
-  ]
-
-  if (use_x11) {
-    deps += [ "//ui/gfx/x" ]
-  }
 }
 
 # A basic window manager with a default delegate used for testing.

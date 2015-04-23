@@ -26,12 +26,11 @@ mojo_native_application("window_manager") {
     "//mojo/application",
     "//mojo/common:common",
     "//mojo/converters/geometry",
-    "//mojo/converters/input_events",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/utility",
     "//third_party/mojo/src/mojo/public/interfaces/application",
     "//third_party/mojo_services/src/navigation/public/interfaces",
-    "//ui/base",
+    "//ui/gfx/geometry",
     "//ui/mojo/events:interfaces",
   ]
 }

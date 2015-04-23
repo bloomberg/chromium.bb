@@ -77,6 +77,10 @@ bool WindowManagerAccessPolicy::CanSetViewProperties(
   return view->id().connection_id == connection_id_;
 }
 
+bool WindowManagerAccessPolicy::CanSetFocus(const ServerView* view) const {
+  return true;
+}
+
 bool WindowManagerAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerView* view,
     const ServerView** new_parent,
@@ -88,6 +92,11 @@ bool WindowManagerAccessPolicy::ShouldNotifyOnHierarchyChange(
   // already told the window manager about the parent. The later handles the
   // case of a view that wasn't parented to the root getting added to the root.
   return IsViewKnown(view) || (*new_parent && IsViewKnown(*new_parent));
+}
+
+const ServerView* WindowManagerAccessPolicy::GetViewForFocusChange(
+    const ServerView* focused) {
+  return focused;
 }
 
 bool WindowManagerAccessPolicy::IsViewKnown(const ServerView* view) const {

@@ -85,6 +85,11 @@ bool DefaultAccessPolicy::CanSetViewProperties(const ServerView* view) const {
   return WasCreatedByThisConnection(view);
 }
 
+bool DefaultAccessPolicy::CanSetFocus(const ServerView* view) const {
+  return WasCreatedByThisConnection(view) ||
+         delegate_->IsRootForAccessPolicy(view->id());
+}
+
 bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerView* view,
     const ServerView** new_parent,
@@ -102,6 +107,14 @@ bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
     *old_parent = NULL;
   }
   return true;
+}
+
+const ServerView* DefaultAccessPolicy::GetViewForFocusChange(
+    const ServerView* focused) {
+  if (WasCreatedByThisConnection(focused) ||
+      delegate_->IsRootForAccessPolicy(focused->id()))
+    return focused;
+  return nullptr;
 }
 
 bool DefaultAccessPolicy::WasCreatedByThisConnection(

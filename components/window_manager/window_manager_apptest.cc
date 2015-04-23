@@ -57,24 +57,6 @@ class TestApplication : public ApplicationDelegate, public ViewManagerDelegate {
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestApplication);
 };
 
-class TestWindowManagerObserver : public WindowManagerObserver {
- public:
-  explicit TestWindowManagerObserver(
-      InterfaceRequest<WindowManagerObserver> observer_request)
-      : binding_(this, observer_request.Pass()) {}
-  ~TestWindowManagerObserver() override {}
-
- private:
-  // Overridden from WindowManagerClient:
-  void OnCaptureChanged(Id new_capture_node_id) override {}
-  void OnFocusChanged(Id focused_node_id) override {}
-  void OnActiveWindowChanged(Id active_window) override {}
-
-  Binding<WindowManagerObserver> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWindowManagerObserver);
-};
-
 class WindowManagerApplicationTest : public test::ApplicationTestBase {
  public:
   WindowManagerApplicationTest() {}
@@ -111,102 +93,6 @@ TEST_F(WindowManagerApplicationTest, Embed) {
   EmbedApplicationWithURL(application_impl()->url());
   EXPECT_NE(nullptr, test_application_.root());
 }
-
-struct BoolCallback {
-  BoolCallback(bool* bool_value, base::RunLoop* run_loop)
-      : bool_value(bool_value), run_loop(run_loop) {}
-
-  void Run(bool value) const {
-    *bool_value = value;
-    run_loop->Quit();
-  }
-
-  bool* bool_value;
-  base::RunLoop* run_loop;
-};
-
-TEST_F(WindowManagerApplicationTest, SetCaptureFailsFromNonVM) {
-  EmbedApplicationWithURL(application_impl()->url());
-  bool callback_value = true;
-  base::RunLoop run_loop;
-  window_manager_->SetCapture(test_application_.root()->id(),
-                              BoolCallback(&callback_value, &run_loop));
-  run_loop.Run();
-  // This call only succeeds for WindowManager connections from the ViewManager.
-  EXPECT_FALSE(callback_value);
-}
-
-TEST_F(WindowManagerApplicationTest, FocusWindowFailsFromNonVM) {
-  EmbedApplicationWithURL(application_impl()->url());
-  bool callback_value = true;
-  base::RunLoop run_loop;
-  window_manager_->FocusWindow(test_application_.root()->id(),
-                               BoolCallback(&callback_value, &run_loop));
-  run_loop.Run();
-  // This call only succeeds for WindowManager connections from the ViewManager.
-  EXPECT_FALSE(callback_value);
-}
-
-TEST_F(WindowManagerApplicationTest, ActivateWindowFailsFromNonVM) {
-  EmbedApplicationWithURL(application_impl()->url());
-  bool callback_value = true;
-  base::RunLoop run_loop;
-  window_manager_->ActivateWindow(test_application_.root()->id(),
-                                  BoolCallback(&callback_value, &run_loop));
-  run_loop.Run();
-  // This call only succeeds for WindowManager connections from the ViewManager.
-  EXPECT_FALSE(callback_value);
-}
-
-struct FocusedAndActiveViewsCallback {
-  FocusedAndActiveViewsCallback(uint32* capture_view_id,
-                                uint32* focused_view_id,
-                                uint32* active_view_id,
-                                base::RunLoop* run_loop)
-      : capture_view_id(capture_view_id),
-        focused_view_id(focused_view_id),
-        active_view_id(active_view_id),
-        run_loop(run_loop) {
-  }
-
-  void Run(uint32 capture, uint32 focused, uint32 active) const {
-    *capture_view_id = capture;
-    *focused_view_id = focused;
-    *active_view_id = active;
-    run_loop->Quit();
-  }
-
-  uint32* capture_view_id;
-  uint32* focused_view_id;
-  uint32* active_view_id;
-  base::RunLoop* run_loop;
-};
-
-TEST_F(WindowManagerApplicationTest, GetFocusedAndActiveViewsFailsWithoutFC) {
-  EmbedApplicationWithURL(application_impl()->url());
-  uint32 capture_view_id = static_cast<uint32>(-1);
-  uint32 focused_view_id = static_cast<uint32>(-1);
-  uint32 active_view_id = static_cast<uint32>(-1);
-  base::RunLoop run_loop;
-
-  WindowManagerObserverPtr observer;
-  scoped_ptr<TestWindowManagerObserver> window_manager_observer(
-      new TestWindowManagerObserver(GetProxy(&observer)));
-
-  window_manager_->GetFocusedAndActiveViews(
-      observer.Pass(),
-      FocusedAndActiveViewsCallback(&capture_view_id,
-                                    &focused_view_id,
-                                    &active_view_id,
-                                    &run_loop));
-  run_loop.Run();
-  // This call fails if the WindowManager does not have a FocusController.
-  EXPECT_EQ(0u, capture_view_id);
-  EXPECT_EQ(0u, focused_view_id);
-  EXPECT_EQ(0u, active_view_id);
-}
-
-// TODO(msw): Write tests exercising other WindowManager functionality.
 
 }  // namespace
 }  // namespace mojo

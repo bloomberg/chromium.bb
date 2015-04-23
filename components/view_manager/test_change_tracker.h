@@ -19,7 +19,7 @@ namespace view_manager {
 enum ChangeType {
   CHANGE_TYPE_EMBED,
   CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED,
-  // TODO(sky): NODE->VIEW.
+  // TODO(sky): nuke NODE.
   CHANGE_TYPE_NODE_BOUNDS_CHANGED,
   CHANGE_TYPE_NODE_VIEWPORT_METRICS_CHANGED,
   CHANGE_TYPE_NODE_HIERARCHY_CHANGED,
@@ -30,6 +30,7 @@ enum ChangeType {
   CHANGE_TYPE_INPUT_EVENT,
   CHANGE_TYPE_PROPERTY_CHANGED,
   CHANGE_TYPE_DELEGATE_EMBED,
+  CHANGE_TYPE_FOCUSED,
 };
 
 // TODO(sky): consider nuking and converting directly to ViewData.
@@ -141,6 +142,7 @@ class TestChangeTracker {
   void OnViewSharedPropertyChanged(mojo::Id view_id,
                                    mojo::String name,
                                    mojo::Array<uint8_t> data);
+  void OnViewFocused(mojo::Id view_id);
   void DelegateEmbed(const mojo::String& url);
 
  private:

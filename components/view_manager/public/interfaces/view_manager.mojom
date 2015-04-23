@@ -143,13 +143,7 @@ interface ViewManagerService {
            ServiceProvider? exposed_services) => (bool success);
   Embed(uint32 view_id, ViewManagerClient client) => (bool success);
 
-  // Requests the WindowManager to perform an action on the specified view.
-  // It's up to the WindowManager to decide what |action| is.
-  //
-  // TODO(sky): nuke this. This is here to guarantee the state of the
-  // WindowManager matches that of the ViewManager at the time the client
-  // invokes the function. When we can enforce ordering this won't be necessary.
-  PerformAction(uint32 view_id, string action) => (bool success);
+  SetFocus(uint32 view_id) => (bool success);
 };
 
 // Changes to views are not sent to the connection that originated the
@@ -160,14 +154,13 @@ interface ViewManagerClient {
   // See Embed() on ViewManagerService for more details. |view_manager_service|
   // will be a handle back to the view manager service, unless the connection is
   // to the WindowManager in which case it will be null.
-  // |window_manager_pipe| is a pipe to the WindowManager.
   OnEmbed(uint16 connection_id,
           string embedder_url,
           ViewData root,
           ViewManagerService? view_manager_service,
           ServiceProvider&? services,
           ServiceProvider? exposed_services,
-          handle<message_pipe> window_manager_pipe);
+          uint32 focused_view);
 
   // Invoked when the application embedded at |view| is disconnected.
   OnEmbeddedAppDisconnected(uint32 view);
@@ -223,8 +216,5 @@ interface ViewManagerClient {
   // Invoked when an event is targeted at the specified view.
   OnViewInputEvent(uint32 view, mojo.Event event) => ();
 
-  // Invoked solely on the WindowManager. See comments in PerformAction() above
-  // for details.
-  // TODO(sky): nuke this.
-  OnPerformAction(uint32 view_id, string action) => (bool success);
+  OnViewFocused(uint32 focused_view_id);
 };

@@ -34,10 +34,12 @@ class DefaultAccessPolicy : public AccessPolicy {
   bool CanSetViewSurfaceId(const ServerView* view) const override;
   bool CanSetViewBounds(const ServerView* view) const override;
   bool CanSetViewProperties(const ServerView* view) const override;
+  bool CanSetFocus(const ServerView* view) const override;
   bool ShouldNotifyOnHierarchyChange(
       const ServerView* view,
       const ServerView** new_parent,
       const ServerView** old_parent) const override;
+  const ServerView* GetViewForFocusChange(const ServerView* focused) override;
 
  private:
   bool WasCreatedByThisConnection(const ServerView* view) const;

@@ -17,7 +17,6 @@
 #include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
 #include "third_party/mojo_services/src/navigation/public/interfaces/navigation.mojom.h"
-#include "ui/base/accelerators/accelerator.h"
 #include "ui/mojo/events/input_events.mojom.h"
 
 namespace kiosk_wm {
@@ -28,8 +27,7 @@ class KioskWM : public mojo::ApplicationDelegate,
                 public mojo::ViewManagerDelegate,
                 public mojo::ViewObserver,
                 public window_manager::WindowManagerDelegate,
-                public mojo::InterfaceFactory<mojo::NavigatorHost>,
-                public ui::AcceleratorTarget {
+                public mojo::InterfaceFactory<mojo::NavigatorHost> {
  public:
   KioskWM();
   ~KioskWM() override;
@@ -62,14 +60,13 @@ class KioskWM : public mojo::ApplicationDelegate,
   void Embed(const mojo::String& url,
              mojo::InterfaceRequest<mojo::ServiceProvider> services,
              mojo::ServiceProviderPtr exposed_services) override;
+  void OnAcceleratorPressed(mojo::View* view,
+                            mojo::KeyboardCode keyboard_code,
+                            mojo::EventFlags flags) override;
 
   // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::NavigatorHost> request) override;
-
-  // Overriden from ui::AcceleratorTarget:
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
-  bool CanHandleAccelerators() const override;
 
   scoped_ptr<window_manager::WindowManagerApp> window_manager_app_;
 

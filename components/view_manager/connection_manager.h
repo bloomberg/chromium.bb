@@ -11,19 +11,24 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
+#include "components/native_viewport/public/interfaces/native_viewport.mojom.h"
 #include "components/view_manager/animation_runner.h"
+#include "components/view_manager/event_dispatcher.h"
+#include "components/view_manager/focus_controller_delegate.h"
 #include "components/view_manager/ids.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/server_view_delegate.h"
 #include "components/view_manager/server_view_observer.h"
 #include "components/window_manager/public/interfaces/window_manager_internal.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace view_manager {
 
 class ClientConnection;
 class ConnectionManagerDelegate;
 class DisplayManager;
+class FocusController;
 class ServerView;
 class ViewManagerServiceImpl;
 
@@ -31,7 +36,8 @@ class ViewManagerServiceImpl;
 // ViewManagerServiceImpls) as well as providing the root of the hierarchy.
 class ConnectionManager : public ServerViewDelegate,
                           public ServerViewObserver,
-                          public mojo::WindowManagerInternalClient {
+                          public mojo::WindowManagerInternalClient,
+                          public FocusControllerDelegate {
  public:
   // Create when a ViewManagerServiceImpl is about to make a change. Ensures
   // clients are notified correctly.
@@ -99,6 +105,9 @@ class ConnectionManager : public ServerViewDelegate,
   // Returns the View identified by |id|.
   ServerView* GetView(const ViewId& id);
 
+  void SetFocusedView(ServerView* view);
+  ServerView* GetFocusedView();
+
   ServerView* root() { return root_.get(); }
   DisplayManager* display_manager() { return display_manager_.get(); }
 
@@ -134,6 +143,12 @@ class ConnectionManager : public ServerViewDelegate,
 
   // WindowManagerInternalClient implementation helper; see mojom for details.
   bool CloneAndAnimate(const ViewId& view_id);
+
+  // Processes an event, potentially changing focus.
+  void ProcessEvent(mojo::EventPtr event);
+
+  // Dispatches |event| directly to the appropriate connection for |view|.
+  void DispatchInputEventToView(const ServerView* view, mojo::EventPtr event);
 
   // These functions trivially delegate to all ViewManagerServiceImpls, which in
   // term notify their clients.
@@ -209,10 +224,18 @@ class ConnectionManager : public ServerViewDelegate,
       const std::vector<uint8_t>* new_data) override;
 
   // WindowManagerInternalClient:
-  void DispatchInputEventToView(mojo::Id transport_view_id,
-                                mojo::EventPtr event) override;
+  void DispatchInputEventToViewDEPRECATED(mojo::Id transport_view_id,
+                                          mojo::EventPtr event) override;
   void SetViewportSize(mojo::SizePtr size) override;
   void CloneAndAnimate(mojo::Id transport_view_id) override;
+  void AddAccelerator(mojo::KeyboardCode keyboard_code,
+                      mojo::EventFlags flags) override;
+  void RemoveAccelerator(mojo::KeyboardCode keyboard_code,
+                         mojo::EventFlags flags) override;
+
+  // FocusControllerDelegate:
+  void OnFocusChanged(ServerView* old_focused_view,
+                      ServerView* new_focused_view) override;
 
   ConnectionManagerDelegate* delegate_;
 
@@ -243,6 +266,12 @@ class ConnectionManager : public ServerViewDelegate,
   base::RepeatingTimer<ConnectionManager> animation_timer_;
 
   AnimationRunner animation_runner_;
+
+  EventDispatcher event_dispatcher_;
+
+  mojo::Binding<mojo::NativeViewportEventDispatcher> event_dispatcher_binding_;
+
+  scoped_ptr<FocusController> focus_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };

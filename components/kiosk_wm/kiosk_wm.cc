@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/kiosk_wm/merged_service_provider.h"
-#include "components/window_manager/basic_focus_rules.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace kiosk_wm {
 
@@ -77,11 +77,8 @@ void KioskWM::OnEmbed(
   root_->AddChild(content_);
   content_->SetVisible(true);
 
-  window_manager_app_->InitFocus(
-      make_scoped_ptr(new window_manager::BasicFocusRules(root_)));
-  window_manager_app_->accelerator_manager()->Register(
-      ui::Accelerator(ui::VKEY_BROWSER_BACK, 0),
-      ui::AcceleratorManager::kNormalPriority, this);
+  window_manager_app_->AddAccelerator(mojo::KEYBOARD_CODE_BROWSER_BACK,
+                                      mojo::EVENT_FLAGS_NONE);
 
   // Now that we're ready, either load a pending url or the default url.
   if (!pending_url_.empty())
@@ -109,6 +106,13 @@ void KioskWM::Embed(const mojo::String& url,
   navigator_host_.RecordNavigation(url);
 }
 
+void KioskWM::OnAcceleratorPressed(mojo::View* view,
+                                   mojo::KeyboardCode keyboard_code,
+                                   mojo::EventFlags flags) {
+  DCHECK_EQ(mojo::KEYBOARD_CODE_BROWSER_BACK, keyboard_code);
+  navigator_host_.RequestNavigateHistory(-1);
+}
+
 void KioskWM::Create(mojo::ApplicationConnection* connection,
                      mojo::InterfaceRequest<mojo::NavigatorHost> request) {
   navigator_host_.Bind(request.Pass());
@@ -132,17 +136,6 @@ void KioskWM::OnViewBoundsChanged(mojo::View* view,
 // Convenience method:
 void KioskWM::ReplaceContentWithURL(const mojo::String& url) {
   Embed(url, nullptr, nullptr);
-}
-
-bool KioskWM::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() != ui::VKEY_BROWSER_BACK)
-    return false;
-  navigator_host_.RequestNavigateHistory(-1);
-  return true;
-}
-
-bool KioskWM::CanHandleAccelerators() const {
-  return true;
 }
 
 }  // namespace kiosk_wm

@@ -51,9 +51,8 @@ bool ViewManagerApp::ConfigureIncomingConnection(
   wm_internal_.set_error_handler(this);
 
   scoped_ptr<DefaultDisplayManager> display_manager(new DefaultDisplayManager(
-      app_impl_, connection,
-      base::Bind(&ViewManagerApp::OnLostConnectionToWindowManager,
-                 base::Unretained(this))));
+      app_impl_, base::Bind(&ViewManagerApp::OnLostConnectionToWindowManager,
+                            base::Unretained(this))));
   connection_manager_.reset(
       new ConnectionManager(this, display_manager.Pass(), wm_internal_.get()));
   return true;

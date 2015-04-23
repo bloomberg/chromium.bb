@@ -8,16 +8,8 @@
 #include "base/stl_util.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
-#include "components/window_manager/capture_controller.h"
-#include "components/window_manager/focus_controller.h"
-#include "components/window_manager/focus_rules.h"
-#include "components/window_manager/hit_test.h"
-#include "components/window_manager/view_event_dispatcher.h"
-#include "components/window_manager/view_target.h"
-#include "components/window_manager/view_targeter.h"
 #include "components/window_manager/window_manager_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_connection.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "third_party/mojo/src/mojo/public/interfaces/application/shell.mojom.h"
@@ -29,14 +21,6 @@ using mojo::View;
 using mojo::WindowManager;
 
 namespace window_manager {
-
-namespace {
-
-Id GetIdForView(View* view) {
-  return view ? view->id() : 0;
-}
-
-}  // namespace
 
 // Used for calls to Embed() that occur before we've connected to the
 // ViewManager.
@@ -60,17 +44,8 @@ WindowManagerApp::WindowManagerApp(
 
 WindowManagerApp::~WindowManagerApp() {
   // TODO(msw|sky): Should this destructor explicitly delete the ViewManager?
-  mojo::ViewManager* cached_view_manager = view_manager();
-  for (RegisteredViewIdSet::const_iterator it = registered_view_id_set_.begin();
-       cached_view_manager && it != registered_view_id_set_.end(); ++it) {
-    View* view = cached_view_manager->GetViewById(*it);
-    if (view && view == root_)
-      root_ = nullptr;
-    if (view)
-      view->RemoveObserver(this);
-  }
-  registered_view_id_set_.clear();
-  DCHECK(!root_);
+  if (root_)
+    root_->RemoveObserver(this);
 
   STLDeleteElements(&connections_);
 }
@@ -85,35 +60,13 @@ void WindowManagerApp::RemoveConnection(WindowManagerImpl* connection) {
   connections_.erase(connection);
 }
 
-bool WindowManagerApp::SetCapture(Id view_id) {
-  View* view = view_manager()->GetViewById(view_id);
-  return view && SetCaptureImpl(view);
-}
-
-bool WindowManagerApp::FocusWindow(Id view_id) {
-  View* view = view_manager()->GetViewById(view_id);
-  return view && FocusWindowImpl(view);
-}
-
-bool WindowManagerApp::ActivateWindow(Id view_id) {
-  View* view = view_manager()->GetViewById(view_id);
-  return view && ActivateWindowImpl(view);
-}
-
 bool WindowManagerApp::IsReady() const {
   return !!root_;
 }
 
-void WindowManagerApp::InitFocus(scoped_ptr<FocusRules> rules) {
-  DCHECK(root_);
-
-  focus_controller_.reset(new FocusController(rules.Pass()));
-  focus_controller_->AddObserver(this);
-  SetFocusController(root_, focus_controller_.get());
-
-  capture_controller_.reset(new CaptureController);
-  capture_controller_->AddObserver(this);
-  SetCaptureController(root_, capture_controller_.get());
+void WindowManagerApp::AddAccelerator(mojo::KeyboardCode keyboard_code,
+                                      mojo::EventFlags flags) {
+  window_manager_client_->AddAccelerator(keyboard_code, flags);
 }
 
 void WindowManagerApp::Embed(
@@ -156,9 +109,7 @@ void WindowManagerApp::OnEmbed(
   DCHECK(!root_);
   root_ = root;
 
-  view_event_dispatcher_.reset(new ViewEventDispatcher);
-
-  RegisterSubtree(root_);
+  root_->AddObserver(this);
 
   if (wrapped_view_manager_delegate_) {
     wrapped_view_manager_delegate_->OnEmbed(root, services.Pass(),
@@ -182,172 +133,23 @@ void WindowManagerApp::OnViewManagerDisconnected(
     message_loop->Quit();
 }
 
-bool WindowManagerApp::OnPerformAction(mojo::View* view,
-                                       const std::string& action) {
-  if (!view)
-    return false;
-  if (action == "capture")
-    return SetCaptureImpl(view);
-  if (action == "focus")
-    return FocusWindowImpl(view);
-  else if (action == "activate")
-    return ActivateWindowImpl(view);
-  return false;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManagerApp, ViewObserver implementation:
 
-void WindowManagerApp::OnTreeChanged(
-    const ViewObserver::TreeChangeParams& params) {
-  if (params.receiver != root_)
-    return;
-  DCHECK(params.old_parent || params.new_parent);
-  if (!params.target)
-    return;
-
-  if (params.new_parent) {
-    if (registered_view_id_set_.find(params.target->id()) ==
-        registered_view_id_set_.end()) {
-      RegisteredViewIdSet::const_iterator it =
-          registered_view_id_set_.find(params.new_parent->id());
-      DCHECK(it != registered_view_id_set_.end());
-      RegisterSubtree(params.target);
-    }
-  } else if (params.old_parent) {
-    UnregisterSubtree(params.target);
-  }
-}
-
 void WindowManagerApp::OnViewDestroying(View* view) {
-  Unregister(view);
-  if (view == root_) {
-    root_ = nullptr;
-    if (focus_controller_)
-      focus_controller_->RemoveObserver(this);
-    if (capture_controller_)
-      capture_controller_->RemoveObserver(this);
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WindowManagerApp, ui::EventHandler implementation:
-
-void WindowManagerApp::OnEvent(ui::Event* event) {
-  if (!window_manager_client_)
-    return;
-
-  View* view = static_cast<ViewTarget*>(event->target())->view();
-  if (!view)
-    return;
-
-  if (event->IsKeyEvent()) {
-    const ui::KeyEvent* key_event = static_cast<const ui::KeyEvent*>(event);
-    if (key_event->type() == ui::ET_KEY_PRESSED) {
-      ui::Accelerator accelerator = ConvertEventToAccelerator(key_event);
-      if (accelerator_manager_.Process(accelerator))
-        return;
-    }
-  }
-
-  if (focus_controller_)
-    focus_controller_->OnEvent(event);
-
-  window_manager_client_->DispatchInputEventToView(view->id(),
-                                                   mojo::Event::From(*event));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WindowManagerApp, mojo::FocusControllerObserver implementation:
-
-void WindowManagerApp::OnFocused(View* gained_focus) {
-  for (Connections::const_iterator it = connections_.begin();
-       it != connections_.end(); ++it) {
-    (*it)->NotifyViewFocused(GetIdForView(gained_focus));
-  }
-}
-
-void WindowManagerApp::OnActivated(View* gained_active) {
-  for (Connections::const_iterator it = connections_.begin();
-       it != connections_.end(); ++it) {
-    (*it)->NotifyWindowActivated(GetIdForView(gained_active));
-  }
-  if (gained_active)
-    gained_active->MoveToFront();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WindowManagerApp, mojo::CaptureControllerObserver implementation:
-
-void WindowManagerApp::OnCaptureChanged(View* gained_capture) {
-  for (Connections::const_iterator it = connections_.begin();
-       it != connections_.end(); ++it) {
-    (*it)->NotifyCaptureChanged(GetIdForView(gained_capture));
-  }
-  if (gained_capture)
-    gained_capture->MoveToFront();
+  DCHECK_EQ(root_, view);
+  root_->RemoveObserver(this);
+  root_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManagerApp, private:
 
-bool WindowManagerApp::SetCaptureImpl(View* view) {
-  CHECK(view);
-  capture_controller_->SetCapture(view);
-  return capture_controller_->GetCapture() == view;
-}
-
-bool WindowManagerApp::FocusWindowImpl(View* view) {
-  CHECK(view);
-  focus_controller_->FocusView(view);
-  return focus_controller_->GetFocusedView() == view;
-}
-
-bool WindowManagerApp::ActivateWindowImpl(View* view) {
-  CHECK(view);
-  focus_controller_->ActivateView(view);
-  return focus_controller_->GetActiveView() == view;
-}
-
-void WindowManagerApp::RegisterSubtree(View* view) {
-  view->AddObserver(this);
-  DCHECK(registered_view_id_set_.find(view->id()) ==
-         registered_view_id_set_.end());
-  // All events pass through the root during dispatch, so we only need a handler
-  // installed there.
-  if (view == root_) {
-    ViewTarget* target = ViewTarget::TargetFromView(view);
-    target->SetEventTargeter(scoped_ptr<ViewTargeter>(new ViewTargeter()));
-    target->AddPreTargetHandler(this);
-    view_event_dispatcher_->SetRootViewTarget(target);
-  }
-  registered_view_id_set_.insert(view->id());
-  View::Children::const_iterator it = view->children().begin();
-  for (; it != view->children().end(); ++it)
-    RegisterSubtree(*it);
-}
-
-void WindowManagerApp::UnregisterSubtree(View* view) {
-  for (View* child : view->children())
-    UnregisterSubtree(child);
-  Unregister(view);
-}
-
-void WindowManagerApp::Unregister(View* view) {
-  RegisteredViewIdSet::iterator it = registered_view_id_set_.find(view->id());
-  if (it == registered_view_id_set_.end()) {
-    // Because we unregister in OnViewDestroying() we can still get a subsequent
-    // OnTreeChanged for the same view. Ignore this one.
-    return;
-  }
-  view->RemoveObserver(this);
-  DCHECK(it != registered_view_id_set_.end());
-  registered_view_id_set_.erase(it);
-}
-
-void WindowManagerApp::DispatchInputEventToView(View* view,
-                                                mojo::EventPtr event) {
-  window_manager_client_->DispatchInputEventToView(view->id(), event.Pass());
+void WindowManagerApp::DispatchInputEventToViewDEPRECATED(
+    View* view,
+    mojo::EventPtr event) {
+  window_manager_client_->DispatchInputEventToViewDEPRECATED(view->id(),
+                                                             event.Pass());
 }
 
 void WindowManagerApp::SetViewportSize(const gfx::Size& size) {
@@ -364,7 +166,6 @@ void WindowManagerApp::LaunchViewManager(mojo::ApplicationImpl* app) {
   view_manager_app->ConnectToService(&view_manager_service_);
 
   view_manager_app->AddService<WindowManagerInternal>(this);
-  view_manager_app->AddService<mojo::NativeViewportEventDispatcher>(this);
 
   view_manager_app->ConnectToService(&window_manager_client_);
 }
@@ -389,22 +190,6 @@ void WindowManagerApp::Create(ApplicationConnection* connection,
   // destructor.
 }
 
-void WindowManagerApp::Create(
-    mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::NativeViewportEventDispatcher> request) {
-  new NativeViewportEventDispatcherImpl(this, request.Pass());
-}
-
-void WindowManagerApp::CreateWindowManagerForViewManagerClient(
-    uint16_t connection_id,
-    mojo::ScopedMessagePipeHandle window_manager_pipe) {
-  // TODO(sky): pass in |connection_id| for validation.
-  WindowManagerImpl* wm = new WindowManagerImpl(this, true);
-  wm->Bind(window_manager_pipe.Pass());
-  // WindowManagerImpl is deleted when the connection has an error, or from our
-  // destructor.
-}
-
 void WindowManagerApp::SetViewManagerClient(
     mojo::ScopedMessagePipeHandle view_manager_client_request) {
   view_manager_client_.reset(
@@ -412,6 +197,12 @@ void WindowManagerApp::SetViewManagerClient(
           mojo::MakeRequest<mojo::ViewManagerClient>(
               view_manager_client_request.Pass()),
           view_manager_service_.Pass(), shell_, this));
+}
+
+void WindowManagerApp::OnAccelerator(mojo::EventPtr event) {
+  window_manager_delegate_->OnAcceleratorPressed(
+      root_->view_manager()->GetFocusedView(),
+      event->key_data->windows_key_code, event->flags);
 }
 
 }  // namespace window_manager

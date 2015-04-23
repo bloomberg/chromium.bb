@@ -102,7 +102,6 @@ ViewManagerClientImpl::ViewManagerClientImpl(
       capture_view_(nullptr),
       focused_view_(nullptr),
       activated_view_(nullptr),
-      wm_observer_binding_(this),
       binding_(this, request.Pass()),
       delete_on_error_(delete_on_error) {
 }
@@ -173,7 +172,7 @@ void ViewManagerClientImpl::SetFocus(Id view_id) {
   // In order for us to get here we had to have exposed a view, which implies we
   // got a connection.
   DCHECK(service_);
-  service_->PerformAction(view_id, "focus", ActionCompletedCallback());
+  service_->SetFocus(view_id, ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::SetVisible(Id view_id, bool visible) {
@@ -217,11 +216,7 @@ void ViewManagerClientImpl::AddView(View* view) {
 
 void ViewManagerClientImpl::RemoveView(Id view_id) {
   if (focused_view_ && focused_view_->id() == view_id)
-    OnFocusChanged(0);
-  if (capture_view_ && capture_view_->id() == view_id)
-    OnCaptureChanged(0);
-  if (activated_view_ && activated_view_->id() == view_id)
-    OnActiveWindowChanged(0);
+    OnViewFocused(0);
 
   IdToViewMap::iterator it = views_.find(view_id);
   if (it != views_.end())
@@ -272,14 +267,13 @@ View* ViewManagerClientImpl::CreateView() {
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManagerClient implementation:
 
-void ViewManagerClientImpl::OnEmbed(
-    ConnectionSpecificId connection_id,
-    const String& creator_url,
-    ViewDataPtr root_data,
-    ViewManagerServicePtr view_manager_service,
-    InterfaceRequest<ServiceProvider> services,
-    ServiceProviderPtr exposed_services,
-    ScopedMessagePipeHandle window_manager_pipe) {
+void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
+                                    const String& creator_url,
+                                    ViewDataPtr root_data,
+                                    ViewManagerServicePtr view_manager_service,
+                                    InterfaceRequest<ServiceProvider> services,
+                                    ServiceProviderPtr exposed_services,
+                                    Id focused_view_id) {
   if (view_manager_service) {
     DCHECK(!service_);
     service_ = view_manager_service.Pass();
@@ -291,22 +285,7 @@ void ViewManagerClientImpl::OnEmbed(
   root_ = AddViewToViewManager(this, nullptr, root_data);
   root_->AddObserver(new RootObserver(root_));
 
-  window_manager_.Bind(window_manager_pipe.Pass());
-  WindowManagerObserverPtr observer;
-  wm_observer_binding_.Bind(GetProxy(&observer));
-  // binding to |this| is safe here as |window_manager_| is bound to our
-  // lifetime.
-  window_manager_->GetFocusedAndActiveViews(
-      observer.Pass(),
-      [this](uint32_t capture_view_id, uint32_t focused_view_id,
-             uint32_t active_view_id) {
-        if (GetViewById(capture_view_id) != capture_view_)
-          OnCaptureChanged(capture_view_id);
-        if (GetViewById(focused_view_id) != focused_view_)
-          OnFocusChanged(focused_view_id);
-        if (GetViewById(active_view_id) != activated_view_)
-          OnActiveWindowChanged(active_view_id);
-      });
+  focused_view_ = GetViewById(focused_view_id);
 
   delegate_->OnEmbed(root_, services.Pass(), exposed_services.Pass());
 }
@@ -425,62 +404,17 @@ void ViewManagerClientImpl::OnViewInputEvent(
   ack_callback.Run();
 }
 
-void ViewManagerClientImpl::OnPerformAction(
-    Id view_id,
-    const String& name,
-    const Callback<void(bool)>& callback) {
-  View* view = GetViewById(view_id);
-  callback.Run(delegate_->OnPerformAction(view, name));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ViewManagerClientImpl, WindowManagerObserver implementation:
-
-void ViewManagerClientImpl::OnCaptureChanged(Id capture_view_id) {
-  View* gained_capture = GetViewById(capture_view_id);
-  View* lost_capture = capture_view_;
-  if (lost_capture) {
-    FOR_EACH_OBSERVER(ViewObserver,
-                      *ViewPrivate(lost_capture).observers(),
-                      OnViewFocusChanged(gained_capture, lost_capture));
-  }
-  capture_view_ = gained_capture;
-  if (gained_capture) {
-    FOR_EACH_OBSERVER(ViewObserver,
-                      *ViewPrivate(gained_capture).observers(),
-                      OnViewFocusChanged(gained_capture, lost_capture));
-  }
-}
-
-void ViewManagerClientImpl::OnFocusChanged(Id focused_view_id) {
+void ViewManagerClientImpl::OnViewFocused(Id focused_view_id) {
   View* focused = GetViewById(focused_view_id);
   View* blurred = focused_view_;
   if (blurred) {
-    FOR_EACH_OBSERVER(ViewObserver,
-                      *ViewPrivate(blurred).observers(),
+    FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(blurred).observers(),
                       OnViewFocusChanged(focused, blurred));
   }
   focused_view_ = focused;
   if (focused) {
-    FOR_EACH_OBSERVER(ViewObserver,
-                      *ViewPrivate(focused).observers(),
+    FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(focused).observers(),
                       OnViewFocusChanged(focused, blurred));
-  }
-}
-
-void ViewManagerClientImpl::OnActiveWindowChanged(Id active_view_id) {
-  View* activated = GetViewById(active_view_id);
-  View* deactivated = activated_view_;
-  if (deactivated) {
-    FOR_EACH_OBSERVER(ViewObserver,
-                      *ViewPrivate(deactivated).observers(),
-                      OnViewActivationChanged(activated, deactivated));
-  }
-  activated_view_ = activated;
-  if (activated) {
-    FOR_EACH_OBSERVER(ViewObserver,
-                      *ViewPrivate(activated).observers(),
-                      OnViewActivationChanged(activated, deactivated));
   }
 }
 

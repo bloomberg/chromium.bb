@@ -290,7 +290,8 @@ class ViewManagerClientImpl : public mojo::ViewManagerClient,
                mojo::ViewManagerServicePtr view_manager_service,
                InterfaceRequest<ServiceProvider> services,
                ServiceProviderPtr exposed_services,
-               mojo::ScopedMessagePipeHandle window_manager_pipe) override {
+               mojo::Id focused_view_id) override {
+    // TODO(sky): add coverage of |focused_view_id|.
     service_ = view_manager_service.Pass();
     tracker()->OnEmbed(connection_id, creator_url, root.Pass());
     if (embed_run_loop_)
@@ -340,9 +341,8 @@ class ViewManagerClientImpl : public mojo::ViewManagerClient,
                                    Array<uint8_t> new_data) override {
     tracker_.OnViewSharedPropertyChanged(view, name, new_data.Pass());
   }
-  void OnPerformAction(uint32_t view,
-                       const String& name,
-                       const Callback<void(bool)>& callback) override {}
+  // TODO(sky): add testing coverage.
+  void OnViewFocused(uint32_t focused_view_id) override {}
 
   TestChangeTracker tracker_;
 
@@ -502,9 +502,6 @@ class ViewManagerServiceAppTest
   }
 
   // mojo::WindowManagerInternal implementation.
-  void CreateWindowManagerForViewManagerClient(
-      uint16_t connection_id,
-      mojo::ScopedMessagePipeHandle window_manager_pipe) override {}
   void SetViewManagerClient(
       mojo::ScopedMessagePipeHandle view_manager_client_request) override {
     auto typed_request = mojo::MakeRequest<mojo::ViewManagerClient>(
@@ -512,6 +509,7 @@ class ViewManagerServiceAppTest
     vm_client1_.Bind(typed_request.Pass());
     view_manager_setup_run_loop_->Quit();
   }
+  void OnAccelerator(mojo::EventPtr event) override {}
 
   mojo::Binding<mojo::WindowManagerInternal> wm_internal_binding_;
   mojo::WindowManagerInternalClientPtr wm_internal_client_;
@@ -1097,22 +1095,6 @@ TEST_F(ViewManagerServiceAppTest, CantGetViewTreeOfOtherRoots) {
   GetViewTree(vm2(), BuildViewId(1, 1), &views);
   ASSERT_EQ(1u, views.size());
   EXPECT_EQ("view=1,1 parent=null", views[0].ToString());
-}
-
-TEST_F(ViewManagerServiceAppTest, OnViewInputEvent) {
-  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  changes2()->clear();
-
-  // Dispatch an event to the view and verify it's received.
-  {
-    EventPtr event(mojo::Event::New());
-    event->action = static_cast<mojo::EventType>(1);
-    wm_internal_client_->DispatchInputEventToView(BuildViewId(1, 1),
-                                                  event.Pass());
-    vm_client2_->WaitForChangeCount(1);
-    EXPECT_EQ("InputEvent view=1,1 event_action=1",
-              SingleChangeToDescription(*changes2()));
-  }
 }
 
 TEST_F(ViewManagerServiceAppTest, EmbedWithSameViewId) {

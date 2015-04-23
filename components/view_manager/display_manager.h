@@ -22,7 +22,6 @@ class SurfaceIdAllocator;
 }
 
 namespace mojo {
-class ApplicationConnection;
 class ApplicationImpl;
 }
 
@@ -36,7 +35,9 @@ class DisplayManager {
  public:
   virtual ~DisplayManager() {}
 
-  virtual void Init(ConnectionManager* connection_manager) = 0;
+  virtual void Init(
+      ConnectionManager* connection_manager,
+      mojo::NativeViewportEventDispatcherPtr event_dispatcher) = 0;
 
   // Schedules a paint for the specified region in the coordinates of |view|.
   virtual void SchedulePaint(const ServerView* view,
@@ -54,12 +55,12 @@ class DefaultDisplayManager : public DisplayManager,
  public:
   DefaultDisplayManager(
       mojo::ApplicationImpl* app_impl,
-      mojo::ApplicationConnection* app_connection,
       const mojo::Callback<void()>& native_viewport_closed_callback);
   ~DefaultDisplayManager() override;
 
   // DisplayManager:
-  void Init(ConnectionManager* connection_manager) override;
+  void Init(ConnectionManager* connection_manager,
+            mojo::NativeViewportEventDispatcherPtr event_dispatcher) override;
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
   const mojo::ViewportMetrics& GetViewportMetrics() override;
@@ -75,7 +76,6 @@ class DefaultDisplayManager : public DisplayManager,
   void OnConnectionError() override;
 
   mojo::ApplicationImpl* app_impl_;
-  mojo::ApplicationConnection* app_connection_;
   ConnectionManager* connection_manager_;
 
   mojo::ViewportMetrics metrics_;

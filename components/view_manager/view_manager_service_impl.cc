@@ -63,12 +63,15 @@ void ViewManagerServiceImpl::Init(mojo::ViewManagerClient* client,
   if (root_.get())
     GetUnknownViewsFrom(GetView(*root_), &to_send);
 
-  mojo::MessagePipe pipe;
-  connection_manager_->wm_internal()->CreateWindowManagerForViewManagerClient(
-      id_, pipe.handle1.Pass());
+  const ServerView* focused_view = connection_manager_->GetFocusedView();
+  if (focused_view)
+    focused_view = access_policy_->GetViewForFocusChange(focused_view);
+  const mojo::Id focused_view_transport_id(
+      ViewIdToTransportId(focused_view ? focused_view->id() : ViewId()));
+
   client->OnEmbed(id_, creator_url_, ViewToViewData(to_send.front()),
                   service_ptr.Pass(), services.Pass(), exposed_services.Pass(),
-                  pipe.handle0.Pass());
+                  focused_view_transport_id);
 }
 
 const ServerView* ViewManagerServiceImpl::GetView(const ViewId& id) const {
@@ -300,6 +303,16 @@ void ViewManagerServiceImpl::ProcessWillChangeViewVisibility(
   }
 
   NotifyDrawnStateChanged(view, view_target_drawn_state);
+}
+
+void ViewManagerServiceImpl::ProcessFocusChanged(
+    const ServerView* old_focused_view,
+    const ServerView* new_focused_view) {
+  const ServerView* view =
+      new_focused_view ? access_policy_->GetViewForFocusChange(new_focused_view)
+                       : nullptr;
+  client()->OnViewFocused(view ? ViewIdToTransportId(view->id())
+                               : ViewIdToTransportId(ViewId()));
 }
 
 bool ViewManagerServiceImpl::IsViewKnown(const ServerView* view) const {
@@ -627,12 +640,16 @@ void ViewManagerServiceImpl::Embed(mojo::Id transport_view_id,
   callback.Run(Embed(ViewIdFromTransportId(transport_view_id), client.Pass()));
 }
 
-void ViewManagerServiceImpl::PerformAction(
-    mojo::Id transport_view_id,
-    const mojo::String& action,
-    const mojo::Callback<void(bool)>& callback) {
-  connection_manager_->GetWindowManagerViewManagerClient()->OnPerformAction(
-      transport_view_id, action, callback);
+void ViewManagerServiceImpl::SetFocus(uint32_t view_id,
+                                      const SetFocusCallback& callback) {
+  ServerView* view = GetView(ViewIdFromTransportId(view_id));
+  bool success = view && view->IsDrawn(connection_manager_->root()) &&
+                 access_policy_->CanSetFocus(view);
+  if (success) {
+    ConnectionManager::ScopedChange change(this, connection_manager_, false);
+    connection_manager_->SetFocusedView(view);
+  }
+  callback.Run(success);
 }
 
 bool ViewManagerServiceImpl::IsRootForAccessPolicy(const ViewId& id) const {

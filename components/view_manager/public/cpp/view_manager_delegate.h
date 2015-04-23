@@ -39,10 +39,6 @@ class ViewManagerDelegate {
   // |view_manager| is not valid after this function returns.
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) = 0;
 
-  // Asks the delegate to perform the specified action.
-  // TODO(sky): nuke! See comments in view_manager.mojom for details.
-  virtual bool OnPerformAction(View* view, const std::string& action);
-
  protected:
   virtual ~ViewManagerDelegate() {}
 };

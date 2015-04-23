@@ -4,28 +4,27 @@
 
 module mojo;
 
+import "ui/mojo/events/input_event_constants.mojom";
 import "ui/mojo/events/input_events.mojom";
+import "ui/mojo/events/input_key_codes.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
 // WindowManagerInternal is an interface provided by the WindowManager
 // exclusively to the ViewManager.
 interface WindowManagerInternal {
-  // Creates a connection to the WindowManager specifically for a connection to
-  // the ViewManager. |connection_id| is the id of the connection to the
-  // ViewManager. See view_manager.mojom for details on the id.
-  CreateWindowManagerForViewManagerClient(
-      uint16 connection_id,
-      handle<message_pipe> window_manager_pipe);
-
   SetViewManagerClient(handle<message_pipe> view_manager_client_request);
+
+  // An accelerator registered via AddAccelerator() has been triggered.
+  OnAccelerator(mojo.Event event);
 };
 
 // WindowManagerInternalClient is an interface provide by the ViewManager
 // exclusively to the WindowManager. It provides functionality only available
 // to the WindowManager.
 interface WindowManagerInternalClient {
-  // Dispatches the specified input event to the specified view.
-  DispatchInputEventToView(uint32 view_id, mojo.Event event);
+  // TODO(sky): this is only used by sky's testing harness. It should be
+  // removed.
+  DispatchInputEventToViewDEPRECATED(uint32 view_id, mojo.Event event);
 
   // Sets the native viewport size.
   SetViewportSize(mojo.Size size);
@@ -36,4 +35,11 @@ interface WindowManagerInternalClient {
   // TODO(sky): I think this only makes sense when destroying (view is
   // already visible), should it be named to indicate this?
   CloneAndAnimate(uint32 view_id);
+
+  // Adds or removes an accelerators. When the ViewManager receives a key event
+  // it checks if an accelerator has been registered. If it has, the event is
+  // sent to the window manager (OnAccelerator()), if not, the event is sent to
+  // the focused view.
+  AddAccelerator(mojo.KeyboardCode keyboard_code, mojo.EventFlags flags);
+  RemoveAccelerator(mojo.KeyboardCode keyboard_code, mojo.EventFlags flags);
 };

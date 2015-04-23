@@ -115,8 +115,8 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   void ProcessViewDeleted(const ViewId& view, bool originated_change);
   void ProcessWillChangeViewVisibility(const ServerView* view,
                                        bool originated_change);
-  void ProcessViewPropertiesChanged(const ServerView* view,
-                                    bool originated_change);
+  void ProcessFocusChanged(const ServerView* old_focused_view,
+                           const ServerView* new_focused_view);
 
  private:
   typedef std::map<mojo::ConnectionSpecificId, ServerView*> ViewMap;
@@ -210,9 +210,7 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   void Embed(mojo::Id transport_view_id,
              mojo::ViewManagerClientPtr client,
              const mojo::Callback<void(bool)>& callback) override;
-  void PerformAction(mojo::Id transport_view_id,
-                     const mojo::String& action,
-                     const mojo::Callback<void(bool)>& callback) override;
+  void SetFocus(uint32_t view_id, const SetFocusCallback& callback) override;
 
   // AccessPolicyDelegate:
   bool IsRootForAccessPolicy(const ViewId& id) const override;

@@ -9,6 +9,7 @@
 #include "components/view_manager/client_connection.h"
 #include "components/view_manager/connection_manager_delegate.h"
 #include "components/view_manager/display_manager.h"
+#include "components/view_manager/focus_controller.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
 #include "components/view_manager/view_manager_service_impl.h"
@@ -120,14 +121,25 @@ ConnectionManager::ConnectionManager(ConnectionManagerDelegate* delegate,
       wm_internal_(wm_internal),
       current_change_(nullptr),
       in_destructor_(false),
-      animation_runner_(base::TimeTicks::Now()) {
+      animation_runner_(base::TimeTicks::Now()),
+      event_dispatcher_(this),
+      event_dispatcher_binding_(&event_dispatcher_),
+      focus_controller_(new FocusController(this, root_.get())) {
   root_->SetBounds(gfx::Rect(800, 600));
   root_->SetVisible(true);
-  display_manager_->Init(this);
+
+  mojo::NativeViewportEventDispatcherPtr event_dispatcher_ptr;
+  event_dispatcher_binding_.Bind(GetProxy(&event_dispatcher_ptr));
+  display_manager_->Init(this, event_dispatcher_ptr.Pass());
 }
 
 ConnectionManager::~ConnectionManager() {
   in_destructor_ = true;
+
+  // Deleting views will attempt to advance focus. When we're being destroyed
+  // that is not necessary. Additionally |focus_controller_| needs to be
+  // destroyed before |root_|.
+  focus_controller_.reset();
 
   STLDeleteValues(&connection_map_);
   // All the connections should have been destroyed.
@@ -158,6 +170,9 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
   scoped_ptr<ClientConnection> connection_owner(connection);
 
   connection_map_.erase(connection->service()->id());
+
+  // TODO(sky): I may want to advance focus differently if focus is in
+  // |connection|.
 
   // Notify remaining connections so that they can cleanup.
   for (auto& pair : connection_map_) {
@@ -220,6 +235,18 @@ ServerView* ConnectionManager::GetView(const ViewId& id) {
   return service ? service->GetView(id) : nullptr;
 }
 
+void ConnectionManager::SetFocusedView(ServerView* view) {
+  ServerView* old_focused = GetFocusedView();
+  if (old_focused == view)
+    return;
+  focus_controller_->SetFocusedView(view);
+  OnFocusChanged(old_focused, view);
+}
+
+ServerView* ConnectionManager::GetFocusedView() {
+  return focus_controller_->GetFocusedView();
+}
+
 void ConnectionManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
   if (current_change_)
     current_change_->MarkConnectionAsMessaged(id);
@@ -267,6 +294,22 @@ bool ConnectionManager::CloneAndAnimate(const ViewId& view_id) {
   view->parent()->Add(clone);
   view->parent()->Reorder(clone, view, mojo::ORDER_DIRECTION_ABOVE);
   return true;
+}
+
+void ConnectionManager::ProcessEvent(mojo::EventPtr event) {
+  event_dispatcher_.OnEvent(event.Pass(), EventDispatcher::OnEventCallback());
+}
+
+void ConnectionManager::DispatchInputEventToView(const ServerView* view,
+                                                 mojo::EventPtr event) {
+  // If the view is an embed root, forward to the embedded view, not the owner.
+  ViewManagerServiceImpl* connection = GetConnectionWithRoot(view->id());
+  if (!connection)
+    connection = GetConnection(view->id().connection_id);
+  CHECK(connection);
+  connection->client()->OnViewInputEvent(ViewIdToTransportId(view->id()),
+                                         event.Pass(),
+                                         base::Bind(&base::DoNothing));
 }
 
 void ConnectionManager::ProcessViewBoundsChanged(const ServerView* view,
@@ -482,8 +525,13 @@ void ConnectionManager::OnViewSharedPropertyChanged(
   }
 }
 
-void ConnectionManager::DispatchInputEventToView(mojo::Id transport_view_id,
-                                                 mojo::EventPtr event) {
+void ConnectionManager::SetViewportSize(mojo::SizePtr size) {
+  display_manager_->SetViewportSize(size.To<gfx::Size>());
+}
+
+void ConnectionManager::DispatchInputEventToViewDEPRECATED(
+    mojo::Id transport_view_id,
+    mojo::EventPtr event) {
   const ViewId view_id(ViewIdFromTransportId(transport_view_id));
 
   ViewManagerServiceImpl* connection = GetConnectionWithRoot(view_id);
@@ -495,13 +543,74 @@ void ConnectionManager::DispatchInputEventToView(mojo::Id transport_view_id,
   }
 }
 
-void ConnectionManager::SetViewportSize(mojo::SizePtr size) {
-  gfx::Size new_size = size.To<gfx::Size>();
-  display_manager_->SetViewportSize(new_size);
-}
-
 void ConnectionManager::CloneAndAnimate(mojo::Id transport_view_id) {
   CloneAndAnimate(ViewIdFromTransportId(transport_view_id));
+}
+
+void ConnectionManager::AddAccelerator(mojo::KeyboardCode keyboard_code,
+                                       mojo::EventFlags flags) {
+  event_dispatcher_.AddAccelerator(keyboard_code, flags);
+}
+
+void ConnectionManager::RemoveAccelerator(mojo::KeyboardCode keyboard_code,
+                                          mojo::EventFlags flags) {
+  event_dispatcher_.RemoveAccelerator(keyboard_code, flags);
+}
+
+void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
+                                       ServerView* new_focused_view) {
+  // There are up to four connections that need to be notified:
+  // . the connection containing |old_focused_view|.
+  // . the connection with |old_focused_view| as its root.
+  // . the connection containing |new_focused_view|.
+  // . the connection with |new_focused_view| as its root.
+  // Some of these connections may be the same. The following takes care to
+  // notify each only once.
+  ViewManagerServiceImpl* owning_connection_old = nullptr;
+  ViewManagerServiceImpl* embedded_connection_old = nullptr;
+
+  if (old_focused_view) {
+    owning_connection_old = GetConnection(old_focused_view->id().connection_id);
+    if (owning_connection_old) {
+      owning_connection_old->ProcessFocusChanged(old_focused_view,
+                                                 new_focused_view);
+    }
+    embedded_connection_old = GetConnectionWithRoot(old_focused_view->id());
+    if (embedded_connection_old) {
+      DCHECK_NE(owning_connection_old, embedded_connection_old);
+      embedded_connection_old->ProcessFocusChanged(old_focused_view,
+                                                   new_focused_view);
+    }
+  }
+  ViewManagerServiceImpl* owning_connection_new = nullptr;
+  ViewManagerServiceImpl* embedded_connection_new = nullptr;
+  if (new_focused_view) {
+    owning_connection_new = GetConnection(new_focused_view->id().connection_id);
+    if (owning_connection_new &&
+        owning_connection_new != owning_connection_old &&
+        owning_connection_new != embedded_connection_old) {
+      owning_connection_new->ProcessFocusChanged(old_focused_view,
+                                                 new_focused_view);
+    }
+    embedded_connection_new = GetConnectionWithRoot(new_focused_view->id());
+    if (embedded_connection_new &&
+        embedded_connection_new != owning_connection_old &&
+        embedded_connection_new != embedded_connection_old) {
+      DCHECK_NE(owning_connection_new, embedded_connection_new);
+      embedded_connection_new->ProcessFocusChanged(old_focused_view,
+                                                   new_focused_view);
+    }
+  }
+
+  // Window manager should always be notified of focus change.
+  ViewManagerServiceImpl* wm_connection =
+      window_manager_client_connection_->service();
+  if (wm_connection != owning_connection_old &&
+      wm_connection != embedded_connection_old &&
+      wm_connection != owning_connection_new &&
+      wm_connection != embedded_connection_new) {
+    wm_connection->ProcessFocusChanged(old_focused_view, new_focused_view);
+  }
 }
 
 }  // namespace view_manager
