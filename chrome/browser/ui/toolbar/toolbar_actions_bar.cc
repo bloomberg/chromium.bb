@@ -119,6 +119,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       model_(extensions::ExtensionToolbarModel::Get(browser_->profile())),
       main_bar_(main_bar),
       platform_settings_(main_bar != nullptr),
+      popup_owner_(nullptr),
       model_observer_(this),
       suppress_layout_(false),
       suppress_animation_(true),
@@ -284,7 +285,8 @@ void ToolbarActionsBar::CreateActions() {
       toolbar_actions_.push_back(new ExtensionActionViewController(
           extension.get(),
           browser_,
-          action_manager->GetExtensionAction(*extension)));
+          action_manager->GetExtensionAction(*extension),
+          this));
     }
 
     // Component actions come second, and are suppressed if the extension
@@ -340,6 +342,7 @@ void ToolbarActionsBar::CreateActions() {
 }
 
 void ToolbarActionsBar::DeleteActions() {
+  HideActivePopup();
   delegate_->RemoveAllViews();
   toolbar_actions_.clear();
 }
@@ -393,6 +396,27 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
     model_->SetVisibleIconCount(model_->visible_icon_count() + delta);
 }
 
+void ToolbarActionsBar::SetPopupOwner(
+    ToolbarActionViewController* popup_owner) {
+  // We should never be setting a popup owner when one already exists, and
+  // never unsetting one when one wasn't set.
+  DCHECK((!popup_owner_ && popup_owner) ||
+         (popup_owner_ && !popup_owner));
+  popup_owner_ = popup_owner;
+}
+
+void ToolbarActionsBar::HideActivePopup() {
+  if (popup_owner_)
+    popup_owner_->HidePopup();
+  DCHECK(!popup_owner_);
+}
+
+ToolbarActionViewController* ToolbarActionsBar::GetMainControllerForAction(
+    ToolbarActionViewController* action) {
+  return in_overflow_mode() ?
+      main_bar_->GetActionForId(action->GetId()) : action;
+}
+
 void ToolbarActionsBar::MaybeShowExtensionBubble() {
   scoped_ptr<extensions::ExtensionMessageBubbleController> controller =
       ExtensionMessageBubbleFactory(browser_->profile()).GetController();
@@ -414,7 +438,8 @@ void ToolbarActionsBar::OnToolbarExtensionAdded(
           extension,
           browser_,
           extensions::ExtensionActionManager::Get(browser_->profile())->
-              GetExtensionAction(*extension)));
+              GetExtensionAction(*extension),
+          this));
 
   delegate_->AddViewForAction(toolbar_actions_[index], index);
 
@@ -499,7 +524,7 @@ bool ToolbarActionsBar::ShowExtensionActionPopup(
     const extensions::Extension* extension,
     bool grant_active_tab) {
   // Don't override another popup, and only show in the active window.
-  if (delegate_->IsPopupRunning() || !browser_->window()->IsActive())
+  if (popup_owner() || !browser_->window()->IsActive())
     return false;
 
   ToolbarActionViewController* action = GetActionForId(extension->id());

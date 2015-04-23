@@ -260,13 +260,6 @@ views::Widget* ToolbarActionView::GetParentForContextMenu() {
       GetWidget();
 }
 
-ToolbarActionViewController*
-ToolbarActionView::GetPreferredPopupViewController() {
-  return delegate_->ShownInsideMenu() ?
-      delegate_->GetMainViewForAction(this)->view_controller() :
-      view_controller();
-}
-
 views::View* ToolbarActionView::GetReferenceViewForPopup() {
   // Browser actions in the overflow menu can still show popups, so we may need
   // a reference view other than this button's parent. If so, use the overflow
@@ -284,7 +277,6 @@ content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
 }
 
 void ToolbarActionView::OnPopupShown(bool by_user) {
-  delegate_->SetPopupOwner(this);
   // If this was through direct user action, we press the menu button.
   if (by_user) {
     // We set the state of the menu button we're using as a reference view,
@@ -298,6 +290,5 @@ void ToolbarActionView::OnPopupShown(bool by_user) {
 }
 
 void ToolbarActionView::OnPopupClosed() {
-  delegate_->SetPopupOwner(nullptr);
   pressed_lock_.reset();  // Unpress the menu button if it was pressed.
 }

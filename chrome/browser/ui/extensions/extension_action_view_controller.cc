@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -31,10 +32,12 @@ using extensions::CommandService;
 ExtensionActionViewController::ExtensionActionViewController(
     const extensions::Extension* extension,
     Browser* browser,
-    ExtensionAction* extension_action)
+    ExtensionAction* extension_action,
+    ToolbarActionsBar* toolbar_actions_bar)
     : extension_(extension),
       browser_(browser),
       extension_action_(extension_action),
+      toolbar_actions_bar_(toolbar_actions_bar),
       popup_host_(nullptr),
       view_delegate_(nullptr),
       platform_delegate_(ExtensionActionPlatformDelegate::Create(this)),
@@ -195,8 +198,7 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
       ExtensionAction::ACTION_SHOW_POPUP) {
     GURL popup_url = extension_action_->GetPopupUrl(
         SessionTabHelper::IdForTab(view_delegate_->GetCurrentWebContents()));
-    return static_cast<ExtensionActionViewController*>(
-               view_delegate_->GetPreferredPopupViewController())
+    return GetPreferredPopupViewController()
         ->ShowPopupWithUrl(show_action, popup_url, grant_tab_permissions);
   }
   return false;
@@ -241,6 +243,17 @@ bool ExtensionActionViewController::ExtensionIsValid() const {
   return extension_registry_->enabled_extensions().Contains(extension_->id());
 }
 
+void ExtensionActionViewController::HideActivePopup() {
+  if (toolbar_actions_bar_) {
+    toolbar_actions_bar_->HideActivePopup();
+  } else {
+    DCHECK_EQ(ActionInfo::TYPE_PAGE, extension_action_->action_type());
+    // In the traditional toolbar, page actions only know how to close their own
+    // popups.
+    HidePopup();
+  }
+}
+
 bool ExtensionActionViewController::GetExtensionCommand(
     extensions::Command* command) {
   DCHECK(command);
@@ -256,6 +269,16 @@ bool ExtensionActionViewController::GetExtensionCommand(
       extension_->id(), CommandService::ACTIVE, command, NULL);
 }
 
+ExtensionActionViewController*
+ExtensionActionViewController::GetPreferredPopupViewController() {
+  if (toolbar_actions_bar_ && toolbar_actions_bar_->in_overflow_mode()) {
+    return static_cast<ExtensionActionViewController*>(
+        toolbar_actions_bar_->GetMainControllerForAction(this));
+  }
+
+  return this;
+}
+
 bool ExtensionActionViewController::ShowPopupWithUrl(
     PopupShowAction show_action,
     const GURL& popup_url,
@@ -267,7 +290,7 @@ bool ExtensionActionViewController::ShowPopupWithUrl(
 
   // Always hide the current popup, even if it's not owned by this extension.
   // Only one popup should be visible at a time.
-  platform_delegate_->CloseActivePopup();
+  HideActivePopup();
 
   // If we were showing a popup already, then we treat the action to open the
   // same one as a desire to close it (like clicking a menu button that was
@@ -279,6 +302,8 @@ bool ExtensionActionViewController::ShowPopupWithUrl(
       show_action, popup_url, grant_tab_permissions);
   if (popup_host_) {
     popup_host_observer_.Add(popup_host_);
+    if (toolbar_actions_bar_)
+      toolbar_actions_bar_->SetPopupOwner(this);
     view_delegate_->OnPopupShown(grant_tab_permissions);
   }
   return is_showing_popup();
@@ -287,5 +312,7 @@ bool ExtensionActionViewController::ShowPopupWithUrl(
 void ExtensionActionViewController::OnPopupClosed() {
   popup_host_observer_.Remove(popup_host_);
   popup_host_ = nullptr;
+  if (toolbar_actions_bar_)
+    toolbar_actions_bar_->SetPopupOwner(nullptr);
   view_delegate_->OnPopupClosed();
 }

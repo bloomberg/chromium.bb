@@ -42,7 +42,6 @@ class ExtensionActionPlatformDelegateViews
   bool IsMenuRunning() const override;
   void RegisterCommand() override;
   void OnDelegateSet() override;
-  void CloseActivePopup() override;
   extensions::ExtensionViewHost* ShowPopupWithUrl(
       ExtensionActionViewController::PopupShowAction show_action,
       const GURL& popup_url,

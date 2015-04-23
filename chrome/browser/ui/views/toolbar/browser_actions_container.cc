@@ -79,7 +79,6 @@ BrowserActionsContainer::BrowserActionsContainer(
               main_container->toolbar_actions_bar_.get() : nullptr)),
       browser_(browser),
       main_container_(main_container),
-      popup_owner_(NULL),
       container_width_(0),
       resize_area_(NULL),
       chevron_(NULL),
@@ -202,36 +201,6 @@ views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
           browser_)->toolbar()->app_menu());
 }
 
-void BrowserActionsContainer::SetPopupOwner(ToolbarActionView* popup_owner) {
-  // We should never be setting a popup owner when one already exists, and
-  // never unsetting one when one wasn't set.
-  DCHECK((!popup_owner_ && popup_owner) ||
-         (popup_owner_ && !popup_owner));
-  popup_owner_ = popup_owner;
-}
-
-void BrowserActionsContainer::HideActivePopup() {
-  if (popup_owner_)
-    popup_owner_->view_controller()->HidePopup();
-}
-
-ToolbarActionView* BrowserActionsContainer::GetMainViewForAction(
-    ToolbarActionView* view) {
-  if (!in_overflow_mode())
-    return view;  // This is the main view.
-
-  // The overflow container and main container each have the same views and
-  // view indices, so we can return the view of the index that |view| has in
-  // this container.
-  ToolbarActionViews::const_iterator iter =
-      std::find(toolbar_action_views_.begin(),
-                toolbar_action_views_.end(),
-                view);
-  DCHECK(iter != toolbar_action_views_.end());
-  size_t index = iter - toolbar_action_views_.begin();
-  return main_container_->toolbar_action_views_[index];
-}
-
 void BrowserActionsContainer::AddViewForAction(
    ToolbarActionViewController* view_controller,
    size_t index) {
@@ -261,7 +230,6 @@ void BrowserActionsContainer::RemoveViewForAction(
 }
 
 void BrowserActionsContainer::RemoveAllViews() {
-  HideActivePopup();
   STLDeleteElements(&toolbar_action_views_);
 }
 
@@ -336,10 +304,6 @@ void BrowserActionsContainer::StopAnimating() {
 
 int BrowserActionsContainer::GetChevronWidth() const {
   return chevron_ ? chevron_->GetPreferredSize().width() + kChevronSpacing : 0;
-}
-
-bool BrowserActionsContainer::IsPopupRunning() const {
-  return popup_owner_ != nullptr;
 }
 
 void BrowserActionsContainer::OnOverflowedActionWantsToRunChanged(
@@ -732,12 +696,6 @@ extensions::ActiveTabPermissionGranter*
     return NULL;
   return extensions::TabHelper::FromWebContents(web_contents)->
       active_tab_permission_granter();
-}
-
-gfx::NativeView BrowserActionsContainer::TestGetPopup() {
-  return popup_owner_ ?
-      popup_owner_->view_controller()->GetPopupNativeView() :
-      NULL;
 }
 
 void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {

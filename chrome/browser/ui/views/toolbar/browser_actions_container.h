@@ -190,9 +190,6 @@ class BrowserActionsContainer
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command);
 
-  // Hides the currently-active popup, if there is one.
-  void HideActivePopup();
-
   // Add or remove an observer.
   void AddObserver(BrowserActionsContainerObserver* observer);
   void RemoveObserver(BrowserActionsContainerObserver* observer);
@@ -235,8 +232,6 @@ class BrowserActionsContainer
   bool ShownInsideMenu() const override;
   void OnToolbarActionViewDragDone() override;
   views::MenuButton* GetOverflowReferenceView() override;
-  void SetPopupOwner(ToolbarActionView* popup_owner) override;
-  ToolbarActionView* GetMainViewForAction(ToolbarActionView* view) override;
 
   // ToolbarActionsBarDelegate:
   void AddViewForAction(ToolbarActionViewController* action,
@@ -252,7 +247,6 @@ class BrowserActionsContainer
   bool IsAnimating() const override;
   void StopAnimating() override;
   int GetChevronWidth() const override;
-  bool IsPopupRunning() const override;
   void OnOverflowedActionWantsToRunChanged(
       bool overflowed_action_wants_to_run) override;
   void ShowExtensionMessageBubble(
@@ -266,9 +260,6 @@ class BrowserActionsContainer
   // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
   extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()
       override;
-
-  // Retrieve the current popup.  This should only be used by unit tests.
-  gfx::NativeView TestGetPopup();
 
   views::BubbleDelegateView* active_bubble() { return active_bubble_; }
 
@@ -311,10 +302,6 @@ class BrowserActionsContainer
   // class is the the main container. See class comments for details on
   // the difference between main and overflow.
   BrowserActionsContainer* main_container_;
-
-  // The view that triggered the current popup (just a reference to a view
-  // from toolbar_action_views_).
-  ToolbarActionView* popup_owner_;
 
   // The current width of the container.
   int container_width_;

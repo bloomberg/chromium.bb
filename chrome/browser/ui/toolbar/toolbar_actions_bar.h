@@ -122,6 +122,16 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
                   int dropped_index,
                   DragType drag_type);
 
+  // Sets the active popup owner to be |popup_owner|.
+  void SetPopupOwner(ToolbarActionViewController* popup_owner);
+
+  // Hides the actively showing popup, if any.
+  void HideActivePopup();
+
+  // Returns the main (i.e., not overflow) controller for the given action.
+  ToolbarActionViewController* GetMainControllerForAction(
+      ToolbarActionViewController* action);
+
   const std::vector<ToolbarActionViewController*>& toolbar_actions() const {
     return toolbar_actions_.get();
   }
@@ -134,6 +144,8 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   const PlatformSettings& platform_settings() const {
     return platform_settings_;
   }
+  ToolbarActionViewController* popup_owner() { return popup_owner_; }
+  bool in_overflow_mode() const { return main_bar_ != nullptr; }
 
   ToolbarActionsBarDelegate* delegate_for_test() { return delegate_; }
 
@@ -187,8 +199,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // Shows an extension message bubble, if any should be shown.
   void MaybeShowExtensionBubble();
 
-  bool in_overflow_mode() const { return main_bar_ != nullptr; }
-
   // The delegate for this object (in a real build, this is the view).
   ToolbarActionsBarDelegate* delegate_;
 
@@ -207,6 +217,10 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
 
   // The toolbar actions.
   ToolbarActions toolbar_actions_;
+
+  // The action that triggered the current popup (just a reference to an action
+  // from toolbar_actions_).
+  ToolbarActionViewController* popup_owner_;
 
   ScopedObserver<extensions::ExtensionToolbarModel,
                  extensions::ExtensionToolbarModel::Observer> model_observer_;

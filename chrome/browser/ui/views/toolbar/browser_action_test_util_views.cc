@@ -87,21 +87,23 @@ std::string BrowserActionTestUtil::GetTooltip(int index) {
 }
 
 gfx::NativeView BrowserActionTestUtil::GetPopupNativeView() {
-  return GetContainer(browser_, bar_delegate_)->TestGetPopup();
+  ToolbarActionViewController* popup_owner =
+      GetToolbarActionsBar()->popup_owner();
+  return popup_owner ? popup_owner->GetPopupNativeView() : nullptr;
 }
 
 bool BrowserActionTestUtil::HasPopup() {
-  return GetContainer(browser_, bar_delegate_)->TestGetPopup() != NULL;
+  return GetPopupNativeView() != nullptr;
 }
 
 gfx::Size BrowserActionTestUtil::GetPopupSize() {
-  gfx::NativeView popup = GetContainer(browser_, bar_delegate_)->TestGetPopup();
+  gfx::NativeView popup = GetPopupNativeView();
   views::Widget* widget = views::Widget::GetWidgetForNativeView(popup);
   return widget->GetWindowBoundsInScreen().size();
 }
 
 bool BrowserActionTestUtil::HidePopup() {
-  GetContainer(browser_, bar_delegate_)->HideActivePopup();
+  GetToolbarActionsBar()->HideActivePopup();
   return !HasPopup();
 }
 

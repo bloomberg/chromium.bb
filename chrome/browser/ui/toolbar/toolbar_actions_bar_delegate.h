@@ -57,9 +57,6 @@ class ToolbarActionsBarDelegate {
   // Returns the width (including padding) for the overflow chevron.
   virtual int GetChevronWidth() const = 0;
 
-  // Returns true if there is currently a popup running.
-  virtual bool IsPopupRunning() const = 0;
-
   // Notifies the delegate that the value of whether or not any overflowed
   // action wants to run has changed.
   virtual void OnOverflowedActionWantsToRunChanged(

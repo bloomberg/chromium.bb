@@ -59,7 +59,6 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegate {
 
  private:
   // ToolbarActionViewDelegate:
-  ToolbarActionViewController* GetPreferredPopupViewController() override;
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
   void OnPopupShown(bool by_user) override;
@@ -121,12 +120,6 @@ void ToolbarActionViewDelegateBridge::ShowContextMenu() {
   } else {
     DoShowContextMenu();
   }
-}
-
-ToolbarActionViewController*
-ToolbarActionViewDelegateBridge::GetPreferredPopupViewController() {
-  return [[controller_ mainButtonForId:viewController_->GetId()]
-      viewController];
 }
 
 content::WebContents* ToolbarActionViewDelegateBridge::GetCurrentWebContents()

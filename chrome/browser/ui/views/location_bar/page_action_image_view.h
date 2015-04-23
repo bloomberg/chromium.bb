@@ -65,7 +65,6 @@ class PageActionImageView : public ToolbarActionViewDelegateViews,
   bool IsShownInMenu() override;
   views::FocusManager* GetFocusManagerForAccelerator() override;
   views::Widget* GetParentForContextMenu() override;
-  ToolbarActionViewController* GetPreferredPopupViewController() override;
   views::View* GetReferenceViewForPopup() override;
   views::MenuButton* GetContextMenuButton() override;
   content::WebContents* GetCurrentWebContents() const override;

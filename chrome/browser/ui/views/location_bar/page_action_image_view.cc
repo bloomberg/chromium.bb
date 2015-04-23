@@ -28,7 +28,8 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
           extensions::ExtensionRegistry::Get(browser->profile())->
               enabled_extensions().GetByID(page_action->extension_id()),
           browser,
-          page_action)),
+          page_action,
+          nullptr)),
       owner_(owner),
       preview_enabled_(false) {
   // There should be an associated focus manager so that we can safely register
@@ -136,11 +137,6 @@ views::FocusManager* PageActionImageView::GetFocusManagerForAccelerator() {
 
 views::Widget* PageActionImageView::GetParentForContextMenu() {
   return GetWidget();
-}
-
-ToolbarActionViewController*
-PageActionImageView::GetPreferredPopupViewController() {
-  return view_controller_.get();
 }
 
 views::View* PageActionImageView::GetReferenceViewForPopup() {

@@ -91,19 +91,6 @@ void ExtensionActionPlatformDelegateViews::OnDelegateSet() {
   GetDelegateViews()->GetAsView()->set_context_menu_controller(this);
 }
 
-void ExtensionActionPlatformDelegateViews::CloseActivePopup() {
-  if (controller_->extension_action()->action_type() ==
-          ActionInfo::TYPE_BROWSER) {
-    BrowserView::GetBrowserViewForBrowser(controller_->browser())->toolbar()->
-        browser_actions()->HideActivePopup();
-  } else {
-    DCHECK_EQ(ActionInfo::TYPE_PAGE,
-              controller_->extension_action()->action_type());
-    // Page actions only know how to close their own popups.
-    controller_->HidePopup();
-  }
-}
-
 extensions::ExtensionViewHost*
 ExtensionActionPlatformDelegateViews::ShowPopupWithUrl(
     ExtensionActionViewController::PopupShowAction show_action,
@@ -211,7 +198,7 @@ void ExtensionActionPlatformDelegateViews::DoShowContextMenu(
   context_menu_owner = this;
 
   // We shouldn't have both a popup and a context menu showing.
-  CloseActivePopup();
+  controller_->HideActivePopup();
 
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(GetDelegateViews()->GetAsView(),

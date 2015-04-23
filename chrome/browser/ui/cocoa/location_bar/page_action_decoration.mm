@@ -39,8 +39,8 @@ PageActionDecoration::PageActionDecoration(
           page_action->extension_id());
   DCHECK(extension);
 
-  viewController_.reset(
-      new ExtensionActionViewController(extension, browser, page_action));
+  viewController_.reset(new ExtensionActionViewController(
+      extension, browser, page_action, nullptr));
   viewController_->SetDelegate(this);
 
   // We set the owner last of all so that we can determine whether we are in
@@ -142,11 +142,6 @@ void PageActionDecoration::SetToolTip(const base::string16& tooltip) {
   NSString* nsTooltip =
       tooltip.empty() ? nil : base::SysUTF16ToNSString(tooltip);
   tooltip_.reset([nsTooltip retain]);
-}
-
-ToolbarActionViewController*
-PageActionDecoration::GetPreferredPopupViewController() {
-  return viewController_.get();
 }
 
 content::WebContents* PageActionDecoration::GetCurrentWebContents() const {

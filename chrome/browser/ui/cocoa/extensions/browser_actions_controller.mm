@@ -184,7 +184,6 @@ class ToolbarActionsBarBridge : public ToolbarActionsBarDelegate {
   bool IsAnimating() const override;
   void StopAnimating() override;
   int GetChevronWidth() const override;
-  bool IsPopupRunning() const override;
   void OnOverflowedActionWantsToRunChanged(bool overflowed_action_wants_to_run)
       override;
   void ShowExtensionMessageBubble(
@@ -255,10 +254,6 @@ void ToolbarActionsBarBridge::StopAnimating() {
 
 int ToolbarActionsBarBridge::GetChevronWidth() const {
   return kChevronWidth;
-}
-
-bool ToolbarActionsBarBridge::IsPopupRunning() const {
-  return [ExtensionPopupController popup] != nil;
 }
 
 void ToolbarActionsBarBridge::OnOverflowedActionWantsToRunChanged(

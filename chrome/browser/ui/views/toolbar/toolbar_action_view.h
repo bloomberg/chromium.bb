@@ -50,14 +50,6 @@ class ToolbarActionView : public views::MenuButton,
     // reference point for a popup when this view isn't visible.
     virtual views::MenuButton* GetOverflowReferenceView() = 0;
 
-    // Sets the delegate's active popup owner to be |popup_owner|.
-    virtual void SetPopupOwner(ToolbarActionView* popup_owner) = 0;
-
-    // Returns the primary ToolbarActionView associated with the given
-    // |extension|.
-    virtual ToolbarActionView* GetMainViewForAction(
-        ToolbarActionView* view) = 0;
-
    protected:
     ~Delegate() override {}
   };
@@ -128,7 +120,6 @@ class ToolbarActionView : public views::MenuButton,
   bool IsShownInMenu() override;
   views::FocusManager* GetFocusManagerForAccelerator() override;
   views::Widget* GetParentForContextMenu() override;
-  ToolbarActionViewController* GetPreferredPopupViewController() override;
   views::View* GetReferenceViewForPopup() override;
   views::MenuButton* GetContextMenuButton() override;
   void OnPopupShown(bool by_user) override;

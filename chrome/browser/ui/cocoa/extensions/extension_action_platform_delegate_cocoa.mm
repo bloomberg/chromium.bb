@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -74,12 +75,6 @@ void ExtensionActionPlatformDelegateCocoa::OnDelegateSet() {
       content::Source<Profile>(controller_->browser()->profile()));
 }
 
-void ExtensionActionPlatformDelegateCocoa::CloseActivePopup() {
-  ExtensionPopupController* popup = [ExtensionPopupController popup];
-  if (popup && ![popup isClosing])
-    [popup close];
-}
-
 extensions::ExtensionViewHost*
 ExtensionActionPlatformDelegateCocoa::ShowPopupWithUrl(
     ExtensionActionViewController::PopupShowAction show_action,
@@ -130,9 +125,16 @@ void ExtensionActionPlatformDelegateCocoa::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-      CloseActivePopup();
+    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+      extensions::ExtensionHost* host =
+          content::Details<extensions::ExtensionHost>(details).ptr();
+      if (host->extension_id() == controller_->GetId()) {
+        ExtensionPopupController* popup = [ExtensionPopupController popup];
+        if (popup && ![popup isClosing] && [popup extensionViewHost] == host)
+          [popup close];
+      }
       break;
+    }
     case extensions::NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC:
     case extensions::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC: {
       DCHECK_EQ(type,

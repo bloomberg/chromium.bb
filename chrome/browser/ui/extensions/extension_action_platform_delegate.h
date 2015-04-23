@@ -30,9 +30,6 @@ class ExtensionActionPlatformDelegate {
   // Called once the delegate is set, in order to do any extra initialization.
   virtual void OnDelegateSet() = 0;
 
-  // Closes the active popup (whether it was this action's popup or not).
-  virtual void CloseActivePopup() = 0;
-
   // Shows the popup for the extension action, given the associated |popup_url|.
   // |grant_tab_permissions| is true if active tab permissions should be given
   // to the extension; this is only true if the popup is opened through a user

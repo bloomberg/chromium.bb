@@ -16,6 +16,7 @@ class Browser;
 class ExtensionAction;
 class ExtensionActionPlatformDelegate;
 class GURL;
+class ToolbarActionsBar;
 
 namespace extensions {
 class Command;
@@ -40,7 +41,8 @@ class ExtensionActionViewController
 
   ExtensionActionViewController(const extensions::Extension* extension,
                                 Browser* browser,
-                                ExtensionAction* extension_action);
+                                ExtensionAction* extension_action,
+                                ToolbarActionsBar* toolbar_actions_bar);
   ~ExtensionActionViewController() override;
 
   // ToolbarActionViewController:
@@ -70,6 +72,9 @@ class ExtensionActionViewController
   // ExtensionContextMenuModel::PopupDelegate:
   void InspectPopup() override;
 
+  // Closes the active popup (whether it was this action's popup or not).
+  void HideActivePopup();
+
   // Populates |command| with the command associated with |extension|, if one
   // exists. Returns true if |command| was populated.
   bool GetExtensionCommand(extensions::Command* command);
@@ -98,6 +103,11 @@ class ExtensionActionViewController
   // itself before we're notified to remove it.
   bool ExtensionIsValid() const;
 
+  // In some cases (such as when an action is shown in a menu), a substitute
+  // ToolbarActionViewController should be used for showing popups. This
+  // returns the preferred controller.
+  ExtensionActionViewController* GetPreferredPopupViewController();
+
   // Executes the extension action with |show_action|. If
   // |grant_tab_permissions| is true, this will grant the extension active tab
   // permissions. Only do this if this was done through a user action (and not
@@ -125,6 +135,13 @@ class ExtensionActionViewController
   // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
   ExtensionAction* extension_action_;
+
+  // The owning ToolbarActionsBar, if any. This will be null if this is a
+  // page action without the toolbar redesign turned on.
+  // TODO(devlin): Would this be better behind a delegate interface? On the one
+  // hand, it's odd for this class to know about ToolbarActionsBar, but on the
+  // other, yet-another-delegate-class might just confuse things.
+  ToolbarActionsBar* toolbar_actions_bar_;
 
   // The extension popup's host if the popup is visible; null otherwise.
   extensions::ExtensionViewHost* popup_host_;
