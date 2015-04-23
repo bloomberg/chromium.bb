@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 299
+#   For your editing convenience: highest ID currently used: 300
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -7334,6 +7334,21 @@
       'caption': '''Maximize the first browser window on first run''',
       'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will unconditionally maximize the the first window shown on first run.
       If this policy is set to false or not configured, a heuristic will decide whether to maximize the first window shown, based on the screen size.''',
+    },
+    {
+      'name': 'SSLErrorOverrideAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:44-', 'chrome_os:44-', 'android:44-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 300,
+      'caption': '''Allow proceeding from the SSL warning page''',
+      'desc': '''Chrome shows a warning page when users navigate to sites that have SSL errors. By default or when this policy is set to true, users are allowed to click through these warning pages.
+      Setting this policy to false disallows users to click through any warning page.''',
     },
   ],
   'messages': {

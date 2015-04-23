@@ -45,6 +45,7 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
+#include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
@@ -3618,6 +3619,72 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingOptInAllowed) {
       SecurityInterstitialPage::CMD_ERROR);
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(rvh, command, &result));
   EXPECT_EQ(SecurityInterstitialPage::CMD_TEXT_NOT_FOUND, result);
+}
+
+// Test that when SSL error overriding is allowed by policy (default), the
+// proceed link appears on SSL blocking pages.
+IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingAllowed) {
+  net::SpawnedTestServer https_server_expired(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server_expired.Start());
+
+  const PrefService* const prefs = browser()->profile()->GetPrefs();
+
+  // Policy should allow overriding by default.
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSSLErrorOverrideAllowed));
+
+  // Policy allows overriding - navigate to an SSL error page and expect the
+  // proceed link.
+  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
+
+  const content::InterstitialPage* const interstitial =
+      content::InterstitialPage::GetInterstitialPage(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(interstitial);
+  EXPECT_TRUE(content::WaitForRenderFrameReady(interstitial->GetMainFrame()));
+
+  // The interstitial should display the proceed link.
+  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
+      interstitial, "proceed-link"));
+}
+
+// Test that when SSL error overriding is disallowed by policy, the
+// proceed link does not appear on SSL blocking pages.
+IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingDisallowed) {
+  net::SpawnedTestServer https_server_expired(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server_expired.Start());
+
+  const PrefService* const prefs = browser()->profile()->GetPrefs();
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSSLErrorOverrideAllowed));
+
+  // Disallowing the proceed link by setting the policy to |false|.
+  PolicyMap policies;
+  policies.Set(key::kSSLErrorOverrideAllowed, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, new base::FundamentalValue(false), NULL);
+  UpdateProviderPolicy(policies);
+
+  // Policy should not allow overriding anymore.
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kSSLErrorOverrideAllowed));
+
+  // Policy disallows overriding - navigate to an SSL error page and expect no
+  // proceed link.
+  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
+  const content::InterstitialPage* const interstitial =
+      content::InterstitialPage::GetInterstitialPage(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(interstitial);
+  EXPECT_TRUE(content::WaitForRenderFrameReady(interstitial->GetMainFrame()));
+
+  // The interstitial should not display the proceed link.
+  EXPECT_FALSE(chrome_browser_interstitials::IsInterstitialDisplayingText(
+      interstitial, "proceed-link"));
 }
 
 #if !defined(OS_CHROMEOS)

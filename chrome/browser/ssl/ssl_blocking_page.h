@@ -13,6 +13,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
@@ -71,8 +72,9 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // InterstitialPageDelegate method:
   InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
 
-  // Returns true if |options_mask| refers to an overridable SSL error.
-  static bool IsOptionsOverridable(int options_mask);
+  // Returns true if |options_mask| refers to an overridable SSL error and
+  // if SSL error overriding is allowed by policy.
+  static bool IsOverridable(int options_mask, const Profile* const profile);
 
   void SetSSLCertReporterForTesting(
       scoped_ptr<SSLCertReporter> ssl_cert_reporter);

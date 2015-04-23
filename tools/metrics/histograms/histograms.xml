@@ -49953,6 +49953,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="298" label="Maximize the first browser window on first run"/>
   <int value="299"
       label="Allow users to opt in to Safe Browsing extended reporting"/>
+  <int value="300" label="Allow proceeding from the SSL warning page"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

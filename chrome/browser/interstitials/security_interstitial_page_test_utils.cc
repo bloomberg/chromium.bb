@@ -21,8 +21,9 @@
 
 namespace chrome_browser_interstitials {
 
-bool IsInterstitialDisplayingText(content::InterstitialPage* interstitial,
-                                  const std::string& text) {
+bool IsInterstitialDisplayingText(
+    const content::InterstitialPage* const interstitial,
+    const std::string& text) {
   // It's valid for |text| to contain "\'", but simply look for "'" instead
   // since this function is used for searching host names and a predefined
   // string.

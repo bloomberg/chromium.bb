@@ -20,8 +20,9 @@ class SecurityInterstitialPage;
 
 namespace chrome_browser_interstitials {
 
-bool IsInterstitialDisplayingText(content::InterstitialPage* interstitial,
-                                  const std::string& text);
+bool IsInterstitialDisplayingText(
+    const content::InterstitialPage* const interstitial,
+    const std::string& text);
 
 // This class is used for testing the display of IDN names in security
 // interstitials.

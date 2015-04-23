@@ -248,7 +248,9 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       callback_(callback),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
-      overridable_(IsOptionsOverridable(options_mask)),
+      overridable_(IsOverridable(
+          options_mask,
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
       danger_overridable_(true),
       strict_enforcement_((options_mask & STRICT_ENFORCEMENT) != 0),
       expired_but_previously_allowed_(
@@ -697,7 +699,11 @@ bool SSLBlockingPage::ShouldReportCertificateError() {
 }
 
 // static
-bool SSLBlockingPage::IsOptionsOverridable(int options_mask) {
-  return (options_mask & SSLBlockingPage::OVERRIDABLE) &&
-         !(options_mask & SSLBlockingPage::STRICT_ENFORCEMENT);
+bool SSLBlockingPage::IsOverridable(int options_mask,
+                                    const Profile* const profile) {
+  const bool is_overridable =
+      (options_mask & SSLBlockingPage::OVERRIDABLE) &&
+      !(options_mask & SSLBlockingPage::STRICT_ENFORCEMENT) &&
+      profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed);
+  return is_overridable;
 }

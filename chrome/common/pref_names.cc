@@ -350,6 +350,10 @@ const char kSafeBrowsingIncidentsSent[] = "safebrowsing.incidents_sent";
 const char kSafeBrowsingExtendedReportingOptInAllowed[] =
     "safebrowsing.extended_reporting_opt_in_allowed";
 
+// Boolean that is true when the SSL interstitial should allow users to
+// proceed anyway. Otherwise, proceeding is not possible.
+const char kSSLErrorOverrideAllowed[] = "ssl.error_override_allowed";
+
 // Enum that specifies whether Incognito mode is:
 // 0 - Enabled. Default behaviour. Default mode is available on demand.
 // 1 - Disabled. Used cannot browse pages in Incognito mode.

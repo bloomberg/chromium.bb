@@ -104,6 +104,10 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSafeBrowsingProceedAnywayDisabled,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kSSLErrorOverrideAllowed,
+      true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDictionaryPref(
       prefs::kSafeBrowsingIncidentsSent,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

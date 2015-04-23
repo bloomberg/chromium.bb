@@ -187,9 +187,11 @@ void SSLErrorHandler::CheckForCaptivePortal() {
 void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   // Show captive portal blocking page. The interstitial owns the blocking page.
-  RecordUMA(SSLBlockingPage::IsOptionsOverridable(options_mask_) ?
-            SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE :
-            SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE);
+  const Profile* const profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  RecordUMA(SSLBlockingPage::IsOverridable(options_mask_, profile)
+                ? SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE
+                : SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE);
   (new CaptivePortalBlockingPage(web_contents_, request_url_, landing_url,
                                  callback_))->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
@@ -202,9 +204,11 @@ void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
 
 void SSLErrorHandler::ShowSSLInterstitial() {
   // Show SSL blocking page. The interstitial owns the blocking page.
-  RecordUMA(SSLBlockingPage::IsOptionsOverridable(options_mask_) ?
-            SHOW_SSL_INTERSTITIAL_OVERRIDABLE :
-            SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE);
+  const Profile* const profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  RecordUMA(SSLBlockingPage::IsOverridable(options_mask_, profile)
+                ? SHOW_SSL_INTERSTITIAL_OVERRIDABLE
+                : SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE);
   (new SSLBlockingPage(web_contents_, cert_error_, ssl_info_, request_url_,
                        options_mask_, base::Time::NowFromSystemTime(),
                        ssl_cert_reporter_.Pass(), callback_))->Show();
