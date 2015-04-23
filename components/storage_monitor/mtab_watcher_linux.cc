@@ -38,7 +38,7 @@ MtabWatcherLinux::MtabWatcherLinux(const base::FilePath& mtab_path,
     : mtab_path_(mtab_path),
       delegate_(delegate),
       weak_ptr_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   bool ret = file_watcher_.Watch(
       mtab_path_, false,
       base::Bind(&MtabWatcherLinux::OnFilePathChanged,
@@ -52,11 +52,11 @@ MtabWatcherLinux::MtabWatcherLinux(const base::FilePath& mtab_path,
 }
 
 MtabWatcherLinux::~MtabWatcherLinux() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 }
 
 void MtabWatcherLinux::ReadMtab() const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   FILE* fp = setmntent(mtab_path_.value().c_str(), "r");
   if (!fp)
@@ -87,7 +87,7 @@ void MtabWatcherLinux::ReadMtab() const {
 
 void MtabWatcherLinux::OnFilePathChanged(
     const base::FilePath& path, bool error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   if (path != mtab_path_) {
     // This cannot happen unless FilePathWatcher is buggy. Just ignore this

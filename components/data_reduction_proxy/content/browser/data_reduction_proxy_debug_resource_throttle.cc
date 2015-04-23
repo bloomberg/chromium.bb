@@ -45,7 +45,7 @@ DataReductionProxyDebugResourceThrottle::MaybeCreate(
 void DataReductionProxyDebugResourceThrottle::StartDisplayingBlockingPage(
     scoped_refptr<DataReductionProxyDebugUIManager> ui_manager,
     const DataReductionProxyDebugUIManager::BypassResource& resource) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ui_manager->DisplayBlockingPage(resource);
 }
 

@@ -38,7 +38,7 @@ const char kWalletCookieName[] = "gdtoken";
 void GetGoogleCookiesCallback(
     const base::Callback<void(const std::string&)>& callback,
     const net::CookieList& cookies) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Cookies for parent domains will also be returned; we only want cookies with
   // exact host matches. TODO(estade): really?
@@ -62,7 +62,7 @@ void GetGoogleCookiesCallback(
 void GetGoogleCookies(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     const base::Callback<void(const std::string&)>& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   net::URLRequestContext* url_request_context =
       request_context_getter->GetURLRequestContext();
@@ -166,7 +166,7 @@ void WalletSigninHelper::OnURLFetchComplete(
 
 void WalletSigninHelper::ReturnWalletCookieValue(
     const std::string& cookie_value) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   delegate_->OnDidFetchWalletCookieValue(cookie_value);
 }

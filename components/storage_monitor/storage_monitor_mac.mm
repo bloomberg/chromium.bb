@@ -47,7 +47,7 @@ StorageInfo::Type GetDeviceType(bool is_removable, bool has_dcim) {
 
 StorageInfo BuildStorageInfo(
     CFDictionaryRef dict, std::string* bsd_name) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   CFStringRef device_bsd_name = base::mac::GetValueFromDictionary<CFStringRef>(
       dict, kDADiskDescriptionMediaBSDNameKey);
@@ -109,7 +109,7 @@ void GetDiskInfoAndUpdateOnFileThread(
     const base::WeakPtr<StorageMonitorMac>& monitor,
     base::ScopedCFTypeRef<CFDictionaryRef> dict,
     StorageMonitorMac::UpdateType update_type) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   std::string bsd_name;
   StorageInfo info = BuildStorageInfo(dict, &bsd_name);
@@ -209,7 +209,7 @@ void StorageMonitorMac::UpdateDisk(
     const std::string& bsd_name,
     const StorageInfo& info,
     UpdateType update_type) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   pending_disk_updates_--;
   bool initialization_complete = false;
@@ -348,7 +348,7 @@ void StorageMonitorMac::DiskDescriptionChangedCallback(DADiskRef disk,
 void StorageMonitorMac::GetDiskInfoAndUpdate(
     DADiskRef disk,
     StorageMonitorMac::UpdateType update_type) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   pending_disk_updates_++;
 

@@ -119,7 +119,7 @@ class TestIOThreadState {
                      url,
                      net::DEFAULT_PRIORITY,
                      NULL /* delegate */)) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (render_process_id != MSG_ROUTING_NONE &&
         render_frame_id != MSG_ROUTING_NONE) {
       content::ResourceRequestInfo::AllocateForTesting(
@@ -150,13 +150,13 @@ class TestIOThreadState {
   }
 
   void ThrottleWillStartRequest(bool* defer) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     throttle_->WillStartRequest(defer);
   }
 
   void ThrottleWillRedirectRequest(const net::RedirectInfo& redirect_info,
                                    bool* defer) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     throttle_->WillRedirectRequest(redirect_info, defer);
   }
 
@@ -211,7 +211,7 @@ class InterceptNavigationResourceThrottleTest
       int render_process_id,
       int render_frame_id,
       bool* defer) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     TestIOThreadState* io_thread_state =
         new TestIOThreadState(url, render_process_id, render_frame_id,
                               request_method, redirect_mode,

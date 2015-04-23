@@ -13,7 +13,7 @@ namespace {
 
 base::File::Error RenameFile(const base::FilePath& downloaded_filename,
                              const base::FilePath& desired_filename) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   bool success = base::ReplaceFile(downloaded_filename, desired_filename, NULL);
   return success ? base::File::FILE_OK : base::File::FILE_ERROR_NOT_FOUND;
 }
@@ -22,7 +22,7 @@ void ReturnRenameResultToListener(
     base::WeakPtr<ImageCaptureDeviceListener> listener,
     const std::string& name,
     const base::File::Error& result) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (listener)
     listener->DownloadedFile(name, result);
 }
@@ -75,18 +75,18 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
 
 - (void)setListener:(base::WeakPtr<storage_monitor::ImageCaptureDeviceListener>)
         listener {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   listener_ = listener;
 }
 
 - (void)open {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(listener_);
   [camera_ requestOpenSession];
 }
 
 - (void)close {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   closing_ = true;
   [camera_ cancelDownload];
   [camera_ requestCloseSession];
@@ -100,7 +100,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
 
 - (void)downloadFile:(const std::string&)name
            localPath:(const base::FilePath&)localPath {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Find the file with that name and start download.
   for (ICCameraItem* item in [camera_ mediaFiles]) {
