@@ -54,7 +54,8 @@ void BluetoothAdapter::StartDiscoverySessionWithFilter(
     scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const DiscoverySessionCallback& callback,
     const ErrorCallback& error_callback) {
-  AddDiscoverySession(discovery_filter.get(),
+  BluetoothDiscoveryFilter* ptr = discovery_filter.get();
+  AddDiscoverySession(ptr,
                       base::Bind(&BluetoothAdapter::OnStartDiscoverySession,
                                  weak_ptr_factory_.GetWeakPtr(),
                                  base::Passed(&discovery_filter), callback),
