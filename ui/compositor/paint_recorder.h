@@ -22,7 +22,6 @@ class SkCanvas;
 class SkPictureRecorder;
 
 namespace ui {
-class PaintCache;
 class PaintContext;
 
 // A class to hide the complexity behind setting up a recording into a
@@ -31,9 +30,6 @@ class PaintContext;
 // recording is complete and can be cached.
 class COMPOSITOR_EXPORT PaintRecorder {
  public:
-  // The |cache| is owned by the caller and must be kept alive while
-  // PaintRecorder is in use.
-  PaintRecorder(const PaintContext& context, PaintCache* cache);
   explicit PaintRecorder(const PaintContext& context);
   ~PaintRecorder();
 
@@ -44,7 +40,6 @@ class COMPOSITOR_EXPORT PaintRecorder {
   const PaintContext& context_;
   gfx::Canvas* canvas_;
   scoped_ptr<gfx::Canvas> owned_canvas_;
-  PaintCache* cache_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRecorder);
 };
