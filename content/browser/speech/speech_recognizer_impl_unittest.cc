@@ -380,7 +380,7 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorNoData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_AUDIO, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -400,7 +400,7 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorWithData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_AUDIO, error_);
+  EXPECT_EQ(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE, error_);
   CheckFinalEventsConsistency();
 }
 

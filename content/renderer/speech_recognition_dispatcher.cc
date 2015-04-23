@@ -168,7 +168,7 @@ static WebSpeechRecognizerClient::ErrorCode WebKitErrorCode(
       return WebSpeechRecognizerClient::NoSpeechError;
     case SPEECH_RECOGNITION_ERROR_ABORTED:
       return WebSpeechRecognizerClient::AbortedError;
-    case SPEECH_RECOGNITION_ERROR_AUDIO:
+    case SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE:
       return WebSpeechRecognizerClient::AudioCaptureError;
     case SPEECH_RECOGNITION_ERROR_NETWORK:
       return WebSpeechRecognizerClient::NetworkError;

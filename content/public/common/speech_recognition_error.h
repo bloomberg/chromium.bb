@@ -21,7 +21,7 @@ enum SpeechRecognitionErrorCode {
   SPEECH_RECOGNITION_ERROR_ABORTED,
 
   // There was an error with recording audio.
-  SPEECH_RECOGNITION_ERROR_AUDIO,
+  SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE,
 
   // There was a network error.
   SPEECH_RECOGNITION_ERROR_NETWORK,

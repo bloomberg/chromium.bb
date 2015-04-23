@@ -95,7 +95,7 @@ public class SpeechRecognition {
             // Translate Android SpeechRecognizer errors to Web Speech API errors.
             switch(error) {
                 case SpeechRecognizer.ERROR_AUDIO:
-                    code = SpeechRecognitionErrorCode.AUDIO;
+                    code = SpeechRecognitionErrorCode.AUDIO_CAPTURE;
                     break;
                 case SpeechRecognizer.ERROR_CLIENT:
                     code = SpeechRecognitionErrorCode.ABORTED;

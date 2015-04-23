@@ -503,7 +503,7 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
   // TODO(xians): Check if the OS has the device with |device_id_|, return
   // |SPEECH_AUDIO_ERROR_DETAILS_NO_MIC| if the target device does not exist.
   if (!audio_manager->HasAudioInputDevices()) {
-    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO,
+    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE,
                                         SPEECH_AUDIO_ERROR_DETAILS_NO_MIC));
   }
 
@@ -513,7 +513,8 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
       device_id_);
   if (!in_params.IsValid() && !unit_test_is_active) {
     DLOG(ERROR) << "Invalid native audio input parameters";
-    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));
+    return Abort(
+        SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE));
   }
 
   // Audio converter shall provide audio based on these parameters as output.
@@ -564,7 +565,8 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
       audio_manager, this, input_parameters, device_id_, NULL);
 
   if (!audio_controller_.get()) {
-    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));
+    return Abort(
+        SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE));
   }
 
   audio_log_->OnCreated(0, input_parameters, device_id_);
@@ -649,7 +651,8 @@ SpeechRecognizerImpl::AbortSilently(const FSMEventArgs& event_args) {
 SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::AbortWithError(const FSMEventArgs& event_args) {
   if (event_args.event == EVENT_AUDIO_ERROR) {
-    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));
+    return Abort(
+        SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE));
   } else if (event_args.event == EVENT_ENGINE_ERROR) {
     return Abort(event_args.engine_error);
   }

@@ -445,7 +445,7 @@ GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
       case proto::SpeechRecognitionEvent::STATUS_ABORTED:
         return Abort(SPEECH_RECOGNITION_ERROR_ABORTED);
       case proto::SpeechRecognitionEvent::STATUS_AUDIO_CAPTURE:
-        return Abort(SPEECH_RECOGNITION_ERROR_AUDIO);
+        return Abort(SPEECH_RECOGNITION_ERROR_AUDIO_CAPTURE);
       case proto::SpeechRecognitionEvent::STATUS_NETWORK:
         return Abort(SPEECH_RECOGNITION_ERROR_NETWORK);
       case proto::SpeechRecognitionEvent::STATUS_NOT_ALLOWED:
