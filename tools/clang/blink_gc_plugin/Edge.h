@@ -39,14 +39,14 @@ class EdgeVisitor {
 class RecursiveEdgeVisitor : public EdgeVisitor {
  public:
   // Overrides that recursively walk the edges and record the path.
-  virtual void VisitValue(Value*) override;
-  virtual void VisitRawPtr(RawPtr*) override;
-  virtual void VisitRefPtr(RefPtr*) override;
-  virtual void VisitOwnPtr(OwnPtr*) override;
-  virtual void VisitMember(Member*) override;
-  virtual void VisitWeakMember(WeakMember*) override;
-  virtual void VisitPersistent(Persistent*) override;
-  virtual void VisitCollection(Collection*) override;
+  void VisitValue(Value*) override;
+  void VisitRawPtr(RawPtr*) override;
+  void VisitRefPtr(RefPtr*) override;
+  void VisitOwnPtr(OwnPtr*) override;
+  void VisitMember(Member*) override;
+  void VisitWeakMember(WeakMember*) override;
+  void VisitPersistent(Persistent*) override;
+  void VisitCollection(Collection*) override;
 
  protected:
   typedef std::deque<Edge*> Context;
