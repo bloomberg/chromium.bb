@@ -92,9 +92,9 @@ base::string16 GetAllDisplayInfo() {
   std::vector<base::string16> lines;
   int64 internal_id = gfx::Display::kInvalidDisplayID;
   // Make sure to show the internal display first.
-  if (display_manager->HasInternalDisplay() &&
-      display_manager->IsInternalDisplayId(
-          display_manager->first_display_id())) {
+  if (gfx::Display::HasInternalDisplay() &&
+      gfx::Display::InternalDisplayId() ==
+          display_manager->first_display_id()) {
     internal_id = display_manager->first_display_id();
     lines.push_back(GetDisplayInfoLine(internal_id));
   }
@@ -228,7 +228,7 @@ class DisplayView : public ActionableView {
       base::string16* additional_message_out) {
     DisplayManager* display_manager = GetDisplayManager();
     if (display_manager->GetNumDisplays() > 1) {
-      if (GetDisplayManager()->HasInternalDisplay()) {
+      if (gfx::Display::HasInternalDisplay()) {
         return l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetExternalDisplayName());
       }
@@ -237,7 +237,7 @@ class DisplayView : public ActionableView {
     }
 
     if (display_manager->IsInMirrorMode()) {
-      if (GetDisplayManager()->HasInternalDisplay()) {
+      if (gfx::Display::HasInternalDisplay()) {
         return l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
             GetDisplayName(display_manager->mirroring_display_id()));
@@ -247,8 +247,8 @@ class DisplayView : public ActionableView {
     }
 
     int64 primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
-    if (display_manager->HasInternalDisplay() &&
-        !display_manager->IsInternalDisplayId(primary_id)) {
+    if (gfx::Display::HasInternalDisplay() &&
+        !(gfx::Display::InternalDisplayId() == primary_id)) {
       if (additional_message_out) {
         *additional_message_out = l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION);

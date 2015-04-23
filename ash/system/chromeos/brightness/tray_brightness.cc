@@ -8,7 +8,6 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_constants.h"
-#include "ash/display/display_manager.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
@@ -26,6 +25,7 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -273,7 +273,7 @@ void TrayBrightness::HandleBrightnessChanged(double percent,
   // Never show the bubble on systems that lack internal displays: if an
   // external display's brightness is changed, it may already display the new
   // level via an on-screen display.
-  if (!Shell::GetInstance()->display_manager()->HasInternalDisplay())
+  if (!gfx::Display::HasInternalDisplay())
     return;
 
   if (brightness_view_)

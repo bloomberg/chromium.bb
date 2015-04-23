@@ -198,12 +198,19 @@ bool Display::IsInternal() const {
   return is_valid() && (id_ == internal_display_id_);
 }
 
+// static
 int64 Display::InternalDisplayId() {
   return internal_display_id_;
 }
 
+// static
 void Display::SetInternalDisplayId(int64 internal_display_id) {
   internal_display_id_ = internal_display_id;
+}
+
+// static
+bool Display::HasInternalDisplay() {
+  return internal_display_id_ != kInvalidDisplayID;
 }
 
 }  // namespace gfx

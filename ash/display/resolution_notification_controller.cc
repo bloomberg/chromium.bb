@@ -139,7 +139,7 @@ ResolutionNotificationController::ResolutionChangeInfo::ResolutionChangeInfo(
       accept_callback(accept_callback),
       timeout_count(0) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (!display_manager->HasInternalDisplay() &&
+  if (!gfx::Display::HasInternalDisplay() &&
       display_manager->num_connected_displays() == 1u) {
     timeout_count = kTimeoutInSec;
   }

@@ -37,13 +37,12 @@ const float kDisplayRotationStickyAngleDegrees = 60.0f;
 const float kMinimumAccelerationScreenRotation = 4.2f;
 
 blink::WebScreenOrientationLockType GetDisplayNaturalOrientation() {
-  ash::DisplayManager* display_manager =
-      ash::Shell::GetInstance()->display_manager();
-  if (!display_manager->HasInternalDisplay())
+  if (!gfx::Display::HasInternalDisplay())
     return blink::WebScreenOrientationLockLandscape;
 
   ash::DisplayInfo info =
-      display_manager->GetDisplayInfo(gfx::Display::InternalDisplayId());
+      ash::Shell::GetInstance()->display_manager()->GetDisplayInfo(
+          gfx::Display::InternalDisplayId());
   gfx::Size size = info.size_in_pixel();
   switch (info.rotation()) {
     case gfx::Display::ROTATE_0:
@@ -102,19 +101,17 @@ void ScreenOrientationController::SetRotationLocked(bool rotation_locked) {
     rotation_locked_orientation_ = blink::WebScreenOrientationLockAny;
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnRotationLockChanged(rotation_locked_));
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (!display_manager->HasInternalDisplay())
+  if (!gfx::Display::HasInternalDisplay())
     return;
   base::AutoReset<bool> auto_ignore_display_configuration_updates(
       &ignore_display_configuration_updates_, true);
-  display_manager->RegisterDisplayRotationProperties(rotation_locked_,
-                                                     current_rotation_);
+  Shell::GetInstance()->display_manager()->RegisterDisplayRotationProperties(
+      rotation_locked_, current_rotation_);
 }
 
 void ScreenOrientationController::SetDisplayRotation(
     gfx::Display::Rotation rotation) {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (!display_manager->HasInternalDisplay())
+  if (!gfx::Display::HasInternalDisplay())
     return;
   current_rotation_ = rotation;
   base::AutoReset<bool> auto_ignore_display_configuration_updates(
@@ -196,9 +193,9 @@ void ScreenOrientationController::Unlock(content::WebContents* web_contents) {
 void ScreenOrientationController::OnDisplayConfigurationChanged() {
   if (ignore_display_configuration_updates_)
     return;
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (!display_manager->HasInternalDisplay())
+  if (!gfx::Display::HasInternalDisplay())
     return;
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   gfx::Display::Rotation user_rotation =
       display_manager->GetDisplayInfo(gfx::Display::InternalDisplayId())
           .rotation();
@@ -212,13 +209,14 @@ void ScreenOrientationController::OnDisplayConfigurationChanged() {
 }
 
 void ScreenOrientationController::OnMaximizeModeStarted() {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   // Do not exit early, as the internal display can be determined after Maximize
   // Mode has started. (chrome-os-partner:38796)
   // Always start observing.
-  if (display_manager->HasInternalDisplay()) {
+  if (gfx::Display::HasInternalDisplay()) {
     current_rotation_ = user_rotation_ =
-        display_manager->GetDisplayInfo(gfx::Display::InternalDisplayId())
+        Shell::GetInstance()
+            ->display_manager()
+            ->GetDisplayInfo(gfx::Display::InternalDisplayId())
             .rotation();
   }
   if (!rotation_locked_)
@@ -294,10 +292,10 @@ void ScreenOrientationController::LockRotationToSecondaryOrientation(
 
 void ScreenOrientationController::LockToRotationMatchingOrientation(
     blink::WebScreenOrientationLockType lock_orientation) {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  if (!display_manager->HasInternalDisplay())
+  if (!gfx::Display::HasInternalDisplay())
     return;
 
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   gfx::Display::Rotation rotation =
       display_manager->GetDisplayInfo(gfx::Display::InternalDisplayId())
           .rotation();

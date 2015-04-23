@@ -348,16 +348,17 @@ void StoreDisplayPrefs() {
 }
 
 void StoreDisplayRotationPrefs(bool rotation_lock) {
-  ash::DisplayManager* display_manager = GetDisplayManager();
-  if (!display_manager->HasInternalDisplay())
+  if (!gfx::Display::HasInternalDisplay())
     return;
 
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate update(local_state, prefs::kDisplayRotationLock);
   base::DictionaryValue* pref_data = update.Get();
   pref_data->SetBoolean("lock", rotation_lock);
-  gfx::Display::Rotation rotation = display_manager->
-      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  gfx::Display::Rotation rotation =
+      GetDisplayManager()
+          ->GetDisplayInfo(gfx::Display::InternalDisplayId())
+          .rotation();
   pref_data->SetInteger("orientation", static_cast<int>(rotation));
 }
 

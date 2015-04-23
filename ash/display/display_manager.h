@@ -79,11 +79,6 @@ class ASH_EXPORT DisplayManager
     MIRRORING
   };
 
-  // True if there is an internal display.
-  static bool HasInternalDisplay();
-
-  static bool IsInternalDisplayId(int64 id);
-
   DisplayManager();
 #if defined(OS_CHROMEOS)
   ~DisplayManager() override;

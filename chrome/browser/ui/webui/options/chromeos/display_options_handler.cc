@@ -124,7 +124,7 @@ bool ConvertValueToDisplayMode(const base::DictionaryValue* dict,
 
 base::DictionaryValue* ConvertDisplayModeToValue(int64 display_id,
                                                  const ash::DisplayMode& mode) {
-  bool is_internal = GetDisplayManager()->IsInternalDisplayId(display_id);
+  bool is_internal = gfx::Display::InternalDisplayId() == display_id;
   base::DictionaryValue* result = new base::DictionaryValue();
   gfx::Size size_dip = mode.GetSizeInDIP(is_internal);
   result->SetInteger("width", size_dip.width());

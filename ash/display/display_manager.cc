@@ -104,20 +104,14 @@ void MaybeInitInternalDisplay(DisplayInfo* info) {
   }
 }
 
+bool IsInternalDisplayId(int64 id) {
+  return gfx::Display::InternalDisplayId() == id;
+}
+
 }  // namespace
 
 using std::string;
 using std::vector;
-
-// static
-bool DisplayManager::HasInternalDisplay() {
-  return gfx::Display::InternalDisplayId() != gfx::Display::kInvalidDisplayID;
-}
-
-// static
-bool DisplayManager::IsInternalDisplayId(int64 id) {
-  return gfx::Display::InternalDisplayId() == id;
-}
 
 DisplayManager::DisplayManager()
     : delegate_(NULL),
@@ -628,10 +622,9 @@ void DisplayManager::OnNativeDisplaysChanged(
     else if (display_modes_.find(iter->id()) != display_modes_.end())
       display_modes_[iter->id()] = *display_modes_iter;
   }
-  if (HasInternalDisplay() &&
-      !internal_display_connected &&
+  if (gfx::Display::HasInternalDisplay() && !internal_display_connected &&
       display_info_.find(gfx::Display::InternalDisplayId()) ==
-      display_info_.end()) {
+          display_info_.end()) {
     DisplayInfo internal_display_info(
         gfx::Display::InternalDisplayId(),
         l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME),

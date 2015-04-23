@@ -122,6 +122,9 @@ class GFX_EXPORT Display {
   static int64 InternalDisplayId();
   static void SetInternalDisplayId(int64 internal_display_id);
 
+  // True if there is an internal display.
+  static bool HasInternalDisplay();
+
   static const int64 kInvalidDisplayID;
 
  private:
