@@ -18,11 +18,14 @@ class RasterSource;
 
 class CC_EXPORT RecordingSource {
  public:
+  // TODO(schenney) Remove RECORD_WITH_SK_NULL_CANVAS when we no longer
+  // support a non-Slimming Paint path.
   enum RecordingMode {
     RECORD_NORMALLY,
     RECORD_WITH_SK_NULL_CANVAS,
     RECORD_WITH_PAINTING_DISABLED,
     RECORD_WITH_CACHING_DISABLED,
+    RECORD_WITH_CONSTRUCTION_DISABLED,
     RECORDING_MODE_COUNT,  // Must be the last entry.
   };
 

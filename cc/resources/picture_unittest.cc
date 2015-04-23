@@ -160,7 +160,7 @@ TEST(PictureTest, RecordingModes) {
       Picture::Create(layer_rect, &content_layer_client, tile_grid_size, false,
                       RecordingSource::RECORD_WITH_PAINTING_DISABLED);
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
-  EXPECT_EQ(ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED,
+  EXPECT_EQ(ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED,
             content_layer_client.last_painting_control());
   EXPECT_TRUE(picture.get());
 
@@ -172,7 +172,9 @@ TEST(PictureTest, RecordingModes) {
             content_layer_client.last_painting_control());
   EXPECT_TRUE(picture.get());
 
-  EXPECT_EQ(4, RecordingSource::RECORDING_MODE_COUNT);
+  // RECORD_WITH_CONSTRUCTION_DISABLED is not supported for Picture.
+
+  EXPECT_EQ(5, RecordingSource::RECORDING_MODE_COUNT);
 }
 
 }  // namespace

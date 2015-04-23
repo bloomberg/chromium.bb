@@ -29,6 +29,8 @@ PaintingControlToWeb(
       return blink::WebContentLayerClient::DisplayListConstructionDisabled;
     case cc::ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED:
       return blink::WebContentLayerClient::DisplayListCachingDisabled;
+    case cc::ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED:
+      return blink::WebContentLayerClient::DisplayListPaintingDisabled;
   }
   NOTREACHED();
   return blink::WebContentLayerClient::PaintDefaultBehavior;

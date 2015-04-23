@@ -199,13 +199,15 @@ void Picture::Record(ContentLayerClient* painter,
       // prevent the Blink GraphicsContext object from consuming any compute
       // time.
       canvas = skia::AdoptRef(SkCreateNullCanvas());
-      painting_control = ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
+      painting_control = ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED;
       break;
     case RecordingSource::RECORD_WITH_CACHING_DISABLED:
       // This mode should give the same results as RECORD_NORMALLY.
       painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
       break;
     default:
+      // case RecordingSource::RECORD_WITH_CONSTRUCTION_DISABLED should
+      // not be reached
       NOTREACHED();
   }
 

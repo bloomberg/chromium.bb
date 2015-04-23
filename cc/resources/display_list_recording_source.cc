@@ -97,26 +97,24 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     case RECORD_NORMALLY:
       // Already setup for normal recording.
       break;
-    case RECORD_WITH_SK_NULL_CANVAS:
-    // TODO(schenney): Remove this when DisplayList recording is the only
-    // option. For now, fall through and disable construction.
     case RECORD_WITH_PAINTING_DISABLED:
-      painting_control = ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
+      painting_control = ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED;
       break;
     case RECORD_WITH_CACHING_DISABLED:
       painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
       break;
+    case RECORD_WITH_CONSTRUCTION_DISABLED:
+      painting_control = ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
+      break;
     default:
+      // case RecordingSource::RECORD_WITH_SK_NULL_CANVAS should not be reached
       NOTREACHED();
   }
 
   int repeat_count = 1;
   if (slow_down_raster_scale_factor_for_debug_ > 1) {
     repeat_count = slow_down_raster_scale_factor_for_debug_;
-    if (painting_control !=
-        ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED) {
-      painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
-    }
+    painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
   }
   for (int i = 0; i < repeat_count; ++i) {
     const bool use_cached_picture = true;

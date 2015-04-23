@@ -34,8 +34,12 @@ const int kTimeLimitMillis = 1;
 const int kWarmupRuns = 0;
 const int kTimeCheckInterval = 1;
 
-const char* kModeSuffixes[RecordingSource::RECORDING_MODE_COUNT] =
-    {"", "_sk_null_canvas", "_painting_disabled", "_caching_disabled"};
+const char* kModeSuffixes[RecordingSource::RECORDING_MODE_COUNT] = {
+    "",
+    "_sk_null_canvas",
+    "_painting_disabled",
+    "_caching_disabled",
+    "_construction_disabled"};
 
 }  // namespace
 
@@ -129,6 +133,11 @@ void RasterizeAndRecordBenchmark::RunOnPictureLayer(
        mode_index++) {
     RecordingSource::RecordingMode mode =
         static_cast<RecordingSource::RecordingMode>(mode_index);
+
+    // Not supported for SkPicture recording.
+    if (mode == RecordingSource::RECORD_WITH_CONSTRUCTION_DISABLED)
+      continue;
+
     base::TimeDelta min_time = base::TimeDelta::Max();
     size_t memory_used = 0;
 
@@ -182,14 +191,17 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
         // Already setup for normal recording.
         break;
       case RecordingSource::RECORD_WITH_SK_NULL_CANVAS:
-      // TODO(schenney): Remove this when DisplayList recording is the only
-      // option. For now, fall through and disable construction.
+        // Not supported for Display List recording.
+        continue;
       case RecordingSource::RECORD_WITH_PAINTING_DISABLED:
-        painting_control =
-            ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
+        painting_control = ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED;
         break;
       case RecordingSource::RECORD_WITH_CACHING_DISABLED:
         painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
+        break;
+      case RecordingSource::RECORD_WITH_CONSTRUCTION_DISABLED:
+        painting_control =
+            ContentLayerClient::DISPLAY_LIST_CONSTRUCTION_DISABLED;
         break;
       default:
         NOTREACHED();
