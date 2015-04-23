@@ -29,7 +29,6 @@ using extensions::DevicePermissionsPrompt;
 }
 
 - (IBAction)ok:(id)sender {
-  __block std::vector<scoped_refptr<device::UsbDevice>> devices;
   [[tableView_ selectedRowIndexes]
       enumerateIndexesUsingBlock:^(NSUInteger index, BOOL* stop) {
           prompt_->GrantDevicePermission(index);
