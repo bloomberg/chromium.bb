@@ -157,7 +157,6 @@ class WorkAreaWatcherObserver;
 - (const std::vector<GURL>&)startupUrls;
 
 - (BookmarkMenuBridge*)bookmarkMenuBridge;
-- (HistoryMenuBridge*)historyMenuBridge;
 
 // Subscribes/unsubscribes from the work area change notification.
 - (void)addObserverForWorkAreaChange:(ui::WorkAreaWatcherObserver*)observer;
