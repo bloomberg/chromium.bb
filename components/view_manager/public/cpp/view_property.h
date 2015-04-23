@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_PROPERTY_H_
-#define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_PROPERTY_H_
+#ifndef COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_PROPERTY_H_
+#define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_PROPERTY_H_
 
 #include <stdint.h>
 
@@ -137,4 +137,4 @@ void View::ClearLocalProperty(const ViewProperty<T>* property) {
   }                                                                    \
   const mojo::ViewProperty<TYPE*>* const NAME = &NAME##_Value;
 
-#endif  // MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_PROPERTY_H_
+#endif  // COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_PROPERTY_H_

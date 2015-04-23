@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_TRACKER_H_
-#define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_TRACKER_H_
+#ifndef COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_TRACKER_H_
+#define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_TRACKER_H_
 
 #include <stdint.h>
 #include <set>
@@ -44,4 +44,4 @@ class ViewTracker : public ViewObserver {
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_TRACKER_H_
+#endif  // COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_TRACKER_H_

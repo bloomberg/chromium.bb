@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_CONTEXT_H_
-#define MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_CONTEXT_H_
+#ifndef COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_CONTEXT_H_
+#define COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_CONTEXT_H_
 
 #include <string>
 #include <vector>
@@ -43,4 +43,4 @@ class ViewManagerContext {
 
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_CONTEXT_H_
+#endif  // COMPONENTS_VIEW_MANAGER_PUBLIC_CPP_VIEW_MANAGER_CONTEXT_H_
