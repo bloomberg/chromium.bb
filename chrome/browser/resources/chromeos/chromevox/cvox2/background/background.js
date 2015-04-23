@@ -62,13 +62,13 @@ Background = function() {
     alert: this.onEventDefault,
     focus: this.onEventDefault,
     hover: this.onEventDefault,
+    loadComplete: this.onLoadComplete,
     menuStart: this.onEventDefault,
     menuEnd: this.onEventDefault,
     menuListValueChanged: this.onEventDefault,
-    loadComplete: this.onLoadComplete,
     textChanged: this.onTextOrTextSelectionChanged,
     textSelectionChanged: this.onTextOrTextSelectionChanged,
-    valueChanged: this.onEventDefault
+    valueChanged: this.onValueChanged
   };
 
   // Register listeners for ...
@@ -317,6 +317,28 @@ Background.prototype = {
     new Output().withBraille(
             this.currentRange_, null, evt.type)
         .go();
+  },
+
+  /**
+   * Provides all feedback once a value changed event fires.
+   * @param {Object} evt
+   */
+  onValueChanged: function(evt) {
+    // Don't process nodes inside of web content if ChromeVox Next is inactive.
+    if (evt.target.root.role != chrome.automation.RoleType.desktop &&
+        !this.active_)
+      return;
+
+    if (!evt.target.state.focused)
+      return;
+
+    // Value change events fire on web text fields and text areas when pressing
+    // enter; suppress them.
+    if (!this.currentRange_ ||
+        evt.target.role != chrome.automation.RoleType.textField) {
+      this.onEventDefault(evt);
+      this.currentRange_ = cursors.Range.fromNode(evt.target);
+    }
   },
 
   /**
