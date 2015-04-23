@@ -68,10 +68,14 @@ def ListAllWorkedOnAtoms(src_root=constants.CHROOT_SOURCE_ROOT):
     src_root: path to source root inside chroot.
 
   Returns:
-    list of atoms marked as worked on (e.g. ['chromeos-base/shill'])
+    Dictionary of atoms marked as worked on (e.g. ['chromeos-base/shill']) for
+    each system.
   """
-  system_to_atoms = dict()
   workon_dir = GetWorkonPath(source_root=src_root)
+  if not os.path.isdir(workon_dir):
+    return dict()
+
+  system_to_atoms = dict()
   for file_name in os.listdir(workon_dir):
     if file_name.endswith('.mask'):
       continue
@@ -119,10 +123,8 @@ class WorkonHelper(object):
     self._src_root = src_root
     self._cached_overlays = None
     self._cached_arch = None
-    system_is_set_up = (os.path.exists(self.workon_file_path) and
-                        os.path.exists(self.masked_file_path))
-    if not system_is_set_up:
-      raise WorkonError('%s has not been setup yet' % self._system)
+    if not os.path.exists(self._sysroot):
+      raise WorkonError('Sysroot %s is not setup.' % self._sysroot)
 
   @property
   def workon_file_path(self):
@@ -133,6 +135,20 @@ class WorkonHelper(object):
   def masked_file_path(self):
     """Returns path to file masking non-9999 ebuilds for worked on atoms."""
     return self.workon_file_path + '.mask'
+
+  @property
+  def workon_file(self):
+    """Return the content to the workon file or '' if it does not exist."""
+    if os.path.exists(self.workon_file_path):
+      return osutils.ReadFile(self.workon_file_path)
+    return ''
+
+  @property
+  def masked_file(self):
+    """Return the content to the masked file or '' if it does not exist."""
+    if os.path.exists(self.masked_file_path):
+      return osutils.ReadFile(self.masked_file_path)
+    return ''
 
   @property
   def _arch(self):
@@ -146,9 +162,14 @@ class WorkonHelper(object):
   def _overlays(self):
     """Returns overlays installed for the selected system."""
     if self._cached_overlays is None:
-      # This command is exceptionally slow, and we don't expect the list
-      # of overlays to change during the lifetime of WorkonHelper.
-      self._cached_overlays = portage_util.FindSysrootOverlays(self._sysroot)
+      sysroot = sysroot_lib.Sysroot(self._sysroot)
+      portdir_overlay = sysroot.GetStandardField('PORTDIR_OVERLAY')
+      if portdir_overlay:
+        self._cached_overlays = portdir_overlay.strip().splitlines()
+      else:
+        # This command is exceptionally slow, and we don't expect the list of
+        # overlays to change during the lifetime of WorkonHelper.
+        self._cached_overlays = portage_util.FindSysrootOverlays(self._sysroot)
 
     return self._cached_overlays
 
@@ -192,7 +213,7 @@ class WorkonHelper(object):
       string canonical atom name (e.g. 'sys-apps/dbus')
     """
     # Attempt to not hit portage if at all possible for speed.
-    worked_on_atoms = osutils.ReadFile(self.workon_file_path).splitlines()
+    worked_on_atoms = self.workon_file.splitlines()
     if '=%s-9999' % package in worked_on_atoms:
       return package
 
@@ -286,7 +307,7 @@ class WorkonHelper(object):
     if filter_on_arch:
       keyword_pat = re.compile(r'^KEYWORDS=".*~(\*|%s).*"$' % self._arch, re.M)
 
-    for overlay in portage_util.FindSysrootOverlays(self._sysroot):
+    for overlay in self._overlays:
       ebuild_paths = glob.glob(
           os.path.join(overlay, '*-*', '*', '*-9999.ebuild'))
       for ebuild_path in ebuild_paths:
@@ -314,7 +335,7 @@ class WorkonHelper(object):
       list of canonical portage atoms.
     """
     atoms = []
-    for line in osutils.ReadFile(self.workon_file_path).splitlines():
+    for line in self.workon_file.splitlines():
       match = re.match('^=(.*)-9999$', line)
       if match:
         atoms.append(match.group(1))
@@ -399,7 +420,7 @@ class WorkonHelper(object):
 
     # Read out what atoms we're already working on.
     existing_atoms = set()
-    for line in osutils.ReadFile(self.workon_file_path).splitlines():
+    for line in self.workon_file.splitlines():
       if not line.startswith('=') or not line.endswith('-9999'):
         logging.warning('Filtering out malformed atom workon line: %s', line)
         continue
@@ -420,7 +441,7 @@ class WorkonHelper(object):
     for pattern, file_path in (('=%s-9999\n', self.workon_file_path),
                                ('<%s-9999\n', self.masked_file_path)):
       contents = ''.join([pattern % atom for atom in current_atoms])
-      osutils.WriteFile(file_path, contents)
+      osutils.WriteFile(file_path, contents, makedirs=True)
 
     self._AddProjectsToPartialManifests(new_atoms)
 
@@ -449,8 +470,8 @@ class WorkonHelper(object):
     else:
       atoms = self._GetCanonicalAtoms(packages)
 
-    workon_lines = osutils.ReadFile(self.workon_file_path).splitlines()
-    mask_lines = osutils.ReadFile(self.masked_file_path).splitlines()
+    workon_lines = self.workon_file.splitlines()
+    mask_lines = self.masked_file.splitlines()
     stopped_atoms = []
     for atom in atoms:
       workon_line = '=%s-9999' % atom
@@ -462,8 +483,10 @@ class WorkonHelper(object):
       mask_lines = [x for x in mask_lines if x != mask_line]
       stopped_atoms.append(atom)
 
-    osutils.WriteFile(self.workon_file_path, '\n'.join(workon_lines))
-    osutils.WriteFile(self.masked_file_path, '\n'.join(mask_lines))
+    osutils.WriteFile(self.workon_file_path, '\n'.join(workon_lines),
+                      makedirs=True)
+    osutils.WriteFile(self.masked_file_path, '\n'.join(mask_lines),
+                      makedirs=True)
 
     if stopped_atoms:
       # Legacy scripts used single quotes in their output, and we carry on this

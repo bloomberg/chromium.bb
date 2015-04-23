@@ -46,7 +46,7 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
           (i.e. inherits cros-workon).
     """
     category, package = atom.split('/', 1)
-    ebuild_path = os.path.join(self.tempdir, OVERLAY_ROOT_DIR, overlay,
+    ebuild_path = os.path.join(self._mock_srcdir, OVERLAY_ROOT_DIR, overlay,
                                category, package,
                                '%s-%s.ebuild' % (package, version))
     content = 'KEYWORDS="~*"\n'
@@ -87,13 +87,17 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     """Set up a test environment."""
     self._valid_atoms = dict()
-    workon_dir = workon_helper.GetWorkonPath(source_root=self.tempdir)
     self._mock_srcdir = os.path.join(self.tempdir, 'src')
+    workon_dir = workon_helper.GetWorkonPath(source_root=self._mock_srcdir)
+    self._board_sysroot = os.path.join(self.tempdir, 'board_sysroot')
+    self._host_sysroot = os.path.join(self.tempdir, 'host_sysroot')
+    osutils.SafeMakedirs(self._board_sysroot)
+    osutils.SafeMakedirs(self._host_sysroot)
     osutils.SafeMakedirs(self._mock_srcdir)
     for system in ('host', BOARD):
       osutils.Touch(os.path.join(workon_dir, system), makedirs=True)
       osutils.Touch(os.path.join(workon_dir, system + '.mask'), makedirs=True)
-    self._overlay_root = os.path.join(self.tempdir, OVERLAY_ROOT_DIR)
+    self._overlay_root = os.path.join(self._mock_srcdir, OVERLAY_ROOT_DIR)
     # Make a bunch of packages to work on.
     self._MakeFakeEbuild(BOARD_OVERLAY_DIR, WORKON_ONLY_ATOM, '9999')
     self._MakeFakeEbuild(BOARD_OVERLAY_DIR, VERSIONED_WORKON_ATOM, '9999')
@@ -102,10 +106,6 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
                          is_workon=False)
     self._MakeFakeEbuild(HOST_OVERLAY_DIR, HOST_ATOM, '9999')
     # Patch the modules interfaces to the rest of the world.
-    self.PatchObject(sysroot_lib.Sysroot, 'GetStandardField',
-                     return_value='amd64')
-    self.PatchObject(portage_util, 'FindSysrootOverlays',
-                     self._MockFindOverlays)
     self.PatchObject(portage_util, 'FindEbuildForPackage',
                      self._MockFindEbuildForPackage)
     # This basically turns off behavior related to adding repositories to
@@ -117,10 +117,27 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
                                              project='workon-project'),
         )
     )
+    host_overlay = os.path.join(self._overlay_root, HOST_OVERLAY_DIR)
+    board_overlay = os.path.join(self._overlay_root, BOARD_OVERLAY_DIR)
+
+    # Setup the sysroots.
+    sysroot_lib.Sysroot(self._board_sysroot).WriteConfig(
+        'ARCH="amd64"\nPORTDIR_OVERLAY="%s"' % board_overlay)
+    sysroot_lib.Sysroot(self._host_sysroot).WriteConfig(
+        'ARCH="amd64"\nPORTDIR_OVERLAY="%s"' % host_overlay)
+
+    # Create helpers for both host and board.
     self.helper = workon_helper.WorkonHelper(
-        self.tempdir, BOARD, src_root=self.tempdir)
+        self._board_sysroot, BOARD, src_root=self._mock_srcdir)
     self.host_helper = workon_helper.WorkonHelper(
-        self.tempdir, 'host', src_root=self.tempdir)
+        self._host_sysroot, 'host', src_root=self._mock_srcdir)
+
+  def tearDown(self):
+    """Clean up the test environment."""
+    # sysroots are created with root permissions, remove them with root
+    # permission too.
+    osutils.RmDir(self._host_sysroot, sudo=True)
+    osutils.RmDir(self._board_sysroot, sudo=True)
 
   def assertWorkingOn(self, atoms, system=BOARD):
     """Assert that the workon/mask files mention the given atoms.
@@ -130,7 +147,7 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
       system: string system to consider (either 'host' or a board name).
     """
     workon_path = workon_helper.GetWorkonPath(
-        source_root=self.tempdir, sub_path=system)
+        source_root=self._mock_srcdir, sub_path=system)
     self.assertEqual(sorted([WORKED_ON_PATTERN % atom for atom in atoms]),
                      sorted(osutils.ReadFile(workon_path).splitlines()))
     mask_path = workon_path + '.mask'
@@ -140,8 +157,9 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
   def testShouldDetectBoardNotSetUp(self):
     """Check that we complain if a board has not been previously setup."""
     with self.assertRaises(workon_helper.WorkonError):
-      workon_helper.WorkonHelper(self.tempdir, 'this-board-is-not-setup.',
-                                 src_root=self.tempdir)
+      workon_helper.WorkonHelper(os.path.join(self.tempdir, 'nonexistent'),
+                                 'this-board-is-not-setup.',
+                                 src_root=self._mock_srcdir)
 
   def testCanStartSingleAtom(self):
     """Check that we can mark a single atom as being worked on."""
@@ -217,15 +235,15 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
     """Check that we can list all worked on atoms across boards."""
     self.assertEqual(dict(),
                      workon_helper.ListAllWorkedOnAtoms(
-                         src_root=self.tempdir))
+                         src_root=self._mock_srcdir))
     self.helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
     self.assertEqual({BOARD: [WORKON_ONLY_ATOM]},
                      workon_helper.ListAllWorkedOnAtoms(
-                         src_root=self.tempdir))
+                         src_root=self._mock_srcdir))
     self.host_helper.StartWorkingOnPackages([HOST_ATOM])
     self.assertEqual({BOARD: [WORKON_ONLY_ATOM], 'host': [HOST_ATOM]},
                      workon_helper.ListAllWorkedOnAtoms(
-                         src_root=self.tempdir))
+                         src_root=self._mock_srcdir))
 
   def testCanListWorkedOnAtoms(self):
     """Check that we can list the atoms we're currently working on."""
