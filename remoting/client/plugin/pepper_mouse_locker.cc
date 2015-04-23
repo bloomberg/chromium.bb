@@ -58,6 +58,7 @@ void PepperMouseLocker::OnMouseLocked(int error) {
   // See if the operation succeeded.
   if (error == PP_OK) {
     mouse_lock_state_ = MouseLockOn;
+    enable_mouse_deltas_.Run(true);
   } else {
     OnMouseLockOff();
   }
@@ -70,6 +71,7 @@ void PepperMouseLocker::OnMouseLocked(int error) {
 void PepperMouseLocker::OnMouseLockOff() {
   mouse_lock_state_ = MouseLockOff;
   cursor_stub_->SetCursorShape(*cursor_shape_);
+  enable_mouse_deltas_.Run(false);
 }
 
 void PepperMouseLocker::RequestMouseLock() {
