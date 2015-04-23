@@ -42,6 +42,8 @@ source_set("trace_event") {
     "trace_event_system_stats_monitor.h",
     "trace_event_win.cc",
     "trace_event_win.h",
+    "winheap_dump_provider_win.cc",
+    "winheap_dump_provider_win.h",
   ]
 
   if (is_nacl) {
@@ -95,6 +97,7 @@ source_set("trace_event_unittests") {
     "trace_event_system_stats_monitor_unittest.cc",
     "trace_event_unittest.cc",
     "trace_event_win_unittest.cc",
+    "winheap_dump_provider_win_unittest.cc",
   ]
 
   deps = [
