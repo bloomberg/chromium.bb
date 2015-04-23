@@ -188,10 +188,19 @@ was filed.
   section.  If a search on go/crash indicates a crasher is no longer occurring,
   mark it as WontFix.
 
-* Particularly for Windows, look for weird dlls associated with the crashes.
-  If there are some, it may be caused by malware.  You can often figure out if
-  a dll is malware by a search, though it's harder to figure out if a dll is
-  definitively not malware.
+* On Windows, you may want to look for weird dlls associated with the crashes.
+    This generally needs crashes from a fair number of different users to reach
+    any conclusions.
+    * To get a list of loaded modules in related crash dumps, select
+      modules->3rd party in the left pane.  It can be difficult to distinguish
+      between safe dlls and those likely to cause problems, but even if you're
+      not that familiar with windows, some may stick out.  Anti-virus programs,
+      download managers, and more gray hat badware often have meaningful dll
+      names or dll paths (Generally product names or company names).  If you
+      see one of these in a significant number of the crash dumps, it may well
+      be the cause.
+    * You can also try selecting the "has malware" option, though that's much
+      less reliable than looking manually.
 
 * See if the same users are repeatedly running into the same issue.  This can
   be accomplished by search for (Or clicking on) the client ID associated with
