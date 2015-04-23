@@ -30,7 +30,7 @@ class ChromeNetLog : public net::NetLog {
   }
 
  private:
-  scoped_ptr<net::WriteToFileNetLogObserver> net_log_logger_;
+  scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
   scoped_ptr<NetLogTempFile> net_log_temp_file_;
 
   scoped_ptr<net::TraceNetLogObserver> trace_net_log_observer_;

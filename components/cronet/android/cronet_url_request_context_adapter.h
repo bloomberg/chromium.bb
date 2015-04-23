@@ -86,8 +86,9 @@ class CronetURLRequestContextAdapter {
 
   // Network thread is owned by |this|, but is destroyed from java thread.
   base::Thread* network_thread_;
-  // |net_log_logger_| and |context_| should only be accessed on network thread.
-  scoped_ptr<net::WriteToFileNetLogObserver> net_log_logger_;
+  // |write_to_file_observer_| and |context_| should only be accessed on
+  // network thread.
+  scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
   scoped_ptr<net::URLRequestContext> context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
 

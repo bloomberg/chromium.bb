@@ -278,7 +278,7 @@ void URLRequestContextAdapter::StartNetLogToFileHelper(
     const std::string& file_name) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   // Do nothing if already logging to a file.
-  if (net_log_logger_)
+  if (write_to_file_observer_)
     return;
 
   base::FilePath file_path(file_name);
@@ -286,16 +286,16 @@ void URLRequestContextAdapter::StartNetLogToFileHelper(
   if (!file)
     return;
 
-  net_log_logger_.reset(new net::WriteToFileNetLogObserver());
-  net_log_logger_->StartObserving(context_->net_log(), file.Pass(), nullptr,
-                                  context_.get());
+  write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
+  write_to_file_observer_->StartObserving(context_->net_log(), file.Pass(),
+                                  nullptr, context_.get());
 }
 
 void URLRequestContextAdapter::StopNetLogHelper() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
-  if (net_log_logger_) {
-    net_log_logger_->StopObserving(context_.get());
-    net_log_logger_.reset();
+  if (write_to_file_observer_) {
+    write_to_file_observer_->StopObserving(context_.get());
+    write_to_file_observer_.reset();
   }
 }
 

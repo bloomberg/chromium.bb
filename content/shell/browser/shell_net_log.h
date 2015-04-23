@@ -18,7 +18,7 @@ class ShellNetLog : public net::NetLog {
   ~ShellNetLog() override;
 
  private:
-  scoped_ptr<net::WriteToFileNetLogObserver> net_log_logger_;
+  scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellNetLog);
 };

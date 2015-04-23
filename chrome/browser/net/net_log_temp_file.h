@@ -151,9 +151,9 @@ class NetLogTempFile {
 
   base::FilePath log_path_;  // base::FilePath to the temporary file.
 
-  // |net_log_logger_| watches the NetLog event stream, and sends all entries to
-  // the file created in StartNetLog().
-  scoped_ptr<net::WriteToFileNetLogObserver> net_log_logger_;
+  // |write_to_file_observer_| watches the NetLog event stream, and
+  // sends all entries to the file created in StartNetLog().
+  scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
 
   // The |chrome_net_log_| is owned by the browser process, cached here to avoid
   // using global (g_browser_process).

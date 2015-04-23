@@ -83,14 +83,14 @@ ChromeNetLog::ChromeNetLog()
                  << " for net logging";
     } else {
       scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
-      net_log_logger_.reset(new net::WriteToFileNetLogObserver());
+      write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
 
       net::NetLogCaptureMode capture_mode =
           GetCaptureModeFromCommandLine(command_line);
-      net_log_logger_->set_capture_mode(capture_mode);
+      write_to_file_observer_->set_capture_mode(capture_mode);
 
-      net_log_logger_->StartObserving(this, file.Pass(), constants.get(),
-                                      nullptr);
+      write_to_file_observer_->StartObserving(this, file.Pass(),
+                                      constants.get(), nullptr);
     }
   }
 
@@ -101,8 +101,8 @@ ChromeNetLog::ChromeNetLog()
 ChromeNetLog::~ChromeNetLog() {
   net_log_temp_file_.reset();
   // Remove the observers we own before we're destroyed.
-  if (net_log_logger_)
-    net_log_logger_->StopObserving(nullptr);
+  if (write_to_file_observer_)
+    write_to_file_observer_->StopObserving(nullptr);
   if (trace_net_log_observer_)
     trace_net_log_observer_->StopWatchForTraceStart();
 }
