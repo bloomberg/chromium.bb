@@ -591,6 +591,7 @@ FileGrid.prototype.decorateThumbnailBox_ = function(li, entry) {
     box.setAttribute('generic-thumbnail', mediaType);
     li.classList.toggle('thumbnail-loaded', false);
   }
+  li.classList.toggle('can-hide-filename', FileType.isImage(entry));
 };
 
 /**

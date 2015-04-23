@@ -1162,7 +1162,7 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 }
 
 body:not(.check-select) .thumbnail-grid.image-dominant
-    .thumbnail-loaded:not([selected]) .thumbnail-bottom {
+    .can-hide-filename.thumbnail-loaded:not([selected]) .thumbnail-bottom {
   display: none;
 }
 
