@@ -2663,24 +2663,7 @@ void Heap::resetHeapCounters()
 
     s_allocatedObjectSize = 0;
     s_markedObjectSize = 0;
-
-    // Similarly, reset the amount of externally allocated memory.
-    s_externallyAllocatedBytes = 0;
-    s_externallyAllocatedBytesAlive = 0;
-
-    s_requestedUrgentGC = false;
-}
-
-void Heap::requestUrgentGC()
-{
-    // The urgent-gc flag will be considered the next time an out-of-line
-    // allocation is made. Bump allocations from the current block will
-    // go ahead until it can no longer service an allocation request.
-    //
-    // FIXME: if that delays urgently needed GCs for too long, consider
-    // flushing out per-heap "allocation points" to trigger the GC
-    // right away.
-    releaseStore(&s_requestedUrgentGC, 1);
+    s_externalObjectSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
 }
 
 Visitor* Heap::s_markingVisitor;
@@ -2700,10 +2683,7 @@ size_t Heap::s_markedObjectSize = 0;
 // We don't want to use 0 KB for the initial value because it may end up
 // triggering the first GC of some thread too prematurely.
 size_t Heap::s_estimatedLiveObjectSize = 512 * 1024;
-
-size_t Heap::s_externallyAllocatedBytes = 0;
-size_t Heap::s_externallyAllocatedBytesAlive = 0;
-unsigned Heap::s_requestedUrgentGC = false;
+size_t Heap::s_externalObjectSizeAtLastGC = 0;
 double Heap::s_estimatedMarkingTimePerByte = 0.0;
 
 } // namespace blink

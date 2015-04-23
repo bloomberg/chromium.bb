@@ -42,6 +42,7 @@
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/Partitions.h"
 #include "wtf/ThreadingPrimitives.h"
 #if ENABLE(GC_PROFILING)
 #include "platform/TracedValue.h"
@@ -500,7 +501,7 @@ Mutex& ThreadState::globalRootsMutex()
     return mutex;
 }
 
-// FIXME: We should improve the GC heuristics.
+// TODO(haraken): We should improve the GC heuristics.
 // These heuristics affect performance significantly.
 bool ThreadState::shouldScheduleIdleGC()
 {
@@ -511,17 +512,19 @@ bool ThreadState::shouldScheduleIdleGC()
     // sweeping. If this thread reaches here before the main thread finishes
     // lazy sweeping, the thread will use the estimated size of the last GC.
     size_t estimatedLiveObjectSize = Heap::estimatedLiveObjectSize();
-    // Schedule an idle GC if more than 512 KB has been allocated since
-    // the last GC and the current memory usage (=allocated + estimated)
-    // is >50% larger than the estimated live memory usage.
     size_t allocatedObjectSize = Heap::allocatedObjectSize();
-    return allocatedObjectSize >= 512 * 1024 && allocatedObjectSize > estimatedLiveObjectSize / 2;
+    // Heap::markedObjectSize() may be underestimated if any thread has not
+    // finished completeSweep().
+    size_t currentObjectSize = allocatedObjectSize + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
+    // Schedule an idle GC if the current memory usage is >1MB
+    // and is >50% larger than the estimated live memory usage.
+    return currentObjectSize >= 1024 * 1024 && currentObjectSize > estimatedLiveObjectSize * 3 / 2;
 #else
     return false;
 #endif
 }
 
-// FIXME: We should improve the GC heuristics.
+// TODO(haraken): We should improve the GC heuristics.
 // These heuristics affect performance significantly.
 bool ThreadState::shouldSchedulePreciseGC()
 {
@@ -534,57 +537,53 @@ bool ThreadState::shouldSchedulePreciseGC()
     // sweeping. If this thread reaches here before the main thread finishes
     // lazy sweeping, the thread will use the estimated size of the last GC.
     size_t estimatedLiveObjectSize = Heap::estimatedLiveObjectSize();
-    // Schedule a precise GC if more than 512 KB has been allocated since
-    // the last GC and the current memory usage (=allocated + estimated)
-    // is >50% larger than the estimated live memory usage.
     size_t allocatedObjectSize = Heap::allocatedObjectSize();
-    return allocatedObjectSize >= 512 * 1024 && allocatedObjectSize > estimatedLiveObjectSize / 2;
+    // Heap::markedObjectSize() may be underestimated if any thread has not
+    // finished completeSweep().
+    size_t currentObjectSize = allocatedObjectSize + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
+    // Schedule a precise GC if the current memory usage is >1MB
+    // and is >50% larger than the estimated live memory usage.
+    return currentObjectSize >= 1024 * 1024 && currentObjectSize > estimatedLiveObjectSize * 3 / 2;
 #endif
 }
 
-// FIXME: We should improve the GC heuristics.
+// TODO(haraken): We should improve the GC heuristics.
 // These heuristics affect performance significantly.
 bool ThreadState::shouldForceConservativeGC()
 {
     if (UNLIKELY(m_gcForbiddenCount))
         return false;
 
-    if (Heap::isUrgentGCRequested())
-        return true;
-
     // The estimated size is updated when the main thread finishes lazy
     // sweeping. If this thread reaches here before the main thread finishes
     // lazy sweeping, the thread will use the estimated size of the last GC.
     size_t estimatedLiveObjectSize = Heap::estimatedLiveObjectSize();
     size_t allocatedObjectSize = Heap::allocatedObjectSize();
-    if (Heap::markedObjectSize() + allocatedObjectSize >= 300 * 1024 * 1024) {
+    // Heap::markedObjectSize() may be underestimated if any thread has not
+    // finished completeSweep().
+    size_t currentObjectSize = allocatedObjectSize + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
+    if (currentObjectSize >= 300 * 1024 * 1024) {
         // If we're consuming too much memory, trigger a conservative GC
         // aggressively. This is a safe guard to avoid OOM.
-        return allocatedObjectSize > estimatedLiveObjectSize / 2;
+        return currentObjectSize > estimatedLiveObjectSize * 3 / 2;
     }
-    // Schedule a conservative GC if more than 32 MB has been allocated since
-    // the last GC and the current memory usage (=allocated + estimated)
-    // is >500% larger than the estimated live memory usage.
-    return allocatedObjectSize >= 32 * 1024 * 1024 && allocatedObjectSize > 4 * estimatedLiveObjectSize;
+    // Schedule a conservative GC if the current memory usage is >32MB
+    // and is >400% larger than the estimated live memory usage.
+    // TODO(haraken): 400% is too large. Lower the heap growing factor.
+    return currentObjectSize >= 32 * 1024 * 1024 && currentObjectSize > 5 * estimatedLiveObjectSize;
 }
 
 void ThreadState::scheduleGCIfNeeded()
 {
     checkThread();
     // Allocation is allowed during sweeping, but those allocations should not
-    // trigger nested GCs. Does not apply if an urgent GC has been requested.
-    if (isSweepingInProgress() && UNLIKELY(!Heap::isUrgentGCRequested()))
+    // trigger nested GCs.
+    if (isSweepingInProgress())
         return;
     ASSERT(!sweepForbidden());
 
     if (shouldForceConservativeGC()) {
-        if (Heap::isUrgentGCRequested()) {
-            // If GC is deemed urgent, eagerly sweep and finalize any external allocations right away.
-            Heap::collectGarbage(HeapPointersOnStack, GCWithSweep, Heap::ConservativeGC);
-        } else {
-            // Otherwise, schedule a lazy sweeping in an idle task.
-            Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
-        }
+        Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
         return;
     }
     if (shouldSchedulePreciseGC())
@@ -846,8 +845,13 @@ void ThreadState::completeSweep()
 
 void ThreadState::postSweep()
 {
-    if (isMainThread())
-        Heap::setEstimatedLiveObjectSize(Heap::markedObjectSize());
+    if (isMainThread()) {
+        // At the point where the main thread finishes lazy sweeping,
+        // we estimate the live object size. Heap::markedObjectSize()
+        // may be underestimated if any other thread has not finished
+        // lazy sweeping.
+        Heap::setEstimatedLiveObjectSize(Heap::markedObjectSize() + Heap::externalObjectSizeAtLastGC());
+    }
 
     switch (gcState()) {
     case Sweeping:
