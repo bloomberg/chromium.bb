@@ -551,7 +551,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ParamTraitInvalidMessagePipeClient) {
 #if defined(OS_WIN)
 class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
  protected:
-  virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
+  scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
     host_.reset(new IPC::ChannelMojoHost(task_runner()));
@@ -559,7 +559,7 @@ class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
                                                  task_runner(), handle);
   }
 
-  virtual bool DidStartClient() override {
+  bool DidStartClient() override {
     IPCTestBase::DidStartClient();
     const base::ProcessHandle client = client_process().Handle();
     // Forces GetFileHandleForProcess() fail. It happens occasionally

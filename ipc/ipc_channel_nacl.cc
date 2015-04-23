@@ -80,7 +80,7 @@ class ChannelNacl::ReaderThreadRunner
 
   // DelegateSimpleThread implementation. Reads data from the pipe in a loop
   // until either we are told to quit or a read fails.
-  virtual void Run() override;
+  void Run() override;
 
  private:
   int pipe_;
