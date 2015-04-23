@@ -41,7 +41,7 @@ class BrowserApi {
   static create(streamInfoPromise, manageZoom) {
     return Promise.all([streamInfoPromise, defaultZoomPromise]).then(
         function(results) {
-      return new BrowserApi(results[0], results[1]);
+      return new BrowserApi(results[0], results[1], manageZoom);
     });
   }
 
