@@ -101,6 +101,7 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
                         Vector<LibraryView*>* preloads,
                         Vector<LibraryView*>* dependencies)
       : main_program_handle_(::dlopen(NULL, RTLD_NOW)),
+        sdk_build_version_(*Globals::GetSDKBuildVersion()),
         lib_(lib), preloads_(preloads), dependencies_(dependencies) {}
 
   virtual void* Lookup(const char* symbol_name) {
@@ -116,29 +117,49 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
     if (address)
       return address;
 
-    // Then look inside the preloads.
+    // Make sure that we do nothing here for non-Lollipop platforms.
+    // In practice, preloads_ will be empty (because we ignore LD_PRELOAD
+    // when not Lollipop) and searching in the main executable should be
+    // benign. But crbug/479220 is weird enough that we want to take all
+    // possible precautions.
     //
-    // Note that searching preloads *before* the main executable is opposite
-    // to the search ordering used by the system linker, but it is required
-    // to work round a dlsym() bug in some Android releases (on releases
-    // without this dlsym() bug preloads_ will be empty, making this preloads
-    // search a no-op).
+    // For more, see:
+    //   https://code.google.com/p/chromium/issues/detail?id=479220
+    if (sdk_build_version_ == SDK_VERSION_CODE_LOLLIPOP) {
+      // Then look inside the preloads.
+      //
+      // Note that searching preloads *before* the main executable is opposite
+      // to the search ordering used by the system linker, but it is required
+      // to work round a dlsym() bug in some Android releases (on releases
+      // without this dlsym() bug preloads_ will be empty, making this preloads
+      // search a no-op).
+      //
+      // For more, see commentary in LibraryList(), and
+      //   https://code.google.com/p/android/issues/detail?id=74255
+      for (size_t n = 0; n < preloads_->GetCount(); ++n) {
+        LibraryView* wrap = (*preloads_)[n];
+        // LOG("%s: Looking into preload %p (%s)\n", __FUNCTION__, wrap,
+        // wrap->GetName());
+        address = LookupInWrap(symbol_name, wrap);
+        if (address)
+          return address;
+      }
+    }
+
+    // Do not lookup inside the main executable for pre-Lollipop, for
+    // crbug/479220. We do however want to do it for Lollipop and
+    // later, because in Lollipop-mr1 the dlsym() bug is fixed, so that
+    // we don't explicitly handle LD_PRELOADS but instead rely on dlsym
+    // correctly searching preloads via the main executable.
     //
-    // For more, see commentary in LibraryList(), and
-    //   https://code.google.com/p/android/issues/detail?id=74255
-    for (size_t n = 0; n < preloads_->GetCount(); ++n) {
-      LibraryView* wrap = (*preloads_)[n];
-      // LOG("%s: Looking into preload %p (%s)\n", __FUNCTION__, wrap,
-      // wrap->GetName());
-      address = LookupInWrap(symbol_name, wrap);
+    // For more, see:
+    //   https://code.google.com/p/chromium/issues/detail?id=479220
+    if (sdk_build_version_ >= SDK_VERSION_CODE_LOLLIPOP) {
+      // Then look inside the main executable.
+      address = ::dlsym(main_program_handle_, symbol_name);
       if (address)
         return address;
     }
-
-    // Then lookup inside the main executable.
-    address = ::dlsym(main_program_handle_, symbol_name);
-    if (address)
-      return address;
 
     // Then look inside the dependencies.
     for (size_t n = 0; n < dependencies_->GetCount(); ++n) {
@@ -188,6 +209,7 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
     return NULL;
   }
 
+  const int sdk_build_version_;
   void* main_program_handle_;
   SharedLibrary* lib_;
   Vector<LibraryView*>* preloads_;

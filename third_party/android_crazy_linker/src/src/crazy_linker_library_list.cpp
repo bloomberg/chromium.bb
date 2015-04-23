@@ -21,9 +21,6 @@ namespace crazy {
 
 namespace {
 
-// From android.os.Build.VERSION_CODES.LOLLIPOP.
-static const int SDK_VERSION_CODE_LOLLIPOP = 21;
-
 // Page size for alignment in a zip file.
 const size_t kZipAlignmentPageSize = 4096;
 COMPILE_ASSERT(kZipAlignmentPageSize % PAGE_SIZE == 0,
@@ -64,8 +61,8 @@ struct SymbolLookupState {
 LibraryList::LibraryList() : head_(0), has_error_(false) {
   const int sdk_build_version = *Globals::GetSDKBuildVersion();
 
-  // If SDK version is Lollipop or earlier, we need to load anything
-  // listed in LD_PRELOAD explicitly, because dlsym() on the main executable
+  // If SDK version is Lollipop, we need to load anything listed in
+  // LD_PRELOAD explicitly, because dlsym() on the main executable
   // fails to lookup in preloads on those releases. Also, when doing our
   // symbol resolution we need to explicity search preloads *before* we
   // search the main executable, to ensure that preloads override symbols
@@ -79,9 +76,15 @@ LibraryList::LibraryList() : head_(0), has_error_(false) {
   // of them for us, and so by not loading preloads here our preloads list
   // remains empty, so that searching it for name lookups is a no-op.
   //
+  // If SDK version is earlier than Lollipop then we also do nothing.
+  // Pre-Lollipop platforms arguably have the same dlsym() issue, but for
+  // now we disable the dlsym() workround in order to try and address
+  // crbug/479220.
+  //
   // For more, see:
   //   https://code.google.com/p/android/issues/detail?id=74255
-  if (sdk_build_version <= SDK_VERSION_CODE_LOLLIPOP)
+  //   https://code.google.com/p/chromium/issues/detail?id=479220
+  if (sdk_build_version == SDK_VERSION_CODE_LOLLIPOP)
     LoadPreloads();
 }
 
