@@ -34,8 +34,6 @@ void CastService::Initialize() {
 void CastService::Finalize() {
   DCHECK(thread_checker_->CalledOnValidThread());
   FinalizeInternal();
-  // Consume any pending tasks which may access components being destroyed soon.
-  base::RunLoop().RunUntilIdle();
 }
 
 void CastService::Start() {
