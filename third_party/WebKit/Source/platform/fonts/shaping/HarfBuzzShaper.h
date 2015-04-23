@@ -79,7 +79,7 @@ public:
     }
 
 private:
-    class HarfBuzzRun {
+    class PLATFORM_EXPORT HarfBuzzRun {
     public:
         HarfBuzzRun(const HarfBuzzRun&);
         ~HarfBuzzRun();
