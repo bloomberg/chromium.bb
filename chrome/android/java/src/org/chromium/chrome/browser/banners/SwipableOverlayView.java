@@ -205,6 +205,13 @@ public abstract class SwipableOverlayView extends ScrollView {
         }
     }
 
+    /**
+     * @return the ContentViewCore that this View is monitoring.
+     */
+    protected ContentViewCore getContentViewCore() {
+        return mContentViewCore;
+    }
+
     public void addToParentView(ViewGroup parentView) {
         if (parentView != null && parentView.indexOfChild(this) == -1) {
             parentView.addView(this, createLayoutParams());

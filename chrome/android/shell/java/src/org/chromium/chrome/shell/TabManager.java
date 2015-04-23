@@ -175,6 +175,11 @@ public class TabManager extends LinearLayout {
             public void onToggleFullscreenMode(Tab tab, boolean enable) {
                 mToolbar.setVisibility(enable ? GONE : VISIBLE);
             }
+
+            @Override
+            public void onContentChanged(Tab tab) {
+                setupContent();
+            }
         });
         return tab;
     }

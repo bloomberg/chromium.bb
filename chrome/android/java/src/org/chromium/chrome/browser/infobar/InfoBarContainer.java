@@ -20,6 +20,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -110,8 +111,7 @@ public class InfoBarContainer extends SwipableOverlayView {
 
     private Paint mTopBorderPaint;
 
-    public InfoBarContainer(
-            Context context, int tabId, ViewGroup parentView, WebContents webContents, Tab tab) {
+    public InfoBarContainer(Context context, int tabId, ViewGroup parentView, Tab tab) {
         super(context, null);
         tab.addObserver(getTabObserver());
         setIsSwipable(false);
@@ -144,7 +144,15 @@ public class InfoBarContainer extends SwipableOverlayView {
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
-        mNativeInfoBarContainer = nativeInit(webContents);
+        mNativeInfoBarContainer = nativeInit();
+    }
+
+    @Override
+    public void setContentViewCore(ContentViewCore contentViewCore) {
+        super.setContentViewCore(contentViewCore);
+        if (getContentViewCore() != null) {
+            nativeSetWebContents(mNativeInfoBarContainer, contentViewCore.getWebContents());
+        }
     }
 
     @Override
@@ -519,10 +527,6 @@ public class InfoBarContainer extends SwipableOverlayView {
         return null;
     }
 
-    public long getNative() {
-        return mNativeInfoBarContainer;
-    }
-
     /**
      * Sets whether the InfoBarContainer is allowed to auto-hide when the user scrolls the page.
      * Expected to be called when Touch Exploration is enabled.
@@ -552,6 +556,8 @@ public class InfoBarContainer extends SwipableOverlayView {
         assert false;
     }
 
-    private native long nativeInit(WebContents webContents);
+    private native long nativeInit();
+    private native void nativeSetWebContents(
+            long nativeInfoBarContainerAndroid, WebContents webContents);
     private native void nativeDestroy(long nativeInfoBarContainerAndroid);
 }

@@ -24,6 +24,7 @@ class InfoBarContainerAndroid : public infobars::InfoBarContainer {
  public:
   InfoBarContainerAndroid(JNIEnv* env,
                           jobject infobar_container);
+  void SetWebContents(JNIEnv* env, jobject obj, jobject web_contents);
   void Destroy(JNIEnv* env, jobject obj);
 
   JavaObjectWeakGlobalRef java_container() const {

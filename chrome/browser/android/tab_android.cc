@@ -294,17 +294,6 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
                                  bool did_start_load,
                                  bool did_finish_load) {
   JNIEnv* env = base::android::AttachCurrentThread();
-
-  // We need to notify the native InfobarContainer so infobars can be swapped.
-  InfoBarContainerAndroid* infobar_container =
-      reinterpret_cast<InfoBarContainerAndroid*>(
-          Java_Tab_getNativeInfoBarContainer(
-              env,
-              weak_java_tab_.get(env).obj()));
-  InfoBarService* new_infobar_service =
-      new_contents ? InfoBarService::FromWebContents(new_contents) : NULL;
-  infobar_container->ChangeInfoBarManager(new_infobar_service);
-
   Java_Tab_swapWebContents(
       env,
       weak_java_tab_.get(env).obj(),

@@ -26,6 +26,14 @@ InfoBarContainerAndroid::~InfoBarContainerAndroid() {
   RemoveAllInfoBarsForDestruction();
 }
 
+void InfoBarContainerAndroid::SetWebContents(JNIEnv* env,
+                                             jobject obj,
+                                             jobject web_contents) {
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
+      content::WebContents::FromJavaWebContents(web_contents));
+  ChangeInfoBarManager(infobar_service);
+}
+
 void InfoBarContainerAndroid::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
@@ -74,14 +82,9 @@ void InfoBarContainerAndroid::PlatformSpecificRemoveInfoBar(
 
 // Native JNI methods ---------------------------------------------------------
 
-static jlong Init(JNIEnv* env,
-                  jobject obj,
-                  jobject web_contents) {
+static jlong Init(JNIEnv* env, jobject obj) {
   InfoBarContainerAndroid* infobar_container =
       new InfoBarContainerAndroid(env, obj);
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      content::WebContents::FromJavaWebContents(web_contents));
-  infobar_container->ChangeInfoBarManager(infobar_service);
   return reinterpret_cast<intptr_t>(infobar_container);
 }
 
