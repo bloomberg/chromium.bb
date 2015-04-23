@@ -569,6 +569,7 @@ def main():
   parser.add_argument("--save-only-failures",
                       help="Only save logs for failing tests.",
                       dest="save_only_failures", action="store_true",
+                      default=False)
   parser.add_argument("website", help="Website test name on which"
                       "tests should be run.")
   parser.add_argument("--test-cases-to-run", help="Names of test cases which"
