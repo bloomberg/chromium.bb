@@ -22,7 +22,7 @@ declare_args() {
   enable_plugins = !is_android || !is_ios
 
   # Enables Native Client support.
-  enable_nacl = (!is_ios && !is_android)
+  enable_nacl = !is_ios && !is_android
 }
 
 # Additional dependent variables -----------------------------------------------
@@ -56,8 +56,9 @@ enable_print_preview = !is_android
 # currently.
 # Do not disable seccomp_bpf anywhere without talking to
 # security@chromium.org!
-use_seccomp_bpf = (is_linux || is_android) &&
-  (current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm")
+use_seccomp_bpf =
+    (is_linux || is_android) &&
+    (current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm")
 
 enable_webrtc = !is_ios
 
@@ -75,7 +76,7 @@ enable_speech_input = true
 
 use_dbus = is_linux
 
-enable_extensions = (!is_android && !is_ios)
+enable_extensions = !is_android && !is_ios
 
 # Variable safe_browsing is used to control the build time configuration for
 # safe browsing feature. Safe browsing can be compiled in 3 different levels: 0
@@ -133,6 +134,6 @@ enable_managed_users = !is_ios
 
 enable_service_discovery = enable_mdns || is_mac
 
-enable_autofill_dialog = !is_ios && !(is_android && is_android_webview_build)
+enable_autofill_dialog = !is_ios && !is_android
 
 enable_wifi_bootstrapping = is_win || is_mac

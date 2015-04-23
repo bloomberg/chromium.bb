@@ -5,24 +5,6 @@
 # This file contains common system config stuff for the Android build.
 
 if (is_android) {
-  # HACK make these variables instead of declare_args so they don't conflict
-  # with whatever build NaCl is embedded into.
-  # TODO(ncbray) don't use this file when embedding into another build.
-  #declare_args() {
-    # Absolute directory containing the Android source code.
-    android_src = ""
-
-    # This is set when building the Android WebView inside the Android build
-    # system, using the 'android' gyp backend. The WebView code is still built
-    # when this is unset, but builds using the normal chromium build system.
-    is_android_webview_build = false
-  #}
-
-  if (is_android_webview_build) {
-    assert(android_src != "",
-           "You must specify android_src for an Android WebView build.")
-  }
-
   # Host stuff -----------------------------------------------------------------
 
   # Defines the name the Android build gives to the current host CPU
@@ -59,9 +41,12 @@ if (is_android) {
   # Subdirectories inside android_ndk_root that contain the sysroot for the
   # associated platform.
   _android_api_level = 14
-  x86_android_sysroot_subdir = "platforms/android-${_android_api_level}/arch-x86"
-  arm_android_sysroot_subdir = "platforms/android-${_android_api_level}/arch-arm"
-  mips_android_sysroot_subdir = "platforms/android-${_android_api_level}/arch-mips"
+  x86_android_sysroot_subdir =
+      "platforms/android-${_android_api_level}/arch-x86"
+  arm_android_sysroot_subdir =
+      "platforms/android-${_android_api_level}/arch-arm"
+  mips_android_sysroot_subdir =
+      "platforms/android-${_android_api_level}/arch-mips"
 
   # Toolchain root directory for each build. The actual binaries are inside
   # a "bin" directory inside of these.
@@ -74,25 +59,18 @@ if (is_android) {
   # only need to define the current one, rather than one for every platform
   # like the toolchain roots.
   if (current_cpu == "x86") {
-    android_libgcc_file =
-      "$x86_android_toolchain_root/lib/gcc/i686-linux-android/${_android_toolchain_version}/libgcc.a"
+    android_libgcc_file = "$x86_android_toolchain_root/lib/gcc/i686-linux-android/${_android_toolchain_version}/libgcc.a"
   } else if (current_cpu == "arm") {
-    android_libgcc_file =
-      "$arm_android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
+    android_libgcc_file = "$arm_android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
   } else if (current_cpu == "mipsel") {
-    android_libgcc_file =
-      "$mips_android_toolchain_root/lib/gcc/mipsel-linux-android/${_android_toolchain_version}/libgcc.a"
+    android_libgcc_file = "$mips_android_toolchain_root/lib/gcc/mipsel-linux-android/${_android_toolchain_version}/libgcc.a"
   } else {
     assert(false, "Need android libgcc support for your target arch.")
   }
 
   # stlport stuff --------------------------------------------------------------
 
-  use_system_stlport = is_android_webview_build
-
-  if (use_system_stlport) {
-    android_stlport_library = "stlport"
-  } else if (component_mode == "shared_library") {
+  if (component_mode == "shared_library") {
     android_stlport_library = "stlport_shared"
   } else {
     android_stlport_library = "stlport_static"
@@ -114,9 +92,4 @@ if (is_android) {
   } else {
     assert(false, "Unknown Android ABI: " + current_cpu)
   }
-} else {
-  if (!defined(is_android_webview_build)) {
-    is_android_webview_build = false
-  }
-  use_system_stlport = false
 }

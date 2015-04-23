@@ -54,20 +54,18 @@ if (current_os == "linux") {
       ldflags += [ "-m64" ]
     }
     if (current_cpu == "arm") {
-      if (!is_android_webview_build) {
-        cflags += [
-          "-march=$arm_arch",
-          "-mfpu=$arm_fpu",
-          "-mfloat-abi=$arm_float_abi",
-        ]
-        if (arm_tune != "") {
-          cflags += [ "-mtune=$arm_tune" ]
-        }
-        if (arm_use_thumb) {
-          cflags += [ "-mthumb" ]
-          if (is_android && !is_clang) {  # Clang doesn't support this option.
-            cflags += [ "-mthumb-interwork" ]
-          }
+      cflags += [
+        "-march=$arm_arch",
+        "-mfpu=$arm_fpu",
+        "-mfloat-abi=$arm_float_abi",
+      ]
+      if (arm_tune != "") {
+        cflags += [ "-mtune=$arm_tune" ]
+      }
+      if (arm_use_thumb) {
+        cflags += [ "-mthumb" ]
+        if (is_android && !is_clang) {  # Clang doesn't support this option.
+          cflags += [ "-mthumb-interwork" ]
         }
       }
     }

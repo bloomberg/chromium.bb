@@ -128,22 +128,18 @@ config("compiler") {
       cflags += [ "-m32" ]
       ldflags += [ "-m32" ]
     } else if (current_cpu == "arm") {
-      # Don't set the compiler flags for the WebView build. These will come
-      # from the Android build system.
-      if (!is_android_webview_build) {
-        cflags += [
-          "-march=$arm_arch",
-          "-mfpu=$arm_fpu",
-          "-mfloat-abi=$arm_float_abi",
-        ]
-        if (arm_tune != "") {
-          cflags += [ "-mtune=$arm_tune" ]
-        }
-        if (arm_use_thumb) {
-          cflags += [ "-mthumb" ]
-          if (is_android && !is_clang) {  # Clang doesn't support this option.
-            cflags += [ "-mthumb-interwork" ]
-          }
+      cflags += [
+        "-march=$arm_arch",
+        "-mfpu=$arm_fpu",
+        "-mfloat-abi=$arm_float_abi",
+      ]
+      if (arm_tune != "") {
+        cflags += [ "-mtune=$arm_tune" ]
+      }
+      if (arm_use_thumb) {
+        cflags += [ "-mthumb" ]
+        if (is_android && !is_clang) {  # Clang doesn't support this option.
+          cflags += [ "-mthumb-interwork" ]
         }
       }
     }
@@ -245,15 +241,6 @@ config("compiler") {
         "-fno-caller-saves",
       ]
     }
-    if (is_android_webview_build) {
-      # Android predefines this as 1; undefine it here so Chromium can redefine
-      # it later to be 2 for chromium code and unset for third party code. This
-      # works because cflags are added before defines.
-      # TODO(brettw) the above comment seems incorrect. We specify defines
-      # before cflags on our compiler command lines.
-      cflags += [ "-U_FORTIFY_SOURCE" ]
-    }
-
     if (is_asan) {
       # Android build relies on -Wl,--gc-sections removing unreachable code.
       # ASan instrumentation for globals inhibits this and results in a library
@@ -262,12 +249,13 @@ config("compiler") {
       cflags += [ "-mllvm -asan-globals=0" ]
     }
 
-    defines += [ "ANDROID" ]
-    if (!is_android_webview_build) {
+    defines += [
+      "ANDROID",
+
       # The NDK has these things, but doesn't define the constants
       # to say that it does. Define them here instead.
-      defines += [ "HAVE_SYS_UIO_H" ]
-    }
+      "HAVE_SYS_UIO_H",
+    ]
 
     # Use gold for Android for most CPU architectures.
     if (current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm") {
@@ -388,26 +376,16 @@ config("runtime_library") {
     # arm-linux-androideabi-4.4.3 toolchain (circa Gingerbread) will exhibit
     # strange errors. The include ordering here is important; change with
     # caution.
-    if (use_system_stlport) {
-      cflags += [
-        # For libstdc++/include, which is used by stlport.
-        "-I" + rebase_path("$android_src/bionic", root_build_dir),
-        "-I" + rebase_path("$android_src/external/stlport/stlport",
-                           root_build_dir),
-      ]
-      libs += [ "stlport" ]
+    android_stlport_root = "$android_ndk_root/sources/cxx-stl/stlport"
+
+    cflags +=
+        [ "-I" + rebase_path("$android_stlport_root/stlport", root_build_dir) ]
+    lib_dirs += [ "$android_stlport_root/libs/$android_app_abi" ]
+
+    if (component_mode == "shared_library") {
+      libs += [ "stlport_shared" ]
     } else {
-      android_stlport_root = "$android_ndk_root/sources/cxx-stl/stlport"
-
-      cflags += [ "-I" +
-                  rebase_path("$android_stlport_root/stlport", root_build_dir) ]
-      lib_dirs += [ "$android_stlport_root/libs/$android_app_abi" ]
-
-      if (component_mode == "shared_library") {
-        libs += [ "stlport_shared" ]
-      } else {
-        libs += [ "stlport_static" ]
-      }
+      libs += [ "stlport_static" ]
     }
 
     if (current_cpu == "mipsel") {
@@ -505,20 +483,6 @@ config("no_chromium_code") {
       # Don't warn about hash_map in third-party code.
       "-Wno-deprecated",
     ]
-  }
-
-  if (is_android_webview_build) {
-    # There is a class of warning which:
-    #  1) Android always enables and also treats as errors
-    #  2) Chromium ignores in third party code
-    # So we re-enable those warnings when building Android.
-    cflags += [
-      "-Wno-address",
-      "-Wno-format-security",
-      "-Wno-return-type",
-      "-Wno-sequence-point",
-    ]
-    cflags_cc += [ "-Wno-non-virtual-dtor" ]
   }
 }
 

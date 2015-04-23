@@ -7,16 +7,12 @@
 
 if (is_android) {
   import("//native_client/build/config/android/config.gni")
-  if (!is_android_webview_build) {
-    if (current_cpu == "x86") {
-      sysroot = rebase_path("$android_ndk_root/$x86_android_sysroot_subdir")
-    } else if (current_cpu == "arm") {
-      sysroot = rebase_path("$android_ndk_root/$arm_android_sysroot_subdir")
-    } else if (current_cpu == "mipsel") {
-      sysroot = rebase_path("$android_ndk_root/$mips_android_sysroot_subdir")
-    } else {
-      sysroot = ""
-    }
+  if (current_cpu == "x86") {
+    sysroot = rebase_path("$android_ndk_root/$x86_android_sysroot_subdir")
+  } else if (current_cpu == "arm") {
+    sysroot = rebase_path("$android_ndk_root/$arm_android_sysroot_subdir")
+  } else if (current_cpu == "mipsel") {
+    sysroot = rebase_path("$android_ndk_root/$mips_android_sysroot_subdir")
   } else {
     sysroot = ""
   }
