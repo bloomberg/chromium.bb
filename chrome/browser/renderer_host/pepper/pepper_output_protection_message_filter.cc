@@ -170,11 +170,13 @@ PepperOutputProtectionMessageFilter::Delegate::GetClientId() {
     window_ = rfh->GetNativeView();
     if (!window_)
       return ui::DisplayConfigurator::kInvalidClientId;
-    window_->AddObserver(this);
 
     ui::DisplayConfigurator* configurator =
         ash::Shell::GetInstance()->display_configurator();
     client_id_ = configurator->RegisterContentProtectionClient();
+
+    if (client_id_ != ui::DisplayConfigurator::kInvalidClientId)
+      window_->AddObserver(this);
   }
   return client_id_;
 }
