@@ -106,8 +106,18 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       $('oauth-enroll-error-retry').addEventListener('click',
                                                      this.doRetry_.bind(this));
+
+      $('oauth-enroll-cancel-button').addEventListener('mousedown',
+                                                       function(e) {
+        e.preventDefault();
+      });
+
       $('oauth-enroll-cancel-button').addEventListener('click',
                                                        this.cancel.bind(this));
+
+      $('oauth-enroll-back-button').addEventListener('mousedown', function(e) {
+        e.preventDefault();
+      });
 
       $('oauth-enroll-back-button').addEventListener('click',
           (function(e) {
