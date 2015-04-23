@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -102,8 +103,8 @@ class LevelDBPrefStore : public PersistentPrefStore {
 
   // Changes are accumulated in |keys_to_delete_| and |keys_to_set_| and are
   // stored in the database according to |timer_|.
-  std::set<std::string> keys_to_delete_;
-  std::map<std::string, std::string> keys_to_set_;
+  base::hash_set<std::string> keys_to_delete_;
+  base::hash_map<std::string, std::string> keys_to_set_;
   base::OneShotTimer<LevelDBPrefStore> timer_;
 
   base::WeakPtrFactory<LevelDBPrefStore> weak_ptr_factory_;

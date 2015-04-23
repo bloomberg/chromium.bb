@@ -5,11 +5,11 @@
 #ifndef BASE_PREFS_PREF_VALUE_MAP_H_
 #define BASE_PREFS_PREF_VALUE_MAP_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "base/prefs/base_prefs_export.h"
 
 namespace base {
@@ -19,8 +19,9 @@ class Value;
 // A generic string to value map used by the PrefStore implementations.
 class BASE_PREFS_EXPORT PrefValueMap {
  public:
-  typedef std::map<std::string, base::Value*>::iterator iterator;
-  typedef std::map<std::string, base::Value*>::const_iterator const_iterator;
+  using Map = base::hash_map<std::string, base::Value*>;
+  using iterator = Map::iterator;
+  using const_iterator = Map::const_iterator;
 
   PrefValueMap();
   virtual ~PrefValueMap();
@@ -81,8 +82,6 @@ class BASE_PREFS_EXPORT PrefValueMap {
                         std::vector<std::string>* differing_keys) const;
 
  private:
-  typedef std::map<std::string, base::Value*> Map;
-
   Map prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefValueMap);

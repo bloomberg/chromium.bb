@@ -62,19 +62,15 @@ class LevelDBPrefStore::FileThreadSerializer {
  public:
   explicit FileThreadSerializer(scoped_ptr<leveldb::DB> db) : db_(db.Pass()) {}
   void WriteToDatabase(
-      std::map<std::string, std::string>* keys_to_set,
-      std::set<std::string>* keys_to_delete) {
+      base::hash_map<std::string, std::string>* keys_to_set,
+      base::hash_set<std::string>* keys_to_delete) {
     DCHECK(keys_to_set->size() > 0 || keys_to_delete->size() > 0);
     leveldb::WriteBatch batch;
-    for (std::map<std::string, std::string>::iterator iter =
-             keys_to_set->begin();
-         iter != keys_to_set->end();
-         iter++) {
+    for (auto iter = keys_to_set->begin(); iter != keys_to_set->end(); iter++) {
       batch.Put(iter->first, iter->second);
     }
 
-    for (std::set<std::string>::iterator iter = keys_to_delete->begin();
-         iter != keys_to_delete->end();
+    for (auto iter = keys_to_delete->begin(); iter != keys_to_delete->end();
          iter++) {
       batch.Delete(*iter);
     }
@@ -244,11 +240,12 @@ void LevelDBPrefStore::PersistFromUIThread() {
     return;
   DCHECK(serializer_);
 
-  scoped_ptr<std::set<std::string> > keys_to_delete(new std::set<std::string>);
+  scoped_ptr<base::hash_set<std::string>> keys_to_delete(
+      new base::hash_set<std::string>);
   keys_to_delete->swap(keys_to_delete_);
 
-  scoped_ptr<std::map<std::string, std::string> > keys_to_set(
-      new std::map<std::string, std::string>);
+  scoped_ptr<base::hash_map<std::string, std::string>> keys_to_set(
+      new base::hash_map<std::string, std::string>);
   keys_to_set->swap(keys_to_set_);
 
   sequenced_task_runner_->PostTask(

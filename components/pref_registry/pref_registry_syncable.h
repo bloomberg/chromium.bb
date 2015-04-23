@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/hash_tables.h"
 #include "base/prefs/pref_registry.h"
 #include "components/pref_registry/pref_registry_export.h"
 
@@ -51,7 +52,7 @@ class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
 
   PrefRegistrySyncable();
 
-  typedef std::map<std::string, PrefSyncStatus> PrefToStatus;
+  typedef base::hash_map<std::string, PrefSyncStatus> PrefToStatus;
 
   // Retrieve the set of syncable preferences currently registered.
   const PrefToStatus& syncable_preferences() const;
