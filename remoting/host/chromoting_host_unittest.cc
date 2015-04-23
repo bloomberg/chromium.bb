@@ -108,9 +108,7 @@ class ChromotingHostTest : public testing::Test {
     session_jid1_ = "user@domain/rest-of-jid";
     session_config2_ = SessionConfig::ForTest();
     session_jid2_ = "user2@domain/rest-of-jid";
-    session_unowned_config1_ = SessionConfig::ForTest();
     session_unowned_jid1_ = "user3@doman/rest-of-jid";
-    session_unowned_config2_ = SessionConfig::ForTest();
     session_unowned_jid2_ = "user4@doman/rest-of-jid";
 
     EXPECT_CALL(*session1_, jid())
@@ -132,9 +130,9 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber())
         .WillRepeatedly(SaveArg<0>(&session_unowned2_event_handler_));
     EXPECT_CALL(*session1_, config())
-        .WillRepeatedly(ReturnRef(session_config1_));
+        .WillRepeatedly(ReturnRef(*session_config1_));
     EXPECT_CALL(*session2_, config())
-        .WillRepeatedly(ReturnRef(session_config2_));
+        .WillRepeatedly(ReturnRef(*session_config2_));
 
     owned_connection1_.reset(new MockConnectionToClient(session1_,
                                                         &host_stub1_));
@@ -421,7 +419,7 @@ class ChromotingHostTest : public testing::Test {
   ClientSession* client1_;
   std::string session_jid1_;
   MockSession* session1_;  // Owned by |connection_|.
-  SessionConfig session_config1_;
+  scoped_ptr<SessionConfig> session_config1_;
   MockVideoStub video_stub1_;
   MockClientStub client_stub1_;
   MockHostStub host_stub1_;
@@ -430,15 +428,13 @@ class ChromotingHostTest : public testing::Test {
   ClientSession* client2_;
   std::string session_jid2_;
   MockSession* session2_;  // Owned by |connection2_|.
-  SessionConfig session_config2_;
+  scoped_ptr<SessionConfig> session_config2_;
   MockVideoStub video_stub2_;
   MockClientStub client_stub2_;
   MockHostStub host_stub2_;
   scoped_ptr<MockSession> session_unowned1_;  // Not owned by a connection.
-  SessionConfig session_unowned_config1_;
   std::string session_unowned_jid1_;
   scoped_ptr<MockSession> session_unowned2_;  // Not owned by a connection.
-  SessionConfig session_unowned_config2_;
   std::string session_unowned_jid2_;
   protocol::Session::EventHandler* session_unowned1_event_handler_;
   protocol::Session::EventHandler* session_unowned2_event_handler_;
@@ -599,7 +595,7 @@ TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
   ExpectHostAndSessionManagerStart();
   EXPECT_CALL(*session_unowned1_, candidate_config()).WillOnce(Return(
       default_candidate_config_.get()));
-  EXPECT_CALL(*session_unowned1_, set_config(_));
+  EXPECT_CALL(*session_unowned1_, set_config_ptr(_));
   EXPECT_CALL(*session_unowned1_, Close()).WillOnce(InvokeWithoutArgs(
     this, &ChromotingHostTest::NotifyConnectionClosed1));
   EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
@@ -620,7 +616,7 @@ TEST_F(ChromotingHostTest, LoginBackOffUponConnection) {
   ExpectHostAndSessionManagerStart();
   EXPECT_CALL(*session_unowned1_, candidate_config()).WillOnce(
     Return(default_candidate_config_.get()));
-  EXPECT_CALL(*session_unowned1_, set_config(_));
+  EXPECT_CALL(*session_unowned1_, set_config_ptr(_));
   EXPECT_CALL(*session_unowned1_, Close()).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed1));
   EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
@@ -646,13 +642,13 @@ TEST_F(ChromotingHostTest, LoginBackOffUponAuthenticating) {
   Expectation start = ExpectHostAndSessionManagerStart();
   EXPECT_CALL(*session_unowned1_, candidate_config()).WillOnce(
     Return(default_candidate_config_.get()));
-  EXPECT_CALL(*session_unowned1_, set_config(_));
+  EXPECT_CALL(*session_unowned1_, set_config_ptr(_));
   EXPECT_CALL(*session_unowned1_, Close()).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed1));
 
   EXPECT_CALL(*session_unowned2_, candidate_config()).WillOnce(
     Return(default_candidate_config_.get()));
-  EXPECT_CALL(*session_unowned2_, set_config(_));
+  EXPECT_CALL(*session_unowned2_, set_config_ptr(_));
   EXPECT_CALL(*session_unowned2_, Close()).WillOnce(
     InvokeWithoutArgs(this, &ChromotingHostTest::NotifyConnectionClosed2));
 

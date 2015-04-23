@@ -85,7 +85,7 @@ void FakeConnectionToHost::SignalConnectionReady(bool ready) {
 }
 
 const protocol::SessionConfig& FakeConnectionToHost::config() {
-  return session_config_;
+  return *session_config_;
 }
 
 protocol::ClipboardStub* FakeConnectionToHost::clipboard_forwarder() {

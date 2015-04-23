@@ -41,7 +41,7 @@ TransportRoute::RouteType CandidateTypeToTransportRouteType(
     const std::string& candidate_type) {
   if (candidate_type == "local") {
     return TransportRoute::DIRECT;
-  } else if (candidate_type == "stun") {
+  } else if (candidate_type == "stun" || candidate_type == "prflx") {
     return TransportRoute::STUN;
   } else if (candidate_type == "relay") {
     return TransportRoute::RELAY;
@@ -57,7 +57,8 @@ class LibjingleTransport
       public sigslot::has_slots<> {
  public:
   LibjingleTransport(cricket::PortAllocator* port_allocator,
-                     const NetworkSettings& network_settings);
+                     const NetworkSettings& network_settings,
+                     TransportRole role);
   ~LibjingleTransport() override;
 
   // Called by JingleTransportFactory when it has fresh Jingle info.
@@ -67,9 +68,12 @@ class LibjingleTransport
   void Connect(const std::string& name,
                Transport::EventHandler* event_handler,
                const Transport::ConnectedCallback& callback) override;
+  void SetRemoteCredentials(const std::string& ufrag,
+                            const std::string& password) override;
   void AddRemoteCandidate(const cricket::Candidate& candidate) override;
   const std::string& name() const override;
   bool is_connected() const override;
+  void SetUseStandardIce(bool use_standard_ice) override;
 
  private:
   void DoStart();
@@ -94,15 +98,19 @@ class LibjingleTransport
 
   cricket::PortAllocator* port_allocator_;
   NetworkSettings network_settings_;
+  TransportRole role_;
+
+  bool use_standard_ice_ = true;
 
   std::string name_;
   EventHandler* event_handler_;
   Transport::ConnectedCallback callback_;
   std::string ice_username_fragment_;
-  std::string ice_password_;
 
   bool can_start_;
 
+  std::string remote_ice_username_fragment_;
+  std::string remote_ice_password_;
   std::list<cricket::Candidate> pending_candidates_;
   scoped_ptr<cricket::P2PTransportChannel> channel_;
   int connect_attempts_left_;
@@ -114,18 +122,18 @@ class LibjingleTransport
 };
 
 LibjingleTransport::LibjingleTransport(cricket::PortAllocator* port_allocator,
-                                       const NetworkSettings& network_settings)
+                                       const NetworkSettings& network_settings,
+                                       TransportRole role)
     : port_allocator_(port_allocator),
       network_settings_(network_settings),
+      role_(role),
       event_handler_(nullptr),
       ice_username_fragment_(
           rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
-      ice_password_(rtc::CreateRandomString(cricket::ICE_PWD_LENGTH)),
       can_start_(false),
       connect_attempts_left_(kMaxReconnectAttempts),
       weak_factory_(this) {
   DCHECK(!ice_username_fragment_.empty());
-  DCHECK(!ice_password_.empty());
 }
 
 LibjingleTransport::~LibjingleTransport() {
@@ -149,9 +157,17 @@ void LibjingleTransport::OnCanStart() {
   if (!callback_.is_null())
     DoStart();
 
+  // Pass pending ICE credentials and candidates to the channel.
+  if (!remote_ice_username_fragment_.empty()) {
+    channel_->SetRemoteIceCredentials(remote_ice_username_fragment_,
+                                      remote_ice_password_);
+  }
+
   while (!pending_candidates_.empty()) {
-    channel_->SetRemoteIceCredentials(pending_candidates_.front().username(),
-                                      pending_candidates_.front().password());
+    if (!use_standard_ice_) {
+      channel_->SetRemoteIceCredentials(pending_candidates_.front().username(),
+                                        pending_candidates_.front().password());
+    }
     channel_->OnCandidate(pending_candidates_.front());
     pending_candidates_.pop_front();
   }
@@ -182,8 +198,18 @@ void LibjingleTransport::DoStart() {
   // TODO(sergeyu): Specify correct component ID for the channel.
   channel_.reset(new cricket::P2PTransportChannel(
       std::string(), 0, nullptr, port_allocator_));
-  channel_->SetIceProtocolType(cricket::ICEPROTO_GOOGLE);
-  channel_->SetIceCredentials(ice_username_fragment_, ice_password_);
+  std::string ice_password = rtc::CreateRandomString(cricket::ICE_PWD_LENGTH);
+  if (use_standard_ice_) {
+    channel_->SetIceProtocolType(cricket::ICEPROTO_RFC5245);
+    channel_->SetIceRole((role_ == TransportRole::CLIENT)
+                             ? cricket::ICEROLE_CONTROLLING
+                             : cricket::ICEROLE_CONTROLLED);
+    event_handler_->OnTransportIceCredentials(this, ice_username_fragment_,
+                                              ice_password);
+  } else {
+    channel_->SetIceProtocolType(cricket::ICEPROTO_GOOGLE);
+  }
+  channel_->SetIceCredentials(ice_username_fragment_, ice_password);
   channel_->SignalRequestSignaling.connect(
       this, &LibjingleTransport::OnRequestSignaling);
   channel_->SignalCandidateReady.connect(
@@ -218,6 +244,17 @@ void LibjingleTransport::NotifyConnected() {
   base::ResetAndReturn(&callback_).Run(socket.Pass());
 }
 
+void LibjingleTransport::SetRemoteCredentials(const std::string& ufrag,
+                                              const std::string& password) {
+  DCHECK(CalledOnValidThread());
+
+  remote_ice_username_fragment_ = ufrag;
+  remote_ice_password_ = password;
+
+  if (channel_)
+    channel_->SetRemoteIceCredentials(ufrag, password);
+}
+
 void LibjingleTransport::AddRemoteCandidate(
     const cricket::Candidate& candidate) {
   DCHECK(CalledOnValidThread());
@@ -230,8 +267,10 @@ void LibjingleTransport::AddRemoteCandidate(
     return;
 
   if (channel_) {
-    channel_->SetRemoteIceCredentials(candidate.username(),
-                                      candidate.password());
+    if (!use_standard_ice_) {
+      channel_->SetRemoteIceCredentials(candidate.username(),
+                                        candidate.password());
+    }
     channel_->OnCandidate(candidate);
   } else {
     pending_candidates_.push_back(candidate);
@@ -246,6 +285,12 @@ const std::string& LibjingleTransport::name() const {
 bool LibjingleTransport::is_connected() const {
   DCHECK(CalledOnValidThread());
   return callback_.is_null();
+}
+
+void LibjingleTransport::SetUseStandardIce(bool use_standard_ice) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!channel_);
+  use_standard_ice_ = use_standard_ice;
 }
 
 void LibjingleTransport::OnRequestSignaling(
@@ -339,8 +384,10 @@ void LibjingleTransport::TryReconnect() {
   --connect_attempts_left_;
 
   // Restart ICE by resetting ICE password.
-  ice_password_ = rtc::CreateRandomString(cricket::ICE_PWD_LENGTH);
-  channel_->SetIceCredentials(ice_username_fragment_, ice_password_);
+  std::string ice_password = rtc::CreateRandomString(cricket::ICE_PWD_LENGTH);
+  event_handler_->OnTransportIceCredentials(this, ice_username_fragment_,
+                                            ice_password);
+  channel_->SetIceCredentials(ice_username_fragment_, ice_password);
 }
 
 }  // namespace
@@ -348,10 +395,12 @@ void LibjingleTransport::TryReconnect() {
 LibjingleTransportFactory::LibjingleTransportFactory(
     SignalStrategy* signal_strategy,
     scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator,
-    const NetworkSettings& network_settings)
+    const NetworkSettings& network_settings,
+    TransportRole role)
     : signal_strategy_(signal_strategy),
       port_allocator_(port_allocator.Pass()),
-      network_settings_(network_settings) {
+      network_settings_(network_settings),
+      role_(role) {
 }
 
 LibjingleTransportFactory::~LibjingleTransportFactory() {
@@ -368,7 +417,7 @@ void LibjingleTransportFactory::PrepareTokens() {
 
 scoped_ptr<Transport> LibjingleTransportFactory::CreateTransport() {
   scoped_ptr<LibjingleTransport> result(
-      new LibjingleTransport(port_allocator_.get(), network_settings_));
+      new LibjingleTransport(port_allocator_.get(), network_settings_, role_));
 
   EnsureFreshJingleInfo();
 

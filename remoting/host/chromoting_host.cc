@@ -285,15 +285,17 @@ void ChromotingHost::OnIncomingSession(
     return;
   }
 
-  protocol::SessionConfig config;
-  if (!protocol_config_->Select(session->candidate_config(), &config)) {
+  scoped_ptr<protocol::SessionConfig> config =
+      protocol::SessionConfig::SelectCommon(session->candidate_config(),
+                                            protocol_config_.get());
+  if (!config) {
     LOG(WARNING) << "Rejecting connection from " << session->jid()
                  << " because no compatible configuration has been found.";
     *response = protocol::SessionManager::INCOMPATIBLE;
     return;
   }
 
-  session->set_config(config);
+  session->set_config(config.Pass());
 
   *response = protocol::SessionManager::ACCEPT;
 

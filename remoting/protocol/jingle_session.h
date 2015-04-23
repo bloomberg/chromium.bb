@@ -51,7 +51,7 @@ class JingleSession : public base::NonThreadSafe,
   const std::string& jid() override;
   const CandidateSessionConfig* candidate_config() override;
   const SessionConfig& config() override;
-  void set_config(const SessionConfig& config) override;
+  void set_config(scoped_ptr<SessionConfig> config) override;
   StreamChannelFactory* GetTransportChannelFactory() override;
   StreamChannelFactory* GetMultiplexedChannelFactory() override;
   void Close() override;
@@ -62,6 +62,9 @@ class JingleSession : public base::NonThreadSafe,
   void CancelChannelCreation(const std::string& name) override;
 
   // Transport::EventHandler interface.
+  void OnTransportIceCredentials(Transport* transport,
+                                 const std::string& ufrag,
+                                 const std::string& password) override;
   void OnTransportCandidate(Transport* transport,
                             const cricket::Candidate& candidate) override;
   void OnTransportRouteChange(Transport* transport,
@@ -82,8 +85,9 @@ class JingleSession : public base::NonThreadSafe,
                        scoped_ptr<Authenticator> authenticator,
                        scoped_ptr<CandidateSessionConfig> config);
 
-  // Adds to a new channel the remote candidates received before it was created.
-  void AddPendingRemoteCandidates(Transport* channel, const std::string& name);
+  // Passes transport info to a new |channel| in case it was received before the
+  // channel was created.
+  void AddPendingRemoteTransportInfo(Transport* channel);
 
   // Called by JingleSessionManager for incoming connections.
   void InitializeIncomingConnection(const JingleMessage& initiate_message,
@@ -99,6 +103,10 @@ class JingleSession : public base::NonThreadSafe,
   void OnMessageResponse(JingleMessage::ActionType request_type,
                          IqRequest* request,
                          const buzz::XmlElement* response);
+
+  // Creates empty |pending_transport_info_message_| and schedules timer for
+  // SentTransportInfo() to sent the message later.
+  void EnsurePendingTransportInfoMessage();
 
   // Sends transport-info message with candidates from |pending_candidates_|.
   void SendTransportInfo();
@@ -158,8 +166,7 @@ class JingleSession : public base::NonThreadSafe,
   State state_;
   ErrorCode error_;
 
-  SessionConfig config_;
-  bool config_is_set_;
+  scoped_ptr<SessionConfig> config_;
 
   scoped_ptr<Authenticator> authenticator_;
 
@@ -174,10 +181,12 @@ class JingleSession : public base::NonThreadSafe,
   scoped_ptr<SecureChannelFactory> secure_channel_factory_;
   scoped_ptr<ChannelMultiplexer> channel_multiplexer_;
 
-  base::OneShotTimer<JingleSession> transport_infos_timer_;
-  std::list<JingleMessage::NamedCandidate> pending_candidates_;
+  scoped_ptr<JingleMessage> pending_transport_info_message_;
+  base::OneShotTimer<JingleSession> transport_info_timer_;
 
-  // Pending remote candidates, received before the local channels were created.
+  // Pending remote transport info received before the local channels were
+  // created.
+  std::list<JingleMessage::IceCredentials> pending_remote_ice_credentials_;
   std::list<JingleMessage::NamedCandidate> pending_remote_candidates_;
 
   base::WeakPtrFactory<JingleSession> weak_factory_;

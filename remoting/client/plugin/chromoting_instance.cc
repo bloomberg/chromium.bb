@@ -712,10 +712,10 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   // Create TransportFactory.
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
-          signal_strategy_.get(),
-          PepperPortAllocator::Create(this).Pass(),
+          signal_strategy_.get(), PepperPortAllocator::Create(this).Pass(),
           protocol::NetworkSettings(
-              protocol::NetworkSettings::NAT_TRAVERSAL_FULL)));
+              protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
+          protocol::TransportRole::CLIENT));
 
   // Create Authenticator.
   scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
