@@ -287,9 +287,7 @@ bool AddTransformNodeIfNeeded(
   }
 
   node->data.local = layer->transform();
-  node->data.pre_local.Translate3d(-layer->transform_origin().x(),
-                                   -layer->transform_origin().y(),
-                                   -layer->transform_origin().z());
+  node->data.update_pre_local_transform(layer->transform_origin());
 
   node->data.needs_local_transform_update = true;
   data_from_ancestor.transform_tree->UpdateTransforms(node->id);

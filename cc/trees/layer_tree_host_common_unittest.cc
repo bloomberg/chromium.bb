@@ -9195,5 +9195,31 @@ TEST_F(LayerTreeHostCommonTest, ChangingAxisAlignmentTriggersRebuild) {
   EXPECT_TRUE(host->property_trees()->needs_rebuild);
 }
 
+TEST_F(LayerTreeHostCommonTest, ChangeTransformOrigin) {
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  root->AddChild(child);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  gfx::Transform identity_matrix;
+  gfx::Transform scale_matrix;
+  scale_matrix.Scale(2.f, 2.f);
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child.get(), scale_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(10, 10), child->visible_rect_from_property_trees());
+
+  child->SetTransformOrigin(gfx::Point3F(10.f, 10.f, 10.f));
+
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(5, 5, 5, 5), child->visible_rect_from_property_trees());
+}
+
 }  // namespace
 }  // namespace cc

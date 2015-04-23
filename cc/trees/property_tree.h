@@ -105,6 +105,8 @@ struct CC_EXPORT TransformNodeData {
     is_invertible = to_parent.IsInvertible();
   }
 
+  void update_pre_local_transform(const gfx::Point3F& transform_origin);
+
   void update_post_local_transform(const gfx::PointF& position,
                                    const gfx::Point3F& transform_origin);
 };

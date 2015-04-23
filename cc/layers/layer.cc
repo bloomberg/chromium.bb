@@ -697,6 +697,7 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
           layer_tree_host_->property_trees()->transform_tree.Node(
               transform_tree_index())) {
     if (transform_node->owner_id == id()) {
+      transform_node->data.update_pre_local_transform(transform_origin);
       transform_node->data.update_post_local_transform(position(),
                                                        transform_origin);
       transform_node->data.needs_local_transform_update = true;
