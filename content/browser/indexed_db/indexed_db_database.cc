@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,6 +37,34 @@ using base::Int64ToString16;
 using blink::WebIDBKeyTypeNumber;
 
 namespace content {
+
+namespace {
+
+// Used for WebCore.IndexedDB.Schema.ObjectStore.KeyPathType and
+// WebCore.IndexedDB.Schema.Index.KeyPathType histograms. Do not
+// modify (delete, re-order, renumber) these values other than
+// the _MAX value.
+enum HistogramIDBKeyPathType {
+  KEY_PATH_TYPE_NONE = 0,
+  KEY_PATH_TYPE_STRING = 1,
+  KEY_PATH_TYPE_ARRAY = 2,
+  KEY_PATH_TYPE_MAX = 3,  // Keep as last/max entry, for histogram range.
+};
+
+HistogramIDBKeyPathType HistogramKeyPathType(const IndexedDBKeyPath& key_path) {
+  switch (key_path.type()) {
+    case blink::WebIDBKeyPathTypeNull:
+      return KEY_PATH_TYPE_NONE;
+    case blink::WebIDBKeyPathTypeString:
+      return KEY_PATH_TYPE_STRING;
+    case blink::WebIDBKeyPathTypeArray:
+      return KEY_PATH_TYPE_ARRAY;
+  }
+  NOTREACHED();
+  return KEY_PATH_TYPE_NONE;
+}
+
+}  // namespace
 
 // PendingUpgradeCall has a scoped_ptr<IndexedDBConnection> because it owns the
 // in-progress connection.
@@ -280,6 +309,11 @@ void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION("WebCore.IndexedDB.Schema.ObjectStore.KeyPathType",
+                            HistogramKeyPathType(key_path), KEY_PATH_TYPE_MAX);
+  UMA_HISTOGRAM_BOOLEAN("WebCore.IndexedDB.Schema.ObjectStore.AutoIncrement",
+                        auto_increment);
+
   // Store creation is done synchronously, as it may be followed by
   // index creation (also sync) since preemptive OpenCursor/SetIndexKeys
   // may follow.
@@ -348,6 +382,12 @@ void IndexedDBDatabase::CreateIndex(int64 transaction_id,
 
   if (!ValidateObjectStoreIdAndNewIndexId(object_store_id, index_id))
     return;
+
+  UMA_HISTOGRAM_ENUMERATION("WebCore.IndexedDB.Schema.Index.KeyPathType",
+                            HistogramKeyPathType(key_path), KEY_PATH_TYPE_MAX);
+  UMA_HISTOGRAM_BOOLEAN("WebCore.IndexedDB.Schema.Index.Unique", unique);
+  UMA_HISTOGRAM_BOOLEAN("WebCore.IndexedDB.Schema.Index.MultiEntry",
+                        multi_entry);
 
   // Index creation is done synchronously since preemptive
   // OpenCursor/SetIndexKeys may follow.

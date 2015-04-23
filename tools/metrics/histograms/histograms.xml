@@ -44403,6 +44403,49 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.Schema.Index.KeyPathType"
+    enum="IDBKeyPathType">
+  <owner>jsbell@chromium.org</owner>
+  <summary>
+    Records the 'keyPath' type (none, string, or array) during IDBObjectStore's
+    createIndex operation. See http://www.w3.org/TR/IndexedDB/
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Schema.Index.MultiEntry" enum="Boolean">
+  <owner>jsbell@chromium.org</owner>
+  <summary>
+    Records the 'multiEntry' flag value during IDBObjectStore's createIndex
+    operation. See http://www.w3.org/TR/IndexedDB/
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Schema.Index.Unique" enum="Boolean">
+  <owner>jsbell@chromium.org</owner>
+  <summary>
+    Records the 'unique' flag value during IDBObjectStore's createIndex
+    operation. See http://www.w3.org/TR/IndexedDB/
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Schema.ObjectStore.AutoIncrement"
+    enum="Boolean">
+  <owner>jsbell@chromium.org</owner>
+  <summary>
+    Records the 'autoIncrement' flag value during IDBDatabase's
+    createObjectStore operation. See http://www.w3.org/TR/IndexedDB/
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.Schema.ObjectStore.KeyPathType"
+    enum="IDBKeyPathType">
+  <owner>jsbell@chromium.org</owner>
+  <summary>
+    Records the 'keyPath' type (none, string, or array) during IDBDatabase's
+    createObjectStore operation. See http://www.w3.org/TR/IndexedDB/
+  </summary>
+</histogram>
+
 <histogram name="WebCore.PreloadDelayMs" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -53421,6 +53464,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="InternalsPage">
     A forced close was requested from the indexeddb-internals page.
   </int>
+</enum>
+
+<enum name="IDBKeyPathType" type="int">
+  <int value="0" label="None">No key path.</int>
+  <int value="1" label="String">Key path is a string.</int>
+  <int value="2" label="Array">Key path is an array of strings.</int>
 </enum>
 
 <enum name="IDBLevelDBBackingStoreInternalErrorType" type="int">
