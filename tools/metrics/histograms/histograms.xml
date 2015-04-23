@@ -8577,8 +8577,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ExtensionInstallSigner.InvalidCount">
+  <owner>asargent@chromium.org</owner>
+  <summary>
+    This is a count of the number of ids that we asked to be signed which the
+    server response indicated were not in the webstore.
+  </summary>
+</histogram>
+
 <histogram name="ExtensionInstallSigner.RequestCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     A count of the number of server requests since Chrome started running,
     recorded each time we do a request. NOTE: when interpreting these values,
@@ -8588,7 +8596,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ExtensionInstallSigner.ResultWasValid">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Whether the server result received by the extensions install signer was
     valid or invalid.
@@ -8597,7 +8605,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ExtensionInstallSigner.SecondsSinceLastRequest"
     units="seconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     This records the number of seconds since the last time we've done a request
     to the server (only during this run of the browser).
@@ -8605,7 +8613,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="ExtensionInstallSigner.UptimeAtTimeOfRequest" units="seconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Records how many seconds the browser has been running at the time a request
     to the server is made to get a new install signature.
@@ -12568,6 +12576,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="InstallSigner.InvalidCount">
+  <obsolete>
+    Deprecated 4/2015. It appears the code at some point changed to use the
+    histogram name 'ExtensionInstallSigner.InvalidCount' and we forgot to update
+    this histogram name.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     This is a count of the number of ids that we asked to be signed which the
