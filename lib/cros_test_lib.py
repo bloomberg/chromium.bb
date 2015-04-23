@@ -1582,6 +1582,21 @@ class WorkspaceTestCase(MockTempDirTestCase):
 
     return blueprint_lib.Blueprint(path, initial_config=config)
 
+  def AssertBlueprintExists(self, locator, bsp=None, bricks=None):
+    """Verifies a blueprint exists with the specified contents.
+
+    Args:
+      locator: blueprint locator to check.
+      bsp: Expected blueprint BSP or None.
+      bricks: Expected blueprint bricks or None.
+    """
+    actual = blueprint_lib.Blueprint(locator)
+
+    if bsp is not None:
+      self.assertEqual(bsp, actual.GetBSP())
+    if bricks is not None:
+      self.assertListEqual(bricks, actual.GetBricks())
+
 
 @contextlib.contextmanager
 def SetTimeZone(tz):

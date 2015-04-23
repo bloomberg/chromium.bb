@@ -50,7 +50,7 @@ class BrickLibTest(cros_test_lib.WorkspaceTestCase):
       self.assertTrue(line in layout_conf)
 
   def testConfigurationGenerated(self):
-    """Test that portage's files are generated when brick.json changes."""
+    """Test that portage's files are generated when the config file changes."""
     (self.brick, self.brick_path) = self.CreateBrick()
     sample_config = {'name': 'hello',
                      'dependencies': []}
@@ -62,7 +62,7 @@ class BrickLibTest(cros_test_lib.WorkspaceTestCase):
   def testFindBrickInPath(self):
     """Test that we can infer the current brick from the current directory."""
     (self.brick, self.brick_path) = self.CreateBrick()
-    os.remove(os.path.join(self.brick_path, 'config.json'))
+    os.remove(os.path.join(self.brick_path, brick_lib._CONFIG_FILE))
     brick_dir = os.path.join(self.workspace_path, 'foo', 'bar', 'project')
     expected_name = 'hello'
     brick_lib.Brick(brick_dir, initial_config={'name': 'hello'})

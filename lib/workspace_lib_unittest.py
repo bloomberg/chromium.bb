@@ -186,3 +186,31 @@ class WorkspaceLibTest(cros_test_lib.TempDirTestCase):
     assertReversible('//foo')
     assertReversible('//foo/bar/baz')
     assertReversible('board:gizmo')
+
+
+class ConfigurationTest(cros_test_lib.TempDirTestCase):
+  """Test WriteConfigFile() and ReadConfigFile()."""
+
+  def testWriteReadConfigFile(self):
+    """Tests WriteConfigFile() then ReadConfigFile()."""
+    path = os.path.join(self.tempdir, 'foo.json')
+    config = {'foo': 1, 'bar': 2}
+
+    workspace_lib.WriteConfigFile(path, config)
+    self.assertDictEqual(config, workspace_lib.ReadConfigFile(path))
+
+  def testWriteConfigFileInvalid(self):
+    """Tests writing an invalid configuration file."""
+    path = os.path.join(self.tempdir, 'foo.json')
+    config = Exception()
+
+    with self.assertRaises(workspace_lib.ConfigFileError):
+      workspace_lib.WriteConfigFile(path, config)
+
+  def testReadConfigFileInvalid(self):
+    """Tests reading an invalid configuration file."""
+    path = os.path.join(self.tempdir, 'foo.json')
+    osutils.WriteFile(path, 'invalid contents')
+
+    with self.assertRaises(workspace_lib.ConfigFileError):
+      workspace_lib.ReadConfigFile(path)

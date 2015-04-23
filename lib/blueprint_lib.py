@@ -6,16 +6,46 @@
 
 from __future__ import print_function
 
-import json
 import os
 
 from chromite.lib import brick_lib
-from chromite.lib import osutils
 from chromite.lib import workspace_lib
 
 
-class BlueprintNotFound(Exception):
+# Field names for specifying initial configuration.
+BRICKS_FIELD = 'bricks'
+BSP_FIELD = 'bsp'
+
+
+class BlueprintNotFoundError(Exception):
   """The blueprint does not exist."""
+
+
+class BlueprintCreationError(Exception):
+  """Blueprint creation failed."""
+
+
+# TODO(dpursell): Enable this shorthand blueprint specifications for all CLI
+# tools. http://brbug.com/931.
+def ExpandBlueprintPath(path):
+  """Expand a blueprint path using some common assumptions.
+
+  Makes the following changes to |path|:
+    1. Put non-paths in //blueprints (e.g. foo -> //blueprints/foo).
+    2. Add .json if no extension was given.
+
+  Args:
+    path: blueprint path.
+
+  Returns:
+    Modified blueprint path.
+  """
+  # Non-path arguments should be put in //blueprints by default.
+  if '/' not in path:
+    path = os.path.join('//blueprints', path)
+  if os.path.splitext(path)[1] != '.json':
+    path += '.json'
+  return path
 
 
 class Blueprint(object):
@@ -30,32 +60,64 @@ class Blueprint(object):
         with '//'.
       initial_config: A dictionary of key-value pairs to seed a new blueprint
         with if the specified blueprint doesn't already exist.
+
+    Raises:
+      BlueprintNotFoundError: No blueprint exists at |blueprint_loc| and no
+        |initial_config| was given to create a new one.
+      BlueprintCreationError: |initial_config| was specified but a file
+        already exists at |blueprint_loc|.
     """
     self._path = (workspace_lib.LocatorToPath(blueprint_loc)
                   if workspace_lib.IsLocator(blueprint_loc) else blueprint_loc)
     self._locator = workspace_lib.PathToLocator(self._path)
-    if not os.path.exists(self._path):
-      if initial_config:
-        osutils.WriteFile(self._path,
-                          json.dumps(initial_config, sort_keys=True,
-                                     indent=4, separators=(',', ': ')),
-                          makedirs=True)
-      else:
-        raise BlueprintNotFound('blueprint %s not found.' % self._path)
 
-    self.config = json.loads(osutils.ReadFile(self._path))
+    if initial_config is not None:
+      self._CreateBlueprintConfig(initial_config)
+
+    try:
+      self.config = workspace_lib.ReadConfigFile(self._path)
+    except IOError:
+      raise BlueprintNotFoundError('Blueprint %s not found.' % self._path)
+
+  def _CreateBlueprintConfig(self, config):
+    """Create an initial blueprint config file.
+
+    Converts all brick paths in |config| into locators then saves the
+    configuration file to |self._path|.
+
+    Currently fails if |self._path| already exists, but could be
+    generalized to allow re-writing config files if needed.
+
+    Args:
+      config: configuration dictionary.
+
+    Raises:
+      BlueprintCreationError: A brick in |config| doesn't exist or an
+        error occurred while saving the config file.
+    """
+    if os.path.exists(self._path):
+      raise BlueprintCreationError('File already exists at %s.' % self._path)
+
+    try:
+      # Turn brick specifications into locators.
+      if config.get(BRICKS_FIELD):
+        config[BRICKS_FIELD] = [brick_lib.Brick(b).brick_locator
+                                for b in config[BRICKS_FIELD]]
+      if config.get(BSP_FIELD):
+        config[BSP_FIELD] = brick_lib.Brick(config[BSP_FIELD]).brick_locator
+
+      # Create the config file.
+      workspace_lib.WriteConfigFile(self._path, config)
+    except (brick_lib.BrickNotFound, workspace_lib.ConfigFileError) as e:
+      raise BlueprintCreationError('Blueprint creation failed. %s' % e)
 
   def GetBricks(self):
     """Returns the bricks field of a blueprint."""
-    return self.config.get('bricks', [])
+    return self.config.get(BRICKS_FIELD, [])
 
   def GetBSP(self):
     """Returns the BSP field of a blueprint."""
-    return self.config.get('bsp')
-
-  def GetMainPackage(self):
-    """Returns the main_package field of a blueprint."""
-    return self.config.get('main_package')
+    return self.config.get(BSP_FIELD)
 
   def FriendlyName(self):
     """Returns the friendly name for this blueprint."""

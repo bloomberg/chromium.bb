@@ -43,6 +43,10 @@ class LocatorNotResolved(Exception):
   """Given locator could not be resolved."""
 
 
+class ConfigFileError(Exception):
+  """Configuration file writing or reading failed."""
+
+
 def WorkspacePath(workspace_reference_dir=None):
   """Returns the path to the current workspace.
 
@@ -169,14 +173,11 @@ def _ReadLocalConfig(workspace_path):
   Returns:
     Local workspace config as a Python dictionary.
   """
-  config_file = os.path.join(workspace_path, WORKSPACE_LOCAL_CONFIG)
-
-  # If the file doesn't exist, it's an empty dictionary.
-  if not os.path.exists(config_file):
+  try:
+    return ReadConfigFile(os.path.join(workspace_path, WORKSPACE_LOCAL_CONFIG))
+  except IOError:
+    # If the file doesn't exist, it's an empty dictionary.
     return {}
-
-  with open(config_file, 'r') as config_fp:
-    return json.load(config_fp)
 
 
 def _WriteLocalConfig(workspace_path, config):
@@ -186,11 +187,7 @@ def _WriteLocalConfig(workspace_path, config):
     workspace_path: Root directory of the workspace (WorkspacePath()).
     config: New local workspace config contents as a Python dictionary.
   """
-  config_file = os.path.join(workspace_path, WORKSPACE_LOCAL_CONFIG)
-
-  # Overwrite the config file, with the new dictionary.
-  with open(config_file, 'w') as config_fp:
-    json.dump(config, config_fp)
+  WriteConfigFile(os.path.join(workspace_path, WORKSPACE_LOCAL_CONFIG), config)
 
 
 def IsLocator(name):
@@ -276,3 +273,47 @@ def LocatorToFriendlyName(locator):
     return locator[len(_WORKSPACE_LOCATOR_PREFIX):].replace('/', '.')
 
   raise ValueError('Not a valid workspace locator: %s' % locator)
+
+
+def WriteConfigFile(path, config):
+  """Writes |config| to a file at |path|.
+
+  Configuration files in a workspace should all use the same format
+  whenever possible. Currently it's JSON, but centralizing config
+  read/write makes it easier to change when needed.
+
+  Args:
+    path: path to write.
+    config: configuration dictionary to write.
+
+  Raises:
+    ConfigFileError: |config| cannot be written as JSON.
+  """
+  # TODO(dpursell): Add support for comments in config files.
+  try:
+    osutils.WriteFile(
+        path,
+        json.dumps(config, sort_keys=True, indent=4, separators=(',', ': ')),
+        makedirs=True)
+  except TypeError as e:
+    raise ConfigFileError('Writing config file %s failed: %s', path, e)
+
+
+def ReadConfigFile(path):
+  """Reads a configuration file at |path|.
+
+  For use with WriteConfigFile().
+
+  Args:
+    path: file path.
+
+  Returns:
+    Result of parsing the JSON file.
+
+  Raises:
+    ConfigFileError: JSON parsing failed.
+  """
+  try:
+    return json.loads(osutils.ReadFile(path))
+  except ValueError as e:
+    raise ConfigFileError('%s is not in valid JSON format: %s' % (path, e))
