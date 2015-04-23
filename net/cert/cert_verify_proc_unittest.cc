@@ -1019,15 +1019,11 @@ TEST_F(CertVerifyProcTest, AdditionalTrustAnchors) {
 // detecting known roots.
 TEST_F(CertVerifyProcTest, IsIssuedByKnownRootIgnoresTestRoots) {
   // Load root_ca_cert.pem into the test root store.
-  TestRootCerts* root_certs = TestRootCerts::GetInstance();
-  root_certs->AddFromFile(
-      GetTestCertsDirectory().AppendASCII("root_ca_cert.pem"));
+  ScopedTestRoot test_root(
+      ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem").get());
 
-  CertificateList cert_list = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "ok_cert.pem",
-      X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(1U, cert_list.size());
-  scoped_refptr<X509Certificate> cert(cert_list[0]);
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem"));
 
   // Verification should pass.
   int flags = 0;
@@ -1038,9 +1034,6 @@ TEST_F(CertVerifyProcTest, IsIssuedByKnownRootIgnoresTestRoots) {
   EXPECT_EQ(0U, verify_result.cert_status);
   // But should not be marked as a known root.
   EXPECT_FALSE(verify_result.is_issued_by_known_root);
-
-  root_certs->Clear();
-  EXPECT_TRUE(root_certs->IsEmpty());
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
