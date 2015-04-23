@@ -259,10 +259,8 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
   scoped_refptr<ServiceWorkerVersion> activating_version = waiting_version();
   scoped_refptr<ServiceWorkerVersion> exiting_version = active_version();
 
-  if (activating_version->is_doomed() ||
-      activating_version->status() == ServiceWorkerVersion::REDUNDANT) {
+  if (activating_version->is_redundant())
     return;  // Activation is no longer relevant.
-  }
 
   // "5. If exitingWorker is not null,
   if (exiting_version.get()) {

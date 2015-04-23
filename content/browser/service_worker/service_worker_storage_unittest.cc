@@ -1116,7 +1116,6 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
                  &verify_ids,
                  &was_called,
                  &result));
-  registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
@@ -1131,6 +1130,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
 
   // Removing the controllee should cause the resources to be deleted.
   registration_->active_version()->RemoveControllee(host.get());
+  registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -1268,7 +1268,6 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
                  &verify_ids,
                  &was_called,
                  &result));
-  registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
@@ -1284,6 +1283,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Removing the controllee should cause the old version's resources to be
   // deleted.
   registration_->active_version()->RemoveControllee(host.get());
+  registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,

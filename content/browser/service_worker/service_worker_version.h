@@ -286,11 +286,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void ReportError(ServiceWorkerStatusCode status,
                    const std::string& status_message);
 
-  // Dooms this version to have REDUNDANT status and its resources deleted.  If
-  // the version is controlling a page, these changes will happen when the
-  // version no longer controls any pages.
+  // Sets this version's status to REDUNDANT and deletes its resources.
+  // The version must not have controllees.
   void Doom();
-  bool is_doomed() const { return is_doomed_; }
+  bool is_redundant() const { return status_ == REDUNDANT; }
 
   bool skip_waiting() const { return skip_waiting_; }
 
@@ -472,10 +471,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // and records metrics about startup.
   void RecordStartWorkerResult(ServiceWorkerStatusCode status);
 
-  void DoomInternal();
-
   template <typename IDMAP>
-  void RemoveCallbackAndStopIfDoomed(IDMAP* callbacks, int request_id);
+  void RemoveCallbackAndStopIfRedundant(IDMAP* callbacks, int request_id);
 
   template <typename CallbackType>
   int AddRequest(const CallbackType& callback,
@@ -539,7 +536,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // callback map).
   std::queue<RequestInfo> requests_;
 
-  bool is_doomed_ = false;
   bool skip_waiting_ = false;
   bool skip_recording_startup_time_ = false;
   bool force_bypass_cache_for_scripts_ = false;
