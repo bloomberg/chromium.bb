@@ -19,6 +19,10 @@ class GnPrepareOut(cr.PrepareOut):
   )
 
   @property
+  def priority(self):
+    return -1
+
+  @property
   def enabled(self):
     # Disabled on Android for now.
     return not cr.AndroidPlatform.GetInstance().is_active
