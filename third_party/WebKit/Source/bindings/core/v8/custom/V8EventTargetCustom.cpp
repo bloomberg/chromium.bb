@@ -41,7 +41,7 @@ v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationCon
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
 
-    // FIXME: This naming seems broken.
+    // TODO(yukishiino): Rename EventTargetNames::LocalDOMWindow to DOMWindow.
     if (impl->interfaceName() == EventTargetNames::LocalDOMWindow)
         return toV8(static_cast<DOMWindow*>(impl), creationContext, isolate);
 

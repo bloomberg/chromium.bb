@@ -79,7 +79,6 @@ public:
     PassRefPtrWillBeRawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
     // EventTarget overrides:
-    virtual const AtomicString& interfaceName() const override;
     virtual ExecutionContext* executionContext() const override;
     virtual LocalDOMWindow* toDOMWindow() override;
 
