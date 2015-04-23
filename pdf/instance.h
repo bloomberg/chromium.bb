@@ -58,36 +58,36 @@ class Instance : public pp::InstancePrivate,
                  public ControlOwner {
  public:
   explicit Instance(PP_Instance instance);
-  virtual ~Instance();
+  ~Instance() override;
 
   // pp::Instance implementation.
-  virtual bool Init(uint32_t argc,
-                    const char* argn[],
-                    const char* argv[]) override;
-  virtual bool HandleDocumentLoad(const pp::URLLoader& loader) override;
-  virtual bool HandleInputEvent(const pp::InputEvent& event) override;
-  virtual void DidChangeView(const pp::View& view) override;
-  virtual pp::Var GetInstanceObject() override;
+  bool Init(uint32_t argc,
+            const char* argn[],
+            const char* argv[]) override;
+  bool HandleDocumentLoad(const pp::URLLoader& loader) override;
+  bool HandleInputEvent(const pp::InputEvent& event) override;
+  void DidChangeView(const pp::View& view) override;
+  pp::Var GetInstanceObject() override;
 
   // pp::Find_Private implementation.
-  virtual bool StartFind(const std::string& text, bool case_sensitive) override;
-  virtual void SelectFindResult(bool forward) override;
-  virtual void StopFind() override;
+  bool StartFind(const std::string& text, bool case_sensitive) override;
+  void SelectFindResult(bool forward) override;
+  void StopFind() override;
 
   // pp::PaintManager::Client implementation.
-  virtual void OnPaint(const std::vector<pp::Rect>& paint_rects,
-                       std::vector<PaintManager::ReadyRect>* ready,
-                       std::vector<pp::Rect>* pending) override;
+  void OnPaint(const std::vector<pp::Rect>& paint_rects,
+               std::vector<PaintManager::ReadyRect>* ready,
+               std::vector<pp::Rect>* pending) override;
 
   // pp::Printing_Dev implementation.
-  virtual uint32_t QuerySupportedPrintOutputFormats() override;
-  virtual int32_t PrintBegin(
+  uint32_t QuerySupportedPrintOutputFormats() override;
+  int32_t PrintBegin(
       const PP_PrintSettings_Dev& print_settings) override;
-  virtual pp::Resource PrintPages(
+  pp::Resource PrintPages(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count) override;
-  virtual void PrintEnd() override;
-  virtual bool IsPrintScalingDisabled() override;
+  void PrintEnd() override;
+  bool IsPrintScalingDisabled() override;
 
   // pp::Private implementation.
   virtual pp::Var GetLinkAtPosition(const pp::Point& point);
@@ -95,18 +95,18 @@ class Instance : public pp::InstancePrivate,
       PP_PdfPrintPresetOptions_Dev* options);
 
   // PPP_Selection_Dev implementation.
-  virtual pp::Var GetSelectedText(bool html) override;
+  pp::Var GetSelectedText(bool html) override;
 
   // WidgetClient_Dev implementation.
-  virtual void InvalidateWidget(pp::Widget_Dev widget,
-                                const pp::Rect& dirty_rect) override;
-  virtual void ScrollbarValueChanged(pp::Scrollbar_Dev scrollbar,
-                                     uint32_t value) override;
-  virtual void ScrollbarOverlayChanged(pp::Scrollbar_Dev scrollbar,
-                                       bool overlay) override;
+  void InvalidateWidget(pp::Widget_Dev widget,
+                        const pp::Rect& dirty_rect) override;
+  void ScrollbarValueChanged(pp::Scrollbar_Dev scrollbar,
+                             uint32_t value) override;
+  void ScrollbarOverlayChanged(pp::Scrollbar_Dev scrollbar,
+                               bool overlay) override;
 
   // pp::Zoom_Dev implementation.
-  virtual void Zoom(double scale, bool text_only) override;
+  void Zoom(double scale, bool text_only) override;
   void ZoomChanged(double factor);  // Override.
 
   void FlushCallback(int32_t result);
@@ -194,8 +194,8 @@ class Instance : public pp::InstancePrivate,
                                pp::Var* exception);
 
   // PreviewModeClient::Client implementation.
-  virtual void PreviewDocumentLoadComplete() override;
-  virtual void PreviewDocumentLoadFailed() override;
+  void PreviewDocumentLoadComplete() override;
+  void PreviewDocumentLoadFailed() override;
 
   // Helper functions for implementing PPP_PDF.
   void RotateClockwise();

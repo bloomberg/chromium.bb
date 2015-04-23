@@ -45,35 +45,32 @@ class OutOfProcessInstance : public pp::Instance,
                              public PreviewModeClient::Client {
  public:
   explicit OutOfProcessInstance(PP_Instance instance);
-  virtual ~OutOfProcessInstance();
+  ~OutOfProcessInstance() override;
 
   // pp::Instance implementation.
-  virtual bool Init(uint32_t argc,
-                    const char* argn[],
-                    const char* argv[]) override;
-  virtual void HandleMessage(const pp::Var& message) override;
-  virtual bool HandleInputEvent(const pp::InputEvent& event) override;
-  virtual void DidChangeView(const pp::View& view) override;
+  bool Init(uint32_t argc, const char* argn[], const char* argv[]) override;
+  void HandleMessage(const pp::Var& message) override;
+  bool HandleInputEvent(const pp::InputEvent& event) override;
+  void DidChangeView(const pp::View& view) override;
 
   // pp::Find_Private implementation.
-  virtual bool StartFind(const std::string& text, bool case_sensitive) override;
-  virtual void SelectFindResult(bool forward) override;
-  virtual void StopFind() override;
+  bool StartFind(const std::string& text, bool case_sensitive) override;
+  void SelectFindResult(bool forward) override;
+  void StopFind() override;
 
   // pp::PaintManager::Client implementation.
-  virtual void OnPaint(const std::vector<pp::Rect>& paint_rects,
-                       std::vector<PaintManager::ReadyRect>* ready,
-                       std::vector<pp::Rect>* pending) override;
+  void OnPaint(const std::vector<pp::Rect>& paint_rects,
+               std::vector<PaintManager::ReadyRect>* ready,
+               std::vector<pp::Rect>* pending) override;
 
   // pp::Printing_Dev implementation.
-  virtual uint32_t QuerySupportedPrintOutputFormats() override;
-  virtual int32_t PrintBegin(
-      const PP_PrintSettings_Dev& print_settings) override;
-  virtual pp::Resource PrintPages(
+  uint32_t QuerySupportedPrintOutputFormats() override;
+  int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings) override;
+  pp::Resource PrintPages(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count) override;
-  virtual void PrintEnd() override;
-  virtual bool IsPrintScalingDisabled() override;
+  void PrintEnd() override;
+  bool IsPrintScalingDisabled() override;
 
   // pp::Private implementation.
   virtual pp::Var GetLinkAtPosition(const pp::Point& point);
@@ -81,7 +78,7 @@ class OutOfProcessInstance : public pp::Instance,
       PP_PdfPrintPresetOptions_Dev* options);
 
   // PPP_Selection_Dev implementation.
-  virtual pp::Var GetSelectedText(bool html) override;
+  pp::Var GetSelectedText(bool html) override;
 
   void FlushCallback(int32_t result);
   void DidOpen(int32_t result);
