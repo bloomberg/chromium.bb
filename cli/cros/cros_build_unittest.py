@@ -31,9 +31,23 @@ class MockBuildCommand(command_unittest.MockCommand):
   def Run(self, inst):
     self.PatchObject(chroot_util, 'UpdateChroot',
                      side_effect=self.OnChrootUpdate)
-    self.PatchObject(workon_helper, 'WorkonHelper')
     with parallel_unittest.ParallelMock():
       command_unittest.MockCommand.Run(self, inst)
+
+
+class FakeWorkonHelper(object):
+  """Fake workon_helper.WorkonHelper."""
+
+  def __init__(self, *_args, **_kwargs):
+    self.start_called = 0
+    self.use_workon_only = None
+
+  def ListAtoms(self, *_args, **_kwargs):
+    pass
+
+  def StartWorkingOnPackages(self, *_args, **kwargs):
+    self.start_called += 1
+    self.use_workon_only = kwargs.get('use_workon_only')
 
 
 class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
@@ -45,17 +59,28 @@ class BuildCommandTest(cros_test_lib.MockTempDirTestCase):
             ['--board=randomname', 'power_manager'],
             ['--board=randomname', '--debug', 'power_manager'],
             ['--board=randomname', '--no-deps', 'power_manager'],
-            ['--board=randomname', '--no-chroot-update', 'power_manager']]
+            ['--board=randomname', '--no-chroot-update', 'power_manager'],
+            ['--board=randomname', '--no-enable-only-latest', 'power_manager']]
     for cmd in cmds:
       update_chroot = not ('--no-deps' in cmd or '--no-chroot-update' in cmd)
+      enable_only_latest = '--no-enable-only-latest' not in cmd
+      fake_workon_helper = FakeWorkonHelper()
+      self.PatchObject(workon_helper, 'WorkonHelper',
+                       return_value=fake_workon_helper)
       with MockBuildCommand(cmd) as build:
         build.inst.Run()
         self.assertEquals(1 if update_chroot else 0, build.chroot_update_called)
+        self.assertEquals(1 if enable_only_latest else 0,
+                          fake_workon_helper.start_called)
+        self.assertEquals(True if enable_only_latest else None,
+                          fake_workon_helper.use_workon_only)
 
   def testFailedDeps(self):
     """Test that failures are detected correctly."""
     # pylint: disable=protected-access
     args = ['--board=randomname', 'power_manager']
+    self.PatchObject(workon_helper, 'WorkonHelper',
+                     return_value=FakeWorkonHelper())
     with MockBuildCommand(args) as build:
       cmd = partial_mock.In('--backtrack=0')
       build.rc_mock.AddCmdResult(cmd=cmd, returncode=1, error='error\n')

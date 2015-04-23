@@ -14,6 +14,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
+from chromite.lib import workon_helper
 
 
 @command.CommandDecorator('build')
@@ -56,14 +57,16 @@ To just build a single package:
     elif self.options.brick or self.curr_brick_locator:
       self.brick = brick_lib.Brick(self.options.brick
                                    or self.curr_brick_locator)
+      self.board = self.brick.FriendlyName()
       if not self.build_pkgs:
         self.build_pkgs = self.brick.MainPackages()
     else:
       # If nothing is explicitly set, use the default board.
       self.board = cros_build_lib.GetDefaultBoard()
 
-    if self.brick:
-      self.board = self.brick.FriendlyName()
+    # Set sysroot and friendly name. The latter is None if building for host.
+    self.sysroot = cros_build_lib.GetSysroot(self.blueprint.FriendlyName()
+                                             if self.blueprint else self.board)
 
   @classmethod
   def AddParser(cls, parser):
@@ -100,6 +103,9 @@ To just build a single package:
     advanced.add_argument('--no-chroot-update', default=True,
                           dest='chroot_update', action='store_false',
                           help="Don't update chroot at all.")
+    advanced.add_argument('--no-enable-only-latest', default=True,
+                          dest='enable_only_latest', action='store_false',
+                          help="Don't enable packages with only live ebuilds.")
     advanced.add_argument('--jobs', default=None, type=int,
                           help='Maximum job count to run in parallel '
                           '(uses all available cores by default).')
@@ -120,8 +126,7 @@ To just build a single package:
     Only print the output if this step fails or if we're in debug mode.
     """
     if self.options.deps and not self.host and not self.blueprint:
-      sysroot = cros_build_lib.GetSysroot(self.board)
-      cmd = chroot_util.GetEmergeCommand(sysroot=sysroot)
+      cmd = chroot_util.GetEmergeCommand(sysroot=self.sysroot)
       cmd += ['-pe', '--backtrack=0'] + self.build_pkgs
       try:
         cros_build_lib.RunCommand(cmd, combine_stdout_stderr=True,
@@ -174,4 +179,9 @@ To just build a single package:
           use_binary=self.options.binary)
 
     if not self.options.init_only:
+      # Preliminary: enable building all packages that only have a live ebuild.
+      if self.options.enable_only_latest:
+        workon = workon_helper.WorkonHelper(self.sysroot)
+        workon.StartWorkingOnPackages([], use_workon_only=True)
+
       parallel.RunParallelSteps([self._CheckDependencies, self._Build])
