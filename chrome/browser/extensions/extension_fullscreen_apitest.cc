@@ -37,3 +37,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   ASSERT_TRUE(RunExtensionTest("window_update/sizing")) << message_;
   ASSERT_FALSE(browser()->window()->IsFullscreen());
 }
+
+#if defined(OS_MACOSX)
+// Fails on MAC: http://crbug.com/480370
+#define MAYBE_DisplayModeWindowIsInFullscreen DISABLED_DisplayModeWindowIsInFullscreen
+#else
+#define MAYBE_DisplayModeWindowIsInFullscreen DisplayModeWindowIsInFullscreen
+#endif  // defined(OS_MACOSX)
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       MAYBE_DisplayModeWindowIsInFullscreen) {
+  ASSERT_TRUE(RunPlatformAppTest("fullscreen/mq_display_mode")) << message_;
+}

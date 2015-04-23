@@ -955,6 +955,12 @@ bool AppWindow::IsFullscreenForTabOrPending(const content::WebContents* source)
   return IsHtmlApiFullscreen();
 }
 
+blink::WebDisplayMode AppWindow::GetDisplayMode(
+    const content::WebContents* source) const {
+  return IsFullscreen() ? blink::WebDisplayModeFullscreen
+                        : blink::WebDisplayModeStandalone;
+}
+
 void AppWindow::OnExtensionUnloaded(BrowserContext* browser_context,
                                     const Extension* extension,
                                     UnloadedExtensionInfo::Reason reason) {
