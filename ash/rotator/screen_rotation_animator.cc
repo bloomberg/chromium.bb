@@ -103,6 +103,10 @@ class LayerCleanupObserver : public ui::LayerAnimationObserver {
   void OnDetachedFromSequence(ui::LayerAnimationSequence* sequence) override;
 
  private:
+  // Aborts the active animations of the layer, and recurses upon its child
+  // layers.
+  void AbortAnimations(ui::Layer* layer);
+
   // The owned layer tree.
   scoped_ptr<ui::LayerTreeOwner> layer_tree_owner_;
 
@@ -123,6 +127,7 @@ LayerCleanupObserver::~LayerCleanupObserver() {
   // RequiresNotificationWhenAnimatorDestroyed.
   if (sequence_)
     sequence_->RemoveObserver(this);
+  AbortAnimations(layer_tree_owner_->root());
 }
 
 ui::Layer* LayerCleanupObserver::GetRootLayer() {
@@ -148,6 +153,12 @@ void LayerCleanupObserver::OnDetachedFromSequence(
     ui::LayerAnimationSequence* sequence) {
   DCHECK_EQ(sequence, sequence_);
   sequence_ = nullptr;
+}
+
+void LayerCleanupObserver::AbortAnimations(ui::Layer* layer) {
+  for (ui::Layer* child_layer : layer->children())
+    AbortAnimations(child_layer);
+  layer->GetAnimator()->AbortAllAnimations();
 }
 
 // Set the screen orientation for the given |display| to |new_rotation| and
