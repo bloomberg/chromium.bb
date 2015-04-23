@@ -399,8 +399,8 @@ TEST_P(HotwordServiceTest, DisableAlwaysOnOnLanguageChange) {
   hotword_service->SetExtensionService(service());
   hotword_service->SetExtensionId(extension_id_);
 
-  // Initialize the locale to "en".
-  SetApplicationLocale(profile(), "en");
+  // Initialize the locale to "en_us".
+  SetApplicationLocale(profile(), "en_us");
 
   // The previous locale should not be set. No reason to uninstall.
   EXPECT_FALSE(hotword_service->MaybeReinstallHotwordExtension());
@@ -415,13 +415,15 @@ TEST_P(HotwordServiceTest, DisableAlwaysOnOnLanguageChange) {
   EXPECT_FALSE(hotword_service->MaybeReinstallHotwordExtension());
   EXPECT_TRUE(hotword_service->IsAlwaysOnEnabled());
 
-  // Switch the locale to a valid but different one.
-  SetApplicationLocale(profile(), "fr_fr");
-  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile()));
+  // TODO(kcarattini): Uncomment this sectione once we launch always-on
+  // in more languages.
+  // // Switch the locale to a valid but different one.
+  // SetApplicationLocale(profile(), "fr_fr");
+  // EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile()));
 
-  // Different but valid locale so expect uninstall.
-  EXPECT_TRUE(hotword_service->MaybeReinstallHotwordExtension());
-  EXPECT_FALSE(hotword_service->IsAlwaysOnEnabled());
+  // // Different but valid locale so expect uninstall.
+  // EXPECT_TRUE(hotword_service->MaybeReinstallHotwordExtension());
+  // EXPECT_FALSE(hotword_service->IsAlwaysOnEnabled());
 
   // Re-enable always-on.
   profile()->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled, true);
@@ -432,12 +434,14 @@ TEST_P(HotwordServiceTest, DisableAlwaysOnOnLanguageChange) {
   EXPECT_FALSE(hotword_service->MaybeReinstallHotwordExtension());
   EXPECT_TRUE(hotword_service->IsAlwaysOnEnabled());
 
-  // If the locale is set back to the last valid one, then an uninstall-install
-  // shouldn't be needed.
-  SetApplicationLocale(profile(), "fr_fr");
-  EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile()));
-  EXPECT_FALSE(hotword_service->MaybeReinstallHotwordExtension());
-  EXPECT_TRUE(hotword_service->IsAlwaysOnEnabled());
+  // TODO(kcarattini): Uncomment this sectione once we launch always-on
+  // in more languages.
+  // // If the locale is set back to the last valid one, then an
+  // // uninstall-install shouldn't be needed.
+  // SetApplicationLocale(profile(), "fr_fr");
+  // EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile()));
+  // EXPECT_FALSE(hotword_service->MaybeReinstallHotwordExtension());
+  // EXPECT_TRUE(hotword_service->IsAlwaysOnEnabled());
 }
 
 TEST_P(HotwordServiceTest, IsAlwaysOnEnabled) {

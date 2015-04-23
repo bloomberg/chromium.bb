@@ -271,6 +271,13 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
       l10n_util::NormalizeLocale(GetCurrentLocale(profile));
   base::StringToLowerASCII(&normalized_locale);
 
+  // For M43, we are limiting always-on to en_us only.
+  // TODO(kcarattini): Remove this once
+  // https://code.google.com/p/chrome-os-partner/issues/detail?id=39227
+  // is fixed.
+  if (HotwordServiceFactory::IsAlwaysOnAvailable())
+    return normalized_locale == "en_us";
+
   for (size_t i = 0; i < arraysize(kSupportedLocales); i++) {
     if (normalized_locale == kSupportedLocales[i])
       return true;
