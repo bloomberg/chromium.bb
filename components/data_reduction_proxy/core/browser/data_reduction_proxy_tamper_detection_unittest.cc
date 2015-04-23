@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/test/histogram_tester.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "net/http/http_response_headers.h"
@@ -591,6 +592,107 @@ TEST_F(DataReductionProxyTamperDetectionTest, GetHeaderValues) {
         DataReductionProxyTamperDetection::GetHeaderValues(headers.get(),
                                                            test[i].header_name);
     EXPECT_EQ(expected_output_values, output_values) << test[i].label;
+  }
+}
+
+// Tests UMA histogram count.
+TEST_F(DataReductionProxyTamperDetectionTest, HistogramCount) {
+  struct {
+    std::string raw_header;
+    std::string histogram_name_suffix;
+    int original_content_length;
+    std::string image_histogram_name_suffix;
+  } tests[] = {
+      // Checks the correctness of histogram for Javascript
+      {"HTTP/1.1 200 OK\n"
+       "Content-Type: text/javascript\n",
+       "_JS",
+       -1,
+       ""},
+      // Checks the correctness of histogram for CSS
+      {"HTTP/1.1 200 OK\n"
+       "Content-Type: text/css\n",
+       "_CSS",
+       -1,
+       ""},
+      // Checks the correctness of histogram for image
+      {"HTTP/1.1 200 OK\n"
+       "Content-Type: image/test\n",
+       "_Image",
+       1,
+       "_Image_0_10KB"},
+      // Checks the correctness of histogram for GIF
+      {"HTTP/1.1 200 OK\n"
+       "Content-Type: image/gif\n",
+       "_Image_GIF",
+       20 * 1024,
+       "_Image_10_100KB"},
+      // Checks the correctness of histogram for JPG
+      {"HTTP/1.1 200 OK\n"
+       "Content-Type: image/jpeg\n",
+       "_Image_JPG",
+       200 * 1024,
+       "_Image_100_500KB"},
+      // Checks the correctness of histogram for PNG
+      {"HTTP/1.1 200 OK\n"
+       "Content-Type: image/png\n",
+       "_Image_PNG",
+       600 * 1024,
+       "_Image_500KB"},
+      // Checks the correctness of histogram for WebP
+      {"HTTP/1.1 200 OK\n"
+       "Content-Type: image/webp\n",
+       "_Image_WEBP",
+       -1,
+       ""},
+  };
+
+  const int carrier_id = 100;
+
+  for (auto& test : tests) {
+    std::string raw_headers(test.raw_header);
+    HeadersToRaw(&raw_headers);
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders(raw_headers));
+
+    // Test HTTPS and HTTP separately.
+    int https_values[] = {true, false};
+    for (auto https : https_values) {
+      base::HistogramTester histogram_tester;
+
+      DataReductionProxyTamperDetection tamper_detection(headers.get(), https,
+                                                         carrier_id);
+      tamper_detection.ReportUMAForTamperDetectionCount(
+          test.original_content_length);
+      histogram_tester.ExpectTotalCount(
+          std::string("DataReductionProxy.HeaderTamperDetectionHTTP") +
+              (https ? "S" : "") + test.histogram_name_suffix + "_Total",
+          1);
+      histogram_tester.ExpectUniqueSample(
+          std::string("DataReductionProxy.HeaderTamperDetectionHTTP") +
+              (https ? "S" : "") + test.histogram_name_suffix,
+          carrier_id, 1);
+      histogram_tester.ExpectTotalCount(
+          std::string("DataReductionProxy.HeaderTamperDetectionHTTP") +
+              (https ? "S" : "") + "_Total",
+          1);
+      histogram_tester.ExpectUniqueSample(
+          std::string("DataReductionProxy.HeaderTamperDetectionHTTP") +
+              (https ? "S" : ""),
+          carrier_id, 1);
+
+      if (test.original_content_length != -1) {
+        histogram_tester.ExpectTotalCount(
+            std::string("DataReductionProxy.HeaderTamperDetectionHTTP") +
+                (https ? "S" : "") + test.image_histogram_name_suffix +
+                "_Total",
+            1);
+        histogram_tester.ExpectUniqueSample(
+            std::string("DataReductionProxy.HeaderTamperDetectionHTTP") +
+                (https ? "S" : "") + test.image_histogram_name_suffix,
+            carrier_id, 1);
+      }
+    }
   }
 }
 

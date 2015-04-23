@@ -101,7 +101,13 @@ class DataReductionProxyTamperDetection {
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyTamperDetectionTest,
                            GetHeaderValues);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyTamperDetectionTest,
+                           HistogramCount);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyTamperDetectionTest,
                            DetectAndReport);
+
+  // Reports UMA for the numbers of responses with valid fingerprints, separated
+  // by MIME type.
+  void ReportUMAForTamperDetectionCount(int64 original_content_length) const;
 
   // Returns the result of validating Chrome-Proxy header.
   bool ValidateChromeProxyHeader(const std::string& fingerprint) const;

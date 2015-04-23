@@ -109,15 +109,9 @@ bool DataReductionProxyTamperDetection::DetectAndReport(
   }
 
   // Chrome-Proxy header has not been tampered with, and thus other
-  // fingerprints are valid. Reports the number of responses that other
-  // fingerprints will be checked.
-  REPORT_TAMPER_DETECTION_UMA(
-      scheme_is_https,
-      "DataReductionProxy.HeaderTamperDetectionHTTPS",
-      "DataReductionProxy.HeaderTamperDetectionHTTP",
-      carrier_id);
-
+  // fingerprints are valid.
   bool tampered = false;
+  int64 original_content_length = -1;
   std::string fingerprint;
 
   if (GetDataReductionProxyActionFingerprintVia(headers, &fingerprint)) {
@@ -140,7 +134,6 @@ bool DataReductionProxyTamperDetection::DetectAndReport(
 
   if (GetDataReductionProxyActionFingerprintContentLength(
       headers, &fingerprint)) {
-    int64 original_content_length;
     if (tamper_detection.ValidateContentLength(fingerprint,
                                                content_length,
                                                &original_content_length)) {
@@ -158,6 +151,10 @@ bool DataReductionProxyTamperDetection::DetectAndReport(
         carrier_id);
   }
 
+  // Reports the number of responses that other fingerprints will be checked,
+  // separated by MIME type.
+  tamper_detection.ReportUMAForTamperDetectionCount(original_content_length);
+
   return tampered;
 }
 
@@ -173,6 +170,88 @@ DataReductionProxyTamperDetection::DataReductionProxyTamperDetection(
 }
 
 DataReductionProxyTamperDetection::~DataReductionProxyTamperDetection() {};
+
+void DataReductionProxyTamperDetection::ReportUMAForTamperDetectionCount(
+    int64 original_content_length) const {
+  REPORT_TAMPER_DETECTION_UMA(
+      scheme_is_https_, "DataReductionProxy.HeaderTamperDetectionHTTPS",
+      "DataReductionProxy.HeaderTamperDetectionHTTP", carrier_id_);
+
+  std::string mime_type;
+  response_headers_->GetMimeType(&mime_type);
+
+  if (net::MatchesMimeType("text/javascript", mime_type) ||
+      net::MatchesMimeType("application/x-javascript", mime_type) ||
+      net::MatchesMimeType("application/javascript", mime_type)) {
+    REPORT_TAMPER_DETECTION_UMA(
+        scheme_is_https_, "DataReductionProxy.HeaderTamperDetectionHTTPS_JS",
+        "DataReductionProxy.HeaderTamperDetectionHTTP_JS", carrier_id_);
+  } else if (net::MatchesMimeType("text/css", mime_type)) {
+    REPORT_TAMPER_DETECTION_UMA(
+        scheme_is_https_, "DataReductionProxy.HeaderTamperDetectionHTTPS_CSS",
+        "DataReductionProxy.HeaderTamperDetectionHTTP_CSS", carrier_id_);
+  } else if (net::MatchesMimeType("image/*", mime_type)) {
+    REPORT_TAMPER_DETECTION_UMA(
+        scheme_is_https_, "DataReductionProxy.HeaderTamperDetectionHTTPS_Image",
+        "DataReductionProxy.HeaderTamperDetectionHTTP_Image", carrier_id_);
+
+    if (net::MatchesMimeType("image/gif", mime_type)) {
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperDetectionHTTPS_Image_GIF",
+          "DataReductionProxy.HeaderTamperDetectionHTTP_Image_GIF",
+          carrier_id_);
+    } else if (net::MatchesMimeType("image/jpeg", mime_type) ||
+               net::MatchesMimeType("image/jpg", mime_type)) {
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperDetectionHTTPS_Image_JPG",
+          "DataReductionProxy.HeaderTamperDetectionHTTP_Image_JPG",
+          carrier_id_);
+    } else if (net::MatchesMimeType("image/png", mime_type)) {
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperDetectionHTTPS_Image_PNG",
+          "DataReductionProxy.HeaderTamperDetectionHTTP_Image_PNG",
+          carrier_id_);
+    } else if (net::MatchesMimeType("image/webp", mime_type)) {
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperDetectionHTTPS_Image_WEBP",
+          "DataReductionProxy.HeaderTamperDetectionHTTP_Image_WEBP",
+          carrier_id_);
+    }
+
+    if (original_content_length == -1)
+      return;
+
+    if (original_content_length < 10 * 1024) {  // 0-10KB
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperDetectionHTTPS_Image_0_10KB",
+          "DataReductionProxy.HeaderTamperDetectionHTTP_Image_0_10KB",
+          carrier_id_);
+    } else if (original_content_length < 100 * 1024) {  // 10-100KB
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperDetectionHTTPS_Image_10_100KB",
+          "DataReductionProxy.HeaderTamperDetectionHTTP_Image_10_100KB",
+          carrier_id_);
+    } else if (original_content_length < 500 * 1024) {  // 100-500KB
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperDetectionHTTPS_Image_100_500KB",
+          "DataReductionProxy.HeaderTamperDetectionHTTP_Image_100_500KB",
+          carrier_id_);
+    } else {  // >=500KB
+      REPORT_TAMPER_DETECTION_UMA(
+          scheme_is_https_,
+          "DataReductionProxy.HeaderTamperDetectionHTTPS_Image_500KB",
+          "DataReductionProxy.HeaderTamperDetectionHTTP_Image_500KB",
+          carrier_id_);
+    }
+  }
+}
 
 // |fingerprint| is Base64 encoded. Decodes it first. Then calculates the
 // fingerprint of received Chrome-Proxy header, and compares the two to see
