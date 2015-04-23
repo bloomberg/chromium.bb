@@ -7,25 +7,30 @@
  * Mock implementation of ClientPlugin for testing.
  */
 
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+(function() {
+
+'use strict';
+
 /**
- * @param {Element} container
  * @constructor
  * @implements {remoting.ClientPlugin}
  */
-remoting.MockClientPlugin = function(container) {
-  this.container_ = container;
+remoting.MockClientPlugin = function() {
+  /** @private {Element} */
+  this.container_ = null;
+  /** @private */
   this.element_ = /** @type {HTMLElement} */ (document.createElement('div'));
   this.element_.style.backgroundImage = 'linear-gradient(45deg, blue, red)';
-  this.container_.appendChild(this.element_);
-  this.hostDesktop_ = new remoting.MockClientPlugin.HostDesktop();
+  /** @private */
+  this.hostDesktop_ =
+      new remoting.ClientPlugin.HostDesktopImpl(this, base.doNothing);
+  /** @private */
   this.extensions_ = new remoting.ProtocolExtensionManager(base.doNothing);
-  /** @type {remoting.ClientPlugin.ConnectionEventHandler} */
-  this.connectionEventHandler = null;
+  /** @private {remoting.ClientPlugin.ConnectionEventHandler} */
+  this.connectionEventHandler_ = null;
 
   // Fake initialization result to return.
   this.mock$initializationResult = true;
@@ -35,6 +40,9 @@ remoting.MockClientPlugin = function(container) {
       remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
       remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS
   ];
+
+  /** @private */
+  this.onConnectDeferred_ = new base.Deferred();
 };
 
 remoting.MockClientPlugin.prototype.dispose = function() {
@@ -65,13 +73,7 @@ remoting.MockClientPlugin.prototype.initialize = function(onDone) {
 
 remoting.MockClientPlugin.prototype.connect =
     function(host, localJid, credentialsProvider) {
-  base.debug.assert(this.connectionEventHandler !== null);
-  var that = this;
-  window.requestAnimationFrame(function() {
-    that.connectionEventHandler.onConnectionStatusUpdate(
-          remoting.ClientSession.State.CONNECTED,
-          remoting.ClientSession.ConnectionError.NONE);
-  });
+  this.onConnectDeferred_.resolve();
 };
 
 remoting.MockClientPlugin.prototype.injectKeyCombination = function(keys) {};
@@ -125,7 +127,7 @@ remoting.MockClientPlugin.prototype.getPerfStats = function() {
 
 remoting.MockClientPlugin.prototype.setConnectionEventHandler =
     function(handler) {
-  this.connetionEventHandler = handler;
+  this.connectionEventHandler_ = handler;
 };
 
 remoting.MockClientPlugin.prototype.setMouseCursorHandler =
@@ -136,60 +138,28 @@ remoting.MockClientPlugin.prototype.setClipboardHandler = function(handler) {};
 remoting.MockClientPlugin.prototype.setDebugDirtyRegionHandler =
     function(handler) {};
 
-/**
- * @constructor
- * @implements {remoting.HostDesktop}
- * @extends {base.EventSourceImpl}
- */
-remoting.MockClientPlugin.HostDesktop = function() {
-  base.inherits(this, base.EventSourceImpl);
-  /** @private */
-  this.width_ = 0;
-  /** @private */
-  this.height_ = 0;
-  /** @private */
-  this.xDpi_ = 96;
-  /** @private */
-  this.yDpi_ = 96;
-  /** @private */
-  this.resizable_ = true;
-  this.defineEvents(base.values(remoting.HostDesktop.Events));
+/** @param {Element} container */
+remoting.MockClientPlugin.prototype.mock$setContainer = function(container) {
+  this.container_ = container;
+  this.container_.appendChild(this.element_);
+};
+
+/** @return {Promise} */
+remoting.MockClientPlugin.prototype.mock$onConnect = function() {
+  this.onConnectDeferred_ = new base.Deferred();
+  return this.onConnectDeferred_.promise();
 };
 
 /**
- * @return {{width:number, height:number, xDpi:number, yDpi:number}}
- * @override
+ * @param {remoting.ClientSession.State} status
+ * @param {remoting.ClientSession.ConnectionError=} opt_error
  */
-remoting.MockClientPlugin.HostDesktop.prototype.getDimensions = function() {
-  return {
-    width: this.width_,
-    height: this.height_,
-    xDpi: this.xDpi_,
-    yDpi: this.yDpi_
-  };
-};
-
-/**
- * @return {boolean}
- * @override
- */
-remoting.MockClientPlugin.HostDesktop.prototype.isResizable = function() {
-  return this.resizable_;
-};
-
-/**
- * @param {number} width
- * @param {number} height
- * @param {number} deviceScale
- * @override
- */
-remoting.MockClientPlugin.HostDesktop.prototype.resize =
-    function(width, height, deviceScale) {
-  this.width_ = width;
-  this.height_ = height;
-  this.xDpi_ = this.yDpi_ = Math.floor(deviceScale * 96);
-  this.raiseEvent(remoting.HostDesktop.Events.sizeChanged,
-                  this.getDimensions());
+remoting.MockClientPlugin.prototype.mock$setConnectionStatus = function(
+    status, opt_error) {
+  base.debug.assert(this.connectionEventHandler_ !== null);
+  var PluginError = remoting.ClientSession.ConnectionError;
+  var error = opt_error ? opt_error : PluginError.NONE;
+  this.connectionEventHandler_.onConnectionStatusUpdate(status, error);
 };
 
 /**
@@ -197,14 +167,72 @@ remoting.MockClientPlugin.HostDesktop.prototype.resize =
  * @implements {remoting.ClientPluginFactory}
  */
 remoting.MockClientPluginFactory = function() {
-  /** @private {remoting.MockClientPlugin} */
-  this.plugin_ = null;
+  /** @private */
+  this.plugin_ = new remoting.MockClientPlugin();
 };
 
 remoting.MockClientPluginFactory.prototype.createPlugin =
-    function(container, onExtensionMessage) {
-  this.plugin_ = new remoting.MockClientPlugin(container);
+    function(container, capabilities) {
+  this.plugin_.mock$setContainer(container);
+  this.plugin_.mock$capabilities = capabilities;
+  return this.plugin_;
+};
+
+/** @return {remoting.MockClientPlugin} */
+remoting.MockClientPluginFactory.prototype.plugin = function() {
   return this.plugin_;
 };
 
 remoting.MockClientPluginFactory.prototype.preloadPlugin = function() {};
+
+/**
+ * A class that sets up all the dependencies required for mocking a connection.
+ *
+ * @constructor
+ */
+remoting.MockConnection = function() {
+  /** @private */
+  this.originalPluginFactory_ = remoting.ClientPlugin.factory;
+
+  /** @private */
+  this.pluginFactory_ = new remoting.MockClientPluginFactory();
+  remoting.ClientPlugin.factory = this.pluginFactory_;
+
+  /** @private */
+  this.mockSignalStrategy_ = new remoting.MockSignalStrategy(
+      'fake_jid', remoting.SignalStrategy.Type.XMPP);
+
+  /** @private {sinon.TestStub} */
+  this.createSignalStrategyStub_ =
+      sinon.stub(remoting.SignalStrategy, 'create');
+  this.createSignalStrategyStub_.returns(this.mockSignalStrategy_);
+
+  /** @private */
+  this.originalIdentity_ = remoting.identity;
+  remoting.identity = new remoting.Identity();
+  var identityStub = sinon.stub(remoting.identity, 'getUserInfo');
+  identityStub.returns(Promise.resolve({email: 'email', userName: 'userName'}));
+
+  /** @private */
+  this.originalSettings_ = remoting.settings;
+  remoting.settings = new remoting.Settings();
+};
+
+/** @return {remoting.MockClientPlugin} */
+remoting.MockConnection.prototype.plugin = function() {
+  return this.pluginFactory_.plugin();
+};
+
+/** @return {remoting.MockSignalStrategy} */
+remoting.MockConnection.prototype.signalStrategy = function() {
+  return this.mockSignalStrategy_;
+};
+
+remoting.MockConnection.prototype.restore = function() {
+  remoting.settings = this.originalSettings_;
+  remoting.identity = this.originalIdentity_;
+  remoting.ClientPlugin.factory = this.originalPluginFactory_;
+  this.createSignalStrategyStub_.restore();
+};
+
+})();

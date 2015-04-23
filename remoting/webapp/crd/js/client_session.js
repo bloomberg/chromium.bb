@@ -302,10 +302,6 @@ remoting.ClientSession.prototype.disconnect = function(error) {
   var state = error.isNone() ?
                   remoting.ClientSession.State.CLOSED :
                   remoting.ClientSession.State.FAILED;
-
-  // The plugin won't send a state change notification, so we explicitly log
-  // the fact that the connection has closed.
-  this.logToServer_.logClientSessionStateChange(state, error);
   this.error_ = error;
   this.setState_(state);
 };
@@ -496,6 +492,7 @@ remoting.ClientSession.prototype.isFinished = function() {
   var finishedStates = [
     remoting.ClientSession.State.CLOSED,
     remoting.ClientSession.State.FAILED,
+    remoting.ClientSession.State.CONNECTION_CANCELED,
     remoting.ClientSession.State.CONNECTION_DROPPED
   ];
   return finishedStates.indexOf(this.getState()) !== -1;
@@ -557,9 +554,12 @@ remoting.ClientSession.prototype.notifyStateChanges_ =
       this.listener_.onDisconnected();
       break;
 
+    case remoting.ClientSession.State.CONNECTION_CANCELED:
     case remoting.ClientSession.State.FAILED:
       error = this.getError();
-      console.error('Connection failed: ' + error.toString());
+      if (!error.isNone()) {
+        console.error('Connection failed: ' + error.toString());
+      }
       this.listener_.onConnectionFailed(error);
       break;
 

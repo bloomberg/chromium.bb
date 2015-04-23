@@ -15,7 +15,7 @@ remoting.ClientPlugin = remoting.ClientPlugin || {};
 'use strict';
 
 /**
- * @param {remoting.ClientPluginImpl} plugin
+ * @param {remoting.ClientPlugin} plugin
  * @param {function(Object):void} postMessageCallback Callback to post a message
  *   to the Client Plugin.
  *

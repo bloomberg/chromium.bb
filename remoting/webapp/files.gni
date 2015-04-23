@@ -72,6 +72,7 @@ remoting_webapp_unittests_js_files = [
   "base/js/ipc_unittest.js",
   "base/js/protocol_extension_manager_unittest.js",
   "crd/js/apps_v2_migration_unittest.js",
+  "crd/js/client_session_unittest.js",
   "crd/js/desktop_viewport_unittest.js",
   "crd/js/dns_blackhole_checker_unittest.js",
   "crd/js/error_unittest.js",

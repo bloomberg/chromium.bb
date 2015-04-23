@@ -72,6 +72,7 @@
       'webapp/base/js/ipc_unittest.js',
       'webapp/base/js/protocol_extension_manager_unittest.js',
       'webapp/crd/js/apps_v2_migration_unittest.js',
+      'webapp/crd/js/client_session_unittest.js',
       'webapp/crd/js/desktop_viewport_unittest.js',
       'webapp/crd/js/client_session_factory_unittest.js',
       'webapp/crd/js/dns_blackhole_checker_unittest.js',

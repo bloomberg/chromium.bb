@@ -6,18 +6,12 @@
 
 'use strict';
 
-var originalPluginFactory;
-var originalIdentity;
-var originalSettings;
-
-/** @type {remoting.MockSignalStrategy} */
-var mockSignalStrategy;
+/** @type {remoting.MockConnection} */
+var mockConnection;
 /** @type {remoting.ClientSessionFactory} */
 var factory;
 /** @type {remoting.ClientSession.EventHandler} */
 var listener;
-/** @type {sinon.TestStub} */
-var createSignalStrategyStub;
 
 /**
  * @constructor
@@ -31,69 +25,70 @@ SessionListener.prototype.onError = function(error) {};
 
 QUnit.module('ClientSessionFactory', {
   beforeEach: function() {
-    originalPluginFactory = remoting.ClientPlugin.factory;
-    remoting.ClientPlugin.factory = new remoting.MockClientPluginFactory();
-
-    mockSignalStrategy = new remoting.MockSignalStrategy(
-        'jid', remoting.SignalStrategy.Type.XMPP);
-    createSignalStrategyStub = sinon.stub(remoting.SignalStrategy, 'create');
-    createSignalStrategyStub.returns(mockSignalStrategy);
-    listener = new SessionListener();
-
-    originalIdentity = remoting.identity;
-    remoting.identity = new remoting.Identity();
     chromeMocks.activate(['identity']);
     chromeMocks.identity.mock$setToken('fake_token');
 
-    originalSettings = remoting.settings;
-    remoting.settings = new remoting.Settings();
-
-    remoting.identity.getUserInfo = function() {
-      return { email: 'email', userName: 'userName'};
-    };
-
+    mockConnection = new remoting.MockConnection();
+    listener = new SessionListener();
     factory = new remoting.ClientSessionFactory(
-      document.createElement('div'), ['fake_capability']);
+        document.createElement('div'),
+        [remoting.ClientSession.Capability.VIDEO_RECORDER]);
   },
   afterEach: function() {
-    remoting.settings = originalSettings;
-    remoting.identity = originalIdentity;
+    mockConnection.restore();
     chromeMocks.restore();
-    remoting.identity = null;
-    remoting.ClientPlugin.factory = originalPluginFactory;
-    createSignalStrategyStub.restore();
   }
 });
 
 QUnit.test('createSession() should return a remoting.ClientSession',
     function(assert) {
-
-  mockSignalStrategy.connect = function() {
-    mockSignalStrategy.setStateForTesting(
-        remoting.SignalStrategy.State.CONNECTED);
-  };
-
   return factory.createSession(listener).then(
     function(/** remoting.ClientSession */ session){
       assert.ok(session instanceof remoting.ClientSession);
+      assert.ok(
+          mockConnection.plugin().hasCapability(
+              remoting.ClientSession.Capability.VIDEO_RECORDER),
+          'Capability is set correctly.');
   });
 });
 
 QUnit.test('createSession() should reject on signal strategy failure',
     function(assert) {
-
+  var mockSignalStrategy = mockConnection.signalStrategy();
   mockSignalStrategy.connect = function() {
-    mockSignalStrategy.setStateForTesting(remoting.SignalStrategy.State.FAILED);
+    Promise.resolve().then(function () {
+      mockSignalStrategy.setStateForTesting(
+          remoting.SignalStrategy.State.FAILED);
+    });
   };
 
-  var signalStrategyDispose =
-      /** @type {sinon.Spy} */ (sinon.spy(mockSignalStrategy, 'dispose'));
+  var signalStrategyDispose = sinon.stub(mockSignalStrategy, 'dispose');
 
   return factory.createSession(listener).then(
-    assert.ok.bind(assert, false, 'Expect createSession to fail')
+    assert.ok.bind(assert, false, 'Expect createSession() to fail.')
   ).catch(function(/** remoting.Error */ error) {
-    assert.ok(signalStrategyDispose.called);
-    assert.equal(error.getDetail(), 'setStateForTesting');
+    assert.ok(
+        signalStrategyDispose.called, 'SignalStrategy is disposed on failure.');
+    assert.equal(error.getDetail(), 'setStateForTesting',
+                 'Error message is set correctly.');
+  });
+});
+
+QUnit.test('createSession() should reject on plugin initialization failure',
+    function(assert) {
+  var mockSignalStrategy = mockConnection.signalStrategy();
+  var plugin = mockConnection.plugin();
+  plugin.mock$initializationResult = false;
+
+  var signalStrategyDispose = sinon.stub(mockSignalStrategy, 'dispose');
+
+  return factory.createSession(listener).then(function() {
+    assert.ok(false, 'Expect createSession() to fail.');
+  }).catch(function(/** remoting.Error */ error) {
+    assert.ok(
+        signalStrategyDispose.called, 'SignalStrategy is disposed on failure.');
+    assert.ok(error.hasTag(remoting.Error.Tag.MISSING_PLUGIN),
+        'Initialization failed with MISSING_PLUGIN.');
   });
 });
 

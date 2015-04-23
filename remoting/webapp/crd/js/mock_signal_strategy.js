@@ -35,6 +35,10 @@ remoting.MockSignalStrategy.prototype.dispose = function() {
 
 /** @override */
 remoting.MockSignalStrategy.prototype.connect = function() {
+  var that = this;
+  Promise.resolve().then(function() {
+    that.setStateForTesting(remoting.SignalStrategy.State.CONNECTED);
+  });
 };
 
 /** @override */
@@ -63,6 +67,11 @@ remoting.MockSignalStrategy.prototype.setIncomingStanzaCallback =
   this.onIncomingStanzaCallback_ =
       onIncomingStanzaCallback ? onIncomingStanzaCallback
                                : function() {};
+};
+
+/** @param {Element} stanza */
+remoting.MockSignalStrategy.prototype.mock$onIncomingStanza = function(stanza) {
+  this.onIncomingStanzaCallback_(stanza);
 };
 
 /** @return {remoting.SignalStrategy.State} */
