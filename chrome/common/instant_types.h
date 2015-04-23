@@ -38,6 +38,8 @@ enum ThemeBackgroundImageAlignment {
   THEME_BKGRND_IMAGE_ALIGN_TOP,
   THEME_BKGRND_IMAGE_ALIGN_RIGHT,
   THEME_BKGRND_IMAGE_ALIGN_BOTTOM,
+
+  THEME_BKGRND_IMAGE_ALIGN_LAST = THEME_BKGRND_IMAGE_ALIGN_BOTTOM,
 };
 
 // The tiling of the theme background image.
@@ -46,6 +48,8 @@ enum ThemeBackgroundImageTiling {
   THEME_BKGRND_IMAGE_REPEAT_X,
   THEME_BKGRND_IMAGE_REPEAT_Y,
   THEME_BKGRND_IMAGE_REPEAT,
+
+  THEME_BKGRND_IMAGE_LAST = THEME_BKGRND_IMAGE_REPEAT,
 };
 
 // The RGBA color components for the text and links of the theme.

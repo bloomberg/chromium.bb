@@ -33,7 +33,9 @@ enum InstallState {
   INSTALLED_BUT_NOT_DEFAULT = 1,
 
   // The search provider is set as the user's default.
-  INSTALLED_AS_DEFAULT = 2
+  INSTALLED_AS_DEFAULT = 2,
+
+  INSTALLED_STATE_LAST = INSTALLED_AS_DEFAULT
 };
 
 }  // namespace search_provider
