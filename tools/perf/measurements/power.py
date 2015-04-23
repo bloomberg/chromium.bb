@@ -4,6 +4,7 @@
 
 from telemetry.page import page_test
 
+from metrics import network
 from metrics import power
 
 
@@ -11,13 +12,20 @@ class Power(page_test.PageTest):
   def __init__(self):
     super(Power, self).__init__()
     self._power_metric = None
+    self._network_metric = None
 
   def WillStartBrowser(self, platform):
     self._power_metric = power.PowerMetric(platform)
+    self._network_metric = network.NetworkMetric(platform)
+
+  def WillNavigateToPage(self, page, tab):
+    self._network_metric.Start(page, tab)
 
   def DidNavigateToPage(self, page, tab):
     self._power_metric.Start(page, tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
+    self._network_metric.Stop(page, tab)
     self._power_metric.Stop(page, tab)
+    self._network_metric.AddResults(tab, results)
     self._power_metric.AddResults(tab, results)
