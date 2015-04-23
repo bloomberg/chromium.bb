@@ -458,15 +458,26 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   DCHECK(args);
   const base::Value* profile_path_value;
-  if (!args->Get(0, &profile_path_value))
+  if (!args->Get(0, &profile_path_value)) {
+    NOTREACHED();
     return;
+  }
 
   base::FilePath profile_path;
-  if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
+  if (!base::GetValueAsFilePath(*profile_path_value, &profile_path)) {
+    NOTREACHED();
     return;
+  }
 
-  if (!profiles::IsMultipleProfilesEnabled())
+  if (!profiles::IsMultipleProfilesEnabled()) {
+    NOTREACHED();
     return;
+  }
+
+  // The Profile Data doesn't get wiped until Chrome closes. Since we promised
+  // that the user's data would be removed, do so immediately. If the profile
+  // hasn't been loaded then the ProfileManager will delete it right away.
+  profiles::RemoveBrowsingDataForProfile(profile_path);
 
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
       profile_path,

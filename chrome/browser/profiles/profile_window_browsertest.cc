@@ -113,6 +113,9 @@ Browser* ProfileWindowBrowserTest::OpenGuestBrowser() {
                                  ProfileManager::CreateCallback());
 
   browser_creation_observer.Wait();
+  DCHECK_NE(static_cast<Profile*>(nullptr),
+            g_browser_process->profile_manager()->GetProfileByPath(
+                ProfileManager::GetGuestProfilePath()));
   EXPECT_EQ(num_browsers + 1,
             BrowserList::GetInstance(chrome::GetActiveDesktop())->size());
 

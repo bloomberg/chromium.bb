@@ -35,8 +35,6 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -69,6 +67,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -524,11 +523,7 @@ Browser::~Browser() {
       // profile has BrowserContextKeyedServices that the Incognito profile
       // doesn't, so the ProfileDestroyer can't delete it properly.
       // TODO(mlerman): Delete the guest using an improved ProfileDestroyer.
-      BrowsingDataRemover* data_remover =
-          BrowsingDataRemover::CreateForUnboundedRange(profile_);
-      data_remover->Remove(BrowsingDataRemover::REMOVE_ALL,
-                           BrowsingDataHelper::ALL);
-      // BrowsingDataRemover deletes itself.
+      profiles::RemoveBrowsingDataForProfile(profile_->GetPath());
 #endif
     } else {
       // An incognito profile is no longer needed, this indirectly frees

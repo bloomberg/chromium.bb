@@ -9,6 +9,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -212,6 +214,21 @@ bool SetActiveProfileToGuestIfLocked() {
       prefs::kProfileLastUsed,
       guest_path.BaseName().MaybeAsASCII());
   return true;
+}
+
+void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
+  Profile* profile = g_browser_process->profile_manager()->GetProfileByPath(
+      profile_path);
+  if (!profile)
+    return;
+
+  // For guest the browsing data is in the OTR profile.
+  if (profile->IsGuestSession())
+    profile = profile->GetOffTheRecordProfile();
+
+  BrowsingDataRemover::CreateForUnboundedRange(profile)->Remove(
+      BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
+  // BrowsingDataRemover deletes itself.
 }
 
 }  // namespace profiles

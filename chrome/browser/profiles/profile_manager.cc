@@ -1202,8 +1202,14 @@ void ProfileManager::FinishDeletingProfile(
       password_store->RemoveLoginsCreatedBetween(base::Time(),
                                                  base::Time::Max());
     }
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&NukeProfileFromDisk, profile_dir));
   }
 
+  // Queue even a profile that was Nuked so it will be MarkedForDeletion and so
+  // CreateProfileAsync can't create it.
   QueueProfileDirectoryForDeletion(profile_dir);
   cache.DeleteProfileFromCache(profile_dir);
   ProfileMetrics::UpdateReportedProfilesStatistics(this);

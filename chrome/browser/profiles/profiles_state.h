@@ -88,6 +88,10 @@ SigninErrorController* GetSigninErrorController(Profile* profile);
 // method.
 bool SetActiveProfileToGuestIfLocked();
 
+// If the profile given by |profile_path| is loaded in the ProfileManager, use
+// a BrowsingDataRemover to delete all the Profile's data.
+void RemoveBrowsingDataForProfile(const base::FilePath& profile_path);
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILES_STATE_H_
