@@ -13,6 +13,7 @@
 
 namespace ui {
 
+class DisplayLayoutManager;
 class DisplaySnapshot;
 class NativeDisplayDelegate;
 
@@ -34,7 +35,7 @@ class DISPLAY_EXPORT ApplyContentProtectionTask {
   typedef base::Callback<void(bool)> ResponseCallback;
 
   ApplyContentProtectionTask(
-      DisplayConfigurator::DisplayLayoutManager* layout_manager,
+      DisplayLayoutManager* layout_manager,
       NativeDisplayDelegate* native_display_delegate,
       const DisplayConfigurator::ContentProtections& requests,
       const ResponseCallback& callback);
@@ -53,7 +54,7 @@ class DISPLAY_EXPORT ApplyContentProtectionTask {
 
   uint32_t GetDesiredProtectionMask(int64_t display_id) const;
 
-  DisplayConfigurator::DisplayLayoutManager* layout_manager_;  // Not owned.
+  DisplayLayoutManager* layout_manager_;  // Not owned.
 
   NativeDisplayDelegate* native_display_delegate_;  // Not owned.
 

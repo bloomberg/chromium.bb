@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "ui/display/chromeos/display_layout_manager.h"
 #include "ui/display/chromeos/display_util.h"
 #include "ui/display/chromeos/update_display_configuration_task.h"
 #include "ui/display/display_switches.h"

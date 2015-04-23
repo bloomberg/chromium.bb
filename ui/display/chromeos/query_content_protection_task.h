@@ -5,11 +5,14 @@
 #ifndef UI_DISPLAY_CHROMEOS_QUERY_CONTENT_PROTECTION_TASK_H_
 #define UI_DISPLAY_CHROMEOS_QUERY_CONTENT_PROTECTION_TASK_H_
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/display_export.h"
+#include "ui/display/types/display_constants.h"
 
 namespace ui {
 
+class DisplayLayoutManager;
 class NativeDisplayDelegate;
 
 class DISPLAY_EXPORT QueryContentProtectionTask {
@@ -23,11 +26,10 @@ class DISPLAY_EXPORT QueryContentProtectionTask {
 
   typedef base::Callback<void(Response)> ResponseCallback;
 
-  QueryContentProtectionTask(
-      DisplayConfigurator::DisplayLayoutManager* layout_manager,
-      NativeDisplayDelegate* native_display_delegate,
-      int64_t display_id,
-      const ResponseCallback& callback);
+  QueryContentProtectionTask(DisplayLayoutManager* layout_manager,
+                             NativeDisplayDelegate* native_display_delegate,
+                             int64_t display_id,
+                             const ResponseCallback& callback);
   ~QueryContentProtectionTask();
 
   void Run();
@@ -36,7 +38,7 @@ class DISPLAY_EXPORT QueryContentProtectionTask {
   // Callback for NativeDisplayDelegate::GetHDCPState()
   void OnHDCPStateUpdate(bool success, HDCPState state);
 
-  DisplayConfigurator::DisplayLayoutManager* layout_manager_;  // Not owned.
+  DisplayLayoutManager* layout_manager_;  // Not owned.
 
   NativeDisplayDelegate* native_display_delegate_;  // Not owned.
 

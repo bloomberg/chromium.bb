@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/apply_content_protection_task.h"
+#include "ui/display/chromeos/display_layout_manager.h"
 #include "ui/display/chromeos/test/action_logger_util.h"
 #include "ui/display/chromeos/test/test_display_layout_manager.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"

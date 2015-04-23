@@ -6,6 +6,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/chromeos/display_layout_manager.h"
 #include "ui/display/chromeos/test/action_logger_util.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/chromeos/test/test_native_display_delegate.h"
@@ -16,8 +17,7 @@ namespace test {
 
 namespace {
 
-class TestDisplayLayoutManager
-    : public DisplayConfigurator::DisplayLayoutManager {
+class TestDisplayLayoutManager : public DisplayLayoutManager {
  public:
   TestDisplayLayoutManager()
       : should_mirror_(true),

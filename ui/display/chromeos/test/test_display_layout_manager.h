@@ -7,18 +7,18 @@
 
 #include "base/memory/scoped_vector.h"
 #include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/chromeos/display_layout_manager.h"
 
 namespace ui {
 namespace test {
 
-class TestDisplayLayoutManager
-    : public DisplayConfigurator::DisplayLayoutManager {
+class TestDisplayLayoutManager : public DisplayLayoutManager {
  public:
   TestDisplayLayoutManager(ScopedVector<DisplaySnapshot> displays,
                            MultipleDisplayState display_state);
   ~TestDisplayLayoutManager() override;
 
-  // DisplayConfigurator::DisplayLayoutManager:
+  // DisplayLayoutManager:
   DisplayConfigurator::StateController* GetStateController() const override;
   DisplayConfigurator::SoftwareMirroringController*
   GetSoftwareMirroringController() const override;

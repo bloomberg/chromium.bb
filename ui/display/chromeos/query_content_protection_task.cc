@@ -4,13 +4,14 @@
 
 #include "ui/display/chromeos/query_content_protection_task.h"
 
+#include "ui/display/chromeos/display_layout_manager.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 
 namespace ui {
 
 QueryContentProtectionTask::QueryContentProtectionTask(
-    DisplayConfigurator::DisplayLayoutManager* layout_manager,
+    DisplayLayoutManager* layout_manager,
     NativeDisplayDelegate* native_display_delegate,
     int64_t display_id,
     const ResponseCallback& callback)

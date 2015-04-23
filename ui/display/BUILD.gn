@@ -13,6 +13,7 @@ component("display") {
     "chromeos/configure_displays_task.h",
     "chromeos/display_configurator.cc",
     "chromeos/display_configurator.h",
+    "chromeos/display_layout_manager.h",
     "chromeos/display_util.cc",
     "chromeos/display_util.h",
     "chromeos/ozone/display_configurator_ozone.cc",

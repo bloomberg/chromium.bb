@@ -4,6 +4,7 @@
 
 #include "ui/display/chromeos/apply_content_protection_task.h"
 
+#include "ui/display/chromeos/display_layout_manager.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 
@@ -12,7 +13,7 @@ namespace ui {
 namespace {
 
 bool GetHDCPCapableDisplays(
-    const DisplayConfigurator::DisplayLayoutManager& layout_manager,
+    const DisplayLayoutManager& layout_manager,
     std::vector<DisplaySnapshot*>* hdcp_capable_displays) {
   for (DisplaySnapshot* display : layout_manager.GetDisplayStates()) {
     switch (display->type()) {
@@ -41,7 +42,7 @@ bool GetHDCPCapableDisplays(
 }  // namespace
 
 ApplyContentProtectionTask::ApplyContentProtectionTask(
-    DisplayConfigurator::DisplayLayoutManager* layout_manager,
+    DisplayLayoutManager* layout_manager,
     NativeDisplayDelegate* native_display_delegate,
     const DisplayConfigurator::ContentProtections& requests,
     const ResponseCallback& callback)

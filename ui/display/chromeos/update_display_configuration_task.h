@@ -25,15 +25,14 @@ class DISPLAY_EXPORT UpdateDisplayConfigurationTask {
       MultipleDisplayState /* new_display_state */,
       chromeos::DisplayPowerState /* new_power_state */)> ResponseCallback;
 
-  UpdateDisplayConfigurationTask(
-      NativeDisplayDelegate* delegate,
-      DisplayConfigurator::DisplayLayoutManager* layout_manager,
-      MultipleDisplayState new_display_state,
-      chromeos::DisplayPowerState new_power_state,
-      int power_flags,
-      uint32_t background_color_argb,
-      bool force_configure,
-      const ResponseCallback& callback);
+  UpdateDisplayConfigurationTask(NativeDisplayDelegate* delegate,
+                                 DisplayLayoutManager* layout_manager,
+                                 MultipleDisplayState new_display_state,
+                                 chromeos::DisplayPowerState new_power_state,
+                                 int power_flags,
+                                 uint32_t background_color_argb,
+                                 bool force_configure,
+                                 const ResponseCallback& callback);
   ~UpdateDisplayConfigurationTask();
 
   void Run();
@@ -68,8 +67,8 @@ class DISPLAY_EXPORT UpdateDisplayConfigurationTask {
   // Returns a display state based on the power state.
   MultipleDisplayState ChooseDisplayState() const;
 
-  NativeDisplayDelegate* delegate_;                            // Not owned.
-  DisplayConfigurator::DisplayLayoutManager* layout_manager_;  // Not owned.
+  NativeDisplayDelegate* delegate_;       // Not owned.
+  DisplayLayoutManager* layout_manager_;  // Not owned.
 
   // Requested display state.
   MultipleDisplayState new_display_state_;

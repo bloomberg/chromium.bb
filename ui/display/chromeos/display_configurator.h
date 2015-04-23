@@ -28,7 +28,7 @@ class Size;
 }
 
 namespace ui {
-struct DisplayConfigureRequest;
+class DisplayLayoutManager;
 class DisplayMode;
 class DisplaySnapshot;
 class NativeDisplayDelegate;
@@ -108,37 +108,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     // Called when the hardware mirroring failed.
     virtual void SetSoftwareMirroring(bool enabled) = 0;
     virtual bool SoftwareMirroringEnabled() const = 0;
-  };
-
-  class DisplayLayoutManager {
-   public:
-    virtual ~DisplayLayoutManager() {}
-
-    virtual SoftwareMirroringController* GetSoftwareMirroringController()
-        const = 0;
-
-    virtual StateController* GetStateController() const = 0;
-
-    // Returns the current display state.
-    virtual MultipleDisplayState GetDisplayState() const = 0;
-
-    // Returns the current power state.
-    virtual chromeos::DisplayPowerState GetPowerState() const = 0;
-
-    // Based on the given |displays|, display state and power state, it will
-    // create display configuration requests which will then be used to
-    // configure the hardware. The requested configuration is stored in
-    // |requests| and |framebuffer_size|.
-    virtual bool GetDisplayLayout(
-        const std::vector<DisplaySnapshot*>& displays,
-        MultipleDisplayState new_display_state,
-        chromeos::DisplayPowerState new_power_state,
-        std::vector<DisplayConfigureRequest>* requests,
-        gfx::Size* framebuffer_size) const = 0;
-
-    virtual DisplayStateList GetDisplayStates() const = 0;
-
-    virtual bool IsMirroring() const = 0;
   };
 
   // Helper class used by tests.
