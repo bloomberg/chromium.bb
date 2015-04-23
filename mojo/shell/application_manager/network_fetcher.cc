@@ -226,6 +226,7 @@ void NetworkFetcher::StartNetworkRequest(const GURL& url,
 
 void NetworkFetcher::OnLoadComplete(URLResponsePtr response) {
   TRACE_EVENT_ASYNC_END0("mojo_shell", "NetworkFetcher::NetworkRequest", this);
+  scoped_ptr<Fetcher> owner(this);
   if (response->error) {
     LOG(ERROR) << "Error (" << response->error->code << ": "
                << response->error->description << ") while fetching "
@@ -243,7 +244,7 @@ void NetworkFetcher::OnLoadComplete(URLResponsePtr response) {
   }
 
   response_ = response.Pass();
-  loader_callback_.Run(make_scoped_ptr(this));
+  loader_callback_.Run(owner.Pass());
 }
 
 }  // namespace shell
