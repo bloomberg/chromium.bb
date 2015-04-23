@@ -55154,6 +55154,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-820041355" label="enable-transition-compositing"/>
   <int value="-814097014" label="disable-session-crashed-bubble"/>
   <int value="-813474479" label="site-per-process"/>
+  <int value="-802348444" label="disable-site-engagement-service"/>
   <int value="-795600188" label="disable-async-dns"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-770319039" label="enable-touch-editing"/>
@@ -55177,6 +55178,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-562274241" label="enable-extension-action-redesign"/>
   <int value="-560551550" label="use-memory-pressure-chromeos"/>
   <int value="-536289234" label="ssl-interstitial-v2-colorful"/>
+  <int value="-519960638" label="enable-site-engagement-service"/>
   <int value="-516845951" label="enable-embedded-extension-options"/>
   <int value="-512971943" label="disable-one-copy"/>
   <int value="-510488450" label="disable-pnacl"/>

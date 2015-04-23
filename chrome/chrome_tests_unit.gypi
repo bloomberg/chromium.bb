@@ -1429,6 +1429,7 @@
       'browser/diagnostics/diagnostics_model_unittest.cc',
       'browser/download/download_commands_unittest.cc',
       'browser/download/download_shelf_unittest.cc',
+      'browser/engagement/site_engagement_service_unittest.cc',
       'browser/first_run/first_run_unittest.cc',
       'browser/font_family_cache_unittest.cc',
       'browser/importer/firefox_profile_lock_unittest.cc',

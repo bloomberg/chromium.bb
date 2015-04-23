@@ -1336,6 +1336,14 @@
       'browser/content_settings/web_site_settings_uma_util.cc',
       'browser/content_settings/web_site_settings_uma_util.h',
     ],
+    'chrome_browser_engagement_sources': [
+      'browser/engagement/site_engagement_helper.cc',
+      'browser/engagement/site_engagement_helper.h',
+      'browser/engagement/site_engagement_service.cc',
+      'browser/engagement/site_engagement_service.h',
+      'browser/engagement/site_engagement_service_factory.cc',
+      'browser/engagement/site_engagement_service_factory.h',
+    ],
     'chrome_browser_extensions_sources': [
       'browser/accessibility/accessibility_extension_api.cc',
       'browser/accessibility/accessibility_extension_api.h',
@@ -3147,6 +3155,7 @@
             '<@(chrome_browser_bookmark_sources)',
             '<@(chrome_browser_browser_process_sources)',
             '<@(chrome_browser_content_settings_sources)',
+            '<@(chrome_browser_engagement_sources)',
             '<@(chrome_browser_favicon_sources)',
             '<@(chrome_browser_google_sources)',
             '<@(chrome_browser_history_sources)',

@@ -15,6 +15,8 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
@@ -276,6 +278,10 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   ShortcutsBackendFactory::GetInstance();
   SigninManagerFactory::GetInstance();
+
+  if (SiteEngagementService::IsEnabled())
+    SiteEngagementServiceFactory::GetInstance();
+
 #if defined(ENABLE_SPELLCHECK)
   SpellcheckServiceFactory::GetInstance();
 #endif

@@ -342,6 +342,10 @@ const char kDisableSdchPersistence[] = "disable-sdch-persistence";
 // Disables using bubbles for session restore request.
 const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
 
+// Disables the Site Engagement service, which records interaction with sites
+// and allocates certain resources accordingly.
+const char kDisableSiteEngagementService[] = "disable-site-engagement-service";
+
 // Disables the suggestions service.
 const char kDisableSuggestionsService[]     = "disable-suggestions-service";
 
@@ -551,6 +555,10 @@ const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";
 // (see SettingsWindowEnabled() below).
 const char kEnableSettingsWindow[]           = "enable-settings-window";
 const char kDisableSettingsWindow[]          = "disable-settings-window";
+
+// Enable the Site Engagement service, which records interaction with sites and
+// allocates certain resources accordingly.
+const char kEnableSiteEngagementService[]   = "enable-site-engagement-service";
 
 // Enable SPDY/4, aka HTTP/2. This is a temporary testing flag.
 const char kEnableSpdy4[]                   = "enable-spdy4";

@@ -6706,6 +6706,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION" desc="Description for the flag to enable showing permissions requests in bubbles.">
         Show content permission requests (e.g. notifications, quota, camera use, microphone use) in bubbles instead of info bars.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SITE_ENGAGEMENT_SERVICE_NAME" desc="Title for the flag to enable the site engagement service.">
+        Enable Site Engagement Service
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SITE_ENGAGEMENT_SERVICE_DESCRIPTION" desc="Description for the flag to enable the site engagement service.">
+        Enables the Site Engagement Service, which records interaction with sites and allocates resources accordingly.
+      </message>
       <message name="IDS_FLAGS_OUT_OF_PROCESS_PDF_NAME" desc="Title for the flag to enable out of process PDF.">
         Enable out of process PDF.
       </message>

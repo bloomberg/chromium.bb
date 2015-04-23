@@ -1804,6 +1804,14 @@ const Experiment kExperiments[] = {
                               switches::kDisablePermissionsBubbles)
   },
   {
+    "enable-site-engagement-service",
+    IDS_FLAGS_ENABLE_SITE_ENGAGEMENT_SERVICE_NAME,
+    IDS_FLAGS_ENABLE_SITE_ENGAGEMENT_SERVICE_DESCRIPTION,
+    kOsAll,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSiteEngagementService,
+                              switches::kDisableSiteEngagementService)
+  },
+  {
     "enable-session-crashed-bubble",
     IDS_FLAGS_ENABLE_SESSION_CRASHED_BUBBLE_NAME,
     IDS_FLAGS_ENABLE_SESSION_CRASHED_BUBBLE_DESCRIPTION,
