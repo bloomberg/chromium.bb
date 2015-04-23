@@ -137,7 +137,8 @@ StringSlicer::StringSlicer(const base::string16& text,
       elide_at_beginning_(elide_at_beginning) {
 }
 
-base::string16 StringSlicer::CutString(size_t length, bool insert_ellipsis) {
+base::string16 StringSlicer::CutString(size_t length,
+                                       bool insert_ellipsis) const {
   const base::string16 ellipsis_text = insert_ellipsis ? ellipsis_
                                                        : base::string16();
 
@@ -151,12 +152,10 @@ base::string16 StringSlicer::CutString(size_t length, bool insert_ellipsis) {
   // We put the extra character, if any, before the cut.
   const size_t half_length = length / 2;
   const size_t prefix_length = FindValidBoundaryBefore(length - half_length);
-  const size_t suffix_start_guess = text_.length() - half_length;
-  const size_t suffix_start = FindValidBoundaryAfter(suffix_start_guess);
-  const size_t suffix_length =
-      half_length - (suffix_start_guess - suffix_start);
+  const size_t suffix_start =
+      FindValidBoundaryAfter(text_.length() - half_length);
   return text_.substr(0, prefix_length) + ellipsis_text +
-         text_.substr(suffix_start, suffix_length);
+         text_.substr(suffix_start);
 }
 
 size_t StringSlicer::FindValidBoundaryBefore(size_t index) const {
@@ -284,12 +283,13 @@ base::string16 ElideText(const base::string16& text,
   size_t lo = 0;
   size_t hi = text.length() - 1;
   size_t guess;
+  base::string16 cut;
   for (guess = (lo + hi) / 2; lo <= hi; guess = (lo + hi) / 2) {
     // We check the width of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.
     // TODO(skanuj) : Handle directionality of ellipsis based on adjacent
     // characters.  See crbug.com/327963.
-    const base::string16 cut = slicer.CutString(guess, insert_ellipsis);
+    cut = slicer.CutString(guess, insert_ellipsis);
     const float guess_width = GetStringWidthF(cut, font_list);
     if (guess_width == available_pixel_width)
       break;
@@ -303,7 +303,7 @@ base::string16 ElideText(const base::string16& text,
     }
   }
 
-  return slicer.CutString(guess, insert_ellipsis);
+  return cut;
 #endif
 }
 

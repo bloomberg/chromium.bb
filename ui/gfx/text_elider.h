@@ -48,7 +48,7 @@ class GFX_EXPORT StringSlicer {
   // |length| limit).
   // Note: Characters may still be omitted even if |length| is the full string
   // length, if surrogate pairs fall on the split boundary.
-  base::string16 CutString(size_t length, bool insert_ellipsis);
+  base::string16 CutString(size_t length, bool insert_ellipsis) const;
 
  private:
   // Returns a valid cut boundary at or before/after |index|.
