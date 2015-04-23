@@ -364,6 +364,7 @@ if (!is_mac) {
       "//skia",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/harfbuzz-ng",
       "//third_party/WebKit/Source/wtf",
       "//third_party/WebKit/Source/wtf:test_support",
       "//url",
