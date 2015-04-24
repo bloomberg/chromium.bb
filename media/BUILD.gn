@@ -368,15 +368,12 @@ component("media") {
     ]
   }
 
-  if (use_alsa) {
+  if (use_alsa && use_udev) {
     libs += [ "asound" ]
     sources += [
       "midi/midi_manager_alsa.cc",
       "midi/midi_manager_alsa.h",
     ]
-  }
-
-  if (use_udev) {
     deps += [ "//device/udev_linux" ]
   }
 
@@ -679,7 +676,7 @@ test("media_unittests") {
     ]
   }
 
-  if (use_alsa) {
+  if (use_alsa && use_udev) {
     sources += [ "midi/midi_manager_alsa_unittest.cc" ]
   }
 

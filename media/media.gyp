@@ -1100,6 +1100,11 @@
           'dependencies': [
             '../device/udev_linux/udev.gyp:udev_linux',
           ],
+        }, {  # use_udev==0
+          'sources!': [
+            'midi/midi_manager_alsa.cc',
+            'midi/midi_manager_alsa.h',
+          ],
         }],
       ],  # conditions
       'target_conditions': [
@@ -1416,7 +1421,7 @@
             'video/capture/mac/video_capture_device_factory_mac_unittest.mm',
           ]
         }],
-	['use_alsa==1', {
+        ['use_alsa==1 and use_udev==1', {
           'sources': [
             'midi/midi_manager_alsa_unittest.cc',
           ]

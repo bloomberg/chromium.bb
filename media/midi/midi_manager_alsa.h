@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "device/udev_linux/scoped_udev.h"
 #include "media/midi/midi_manager.h"
 
 namespace media {
@@ -311,6 +312,9 @@ class MEDIA_EXPORT MidiManagerAlsa final : public MidiManager {
 
   // ALSA event -> MIDI coder.
   snd_midi_event_t* decoder_;
+
+  // udev, for querying hardware devices.
+  device::ScopedUdevPtr udev_;
 
   base::Thread send_thread_;
   base::Thread event_thread_;

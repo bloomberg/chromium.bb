@@ -70,6 +70,7 @@ MidiManagerAlsa::MidiManagerAlsa()
       out_client_id_(-1),
       in_port_id_(-1),
       decoder_(NULL),
+      udev_(device::udev_new()),
       send_thread_("MidiSendThread"),
       event_thread_("MidiEventThread"),
       event_thread_shutdown_(false) {

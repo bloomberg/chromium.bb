@@ -19,8 +19,8 @@ MidiManager::MidiManager()
 MidiManager::~MidiManager() {
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA) && \
-    !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_MACOSX) && !defined(OS_WIN) && \
+    !(defined(USE_ALSA) && defined(USE_UDEV)) && !defined(OS_ANDROID)
 MidiManager* MidiManager::Create() {
   return new MidiManager;
 }
