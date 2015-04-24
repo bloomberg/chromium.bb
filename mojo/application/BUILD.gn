@@ -35,7 +35,7 @@ source_set("content_handler") {
   ]
 }
 
-source_set("test_support_source_set") {
+source_set("test_support") {
   testonly = true
   sources = [
     "application_test_base_chromium.cc",
@@ -51,15 +51,6 @@ source_set("test_support_source_set") {
     "//third_party/mojo/src/mojo/public/cpp/environment",
     "//third_party/mojo/src/mojo/public/cpp/system",
     "//testing/gtest",
-  ]
-}
-
-# This group wraps the source_set above, so building any apptest that depends
-# on this target also builds this target's data_deps; see crbug.com/477104.
-group("test_support") {
-  testonly = true
-  public_deps = [
-    ":test_support_source_set",
   ]
 
   data_deps = []
