@@ -222,12 +222,20 @@ bool MediaAudioConstraints::GetDefaultValueForConstraint(
 }
 
 EchoInformation::EchoInformation()
-    : num_chunks_(0) {}
+    : num_chunks_(0), echo_frames_received_(false) {
+}
 
 EchoInformation::~EchoInformation() {}
 
 void EchoInformation::UpdateAecDelayStats(
     webrtc::EchoCancellation* echo_cancellation) {
+  // Only start collecting stats if we know echo cancellation has measured an
+  // echo. Otherwise we clutter the stats with for example cases where only the
+  // microphone is used.
+  if (!echo_frames_received_ & !echo_cancellation->stream_has_echo())
+    return;
+
+  echo_frames_received_ = true;
   // In WebRTC, three echo delay metrics are calculated and updated every
   // five seconds. We use one of them, |fraction_poor_delays| to log in a UMA
   // histogram an Echo Cancellation quality metric. The stat in WebRTC has a

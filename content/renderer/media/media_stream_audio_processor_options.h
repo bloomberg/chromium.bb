@@ -101,6 +101,7 @@ class CONTENT_EXPORT EchoInformation {
   // Counter to track 5 seconds of processed 10 ms chunks in order to query a
   // new metric from webrtc::EchoCancellation::GetEchoDelayMetrics().
   int num_chunks_;
+  bool echo_frames_received_;
 
   DISALLOW_COPY_AND_ASSIGN(EchoInformation);
 };
