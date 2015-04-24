@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.share;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -253,6 +254,10 @@ public class ShareHelper {
         intent.putExtra(Intent.EXTRA_TEXT, url);
         if (screenshotUri != null) {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            // To give read access to an Intent target, we need to put |screenshotUri| in clipData
+            // because adding Intent.FLAG_GRANT_READ_URI_PERMISSION doesn't work for
+            // EXTRA_SHARE_SCREENSHOT_AS_STREAM.
+            intent.setClipData(ClipData.newRawUri("", screenshotUri));
             intent.putExtra(EXTRA_SHARE_SCREENSHOT_AS_STREAM, screenshotUri);
         }
         return intent;
