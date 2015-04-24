@@ -37,8 +37,10 @@ public final class TestUploadDataStreamHandler {
     }
 
     public void destroyNativeObjects() {
-        nativeDestroy(mTestUploadDataStreamHandler);
-        mTestUploadDataStreamHandler = 0;
+        if (mTestUploadDataStreamHandler != 0) {
+            nativeDestroy(mTestUploadDataStreamHandler);
+            mTestUploadDataStreamHandler = 0;
+        }
     }
 
     /**
