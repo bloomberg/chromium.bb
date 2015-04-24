@@ -1629,6 +1629,7 @@
             'inspector/InspectorHighlight.h',
             'inspector/InspectorHistory.cpp',
             'inspector/InspectorHistory.h',
+            'inspector/InspectorIdentifiers.h',
             'inspector/InspectorInputAgent.cpp',
             'inspector/InspectorInputAgent.h',
             'inspector/InspectorInspectorAgent.cpp',

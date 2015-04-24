@@ -87,7 +87,9 @@ using StaticNodeList = StaticNodeTypeList<Node>;
 class TagCollection;
 class Text;
 class TouchEvent;
+#if !ENABLE(OILPAN)
 template <typename T> struct WeakIdentifierMapTraits;
+#endif
 
 const int nodeStyleChangeShift = 19;
 
@@ -797,10 +799,10 @@ protected:
 
 private:
     friend class TreeShared<Node>;
+#if !ENABLE(OILPAN)
     // FIXME: consider exposing proper API for this instead.
     friend struct WeakIdentifierMapTraits<Node>;
 
-#if !ENABLE(OILPAN)
     void removedLastRef();
 #endif
     bool hasTreeSharedParent() const { return !!parentOrShadowHostNode(); }

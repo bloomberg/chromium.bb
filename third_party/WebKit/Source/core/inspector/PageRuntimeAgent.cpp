@@ -39,6 +39,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorIdentifiers.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/page/Page.h"
@@ -111,7 +112,7 @@ void PageRuntimeAgent::didCreateScriptContext(LocalFrame* frame, ScriptState* sc
         return;
     ASSERT(frontend());
     String originString = origin ? origin->toRawString() : "";
-    String frameId = m_pageAgent->frameId(frame);
+    String frameId = InspectorIdentifiers<LocalFrame>::identifier(frame);
     addExecutionContextToFrontend(scriptState, isMainWorld, originString, frameId);
 }
 
@@ -160,7 +161,7 @@ void PageRuntimeAgent::reportExecutionContextCreation()
         LocalFrame* localFrame = toLocalFrame(frame);
         if (!localFrame->script().canExecuteScripts(NotAboutToExecuteScript))
             continue;
-        String frameId = m_pageAgent->frameId(localFrame);
+        String frameId = InspectorIdentifiers<LocalFrame>::identifier(localFrame);
 
         // Ensure execution context is created.
         // If initializeMainWorld returns true, then is registered by didCreateScriptContext

@@ -70,6 +70,7 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
+#include "core/inspector/InspectorIdentifiers.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
@@ -1593,9 +1594,8 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
 
         if (node->isFrameOwnerElement()) {
             HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(node);
-            LocalFrame* frame = (frameOwner->contentFrame() && frameOwner->contentFrame()->isLocalFrame()) ? toLocalFrame(frameOwner->contentFrame()) : nullptr;
-            if (frame)
-                value->setFrameId(m_pageAgent->frameId(frame));
+            if (LocalFrame* frame = frameOwner->contentFrame() && frameOwner->contentFrame()->isLocalFrame() ? toLocalFrame(frameOwner->contentFrame()) : nullptr)
+                value->setFrameId(InspectorIdentifiers<LocalFrame>::identifier(frame));
             if (Document* doc = frameOwner->contentDocument())
                 value->setContentDocument(buildObjectForNode(doc, 0, nodesMap));
         }

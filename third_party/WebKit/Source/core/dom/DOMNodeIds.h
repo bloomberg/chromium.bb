@@ -6,11 +6,10 @@
 #define DOMNodeIds_h
 
 #include "core/CoreExport.h"
+#include "core/dom/Node.h"
 #include "core/dom/WeakIdentifierMap.h"
 
 namespace blink {
-
-class Node;
 
 #if !ENABLE(OILPAN)
 template<> struct WeakIdentifierMapTraits<Node> {
@@ -19,7 +18,8 @@ template<> struct WeakIdentifierMapTraits<Node> {
 };
 #endif
 
-typedef WeakIdentifierMap<Node> WeakNodeMap;
+extern template class WeakIdentifierMap<Node>;
+using WeakNodeMap = WeakIdentifierMap<Node>;
 
 class CORE_EXPORT DOMNodeIds {
 public:

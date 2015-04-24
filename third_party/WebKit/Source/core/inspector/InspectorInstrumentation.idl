@@ -315,9 +315,6 @@ interface InspectorInstrumentation {
     void frameDocumentUpdated([Keep] LocalFrame*);
 
     [Page]
-    void loaderDetachedFromFrame(LocalFrame*, DocumentLoader*);
-
-    [Page]
     void frameStartedLoading([Keep] LocalFrame*);
 
     [Page]

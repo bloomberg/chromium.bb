@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/DocumentType.h"
+#include "core/dom/WeakIdentifierMap.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
@@ -278,6 +279,7 @@ void LocalFrame::detach()
     // Main motivation is to avoid being dependent on its exact timing (Oilpan.)
     LocalFrameLifecycleNotifier::notifyContextDestroyed();
     m_supplements.clear();
+    WeakIdentifierMap<LocalFrame>::notifyObjectDestroyed(this);
 }
 
 SecurityContext* LocalFrame::securityContext() const

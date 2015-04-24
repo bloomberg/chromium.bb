@@ -51,9 +51,9 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/DOMPatchSupport.h"
-#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/InspectorIdentifiers.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
@@ -89,6 +89,11 @@ KURL urlWithoutFragment(const KURL& url)
     KURL result = url;
     result.removeFragmentIdentifier();
     return result;
+}
+
+String frameId(LocalFrame* frame)
+{
+    return frame ? InspectorIdentifiers<LocalFrame>::identifier(frame) : "";
 }
 
 }
@@ -670,12 +675,7 @@ void InspectorPageAgent::frameAttachedToParent(LocalFrame* frame)
 
 void InspectorPageAgent::frameDetachedFromParent(LocalFrame* frame)
 {
-    HashMap<LocalFrame*, String>::iterator iterator = m_frameToIdentifier.find(frame);
-    if (iterator != m_frameToIdentifier.end()) {
-        frontend()->frameDetached(iterator->value);
-        m_identifierToFrame.remove(iterator->value);
-        m_frameToIdentifier.remove(iterator);
-    }
+    frontend()->frameDetached(frameId(frame));
 }
 
 FrameHost* InspectorPageAgent::frameHost()
@@ -685,37 +685,8 @@ FrameHost* InspectorPageAgent::frameHost()
 
 LocalFrame* InspectorPageAgent::frameForId(const String& frameId)
 {
-    return frameId.isEmpty() ? nullptr : m_identifierToFrame.get(frameId);
-}
-
-String InspectorPageAgent::frameId(LocalFrame* frame)
-{
-    if (!frame)
-        return "";
-    String identifier = m_frameToIdentifier.get(frame);
-    if (identifier.isNull()) {
-        identifier = IdentifiersFactory::createIdentifier();
-        m_frameToIdentifier.set(frame, identifier);
-        m_identifierToFrame.set(identifier, frame);
-    }
-    return identifier;
-}
-
-bool InspectorPageAgent::hasIdForFrame(LocalFrame* frame) const
-{
-    return frame && m_frameToIdentifier.contains(frame);
-}
-
-String InspectorPageAgent::loaderId(DocumentLoader* loader)
-{
-    if (!loader)
-        return "";
-    String identifier = m_loaderToIdentifier.get(loader);
-    if (identifier.isNull()) {
-        identifier = IdentifiersFactory::createIdentifier();
-        m_loaderToIdentifier.set(loader, identifier);
-    }
-    return identifier;
+    LocalFrame* frame = InspectorIdentifiers<LocalFrame>::lookup(frameId);
+    return frame && frame->instrumentingAgents() == m_inspectedFrame->instrumentingAgents() ? frame : nullptr;
 }
 
 LocalFrame* InspectorPageAgent::findFrameWithSecurityOrigin(const String& originRawString)
@@ -750,13 +721,6 @@ DocumentLoader* InspectorPageAgent::assertDocumentLoader(ErrorString* errorStrin
     if (!documentLoader)
         *errorString = "No documentLoader for given frame found";
     return documentLoader;
-}
-
-void InspectorPageAgent::loaderDetachedFromFrame(DocumentLoader* loader)
-{
-    HashMap<DocumentLoader*, String>::iterator iterator = m_loaderToIdentifier.find(loader);
-    if (iterator != m_loaderToIdentifier.end())
-        m_loaderToIdentifier.remove(iterator);
 }
 
 void InspectorPageAgent::frameStartedLoading(LocalFrame* frame)
@@ -823,7 +787,7 @@ PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(Loc
 {
     RefPtr<TypeBuilder::Page::Frame> frameObject = TypeBuilder::Page::Frame::create()
         .setId(frameId(frame))
-        .setLoaderId(loaderId(frame->loader().documentLoader()))
+        .setLoaderId(InspectorIdentifiers<DocumentLoader>::identifier(frame->loader().documentLoader()))
         .setUrl(urlWithoutFragment(frame->document()->url()).string())
         .setMimeType(frame->loader().documentLoader()->responseMIMEType())
         .setSecurityOrigin(frame->document()->securityOrigin()->toRawString());

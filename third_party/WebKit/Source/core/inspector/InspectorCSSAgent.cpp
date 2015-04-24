@@ -1316,7 +1316,7 @@ InspectorStyleSheet* InspectorCSSAgent::bindStyleSheet(CSSStyleSheet* styleSheet
     if (!inspectorStyleSheet) {
         String id = String::number(m_lastStyleSheetId++);
         Document* document = styleSheet->ownerDocument();
-        inspectorStyleSheet = InspectorStyleSheet::create(m_pageAgent, m_resourceAgent, id, styleSheet, detectOrigin(styleSheet, document), InspectorDOMAgent::documentURLString(document), this);
+        inspectorStyleSheet = InspectorStyleSheet::create(m_resourceAgent, id, styleSheet, detectOrigin(styleSheet, document), InspectorDOMAgent::documentURLString(document), this);
         m_idToInspectorStyleSheet.set(id, inspectorStyleSheet);
         m_cssStyleSheetToInspectorStyleSheet.set(styleSheet, inspectorStyleSheet);
         if (m_creatingViaInspectorStyleSheet)

@@ -32,6 +32,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
+#include "core/dom/WeakIdentifierMap.h"
 #include "core/events/Event.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/MemoryCache.h"
@@ -563,7 +564,7 @@ void DocumentLoader::detachFromFrame()
     stopLoading();
 
     m_applicationCacheHost->setApplicationCache(0);
-    InspectorInstrumentation::loaderDetachedFromFrame(m_frame, this);
+    WeakIdentifierMap<DocumentLoader>::notifyObjectDestroyed(this);
     m_frame = 0;
 }
 

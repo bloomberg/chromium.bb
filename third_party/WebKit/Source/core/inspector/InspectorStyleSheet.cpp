@@ -47,7 +47,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorIdentifiers.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/svg/SVGStyleElement.h"
 #include "wtf/OwnPtr.h"
@@ -979,15 +979,14 @@ bool InspectorStyleSheetBase::findPropertyByRange(const SourceRange& sourceRange
     return false;
 }
 
-PassRefPtrWillBeRawPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
+PassRefPtrWillBeRawPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
 {
-    return adoptRefWillBeNoop(new InspectorStyleSheet(pageAgent, resourceAgent, id, pageStyleSheet, origin, documentURL, cssAgent));
+    return adoptRefWillBeNoop(new InspectorStyleSheet(resourceAgent, id, pageStyleSheet, origin, documentURL, cssAgent));
 }
 
-InspectorStyleSheet::InspectorStyleSheet(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
+InspectorStyleSheet::InspectorStyleSheet(InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
     : InspectorStyleSheetBase(id, cssAgent)
     , m_cssAgent(cssAgent)
-    , m_pageAgent(pageAgent)
     , m_resourceAgent(resourceAgent)
     , m_pageStyleSheet(pageStyleSheet)
     , m_origin(origin)
@@ -1003,7 +1002,6 @@ InspectorStyleSheet::~InspectorStyleSheet()
 DEFINE_TRACE(InspectorStyleSheet)
 {
     visitor->trace(m_cssAgent);
-    visitor->trace(m_pageAgent);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_pageStyleSheet);
     visitor->trace(m_flatRules);
@@ -1413,7 +1411,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
         .setDisabled(styleSheet->disabled())
         .setSourceURL(url())
         .setTitle(styleSheet->title())
-        .setFrameId(m_pageAgent->frameId(frame))
+        .setFrameId(frame ? InspectorIdentifiers<LocalFrame>::identifier(frame) : "")
         .setIsInline(styleSheet->isInline() && !startsAtZero())
         .setStartLine(styleSheet->startPositionInSource().m_line.zeroBasedInt())
         .setStartColumn(styleSheet->startPositionInSource().m_column.zeroBasedInt());

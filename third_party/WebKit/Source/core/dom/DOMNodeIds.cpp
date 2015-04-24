@@ -4,10 +4,11 @@
 
 #include "config.h"
 #include "core/dom/DOMNodeIds.h"
-#include "core/dom/Node.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
+
+template class WeakIdentifierMap<Node>;
 
 #if !ENABLE(OILPAN)
 void WeakIdentifierMapTraits<Node>::removedFromIdentifierMap(Node* node)
@@ -23,7 +24,7 @@ void WeakIdentifierMapTraits<Node>::addedToIdentifierMap(Node* node)
 
 static WeakNodeMap& nodeIds()
 {
-    DEFINE_STATIC_LOCAL(RawPtrWillBePersistent<WeakNodeMap>, self, (new WeakNodeMap()));
+    DEFINE_STATIC_LOCAL(WeakNodeMap::ReferenceType, self, (new WeakNodeMap()));
     return *self;
 }
 

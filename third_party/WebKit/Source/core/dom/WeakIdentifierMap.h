@@ -11,14 +11,32 @@
 
 namespace blink {
 
-#if !ENABLE(OILPAN)
+template<typename T> struct IdentifierGenerator;
+
+template<> struct IdentifierGenerator<int> {
+    using IdentifierType = int;
+    static IdentifierType next()
+    {
+        static int s_lastId = 0;
+        return ++s_lastId;
+    }
+};
+
 template<typename T> struct WeakIdentifierMapTraits {
     static void removedFromIdentifierMap(T*) { }
     static void addedToIdentifierMap(T*) { }
 };
 
-template<typename T, typename Traits = WeakIdentifierMapTraits<T>> class WeakIdentifierMap {
+template<typename T,
+    typename Generator = IdentifierGenerator<int>,
+    typename Traits = WeakIdentifierMapTraits<T>,
+    bool isGarbageCollected = IsGarbageCollectedType<T>::value> class WeakIdentifierMap;
+
+template<typename T, typename Generator, typename Traits> class WeakIdentifierMap<T, Generator, Traits, false> {
 public:
+    using IdentifierType = typename Generator::IdentifierType;
+    using ReferenceType = RawPtr<WeakIdentifierMap<T, Generator, Traits, false>>;
+
     ~WeakIdentifierMap()
     {
         ObjectToWeakIdentifierMaps& allMaps = ObjectToWeakIdentifierMaps::instance();
@@ -29,18 +47,18 @@ public:
         }
     }
 
-    int identifier(T* object)
+    IdentifierType identifier(T* object)
     {
-        int result = m_objectToIdentifier.get(object);
-        if (!result) {
-            static int s_lastId = 0;
-            result = ++s_lastId;
+        IdentifierType result = m_objectToIdentifier.get(object);
+
+        if (WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(result)) {
+            result = Generator::next();
             put(object, result);
         }
         return result;
     }
 
-    T* lookup(int identifier)
+    T* lookup(IdentifierType identifier)
     {
         return m_identifierToObject.get(identifier);
     }
@@ -51,7 +69,7 @@ public:
     }
 
 private:
-    void put(T* object, int identifier)
+    void put(T* object, IdentifierType identifier)
     {
         ASSERT(object && !m_objectToIdentifier.contains(object));
         m_objectToIdentifier.set(object, identifier);
@@ -63,7 +81,7 @@ private:
     }
 
     class ObjectToWeakIdentifierMaps {
-        typedef WeakIdentifierMap<T> IdentifierMap;
+        using IdentifierMap = WeakIdentifierMap<T, Generator, Traits>;
     public:
         bool addedToMap(T* object, IdentifierMap* map)
         {
@@ -91,9 +109,10 @@ private:
 
         void objectDestroyed(T* object)
         {
-            OwnPtr<MapList> maps = m_objectToMapList.take(object);
-            for (auto& map : *maps)
-                map->objectDestroyed(object);
+            if (OwnPtr<MapList> maps = m_objectToMapList.take(object)) {
+                for (auto& map : *maps)
+                    map->objectDestroyed(object);
+            }
         }
 
         static ObjectToWeakIdentifierMaps& instance()
@@ -103,8 +122,8 @@ private:
         }
 
     private:
-        typedef Vector<IdentifierMap*, 1> MapList;
-        typedef HashMap<T*, OwnPtr<MapList>> ObjectToMapList;
+        using MapList = Vector<IdentifierMap*, 1>;
+        using ObjectToMapList = HashMap<T*, OwnPtr<MapList>>;
         ObjectToMapList m_objectToMapList;
     };
 
@@ -115,35 +134,37 @@ private:
         m_identifierToObject.remove(identifier);
     }
 
-    typedef HashMap<T*, int> ObjectToIdentifier;
-    typedef HashMap<int, T*> IdentifierToObject;
+    using ObjectToIdentifier = HashMap<T*, IdentifierType>;
+    using IdentifierToObject = HashMap<IdentifierType, T*>;
 
     ObjectToIdentifier m_objectToIdentifier;
     IdentifierToObject m_identifierToObject;
 };
 
-#else // ENABLE(OILPAN)
-
-template<typename T> class WeakIdentifierMap : public GarbageCollected<WeakIdentifierMap<T>> {
+template<typename T, typename Generator, typename Traits> class WeakIdentifierMap<T, Generator, Traits, true>
+    : public GarbageCollected<WeakIdentifierMap<T, Generator, Traits, true>> {
 public:
+    using IdentifierType = typename Generator::IdentifierType;
+    using ReferenceType = Persistent<WeakIdentifierMap<T, Generator, Traits, true>>;
+
     WeakIdentifierMap()
         : m_objectToIdentifier(new ObjectToIdentifier())
         , m_identifierToObject(new IdentifierToObject())
     {
     }
 
-    int identifier(T* object)
+    IdentifierType identifier(T* object)
     {
-        int result = m_objectToIdentifier->get(object);
-        if (!result) {
-            static int s_lastId = 0;
-            result = ++s_lastId;
+        IdentifierType result = m_objectToIdentifier->get(object);
+
+        if (WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(result)) {
+            result = Generator::next();
             put(object, result);
         }
         return result;
     }
 
-    T* lookup(int identifier)
+    T* lookup(IdentifierType identifier)
     {
         return m_identifierToObject->get(identifier);
     }
@@ -157,21 +178,19 @@ public:
     }
 
 private:
-    void put(T* object, int identifier)
+    void put(T* object, IdentifierType identifier)
     {
         ASSERT(object && !m_objectToIdentifier->contains(object));
         m_objectToIdentifier->set(object, identifier);
         m_identifierToObject->set(identifier, object);
     }
 
-    typedef HeapHashMap<WeakMember<T>, int> ObjectToIdentifier;
-    typedef HeapHashMap<int, WeakMember<T>> IdentifierToObject;
+    using ObjectToIdentifier = HeapHashMap<WeakMember<T>, IdentifierType>;
+    using IdentifierToObject = HeapHashMap<IdentifierType, WeakMember<T>>;
 
     Member<ObjectToIdentifier> m_objectToIdentifier;
     Member<IdentifierToObject> m_identifierToObject;
 };
-
-#endif // ENABLE(OILPAN)
 
 }
 

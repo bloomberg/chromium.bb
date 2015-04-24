@@ -49,7 +49,6 @@ class Document;
 class Element;
 class ExceptionState;
 class InspectorCSSAgent;
-class InspectorPageAgent;
 class InspectorResourceAgent;
 class InspectorStyleSheetBase;
 
@@ -190,7 +189,7 @@ private:
 
 class InspectorStyleSheet : public InspectorStyleSheetBase {
 public:
-    static PassRefPtrWillBeRawPtr<InspectorStyleSheet> create(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
+    static PassRefPtrWillBeRawPtr<InspectorStyleSheet> create(InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
 
     virtual ~InspectorStyleSheet();
     DECLARE_VIRTUAL_TRACE();
@@ -236,7 +235,7 @@ protected:
     virtual bool ensureParsedDataReady() override;
 
 private:
-    InspectorStyleSheet(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
+    InspectorStyleSheet(InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
     unsigned ruleIndexBySourceRange(const CSSMediaRule* parentMediaRule, const SourceRange&);
     CSSStyleRule* insertCSSOMRuleInStyleSheet(const SourceRange&, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleInMediaRule(CSSMediaRule*, const SourceRange&, const String& ruleText, ExceptionState&);
@@ -263,7 +262,6 @@ private:
     Element* ownerStyleElement() const;
 
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
     RefPtrWillBeMember<CSSStyleSheet> m_pageStyleSheet;
     TypeBuilder::CSS::StyleSheetOrigin::Enum m_origin;

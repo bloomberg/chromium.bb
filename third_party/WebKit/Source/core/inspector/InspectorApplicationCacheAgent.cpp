@@ -27,6 +27,7 @@
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 
 #include "core/frame/LocalFrame.h"
+#include "core/inspector/InspectorIdentifiers.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -79,7 +80,8 @@ void InspectorApplicationCacheAgent::updateApplicationCacheStatus(LocalFrame* fr
     ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
 
     String manifestURL = info.m_manifest.string();
-    frontend()->applicationCacheStatusUpdated(m_pageAgent->frameId(frame), manifestURL, static_cast<int>(status));
+    String frameId = InspectorIdentifiers<LocalFrame>::identifier(frame);
+    frontend()->applicationCacheStatusUpdated(frameId, manifestURL, static_cast<int>(status));
 }
 
 void InspectorApplicationCacheAgent::networkStateChanged(LocalFrame* frame, bool online)
@@ -105,7 +107,7 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, RefPtr
         String manifestURL = info.m_manifest.string();
         if (!manifestURL.isEmpty()) {
             RefPtr<TypeBuilder::ApplicationCache::FrameWithManifest> value = TypeBuilder::ApplicationCache::FrameWithManifest::create()
-                .setFrameId(m_pageAgent->frameId(toLocalFrame(frame)))
+                .setFrameId(InspectorIdentifiers<LocalFrame>::identifier(toLocalFrame(frame)))
                 .setManifestURL(manifestURL)
                 .setStatus(static_cast<int>(host->status()));
             result->addItem(value);
