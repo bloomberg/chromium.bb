@@ -86,26 +86,61 @@ static BROTLI_INLINE int DecodeVarLenUint8(BrotliBitReader* br) {
   return 0;
 }
 
-static void DecodeMetaBlockLength(BrotliBitReader* br,
-                                  int* meta_block_length,
-                                  int* input_end,
-                                  int* is_uncompressed) {
+/* Advances the bit reader position to the next byte boundary and verifies
+   that any skipped bits are set to zero. */
+static BROTLI_INLINE int JumpToByteBoundary(BrotliBitReader* br) {
+  uint32_t new_bit_pos = (br->bit_pos_ + 7) & (uint32_t)(~7UL);
+  uint32_t pad_bits = BrotliReadBits(br, (int)(new_bit_pos - br->bit_pos_));
+  return pad_bits == 0;
+}
+
+static int DecodeMetaBlockLength(BrotliBitReader* br,
+                                 int* meta_block_length,
+                                 int* input_end,
+                                 int* is_metadata,
+                                 int* is_uncompressed) {
   int size_nibbles;
+  int size_bytes;
   int i;
   *input_end = (int)BrotliReadBits(br, 1);
   *meta_block_length = 0;
   *is_uncompressed = 0;
+  *is_metadata = 0;
   if (*input_end && BrotliReadBits(br, 1)) {
-    return;
+    return 1;
   }
   size_nibbles = (int)BrotliReadBits(br, 2) + 4;
-  for (i = 0; i < size_nibbles; ++i) {
-    *meta_block_length |= (int)BrotliReadBits(br, 4) << (i * 4);
+  if (size_nibbles == 7) {
+    *is_metadata = 1;
+    /* Verify reserved bit. */
+    if (BrotliReadBits(br, 1) != 0) {
+      return 0;
+    }
+    size_bytes = (int)BrotliReadBits(br, 2);
+    if (size_bytes == 0) {
+      return 1;
+    }
+    for (i = 0; i < size_bytes; ++i) {
+      int next_byte = (int)BrotliReadBits(br, 8);
+      if (i + 1 == size_bytes && size_bytes > 1 && next_byte == 0) {
+        return 0;
+      }
+      *meta_block_length |= next_byte << (i * 8);
+    }
+  } else {
+    for (i = 0; i < size_nibbles; ++i) {
+      int next_nibble = (int)BrotliReadBits(br, 4);
+      if (i + 1 == size_nibbles && size_nibbles > 4 && next_nibble == 0) {
+        return 0;
+      }
+      *meta_block_length |= next_nibble << (i * 4);
+    }
   }
   ++(*meta_block_length);
-  if (!*input_end) {
+  if (!*input_end && !*is_metadata) {
     *is_uncompressed = (int)BrotliReadBits(br, 1);
   }
+  return 1;
 }
 
 /* Decodes the next Huffman code from bit-stream. */
@@ -156,7 +191,7 @@ static BrotliResult ReadHuffmanCodeLengths(
         const HuffmanCode* p = s->table;
         uint8_t code_len;
         if (!BrotliReadMoreInput(br)) {
-          return BROTLI_RESULT_PARTIAL;
+          return BROTLI_RESULT_NEEDS_MORE_INPUT;
         }
         BrotliFillBitWindow(br);
         p += (br->val_ >> br->bit_pos_) & 31;
@@ -224,7 +259,7 @@ static BrotliResult ReadHuffmanCode(int alphabet_size,
     switch(s->sub_state[1]) {
       case BROTLI_STATE_SUB_NONE:
         if (!BrotliReadMoreInput(br)) {
-          return BROTLI_RESULT_PARTIAL;
+          return BROTLI_RESULT_NEEDS_MORE_INPUT;
         }
         s->code_lengths =
             (uint8_t*)BrotliSafeMalloc((uint64_t)alphabet_size,
@@ -250,7 +285,10 @@ static BrotliResult ReadHuffmanCode(int alphabet_size,
           }
           memset(s->code_lengths, 0, (size_t)alphabet_size);
           for (i = 0; i < num_symbols; ++i) {
-            symbols[i] = (int)BrotliReadBits(br, max_bits) % alphabet_size;
+            symbols[i] = (int)BrotliReadBits(br, max_bits);
+            if (symbols[i] >= alphabet_size) {
+              return BROTLI_RESULT_ERROR;
+            }
             s->code_lengths[symbols[i]] = 2;
           }
           s->code_lengths[symbols[0]] = 1;
@@ -375,13 +413,6 @@ static int TranslateShortCodes(int code, int* ringbuffer, int index) {
   return val;
 }
 
-static void MoveToFront(uint8_t* v, uint8_t index) {
-  uint8_t value = v[index];
-  uint8_t i = index;
-  for (; i; --i) v[i] = v[i - 1];
-  v[0] = value;
-}
-
 static void InverseMoveToFrontTransform(uint8_t* v, int v_len) {
   uint8_t mtf[256];
   int i;
@@ -390,8 +421,12 @@ static void InverseMoveToFrontTransform(uint8_t* v, int v_len) {
   }
   for (i = 0; i < v_len; ++i) {
     uint8_t index = v[i];
-    v[i] = mtf[index];
-    if (index) MoveToFront(mtf, index);
+    uint8_t value = mtf[index];
+    v[i] = value;
+    for (; index; --index) {
+      mtf[index] = mtf[index - 1];
+    }
+    mtf[0] = value;
   }
 }
 
@@ -436,7 +471,7 @@ static BrotliResult DecodeContextMap(int context_map_size,
   switch(s->sub_state[0]) {
     case BROTLI_STATE_SUB_NONE:
       if (!BrotliReadMoreInput(br)) {
-        return BROTLI_RESULT_PARTIAL;
+        return BROTLI_RESULT_NEEDS_MORE_INPUT;
       }
       *num_htrees = DecodeVarLenUint8(br) + 1;
 
@@ -477,7 +512,7 @@ static BrotliResult DecodeContextMap(int context_map_size,
       while (s->context_index < context_map_size) {
         int code;
         if (!BrotliReadMoreInput(br)) {
-          return BROTLI_RESULT_PARTIAL;
+          return BROTLI_RESULT_NEEDS_MORE_INPUT;
         }
         code = ReadSymbol(s->context_map_table, br);
         if (code == 0) {
@@ -612,6 +647,7 @@ BrotliResult CopyUncompressedBlockToOutput(BrotliOutput output,
   int br_pos = s->br.pos_ & BROTLI_IBUF_MASK;
   uint32_t remaining_bits;
   int num_read;
+  int num_written;
 
   /* State machine */
   for (;;) {
@@ -656,12 +692,23 @@ BrotliResult CopyUncompressedBlockToOutput(BrotliOutput output,
         rb_pos += s->nbytes;
         s->meta_block_remaining_len -= s->nbytes;
 
+        s->partially_written = 0;
+        s->sub_state[0] = BROTLI_STATE_SUB_UNCOMPRESSED_WRITE_1;
+        /* No break, continue to next state */
+      case BROTLI_STATE_SUB_UNCOMPRESSED_WRITE_1:
         /* If we wrote past the logical end of the ringbuffer, copy the tail of
            the ringbuffer to its beginning and flush the ringbuffer to the
            output. */
         if (rb_pos >= rb_size) {
-          if (BrotliWrite(output, s->ringbuffer, (size_t)rb_size) < rb_size) {
+          num_written = BrotliWrite(output,
+                                    s->ringbuffer + s->partially_written,
+                                    (size_t)(rb_size - s->partially_written));
+          if (num_written < 0) {
             return BROTLI_RESULT_ERROR;
+          }
+          s->partially_written += num_written;
+          if (s->partially_written < rb_size) {
+            return BROTLI_RESULT_NEEDS_MORE_OUTPUT;
           }
           rb_pos -= rb_size;
           s->meta_block_remaining_len += rb_size;
@@ -672,37 +719,66 @@ BrotliResult CopyUncompressedBlockToOutput(BrotliOutput output,
       case BROTLI_STATE_SUB_UNCOMPRESSED_SHORT:
         while (s->meta_block_remaining_len > 0) {
           if (!BrotliReadMoreInput(&s->br)) {
-            return BROTLI_RESULT_PARTIAL;
+            return BROTLI_RESULT_NEEDS_MORE_INPUT;
           }
           s->ringbuffer[rb_pos++] = (uint8_t)BrotliReadBits(&s->br, 8);
           if (rb_pos == rb_size) {
-            if (BrotliWrite(output, s->ringbuffer, (size_t)rb_size) < rb_size) {
-              return BROTLI_RESULT_ERROR;
-            }
-            rb_pos = 0;
+            s->partially_written = 0;
+            s->sub_state[0] = BROTLI_STATE_SUB_UNCOMPRESSED_WRITE_2;
+            break;
           }
           s->meta_block_remaining_len--;
         }
-        s->sub_state[0] = BROTLI_STATE_SUB_NONE;
-        return BROTLI_RESULT_SUCCESS;
+        if (s->sub_state[0] == BROTLI_STATE_SUB_UNCOMPRESSED_SHORT) {
+          s->sub_state[0] = BROTLI_STATE_SUB_NONE;
+          return BROTLI_RESULT_SUCCESS;
+        }
+        /* No break, if state is updated, continue to next state */
+      case BROTLI_STATE_SUB_UNCOMPRESSED_WRITE_2:
+        num_written = BrotliWrite(output, s->ringbuffer + s->partially_written,
+                                  (size_t)(rb_size - s->partially_written));
+        if (num_written < 0) {
+          return BROTLI_RESULT_ERROR;
+        }
+        s->partially_written += num_written;
+        if (s->partially_written < rb_size) {
+          return BROTLI_RESULT_NEEDS_MORE_OUTPUT;
+        }
+        rb_pos = 0;
+        s->meta_block_remaining_len--;
+        s->sub_state[0] = BROTLI_STATE_SUB_UNCOMPRESSED_SHORT;
+        break;
       case BROTLI_STATE_SUB_UNCOMPRESSED_FILL:
         /* If we have more to copy than the remaining size of the ringbuffer,
            then we first fill the ringbuffer from the input and then flush the
            ringbuffer to the output */
-        while (rb_pos + s->meta_block_remaining_len >= rb_size) {
+        if (rb_pos + s->meta_block_remaining_len >= rb_size) {
           s->nbytes = rb_size - rb_pos;
           if (BrotliRead(s->br.input_, &s->ringbuffer[rb_pos],
                          (size_t)s->nbytes) < s->nbytes) {
-            return BROTLI_RESULT_PARTIAL;
+            return BROTLI_RESULT_NEEDS_MORE_INPUT;
           }
-          if (BrotliWrite(output, s->ringbuffer, (size_t)rb_size) < s->nbytes) {
-            return BROTLI_RESULT_ERROR;
-          }
-          s->meta_block_remaining_len -= s->nbytes;
-          rb_pos = 0;
+          s->partially_written = 0;
+          s->sub_state[0] = BROTLI_STATE_SUB_UNCOMPRESSED_WRITE_3;
+        } else {
+          s->sub_state[0] = BROTLI_STATE_SUB_UNCOMPRESSED_COPY;
+          break;
         }
-        s->sub_state[0] = BROTLI_STATE_SUB_UNCOMPRESSED_COPY;
         /* No break, continue to next state */
+      case BROTLI_STATE_SUB_UNCOMPRESSED_WRITE_3:
+        num_written = BrotliWrite(output, s->ringbuffer + s->partially_written,
+                                  (size_t)(rb_size - s->partially_written));
+        if (num_written < 0) {
+          return BROTLI_RESULT_ERROR;
+        }
+        s->partially_written += num_written;
+        if (s->partially_written < rb_size) {
+          return BROTLI_RESULT_NEEDS_MORE_OUTPUT;
+        }
+        s->meta_block_remaining_len -= s->nbytes;
+        rb_pos = 0;
+        s->sub_state[0] = BROTLI_STATE_SUB_UNCOMPRESSED_FILL;
+        break;
       case BROTLI_STATE_SUB_UNCOMPRESSED_COPY:
         /* Copy straight from the input onto the ringbuffer. The ringbuffer will
            be flushed to the output at a later time. */
@@ -710,7 +786,7 @@ BrotliResult CopyUncompressedBlockToOutput(BrotliOutput output,
                               (size_t)s->meta_block_remaining_len);
         s->meta_block_remaining_len -= num_read;
         if (s->meta_block_remaining_len > 0) {
-          return BROTLI_RESULT_PARTIAL;
+          return BROTLI_RESULT_NEEDS_MORE_INPUT;
         }
 
         /* Restore the state of the bit reader. */
@@ -719,7 +795,7 @@ BrotliResult CopyUncompressedBlockToOutput(BrotliOutput output,
         /* No break, continue to next state */
       case BROTLI_STATE_SUB_UNCOMPRESSED_WARMUP:
         if (!BrotliWarmupBitReader(&s->br)) {
-          return BROTLI_RESULT_PARTIAL;
+          return BROTLI_RESULT_NEEDS_MORE_INPUT;
         }
         s->sub_state[0] = BROTLI_STATE_SUB_NONE;
         return BROTLI_RESULT_SUCCESS;
@@ -810,7 +886,7 @@ BrotliResult BrotliDecompress(BrotliInput input, BrotliOutput output) {
   BrotliResult result;
   BrotliStateInit(&s);
   result = BrotliDecompressStreaming(input, output, 1, &s);
-  if (result == BROTLI_RESULT_PARTIAL) {
+  if (result == BROTLI_RESULT_NEEDS_MORE_INPUT) {
     /* Not ok: it didn't finish even though this is a non-streaming function. */
     result = BROTLI_RESULT_ERROR;
   }
@@ -854,6 +930,7 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
   BrotliBitReader* br = &s->br;
   int initial_remaining_len;
   int bytes_copied;
+  int num_written;
 
   /* We need the slack region for the following reasons:
        - always doing two 8-byte copies for fast backward copying
@@ -866,7 +943,7 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
   /* State machine */
   for (;;) {
     if (result != BROTLI_RESULT_SUCCESS) {
-      if (result == BROTLI_RESULT_PARTIAL && finish) {
+      if (result == BROTLI_RESULT_NEEDS_MORE_INPUT && finish) {
         printf("Unexpected end of input. State: %d\n", s->state);
         result = BROTLI_RESULT_ERROR;
       }
@@ -895,7 +972,7 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
         /* No break, continue to next state */
       case BROTLI_STATE_BITREADER_WARMUP:
         if (!BrotliWarmupBitReader(br)) {
-          result = BROTLI_RESULT_PARTIAL;
+          result = BROTLI_RESULT_NEEDS_MORE_INPUT;
           break;
         }
         /* Decode window size. */
@@ -926,10 +1003,11 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
         /* No break, continue to next state */
       case BROTLI_STATE_METABLOCK_BEGIN:
         if (!BrotliReadMoreInput(br)) {
-          result = BROTLI_RESULT_PARTIAL;
+          result = BROTLI_RESULT_NEEDS_MORE_INPUT;
           break;
         }
         if (s->input_end) {
+          s->partially_written = 0;
           s->state = BROTLI_STATE_DONE;
           break;
         }
@@ -967,19 +1045,36 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
         /* No break, continue to next state */
       case BROTLI_STATE_METABLOCK_HEADER_1:
         if (!BrotliReadMoreInput(br)) {
-          result = BROTLI_RESULT_PARTIAL;
+          result = BROTLI_RESULT_NEEDS_MORE_INPUT;
           break;
         }
         BROTLI_LOG_UINT(pos);
-        DecodeMetaBlockLength(br, &s->meta_block_remaining_len,
-                              &s->input_end, &s->is_uncompressed);
+        if (!DecodeMetaBlockLength(br,
+                                   &s->meta_block_remaining_len,
+                                   &s->input_end,
+                                   &s->is_metadata,
+                                   &s->is_uncompressed)) {
+          result = BROTLI_RESULT_ERROR;
+          break;
+        }
         BROTLI_LOG_UINT(s->meta_block_remaining_len);
+        if (s->is_metadata) {
+          if (!JumpToByteBoundary(&s->br)) {
+            result = BROTLI_RESULT_ERROR;
+            break;
+          }
+          s->state = BROTLI_STATE_METADATA;
+          break;
+        }
         if (s->meta_block_remaining_len == 0) {
           s->state = BROTLI_STATE_METABLOCK_DONE;
           break;
         }
         if (s->is_uncompressed) {
-          BrotliSetBitPos(br, (s->br.bit_pos_ + 7) & (uint32_t)(~7UL));
+          if (!JumpToByteBoundary(&s->br)) {
+            result = BROTLI_RESULT_ERROR;
+            break;
+          }
           s->state = BROTLI_STATE_UNCOMPRESSED;
           break;
         }
@@ -990,6 +1085,9 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
         initial_remaining_len = s->meta_block_remaining_len;
         /* pos is given as argument since s->pos is only updated at the end. */
         result = CopyUncompressedBlockToOutput(output, pos, s);
+        if (result == BROTLI_RESULT_NEEDS_MORE_OUTPUT) {
+          break;
+        }
         bytes_copied = initial_remaining_len - s->meta_block_remaining_len;
         pos += bytes_copied;
         if (bytes_copied > 0) {
@@ -998,6 +1096,17 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
           s->prev_byte1 = s->ringbuffer[(pos - 1) & s->ringbuffer_mask];
         }
         if (result != BROTLI_RESULT_SUCCESS) break;
+        s->state = BROTLI_STATE_METABLOCK_DONE;
+        break;
+      case BROTLI_STATE_METADATA:
+        for (; s->meta_block_remaining_len > 0; --s->meta_block_remaining_len) {
+          if (!BrotliReadMoreInput(&s->br)) {
+            result = BROTLI_RESULT_NEEDS_MORE_INPUT;
+            break;
+          }
+          /* Read one byte and ignore it. */
+          BrotliReadBits(&s->br, 8);
+        }
         s->state = BROTLI_STATE_METABLOCK_DONE;
         break;
       case BROTLI_STATE_HUFFMAN_CODE_0:
@@ -1041,7 +1150,7 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
         break;
       case BROTLI_STATE_METABLOCK_HEADER_2:
         if (!BrotliReadMoreInput(br)) {
-          result = BROTLI_RESULT_PARTIAL;
+          result = BROTLI_RESULT_NEEDS_MORE_INPUT;
           break;
         }
         s->distance_postfix_bits = (int)BrotliReadBits(br, 2);
@@ -1115,7 +1224,7 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
  /* Block decoding is the inner loop, jumping with goto makes it 3% faster */
  BlockBegin:
         if (!BrotliReadMoreInput(br)) {
-          result = BROTLI_RESULT_PARTIAL;
+          result = BROTLI_RESULT_NEEDS_MORE_INPUT;
           break;
         }
         if (s->meta_block_remaining_len <= 0) {
@@ -1164,7 +1273,7 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
         if (s->trivial_literal_context) {
           while (i < s->insert_length) {
             if (!BrotliReadMoreInput(br)) {
-              result = BROTLI_RESULT_PARTIAL;
+              result = BROTLI_RESULT_NEEDS_MORE_INPUT;
               break;
             }
             if (s->block_length[0] == 0) {
@@ -1178,19 +1287,19 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
             BROTLI_LOG_UINT(s->literal_htree_index);
             BROTLI_LOG_ARRAY_INDEX(s->ringbuffer, pos & s->ringbuffer_mask);
             if ((pos & s->ringbuffer_mask) == s->ringbuffer_mask) {
-              if (BrotliWrite(output, s->ringbuffer,
-                              (size_t)s->ringbuffer_size) < 0) {
-                result = BROTLI_RESULT_ERROR;
-                break;
-              }
+              s->partially_written = 0;
+              s->state = BROTLI_STATE_BLOCK_INNER_WRITE;
+              break;
             }
+            /* Modifications to this code shold be reflected in
+            BROTLI_STATE_BLOCK_INNER_WRITE case */
             ++pos;
             ++i;
           }
         } else {
           while (i < s->insert_length) {
             if (!BrotliReadMoreInput(br)) {
-              result = BROTLI_RESULT_PARTIAL;
+              result = BROTLI_RESULT_NEEDS_MORE_INPUT;
               break;
             }
             if (s->block_length[0] == 0) {
@@ -1210,18 +1319,18 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
             BROTLI_LOG_UINT(s->literal_htree_index);
             BROTLI_LOG_ARRAY_INDEX(s->ringbuffer, pos & s->ringbuffer_mask);
             if ((pos & s->ringbuffer_mask) == s->ringbuffer_mask) {
-              if (BrotliWrite(output, s->ringbuffer,
-                              (size_t)s->ringbuffer_size) < 0) {
-                result = BROTLI_RESULT_ERROR;
-                break;
-              }
+              s->partially_written = 0;
+              s->state = BROTLI_STATE_BLOCK_INNER_WRITE;
+              break;
             }
+            /* Modifications to this code shold be reflected in
+            BROTLI_STATE_BLOCK_INNER_WRITE case */
             ++pos;
             ++i;
           }
         }
-
-        if (result != BROTLI_RESULT_SUCCESS) break;
+        if (result != BROTLI_RESULT_SUCCESS ||
+            s->state == BROTLI_STATE_BLOCK_INNER_WRITE) break;
 
         s->meta_block_remaining_len -= s->insert_length;
         if (s->meta_block_remaining_len <= 0) {
@@ -1236,7 +1345,7 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
         /* No break, go to next state */
       case BROTLI_STATE_BLOCK_DISTANCE:
         if (!BrotliReadMoreInput(br)) {
-          result = BROTLI_RESULT_PARTIAL;
+          result = BROTLI_RESULT_NEEDS_MORE_INPUT;
           break;
         }
         assert(s->distance_code < 0);
@@ -1274,7 +1383,7 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
         /* No break, go to next state */
       case BROTLI_STATE_BLOCK_POST:
         if (!BrotliReadMoreInput(br)) {
-          result = BROTLI_RESULT_PARTIAL;
+          result = BROTLI_RESULT_NEEDS_MORE_INPUT;
           break;
         }
         /* Convert the distance code to the actual distance by possibly */
@@ -1314,11 +1423,21 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
               pos += len;
               s->meta_block_remaining_len -= len;
               if (s->copy_dst >= s->ringbuffer_end) {
-                if (BrotliWrite(output, s->ringbuffer,
-                                (size_t)s->ringbuffer_size) < 0) {
+                s->partially_written = 0;
+                num_written = BrotliWrite(output, s->ringbuffer,
+                                          (size_t)s->ringbuffer_size);
+                if (num_written < 0) {
                   result = BROTLI_RESULT_ERROR;
                   break;
                 }
+                s->partially_written += num_written;
+                if (s->partially_written < s->ringbuffer_size) {
+                  result = BROTLI_RESULT_NEEDS_MORE_OUTPUT;
+                  s->state = BROTLI_STATE_BLOCK_POST_WRITE_1;
+                  break;
+                }
+                /* Modifications to this code shold be reflected in
+                BROTLI_STATE_BLOCK_POST_WRITE_1 case */
                 memcpy(s->ringbuffer, s->ringbuffer_end,
                        (size_t)(s->copy_dst - s->ringbuffer_end));
               }
@@ -1368,22 +1487,35 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
             s->copy_length = 0;
           }
 #endif
-
+          /* Modifications to this loop shold be reflected in
+          BROTLI_STATE_BLOCK_POST_WRITE_2 case */
           for (i = 0; i < s->copy_length; ++i) {
             s->ringbuffer[pos & s->ringbuffer_mask] =
                 s->ringbuffer[(pos - s->distance) & s->ringbuffer_mask];
             if ((pos & s->ringbuffer_mask) == s->ringbuffer_mask) {
-              if (BrotliWrite(output, s->ringbuffer,
-                              (size_t)s->ringbuffer_size) < 0) {
+              s->partially_written = 0;
+              num_written = BrotliWrite(output, s->ringbuffer,
+                              (size_t)s->ringbuffer_size);
+              if (num_written < 0) {
                 result = BROTLI_RESULT_ERROR;
+                break;
+              }
+              s->partially_written += num_written;
+              if (s->partially_written < s->ringbuffer_size) {
+                result = BROTLI_RESULT_NEEDS_MORE_OUTPUT;
+                s->state = BROTLI_STATE_BLOCK_POST_WRITE_2;
                 break;
               }
             }
             ++pos;
             --s->meta_block_remaining_len;
           }
+          if (result == BROTLI_RESULT_NEEDS_MORE_OUTPUT) {
+            break;
+          }
         }
-
+        /* No break, continue to next state */
+      case BROTLI_STATE_BLOCK_POST_CONTINUE:
         /* When we get here, we must have inserted at least one literal and */
         /* made a copy of at least length two, therefore accessing the last 2 */
         /* bytes is valid. */
@@ -1391,6 +1523,62 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
         s->prev_byte2 = s->ringbuffer[(pos - 2) & s->ringbuffer_mask];
         s->state = BROTLI_STATE_BLOCK_BEGIN;
         goto BlockBegin;
+      case BROTLI_STATE_BLOCK_INNER_WRITE:
+      case BROTLI_STATE_BLOCK_POST_WRITE_1:
+      case BROTLI_STATE_BLOCK_POST_WRITE_2:
+        num_written = BrotliWrite(
+            output, s->ringbuffer + s->partially_written,
+            (size_t)(s->ringbuffer_size - s->partially_written));
+        if (num_written < 0) {
+          result = BROTLI_RESULT_ERROR;
+          break;
+        }
+        s->partially_written += num_written;
+        if (s->partially_written < s->ringbuffer_size) {
+          result = BROTLI_RESULT_NEEDS_MORE_OUTPUT;
+          break;
+        }
+        if (s->state == BROTLI_STATE_BLOCK_POST_WRITE_1) {
+          memcpy(s->ringbuffer, s->ringbuffer_end,
+                 (size_t)(s->copy_dst - s->ringbuffer_end));
+          s->state = BROTLI_STATE_BLOCK_POST_CONTINUE;
+        } else if (s->state == BROTLI_STATE_BLOCK_POST_WRITE_2) {
+          /* The tail of "i < s->copy_length" loop. */
+          ++pos;
+          --s->meta_block_remaining_len;
+          ++i;
+          /* Reenter the loop. */
+          for (; i < s->copy_length; ++i) {
+            s->ringbuffer[pos & s->ringbuffer_mask] =
+                s->ringbuffer[(pos - s->distance) & s->ringbuffer_mask];
+            if ((pos & s->ringbuffer_mask) == s->ringbuffer_mask) {
+              s->partially_written = 0;
+              num_written = BrotliWrite(output, s->ringbuffer,
+                                        (size_t)s->ringbuffer_size);
+              if (num_written < 0) {
+                result = BROTLI_RESULT_ERROR;
+                break;
+              }
+              s->partially_written += num_written;
+              if (s->partially_written < s->ringbuffer_size) {
+                result = BROTLI_RESULT_NEEDS_MORE_OUTPUT;
+                break;
+              }
+            }
+            ++pos;
+            --s->meta_block_remaining_len;
+          }
+          if (result == BROTLI_RESULT_NEEDS_MORE_OUTPUT) {
+            break;
+          }
+          s->state = BROTLI_STATE_BLOCK_POST_CONTINUE;
+        } else {  /* BROTLI_STATE_BLOCK_INNER_WRITE */
+          /* The tail of "i < s->insert_length" loop. */
+          ++pos;
+          ++i;
+          s->state = BROTLI_STATE_BLOCK_INNER;
+        }
+        break;
       case BROTLI_STATE_METABLOCK_DONE:
         if (s->context_modes != 0) {
           free(s->context_modes);
@@ -1413,10 +1601,20 @@ BrotliResult BrotliDecompressStreaming(BrotliInput input, BrotliOutput output,
         break;
       case BROTLI_STATE_DONE:
         if (s->ringbuffer != 0) {
-          if (BrotliWrite(output, s->ringbuffer,
-                          (size_t)(pos & s->ringbuffer_mask)) < 0) {
+          num_written = BrotliWrite(
+              output, s->ringbuffer + s->partially_written,
+              (size_t)((pos & s->ringbuffer_mask) - s->partially_written));
+          if (num_written < 0) {
             result = BROTLI_RESULT_ERROR;
           }
+          s->partially_written += num_written;
+          if (s->partially_written < (pos & s->ringbuffer_mask)) {
+            result = BROTLI_RESULT_NEEDS_MORE_OUTPUT;
+            break;
+          }
+        }
+        if (!JumpToByteBoundary(&s->br)) {
+          result = BROTLI_RESULT_ERROR;
         }
         return result;
       default:

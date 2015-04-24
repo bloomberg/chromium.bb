@@ -39,7 +39,12 @@ typedef enum {
   BROTLI_STATE_BLOCK_DISTANCE = 15,
   BROTLI_STATE_BLOCK_POST = 16,
   BROTLI_STATE_UNCOMPRESSED = 17,
+  BROTLI_STATE_METADATA = 18,
+  BROTLI_STATE_BLOCK_INNER_WRITE = 19,
   BROTLI_STATE_METABLOCK_DONE = 20,
+  BROTLI_STATE_BLOCK_POST_WRITE_1 = 21,
+  BROTLI_STATE_BLOCK_POST_WRITE_2 = 22,
+  BROTLI_STATE_BLOCK_POST_CONTINUE = 23,
   BROTLI_STATE_HUFFMAN_CODE_0 = 30,
   BROTLI_STATE_HUFFMAN_CODE_1 = 31,
   BROTLI_STATE_HUFFMAN_CODE_2 = 32,
@@ -51,6 +56,9 @@ typedef enum {
   BROTLI_STATE_SUB_UNCOMPRESSED_FILL = 52,
   BROTLI_STATE_SUB_UNCOMPRESSED_COPY = 53,
   BROTLI_STATE_SUB_UNCOMPRESSED_WARMUP = 54,
+  BROTLI_STATE_SUB_UNCOMPRESSED_WRITE_1 = 55,
+  BROTLI_STATE_SUB_UNCOMPRESSED_WRITE_2 = 56,
+  BROTLI_STATE_SUB_UNCOMPRESSED_WRITE_3 = 57,
   BROTLI_STATE_SUB_HUFFMAN_LENGTH_BEGIN = 60,
   BROTLI_STATE_SUB_HUFFMAN_LENGTH_SYMBOLS = 61,
   BROTLI_STATE_SUB_HUFFMAN_DONE = 62,
@@ -91,6 +99,7 @@ typedef struct {
   int trivial_literal_context;
 
   int meta_block_remaining_len;
+  int is_metadata;
   int is_uncompressed;
   int block_length[3];
   int block_type[3];
@@ -130,6 +139,9 @@ typedef struct {
 
   /* For CopyUncompressedBlockToOutput */
   int nbytes;
+
+  /* For partial write operations */
+  int partially_written;
 
   /* For HuffmanTreeGroupDecode */
   int htrees_decoded;
