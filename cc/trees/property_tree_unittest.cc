@@ -47,6 +47,7 @@ TEST(PropertyTreeTest, ComputeTransformChild) {
   TransformNode child;
   child.data.local.Translate(3, 3);
   child.data.target_id = 0;
+  child.data.source_node_id = 0;
 
   tree.Insert(child, 0);
   tree.UpdateTransforms(1);
@@ -87,6 +88,7 @@ TEST(PropertyTreeTest, TransformsWithFlattening) {
   int grand_parent = tree.Insert(TransformNode(), 0);
   tree.Node(grand_parent)->data.content_target_id = grand_parent;
   tree.Node(grand_parent)->data.target_id = grand_parent;
+  tree.Node(grand_parent)->data.source_node_id = 0;
 
   gfx::Transform rotation_about_x;
   rotation_about_x.RotateAboutXAxis(15);
@@ -95,17 +97,20 @@ TEST(PropertyTreeTest, TransformsWithFlattening) {
   tree.Node(parent)->data.needs_sublayer_scale = true;
   tree.Node(parent)->data.target_id = grand_parent;
   tree.Node(parent)->data.content_target_id = parent;
+  tree.Node(parent)->data.source_node_id = grand_parent;
   tree.Node(parent)->data.local = rotation_about_x;
 
   int child = tree.Insert(TransformNode(), parent);
   tree.Node(child)->data.target_id = parent;
   tree.Node(child)->data.content_target_id = parent;
+  tree.Node(child)->data.source_node_id = parent;
   tree.Node(child)->data.flattens_inherited_transform = true;
   tree.Node(child)->data.local = rotation_about_x;
 
   int grand_child = tree.Insert(TransformNode(), child);
   tree.Node(grand_child)->data.target_id = parent;
   tree.Node(grand_child)->data.content_target_id = parent;
+  tree.Node(grand_child)->data.source_node_id = child;
   tree.Node(grand_child)->data.flattens_inherited_transform = true;
   tree.Node(grand_child)->data.local = rotation_about_x;
 
@@ -162,6 +167,7 @@ TEST(PropertyTreeTest, MultiplicationOrder) {
   TransformNode child;
   child.data.local.Scale(2, 2);
   child.data.target_id = 0;
+  child.data.source_node_id = 0;
 
   tree.Insert(child, 0);
   tree.UpdateTransforms(1);
@@ -194,6 +200,7 @@ TEST(PropertyTreeTest, ComputeTransformWithUninvertibleTransform) {
   TransformNode child;
   child.data.local.Scale(0, 0);
   child.data.target_id = 0;
+  child.data.source_node_id = 0;
 
   tree.Insert(child, 0);
   tree.UpdateTransforms(1);
@@ -223,6 +230,7 @@ TEST(PropertyTreeTest, ComputeTransformWithSublayerScale) {
   TransformNode grand_parent;
   grand_parent.data.local.Scale(2.f, 2.f);
   grand_parent.data.target_id = 0;
+  grand_parent.data.source_node_id = 0;
   grand_parent.data.needs_sublayer_scale = true;
   int grand_parent_id = tree.Insert(grand_parent, 0);
   tree.UpdateTransforms(grand_parent_id);
@@ -230,18 +238,21 @@ TEST(PropertyTreeTest, ComputeTransformWithSublayerScale) {
   TransformNode parent;
   parent.data.local.Translate(15.f, 15.f);
   parent.data.target_id = grand_parent_id;
+  parent.data.source_node_id = grand_parent_id;
   int parent_id = tree.Insert(parent, grand_parent_id);
   tree.UpdateTransforms(parent_id);
 
   TransformNode child;
   child.data.local.Scale(3.f, 3.f);
   child.data.target_id = grand_parent_id;
+  child.data.source_node_id = parent_id;
   int child_id = tree.Insert(child, parent_id);
   tree.UpdateTransforms(child_id);
 
   TransformNode grand_child;
   grand_child.data.local.Scale(5.f, 5.f);
   grand_child.data.target_id = grand_parent_id;
+  grand_child.data.source_node_id = child_id;
   grand_child.data.needs_sublayer_scale = true;
   int grand_child_id = tree.Insert(grand_child, child_id);
   tree.UpdateTransforms(grand_child_id);
@@ -327,6 +338,7 @@ TEST(PropertyTreeTest, FlatteningWhenDestinationHasOnlyFlatAncestors) {
   int parent = tree.Insert(TransformNode(), 0);
   tree.Node(parent)->data.content_target_id = parent;
   tree.Node(parent)->data.target_id = parent;
+  tree.Node(parent)->data.source_node_id = 0;
   tree.Node(parent)->data.local.Translate(2, 2);
 
   gfx::Transform rotation_about_x;
@@ -335,12 +347,14 @@ TEST(PropertyTreeTest, FlatteningWhenDestinationHasOnlyFlatAncestors) {
   int child = tree.Insert(TransformNode(), parent);
   tree.Node(child)->data.content_target_id = child;
   tree.Node(child)->data.target_id = child;
+  tree.Node(child)->data.source_node_id = parent;
   tree.Node(child)->data.local = rotation_about_x;
 
 
   int grand_child = tree.Insert(TransformNode(), child);
   tree.Node(grand_child)->data.content_target_id = grand_child;
   tree.Node(grand_child)->data.target_id = grand_child;
+  tree.Node(grand_child)->data.source_node_id = child;
   tree.Node(grand_child)->data.flattens_inherited_transform = true;
 
   tree.set_needs_update(true);

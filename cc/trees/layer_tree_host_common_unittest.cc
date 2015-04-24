@@ -9221,5 +9221,42 @@ TEST_F(LayerTreeHostCommonTest, ChangeTransformOrigin) {
   EXPECT_EQ(gfx::Rect(5, 5, 5, 5), child->visible_rect_from_property_trees());
 }
 
+TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> scroll_parent =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+  scoped_refptr<LayerWithForcedDrawsContent> scroll_child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent);
+
+  root->AddChild(scroll_child);
+  root->AddChild(scroll_parent);
+  scroll_child->SetScrollParent(scroll_parent.get());
+  scroll_parent->SetScrollClipLayerId(root->id());
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  gfx::Transform identity_transform;
+  gfx::Transform scale;
+  scale.Scale(2.f, 2.f);
+  SetLayerPropertiesForTesting(root.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(scroll_child.get(), scale, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(40, 40), true, false);
+  SetLayerPropertiesForTesting(scroll_parent.get(), identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               true, false);
+
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(25, 25),
+            scroll_child->visible_rect_from_property_trees());
+
+  scroll_child->SetPosition(gfx::PointF(0, -10.f));
+  scroll_parent->SetScrollOffset(gfx::ScrollOffset(0.f, 10.f));
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 5, 25, 25),
+            scroll_child->visible_rect_from_property_trees());
+}
+
 }  // namespace
 }  // namespace cc

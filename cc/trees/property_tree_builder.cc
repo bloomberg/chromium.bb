@@ -185,33 +185,29 @@ bool AddTransformNodeIfNeeded(
 
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
 
-  gfx::Vector2dF parent_offset;
+  int parent_index = 0;
+  if (transform_parent)
+    parent_index = transform_parent->transform_tree_index();
+
+  int source_index = parent_index;
+
+  gfx::Vector2dF source_offset;
   if (transform_parent) {
     if (layer->scroll_parent()) {
-      gfx::Transform to_parent;
       LayerType* source = layer->parent();
-      parent_offset += source->offset_to_transform_parent();
-      data_from_ancestor.transform_tree->ComputeTransform(
-          source->transform_tree_index(),
-          transform_parent->transform_tree_index(), &to_parent);
-      parent_offset += to_parent.To2dTranslation();
+      source_offset += source->offset_to_transform_parent();
+      source_index = source->transform_tree_index();
     } else if (!is_fixed) {
-      parent_offset = transform_parent->offset_to_transform_parent();
+      source_offset = transform_parent->offset_to_transform_parent();
     } else {
       if (data_from_ancestor.transform_tree_parent !=
           data_from_ancestor.transform_fixed_parent) {
-        gfx::Vector2dF fixed_offset = data_from_ancestor.transform_tree_parent
-                                          ->offset_to_transform_parent();
-        gfx::Transform parent_to_parent;
-        data_from_ancestor.transform_tree->ComputeTransform(
-            data_from_ancestor.transform_tree_parent->transform_tree_index(),
-            data_from_ancestor.transform_fixed_parent->transform_tree_index(),
-            &parent_to_parent);
-
-        fixed_offset += parent_to_parent.To2dTranslation();
-        parent_offset += fixed_offset;
+        source_offset = data_from_ancestor.transform_tree_parent
+                            ->offset_to_transform_parent();
+        source_index =
+            data_from_ancestor.transform_tree_parent->transform_tree_index();
       }
-      parent_offset += data_from_ancestor.scroll_compensation_adjustment;
+      source_offset += data_from_ancestor.scroll_compensation_adjustment;
     }
   }
 
@@ -226,16 +222,20 @@ bool AddTransformNodeIfNeeded(
     data_for_children->should_flatten |= layer->should_flatten_transform();
     gfx::Vector2dF local_offset = layer->position().OffsetFromOrigin() +
                                   layer->transform().To2dTranslation();
-    layer->set_offset_to_transform_parent(parent_offset + local_offset);
+    gfx::Vector2dF source_to_parent;
+    if (source_index != parent_index) {
+      gfx::Transform to_parent;
+      data_from_ancestor.transform_tree->ComputeTransform(
+          source_index, parent_index, &to_parent);
+      source_to_parent = to_parent.To2dTranslation();
+    }
+    layer->set_offset_to_transform_parent(source_offset + source_to_parent +
+                                          local_offset);
     layer->set_should_flatten_transform_from_property_tree(
         data_from_ancestor.should_flatten);
-    layer->set_transform_tree_index(transform_parent->transform_tree_index());
+    layer->set_transform_tree_index(parent_index);
     return false;
   }
-
-  int parent_index = 0;
-  if (transform_parent)
-    parent_index = transform_parent->transform_tree_index();
 
   data_for_children->transform_tree->Insert(TransformNode(), parent_index);
 
@@ -276,7 +276,8 @@ bool AddTransformNodeIfNeeded(
                                 post_local_scale_factor);
   } else {
     node->data.post_local_scale_factor = post_local_scale_factor;
-    node->data.parent_offset = parent_offset;
+    node->data.source_offset = source_offset;
+    node->data.source_node_id = source_index;
     node->data.update_post_local_transform(layer->position(),
                                            layer->transform_origin());
   }

@@ -60,6 +60,12 @@ struct CC_EXPORT TransformNodeData {
   // with this transform node.
   int content_target_id;
 
+  // This is the node with respect to which source_offset is defined. This will
+  // not be needed once layerization moves to cc, but is needed in order to
+  // efficiently update the transform tree for changes to position in the layer
+  // tree.
+  int source_node_id;
+
   // TODO(vollick): will be moved when accelerated effects are implemented.
   bool needs_local_transform_update;
 
@@ -98,7 +104,7 @@ struct CC_EXPORT TransformNodeData {
   gfx::Vector2dF scroll_snap;
 
   // TODO(vollick): will be moved when accelerated effects are implemented.
-  gfx::Vector2dF parent_offset;
+  gfx::Vector2dF source_offset;
 
   void set_to_parent(const gfx::Transform& transform) {
     to_parent = transform;

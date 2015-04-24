@@ -48,6 +48,7 @@ template class PropertyTree<OpacityNode>;
 TransformNodeData::TransformNodeData()
     : target_id(-1),
       content_target_id(-1),
+      source_node_id(-1),
       needs_local_transform_update(true),
       is_invertible(true),
       ancestors_are_invertible(true),
@@ -76,8 +77,8 @@ void TransformNodeData::update_post_local_transform(
   post_local.MakeIdentity();
   post_local.Scale(post_local_scale_factor, post_local_scale_factor);
   post_local.Translate3d(
-      position.x() + parent_offset.x() + transform_origin.x(),
-      position.y() + parent_offset.y() + transform_origin.y(),
+      position.x() + source_offset.x() + transform_origin.x(),
+      position.y() + source_offset.y() + transform_origin.y(),
       transform_origin.z());
 }
 
@@ -141,7 +142,8 @@ void TransformTree::UpdateTransforms(int id) {
   TransformNode* node = Node(id);
   TransformNode* parent_node = parent(node);
   TransformNode* target_node = Node(node->data.target_id);
-  if (node->data.needs_local_transform_update)
+  if (node->data.needs_local_transform_update ||
+      node->parent_id != node->data.source_node_id)
     UpdateLocalTransform(node);
   UpdateScreenSpaceTransform(node, parent_node, target_node);
   UpdateSublayerScale(node);
@@ -249,8 +251,14 @@ bool TransformTree::CombineInversesBetween(int source_id,
 
 void TransformTree::UpdateLocalTransform(TransformNode* node) {
   gfx::Transform transform = node->data.post_local;
-  transform.Translate(-node->data.scroll_offset.x(),
-                      -node->data.scroll_offset.y());
+  gfx::Vector2dF source_to_parent;
+  if (node->parent_id != node->data.source_node_id) {
+    gfx::Transform to_parent;
+    ComputeTransform(node->data.source_node_id, node->parent_id, &to_parent);
+    source_to_parent = to_parent.To2dTranslation();
+  }
+  transform.Translate(source_to_parent.x() - node->data.scroll_offset.x(),
+                      source_to_parent.y() - node->data.scroll_offset.y());
   transform.PreconcatTransform(node->data.local);
   transform.PreconcatTransform(node->data.pre_local);
   node->data.set_to_parent(transform);
