@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_suite.h"
 #include "media/base/decoder_buffer.h"
@@ -190,24 +192,43 @@ void CreateFrameAndMemsetPlane(VideoFrameFactory* const video_frame_factory) {
   CVPixelBufferUnlockBaseAddress(cv_pixel_buffer, 0);
 }
 
+void NoopFrameEncodedCallback(
+    scoped_ptr<media::cast::EncodedFrame> /*encoded_frame*/) {
+}
+
+class TestPowerSource : public base::PowerMonitorSource {
+ public:
+  void GenerateSuspendEvent() {
+    ProcessPowerEvent(SUSPEND_EVENT);
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+  void GenerateResumeEvent() {
+    ProcessPowerEvent(RESUME_EVENT);
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+ private:
+  bool IsOnBatteryPowerImpl() override { return false; }
+};
+
 class H264VideoToolboxEncoderTest : public ::testing::Test {
  protected:
-  H264VideoToolboxEncoderTest()
-      : operational_status_(STATUS_UNINITIALIZED) {
-    frame_->set_timestamp(base::TimeDelta());
-  }
+  H264VideoToolboxEncoderTest() = default;
 
   void SetUp() override {
     clock_ = new base::SimpleTestTickClock();
     clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
+
+    power_source_ = new TestPowerSource();
+    power_monitor_.reset(
+        new base::PowerMonitor(scoped_ptr<TestPowerSource>(power_source_)));
 
     cast_environment_ = new CastEnvironment(
         scoped_ptr<base::TickClock>(clock_).Pass(),
         message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
         message_loop_.message_loop_proxy());
     encoder_.reset(new H264VideoToolboxEncoder(
-        cast_environment_,
-        video_sender_config_,
+        cast_environment_, video_sender_config_,
         base::Bind(&SaveOperationalStatus, &operational_status_)));
     message_loop_.RunUntilIdle();
     EXPECT_EQ(STATUS_INITIALIZED, operational_status_);
@@ -216,6 +237,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   void TearDown() override {
     encoder_.reset();
     message_loop_.RunUntilIdle();
+    power_monitor_.reset();
   }
 
   void AdvanceClockAndVideoFrameTimestamp() {
@@ -244,6 +266,8 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<VideoEncoder> encoder_;
   OperationalStatus operational_status_;
+  TestPowerSource* power_source_;  // Owned by the power monitor.
+  scoped_ptr<base::PowerMonitor> power_monitor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(H264VideoToolboxEncoderTest);
@@ -311,6 +335,77 @@ TEST_F(H264VideoToolboxEncoderTest, CheckVideoFrameFactory) {
   ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
       gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
   message_loop_.RunUntilIdle();
+  CreateFrameAndMemsetPlane(video_frame_factory.get());
+}
+
+TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoring) {
+  // Encode a frame, suspend, encode a frame, resume, encode a frame.
+
+  VideoEncoder::FrameEncodedCallback cb = base::Bind(&NoopFrameEncodedCallback);
+  EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
+  power_source_->GenerateSuspendEvent();
+  EXPECT_FALSE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
+  power_source_->GenerateResumeEvent();
+  EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
+}
+
+TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoringNoInitialFrame) {
+  // Suspend, encode a frame, resume, encode a frame.
+
+  VideoEncoder::FrameEncodedCallback cb = base::Bind(&NoopFrameEncodedCallback);
+  power_source_->GenerateSuspendEvent();
+  EXPECT_FALSE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
+  power_source_->GenerateResumeEvent();
+  EXPECT_TRUE(encoder_->EncodeVideoFrame(frame_, clock_->NowTicks(), cb));
+}
+
+TEST_F(H264VideoToolboxEncoderTest, CheckPowerMonitoringVideoFrameFactory) {
+  VideoEncoder::FrameEncodedCallback cb = base::Bind(&NoopFrameEncodedCallback);
+  auto video_frame_factory = encoder_->CreateVideoFrameFactory();
+  ASSERT_TRUE(video_frame_factory.get());
+
+  // The first call to |MaybeCreateFrame| will return null but post a task to
+  // the encoder to initialize for the specified frame size. We then drain the
+  // message loop. After that, the encoder should have initialized and we
+  // request a frame again.
+  ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
+      gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
+  message_loop_.RunUntilIdle();
+  CreateFrameAndMemsetPlane(video_frame_factory.get());
+
+  // After a power suspension, the factory should not produce frames.
+  power_source_->GenerateSuspendEvent();
+
+  ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
+      gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
+  message_loop_.RunUntilIdle();
+  ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
+      gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
+
+  // After a power resume event, the factory should produce frames right away
+  // because the encoder re-initializes on its own.
+  power_source_->GenerateResumeEvent();
+  CreateFrameAndMemsetPlane(video_frame_factory.get());
+}
+
+TEST_F(H264VideoToolboxEncoderTest,
+       CheckPowerMonitoringVideoFrameFactoryNoInitialFrame) {
+  VideoEncoder::FrameEncodedCallback cb = base::Bind(&NoopFrameEncodedCallback);
+  auto video_frame_factory = encoder_->CreateVideoFrameFactory();
+  ASSERT_TRUE(video_frame_factory.get());
+
+  // After a power suspension, the factory should not produce frames.
+  power_source_->GenerateSuspendEvent();
+
+  ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
+      gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
+  message_loop_.RunUntilIdle();
+  ASSERT_FALSE(video_frame_factory->MaybeCreateFrame(
+      gfx::Size(kVideoWidth, kVideoHeight), base::TimeDelta()));
+
+  // After a power resume event, the factory should produce frames right away
+  // because the encoder re-initializes on its own.
+  power_source_->GenerateResumeEvent();
   CreateFrameAndMemsetPlane(video_frame_factory.get());
 }
 

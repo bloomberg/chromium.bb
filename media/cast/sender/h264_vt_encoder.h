@@ -6,6 +6,7 @@
 #define MEDIA_CAST_SENDER_H264_VT_ENCODER_H_
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/mac/videotoolbox_glue.h"
 #include "media/cast/sender/size_adaptable_video_encoder_base.h"
@@ -17,8 +18,10 @@ namespace cast {
 // VideoToolbox implementation of the media::cast::VideoEncoder interface.
 // VideoToolbox makes no guarantees that it is thread safe, so this object is
 // pinned to the thread on which it is constructed. Supports changing frame
-// sizes directly.
-class H264VideoToolboxEncoder : public VideoEncoder {
+// sizes directly. Implements the base::PowerObserver interface to reset the
+// compression session when the host process is suspended.
+class H264VideoToolboxEncoder : public VideoEncoder,
+                                public base::PowerObserver {
   typedef CoreMediaGlue::CMSampleBufferRef CMSampleBufferRef;
   typedef VideoToolboxGlue::VTCompressionSessionRef VTCompressionSessionRef;
   typedef VideoToolboxGlue::VTEncodeInfoFlags VTEncodeInfoFlags;
@@ -44,6 +47,10 @@ class H264VideoToolboxEncoder : public VideoEncoder {
   void LatestFrameIdToReference(uint32 frame_id) override;
   scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory() override;
   void EmitFrames() override;
+
+  // base::PowerObserver
+  void OnSuspend() override;
+  void OnResume() override;
 
  private:
   // VideoFrameFactory tied to the VideoToolbox encoder.
@@ -110,6 +117,9 @@ class H264VideoToolboxEncoder : public VideoEncoder {
 
   // Force next frame to be a keyframe.
   bool encode_next_frame_as_keyframe_;
+
+  // Power suspension state.
+  bool power_suspended_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<H264VideoToolboxEncoder> weak_factory_;

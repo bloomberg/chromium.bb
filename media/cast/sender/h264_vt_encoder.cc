@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/synchronization/lock.h"
 #include "media/base/mac/corevideo_glue.h"
 #include "media/base/mac/video_frame_mac.h"
@@ -321,6 +322,7 @@ H264VideoToolboxEncoder::H264VideoToolboxEncoder(
       status_change_cb_(status_change_cb),
       last_frame_id_(kStartFrameId),
       encode_next_frame_as_keyframe_(false),
+      power_suspended_(false),
       weak_factory_(this) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(!status_change_cb_.is_null());
@@ -334,18 +336,43 @@ H264VideoToolboxEncoder::H264VideoToolboxEncoder(
       base::Bind(status_change_cb_, operational_status));
 
   if (operational_status == STATUS_INITIALIZED) {
+    // Create the shared video frame factory. It persists for the combined
+    // lifetime of the encoder and all video frame factory proxies created by
+    // |CreateVideoFrameFactory| that reference it.
     video_frame_factory_ =
         scoped_refptr<VideoFrameFactoryImpl>(new VideoFrameFactoryImpl(
             weak_factory_.GetWeakPtr(), cast_environment_));
+
+    // Register for power state changes.
+    auto power_monitor = base::PowerMonitor::Get();
+    if (power_monitor) {
+      power_monitor->AddObserver(this);
+      VLOG(1) << "Registered for power state changes.";
+    } else {
+      DLOG(WARNING) << "No power monitor. Process suspension will invalidate "
+                       "the encoder.";
+    }
   }
 }
 
 H264VideoToolboxEncoder::~H264VideoToolboxEncoder() {
   DestroyCompressionSession();
+
+  // If video_frame_factory_ is not null, the encoder registered for power state
+  // changes in the ctor and it must now unregister.
+  if (video_frame_factory_) {
+    auto power_monitor = base::PowerMonitor::Get();
+    if (power_monitor)
+      power_monitor->RemoveObserver(this);
+  }
 }
 
 void H264VideoToolboxEncoder::ResetCompressionSession() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Ignore reset requests while power suspended.
+  if (power_suspended_)
+    return;
 
   // Notify that we're resetting the encoder.
   cast_environment_->PostTask(
@@ -622,6 +649,27 @@ void H264VideoToolboxEncoder::EmitFrames() {
       compression_session_, CoreMediaGlue::CMTime{0, 0, 0, 0});
   if (status != noErr) {
     DLOG(ERROR) << " VTCompressionSessionCompleteFrames failed: " << status;
+  }
+}
+
+void H264VideoToolboxEncoder::OnSuspend() {
+  VLOG(1)
+      << "OnSuspend: Emitting all frames and destroying compression session.";
+  EmitFrames();
+  DestroyCompressionSession();
+  power_suspended_ = true;
+}
+
+void H264VideoToolboxEncoder::OnResume() {
+  power_suspended_ = false;
+
+  // Reset the compression session only if the frame size is not zero (which
+  // will obviously fail). It is possible for the frame size to be zero if no
+  // frame was submitted for encoding or requested from the video frame factory
+  // before suspension.
+  if (!frame_size_.IsEmpty()) {
+    VLOG(1) << "OnResume: Resetting compression session.";
+    ResetCompressionSession();
   }
 }
 
