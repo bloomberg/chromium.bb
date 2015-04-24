@@ -29,14 +29,13 @@ const int kFilesPerDirectory = 5;
 
 class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
  public:
-  explicit ListerDelegate(bool recursive)
+  explicit ListerDelegate(DirectoryLister::ListingType type)
       : cancel_lister_on_list_file_(false),
         cancel_lister_on_list_done_(false),
         lister_(nullptr),
         done_(false),
         error_(-1),
-        recursive_(recursive) {
-  }
+        type_(type) {}
 
   // When set to true, this signals that the directory list operation should be
   // cancelled (And the run loop quit) in the first call to OnListFile.
@@ -66,26 +65,12 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
 
     done_ = true;
     error_ = error;
-    if (recursive_)
-      CheckRecursiveSort();
-    else
+    if (type_ == DirectoryLister::ALPHA_DIRS_FIRST)
       CheckSort();
 
     if (cancel_lister_on_list_done_)
       lister_->Cancel();
     run_loop.Quit();
-  }
-
-  void CheckRecursiveSort() {
-    // Check that we got files in the right order.
-    if (!file_list_.empty()) {
-      for (size_t previous = 0, current = 1;
-           current < file_list_.size();
-           previous++, current++) {
-        EXPECT_TRUE(base::i18n::LocaleAwareCompareFilenames(
-            paths_[previous], paths_[current]));
-      }
-    }
   }
 
   void CheckSort() {
@@ -133,7 +118,7 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
 
   bool done_;
   int error_;
-  bool recursive_;
+  DirectoryLister::ListingType type_;
 
   std::vector<base::FileEnumerator::FileInfo> file_list_;
   std::vector<base::FilePath> paths_;
@@ -208,7 +193,7 @@ class DirectoryListerTest : public PlatformTest {
 };
 
 TEST_F(DirectoryListerTest, BigDirTest) {
-  ListerDelegate delegate(false);
+  ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
   DirectoryLister lister(root_path(), &delegate);
   delegate.Run(&lister);
 
@@ -218,9 +203,9 @@ TEST_F(DirectoryListerTest, BigDirTest) {
 }
 
 TEST_F(DirectoryListerTest, BigDirRecursiveTest) {
-  ListerDelegate delegate(true);
-  DirectoryLister lister(
-      root_path(), true, DirectoryLister::FULL_PATH, &delegate);
+  ListerDelegate delegate(DirectoryLister::NO_SORT_RECURSIVE);
+  DirectoryLister lister(root_path(), DirectoryLister::NO_SORT_RECURSIVE,
+                         &delegate);
   delegate.Run(&lister);
 
   EXPECT_TRUE(delegate.done());
@@ -232,7 +217,7 @@ TEST_F(DirectoryListerTest, EmptyDirTest) {
   base::ScopedTempDir tempDir;
   EXPECT_TRUE(tempDir.CreateUniqueTempDir());
 
-  ListerDelegate delegate(false);
+  ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
   DirectoryLister lister(tempDir.path(), &delegate);
   delegate.Run(&lister);
 
@@ -248,7 +233,7 @@ TEST_F(DirectoryListerTest, EmptyDirTest) {
 // TODO(mmenke):  See if there's a way to make this fail more reliably on
 // regression.
 TEST_F(DirectoryListerTest, BasicCancelTest) {
-  ListerDelegate delegate(false);
+  ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
   scoped_ptr<DirectoryLister> lister(new DirectoryLister(
       root_path(), &delegate));
   lister->Start();
@@ -260,7 +245,7 @@ TEST_F(DirectoryListerTest, BasicCancelTest) {
 }
 
 TEST_F(DirectoryListerTest, CancelOnListFileTest) {
-  ListerDelegate delegate(false);
+  ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
   DirectoryLister lister(root_path(), &delegate);
   delegate.set_cancel_lister_on_list_file(true);
   delegate.Run(&lister);
@@ -270,7 +255,7 @@ TEST_F(DirectoryListerTest, CancelOnListFileTest) {
 }
 
 TEST_F(DirectoryListerTest, CancelOnListDoneTest) {
-  ListerDelegate delegate(false);
+  ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
   DirectoryLister lister(root_path(), &delegate);
   delegate.set_cancel_lister_on_list_done(true);
   delegate.Run(&lister);
@@ -284,7 +269,7 @@ TEST_F(DirectoryListerTest, CancelOnLastElementTest) {
   base::ScopedTempDir tempDir;
   EXPECT_TRUE(tempDir.CreateUniqueTempDir());
 
-  ListerDelegate delegate(false);
+  ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
   DirectoryLister lister(tempDir.path(), &delegate);
   delegate.set_cancel_lister_on_list_file(true);
   delegate.Run(&lister);
@@ -298,7 +283,7 @@ TEST_F(DirectoryListerTest, NoSuchDirTest) {
   base::ScopedTempDir tempDir;
   EXPECT_TRUE(tempDir.CreateUniqueTempDir());
 
-  ListerDelegate delegate(false);
+  ListerDelegate delegate(DirectoryLister::ALPHA_DIRS_FIRST);
   DirectoryLister lister(
       tempDir.path().AppendASCII("this_path_does_not_exist"), &delegate);
   delegate.Run(&lister);

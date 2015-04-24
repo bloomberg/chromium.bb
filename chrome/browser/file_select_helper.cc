@@ -191,10 +191,8 @@ void FileSelectHelper::StartNewEnumeration(const base::FilePath& path,
   scoped_ptr<ActiveDirectoryEnumeration> entry(new ActiveDirectoryEnumeration);
   entry->rvh_ = render_view_host;
   entry->delegate_.reset(new DirectoryListerDispatchDelegate(this, request_id));
-  entry->lister_.reset(new net::DirectoryLister(path,
-                                                true,
-                                                net::DirectoryLister::NO_SORT,
-                                                entry->delegate_.get()));
+  entry->lister_.reset(new net::DirectoryLister(
+      path, net::DirectoryLister::NO_SORT_RECURSIVE, entry->delegate_.get()));
   if (!entry->lister_->Start()) {
     if (request_id == kFileSelectEnumerationId)
       FileSelectionCanceled(NULL);

@@ -44,27 +44,22 @@ class NET_EXPORT DirectoryLister  {
     virtual ~DirectoryListerDelegate() {}
   };
 
-  // Sort options
-  // ALPHA_DIRS_FIRST is the default sort :
+  // Listing options
+  // ALPHA_DIRS_FIRST is the default listing type:
   //   directories first in name order, then files by name order
-  // FULL_PATH sorts by paths as strings, ignoring files v. directories
-  // DATE sorts by last modified date
-  // TODO(mmenke):  Only NO_SORT and ALPHA_DIRS_FIRST appear to be used in
-  //     production code, and there's very little testing of some of these
-  //     options.  Remove unused options, improve testing of the others.
-  enum SortType {
+  // Listing is recursive only if listing type is NO_SORT_RECURSIVE.
+  // TODO(mmenke): Improve testing.
+  enum ListingType {
     NO_SORT,
-    DATE,
+    NO_SORT_RECURSIVE,
     ALPHA_DIRS_FIRST,
-    FULL_PATH
   };
 
   DirectoryLister(const base::FilePath& dir,
                   DirectoryListerDelegate* delegate);
 
   DirectoryLister(const base::FilePath& dir,
-                  bool recursive,
-                  SortType sort,
+                  ListingType type,
                   DirectoryListerDelegate* delegate);
 
   // Will invoke Cancel().
@@ -89,10 +84,7 @@ class NET_EXPORT DirectoryLister  {
   // reference owned by the callback itself.
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
-    Core(const base::FilePath& dir,
-         bool recursive,
-         SortType sort,
-         DirectoryLister* lister);
+    Core(const base::FilePath& dir, ListingType type, DirectoryLister* lister);
 
     // May only be called on a worker pool thread.
     void Start();
@@ -114,8 +106,7 @@ class NET_EXPORT DirectoryLister  {
                             int error) const;
 
     const base::FilePath dir_;
-    const bool recursive_;
-    const SortType sort_;
+    const ListingType type_;
     const scoped_refptr<base::MessageLoopProxy> origin_loop_;
 
     // Only used on the origin thread.

@@ -45,42 +45,15 @@ bool CompareAlphaDirsFirst(const DirectoryLister::DirectoryListerData& a,
                                                  b.info.GetName());
 }
 
-bool CompareDate(const DirectoryLister::DirectoryListerData& a,
-                 const DirectoryLister::DirectoryListerData& b) {
-  // Parent directory before all else.
-  if (IsDotDot(a.info.GetName()))
-    return true;
-  if (IsDotDot(b.info.GetName()))
-    return false;
-
-  // Directories before regular files.
-  bool a_is_directory = a.info.IsDirectory();
-  bool b_is_directory = b.info.IsDirectory();
-  if (a_is_directory != b_is_directory)
-    return a_is_directory;
-  return a.info.GetLastModifiedTime() > b.info.GetLastModifiedTime();
-}
-
-// Comparator for sorting find result by paths. This uses the locale-aware
-// comparison function on the filenames for sorting in the user's locale.
-// Static.
-bool CompareFullPath(const DirectoryLister::DirectoryListerData& a,
-                     const DirectoryLister::DirectoryListerData& b) {
-  return base::i18n::LocaleAwareCompareFilenames(a.path, b.path);
-}
-
 void SortData(std::vector<DirectoryLister::DirectoryListerData>* data,
-              DirectoryLister::SortType sort_type) {
+              DirectoryLister::ListingType listing_type) {
   // Sort the results. See the TODO below (this sort should be removed and we
   // should do it from JS).
-  if (sort_type == DirectoryLister::DATE) {
-    std::sort(data->begin(), data->end(), CompareDate);
-  } else if (sort_type == DirectoryLister::FULL_PATH) {
-    std::sort(data->begin(), data->end(), CompareFullPath);
-  } else if (sort_type == DirectoryLister::ALPHA_DIRS_FIRST) {
+  if (listing_type == DirectoryLister::ALPHA_DIRS_FIRST) {
     std::sort(data->begin(), data->end(), CompareAlphaDirsFirst);
-  } else {
-    DCHECK_EQ(DirectoryLister::NO_SORT, sort_type);
+  } else if (listing_type != DirectoryLister::NO_SORT &&
+             listing_type != DirectoryLister::NO_SORT_RECURSIVE) {
+    NOTREACHED();
   }
 }
 
@@ -89,17 +62,16 @@ void SortData(std::vector<DirectoryLister::DirectoryListerData>* data,
 DirectoryLister::DirectoryLister(const base::FilePath& dir,
                                  DirectoryListerDelegate* delegate)
     : delegate_(delegate) {
-  core_ = new Core(dir, false, ALPHA_DIRS_FIRST, this);
+  core_ = new Core(dir, ALPHA_DIRS_FIRST, this);
   DCHECK(delegate_);
   DCHECK(!dir.value().empty());
 }
 
 DirectoryLister::DirectoryLister(const base::FilePath& dir,
-                                 bool recursive,
-                                 SortType sort,
+                                 ListingType type,
                                  DirectoryListerDelegate* delegate)
     : delegate_(delegate) {
-  core_ = new Core(dir, recursive, sort, this);
+  core_ = new Core(dir, type, this);
   DCHECK(delegate_);
   DCHECK(!dir.value().empty());
 }
@@ -120,12 +92,10 @@ void DirectoryLister::Cancel() {
 }
 
 DirectoryLister::Core::Core(const base::FilePath& dir,
-                            bool recursive,
-                            SortType sort,
+                            ListingType type,
                             DirectoryLister* lister)
     : dir_(dir),
-      recursive_(recursive),
-      sort_(sort),
+      type_(type),
       origin_loop_(base::MessageLoopProxy::current()),
       lister_(lister),
       cancelled_(0) {
@@ -156,10 +126,14 @@ void DirectoryLister::Core::Start() {
   }
 
   int types = base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES;
-  if (!recursive_)
+  bool recursive;
+  if (NO_SORT_RECURSIVE != type_) {
     types |= base::FileEnumerator::INCLUDE_DOT_DOT;
-
-  base::FileEnumerator file_enum(dir_, recursive_, types);
+    recursive = false;
+  } else {
+    recursive = true;
+  }
+  base::FileEnumerator file_enum(dir_, recursive, types);
 
   base::FilePath path;
   while (!(path = file_enum.Next()).empty()) {
@@ -189,7 +163,7 @@ void DirectoryLister::Core::Start() {
     */
   }
 
-  SortData(directory_list.get(), sort_);
+  SortData(directory_list.get(), type_);
 
   origin_loop_->PostTask(
       FROM_HERE,
