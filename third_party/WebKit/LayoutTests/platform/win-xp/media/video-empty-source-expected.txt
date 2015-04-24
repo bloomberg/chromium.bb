@@ -11,12 +11,12 @@ layer at (0,0) size 800x600
 layer at (8,44) size 302x152
   LayoutVideo {VIDEO} at (0,0) size 302x152 [border: (1px solid #000000)]
 layer at (9,45) size 300x150
-  LayoutFlexibleBox {DIV} at (1,1) size 300x150
+  LayoutFlexibleBox (relative positioned) {DIV} at (1,1) size 300x150
     LayoutBlockFlow {DIV} at (0,115) size 300x35
 layer at (9,45) size 300x115
-  LayoutFlexibleBox {DIV} at (0,0) size 300x115
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x115
 layer at (14,160) size 290x30
-  LayoutFlexibleBox {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
+  LayoutFlexibleBox (relative positioned) {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 152x8
       LayoutFlexibleBox {DIV} at (0,0) size 152x8 [border: (1px solid #E6E6E659)]

@@ -14,12 +14,12 @@ layer at (8,162) size 300x150
 layer at (308,282) size 300x30
   LayoutMedia {AUDIO} at (300,120) size 300x30
 layer at (8,8) size 300x150
-  LayoutFlexibleBox {DIV} at (0,0) size 300x150
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x150
     LayoutBlockFlow {DIV} at (0,115) size 300x35
 layer at (8,8) size 300x115
-  LayoutFlexibleBox {DIV} at (0,0) size 300x115
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x115
 layer at (13,123) size 290x30
-  LayoutFlexibleBox {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
+  LayoutFlexibleBox (relative positioned) {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 152x8
       LayoutFlexibleBox {DIV} at (0,0) size 152x8 [border: (1px solid #E6E6E659)]
@@ -31,10 +31,10 @@ layer at (13,123) size 290x30
           text run at (0,7) width 25: "0:00"
     LayoutButton {INPUT} at (249,0) size 35x30
 layer at (308,128) size 300x30
-  LayoutFlexibleBox {DIV} at (0,0) size 300x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30
     LayoutBlockFlow {DIV} at (0,0) size 300x30
 layer at (308,128) size 300x30
-  LayoutFlexibleBox {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 162x8
       LayoutFlexibleBox {DIV} at (0,0) size 162x8 [border: (1px solid #E6E6E659)]
@@ -46,12 +46,12 @@ layer at (308,128) size 300x30
           text run at (0,7) width 25: "0:00"
     LayoutButton {INPUT} at (259,0) size 35x30
 layer at (8,162) size 300x150
-  LayoutFlexibleBox {DIV} at (0,0) size 300x150
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x150
     LayoutBlockFlow {DIV} at (0,115) size 300x35
 layer at (8,162) size 300x115
-  LayoutFlexibleBox {DIV} at (0,0) size 300x115
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x115
 layer at (13,277) size 290x30
-  LayoutFlexibleBox {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
+  LayoutFlexibleBox (relative positioned) {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 152x8
       LayoutFlexibleBox {DIV} at (0,0) size 152x8 [border: (1px solid #E6E6E659)]
@@ -63,10 +63,10 @@ layer at (13,277) size 290x30
           text run at (0,7) width 25: "0:00"
     LayoutButton {INPUT} at (249,0) size 35x30
 layer at (308,282) size 300x30
-  LayoutFlexibleBox {DIV} at (0,0) size 300x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30
     LayoutBlockFlow {DIV} at (0,0) size 300x30
 layer at (308,282) size 300x30
-  LayoutFlexibleBox {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 162x8
       LayoutFlexibleBox {DIV} at (0,0) size 162x8 [border: (1px solid #E6E6E659)]

@@ -14,10 +14,10 @@ layer at (0,0) size 800x600
 layer at (8,42) size 300x30
   LayoutMedia {AUDIO} at (0,0) size 300x30
 layer at (8,42) size 300x30
-  LayoutFlexibleBox {DIV} at (0,0) size 300x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30
     LayoutBlockFlow {DIV} at (0,0) size 300x30
 layer at (8,42) size 300x30
-  LayoutFlexibleBox {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 103.39x8
       LayoutFlexibleBox {DIV} at (0,0) size 103.39x8 [border: (1px solid #E6E6E659)]
@@ -35,10 +35,10 @@ layer at (8,42) size 300x30
 layer at (8,72) size 300x30
   LayoutMedia {AUDIO} at (0,30) size 300x30
 layer at (8,72) size 300x30
-  LayoutFlexibleBox {DIV} at (0,0) size 300x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30
     LayoutBlockFlow {DIV} at (0,0) size 300x30
 layer at (8,72) size 300x30
-  LayoutFlexibleBox {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 103.39x8
       LayoutFlexibleBox {DIV} at (0,0) size 103.39x8 [border: (1px solid #E6E6E659)]
@@ -56,10 +56,10 @@ layer at (8,72) size 300x30
 layer at (8,154) size 300x30
   LayoutMedia {AUDIO} at (0,112) size 300x30
 layer at (8,154) size 300x30
-  LayoutFlexibleBox {DIV} at (0,0) size 300x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30
     LayoutBlockFlow {DIV} at (0,0) size 300x30
 layer at (8,154) size 300x30
-  LayoutFlexibleBox {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
     LayoutButton {INPUT} at (9,0) size 30x30
     LayoutSlider {INPUT} at (48,11) size 103.39x8
       LayoutFlexibleBox {DIV} at (0,0) size 103.39x8 [border: (1px solid #E6E6E659)]
