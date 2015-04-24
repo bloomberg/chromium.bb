@@ -456,6 +456,11 @@ LayoutUnit LayoutMultiColumnFlowThread::skipColumnSpanner(LayoutBox* renderer, L
 // inserted, certain types of objects should be skipped.
 static bool shouldSkipInsertedOrRemovedChild(const LayoutObject& child)
 {
+    if (child.isSVG() && !child.isSVGRoot()) {
+        // Don't descend into SVG objects. What's in there is of no interest, and there might even
+        // be a foreignObject there with column-span:all, which doesn't apply to us.
+        return true;
+    }
     if (child.isLayoutFlowThread()) {
         // Found an inner flow thread. We need to skip it and its descendants.
         return true;
