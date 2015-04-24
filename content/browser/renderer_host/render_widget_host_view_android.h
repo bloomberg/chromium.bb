@@ -205,8 +205,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // DelegatedFrameEvictor implementation
   void EvictDelegatedFrame() override;
 
-  SkColorType PreferredReadbackFormat() override;
-
   // StylusTextSelectorClient implementation.
   void OnStylusSelectBegin(float x0, float y0, float x1, float y1) override;
   void OnStylusSelectUpdate(float x, float y) override;
@@ -301,13 +299,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // of the copy.
   static void PrepareTextureCopyOutputResult(
       const gfx::Size& dst_size_in_pixel,
-      const SkColorType color_type,
+      SkColorType color_type,
       const base::TimeTicks& start_time,
       ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void PrepareTextureCopyOutputResultForDelegatedReadback(
       const gfx::Size& dst_size_in_pixel,
-      const SkColorType color_type,
+      SkColorType color_type,
       const base::TimeTicks& start_time,
       scoped_refptr<cc::Layer> readback_layer,
       ReadbackRequestCallback& callback,

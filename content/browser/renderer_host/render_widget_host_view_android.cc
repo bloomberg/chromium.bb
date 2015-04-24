@@ -1959,14 +1959,14 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
 }
 
 // static
-void
-RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResultForDelegatedReadback(
-    const gfx::Size& dst_size_in_pixel,
-    const SkColorType color_type,
-    const base::TimeTicks& start_time,
-    scoped_refptr<cc::Layer> readback_layer,
-    ReadbackRequestCallback& callback,
-    scoped_ptr<cc::CopyOutputResult> result) {
+void RenderWidgetHostViewAndroid::
+    PrepareTextureCopyOutputResultForDelegatedReadback(
+        const gfx::Size& dst_size_in_pixel,
+        SkColorType color_type,
+        const base::TimeTicks& start_time,
+        scoped_refptr<cc::Layer> readback_layer,
+        ReadbackRequestCallback& callback,
+        scoped_ptr<cc::CopyOutputResult> result) {
   readback_layer->RemoveFromParent();
   PrepareTextureCopyOutputResult(
       dst_size_in_pixel, color_type, start_time, callback, result.Pass());
@@ -1975,7 +1975,7 @@ RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResultForDelegatedReadback(
 // static
 void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
-    const SkColorType color_type,
+    SkColorType color_type,
     const base::TimeTicks& start_time,
     ReadbackRequestCallback& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
@@ -1993,6 +1993,11 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
   else
     output_size_in_pixel = dst_size_in_pixel;
 
+  GLHelper* gl_helper = GetPostReadbackGLHelper();
+  if (!gl_helper)
+    return;
+  if (!gl_helper->IsReadbackConfigSupported(color_type))
+    color_type = kRGBA_8888_SkColorType;
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
   if (!bitmap->tryAllocPixels(SkImageInfo::Make(output_size_in_pixel.width(),
                                                 output_size_in_pixel.height(),
@@ -2001,9 +2006,6 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     return;
   }
 
-  GLHelper* gl_helper = GetPostReadbackGLHelper();
-  if (!gl_helper || !gl_helper->IsReadbackConfigSupported(color_type))
-    return;
 
   scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock(
       new SkAutoLockPixels(*bitmap));
@@ -2033,21 +2035,6 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
                  start_time,
                  base::Passed(&bitmap_pixels_lock)),
       GLHelper::SCALER_QUALITY_GOOD);
-}
-
-SkColorType RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
-  // Define the criteria here. If say the 16 texture readback is
-  // supported we should go with that (this degrades quality)
-  // or stick back to the default format.
-  if (base::SysInfo::IsLowEndDevice()) {
-    // TODO(sievers): Cannot use GLHelper here. Instead remove this API
-    // and have CopyFromCompositingSurface() fall back to RGB8 if 565 was
-    // requested but is not supported.
-    GLHelper* gl_helper = GetPostReadbackGLHelper();
-    if (gl_helper && gl_helper->IsReadbackConfigSupported(kRGB_565_SkColorType))
-      return kRGB_565_SkColorType;
-  }
-  return kN32_SkColorType;
 }
 
 void RenderWidgetHostViewAndroid::OnStylusSelectBegin(float x0,
