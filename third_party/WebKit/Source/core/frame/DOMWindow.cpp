@@ -48,8 +48,7 @@ v8::Handle<v8::Object> DOMWindow::associateWithWrapper(v8::Isolate*, const Wrapp
 
 const AtomicString& DOMWindow::interfaceName() const
 {
-    // TODO(yukishiino): Rename EventTargetNames::LocalDOMWindow to DOMWindow.
-    return EventTargetNames::LocalDOMWindow;
+    return EventTargetNames::DOMWindow;
 }
 
 Location* DOMWindow::location() const

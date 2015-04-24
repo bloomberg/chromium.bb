@@ -16,7 +16,7 @@ core/html/track/VideoTrackList
 core/loader/appcache/ApplicationCache
 core/page/EventSource
 core/timing/Performance
-core/frame/Window ImplementedAs=LocalDOMWindow
+core/frame/Window ImplementedAs=DOMWindow
 core/workers/DedicatedWorkerGlobalScope
 core/workers/SharedWorker
 core/workers/SharedWorkerGlobalScope
