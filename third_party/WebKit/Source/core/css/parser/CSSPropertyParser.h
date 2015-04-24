@@ -146,8 +146,8 @@ private:
     // Legacy parsing allows <string>s for animation-name
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty(CSSPropertyID, bool useLegacyParsing);
     PassRefPtrWillBeRawPtr<CSSValueList> parseAnimationPropertyList(CSSPropertyID, bool useLegacyParsing);
-    bool parseAnimationShorthand(CSSPropertyID, bool useLegacyParsing, bool important);
-    bool parseTransitionShorthand(CSSPropertyID, bool important);
+    bool parseAnimationShorthand(bool useLegacyParsing, bool important);
+    bool parseTransitionShorthand(bool important);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseColumnWidth();
     PassRefPtrWillBeRawPtr<CSSValue> parseColumnCount();

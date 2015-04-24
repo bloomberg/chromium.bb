@@ -74,21 +74,6 @@ const StylePropertyShorthand& transitionShorthandForParsing()
     return transitionLonghands;
 }
 
-// Returns an empty list if the property is not a shorthand, otherwise the list of longhands for parsing.
-const StylePropertyShorthand& parsingShorthandForProperty(CSSPropertyID propertyID)
-{
-    switch (propertyID) {
-    case CSSPropertyAnimation:
-        return animationShorthandForParsing();
-    case CSSPropertyBorder:
-        return borderShorthandForParsing();
-    case CSSPropertyTransition:
-        return transitionShorthandForParsing();
-    default:
-        return shorthandForProperty(propertyID);
-    }
-}
-
 bool isShorthandProperty(CSSPropertyID id)
 {
     return shorthandForProperty(id).length();

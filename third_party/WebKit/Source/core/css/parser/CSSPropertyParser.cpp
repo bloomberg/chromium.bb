@@ -1163,7 +1163,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyMotion:
         // <motion-path> && <motion-offset> && <motion-rotation>
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
-        return parseShorthand(propId, parsingShorthandForProperty(CSSPropertyMotion), important);
+        return parseShorthand(propId, motionShorthand(), important);
     case CSSPropertyMotionPath:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
         if (id == CSSValueNone)
@@ -1366,7 +1366,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorder:
         // [ 'border-width' || 'border-style' || <color> ] | inherit
     {
-        if (parseShorthand(propId, parsingShorthandForProperty(CSSPropertyBorder), important)) {
+        if (parseShorthand(propId, borderShorthandForParsing(), important)) {
             // The CSS3 Borders and Backgrounds specification says that border also resets border-image. It's as
             // though a value of none was specified for the image.
             addExpandedPropertyForValue(CSSPropertyBorderImage, cssValuePool().createImplicitInitialValue(), important);
@@ -1431,9 +1431,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitTextStroke:
         return parseShorthand(propId, webkitTextStrokeShorthand(), important);
     case CSSPropertyAnimation:
-        return parseAnimationShorthand(propId, unresolvedProperty == CSSPropertyAliasWebkitAnimation, important);
+        return parseAnimationShorthand(unresolvedProperty == CSSPropertyAliasWebkitAnimation, important);
     case CSSPropertyTransition:
-        return parseTransitionShorthand(propId, important);
+        return parseTransitionShorthand(important);
     case CSSPropertyInvalid:
         return false;
     case CSSPropertyPage:
@@ -1743,18 +1743,18 @@ static bool isValidTransitionPropertyList(CSSValueList* value)
     return true;
 }
 
-bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool useLegacyparsing, bool important)
+bool CSSPropertyParser::parseAnimationShorthand(bool useLegacyparsing, bool important)
 {
-    const StylePropertyShorthand& animationProperties = parsingShorthandForProperty(propId);
+    const StylePropertyShorthand& animationProperties = animationShorthandForParsing();
     const unsigned numProperties = 8;
 
     // The list of properties in the shorthand should be the same
     // length as the list with animation name in last position, even though they are
     // in a different order.
     ASSERT(numProperties == animationProperties.length());
-    ASSERT(numProperties == shorthandForProperty(propId).length());
+    ASSERT(numProperties == animationShorthand().length());
 
-    ShorthandScope scope(this, propId);
+    ShorthandScope scope(this, CSSPropertyAnimation);
 
     bool parsedProperty[numProperties] = { false };
     RefPtrWillBeRawPtr<CSSValueList> values[numProperties];
@@ -1801,13 +1801,13 @@ bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool useLe
     return true;
 }
 
-bool CSSPropertyParser::parseTransitionShorthand(CSSPropertyID propId, bool important)
+bool CSSPropertyParser::parseTransitionShorthand(bool important)
 {
     const unsigned numProperties = 4;
-    const StylePropertyShorthand& shorthand = parsingShorthandForProperty(propId);
+    const StylePropertyShorthand& shorthand = transitionShorthandForParsing();
     ASSERT(numProperties == shorthand.length());
 
-    ShorthandScope scope(this, propId);
+    ShorthandScope scope(this, CSSPropertyTransition);
 
     bool parsedProperty[numProperties] = { false };
     RefPtrWillBeRawPtr<CSSValueList> values[numProperties];
