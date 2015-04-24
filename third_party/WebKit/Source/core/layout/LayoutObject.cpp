@@ -267,10 +267,14 @@ bool LayoutObject::isLegend() const
 
 void LayoutObject::setFlowThreadStateIncludingDescendants(FlowThreadState state)
 {
-    for (LayoutObject *object = this; object; object = object->nextInPreOrder(this)) {
+    LayoutObject* next;
+    for (LayoutObject *object = this; object; object = next) {
         // If object is a fragmentation context it already updated the descendants flag accordingly.
-        if (object->isLayoutFlowThread())
+        if (object->isLayoutFlowThread()) {
+            next = object->nextInPreOrderAfterChildren(this);
             continue;
+        }
+        next = object->nextInPreOrder(this);
         ASSERT(state != object->flowThreadState());
         object->setFlowThreadState(state);
     }
@@ -2511,8 +2515,11 @@ void LayoutObject::removeFromLayoutFlowThread()
 void LayoutObject::removeFromLayoutFlowThreadRecursive(LayoutFlowThread* renderFlowThread)
 {
     if (const LayoutObjectChildList* children = virtualChildren()) {
-        for (LayoutObject* child = children->firstChild(); child; child = child->nextSibling())
-            child->removeFromLayoutFlowThreadRecursive(renderFlowThread);
+        for (LayoutObject* child = children->firstChild(); child; child = child->nextSibling()) {
+            if (child->isLayoutFlowThread())
+                continue; // Don't descend into inner fragmentation contexts.
+            child->removeFromLayoutFlowThreadRecursive(child->isLayoutFlowThread() ? toLayoutFlowThread(child) : renderFlowThread);
+        }
     }
 
     if (renderFlowThread && renderFlowThread != this)
