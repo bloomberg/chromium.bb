@@ -15,6 +15,7 @@ namespace content {
 struct LoadCommittedDetails;
 struct LoadNotificationDetails;
 struct NativeWebKeyboardEvent;
+class FrameTree;
 class InterstitialPage;
 class InterstitialPageImpl;
 class RenderFrameHost;
@@ -46,6 +47,7 @@ class NavigationControllerDelegate {
 
   // Methods from WebContentsImpl that NavigationControllerImpl needs to
   // call.
+  virtual FrameTree* GetFrameTree() = 0;
   virtual void NotifyBeforeFormRepostWarningShow() = 0;
   virtual void NotifyNavigationEntryCommitted(
       const LoadCommittedDetails& load_details) = 0;

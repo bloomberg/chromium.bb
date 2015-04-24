@@ -23,11 +23,24 @@ namespace content {
 namespace {
 
 // Used with FrameTree::ForEach() to search for the FrameTreeNode
-// corresponding to |frame_tree_node_id| whithin a specific FrameTree.
+// corresponding to |frame_tree_node_id| within a specific FrameTree.
 bool FrameTreeNodeForId(int64 frame_tree_node_id,
                         FrameTreeNode** out_node,
                         FrameTreeNode* node) {
   if (node->frame_tree_node_id() == frame_tree_node_id) {
+    *out_node = node;
+    // Terminate iteration once the node has been found.
+    return false;
+  }
+  return true;
+}
+
+// Used with FrameTree::ForEach() to search for the FrameTreeNode with the given
+// |name| within a specific FrameTree.
+bool FrameTreeNodeForName(const std::string& name,
+                          FrameTreeNode** out_node,
+                          FrameTreeNode* node) {
+  if (node->frame_name() == name) {
     *out_node = node;
     // Terminate iteration once the node has been found.
     return false;
@@ -104,7 +117,7 @@ FrameTree::~FrameTree() {
 }
 
 FrameTreeNode* FrameTree::FindByID(int64 frame_tree_node_id) {
-  FrameTreeNode* node = NULL;
+  FrameTreeNode* node = nullptr;
   ForEach(base::Bind(&FrameTreeNodeForId, frame_tree_node_id, &node));
   return node;
 }
@@ -126,12 +139,21 @@ FrameTreeNode* FrameTree::FindByRoutingID(int process_id, int routing_id) {
       return result;
   }
 
-  return NULL;
+  return nullptr;
+}
+
+FrameTreeNode* FrameTree::FindByName(const std::string& name) {
+  if (name.empty())
+    return root_.get();
+
+  FrameTreeNode* node = nullptr;
+  ForEach(base::Bind(&FrameTreeNodeForName, name, &node));
+  return node;
 }
 
 void FrameTree::ForEach(
     const base::Callback<bool(FrameTreeNode*)>& on_node) const {
-  ForEach(on_node, NULL);
+  ForEach(on_node, nullptr);
 }
 
 void FrameTree::ForEach(
@@ -272,7 +294,7 @@ RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
       render_view_host_map_.find(site_instance->GetId());
   // TODO(creis): Mirror the frame tree so this check can't fail.
   if (iter == render_view_host_map_.end())
-    return NULL;
+    return nullptr;
   return iter->second;
 }
 

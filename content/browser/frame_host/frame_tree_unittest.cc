@@ -201,6 +201,49 @@ TEST_F(FrameTreeTest, DISABLED_Shape) {
             GetTreeState(frame_tree));
 }
 
+// Ensure frames can be found by frame_tree_node_id, routing ID, or name.
+TEST_F(FrameTreeTest, FindFrames) {
+  // Add a few child frames to the main frame.
+  FrameTree* frame_tree = contents()->GetFrameTree();
+  FrameTreeNode* root = frame_tree->root();
+  main_test_rfh()->OnCreateChildFrame(22, "child0", SandboxFlags::NONE);
+  main_test_rfh()->OnCreateChildFrame(23, "child1", SandboxFlags::NONE);
+  main_test_rfh()->OnCreateChildFrame(24, std::string(), SandboxFlags::NONE);
+  FrameTreeNode* child0 = root->child_at(0);
+  FrameTreeNode* child1 = root->child_at(1);
+  FrameTreeNode* child2 = root->child_at(2);
+
+  // Add one grandchild frame.
+  child1->current_frame_host()->OnCreateChildFrame(33, "grandchild",
+                                                   SandboxFlags::NONE);
+  FrameTreeNode* grandchild = child1->child_at(0);
+
+  // Ensure they can be found by FTN id.
+  EXPECT_EQ(root, frame_tree->FindByID(root->frame_tree_node_id()));
+  EXPECT_EQ(child0, frame_tree->FindByID(child0->frame_tree_node_id()));
+  EXPECT_EQ(child1, frame_tree->FindByID(child1->frame_tree_node_id()));
+  EXPECT_EQ(child2, frame_tree->FindByID(child2->frame_tree_node_id()));
+  EXPECT_EQ(grandchild, frame_tree->FindByID(grandchild->frame_tree_node_id()));
+  EXPECT_EQ(nullptr, frame_tree->FindByID(-1));
+
+  // Ensure they can be found by routing id.
+  int process_id = main_test_rfh()->GetProcess()->GetID();
+  EXPECT_EQ(root, frame_tree->FindByRoutingID(process_id,
+                                              main_test_rfh()->GetRoutingID()));
+  EXPECT_EQ(child0, frame_tree->FindByRoutingID(process_id, 22));
+  EXPECT_EQ(child1, frame_tree->FindByRoutingID(process_id, 23));
+  EXPECT_EQ(child2, frame_tree->FindByRoutingID(process_id, 24));
+  EXPECT_EQ(grandchild, frame_tree->FindByRoutingID(process_id, 33));
+  EXPECT_EQ(nullptr, frame_tree->FindByRoutingID(process_id, 37));
+
+  // Ensure they can be found by name, if they have one.
+  EXPECT_EQ(root, frame_tree->FindByName(std::string()));
+  EXPECT_EQ(child0, frame_tree->FindByName("child0"));
+  EXPECT_EQ(child1, frame_tree->FindByName("child1"));
+  EXPECT_EQ(grandchild, frame_tree->FindByName("grandchild"));
+  EXPECT_EQ(nullptr, frame_tree->FindByName("no such frame"));
+}
+
 // Do some simple manipulations of the frame tree, making sure that
 // WebContentsObservers see a consistent view of the tree as we go.
 TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {

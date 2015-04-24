@@ -731,6 +731,13 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
           params.is_renderer_initiated,
           params.extra_headers,
           browser_context_));
+  if (!params.frame_name.empty()) {
+    // This is only used for navigating subframes in tests.
+    FrameTreeNode* named_frame =
+        delegate_->GetFrameTree()->FindByName(params.frame_name);
+    if (named_frame)
+      entry->set_frame_tree_node_id(named_frame->frame_tree_node_id());
+  }
   if (params.frame_tree_node_id != -1)
     entry->set_frame_tree_node_id(params.frame_tree_node_id);
   entry->set_source_site_instance(
@@ -745,7 +752,6 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   entry->SetIsOverridingUserAgent(override);
   entry->set_transferred_global_request_id(
       params.transferred_global_request_id);
-  entry->SetFrameToNavigate(params.frame_name);
 
 #if defined(OS_ANDROID)
   if (params.intent_received_timestamp > 0) {

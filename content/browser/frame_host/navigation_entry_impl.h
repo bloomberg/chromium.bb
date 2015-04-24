@@ -104,8 +104,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   base::Time GetTimestamp() const override;
   void SetCanLoadLocalResources(bool allow) override;
   bool GetCanLoadLocalResources() const override;
-  void SetFrameToNavigate(const std::string& frame_name) override;
-  const std::string& GetFrameToNavigate() const override;
   void SetExtraData(const std::string& key,
                     const base::string16& data) override;
   bool GetExtraData(const std::string& key,
@@ -414,10 +412,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Set when this entry should be able to access local file:// resources. This
   // value is not needed after the entry commits and is not persisted.
   bool can_load_local_resources_;
-
-  // If not empty, the name of the frame to navigate. This field is not
-  // persisted, because it is currently only used in tests.
-  std::string frame_to_navigate_;
 
   // If not -1, this indicates which FrameTreeNode to navigate.  This field is
   // not persisted because it is experimental and only used when the

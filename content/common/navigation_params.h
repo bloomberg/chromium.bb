@@ -166,7 +166,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           base::TimeTicks navigation_start,
                           const std::vector<GURL>& redirects,
                           bool can_load_local_resources,
-                          const std::string& frame_to_navigate,
                           base::Time request_time,
                           const PageState& page_state,
                           int32 page_id,
@@ -189,9 +188,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // Whether or not this url should be allowed to access local file://
   // resources.
   bool can_load_local_resources;
-
-  // If not empty, which frame to navigate.
-  std::string frame_to_navigate;
 
   // The time the request was created. This is used by the old performance
   // infrastructure to set up DocumentState associated with the RenderView.

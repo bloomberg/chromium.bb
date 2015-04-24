@@ -207,10 +207,6 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   entry2_->SetBrowserInitiatedPostData(post_data.get());
   EXPECT_EQ(post_data->front(),
       entry2_->GetBrowserInitiatedPostData()->front());
-
- // Frame to navigate.
-  EXPECT_TRUE(entry1_->GetFrameToNavigate().empty());
-  EXPECT_TRUE(entry2_->GetFrameToNavigate().empty());
 }
 
 // Test basic Clone behavior.

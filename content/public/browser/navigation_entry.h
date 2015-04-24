@@ -183,12 +183,6 @@ class NavigationEntry {
   virtual void SetCanLoadLocalResources(bool allow) = 0;
   virtual bool GetCanLoadLocalResources() const = 0;
 
-  // Used to specify which frame to navigate. If empty, the main frame is
-  // navigated. This is currently not persisted in session restore, because it
-  // is currently only used in tests.
-  virtual void SetFrameToNavigate(const std::string& frame_name) = 0;
-  virtual const std::string& GetFrameToNavigate() const = 0;
-
   // Set extra data on this NavigationEntry according to the specified |key|.
   // This data is not persisted by default.
   virtual void SetExtraData(const std::string& key,

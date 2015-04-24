@@ -34,9 +34,6 @@ ContentSerializedNavigationBuilder::FromNavigationEntry(
   navigation.is_overriding_user_agent_ = entry.GetIsOverridingUserAgent();
   navigation.timestamp_ = entry.GetTimestamp();
   navigation.is_restored_ = entry.IsRestored();
-  // If you want to navigate a named frame in Chrome, you will first need to
-  // add support for persisting it. It is currently only used for layout tests.
-  CHECK(entry.GetFrameToNavigate().empty());
   entry.GetExtraData(kSearchTermsKey, &navigation.search_terms_);
   if (entry.GetFavicon().valid)
     navigation.favicon_url_ = entry.GetFavicon().url;

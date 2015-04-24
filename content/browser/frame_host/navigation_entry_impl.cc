@@ -313,14 +313,6 @@ bool NavigationEntryImpl::GetCanLoadLocalResources() const {
   return can_load_local_resources_;
 }
 
-void NavigationEntryImpl::SetFrameToNavigate(const std::string& frame_name) {
-  frame_to_navigate_ = frame_name;
-}
-
-const std::string& NavigationEntryImpl::GetFrameToNavigate() const {
-  return frame_to_navigate_;
-}
-
 void NavigationEntryImpl::SetExtraData(const std::string& key,
                                        const base::string16& data) {
   extra_data_[key] = data;
@@ -378,7 +370,6 @@ NavigationEntryImpl* NavigationEntryImpl::Clone() const {
   // ResetForCommit: should_replace_entry_
   copy->redirect_chain_ = redirect_chain_;
   // ResetForCommit: should_clear_history_list_
-  copy->frame_to_navigate_ = frame_to_navigate_;
   // ResetForCommit: frame_tree_node_id_
   // ResetForCommit: intent_received_timestamp_
   copy->extra_data_ = extra_data_;
@@ -444,10 +435,9 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
   }
   return RequestNavigationParams(
       GetIsOverridingUserAgent(), navigation_start, redirects,
-      GetCanLoadLocalResources(), GetFrameToNavigate(), base::Time::Now(),
-      GetPageState(), GetPageID(), pending_offset_to_send,
-      current_offset_to_send, current_length_to_send,
-      should_clear_history_list());
+      GetCanLoadLocalResources(), base::Time::Now(), GetPageState(),
+      GetPageID(), pending_offset_to_send, current_offset_to_send,
+      current_length_to_send, should_clear_history_list());
 }
 
 void NavigationEntryImpl::ResetForCommit() {

@@ -1091,15 +1091,6 @@ void RenderFrameImpl::OnNavigate(
 
   GetContentClient()->SetActiveURL(common_params.url);
 
-  WebFrame* frame = frame_;
-  if (!request_params.frame_to_navigate.empty()) {
-    // TODO(nasko): Move this lookup to the browser process.
-    frame = render_view_->webview()->findFrameByName(
-        WebString::fromUTF8(request_params.frame_to_navigate));
-    CHECK(frame) << "Invalid frame name passed: "
-                 << request_params.frame_to_navigate;
-  }
-
   // If this frame isn't in the same process as its parent, it will naively
   // assume that this is the first navigation in the iframe, but this may not
   // actually be the case. The PageTransition differentiates between the first
@@ -1109,7 +1100,6 @@ void RenderFrameImpl::OnNavigate(
                                    ui::PAGE_TRANSITION_MANUAL_SUBFRAME)) {
     CHECK(frame_->parent());
     if (frame_->parent()->isWebRemoteFrame()) {
-      CHECK_EQ(frame, frame_);
       frame_->setCommittedFirstRealLoad();
     }
   }
@@ -1136,9 +1126,9 @@ void RenderFrameImpl::OnNavigate(
                          FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
 
     if (reload_original_url)
-      frame->reloadWithOverrideURL(common_params.url, true);
+      frame_->reloadWithOverrideURL(common_params.url, true);
     else
-      frame->reload(ignore_cache);
+      frame_->reload(ignore_cache);
   } else if (is_history_navigation) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(request_params.page_id, -1);
@@ -1154,12 +1144,12 @@ void RenderFrameImpl::OnNavigate(
           entry.Pass(), navigation_params.Pass(), cache_policy);
     }
   } else if (!common_params.base_url_for_data_url.is_empty()) {
-    LoadDataURL(common_params, frame);
+    LoadDataURL(common_params, frame_);
   } else {
     // Navigate to the given URL.
     WebURLRequest request = CreateURLRequestForNavigation(
         common_params, scoped_ptr<StreamOverrideParameters>(),
-        frame->isViewSourceModeEnabled());
+        frame_->isViewSourceModeEnabled());
 
     if (!start_params.extra_headers.empty()) {
       for (net::HttpUtil::HeadersIterator i(start_params.extra_headers.begin(),
@@ -1193,9 +1183,9 @@ void RenderFrameImpl::OnNavigate(
     // Record this before starting the load, we need a lower bound of this time
     // to sanitize the navigationStart override set below.
     base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
-    frame->loadRequest(request);
+    frame_->loadRequest(request);
 
-    UpdateFrameNavigationTiming(frame, request_params.browser_navigation_start,
+    UpdateFrameNavigationTiming(frame_, request_params.browser_navigation_start,
                                 renderer_navigation_start);
   }
 
