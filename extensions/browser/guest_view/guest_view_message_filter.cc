@@ -65,8 +65,7 @@ void GuestViewMessageFilter::OnAttachGuest(
     int guest_instance_id,
     const base::DictionaryValue& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto manager =
-      GuestViewManager::FromBrowserContextIfAvailable(browser_context_);
+  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
   // We should have a GuestViewManager at this point. If we don't then the
   // embedder is misbehaving.
   if (!manager)

@@ -23,9 +23,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
+#include "extensions/browser/guest_view/test_guest_view_manager.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/ime/composition_text.h"
@@ -34,88 +36,9 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using extensions::AppWindow;
-
-class TestGuestViewManager : public extensions::GuestViewManager {
- public:
-  explicit TestGuestViewManager(content::BrowserContext* context)
-      : GuestViewManager(context),
-        guest_add_count_(0),
-        guest_remove_count_(0),
-        web_contents_(NULL) {}
-
-  content::WebContents* WaitForGuestAdded() {
-    if (web_contents_)
-      return web_contents_;
-
-    add_message_loop_runner_ = new content::MessageLoopRunner;
-    add_message_loop_runner_->Run();
-    return web_contents_;
-  }
-
-  // Waits so that at least |expected_remove_count| guests' creation
-  // has been seen by this manager.
-  void WaitForGuestRemoved(size_t expected_remove_count) {
-    if (guest_remove_count_ >= expected_remove_count)
-      return;
-
-    remove_message_loop_runner_ = new content::MessageLoopRunner;
-    remove_message_loop_runner_->Run();
-  }
-
-  size_t guest_add_count() { return guest_add_count_; }
-
- private:
-  // GuestViewManager override:
-  void AddGuest(int guest_instance_id,
-                content::WebContents* guest_web_contents) override {
-    GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
-    web_contents_ = guest_web_contents;
-    ++guest_add_count_;
-
-    if (add_message_loop_runner_.get())
-      add_message_loop_runner_->Quit();
-  }
-
-  void RemoveGuest(int guest_instance_id) override {
-    GuestViewManager::RemoveGuest(guest_instance_id);
-    ++guest_remove_count_;
-
-    if (remove_message_loop_runner_.get())
-      remove_message_loop_runner_->Quit();
-  }
-
-  size_t guest_add_count_;
-  size_t guest_remove_count_;
-  content::WebContents* web_contents_;
-  scoped_refptr<content::MessageLoopRunner> add_message_loop_runner_;
-  scoped_refptr<content::MessageLoopRunner> remove_message_loop_runner_;
-};
-
-// Test factory for creating test instances of GuestViewManager.
-class TestGuestViewManagerFactory : public extensions::GuestViewManagerFactory {
- public:
-  TestGuestViewManagerFactory() :
-      test_guest_view_manager_(NULL) {}
-
-  ~TestGuestViewManagerFactory() override {}
-
-  extensions::GuestViewManager* CreateGuestViewManager(
-      content::BrowserContext* context) override {
-    return GetManager(context);
-  }
-
-  TestGuestViewManager* GetManager(content::BrowserContext* context) {
-    if (!test_guest_view_manager_) {
-      test_guest_view_manager_ = new TestGuestViewManager(context);
-    }
-    return test_guest_view_manager_;
-  }
-
- private:
-  TestGuestViewManager* test_guest_view_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestGuestViewManagerFactory);
-};
+using extensions::ExtensionsGuestViewManagerDelegate;
+using extensions::GuestViewManager;
+using extensions::TestGuestViewManager;
 
 class WebViewInteractiveTest
     : public extensions::PlatformAppBrowserTest {
@@ -130,7 +53,19 @@ class WebViewInteractiveTest
   }
 
   TestGuestViewManager* GetGuestViewManager() {
-    return factory_.GetManager(browser()->profile());
+    TestGuestViewManager* manager = static_cast<TestGuestViewManager*>(
+        TestGuestViewManager::FromBrowserContext(browser()->profile()));
+    // TestGuestViewManager::WaitForSingleGuestCreated may and will get called
+    // before a guest is created.
+    if (!manager) {
+      manager = static_cast<TestGuestViewManager*>(
+          GuestViewManager::CreateWithDelegate(
+              browser()->profile(),
+              scoped_ptr<guestview::GuestViewManagerDelegate>(
+                  new ExtensionsGuestViewManagerDelegate(
+                      browser()->profile()))));
+    }
+    return manager;
   }
 
   void MoveMouseInsideWindowWithListener(gfx::Point point,
@@ -284,11 +219,9 @@ class WebViewInteractiveTest
     ASSERT_TRUE(done_listener);
     ASSERT_TRUE(done_listener->WaitUntilSatisfied());
 
-    guest_web_contents_ = GetGuestViewManager()->WaitForGuestAdded();
+    guest_web_contents_ = GetGuestViewManager()->WaitForSingleGuestCreated();
   }
 
-  void RunTest(const std::string& app_name) {
-  }
   void SetupTest(const std::string& app_name,
                  const std::string& guest_url_spec) {
     ASSERT_TRUE(StartEmbeddedTestServer());
@@ -547,7 +480,7 @@ class WebViewInteractiveTest
   }
 
  protected:
-  TestGuestViewManagerFactory factory_;
+  extensions::TestGuestViewManagerFactory factory_;
   content::WebContents* guest_web_contents_;
   content::WebContents* embedder_web_contents_;
   gfx::Point corner_;
@@ -900,13 +833,13 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
   TestHelper("testNewWindowOpenerDestroyedWhileUnattached",
              "web_view/newwindow",
              NEEDS_TEST_SERVER);
-  ASSERT_EQ(2u, GetGuestViewManager()->guest_add_count());
+  ASSERT_EQ(2, GetGuestViewManager()->num_guests_created());
 
   // We have two guests in this test, one is the intial one, the other
   // is the newwindow one.
   // Before the embedder goes away, both the guests should go away.
   // This ensures that unattached guests are gone if opener is gone.
-  GetGuestViewManager()->WaitForGuestRemoved(2u);
+  GetGuestViewManager()->WaitForAllGuestsDeleted();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {

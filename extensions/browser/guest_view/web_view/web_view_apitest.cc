@@ -17,6 +17,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
 #include "extensions/browser/guest_view/test_guest_view_manager.h"
@@ -237,9 +238,20 @@ content::WebContents* WebViewAPITest::GetEmbedderWebContents() {
 }
 
 TestGuestViewManager* WebViewAPITest::GetGuestViewManager() {
-  return static_cast<TestGuestViewManager*>(
-      TestGuestViewManager::FromBrowserContext(
-          ShellContentBrowserClient::Get()->GetBrowserContext()));
+  content::BrowserContext* context =
+      ShellContentBrowserClient::Get()->GetBrowserContext();
+  TestGuestViewManager* manager = static_cast<TestGuestViewManager*>(
+      TestGuestViewManager::FromBrowserContext(context));
+  // TestGuestViewManager::WaitForSingleGuestCreated may and will get called
+  // before a guest is created.
+  if (!manager) {
+    manager = static_cast<TestGuestViewManager*>(
+        GuestViewManager::CreateWithDelegate(
+            context,
+            scoped_ptr<guestview::GuestViewManagerDelegate>(
+                new ExtensionsGuestViewManagerDelegate(context))));
+  }
+  return manager;
 }
 
 void WebViewAPITest::SendMessageToGuestAndWait(

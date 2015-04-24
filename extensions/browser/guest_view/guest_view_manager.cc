@@ -14,18 +14,9 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/guest_view/app_view/app_view_guest.h"
-#include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
-#include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
+#include "extensions/browser/guest_view/guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
-#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
-#include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
-#include "extensions/browser/process_manager.h"
-#include "extensions/browser/process_map.h"
-#include "extensions/common/features/feature.h"
-#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -33,29 +24,35 @@
 using content::BrowserContext;
 using content::SiteInstance;
 using content::WebContents;
+using guestview::GuestViewManagerDelegate;
 
 namespace extensions {
 
 // static
 GuestViewManagerFactory* GuestViewManager::factory_ = nullptr;
 
-GuestViewManager::GuestViewManager(content::BrowserContext* context)
-    : current_instance_id_(0), last_instance_id_removed_(0), context_(context) {
+GuestViewManager::GuestViewManager(
+    content::BrowserContext* context,
+    scoped_ptr<GuestViewManagerDelegate> delegate)
+    : current_instance_id_(0),
+      last_instance_id_removed_(0),
+      context_(context),
+      delegate_(delegate.Pass()) {
 }
 
 GuestViewManager::~GuestViewManager() {}
 
 // static
-GuestViewManager* GuestViewManager::FromBrowserContext(
-    BrowserContext* context) {
-  GuestViewManager* guest_manager =
-      static_cast<GuestViewManager*>(context->GetUserData(
-          guestview::kGuestViewManagerKeyName));
+GuestViewManager* GuestViewManager::CreateWithDelegate(
+    BrowserContext* context,
+    scoped_ptr<GuestViewManagerDelegate> delegate) {
+  GuestViewManager* guest_manager = FromBrowserContext(context);
   if (!guest_manager) {
     if (factory_) {
-      guest_manager = factory_->CreateGuestViewManager(context);
+      guest_manager =
+          factory_->CreateGuestViewManager(context, delegate.Pass());
     } else {
-      guest_manager = new GuestViewManager(context);
+      guest_manager = new GuestViewManager(context, delegate.Pass());
     }
     context->SetUserData(guestview::kGuestViewManagerKeyName, guest_manager);
   }
@@ -63,7 +60,7 @@ GuestViewManager* GuestViewManager::FromBrowserContext(
 }
 
 // static
-GuestViewManager* GuestViewManager::FromBrowserContextIfAvailable(
+GuestViewManager* GuestViewManager::FromBrowserContext(
     BrowserContext* context) {
   return static_cast<GuestViewManager*>(context->GetUserData(
       guestview::kGuestViewManagerKeyName));
@@ -120,6 +117,10 @@ void GuestViewManager::DetachGuest(GuestViewBase* guest) {
 
   reverse_instance_id_map_.erase(reverse_it);
   instance_id_map_.erase(it);
+}
+
+bool GuestViewManager::IsOwnedByExtension(GuestViewBase* guest) {
+  return delegate_->IsOwnedByExtension(guest);
 }
 
 int GuestViewManager::GetNextInstanceID() {
@@ -260,39 +261,19 @@ GuestViewBase* GuestViewManager::CreateGuestInternal(
   return it->second.Run(owner_web_contents);
 }
 
-// static
 void GuestViewManager::RegisterGuestViewTypes() {
-  RegisterGuestViewType<AppViewGuest>();
-  RegisterGuestViewType<ExtensionOptionsGuest>();
-  RegisterGuestViewType<ExtensionViewGuest>();
-  RegisterGuestViewType<MimeHandlerViewGuest>();
-  RegisterGuestViewType<SurfaceWorkerGuest>();
-  RegisterGuestViewType<WebViewGuest>();
+  delegate_->RegisterAdditionalGuestViewTypes();
 }
 
-bool GuestViewManager::IsGuestAvailableToContext(
-    GuestViewBase* guest,
-    std::string* owner_extension_id) {
-  const Feature* feature =
-      FeatureProvider::GetAPIFeature(guest->GetAPINamespace());
-  CHECK(feature);
+bool GuestViewManager::IsGuestAvailableToContext(GuestViewBase* guest) {
+  return delegate_->IsGuestAvailableToContext(guest);
+}
 
-  ProcessMap* process_map = ProcessMap::Get(context_);
-  CHECK(process_map);
-
-  const Extension* owner_extension = ProcessManager::Get(context_)->
-      GetExtensionForWebContents(guest->owner_web_contents());
-  *owner_extension_id = owner_extension ? owner_extension->id() : std::string();
-
-  // Ok for |owner_extension| to be nullptr, the embedder might be WebUI.
-  Feature::Availability availability = feature->IsAvailableToContext(
-      owner_extension,
-      process_map->GetMostLikelyContextType(
-          owner_extension,
-          guest->owner_web_contents()->GetRenderProcessHost()->GetID()),
-      guest->GetOwnerSiteURL());
-
-  return availability.is_available();
+void GuestViewManager::DispatchEvent(const std::string& event_name,
+                                     scoped_ptr<base::DictionaryValue> args,
+                                     GuestViewBase* guest,
+                                     int instance_id) {
+  delegate_->DispatchEvent(event_name, args.Pass(), guest, instance_id);
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceID(

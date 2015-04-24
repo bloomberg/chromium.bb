@@ -415,7 +415,7 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
 
 content::BrowserPluginGuestManager* OffTheRecordProfileImpl::GetGuestManager() {
 #if defined(ENABLE_EXTENSIONS)
-  return extensions::GuestViewManager::FromBrowserContextIfAvailable(this);
+  return extensions::GuestViewManager::FromBrowserContext(this);
 #else
   return NULL;
 #endif

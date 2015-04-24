@@ -36,6 +36,7 @@
 #include "extensions/browser/api/declarative/test_rules_registry.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
 #include "extensions/browser/guest_view/test_guest_view_manager.h"
@@ -67,6 +68,9 @@
 #endif
 
 using extensions::ContextMenuMatcher;
+using extensions::ExtensionsGuestViewManagerDelegate;
+using extensions::GuestViewManager;
+using extensions::TestGuestViewManager;
 using extensions::MenuItem;
 using prerender::PrerenderLinkManager;
 using prerender::PrerenderLinkManagerFactory;
@@ -816,10 +820,20 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     return embedder_web_contents_;
   }
 
-  extensions::TestGuestViewManager* GetGuestViewManager() {
-    return static_cast<extensions::TestGuestViewManager*>(
-        extensions::TestGuestViewManager::FromBrowserContext(
-            browser()->profile()));
+  TestGuestViewManager* GetGuestViewManager() {
+    TestGuestViewManager* manager = static_cast<TestGuestViewManager*>(
+        TestGuestViewManager::FromBrowserContext(browser()->profile()));
+    // TestGuestViewManager::WaitForSingleGuestCreated may and will get called
+    // before a guest is created.
+    if (!manager) {
+      manager = static_cast<TestGuestViewManager*>(
+          GuestViewManager::CreateWithDelegate(
+              browser()->profile(),
+              scoped_ptr<guestview::GuestViewManagerDelegate>(
+                  new ExtensionsGuestViewManagerDelegate(
+                      browser()->profile()))));
+    }
+    return manager;
   }
 
   WebViewTest() : guest_web_contents_(NULL),

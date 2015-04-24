@@ -8,6 +8,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
@@ -22,6 +23,7 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::RenderFrameHost;
 using content::WebContents;
+using guestview::GuestViewManagerDelegate;
 
 namespace extensions {
 
@@ -93,7 +95,12 @@ void ExtensionsGuestViewMessageFilter::OnCreateMimeHandlerViewGuest(
   // Since we are creating a new guest, we will create a GuestViewManager
   // if we don't already have one.
   auto manager = GuestViewManager::FromBrowserContext(browser_context_);
-  DCHECK(manager);
+  if (!manager) {
+    manager = GuestViewManager::CreateWithDelegate(
+        browser_context_,
+        scoped_ptr<GuestViewManagerDelegate>(
+            new ExtensionsGuestViewManagerDelegate(browser_context_)));
+  }
 
   auto rfh = RenderFrameHost::FromID(render_process_id_, render_frame_id);
   auto embedder_web_contents = WebContents::FromRenderFrameHost(rfh);
@@ -124,8 +131,7 @@ void ExtensionsGuestViewMessageFilter::OnResizeGuest(
     int render_frame_id,
     int element_instance_id,
     const gfx::Size& new_size) {
-  auto manager =
-      GuestViewManager::FromBrowserContextIfAvailable(browser_context_);
+  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
   // We should have a GuestViewManager at this point. If we don't then the
   // embedder is misbehaving.
   if (!manager)
@@ -162,8 +168,7 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
   base::DictionaryValue attach_params;
   attach_params.SetInteger(guestview::kElementWidth, element_size.width());
   attach_params.SetInteger(guestview::kElementHeight, element_size.height());
-  auto manager =
-      GuestViewManager::FromBrowserContextIfAvailable(browser_context_);
+  auto manager = GuestViewManager::FromBrowserContext(browser_context_);
   CHECK(manager);
   manager->AttachGuest(embedder_render_process_id,
                        element_instance_id,

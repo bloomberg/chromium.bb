@@ -284,7 +284,7 @@ void WebViewGuest::CreateWebContents(
   // If we already have a webview tag in the same app using the same storage
   // partition, we should use the same SiteInstance so the existing tag and
   // the new tag can script each other.
-  auto guest_view_manager = GuestViewManager::FromBrowserContextIfAvailable(
+  auto guest_view_manager = GuestViewManager::FromBrowserContext(
       owner_render_process_host->GetBrowserContext());
   content::SiteInstance* guest_site_instance =
       guest_view_manager->GetGuestSiteInstance(guest_site);
@@ -395,7 +395,7 @@ void WebViewGuest::EmbedderWillBeDestroyed() {
       base::Bind(
           &RemoveWebViewEventListenersOnIOThread,
           browser_context(),
-          owner_extension_id(),
+          owner_host(),
           owner_web_contents()->GetRenderProcessHost()->GetID(),
           view_instance_id()));
 }
@@ -562,7 +562,7 @@ void WebViewGuest::LoadAbort(bool is_top_level,
 void WebViewGuest::CreateNewGuestWebViewWindow(
     const content::OpenURLParams& params) {
   GuestViewManager* guest_manager =
-      GuestViewManager::FromBrowserContextIfAvailable(browser_context());
+      GuestViewManager::FromBrowserContext(browser_context());
   // Set the attach params to use the same partition as the opener.
   // We pull the partition information from the site's URL, which is of the
   // form guest://site/{persist}?{partition_name}.
@@ -871,7 +871,7 @@ void WebViewGuest::PushWebViewStateToIOThread() {
       owner_web_contents()->GetRenderProcessHost()->GetID();
   web_view_info.instance_id = view_instance_id();
   web_view_info.partition_id = partition_id;
-  web_view_info.owner_extension_id = owner_extension_id();
+  web_view_info.owner_host = owner_host();
   web_view_info.rules_registry_id = rules_registry_id_;
 
   // Get content scripts IDs added by the guest.
@@ -971,8 +971,10 @@ void WebViewGuest::NavigateGuest(const std::string& src,
 bool WebViewGuest::HandleKeyboardShortcuts(
     const content::NativeWebKeyboardEvent& event) {
   // <webview> outside of Chrome Apps do not handle keyboard shortcuts.
-  if (!in_extension())
+  if (!GuestViewManager::FromBrowserContext(browser_context())->
+          IsOwnedByExtension(this)) {
     return false;
+  }
 
   if (event.type != blink::WebInputEvent::RawKeyDown)
     return false;
@@ -1360,12 +1362,14 @@ void WebViewGuest::RequestNewWindowPermission(
 }
 
 GURL WebViewGuest::ResolveURL(const std::string& src) {
-  if (!in_extension())
+  if (!GuestViewManager::FromBrowserContext(browser_context())->
+          IsOwnedByExtension(this)) {
     return GURL(src);
+  }
 
   GURL default_url(base::StringPrintf("%s://%s/",
                                       kExtensionScheme,
-                                      owner_extension_id().c_str()));
+                                      owner_host().c_str()));
   return default_url.Resolve(src);
 }
 

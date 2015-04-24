@@ -37,7 +37,7 @@ bool StoreFullPagePlugin(content::WebContents** result,
 content::WebContents* GetWebContentsToUse(content::WebContents* contents) {
 #if defined(ENABLE_EXTENSIONS)
   extensions::GuestViewManager* guest_view_manager =
-      extensions::GuestViewManager::FromBrowserContextIfAvailable(
+      extensions::GuestViewManager::FromBrowserContext(
           contents->GetBrowserContext());
   if (guest_view_manager) {
     guest_view_manager->ForEachGuest(

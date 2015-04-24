@@ -22,6 +22,10 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
+namespace guestview {
+class GuestViewManagerDelegate;
+}  // namespace guestview
+
 namespace extensions{
 class GuestViewBase;
 class GuestViewManagerFactory;
@@ -29,17 +33,19 @@ class GuestViewManagerFactory;
 class GuestViewManager : public content::BrowserPluginGuestManager,
                          public base::SupportsUserData::Data {
  public:
-  explicit GuestViewManager(content::BrowserContext* context);
+  GuestViewManager(content::BrowserContext* context,
+                   scoped_ptr<guestview::GuestViewManagerDelegate> delegate);
   ~GuestViewManager() override;
 
   // Returns the GuestViewManager associated with |context|. If one isn't
   // available, then it is created and returned.
-  static GuestViewManager* FromBrowserContext(content::BrowserContext* context);
+  static GuestViewManager* CreateWithDelegate(
+      content::BrowserContext* context,
+      scoped_ptr<guestview::GuestViewManagerDelegate> delegate);
 
   // Returns the GuestViewManager associated with |context|. If one isn't
   // available, then nullptr is returned.
-  static GuestViewManager* FromBrowserContextIfAvailable(
-      content::BrowserContext* context);
+  static GuestViewManager* FromBrowserContext(content::BrowserContext* context);
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
@@ -66,6 +72,9 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   // Removes the association between |element_instance_id| and a guest instance
   // ID if one exists.
   void DetachGuest(GuestViewBase* guest);
+
+  // Indicates whether the |guest| is owned by an extension or Chrome App.
+  bool IsOwnedByExtension(GuestViewBase* guest);
 
   int GetNextInstanceID();
   int GetGuestInstanceIDForElementID(
@@ -105,7 +114,7 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
  protected:
   friend class GuestViewBase;
-  FRIEND_TEST_ALL_PREFIXES(GuestViewManagerTest, AddRemove);
+  friend class GuestViewEvent;
 
   // Can be overriden in tests.
   virtual void AddGuest(int guest_instance_id,
@@ -123,8 +132,14 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   // Indicates whether the provided |guest| can be used in the context it has
   // been created.
-  bool IsGuestAvailableToContext(GuestViewBase* guest,
-                                 std::string* owner_extension_id);
+  bool IsGuestAvailableToContext(GuestViewBase* guest);
+
+  // Dispatches the event with |name| with the provided |args| to the embedder
+  // of the given |guest| with |instance_id| for routing.
+  void DispatchEvent(const std::string& event_name,
+                     scoped_ptr<base::DictionaryValue> args,
+                     GuestViewBase* guest,
+                     int instance_id);
 
   content::WebContents* GetGuestByInstanceID(int guest_instance_id);
 
@@ -188,6 +203,8 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   std::set<int> removed_instance_ids_;
 
   content::BrowserContext* context_;
+
+  scoped_ptr<guestview::GuestViewManagerDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewManager);
 };

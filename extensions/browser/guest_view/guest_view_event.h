@@ -14,8 +14,8 @@ namespace extensions {
 
 class GuestViewBase;
 
-// A GuestViewEvent is a wrapper class for an extension event.
-// GuestViewEvents may be queued until the guest is attached to a conatiner.
+// A GuestViewEvent is a wrapper class for a GuestView event.
+// GuestViewEvents may be queued until the guest is attached to a container.
 // This wrapper class holds all the necessary information to fire the event
 // on attachment. GuestViewEvents are owned by GuestViewBase.
 class GuestViewEvent {

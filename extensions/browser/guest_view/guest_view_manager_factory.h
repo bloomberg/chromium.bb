@@ -9,6 +9,10 @@ namespace content {
 class BrowserContext;
 }
 
+namespace guestview {
+class GuestViewManagerDelegate;
+}  // namespace guestview
+
 namespace extensions {
 
 class GuestViewManager;
@@ -16,7 +20,8 @@ class GuestViewManager;
 class GuestViewManagerFactory {
  public:
   virtual GuestViewManager* CreateGuestViewManager(
-      content::BrowserContext* context) = 0;
+      content::BrowserContext* context,
+      scoped_ptr<guestview::GuestViewManagerDelegate> delegate) = 0;
 
  protected:
   virtual ~GuestViewManagerFactory() {}

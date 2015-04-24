@@ -9,35 +9,16 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extensions_test.h"
+#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
+#include "extensions/browser/guest_view/guest_view_manager_delegate.h"
+#include "extensions/browser/guest_view/test_guest_view_manager.h"
 
 using content::WebContents;
 using content::WebContentsTester;
+using guestview::GuestViewManagerDelegate;
 
 namespace extensions {
-
-namespace guestview {
-
-// This class allows us to access some private variables in
-// GuestViewManager.
-class TestGuestViewManager : public GuestViewManager {
- public:
-  explicit TestGuestViewManager(content::BrowserContext* context)
-      : GuestViewManager(context) {}
-
-  int last_instance_id_removed_for_testing() {
-    return last_instance_id_removed_;
-  }
-
-  size_t GetRemovedInstanceIdSize() { return removed_instance_ids_.size(); }
-
- private:
-  using GuestViewManager::last_instance_id_removed_;
-  using GuestViewManager::removed_instance_ids_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestGuestViewManager);
-};
-
-} // namespace guestview
 
 namespace {
 
@@ -64,14 +45,16 @@ class GuestViewManagerTest : public extensions::ExtensionsTest {
 
 TEST_F(GuestViewManagerTest, AddRemove) {
   content::TestBrowserContext browser_context;
-  scoped_ptr<guestview::TestGuestViewManager> manager(
-      new guestview::TestGuestViewManager(&browser_context));
+  scoped_ptr<GuestViewManagerDelegate> delegate(
+      new ExtensionsGuestViewManagerDelegate(&browser_context));
+  scoped_ptr<TestGuestViewManager> manager(
+      new extensions::TestGuestViewManager(&browser_context, delegate.Pass()));
 
   scoped_ptr<WebContents> web_contents1(CreateWebContents());
   scoped_ptr<WebContents> web_contents2(CreateWebContents());
   scoped_ptr<WebContents> web_contents3(CreateWebContents());
 
-  EXPECT_EQ(0, manager->last_instance_id_removed_for_testing());
+  EXPECT_EQ(0, manager->last_instance_id_removed());
 
   EXPECT_TRUE(manager->CanUseGuestInstanceID(1));
   EXPECT_TRUE(manager->CanUseGuestInstanceID(2));
@@ -86,7 +69,7 @@ TEST_F(GuestViewManagerTest, AddRemove) {
   EXPECT_FALSE(manager->CanUseGuestInstanceID(2));
   EXPECT_TRUE(manager->CanUseGuestInstanceID(3));
 
-  EXPECT_EQ(0, manager->last_instance_id_removed_for_testing());
+  EXPECT_EQ(0, manager->last_instance_id_removed());
 
   EXPECT_TRUE(manager->CanUseGuestInstanceID(3));
 
@@ -95,15 +78,15 @@ TEST_F(GuestViewManagerTest, AddRemove) {
   EXPECT_FALSE(manager->CanUseGuestInstanceID(1));
   EXPECT_FALSE(manager->CanUseGuestInstanceID(2));
 
-  EXPECT_EQ(2, manager->last_instance_id_removed_for_testing());
+  EXPECT_EQ(2, manager->last_instance_id_removed());
   manager->RemoveGuest(3);
-  EXPECT_EQ(3, manager->last_instance_id_removed_for_testing());
+  EXPECT_EQ(3, manager->last_instance_id_removed());
 
   EXPECT_FALSE(manager->CanUseGuestInstanceID(1));
   EXPECT_FALSE(manager->CanUseGuestInstanceID(2));
   EXPECT_FALSE(manager->CanUseGuestInstanceID(3));
 
-  EXPECT_EQ(0u, manager->GetRemovedInstanceIdSize());
+  EXPECT_EQ(0, manager->GetNumRemovedInstanceIDs());
 }
 
 }  // namespace extensions

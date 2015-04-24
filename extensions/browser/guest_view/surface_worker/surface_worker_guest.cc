@@ -65,9 +65,8 @@ void SurfaceWorkerGuest::CreateWebContents(
                                      content::kGuestScheme,
                                      GetOwnerSiteURL().host().c_str()));
 
-  GuestViewManager* guest_view_manager =
-      GuestViewManager::FromBrowserContextIfAvailable(
-          owner_web_contents()->GetBrowserContext());
+  GuestViewManager* guest_view_manager = GuestViewManager::FromBrowserContext(
+      owner_web_contents()->GetBrowserContext());
   content::SiteInstance* guest_site_instance =
       guest_view_manager->GetGuestSiteInstance(guest_site);
   WebContents::CreateParams params(

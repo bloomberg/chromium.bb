@@ -10,6 +10,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
@@ -17,17 +18,26 @@
 #include "extensions/shell/test/shell_test.h"
 #include "extensions/test/extension_test_message_listener.h"
 
+using guestview::GuestViewManagerDelegate;
+
 namespace extensions {
 
-TestGuestViewManager::TestGuestViewManager(content::BrowserContext* context)
-    : GuestViewManager(context) {
+TestGuestViewManager::TestGuestViewManager(
+    content::BrowserContext* context,
+    scoped_ptr<GuestViewManagerDelegate> delegate)
+    : GuestViewManager(context, delegate.Pass()),
+      num_guests_created_(0) {
 }
 
 TestGuestViewManager::~TestGuestViewManager() {
 }
 
-int TestGuestViewManager::GetNumGuests() const {
+int TestGuestViewManager::GetNumGuestsActive() const {
   return guest_web_contents_by_instance_id_.size();
+}
+
+int TestGuestViewManager::GetNumRemovedInstanceIDs() const {
+  return removed_instance_ids_.size();
 }
 
 content::WebContents* TestGuestViewManager::GetLastGuestCreated() {
@@ -53,8 +63,12 @@ void TestGuestViewManager::WaitForGuestCreated() {
 }
 
 content::WebContents* TestGuestViewManager::WaitForSingleGuestCreated() {
-  if (GetNumGuests() == 0)
+  if (!GetNumGuestsActive()) {
+    // Guests have been created and subsequently destroyed.
+    if (num_guests_created() > 0)
+      return nullptr;
     WaitForGuestCreated();
+  }
 
   return GetLastGuestCreated();
 }
@@ -66,6 +80,8 @@ void TestGuestViewManager::AddGuest(int guest_instance_id,
   guest_web_contents_watchers_.push_back(
       linked_ptr<content::WebContentsDestroyedWatcher>(
           new content::WebContentsDestroyedWatcher(guest_web_contents)));
+
+  ++num_guests_created_;
 
   if (created_message_loop_runner_.get())
     created_message_loop_runner_->Quit();
@@ -84,17 +100,12 @@ TestGuestViewManagerFactory::~TestGuestViewManagerFactory() {
 }
 
 GuestViewManager* TestGuestViewManagerFactory::CreateGuestViewManager(
-    content::BrowserContext* context) {
-  return GetManager(context);
-}
-
-// This function gets called from GuestViewManager::FromBrowserContext(),
-// where test_guest_view_manager_ is assigned to a linked_ptr that takes care
-// of deleting it.
-TestGuestViewManager* TestGuestViewManagerFactory::GetManager(
-    content::BrowserContext* context) {
-  DCHECK(!test_guest_view_manager_);
-  test_guest_view_manager_ = new TestGuestViewManager(context);
+    content::BrowserContext* context,
+    scoped_ptr<guestview::GuestViewManagerDelegate> delegate) {
+  if (!test_guest_view_manager_) {
+    test_guest_view_manager_ =
+        new TestGuestViewManager(context, delegate.Pass());
+  }
   return test_guest_view_manager_;
 }
 

@@ -15,7 +15,9 @@ namespace extensions {
 
 class TestGuestViewManager : public GuestViewManager {
  public:
-  explicit TestGuestViewManager(content::BrowserContext* context);
+  TestGuestViewManager(
+      content::BrowserContext* context,
+      scoped_ptr<guestview::GuestViewManagerDelegate> delegate);
   ~TestGuestViewManager() override;
 
   void WaitForAllGuestsDeleted();
@@ -23,14 +25,34 @@ class TestGuestViewManager : public GuestViewManager {
 
   content::WebContents* GetLastGuestCreated();
 
+  // Returns the number of guests currently still alive at the time of calling
+  // this method.
+  int GetNumGuestsActive() const;
+
+  // Returns the size of the set of removed instance IDs.
+  int GetNumRemovedInstanceIDs() const;
+
+  // Returns the number of guests that have been created since the creation of
+  // this GuestViewManager.
+  int num_guests_created() const { return num_guests_created_; }
+
+  // Returns the last guest instance ID removed from the manager.
+  int last_instance_id_removed() const { return last_instance_id_removed_; }
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(GuestViewManagerTest, AddRemove);
+
   // GuestViewManager override:
   void AddGuest(int guest_instance_id,
                 content::WebContents* guest_web_contents) override;
   void RemoveGuest(int guest_instance_id) override;
 
-  int GetNumGuests() const;
   void WaitForGuestCreated();
+
+  using GuestViewManager::last_instance_id_removed_;
+  using GuestViewManager::removed_instance_ids_;
+
+  int num_guests_created_;
 
   std::vector<linked_ptr<content::WebContentsDestroyedWatcher>>
       guest_web_contents_watchers_;
@@ -46,9 +68,8 @@ class TestGuestViewManagerFactory : public GuestViewManagerFactory {
   ~TestGuestViewManagerFactory() override;
 
   GuestViewManager* CreateGuestViewManager(
-      content::BrowserContext* context) override;
-
-  TestGuestViewManager* GetManager(content::BrowserContext* context);
+      content::BrowserContext* context,
+      scoped_ptr<guestview::GuestViewManagerDelegate> delegate) override;
 
  private:
   TestGuestViewManager* test_guest_view_manager_;

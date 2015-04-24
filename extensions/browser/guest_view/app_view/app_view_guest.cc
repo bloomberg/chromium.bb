@@ -279,7 +279,7 @@ void AppViewGuest::LaunchAppAndFireEvent(
 
   scoped_ptr<base::DictionaryValue> embed_request(new base::DictionaryValue());
   embed_request->SetInteger(appview::kGuestInstanceID, guest_instance_id());
-  embed_request->SetString(appview::kEmbedderID, owner_extension_id());
+  embed_request->SetString(appview::kEmbedderID, owner_host());
   embed_request->Set(appview::kData, data.release());
   AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
       browser_context(), embed_request.Pass(), extension_host->extension());

@@ -1053,7 +1053,7 @@ HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
 
 content::BrowserPluginGuestManager* ProfileImpl::GetGuestManager() {
 #if defined(ENABLE_EXTENSIONS)
-  return extensions::GuestViewManager::FromBrowserContextIfAvailable(this);
+  return extensions::GuestViewManager::FromBrowserContext(this);
 #else
   return NULL;
 #endif

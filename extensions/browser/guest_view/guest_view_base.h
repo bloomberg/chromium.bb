@@ -241,14 +241,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Returns the instance ID of the GuestViewBase's element.
   int element_instance_id() const { return element_instance_id_; }
 
-  // Returns the extension ID of the embedder.
-  const std::string& owner_extension_id() const {
-    return owner_extension_id_;
-  }
-
-  // Returns whether this GuestView is embedded in an extension/app.
-  bool in_extension() const { return !owner_extension_id_.empty(); }
-
   bool can_owner_receive_events() const { return !!view_instance_id_; }
 
   // Returns the user browser context of the embedder.
@@ -260,6 +252,10 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // Returns the URL of the owner WebContents.
   const GURL& GetOwnerSiteURL() const;
+
+  // Returns the host of the owner WebContents. For extensions, this is the
+  // extension ID.
+  std::string owner_host() const { return owner_host_; }
 
   // Whether the guest view is inside a plugin document.
   bool is_full_page_plugin() const { return is_full_page_plugin_; }
@@ -381,7 +377,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // |owner_web_contents_|. If |owner_web_contents_| is destroyed then this
   // guest will also self-destruct.
   content::WebContents* owner_web_contents_;
-  std::string owner_extension_id_;
+  std::string owner_host_;
   content::BrowserContext* const browser_context_;
 
   // |guest_instance_id_| is a profile-wide unique identifier for a guest

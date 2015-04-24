@@ -92,9 +92,8 @@ bool CoreTabHelper::GetStatusTextForWebContents(
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "467185 CoreTabHelper::GetStatusTextForWebContents1"));
-  auto guest_manager =
-      extensions::GuestViewManager::FromBrowserContextIfAvailable(
-          source->GetBrowserContext());
+  auto guest_manager = extensions::GuestViewManager::FromBrowserContext(
+      source->GetBrowserContext());
   if (!source->IsLoading() ||
       source->GetLoadState().state == net::LOAD_STATE_IDLE) {
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
