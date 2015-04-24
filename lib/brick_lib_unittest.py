@@ -15,9 +15,7 @@ from chromite.lib import osutils
 from chromite.lib import workspace_lib
 
 
-class BrickLibTest(cros_test_lib.MockTempDirTestCase,
-                   cros_test_lib.BrickTestCase,
-                   cros_test_lib.WorkspaceTestCase):
+class BrickLibTest(cros_test_lib.WorkspaceTestCase):
   """Unittest for brick.py"""
 
   # pylint: disable=protected-access
@@ -25,12 +23,12 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
   def setUp(self):
     self.brick = None
     self.brick_path = None
-    self.SetupFakeWorkspace()
+    self.CreateWorkspace()
 
   def SetupLegacyBrick(self, brick_dir=None, brick_name='foo'):
     """Sets up a legacy brick layout."""
     if brick_dir is None:
-      brick_dir = self.tempdir
+      brick_dir = self.workspace_path
     layout_conf = 'repo-name = %s\n' % brick_name
     osutils.WriteFile(os.path.join(brick_dir, 'metadata', 'layout.conf'),
                       layout_conf, makedirs=True)
@@ -65,11 +63,11 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
     """Test that we can infer the current brick from the current directory."""
     (self.brick, self.brick_path) = self.CreateBrick()
     os.remove(os.path.join(self.brick_path, 'config.json'))
-    brick_dir = os.path.join(self.tempdir, 'foo', 'bar', 'project')
+    brick_dir = os.path.join(self.workspace_path, 'foo', 'bar', 'project')
     expected_name = 'hello'
     brick_lib.Brick(brick_dir, initial_config={'name': 'hello'})
 
-    with osutils.ChdirContext(self.tempdir):
+    with osutils.ChdirContext(self.workspace_path):
       self.assertEqual(None, brick_lib.FindBrickInPath())
 
     with osutils.ChdirContext(brick_dir):
@@ -88,13 +86,14 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
     with self.assertRaises(brick_lib.BrickCreationFailed):
       brick_lib.Brick(self.brick_path, initial_config={})
 
-    nonexistingbrick = os.path.join(self.tempdir, 'foo')
+    nonexistingbrick = os.path.join(self.workspace_path, 'foo')
     with self.assertRaises(brick_lib.BrickNotFound):
       brick_lib.Brick(nonexistingbrick)
 
   def testLoadNonExistingBrickFails(self):
     """Tests that trying to load a non-existing brick fails."""
-    self.assertRaises(brick_lib.BrickNotFound, brick_lib.Brick, self.tempdir)
+    self.assertRaises(brick_lib.BrickNotFound, brick_lib.Brick,
+                      self.workspace_path)
 
   def testLoadExistingNormalBrickSucceeds(self):
     """Tests that loading an existing brick works."""
@@ -106,18 +105,18 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
     """Tests that loading a legacy brick fails when not allowed."""
     self.SetupLegacyBrick()
     with self.assertRaises(brick_lib.BrickNotFound):
-      brick_lib.Brick(self.tempdir, allow_legacy=False)
+      brick_lib.Brick(self.workspace_path, allow_legacy=False)
 
   def testLoadExistingLegacyBrickSucceeds(self):
     """Tests that loading a legacy brick fails when not allowed."""
     self.SetupLegacyBrick()
-    self.brick = brick_lib.Brick(self.tempdir)
+    self.brick = brick_lib.Brick(self.workspace_path)
     self.assertEquals('foo', self.brick.config.get('name'))
 
   def testLegacyBrickUpdateConfigFails(self):
     """Tests that a legacy brick config cannot be updated."""
     self.SetupLegacyBrick()
-    self.brick = brick_lib.Brick(self.tempdir)
+    self.brick = brick_lib.Brick(self.workspace_path)
     with self.assertRaises(brick_lib.BrickFeatureNotSupported):
       self.brick.UpdateConfig({'name': 'bar'})
 
@@ -127,8 +126,9 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
 
     try:
       # Mock the source root so that we can create fake legacy overlay.
-      constants.SOURCE_ROOT = self.tempdir
-      legacy = os.path.join(self.tempdir, 'src', 'overlays', 'overlay-foobar')
+      constants.SOURCE_ROOT = self.workspace_path
+      legacy = os.path.join(self.workspace_path, 'src', 'overlays',
+                            'overlay-foobar')
       self.SetupLegacyBrick(brick_dir=legacy, brick_name='foobar')
 
       bar_brick = brick_lib.Brick('//bar', initial_config={'name': 'bar'})
@@ -152,7 +152,7 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
 
   def testOpenUsingLocator(self):
     """Tests that we can open a brick given a locator."""
-    brick_lib.Brick(os.path.join(self.tempdir, 'foo'),
+    brick_lib.Brick(os.path.join(self.workspace_path, 'foo'),
                     initial_config={'name': 'foo'})
 
     brick_lib.Brick('//foo')
@@ -168,15 +168,15 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
     brick_lib.Brick('//foobar')
     brick_lib.Brick('//bricks/some/path')
 
-    brick_lib.Brick(os.path.join(self.tempdir, 'foobar'))
-    brick_lib.Brick(os.path.join(self.tempdir, 'bricks', 'some', 'path'))
+    brick_lib.Brick(os.path.join(self.workspace_path, 'foobar'))
+    brick_lib.Brick(os.path.join(self.workspace_path, 'bricks', 'some', 'path'))
 
   def testFriendlyName(self):
     """Tests that the friendly name generation works."""
     first = brick_lib.Brick('//foo/bar/test', initial_config={'name': 'test'})
     self.assertEqual('foo.bar.test', first.FriendlyName())
 
-    second = brick_lib.Brick(os.path.join(self.tempdir, 'test', 'foo'),
+    second = brick_lib.Brick(os.path.join(self.workspace_path, 'test', 'foo'),
                              initial_config={'name': 'foo'})
     self.assertEqual('test.foo', second.FriendlyName())
 
@@ -193,7 +193,7 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase,
   def testNormalizedDependencies(self):
     """Tests that dependencies are normalized during brick creation."""
     brick_lib.Brick('//foo/bar', initial_config={'name': 'bar'})
-    with osutils.ChdirContext(os.path.join(self.tempdir, 'foo')):
+    with osutils.ChdirContext(os.path.join(self.workspace_path, 'foo')):
       brick_lib.Brick('//baz', initial_config={'name': 'baz',
                                                'dependencies': ['bar']})
 

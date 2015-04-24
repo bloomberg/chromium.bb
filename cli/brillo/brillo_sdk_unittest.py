@@ -188,8 +188,7 @@ class BrilloSdkTestUpdateBootstrap(cros_test_lib.MockTempDirTestCase):
     self.assertEquals(0, self.rc_mock.call_count)
 
 
-class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase,
-                           cros_test_lib.OutputTestCase,
+class BrilloSdkCommandTest(cros_test_lib.OutputTestCase,
                            cros_test_lib.WorkspaceTestCase):
   """Test class for our BuildCommand class."""
 
@@ -200,7 +199,7 @@ class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase,
     self.cmd_mock = None
 
     # Workspace is supposed to exist in advance.
-    self.SetupFakeWorkspace()
+    self.CreateWorkspace()
     self.sdk_path = os.path.join(self.tempdir, 'sdk')
 
     # Pretend we are outside the chroot, since this command only runs there.
@@ -232,7 +231,7 @@ class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase,
   def testHandleVersionOnlyNoUpdate(self):
     """Tests that `cros sdk` logs a version and doesn't re-exec."""
     self.SetupCommandMock([])
-    workspace_lib.SetActiveSdkVersion(self.tempdir, '1.2.3')
+    workspace_lib.SetActiveSdkVersion(self.workspace_path, '1.2.3')
 
     with self.OutputCapturer():
       self.cmd_mock.inst.Run()
@@ -255,7 +254,7 @@ class BrilloSdkCommandTest(cros_test_lib.MockTempDirTestCase,
   def testVersionOption(self):
     """Tests that --version prints to stdout."""
     self.SetupCommandMock(['--version'])
-    workspace_lib.SetActiveSdkVersion(self.tempdir, 'foo')
+    workspace_lib.SetActiveSdkVersion(self.workspace_path, 'foo')
 
     with self.OutputCapturer():
       self.cmd_mock.inst.Run()

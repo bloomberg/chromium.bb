@@ -10,13 +10,11 @@ from chromite.lib import brick_lib
 from chromite.lib import cros_test_lib
 
 
-class BlueprintLibTest(cros_test_lib.MockTempDirTestCase,
-                       cros_test_lib.BlueprintTestCase,
-                       cros_test_lib.WorkspaceTestCase):
+class BlueprintLibTest(cros_test_lib.WorkspaceTestCase):
   """Unittest for blueprint_lib.py"""
 
   def setUp(self):
-    self.SetupFakeWorkspace()
+    self.CreateWorkspace()
 
   def testBlueprint(self):
     """Tests getting the basic blueprint getters."""

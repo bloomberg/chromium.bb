@@ -29,6 +29,7 @@ import urllib
 
 from chromite.cbuildbot import constants
 from chromite.lib import blueprint_lib
+from chromite.lib import bootstrap_lib
 from chromite.lib import brick_lib
 from chromite.lib import cidb
 from chromite.lib import commandline
@@ -1497,26 +1498,79 @@ class MockLoggingTestCase(MockTestCase, LoggingTestCase):
   """Convenience class mixing Logging and Mock."""
 
 
-class BrickTestCase(TempDirTestCase):
-  """Test case that adds utilities for using bricks."""
+class WorkspaceTestCase(MockTempDirTestCase):
+  """Test case that adds utilities for using workspaces."""
+
+  def setUp(self):
+    """Define variables populated below, mostly to make lint happy."""
+    self.bootstrap_path = None
+    self.mock_bootstrap_path = None
+
+    self.workspace_path = None
+    self.workspace_config = None
+    self.mock_workspace_path = None
+
+  def CreateBootstrap(self, sdk_version=None):
+    """Create a fake bootstrap directory in self.tempdir.
+
+    self.bootstrap_path points to new workspace path.
+    self.mock_bootstrap_path points to mock of FindBootstrapPath
+
+    Args:
+      sdk_version: Create a fake SDK version that's present in bootstrap.
+    """
+    # Create a bootstrap, inside our tempdir.
+    self.bootstrap_path = os.path.join(self.tempdir, 'bootstrap')
+    osutils.SafeMakedirs(self.bootstrap_path)
+
+    # If a version is provided, fake it's existence in the bootstrap.
+    if sdk_version is not None:
+      osutils.SafeMakedirs(
+          bootstrap_lib.ComputeSdkPath(self.bootstrap_path, sdk_version))
+
+    # Fake out workspace lookups to find this path.
+    self.mock_bootstrap_path = self.PatchObject(
+        bootstrap_lib, 'FindBootstrapPath', return_value=self.bootstrap_path)
+
+  def CreateWorkspace(self, sdk_version=None):
+    """Create a fake workspace directory in self.tempdir.
+
+    self.workspace_path points to new workspace path.
+    self.workspace_config points to workspace config file.
+    self.mock_workspace_path points to mock of WorkspacePath
+
+    Args:
+      sdk_version: Mark SDK version as active in workspace. Does NOT mean
+         it's present in bootstrap.
+    """
+    # Create a workspace, inside our tempdir.
+    self.workspace_path = os.path.join(self.tempdir, 'workspace')
+    self.workspace_config = os.path.join(
+        self.workspace_path,
+        workspace_lib.WORKSPACE_CONFIG)
+    osutils.Touch(self.workspace_config, makedirs=True)
+
+    # Define an SDK version for it, if needed.
+    if sdk_version is not None:
+      workspace_lib.SetActiveSdkVersion(self.workspace_path, sdk_version)
+
+    # Fake out workspace lookups to find this path.
+    self.mock_workspace_path = self.PatchObject(
+        workspace_lib, 'WorkspacePath', return_value=self.workspace_path)
 
   def CreateBrick(self, name='thebrickfoo', main_package='category/bar'):
     """Creates a new brick."""
     # Creates the brick in a subdirectory of tempdir so that we can create other
     # bricks without interfering with it.
-    brick_path = os.path.join(self.tempdir, name)
+    brick_path = os.path.join(self.workspace_path, name)
     brick = brick_lib.Brick(brick_path,
                             initial_config={'name': name,
                                             'main_package': main_package})
     return (brick, brick_path)
 
-
-class BlueprintTestCase(TempDirTestCase):
-  """Test case that adds utilities for using blueprints."""
-
   def CreateBlueprint(self, blueprint_name='foo.json', bricks=None, bsp=None,
                       main_package=None):
-    path = os.path.join(self.tempdir, blueprint_name)
+    path = os.path.join(self.workspace_path, blueprint_name)
 
     config = {}
     if bricks:
@@ -1527,13 +1581,6 @@ class BlueprintTestCase(TempDirTestCase):
       config['main_package'] = main_package
 
     return blueprint_lib.Blueprint(path, initial_config=config)
-
-
-class WorkspaceTestCase(TempDirTestCase):
-  """Test case that adds utilities for using workspaces."""
-
-  def SetupFakeWorkspace(self):
-    self.PatchObject(workspace_lib, 'WorkspacePath', return_value=self.tempdir)
 
 
 @contextlib.contextmanager

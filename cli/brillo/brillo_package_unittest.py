@@ -25,9 +25,7 @@ class MockPackageCommand(command_unittest.MockCommand):
 
 
 class PackageCommandTest(cros_test_lib.OutputTestCase,
-                         cros_test_lib.MockTempDirTestCase,
-                         cros_test_lib.WorkspaceTestCase,
-                         cros_test_lib.BrickTestCase):
+                         cros_test_lib.WorkspaceTestCase):
   """Test the flow of PackageCommand.Run()."""
 
   _PACKAGE_CATEGORY = 'foo'
@@ -71,7 +69,7 @@ class PackageCommandTest(cros_test_lib.OutputTestCase,
 
   def setUp(self):
     """Patches objects."""
-    self.SetupFakeWorkspace()
+    self.CreateWorkspace()
     self.PatchObject(commandline, 'RunInsideChroot')
     # These objects are valid after SetupCommandMock() has been called.
     self.cmd_mock = None

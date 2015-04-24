@@ -30,10 +30,7 @@ class MockImageCommand(command_unittest.MockCommand):
     return super(MockImageCommand, self).Run(inst)
 
 
-class ImageCommandTest(cros_test_lib.MockTempDirTestCase,
-                       cros_test_lib.BrickTestCase,
-                       cros_test_lib.BlueprintTestCase,
-                       cros_test_lib.WorkspaceTestCase):
+class ImageCommandTest(cros_test_lib.WorkspaceTestCase):
   """Test class for our ImageCommand class."""
 
   def SetupCommandMock(self, cmd_args):
@@ -42,7 +39,7 @@ class ImageCommandTest(cros_test_lib.MockTempDirTestCase,
 
   def setUp(self):
     self.cmd_mock = None
-    self.SetupFakeWorkspace()
+    self.CreateWorkspace()
 
     # Since the build_image command is mocked out and the workspace directory
     # is patched, fake being in the chroot to allow running the unittest
@@ -73,6 +70,7 @@ class ImageCommandTest(cros_test_lib.MockTempDirTestCase,
 
   def testOutputRootInWorkspace(self):
     """Tests running the image command with an output root in the workspace."""
+    self.CreateWorkspace()
     self.CreateBrick(name='brick1', main_package='brick/foo')
     self.CreateBrick(name='bsp1', main_package='bsp/baz')
     self.CreateBlueprint(blueprint_name='bar.json', bricks=['//brick1'],
@@ -86,7 +84,8 @@ class ImageCommandTest(cros_test_lib.MockTempDirTestCase,
                      '--extra_packages=brick/foo bsp/baz',
                      '--board=bar.json', '--noenable_bootcache',
                      '--enable_rootfs_verification',
-                     '--output_root=%s' % os.path.join(self.tempdir, 'images'),
+                     '--output_root=%s' % os.path.join(self.workspace_path,
+                                                       'images'),
                      '--loglevel=7']
     self.rc_mock.assertCommandContains(expected_args)
 
