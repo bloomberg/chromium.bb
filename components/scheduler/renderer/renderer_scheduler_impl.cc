@@ -362,44 +362,41 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       new_policy == current_policy_)
     return;
 
-  PrioritizingTaskQueueSelector* task_queue_selector =
-      helper_.SchedulerTaskQueueSelector();
   bool policy_disables_timers = false;
 
   switch (new_policy) {
     case Policy::COMPOSITOR_PRIORITY:
-      task_queue_selector->SetQueuePriority(
-          COMPOSITOR_TASK_QUEUE, PrioritizingTaskQueueSelector::HIGH_PRIORITY);
+      helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
+                               PrioritizingTaskQueueSelector::HIGH_PRIORITY);
       // TODO(scheduler-dev): Add a task priority between HIGH and BEST_EFFORT
       // that still has some guarantee of running.
-      task_queue_selector->SetQueuePriority(
+      helper_.SetQueuePriority(
           LOADING_TASK_QUEUE,
           PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY);
       break;
     case Policy::TOUCHSTART_PRIORITY:
-      task_queue_selector->SetQueuePriority(
-          COMPOSITOR_TASK_QUEUE, PrioritizingTaskQueueSelector::HIGH_PRIORITY);
-      task_queue_selector->DisableQueue(LOADING_TASK_QUEUE);
+      helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
+                               PrioritizingTaskQueueSelector::HIGH_PRIORITY);
+      helper_.DisableQueue(LOADING_TASK_QUEUE);
       // TODO(alexclarke): Set policy_disables_timers once the blink TimerBase
       // refactor is safely landed.
       break;
     case Policy::NORMAL:
-      task_queue_selector->SetQueuePriority(
-          COMPOSITOR_TASK_QUEUE,
-          PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
-      task_queue_selector->SetQueuePriority(
-          LOADING_TASK_QUEUE, PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
+      helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
+                               PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
+      helper_.SetQueuePriority(LOADING_TASK_QUEUE,
+                               PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
       break;
   }
   if (timer_queue_suspend_count_ != 0 || policy_disables_timers) {
-    task_queue_selector->DisableQueue(TIMER_TASK_QUEUE);
+    helper_.DisableQueue(TIMER_TASK_QUEUE);
   } else {
-    helper_.SchedulerTaskQueueSelector()->SetQueuePriority(
-        TIMER_TASK_QUEUE, PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
+    helper_.SetQueuePriority(TIMER_TASK_QUEUE,
+                             PrioritizingTaskQueueSelector::NORMAL_PRIORITY);
   }
-  DCHECK(task_queue_selector->IsQueueEnabled(COMPOSITOR_TASK_QUEUE));
+  DCHECK(helper_.IsQueueEnabled(COMPOSITOR_TASK_QUEUE));
   if (new_policy != Policy::TOUCHSTART_PRIORITY)
-    DCHECK(task_queue_selector->IsQueueEnabled(LOADING_TASK_QUEUE));
+    DCHECK(helper_.IsQueueEnabled(LOADING_TASK_QUEUE));
 
   current_policy_ = new_policy;
 
@@ -507,8 +504,7 @@ void RendererSchedulerImpl::SuspendTimerQueue() {
   helper_.CheckOnValidThread();
   timer_queue_suspend_count_++;
   ForceUpdatePolicy();
-  DCHECK(
-      !helper_.SchedulerTaskQueueSelector()->IsQueueEnabled(TIMER_TASK_QUEUE));
+  DCHECK(!helper_.IsQueueEnabled(TIMER_TASK_QUEUE));
 }
 
 void RendererSchedulerImpl::ResumeTimerQueue() {

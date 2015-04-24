@@ -7,7 +7,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/scheduler/child/nestable_single_thread_task_runner.h"
-#include "components/scheduler/child/prioritizing_task_queue_selector.h"
 #include "components/scheduler/child/time_source.h"
 
 namespace scheduler {
@@ -336,11 +335,6 @@ SchedulerHelper::IdlePeriodState SchedulerHelper::SchedulerIdlePeriodState()
   return idle_period_state_;
 }
 
-PrioritizingTaskQueueSelector* SchedulerHelper::SchedulerTaskQueueSelector()
-    const {
-  return task_queue_selector_.get();
-}
-
 scoped_refptr<base::SingleThreadTaskRunner> SchedulerHelper::TaskRunnerForQueue(
     size_t queue_index) const {
   CheckOnValidThread();
@@ -355,6 +349,30 @@ void SchedulerHelper::SetQueueName(size_t queue_index, const char* name) {
 bool SchedulerHelper::IsQueueEmpty(size_t queue_index) const {
   CheckOnValidThread();
   return task_queue_manager_->IsQueueEmpty(queue_index);
+}
+
+void SchedulerHelper::SetQueuePriority(
+    size_t queue_index,
+    PrioritizingTaskQueueSelector::QueuePriority priority) {
+  CheckOnValidThread();
+  return task_queue_selector_->SetQueuePriority(queue_index, priority);
+}
+
+void SchedulerHelper::EnableQueue(
+    size_t queue_index,
+    PrioritizingTaskQueueSelector::QueuePriority priority) {
+  CheckOnValidThread();
+  task_queue_selector_->EnableQueue(queue_index, priority);
+}
+
+void SchedulerHelper::DisableQueue(size_t queue_index) {
+  CheckOnValidThread();
+  task_queue_selector_->DisableQueue(queue_index);
+}
+
+bool SchedulerHelper::IsQueueEnabled(size_t queue_index) const {
+  CheckOnValidThread();
+  return task_queue_selector_->IsQueueEnabled(queue_index);
 }
 
 // static

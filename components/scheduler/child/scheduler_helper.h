@@ -6,6 +6,7 @@
 #define COMPONENTS_SCHEDULER_CHILD_SCHEDULER_HELPER_H_
 
 #include "components/scheduler/child/cancelable_closure_holder.h"
+#include "components/scheduler/child/prioritizing_task_queue_selector.h"
 #include "components/scheduler/child/single_thread_idle_task_runner.h"
 #include "components/scheduler/child/task_queue_manager.h"
 #include "components/scheduler/child/time_source.h"
@@ -13,7 +14,6 @@
 
 namespace scheduler {
 
-class PrioritizingTaskQueueSelector;
 class NestableSingleThreadTaskRunner;
 
 // Common scheduler functionality for Default and Idle tasks.
@@ -159,11 +159,16 @@ class SCHEDULER_EXPORT SchedulerHelper {
   // Accessor methods.
   base::TimeTicks Now() const;
   IdlePeriodState SchedulerIdlePeriodState() const;
-  PrioritizingTaskQueueSelector* SchedulerTaskQueueSelector() const;
   scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerForQueue(
       size_t queue_index) const;
   void SetQueueName(size_t queue_index, const char* name);
   bool IsQueueEmpty(size_t queue_index) const;
+  void SetQueuePriority(size_t queue_index,
+                        PrioritizingTaskQueueSelector::QueuePriority priority);
+  void EnableQueue(size_t queue_index,
+                   PrioritizingTaskQueueSelector::QueuePriority priority);
+  void DisableQueue(size_t queue_index);
+  bool IsQueueEnabled(size_t queue_index) const;
 
   // Test helpers.
   void SetTimeSourceForTesting(scoped_ptr<TimeSource> time_source);
