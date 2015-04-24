@@ -10,426 +10,7 @@ policies and contribution forms [3].
 [3] http://www.w3.org/2004/10/27-testcases
 */
 
-/*
- * == Introduction ==
- *
- * This file provides a framework for writing testcases. It is intended to
- * provide a convenient API for making common assertions, and to work both
- * for testing synchronous and asynchronous DOM features in a way that
- * promotes clear, robust, tests.
- *
- * == Basic Usage ==
- *
- * To use this file, import the script and the testharnessreport script into
- * the test document:
- *
- * <script src="/resources/testharness.js"></script>
- * <script src="/resources/testharnessreport.js"></script>
- *
- * Within each file one may define one or more tests. Each test is atomic
- * in the sense that a single test has a single result (pass/fail/timeout).
- * Within each test one may have a number of asserts. The test fails at the
- * first failing assert, and the remainder of the test is (typically) not run.
- *
- * If the file containing the tests is a HTML file, a table containing the test
- * results will be added to the document after all tests have run. By default this
- * will be added to a div element with id=log if it exists, or a new div element
- * appended to document.body if it does not.
- *
- * NOTE: By default tests must be created before the load event fires. For ways
- *       to create tests after the load event, see "Determining when all tests
- *       are complete", below
- *
- * == Synchronous Tests ==
- *
- * To create a synchronous test use the test() function:
- *
- * test(test_function, name, properties)
- *
- * test_function is a function that contains the code to test. For example a
- * trivial passing test would be:
- *
- * test(function() {assert_true(true)}, "assert_true with true")
- *
- * The function passed in is run in the test() call.
- *
- * properties is an object that overrides default test properties. The
- * recognised properties are:
- *    timeout - the test timeout in ms
- *
- * e.g.
- * test(test_function, "Sample test", {timeout:1000})
- *
- * would run test_function with a timeout of 1s.
- *
- * Additionally, test-specific metadata can be passed in the properties. These
- * are used when the individual test has different metadata from that stored
- * in the <head>.
- * The recognized metadata properties are:
- *
- *    help - The url or an array of urls of the part(s) of the specification(s)
- *           being tested
- *
- *    assert - A human readable description of what the test is attempting
- *             to prove
- *
- *    author - Name and contact information for the author of the test in the
- *             format: "Name <email_addr>" or "Name http://contact/url"
- *
- * == Asynchronous Tests ==
- *
- * Testing asynchronous features is somewhat more complex since the result of
- * a test may depend on one or more events or other callbacks. The API provided
- * for testing these features is indended to be rather low-level but hopefully
- * applicable to many situations.
- *
- * To create a test, one starts by getting a Test object using async_test:
- *
- * async_test(name, properties)
- *
- * e.g.
- * var t = async_test("Simple async test")
- *
- * Assertions can be added to the test by calling the step method of the test
- * object with a function containing the test assertions:
- *
- * t.step(function() {assert_true(true)});
- *
- * When all the steps are complete, the done() method must be called:
- *
- * t.done();
- *
- * As a convenience, async_test can also takes a function as first argument.
- * This function is called with the test object as both its `this` object and
- * first argument. The above example can be rewritten as:
- *
- * async_test(function(t) {
- *     object.some_event = function() {
- *         t.step(function (){assert_true(true); t.done();});
- *     };
- * }, "Simple async test");
- *
- * which avoids cluttering the global scope with references to async
- * tests instances.
- *
- * The properties argument is identical to that for test().
- *
- * In many cases it is convenient to run a step in response to an event or a
- * callback. A convenient method of doing this is through the step_func method
- * which returns a function that, when called runs a test step. For example
- *
- * object.some_event = t.step_func(function(e) {assert_true(e.a)});
- *
- * For asynchronous callbacks that should never execute, unreached_func can
- * be used. For example:
- *
- * object.some_event = t.unreached_func("some_event should not fire");
- *
- * == Single Page Tests ==
- *
- * Sometimes, particularly when dealing with asynchronous behaviour,
- * having exactly one test per page is desirable, and the overhead of
- * wrapping everything in functions for isolation becomes
- * burdensome. For these cases testharness.js support "single page
- * tests".
- *
- * In order for a test to be interpreted as a "single page" test, the
- * it must simply not call test() or async_test() anywhere on the page, and
- * must call the done() function to indicate that the test is complete. All
- * the assert_* functions are avaliable as normal, but are called without
- * the normal step function wrapper. For example:
- *
- * <!doctype html>
- * <title>Example single-page test</title>
- * <script src="/resources/testharness.js"></script>
- * <script src="/resources/testharnessreport.js"></script>
- * <body>
- *   <script>
- *     assert_equals(document.body, document.getElementsByTagName("body")[0])
- *     done()
- *  </script>
- *
- * The test title for sinple page tests is always taken from document.title.
- *
- * == Making assertions ==
- *
- * Functions for making assertions start assert_
- * The best way to get a list is to look in this file for functions names
- * matching that pattern. The general signature is
- *
- * assert_something(actual, expected, description)
- *
- * although not all assertions precisely match this pattern e.g. assert_true
- * only takes actual and description as arguments.
- *
- * The description parameter is used to present more useful error messages when
- * a test fails
- *
- * NOTE: All asserts must be located in a test() or a step of an async_test().
- *       asserts outside these places won't be detected correctly by the harness
- *       and may cause a file to stop testing.
- *
- * == Cleanup ==
- *
- * Occasionally tests may create state that will persist beyond the test itself.
- * In order to ensure that tests are independent, such state should be cleaned
- * up once the test has a result. This can be achieved by adding cleanup
- * callbacks to the test. Such callbacks are registered using the add_cleanup
- * function on the test object. All registered callbacks will be run as soon as
- * the test result is known. For example
- *
- * test(function() {
- *          window.some_global = "example";
- *          this.add_cleanup(function() {delete window.some_global});
- *          assert_true(false);
- *      });
- *
- * == Harness Timeout ==
- *
- * The overall harness admits two timeout values "normal" (the
- * default) and "long", used for tests which have an unusually long
- * runtime. After the timeout is reached, the harness will stop
- * waiting for further async tests to complete. By default the
- * timeouts are set to 10s and 60s, respectively, but may be changed
- * when the test is run on hardware with different performance
- * characteristics to a common desktop computer.  In order to opt-in
- * to the longer test timeout, the test must specify a meta element:
- *
- * <meta name="timeout" content="long">
- *
- * Occasionally tests may have a race between the harness timing out and
- * a particular test failing; typically when the test waits for some event
- * that never occurs. In this case it is possible to use test.force_timeout()
- * in place of assert_unreached(), to immediately fail the test but with a
- * status of "timeout". This should only be used as a last resort when it is
- * not possible to make the test reliable in some other way.
- *
- * == Setup ==
- *
- * Sometimes tests require non-trivial setup that may fail. For this purpose
- * there is a setup() function, that may be called with one or two arguments.
- * The two argument version is:
- *
- * setup(func, properties)
- *
- * The one argument versions may omit either argument.
- * func is a function to be run synchronously. setup() becomes a no-op once
- * any tests have returned results. Properties are global properties of the test
- * harness. Currently recognised properties are:
- *
- *
- * explicit_done - Wait for an explicit call to done() before declaring all
- *                 tests complete (see below; implicitly true for single page
- *                 tests)
- *
- * output_document - The document to which results should be logged. By default
- *                   this is the current document but could be an ancestor
- *                   document in some cases e.g. a SVG test loaded in an HTML
- *                   wrapper
- *
- * explicit_timeout - disable file timeout; only stop waiting for results
- *                    when the timeout() function is called (typically for
- *                    use when integrating with some existing test framework
- *                    that has its own timeout mechanism).
- *
- * allow_uncaught_exception - don't treat an uncaught exception as an error;
- *                            needed when e.g. testing the window.onerror
- *                            handler.
- *
- * timeout_multiplier - Multiplier to apply to per-test timeouts.
- *
- * == Determining when all tests are complete ==
- *
- * By default the test harness will assume there are no more results to come
- * when:
- * 1) There are no Test objects that have been created but not completed
- * 2) The load event on the document has fired
- *
- * This behaviour can be overridden by setting the explicit_done property to
- * true in a call to setup(). If explicit_done is true, the test harness will
- * not assume it is done until the global done() function is called. Once done()
- * is called, the two conditions above apply like normal.
- *
- * == Generating tests ==
- *
- * There are scenarios in which is is desirable to create a large number of
- * (synchronous) tests that are internally similar but vary in the parameters
- * used. To make this easier, the generate_tests function allows a single
- * function to be called with each set of parameters in a list:
- *
- * generate_tests(test_function, parameter_lists, properties)
- *
- * For example:
- *
- * generate_tests(assert_equals, [
- *     ["Sum one and one", 1+1, 2],
- *     ["Sum one and zero", 1+0, 1]
- *     ])
- *
- * Is equivalent to:
- *
- * test(function() {assert_equals(1+1, 2)}, "Sum one and one")
- * test(function() {assert_equals(1+0, 1)}, "Sum one and zero")
- *
- * Note that the first item in each parameter list corresponds to the name of
- * the test.
- *
- * The properties argument is identical to that for test(). This may be a
- * single object (used for all generated tests) or an array.
- *
- * == Callback API ==
- *
- * The framework provides callbacks corresponding to 3 events:
- *
- * start - happens when the first Test is created
- * result - happens when a test result is recieved
- * complete - happens when all results are recieved
- *
- * The page defining the tests may add callbacks for these events by calling
- * the following methods:
- *
- *   add_start_callback(callback) - callback called with no arguments
- *   add_result_callback(callback) - callback called with a test argument
- *   add_completion_callback(callback) - callback called with an array of tests
- *                                       and an status object
- *
- * tests have the following properties:
- *   status: A status code. This can be compared to the PASS, FAIL, TIMEOUT and
- *           NOTRUN properties on the test object
- *   message: A message indicating the reason for failure. In the future this
- *            will always be a string
- *
- *  The status object gives the overall status of the harness. It has the
- *  following properties:
- *    status: Can be compared to the OK, ERROR and TIMEOUT properties
- *    message: An error message set when the status is ERROR
- *
- * == External API ==
- *
- * In order to collect the results of multiple pages containing tests, the test
- * harness will, when loaded in a nested browsing context, attempt to call
- * certain functions in each ancestor and opener browsing context:
- *
- * start - start_callback
- * result - result_callback
- * complete - completion_callback
- *
- * These are given the same arguments as the corresponding internal callbacks
- * described above.
- *
- * == External API through cross-document messaging ==
- *
- * Where supported, the test harness will also send messages using
- * cross-document messaging to each ancestor and opener browsing context. Since
- * it uses the wildcard keyword (*), cross-origin communication is enabled and
- * script on different origins can collect the results.
- *
- * This API follows similar conventions as those described above only slightly
- * modified to accommodate message event API. Each message is sent by the harness
- * is passed a single vanilla object, available as the `data` property of the
- * event object. These objects are structures as follows:
- *
- * start - { type: "start" }
- * result - { type: "result", test: Test }
- * complete - { type: "complete", tests: [Test, ...], status: TestsStatus }
- *
- * == List of assertions ==
- *
- * assert_true(actual, description)
- *   asserts that /actual/ is strictly true
- *
- * assert_false(actual, description)
- *   asserts that /actual/ is strictly false
- *
- * assert_equals(actual, expected, description)
- *   asserts that /actual/ is the same value as /expected/
- *
- * assert_not_equals(actual, expected, description)
- *   asserts that /actual/ is a different value to /expected/. Yes, this means
- *   that "expected" is a misnomer
- *
- * assert_in_array(actual, expected, description)
- *   asserts that /expected/ is an Array, and /actual/ is equal to one of the
- *   members -- expected.indexOf(actual) != -1
- *
- * assert_array_equals(actual, expected, description)
- *   asserts that /actual/ and /expected/ have the same length and the value of
- *   each indexed property in /actual/ is the strictly equal to the corresponding
- *   property value in /expected/
- *
- * assert_approx_equals(actual, expected, epsilon, description)
- *   asserts that /actual/ is a number within +/- /epsilon/ of /expected/
- *
- * assert_less_than(actual, expected, description)
- *   asserts that /actual/ is a number less than /expected/
- *
- * assert_greater_than(actual, expected, description)
- *   asserts that /actual/ is a number greater than /expected/
- *
- * assert_less_than_equal(actual, expected, description)
- *   asserts that /actual/ is a number less than or equal to /expected/
- *
- * assert_greater_than_equal(actual, expected, description)
- *   asserts that /actual/ is a number greater than or equal to /expected/
- *
- * assert_regexp_match(actual, expected, description)
- *   asserts that /actual/ matches the regexp /expected/
- *
- * assert_class_string(object, class_name, description)
- *   asserts that the class string of /object/ as returned in
- *   Object.prototype.toString is equal to /class_name/.
- *
- * assert_own_property(object, property_name, description)
- *   assert that object has own property property_name
- *
- * assert_inherits(object, property_name, description)
- *   assert that object does not have an own property named property_name
- *   but that property_name is present in the prototype chain for object
- *
- * assert_idl_attribute(object, attribute_name, description)
- *   assert that an object that is an instance of some interface has the
- *   attribute attribute_name following the conditions specified by WebIDL
- *
- * assert_readonly(object, property_name, description)
- *   assert that property property_name on object is readonly
- *
- * assert_throws(code, func, description)
- *   code - the expected exception:
- *     o string: the thrown exception must be a DOMException with the given
- *               name, e.g., "TimeoutError" (for compatibility with existing
- *               tests, a constant is also supported, e.g., "TIMEOUT_ERR")
- *     o object: the thrown exception must have a property called "name" that
- *               matches code.name
- *     o null:   allow any exception (in general, one of the options above
- *               should be used)
- *   func - a function that should throw
- *
- * assert_unreached(description)
- *   asserts if called. Used to ensure that some codepath is *not* taken e.g.
- *   an event does not fire.
- *
- * assert_any(assert_func, actual, expected_array, extra_arg_1, ... extra_arg_N)
- *   asserts that one assert_func(actual, expected_array_N, extra_arg1, ..., extra_arg_N)
- *   is true for some expected_array_N in expected_array. This only works for assert_func
- *   with signature assert_func(actual, expected, args_1, ..., args_N). Note that tests
- *   with multiple allowed pass conditions are bad practice unless the spec specifically
- *   allows multiple behaviours. Test authors should not use this method simply to hide
- *   UA bugs.
- *
- * assert_exists(object, property_name, description)
- *   *** deprecated ***
- *   asserts that object has an own property property_name
- *
- * assert_not_exists(object, property_name, description)
- *   *** deprecated ***
- *   assert that object does not have own property property_name
- *
- *  == Metadata ==
- *
- * It is possible to add optional metadata to tests; this can be done in one of two ways;
- * either by adding <meta> elements to the head of the document containing the tests,
- * or by adding the metadata to individual [async_]test calls, as properties.
- */
+/* Documentation is in docs/api.md */
 
 (function ()
 {
@@ -490,13 +71,22 @@ policies and contribution forms [3].
 
     WindowTestEnvironment.prototype._dispatch = function(selector, callback_args, message_arg) {
         this._forEach_windows(
-                function(w, is_same_origin) {
-                    if (is_same_origin && selector in w) {
+                function(w, same_origin) {
+                    if (same_origin) {
                         try {
-                            w[selector].apply(undefined, callback_args);
-                        } catch (e) {
-                            if (debug) {
-                                throw e;
+                            var has_selector = selector in w;
+                        } catch(e) {
+                            // If document.domain was set at some point same_origin can be
+                            // wrong and the above will fail.
+                            has_selector = false;
+                        }
+                        if (has_selector) {
+                            try {
+                                w[selector].apply(undefined, callback_args);
+                            } catch (e) {
+                                if (debug) {
+                                    throw e;
+                                }
                             }
                         }
                     }
@@ -883,6 +473,80 @@ policies and contribution forms [3].
                 }));
     }
 
+    function promise_rejects(test, expected, promise) {
+        return promise.then(test.unreached_func("Should have rejected.")).catch(function(e) {
+            assert_throws(expected, function() { throw e });
+        });
+    }
+
+    /**
+     * This constructor helper allows DOM events to be handled using Promises,
+     * which can make it a lot easier to test a very specific series of events,
+     * including ensuring that unexpected events are not fired at any point.
+     */
+    function EventWatcher(test, watchedNode, eventTypes)
+    {
+        if (typeof eventTypes == 'string') {
+            eventTypes = [eventTypes];
+        }
+
+        var waitingFor = null;
+
+        var eventHandler = test.step_func(function(evt) {
+            assert_true(!!waitingFor,
+                        'Not expecting event, but got ' + evt.type + ' event');
+            assert_equals(evt.type, waitingFor.types[0],
+                          'Expected ' + waitingFor.types[0] + ' event, but got ' +
+                          evt.type + ' event instead');
+            if (waitingFor.types.length > 1) {
+                // Pop first event from array
+                waitingFor.types.shift();
+                return;
+            }
+            // We need to null out waitingFor before calling the resolve function
+            // since the Promise's resolve handlers may call wait_for() which will
+            // need to set waitingFor.
+            var resolveFunc = waitingFor.resolve;
+            waitingFor = null;
+            resolveFunc(evt);
+        });
+
+        for (var i = 0; i < eventTypes.length; i++) {
+            watchedNode.addEventListener(eventTypes[i], eventHandler);
+        }
+
+        /**
+         * Returns a Promise that will resolve after the specified event or
+         * series of events has occured.
+         */
+        this.wait_for = function(types) {
+            if (waitingFor) {
+                return Promise.reject('Already waiting for an event or events');
+            }
+            if (typeof types == 'string') {
+                types = [types];
+            }
+            return new Promise(function(resolve, reject) {
+                waitingFor = {
+                    types: types,
+                    resolve: resolve,
+                    reject: reject
+                };
+            });
+        };
+
+        function stop_watching() {
+            for (var i = 0; i < eventTypes.length; i++) {
+                watchedNode.removeEventListener(eventTypes[i], eventHandler);
+            }
+        };
+
+        test.add_cleanup(stop_watching);
+
+        return this;
+    }
+    expose(EventWatcher, 'EventWatcher');
+
     function setup(func_or_properties, maybe_properties)
     {
         var func = null;
@@ -930,6 +594,7 @@ policies and contribution forms [3].
     expose(test, 'test');
     expose(async_test, 'async_test');
     expose(promise_test, 'promise_test');
+    expose(promise_rejects, 'promise_rejects');
     expose(generate_tests, 'generate_tests');
     expose(setup, 'setup');
     expose(done, 'done');
@@ -1193,7 +858,7 @@ policies and contribution forms [3].
         for (var i = 0; i < actual.length; i++) {
             assert(actual.hasOwnProperty(i) === expected.hasOwnProperty(i),
                    "assert_array_equals", description,
-                   "property ${i}, property expected to be $expected but was $actual",
+                   "property ${i}, property expected to be ${expected} but was ${actual}",
                    {i:i, expected:expected.hasOwnProperty(i) ? "present" : "missing",
                    actual:actual.hasOwnProperty(i) ? "present" : "missing"});
             assert(same_value(expected[i], actual[i]),
@@ -1255,6 +920,24 @@ policies and contribution forms [3].
     }
     expose(assert_greater_than, "assert_greater_than");
 
+    function assert_between_exclusive(actual, lower, upper, description)
+    {
+        /*
+         * Test if a primitive number is between two others
+         */
+        assert(typeof actual === "number",
+               "assert_between_exclusive", description,
+               "expected a number but got a ${type_actual}",
+               {type_actual:typeof actual});
+
+        assert(actual > lower && actual < upper,
+               "assert_between_exclusive", description,
+               "expected a number greater than ${lower} " +
+               "and less than ${upper} but got ${actual}",
+               {lower:lower, upper:upper, actual:actual});
+    }
+    expose(assert_between_exclusive, "assert_between_exclusive");
+
     function assert_less_than_equal(actual, expected, description)
     {
         /*
@@ -1266,7 +949,7 @@ policies and contribution forms [3].
                {type_actual:typeof actual});
 
         assert(actual <= expected,
-               "assert_less_than", description,
+               "assert_less_than_equal", description,
                "expected a number less than or equal to ${expected} but got ${actual}",
                {expected:expected, actual:actual});
     }
@@ -1288,6 +971,24 @@ policies and contribution forms [3].
                {expected:expected, actual:actual});
     }
     expose(assert_greater_than_equal, "assert_greater_than_equal");
+
+    function assert_between_inclusive(actual, lower, upper, description)
+    {
+        /*
+         * Test if a primitive number is between to two others or equal to either of them
+         */
+        assert(typeof actual === "number",
+               "assert_between_inclusive", description,
+               "expected a number but got a ${type_actual}",
+               {type_actual:typeof actual});
+
+        assert(actual >= lower && actual <= upper,
+               "assert_between_inclusive", description,
+               "expected a number greater than or equal to ${lower} " +
+               "and less than or equal to ${upper} but got ${actual}",
+               {lower:lower, upper:upper, actual:actual});
+    }
+    expose(assert_between_inclusive, "assert_between_inclusive");
 
     function assert_regexp_match(actual, expected, description) {
         /*
@@ -1440,12 +1141,15 @@ policies and contribution forms [3].
                 InvalidNodeTypeError: 24,
                 DataCloneError: 25,
 
+                EncodingError: 0,
+                NotReadableError: 0,
                 UnknownError: 0,
                 ConstraintError: 0,
                 DataError: 0,
                 TransactionInactiveError: 0,
                 ReadOnlyError: 0,
-                VersionError: 0
+                VersionError: 0,
+                OperationError: 0,
             };
 
             if (!(name in name_code_map)) {
@@ -1455,7 +1159,10 @@ policies and contribution forms [3].
             var required_props = { code: name_code_map[name] };
 
             if (required_props.code === 0 ||
-               ("name" in e && e.name !== e.name.toUpperCase() && e.name !== "DOMException")) {
+               (typeof e == "object" &&
+                "name" in e &&
+                e.name !== e.name.toUpperCase() &&
+                e.name !== "DOMException")) {
                 // New style exception: also test the name property.
                 required_props.name = name;
             }
@@ -1529,6 +1236,7 @@ policies and contribution forms [3].
         }
 
         this.message = null;
+        this.stack = null;
 
         this.steps = [];
 
@@ -1565,6 +1273,7 @@ policies and contribution forms [3].
         }
         this._structured_clone.status = this.status;
         this._structured_clone.message = this.message;
+        this._structured_clone.stack = this.stack;
         this._structured_clone.index = this.index;
         return this._structured_clone;
     };
@@ -1597,15 +1306,10 @@ policies and contribution forms [3].
             if (this.phase >= this.phases.HAS_RESULT) {
                 return;
             }
-            var message = (typeof e === "object" && e !== null) ? e.message : e;
-            if (typeof e.stack != "undefined" && typeof e.message == "string") {
-                //Try to make it more informative for some exceptions, at least
-                //in Gecko and WebKit.  This results in a stack dump instead of
-                //just errors like "Cannot read property 'parentNode' of null"
-                //or "root is null".  Makes it a lot longer, of course.
-                message += "(stack: " + e.stack + ")";
-            }
-            this.set_status(this.FAIL, message);
+            var message = String((typeof e === "object" && e !== null) ? e.message : e);
+            var stack = e.stack ? e.stack : null;
+
+            this.set_status(this.FAIL, message, stack);
             this.phase = this.phases.HAS_RESULT;
             this.done();
         }
@@ -1671,10 +1375,11 @@ policies and contribution forms [3].
         }
     };
 
-    Test.prototype.set_status = function(status, message)
+    Test.prototype.set_status = function(status, message, stack)
     {
         this.status = status;
         this.message = message;
+        this.stack = stack ? stack : null;
     };
 
     Test.prototype.timeout = function()
@@ -1747,6 +1452,7 @@ policies and contribution forms [3].
     RemoteTest.prototype.update_state_from = function(clone) {
         this.status = clone.status;
         this.message = clone.message;
+        this.stack = clone.stack;
         if (this.phase === this.phases.INITIAL) {
             this.phase = this.phases.STARTED;
         }
@@ -1806,7 +1512,8 @@ policies and contribution forms [3].
         this.worker_done({
             status: {
                 status: tests.status.ERROR,
-                message: "Error in worker" + filename + ": " + message
+                message: "Error in worker" + filename + ": " + message,
+                stack: error.stack
             }
         });
         error.preventDefault();
@@ -1834,6 +1541,7 @@ policies and contribution forms [3].
             data.status.status !== data.status.OK) {
             tests.status.status = data.status.status;
             tests.status.message = data.status.message;
+            tests.status.stack = data.status.stack;
         }
         this.running = false;
         this.worker = null;
@@ -1856,6 +1564,7 @@ policies and contribution forms [3].
     {
         this.status = null;
         this.message = null;
+        this.stack = null;
     }
 
     TestsStatus.statuses = {
@@ -1873,7 +1582,8 @@ policies and contribution forms [3].
             msg = msg ? String(msg) : msg;
             this._structured_clone = merge({
                 status:this.status,
-                message:msg
+                message:msg,
+                stack:this.stack
             }, TestsStatus.statuses);
         }
         return this._structured_clone;
@@ -1963,6 +1673,7 @@ policies and contribution forms [3].
             } catch (e) {
                 this.status.status = this.status.ERROR;
                 this.status.message = String(e);
+                this.status.stack = e.stack ? e.stack : null;
             }
         }
         this.set_timeout();
@@ -2320,6 +2031,9 @@ policies and contribution forms [3].
 
                                     if (harness_status.status === harness_status.ERROR) {
                                         rv[0].push(["pre", {}, harness_status.message]);
+                                        if (harness_status.stack) {
+                                            rv[0].push(["pre", {}, harness_status.stack]);
+                                        }
                                     }
                                     return rv;
                                 },
@@ -2417,6 +2131,9 @@ policies and contribution forms [3].
                 "</td><td>" +
                 (assertions ? escape_html(get_assertion(tests[i])) + "</td><td>" : "") +
                 escape_html(tests[i].message ? tests[i].message : " ") +
+                (tests[i].stack ? "<pre>" +
+                 escape_html(tests[i].stack) +
+                 "</pre>": "") +
                 "</td></tr>";
         }
         html += "</tbody></table>";
@@ -2612,11 +2329,26 @@ policies and contribution forms [3].
     function AssertionError(message)
     {
         this.message = message;
+        this.stack = this.get_stack();
     }
 
-    AssertionError.prototype.toString = function() {
-        return this.message;
-    };
+    AssertionError.prototype = Object.create(Error.prototype);
+
+    AssertionError.prototype.get_stack = function() {
+        var lines = new Error().stack.split("\n");
+        var rv = [];
+        var re = /\/resources\/testharness\.js/;
+        var i = 0;
+        // Fire remove any preamble that doesn't match the regexp
+        while (!re.test(lines[i])) {
+            i++
+        }
+        // Then remove top frames in testharness.js itself
+        while (re.test(lines[i])) {
+            i++
+        }
+        return lines.slice(i).join("\n");
+    }
 
     function make_message(function_name, description, error, substitutions)
     {
@@ -2755,14 +2487,14 @@ policies and contribution forms [3].
             if (test.phase >= test.phases.HAS_RESULT) {
                 return;
             }
-            var message = e.message;
-            test.set_status(test.FAIL, message);
+            test.set_status(test.FAIL, e.message, e.stack);
             test.phase = test.phases.HAS_RESULT;
             test.done();
             done();
         } else if (!tests.allow_uncaught_exception) {
             tests.status.status = tests.status.ERROR;
             tests.status.message = e.message;
+            tests.status.stack = e.stack;
         }
     });
 

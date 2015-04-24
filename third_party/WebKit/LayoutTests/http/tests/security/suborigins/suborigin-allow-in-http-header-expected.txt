@@ -6,6 +6,6 @@ CONSOLE ERROR: Unrecognized Content-Security-Policy directive 'suborigin'.
 
 
 This is a testharness.js-based test.
-FAIL Allow suborigin in HTTP header Uncaught assert_unreached: Reached unreachable code
+FAIL Allow suborigin in HTTP header Uncaught Error: assert_unreached: Reached unreachable code
 Harness: the test ran to completion.
 
