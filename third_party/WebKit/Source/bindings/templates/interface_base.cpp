@@ -231,7 +231,9 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] =
                 attribute.runtime_enabled_function or
                 attribute.exposed_test) and
            attribute.should_be_exposed_to_script) %}
+    {% filter conditional(attribute.conditional_string) %}
     {{attribute_configuration(attribute)}},
+    {% endfilter %}
     {% endfor %}
 };
 
