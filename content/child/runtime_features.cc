@@ -100,9 +100,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(scheduler::switches::kDisableBlinkScheduler))
     WebRuntimeFeatures::enableBlinkScheduler(false);
 
-  if (command_line.HasSwitch(switches::kDisableLocalStorage))
-    WebRuntimeFeatures::enableLocalStorage(false);
-
   if (command_line.HasSwitch(switches::kDisableMediaSource))
     WebRuntimeFeatures::enableMediaSource(false);
 
