@@ -117,6 +117,7 @@ LocationLine.prototype.update_ = function(components) {
     newBreadcrumbs.appendChild(button);
 
     var ripple = document.createElement('paper-ripple');
+    ripple.classList.add('recenteringTouch');
     ripple.setAttribute('fit', '');
     button.appendChild(ripple);
 
