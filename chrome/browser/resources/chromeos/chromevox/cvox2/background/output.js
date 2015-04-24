@@ -536,11 +536,11 @@ Output.prototype = {
           this.append_(buff, text, options);
         } else if (token == 'indexInParent') {
           options.annotation.push(token);
-          this.append_(buff, node.indexInParent + 1);
+          this.append_(buff, String(node.indexInParent + 1));
         } else if (token == 'parentChildCount') {
           options.annotation.push(token);
           if (node.parent)
-          this.append_(buff, node.parent.children.length);
+          this.append_(buff, String(node.parent.children.length));
         } else if (token == 'state') {
           options.annotation.push(token);
           Object.getOwnPropertyNames(node.state).forEach(function(s) {

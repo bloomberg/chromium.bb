@@ -15,9 +15,7 @@ goog.provide('cvox.ChromeVoxJSON');
  */
 
 if (!cvox.ChromeVoxJSON) {
-  /**
-   * @type {Object}
-   */
+  /** Placeholder object. */
   cvox.ChromeVoxJSON = {};
 }
 

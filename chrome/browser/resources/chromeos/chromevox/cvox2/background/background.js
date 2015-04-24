@@ -182,7 +182,7 @@ Background.prototype = {
       case 'continuousRead':
         global.isReadingContinuously = true;
         var continueReading = function(prevRange) {
-          if (!global.isReadingContinuously)
+          if (!global.isReadingContinuously || !this.currentRange_)
             return;
 
           new Output().withSpeechAndBraille(
@@ -193,7 +193,7 @@ Background.prototype = {
           this.currentRange_ =
               this.currentRange_.move(cursors.Unit.NODE, Dir.FORWARD);
 
-          if (this.currentRange_.equals(prevRange))
+          if (!this.currentRange_ || this.currentRange_.equals(prevRange))
             global.isReadingContinuously = false;
         }.bind(this);
 
