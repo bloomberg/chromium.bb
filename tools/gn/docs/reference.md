@@ -4073,6 +4073,131 @@
 
 
 ```
+## **GN build language grammar**
+
+### **Tokens**
+
+```
+  GN build files are read as sequences of tokens.  While splitting the
+  file into tokens, the next token is the longest sequence of characters
+  that form a valid token.
+
+```
+
+### **White space and comments**
+
+```
+  White space is comprised of spaces (U+0020), horizontal tabs (U+0009),
+  carriage returns (U+000D), and newlines (U+000A).
+
+  Comments start at the character "#" and stop at the next newline.
+
+  White space and comments are ignored except that they may separate
+  tokens that would otherwise combine into a single token.
+
+```
+
+### **Identifiers**
+
+```
+  Identifiers name variables and functions.
+
+      identifier = letter { letter | digit } .
+      letter     = "A" ... "Z" | "a" ... "z" | "_" .
+      digit      = "0" ... "9" .
+
+```
+
+### **Keywords**
+
+```
+  The following keywords are reserved and may not be used as
+  identifiers:
+
+          else    false   if      true
+
+```
+
+### **Integer literals**
+
+```
+  An integer literal represents a decimal integer value.
+
+      integer = [ "-" ] digit { digit } .
+
+  Leading zeros and negative zero are disallowed.
+
+```
+
+### **String literals**
+
+```
+  A string literal represents a string value consisting of the quoted
+  characters with possible escape sequences and variable expansions.
+
+      string    = `"` { char | escape | expansion } `"` .
+      escape    = `\` ( "$" | `"` | char ) .
+      expansion = "$" ( identifier | "{" identifier "}" ) .
+      char      = /* any character except "$", `"`, or newline */ .
+
+  After a backslash, certain sequences represent special characters:
+
+          \"    U+0022    quotation mark
+          \$    U+0024    dollar sign
+          \\    U+005C    backslash
+
+  All other backslashes represent themselves.
+
+```
+
+### **Punctuation**
+
+```
+  The following character sequences represent punctuation:
+
+          +       +=      ==      !=      (       )
+          -       -=      <       <=      [       ]
+          !       =       >       >=      {       }
+                          &&      ||      .       ,
+
+```
+
+### **Grammar**
+
+```
+  The input tokens form a syntax tree following a context-free grammar:
+
+      File = StatementList .
+
+      Statement     = Assignment | Call | Condition .
+      Assignment    = identifier AssignOp Expr .
+      Call          = identifier "(" [ ExprList ] ")" [ Block ] .
+      Condition     = "if" "(" Expr ")" Block
+                      [ "else" ( Condition | Block ) ] .
+      Block         = "{" StatementList "}" .
+      StatementList = { Statement } .
+
+      Expr        = UnaryExpr | Expr BinaryOp Expr .
+      UnaryExpr   = PrimaryExpr | UnaryOp UnaryExpr .
+      PrimaryExpr = identifier | integer | string | Call
+                  | identifier "[" Expr "]"
+                  | identifier "." identifier
+                  | "(" Expr ")"
+                  | "[" [ ExprList [ "," ] ] "]" .
+      ExprList    = Expr { "," Expr } .
+
+      AssignOp = "=" | "+=" | "-=" .
+      UnaryOp  = "!" .
+      BinaryOp = "+" | "-"                  // highest priority
+               | "<" | "<=" | ">" | ">="
+               | "==" | "!="
+               | "&&"
+               | "||" .                     // lowest priority
+
+  All binary operators are left-associative.
+
+
+```
 ## **input_conversion**: Specifies how to transform input to a variable.
 
 ```

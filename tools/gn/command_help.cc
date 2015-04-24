@@ -120,6 +120,7 @@ void PrintAllHelp() {
 
   PrintLongHelp(kBuildArgs_Help);
   PrintLongHelp(kDotfile_Help);
+  PrintLongHelp(kGrammar_Help);
   PrintLongHelp(kInputConversion_Help);
   PrintLongHelp(kLabelPattern_Help);
   PrintLongHelp(kSourceExpansion_Help);
