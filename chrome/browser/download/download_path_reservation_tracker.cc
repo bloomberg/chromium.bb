@@ -70,7 +70,7 @@ class DownloadItemObserver : public DownloadItem::Observer {
 
 // Returns true if the given path is in use by a path reservation.
 bool IsPathReserved(const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // No reservation map => no reservations.
   if (g_reservation_map == NULL)
     return false;
@@ -89,7 +89,7 @@ bool IsPathReserved(const base::FilePath& path) {
 // Returns true if the given path is in use by any path reservation or the
 // file system. Called on the FILE thread.
 bool IsPathInUse(const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // If there is a reservation, then the path is in use.
   if (IsPathReserved(path))
     return true;
@@ -155,7 +155,7 @@ bool CreateReservation(
     bool create_directory,
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     base::FilePath* reserved_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(suggested_path.IsAbsolute());
 
   // Create a reservation map if one doesn't exist. It will be automatically
@@ -249,7 +249,7 @@ bool CreateReservation(
 // Called on the FILE thread to update the path of the reservation associated
 // with |key| to |new_path|.
 void UpdateReservation(ReservationKey key, const base::FilePath& new_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(g_reservation_map != NULL);
   ReservationMap::iterator iter = g_reservation_map->find(key);
   if (iter != g_reservation_map->end()) {
@@ -265,7 +265,7 @@ void UpdateReservation(ReservationKey key, const base::FilePath& new_path) {
 // Called on the FILE thread to remove the path reservation associated with
 // |key|.
 void RevokeReservation(ReservationKey key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(g_reservation_map != NULL);
   DCHECK(ContainsKey(*g_reservation_map, key));
   g_reservation_map->erase(key);
@@ -280,14 +280,14 @@ void RunGetReservedPathCallback(
     const DownloadPathReservationTracker::ReservedPathCallback& callback,
     const base::FilePath* reserved_path,
     bool verified) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(*reserved_path, verified);
 }
 
 DownloadItemObserver::DownloadItemObserver(DownloadItem* download_item)
     : download_item_(download_item),
       last_target_path_(download_item->GetTargetFilePath()) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   download_item_->AddObserver(this);
 }
 
@@ -350,7 +350,7 @@ void DownloadPathReservationTracker::GetReservedPath(
     bool create_directory,
     FilenameConflictAction conflict_action,
     const ReservedPathCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Attach an observer to the download item so that we know when the target
   // path changes and/or the download is no longer active.
   new DownloadItemObserver(download_item);

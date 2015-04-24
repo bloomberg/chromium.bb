@@ -75,7 +75,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void QueryDownloads(
       const history::HistoryService::DownloadQueryCallback& callback) override {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
         base::Bind(&FakeHistoryAdapter::QueryDownloadsDone,
             base::Unretained(this), callback));
@@ -83,7 +83,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void QueryDownloadsDone(
       const history::HistoryService::DownloadQueryCallback& callback) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     CHECK(expect_query_downloads_.get());
     callback.Run(expect_query_downloads_.Pass());
   }
@@ -93,7 +93,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   void CreateDownload(const history::DownloadRow& info,
                       const history::HistoryService::DownloadCreateCallback&
                           callback) override {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     create_download_info_ = info;
     // Must not call CreateDownload() again before FinishCreateDownload()!
     DCHECK(create_download_callback_.is_null());
@@ -104,18 +104,18 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   }
 
   void FinishCreateDownload() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     create_download_callback_.Run();
     create_download_callback_.Reset();
   }
 
   void UpdateDownload(const history::DownloadRow& info) override {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     update_download_ = info;
   }
 
   void RemoveDownloads(const IdSet& ids) override {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     for (IdSet::const_iterator it = ids.begin();
          it != ids.end(); ++it) {
       remove_downloads_.insert(*it);
@@ -123,55 +123,55 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   }
 
   void ExpectWillQueryDownloads(scoped_ptr<InfoVector> infos) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     expect_query_downloads_ = infos.Pass();
   }
 
   void ExpectQueryDownloadsDone() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     EXPECT_TRUE(NULL == expect_query_downloads_.get());
   }
 
   void FailCreateDownload() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     fail_create_download_ = true;
   }
 
   void ExpectDownloadCreated(
       const history::DownloadRow& info) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     CheckInfoEqual(info, create_download_info_);
     create_download_info_ = history::DownloadRow();
   }
 
   void ExpectNoDownloadCreated() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     CheckInfoEqual(history::DownloadRow(), create_download_info_);
   }
 
   void ExpectDownloadUpdated(const history::DownloadRow& info) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     CheckInfoEqual(update_download_, info);
     update_download_ = history::DownloadRow();
   }
 
   void ExpectNoDownloadUpdated() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     CheckInfoEqual(history::DownloadRow(), update_download_);
   }
 
   void ExpectNoDownloadsRemoved() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     EXPECT_EQ(0, static_cast<int>(remove_downloads_.size()));
   }
 
   void ExpectDownloadsRemoved(const IdSet& ids) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     IdSet differences = base::STLSetDifference<IdSet>(ids, remove_downloads_);
     for (IdSet::const_iterator different = differences.begin();
@@ -222,7 +222,7 @@ class DownloadHistoryTest : public testing::Test {
   }
 
   void CreateDownloadHistory(scoped_ptr<InfoVector> infos) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     CHECK(infos.get());
     EXPECT_CALL(manager(), AddObserver(_)).WillOnce(WithArg<0>(Invoke(
         this, &DownloadHistoryTest::SetManagerObserver)));
@@ -265,7 +265,7 @@ class DownloadHistoryTest : public testing::Test {
   }
 
   void CallOnDownloadCreated(size_t index) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (!pre_on_create_handler_.is_null())
       pre_on_create_handler_.Run(&item(index));
     manager_observer()->OnDownloadCreated(&manager(), &item(index));
@@ -274,60 +274,60 @@ class DownloadHistoryTest : public testing::Test {
   }
 
   void CallOnDownloadCreatedInOrder() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // Gmock doesn't appear to support something like InvokeWithTheseArgs. Maybe
     // gmock needs to learn about base::Callback.
     CallOnDownloadCreated(download_created_index_++);
   }
 
   void set_slow_create_download(bool slow) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     history_->set_slow_create_download(slow);
   }
 
   void FinishCreateDownload() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     history_->FinishCreateDownload();
   }
 
   void FailCreateDownload() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     history_->FailCreateDownload();
   }
 
   void ExpectDownloadCreated(
       const history::DownloadRow& info) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     history_->ExpectDownloadCreated(info);
   }
 
   void ExpectNoDownloadCreated() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     history_->ExpectNoDownloadCreated();
   }
 
   void ExpectDownloadUpdated(const history::DownloadRow& info) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     history_->ExpectDownloadUpdated(info);
   }
 
   void ExpectNoDownloadUpdated() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     history_->ExpectNoDownloadUpdated();
   }
 
   void ExpectNoDownloadsRemoved() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     history_->ExpectNoDownloadsRemoved();
   }
 
   void ExpectDownloadsRemoved(const IdSet& ids) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     history_->ExpectDownloadsRemoved(ids);
   }
 
   void ExpectDownloadsRestoredFromHistory(bool expected_value) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     pre_on_create_handler_ =
         base::Bind(&DownloadHistoryTest::CheckDownloadWasRestoredFromHistory,
                    base::Unretained(this),
@@ -389,7 +389,7 @@ class DownloadHistoryTest : public testing::Test {
       const std::string& by_extension_id,
       const std::string& by_extension_name,
       history::DownloadRow* info) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     size_t index = items_.size();
     StrictMockDownloadItem* mock_item = new StrictMockDownloadItem();

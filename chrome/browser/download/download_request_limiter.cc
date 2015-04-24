@@ -287,7 +287,7 @@ void DownloadRequestLimiter::CanDownloadOnIOThread(
     const Callback& callback) {
   // This is invoked on the IO thread. Schedule the task to run on the UI
   // thread so that we can query UI state.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadRequestLimiter::CanDownload, this,
@@ -319,7 +319,7 @@ void DownloadRequestLimiter::CanDownload(int render_process_host_id,
                                          const GURL& url,
                                          const std::string& request_method,
                                          const Callback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::WebContents* originating_contents =
       tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
@@ -357,7 +357,7 @@ void DownloadRequestLimiter::OnCanDownloadDecided(
     int render_view_id,
     const std::string& request_method,
     const Callback& orig_callback, bool allow) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::WebContents* originating_contents =
       tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
   if (!originating_contents || !allow) {

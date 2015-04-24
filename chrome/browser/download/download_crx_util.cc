@@ -94,7 +94,7 @@ scoped_refptr<extensions::CrxInstaller> CreateCrxInstaller(
 scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
     Profile* profile,
     const DownloadItem& download_item) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_refptr<extensions::CrxInstaller> installer(
       CreateCrxInstaller(profile, download_item));

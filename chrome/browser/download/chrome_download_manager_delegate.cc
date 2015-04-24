@@ -213,7 +213,7 @@ ChromeDownloadManagerDelegate::GetDownloadIdReceiverCallback() {
 }
 
 void ChromeDownloadManagerDelegate::SetNextId(uint32 next_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_->IsOffTheRecord());
   DCHECK_NE(content::DownloadItem::kInvalidId, next_id);
   next_download_id_ = next_id;
@@ -228,7 +228,7 @@ void ChromeDownloadManagerDelegate::SetNextId(uint32 next_id) {
 
 void ChromeDownloadManagerDelegate::GetNextId(
     const content::DownloadIdCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (profile_->IsOffTheRecord()) {
     content::BrowserContext::GetDownloadManager(
         profile_->GetOriginalProfile())->GetDelegate()->GetNextId(callback);
@@ -243,7 +243,7 @@ void ChromeDownloadManagerDelegate::GetNextId(
 
 void ChromeDownloadManagerDelegate::ReturnNextId(
     const content::DownloadIdCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_->IsOffTheRecord());
   DCHECK_NE(content::DownloadItem::kInvalidId, next_download_id_);
   callback.Run(next_download_id_++);
@@ -268,7 +268,7 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
 
 bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
     const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (path.Extension().empty())
     return false;
 #if defined(ENABLE_EXTENSIONS)
@@ -283,7 +283,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 
 // static
 void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(FULL_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetUserData(&kSafeBrowsingUserDataKey));
@@ -298,7 +298,7 @@ void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
 bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     DownloadItem* item,
     const base::Closure& internal_complete_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(FULL_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetUserData(&kSafeBrowsingUserDataKey));
@@ -516,7 +516,7 @@ ChromeDownloadManagerDelegate::ApplicationClientIdForFileScanning() const {
 
 DownloadProtectionService*
     ChromeDownloadManagerDelegate::GetDownloadProtectionService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(FULL_SAFE_BROWSING)
   SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
   if (sb_service && sb_service->download_protection_service() &&
@@ -531,7 +531,7 @@ void ChromeDownloadManagerDelegate::NotifyExtensions(
     DownloadItem* download,
     const base::FilePath& virtual_path,
     const NotifyExtensionsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionDownloadsEventRouter* router =
       DownloadServiceFactory::GetForBrowserContext(profile_)
@@ -555,7 +555,7 @@ void ChromeDownloadManagerDelegate::ReserveVirtualPath(
     bool create_directory,
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     const DownloadTargetDeterminerDelegate::ReservedPathCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!virtual_path.empty());
 #if defined(OS_CHROMEOS)
   // TODO(asanka): Handle path reservations for virtual paths as well.
@@ -578,7 +578,7 @@ void ChromeDownloadManagerDelegate::PromptUserForDownloadPath(
     DownloadItem* download,
     const base::FilePath& suggested_path,
     const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_ANDROID)
   chrome::android::ChromeDownloadManagerOverwriteInfoBarDelegate::Create(
       InfoBarService::FromWebContents(download->GetWebContents()),
@@ -592,7 +592,7 @@ void ChromeDownloadManagerDelegate::DetermineLocalPath(
     DownloadItem* download,
     const base::FilePath& virtual_path,
     const DownloadTargetDeterminerDelegate::LocalPathCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_CHROMEOS)
   drive::DownloadHandler* drive_download_handler =
       drive::DownloadHandler::GetForProfile(profile_);
@@ -609,7 +609,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrl(
     DownloadItem* download,
     const base::FilePath& suggested_path,
     const CheckDownloadUrlCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(FULL_SAFE_BROWSING)
   safe_browsing::DownloadProtectionService* service =
@@ -632,7 +632,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrl(
 void ChromeDownloadManagerDelegate::GetFileMimeType(
     const base::FilePath& path,
     const GetFileMimeTypeCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskAndReplyWithResult(BrowserThread::GetBlockingPool(),
                                    FROM_HERE,
                                    base::Bind(&GetMimeType, path),
@@ -712,7 +712,7 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
     int32 download_id,
     const content::DownloadTargetCallback& callback,
     scoped_ptr<DownloadTargetInfo> target_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (item) {
     if (!target_info->target_path.empty() &&
