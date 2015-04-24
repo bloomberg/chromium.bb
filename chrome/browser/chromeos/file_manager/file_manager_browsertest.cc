@@ -1040,10 +1040,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "traverseDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-// Disabled under MSAN, ASAN, and LSAN as well. http://crbug.com/479757.
-// Flakes often: http://crbug.com/479757
+// Disabled under MSAN as well. http://crbug.com/468980.
+#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
+#define MAYBE_SuggestAppDialog DISABLED_SuggestAppDialog
+#else
+#define MAYBE_SuggestAppDialog SuggestAppDialog
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_SuggestAppDialog,
+    MAYBE_SuggestAppDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "suggestAppDialog")));
 

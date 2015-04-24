@@ -53,7 +53,7 @@ testcase.suggestAppDialog = function() {
     function(result) {
       chrome.test.assertTrue(!!result);
       remoteCall.waitForElement(
-          appId, '.cws-widget-webview-container:not(.cws-widget-show-spinner)').
+          appId, '.cws-widget-spinner-layer:not(.cws-widget-show-spinner)').
           then(this.next);
     },
     // Override task APIs for test.
