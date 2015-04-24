@@ -1,0 +1,44 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [295, 178, 15, 324],
+        [295, 102, 15, 400],
+        [295, 102, 15, 152],
+        [295, 102, 15, 76],
+        [18, 164, 269, 338],
+        [18, 146, 269, 356],
+        [18, 128, 269, 36],
+        [18, 128, 269, 18],
+        [18, 128, 258, 36],
+        [18, 128, 84, 18],
+        [10, 102, 285, 400]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'To be changed: findme (Manual testing:'",
+        "InlineTextBox 'Find-in-page 'findme', then click here)'",
+        "LayoutText #text",
+        "RootInlineBox",
+        "RootInlineBox",
+        "VerticalScrollbar",
+        "LayoutIFrame (positioned) IFRAME id='iframe'",
+        "VerticalScrollbar",
+        "LayoutIFrame (positioned) IFRAME id='iframe'",
+        "VerticalScrollbar",
+        "LayoutIFrame (positioned) IFRAME id='iframe'",
+        "VerticalScrollbar",
+        "LayoutIFrame (positioned) IFRAME id='iframe'",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow DIV id='to-be-changed'",
+        "LayoutText #text",
+        "InlineTextBox 'After change'",
+        "LayoutBlockFlow DIV"
+      ]
+    }
+  ]
+}
+
