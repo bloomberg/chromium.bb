@@ -641,13 +641,13 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
     return RespondNow(Error(kErrorNotSupported));
   }
 
-  AddRef();
   prompt_->AskForUsbDevices(
-      this, extension(), browser_context(), multiple, filters);
+      extension(), browser_context(), multiple, filters,
+      base::Bind(&UsbGetUserSelectedDevicesFunction::OnDevicesChosen, this));
   return RespondLater();
 }
 
-void UsbGetUserSelectedDevicesFunction::OnUsbDevicesChosen(
+void UsbGetUserSelectedDevicesFunction::OnDevicesChosen(
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
   scoped_ptr<base::ListValue> result(new base::ListValue());
   for (const auto& device : devices) {
@@ -655,7 +655,6 @@ void UsbGetUserSelectedDevicesFunction::OnUsbDevicesChosen(
   }
 
   Respond(OneArgument(result.release()));
-  Release();
 }
 
 UsbRequestAccessFunction::UsbRequestAccessFunction() {

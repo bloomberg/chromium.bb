@@ -341,10 +341,10 @@
       <message name="IDS_DEVICE_PERMISSIONS_DEVICE_NAME" desc="String describing a device in a list of devices.">
         <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>
       </message>
-      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_TITLE_SINGLE" desc="Title of the device selection dialog when the app wants only one device selected.">
+      <message name="IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE_SINGLE" desc="Title of the USB device selection dialog when the app wants only one device selected.">
         Select a USB device
       </message>
-      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_TITLE_MULTIPLE" desc="Title of the device selection dialog when the app will accept one or more selected devices.">
+      <message name="IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE_MULTIPLE" desc="Title of the USB device selection dialog when the app will accept one or more selected devices.">
         Select USB devices
       </message>
       <message name="IDS_DEVICE_PERMISSIONS_PROMPT_SINGLE" desc="Instructions asking the user to select one device for use with an app.">

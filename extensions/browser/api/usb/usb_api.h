@@ -14,7 +14,6 @@
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_device_handle.h"
 #include "extensions/browser/api/api_resource_manager.h"
-#include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/usb.h"
 #include "net/base/io_buffer.h"
@@ -23,6 +22,7 @@ namespace extensions {
 
 class DevicePermissionEntry;
 class DevicePermissions;
+class DevicePermissionsPrompt;
 class DevicePermissionsManager;
 class UsbDeviceResource;
 
@@ -108,9 +108,7 @@ class UsbGetDevicesFunction : public UsbPermissionCheckingFunction {
   DISALLOW_COPY_AND_ASSIGN(UsbGetDevicesFunction);
 };
 
-class UsbGetUserSelectedDevicesFunction
-    : public UIThreadExtensionFunction,
-      public DevicePermissionsPrompt::Delegate {
+class UsbGetUserSelectedDevicesFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.getUserSelectedDevices",
                              USB_GETUSERSELECTEDDEVICES)
@@ -123,8 +121,8 @@ class UsbGetUserSelectedDevicesFunction
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void OnUsbDevicesChosen(
-      const std::vector<scoped_refptr<device::UsbDevice>>& devices) override;
+  void OnDevicesChosen(
+      const std::vector<scoped_refptr<device::UsbDevice>>& devices);
 
   scoped_ptr<DevicePermissionsPrompt> prompt_;
 
