@@ -33,8 +33,8 @@ class EvictionOrderComparator {
     const Tile* a_tile = a_queue->Top();
     const Tile* b_tile = b_queue->Top();
 
-    const TilePriority& a_priority = a_tile->combined_priority();
-    const TilePriority& b_priority = b_tile->combined_priority();
+    const TilePriority& a_priority = a_tile->priority();
+    const TilePriority& b_priority = b_tile->priority();
     bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
 
     // If the priority bin differs, b is lower priority if it has the higher
@@ -61,8 +61,8 @@ class EvictionOrderComparator {
 
     // Otherwise if the occlusion differs, b is lower priority if it is
     // occluded.
-    bool a_is_occluded = a_tile->is_occluded_combined();
-    bool b_is_occluded = b_tile->is_occluded_combined();
+    bool a_is_occluded = a_tile->is_occluded();
+    bool b_is_occluded = b_tile->is_occluded();
     if (a_is_occluded != b_is_occluded)
       return b_is_occluded;
 
@@ -184,8 +184,8 @@ EvictionTilePriorityQueue::PairedTilingSetQueue::NextTileIteratorTree() const {
   if (active_tile == pending_tile)
     return ACTIVE_TREE;
 
-  const TilePriority& active_priority = active_tile->combined_priority();
-  const TilePriority& pending_priority = pending_tile->combined_priority();
+  const TilePriority& active_priority = active_tile->priority();
+  const TilePriority& pending_priority = pending_tile->priority();
 
   // If the bins are the same and activation differs, then return the tree of
   // the tile not required for activation.

@@ -288,15 +288,19 @@ class PictureLayerImplTest : public testing::Test {
   }
 
   void ResetTilingsAndRasterScales() {
-    pending_layer_->ReleaseResources();
-    EXPECT_FALSE(pending_layer_->tilings());
-    pending_layer_->RecreateResources();
-    EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
+    if (pending_layer_) {
+      pending_layer_->ReleaseResources();
+      EXPECT_FALSE(pending_layer_->tilings());
+      pending_layer_->RecreateResources();
+      EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
+    }
 
-    active_layer_->ReleaseResources();
-    EXPECT_FALSE(active_layer_->tilings());
-    active_layer_->RecreateResources();
-    EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
+    if (active_layer_) {
+      active_layer_->ReleaseResources();
+      EXPECT_FALSE(active_layer_->tilings());
+      active_layer_->RecreateResources();
+      EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
+    }
   }
 
   size_t NumberOfTilesRequired(PictureLayerTiling* tiling) {
@@ -416,7 +420,7 @@ TEST_F(PictureLayerImplTest, CloneNoInvalidation) {
   const PictureLayerTilingSet* tilings = pending_layer_->tilings();
   EXPECT_GT(tilings->num_tilings(), 0u);
   for (size_t i = 0; i < tilings->num_tilings(); ++i)
-    VerifyAllTilesExistAndHavePile(tilings->tiling_at(i), pending_pile.get());
+    EXPECT_TRUE(tilings->tiling_at(i)->AllTilesForTesting().empty());
 }
 
 TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
@@ -667,7 +671,7 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
 
   SetupPendingTreeWithFixedTileSize(lost_pile, gfx::Size(50, 50), Region());
   ActivateTree();
-  // Add a non-shared tiling on the active tree.
+  // Add a unique tiling on the active tree.
   PictureLayerTiling* tiling = active_layer_->AddTiling(3.f);
   tiling->CreateAllTilesForTesting();
 
@@ -694,9 +698,16 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
              gfx::Rect(tiling->tiling_size()));
          iter;
          ++iter) {
-      EXPECT_TRUE(*iter);
-      EXPECT_FALSE(iter.geometry_rect().IsEmpty());
-      EXPECT_EQ(pending_pile.get(), iter->raster_source());
+      // We don't always have a tile, but when we do it's because it was
+      // invalidated and it has the latest raster source.
+      if (*iter) {
+        EXPECT_FALSE(iter.geometry_rect().IsEmpty());
+        EXPECT_EQ(pending_pile.get(), iter->raster_source());
+        EXPECT_TRUE(iter.geometry_rect().Intersects(content_invalidation));
+      } else {
+        // We don't create tiles in non-invalidated regions.
+        EXPECT_FALSE(iter.geometry_rect().Intersects(content_invalidation));
+      }
     }
   }
 
@@ -714,12 +725,8 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
          ++iter) {
       EXPECT_TRUE(*iter);
       EXPECT_FALSE(iter.geometry_rect().IsEmpty());
-      if (iter.geometry_rect().Intersects(content_invalidation))
-        EXPECT_EQ(active_pile.get(), iter->raster_source());
-      else if (!active_layer_->GetPendingOrActiveTwinTiling(tiling))
-        EXPECT_EQ(active_pile.get(), iter->raster_source());
-      else
-        EXPECT_EQ(pending_pile.get(), iter->raster_source());
+      // Pile will be updated upon activation.
+      EXPECT_EQ(active_pile.get(), iter->raster_source());
     }
   }
 }
@@ -1537,17 +1544,15 @@ TEST_F(PictureLayerImplTest, ReleaseResources) {
   EXPECT_EQ(2u, pending_layer_->tilings()->num_tilings());
 }
 
-TEST_F(PictureLayerImplTest, ClampTilesToToMaxTileSize) {
+TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
   // The default max tile size is larger than 400x400.
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(5000, 5000);
 
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-  scoped_refptr<FakePicturePileImpl> active_pile =
-      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
-  SetupTrees(pending_pile, active_pile);
+  SetupPendingTree(pending_pile);
   EXPECT_GE(pending_layer_->tilings()->num_tilings(), 1u);
 
   pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
@@ -1592,16 +1597,16 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
   SetupTrees(pending_pile, active_pile);
-  EXPECT_GE(pending_layer_->tilings()->num_tilings(), 1u);
+  EXPECT_GE(active_layer_->tilings()->num_tilings(), 1u);
 
-  pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
+  active_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
 
   // The default value. The layer is smaller than this.
   EXPECT_EQ(gfx::Size(512, 512).ToString(),
             host_impl_.settings().max_untiled_layer_size.ToString());
 
   // There should be a single tile since the layer is small.
-  PictureLayerTiling* high_res_tiling = pending_layer_->tilings()->tiling_at(0);
+  PictureLayerTiling* high_res_tiling = active_layer_->tilings()->tiling_at(0);
   EXPECT_EQ(1u, high_res_tiling->AllTilesForTesting().size());
 
   ResetTilingsAndRasterScales();
@@ -1614,18 +1619,18 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   host_impl_.InitializeRenderer(
       FakeOutputSurface::Create3d(context.Pass()).Pass());
 
-  SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
-  ASSERT_LE(1u, pending_layer_->tilings()->num_tilings());
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  ASSERT_LE(1u, active_layer_->tilings()->num_tilings());
 
-  pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
+  active_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
 
   // There should be more than one tile since the max texture size won't cover
   // the layer.
-  high_res_tiling = pending_layer_->tilings()->tiling_at(0);
+  high_res_tiling = active_layer_->tilings()->tiling_at(0);
   EXPECT_LT(1u, high_res_tiling->AllTilesForTesting().size());
 
   // Verify the tiles are not larger than the context's max texture size.
-  Tile* tile = pending_layer_->tilings()->tiling_at(0)->AllTilesForTesting()[0];
+  Tile* tile = active_layer_->tilings()->tiling_at(0)->AllTilesForTesting()[0];
   EXPECT_GE(140, tile->content_rect().width());
   EXPECT_GE(140, tile->content_rect().height());
 }
@@ -1749,7 +1754,7 @@ TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
   for (; !queue->IsEmpty(); queue->Pop()) {
     const Tile* tile = queue->Top();
     DCHECK(tile);
-    if (tile->priority(PENDING_TREE).distance_to_visible == 0.f) {
+    if (tile->priority().distance_to_visible == 0.f) {
       EXPECT_TRUE(tile->required_for_activation());
       num_visible++;
     } else {
@@ -1814,10 +1819,12 @@ TEST_F(NoLowResPictureLayerImplTest,
       pending_layer_->viewport_rect_for_tile_priority_in_content_space();
   viewport_for_tile_priority.Intersect(pending_layer_->visible_content_rect());
 
+  EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
+
   int num_inside = 0;
   int num_outside = 0;
-  for (PictureLayerTiling::CoverageIterator iter(
-           pending_layer_->HighResTiling(), 1.f, gfx::Rect(layer_bounds));
+  for (PictureLayerTiling::CoverageIterator iter(active_layer_->HighResTiling(),
+                                                 1.f, gfx::Rect(layer_bounds));
        iter; ++iter) {
     if (!*iter)
       continue;
@@ -2046,18 +2053,17 @@ TEST_F(PictureLayerImplTest,
   EXPECT_FALSE(active_layer_->only_used_low_res_last_append_quads());
 }
 
-TEST_F(PictureLayerImplTest, HighResRequiredWhenUnsharedActiveAllReady) {
+TEST_F(PictureLayerImplTest, HighResRequiredWhenActiveAllReady) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);
 
-  // No tiles shared.
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size,
                                      gfx::Rect(layer_bounds));
 
   active_layer_->SetAllTilesReady();
 
-  // No shared tiles and all active tiles ready, so pending can only
-  // activate with all high res tiles.
+  // All active tiles ready, so pending can only activate with all high res
+  // tiles.
   pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
   pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
 
@@ -2069,7 +2075,7 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenMissingHighResFlagOn) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);
 
-  // All tiles shared (no invalidation).
+  // No invalidation.
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
 
   // Verify active tree not ready.
@@ -2077,18 +2083,22 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenMissingHighResFlagOn) {
       active_layer_->HighResTiling()->AllTilesForTesting()[0];
   EXPECT_FALSE(some_active_tile->IsReadyToDraw());
 
-  // When high res are required, even if the active tree is not ready,
-  // the high res tiles must be ready.
+  // When high res are required, all tiles in active high res tiling should be
+  // required for activation.
   host_impl_.SetRequiresHighResToDraw();
 
   pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
   pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+  active_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  active_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
 
-  AssertAllTilesRequired(pending_layer_->HighResTiling());
-  AssertNoTilesRequired(pending_layer_->LowResTiling());
+  EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
+  EXPECT_TRUE(pending_layer_->LowResTiling()->AllTilesForTesting().empty());
+  AssertAllTilesRequired(active_layer_->HighResTiling());
+  AssertNoTilesRequired(active_layer_->LowResTiling());
 }
 
-TEST_F(PictureLayerImplTest, AllHighResRequiredEvenIfShared) {
+TEST_F(PictureLayerImplTest, AllHighResRequiredEvenIfNotChanged) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);
 
@@ -2098,13 +2108,15 @@ TEST_F(PictureLayerImplTest, AllHighResRequiredEvenIfShared) {
       active_layer_->HighResTiling()->AllTilesForTesting()[0];
   EXPECT_FALSE(some_active_tile->IsReadyToDraw());
 
-  // All tiles shared (no invalidation), so even though the active tree's
-  // tiles aren't ready, the high res tiles are required for activation.
-  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
-  pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+  // Since there are no invalidations, pending tree should have no tiles.
+  EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
+  EXPECT_TRUE(pending_layer_->LowResTiling()->AllTilesForTesting().empty());
 
-  AssertAllTilesRequired(pending_layer_->HighResTiling());
-  AssertNoTilesRequired(pending_layer_->LowResTiling());
+  active_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  active_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
+  AssertAllTilesRequired(active_layer_->HighResTiling());
+  AssertNoTilesRequired(active_layer_->LowResTiling());
 }
 
 TEST_F(PictureLayerImplTest, DisallowRequiredForActivation) {
@@ -2117,15 +2129,19 @@ TEST_F(PictureLayerImplTest, DisallowRequiredForActivation) {
       active_layer_->HighResTiling()->AllTilesForTesting()[0];
   EXPECT_FALSE(some_active_tile->IsReadyToDraw());
 
+  EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
+  EXPECT_TRUE(pending_layer_->LowResTiling()->AllTilesForTesting().empty());
+  active_layer_->HighResTiling()->set_can_require_tiles_for_activation(false);
+  active_layer_->LowResTiling()->set_can_require_tiles_for_activation(false);
   pending_layer_->HighResTiling()->set_can_require_tiles_for_activation(false);
   pending_layer_->LowResTiling()->set_can_require_tiles_for_activation(false);
 
   // If we disallow required for activation, no tiles can be required.
-  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
-  pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+  active_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  active_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
 
-  AssertNoTilesRequired(pending_layer_->HighResTiling());
-  AssertNoTilesRequired(pending_layer_->LowResTiling());
+  AssertNoTilesRequired(active_layer_->HighResTiling());
+  AssertNoTilesRequired(active_layer_->LowResTiling());
 }
 
 TEST_F(PictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
@@ -2199,9 +2215,16 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenActiveHasDifferentBounds) {
   // high res tiles in order to activate.
   pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
   pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+  active_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  active_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
 
   AssertAllTilesRequired(pending_layer_->HighResTiling());
-  AssertNoTilesRequired(pending_layer_->LowResTiling());
+  AssertAllTilesRequired(active_layer_->HighResTiling());
+  AssertNoTilesRequired(active_layer_->LowResTiling());
+  // Since the test doesn't invalidate the resized region, we expect that the
+  // same low res tile would exist (which means we don't create a new one of the
+  // pending tree).
+  EXPECT_TRUE(pending_layer_->LowResTiling()->AllTilesForTesting().empty());
 }
 
 TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
@@ -2270,40 +2293,41 @@ TEST_F(PictureLayerImplTest, ShareTilesOnNextFrame) {
 
   // pending_tiling->CreateAllTilesForTesting();
 
-  // Tile 0,0 should be shared, but tile 1,1 should not be.
-  EXPECT_EQ(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
-  EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
-  EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
+  // Tile 0,0 not exist on pending, but tile 1,1 should.
+  EXPECT_TRUE(active_tiling->TileAt(0, 0));
+  EXPECT_TRUE(active_tiling->TileAt(1, 0));
+  EXPECT_TRUE(active_tiling->TileAt(0, 1));
+  EXPECT_FALSE(pending_tiling->TileAt(0, 0));
+  EXPECT_FALSE(pending_tiling->TileAt(1, 0));
+  EXPECT_FALSE(pending_tiling->TileAt(0, 1));
   EXPECT_NE(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
-  EXPECT_TRUE(pending_tiling->TileAt(0, 0)->is_shared());
-  EXPECT_TRUE(pending_tiling->TileAt(1, 0)->is_shared());
-  EXPECT_TRUE(pending_tiling->TileAt(0, 1)->is_shared());
-  EXPECT_FALSE(pending_tiling->TileAt(1, 1)->is_shared());
+  EXPECT_TRUE(active_tiling->TileAt(1, 1));
+  EXPECT_TRUE(pending_tiling->TileAt(1, 1));
 
-  // Drop the tiles on the active tree and recreate them. The same tiles
-  // should be shared or not.
+  // Drop the tiles on the active tree and recreate them.
   active_tiling->ComputeTilePriorityRects(gfx::Rect(), 1.f, 1.0, Occlusion());
   EXPECT_TRUE(active_tiling->AllTilesForTesting().empty());
   active_tiling->CreateAllTilesForTesting();
 
-  // Tile 0,0 should be shared, but tile 1,1 should not be.
-  EXPECT_EQ(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
-  EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
-  EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
+  // Tile 0,0 not exist on pending, but tile 1,1 should.
+  EXPECT_TRUE(active_tiling->TileAt(0, 0));
+  EXPECT_TRUE(active_tiling->TileAt(1, 0));
+  EXPECT_TRUE(active_tiling->TileAt(0, 1));
+  EXPECT_FALSE(pending_tiling->TileAt(0, 0));
+  EXPECT_FALSE(pending_tiling->TileAt(1, 0));
+  EXPECT_FALSE(pending_tiling->TileAt(0, 1));
   EXPECT_NE(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
-  EXPECT_TRUE(pending_tiling->TileAt(0, 0)->is_shared());
-  EXPECT_TRUE(pending_tiling->TileAt(1, 0)->is_shared());
-  EXPECT_TRUE(pending_tiling->TileAt(0, 1)->is_shared());
-  EXPECT_FALSE(pending_tiling->TileAt(1, 1)->is_shared());
+  EXPECT_TRUE(active_tiling->TileAt(1, 1));
+  EXPECT_TRUE(pending_tiling->TileAt(1, 1));
 }
 
-TEST_F(PictureLayerImplTest, ShareTilesWithNoInvalidation) {
+TEST_F(PictureLayerImplTest, PendingHasNoTilesWithNoInvalidation) {
   SetupDefaultTrees(gfx::Size(1500, 1500));
 
   EXPECT_GE(active_layer_->num_tilings(), 1u);
   EXPECT_GE(pending_layer_->num_tilings(), 1u);
 
-  // No invalidation, so all tiles are shared.
+  // No invalidation.
   PictureLayerTiling* active_tiling = active_layer_->tilings()->tiling_at(0);
   PictureLayerTiling* pending_tiling = pending_layer_->tilings()->tiling_at(0);
   ASSERT_TRUE(active_tiling);
@@ -2314,19 +2338,10 @@ TEST_F(PictureLayerImplTest, ShareTilesWithNoInvalidation) {
   EXPECT_TRUE(active_tiling->TileAt(0, 1));
   EXPECT_TRUE(active_tiling->TileAt(1, 1));
 
-  EXPECT_TRUE(pending_tiling->TileAt(0, 0));
-  EXPECT_TRUE(pending_tiling->TileAt(1, 0));
-  EXPECT_TRUE(pending_tiling->TileAt(0, 1));
-  EXPECT_TRUE(pending_tiling->TileAt(1, 1));
-
-  EXPECT_EQ(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
-  EXPECT_TRUE(active_tiling->TileAt(0, 0)->is_shared());
-  EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
-  EXPECT_TRUE(active_tiling->TileAt(1, 0)->is_shared());
-  EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
-  EXPECT_TRUE(active_tiling->TileAt(0, 1)->is_shared());
-  EXPECT_EQ(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
-  EXPECT_TRUE(active_tiling->TileAt(1, 1)->is_shared());
+  EXPECT_FALSE(pending_tiling->TileAt(0, 0));
+  EXPECT_FALSE(pending_tiling->TileAt(1, 0));
+  EXPECT_FALSE(pending_tiling->TileAt(0, 1));
+  EXPECT_FALSE(pending_tiling->TileAt(1, 1));
 }
 
 TEST_F(PictureLayerImplTest, ShareInvalidActiveTreeTiles) {
@@ -2348,8 +2363,7 @@ TEST_F(PictureLayerImplTest, ShareInvalidActiveTreeTiles) {
   EXPECT_GE(active_layer_->num_tilings(), 1u);
   EXPECT_GE(pending_layer_->num_tilings(), 1u);
 
-  // The active tree invalidation was handled by the active tiles, so they
-  // can be shared with the pending tree.
+  // The active tree invalidation was handled by the active tiles.
   PictureLayerTiling* active_tiling = active_layer_->tilings()->tiling_at(0);
   PictureLayerTiling* pending_tiling = pending_layer_->tilings()->tiling_at(0);
   ASSERT_TRUE(active_tiling);
@@ -2360,19 +2374,10 @@ TEST_F(PictureLayerImplTest, ShareInvalidActiveTreeTiles) {
   EXPECT_TRUE(active_tiling->TileAt(0, 1));
   EXPECT_TRUE(active_tiling->TileAt(1, 1));
 
-  EXPECT_TRUE(pending_tiling->TileAt(0, 0));
-  EXPECT_TRUE(pending_tiling->TileAt(1, 0));
-  EXPECT_TRUE(pending_tiling->TileAt(0, 1));
-  EXPECT_TRUE(pending_tiling->TileAt(1, 1));
-
-  EXPECT_EQ(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
-  EXPECT_TRUE(active_tiling->TileAt(0, 0)->is_shared());
-  EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
-  EXPECT_TRUE(active_tiling->TileAt(1, 0)->is_shared());
-  EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
-  EXPECT_TRUE(active_tiling->TileAt(0, 1)->is_shared());
-  EXPECT_EQ(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
-  EXPECT_TRUE(active_tiling->TileAt(1, 1)->is_shared());
+  EXPECT_FALSE(pending_tiling->TileAt(0, 0));
+  EXPECT_FALSE(pending_tiling->TileAt(1, 0));
+  EXPECT_FALSE(pending_tiling->TileAt(0, 1));
+  EXPECT_FALSE(pending_tiling->TileAt(1, 1));
 }
 
 TEST_F(PictureLayerImplTest, RecreateInvalidPendingTreeTiles) {
@@ -2383,8 +2388,7 @@ TEST_F(PictureLayerImplTest, RecreateInvalidPendingTreeTiles) {
   EXPECT_GE(active_layer_->num_tilings(), 1u);
   EXPECT_GE(pending_layer_->num_tilings(), 1u);
 
-  // The pending tree invalidation means tiles can not be shared with the
-  // active tree.
+  // The pending tree invalidation creates tiles on the pending tree.
   PictureLayerTiling* active_tiling = active_layer_->tilings()->tiling_at(0);
   PictureLayerTiling* pending_tiling = pending_layer_->tilings()->tiling_at(0);
   ASSERT_TRUE(active_tiling);
@@ -2396,19 +2400,11 @@ TEST_F(PictureLayerImplTest, RecreateInvalidPendingTreeTiles) {
   EXPECT_TRUE(active_tiling->TileAt(1, 1));
 
   EXPECT_TRUE(pending_tiling->TileAt(0, 0));
-  EXPECT_TRUE(pending_tiling->TileAt(1, 0));
-  EXPECT_TRUE(pending_tiling->TileAt(0, 1));
-  EXPECT_TRUE(pending_tiling->TileAt(1, 1));
+  EXPECT_FALSE(pending_tiling->TileAt(1, 0));
+  EXPECT_FALSE(pending_tiling->TileAt(0, 1));
+  EXPECT_FALSE(pending_tiling->TileAt(1, 1));
 
   EXPECT_NE(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
-  EXPECT_FALSE(active_tiling->TileAt(0, 0)->is_shared());
-  EXPECT_FALSE(pending_tiling->TileAt(0, 0)->is_shared());
-  EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
-  EXPECT_TRUE(active_tiling->TileAt(1, 0)->is_shared());
-  EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
-  EXPECT_TRUE(active_tiling->TileAt(1, 1)->is_shared());
-  EXPECT_EQ(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
-  EXPECT_TRUE(active_tiling->TileAt(1, 1)->is_shared());
 }
 
 TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
@@ -2531,17 +2527,16 @@ TEST_F(PictureLayerImplTest, RequiredTilesWithGpuRasterization) {
   EXPECT_TRUE(host_impl_.use_gpu_rasterization());
 
   // Should only have the high-res tiling.
-  EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
+  EXPECT_EQ(1u, active_layer_->tilings()->num_tilings());
 
-  active_layer_->SetAllTilesReady();
-  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  active_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
 
   // High res tiling should have 64 tiles (4x16 tile grid).
-  EXPECT_EQ(64u, pending_layer_->HighResTiling()->AllTilesForTesting().size());
+  EXPECT_EQ(64u, active_layer_->HighResTiling()->AllTilesForTesting().size());
 
   // Visible viewport should be covered by 4 tiles.  No other
   // tiles should be required for activation.
-  EXPECT_EQ(4u, NumberOfTilesRequired(pending_layer_->HighResTiling()));
+  EXPECT_EQ(4u, NumberOfTilesRequired(active_layer_->HighResTiling()));
 }
 
 TEST_F(PictureLayerImplTest, NoTilingIfDoesNotDrawContent) {
@@ -2875,7 +2870,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
       pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
-    TilePriority priority = tile->priority(PENDING_TREE);
+    TilePriority priority = tile->priority();
 
     EXPECT_TRUE(tile);
 
@@ -2949,7 +2944,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
       pending_layer_->picture_layer_tiling_set(), false));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
-    TilePriority priority = tile->priority(PENDING_TREE);
+    TilePriority priority = tile->priority();
 
     EXPECT_TRUE(tile);
 
@@ -2991,7 +2986,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
       pending_layer_->picture_layer_tiling_set(), true));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
-    TilePriority priority = tile->priority(PENDING_TREE);
+    TilePriority priority = tile->priority();
 
     EXPECT_TRUE(tile);
 
@@ -3137,7 +3132,7 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
 
     EXPECT_TRUE(tile);
 
-    TilePriority priority = tile->priority(PENDING_TREE);
+    TilePriority priority = tile->priority();
 
     if (priority.priority_bin == TilePriority::NOW) {
       reached_visible = true;
@@ -3161,7 +3156,7 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
         std::abs(tile->contents_scale() - last_tile->contents_scale()) <
             std::numeric_limits<float>::epsilon()) {
       if (priority.distance_to_visible <=
-          last_tile->priority(PENDING_TREE).distance_to_visible)
+          last_tile->priority().distance_to_visible)
         ++distance_decreasing;
       else
         ++distance_increasing;
@@ -3183,7 +3178,7 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
     Tile* tile = queue->Top();
     EXPECT_TRUE(tile);
 
-    TilePriority priority = tile->priority(PENDING_TREE);
+    TilePriority priority = tile->priority();
     EXPECT_EQ(TilePriority::NOW, priority.priority_bin);
 
     if (reached_required) {
@@ -3304,7 +3299,7 @@ TEST_F(PictureLayerImplTest, LowResReadyToDrawNotEnoughToActivate) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
 
-  // Make sure some tiles are not shared.
+  // Make sure pending tree has tiles.
   gfx::Rect invalidation(gfx::Point(50, 50), tile_size);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, invalidation);
 
@@ -3313,12 +3308,14 @@ TEST_F(PictureLayerImplTest, LowResReadyToDrawNotEnoughToActivate) {
 
   // Initialize all low-res tiles.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->LowResTiling());
+  pending_layer_->SetAllTilesReadyInTiling(active_layer_->LowResTiling());
 
   // Low-res tiles should not be enough.
   EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
   // Initialize remaining tiles.
   pending_layer_->SetAllTilesReady();
+  active_layer_->SetAllTilesReady();
 
   EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
@@ -3327,7 +3324,7 @@ TEST_F(PictureLayerImplTest, HighResReadyToDrawEnoughToActivate) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
 
-  // Make sure some tiles are not shared.
+  // Make sure pending tree has tiles.
   gfx::Rect invalidation(gfx::Point(50, 50), tile_size);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, invalidation);
 
@@ -3336,17 +3333,18 @@ TEST_F(PictureLayerImplTest, HighResReadyToDrawEnoughToActivate) {
 
   // Initialize all high-res tiles.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
+  active_layer_->SetAllTilesReadyInTiling(active_layer_->HighResTiling());
 
   // High-res tiles should be enough, since they cover everything visible.
   EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
 
 TEST_F(PictureLayerImplTest,
-       SharedActiveHighResReadyAndPendingLowResReadyNotEnoughToActivate) {
+       ActiveHighResReadyAndPendingLowResReadyNotEnoughToActivate) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
 
-  // Make sure some tiles are not shared.
+  // Make sure pending tree has tiles.
   gfx::Rect invalidation(gfx::Point(50, 50), tile_size);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, invalidation);
 
@@ -3355,29 +3353,29 @@ TEST_F(PictureLayerImplTest,
   // And all the low-res tiles in the pending layer.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->LowResTiling());
 
-  // The unshared high-res tiles are not ready, so we cannot activate.
+  // The pending high-res tiles are not ready, so we cannot activate.
   EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
-  // When the unshared pending high-res tiles are ready, we can activate.
+  // When the pending high-res tiles are ready, we can activate.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
   EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
 
-TEST_F(PictureLayerImplTest, SharedActiveHighResReadyNotEnoughToActivate) {
+TEST_F(PictureLayerImplTest, ActiveHighResReadyNotEnoughToActivate) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
 
-  // Make sure some tiles are not shared.
+  // Make sure pending tree has tiles.
   gfx::Rect invalidation(gfx::Point(50, 50), tile_size);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, invalidation);
 
   // Initialize all high-res tiles in the active layer.
   active_layer_->SetAllTilesReadyInTiling(active_layer_->HighResTiling());
 
-  // The unshared high-res tiles are not ready, so we cannot activate.
+  // The pending high-res tiles are not ready, so we cannot activate.
   EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
-  // When the unshared pending high-res tiles are ready, we can activate.
+  // When the pending pending high-res tiles are ready, we can activate.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
   EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
@@ -3504,7 +3502,7 @@ TEST_F(NoLowResPictureLayerImplTest, PendingLayerOnlyHasHighResTiling) {
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
 }
 
-TEST_F(NoLowResPictureLayerImplTest, AllHighResRequiredEvenIfShared) {
+TEST_F(NoLowResPictureLayerImplTest, AllHighResRequiredEvenIfNotChanged) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);
 
@@ -3514,15 +3512,18 @@ TEST_F(NoLowResPictureLayerImplTest, AllHighResRequiredEvenIfShared) {
       active_layer_->HighResTiling()->AllTilesForTesting()[0];
   EXPECT_FALSE(some_active_tile->IsReadyToDraw());
 
-  // All tiles shared (no invalidation), so even though the active tree's
-  // tiles aren't ready, there is nothing required.
-  pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
+  // Since there is no invalidation, pending tree should have no tiles.
+  EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
   if (host_impl_.settings().create_low_res_tiling)
-    pending_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+    EXPECT_TRUE(pending_layer_->LowResTiling()->AllTilesForTesting().empty());
 
-  AssertAllTilesRequired(pending_layer_->HighResTiling());
+  active_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
   if (host_impl_.settings().create_low_res_tiling)
-    AssertNoTilesRequired(pending_layer_->LowResTiling());
+    active_layer_->LowResTiling()->UpdateAllTilePrioritiesForTesting();
+
+  AssertAllTilesRequired(active_layer_->HighResTiling());
+  if (host_impl_.settings().create_low_res_tiling)
+    AssertNoTilesRequired(active_layer_->LowResTiling());
 }
 
 TEST_F(NoLowResPictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
@@ -3908,11 +3909,10 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
   void VerifyEvictionConsidersOcclusion(FakePictureLayerImpl* layer,
                                         FakePictureLayerImpl* twin_layer,
                                         WhichTree tree,
-                                        size_t expected_occluded_tile_count) {
-    WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
+                                        size_t expected_occluded_tile_count,
+                                        int source_line) {
     size_t occluded_tile_count = 0u;
     Tile* last_tile = nullptr;
-    std::set<Tile*> shared_tiles;
 
     scoped_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
         layer->picture_layer_tiling_set(), layer && twin_layer));
@@ -3920,73 +3920,32 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
       Tile* tile = queue->Top();
       if (!last_tile)
         last_tile = tile;
-      if (tile->is_shared())
-        EXPECT_TRUE(shared_tiles.insert(tile).second);
 
       // The only way we will encounter an occluded tile after an unoccluded
       // tile is if the priorty bin decreased, the tile is required for
       // activation, or the scale changed.
-      bool tile_is_occluded = tile->is_occluded(tree);
+      bool tile_is_occluded = tile->is_occluded();
       if (tile_is_occluded) {
         occluded_tile_count++;
 
-        bool last_tile_is_occluded = last_tile->is_occluded(tree);
+        bool last_tile_is_occluded = last_tile->is_occluded();
         if (!last_tile_is_occluded) {
           TilePriority::PriorityBin tile_priority_bin =
-              tile->priority(tree).priority_bin;
+              tile->priority().priority_bin;
           TilePriority::PriorityBin last_tile_priority_bin =
-              last_tile->priority(tree).priority_bin;
+              last_tile->priority().priority_bin;
 
           EXPECT_TRUE(tile_priority_bin < last_tile_priority_bin ||
                       tile->required_for_activation() ||
-                      tile->contents_scale() != last_tile->contents_scale());
+                      tile->contents_scale() != last_tile->contents_scale())
+              << "line: " << source_line;
         }
       }
       last_tile = tile;
       queue->Pop();
     }
-    // Count also shared tiles which are occluded in the tree but which were
-    // not returned by the tiling set eviction queue. Those shared tiles
-    // shall be returned by the twin tiling set eviction queue.
-    queue.reset(new TilingSetEvictionQueue(
-        twin_layer->picture_layer_tiling_set(), layer && twin_layer));
-    while (!queue->IsEmpty()) {
-      Tile* tile = queue->Top();
-      if (tile->is_shared()) {
-        EXPECT_TRUE(shared_tiles.insert(tile).second);
-        if (tile->is_occluded(tree))
-          ++occluded_tile_count;
-        // Check the reasons why the shared tile was not returned by
-        // the first tiling set eviction queue.
-        const TilePriority& combined_priority = tile->combined_priority();
-        const TilePriority& priority = tile->priority(tree);
-        const TilePriority& twin_priority = tile->priority(twin_tree);
-        // Check if the shared tile was not returned by the first tiling
-        // set eviction queue because it was out of order for the first
-        // tiling set eviction queue but not for the twin tiling set
-        // eviction queue.
-        if (priority.priority_bin != twin_priority.priority_bin) {
-          EXPECT_LT(combined_priority.priority_bin, priority.priority_bin);
-          EXPECT_EQ(combined_priority.priority_bin, twin_priority.priority_bin);
-        } else if (tile->is_occluded(tree) != tile->is_occluded(twin_tree)) {
-          EXPECT_TRUE(tile->is_occluded(tree));
-          EXPECT_FALSE(tile->is_occluded(twin_tree));
-          EXPECT_FALSE(tile->is_occluded_combined());
-        } else if (priority.distance_to_visible !=
-                   twin_priority.distance_to_visible) {
-          EXPECT_LT(combined_priority.distance_to_visible,
-                    priority.distance_to_visible);
-          EXPECT_EQ(combined_priority.distance_to_visible,
-                    twin_priority.distance_to_visible);
-        } else {
-          // Shared tiles having the same active and pending priorities
-          // should be returned only by a pending tree eviction queue.
-          EXPECT_EQ(ACTIVE_TREE, tree);
-        }
-      }
-      queue->Pop();
-    }
-    EXPECT_EQ(expected_occluded_tile_count, occluded_tile_count);
+    EXPECT_EQ(expected_occluded_tile_count, occluded_tile_count)
+        << "line: " << source_line;
   }
 };
 
@@ -4016,7 +3975,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
     Tile* tile = queue->Top();
 
     // Occluded tiles should not be iterated over.
-    EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
+    EXPECT_FALSE(tile->is_occluded());
 
     // Some tiles may not be visible (i.e. outside the viewport). The rest are
     // visible and at least partially unoccluded, verified by the above expect.
@@ -4049,7 +4008,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
 
-    EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
+    EXPECT_FALSE(tile->is_occluded());
 
     bool tile_is_visible =
         tile->content_rect().Intersects(pending_layer_->visible_content_rect());
@@ -4073,7 +4032,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
 
-    EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
+    EXPECT_FALSE(tile->is_occluded());
 
     bool tile_is_visible =
         tile->content_rect().Intersects(pending_layer_->visible_content_rect());
@@ -4106,6 +4065,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   int occluded_tile_count = 0;
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
+    tiling->UpdateAllTilePrioritiesForTesting();
 
     occluded_tile_count = 0;
     for (PictureLayerTiling::CoverageIterator iter(
@@ -4119,7 +4079,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
       const Tile* tile = *iter;
 
       // Fully occluded tiles are not required for activation.
-      if (tile->is_occluded(PENDING_TREE)) {
+      if (tile->is_occluded()) {
         EXPECT_FALSE(tile->required_for_activation());
         occluded_tile_count++;
       }
@@ -4157,7 +4117,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         continue;
       const Tile* tile = *iter;
 
-      if (tile->is_occluded(PENDING_TREE)) {
+      if (tile->is_occluded()) {
         EXPECT_FALSE(tile->required_for_activation());
         occluded_tile_count++;
       }
@@ -4197,7 +4157,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         continue;
       const Tile* tile = *iter;
 
-      if (tile->is_occluded(PENDING_TREE)) {
+      if (tile->is_occluded()) {
         EXPECT_FALSE(tile->required_for_activation());
         occluded_tile_count++;
       }
@@ -4267,7 +4227,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
 
     occluded_tile_count = 0;
     for (size_t j = 0; j < tiles.size(); ++j) {
-      if (tiles[j]->is_occluded(PENDING_TREE)) {
+      if (tiles[j]->is_occluded()) {
         gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
             tiles[j]->content_rect(), 1.0f / tiles[j]->contents_scale());
         EXPECT_GE(scaled_content_rect.x(), occluding_layer_position.x());
@@ -4321,50 +4281,33 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
 
   ActivateTree();
 
-  // Partially invalidate the pending layer.
-  SetupPendingTreeWithInvalidation(pending_pile, invalidation_rect);
-
-  for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
-    PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
+  for (size_t i = 0; i < active_layer_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = active_layer_->tilings()->tiling_at(i);
     tiling->UpdateAllTilePrioritiesForTesting();
 
-    for (PictureLayerTiling::CoverageIterator iter(
-             tiling,
-             pending_layer_->contents_scale_x(),
-             gfx::Rect(layer_bounds));
-         iter;
-         ++iter) {
+    for (
+        PictureLayerTiling::CoverageIterator iter(
+            tiling, active_layer_->contents_scale_x(), gfx::Rect(layer_bounds));
+        iter; ++iter) {
       if (!*iter)
         continue;
       const Tile* tile = *iter;
 
-      // All tiles are unoccluded on the pending tree.
-      EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
-
-      Tile* twin_tile = pending_layer_->GetPendingOrActiveTwinTiling(tiling)
-                            ->TileAt(iter.i(), iter.j());
       gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
           tile->content_rect(), 1.0f / tile->contents_scale());
-
-      if (scaled_content_rect.Intersects(invalidation_rect)) {
-        // Tiles inside the invalidation rect are only on the pending tree.
-        EXPECT_NE(tile, twin_tile);
-
-        // Unshared tiles should be unoccluded on the active tree by default.
-        EXPECT_FALSE(tile->is_occluded(ACTIVE_TREE));
-      } else {
-        // Tiles outside the invalidation rect are shared between both trees.
-        EXPECT_EQ(tile, twin_tile);
-        // Shared tiles are occluded on the active tree iff they lie beneath the
-        // occluding layer.
-        EXPECT_EQ(tile->is_occluded(ACTIVE_TREE),
-                  scaled_content_rect.x() >= occluding_layer_position.x());
-      }
+      // Tiles are occluded on the active tree iff they lie beneath the
+      // occluding layer.
+      EXPECT_EQ(tile->is_occluded(),
+                scaled_content_rect.x() >= occluding_layer_position.x());
     }
   }
 
+  // Partially invalidate the pending layer.
+  SetupPendingTreeWithInvalidation(pending_pile, invalidation_rect);
+
   for (size_t i = 0; i < active_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = active_layer_->tilings()->tiling_at(i);
+    tiling->UpdateAllTilePrioritiesForTesting();
 
     for (PictureLayerTiling::CoverageIterator iter(
              tiling,
@@ -4376,24 +4319,24 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
         continue;
       const Tile* tile = *iter;
 
+      // All tiles are unoccluded, because the pending tree has no occlusion.
+      EXPECT_FALSE(tile->is_occluded());
+      EXPECT_FALSE(tile->is_occluded());
+
       Tile* twin_tile = active_layer_->GetPendingOrActiveTwinTiling(tiling)
                             ->TileAt(iter.i(), iter.j());
       gfx::Rect scaled_content_rect = ScaleToEnclosingRect(
           tile->content_rect(), 1.0f / tile->contents_scale());
 
-      // Since we've already checked the shared tiles, only consider tiles in
-      // the invalidation rect.
       if (scaled_content_rect.Intersects(invalidation_rect)) {
-        // Tiles inside the invalidation rect are only on the active tree.
+        // Tiles inside the invalidation rect exist on both trees.
+        EXPECT_TRUE(tile);
+        EXPECT_TRUE(twin_tile);
         EXPECT_NE(tile, twin_tile);
-
-        // Unshared tiles should be unoccluded on the pending tree by default.
-        EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
-
-        // Unshared tiles are occluded on the active tree iff they lie beneath
-        // the occluding layer.
-        EXPECT_EQ(tile->is_occluded(ACTIVE_TREE),
-                  scaled_content_rect.x() >= occluding_layer_position.x());
+      } else {
+        // Tiles outside the invalidation rect only exist on the active tree.
+        EXPECT_TRUE(tile);
+        EXPECT_FALSE(twin_tile);
       }
     }
   }
@@ -4411,7 +4354,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   gfx::Size viewport_size(1000, 1000);
   gfx::Point pending_occluding_layer_position(310, 0);
   gfx::Point active_occluding_layer_position(0, 310);
-  gfx::Rect invalidation_rect(230, 230, 102, 102);
+  gfx::Rect invalidation_rect(230, 230, 152, 152);
 
   host_impl_.SetViewportSize(viewport_size);
   host_impl_.SetDeviceScaleFactor(2.f);
@@ -4435,7 +4378,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   ActivateTree();
 
   // Partially invalidate the pending layer. Tiles inside the invalidation rect
-  // are not shared between trees.
+  // are created.
   SetupPendingTreeWithFixedTileSize(pending_pile, tile_size, invalidation_rect);
 
   // Partially occlude the pending layer in a different way.
@@ -4459,11 +4402,9 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // The expected number of occluded tiles on each of the 2 tilings for each of
   // the 3 tree priorities.
-  size_t expected_occluded_tile_count_on_both[] = {9u, 1u};
-  size_t expected_occluded_tile_count_on_active[] = {30u, 3u};
-  size_t expected_occluded_tile_count_on_pending[] = {30u, 3u};
-
-  size_t total_expected_occluded_tile_count_on_trees[] = {33u, 33u};
+  size_t expected_occluded_tile_count_on_pending[] = {4u, 0u};
+  size_t expected_occluded_tile_count_on_active[] = {12u, 1u};
+  size_t total_expected_occluded_tile_count_on_trees[] = {13u, 4u};
 
   // Verify number of occluded tiles on the pending layer for each tiling.
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
@@ -4471,30 +4412,23 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
     tiling->UpdateAllTilePrioritiesForTesting();
 
     size_t occluded_tile_count_on_pending = 0u;
-    size_t occluded_tile_count_on_active = 0u;
-    size_t occluded_tile_count_on_both = 0u;
     for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f,
                                                    gfx::Rect(layer_bounds));
          iter; ++iter) {
       Tile* tile = *iter;
 
+      if (invalidation_rect.Intersects(iter.geometry_rect()))
+        EXPECT_TRUE(tile);
+      else
+        EXPECT_FALSE(tile);
+
       if (!tile)
         continue;
-      if (tile->is_occluded(PENDING_TREE))
+      if (tile->is_occluded())
         occluded_tile_count_on_pending++;
-      if (tile->is_occluded(ACTIVE_TREE))
-        occluded_tile_count_on_active++;
-      if (tile->is_occluded(PENDING_TREE) && tile->is_occluded(ACTIVE_TREE))
-        occluded_tile_count_on_both++;
     }
     EXPECT_EQ(expected_occluded_tile_count_on_pending[i],
               occluded_tile_count_on_pending)
-        << tiling->contents_scale();
-    EXPECT_EQ(expected_occluded_tile_count_on_active[i],
-              occluded_tile_count_on_active)
-        << tiling->contents_scale();
-    EXPECT_EQ(expected_occluded_tile_count_on_both[i],
-              occluded_tile_count_on_both)
         << tiling->contents_scale();
   }
 
@@ -4503,9 +4437,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
     PictureLayerTiling* tiling = active_layer_->tilings()->tiling_at(i);
     tiling->UpdateAllTilePrioritiesForTesting();
 
-    size_t occluded_tile_count_on_pending = 0u;
     size_t occluded_tile_count_on_active = 0u;
-    size_t occluded_tile_count_on_both = 0u;
     for (PictureLayerTiling::CoverageIterator iter(
              tiling,
              pending_layer_->contents_scale_x(),
@@ -4516,21 +4448,11 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
       if (!tile)
         continue;
-      if (tile->is_occluded(PENDING_TREE))
-        occluded_tile_count_on_pending++;
-      if (tile->is_occluded(ACTIVE_TREE))
+      if (tile->is_occluded())
         occluded_tile_count_on_active++;
-      if (tile->is_occluded(PENDING_TREE) && tile->is_occluded(ACTIVE_TREE))
-        occluded_tile_count_on_both++;
     }
-    EXPECT_EQ(expected_occluded_tile_count_on_pending[i],
-              occluded_tile_count_on_pending)
-        << i;
     EXPECT_EQ(expected_occluded_tile_count_on_active[i],
               occluded_tile_count_on_active)
-        << i;
-    EXPECT_EQ(expected_occluded_tile_count_on_both[i],
-              occluded_tile_count_on_both)
         << i;
   }
 
@@ -4540,32 +4462,39 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
     std::vector<Tile*> tiles = tiling->AllTilesForTesting();
     all_tiles.insert(all_tiles.end(), tiles.begin(), tiles.end());
   }
+  for (size_t i = 0; i < active_layer_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = active_layer_->tilings()->tiling_at(i);
+    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
+    all_tiles.insert(all_tiles.end(), tiles.begin(), tiles.end());
+  }
 
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
 
   VerifyEvictionConsidersOcclusion(
       pending_layer_, active_layer_, PENDING_TREE,
-      total_expected_occluded_tile_count_on_trees[PENDING_TREE]);
+      total_expected_occluded_tile_count_on_trees[PENDING_TREE], __LINE__);
   VerifyEvictionConsidersOcclusion(
       active_layer_, pending_layer_, ACTIVE_TREE,
-      total_expected_occluded_tile_count_on_trees[ACTIVE_TREE]);
+      total_expected_occluded_tile_count_on_trees[ACTIVE_TREE], __LINE__);
 
   // Repeat the tests without valid active tree priorities.
   active_layer_->set_has_valid_tile_priorities(false);
   VerifyEvictionConsidersOcclusion(
       pending_layer_, active_layer_, PENDING_TREE,
-      total_expected_occluded_tile_count_on_trees[PENDING_TREE]);
+      total_expected_occluded_tile_count_on_trees[PENDING_TREE], __LINE__);
   VerifyEvictionConsidersOcclusion(
-      active_layer_, pending_layer_, ACTIVE_TREE, 0u);
+      active_layer_, pending_layer_, ACTIVE_TREE,
+      total_expected_occluded_tile_count_on_trees[ACTIVE_TREE], __LINE__);
   active_layer_->set_has_valid_tile_priorities(true);
 
   // Repeat the tests without valid pending tree priorities.
   pending_layer_->set_has_valid_tile_priorities(false);
   VerifyEvictionConsidersOcclusion(
       active_layer_, pending_layer_, ACTIVE_TREE,
-      total_expected_occluded_tile_count_on_trees[ACTIVE_TREE]);
+      total_expected_occluded_tile_count_on_trees[ACTIVE_TREE], __LINE__);
   VerifyEvictionConsidersOcclusion(
-      pending_layer_, active_layer_, PENDING_TREE, 0u);
+      pending_layer_, active_layer_, PENDING_TREE,
+      total_expected_occluded_tile_count_on_trees[PENDING_TREE], __LINE__);
   pending_layer_->set_has_valid_tile_priorities(true);
 }
 
@@ -4794,6 +4723,13 @@ TEST_F(PictureLayerImplTest, ChangeInViewportAllowsTilingUpdates) {
     if (*iter)
       tiles.push_back(*iter);
   }
+  for (PictureLayerTiling::CoverageIterator iter(
+           active_layer_->HighResTiling(), 1.f,
+           active_layer_->HighResTiling()->GetCurrentVisibleRectForTesting());
+       iter; ++iter) {
+    if (*iter)
+      tiles.push_back(*iter);
+  }
 
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
 
@@ -4823,8 +4759,8 @@ TEST_F(PictureLayerImplTest, CloneMissingRecordings) {
   PictureLayerTiling* pending_tiling = old_pending_layer_->HighResTiling();
   PictureLayerTiling* active_tiling = active_layer_->HighResTiling();
 
-  // We should have all tiles in both tile sets.
-  EXPECT_EQ(5u * 5u, pending_tiling->AllTilesForTesting().size());
+  // We should have all tiles on active, and none on pending.
+  EXPECT_EQ(0u, pending_tiling->AllTilesForTesting().size());
   EXPECT_EQ(5u * 5u, active_tiling->AllTilesForTesting().size());
 
   // Now put a partially-recorded pile on the pending tree (and invalidate
@@ -4852,16 +4788,19 @@ TEST_F(PictureLayerImplTest, CloneMissingRecordings) {
   SetupPendingTreeWithFixedTileSize(filled_pile, tile_size,
                                     Region(gfx::Rect(layer_bounds)));
   EXPECT_EQ(5u * 5u, pending_tiling->AllTilesForTesting().size());
+  Tile* tile00 = pending_tiling->TileAt(0, 0);
+  Tile* tile11 = pending_tiling->TileAt(1, 1);
+  Tile* tile22 = pending_tiling->TileAt(2, 2);
 
   // Active is not affected yet.
   EXPECT_EQ(3u * 3u, active_tiling->AllTilesForTesting().size());
 
-  // Activate the tree. The tiles are created and shared on the active tree.
+  // Activate the tree. The tiles are moved to the active tree.
   ActivateTree();
   EXPECT_EQ(5u * 5u, active_tiling->AllTilesForTesting().size());
-  EXPECT_TRUE(active_tiling->TileAt(0, 0)->is_shared());
-  EXPECT_TRUE(active_tiling->TileAt(1, 1)->is_shared());
-  EXPECT_TRUE(active_tiling->TileAt(2, 2)->is_shared());
+  EXPECT_EQ(tile00, active_tiling->TileAt(0, 0));
+  EXPECT_EQ(tile11, active_tiling->TileAt(1, 1));
+  EXPECT_EQ(tile22, active_tiling->TileAt(2, 2));
 }
 
 class TileSizeSettings : public ImplSidePaintingSettings {

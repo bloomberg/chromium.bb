@@ -12,6 +12,12 @@
 
 namespace cc {
 
+TilingSetRasterQueueAll::IterationStage::IterationStage(
+    IteratorType type,
+    TilePriority::PriorityBin bin)
+    : iterator_type(type), tile_type(bin) {
+}
+
 TilingSetRasterQueueAll::TilingSetRasterQueueAll(
     PictureLayerTilingSet* tiling_set,
     bool prioritize_low_res)
@@ -19,39 +25,73 @@ TilingSetRasterQueueAll::TilingSetRasterQueueAll(
   DCHECK(tiling_set_);
 
   // Early out if the tiling set has no tilings.
-  if (!tiling_set_->num_tilings()) {
-    current_stage_ = arraysize(stages_);
+  if (!tiling_set_->num_tilings())
     return;
-  }
 
+  const PictureLayerTilingClient* client = tiling_set->client();
+  WhichTree tree = client->GetTree();
   // Find high and low res tilings and initialize the iterators.
+  PictureLayerTiling* high_res_tiling = nullptr;
+  PictureLayerTiling* low_res_tiling = nullptr;
+  // This variable would point to a tiling that has a NON_IDEAL_RESOLUTION
+  // resolution on the active tree, but HIGH_RESOLUTION on the pending tree.
+  // These tilings are the only non-ideal tilings that could have required for
+  // activation tiles, so they need to be considered for rasterization.
+  PictureLayerTiling* active_non_ideal_pending_high_res_tiling = nullptr;
   for (size_t i = 0; i < tiling_set_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tiling_set_->tiling_at(i);
     if (tiling->resolution() == HIGH_RESOLUTION)
-      iterators_[HIGH_RES] = TilingIterator(tiling, &tiling->tiling_data_);
+      high_res_tiling = tiling;
     if (prioritize_low_res && tiling->resolution() == LOW_RESOLUTION)
-      iterators_[LOW_RES] = TilingIterator(tiling, &tiling->tiling_data_);
+      low_res_tiling = tiling;
+    if (tree == ACTIVE_TREE && tiling->resolution() == NON_IDEAL_RESOLUTION) {
+      const PictureLayerTiling* twin =
+          client->GetPendingOrActiveTwinTiling(tiling);
+      if (twin && twin->resolution() == HIGH_RESOLUTION)
+        active_non_ideal_pending_high_res_tiling = tiling;
+    }
   }
 
-  if (prioritize_low_res) {
-    stages_[0].iterator_type = LOW_RES;
-    stages_[0].tile_type = TilePriority::NOW;
-
-    stages_[1].iterator_type = HIGH_RES;
-    stages_[1].tile_type = TilePriority::NOW;
-  } else {
-    stages_[0].iterator_type = HIGH_RES;
-    stages_[0].tile_type = TilePriority::NOW;
-
-    stages_[1].iterator_type = LOW_RES;
-    stages_[1].tile_type = TilePriority::NOW;
+  bool use_low_res_tiling = low_res_tiling && low_res_tiling->has_tiles();
+  if (use_low_res_tiling && prioritize_low_res) {
+    iterators_[LOW_RES] =
+        TilingIterator(low_res_tiling, &low_res_tiling->tiling_data_);
+    stages_->push_back(IterationStage(LOW_RES, TilePriority::NOW));
   }
 
-  stages_[2].iterator_type = HIGH_RES;
-  stages_[2].tile_type = TilePriority::SOON;
+  DCHECK(high_res_tiling);
+  bool use_high_res_tiling = high_res_tiling->has_tiles();
+  if (use_high_res_tiling) {
+    iterators_[HIGH_RES] =
+        TilingIterator(high_res_tiling, &high_res_tiling->tiling_data_);
+    stages_->push_back(IterationStage(HIGH_RES, TilePriority::NOW));
+  }
 
-  stages_[3].iterator_type = HIGH_RES;
-  stages_[3].tile_type = TilePriority::EVENTUALLY;
+  if (low_res_tiling && !prioritize_low_res) {
+    iterators_[LOW_RES] =
+        TilingIterator(low_res_tiling, &low_res_tiling->tiling_data_);
+    stages_->push_back(IterationStage(LOW_RES, TilePriority::NOW));
+  }
+
+  if (active_non_ideal_pending_high_res_tiling &&
+      active_non_ideal_pending_high_res_tiling->has_tiles()) {
+    iterators_[ACTIVE_NON_IDEAL_PENDING_HIGH_RES] =
+        TilingIterator(active_non_ideal_pending_high_res_tiling,
+                       &active_non_ideal_pending_high_res_tiling->tiling_data_);
+
+    stages_->push_back(
+        IterationStage(ACTIVE_NON_IDEAL_PENDING_HIGH_RES, TilePriority::NOW));
+    stages_->push_back(
+        IterationStage(ACTIVE_NON_IDEAL_PENDING_HIGH_RES, TilePriority::SOON));
+  }
+
+  if (use_high_res_tiling) {
+    stages_->push_back(IterationStage(HIGH_RES, TilePriority::SOON));
+    stages_->push_back(IterationStage(HIGH_RES, TilePriority::EVENTUALLY));
+  }
+
+  if (stages_->empty())
+    return;
 
   IteratorType index = stages_[current_stage_].iterator_type;
   TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
@@ -63,7 +103,7 @@ TilingSetRasterQueueAll::~TilingSetRasterQueueAll() {
 }
 
 bool TilingSetRasterQueueAll::IsEmpty() const {
-  return current_stage_ >= arraysize(stages_);
+  return current_stage_ >= stages_->size();
 }
 
 void TilingSetRasterQueueAll::Pop() {
@@ -100,9 +140,9 @@ const Tile* TilingSetRasterQueueAll::Top() const {
 }
 
 void TilingSetRasterQueueAll::AdvanceToNextStage() {
-  DCHECK_LT(current_stage_, arraysize(stages_));
+  DCHECK_LT(current_stage_, stages_->size());
   ++current_stage_;
-  while (current_stage_ < arraysize(stages_)) {
+  while (current_stage_ < stages_->size()) {
     IteratorType index = stages_[current_stage_].iterator_type;
     TilePriority::PriorityBin tile_type = stages_[current_stage_].tile_type;
 
@@ -173,11 +213,33 @@ TilingSetRasterQueueAll::VisibleTilingIterator&
   return *this;
 }
 
+// PendingVisibleTilingIterator.
+TilingSetRasterQueueAll::PendingVisibleTilingIterator::
+    PendingVisibleTilingIterator(PictureLayerTiling* tiling,
+                                 TilingData* tiling_data)
+    : OnePriorityRectIterator(tiling, tiling_data) {
+  iterator_ = TilingData::DifferenceIterator(tiling_data_,
+                                             tiling_->pending_visible_rect(),
+                                             tiling_->current_visible_rect());
+  if (!iterator_)
+    return;
+  if (!GetFirstTileAndCheckIfValid(&iterator_))
+    ++(*this);
+}
+
+TilingSetRasterQueueAll::PendingVisibleTilingIterator&
+    TilingSetRasterQueueAll::PendingVisibleTilingIterator::
+    operator++() {
+  AdvanceToNextTile(&iterator_);
+  return *this;
+}
+
 // SkewportTilingIterator.
 TilingSetRasterQueueAll::SkewportTilingIterator::SkewportTilingIterator(
     PictureLayerTiling* tiling,
     TilingData* tiling_data)
-    : OnePriorityRectIterator(tiling, tiling_data) {
+    : OnePriorityRectIterator(tiling, tiling_data),
+      pending_visible_rect_(tiling->pending_visible_rect()) {
   if (!tiling_->has_skewport_rect_tiles())
     return;
   iterator_ = TilingData::SpiralDifferenceIterator(
@@ -185,7 +247,11 @@ TilingSetRasterQueueAll::SkewportTilingIterator::SkewportTilingIterator(
       tiling_->current_visible_rect(), tiling_->current_visible_rect());
   if (!iterator_)
     return;
-  if (!GetFirstTileAndCheckIfValid(&iterator_))
+  if (!GetFirstTileAndCheckIfValid(&iterator_)) {
+    ++(*this);
+    return;
+  }
+  if (tile_->content_rect().Intersects(pending_visible_rect_))
     ++(*this);
 }
 
@@ -193,6 +259,11 @@ TilingSetRasterQueueAll::SkewportTilingIterator&
     TilingSetRasterQueueAll::SkewportTilingIterator::
     operator++() {
   AdvanceToNextTile(&iterator_);
+  while (!done()) {
+    if (!tile_->content_rect().Intersects(pending_visible_rect_))
+      break;
+    AdvanceToNextTile(&iterator_);
+  }
   return *this;
 }
 
@@ -200,7 +271,8 @@ TilingSetRasterQueueAll::SkewportTilingIterator&
 TilingSetRasterQueueAll::SoonBorderTilingIterator::SoonBorderTilingIterator(
     PictureLayerTiling* tiling,
     TilingData* tiling_data)
-    : OnePriorityRectIterator(tiling, tiling_data) {
+    : OnePriorityRectIterator(tiling, tiling_data),
+      pending_visible_rect_(tiling->pending_visible_rect()) {
   if (!tiling_->has_soon_border_rect_tiles())
     return;
   iterator_ = TilingData::SpiralDifferenceIterator(
@@ -208,7 +280,11 @@ TilingSetRasterQueueAll::SoonBorderTilingIterator::SoonBorderTilingIterator(
       tiling_->current_skewport_rect(), tiling_->current_visible_rect());
   if (!iterator_)
     return;
-  if (!GetFirstTileAndCheckIfValid(&iterator_))
+  if (!GetFirstTileAndCheckIfValid(&iterator_)) {
+    ++(*this);
+    return;
+  }
+  if (tile_->content_rect().Intersects(pending_visible_rect_))
     ++(*this);
 }
 
@@ -216,6 +292,11 @@ TilingSetRasterQueueAll::SoonBorderTilingIterator&
     TilingSetRasterQueueAll::SoonBorderTilingIterator::
     operator++() {
   AdvanceToNextTile(&iterator_);
+  while (!done()) {
+    if (!tile_->content_rect().Intersects(pending_visible_rect_))
+      break;
+    AdvanceToNextTile(&iterator_);
+  }
   return *this;
 }
 
@@ -223,7 +304,8 @@ TilingSetRasterQueueAll::SoonBorderTilingIterator&
 TilingSetRasterQueueAll::EventuallyTilingIterator::EventuallyTilingIterator(
     PictureLayerTiling* tiling,
     TilingData* tiling_data)
-    : OnePriorityRectIterator(tiling, tiling_data) {
+    : OnePriorityRectIterator(tiling, tiling_data),
+      pending_visible_rect_(tiling->pending_visible_rect()) {
   if (!tiling_->has_eventually_rect_tiles())
     return;
   iterator_ = TilingData::SpiralDifferenceIterator(
@@ -231,7 +313,11 @@ TilingSetRasterQueueAll::EventuallyTilingIterator::EventuallyTilingIterator(
       tiling_->current_skewport_rect(), tiling_->current_soon_border_rect());
   if (!iterator_)
     return;
-  if (!GetFirstTileAndCheckIfValid(&iterator_))
+  if (!GetFirstTileAndCheckIfValid(&iterator_)) {
+    ++(*this);
+    return;
+  }
+  if (tile_->content_rect().Intersects(pending_visible_rect_))
     ++(*this);
 }
 
@@ -239,6 +325,11 @@ TilingSetRasterQueueAll::EventuallyTilingIterator&
     TilingSetRasterQueueAll::EventuallyTilingIterator::
     operator++() {
   AdvanceToNextTile(&iterator_);
+  while (!done()) {
+    if (!tile_->content_rect().Intersects(pending_visible_rect_))
+      break;
+    AdvanceToNextTile(&iterator_);
+  }
   return *this;
 }
 
@@ -262,6 +353,9 @@ TilingSetRasterQueueAll::TilingIterator::TilingIterator(
   current_tile_ = *visible_iterator_;
 }
 
+TilingSetRasterQueueAll::TilingIterator::~TilingIterator() {
+}
+
 void TilingSetRasterQueueAll::TilingIterator::AdvancePhase() {
   DCHECK_LT(phase_, EVENTUALLY_RECT);
 
@@ -272,6 +366,12 @@ void TilingSetRasterQueueAll::TilingIterator::AdvancePhase() {
       case VISIBLE_RECT:
         NOTREACHED();
         return;
+      case PENDING_VISIBLE_RECT:
+        pending_visible_iterator_ =
+            PendingVisibleTilingIterator(tiling_, tiling_data_);
+        if (!pending_visible_iterator_.done())
+          current_tile_ = *pending_visible_iterator_;
+        break;
       case SKEWPORT_RECT:
         skewport_iterator_ = SkewportTilingIterator(tiling_, tiling_data_);
         if (!skewport_iterator_.done())
@@ -302,6 +402,14 @@ TilingSetRasterQueueAll::TilingIterator&
         return *this;
       }
       current_tile_ = *visible_iterator_;
+      break;
+    case PENDING_VISIBLE_RECT:
+      ++pending_visible_iterator_;
+      if (pending_visible_iterator_.done()) {
+        AdvancePhase();
+        return *this;
+      }
+      current_tile_ = *pending_visible_iterator_;
       break;
     case SKEWPORT_RECT:
       ++skewport_iterator_;

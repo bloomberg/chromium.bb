@@ -7,33 +7,6 @@
 #include "cc/resources/tiling_set_eviction_queue.h"
 
 namespace cc {
-namespace {
-
-bool IsSharedOutOfOrderTile(WhichTree tree, const Tile* tile) {
-  if (!tile->is_shared())
-    return false;
-
-  // The priority for tile priority of a shared tile will be a combined
-  // priority thus return shared tiles from a higher priority tree as
-  // it is out of order for a lower priority tree.
-  WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
-  const TilePriority& priority = tile->priority(tree);
-  const TilePriority& twin_priority = tile->priority(twin_tree);
-  if (priority.priority_bin != twin_priority.priority_bin)
-    return priority.priority_bin > twin_priority.priority_bin;
-  const bool occluded = tile->is_occluded(tree);
-  const bool twin_occluded = tile->is_occluded(twin_tree);
-  if (occluded != twin_occluded)
-    return occluded;
-  if (priority.distance_to_visible != twin_priority.distance_to_visible)
-    return priority.distance_to_visible > twin_priority.distance_to_visible;
-
-  // If priorities are the same, it does not matter which tree returns
-  // the tile. Let's pick the pending tree.
-  return tree != PENDING_TREE;
-}
-
-}  // namespace
 
 TilingSetEvictionQueue::TilingSetEvictionQueue(
     PictureLayerTilingSet* tiling_set,
@@ -63,28 +36,43 @@ void TilingSetEvictionQueue::GenerateTilingOrder(
   tilings_.reserve(tiling_set->num_tilings());
   // Generate all of the tilings in the order described in the header comment
   // for this class.
-  auto range =
+  PictureLayerTilingSet::TilingRange range =
       tiling_set->GetTilingRange(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES);
-  for (int i = range.start; i < range.end; ++i)
-    tilings_.push_back(tiling_set->tiling_at(i));
+  for (int i = range.start; i < range.end; ++i) {
+    PictureLayerTiling* tiling = tiling_set->tiling_at(i);
+    if (tiling->has_tiles())
+      tilings_.push_back(tiling);
+  }
 
   range = tiling_set->GetTilingRange(PictureLayerTilingSet::LOWER_THAN_LOW_RES);
-  for (int i = range.end - 1; i >= range.start; --i)
-    tilings_.push_back(tiling_set->tiling_at(i));
+  for (int i = range.end - 1; i >= range.start; --i) {
+    PictureLayerTiling* tiling = tiling_set->tiling_at(i);
+    if (tiling->has_tiles())
+      tilings_.push_back(tiling);
+  }
 
   range = tiling_set->GetTilingRange(
       PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES);
-  for (int i = range.end - 1; i >= range.start; --i)
-    tilings_.push_back(tiling_set->tiling_at(i));
+  for (int i = range.end - 1; i >= range.start; --i) {
+    PictureLayerTiling* tiling = tiling_set->tiling_at(i);
+    if (tiling->has_tiles())
+      tilings_.push_back(tiling);
+  }
 
   range = tiling_set->GetTilingRange(PictureLayerTilingSet::LOW_RES);
-  for (int i = range.start; i < range.end; ++i)
-    tilings_.push_back(tiling_set->tiling_at(i));
+  for (int i = range.start; i < range.end; ++i) {
+    PictureLayerTiling* tiling = tiling_set->tiling_at(i);
+    if (tiling->has_tiles())
+      tilings_.push_back(tiling);
+  }
 
   range = tiling_set->GetTilingRange(PictureLayerTilingSet::HIGH_RES);
-  for (int i = range.start; i < range.end; ++i)
-    tilings_.push_back(tiling_set->tiling_at(i));
-  DCHECK_EQ(tiling_set->num_tilings(), tilings_.size());
+  for (int i = range.start; i < range.end; ++i) {
+    PictureLayerTiling* tiling = tiling_set->tiling_at(i);
+    if (tiling->has_tiles())
+      tilings_.push_back(tiling);
+  }
+  DCHECK_GE(tiling_set->num_tilings(), tilings_.size());
 }
 
 void TilingSetEvictionQueue::AdvancePhase() {
@@ -107,6 +95,20 @@ void TilingSetEvictionQueue::AdvancePhase() {
             &tilings_, tree_, skip_shared_out_of_order_tiles_);
         if (!skewport_iterator_.done())
           current_tile_ = *skewport_iterator_;
+        break;
+      case PENDING_VISIBLE_RECT:
+        pending_visible_iterator_ = PendingVisibleTilingIterator(
+            &tilings_, tree_, skip_shared_out_of_order_tiles_,
+            false /* return required for activation tiles */);
+        if (!pending_visible_iterator_.done())
+          current_tile_ = *pending_visible_iterator_;
+        break;
+      case PENDING_VISIBLE_RECT_REQUIRED_FOR_ACTIVATION:
+        pending_visible_iterator_ = PendingVisibleTilingIterator(
+            &tilings_, tree_, skip_shared_out_of_order_tiles_,
+            true /* return required for activation tiles */);
+        if (!pending_visible_iterator_.done())
+          current_tile_ = *pending_visible_iterator_;
         break;
       case VISIBLE_RECT_OCCLUDED:
         visible_iterator_ = VisibleTilingIterator(
@@ -177,6 +179,12 @@ void TilingSetEvictionQueue::Pop() {
       if (!skewport_iterator_.done())
         current_tile_ = *skewport_iterator_;
       break;
+    case PENDING_VISIBLE_RECT:
+    case PENDING_VISIBLE_RECT_REQUIRED_FOR_ACTIVATION:
+      ++pending_visible_iterator_;
+      if (!pending_visible_iterator_.done())
+        current_tile_ = *pending_visible_iterator_;
+      break;
     case VISIBLE_RECT_OCCLUDED:
     case VISIBLE_RECT_UNOCCLUDED:
     case VISIBLE_RECT_REQUIRED_FOR_ACTIVATION_OCCLUDED:
@@ -202,11 +210,13 @@ TilingSetEvictionQueue::EvictionRectIterator::EvictionRectIterator()
 TilingSetEvictionQueue::EvictionRectIterator::EvictionRectIterator(
     std::vector<PictureLayerTiling*>* tilings,
     WhichTree tree,
-    bool skip_shared_out_of_order_tiles)
+    bool skip_shared_out_of_order_tiles,
+    bool skip_pending_visible_rect)
     : tile_(nullptr),
       tilings_(tilings),
       tree_(tree),
       skip_shared_out_of_order_tiles_(skip_shared_out_of_order_tiles),
+      skip_pending_visible_rect_(skip_pending_visible_rect),
       tiling_index_(0) {
 }
 
@@ -228,15 +238,16 @@ bool TilingSetEvictionQueue::EvictionRectIterator::AdvanceToNextTile(
 template <typename TilingIteratorType>
 bool TilingSetEvictionQueue::EvictionRectIterator::GetFirstTileAndCheckIfValid(
     TilingIteratorType* iterator) {
-  tile_ = (*tilings_)[tiling_index_]->TileAt(iterator->index_x(),
-                                             iterator->index_y());
+  PictureLayerTiling* tiling = (*tilings_)[tiling_index_];
+  tile_ = tiling->TileAt(iterator->index_x(), iterator->index_y());
   // If there's nothing to evict, return false.
   if (!tile_ || !tile_->HasResource())
     return false;
-  (*tilings_)[tiling_index_]->UpdateTileAndTwinPriority(tile_);
-  // If the tile is out of order, return false.
-  if (skip_shared_out_of_order_tiles_ && IsSharedOutOfOrderTile(tree_, tile_))
+  if (skip_pending_visible_rect_ &&
+      tiling->pending_visible_rect().Intersects(tile_->content_rect())) {
     return false;
+  }
+  (*tilings_)[tiling_index_]->UpdateTileAndTwinPriority(tile_);
   // In other cases, the tile we got is a viable candidate, return true.
   return true;
 }
@@ -246,18 +257,21 @@ TilingSetEvictionQueue::EventuallyTilingIterator::EventuallyTilingIterator(
     std::vector<PictureLayerTiling*>* tilings,
     WhichTree tree,
     bool skip_shared_out_of_order_tiles)
-    : EvictionRectIterator(tilings, tree, skip_shared_out_of_order_tiles) {
+    : EvictionRectIterator(tilings,
+                           tree,
+                           skip_shared_out_of_order_tiles,
+                           true /* skip_pending_visible_rect */) {
   // Find the first tiling with a tile.
   while (tiling_index_ < tilings_->size()) {
-    if (!((*tilings_))[tiling_index_]->has_eventually_rect_tiles()) {
+    if (!(*tilings_)[tiling_index_]->has_eventually_rect_tiles()) {
       ++tiling_index_;
       continue;
     }
     iterator_ = TilingData::ReverseSpiralDifferenceIterator(
-        ((*tilings_))[tiling_index_]->tiling_data(),
-        ((*tilings_))[tiling_index_]->current_eventually_rect(),
-        ((*tilings_))[tiling_index_]->current_skewport_rect(),
-        ((*tilings_))[tiling_index_]->current_soon_border_rect());
+        (*tilings_)[tiling_index_]->tiling_data(),
+        (*tilings_)[tiling_index_]->current_eventually_rect(),
+        (*tilings_)[tiling_index_]->current_skewport_rect(),
+        (*tilings_)[tiling_index_]->current_soon_border_rect());
     if (!iterator_) {
       ++tiling_index_;
       continue;
@@ -276,13 +290,13 @@ TilingSetEvictionQueue::EventuallyTilingIterator&
   bool found_tile = AdvanceToNextTile(&iterator_);
   while (!found_tile && (tiling_index_ + 1) < tilings_->size()) {
     ++tiling_index_;
-    if (!((*tilings_))[tiling_index_]->has_eventually_rect_tiles())
+    if (!(*tilings_)[tiling_index_]->has_eventually_rect_tiles())
       continue;
     iterator_ = TilingData::ReverseSpiralDifferenceIterator(
-        ((*tilings_))[tiling_index_]->tiling_data(),
-        ((*tilings_))[tiling_index_]->current_eventually_rect(),
-        ((*tilings_))[tiling_index_]->current_skewport_rect(),
-        ((*tilings_))[tiling_index_]->current_soon_border_rect());
+        (*tilings_)[tiling_index_]->tiling_data(),
+        (*tilings_)[tiling_index_]->current_eventually_rect(),
+        (*tilings_)[tiling_index_]->current_skewport_rect(),
+        (*tilings_)[tiling_index_]->current_soon_border_rect());
     if (!iterator_)
       continue;
     found_tile = GetFirstTileAndCheckIfValid(&iterator_);
@@ -297,18 +311,21 @@ TilingSetEvictionQueue::SoonBorderTilingIterator::SoonBorderTilingIterator(
     std::vector<PictureLayerTiling*>* tilings,
     WhichTree tree,
     bool skip_shared_out_of_order_tiles)
-    : EvictionRectIterator(tilings, tree, skip_shared_out_of_order_tiles) {
+    : EvictionRectIterator(tilings,
+                           tree,
+                           skip_shared_out_of_order_tiles,
+                           true /* skip_pending_visible_rect */) {
   // Find the first tiling with a tile.
   while (tiling_index_ < tilings_->size()) {
-    if (!((*tilings_))[tiling_index_]->has_soon_border_rect_tiles()) {
+    if (!(*tilings_)[tiling_index_]->has_soon_border_rect_tiles()) {
       ++tiling_index_;
       continue;
     }
     iterator_ = TilingData::ReverseSpiralDifferenceIterator(
-        ((*tilings_))[tiling_index_]->tiling_data(),
-        ((*tilings_))[tiling_index_]->current_soon_border_rect(),
-        ((*tilings_))[tiling_index_]->current_skewport_rect(),
-        ((*tilings_))[tiling_index_]->current_visible_rect());
+        (*tilings_)[tiling_index_]->tiling_data(),
+        (*tilings_)[tiling_index_]->current_soon_border_rect(),
+        (*tilings_)[tiling_index_]->current_skewport_rect(),
+        (*tilings_)[tiling_index_]->current_visible_rect());
     if (!iterator_) {
       ++tiling_index_;
       continue;
@@ -327,13 +344,13 @@ TilingSetEvictionQueue::SoonBorderTilingIterator&
   bool found_tile = AdvanceToNextTile(&iterator_);
   while (!found_tile && (tiling_index_ + 1) < tilings_->size()) {
     ++tiling_index_;
-    if (!((*tilings_))[tiling_index_]->has_soon_border_rect_tiles())
+    if (!(*tilings_)[tiling_index_]->has_soon_border_rect_tiles())
       continue;
     iterator_ = TilingData::ReverseSpiralDifferenceIterator(
-        ((*tilings_))[tiling_index_]->tiling_data(),
-        ((*tilings_))[tiling_index_]->current_soon_border_rect(),
-        ((*tilings_))[tiling_index_]->current_skewport_rect(),
-        ((*tilings_))[tiling_index_]->current_visible_rect());
+        (*tilings_)[tiling_index_]->tiling_data(),
+        (*tilings_)[tiling_index_]->current_soon_border_rect(),
+        (*tilings_)[tiling_index_]->current_skewport_rect(),
+        (*tilings_)[tiling_index_]->current_visible_rect());
     if (!iterator_)
       continue;
     found_tile = GetFirstTileAndCheckIfValid(&iterator_);
@@ -348,18 +365,21 @@ TilingSetEvictionQueue::SkewportTilingIterator::SkewportTilingIterator(
     std::vector<PictureLayerTiling*>* tilings,
     WhichTree tree,
     bool skip_shared_out_of_order_tiles)
-    : EvictionRectIterator(tilings, tree, skip_shared_out_of_order_tiles) {
+    : EvictionRectIterator(tilings,
+                           tree,
+                           skip_shared_out_of_order_tiles,
+                           true /* skip_pending_visible_rect */) {
   // Find the first tiling with a tile.
   while (tiling_index_ < tilings_->size()) {
-    if (!((*tilings_))[tiling_index_]->has_skewport_rect_tiles()) {
+    if (!(*tilings_)[tiling_index_]->has_skewport_rect_tiles()) {
       ++tiling_index_;
       continue;
     }
     iterator_ = TilingData::ReverseSpiralDifferenceIterator(
-        ((*tilings_))[tiling_index_]->tiling_data(),
-        ((*tilings_))[tiling_index_]->current_skewport_rect(),
-        ((*tilings_))[tiling_index_]->current_visible_rect(),
-        ((*tilings_))[tiling_index_]->current_visible_rect());
+        (*tilings_)[tiling_index_]->tiling_data(),
+        (*tilings_)[tiling_index_]->current_skewport_rect(),
+        (*tilings_)[tiling_index_]->current_visible_rect(),
+        (*tilings_)[tiling_index_]->current_visible_rect());
     if (!iterator_) {
       ++tiling_index_;
       continue;
@@ -378,13 +398,13 @@ TilingSetEvictionQueue::SkewportTilingIterator&
   bool found_tile = AdvanceToNextTile(&iterator_);
   while (!found_tile && (tiling_index_ + 1) < tilings_->size()) {
     ++tiling_index_;
-    if (!((*tilings_))[tiling_index_]->has_skewport_rect_tiles())
+    if (!(*tilings_)[tiling_index_]->has_skewport_rect_tiles())
       continue;
     iterator_ = TilingData::ReverseSpiralDifferenceIterator(
-        ((*tilings_))[tiling_index_]->tiling_data(),
-        ((*tilings_))[tiling_index_]->current_skewport_rect(),
-        ((*tilings_))[tiling_index_]->current_visible_rect(),
-        ((*tilings_))[tiling_index_]->current_visible_rect());
+        (*tilings_)[tiling_index_]->tiling_data(),
+        (*tilings_)[tiling_index_]->current_skewport_rect(),
+        (*tilings_)[tiling_index_]->current_visible_rect(),
+        (*tilings_)[tiling_index_]->current_visible_rect());
     if (!iterator_)
       continue;
     found_tile = GetFirstTileAndCheckIfValid(&iterator_);
@@ -394,6 +414,73 @@ TilingSetEvictionQueue::SkewportTilingIterator&
   return *this;
 }
 
+// PendingVisibleIterator
+TilingSetEvictionQueue::PendingVisibleTilingIterator::
+    PendingVisibleTilingIterator(std::vector<PictureLayerTiling*>* tilings,
+                                 WhichTree tree,
+                                 bool skip_shared_out_of_order_tiles,
+                                 bool return_required_for_activation_tiles)
+    : EvictionRectIterator(tilings,
+                           tree,
+                           skip_shared_out_of_order_tiles,
+                           false /* skip_pending_visible_rect */),
+      return_required_for_activation_tiles_(
+          return_required_for_activation_tiles) {
+  // Find the first tiling with a tile.
+  while (tiling_index_ < tilings_->size()) {
+    iterator_ = TilingData::DifferenceIterator(
+        (*tilings_)[tiling_index_]->tiling_data(),
+        (*tilings_)[tiling_index_]->pending_visible_rect(),
+        (*tilings_)[tiling_index_]->current_visible_rect());
+    if (!iterator_) {
+      ++tiling_index_;
+      continue;
+    }
+    break;
+  }
+  if (tiling_index_ >= tilings_->size())
+    return;
+  if (!GetFirstTileAndCheckIfValid(&iterator_)) {
+    ++(*this);
+    return;
+  }
+  if (!TileMatchesRequiredFlags(tile_)) {
+    ++(*this);
+    return;
+  }
+}
+
+TilingSetEvictionQueue::PendingVisibleTilingIterator&
+    TilingSetEvictionQueue::PendingVisibleTilingIterator::
+    operator++() {
+  bool found_tile = AdvanceToNextTile(&iterator_);
+  while (found_tile && !TileMatchesRequiredFlags(tile_))
+    found_tile = AdvanceToNextTile(&iterator_);
+
+  while (!found_tile && (tiling_index_ + 1) < tilings_->size()) {
+    ++tiling_index_;
+    iterator_ = TilingData::DifferenceIterator(
+        (*tilings_)[tiling_index_]->tiling_data(),
+        (*tilings_)[tiling_index_]->pending_visible_rect(),
+        (*tilings_)[tiling_index_]->current_visible_rect());
+    if (!iterator_)
+      continue;
+    found_tile = GetFirstTileAndCheckIfValid(&iterator_);
+    if (!found_tile)
+      found_tile = AdvanceToNextTile(&iterator_);
+    while (found_tile && !TileMatchesRequiredFlags(tile_))
+      found_tile = AdvanceToNextTile(&iterator_);
+  }
+  return *this;
+}
+
+bool TilingSetEvictionQueue::PendingVisibleTilingIterator::
+    TileMatchesRequiredFlags(const Tile* tile) const {
+  bool activation_flag_matches =
+      tile->required_for_activation() == return_required_for_activation_tiles_;
+  return activation_flag_matches;
+}
+
 // VisibleTilingIterator
 TilingSetEvictionQueue::VisibleTilingIterator::VisibleTilingIterator(
     std::vector<PictureLayerTiling*>* tilings,
@@ -401,19 +488,22 @@ TilingSetEvictionQueue::VisibleTilingIterator::VisibleTilingIterator(
     bool skip_shared_out_of_order_tiles,
     bool return_occluded_tiles,
     bool return_required_for_activation_tiles)
-    : EvictionRectIterator(tilings, tree, skip_shared_out_of_order_tiles),
+    : EvictionRectIterator(tilings,
+                           tree,
+                           skip_shared_out_of_order_tiles,
+                           false /* skip_pending_visible_rect */),
       return_occluded_tiles_(return_occluded_tiles),
       return_required_for_activation_tiles_(
           return_required_for_activation_tiles) {
   // Find the first tiling with a tile.
   while (tiling_index_ < tilings_->size()) {
-    if (!((*tilings_))[tiling_index_]->has_visible_rect_tiles()) {
+    if (!(*tilings_)[tiling_index_]->has_visible_rect_tiles()) {
       ++tiling_index_;
       continue;
     }
     iterator_ = TilingData::Iterator(
-        ((*tilings_))[tiling_index_]->tiling_data(),
-        ((*tilings_))[tiling_index_]->current_visible_rect(), false);
+        (*tilings_)[tiling_index_]->tiling_data(),
+        (*tilings_)[tiling_index_]->current_visible_rect(), false);
     if (!iterator_) {
       ++tiling_index_;
       continue;
@@ -441,11 +531,11 @@ TilingSetEvictionQueue::VisibleTilingIterator&
 
   while (!found_tile && (tiling_index_ + 1) < tilings_->size()) {
     ++tiling_index_;
-    if (!((*tilings_))[tiling_index_]->has_visible_rect_tiles())
+    if (!(*tilings_)[tiling_index_]->has_visible_rect_tiles())
       continue;
     iterator_ = TilingData::Iterator(
-        ((*tilings_))[tiling_index_]->tiling_data(),
-        ((*tilings_))[tiling_index_]->current_visible_rect(), false);
+        (*tilings_)[tiling_index_]->tiling_data(),
+        (*tilings_)[tiling_index_]->current_visible_rect(), false);
     if (!iterator_)
       continue;
     found_tile = GetFirstTileAndCheckIfValid(&iterator_);
@@ -461,8 +551,7 @@ bool TilingSetEvictionQueue::VisibleTilingIterator::TileMatchesRequiredFlags(
     const Tile* tile) const {
   bool activation_flag_matches =
       tile->required_for_activation() == return_required_for_activation_tiles_;
-  bool occluded_flag_matches =
-      tile->is_occluded(tree_) == return_occluded_tiles_;
+  bool occluded_flag_matches = tile->is_occluded() == return_occluded_tiles_;
   return activation_flag_matches && occluded_flag_matches;
 }
 
