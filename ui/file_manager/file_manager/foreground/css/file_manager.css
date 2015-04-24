@@ -1130,13 +1130,17 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 }
 
 .thumbnail-grid .shield {
-  background-color: rgba(27, 168, 243, 0.5);
+  background-color: rgba(160, 160, 160, 0.5);
   bottom: 0;
   display: none;
   left: 0;
   position: absolute;
   right: 0;
   top: 0;
+}
+
+.thumbnail-grid:focus .shield {
+  background-color: rgba(27, 168, 243, 0.5);
 }
 
 .thumbnail-grid .thumbnail-item[selected] .shield {
@@ -1154,6 +1158,10 @@ body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
 }
 
 .thumbnail-grid .thumbnail-item[selected].directory .thumbnail-bottom {
+  background-color: rgb(232, 232, 232);
+}
+
+.thumbnail-grid:focus .thumbnail-item[selected].directory .thumbnail-bottom {
   background-color: rgb(232, 246, 253);
 }
 
