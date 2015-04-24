@@ -1839,8 +1839,8 @@ void WebGLRenderingContextBase::disableVertexAttribArray(GLuint index)
         return;
     }
 
-    WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
-    state.enabled = false;
+    WebGLVertexArrayObjectOES::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
+    state->enabled = false;
 
     webContext()->disableVertexAttribArray(index);
 }
@@ -1951,8 +1951,8 @@ void WebGLRenderingContextBase::enableVertexAttribArray(GLuint index)
         return;
     }
 
-    WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
-    state.enabled = true;
+    WebGLVertexArrayObjectOES::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
+    state->enabled = true;
 
     webContext()->enableVertexAttribArray(index);
 }
@@ -2961,27 +2961,27 @@ ScriptValue WebGLRenderingContextBase::getVertexAttrib(ScriptState* scriptState,
         synthesizeGLError(GL_INVALID_VALUE, "getVertexAttrib", "index out of range");
         return ScriptValue::createNull(scriptState);
     }
-    const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
+    const WebGLVertexArrayObjectOES::VertexAttribState* state = m_boundVertexArrayObject->getVertexAttribState(index);
 
     if ((extensionEnabled(ANGLEInstancedArraysName) || isWebGL2OrHigher())
         && pname == GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE)
-        return WebGLAny(scriptState, state.divisor);
+        return WebGLAny(scriptState, state->divisor);
 
     switch (pname) {
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
-        if (!state.bufferBinding || !state.bufferBinding->object())
+        if (!state->bufferBinding || !state->bufferBinding->object())
             return ScriptValue::createNull(scriptState);
-        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(state.bufferBinding.get()));
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(state->bufferBinding.get()));
     case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
-        return WebGLAny(scriptState, state.enabled);
+        return WebGLAny(scriptState, state->enabled);
     case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
-        return WebGLAny(scriptState, state.normalized);
+        return WebGLAny(scriptState, state->normalized);
     case GL_VERTEX_ATTRIB_ARRAY_SIZE:
-        return WebGLAny(scriptState, state.size);
+        return WebGLAny(scriptState, state->size);
     case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
-        return WebGLAny(scriptState, state.originalStride);
+        return WebGLAny(scriptState, state->originalStride);
     case GL_VERTEX_ATTRIB_ARRAY_TYPE:
-        return WebGLAny(scriptState, state.type);
+        return WebGLAny(scriptState, state->type);
     case GL_CURRENT_VERTEX_ATTRIB:
         {
             VertexAttribValue& attribValue = m_vertexAttribValue[index];

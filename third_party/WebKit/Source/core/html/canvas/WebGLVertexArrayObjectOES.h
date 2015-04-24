@@ -48,8 +48,7 @@ public:
     Platform3DObject object() const { return m_object; }
 
     // Cached values for vertex attrib range checks
-    class VertexAttribState final {
-        ALLOW_ONLY_INLINE_ALLOCATION();
+    class VertexAttribState final : public NoBaseWillBeGarbageCollected<VertexAttribState> {
     public:
         VertexAttribState()
             : enabled(false)
@@ -86,7 +85,7 @@ public:
     PassRefPtrWillBeRawPtr<WebGLBuffer> boundElementArrayBuffer() const { return m_boundElementArrayBuffer; }
     void setElementArrayBuffer(PassRefPtrWillBeRawPtr<WebGLBuffer>);
 
-    VertexAttribState& getVertexAttribState(int index) { return m_vertexAttribState[index]; }
+    VertexAttribState* getVertexAttribState(size_t);
     void setVertexAttribState(GLuint, GLsizei, GLint, GLenum, GLboolean, GLsizei, GLintptr, PassRefPtrWillBeRawPtr<WebGLBuffer>);
     void unbindBuffer(PassRefPtrWillBeRawPtr<WebGLBuffer>);
     void setVertexAttribDivisor(GLuint index, GLuint divisor);
@@ -108,20 +107,9 @@ private:
     bool m_destructionInProgress;
 #endif
     RefPtrWillBeMember<WebGLBuffer> m_boundElementArrayBuffer;
-    WillBeHeapVector<VertexAttribState> m_vertexAttribState;
+    WillBeHeapVector<OwnPtrWillBeMember<VertexAttribState>> m_vertexAttribState;
 };
 
 } // namespace blink
-
-namespace WTF {
-
-template<>
-struct VectorTraits<blink::WebGLVertexArrayObjectOES::VertexAttribState> : SimpleClassVectorTraits<blink::WebGLVertexArrayObjectOES::VertexAttribState> {
-    // Must use the constructor.
-    static const bool canInitializeWithMemset = false;
-    static const bool canCopyWithMemcpy = true;
-};
-
-} // namespace WTF
 
 #endif // WebGLVertexArrayObjectOES_h
