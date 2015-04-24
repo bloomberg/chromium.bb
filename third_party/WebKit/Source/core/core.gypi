@@ -915,6 +915,8 @@
             'animation/LengthBoxStyleInterpolation.h',
             'animation/LengthPairStyleInterpolation.cpp',
             'animation/LengthPairStyleInterpolation.h',
+            'animation/LengthSVGInterpolation.cpp',
+            'animation/LengthSVGInterpolation.h',
             'animation/LengthStyleInterpolation.cpp',
             'animation/LengthStyleInterpolation.h',
             'animation/NumberOptionalNumberSVGInterpolation.h',

@@ -262,7 +262,7 @@
       return null;
     }
 
-    if (result instanceof SVGAngle)
+    if (result instanceof SVGAngle || result instanceof SVGLength)
       result = result.value;
     else if (result instanceof SVGNumberList)
       result = serializeSVGNumberList(result);
@@ -307,8 +307,12 @@
 
   // The following collide with CSS properties or the Web Animations API (offset).
   var svgPrefixedAttributes = [
+    'height',
+    'offset',
     'offset',
     'order',
+    'r',
+    'width',
   ];
 
   function makeKeyframes(target, attributeName, params) {

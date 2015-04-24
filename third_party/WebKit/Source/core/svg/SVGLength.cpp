@@ -185,7 +185,7 @@ void SVGLength::setValue(float value, const SVGLengthContext& context)
 
 void SVGLength::setUnitType(SVGLengthType type)
 {
-    ASSERT(type != LengthTypeUnknown && type <= LengthTypePC);
+    ASSERT(type != LengthTypeUnknown && type <= LengthTypeCHS);
     m_unitType = type;
 }
 
@@ -273,7 +273,7 @@ void SVGLength::newValueSpecifiedUnits(SVGLengthType type, float value)
 
 void SVGLength::convertToSpecifiedUnits(SVGLengthType type, const SVGLengthContext& context)
 {
-    ASSERT(type != LengthTypeUnknown && type <= LengthTypePC);
+    ASSERT(type != LengthTypeUnknown && type <= LengthTypeCHS);
 
     float valueInUserUnits = value(context);
     m_unitType = type;
