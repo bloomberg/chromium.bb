@@ -122,6 +122,7 @@ void NonUIDataTypeController::Stop() {
       return;  // The datatype was never activated, we're done.
     case ASSOCIATING:
       state_ = STOPPING;
+      StopModels();
       // We continue on to deactivate the datatype and stop the local service.
       break;
     case MODEL_LOADED:

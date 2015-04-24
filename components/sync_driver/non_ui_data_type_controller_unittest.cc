@@ -393,6 +393,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, AbortDuringAssociation) {
                                    syncer::SyncError::DATATYPE_ERROR,
                                    "Disconnected.",
                                    AUTOFILL_PROFILE)));
+  EXPECT_CALL(*dtc_mock_.get(), StopModels());
   EXPECT_CALL(*change_processor_.get(), Disconnect())
       .WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
@@ -411,7 +412,7 @@ TEST_F(SyncNonUIDataTypeControllerTest, StartAfterSyncShutdown) {
   SetStartExpectations();
   // We don't expect StopSyncing to be called because local_service_ will never
   // have been set.
-  EXPECT_CALL(*change_processor_.get(), Disconnect()).WillOnce(Return(true));
+  SetStopExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
   non_ui_dtc_->Stop();
