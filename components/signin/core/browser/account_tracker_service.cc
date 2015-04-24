@@ -255,13 +255,15 @@ AccountTrackerService::AccountInfo AccountTrackerService::GetAccountInfo(
 AccountTrackerService::AccountInfo
 AccountTrackerService::FindAccountInfoByGaiaId(
     const std::string& gaia_id) {
-  for (std::map<std::string, AccountState>::const_iterator it =
-           accounts_.begin();
-       it != accounts_.end();
-       ++it) {
-    const AccountState& state = it->second;
-    if (state.info.gaia == gaia_id)
-      return state.info;
+  if (!gaia_id.empty()) {
+    for (std::map<std::string, AccountState>::const_iterator it =
+             accounts_.begin();
+         it != accounts_.end();
+         ++it) {
+      const AccountState& state = it->second;
+      if (state.info.gaia == gaia_id)
+        return state.info;
+    }
   }
 
   return AccountInfo();
@@ -270,13 +272,15 @@ AccountTrackerService::FindAccountInfoByGaiaId(
 AccountTrackerService::AccountInfo
 AccountTrackerService::FindAccountInfoByEmail(
     const std::string& email) {
-  for (std::map<std::string, AccountState>::const_iterator it =
-           accounts_.begin();
-       it != accounts_.end();
-       ++it) {
-    const AccountState& state = it->second;
-    if (gaia::AreEmailsSame(state.info.email, email))
-      return state.info;
+  if (!email.empty()) {
+    for (std::map<std::string, AccountState>::const_iterator it =
+             accounts_.begin();
+         it != accounts_.end();
+         ++it) {
+      const AccountState& state = it->second;
+      if (gaia::AreEmailsSame(state.info.email, email))
+        return state.info;
+    }
   }
 
   return AccountInfo();
@@ -584,7 +588,8 @@ std::string AccountTrackerService::PickAccountIdForAccount(
     PrefService* pref_service,
     const std::string& gaia,
     const std::string& email) {
-  DCHECK(!gaia.empty());
+  DCHECK(!gaia.empty() ||
+      GetMigrationState(pref_service) == MIGRATION_NOT_STARTED);
   DCHECK(!email.empty());
   switch(GetMigrationState(pref_service)) {
     case MIGRATION_NOT_STARTED:
@@ -603,13 +608,11 @@ std::string AccountTrackerService::PickAccountIdForAccount(
 
 std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
                                                    const std::string& email) {
-  DCHECK(!gaia.empty());
-  DCHECK(!email.empty());
   const std::string account_id = PickAccountIdForAccount(gaia, email);
   const bool already_exists = ContainsKey(accounts_, account_id);
   StartTrackingAccount(account_id);
   AccountState& state = accounts_[account_id];
-  DCHECK(!already_exists || state.info.gaia == gaia);
+  DCHECK(!already_exists || state.info.gaia.empty() || state.info.gaia == gaia);
   state.info.gaia = gaia;
   state.info.email = email;
   SaveToPrefs(state);

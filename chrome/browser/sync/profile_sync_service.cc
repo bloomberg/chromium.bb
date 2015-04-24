@@ -293,8 +293,8 @@ bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {
   if (IsManaged() || sync_prefs_.IsStartSuppressed())
     return false;
 
-  // Sync is logged in if there is a non-empty effective username.
-  return !signin_->GetEffectiveUsername().empty();
+  // Sync is logged in if there is a non-empty effective account id.
+  return !signin_->GetAccountIdToUse().empty();
 }
 
 bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
@@ -321,7 +321,7 @@ void ProfileSyncService::Initialize() {
 
   RegisterAuthNotifications();
 
-  if (!HasSyncSetupCompleted() || signin_->GetEffectiveUsername().empty()) {
+  if (!HasSyncSetupCompleted() || signin_->GetAccountIdToUse().empty()) {
     // Clean up in case of previous crash / setup abort / signout.
     DisableForUser();
   }
@@ -347,7 +347,7 @@ void ProfileSyncService::Initialize() {
   if (browser_sync::BackupRollbackController::IsBackupEnabled()) {
     // Backup is needed if user's not signed in or signed in but previous
     // backup didn't finish, i.e. backend didn't switch from backup to sync.
-    need_backup_ = signin_->GetEffectiveUsername().empty() ||
+    need_backup_ = signin_->GetAccountIdToUse().empty() ||
         sync_prefs_.GetFirstSyncTime().is_null();
 
     // Try to resume rollback if it didn't finish in last session.
@@ -357,7 +357,7 @@ void ProfileSyncService::Initialize() {
   }
 
 #if defined(ENABLE_PRE_SYNC_BACKUP)
-  if (!running_rollback && signin_->GetEffectiveUsername().empty()) {
+  if (!running_rollback && signin_->GetAccountIdToUse().empty()) {
     CleanUpBackup();
   }
 #else
@@ -2554,7 +2554,7 @@ bool ProfileSyncService::HasSyncingBackend() const {
 }
 
 void ProfileSyncService::UpdateFirstSyncTimePref() {
-  if (signin_->GetEffectiveUsername().empty()) {
+  if (signin_->GetAccountIdToUse().empty()) {
     // Clear if user's not signed in and rollback is done.
     if (backend_mode_ != ROLLBACK)
       sync_prefs_.ClearFirstSyncTime();

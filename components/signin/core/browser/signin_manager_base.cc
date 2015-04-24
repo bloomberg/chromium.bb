@@ -62,31 +62,39 @@ void SigninManagerBase::Initialize(PrefService* local_state) {
   if (account_id.empty()) {
     std::string pref_account_username =
         client_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
-    std::string pref_gaia_id =
-        client_->GetPrefs()->GetString(prefs::kGoogleServicesUserAccountId);
+    if (!pref_account_username.empty()) {
+      // This is an old profile connected to a google account.  Migrate from
+      // kGoogleServicesUsername to kGoogleServicesAccountId.
+      std::string pref_gaia_id =
+          client_->GetPrefs()->GetString(prefs::kGoogleServicesUserAccountId);
 
-    // If kGoogleServicesUserAccountId is empty, then this is either a chromeos
-    // machine or a really old profile on one of the other platforms.  However
-    // in this case the account tracker should have the gaia_id so fetch it
-    // from there.
-    if (!pref_account_username.empty() && pref_gaia_id.empty()) {
-      AccountTrackerService::AccountInfo info =
-          account_tracker_service_->GetAccountInfo(pref_account_username);
-      DCHECK(!info.gaia.empty());
-      pref_gaia_id = info.gaia;
-    }
+      // If kGoogleServicesUserAccountId is empty, then this is either a cros
+      // machine or a really old profile on one of the other platforms.  However
+      // in this case the account tracker should have the gaia_id so fetch it
+      // from there.
+      if (pref_gaia_id.empty()) {
+        AccountTrackerService::AccountInfo info =
+            account_tracker_service_->GetAccountInfo(pref_account_username);
+        pref_gaia_id = info.gaia;
+      }
 
-    if (!pref_account_username.empty() && !pref_gaia_id.empty()) {
+      // If |pref_gaia_id| is still empty, this means the profile has been in
+      // an auth error state for some time (since M39).  It could also mean
+      // a profile that has not been used since M33.  Before migration to gaia
+      // id is complete, the returned value will be the normalized email, which
+      // is correct.  After the migration, the returned value will be empty,
+      // which means the user is essentially signed out.
+      // TODO(rogerta): may want to show a toast or something.
       account_id = account_tracker_service_->SeedAccountInfo(
           pref_gaia_id, pref_account_username);
 
       // Now remove obsolete preferences.
       client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
-
-      // TODO(rogerta): once migration to gaia id is complete, remove
-      // kGoogleServicesUserAccountId and change all uses of that pref to
-      // kGoogleServicesAccountId.
     }
+
+    // TODO(rogerta): once migration to gaia id is complete, remove
+    // kGoogleServicesUserAccountId and change all uses of that pref to
+    // kGoogleServicesAccountId.
   }
 
   if (!account_id.empty())
@@ -110,6 +118,9 @@ const std::string& SigninManagerBase::GetAuthenticatedAccountId() const {
 
 void SigninManagerBase::SetAuthenticatedAccountInfo(const std::string& gaia_id,
                                                     const std::string& email) {
+  DCHECK(!gaia_id.empty());
+  DCHECK(!email.empty());
+
   std::string account_id =
       account_tracker_service_->SeedAccountInfo(gaia_id, email);
   SetAuthenticatedAccountId(account_id);
@@ -138,9 +149,13 @@ void SigninManagerBase::SetAuthenticatedAccountId(
   // Gaia id of the signed in user.
   AccountTrackerService::AccountInfo info =
       account_tracker_service_->GetAccountInfo(account_id);
-  DCHECK(!info.gaia.empty());
-  client_->GetPrefs()->SetString(prefs::kGoogleServicesUserAccountId,
-                                 info.gaia);
+
+  // When this function is called from Initialize(), it's possible for
+  // |info.gaia| to be empty when migrating from a really old profile.
+  if (!info.gaia.empty()) {
+    client_->GetPrefs()->SetString(prefs::kGoogleServicesUserAccountId,
+                                   info.gaia);
+  }
 
   // Go ahead and update the last signed in account info here as well. Once a
   // user is signed in the two preferences should match. Doing it here as
