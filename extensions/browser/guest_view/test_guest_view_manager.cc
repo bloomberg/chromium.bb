@@ -4,19 +4,7 @@
 
 #include "extensions/browser/guest_view/test_guest_view_manager.h"
 
-#include "base/callback.h"
-#include "base/strings/stringprintf.h"
-#include "content/public/test/browser_test_utils.h"
-#include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/extension_host.h"
-#include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
-#include "extensions/browser/process_manager.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/extension_paths.h"
-#include "extensions/shell/browser/shell_extension_system.h"
-#include "extensions/shell/test/shell_test.h"
-#include "extensions/test/extension_test_message_listener.h"
+#include "extensions/browser/guest_view/guest_view_manager_delegate.h"
 
 using guestview::GuestViewManagerDelegate;
 
