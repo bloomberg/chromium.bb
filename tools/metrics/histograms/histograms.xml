@@ -8140,6 +8140,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Event.Latency.TouchToFirstScrollUpdateSwap"
     units="microseconds">
   <owner>rbyers@chromium.org</owner>
+  <obsolete>
+    Replaced by Event.Latency.TouchToFirstScrollUpdateSwapBegin.
+    crbug.com/478845
+  </obsolete>
   <summary>
     Time between initial creation of a touch event and the frame swap caused by
     by the generated ScrollUpdate gesture event if that ScrollUpdate is the
@@ -8148,12 +8152,36 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Event.Latency.TouchToFirstScrollUpdateSwapBegin"
+    units="microseconds">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Time between initial creation of a touch event and the start of the frame
+    swap on the GPU service caused by the generated ScrollUpdate gesture event
+    if that ScrollUpdate is the first such event in a given scroll gesture event
+    sequence. If no swap was induced by the event, no recording is made.
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.TouchToScrollUpdateSwap" units="microseconds">
   <owner>rbyers@chromium.org</owner>
+  <obsolete>
+    Replaced by Event.Latency.TouchToScrollUpdateSwapBegin. crbug.com/478845
+  </obsolete>
   <summary>
     Time between initial creation of a touch event and the frame swap caused by
     by the generated ScrollUpdate gesture event. If no swap was induced by the
     event, no recording is made.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.TouchToScrollUpdateSwapBegin"
+    units="microseconds">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Time between initial creation of a touch event and start of the frame swap
+    on the GPU service caused by the generated ScrollUpdate gesture event. If no
+    swap was induced by the event, no recording is made.
   </summary>
 </histogram>
 
