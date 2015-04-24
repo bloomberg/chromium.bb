@@ -207,7 +207,7 @@ namespace ${domain} {
 class Client : public DevToolsProtocolClient {
  public:
   explicit Client(const RawMessageCallback& raw_message_callback);
-  virtual ~Client();
+  ~Client() override;
 
 ${methods}\
 };
