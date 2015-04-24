@@ -51,13 +51,8 @@ void OmniboxPopupModel::ComputeMatchMaxWidths(int contents_width,
                                               bool allow_shrinking_contents,
                                               int* contents_max_width,
                                               int* description_max_width) {
-  if (available_width <= 0) {
-    *contents_max_width = 0;
-    *description_max_width = 0;
-    return;
-  }
-
-  *contents_max_width = contents_width;
+  available_width = std::max(available_width, 0);
+  *contents_max_width = std::min(contents_width, available_width);
   *description_max_width = description_width;
 
   // If the description is empty, the contents can get the full width.
@@ -67,6 +62,10 @@ void OmniboxPopupModel::ComputeMatchMaxWidths(int contents_width,
   // If we want to display the description, we need to reserve enough space for
   // the separator.
   available_width -= separator_width;
+  if (available_width < 0) {
+    *description_max_width = 0;
+    return;
+  }
 
   if (contents_width + description_width > available_width) {
     if (allow_shrinking_contents) {
@@ -79,19 +78,24 @@ void OmniboxPopupModel::ComputeMatchMaxWidths(int contents_width,
           (available_width + 1) / 2, available_width - description_width);
 
       const int kMinimumContentsWidth = 300;
-      *contents_max_width = std::min(
-          std::max(*contents_max_width, kMinimumContentsWidth), contents_width);
+      *contents_max_width = std::min(std::min(
+          std::max(*contents_max_width, kMinimumContentsWidth), contents_width),
+          available_width);
     }
 
     // Give the description the remaining space, unless this makes it too small
     // to display anything meaningful, in which case just hide the description
     // and let the contents take up the whole width.
-    *description_max_width = available_width - *contents_max_width;
+    *description_max_width =
+        std::min(description_width, available_width - *contents_max_width);
     const int kMinimumDescriptionWidth = 75;
     if (*description_max_width <
         std::min(description_width, kMinimumDescriptionWidth)) {
       *description_max_width = 0;
-      *contents_max_width = contents_width;
+      // Since we're not going to display the description, the contents can have
+      // the space we reserved for the separator.
+      available_width += separator_width;
+      *contents_max_width = std::min(contents_width, available_width);
     }
   }
 }

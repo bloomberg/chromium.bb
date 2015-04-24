@@ -63,7 +63,7 @@ TEST(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
     OmniboxPopupModel::ComputeMatchMaxWidths(
         contents_width, separator_width, description_width, available_width,
         true, &contents_max_width, &description_max_width);
-    EXPECT_EQ(contents_width, contents_max_width);
+    EXPECT_EQ(available_width, contents_max_width);
     EXPECT_EQ(0, description_max_width);
 
     // Half and half.
