@@ -127,6 +127,10 @@ class SQLiteChannelIDStore::Backend
   // Batch a channel id operation (add or delete).
   void BatchOperation(PendingOperation::OperationType op,
                       const DefaultChannelIDStore::ChannelID& channel_id);
+  // Prunes the list of pending operations to remove any operations for an
+  // identifier in |server_identifiers|.
+  void PrunePendingOperationsForDeletes(
+      const std::list<std::string>& server_identifiers);
   // Commit our pending operations to the database.
   void Commit();
   // Close() executed on the background task runner.
@@ -477,6 +481,28 @@ void SQLiteChannelIDStore::Backend::BatchOperation(
   }
 }
 
+void SQLiteChannelIDStore::Backend::PrunePendingOperationsForDeletes(
+    const std::list<std::string>& server_identifiers) {
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+  base::AutoLock locked(lock_);
+
+  for (PendingOperationsList::iterator it = pending_.begin();
+       it != pending_.end();) {
+    bool remove =
+        std::find(server_identifiers.begin(), server_identifiers.end(),
+                  (*it)->channel_id().server_identifier()) !=
+        server_identifiers.end();
+
+    if (remove) {
+      scoped_ptr<PendingOperation> po(*it);
+      it = pending_.erase(it);
+      --num_pending_;
+    } else {
+      ++it;
+    }
+  }
+}
+
 void SQLiteChannelIDStore::Backend::Commit() {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
@@ -566,6 +592,8 @@ void SQLiteChannelIDStore::Backend::BackgroundDeleteAllInList(
 
   if (!db_.get())
     return;
+
+  PrunePendingOperationsForDeletes(server_identifiers);
 
   sql::Statement del_smt(db_->GetCachedStatement(
       SQL_FROM_HERE, "DELETE FROM origin_bound_certs WHERE origin=?"));

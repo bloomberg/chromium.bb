@@ -140,7 +140,7 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
   ASSERT_EQ(3, foo_channel_id->creation_time().ToInternalValue());
   ASSERT_EQ(4, foo_channel_id->expiration_time().ToInternalValue());
 
-  // Now delete the cert and check persistence again.
+  // Now delete the channel ID and check persistence again.
   store_->DeleteChannelID(*channel_ids[0]);
   store_->DeleteChannelID(*channel_ids[1]);
   store_ = NULL;
@@ -152,7 +152,7 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
       base::MessageLoopProxy::current(),
       NULL);
 
-  // Reload and check if the cert has been removed.
+  // Reload and check if the channel ID has been removed.
   Load(&channel_ids);
   ASSERT_EQ(0U, channel_ids.size());
 }
@@ -160,7 +160,7 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPersistence) {
 // Test if data is stored as expected in the QuotaPolicy database.
 TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
   store_->AddChannelID(
-      net::DefaultChannelIDStore::ChannelID("foo.com",
+      net::DefaultChannelIDStore::ChannelID("nonpersistent.com",
                                             base::Time::FromInternalValue(3),
                                             base::Time::FromInternalValue(4),
                                             "c",
@@ -173,12 +173,12 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
   store_ = NULL;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
-  // Specify storage policy that makes "foo.com" session only.
+  // Specify storage policy that makes "nonpersistent.com" session only.
   scoped_refptr<content::MockSpecialStoragePolicy> storage_policy =
       new content::MockSpecialStoragePolicy();
   storage_policy->AddSessionOnly(
-      net::cookie_util::CookieOriginToURL("foo.com", true));
-  // Reload store, it should still have both channel ids.
+      net::cookie_util::CookieOriginToURL("nonpersistent.com", true));
+  // Reload store, it should still have both channel IDs.
   store_ = new QuotaPolicyChannelIDStore(
       temp_dir_.path().Append(kTestChannelIDFilename),
       base::MessageLoopProxy::current(),
@@ -186,7 +186,20 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
   Load(&channel_ids);
   ASSERT_EQ(2U, channel_ids.size());
 
-  // Now close the store, and "foo.com" should be deleted according to policy.
+  // Add another two channel IDs before closing the store. Because additions are
+  // delayed and committed to disk in batches, these will not be committed until
+  // the store is destroyed, which is after the policy is applied. The pending
+  // operation pruning logic should prevent the "nonpersistent.com" ID from
+  // being committed to disk.
+  store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
+      "nonpersistent.com", base::Time::FromInternalValue(5),
+      base::Time::FromInternalValue(6), "e", "f"));
+  store_->AddChannelID(net::DefaultChannelIDStore::ChannelID(
+      "persistent.com", base::Time::FromInternalValue(7),
+      base::Time::FromInternalValue(8), "g", "h"));
+
+  // Now close the store, and the nonpersistent.com channel IDs should be
+  // deleted according to policy.
   store_ = NULL;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
@@ -196,8 +209,10 @@ TEST_F(QuotaPolicyChannelIDStoreTest, TestPolicy) {
       base::MessageLoopProxy::current(),
       NULL);
 
-  // Reload and check that the "foo.com" cert has been removed.
+  // Reload and check that the nonpersistent.com channel IDs have been removed.
   Load(&channel_ids);
-  ASSERT_EQ(1U, channel_ids.size());
-  ASSERT_EQ("google.com", channel_ids[0]->server_identifier());
+  ASSERT_EQ(2U, channel_ids.size());
+  for (const auto& id : channel_ids) {
+    ASSERT_NE("nonpersistent.com", id->server_identifier());
+  }
 }
