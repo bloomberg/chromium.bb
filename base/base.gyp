@@ -1494,6 +1494,7 @@
           'type': 'none',
           'dependencies': [
             'base_java',
+            '../testing/android/on_device_instrumentation.gyp:reporter_java',
           ],
           'variables': {
             'java_in_dir': '../base/test/android/javatests',

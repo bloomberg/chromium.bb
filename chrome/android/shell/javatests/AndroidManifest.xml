@@ -17,6 +17,9 @@
         <provider android:name="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider"
             android:authorities="org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsDelayedProvider" />
 
+        <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
+            android:exported="true"/>
+
         <activity android:name="org.chromium.sync.test.util.MockGrantCredentialsPermissionActivity"
             android:exported="false">
             <intent-filter>

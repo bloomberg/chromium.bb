@@ -1966,6 +1966,8 @@
             '../net/net.gyp:net_java',
             '../net/net.gyp:net_javatests',
             '../net/net.gyp:net_java_test_support',
+            '../testing/android/on_device_instrumentation.gyp:broker_java',
+            '../testing/android/on_device_instrumentation.gyp:require_driver_apk',
             '../third_party/mojo/mojo_public.gyp:mojo_public_test_interfaces',
           ],
           'variables': {

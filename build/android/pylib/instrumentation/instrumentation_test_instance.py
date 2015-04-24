@@ -30,6 +30,17 @@ _ACTIVITY_RESULT_OK = -1
 _DEFAULT_ANNOTATIONS = [
     'Smoke', 'SmallTest', 'MediumTest', 'LargeTest',
     'EnormousTest', 'IntegrationTest']
+_EXTRA_ENABLE_HTTP_SERVER = (
+    'org.chromium.chrome.test.ChromeInstrumentationTestRunner.'
+        + 'EnableTestHttpServer')
+_EXTRA_DRIVER_TEST_LIST = (
+    'org.chromium.test.driver.OnDeviceInstrumentationDriver.TestList')
+_EXTRA_DRIVER_TEST_LIST_FILE = (
+    'org.chromium.test.driver.OnDeviceInstrumentationDriver.TestListFile')
+_EXTRA_DRIVER_TARGET_PACKAGE = (
+    'org.chromium.test.driver.OnDeviceInstrumentationDriver.TargetPackage')
+_EXTRA_DRIVER_TARGET_CLASS = (
+    'org.chromium.test.driver.OnDeviceInstrumentationDriver.TargetClass')
 _NATIVE_CRASH_RE = re.compile('native crash', re.IGNORECASE)
 _PICKLE_FORMAT_VERSION = 10
 
@@ -130,29 +141,35 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     self._apk_under_test = None
     self._package_info = None
+    self._suite = None
     self._test_apk = None
     self._test_jar = None
     self._test_package = None
     self._test_runner = None
     self._test_support_apk = None
-    self.__initializeApkAttributes(args, error_func)
+    self._initializeApkAttributes(args, error_func)
 
     self._data_deps = None
     self._isolate_abs_path = None
     self._isolate_delegate = None
     self._isolated_abs_path = None
     self._test_data = None
-    self.__initializeDataDependencyAttributes(args, isolate_delegate)
+    self._initializeDataDependencyAttributes(args, isolate_delegate)
 
     self._annotations = None
     self._excluded_annotations = None
     self._test_filter = None
-    self.__initializeTestFilterAttributes(args)
+    self._initializeTestFilterAttributes(args)
 
     self._flags = None
-    self.__initializeFlagAttributes(args)
+    self._initializeFlagAttributes(args)
 
-  def __initializeApkAttributes(self, args, error_func):
+    self._driver_apk = None
+    self._driver_package = None
+    self._driver_name = None
+    self._initializeDriverAttributes()
+
+  def _initializeApkAttributes(self, args, error_func):
     if args.apk_under_test.endswith('.apk'):
       self._apk_under_test = args.apk_under_test
     else:
@@ -164,20 +181,20 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       error_func('Unable to find APK under test: %s' % self._apk_under_test)
 
     if args.test_apk.endswith('.apk'):
-      test_apk_root = os.path.splitext(os.path.basename(args.test_apk))[0]
+      self._suite = os.path.splitext(os.path.basename(args.test_apk))[0]
       self._test_apk = args.test_apk
     else:
-      test_apk_root = args.test_apk
+      self._suite = args.test_apk
       self._test_apk = os.path.join(
           constants.GetOutDirectory(), constants.SDK_BUILD_APKS_DIR,
           '%s.apk' % args.test_apk)
 
     self._test_jar = os.path.join(
         constants.GetOutDirectory(), constants.SDK_BUILD_TEST_JAVALIB_DIR,
-        '%s.jar' % test_apk_root)
+        '%s.jar' % self._suite)
     self._test_support_apk = os.path.join(
         constants.GetOutDirectory(), constants.SDK_BUILD_TEST_JAVALIB_DIR,
-        '%sSupport.apk' % test_apk_root)
+        '%sSupport.apk' % self._suite)
 
     if not os.path.exists(self._test_apk):
       error_func('Unable to find test APK: %s' % self._test_apk)
@@ -194,7 +211,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if not self._package_info:
       logging.warning('Unable to find package info for %s', self._test_package)
 
-  def __initializeDataDependencyAttributes(self, args, isolate_delegate):
+  def _initializeDataDependencyAttributes(self, args, isolate_delegate):
     self._data_deps = []
     if args.isolate_file_path:
       self._isolate_abs_path = os.path.abspath(args.isolate_file_path)
@@ -215,7 +232,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     if not self._isolate_delegate and not self._test_data:
       logging.warning('No data dependencies will be pushed.')
 
-  def __initializeTestFilterAttributes(self, args):
+  def _initializeTestFilterAttributes(self, args):
     self._test_filter = args.test_filter
 
     def annotation_dict_element(a):
@@ -240,7 +257,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     else:
       self._excluded_annotations = {}
 
-  def __initializeFlagAttributes(self, args):
+  def _initializeFlagAttributes(self, args):
     self._flags = ['--disable-fre', '--enable-test-intents']
     # TODO(jbudorick): Transition "--device-flags" to "--device-flags-file"
     if hasattr(args, 'device_flags') and args.device_flags:
@@ -252,9 +269,17 @@ class InstrumentationTestInstance(test_instance.TestInstance):
         stripped_lines = (l.strip() for l in device_flags_file)
         self._flags.extend([flag for flag in stripped_lines if flag])
 
-  @property
-  def suite(self):
-    return 'instrumentation'
+  def _initializeDriverAttributes(self):
+    self._driver_apk = os.path.join(
+        constants.GetOutDirectory(), constants.SDK_BUILD_APKS_DIR,
+        'OnDeviceInstrumentationDriver.apk')
+    if os.path.exists(self._driver_apk):
+      self._driver_package = apk_helper.GetPackageName(
+          self._driver_apk)
+      self._driver_name = apk_helper.GetInstrumentationName(
+          self._driver_apk)
+    else:
+      self._driver_apk = None
 
   @property
   def apk_under_test(self):
@@ -265,8 +290,24 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._flags
 
   @property
+  def driver_apk(self):
+    return self._driver_apk
+
+  @property
+  def driver_package(self):
+    return self._driver_package
+
+  @property
+  def driver_name(self):
+    return self._driver_name
+
+  @property
   def package_info(self):
     return self._package_info
+
+  @property
+  def suite(self):
+    return self._suite
 
   @property
   def test_apk(self):
@@ -444,6 +485,28 @@ class InstrumentationTestInstance(test_instance.TestInstance):
             'annotations': a,
         })
     return inflated_tests
+
+  @staticmethod
+  def GetHttpServerEnvironmentVars():
+    return {
+      _EXTRA_ENABLE_HTTP_SERVER: None,
+    }
+
+  def GetDriverEnvironmentVars(
+      self, test_list=None, test_list_file_path=None):
+    env = {
+      _EXTRA_DRIVER_TARGET_PACKAGE: self.test_package,
+      _EXTRA_DRIVER_TARGET_CLASS: self.test_runner,
+    }
+
+    if test_list:
+      env[_EXTRA_DRIVER_TEST_LIST] = ','.join(test_list)
+
+    if test_list_file_path:
+      env[_EXTRA_DRIVER_TEST_LIST_FILE] = (
+          os.path.basename(test_list_file_path))
+
+    return env
 
   @staticmethod
   def ParseAmInstrumentRawOutput(raw_output):

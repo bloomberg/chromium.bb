@@ -8,6 +8,7 @@ import logging
 import os
 import tempfile
 
+from pylib import constants
 from pylib.base import base_test_result
 from pylib.remote.device import remote_device_test_run
 from pylib.utils import apk_helper
@@ -25,9 +26,33 @@ class RemoteDeviceInstrumentationTestRun(
   def _TriggerSetUp(self):
     """Set up the triggering of a test run."""
     logging.info('Triggering test run.')
-    self._AmInstrumentTestSetup(
-        self._test_instance._apk_under_test, self._test_instance.test_apk,
-        self._test_instance.test_runner, environment_variables={})
+
+    with tempfile.NamedTemporaryFile(suffix='.txt') as test_list_file:
+      tests = self._test_instance.GetTests()
+      logging.debug('preparing to run %d instrumentation tests remotely:',
+                    len(tests))
+      for t in tests:
+        test_name = '%s#%s' % (t['class'], t['method'])
+        logging.debug('  %s', test_name)
+        test_list_file.write('%s\n' % test_name)
+      test_list_file.flush()
+      self._test_instance._data_deps.append(
+          (os.path.abspath(test_list_file.name), None))
+
+      env_vars = self._test_instance.GetDriverEnvironmentVars(
+          test_list_file_path=test_list_file.name)
+      env_vars.update(self._test_instance.GetHttpServerEnvironmentVars())
+
+      logging.debug('extras:')
+      for k, v in env_vars.iteritems():
+        logging.debug('  %s: %s', k, v)
+
+      self._AmInstrumentTestSetup(
+          self._test_instance.apk_under_test,
+          self._test_instance.driver_apk,
+          self._test_instance.driver_name,
+          environment_variables=env_vars,
+          extra_apks=[self._test_instance.test_apk])
 
   #override
   def _ParseTestResults(self):

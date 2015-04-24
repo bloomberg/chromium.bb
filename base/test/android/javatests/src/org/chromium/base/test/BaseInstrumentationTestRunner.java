@@ -14,10 +14,12 @@ import junit.framework.TestCase;
 import junit.framework.TestResult;
 
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.test.reporter.TestStatusListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO(jbudorick): Add support for on-device handling of timeouts.
 /**
  *  An Instrumentation test runner that checks SDK level for tests with specific requirements.
  */
@@ -88,7 +90,7 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
 
     @Override
     protected AndroidTestRunner getAndroidTestRunner() {
-        return new AndroidTestRunner() {
+        AndroidTestRunner runner = new AndroidTestRunner() {
             @Override
             protected TestResult createTestResult() {
                 SkippingTestResult r = new SkippingTestResult();
@@ -96,6 +98,8 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
                 return r;
             }
         };
+        runner.addTestListener(new TestStatusListener(getContext()));
+        return runner;
     }
 
     /**

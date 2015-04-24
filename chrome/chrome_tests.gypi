@@ -2938,6 +2938,8 @@
             '../components/components.gyp:precache_javatests',
             '../content/content_shell_and_tests.gyp:content_java_test_support',
             '../sync/sync.gyp:sync_javatests',
+            '../testing/android/on_device_instrumentation.gyp:broker_java',
+            '../testing/android/on_device_instrumentation.gyp:require_driver_apk',
             '../ui/android/ui_android.gyp:ui_javatests',
           ],
           'variables': {

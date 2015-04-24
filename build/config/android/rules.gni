@@ -1566,6 +1566,7 @@ template("unittest_apk") {
     deps = [
       "//base:base_java",
       "//build/android/pylib/remote/device/dummy:remote_device_dummy_apk",
+      "//testing/android/appurify_support:appurify_support_java",
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps

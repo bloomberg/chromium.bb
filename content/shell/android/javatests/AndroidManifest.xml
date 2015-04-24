@@ -11,9 +11,11 @@
          needed when building test cases. -->
     <application>
         <uses-library android:name="android.test.runner" />
+        <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
+            android:exported="true"/>
     </application>
     <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
-    <instrumentation android:name="android.test.InstrumentationTestRunner"
+    <instrumentation android:name="org.chromium.base.test.BaseInstrumentationTestRunner"
         android:targetPackage="org.chromium.content_shell_apk"
         android:label="Tests for org.chromium.content_shell_apk"/>
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
