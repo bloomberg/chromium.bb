@@ -41,3 +41,6 @@ Android relocation packing tool details:
     Create gyp build
     Create gn build (currently packer only; no unit tests)
     Apply https://android-review.googlesource.com/#/c/143878/
+    Apply https://android-review.googlesource.com/#/c/147620/
+          https://android-review.googlesource.com/#/c/147745/
+          https://android-review.googlesource.com/#/c/148073/
