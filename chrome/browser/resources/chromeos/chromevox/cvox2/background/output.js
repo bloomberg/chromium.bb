@@ -93,6 +93,9 @@ Output.ROLE_INFO_ = {
   checkBox: {
     msgId: 'input_type_checkbox'
   },
+  date: {
+    msgId: 'input_type_date'
+  },
   dialog: {
     msgId: 'dialog'
   },
@@ -116,6 +119,10 @@ Output.ROLE_INFO_ = {
   radioButton: {
     msgId: 'input_type_radio'
   },
+  spinButton: {
+    msgId: 'aria_role_combobox',
+    earcon: 'LISTBOX'
+  },
   textBox: {
     msgId: 'input_type_text',
     earcon: 'EDITABLE_TEXT'
@@ -123,6 +130,9 @@ Output.ROLE_INFO_ = {
   textField: {
     msgId: 'input_type_text',
     earcon: 'EDITABLE_TEXT'
+  },
+  time: {
+    msgId: 'tag_time'
   },
   toolbar: {
     msgId: 'aria_role_toolbar'
@@ -156,7 +166,7 @@ Output.STATE_INFO_ = {
 Output.RULES = {
   navigate: {
     'default': {
-      speak: '$name $value $description $role',
+      speak: '$name $value $description $help $role',
       braille: ''
     },
     alert: {
@@ -164,6 +174,10 @@ Output.RULES = {
     },
     checkBox: {
       speak: '$name $role $checked'
+    },
+    date: {
+      enter: '$name $role',
+      leave: '@exited_container($role)'
     },
     dialog: {
       enter: '$name $role'
@@ -214,6 +228,16 @@ Output.RULES = {
     },
     tab: {
       speak: '@describe_tab($name)'
+    },
+    textField: {
+      speak: '$name $value $if(' +
+          '$textInputType, @input_type_+$textInputType, @input_type_text) ' +
+          '$earcon(EDITABLE_TEXT)',
+      braille: ''
+    },
+    time: {
+      enter: '$name $role',
+      leave: '@exited_container($role)'
     },
     toolbar: {
       enter: '$name $role'

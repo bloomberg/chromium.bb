@@ -144,18 +144,20 @@ TEST_F('OutputE2ETest', 'Audio', function() {
       var el = root.firstChild.firstChild.firstChild.firstChild;
       var range = cursors.Range.fromNode(el);
       var o = new Output().withSpeechAndBraille(range, null, 'navigate');
-      assertEqualsJSON({string_: 'media control|Tool bar|||play|Button',
-          spans_:
+      assertEqualsJSON(
+          {string_: 'media control|Tool bar|||play|begin playback|Button',
+           spans_:
               // Entered container toolbar.
 
               // Button.
               [{value: 'name', start: 23, end: 23},
               {value: 'value', start: 24, end: 24},
               {value: 'description', start: 25, end: 29},
-              {value: 'role', start: 30, end: 36},
+              {value: 'help', start: 30, end: 44},
+              {value: 'role', start: 45, end: 51},
 
               // Button earcon.
-              {value: {}, start: 30, end: 36}]
+              {value: {}, start: 45, end: 51}]
           }, o.toSpannableForTest());
 
       el = el.nextSibling;
@@ -166,5 +168,60 @@ TEST_F('OutputE2ETest', 'Audio', function() {
           spans_:
               [{value: 'help', start: 12, end: 31}]
           }, o.toSpannableForTest());
+  });
+});
+
+TEST_F('OutputE2ETest', 'Input', function() {
+  this.runWithLoadedTree(
+      '<input type="text"></input>' +
+      '<input type="email"></input>' +
+      '<input type="password"></input>' +
+      '<input type="tel"></input>'          +
+      '<input type="number"></input>' +
+      '<input type="time"></input>' +
+      '<input type="date"></input>',
+    function(root) {
+      var expected = {string_: '', 'spans_': [
+              {value: 'name', start: 0, end: 0},
+
+              // Selection span.
+              {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
+
+              {value: 'value', start: 1, end: 1},
+
+              // Earcon
+              {value: {}, start: 2, end: 2}
+      ]};
+
+      var expectedValues = [
+        '||Edit text',
+        '||Edit text, email entry',
+        '||Password edit text',
+        '||Edit text, number entry',
+        {string_: '||Combo box', spans_: [{value: 'name', start: 0, end: 0},
+            {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
+            {value: 'value', start: 1, end: 1},
+            {value: 'role', start: 2, end: 11},
+            {value: {}, start: 2, end: 11}]},
+        {string_: '||Time', spans_: [{value: 'name', start: 0, end: 0},
+            {value: 'value', start: 1, end: 1},
+            {value: 'role', start: 2, end: 6}]},
+        {string_: '||Date control', spans_: [{value: 'name', start: 0, end: 0},
+            {value: 'value', start: 1, end: 1},
+            {value: 'role', start: 2, end: 14}]}
+      ];
+
+      var el = root.firstChild.firstChild;
+      expectedValues.forEach(function(expectedValue) {
+        var range = cursors.Range.fromNode(el);
+        var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+        if (typeof expectedValue == 'object') {
+          assertEqualsJSON(expectedValue, o.toSpannableForTest());
+        } else {
+          expected.string_ = expectedValue;
+          assertEqualsJSON(expected, o.toSpannableForTest());
+        }
+        el = el.nextSibling;
+      });
   });
 });
