@@ -12,8 +12,7 @@ import os
 import sys
 
 from pylib import screenshot
-from pylib.device import adb_wrapper
-from pylib.device import device_filter
+from pylib.device import device_errors
 from pylib.device import device_utils
 
 def _PrintMessage(heading, eol='\n'):
@@ -67,22 +66,25 @@ def main():
 
   (options, args) = parser.parse_args()
 
-  if options.verbose:
-    logging.getLogger().setLevel(logging.DEBUG)
-
-  devices = adb_wrapper.AdbWrapper.Devices(
-      filters=device_filter.DefaultFilters())
-
-  if not options.device and len(devices) > 1:
-    parser.error('Multiple devices are attached. '
-                 'Please specify device serial number with --device.')
-  elif not options.device and len(devices) == 1:
-    options.device = devices[0]
-
   if len(args) > 1:
     parser.error('Too many positional arguments.')
   host_file = args[0] if args else options.file
-  device = device_utils.DeviceUtils(options.device)
+
+  if options.verbose:
+    logging.getLogger().setLevel(logging.DEBUG)
+
+  devices = device_utils.DeviceUtils.HealthyDevices()
+
+  if not options.device:
+    if len(devices) > 1:
+      parser.error('Multiple devices are attached. '
+                   'Please specify device serial number with --device.')
+    elif len(devices) == 1:
+      device = devices[0]
+    else:
+      raise device_errors.NoDevicesError()
+  else:
+    device = device_utils.DeviceUtils(options.device)
 
   if options.video:
     _CaptureVideo(device, host_file, options)

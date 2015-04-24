@@ -30,7 +30,6 @@ from pylib.device import adb_wrapper
 from pylib.device import decorators
 from pylib.device import device_blacklist
 from pylib.device import device_errors
-from pylib.device import device_filter
 from pylib.device import intent
 from pylib.device import logcat_monitor
 from pylib.device.commands import install_commands
@@ -1540,6 +1539,18 @@ class DeviceUtils(object):
 
     return self._cache['run_pie']
 
+  def GetClientCache(self, client_name):
+    """Returns client cache."""
+    if client_name not in self._client_caches:
+      self._client_caches[client_name] = {}
+    return self._client_caches[client_name]
+
+  def _ClearCache(self):
+    """Clears all caches."""
+    for client in self._client_caches:
+      self._client_caches[client].clear()
+    self._cache.clear()
+
   @classmethod
   def parallel(cls, devices=None, async=False):
     """Creates a Parallelizer to operate over the provided list of devices.
@@ -1558,8 +1569,7 @@ class DeviceUtils(object):
       A Parallelizer operating over |devices|.
     """
     if not devices:
-      devices = adb_wrapper.AdbWrapper.Devices(
-          filters=device_filter.DefaultFilters())
+      devices = cls.HealthyDevices()
       if not devices:
         raise device_errors.NoDevicesError()
 
@@ -1569,14 +1579,15 @@ class DeviceUtils(object):
     else:
       return parallelizer.SyncParallelizer(devices)
 
-  def GetClientCache(self, client_name):
-    """Returns client cache."""
-    if client_name not in self._client_caches:
-      self._client_caches[client_name] = {}
-    return self._client_caches[client_name]
+  @classmethod
+  def HealthyDevices(cls):
+    blacklist = device_blacklist.ReadBlacklist()
+    def blacklisted(adb):
+      if adb.GetDeviceSerial() in blacklist:
+        logging.warning('Device %s is blacklisted.', adb.GetDeviceSerial())
+        return True
+      return False
 
-  def _ClearCache(self):
-    """Clears all caches."""
-    for client in self._client_caches:
-      self._client_caches[client].clear()
-    self._cache.clear()
+    return [cls(adb) for adb in adb_wrapper.AdbWrapper.Devices()
+            if not blacklisted(adb)]
+

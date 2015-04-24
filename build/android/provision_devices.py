@@ -21,11 +21,9 @@ import time
 
 from pylib import constants
 from pylib import device_settings
-from pylib.device import adb_wrapper
 from pylib.device import battery_utils
 from pylib.device import device_blacklist
 from pylib.device import device_errors
-from pylib.device import device_filter
 from pylib.device import device_utils
 from pylib.utils import run_tests_helper
 from pylib.utils import timeout_retry
@@ -55,8 +53,7 @@ def ProvisionDevices(options):
   if options.device is not None:
     devices = [options.device]
   else:
-    devices = adb_wrapper.AdbWrapper.Devices(
-        filters=device_filter.DefaultFilters())
+    devices = device_utils.DeviceUtils.HealthyDevices()
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
   parallel_devices.pMap(ProvisionDevice, options)

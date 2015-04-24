@@ -1547,30 +1547,6 @@ class DeviceUtilsStrTest(DeviceUtilsTest):
       self.assertEqual('0123456789abcdef', str(self.device))
 
 
-class DeviceUtilsParallelTest(mock_calls.TestCase):
-
-  def testParallel_default(self):
-    test_serials = ['0123456789abcdef', 'fedcba9876543210']
-    with self.assertCalls(
-        (mock.call.pylib.device.device_filter.DefaultFilters(), None),
-        (mock.call.pylib.device.adb_wrapper.AdbWrapper.Devices(filters=None),
-         [_AdbWrapperMock(serial) for serial in test_serials])):
-      parallel_devices = device_utils.DeviceUtils.parallel()
-    for serial, device in zip(test_serials, parallel_devices.pGet(None)):
-      self.assertTrue(
-          isinstance(device, device_utils.DeviceUtils)
-          and serial == str(device),
-          'Expected a DeviceUtils object with serial %s' % serial)
-
-  def testParallel_noDevices(self):
-    with self.assertCalls(
-        (mock.call.pylib.device.device_filter.DefaultFilters(), None),
-        (mock.call.pylib.device.adb_wrapper.AdbWrapper.Devices(filters=None),
-         [])):
-      with self.assertRaises(device_errors.NoDevicesError):
-        device_utils.DeviceUtils.parallel()
-
-
 class DeviceUtilsClientCache(DeviceUtilsTest):
 
   def testClientCache_twoCaches(self):
@@ -1596,6 +1572,57 @@ class DeviceUtilsClientCache(DeviceUtilsTest):
     self.device._ClearCache()
     self.assertEqual(client_cache_one, {})
     self.assertEqual(client_cache_two, {})
+
+
+class DeviceUtilsParallelTest(mock_calls.TestCase):
+
+  def testParallel_default(self):
+    test_serials = ['0123456789abcdef', 'fedcba9876543210']
+    with self.assertCall(
+        mock.call.pylib.device.device_utils.DeviceUtils.HealthyDevices(),
+        [device_utils.DeviceUtils(s) for s in test_serials]):
+      parallel_devices = device_utils.DeviceUtils.parallel()
+    for serial, device in zip(test_serials, parallel_devices.pGet(None)):
+      self.assertTrue(isinstance(device, device_utils.DeviceUtils))
+      self.assertEquals(serial, device.adb.GetDeviceSerial())
+
+  def testParallel_noDevices(self):
+    with self.assertCall(
+        mock.call.pylib.device.device_utils.DeviceUtils.HealthyDevices(), []):
+      with self.assertRaises(device_errors.NoDevicesError):
+        device_utils.DeviceUtils.parallel()
+
+
+class DeviceUtilsHealthyDevicesTest(mock_calls.TestCase):
+
+  def _createAdbWrapperMock(self, serial, is_ready=True):
+    adb = _AdbWrapperMock(serial)
+    adb.is_ready = is_ready
+    return adb
+
+  def testHealthyDevices_default(self):
+    test_serials = ['0123456789abcdef', 'fedcba9876543210']
+    with self.assertCalls(
+        (mock.call.pylib.device.device_blacklist.ReadBlacklist(), []),
+        (mock.call.pylib.device.adb_wrapper.AdbWrapper.Devices(),
+         [self._createAdbWrapperMock(s) for s in test_serials])):
+      devices = device_utils.DeviceUtils.HealthyDevices()
+    for serial, device in zip(test_serials, devices):
+      self.assertTrue(isinstance(device, device_utils.DeviceUtils))
+      self.assertEquals(serial, device.adb.GetDeviceSerial())
+
+  def testHealthyDevices_blacklisted(self):
+    test_serials = ['0123456789abcdef', 'fedcba9876543210']
+    with self.assertCalls(
+        (mock.call.pylib.device.device_blacklist.ReadBlacklist(),
+         ['fedcba9876543210']),
+        (mock.call.pylib.device.adb_wrapper.AdbWrapper.Devices(),
+         [self._createAdbWrapperMock(s) for s in test_serials])):
+      devices = device_utils.DeviceUtils.HealthyDevices()
+    self.assertEquals(1, len(devices))
+    self.assertTrue(isinstance(devices[0], device_utils.DeviceUtils))
+    self.assertEquals('0123456789abcdef', devices[0].adb.GetDeviceSerial())
+
 
 if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)

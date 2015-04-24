@@ -12,17 +12,21 @@ import collections
 import errno
 import logging
 import os
+import re
 
 from pylib import cmd_helper
 from pylib import constants
 from pylib.device import decorators
 from pylib.device import device_errors
-from pylib.device import device_filter
 from pylib.utils import timeout_retry
 
 
 _DEFAULT_TIMEOUT = 30
 _DEFAULT_RETRIES = 2
+
+_EMULATOR_RE = re.compile(r'^emulator-[0-9]+$')
+
+_READY_STATE = 'device'
 
 
 def _VerifyLocalFileExists(path):
@@ -160,22 +164,17 @@ class AdbWrapper(object):
                    cpu_affinity=0)
 
   @classmethod
-  def GetDevices(cls, filters=None, timeout=_DEFAULT_TIMEOUT,
-                 retries=_DEFAULT_RETRIES):
+  def GetDevices(cls, timeout=_DEFAULT_TIMEOUT, retries=_DEFAULT_RETRIES):
     """DEPRECATED. Refer to Devices(...) below."""
     # TODO(jbudorick): Remove this function once no more clients are using it.
-    return cls.Devices(filters=filters, timeout=timeout, retries=retries)
+    return cls.Devices(timeout=timeout, retries=retries)
 
   @classmethod
-  def Devices(cls, filters=None, timeout=_DEFAULT_TIMEOUT,
+  def Devices(cls, is_ready=True, timeout=_DEFAULT_TIMEOUT,
               retries=_DEFAULT_RETRIES):
     """Get the list of active attached devices.
 
     Args:
-      filters: (optional) A list of binary functions that take an AdbWrapper
-          instance and a string description. Any device for which all provided
-          filter functions do not return True will not be included in the
-          returned list.
       timeout: (optional) Timeout per try in seconds.
       retries: (optional) Number of retries to attempt.
 
@@ -184,17 +183,8 @@ class AdbWrapper(object):
     """
     output = cls._RunAdbCmd(['devices'], timeout=timeout, retries=retries)
     lines = (line.split() for line in output.splitlines())
-    devices = (AdbWrapper(line[0]) for line in lines if len(line) == 2)
-
-    def matches_all_filters(device):
-      for f in filters or ():
-        if not f(device):
-          logging.info('Device %s failed filter %s', device.GetDeviceSerial(),
-                       f.__name__)
-          return False
-      return True
-
-    return [d for d in devices if matches_all_filters(d)]
+    return [AdbWrapper(line[0]) for line in lines
+            if len(line) == 2 and (not is_ready or line[1] == _READY_STATE)]
 
   def GetDeviceSerial(self):
     """Gets the device serial number associated with this object.
@@ -551,3 +541,15 @@ class AdbWrapper(object):
     if 'cannot' in output:
       raise device_errors.AdbCommandFailedError(
           ['root'], output, device_serial=self._device_serial)
+
+  @property
+  def is_emulator(self):
+    return _EMULATOR_RE.match(self._device_serial)
+
+  @property
+  def is_ready(self):
+    try:
+      return self.GetState() == _READY_STATE
+    except device_errors.CommandFailedError:
+      return False
+

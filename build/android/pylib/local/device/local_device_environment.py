@@ -5,7 +5,6 @@
 from pylib.base import environment
 from pylib.device import adb_wrapper
 from pylib.device import device_errors
-from pylib.device import device_filter
 from pylib.device import device_utils
 from pylib.utils import parallelizer
 
@@ -14,26 +13,24 @@ class LocalDeviceEnvironment(environment.Environment):
 
   def __init__(self, args, _error_func):
     super(LocalDeviceEnvironment, self).__init__()
-    self._device = args.test_device
+    self._device_serial = args.test_device
     self._devices = []
     self._max_tries = 1 + args.num_retries
     self._tool_name = args.tool
 
   #override
   def SetUp(self):
-    available_devices = adb_wrapper.AdbWrapper.Devices(
-        filters=device_filter.DefaultFilters())
+    available_devices = device_utils.DeviceUtils.HealthyDevices()
     if not available_devices:
       raise device_errors.NoDevicesError
-    if self._device:
-      if self._device not in available_devices:
+    if self._device_serial:
+      self._devices = [d for d in available_devices
+                       if d.adb.GetDeviceSerial == self._device_serial]
+      if not self._devices:
         raise device_errors.DeviceUnreachableError(
-            'Could not find device %r' % self._device)
-      self._devices = [device_utils.DeviceUtils(self._device)]
+            'Could not find device %r' % self._device_serial)
     else:
-      self._devices = [
-          device_utils.DeviceUtils(s)
-          for s in available_devices]
+      self._devices = available_devices
 
   @property
   def devices(self):

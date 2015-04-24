@@ -19,7 +19,6 @@ import time
 from pylib import constants
 from pylib import forwarder
 from pylib.device import adb_wrapper
-from pylib.device import device_filter
 from pylib.device import device_utils
 from pylib.utils import run_tests_helper
 
@@ -54,11 +53,10 @@ def main(argv):
     parser.error('Bad port number')
     sys.exit(1)
 
-  devices = adb_wrapper.AdbWrapper.Devices(
-      filters=device_filter.DefaultFilters())
+  devices = device_utils.DeviceUtils.HealthyDevices()
 
   if options.device:
-    if options.device not in [d.GetDeviceSerial() for d in devices]:
+    if options.device not in [str(d) for d in devices]:
       raise Exception('Error: %s not in attached devices %s' % (options.device,
                       ','.join(devices)))
     devices = [options.device]
@@ -67,7 +65,7 @@ def main(argv):
       raise Exception('Error: no connected devices')
     logging.info('No device specified. Defaulting to %s', devices[0])
 
-  device = device_utils.DeviceUtils(devices[0])
+  device = devices[0]
   constants.SetBuildType(options.build_type)
   try:
     forwarder.Forwarder.Map(port_pairs, device)

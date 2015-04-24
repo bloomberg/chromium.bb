@@ -12,8 +12,6 @@ import shutil
 import sys
 import time
 
-from pylib.device import adb_wrapper
-from pylib.device import device_filter
 from pylib.device import device_utils
 
 def _SaveAppData(device, package_name, from_apk=None, data_dir=None):
@@ -109,11 +107,10 @@ def main():
     parser.print_help(sys.stderr)
     parser.error('Unknown arguments: %s.' % args)
 
-  devices = adb_wrapper.AdbWrapper.Devices(
-      filters=device_filter.DefaultFilters())
+  devices = device_utils.DeviceUtils.HealthyDevices()
   if len(devices) != 1:
     parser.error('Exactly 1 device must be attached.')
-  device = device_utils.DeviceUtils(devices[0])
+  device = devices[0]
 
   if options.from_apk:
     assert os.path.isfile(options.from_apk)
