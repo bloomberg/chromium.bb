@@ -134,7 +134,7 @@ bool SessionCrashedBubbleView::Show(Browser* browser) {
   if (!IsBubbleUIEnabled())
     return false;
 
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (browser->profile()->IsOffTheRecord())
     return true;
 

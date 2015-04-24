@@ -28,7 +28,7 @@ const char* kWhitelistedFiles[] = {
 void ImageLoaded(
     const content::URLDataSource::GotDataCallback& got_data_callback,
     const user_manager::UserImage& user_image) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (user_image.has_raw_image())
     got_data_callback.Run(new base::RefCountedBytes(user_image.raw_image()));

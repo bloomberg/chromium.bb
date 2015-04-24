@@ -422,7 +422,7 @@ void ResolveUILanguageList(
     scoped_ptr<chromeos::locale_util::LanguageSwitchResult>
         language_switch_result,
     UILanguageListResolvedCallback callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   scoped_ptr<scoped_ptr<base::ListValue>> new_language_list(
       new scoped_ptr<base::ListValue>());

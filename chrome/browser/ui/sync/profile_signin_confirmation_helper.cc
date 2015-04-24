@@ -113,7 +113,7 @@ ProfileSigninConfirmationHelper::ProfileSigninConfirmationHelper(
 }
 
 ProfileSigninConfirmationHelper::~ProfileSigninConfirmationHelper() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void ProfileSigninConfirmationHelper::OnHistoryQueryResults(
@@ -164,7 +164,7 @@ void ProfileSigninConfirmationHelper::CheckHasTypedURLs() {
 }
 
 void ProfileSigninConfirmationHelper::ReturnResult(bool result) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Pass |true| into the callback as soon as one of the tasks passes a
   // result of |true|, otherwise pass the last returned result.
   if (--pending_requests_ == 0 || result) {
@@ -229,7 +229,7 @@ bool HasSyncedExtensions(Profile* profile) {
 void CheckShouldPromptForNewProfile(
     Profile* profile,
     const base::Callback<void(bool)>& return_result) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (HasBeenShutdown(profile) ||
       HasBookmarks(profile) ||
