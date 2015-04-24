@@ -1,0 +1,89 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use the <code>chrome.instanceID</code> API to access the InstanceID service.
+namespace instanceID {
+  // Parameters for getToken.
+  dictionary GetTokenParams {
+    // Identifies the entity that is authorized to access resources associated
+    // with this Instance ID. It can be another Instance ID or a project ID.
+    DOMString audience;
+
+    // Identifies authorized actions that the authorized entity can take.
+    // E.g. for sending GCM messages, <code>GCM</code> scope should be used.
+    DOMString scope;
+
+    // Allows including a small number of string key/value pairs that will be
+    // associated with the token and may be used in processing the request.
+    object? options;
+  };
+
+  // Parameters for deleteToken.
+  dictionary DeleteTokenParams {
+    // The audience that is passed for obtaining a token.
+    DOMString audience;
+
+    // The scope that is passed for obtaining a token.
+    DOMString scope;
+  };
+
+  // |instanceID| : The Instance ID assigned to the app.
+  callback GetIDCallback = void(DOMString instanceID);
+
+  // |creationTime| : The time when the Instance ID has been generated,
+  //     represented in milliseconds since the epoch.
+  callback GetCreationTimeCallback = void(long creationTime);
+
+  // |token| : The token assigned by the requested service.
+  callback GetTokenCallback = void(DOMString token);
+
+  callback DeleteIDCallback = void();
+
+  callback DeleteTokenCallback = void();
+
+  interface Functions {
+    // Retrieves an identifier for the app instance. The instance ID will be
+    // returned by the <code>callback</code>.
+    // The same ID will be returned as long as the application identity has not
+    // been revoked or expired.
+    // |callback| : Function called when the retrieval completes. It should
+    //     check $(ref:runtime.lastError) for error when instanceID is empty.
+    static void getID(GetIDCallback callback);
+
+    // Retrieves the time when the InstanceID has been generated. The creation
+    // time will be returned by the <code>callback</code>.
+    // |callback| : Function called when the retrieval completes. It should
+    //     check $(ref:runtime.lastError) for error when creationTime is zero.
+    static void getCreationTime(GetCreationTimeCallback callback);
+
+    // Return a token that allows the identified audience to access the service
+    // defined as scope.
+    // |getTokenParams| : getToken parameters.
+    // |callback| : Function called when the retrieval completes. It should
+    //     check $(ref:runtime.lastError) for error when token is empty.
+    static void getToken(GetTokenParams getTokenParams,
+                         GetTokenCallback callback);
+
+    // Revokes a granted token.
+    // |deleteTokenParams| : deleteToken parameters.
+    // |callback| : Function called when the deletion completes. The token
+    //     was revoked successfully if $(ref:runtime.lastError) is not set.
+    static void deleteToken(DeleteTokenParams deleteTokenParams,
+                            DeleteTokenCallback callback);
+
+    // Resets the app instance identifier and revokes all tokens associated with
+    // it.
+    // |callback| : Function called when the deletion completes. The instance
+    //     identifier was revoked successfully if $(ref:runtime.lastError) is
+    //     not set.
+    static void deleteID(DeleteIDCallback callback);
+  };
+
+  interface Events {
+    // Fired when all the granted tokens need to be refreshed. The Instance ID
+    // also needs to be refreshed when updateID is set to true.
+    // |updateID| : Instance ID also needs to be refreshed.
+    static void onTokenRefresh(boolean updateID);
+  };
+};

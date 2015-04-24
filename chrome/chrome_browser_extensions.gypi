@@ -305,6 +305,8 @@
       'browser/extensions/api/image_writer_private/write_from_url_operation.h',
       'browser/extensions/api/inline_install_private/inline_install_private_api.cc',
       'browser/extensions/api/inline_install_private/inline_install_private_api.h',
+      'browser/extensions/api/instance_id/instance_id_api.cc',
+      'browser/extensions/api/instance_id/instance_id_api.h',
       'browser/extensions/api/launcher_page/launcher_page_api.cc',
       'browser/extensions/api/launcher_page/launcher_page_api.h',
       'browser/extensions/api/location/location_api.cc',

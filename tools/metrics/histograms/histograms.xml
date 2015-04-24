@@ -51311,6 +51311,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1016" label="AUTOFILLPRIVATE_REMOVEENTRY"/>
   <int value="1017" label="AUTOFILLPRIVATE_VALIDATEPHONENUMBERS"/>
   <int value="1018" label="AUTOFILLPRIVATE_MASKCREDITCARD"/>
+  <int value="1019" label="INSTANCEID_GETID"/>
+  <int value="1020" label="INSTANCEID_GETCREATIONTIME"/>
+  <int value="1021" label="INSTANCEID_GETTOKEN"/>
+  <int value="1022" label="INSTANCEID_DELETETOKEN"/>
+  <int value="1023" label="INSTANCEID_DELETEID"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
