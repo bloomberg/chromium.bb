@@ -52,3 +52,6 @@ WebRtcBrowserTest.CanSetupVideoCallWith1To1AspectRatio
 WebRtcBrowserTest.CanSetupVideoCallWith4To3AspectRatio
 WebRtcBrowserTest.NegotiateOfferWithBLine
 WebRtcBrowserTest.CanMakeAudioCallAndThenRenegotiateToVideo
+
+# https://crbug.com/480750
+MSE_ClearKey/EncryptedMediaTest.Playback_AudioClearVideo_WebM/0
