@@ -19,6 +19,49 @@ from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 
 
+def _GetLinesFromFile(path, line_prefix, line_suffix):
+  """Get a unique set of lines from a file, stripping off a prefix and suffix.
+
+  Rejects lines that do not start with |line_prefix| or end with |line_suffix|.
+  Returns an empty set if the file at |path| does not exist.
+  Discards duplicate lines.
+
+  Args:
+    path: path to file.
+    line_prefix: prefix of line to look for and strip if found.
+    line_suffix: suffix of line to look for and strip if found.
+
+  Returns:
+    A list of filtered lines from the file at |path|.
+  """
+  if not os.path.exists(path):
+    return set()
+
+  # Note that there is an opportunity to race with the file system here.
+  lines = set()
+  for line in osutils.ReadFile(path).splitlines():
+    if not line.startswith(line_prefix) or not line.endswith(line_suffix):
+      logging.warning('Filtering out malformed line: %s', line)
+      continue
+    lines.add(line[len(line_prefix):-len(line_suffix)])
+
+  return lines
+
+
+def _WriteLinesToFile(path, lines, line_prefix, line_suffix):
+  """Write a set of lines to a file, adding prefixes, suffixes and newlines.
+
+  Args:
+    path: path to file.
+    lines: iterable of lines to write.
+    line_prefix: string to prefix each line with.
+    line_suffix: string to append to each line before a newline.
+  """
+  contents = ''.join(
+      ['%s%s%s\n' % (line_prefix, line, line_suffix) for line in lines])
+  osutils.WriteFile(path, contents, makedirs=True)
+
+
 def GetWorkonPath(source_root=constants.CHROOT_SOURCE_ROOT, sub_path=None):
   """Get the path to files related to packages we're working locally on.
 
@@ -137,20 +180,6 @@ class WorkonHelper(object):
     return self.workon_file_path + '.mask'
 
   @property
-  def workon_file(self):
-    """Return the content to the workon file or '' if it does not exist."""
-    if os.path.exists(self.workon_file_path):
-      return osutils.ReadFile(self.workon_file_path)
-    return ''
-
-  @property
-  def masked_file(self):
-    """Return the content to the masked file or '' if it does not exist."""
-    if os.path.exists(self.masked_file_path):
-      return osutils.ReadFile(self.masked_file_path)
-    return ''
-
-  @property
   def _arch(self):
     if self._cached_arch is None:
       self._cached_arch = sysroot_lib.Sysroot(
@@ -177,7 +206,7 @@ class WorkonHelper(object):
     """Maps from a list of CP atoms to a list of corresponding -9999 ebuilds.
 
     Args:
-      atoms: list of portage atoms (e.g. ['sys-apps/dbus']).
+      atoms: iterable of portage atoms (e.g. ['sys-apps/dbus']).
 
     Returns:
       list of ebuilds corresponding to those atoms.
@@ -213,8 +242,7 @@ class WorkonHelper(object):
       string canonical atom name (e.g. 'sys-apps/dbus')
     """
     # Attempt to not hit portage if at all possible for speed.
-    worked_on_atoms = self.workon_file.splitlines()
-    if '=%s-9999' % package in worked_on_atoms:
+    if package in self._GetWorkedOnAtoms():
       return package
 
     # Ask portage directly what it thinks about that package.
@@ -277,6 +305,14 @@ class WorkonHelper(object):
 
     return atoms
 
+  def _GetWorkedOnAtoms(self):
+    """Returns a list of CP atoms that we're currently working on."""
+    return _GetLinesFromFile(self.workon_file_path, '=', '-9999')
+
+  def _GetMaskedAtoms(self):
+    """Returns a list of stable CP atoms that are masked out."""
+    return _GetLinesFromFile(self.masked_file_path, '<', '-9999')
+
   def _FindEbuildForPackage(self, package):
     """Find an ebuild for a given atom (accepting even masked ebuilds).
 
@@ -334,11 +370,7 @@ class WorkonHelper(object):
     Returns:
       list of canonical portage atoms.
     """
-    atoms = []
-    for line in self.workon_file.splitlines():
-      match = re.match('^=(.*)-9999$', line)
-      if match:
-        atoms.append(match.group(1))
+    atoms = self._GetWorkedOnAtoms()
 
     if filter_workon:
       ebuilds = _FilterWorkonOnlyEbuilds(self._AtomsToEbuilds(atoms))
@@ -419,12 +451,7 @@ class WorkonHelper(object):
     atoms = set(atoms)
 
     # Read out what atoms we're already working on.
-    existing_atoms = set()
-    for line in self.workon_file.splitlines():
-      if not line.startswith('=') or not line.endswith('-9999'):
-        logging.warning('Filtering out malformed atom workon line: %s', line)
-        continue
-      existing_atoms.add(line[1:-5])
+    existing_atoms = self._GetWorkedOnAtoms()
 
     # Warn the user if they're requested to work on an atom that's already
     # marked as being worked on.
@@ -438,10 +465,8 @@ class WorkonHelper(object):
 
     # Write out all these atoms to the appropriate files.
     current_atoms = new_atoms | existing_atoms
-    for pattern, file_path in (('=%s-9999\n', self.workon_file_path),
-                               ('<%s-9999\n', self.masked_file_path)):
-      contents = ''.join([pattern % atom for atom in current_atoms])
-      osutils.WriteFile(file_path, contents, makedirs=True)
+    _WriteLinesToFile(self.workon_file_path, current_atoms, '=', '-9999')
+    _WriteLinesToFile(self.masked_file_path, current_atoms, '<', '-9999')
 
     self._AddProjectsToPartialManifests(new_atoms)
 
@@ -470,23 +495,19 @@ class WorkonHelper(object):
     else:
       atoms = self._GetCanonicalAtoms(packages)
 
-    workon_lines = self.workon_file.splitlines()
-    mask_lines = self.masked_file.splitlines()
+    worked_on_atoms = self._GetWorkedOnAtoms()
+    masked_out_atoms = self._GetMaskedAtoms()
     stopped_atoms = []
     for atom in atoms:
-      workon_line = '=%s-9999' % atom
-      mask_line = '<%s-9999' % atom
-      if not workon_line in workon_lines:
+      if not atom in worked_on_atoms:
         logging.warn('Not working on %s', atom)
         continue
-      workon_lines = [x for x in workon_lines if x != workon_line]
-      mask_lines = [x for x in mask_lines if x != mask_line]
+      worked_on_atoms.discard(atom)
+      masked_out_atoms.discard(atom)
       stopped_atoms.append(atom)
 
-    osutils.WriteFile(self.workon_file_path, '\n'.join(workon_lines),
-                      makedirs=True)
-    osutils.WriteFile(self.masked_file_path, '\n'.join(mask_lines),
-                      makedirs=True)
+    _WriteLinesToFile(self.workon_file_path, worked_on_atoms, '=', '-9999')
+    _WriteLinesToFile(self.masked_file_path, masked_out_atoms, '<', '-9999')
 
     if stopped_atoms:
       # Legacy scripts used single quotes in their output, and we carry on this
