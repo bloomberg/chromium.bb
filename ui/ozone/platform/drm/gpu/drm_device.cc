@@ -498,14 +498,31 @@ bool DrmDevice::CloseBufferHandle(uint32_t handle) {
 
 bool DrmDevice::CommitProperties(drmModePropertySet* properties,
                                  uint32_t flags,
+                                 bool is_sync,
                                  const PageFlipCallback& callback) {
 #if defined(USE_DRM_ATOMIC)
+  flags |= DRM_MODE_PAGE_FLIP_EVENT;
+  if (!is_sync)
+    flags |= DRM_MODE_PAGE_FLIP_ASYNC;
   scoped_ptr<PageFlipPayload> payload(
       new PageFlipPayload(base::ThreadTaskRunnerHandle::Get(), callback));
   if (!drmModePropertySetCommit(file_.GetPlatformFile(), flags, payload.get(),
                                 properties)) {
     // If successful the payload will be removed by the event
     ignore_result(payload.release());
+
+    // If the flip was requested synchronous or if no watcher has been installed
+    // yet, then synchronously handle the page flip events.
+    if (is_sync || !watcher_) {
+      TRACE_EVENT1("drm", "OnDrmEvent", "socket", file_.GetPlatformFile());
+
+      drmEventContext event;
+      event.version = DRM_EVENT_CONTEXT_VERSION;
+      event.page_flip_handler = HandlePageFlipEventOnUI;
+      event.vblank_handler = nullptr;
+
+      drmHandleEvent(file_.GetPlatformFile(), &event);
+    }
     return true;
   }
   return false;
