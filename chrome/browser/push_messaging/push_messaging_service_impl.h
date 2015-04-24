@@ -90,6 +90,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // KeyedService implementation.
   void Shutdown() override;
 
+  void SetMessageCallbackForTesting(const base::Closure& callback);
   void SetContentSettingChangedCallbackForTesting(
       const base::Closure& callback);
 
@@ -104,6 +105,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                               const GURL& requesting_origin,
                               int64 service_worker_registration_id,
                               const gcm::GCMClient::IncomingMessage& message,
+                              const base::Closure& message_handled_closure,
                               content::PushDeliveryStatus status);
 
   // Developers are required to display a Web Notification in response to an
@@ -111,12 +113,14 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // happened in the background. When they forget to do so, display a default
   // notification on their behalf.
   void RequireUserVisibleUX(const GURL& requesting_origin,
-                            int64 service_worker_registration_id);
+                            int64 service_worker_registration_id,
+                            const base::Closure& message_handled_closure);
   void DidGetNotificationsShown(
       const GURL& requesting_origin,
       int64 service_worker_registration_id,
       bool notification_shown,
       bool notification_needed,
+      const base::Closure& message_handled_closure,
       const std::string& data,
       bool success,
       bool not_found);
@@ -169,6 +173,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   int push_registration_count_;
   int pending_push_registration_count_;
 
+  base::Closure message_callback_for_testing_;
   base::Closure content_setting_changed_callback_for_testing_;
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;

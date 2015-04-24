@@ -199,6 +199,10 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   PushMessagingApplicationId GetServiceWorkerAppId(
       int64 service_worker_registration_id);
 
+  void SendMessageAndWaitUntilHandled(
+      const PushMessagingApplicationId& app_id,
+      const gcm::GCMClient::IncomingMessage& message);
+
   net::SpawnedTestServer* https_server() const { return https_server_.get(); }
 
   gcm::FakeGCMProfileService* gcm_service() const { return gcm_service_; }
@@ -271,6 +275,15 @@ PushMessagingApplicationId PushMessagingBrowserTest::GetServiceWorkerAppId(
       GetBrowser()->profile(), origin, service_worker_registration_id);
   EXPECT_TRUE(application_id.IsValid());
   return application_id;
+}
+
+void PushMessagingBrowserTest::SendMessageAndWaitUntilHandled(
+    const PushMessagingApplicationId& app_id,
+    const gcm::GCMClient::IncomingMessage& message) {
+  base::RunLoop run_loop;
+  push_service()->SetMessageCallbackForTesting(run_loop.QuitClosure());
+  push_service()->OnMessage(app_id.app_id_guid(), message);
+  run_loop.Run();
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
@@ -486,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   message.sender_id = "1234567890";
   for (int n = 0; n < 2; n++) {
     message.data["data"] = "testdata";
-    push_service()->OnMessage(app_id.app_id_guid(), message);
+    SendMessageAndWaitUntilHandled(app_id, message);
     ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
     EXPECT_EQ("testdata", script_result);
     EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
@@ -501,12 +514,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // should show a forced one, but only on the 2nd occurrence since we allow one
   // mistake per 10 push events.
   message.data["data"] = "testdata";
-  push_service()->OnMessage(app_id.app_id_guid(), message);
+  SendMessageAndWaitUntilHandled(app_id, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
   EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
   message.data["data"] = "testdata";
-  push_service()->OnMessage(app_id.app_id_guid(), message);
+  SendMessageAndWaitUntilHandled(app_id, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
 
@@ -520,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // Currently, this notification will stick around until the user or webapp
   // explicitly dismisses it (though we may change this later).
   message.data["data"] = "shownotification";
-  push_service()->OnMessage(app_id.app_id_guid(), message);
+  SendMessageAndWaitUntilHandled(app_id, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("shownotification", script_result);
   EXPECT_EQ(2u, notification_manager()->GetNotificationCount());
@@ -532,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // should not show a forced one.
   message.data["data"] = "shownotification";
   for (int n = 0; n < 9; n++) {
-    push_service()->OnMessage(app_id.app_id_guid(), message);
+    SendMessageAndWaitUntilHandled(app_id, message);
     ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
     EXPECT_EQ("shownotification", script_result);
     EXPECT_EQ(1u, notification_manager()->GetNotificationCount());
@@ -544,7 +557,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // Now that 10 push messages in a row have shown notifications, we should
   // allow the next one to mistakenly not show a notification.
   message.data["data"] = "testdata";
-  push_service()->OnMessage(app_id.app_id_guid(), message);
+  SendMessageAndWaitUntilHandled(app_id, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
   EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
