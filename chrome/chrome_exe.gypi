@@ -316,18 +316,8 @@
                 # Unique dir to write to so the [lang].lproj/InfoPlist.strings
                 # for the main app and the helper app don't name collide.
                 'output_path': '<(INTERMEDIATE_DIR)/app_infoplist_strings',
+                'branding_name': '<(branding_path_component)_strings',
               },
-              'conditions': [
-                [ 'branding == "Chrome"', {
-                  'variables': {
-                     'branding_name': 'google_chrome_strings',
-                  },
-                }, { # else branding!="Chrome"
-                  'variables': {
-                     'branding_name': 'chromium_strings',
-                  },
-                }],
-              ],
               'inputs': [
                 '<(tool_path)',
                 '<(version_path)',

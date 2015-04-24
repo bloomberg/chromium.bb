@@ -149,6 +149,7 @@
         'enable_hidpi%': '<(enable_hidpi)',
         'buildtype%': '<(buildtype)',
         'branding%': '<(branding)',
+        'branding_path_component%': '<(branding)',
         'host_arch%': '<(host_arch)',
         'target_arch%': '<(target_arch)',
 
@@ -188,6 +189,14 @@
         'mips_dsp_rev%': 0,
 
         'conditions': [
+          ['branding == "Chrome"', {
+            'branding_path_component%': 'google_chrome',
+          }],
+
+          ['branding == "Chromium"', {
+            'branding_path_component%': 'chromium',
+          }],
+
           # Ash needs Aura.
           ['use_aura==0', {
             'use_ash%': 0,
@@ -295,6 +304,7 @@
       'use_default_render_theme%': '<(use_default_render_theme)',
       'buildtype%': '<(buildtype)',
       'branding%': '<(branding)',
+      'branding_path_component%': '<(branding_path_component)',
       'arm_version%': '<(arm_version)',
       'sysroot%': '<(sysroot)',
       'chroot_cmd%': '<(chroot_cmd)',
@@ -1066,6 +1076,7 @@
 
     # Copy conditionally-set variables out one scope.
     'branding%': '<(branding)',
+    'branding_path_component%': '<(branding_path_component)',
     'buildtype%': '<(buildtype)',
     'target_arch%': '<(target_arch)',
     'target_subarch%': '<(target_subarch)',

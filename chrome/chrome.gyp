@@ -411,20 +411,10 @@
         {
           'target_name': 'chrome_version_resources',
           'type': 'none',
-          'conditions': [
-            ['branding == "Chrome"', {
-              'variables': {
-                 'branding_path': 'app/theme/google_chrome/BRANDING',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                 'branding_path': 'app/theme/chromium/BRANDING',
-              },
-            }],
-          ],
           'variables': {
             'output_dir': 'chrome_version',
             'template_input_path': 'app/chrome_version.rc.version',
+            'branding_path': 'app/theme/<(branding_path_component)/BRANDING',
           },
           'direct_dependent_settings': {
             'include_dirs': [
@@ -452,18 +442,8 @@
               'variables': {
                 'lastchange_path':
                   '<(DEPTH)/build/util/LASTCHANGE',
+                'branding_path': 'app/theme/<(branding_path_component)/BRANDING',
               },
-              'conditions': [
-                ['branding == "Chrome"', {
-                  'variables': {
-                     'branding_path': 'app/theme/google_chrome/BRANDING',
-                  },
-                }, { # else branding!="Chrome"
-                  'variables': {
-                     'branding_path': 'app/theme/chromium/BRANDING',
-                  },
-                }],
-              ],
               'inputs': [
                 '<(version_path)',
                 '<(branding_path)',

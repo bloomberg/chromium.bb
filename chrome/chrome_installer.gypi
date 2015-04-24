@@ -6,7 +6,8 @@
   'variables': {
     'lastchange_path': '../build/util/LASTCHANGE',
     'libpeer_target_type%': 'static_library',
-    # 'branding_dir' is set in the 'conditions' section at the bottom.
+    'branding_dir': 'app/theme/<(branding_path_component)',
+    'branding_dir_100': 'app/theme/default_100_percent/<(branding_path_component)',
   },
   'conditions': [
     ['OS=="win"', {
@@ -158,18 +159,9 @@
               'action_name': 'installer_util_strings',
               'variables': {
                 'create_string_rc_py': 'installer/util/prebuild/create_string_rc.py',
+                'brand_strings': '<(branding_path_component)_strings',
               },
-              'conditions': [
-                ['branding=="Chrome"', {
-                  'variables': {
-                    'brand_strings': 'google_chrome_strings',
-                  },
-                }, {
-                  'variables': {
-                    'brand_strings': 'chromium_strings',
-                  },
-                }],
-              ],
+
               'inputs': [
                 '<(create_string_rc_py)',
                 'app/<(brand_strings).grd',
@@ -300,24 +292,6 @@
             },
           ],
           'conditions': [
-            # TODO(mark):  <(branding_dir) should be defined by the
-            # global condition block at the bottom of the file, but
-            # this doesn't work due to the following issue:
-            #
-            #   http://code.google.com/p/gyp/issues/detail?id=22
-            #
-            # Remove this block once the above issue is fixed.
-            [ 'branding == "Chrome"', {
-              'variables': {
-                 'branding_dir': 'app/theme/google_chrome',
-                 'branding_dir_100': 'app/theme/default_100_percent/google_chrome',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                 'branding_dir': 'app/theme/chromium',
-                 'branding_dir_100': 'app/theme/default_100_percent/chromium',
-              },
-            }],
             ['target_arch=="ia32"', {
               'msvs_settings': {
                 'VCCLCompilerTool': {
@@ -1091,16 +1065,5 @@
         },
       ],  # targets
     }],  # OS=="mac"
-    [ 'branding == "Chrome"', {
-      'variables': {
-         'branding_dir': 'app/theme/google_chrome',
-         'branding_dir_100': 'app/theme/default_100_percent/google_chrome',
-      },
-    }, { # else branding!="Chrome"
-      'variables': {
-         'branding_dir': 'app/theme/chromium',
-         'branding_dir_100': 'app/theme/default_100_percent/chromium',
-      },
-    }],
   ],
 }
