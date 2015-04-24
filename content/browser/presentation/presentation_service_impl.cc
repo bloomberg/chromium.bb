@@ -23,23 +23,24 @@ PresentationServiceImpl::PresentationServiceImpl(
     WebContents* web_contents,
     PresentationServiceDelegate* delegate)
     : WebContentsObserver(web_contents),
-      render_frame_host_(render_frame_host),
       delegate_(delegate),
       is_start_session_pending_(false),
       next_request_session_id_(0),
       weak_factory_(this) {
-  DCHECK(render_frame_host_);
+  DCHECK(render_frame_host);
   DCHECK(web_contents);
+
+  render_process_id_ = render_frame_host->GetProcess()->GetID();
+  render_frame_id_ = render_frame_host->GetRoutingID();
   DVLOG(2) << "PresentationServiceImpl: "
-           << render_frame_host_->GetProcess()->GetID() << ", "
-           << render_frame_host_->GetRoutingID();
+           << render_process_id_ << ", " << render_frame_id_;
   if (delegate_)
-    delegate_->AddObserver(this);
+    delegate_->AddObserver(render_process_id_, render_frame_id_, this);
 }
 
 PresentationServiceImpl::~PresentationServiceImpl() {
   if (delegate_)
-    delegate_->RemoveObserver(this);
+    delegate_->RemoveObserver(render_process_id_, render_frame_id_);
   FlushNewSessionCallbacks();
 }
 
@@ -83,9 +84,7 @@ PresentationServiceImpl::GetOrCreateAvailabilityContext(
     linked_ptr<ScreenAvailabilityContext> context(
         new ScreenAvailabilityContext(presentation_url));
     if (!delegate_->AddScreenAvailabilityListener(
-        render_frame_host_->GetProcess()->GetID(),
-        render_frame_host_->GetRoutingID(),
-        context.get())) {
+        render_process_id_, render_frame_id_, context.get())) {
       DVLOG(1) << "AddScreenAvailabilityListener failed. Ignoring request.";
       return nullptr;
     }
@@ -125,9 +124,7 @@ void PresentationServiceImpl::RemoveScreenAvailabilityListener(
     return;
 
   delegate_->RemoveScreenAvailabilityListener(
-      render_frame_host_->GetProcess()->GetID(),
-      render_frame_host_->GetRoutingID(),
-      it->second.get());
+      render_process_id_, render_frame_id_, it->second.get());
   // Resolve the context's pending callbacks before removing it.
   it->second->OnScreenAvailabilityChanged(false);
   availability_contexts_.erase(it);
@@ -135,7 +132,9 @@ void PresentationServiceImpl::RemoveScreenAvailabilityListener(
 
 void PresentationServiceImpl::ListenForDefaultSessionStart(
     const DefaultSessionMojoCallback& callback) {
-  NOTIMPLEMENTED();
+  if (!default_session_start_context_.get())
+    default_session_start_context_.reset(new DefaultSessionStartContext);
+  default_session_start_context_->AddCallback(callback);
 }
 
 void PresentationServiceImpl::StartSession(
@@ -169,8 +168,8 @@ void PresentationServiceImpl::JoinSession(
 
   int request_session_id = RegisterNewSessionCallback(callback);
   delegate_->JoinSession(
-      render_frame_host_->GetProcess()->GetID(),
-      render_frame_host_->GetRoutingID(),
+      render_process_id_,
+      render_frame_id_,
       presentation_url,
       presentation_id,
       base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionSucceeded,
@@ -214,8 +213,8 @@ void PresentationServiceImpl::DoStartSession(
   int request_session_id = RegisterNewSessionCallback(callback);
   is_start_session_pending_ = true;
   delegate_->StartSession(
-      render_frame_host_->GetProcess()->GetID(),
-      render_frame_host_->GetRoutingID(),
+      render_process_id_,
+      render_frame_id_,
       presentation_url,
       presentation_id,
       base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionSucceeded,
@@ -266,8 +265,8 @@ void PresentationServiceImpl::DoSetDefaultPresentationUrl(
     const std::string& default_presentation_id) {
   DCHECK(delegate_);
   delegate_->SetDefaultPresentationUrl(
-      render_frame_host_->GetProcess()->GetID(),
-      render_frame_host_->GetRoutingID(),
+      render_process_id_,
+      render_frame_id_,
       default_presentation_url,
       default_presentation_id);
   default_presentation_url_ = default_presentation_url;
@@ -307,8 +306,8 @@ void PresentationServiceImpl::SetDefaultPresentationURL(
 
   // Remove listener for old default presentation URL.
   delegate_->RemoveScreenAvailabilityListener(
-      render_frame_host_->GetProcess()->GetID(),
-      render_frame_host_->GetRoutingID(),
+      render_process_id_,
+      render_frame_id_,
       old_it->second.get());
   availability_contexts_.erase(old_it);
   DoSetDefaultPresentationUrl(new_default_url, default_presentation_id);
@@ -325,12 +324,21 @@ void PresentationServiceImpl::ListenForSessionStateChange(
   NOTIMPLEMENTED();
 }
 
+bool PresentationServiceImpl::FrameMatches(
+    content::RenderFrameHost* render_frame_host) const {
+  if (!render_frame_host)
+    return false;
+
+  return render_frame_host->GetProcess()->GetID() == render_process_id_ &&
+         render_frame_host->GetRoutingID() == render_frame_id_;
+}
+
 void PresentationServiceImpl::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   DVLOG(2) << "PresentationServiceImpl::DidNavigateAnyFrame";
-  if (render_frame_host_ != render_frame_host)
+  if (!FrameMatches(render_frame_host))
     return;
 
   std::string prev_url_host = details.previous_url.host();
@@ -355,29 +363,26 @@ void PresentationServiceImpl::DidNavigateAnyFrame(
 void PresentationServiceImpl::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   DVLOG(2) << "PresentationServiceImpl::RenderFrameDeleted";
-  if (render_frame_host_ != render_frame_host)
+  if (!FrameMatches(render_frame_host))
     return;
 
-  // RenderFrameDeleted means |render_frame_host_| is going to be deleted soon.
+  // RenderFrameDeleted means the associated RFH is going to be deleted soon.
   // This object should also be deleted.
   Reset();
-  render_frame_host_ = nullptr;
   delete this;
 }
 
 void PresentationServiceImpl::Reset() {
   DVLOG(2) << "PresentationServiceImpl::Reset";
-  if (delegate_) {
-    delegate_->Reset(
-        render_frame_host_->GetProcess()->GetID(),
-        render_frame_host_->GetRoutingID());
-  }
+  if (delegate_)
+    delegate_->Reset(render_process_id_, render_frame_id_);
 
   default_presentation_url_.clear();
   default_presentation_id_.clear();
   availability_contexts_.clear();
   queued_start_session_requests_.clear();
   FlushNewSessionCallbacks();
+  default_session_start_context_.reset();
 }
 
 // static
@@ -393,6 +398,12 @@ void PresentationServiceImpl::OnDelegateDestroyed() {
   DVLOG(2) << "PresentationServiceImpl::OnDelegateDestroyed";
   delegate_ = nullptr;
   Reset();
+}
+
+void PresentationServiceImpl::OnDefaultPresentationStarted(
+    const PresentationSessionInfo& session) {
+  if (default_session_start_context_.get())
+    default_session_start_context_->set_session(session);
 }
 
 PresentationServiceImpl::ScreenAvailabilityContext::ScreenAvailabilityContext(
@@ -476,6 +487,47 @@ PresentationServiceImpl::StartSessionRequest::PassCallback() {
   NewSessionMojoCallback callback = callback_;
   callback_.reset();
   return callback;
+}
+
+PresentationServiceImpl::DefaultSessionStartContext
+::DefaultSessionStartContext() {
+}
+
+PresentationServiceImpl::DefaultSessionStartContext
+::~DefaultSessionStartContext() {
+  Reset();
+}
+
+void PresentationServiceImpl::DefaultSessionStartContext::AddCallback(
+    const DefaultSessionMojoCallback& callback) {
+  if (session_.get()) {
+    DCHECK(callbacks_.empty());
+    callback.Run(presentation::PresentationSessionInfo::From(*session_));
+    session_.reset();
+  } else {
+    callbacks_.push_back(new DefaultSessionMojoCallback(callback));
+  }
+}
+
+void PresentationServiceImpl::DefaultSessionStartContext::set_session(
+    const PresentationSessionInfo& session) {
+  if (callbacks_.empty()) {
+    session_.reset(new PresentationSessionInfo(session));
+  } else {
+    DCHECK(!session_.get());
+    ScopedVector<DefaultSessionMojoCallback> callbacks;
+    callbacks.swap(callbacks_);
+    for (const auto& callback : callbacks)
+      callback->Run(presentation::PresentationSessionInfo::From(session));
+  }
+}
+
+void PresentationServiceImpl::DefaultSessionStartContext::Reset() {
+  ScopedVector<DefaultSessionMojoCallback> callbacks;
+  callbacks.swap(callbacks_);
+  for (const auto& callback : callbacks)
+    callback->Run(presentation::PresentationSessionInfoPtr());
+  session_.reset();
 }
 
 }  // namespace content

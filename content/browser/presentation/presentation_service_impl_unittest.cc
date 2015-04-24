@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/test_timeouts.h"
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/presentation_session.h"
@@ -23,12 +24,23 @@ using ::testing::SaveArg;
 
 namespace content {
 
+namespace {
+
+bool ArePresentationSessionsEqual(
+    const presentation::PresentationSessionInfo& expected,
+    const presentation::PresentationSessionInfo& actual) {
+  return expected.url == actual.url && expected.id == actual.id;
+}
+}  // namespace
+
 class MockPresentationServiceDelegate : public PresentationServiceDelegate {
  public:
-  MOCK_METHOD1(AddObserver,
-      void(PresentationServiceDelegate::Observer* observer));
-  MOCK_METHOD1(RemoveObserver,
-      void(PresentationServiceDelegate::Observer* observer));
+  MOCK_METHOD3(AddObserver,
+      void(int render_process_id,
+           int render_frame_id,
+           PresentationServiceDelegate::Observer* observer));
+  MOCK_METHOD2(RemoveObserver,
+      void(int render_process_id, int render_frame_id));
   MOCK_METHOD3(AddScreenAvailabilityListener,
       bool(
           int render_process_id,
@@ -69,13 +81,15 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
 
 class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
  public:
-  PresentationServiceImplTest() : callback_count_(0) {}
+  PresentationServiceImplTest()
+      : callback_count_(0), default_session_started_count_(0) {}
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
 
     auto request = mojo::GetProxy(&service_ptr_);
-    EXPECT_CALL(mock_delegate_, AddObserver(_)).Times(1);
+
+    EXPECT_CALL(mock_delegate_, AddObserver(_, _, _)).Times(1);
     service_impl_.reset(new PresentationServiceImpl(
         contents()->GetMainFrame(), contents(), &mock_delegate_));
     service_impl_->Bind(request.Pass());
@@ -84,11 +98,9 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   void TearDown() override {
     service_ptr_.reset();
     if (service_impl_.get()) {
-      EXPECT_CALL(mock_delegate_, RemoveObserver(Eq(service_impl_.get())))
-          .Times(1);
+      EXPECT_CALL(mock_delegate_, RemoveObserver(_, _)).Times(1);
       service_impl_.reset();
     }
-
     RenderViewHostImplTestHarness::TearDown();
   }
 
@@ -155,8 +167,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   }
 
   void ExpectReset() {
-    EXPECT_CALL(mock_delegate_, Reset(_, _))
-        .Times(1);
+    EXPECT_CALL(mock_delegate_, Reset(_, _)).Times(1);
   }
 
   void ExpectCleanState() {
@@ -164,6 +175,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     EXPECT_TRUE(service_impl_->default_presentation_url_.empty());
     EXPECT_TRUE(service_impl_->default_presentation_id_.empty());
     EXPECT_TRUE(service_impl_->queued_start_session_requests_.empty());
+    EXPECT_FALSE(service_impl_->default_session_start_context_.get());
   }
 
   void ExpectNewSessionMojoCallbackSuccess(
@@ -184,11 +196,31 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
       run_loop_quit_closure_.Run();
   }
 
+  void ExpectDefaultSessionStarted(
+      const presentation::PresentationSessionInfo& expected_session,
+      presentation::PresentationSessionInfoPtr actual_session) {
+    ASSERT_TRUE(!actual_session.is_null());
+    EXPECT_TRUE(ArePresentationSessionsEqual(
+        expected_session, *actual_session));
+    ++default_session_started_count_;
+    if (!run_loop_quit_closure_.is_null())
+      run_loop_quit_closure_.Run();
+  }
+
+  void ExpectDefaultSessionNull(
+      presentation::PresentationSessionInfoPtr actual_session) {
+    EXPECT_TRUE(actual_session.is_null());
+    ++default_session_started_count_;
+    if (!run_loop_quit_closure_.is_null())
+      run_loop_quit_closure_.Run();
+  }
+
   MockPresentationServiceDelegate mock_delegate_;
   scoped_ptr<PresentationServiceImpl> service_impl_;
   mojo::InterfacePtr<presentation::PresentationService> service_ptr_;
   base::Closure run_loop_quit_closure_;
   int callback_count_;
+  int default_session_started_count_;
 };
 
 TEST_F(PresentationServiceImplTest, ListenForScreenAvailability) {
@@ -294,7 +326,7 @@ TEST_F(PresentationServiceImplTest, ThisRenderFrameDeleted) {
 
   // Since the frame matched the service, |service_impl_| will be deleted.
   PresentationServiceImpl* service = service_impl_.release();
-  EXPECT_CALL(mock_delegate_, RemoveObserver(Eq(service))).Times(1);
+  EXPECT_CALL(mock_delegate_, RemoveObserver(_, _)).Times(1);
   service->RenderFrameDeleted(contents()->GetMainFrame());
 }
 
@@ -579,6 +611,61 @@ TEST_F(PresentationServiceImplTest, StartSessionInProgress) {
       .Times(1);
   success_cb.Run(PresentationSessionInfo(presentation_url1, presentation_id1));
   SaveQuitClosureAndRunLoop();
+}
+
+TEST_F(PresentationServiceImplTest, ListenForDefaultSessionStart) {
+  std::string presentation_url1("http://fooUrl1");
+  std::string presentation_id1("presentationId1");
+  presentation::PresentationSessionInfo expected_session;
+  expected_session.url = presentation_url1;
+  expected_session.id = presentation_id1;
+  service_ptr_->ListenForDefaultSessionStart(
+      base::Bind(&PresentationServiceImplTest::ExpectDefaultSessionStarted,
+                 base::Unretained(this),
+                 expected_session));
+  RunLoopFor(base::TimeDelta::FromMilliseconds(50));
+  service_impl_->OnDefaultPresentationStarted(
+      content::PresentationSessionInfo(presentation_url1, presentation_id1));
+  SaveQuitClosureAndRunLoop();
+  EXPECT_EQ(1, default_session_started_count_);
+}
+
+TEST_F(PresentationServiceImplTest, ListenForDefaultSessionStartAfterSet) {
+  // Note that the callback will only pick up presentation_url2/id2 since
+  // ListenForDefaultSessionStart wasn't called yet when the DPU was still
+  // presentation_url1.
+  std::string presentation_url1("http://fooUrl1");
+  std::string presentation_id1("presentationId1");
+  std::string presentation_url2("http://fooUrl2");
+  std::string presentation_id2("presentationId2");
+  service_impl_->OnDefaultPresentationStarted(
+      content::PresentationSessionInfo(presentation_url1, presentation_id1));
+
+  presentation::PresentationSessionInfo expected_session;
+  expected_session.url = presentation_url2;
+  expected_session.id = presentation_id2;
+  service_ptr_->ListenForDefaultSessionStart(
+      base::Bind(&PresentationServiceImplTest::ExpectDefaultSessionStarted,
+                 base::Unretained(this),
+                 expected_session));
+  RunLoopFor(base::TimeDelta::FromMilliseconds(50));
+  service_impl_->OnDefaultPresentationStarted(
+      content::PresentationSessionInfo(presentation_url2, presentation_id2));
+  SaveQuitClosureAndRunLoop();
+  EXPECT_EQ(1, default_session_started_count_);
+}
+
+TEST_F(PresentationServiceImplTest, DefaultSessionStartReset) {
+  service_ptr_->ListenForDefaultSessionStart(
+      base::Bind(&PresentationServiceImplTest::ExpectDefaultSessionNull,
+                 base::Unretained(this)));
+  RunLoopFor(TestTimeouts::tiny_timeout());
+
+  ExpectReset();
+  service_impl_->Reset();
+  ExpectCleanState();
+  SaveQuitClosureAndRunLoop();
+  EXPECT_EQ(1, default_session_started_count_);
 }
 
 }  // namespace content

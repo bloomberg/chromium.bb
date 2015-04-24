@@ -52,7 +52,7 @@ interface PresentationService {
     // call, the embedder may queue it and run the callback when the call is
     // performed.
     ListenForDefaultSessionStart()
-        => (PresentationSessionInfo defaultSessionInfo);
+        => (PresentationSessionInfo? defaultSessionInfo);
 
     // Called when startSession() is called by the frame. The result callback
     // will return a non-null and valid PresentationSessionInfo if starting the

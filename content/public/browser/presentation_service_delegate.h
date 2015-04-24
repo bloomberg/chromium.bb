@@ -23,6 +23,13 @@ class CONTENT_EXPORT PresentationServiceDelegate {
     // Called when the PresentationServiceDelegate is being destroyed.
     virtual void OnDelegateDestroyed() = 0;
 
+    // Called when the default presentation has been started outside of a
+    // Presentation API context (e.g., browser action). This will not be called
+    // if the session was created as a result of Presentation API's
+    // StartSession()/JoinSession().
+    virtual void OnDefaultPresentationStarted(
+        const PresentationSessionInfo& session) = 0;
+
    protected:
     virtual ~Observer() {}
   };
@@ -34,12 +41,19 @@ class CONTENT_EXPORT PresentationServiceDelegate {
 
   virtual ~PresentationServiceDelegate() {}
 
-  // Registers an observer with this class to listen for updates to this class.
+  // Registers an observer associated with frame with |render_process_id|
+  // and |render_frame_id| with this class to listen for updates.
   // This class does not own the observer.
-  // It is an error to add an observer if it has already been added before.
-  virtual void AddObserver(Observer* observer) = 0;
-  // Unregisters an observer with this class.
-  virtual void RemoveObserver(Observer* observer) = 0;
+  // It is an error to add an observer if there is already an observer for that
+  // frame.
+  virtual void AddObserver(int render_process_id,
+                           int render_frame_id,
+                           Observer* observer) = 0;
+
+  // Unregisters the observer associated with the frame with |render_process_id|
+  // and |render_frame_id|.
+  // The observer will no longer receive updates.
+  virtual void RemoveObserver(int render_process_id, int render_frame_id) = 0;
 
   // Registers |listener| to continuously listen for
   // availability updates for a presentation URL, originated from the frame

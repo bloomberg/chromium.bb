@@ -109,6 +109,27 @@ class CONTENT_EXPORT PresentationServiceImpl
     scoped_ptr<bool> available_ptr_;
   };
 
+  class CONTENT_EXPORT DefaultSessionStartContext {
+   public:
+    DefaultSessionStartContext();
+    ~DefaultSessionStartContext();
+
+    // Adds a callback. May invoke the callback immediately if |session| using
+    // default presentation URL was already started.
+    void AddCallback(const DefaultSessionMojoCallback& callback);
+
+    // Sets the session info. Maybe invoke callbacks queued with AddCallback().
+    void set_session(const PresentationSessionInfo& session);
+
+   private:
+    // Flush all queued callbacks by invoking them with null
+    // PresentationSessionInfoPtr.
+    void Reset();
+
+    ScopedVector<DefaultSessionMojoCallback> callbacks_;
+    scoped_ptr<PresentationSessionInfo> session_;
+  };
+
   // Context for a StartSession request.
   class CONTENT_EXPORT StartSessionRequest {
    public:
@@ -146,6 +167,12 @@ class CONTENT_EXPORT PresentationServiceImpl
       SetSameDefaultPresentationUrl);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
       ClearDefaultPresentationUrl);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+      ListenForDefaultSessionStart);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+      ListenForDefaultSessionStartAfterSet);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+      DefaultSessionStartReset);
 
   // |render_frame_host|: The RFH this instance is associated with.
   // |web_contents|: The WebContents to observe.
@@ -197,6 +224,8 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   // PresentationServiceDelegate::Observer
   void OnDelegateDestroyed() override;
+  void OnDefaultPresentationStarted(const PresentationSessionInfo& session)
+      override;
 
   // Finds the callback from |pending_session_cbs_| using |request_session_id|.
   // If it exists, invoke it with |session| and |error|, then erase it from
@@ -256,7 +285,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   ScreenAvailabilityContext* GetOrCreateAvailabilityContext(
       const std::string& presentation_url);
 
-  RenderFrameHost* render_frame_host_;
+  // Returns true if this object is associated with |render_frame_host|.
+  bool FrameMatches(content::RenderFrameHost* render_frame_host) const;
+
   PresentationServiceDelegate* delegate_;
 
   // Map from presentation URL to its ScreenAvailabilityContext state machine.
@@ -277,9 +308,15 @@ class CONTENT_EXPORT PresentationServiceImpl
   int next_request_session_id_;
   base::hash_map<int, linked_ptr<NewSessionMojoCallback>> pending_session_cbs_;
 
+  scoped_ptr<DefaultSessionStartContext> default_session_start_context_;
+
   // RAII binding of |this| to an Presentation interface request.
   // The binding is removed when binding_ is cleared or goes out of scope.
   scoped_ptr<mojo::Binding<presentation::PresentationService>> binding_;
+
+  // ID of the RenderFrameHost this object is associated with.
+  int render_process_id_;
+  int render_frame_id_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<PresentationServiceImpl> weak_factory_;
