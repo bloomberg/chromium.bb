@@ -339,6 +339,9 @@ public:
     bool isAllocationAllowed() const { return !isAtSafePoint() && !m_noAllocationCount; }
     void enterNoAllocationScope() { m_noAllocationCount++; }
     void leaveNoAllocationScope() { m_noAllocationCount--; }
+    bool isGCForbidden() const { return m_gcForbiddenCount; }
+    void enterGCForbiddenScope() { m_gcForbiddenCount++; }
+    void leaveGCForbiddenScope() { m_gcForbiddenCount--; }
 
     // Before performing GC the thread-specific heap state should be
     // made consistent for sweeping.
@@ -548,7 +551,7 @@ public:
     void enterGCForbiddenScopeIfNeeded(GarbageCollectedMixinConstructorMarker* gcMixinMarker)
     {
         if (!m_gcMixinMarker) {
-            m_gcForbiddenCount++;
+            enterGCForbiddenScope();
             m_gcMixinMarker = gcMixinMarker;
         }
     }
@@ -556,12 +559,10 @@ public:
     {
         ASSERT(m_gcForbiddenCount > 0);
         if (m_gcMixinMarker == gcMixinMarker) {
-            m_gcForbiddenCount--;
+            leaveGCForbiddenScope();
             m_gcMixinMarker = nullptr;
         }
     }
-
-    bool isGCForbidden() const { return m_gcForbiddenCount; }
 
     // vectorBackingHeap() returns a heap that the vector allocation should use.
     // We have four vector heaps and want to choose the best heap here.

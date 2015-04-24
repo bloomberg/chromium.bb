@@ -708,10 +708,15 @@ template<typename T, typename Allocator>
 inline void swap(LinkedHashSetNode<T, Allocator>& a, LinkedHashSetNode<T, Allocator>& b)
 {
     typedef LinkedHashSetNodeBase Base;
-    Allocator::enterNoAllocationScope();
+    // The key and value cannot be swapped atomically, and it would be
+    // wrong to have a GC when only one was swapped and the other still
+    // contained garbage (eg. from a previous use of the same slot).
+    // Therefore we forbid a GC until both the key and the value are
+    // swapped.
+    Allocator::enterGCForbiddenScope();
     swap(static_cast<Base&>(a), static_cast<Base&>(b));
     swap(a.m_value, b.m_value);
-    Allocator::leaveNoAllocationScope();
+    Allocator::leaveGCForbiddenScope();
 }
 
 // Warning: After and while calling this you have a collection with deleted

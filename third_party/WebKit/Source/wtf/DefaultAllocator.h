@@ -179,6 +179,8 @@ public:
 
     static void enterNoAllocationScope() { }
     static void leaveNoAllocationScope() { }
+    static void enterGCForbiddenScope() { }
+    static void leaveGCForbiddenScope() { }
 
 private:
     WTF_EXPORT static void* allocateBacking(size_t);

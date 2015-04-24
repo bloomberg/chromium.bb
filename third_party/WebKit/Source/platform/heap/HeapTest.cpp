@@ -2655,6 +2655,37 @@ TEST(HeapTest, HeapCollectionTypes)
     EXPECT_EQ(1u, dequeUW2->size());
 }
 
+class NonTrivialObject final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    NonTrivialObject()
+    {
+    }
+    explicit NonTrivialObject(int num)
+    {
+        m_deque.append(IntWrapper::create(num));
+        m_vector.append(IntWrapper::create(num));
+    }
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_deque);
+        visitor->trace(m_vector);
+    }
+
+private:
+    HeapDeque<Member<IntWrapper>> m_deque;
+    HeapVector<Member<IntWrapper>> m_vector;
+};
+
+TEST(HeapTest, HeapHashMapWithInlinedObject)
+{
+    HeapHashMap<int, NonTrivialObject> map;
+    for (int num = 1; num < 1000; num++) {
+        NonTrivialObject object(num);
+        map.add(num, object);
+    }
+}
+
 template<typename T>
 void MapIteratorCheck(T& it, const T& end, int expected)
 {

@@ -1636,6 +1636,16 @@ public:
 #endif
     }
 
+    static void enterGCForbiddenScope()
+    {
+        ThreadState::current()->enterGCForbiddenScope();
+    }
+
+    static void leaveGCForbiddenScope()
+    {
+        ThreadState::current()->leaveGCForbiddenScope();
+    }
+
 private:
     static void backingFree(void*);
     static bool backingExpand(void*, size_t);
