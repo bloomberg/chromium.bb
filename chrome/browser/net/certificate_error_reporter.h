@@ -21,6 +21,7 @@ class SSLInfo;
 namespace chrome_browser_net {
 
 class CertLoggerRequest;
+class EncryptedCertLoggerRequest;
 
 // Provides functionality for sending reports about invalid SSL
 // certificate chains to a report collection server.
@@ -48,6 +49,13 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
                            const GURL& upload_url,
                            CookiesPreference cookies_preference);
 
+  // Allows tests to use a server public key with known private key.
+  CertificateErrorReporter(net::URLRequestContext* request_context,
+                           const GURL& upload_url,
+                           CookiesPreference cookies_preference,
+                           const uint8 server_public_key[32],
+                           const uint32 server_public_key_version);
+
   ~CertificateErrorReporter() override;
 
   // Construct, serialize, and send a certificate report to the report
@@ -58,6 +66,11 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
   // responsible for enforcing any preconditions (such as obtaining user
   // opt-in, only sending reports for certain hostnames, checking for
   // incognito mode, etc.).
+  //
+  // On some platforms (but not all), CertificateErrorReporter can use
+  // an HTTP endpoint to send encrypted extended reporting reports. On
+  // unsupported platforms, callers must send extended reporting reports
+  // over SSL.
   virtual void SendReport(ReportType type,
                           const std::string& hostname,
                           const net::SSLInfo& ssl_info);
@@ -65,6 +78,16 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
   // net::URLRequest::Delegate
   void OnResponseStarted(net::URLRequest* request) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
+
+  // Callers can use this method to determine if sending reports over
+  // HTTP is supported.
+  static bool IsHttpUploadUrlSupported();
+
+  // Used by tests.
+  static bool DecryptCertificateErrorReport(
+      const uint8 server_private_key[32],
+      const EncryptedCertLoggerRequest& encrypted_report,
+      CertLoggerRequest* decrypted_report);
 
  private:
   // Create a URLRequest with which to send a certificate report to the
@@ -75,6 +98,8 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
   // Serialize and send a CertLoggerRequest protobuf to the report
   // collection server.
   void SendCertLoggerRequest(const CertLoggerRequest& request);
+
+  void SendSerializedRequest(const std::string& serialized_request);
 
   // Populate the CertLoggerRequest for a report.
   static void BuildReport(const std::string& hostname,
@@ -91,6 +116,9 @@ class CertificateErrorReporter : public net::URLRequest::Delegate {
   std::set<net::URLRequest*> inflight_requests_;
 
   CookiesPreference cookies_preference_;
+
+  const uint8* server_public_key_;
+  const uint32 server_public_key_version_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateErrorReporter);
 };

@@ -19,6 +19,7 @@
 #include "chrome/browser/net/cert_logger.pb.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/curve25519.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/base/test_data_directory.h"
@@ -47,6 +48,7 @@ const char kHostname[] = "test.mail.google.com";
 const char kSecondRequestHostname[] = "test2.mail.google.com";
 const char kDummyFailureLog[] = "dummy failure log";
 const char kTestCertFilename[] = "test_mail_google_com.pem";
+const uint32 kServerPublicKeyVersion = 1;
 
 SSLInfo GetTestSSLInfo() {
   SSLInfo info;
@@ -83,7 +85,9 @@ void EnableUrlRequestMocks(bool enable) {
 // |GetTestSSLInfo()|). The hostname sent in the report will be erased
 // from |expect_hostnames|.
 void CheckUploadData(URLRequest* request,
-                     std::set<std::string>* expect_hostnames) {
+                     std::set<std::string>* expect_hostnames,
+                     bool encrypted,
+                     const uint8* server_private_key) {
   const net::UploadDataStream* upload = request->get_upload();
   ASSERT_TRUE(upload);
   ASSERT_TRUE(upload->GetElementReaders());
@@ -93,9 +97,27 @@ void CheckUploadData(URLRequest* request,
       (*upload->GetElementReaders())[0]->AsBytesReader();
   ASSERT_TRUE(reader);
   std::string upload_data(reader->bytes(), reader->length());
-  chrome_browser_net::CertLoggerRequest uploaded_request;
 
-  uploaded_request.ParseFromString(upload_data);
+  chrome_browser_net::CertLoggerRequest uploaded_request;
+#if defined(USE_OPENSSL)
+  if (encrypted) {
+    chrome_browser_net::EncryptedCertLoggerRequest encrypted_request;
+    encrypted_request.ParseFromString(upload_data);
+    EXPECT_EQ(kServerPublicKeyVersion,
+              encrypted_request.server_public_key_version());
+    EXPECT_EQ(chrome_browser_net::EncryptedCertLoggerRequest::
+                  AEAD_ECDH_AES_128_CTR_HMAC_SHA256,
+              encrypted_request.algorithm());
+    ASSERT_TRUE(
+        chrome_browser_net::CertificateErrorReporter::
+            DecryptCertificateErrorReport(server_private_key, encrypted_request,
+                                          &uploaded_request));
+  } else {
+    ASSERT_TRUE(uploaded_request.ParseFromString(upload_data));
+  }
+#else
+  ASSERT_TRUE(uploaded_request.ParseFromString(upload_data));
+#endif
 
   EXPECT_EQ(1u, expect_hostnames->count(uploaded_request.hostname()));
   expect_hostnames->erase(uploaded_request.hostname());
@@ -116,7 +138,11 @@ class TestCertificateErrorReporterNetworkDelegate : public NetworkDelegateImpl {
       : url_request_destroyed_callback_(base::Bind(&base::DoNothing)),
         all_url_requests_destroyed_callback_(base::Bind(&base::DoNothing)),
         num_requests_(0),
-        expect_cookies_(false) {}
+        expect_cookies_(false),
+        expect_request_encrypted_(false) {
+    memset(server_private_key_, 1, sizeof(server_private_key_));
+    crypto::curve25519::ScalarBaseMult(server_private_key_, server_public_key_);
+  }
 
   ~TestCertificateErrorReporterNetworkDelegate() override {}
 
@@ -145,6 +171,10 @@ class TestCertificateErrorReporterNetworkDelegate : public NetworkDelegateImpl {
     expect_cookies_ = expect_cookies;
   }
 
+  void set_expect_request_encrypted(bool expect_request_encrypted) {
+    expect_request_encrypted_ = expect_request_encrypted;
+  }
+
   // NetworkDelegateImpl implementation
   int OnBeforeURLRequest(URLRequest* request,
                          const CompletionCallback& callback,
@@ -162,7 +192,8 @@ class TestCertificateErrorReporterNetworkDelegate : public NetworkDelegateImpl {
     }
 
     std::string uploaded_request_hostname;
-    CheckUploadData(request, &expect_hostnames_);
+    CheckUploadData(request, &expect_hostnames_, expect_request_encrypted_,
+                    server_private_key_);
     expect_hostnames_.erase(uploaded_request_hostname);
     return net::OK;
   }
@@ -173,6 +204,8 @@ class TestCertificateErrorReporterNetworkDelegate : public NetworkDelegateImpl {
       all_url_requests_destroyed_callback_.Run();
   }
 
+  const uint8* server_public_key() { return server_public_key_; }
+
  private:
   base::Closure url_request_destroyed_callback_;
   base::Closure all_url_requests_destroyed_callback_;
@@ -180,6 +213,10 @@ class TestCertificateErrorReporterNetworkDelegate : public NetworkDelegateImpl {
   GURL expect_url_;
   std::set<std::string> expect_hostnames_;
   bool expect_cookies_;
+  bool expect_request_encrypted_;
+
+  uint8 server_public_key_[32];
+  uint8 server_private_key_[32];
 
   DISALLOW_COPY_AND_ASSIGN(TestCertificateErrorReporterNetworkDelegate);
 };
@@ -237,11 +274,24 @@ TEST_F(CertificateErrorReporterTest, PinningViolationSendReportSendsRequest) {
 }
 
 TEST_F(CertificateErrorReporterTest, ExtendedReportingSendReportSendsRequest) {
-  GURL url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
-  CertificateErrorReporter reporter(
-      context(), url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
-  SendReport(&reporter, network_delegate(), kHostname, url, 0,
+  // Data should not be encrypted when sent to an HTTPS URL.
+  GURL https_url = net::URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
+  CertificateErrorReporter https_reporter(
+      context(), https_url, CertificateErrorReporter::DO_NOT_SEND_COOKIES);
+  network_delegate()->set_expect_request_encrypted(false);
+  SendReport(&https_reporter, network_delegate(), kHostname, https_url, 0,
              CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING);
+
+  // Data should be encrypted when sent to an HTTP URL.
+  if (CertificateErrorReporter::IsHttpUploadUrlSupported()) {
+    GURL http_url = net::URLRequestMockDataJob::GetMockHttpUrl("dummy data", 1);
+    CertificateErrorReporter http_reporter(
+        context(), http_url, CertificateErrorReporter::DO_NOT_SEND_COOKIES,
+        network_delegate()->server_public_key(), kServerPublicKeyVersion);
+    network_delegate()->set_expect_request_encrypted(true);
+    SendReport(&http_reporter, network_delegate(), kHostname, http_url, 1,
+               CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING);
+  }
 }
 
 TEST_F(CertificateErrorReporterTest, SendMultipleReportsSequentially) {

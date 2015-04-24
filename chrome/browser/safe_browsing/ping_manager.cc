@@ -24,8 +24,12 @@ using chrome_browser_net::CertificateErrorReporter;
 using content::BrowserThread;
 
 namespace {
-// URL to upload invalid certificate chain reports
-const char kExtendedReportingUploadUrl[] =
+// URLs to upload invalid certificate chain reports. The HTTP URL is
+// preferred since a client seeing an invalid cert might not be able to
+// make an HTTPS connection to report it.
+// TODO(estark): insert the production HTTP URL when it's ready
+const char kExtendedReportingUploadUrlInsecure[] = "";
+const char kExtendedReportingUploadUrlSecure[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/chrome-certs";
 }  // namespace
 
@@ -44,15 +48,21 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
     const SafeBrowsingProtocolConfig& config)
     : client_name_(config.client_name),
       request_context_getter_(request_context_getter),
-      url_prefix_(config.url_prefix),
-      certificate_error_reporter_(
-          request_context_getter
-              ? new CertificateErrorReporter(
-                    request_context_getter->GetURLRequestContext(),
-                    GURL(kExtendedReportingUploadUrl),
-                    CertificateErrorReporter::SEND_COOKIES)
-              : nullptr) {
+      url_prefix_(config.url_prefix) {
   DCHECK(!url_prefix_.empty());
+
+  if (request_context_getter) {
+    bool use_insecure_certificate_upload_url =
+        CertificateErrorReporter::IsHttpUploadUrlSupported() &&
+        strlen(kExtendedReportingUploadUrlInsecure) > 0;
+    GURL certificate_upload_url(use_insecure_certificate_upload_url
+                                    ? kExtendedReportingUploadUrlInsecure
+                                    : kExtendedReportingUploadUrlSecure);
+
+    certificate_error_reporter_.reset(new CertificateErrorReporter(
+        request_context_getter->GetURLRequestContext(), certificate_upload_url,
+        CertificateErrorReporter::SEND_COOKIES));
+  }
 
   version_ = SafeBrowsingProtocolManagerHelper::Version();
 }

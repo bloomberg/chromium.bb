@@ -125,6 +125,8 @@
             ],
           }, {
             'sources!': [
+              'aead_openssl.cc',
+              'aead_openssl.h',
               'ec_private_key_openssl.cc',
               'ec_signature_creator_openssl.cc',
               'encryptor_openssl.cc',
@@ -158,6 +160,7 @@
       'target_name': 'crypto_unittests',
       'type': 'executable',
       'sources': [
+        'aead_openssl_unittest.cc',
         'curve25519_unittest.cc',
         'ec_private_key_unittest.cc',
         'ec_signature_creator_unittest.cc',
