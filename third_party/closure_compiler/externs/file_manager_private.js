@@ -201,6 +201,16 @@ var DriveConnectionState;
 var DeviceEvent;
 
 /**
+ * @typedef {{
+ *   extensionId: string,
+ *   name: string,
+ *   canConfigure: boolean,
+ *   canAdd: boolean
+ * }}
+ */
+var ProvidingExtension;
+
+/**
  * @const
  */
 chrome.fileManagerPrivate = {};
@@ -579,6 +589,30 @@ chrome.fileManagerPrivate.setEntryTag = function(entryURL, visibility, key, valu
  * @param {function(boolean)} callback
  */
 chrome.fileManagerPrivate.isPiexLoaderEnabled = function(callback) {};
+
+/**
+ * Returns list of available providing extensions.
+ * @param {function(!Array<!ProvidingExtension>)} callback
+ */
+chrome.fileManagerPrivate.getProvidingExtensions = function(callback) {};
+
+/**
+ * Requests adding a new provided file system. If not possible, then an error
+ * via chrome.runtime.lastError is returned.
+ * @param {string} extensionId
+ * @param {function()} callback
+ */
+chrome.fileManagerPrivate.addProvidedFileSystem =
+    function(extensionId, callback) {};
+
+/**
+ * Requests configuring an existing file system. If not possible, then returns
+ * an error via chrome.runtime.lastError.
+ * @param {string} volumeId
+ * @param {function()} callback
+ */
+chrome.fileManagerPrivate.configureProvidedFileSystem =
+    function(volumeId, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
