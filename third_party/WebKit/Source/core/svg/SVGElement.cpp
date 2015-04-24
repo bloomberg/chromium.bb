@@ -966,9 +966,6 @@ void SVGElement::markForLayoutAndParentResourceInvalidation(LayoutObject* render
 
 void SVGElement::invalidateInstances()
 {
-    if (!inDocument())
-        return;
-
     if (instanceUpdatesBlocked())
         return;
 
@@ -981,14 +978,15 @@ void SVGElement::invalidateInstances()
         instance->setCorrespondingElement(0);
 
         if (SVGUseElement* element = instance->correspondingUseElement()) {
-            ASSERT(element->inDocument());
-            element->invalidateShadowTree();
+            if (element->inDocument())
+                element->invalidateShadowTree();
         }
     }
 
     svgRareData()->elementInstances().clear();
 
-    document().updateRenderTreeIfNeeded();
+    if (inDocument())
+        document().updateRenderTreeIfNeeded();
 }
 
 SVGElement::InstanceUpdateBlocker::InstanceUpdateBlocker(SVGElement* targetElement)
