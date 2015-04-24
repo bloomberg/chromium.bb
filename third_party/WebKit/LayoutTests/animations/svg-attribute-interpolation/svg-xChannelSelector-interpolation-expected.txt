@@ -16,10 +16,10 @@ PASS: xChannelSelector from [R] to [A] was [R] at 0.2
 PASS: xChannelSelector from [R] to [A] was [A] at 0.6
 PASS: xChannelSelector from [R] to [A] was [A] at 1
 PASS: xChannelSelector from [R] to [A] was [A] at 3.4
-FAIL: yChannelSelector from [B] to [G] was [4] at -2.4, expected [B] (parsed as [3])
-FAIL: yChannelSelector from [B] to [G] was [4] at 0, expected [B] (parsed as [3])
-FAIL: yChannelSelector from [B] to [G] was [4] at 0.2, expected [B] (parsed as [3])
-FAIL: yChannelSelector from [B] to [G] was [4] at 0.6, expected [G] (parsed as [2])
-FAIL: yChannelSelector from [B] to [G] was [4] at 1, expected [G] (parsed as [2])
-FAIL: yChannelSelector from [B] to [G] was [4] at 3.4, expected [G] (parsed as [2])
+PASS: yChannelSelector from [B] to [G] was [B] at -2.4
+PASS: yChannelSelector from [B] to [G] was [B] at 0
+PASS: yChannelSelector from [B] to [G] was [B] at 0.2
+PASS: yChannelSelector from [B] to [G] was [G] at 0.6
+PASS: yChannelSelector from [B] to [G] was [G] at 1
+PASS: yChannelSelector from [B] to [G] was [G] at 3.4
 
