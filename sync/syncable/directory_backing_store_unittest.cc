@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -30,6 +31,8 @@
 #include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 
+namespace syncer {
+namespace syncable {
 namespace {
 
 // A handler that simply sets |catastrophic_error_handler_was_called| to true.
@@ -37,10 +40,16 @@ void CatastrophicErrorHandler(bool* catastrophic_error_handler_was_called) {
   *catastrophic_error_handler_was_called = true;
 }
 
-}  // namespace
+// Create a dirty EntryKernel with an ID derived from |id|.
+scoped_ptr<EntryKernel> CreateEntry(int id) {
+  scoped_ptr<EntryKernel> entry(new EntryKernel());
+  entry->put(ID, Id::CreateFromClientString(base::Int64ToString(id)));
+  entry->put(META_HANDLE, id);
+  entry->mark_dirty(NULL);
+  return entry;
+}
 
-namespace syncer {
-namespace syncable {
+}  // namespace
 
 SYNC_EXPORT_PRIVATE extern const int32 kCurrentDBVersion;
 
@@ -4025,8 +4034,10 @@ TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_KeptAcrossReset) {
   ASSERT_TRUE(dbs->db_->has_error_callback());
 }
 
-// Verify that database corruption will trigger the catastrohpic error handler.
-TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_Invocation) {
+// Verify that database corruption encountered during Load will trigger the
+// catastrohpic error handler.
+TEST_F(DirectoryBackingStoreTest,
+       CatastrophicErrorHandler_InvocationDuringLoad) {
   bool was_called = false;
   const base::Closure handler =
       base::Bind(&CatastrophicErrorHandler, &was_called);
@@ -4040,11 +4051,7 @@ TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_Invocation) {
     ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
     ASSERT_FALSE(dbs->DidFailFirstOpenAttempt());
     Directory::SaveChangesSnapshot snapshot;
-    scoped_ptr<EntryKernel> entry(new EntryKernel());
-    entry->put(ID, Id::CreateFromClientString("test_entry"));
-    entry->put(META_HANDLE, 2);
-    entry->mark_dirty(NULL);
-    snapshot.dirty_metas.insert(entry.release());
+    snapshot.dirty_metas.insert(CreateEntry(2).release());
     ASSERT_TRUE(dbs->SaveChanges(snapshot));
   }
 
@@ -4074,6 +4081,56 @@ TEST_F(DirectoryBackingStoreTest, CatastrophicErrorHandler_Invocation) {
     ASSERT_TRUE(dbs->DidFailFirstOpenAttempt());
   }
 
+  // At this point the handler has been posted but not executed.
+  ASSERT_FALSE(was_called);
+  // Pump the message loop and see that it is executed.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(was_called);
+}
+
+// Verify that database corruption encountered during SaveChanges will trigger
+// the catastrohpic error handler.
+TEST_F(DirectoryBackingStoreTest,
+       CatastrophicErrorHandler_InvocationDuringSaveChanges) {
+  bool was_called = false;
+  const base::Closure handler =
+      base::Bind(&CatastrophicErrorHandler, &was_called);
+
+  // Create a DB with many entries.
+  scoped_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
+      new OnDiskDirectoryBackingStoreForTest(GetUsername(), GetDatabasePath()));
+  dbs->SetCatastrophicErrorHandler(handler);
+  ASSERT_TRUE(dbs->db_->has_error_callback());
+  ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+  ASSERT_FALSE(dbs->DidFailFirstOpenAttempt());
+  Directory::SaveChangesSnapshot snapshot;
+  const int num_entries = 4000;
+  for (int i = 0; i < num_entries; ++i) {
+    snapshot.dirty_metas.insert(CreateEntry(i).release());
+  }
+  ASSERT_TRUE(dbs->SaveChanges(snapshot));
+
+  // Corrupt the DB by write a bunch of zeros at the beginning.
+  {
+    // Because the file is already open for writing (see dbs above), it's
+    // important that we open it in a sharing compatible way for platforms that
+    // have the concept of shared/exclusive file access (e.g. Windows).
+    base::ScopedFILE db_file(base::OpenFile(GetDatabasePath(), "wb"));
+    ASSERT_TRUE(db_file.get());
+    const std::string zeros(4096, '\0');
+    ASSERT_EQ(1U, fwrite(zeros.data(), zeros.size(), 1, db_file.get()));
+  }
+
+  // Attempt to save all those entries again. See that it fails (because of the
+  // corruption).
+  //
+  // If this test fails because SaveChanges returned true, it may mean that you
+  // need to increase the number of entries written to the DB. Try increasing
+  // the value of num_entries above. The value needs to be large enough to force
+  // the underlying DB to be read from disk before writing. The value *may*
+  // depend on the underlying DB page size as well as the DB's cache_size
+  // PRAGMA.
+  ASSERT_FALSE(dbs->SaveChanges(snapshot));
   // At this point the handler has been posted but not executed.
   ASSERT_FALSE(was_called);
   // Pump the message loop and see that it is executed.

@@ -187,7 +187,10 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest,
                            CatastrophicErrorHandler_KeptAcrossReset);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest,
-                           CatastrophicErrorHandler_Invocation);
+                           CatastrophicErrorHandler_InvocationDuringLoad);
+  FRIEND_TEST_ALL_PREFIXES(
+      DirectoryBackingStoreTest,
+      CatastrophicErrorHandler_InvocationDuringSaveChanges);
 
   // Drop all tables in preparation for reinitialization.
   void DropAllTables();
