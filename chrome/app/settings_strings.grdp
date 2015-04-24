@@ -89,4 +89,25 @@
   <message name="IDS_SETTINGS_INTERNET_PAGE_TITLE" desc="Name of the settings page which displays internet preferences.">
     Internet Connection
   </message>
+
+  <!-- Search Page -->
+  <message name="IDS_SETTINGS_SEARCH_PAGE_TITLE" desc="Name of the settings page which displays search engine preferences.">
+    Search
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_EXPLANATION" desc="Explanation for the search engine dropdown setting.">
+    Set which search engine is used when searching from the omnibox.
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_MANAGE_BUTTON_LABEL" desc="Label for the Manage Search Engines button.">
+    Manage Search Engines
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL" desc="Label for the checkbox which enables the OK Google hotword.">
+    Enable "Ok Google" to start a voice search.
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_LEARN_MORE_LINK" desc="Link which opens page to learn more about the OK Google hotword.">
+    Learn more
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_DESCRIPTION_LABEL" desc="Label describing when the OK Google hotword may be used.">
+    Say "Ok Google" in a new tab and google.com
+  </message>
+
 </grit-part>

@@ -51303,6 +51303,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1008" label="DEVELOPERPRIVATE_SHOWPATH"/>
   <int value="1009" label="FILEMANAGERPRIVATE_ADDPROVIDEDFILESYSTEM"/>
   <int value="1010" label="FILEMANAGERPRIVATE_CONFIGUREPROVIDEDFILESYSTEM"/>
+  <int value="1011" label="SEARCHENGINESPRIVATE_GETDEFAULTSEARCHENGINES"/>
+  <int value="1012" label="SEARCHENGINESPRIVATE_SETSELECTEDSEARCHENGINE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

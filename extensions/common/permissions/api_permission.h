@@ -167,6 +167,7 @@ class APIPermission {
     kReadingListPrivate,
     kRtcPrivate,
     kSearchProvider,
+    kSearchEnginesPrivate,
     kSerial,
     kSessions,
     kSettingsPrivate,

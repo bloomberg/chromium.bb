@@ -65,6 +65,7 @@
       'preferences_private.json',
       'reading_list_private.json',
       'screenlock_private.idl',
+      'search_engines_private.idl',
       'sessions.json',
       'settings_private.idl',
       'signed_in_devices.idl',

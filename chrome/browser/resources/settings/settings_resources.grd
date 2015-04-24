@@ -205,6 +205,17 @@
       <structure name="IDR_SETTINGS_ROUTING_MORE_ROUTING_ROUTING_EXTRACTED_JS"
                  file="routing/more_routing/routing_extracted.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SEARCH_PAGE_JS"
+                 file="search_page/search_page.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SEARCH_PAGE_HTML"
+                 file="search_page/search_page.html"
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
+      <structure name="IDR_SETTINGS_SEARCH_PAGE_STYLE_HTML"
+                 file="search_page/search_page_style.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SETTINGS_HTML"
                  file="settings.html"
                  type="chrome_html" />

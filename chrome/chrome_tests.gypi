@@ -188,6 +188,7 @@
       'browser/extensions/api/proxy/proxy_apitest.cc',
       'browser/extensions/api/reading_list_private/reading_list_private_apitest.cc',
       'browser/extensions/api/screenlock_private/screenlock_private_apitest.cc',
+      'browser/extensions/api/search_engines_private/search_engines_private_apitest.cc',
       'browser/extensions/api/sessions/sessions_apitest.cc',
       'browser/extensions/api/settings_overrides/settings_overrides_browsertest.cc',
       'browser/extensions/api/settings_private/settings_private_apitest.cc',

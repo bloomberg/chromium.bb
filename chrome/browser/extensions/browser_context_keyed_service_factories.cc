@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
+#include "chrome/browser/extensions/api/search_engines_private/search_engines_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 #include "chrome/browser/extensions/api/settings_overrides/settings_overrides_api.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_event_router_factory.h"
@@ -125,6 +126,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::ScreenlockPrivateEventRouter::GetFactoryInstance();
+  extensions::SearchEnginesPrivateEventRouterFactory::GetInstance();
   extensions::SessionsAPI::GetFactoryInstance();
   extensions::SettingsPrivateEventRouterFactory::GetInstance();
   extensions::SettingsOverridesAPI::GetFactoryInstance();

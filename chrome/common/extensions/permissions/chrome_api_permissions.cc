@@ -341,6 +341,11 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagCannotBeOptional,
        IDS_EXTENSION_PROMPT_WARNING_SETTINGS_PRIVATE,
        PermissionMessage::kSettingsPrivate},
+      {APIPermission::kSearchEnginesPrivate,
+       "searchEnginesPrivate",
+       APIPermissionInfo::kFlagCannotBeOptional,
+       IDS_EXTENSION_PROMPT_WARNING_SEARCH_ENGINES_PRIVATE,
+       PermissionMessage::kSearchEnginesPrivate},
 
       // Full url access permissions.
       {APIPermission::kDebugger,

@@ -619,6 +619,18 @@
     "dependencies": ["permission:rtcPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "searchEnginesPrivate": [{
+    "dependencies": ["permission:searchEnginesPrivate"],
+    "contexts": ["blessed_extension"]
+  }, {
+    "channel": "trunk",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://md-settings/*",
+      "chrome://settings/*",
+      "chrome://settings-frame/*"
+    ]
+  }],
   "sessions": {
     "dependencies": ["permission:sessions"],
     "contexts": ["blessed_extension"]

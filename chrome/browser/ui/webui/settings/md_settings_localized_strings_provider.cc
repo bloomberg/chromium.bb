@@ -104,6 +104,23 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
 }
 #endif
 
+void AddSearchStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("searchPageTitle",
+                                  IDS_SETTINGS_SEARCH_PAGE_TITLE);
+  html_source->AddLocalizedString("searchExplanation",
+                                  IDS_SETTINGS_SEARCH_EXPLANATION);
+  html_source->AddLocalizedString("searchManageButtonLabel",
+                                  IDS_SETTINGS_SEARCH_MANAGE_BUTTON_LABEL);
+  html_source->AddLocalizedString("searchOkGoogleLabel",
+                                  IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL);
+  html_source->AddLocalizedString(
+      "searchOkGoogleLearnMoreLink",
+      IDS_SETTINGS_SEARCH_OK_GOOGLE_LEARN_MORE_LINK);
+  html_source->AddLocalizedString(
+      "searchOkGoogleDescriptionLabel",
+      IDS_SETTINGS_SEARCH_OK_GOOGLE_DESCRIPTION_LABEL);
+}
+
 }  // namespace
 
 namespace settings {
@@ -115,6 +132,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
   AddInternetStrings(html_source);
 #endif
+  AddSearchStrings(html_source);
   html_source->SetJsonPath(kLocalizedStringsFile);
 }
 
