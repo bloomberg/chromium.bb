@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
@@ -250,8 +251,8 @@ void WebURLLoaderImpl::OnReceiveWebBlobData(
 
   // Send a receive data for each blob item.
   for (size_t i = 0; i < items.size(); ++i) {
-    client_->didReceiveData(this, items[i]->data.data(), items[i]->data.size(),
-                            -1);
+    const int data_size = base::checked_cast<int>(items[i]->data.size());
+    client_->didReceiveData(this, items[i]->data.data(), data_size, -1);
   }
 
   // Send a closing finish.
@@ -270,7 +271,7 @@ void WebURLLoaderImpl::ReadMore() {
   if (rv == MOJO_RESULT_OK) {
     base::WeakPtr<WebURLLoaderImpl> self(weak_factory_.GetWeakPtr());
     client_->didReceiveData(this, static_cast<const char*>(buf), buf_size, -1);
-    // We may have been deleted durining didReceiveData.
+    // We may have been deleted during didReceiveData.
     if (!self)
       return;
     EndReadDataRaw(response_body_stream_.get(), buf_size);
