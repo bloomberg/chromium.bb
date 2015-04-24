@@ -12,6 +12,8 @@
     'android_gn_release_bot': ['android', 'gn', 'release_bot'],
     'android_gn_debug_bot': ['android', 'gn', 'debug_static_bot'],
     'android_gn_release_trybot': ['android', 'gn', 'release_trybot'],
+    'android_gyp_debug_bot': ['android', 'gyp', 'debug_bot'],
+    'android_gyp_release_trybot': ['android', 'gyp', 'release_trybot'],
     'chromeos_gn_debug_bot': ['chromeos', 'gn', 'debug_bot'],
     'chromeos_gn_release_bot': ['chromeos', 'gn', 'release_bot'],
     'chromeos_gn_release_trybot': ['chromeos', 'gn', 'release_trybot'],
@@ -167,6 +169,8 @@
       'V8 Android GN (dbg)': 'android_gn_debug_bot',
     },
     'tryserver.blink': {
+      'android_blink_compile_dbg': 'android_gyp_debug_bot',
+      'android_blink_compile_rel': 'android_gyp_release_trybot',
       'android_chromium_gn_compile_rel': 'android_gn_release_bot',
       'linux_chromium_gn_rel': 'gn_release_bot',
     },
