@@ -49,10 +49,13 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
       wifi_phy_layer_protocol_is_ambiguous_);
   network->set_wifi_phy_layer_protocol(GetWifiPHYLayerProtocol());
 
-  // Resets the "ambiguous" flags, since a new metrics log session has started.
-  connection_type_is_ambiguous_ = false;
-  // TODO(isherman): This line seems unnecessary.
+  // Update the connection type. Note that this is necessary to set the network
+  // type to "none" if there is no network connection for an entire UMA logging
+  // window, since OnConnectionTypeChanged() ignores transitions to the "none"
+  // state.
   connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
+  // Reset the "ambiguous" flags, since a new metrics log session has started.
+  connection_type_is_ambiguous_ = false;
   wifi_phy_layer_protocol_is_ambiguous_ = false;
 
   if (!wifi_access_point_info_provider_.get()) {
@@ -73,8 +76,15 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
 
 void NetworkMetricsProvider::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
+  // To avoid reporting an ambiguous connection type for users on flaky
+  // connections, ignore transitions to the "none" state. Note that the
+  // connection type is refreshed in ProvideSystemProfileMetrics() each time a
+  // new UMA logging window begins, so users who genuinely transition to offline
+  // mode for an extended duration will still be at least partially represented
+  // in the metrics logs.
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
     return;
+
   if (type != connection_type_ &&
       connection_type_ != net::NetworkChangeNotifier::CONNECTION_NONE) {
     connection_type_is_ambiguous_ = true;
