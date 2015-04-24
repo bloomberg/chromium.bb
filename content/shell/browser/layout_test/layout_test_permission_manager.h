@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
+#include "base/id_map.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/permission_manager.h"
@@ -56,10 +57,12 @@ class LayoutTestPermissionManager : public PermissionManager {
  private:
   // Representation of a permission for the LayoutTestPermissionManager.
   struct PermissionDescription {
+    PermissionDescription() = default;
     PermissionDescription(PermissionType type,
                           const GURL& origin,
                           const GURL& embedding_origin);
     bool operator==(const PermissionDescription& other) const;
+    bool operator!=(const PermissionDescription& other) const;
 
     // Hash operator for hash maps.
     struct Hash {
@@ -71,9 +74,14 @@ class LayoutTestPermissionManager : public PermissionManager {
     GURL embedding_origin;
   };
 
+  struct Subscription;
+  using SubscriptionsMap = IDMap<Subscription, IDMapOwnPointer>;
   using PermissionsMap = base::hash_map<PermissionDescription,
                                         PermissionStatus,
                                         PermissionDescription::Hash>;
+
+  void OnPermissionChanged(const PermissionDescription& permission,
+                           PermissionStatus status);
 
   // Mutex for permissions access. Unfortunately, the permissions can be
   // accessed from the IO thread because of Notifications' synchronous IPC.
@@ -82,6 +90,9 @@ class LayoutTestPermissionManager : public PermissionManager {
   // List of permissions currently known by the LayoutTestPermissionManager and
   // their associated |PermissionStatus|.
   PermissionsMap permissions_;
+
+  // List of subscribers currently listening to permission changes.
+  SubscriptionsMap subscriptions_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutTestPermissionManager);
 };

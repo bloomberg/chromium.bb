@@ -4,6 +4,8 @@
 
 #include "content/shell/browser/layout_test/layout_test_permission_manager.h"
 
+#include <list>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "content/public/browser/browser_thread.h"
@@ -13,6 +15,12 @@
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
 
 namespace content {
+
+struct LayoutTestPermissionManager::Subscription {
+  PermissionDescription permission;
+  base::Callback<void(content::PermissionStatus)> callback;
+  PermissionStatus current_value;
+};
 
 LayoutTestPermissionManager::PermissionDescription::PermissionDescription(
     PermissionType type,
@@ -28,6 +36,11 @@ bool LayoutTestPermissionManager::PermissionDescription::operator==(
   return type == other.type &&
          origin == other.origin &&
          embedding_origin == other.embedding_origin;
+}
+
+bool LayoutTestPermissionManager::PermissionDescription::operator!=(
+    const PermissionDescription& other) const {
+  return !this->operator==(other);
 }
 
 size_t LayoutTestPermissionManager::PermissionDescription::Hash::operator()(
@@ -115,15 +128,24 @@ int LayoutTestPermissionManager::SubscribePermissionStatusChange(
     const base::Callback<void(PermissionStatus)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(mlamouri): to be implemented, see https://crbug.com/475141
-  return -1;
+  Subscription* subscription = new Subscription();
+  subscription->permission =
+      PermissionDescription(permission, requesting_origin, embedding_origin);
+  subscription->callback = callback;
+  subscription->current_value =
+      GetPermissionStatus(permission,
+                          subscription->permission.origin,
+                          subscription->permission.embedding_origin);
+
+  return subscriptions_.Add(subscription);
 }
 
 void LayoutTestPermissionManager::UnsubscribePermissionStatusChange(
     int subscription_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(mlamouri): to be implemented, see https://crbug.com/475141
+  // Whether |subscription_id| is known will be checked by the Remove() call.
+  subscriptions_.Remove(subscription_id);
 }
 
 void LayoutTestPermissionManager::SetPermission(PermissionType permission,
@@ -143,6 +165,8 @@ void LayoutTestPermissionManager::SetPermission(PermissionType permission,
   } else {
     it->second = status;
   }
+
+  OnPermissionChanged(description, status);
 }
 
 void LayoutTestPermissionManager::ResetPermissions() {
@@ -150,6 +174,31 @@ void LayoutTestPermissionManager::ResetPermissions() {
 
   base::AutoLock lock(permissions_lock_);
   permissions_.clear();
+}
+
+void LayoutTestPermissionManager::OnPermissionChanged(
+    const PermissionDescription& permission,
+    PermissionStatus status) {
+  std::list<base::Closure> callbacks;
+
+  for (SubscriptionsMap::iterator iter(&subscriptions_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    Subscription* subscription = iter.GetCurrentValue();
+    if (subscription->permission != permission)
+      continue;
+
+    if (subscription->current_value == status)
+      continue;
+
+    subscription->current_value = status;
+
+    // Add the callback to |callbacks| which will be run after the loop to
+    // prevent re-entrance issues.
+    callbacks.push_back(base::Bind(subscription->callback, status));
+  }
+
+  for (const auto& callback : callbacks)
+    callback.Run();
 }
 
 }  // namespace content
