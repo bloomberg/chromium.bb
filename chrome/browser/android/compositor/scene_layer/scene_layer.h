@@ -11,11 +11,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "cc/layers/layer.h"
 #include "third_party/skia/include/core/SkColor.h"
-
-namespace cc {
-class Layer;
-}
 
 namespace chrome {
 namespace android {
