@@ -246,8 +246,8 @@ private:
     PassRefPtrWillBeRawPtr<CSSFunctionValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSValueID);
 
     PassRefPtrWillBeRawPtr<CSSValueList> parseTransformOrigin();
-    PassRefPtrWillBeRawPtr<CSSValueList> parseTransform(CSSPropertyID);
-    PassRefPtrWillBeRawPtr<CSSValue> parseTransformValue(CSSPropertyID, CSSParserValue*);
+    PassRefPtrWillBeRawPtr<CSSValueList> parseTransform(bool useLegacyParsing);
+    PassRefPtrWillBeRawPtr<CSSValue> parseTransformValue(bool useLegacyParsing, CSSParserValue*);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseMotionPath();
     PassRefPtrWillBeRawPtr<CSSValue> parseMotionRotation();

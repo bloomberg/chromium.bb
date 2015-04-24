@@ -126,11 +126,11 @@ static bool hasWillChangeThatCreatesStackingContext(const ComputedStyle& style)
         switch (style.willChangeProperties()[i]) {
         case CSSPropertyOpacity:
         case CSSPropertyTransform:
-        case CSSPropertyWebkitTransform:
+        case CSSPropertyAliasWebkitTransform:
         case CSSPropertyTransformStyle:
         case CSSPropertyAliasWebkitTransformStyle:
         case CSSPropertyPerspective:
-        case CSSPropertyWebkitPerspective:
+        case CSSPropertyAliasWebkitPerspective:
         case CSSPropertyWebkitMask:
         case CSSPropertyWebkitMaskBoxImage:
         case CSSPropertyWebkitClipPath:
@@ -199,7 +199,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
     // including the creation of a containing block for fixed position descendants.
     // SVG elements can skip this because they implicitly have transforms.
     bool isSVGElement = e && e->isSVGElement();
-    if (!isSVGElement && !style.hasTransform() && (style.willChangeProperties().contains(CSSPropertyWebkitTransform) || style.willChangeProperties().contains(CSSPropertyTransform))) {
+    if (!isSVGElement && !style.hasTransform() && (style.willChangeProperties().contains(CSSPropertyAliasWebkitTransform) || style.willChangeProperties().contains(CSSPropertyTransform))) {
         bool makeIdentity = true;
         style.setTransform(TransformOperations(makeIdentity));
     }

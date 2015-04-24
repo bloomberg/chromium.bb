@@ -339,7 +339,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitPaddingBefore: return 305;
     case CSSPropertyWebkitPaddingEnd: return 306;
     case CSSPropertyWebkitPaddingStart: return 307;
-    case CSSPropertyWebkitPerspective: return 308;
+    case CSSPropertyAliasWebkitPerspective: return 308;
     case CSSPropertyAliasWebkitPerspectiveOrigin: return 309;
     case CSSPropertyWebkitPerspectiveOriginX: return 310;
     case CSSPropertyWebkitPerspectiveOriginY: return 311;
@@ -357,7 +357,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitTextStroke: return 323;
     case CSSPropertyWebkitTextStrokeColor: return 324;
     case CSSPropertyWebkitTextStrokeWidth: return 325;
-    case CSSPropertyWebkitTransform: return 326;
+    case CSSPropertyAliasWebkitTransform: return 326;
     case CSSPropertyAliasWebkitTransformOrigin: return 327;
     case CSSPropertyWebkitTransformOriginX: return 328;
     case CSSPropertyWebkitTransformOriginY: return 329;

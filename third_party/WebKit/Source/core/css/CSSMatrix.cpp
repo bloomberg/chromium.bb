@@ -69,8 +69,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
     if (string.isEmpty())
         return;
 
-    // FIXME: crbug.com/154772 - should this continue to use legacy style parsing?
-    if (RefPtrWillBeRawPtr<CSSValue> value = CSSParser::parseSingleValue(CSSPropertyWebkitTransform, string)) {
+    if (RefPtrWillBeRawPtr<CSSValue> value = CSSParser::parseSingleValue(CSSPropertyTransform, string)) {
         // Check for a "none" transform. In these cases we can use the default identity matrix.
         if (value->isPrimitiveValue() && (toCSSPrimitiveValue(value.get()))->getValueID() == CSSValueNone)
             return;

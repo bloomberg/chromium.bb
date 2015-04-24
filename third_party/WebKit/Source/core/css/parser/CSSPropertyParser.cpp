@@ -1094,17 +1094,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = validUnit(value, FInteger);
         break;
     case CSSPropertyTransform:
-    case CSSPropertyWebkitTransform:
         if (id == CSSValueNone)
             validPrimitive = true;
-        else {
-            RefPtrWillBeRawPtr<CSSValue> transformValue = parseTransform(propId);
-            if (transformValue) {
-                addProperty(propId, transformValue.release(), important);
-                return true;
-            }
-            return false;
-        }
+        else
+            parsedValue = parseTransform(unresolvedProperty == CSSPropertyAliasWebkitTransform);
         break;
     case CSSPropertyTransformOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = parseTransformOrigin();
@@ -1134,20 +1127,16 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = validUnit(value, FLength);
         break;
     case CSSPropertyPerspective:
-        if (id == CSSValueNone)
+        if (id == CSSValueNone) {
             validPrimitive = true;
-        else if (validUnit(value, FLength) && (m_parsedCalculation || value->fValue > 0))
+        } else if (validUnit(value, FLength) && (m_parsedCalculation || value->fValue > 0)) {
             validPrimitive = true;
-        else
+        } else if (unresolvedProperty == CSSPropertyAliasWebkitPerspective && validUnit(value, FNumber) && value->fValue > 0) {
+            value->unit = CSSPrimitiveValue::CSS_PX;
+            validPrimitive = true;
+        } else {
             return false;
-        break;
-    case CSSPropertyWebkitPerspective:
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else if (validUnit(value, FNumber | FLength) && (m_parsedCalculation || value->fValue > 0))
-            validPrimitive = true;
-        else
-            return false;
+        }
         break;
     case CSSPropertyPerspectiveOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = parseTransformOrigin();
@@ -8302,14 +8291,14 @@ private:
     CSSPropertyParser::Units m_unit;
 };
 
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransform(CSSPropertyID propId)
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransform(bool useLegacyParsing)
 {
     if (!m_valueList)
         return nullptr;
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        RefPtrWillBeRawPtr<CSSValue> parsedTransformValue = parseTransformValue(propId, value);
+        RefPtrWillBeRawPtr<CSSValue> parsedTransformValue = parseTransformValue(useLegacyParsing, value);
         if (!parsedTransformValue)
             return nullptr;
 
@@ -8319,7 +8308,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransform(CSSProper
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSPropertyID propId, CSSParserValue *value)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(bool useLegacyParsing, CSSParserValue *value)
 {
     if (value->unit != CSSParserValue::Function || !value->function)
         return nullptr;
@@ -8364,9 +8353,13 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSPrope
                 return nullptr;
         } else if (type == CSSValuePerspective && !argNumber) {
             // 1st param of perspective() must be a non-negative number (deprecated) or length.
-            if ((propId == CSSPropertyWebkitTransform && !validUnit(a, FNumber | FLength | FNonNeg, HTMLStandardMode))
-                || (propId == CSSPropertyTransform && !validUnit(a, FLength | FNonNeg, HTMLStandardMode)))
-                return nullptr;
+            if (!validUnit(a, FLength | FNonNeg, HTMLStandardMode)) {
+                if (useLegacyParsing && validUnit(a, FNumber | FNonNeg, HTMLStandardMode)) {
+                    a->unit = CSSPrimitiveValue::CSS_PX;
+                } else {
+                    return nullptr;
+                }
+            }
         } else if (!validUnit(a, unit, HTMLStandardMode)) {
             return nullptr;
         }

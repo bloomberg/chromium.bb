@@ -638,7 +638,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> parseSimpleTransformList(CharType*& 
 
 static PassRefPtrWillBeRawPtr<CSSValue> parseSimpleTransform(CSSPropertyID propertyID, const String& string)
 {
-    if (propertyID != CSSPropertyTransform && propertyID != CSSPropertyWebkitTransform)
+    if (propertyID != CSSPropertyTransform)
         return nullptr;
     if (string.isEmpty())
         return nullptr;

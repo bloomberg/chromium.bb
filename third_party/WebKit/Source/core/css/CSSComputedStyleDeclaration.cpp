@@ -259,7 +259,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitMaskSize,
     CSSPropertyOrder,
     CSSPropertyPerspective,
-    CSSPropertyWebkitPerspective,
     CSSPropertyPerspectiveOrigin,
     CSSPropertyWebkitPrintColorAdjust,
     CSSPropertyWebkitRtlOrdering,
@@ -278,7 +277,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitTextStrokeColor,
     CSSPropertyWebkitTextStrokeWidth,
     CSSPropertyTransform,
-    CSSPropertyWebkitTransform,
     CSSPropertyTransformOrigin,
     CSSPropertyTransformStyle,
     CSSPropertyWebkitUserDrag,
@@ -462,7 +460,6 @@ static bool isLayoutDependent(CSSPropertyID propertyID, const ComputedStyle* sty
     case CSSPropertyTop:
     case CSSPropertyPerspectiveOrigin:
     case CSSPropertyTransform:
-    case CSSPropertyWebkitTransform:
     case CSSPropertyTransformOrigin:
     case CSSPropertyMotionPath:
     case CSSPropertyMotionOffset:

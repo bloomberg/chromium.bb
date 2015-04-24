@@ -66,19 +66,6 @@ using PropertySet = HashSet<CSSPropertyID>;
 
 namespace {
 
-CSSPropertyID propertyForAnimation(CSSPropertyID property)
-{
-    switch (property) {
-    case CSSPropertyWebkitPerspective:
-        return CSSPropertyPerspective;
-    case CSSPropertyWebkitTransform:
-        return CSSPropertyTransform;
-    default:
-        break;
-    }
-    return property;
-}
-
 static PassRefPtrWillBeRawPtr<StringKeyframeEffectModel> createKeyframeEffect(StyleResolver* resolver, const Element* animatingElement, Element& element, const ComputedStyle* style, const ComputedStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction)
 {
     // When the animating element is null, use its parent for scoping purposes.
@@ -100,8 +87,8 @@ static PassRefPtrWillBeRawPtr<StringKeyframeEffectModel> createKeyframeEffect(St
         keyframe->setEasing(defaultTimingFunction);
         const StylePropertySet& properties = styleKeyframe->properties();
         for (unsigned j = 0; j < properties.propertyCount(); j++) {
-            specifiedPropertiesForUseCounter.add(properties.propertyAt(j).id());
-            CSSPropertyID property = propertyForAnimation(properties.propertyAt(j).id());
+            CSSPropertyID property = properties.propertyAt(j).id();
+            specifiedPropertiesForUseCounter.add(property);
             if (property == CSSPropertyAnimationTimingFunction) {
                 CSSValue* value = properties.propertyAt(j).value();
                 RefPtr<TimingFunction> timingFunction;
@@ -566,7 +553,6 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
                 CSSPropertyID eventId = id;
 
                 if (!animateAll) {
-                    id = propertyForAnimation(id);
                     if (CSSPropertyMetadata::isAnimatableProperty(id))
                         listedProperties.set(id);
                     else

@@ -354,7 +354,6 @@ webkitPaddingAfter
 webkitPaddingBefore
 webkitPaddingEnd
 webkitPaddingStart
-webkitPerspective
 webkitPerspectiveOriginX
 webkitPerspectiveOriginY
 webkitPrintColorAdjust
@@ -373,7 +372,6 @@ webkitTextSecurity
 webkitTextStroke
 webkitTextStrokeColor
 webkitTextStrokeWidth
-webkitTransform
 webkitTransformOriginX
 webkitTransformOriginY
 webkitTransformOriginZ

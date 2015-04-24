@@ -160,7 +160,6 @@ rect: style.getPropertyValue(-webkit-mask-position) : 0% 0%
 rect: style.getPropertyValue(-webkit-mask-repeat) : repeat
 rect: style.getPropertyValue(-webkit-mask-size) : auto
 rect: style.getPropertyValue(order) : 0
-rect: style.getPropertyValue(-webkit-perspective) : none
 rect: style.getPropertyValue(-webkit-print-color-adjust) : economy
 rect: style.getPropertyValue(-webkit-rtl-ordering) : logical
 rect: style.getPropertyValue(-webkit-text-combine) : none
@@ -173,7 +172,6 @@ rect: style.getPropertyValue(-webkit-text-orientation) : vertical-right
 rect: style.getPropertyValue(-webkit-text-security) : none
 rect: style.getPropertyValue(-webkit-text-stroke-color) : rgb(0, 0, 0)
 rect: style.getPropertyValue(-webkit-text-stroke-width) : 0px
-rect: style.getPropertyValue(-webkit-transform) : none
 rect: style.getPropertyValue(-webkit-user-drag) : auto
 rect: style.getPropertyValue(-webkit-user-modify) : read-only
 rect: style.getPropertyValue(-webkit-user-select) : text
@@ -375,7 +373,6 @@ g: style.getPropertyValue(-webkit-mask-position) : 0% 0%
 g: style.getPropertyValue(-webkit-mask-repeat) : repeat
 g: style.getPropertyValue(-webkit-mask-size) : auto
 g: style.getPropertyValue(order) : 0
-g: style.getPropertyValue(-webkit-perspective) : none
 g: style.getPropertyValue(-webkit-print-color-adjust) : economy
 g: style.getPropertyValue(-webkit-rtl-ordering) : logical
 g: style.getPropertyValue(-webkit-text-combine) : none
@@ -388,7 +385,6 @@ g: style.getPropertyValue(-webkit-text-orientation) : vertical-right
 g: style.getPropertyValue(-webkit-text-security) : none
 g: style.getPropertyValue(-webkit-text-stroke-color) : rgb(0, 0, 0)
 g: style.getPropertyValue(-webkit-text-stroke-width) : 0px
-g: style.getPropertyValue(-webkit-transform) : none
 g: style.getPropertyValue(-webkit-user-drag) : auto
 g: style.getPropertyValue(-webkit-user-modify) : read-only
 g: style.getPropertyValue(-webkit-user-select) : text

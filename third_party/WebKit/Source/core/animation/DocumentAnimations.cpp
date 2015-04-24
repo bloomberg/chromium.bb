@@ -71,7 +71,7 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
     const Element& element = toElement(node);
     if (const ComputedStyle* style = element.computedStyle()) {
         if ((property == CSSPropertyOpacity && style->isRunningOpacityAnimationOnCompositor())
-            || ((property == CSSPropertyTransform || property == CSSPropertyWebkitTransform) && style->isRunningTransformAnimationOnCompositor())
+            || (property == CSSPropertyTransform && style->isRunningTransformAnimationOnCompositor())
             || (property == CSSPropertyWebkitFilter && style->isRunningFilterAnimationOnCompositor())) {
             updateAnimationTiming(element.document(), TimingUpdateOnDemand);
         }

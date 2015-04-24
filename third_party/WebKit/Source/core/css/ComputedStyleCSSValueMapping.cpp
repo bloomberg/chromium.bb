@@ -2130,7 +2130,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWebkitMarginBeforeCollapse:
         return cssValuePool().createValue(style.marginBeforeCollapse());
     case CSSPropertyPerspective:
-    case CSSPropertyWebkitPerspective:
         if (!style.hasPerspective())
             return cssValuePool().createIdentifierValue(CSSValueNone);
         return zoomAdjustedPixelValue(style.perspective(), style);
@@ -2178,7 +2177,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertySpeak:
         return cssValuePool().createValue(style.speak());
     case CSSPropertyTransform:
-    case CSSPropertyWebkitTransform:
         return computedTransform(renderer, style);
     case CSSPropertyTransformOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();

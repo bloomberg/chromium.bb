@@ -240,13 +240,8 @@ void TransformBuilder::createTransformOperations(CSSValue& inValue, const CSSToL
             break;
         }
         case TransformOperation::Perspective: {
-            double p;
-            if (firstValue->isLength())
-                p = firstValue->computeLength<double>(conversionData);
-            else
-                p = firstValue->getDoubleValue();
+            double p = firstValue->computeLength<double>(conversionData);
             ASSERT(p >= 0);
-
             outOperations.operations().append(PerspectiveTransformOperation::create(p));
             break;
         }

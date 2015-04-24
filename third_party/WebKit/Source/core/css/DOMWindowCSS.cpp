@@ -44,14 +44,14 @@ PassRefPtrWillBeRawPtr<DOMWindowCSS> DOMWindowCSS::create()
 
 bool DOMWindowCSS::supports(const String& property, const String& value) const
 {
-    CSSPropertyID propertyID = cssPropertyID(property);
-    if (propertyID == CSSPropertyInvalid)
+    CSSPropertyID unresolvedProperty = unresolvedCSSPropertyID(property);
+    if (unresolvedProperty == CSSPropertyInvalid)
         return false;
-    ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
+    ASSERT(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
 
     // This will return false when !important is present
     RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create();
-    return CSSParser::parseValue(dummyStyle.get(), propertyID, value, false, HTMLStandardMode, 0);
+    return CSSParser::parseValue(dummyStyle.get(), unresolvedProperty, value, false, HTMLStandardMode, 0);
 }
 
 bool DOMWindowCSS::supports(const String& conditionText) const

@@ -873,7 +873,7 @@ bool ComputedStyle::hasWillChangeCompositingHint() const
         switch (rareNonInheritedData->m_willChange->m_properties[i]) {
         case CSSPropertyOpacity:
         case CSSPropertyTransform:
-        case CSSPropertyWebkitTransform:
+        case CSSPropertyAliasWebkitTransform:
         case CSSPropertyTop:
         case CSSPropertyLeft:
         case CSSPropertyBottom:

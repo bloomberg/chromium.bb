@@ -356,7 +356,6 @@ y animatable, svg, converter=convertLength
 -webkit-mask-repeat-x custom_all
 -webkit-mask-repeat-y custom_all
 -webkit-mask-size animatable, custom_all
--webkit-perspective use_handlers_for=CSSPropertyPerspective
 -webkit-perspective-origin-x animatable, converter=convertLength
 -webkit-perspective-origin-y animatable, converter=convertLength
 -webkit-print-color-adjust inherited, type_name=PrintColorAdjust
@@ -371,7 +370,6 @@ y animatable, svg, converter=convertLength
 -webkit-text-security inherited
 -webkit-text-stroke-color animatable, inherited, custom_all
 -webkit-text-stroke-width inherited, converter=convertTextStrokeWidth
--webkit-transform use_handlers_for=CSSPropertyTransform
 -webkit-transform-origin-x animatable, converter=convertLength
 -webkit-transform-origin-y animatable, converter=convertLength
 -webkit-transform-origin-z animatable, converter=convertComputedLength<float>
@@ -524,10 +522,12 @@ transition longhands=transition-property;transition-duration;transition-timing-f
 -webkit-justify-content alias_for=justify-content
 -webkit-opacity alias_for=opacity
 -webkit-order alias_for=order
+-webkit-perspective alias_for=perspective
 -webkit-perspective-origin alias_for=perspective-origin
 -webkit-shape-image-threshold alias_for=shape-image-threshold
 -webkit-shape-margin alias_for=shape-margin
 -webkit-shape-outside alias_for=shape-outside
+-webkit-transform alias_for=transform
 -webkit-transform-origin alias_for=transform-origin
 -webkit-transform-style alias_for=transform-style
 -webkit-transition alias_for=transition

@@ -5,6 +5,6 @@ perspective 10ms
 fired transitionend with propertyName: perspective
 
 -webkit-perspective 10ms
-fired transitionend with propertyName: -webkit-perspective
+fired transitionend with propertyName: perspective
 
 

@@ -142,7 +142,7 @@ bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const Animation
             continue;
 
         // TODO: Add the ability to get expanded bounds for filters as well.
-        if (property.cssProperty() != CSSPropertyTransform && property.cssProperty() != CSSPropertyWebkitTransform)
+        if (property.cssProperty() != CSSPropertyTransform)
             continue;
 
         const PropertySpecificKeyframeVector& frames = keyframeEffect.getPropertySpecificKeyframes(property);

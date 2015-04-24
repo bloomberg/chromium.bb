@@ -1635,7 +1635,7 @@ PassRefPtr<ComputedStyle> Element::styleForLayoutObject()
 
     if (style->hasTransform()) {
         if (const StylePropertySet* inlineStyle = this->inlineStyle())
-            style->setHasInlineTransform(inlineStyle->hasProperty(CSSPropertyTransform) || inlineStyle->hasProperty(CSSPropertyWebkitTransform));
+            style->setHasInlineTransform(inlineStyle->hasProperty(CSSPropertyTransform));
     }
 
     if (hasRareData() && elementRareData()->proxyCount() > 0)

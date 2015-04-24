@@ -208,7 +208,7 @@ void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters
         // of the way across the height of the video's rendering area, while
         // maintaining the relative positions of the boxes in boxes to each
         // other.
-        setInlineStyleProperty(CSSPropertyWebkitTransform,
+        setInlineStyleProperty(CSSPropertyTransform,
             String::format("translate(-%.2f%%, -%.2f%%)", position.x(), position.y()));
 
         setInlineStyleProperty(CSSPropertyWhiteSpace, CSSValuePre);
