@@ -2006,6 +2006,14 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     LayoutUnit containerLogicalWidth = std::max(LayoutUnit(), containingBlockLogicalWidthForContent());
     bool hasPerpendicularContainingBlock = cb->isHorizontalWritingMode() != isHorizontalWritingMode();
 
+    if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() && style()->minWidth().isAuto()) {
+        LayoutUnit minLogicalWidth = minPreferredLogicalWidth();
+        if (containerLogicalWidth < minLogicalWidth) {
+            computedValues.m_extent = constrainLogicalWidthByMinMax(minLogicalWidth, containerLogicalWidth, cb);
+            return;
+        }
+    }
+
     if (isInline() && !isInlineBlockOrInlineTable()) {
         // just calculate margins
         computedValues.m_margins.m_start = minimumValueForLength(styleToUse.marginStart(), containerLogicalWidth);
@@ -2331,7 +2339,13 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
         // FIXME: Account for writing-mode in flexible boxes.
         // https://bugs.webkit.org/show_bug.cgi?id=46418
         if (hasOverrideLogicalContentHeight() && (parent()->isFlexibleBoxIncludingDeprecated() || parent()->isLayoutGrid())) {
-            h = Length(overrideLogicalContentHeight(), Fixed);
+            LayoutUnit contentHeight = overrideLogicalContentHeight();
+            if (parent()->isLayoutGrid() && style()->minHeight().isAuto()) {
+                ASSERT(style()->logicalHeight().isAuto());
+                LayoutUnit minContentHeight = computeContentLogicalHeight(MinSize, Length(MinContent), computedValues.m_extent - borderAndPaddingLogicalHeight());
+                contentHeight = std::max(contentHeight, constrainLogicalHeightByMinMax(minContentHeight, computedValues.m_extent - borderAndPaddingLogicalHeight()));
+            }
+            h = Length(contentHeight, Fixed);
         } else if (treatAsReplaced) {
             h = Length(computeReplacedLogicalHeight(), Fixed);
         } else {
