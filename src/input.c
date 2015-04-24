@@ -173,6 +173,8 @@ default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
 	struct wl_list *resource_list;
 	struct wl_resource *resource;
 	wl_fixed_t x, y;
+	wl_fixed_t old_sx = pointer->sx;
+	wl_fixed_t old_sy = pointer->sy;
 
 	if (pointer->focus) {
 		weston_pointer_motion_to_abs(pointer, event, &x, &y);
@@ -182,10 +184,12 @@ default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
 
 	weston_pointer_move(pointer, event);
 
-	resource_list = &pointer->focus_resource_list;
-	wl_resource_for_each(resource, resource_list) {
-		wl_pointer_send_motion(resource, time,
-				       pointer->sx, pointer->sy);
+	if (old_sx != pointer->sx || old_sy != pointer->sy) {
+		resource_list = &pointer->focus_resource_list;
+		wl_resource_for_each(resource, resource_list) {
+			wl_pointer_send_motion(resource, time,
+					       pointer->sx, pointer->sy);
+		}
 	}
 }
 
