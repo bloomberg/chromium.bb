@@ -581,16 +581,14 @@ hooks = [
     'action': ['python', 'src/tools/clang/scripts/update.py', '--if-needed'],
   },
   {
-    # Update LASTCHANGE. This is also run by export_tarball.py in
-    # src/tools/export_tarball - please keep them in sync.
+    # Update LASTCHANGE.
     'name': 'lastchange',
     'pattern': '.',
     'action': ['python', 'src/build/util/lastchange.py',
                '-o', 'src/build/util/LASTCHANGE'],
   },
   {
-    # Update LASTCHANGE.blink. This is also run by export_tarball.py in
-    # src/tools/export_tarball - please keep them in sync.
+    # Update LASTCHANGE.blink.
     'name': 'lastchange',
     'pattern': '.',
     'action': ['python', 'src/build/util/lastchange.py',
