@@ -123,6 +123,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
         has_implicit_external_sync_(
             HasEGLExtension("EGL_ARM_implicit_external_sync")),
         last_swap_buffers_result_(true),
+        swap_buffers_pending_(false),
         weak_factory_(this) {
     unsubmitted_frames_.push_back(new PendingFrame());
   }
@@ -180,16 +181,23 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
     return true;
   }
   bool SwapBuffersAsync(const SwapCompletionCallback& callback) override {
+    // If last swap failed, don't try to schedule new ones.
+    if (!last_swap_buffers_result_)
+      return false;
+
     glFlush();
+
+    base::Closure surface_swap_callback =
+        base::Bind(&GLSurfaceOzoneSurfaceless::SwapCompleted,
+                   weak_factory_.GetWeakPtr(), callback);
+
+    PendingFrame* frame = unsubmitted_frames_.back();
+    frame->callback = surface_swap_callback;
+    unsubmitted_frames_.push_back(new PendingFrame());
+
     // TODO: the following should be replaced by a per surface flush as it gets
     // implemented in GL drivers.
     if (has_implicit_external_sync_) {
-      // If last swap failed, don't try to schedule new ones.
-      if (!last_swap_buffers_result_) {
-        last_swap_buffers_result_ = true;
-        return false;
-      }
-
       EGLSyncKHR fence = InsertFence();
       if (!fence)
         return false;
@@ -197,22 +205,20 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
       base::Closure fence_wait_task =
           base::Bind(&WaitForFence, GetDisplay(), fence);
 
-      PendingFrame* frame = unsubmitted_frames_.back();
-      frame->callback = callback;
       base::Closure fence_retired_callback =
           base::Bind(&GLSurfaceOzoneSurfaceless::FenceRetired,
                      weak_factory_.GetWeakPtr(), fence, frame);
 
       base::WorkerPool::PostTaskAndReply(FROM_HERE, fence_wait_task,
                                          fence_retired_callback, false);
-      unsubmitted_frames_.push_back(new PendingFrame());
       return true;
     } else if (ozone_surface_->IsUniversalDisplayLinkDevice()) {
       glFinish();
     }
-    unsubmitted_frames_.back()->ScheduleOverlayPlanes(widget_);
-    unsubmitted_frames_.back()->overlays.clear();
-    return ozone_surface_->OnSwapBuffersAsync(callback);
+
+    frame->ready = true;
+    SubmitFrame();
+    return last_swap_buffers_result_;
   }
   bool PostSubBufferAsync(int x,
                           int y,
@@ -265,13 +271,17 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
     Destroy();  // EGL surface must be destroyed before SurfaceOzone
   }
 
-  void SubmitFrames() {
-    while (!unsubmitted_frames_.empty() && unsubmitted_frames_.front()->ready) {
-      PendingFrame* frame = unsubmitted_frames_.front();
+  void SubmitFrame() {
+    DCHECK(!unsubmitted_frames_.empty());
+
+    if (unsubmitted_frames_.front()->ready && !swap_buffers_pending_) {
+      scoped_ptr<PendingFrame> frame(unsubmitted_frames_.front());
+      unsubmitted_frames_.weak_erase(unsubmitted_frames_.begin());
+      swap_buffers_pending_ = true;
+
       last_swap_buffers_result_ =
-          last_swap_buffers_result_ && frame->ScheduleOverlayPlanes(widget_) &&
+          frame->ScheduleOverlayPlanes(widget_) &&
           ozone_surface_->OnSwapBuffersAsync(frame->callback);
-      unsubmitted_frames_.erase(unsubmitted_frames_.begin());
     }
   }
 
@@ -285,7 +295,14 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
   void FenceRetired(EGLSyncKHR fence, PendingFrame* frame) {
     eglDestroySyncKHR(GetDisplay(), fence);
     frame->ready = true;
-    SubmitFrames();
+    SubmitFrame();
+  }
+
+  void SwapCompleted(const SwapCompletionCallback& callback) {
+    callback.Run();
+    swap_buffers_pending_ = false;
+
+    SubmitFrame();
   }
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
@@ -295,6 +312,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
   ScopedVector<PendingFrame> unsubmitted_frames_;
   bool has_implicit_external_sync_;
   bool last_swap_buffers_result_;
+  bool swap_buffers_pending_;
 
   base::WeakPtrFactory<GLSurfaceOzoneSurfaceless> weak_factory_;
 

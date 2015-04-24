@@ -19,7 +19,7 @@
 namespace ui {
 
 class DrmDevice;
-class PageFlipObserver;
+class PageFlipRequest;
 
 // Wrapper around a CRTC.
 //
@@ -38,7 +38,6 @@ class OZONE_EXPORT CrtcController
   uint32_t connector() const { return connector_; }
   const scoped_refptr<DrmDevice>& drm() const { return drm_; }
   bool is_disabled() const { return is_disabled_; }
-  bool page_flip_pending() const { return page_flip_pending_; }
   uint64_t time_of_last_flip() const { return time_of_last_flip_; }
 
   drmModeCrtc* saved_crtc() const { return saved_crtc_.get(); }
@@ -52,7 +51,8 @@ class OZONE_EXPORT CrtcController
 
   // Schedule a page flip event and present the overlays in |planes|.
   bool SchedulePageFlip(HardwareDisplayPlaneList* plane_list,
-                        const OverlayPlaneList& planes);
+                        const OverlayPlaneList& planes,
+                        scoped_refptr<PageFlipRequest> page_flip_request);
 
   // Called if the page flip for this CRTC fails after being scheduled.
   void PageFlipFailed();
@@ -70,11 +70,10 @@ class OZONE_EXPORT CrtcController
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
   bool MoveCursor(const gfx::Point& location);
 
-  void AddObserver(PageFlipObserver* observer);
-  void RemoveObserver(PageFlipObserver* observer);
-
  private:
   bool ResetCursor();
+
+  void SignalPageFlipRequest();
 
   scoped_refptr<DrmDevice> drm_;
 
@@ -85,6 +84,7 @@ class OZONE_EXPORT CrtcController
   OverlayPlaneList current_planes_;
   OverlayPlaneList pending_planes_;
   scoped_refptr<ScanoutBuffer> cursor_buffer_;
+  scoped_refptr<PageFlipRequest> page_flip_request_;
 
   uint32_t crtc_;
 
@@ -101,14 +101,8 @@ class OZONE_EXPORT CrtcController
   // is set to false. Otherwise it is true.
   bool is_disabled_;
 
-  // True if a successful SchedulePageFlip occurred. Reset to false by a modeset
-  // operation or when the OnPageFlipEvent callback is triggered.
-  bool page_flip_pending_;
-
   // The time of the last page flip event as reported by the kernel callback.
   uint64_t time_of_last_flip_;
-
-  ObserverList<PageFlipObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CrtcController);
 };

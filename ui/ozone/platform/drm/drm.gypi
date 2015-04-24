@@ -81,6 +81,8 @@
         'gpu/hardware_display_plane_manager_legacy.h',
         'gpu/overlay_plane.cc',
         'gpu/overlay_plane.h',
+        'gpu/page_flip_request.cc',
+        'gpu/page_flip_request.h',
         'gpu/scoped_drm_types.cc',
         'gpu/scoped_drm_types.h',
         'gpu/screen_manager.cc',

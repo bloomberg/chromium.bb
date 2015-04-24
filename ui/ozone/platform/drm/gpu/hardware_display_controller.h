@@ -17,11 +17,9 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
-#include "ui/ozone/platform/drm/gpu/page_flip_observer.h"
 
 namespace gfx {
 class Point;
@@ -87,12 +85,10 @@ class DrmDevice;
 // only a subset of connectors can be active independently, showing different
 // framebuffers. Though, in this case, it would be possible to have all
 // connectors active if some use the same CRTC to mirror the display.
-class OZONE_EXPORT HardwareDisplayController
-    : public base::SupportsWeakPtr<HardwareDisplayController>,
-      public PageFlipObserver {
+class OZONE_EXPORT HardwareDisplayController {
  public:
   explicit HardwareDisplayController(scoped_ptr<CrtcController> controller);
-  ~HardwareDisplayController() override;
+  ~HardwareDisplayController();
 
   // Performs the initial CRTC configuration. If successful, it will display the
   // framebuffer for |primary| with |mode|.
@@ -151,39 +147,6 @@ class OZONE_EXPORT HardwareDisplayController
   scoped_refptr<DrmDevice> GetAllocationDrmDevice() const;
 
  private:
-  // Returns true if any of the CRTCs is waiting for a page flip.
-  bool HasPendingPageFlips() const;
-
-  bool ActualSchedulePageFlip();
-
-  void ProcessPageFlipRequest();
-
-  void ClearPendingRequests();
-
-  // PageFlipObserver:
-  void OnPageFlipEvent() override;
-
-  struct PageFlipRequest {
-    PageFlipRequest(const OverlayPlaneList& planes,
-                    bool is_sync,
-                    const base::Closure& callback);
-    ~PageFlipRequest();
-
-    OverlayPlaneList planes;
-    bool is_sync;
-    base::Closure callback;
-  };
-
-  // Buffers need to be declared first so that they are destroyed last. Needed
-  // since the controllers may reference the buffers.
-  OverlayPlaneList current_planes_;
-  // Planes currently being queued without having SchedulePageFlip() called.
-  OverlayPlaneList pending_planes_;
-  // Plane lists for which SchedulePageFlip() was called. They are waiting for
-  // previous page flip events to be completed before they can be serviced.
-  std::deque<PageFlipRequest> requests_;
-  scoped_refptr<ScanoutBuffer> cursor_buffer_;
-
   base::ScopedPtrHashMap<DrmDevice*, HardwareDisplayPlaneList>
       owned_hardware_planes_;
 
