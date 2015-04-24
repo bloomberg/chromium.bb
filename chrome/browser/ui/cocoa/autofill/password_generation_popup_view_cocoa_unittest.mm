@@ -28,31 +28,31 @@ class MockPasswordGenerationPopupController
 
   MOCK_METHOD0(PasswordAccepted, void());
 
-  virtual void OnSavedPasswordsLinkClicked() override {}
+  void OnSavedPasswordsLinkClicked() override {}
 
-  virtual int GetMinimumWidth() override { return 200; }
+  int GetMinimumWidth() override { return 200; }
 
-  virtual bool display_password() const override { return true; }
+  bool display_password() const override { return true; }
 
-  virtual bool password_selected() const override { return false; }
+  bool password_selected() const override { return false; }
 
   MOCK_CONST_METHOD0(password, base::string16());
 
-  virtual base::string16 SuggestedText() override {
+  base::string16 SuggestedText() override {
     return base::ASCIIToUTF16("Suggested by Chrome");
   }
 
-  virtual const base::string16& HelpText() override { return help_text_; }
+  const base::string16& HelpText() override { return help_text_; }
 
-  virtual const gfx::Range& HelpTextLinkRange() override { return link_range_; }
+  const gfx::Range& HelpTextLinkRange() override { return link_range_; }
 
   // AutofillPopupViewDelegate implementation.
-  virtual void Hide() override {}
+  void Hide() override {}
   MOCK_METHOD0(ViewDestroyed, void());
-  virtual void SetSelectionAtPoint(const gfx::Point&) override {}
-  virtual bool AcceptSelectedLine() override { return true; }
-  virtual void SelectionCleared() override {}
-  virtual const gfx::Rect& popup_bounds() const override {
+  void SetSelectionAtPoint(const gfx::Point&) override {}
+  bool AcceptSelectedLine() override { return true; }
+  void SelectionCleared() override {}
+  const gfx::Rect& popup_bounds() const override {
     return popup_bounds_;
   }
   MOCK_METHOD0(container_view, gfx::NativeView());

@@ -145,15 +145,15 @@ class ProxyBase : public ServiceDiscoveryClientMdns::Proxy, public T {
       : Proxy(client) {
   }
 
-  virtual ~ProxyBase() {
+  ~ProxyBase() override {
     DeleteOnMdnsThread(implementation_.release());
   }
 
-  virtual bool IsValid() override {
+  bool IsValid() override {
     return !!implementation();
   }
 
-  virtual void OnMdnsDestroy() override {
+  void OnMdnsDestroy() override {
     DeleteOnMdnsThread(implementation_.release());
   };
 

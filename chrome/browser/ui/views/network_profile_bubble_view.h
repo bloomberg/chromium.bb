@@ -25,17 +25,16 @@ class NetworkProfileBubbleView : public views::BubbleDelegateView,
                            content::PageNavigator* navigator,
                            Profile* profile);
  private:
-  virtual ~NetworkProfileBubbleView();
+  ~NetworkProfileBubbleView() override;
 
   // views::BubbleDelegateView:
-  virtual void Init() override;
+  void Init() override;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) override;
+  void LinkClicked(views::Link* source, int event_flags) override;
 
   // Used for loading pages.
   content::PageNavigator* navigator_;

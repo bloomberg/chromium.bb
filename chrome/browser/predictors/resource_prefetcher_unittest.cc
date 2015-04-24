@@ -33,7 +33,7 @@ class TestResourcePrefetcher : public ResourcePrefetcher {
       : ResourcePrefetcher(delegate, config, navigation_id,
                            key_type, requests.Pass()) { }
 
-  virtual ~TestResourcePrefetcher() { }
+  ~TestResourcePrefetcher() override {}
 
   MOCK_METHOD1(StartURLRequest, void(net::URLRequest* request));
 
@@ -55,7 +55,7 @@ class TestResourcePrefetcherDelegate : public ResourcePrefetcher::Delegate {
           loop->message_loop_proxy())) { }
   ~TestResourcePrefetcherDelegate() { }
 
-  virtual net::URLRequestContext* GetURLRequestContext() override {
+  net::URLRequestContext* GetURLRequestContext() override {
     return request_context_getter_->GetURLRequestContext();
   }
 

@@ -30,7 +30,7 @@ class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
             PasswordStoreWin* password_store)
       : web_data_service_(web_data_service), password_store_(password_store) {}
 
-  ~DBHandler();
+  ~DBHandler() override;
 
   // Requests the IE7 login for |form|. This is async. |result_callback| will be
   // run when complete.
@@ -60,7 +60,7 @@ class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
       const PasswordForm& form);
 
   // WebDataServiceConsumer implementation.
-  virtual void OnWebDataServiceRequestDone(
+  void OnWebDataServiceRequestDone(
       PasswordWebDataService::Handle handle,
       const WDTypedResult* result) override;
 

@@ -22,20 +22,19 @@
 
 class PDFExtensionTest : public ExtensionApiTest {
  public:
-  virtual ~PDFExtensionTest() {}
+  ~PDFExtensionTest() override {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableOutOfProcessPdf);
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   }
 
-
-  virtual void TearDownOnMainThread() override {
+  void TearDownOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
     ExtensionApiTest::TearDownOnMainThread();
   }

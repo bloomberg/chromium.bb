@@ -73,7 +73,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
  public:
   ChromePasswordManagerClientTest();
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   TestingPrefServiceSyncable* prefs() {
     return profile()->GetTestingPrefService();

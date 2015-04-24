@@ -52,7 +52,7 @@ class PermissionBubbleControllerTest : public CocoaTest,
   MOCK_METHOD0(Closing, void());
   MOCK_METHOD1(SetView, void(PermissionBubbleView*));
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CocoaTest::SetUp();
     bridge_.reset(new PermissionBubbleCocoa(nil));
     AddRequest(kPermissionA);
@@ -61,7 +61,7 @@ class PermissionBubbleControllerTest : public CocoaTest,
                       bridge:bridge_.get()];
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     [controller_ close];
     chrome::testing::NSRunLoopRunAllPending();
     STLDeleteElements(&requests_);

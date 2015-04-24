@@ -22,9 +22,9 @@ class MockAutoEnrollmentCheckScreenActor
     : public AutoEnrollmentCheckScreenActor {
  public:
   MockAutoEnrollmentCheckScreenActor();
-  virtual ~MockAutoEnrollmentCheckScreenActor();
+  ~MockAutoEnrollmentCheckScreenActor() override;
 
-  virtual void SetDelegate(Delegate* screen) override;
+  void SetDelegate(Delegate* screen) override;
 
   MOCK_METHOD1(MockSetDelegate, void(Delegate* screen));
   MOCK_METHOD0(Show, void());

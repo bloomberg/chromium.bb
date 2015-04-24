@@ -38,9 +38,9 @@ class SetMetroBrowserFlowLauncher : public content::NotificationObserver {
   }
 
   // content::NotificationObserver override:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
   Profile* profile_;

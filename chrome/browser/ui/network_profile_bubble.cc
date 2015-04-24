@@ -41,12 +41,12 @@ const int kMaxWarnings = 2;
 // window.
 class BrowserListObserver : public chrome::BrowserListObserver {
  private:
-  virtual ~BrowserListObserver();
+  ~BrowserListObserver() override;
 
   // Overridden from chrome::BrowserListObserver:
-  virtual void OnBrowserAdded(Browser* browser) override;
-  virtual void OnBrowserRemoved(Browser* browser) override;
-  virtual void OnBrowserSetLastActive(Browser* browser) override;
+  void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
+  void OnBrowserSetLastActive(Browser* browser) override;
 };
 
 BrowserListObserver::~BrowserListObserver() {

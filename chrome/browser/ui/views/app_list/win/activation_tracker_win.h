@@ -15,10 +15,10 @@ class AppListServiceWin;
 class ActivationTrackerWin : public app_list::AppListViewObserver {
  public:
   explicit ActivationTrackerWin(AppListServiceWin* service);
-  ~ActivationTrackerWin();
+  ~ActivationTrackerWin() override;
 
   // app_list::AppListViewObserver:
-  virtual void OnActivationChanged(views::Widget* widget, bool active) override;
+  void OnActivationChanged(views::Widget* widget, bool active) override;
 
   void OnViewHidden();
 

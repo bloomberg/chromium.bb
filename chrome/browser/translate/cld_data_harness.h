@@ -46,7 +46,7 @@ namespace test {
 //         test::CldDataHarnessFactory::Get->CreateCldDataHarness()) {
 //       // (your additional setup code here)
 //     }
-//     virtual void SetUpOnMainThread() override {
+//     void SetUpOnMainThread() override {
 //       cld_data_scope->Init();
 //       InProcessBrowserTest::SetUpOnMainThread();
 //     }

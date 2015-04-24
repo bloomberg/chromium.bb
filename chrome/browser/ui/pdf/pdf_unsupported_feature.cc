@@ -57,16 +57,16 @@ class PDFEnableAdobeReaderPromptClient
     : public pdf::OpenPDFInReaderPromptClient {
  public:
   explicit PDFEnableAdobeReaderPromptClient(Profile* profile);
-  virtual ~PDFEnableAdobeReaderPromptClient();
+  ~PDFEnableAdobeReaderPromptClient() override;
 
   // pdf::OpenPDFInReaderPromptClient
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetAcceptButtonText() const override;
-  virtual base::string16 GetCancelButtonText() const override;
-  virtual bool ShouldExpire(
+  base::string16 GetMessageText() const override;
+  base::string16 GetAcceptButtonText() const override;
+  base::string16 GetCancelButtonText() const override;
+  bool ShouldExpire(
       const content::LoadCommittedDetails& details) const override;
-  virtual void Accept() override;
-  virtual void Cancel() override;
+  void Accept() override;
+  void Cancel() override;
 
  private:
   void OnYes();
@@ -163,7 +163,7 @@ class PDFUnsupportedFeatureInterstitial
 
  protected:
   // InterstitialPageDelegate implementation.
-  virtual std::string GetHTMLContents() override {
+  std::string GetHTMLContents() override {
     base::DictionaryValue strings;
     strings.SetString(
         "title",
@@ -191,7 +191,7 @@ class PDFUnsupportedFeatureInterstitial
     return webui::GetI18nTemplateHtml(html, &strings);
   }
 
-  virtual void CommandReceived(const std::string& command) override {
+  void CommandReceived(const std::string& command) override {
     if (command == "0") {
       content::RecordAction(
           UserMetricsAction("PDF_ReaderInterstitialCancel"));
@@ -215,8 +215,7 @@ class PDFUnsupportedFeatureInterstitial
     interstitial_page_->Proceed();
   }
 
-  virtual void OverrideRendererPrefs(
-      content::RendererPreferences* prefs) override {
+  void OverrideRendererPrefs(content::RendererPreferences* prefs) override {
     Profile* profile =
         Profile::FromBrowserContext(web_contents_->GetBrowserContext());
     renderer_preferences_util::UpdateFromSystemSettings(
@@ -238,16 +237,16 @@ class PDFUnsupportedFeaturePromptClient
  public:
   PDFUnsupportedFeaturePromptClient(WebContents* web_contents,
                                     const AdobeReaderPluginInfo& reader_info);
-  virtual ~PDFUnsupportedFeaturePromptClient();
+  ~PDFUnsupportedFeaturePromptClient() override;
 
   // pdf::OpenPDFInReaderPromptClient:
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetAcceptButtonText() const override;
-  virtual base::string16 GetCancelButtonText() const override;
-  virtual bool ShouldExpire(
+  base::string16 GetMessageText() const override;
+  base::string16 GetAcceptButtonText() const override;
+  base::string16 GetCancelButtonText() const override;
+  bool ShouldExpire(
       const content::LoadCommittedDetails& details) const override;
-  virtual void Accept() override;
-  virtual void Cancel() override;
+  void Accept() override;
+  void Cancel() override;
 
  private:
   WebContents* web_contents_;

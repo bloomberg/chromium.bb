@@ -21,8 +21,8 @@ class PPAPITestMessageHandler : public content::TestMessageHandler {
  public:
   PPAPITestMessageHandler();
 
-  virtual MessageResponse HandleMessage(const std::string& json) override;
-  virtual void Reset() override;
+  MessageResponse HandleMessage(const std::string& json) override;
+  void Reset() override;
 
   const std::string& message() const {
     return message_;
@@ -39,9 +39,9 @@ class PPAPITestBase : public InProcessBrowserTest {
   PPAPITestBase();
 
   // InProcessBrowserTest:
-  virtual void SetUp() override;
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void SetUpOnMainThread() override;
+  void SetUp() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
 
   virtual std::string BuildQuery(const std::string& base,
                                  const std::string& test_case) = 0;
@@ -66,9 +66,9 @@ class PPAPITestBase : public InProcessBrowserTest {
 
    private:
     // content::NotificationObserver:
-    virtual void Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) override;
+    void Observe(int type,
+                 const content::NotificationSource& source,
+                 const content::NotificationDetails& details) override;
 
     void VerifyInfoBarState();
 
@@ -94,17 +94,18 @@ class PPAPITest : public PPAPITestBase {
  public:
   PPAPITest();
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
-  virtual std::string BuildQuery(const std::string& base,
-                                 const std::string& test_case) override;
+  std::string BuildQuery(const std::string& base,
+                         const std::string& test_case) override;
+
  protected:
   bool in_process_;  // Controls the --ppapi-in-process switch.
 };
 
 class PPAPIPrivateTest : public PPAPITest {
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 // Variant of PPAPITest that runs plugins out-of-process to test proxy
@@ -113,74 +114,72 @@ class OutOfProcessPPAPITest : public PPAPITest {
  public:
   OutOfProcessPPAPITest();
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 class OutOfProcessPPAPIPrivateTest : public OutOfProcessPPAPITest {
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 // NaCl plugin test runner for Newlib runtime.
 class PPAPINaClTest : public PPAPITestBase {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
-  virtual void SetUpOnMainThread() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
   // PPAPITestBase overrides.
-  virtual void RunTest(const std::string& test_case) override;
-  virtual void RunTestViaHTTP(const std::string& test_case) override;
-  virtual void RunTestWithSSLServer(const std::string& test_case) override;
-  virtual void RunTestWithWebSocketServer(
-      const std::string& test_case) override;
-  virtual void RunTestIfAudioOutputAvailable(
-      const std::string& test_case) override;
-  virtual void RunTestViaHTTPIfAudioOutputAvailable(
+  void RunTest(const std::string& test_case) override;
+  void RunTestViaHTTP(const std::string& test_case) override;
+  void RunTestWithSSLServer(const std::string& test_case) override;
+  void RunTestWithWebSocketServer(const std::string& test_case) override;
+  void RunTestIfAudioOutputAvailable(const std::string& test_case) override;
+  void RunTestViaHTTPIfAudioOutputAvailable(
       const std::string& test_case) override;
 };
 
 // NaCl plugin test runner for Newlib runtime.
 class PPAPINaClNewlibTest : public PPAPINaClTest {
  public:
-  virtual std::string BuildQuery(const std::string& base,
-                                 const std::string& test_case) override;
+  std::string BuildQuery(const std::string& base,
+                         const std::string& test_case) override;
 };
 
 class PPAPIPrivateNaClNewlibTest : public PPAPINaClNewlibTest {
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 // NaCl plugin test runner for GNU-libc runtime.
 class PPAPINaClGLibcTest : public PPAPINaClTest {
  public:
-  virtual std::string BuildQuery(const std::string& base,
-                                 const std::string& test_case) override;
+  std::string BuildQuery(const std::string& base,
+                         const std::string& test_case) override;
 };
 
 class PPAPIPrivateNaClGLibcTest : public PPAPINaClGLibcTest {
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 // NaCl plugin test runner for the PNaCl + Newlib runtime.
 class PPAPINaClPNaClTest : public PPAPINaClTest {
  public:
-  virtual std::string BuildQuery(const std::string& base,
-                                 const std::string& test_case) override;
+  std::string BuildQuery(const std::string& base,
+                         const std::string& test_case) override;
 };
 
 class PPAPIPrivateNaClPNaClTest : public PPAPINaClPNaClTest {
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 // Test Non-SFI Mode, using PNaCl toolchain to produce nexes.
 class PPAPINaClPNaClNonSfiTest : public PPAPINaClTest {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line);
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
-  virtual std::string BuildQuery(const std::string& base,
-                                 const std::string& test_case) override;
+  std::string BuildQuery(const std::string& base,
+                         const std::string& test_case) override;
 };
 
 // TODO(hidehiko): Switch NonSfi tests to use nacl_helper_nonsfi, when
@@ -188,12 +187,12 @@ class PPAPINaClPNaClNonSfiTest : public PPAPINaClTest {
 // for more details.
 class PPAPINaClPNaClTransitionalNonSfiTest : public PPAPINaClPNaClNonSfiTest {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 class PPAPIPrivateNaClPNaClNonSfiTest : public PPAPINaClPNaClNonSfiTest {
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 // TODO(hidehiko): Switch NonSfi tests to use nacl_helper_nonsfi, when
@@ -202,22 +201,22 @@ class PPAPIPrivateNaClPNaClNonSfiTest : public PPAPINaClPNaClNonSfiTest {
 class PPAPIPrivateNaClPNaClTransitionalNonSfiTest
     : public PPAPIPrivateNaClPNaClNonSfiTest {
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
 
 class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
  public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
-  virtual std::string BuildQuery(const std::string& base,
-                                 const std::string& test_case) override;
+  std::string BuildQuery(const std::string& base,
+                         const std::string& test_case) override;
 };
 
 class PPAPIBrokerInfoBarTest : public OutOfProcessPPAPITest {
  public:
   // PPAPITestBase override:
-  virtual void SetUpOnMainThread() override;
+  void SetUpOnMainThread() override;
 };
 
 #endif  // CHROME_TEST_PPAPI_PPAPI_TEST_H_

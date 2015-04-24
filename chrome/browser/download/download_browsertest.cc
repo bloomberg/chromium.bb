@@ -3427,9 +3427,9 @@ class DisableSafeBrowsingOnInProgressDownload
         final_state_seen_(false) {
     Init();
   }
-  virtual ~DisableSafeBrowsingOnInProgressDownload() {}
+  ~DisableSafeBrowsingOnInProgressDownload() override {}
 
-  virtual bool IsDownloadInFinalState(DownloadItem* download) override {
+  bool IsDownloadInFinalState(DownloadItem* download) override {
     if (download->GetState() != DownloadItem::IN_PROGRESS ||
         download->GetTargetFilePath().empty())
       return false;

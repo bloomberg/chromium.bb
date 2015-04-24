@@ -48,9 +48,8 @@ static const std::string kNotificationId =
 class ScreenTypeDelegateDesktop : public gfx::ScreenTypeDelegate {
  public:
   ScreenTypeDelegateDesktop() {}
-  virtual ~ScreenTypeDelegateDesktop() {}
-  virtual gfx::ScreenType GetScreenTypeForNativeView(
-      gfx::NativeView view) override {
+  ~ScreenTypeDelegateDesktop() override {}
+  gfx::ScreenType GetScreenTypeForNativeView(gfx::NativeView view) override {
     return chrome::IsNativeViewInAsh(view) ?
         gfx::SCREEN_TYPE_ALTERNATE :
         gfx::SCREEN_TYPE_NATIVE;

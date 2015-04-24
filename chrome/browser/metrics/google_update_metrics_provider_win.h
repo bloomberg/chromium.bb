@@ -16,14 +16,14 @@
 class GoogleUpdateMetricsProviderWin : public metrics::MetricsProvider {
  public:
   GoogleUpdateMetricsProviderWin();
-  virtual ~GoogleUpdateMetricsProviderWin();
+  ~GoogleUpdateMetricsProviderWin() override;
 
   // Fetches Google Update data asynchronously and calls |done_callback| when
   // done.
   void GetGoogleUpdateData(const base::Closure& done_callback);
 
   // metrics::MetricsProvider
-  virtual void ProvideSystemProfileMetrics(
+  void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
 
  private:

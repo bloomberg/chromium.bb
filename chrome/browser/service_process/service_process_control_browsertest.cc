@@ -65,14 +65,14 @@ class ServiceProcessControlBrowserTest
     ServiceProcessControl::GetInstance()->Disconnect();
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // This should not be needed because TearDown() ends with a closed
     // service_process_, but HistogramsTimeout and Histograms fail without this
     // on Mac.
     service_process_.Close();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (ServiceProcessControl::GetInstance()->IsConnected())
       EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 #if defined(OS_MACOSX)

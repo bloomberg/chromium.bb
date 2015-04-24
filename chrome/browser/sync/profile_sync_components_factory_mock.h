@@ -26,7 +26,7 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
   ProfileSyncComponentsFactoryMock(
       sync_driver::AssociatorInterface* model_associator,
       sync_driver::ChangeProcessor* change_processor);
-  virtual ~ProfileSyncComponentsFactoryMock();
+  ~ProfileSyncComponentsFactoryMock() override;
 
   MOCK_METHOD1(RegisterDataTypes, void(ProfileSyncService*));
   MOCK_METHOD5(CreateDataTypeManager,
@@ -44,14 +44,14 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
                    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
                    const base::FilePath& sync_folder));
 
-  virtual scoped_ptr<sync_driver::LocalDeviceInfoProvider>
+  scoped_ptr<sync_driver::LocalDeviceInfoProvider>
       CreateLocalDeviceInfoProvider() override;
   void SetLocalDeviceInfoProvider(
       scoped_ptr<sync_driver::LocalDeviceInfoProvider> local_device);
 
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<syncer::SyncableService>(syncer::ModelType));
-  virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+  scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,

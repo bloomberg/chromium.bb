@@ -23,10 +23,10 @@ class MockEulaScreen : public EulaScreen {
 class MockEulaView : public EulaView {
  public:
   MockEulaView();
-  virtual ~MockEulaView();
+  ~MockEulaView() override;
 
-  virtual void Bind(EulaModel& model) override;
-  virtual void Unbind() override;
+  void Bind(EulaModel& model) override;
+  void Unbind() override;
 
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());

@@ -15,10 +15,10 @@
 class SystemMenuInsertionDelegateWin : public views::MenuInsertionDelegateWin {
  public:
   SystemMenuInsertionDelegateWin() {}
-  virtual ~SystemMenuInsertionDelegateWin() {}
+  ~SystemMenuInsertionDelegateWin() override {}
 
   // Overridden from views::MenuInsertionDelegateWin:
-  virtual int GetInsertionIndex(HMENU native_menu) override;
+  int GetInsertionIndex(HMENU native_menu) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemMenuInsertionDelegateWin);

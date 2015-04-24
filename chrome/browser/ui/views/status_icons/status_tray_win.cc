@@ -70,7 +70,7 @@ class StatusTrayStateChangerProxyImpl : public StatusTrayStateChangerProxy,
     worker_thread_.init_com_with_mta(false);
   }
 
-  virtual void EnqueueChange(UINT icon_id, HWND window) override {
+  void EnqueueChange(UINT icon_id, HWND window) override {
     DCHECK(CalledOnValidThread());
     if (pending_requests_ == 0)
       worker_thread_.Start();

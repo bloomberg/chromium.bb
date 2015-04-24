@@ -23,23 +23,23 @@ const uint16 kDefaultMdnsPort = 5353;
 class FirewallManagerAdvancedImpl : public FirewallManager {
  public:
   FirewallManagerAdvancedImpl() {}
-  virtual ~FirewallManagerAdvancedImpl() {}
+  ~FirewallManagerAdvancedImpl() override {}
 
   bool Init(const base::string16& app_name, const base::FilePath& app_path) {
     return manager_.Init(app_name, app_path);
   }
 
   // FirewallManager methods.
-  virtual bool CanUseLocalPorts() override {
+  bool CanUseLocalPorts() override {
     return !manager_.IsFirewallEnabled() || manager_.HasAnyRule();
   };
 
-  virtual bool AddFirewallRules() override {
+  bool AddFirewallRules() override {
     return manager_.AddUDPRule(GetMdnsRuleName(), GetMdnsRuleDescription(),
                                kDefaultMdnsPort);
   }
 
-  virtual void RemoveFirewallRules() override {
+  void RemoveFirewallRules() override {
     manager_.DeleteAllRules();
   }
 
@@ -67,25 +67,25 @@ class FirewallManagerAdvancedImpl : public FirewallManager {
 class FirewallManagerLegacyImpl : public FirewallManager {
  public:
   FirewallManagerLegacyImpl() {}
-  virtual ~FirewallManagerLegacyImpl() {}
+  ~FirewallManagerLegacyImpl() override {}
 
   bool Init(const base::string16& app_name, const base::FilePath& app_path) {
     return manager_.Init(app_name, app_path);
   }
 
   // FirewallManager methods.
-  virtual bool CanUseLocalPorts() override {
+  bool CanUseLocalPorts() override {
     return !manager_.IsFirewallEnabled() ||
         manager_.GetAllowIncomingConnection(NULL);
   };
 
-  virtual bool AddFirewallRules() override {
+  bool AddFirewallRules() override {
     // Change nothing if rule is set.
     return manager_.GetAllowIncomingConnection(NULL) ||
         manager_.SetAllowIncomingConnection(true);
   }
 
-  virtual void RemoveFirewallRules() override {
+  void RemoveFirewallRules() override {
     manager_.DeleteRule();
   }
 

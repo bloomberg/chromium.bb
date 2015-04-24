@@ -22,17 +22,17 @@ class MetroPinTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<MetroPinTabHelper> {
  public:
-  virtual ~MetroPinTabHelper();
+  ~MetroPinTabHelper() override;
 
   bool IsPinned() const;
 
   void TogglePinnedToStartScreen();
 
   // content::WebContentsObserver overrides:
-  virtual void DidNavigateMainFrame(
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  virtual void DidUpdateFaviconURL(
+  void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) override;
 
  private:

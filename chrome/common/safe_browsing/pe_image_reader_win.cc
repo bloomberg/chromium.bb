@@ -37,19 +37,19 @@ class PeImageReader::OptionalHeaderImpl : public PeImageReader::OptionalHeader {
       : optional_header_(reinterpret_cast<const OPTIONAL_HEADER_TYPE*>(
                              optional_header_start)) {}
 
-  virtual WordSize GetWordSize() override {
+  WordSize GetWordSize() override {
     return TraitsType::word_size;
   }
 
-  virtual size_t GetDataDirectoryOffset() override {
+  size_t GetDataDirectoryOffset() override {
     return offsetof(OPTIONAL_HEADER_TYPE, DataDirectory);
   }
 
-  virtual DWORD GetDataDirectorySize() override {
+  DWORD GetDataDirectorySize() override {
     return optional_header_->NumberOfRvaAndSizes;
   }
 
-  virtual const IMAGE_DATA_DIRECTORY* GetDataDirectoryEntries() override {
+  const IMAGE_DATA_DIRECTORY* GetDataDirectoryEntries() override {
     return &optional_header_->DataDirectory[0];
   }
 

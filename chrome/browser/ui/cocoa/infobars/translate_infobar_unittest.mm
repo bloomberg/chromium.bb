@@ -57,11 +57,11 @@ class MockTranslateInfoBarDelegate
 
   MOCK_METHOD0(TranslationDeclined, void());
 
-  virtual bool IsTranslatableLanguageByPrefs() override { return true; }
+  bool IsTranslatableLanguageByPrefs() override { return true; }
   MOCK_METHOD0(ToggleTranslatableLanguageByPrefs, void());
-  virtual bool IsSiteBlacklisted() override { return false; }
+  bool IsSiteBlacklisted() override { return false; }
   MOCK_METHOD0(ToggleSiteBlacklist, void());
-  virtual bool ShouldAlwaysTranslate() override { return false; }
+  bool ShouldAlwaysTranslate() override { return false; }
   MOCK_METHOD0(ToggleAlwaysTranslate, void());
 };
 

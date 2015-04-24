@@ -28,19 +28,19 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
   MockPrivetURLFetcherDelegate() : raw_mode_(false) {
   }
 
-  virtual ~MockPrivetURLFetcherDelegate() {
+  ~MockPrivetURLFetcherDelegate() override {
   }
 
-  virtual void OnError(PrivetURLFetcher* fetcher,
-                       PrivetURLFetcher::ErrorType error) override {
+  void OnError(PrivetURLFetcher* fetcher,
+               PrivetURLFetcher::ErrorType error) override {
     OnErrorInternal(error);
   }
 
   MOCK_METHOD1(OnErrorInternal, void(PrivetURLFetcher::ErrorType error));
 
-  virtual void OnParsedJson(PrivetURLFetcher* fetcher,
-                            const base::DictionaryValue& value,
-                            bool has_error) override {
+  void OnParsedJson(PrivetURLFetcher* fetcher,
+                    const base::DictionaryValue& value,
+                    bool has_error) override {
     saved_value_.reset(value.DeepCopy());
     OnParsedJsonInternal(has_error);
   }

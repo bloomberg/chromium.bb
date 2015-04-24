@@ -256,7 +256,7 @@ class NewTabButton : public views::ImageButton,
  protected:
   // views::View:
 #if defined(OS_WIN)
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
 #endif
   void OnPaint(gfx::Canvas* canvas) override;
 

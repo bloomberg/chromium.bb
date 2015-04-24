@@ -62,7 +62,7 @@ class AutomaticProfileResetterUnderTest : public AutomaticProfileResetter {
  public:
   explicit AutomaticProfileResetterUnderTest(Profile* profile)
       : AutomaticProfileResetter(profile) {}
-  virtual ~AutomaticProfileResetterUnderTest() {}
+  ~AutomaticProfileResetterUnderTest() override {}
 
   MOCK_METHOD2(ReportStatistics, void(uint32, uint32));
   MOCK_METHOD1(ReportPromptResult,
@@ -76,7 +76,7 @@ class MockProfileResetterDelegate : public AutomaticProfileResetterDelegate {
  public:
   MockProfileResetterDelegate()
       : emulated_is_default_search_provider_managed_(false) {}
-  virtual ~MockProfileResetterDelegate() {}
+  ~MockProfileResetterDelegate() override {}
 
   MOCK_METHOD0(EnumerateLoadedModulesIfNeeded, void());
   MOCK_CONST_METHOD1(RequestCallbackWhenLoadedModulesAreEnumerated,
@@ -99,26 +99,25 @@ class MockProfileResetterDelegate : public AutomaticProfileResetterDelegate {
   MOCK_METHOD2(TriggerProfileSettingsReset, void(bool, const base::Closure&));
   MOCK_METHOD0(DismissPrompt, void());
 
-  virtual scoped_ptr<base::ListValue>
-      GetLoadedModuleNameDigests() const override {
+  scoped_ptr<base::ListValue> GetLoadedModuleNameDigests() const override {
     OnGetLoadedModuleNameDigestsCalled();
     return scoped_ptr<base::ListValue>(
         emulated_loaded_module_digests_.DeepCopy());
   }
 
-  virtual scoped_ptr<base::DictionaryValue>
+  scoped_ptr<base::DictionaryValue>
       GetDefaultSearchProviderDetails() const override {
     OnGetDefaultSearchProviderDetailsCalled();
     return scoped_ptr<base::DictionaryValue>(
         emulated_default_search_provider_details_.DeepCopy());
   }
 
-  virtual bool IsDefaultSearchProviderManaged() const override {
+  bool IsDefaultSearchProviderManaged() const override {
     OnIsDefaultSearchProviderManagedCalled();
     return emulated_is_default_search_provider_managed_;
   }
 
-  virtual scoped_ptr<base::ListValue>
+  scoped_ptr<base::ListValue>
       GetPrepopulatedSearchProvidersDetails() const override {
     OnGetPrepopulatedSearchProvidersDetailsCalled();
     return scoped_ptr<base::ListValue>(
@@ -515,7 +514,7 @@ class AutomaticProfileResetterTestBase : public testing::Test {
         user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     variations::testing::ClearAllVariationParams();
     base::FieldTrialList::CreateFieldTrial(kAutomaticProfileResetStudyName,
                                            experiment_group_name_);

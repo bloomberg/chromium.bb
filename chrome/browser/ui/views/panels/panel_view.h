@@ -143,11 +143,11 @@ class PanelView : public NativePanel,
 
   // Overridden from ui::HWNDMessageFilter:
 #if defined(OS_WIN)
-  virtual bool FilterMessage(HWND hwnd,
-                             UINT message,
-                             WPARAM w_param,
-                             LPARAM l_param,
-                             LRESULT* l_result) override;
+  bool FilterMessage(HWND hwnd,
+                     UINT message,
+                     WPARAM w_param,
+                     LPARAM l_param,
+                     LRESULT* l_result) override;
 #endif
 
   // Overridden from AnimationDelegate:

@@ -130,12 +130,12 @@ class SwitchToMetroUIHandler
     default_browser_worker_->StartCheckIsDefault();
   }
 
-  virtual ~SwitchToMetroUIHandler() {
+  ~SwitchToMetroUIHandler() override {
     default_browser_worker_->ObserverDestroyed();
   }
 
  private:
-  virtual void SetDefaultWebClientUIState(
+  void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state) override {
     switch (state) {
       case ShellIntegration::STATE_PROCESSING:
@@ -157,7 +157,7 @@ class SwitchToMetroUIHandler
     delete this;
   }
 
-  virtual void OnSetAsDefaultConcluded(bool success)  override {
+  void OnSetAsDefaultConcluded(bool success) override {
     if (!success) {
       delete this;
       return;
@@ -166,7 +166,7 @@ class SwitchToMetroUIHandler
     default_browser_worker_->StartCheckIsDefault();
   }
 
-  virtual bool IsInteractiveSetDefaultPermitted() override {
+  bool IsInteractiveSetDefaultPermitted() override {
     return true;
   }
 

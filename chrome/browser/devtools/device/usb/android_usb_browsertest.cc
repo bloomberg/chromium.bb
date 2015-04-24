@@ -120,11 +120,11 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
         broken_(false) {
   }
 
-  virtual scoped_refptr<UsbDevice> GetDevice() const override {
+  scoped_refptr<UsbDevice> GetDevice() const override {
     return device_;
   }
 
-  virtual void Close() override { device_ = nullptr; }
+  void Close() override { device_ = nullptr; }
 
   void SetConfiguration(int configuration_value,
                         const ResultCallback& callback) override {

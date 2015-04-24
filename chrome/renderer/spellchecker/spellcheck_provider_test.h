@@ -25,10 +25,9 @@ class FakeTextCheckingCompletion : public blink::WebTextCheckingCompletion {
   FakeTextCheckingCompletion();
   ~FakeTextCheckingCompletion();
 
-  virtual void didFinishCheckingText(
+  void didFinishCheckingText(
       const blink::WebVector<blink::WebTextCheckingResult>& results) override;
-  virtual void didCancelCheckingText() override;
-
+  void didCancelCheckingText() override;
 
   size_t completion_count_;
   size_t cancellation_count_;

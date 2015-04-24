@@ -17,19 +17,19 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
                                    public content::NotificationObserver {
  public:
   BrowserProcessPlatformPart();
-  virtual ~BrowserProcessPlatformPart();
+  ~BrowserProcessPlatformPart() override;
 
   // Invoked when the ASH metro viewer process on Windows 8 exits.
   void OnMetroViewerProcessTerminated();
 
   // Overridden from BrowserProcessPlatformPartBase:
-  virtual void PlatformSpecificCommandLineProcessing(
+  void PlatformSpecificCommandLineProcessing(
       const base::CommandLine& command_line) override;
 
   // content::NotificationObserver method:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  private:
   // Hosts the channel for the Windows 8 metro viewer process which runs in

@@ -345,10 +345,10 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
       &fetcher_impl_factory_,
       fake_url_fetcher_creator_.callback()) {
   }
-  virtual ~LocalDiscoveryUITest() {
+  ~LocalDiscoveryUITest() override {
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     WebUIBrowserTest::SetUpOnMainThread();
 
     test_service_discovery_client_ = new TestServiceDiscoveryClient();
@@ -425,7 +425,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("local_discovery_ui_test.js")));
   }
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(OS_CHROMEOS)
     // On chromeos, don't sign in with the stub-user automatically.  Use the
     // kLoginUser instead.

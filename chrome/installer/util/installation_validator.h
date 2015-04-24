@@ -99,40 +99,40 @@ class InstallationValidator {
   // Validation rules for the Chrome browser.
   class ChromeRules : public ProductRules {
    public:
-    virtual BrowserDistribution::Type distribution_type() const override;
-    virtual void AddUninstallSwitchExpectations(
+    BrowserDistribution::Type distribution_type() const override;
+    void AddUninstallSwitchExpectations(
         const ProductContext& ctx,
         SwitchExpectations* expectations) const override;
-    virtual void AddRenameSwitchExpectations(
+    void AddRenameSwitchExpectations(
         const ProductContext& ctx,
         SwitchExpectations* expectations) const override;
-    virtual bool UsageStatsAllowed(const ProductContext& ctx) const override;
+    bool UsageStatsAllowed(const ProductContext& ctx) const override;
   };
 
   // Validation rules for Chrome Frame.
   class ChromeFrameRules : public ProductRules {
    public:
-    virtual BrowserDistribution::Type distribution_type() const override;
-    virtual void AddUninstallSwitchExpectations(
+    BrowserDistribution::Type distribution_type() const override;
+    void AddUninstallSwitchExpectations(
         const ProductContext& ctx,
         SwitchExpectations* expectations) const override;
-    virtual void AddRenameSwitchExpectations(
+    void AddRenameSwitchExpectations(
         const ProductContext& ctx,
         SwitchExpectations* expectations) const override;
-    virtual bool UsageStatsAllowed(const ProductContext& ctx) const override;
+    bool UsageStatsAllowed(const ProductContext& ctx) const override;
   };
 
   // Validation rules for the multi-install Chrome binaries.
   class ChromeBinariesRules : public ProductRules {
    public:
-    virtual BrowserDistribution::Type distribution_type() const override;
-    virtual void AddUninstallSwitchExpectations(
+    BrowserDistribution::Type distribution_type() const override;
+    void AddUninstallSwitchExpectations(
         const ProductContext& ctx,
         SwitchExpectations* expectations) const override;
-    virtual void AddRenameSwitchExpectations(
+    void AddRenameSwitchExpectations(
         const ProductContext& ctx,
         SwitchExpectations* expectations) const override;
-    virtual bool UsageStatsAllowed(const ProductContext& ctx) const override;
+    bool UsageStatsAllowed(const ProductContext& ctx) const override;
   };
 
   struct ProductContext {

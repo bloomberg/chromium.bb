@@ -52,7 +52,7 @@ class SessionManagerOperationTest : public testing::Test {
         ->SetOwnerKeyUtilForTesting(owner_key_util_);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     policy_.payload().mutable_user_whitelist()->add_user_whitelist(
         "fake-whitelist");
     policy_.Build();

@@ -87,34 +87,34 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
                            const base::string16& storage_object_id);
 
   // Destructed via CancelPendingTasksAndDeleteDelegate().
-  virtual ~MTPDeviceDelegateImplWin();
+  ~MTPDeviceDelegateImplWin() override;
 
   // MTPDeviceAsyncDelegate:
-  virtual void GetFileInfo(const base::FilePath& file_path,
-                           const GetFileInfoSuccessCallback& success_callback,
-                           const ErrorCallback& error_callback) override;
-  virtual void CreateDirectory(
+  void GetFileInfo(const base::FilePath& file_path,
+                   const GetFileInfoSuccessCallback& success_callback,
+                   const ErrorCallback& error_callback) override;
+  void CreateDirectory(
       const base::FilePath& directory_path,
       const bool exclusive,
       const bool recursive,
       const CreateDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback) override;
-  virtual void ReadDirectory(
+  void ReadDirectory(
       const base::FilePath& root,
       const ReadDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback) override;
-  virtual void CreateSnapshotFile(
+  void CreateSnapshotFile(
       const base::FilePath& device_file_path,
       const base::FilePath& local_path,
       const CreateSnapshotFileSuccessCallback& success_callback,
       const ErrorCallback& error_callback) override;
-  virtual bool IsStreaming() override;
-  virtual void ReadBytes(const base::FilePath& device_file_path,
-                         const scoped_refptr<net::IOBuffer>& buf,
-                         int64 offset,
-                         int buf_len,
-                         const ReadBytesSuccessCallback& success_callback,
-                         const ErrorCallback& error_callback) override;
+  bool IsStreaming() override;
+  void ReadBytes(const base::FilePath& device_file_path,
+                 const scoped_refptr<net::IOBuffer>& buf,
+                 int64 offset,
+                 int buf_len,
+                 const ReadBytesSuccessCallback& success_callback,
+                 const ErrorCallback& error_callback) override;
   bool IsReadOnly() const override;
   void CopyFileLocal(
       const base::FilePath& source_file_path,
@@ -151,7 +151,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
       const base::FilePath& file_path,
       const bool recursive,
       const storage::WatcherManager::StatusCallback& callback) override;
-  virtual void CancelPendingTasksAndDeleteDelegate() override;
+  void CancelPendingTasksAndDeleteDelegate() override;
 
   // Ensures the device is initialized for communication by doing a
   // call-and-reply to a blocking pool thread. |task_info.task| runs on a

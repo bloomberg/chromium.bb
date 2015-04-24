@@ -29,8 +29,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   using PersonalDataManager::SetPrefService;
 
   // Overridden to avoid a trip to the database.
-  virtual void LoadProfiles() override {}
-  virtual void LoadCreditCards() override {}
+  void LoadProfiles() override {}
+  void LoadCreditCards() override {}
 
   MOCK_METHOD1(SaveImportedCreditCard,
                std::string(const CreditCard& imported_credit_card));

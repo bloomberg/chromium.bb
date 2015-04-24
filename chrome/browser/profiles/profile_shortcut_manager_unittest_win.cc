@@ -41,7 +41,7 @@ class ProfileShortcutManagerTest : public testing::Test {
         fake_system_desktop_(base::DIR_COMMON_DESKTOP) {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CoInitialize(NULL);
 
     TestingBrowserProcess* browser_process =
@@ -59,7 +59,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     profile_3_path_ = CreateProfileDirectory(profile_3_name_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     message_loop_.RunUntilIdle();
 
     // Delete all profiles and ensure their shortcuts got removed.

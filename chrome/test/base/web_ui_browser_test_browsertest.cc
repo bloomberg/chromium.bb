@@ -108,7 +108,7 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
     MOCK_METHOD1(HandleTestPasses, void(const base::ListValue*));
 
    private:
-    virtual void RegisterMessages() override {
+    void RegisterMessages() override {
       web_ui()->RegisterMessageCallback("startAsyncTest",
           base::Bind(&AsyncWebUIMessageHandler::HandleStartAsyncTest,
                      base::Unretained(this)));
@@ -138,12 +138,12 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
 
  private:
   // Provide this object's handler.
-  virtual WebUIMessageHandler* GetMockMessageHandler() override {
+  WebUIMessageHandler* GetMockMessageHandler() override {
     return &message_handler_;
   }
 
   // Set up and browse to kDummyURL for all tests.
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     WebUIBrowserTest::SetUpOnMainThread();
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("async.js")));
     ui_test_utils::NavigateToURL(browser(), GURL(kDummyURL));

@@ -49,17 +49,17 @@ class MockPrivetHTTPClient : public PrivetHTTPClient {
       CreateInfoOperationPtr,
       PrivetJSONOperation*(const PrivetJSONOperation::ResultCallback&));
 
-  virtual void RefreshPrivetToken(
+  void RefreshPrivetToken(
       const PrivetURLFetcher::TokenCallback& callback) override {
     FAIL();
   }
 
-  virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
+  scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
       const PrivetJSONOperation::ResultCallback& callback) override {
     return make_scoped_ptr(CreateInfoOperationPtr(callback));
   }
 
-  virtual scoped_ptr<PrivetURLFetcher> CreateURLFetcher(
+  scoped_ptr<PrivetURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcher::RequestType request_type,
       PrivetURLFetcher::Delegate* delegate) override {
@@ -78,7 +78,7 @@ class PrivetV3SessionTest : public testing::Test {
       : fetcher_factory_(nullptr),
         session_(make_scoped_ptr(new MockPrivetHTTPClient())) {}
 
-  virtual ~PrivetV3SessionTest() {}
+  ~PrivetV3SessionTest() override {}
 
   MOCK_METHOD2(OnInitialized, void(Result, const std::vector<PairingType>&));
   MOCK_METHOD1(OnPairingStarted, void(Result));
@@ -87,7 +87,7 @@ class PrivetV3SessionTest : public testing::Test {
   MOCK_METHOD1(OnPostData, void(const base::DictionaryValue& data));
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(*this, OnInitialized(_, _)).Times(0);
     EXPECT_CALL(*this, OnPairingStarted(_)).Times(0);
     EXPECT_CALL(*this, OnCodeConfirmed(_)).Times(0);

@@ -60,8 +60,7 @@ class ServiceSandboxedProcessLauncherDelegate
  public:
   ServiceSandboxedProcessLauncherDelegate() {}
 
-  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
-                              bool* success) override {
+  void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
     // Service process may run as windows service and it fails to create a
     // window station.
     policy->SetAlternateDesktop(false);

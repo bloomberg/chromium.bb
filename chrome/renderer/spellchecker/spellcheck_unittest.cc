@@ -110,14 +110,13 @@ class MockTextCheckingCompletion : public blink::WebTextCheckingCompletion {
       : completion_count_(0) {
   }
 
-  virtual void didFinishCheckingText(
-      const blink::WebVector<blink::WebTextCheckingResult>& results)
-          override {
+  void didFinishCheckingText(
+      const blink::WebVector<blink::WebTextCheckingResult>& results) override {
     completion_count_++;
     last_results_ = results;
   }
 
-  virtual void didCancelCheckingText() override {
+  void didCancelCheckingText() override {
     completion_count_++;
   }
 

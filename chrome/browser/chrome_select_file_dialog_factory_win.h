@@ -23,11 +23,11 @@ class ChromeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
   // Uses |blocking_task_runner| to perform IPC with the utility process.
   explicit ChromeSelectFileDialogFactory(
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
-  virtual ~ChromeSelectFileDialogFactory();
+  ~ChromeSelectFileDialogFactory() override;
 
   // ui::SelectFileDialogFactory implementation
-  virtual ui::SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
-                                       ui::SelectFilePolicy* policy) override;
+  ui::SelectFileDialog* Create(ui::SelectFileDialog::Listener* listener,
+                               ui::SelectFilePolicy* policy) override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

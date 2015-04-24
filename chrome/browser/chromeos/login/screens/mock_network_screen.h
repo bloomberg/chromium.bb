@@ -17,7 +17,7 @@ class MockNetworkScreen : public NetworkScreen {
   MockNetworkScreen(BaseScreenDelegate* base_screen_delegate,
                     Delegate* delegate,
                     NetworkView* view);
-  virtual ~MockNetworkScreen();
+  ~MockNetworkScreen() override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
@@ -26,10 +26,10 @@ class MockNetworkScreen : public NetworkScreen {
 class MockNetworkView : public NetworkView {
  public:
   MockNetworkView();
-  virtual ~MockNetworkView();
+  ~MockNetworkView() override;
 
-  virtual void Bind(NetworkModel& model) override;
-  virtual void Unbind() override;
+  void Bind(NetworkModel& model) override;
+  void Unbind() override;
 
   MOCK_METHOD1(MockBind, void(NetworkModel& model));
   MOCK_METHOD0(MockUnbind, void());

@@ -98,16 +98,16 @@ class SetAsDefaultBrowserHandler
  public:
   explicit SetAsDefaultBrowserHandler(
       const base::WeakPtr<ResponseDelegate>& response_delegate);
-  virtual ~SetAsDefaultBrowserHandler();
+  ~SetAsDefaultBrowserHandler() override;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() override;
+  void RegisterMessages() override;
 
   // ShellIntegration::DefaultWebClientObserver implementation.
-  virtual void SetDefaultWebClientUIState(
+  void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state) override;
-  virtual void OnSetAsDefaultConcluded(bool close_chrome)  override;
-  virtual bool IsInteractiveSetDefaultPermitted() override;
+  void OnSetAsDefaultConcluded(bool close_chrome) override;
+  bool IsInteractiveSetDefaultPermitted() override;
 
  private:
   // Handler for the 'Next' (or 'make Chrome the Metro browser') button.
@@ -201,31 +201,29 @@ class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
                                       public chrome::BrowserListObserver {
  public:
   SetAsDefaultBrowserDialogImpl(Profile* profile, Browser* browser);
-  virtual ~SetAsDefaultBrowserDialogImpl();
+  ~SetAsDefaultBrowserDialogImpl() override;
   // Show a modal web dialog with kChromeUIMetroFlowURL page.
   void ShowDialog();
 
  protected:
   // Overridden from WebDialogDelegate:
-  virtual ui::ModalType GetDialogModalType() const override;
-  virtual base::string16 GetDialogTitle() const override;
-  virtual GURL GetDialogContentURL() const override;
-  virtual void GetWebUIMessageHandlers(
+  ui::ModalType GetDialogModalType() const override;
+  base::string16 GetDialogTitle() const override;
+  GURL GetDialogContentURL() const override;
+  void GetWebUIMessageHandlers(
       std::vector<WebUIMessageHandler*>* handlers) const override;
-  virtual void GetDialogSize(gfx::Size* size) const override;
-  virtual std::string GetDialogArgs() const override;
-  virtual void OnDialogClosed(const std::string& json_retval) override;
-  virtual void OnCloseContents(WebContents* source,
-                               bool* out_close_dialog) override;
-  virtual bool ShouldShowDialogTitle() const override;
-  virtual bool HandleContextMenu(
-      const content::ContextMenuParams& params) override;
+  void GetDialogSize(gfx::Size* size) const override;
+  std::string GetDialogArgs() const override;
+  void OnDialogClosed(const std::string& json_retval) override;
+  void OnCloseContents(WebContents* source, bool* out_close_dialog) override;
+  bool ShouldShowDialogTitle() const override;
+  bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
   // Overridden from ResponseDelegate:
-  virtual void SetDialogInteractionResult(MakeChromeDefaultResult result);
+  void SetDialogInteractionResult(MakeChromeDefaultResult result) override;
 
   // Overridden from BrowserListObserver:
-  virtual void OnBrowserRemoved(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
 
  private:
   Profile* profile_;

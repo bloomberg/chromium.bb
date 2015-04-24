@@ -17,11 +17,11 @@ class AdvancedFirewallManagerTest : public ::testing::Test {
 
  protected:
   // Sets up the test fixture.
-  virtual void SetUp() override {
+  void SetUp() override {
     if (base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY) {
       LOG(WARNING) << "XP or not elevated. Skipping the test.";
       return;
-    };
+    }
     skip_test_ = false;
     base::FilePath exe_path;
     PathService::Get(base::FILE_EXE, &exe_path);
@@ -30,7 +30,7 @@ class AdvancedFirewallManagerTest : public ::testing::Test {
   }
 
   // Tears down the test fixture.
-  virtual void TearDown() override {
+  void TearDown() override {
     if (!skip_test_)
       manager_.DeleteAllRules();
   }

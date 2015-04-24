@@ -32,7 +32,7 @@ class ConflictingModuleView : public views::BubbleDelegateView,
   static void MaybeShow(Browser* browser, views::View* anchor_view);
 
  private:
-  virtual ~ConflictingModuleView();
+  ~ConflictingModuleView() override;
 
   // Shows the bubble and updates the counter for how often it has been shown.
   void ShowBubble();
@@ -42,22 +42,21 @@ class ConflictingModuleView : public views::BubbleDelegateView,
   void DismissBubble();
 
   // views::BubbleDelegateView implementation:
-  virtual void Init() override;
+  void Init() override;
 
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) override;
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View implementation.
-  virtual void GetAccessibleState(ui::AXViewState* state) override;
-  virtual void ViewHierarchyChanged(
+  void GetAccessibleState(ui::AXViewState* state) override;
+  void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
   // content::NotificationObserver implementation.
-  virtual void Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) override;
+  void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) override;
 
   Browser* browser_;
 

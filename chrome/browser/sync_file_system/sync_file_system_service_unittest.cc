@@ -131,7 +131,7 @@ class SyncFileSystemServiceTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD |
                        content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin),
@@ -165,7 +165,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     file_system_->SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     sync_service_->Shutdown();
     file_system_->TearDown();
     RevokeSyncableFileSystem();

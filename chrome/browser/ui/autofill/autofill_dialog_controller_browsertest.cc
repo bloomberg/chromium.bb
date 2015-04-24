@@ -115,22 +115,22 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
         false);
   }
 
-  virtual ~TestAutofillDialogController() {}
+  ~TestAutofillDialogController() override {}
 
   GURL FakeSignInUrl() const {
     return GURL(chrome::kChromeUIVersionURL);
   }
 
-  virtual void ShowSignIn(const GURL& url) override {
+  void ShowSignIn(const GURL& url) override {
     AutofillDialogControllerImpl::ShowSignIn(FakeSignInUrl());
   }
 
-  virtual void ViewClosed() override {
+  void ViewClosed() override {
     message_loop_runner_->Quit();
     AutofillDialogControllerImpl::ViewClosed();
   }
 
-  virtual base::string16 InputValidityMessage(
+  base::string16 InputValidityMessage(
       DialogSection section,
       ServerFieldType type,
       const base::string16& value) override {
@@ -140,7 +140,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
         section, type, value);
   }
 
-  virtual ValidityMessages InputsAreValid(
+  ValidityMessages InputsAreValid(
       DialogSection section,
       const FieldValueMap& inputs) override {
     if (!use_validation_)
@@ -150,7 +150,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   // Saving to Chrome is tested in AutofillDialogControllerImpl unit tests.
   // TODO(estade): test that the view defaults to saving to Chrome.
-  virtual bool ShouldOfferToSaveInChrome() const override {
+  bool ShouldOfferToSaveInChrome() const override {
     return true;
   }
 
@@ -164,7 +164,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   MOCK_METHOD0(LoadRiskFingerprintData, void());
 
-  virtual std::vector<DialogNotification> CurrentNotifications() override {
+  std::vector<DialogNotification> CurrentNotifications() override {
     return notifications_;
   }
 
@@ -206,20 +206,19 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
  protected:
-  virtual PersonalDataManager* GetManager() const override {
+  PersonalDataManager* GetManager() const override {
     return &const_cast<TestAutofillDialogController*>(this)->test_manager_;
   }
 
-  virtual AddressValidator* GetValidator() override {
+  AddressValidator* GetValidator() override {
     return &mock_validator_;
   }
 
-  virtual wallet::WalletClient* GetWalletClient() override {
+  wallet::WalletClient* GetWalletClient() override {
     return &mock_wallet_client_;
   }
 
-  virtual bool IsSignInContinueUrl(const GURL& url, size_t* user_index) const
-      override {
+  bool IsSignInContinueUrl(const GURL& url, size_t* user_index) const override {
     *user_index = sign_in_user_index_;
     return url == wallet::GetSignInContinueUrl();
   }

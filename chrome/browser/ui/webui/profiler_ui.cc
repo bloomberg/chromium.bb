@@ -53,17 +53,17 @@ class ProfilerWebUIDataSource : public content::URLDataSource {
 
  protected:
   // content::URLDataSource implementation.
-  virtual std::string GetSource() override {
+  std::string GetSource() override {
     return chrome::kChromeUIProfilerHost;
   }
 
-  virtual std::string GetMimeType(const std::string& path) const override {
+  std::string GetMimeType(const std::string& path) const override {
     if (EndsWith(path, ".js", false))
       return "application/javascript";
     return "text/html";
   }
 
-  virtual void StartDataRequest(
+  void StartDataRequest(
       const std::string& path,
       bool is_incognito,
       const content::URLDataSource::GotDataCallback& callback) override {

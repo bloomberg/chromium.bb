@@ -28,7 +28,7 @@ class StatusTrayStateChangerProxy {
 class StatusTrayWin : public StatusTray {
  public:
   StatusTrayWin();
-  ~StatusTrayWin();
+  ~StatusTrayWin() override;
 
   void UpdateIconVisibilityInBackground(StatusIconWin* status_icon);
 
@@ -38,10 +38,9 @@ class StatusTrayWin : public StatusTray {
 
  protected:
   // Overriden from StatusTray:
-  virtual StatusIcon* CreatePlatformStatusIcon(StatusIconType type,
-                                               const gfx::ImageSkia& image,
-                                               const base::string16& tool_tip)
-      override;
+  StatusIcon* CreatePlatformStatusIcon(StatusIconType type,
+                                       const gfx::ImageSkia& image,
+                                       const base::string16& tool_tip) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(StatusTrayWinTest, EnsureVisibleTest);

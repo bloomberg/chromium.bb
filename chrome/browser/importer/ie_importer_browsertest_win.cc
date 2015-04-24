@@ -236,10 +236,10 @@ class TestObserver : public ProfileWriter,
   }
 
   // importer::ImporterProgressObserver:
-  virtual void ImportStarted() override {}
-  virtual void ImportItemStarted(importer::ImportItem item) override {}
-  virtual void ImportItemEnded(importer::ImportItem item) override {}
-  virtual void ImportEnded() override {
+  void ImportStarted() override {}
+  void ImportItemStarted(importer::ImportItem item) override {}
+  void ImportItemEnded(importer::ImportItem item) override {}
+  void ImportEnded() override {
     base::MessageLoop::current()->Quit();
     if (importer_items_ & importer::FAVORITES) {
       EXPECT_EQ(arraysize(kIEBookmarks), bookmark_count_);
@@ -256,16 +256,17 @@ class TestObserver : public ProfileWriter,
     // EXPECT_EQ(1, password_count_);
   }
 
-  virtual bool BookmarkModelIsLoaded() const {
+  // ProfileWriter:
+  bool BookmarkModelIsLoaded() const override {
     // Profile is ready for writing.
     return true;
   }
 
-  virtual bool TemplateURLServiceIsLoaded() const {
+  bool TemplateURLServiceIsLoaded() const override {
     return true;
   }
 
-  virtual void AddPasswordForm(const autofill::PasswordForm& form) {
+  void AddPasswordForm(const autofill::PasswordForm& form) override {
     // Importer should obtain this password form only.
     EXPECT_EQ(GURL("http://localhost:8080/security/index.htm"), form.origin);
     EXPECT_EQ("http://localhost:8080/", form.signon_realm);
@@ -277,8 +278,8 @@ class TestObserver : public ProfileWriter,
     ++password_count_;
   }
 
-  virtual void AddHistoryPage(const history::URLRows& page,
-                              history::VisitSource visit_source) {
+  void AddHistoryPage(const history::URLRows& page,
+                      history::VisitSource visit_source) override {
     bool cache_item_found = false;
     bool history_item_found = false;
     // Importer should read the specified URL.
@@ -301,9 +302,8 @@ class TestObserver : public ProfileWriter,
     EXPECT_EQ(history::SOURCE_IE_IMPORTED, visit_source);
   }
 
-  virtual void AddBookmarks(
-      const std::vector<ImportedBookmarkEntry>& bookmarks,
-      const base::string16& top_level_folder_name) override {
+  void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
+                    const base::string16& top_level_folder_name) override {
     ASSERT_LE(bookmark_count_ + bookmarks.size(), arraysize(kIEBookmarks));
     // Importer should import the IE Favorites folder the same as the list,
     // in the same order.
@@ -323,8 +323,7 @@ class TestObserver : public ProfileWriter,
     STLDeleteContainerPointers(template_url.begin(), template_url.end());
   }
 
-  virtual void AddFavicons(
-      const favicon_base::FaviconUsageDataList& usage) override {
+  void AddFavicons(const favicon_base::FaviconUsageDataList& usage) override {
     // Importer should group the favicon information for each favicon URL.
     for (size_t i = 0; i < arraysize(kIEFaviconGroup); ++i) {
       GURL favicon_url(kIEFaviconGroup[i].favicon_url);
@@ -385,25 +384,25 @@ class MalformedFavoritesRegistryTestObserver
   }
 
   // importer::ImporterProgressObserver:
-  virtual void ImportStarted() override {}
-  virtual void ImportItemStarted(importer::ImportItem item) override {}
-  virtual void ImportItemEnded(importer::ImportItem item) override {}
-  virtual void ImportEnded() override {
+  void ImportStarted() override {}
+  void ImportItemStarted(importer::ImportItem item) override {}
+  void ImportItemEnded(importer::ImportItem item) override {}
+  void ImportEnded() override {
     base::MessageLoop::current()->Quit();
     EXPECT_EQ(arraysize(kIESortedBookmarks), bookmark_count_);
   }
 
-  virtual bool BookmarkModelIsLoaded() const { return true; }
-  virtual bool TemplateURLServiceIsLoaded() const { return true; }
+  // ProfileWriter:
+  bool BookmarkModelIsLoaded() const override { return true; }
+  bool TemplateURLServiceIsLoaded() const override { return true; }
 
-  virtual void AddPasswordForm(const autofill::PasswordForm& form) {}
-  virtual void AddHistoryPage(const history::URLRows& page,
-                              history::VisitSource visit_source) {}
-  virtual void AddKeyword(std::vector<TemplateURL*> template_url,
-                          int default_keyword_index) {}
-  virtual void AddBookmarks(
-      const std::vector<ImportedBookmarkEntry>& bookmarks,
-      const base::string16& top_level_folder_name) override {
+  void AddPasswordForm(const autofill::PasswordForm& form) override {}
+  void AddHistoryPage(const history::URLRows& page,
+                      history::VisitSource visit_source) override {}
+  void AddKeywords(ScopedVector<TemplateURL> template_urls,
+                   bool unique_on_host_and_path) override {}
+  void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
+                    const base::string16& top_level_folder_name) override {
     ASSERT_LE(bookmark_count_ + bookmarks.size(),
               arraysize(kIESortedBookmarks));
     for (size_t i = 0; i < bookmarks.size(); ++i) {
@@ -415,7 +414,7 @@ class MalformedFavoritesRegistryTestObserver
   }
 
  private:
-  ~MalformedFavoritesRegistryTestObserver() {}
+  ~MalformedFavoritesRegistryTestObserver() override {}
 
   size_t bookmark_count_;
 };
@@ -426,7 +425,7 @@ class MalformedFavoritesRegistryTestObserver
 // import (via ExternalProcessImporterHost) which launches a utility process.
 class IEImporterBrowserTest : public InProcessBrowserTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // This will launch the browser test and thus needs to happen last.

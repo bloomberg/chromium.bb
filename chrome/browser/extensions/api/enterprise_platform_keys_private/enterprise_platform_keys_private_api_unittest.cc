@@ -168,7 +168,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
     settings_helper_.SetBoolean(chromeos::kDeviceAttestationEnabled, true);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
     // Set the user preferences.

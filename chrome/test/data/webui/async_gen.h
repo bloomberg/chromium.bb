@@ -16,7 +16,7 @@ class ListValue;
 class WebUIBrowserAsyncGenTest : public WebUIBrowserTest {
  public:
   WebUIBrowserAsyncGenTest();
-  virtual ~WebUIBrowserAsyncGenTest();
+  ~WebUIBrowserAsyncGenTest() override;
 
  protected:
   class AsyncWebUIMessageHandler : public content::WebUIMessageHandler {
@@ -30,7 +30,7 @@ class WebUIBrowserAsyncGenTest : public WebUIBrowserTest {
     void HandleCallJS(const base::ListValue* list_value);
 
     // WebUIMessageHandler implementation.
-    virtual void RegisterMessages() override;
+    void RegisterMessages() override;
   };
 
   // Handler for this test fixture.
@@ -38,11 +38,11 @@ class WebUIBrowserAsyncGenTest : public WebUIBrowserTest {
 
  private:
   // Provide this object's handler.
-  virtual content::WebUIMessageHandler* GetMockMessageHandler() override {
+  content::WebUIMessageHandler* GetMockMessageHandler() override {
     return &message_handler_;
   }
 
-  virtual void SetUpOnMainThread() override {
+  void SetUpOnMainThread() override {
     WebUIBrowserTest::SetUpOnMainThread();
     EXPECT_CALL(message_handler_, HandleTearDown(::testing::_));
   }

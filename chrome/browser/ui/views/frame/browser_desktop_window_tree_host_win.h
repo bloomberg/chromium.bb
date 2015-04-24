@@ -29,31 +29,29 @@ class BrowserDesktopWindowTreeHostWin : public BrowserDesktopWindowTreeHost,
       views::DesktopNativeWidgetAura* desktop_native_widget_aura,
       BrowserView* browser_view,
       BrowserFrame* browser_frame);
-  virtual ~BrowserDesktopWindowTreeHostWin();
+  ~BrowserDesktopWindowTreeHostWin() override;
 
  private:
   views::NativeMenuWin* GetSystemMenu();
 
   // Overridden from BrowserDesktopWindowTreeHost:
-  virtual DesktopWindowTreeHost* AsDesktopWindowTreeHost() override;
-  virtual int GetMinimizeButtonOffset() const override;
-  virtual bool UsesNativeSystemMenu() const override;
+  DesktopWindowTreeHost* AsDesktopWindowTreeHost() override;
+  int GetMinimizeButtonOffset() const override;
+  bool UsesNativeSystemMenu() const override;
 
   // Overridden from DesktopWindowTreeHostWin:
-  virtual int GetInitialShowState() const override;
-  virtual bool GetClientAreaInsets(gfx::Insets* insets) const override;
-  virtual void HandleCreate() override;
-  virtual void HandleFrameChanged() override;
-  virtual bool PreHandleMSG(UINT message,
-                            WPARAM w_param,
-                            LPARAM l_param,
-                            LRESULT* result) override;
-  virtual void PostHandleMSG(UINT message,
-                             WPARAM w_param,
-                             LPARAM l_param) override;
-  virtual bool IsUsingCustomFrame() const override;
-  virtual bool ShouldUseNativeFrame() const override;
-  virtual void FrameTypeChanged() override;
+  int GetInitialShowState() const override;
+  bool GetClientAreaInsets(gfx::Insets* insets) const override;
+  void HandleCreate() override;
+  void HandleFrameChanged() override;
+  bool PreHandleMSG(UINT message,
+                    WPARAM w_param,
+                    LPARAM l_param,
+                    LRESULT* result) override;
+  void PostHandleMSG(UINT message, WPARAM w_param, LPARAM l_param) override;
+  bool IsUsingCustomFrame() const override;
+  bool ShouldUseNativeFrame() const override;
+  void FrameTypeChanged() override;
 
   void UpdateDWMFrame();
 

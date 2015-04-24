@@ -29,11 +29,10 @@ class AppWindowDesktopNativeWidgetAuraWin
       ChromeNativeAppWindowViewsWin* app_window);
 
  protected:
-  virtual ~AppWindowDesktopNativeWidgetAuraWin();
+  ~AppWindowDesktopNativeWidgetAuraWin() override;
 
   // Overridden from views::DesktopNativeWidgetAura:
-  virtual void InitNativeWidget(
-      const views::Widget::InitParams& params) override;
+  void InitNativeWidget(const views::Widget::InitParams& params) override;
   void Maximize() override;
   void Minimize() override;
 

@@ -20,7 +20,7 @@ class PrerendererClient : public content::RenderViewObserver,
   ~PrerendererClient() override;
 
   // Implements blink::WebPrerendererClient
-  virtual void willAddPrerender(blink::WebPrerender* prerender) override;
+  void willAddPrerender(blink::WebPrerender* prerender) override;
 };
 
 }  // namespace prerender

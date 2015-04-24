@@ -20,16 +20,16 @@ class CredentialGetterWin : public content::UtilityProcessHostClient {
       CredentialsCallback;
 
   CredentialGetterWin();
-  virtual ~CredentialGetterWin();
+  ~CredentialGetterWin() override;
 
   void StartGetCredentials(const std::string& network_guid,
                            const CredentialsCallback& callback);
 
  private:
   // UtilityProcessHostClient
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnProcessCrashed(int exit_code) override;
-  virtual void OnProcessLaunchFailed() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnProcessCrashed(int exit_code) override;
+  void OnProcessLaunchFailed() override;
 
   // IPC message handlers.
   void OnGotCredentials(const std::string& key_data, bool success);

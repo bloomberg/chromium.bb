@@ -36,11 +36,11 @@ class VersionUpdaterWin : public VersionUpdater {
 
   // Clients must use VersionUpdater::Create().
   VersionUpdaterWin();
-  virtual ~VersionUpdaterWin();
+  ~VersionUpdaterWin() override;
 
   // VersionUpdater implementation.
-  virtual void CheckForUpdate(const StatusCallback& callback) override;
-  virtual void RelaunchBrowser() const override;
+  void CheckForUpdate(const StatusCallback& callback) override;
+  void RelaunchBrowser() const override;
 
   // chrome::UpdateCheckCallback.
   void OnUpdateCheckResults(GoogleUpdateUpgradeResult result,

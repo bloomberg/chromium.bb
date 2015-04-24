@@ -246,8 +246,8 @@ class StoreNodeValue : public Operation {
       : hashed_name_(hashed_name) {
     DCHECK(base::IsStringUTF8(hashed_name));
   }
-  virtual ~StoreNodeValue() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~StoreNodeValue() override {}
+  bool Execute(ExecutionContext* context) override {
     scoped_ptr<base::Value> value;
     if (ExpectedTypeIsBooleanNotHashable) {
       if (!context->current_node()->IsType(base::Value::TYPE_BOOLEAN))
@@ -382,8 +382,8 @@ class CompareNodeToStored : public Operation {
  public:
   explicit CompareNodeToStored(const std::string& hashed_name)
       : hashed_name_(hashed_name) {}
-  virtual ~CompareNodeToStored() {}
-  virtual bool Execute(ExecutionContext* context) override {
+  ~CompareNodeToStored() override {}
+  bool Execute(ExecutionContext* context) override {
     const base::Value* stored_value = NULL;
     if (!context->working_memory()->Get(hashed_name_, &stored_value))
       return true;

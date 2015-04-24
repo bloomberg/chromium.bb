@@ -80,7 +80,7 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
         test_controller_common_(new TestPopupControllerCommon(element_bounds)) {
     controller_common_.reset(test_controller_common_);
   }
-  virtual ~TestAutofillPopupController() {}
+  ~TestAutofillPopupController() override {}
 
   void set_display(const gfx::Display& display) {
     test_controller_common_->set_display(display);
@@ -117,7 +117,7 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   }
 
  private:
-  virtual void ShowView() override {}
+  void ShowView() override {}
 
   TestPopupControllerCommon* test_controller_common_;
 };

@@ -1359,13 +1359,13 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_BasicDrive) {
 template<GuestMode M>
 class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
  public:
-  virtual GuestMode GetGuestModeParam() const override { return M; }
-  virtual const char* GetTestCaseNameParam() const override {
+  GuestMode GetGuestModeParam() const override { return M; }
+  const char* GetTestCaseNameParam() const override {
     return test_case_name_.c_str();
   }
 
  protected:
-  virtual const char* GetTestManifestName() const override {
+  const char* GetTestManifestName() const override {
     return "gallery_test_manifest.json";
   }
 
@@ -1512,19 +1512,19 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ExposureImageOnDrive) {
 template<GuestMode M>
 class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
  public:
-  virtual GuestMode GetGuestModeParam() const override { return M; }
-  virtual const char* GetTestCaseNameParam() const override {
+  GuestMode GetGuestModeParam() const override { return M; }
+  const char* GetTestCaseNameParam() const override {
     return test_case_name_.c_str();
   }
 
  protected:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         chromeos::switches::kEnableVideoPlayerChromecastSupport);
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
   }
 
-  virtual const char* GetTestManifestName() const override {
+  const char* GetTestManifestName() const override {
     return "video_player_test_manifest.json";
   }
 

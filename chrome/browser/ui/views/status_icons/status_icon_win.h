@@ -28,7 +28,7 @@ class StatusIconWin : public StatusIcon {
  public:
   // Constructor which provides this icon's unique ID and messaging window.
   StatusIconWin(StatusTrayWin* tray, UINT id, HWND window, UINT message);
-  virtual ~StatusIconWin();
+  ~StatusIconWin() override;
 
   // Handles a click event from the user - if |left_button_click| is true and
   // there is a registered observer, passes the click event to the observer,
@@ -46,16 +46,16 @@ class StatusIconWin : public StatusIcon {
   UINT message_id() const { return message_id_; }
 
   // Overridden from StatusIcon:
-  virtual void SetImage(const gfx::ImageSkia& image) override;
-  virtual void SetToolTip(const base::string16& tool_tip) override;
-  virtual void DisplayBalloon(const gfx::ImageSkia& icon,
-                              const base::string16& title,
-                              const base::string16& contents) override;
-  virtual void ForceVisible() override;
+  void SetImage(const gfx::ImageSkia& image) override;
+  void SetToolTip(const base::string16& tool_tip) override;
+  void DisplayBalloon(const gfx::ImageSkia& icon,
+                      const base::string16& title,
+                      const base::string16& contents) override;
+  void ForceVisible() override;
 
  protected:
   // Overridden from StatusIcon:
-  virtual void UpdatePlatformContextMenu(StatusIconMenuModel* menu) override;
+  void UpdatePlatformContextMenu(StatusIconMenuModel* menu) override;
 
  private:
   void InitIconData(NOTIFYICONDATA* icon_data);

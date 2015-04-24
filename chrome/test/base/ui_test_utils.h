@@ -219,9 +219,9 @@ class WindowedNotificationObserverWithDetails
     return true;
   }
 
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override {
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
     const U* details_ptr = content::Details<U>(details).ptr();
     if (details_ptr)
       details_[source.map_key()] = *details_ptr;

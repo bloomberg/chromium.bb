@@ -98,25 +98,24 @@ class MockUserManager : public ChromeUserManager {
 
   // You can't mock these functions easily because nobody can create
   // User objects but the ChromeUserManager and us.
-  virtual const user_manager::UserList& GetUsers() const override;
-  virtual const user_manager::User* GetLoggedInUser() const override;
-  virtual user_manager::UserList GetUnlockUsers() const override;
-  virtual const std::string& GetOwnerEmail() const override;
-  virtual user_manager::User* GetLoggedInUser() override;
-  virtual const user_manager::User* GetActiveUser() const override;
-  virtual user_manager::User* GetActiveUser() override;
-  virtual const user_manager::User* GetPrimaryUser() const override;
+  const user_manager::UserList& GetUsers() const override;
+  const user_manager::User* GetLoggedInUser() const override;
+  user_manager::UserList GetUnlockUsers() const override;
+  const std::string& GetOwnerEmail() const override;
+  user_manager::User* GetLoggedInUser() override;
+  const user_manager::User* GetActiveUser() const override;
+  user_manager::User* GetActiveUser() override;
+  const user_manager::User* GetPrimaryUser() const override;
 
   // ChromeUserManager overrides:
-  virtual BootstrapManager* GetBootstrapManager() override;
-  virtual MultiProfileUserController* GetMultiProfileUserController() override;
-  virtual UserImageManager* GetUserImageManager(
-      const std::string& user_id) override;
-  virtual SupervisedUserManager* GetSupervisedUserManager() override;
+  BootstrapManager* GetBootstrapManager() override;
+  MultiProfileUserController* GetMultiProfileUserController() override;
+  UserImageManager* GetUserImageManager(const std::string& user_id) override;
+  SupervisedUserManager* GetSupervisedUserManager() override;
   MOCK_METHOD2(SetUserFlow, void(const std::string&, UserFlow*));
   MOCK_METHOD1(ResetUserFlow, void(const std::string&));
-  virtual UserFlow* GetCurrentUserFlow() const override;
-  virtual UserFlow* GetUserFlow(const std::string&) const override;
+  UserFlow* GetCurrentUserFlow() const override;
+  UserFlow* GetUserFlow(const std::string&) const override;
 
   // Sets a new User instance. Users previously created by this MockUserManager
   // become invalid.

@@ -33,7 +33,7 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
       const scoped_refptr<PasswordWebDataService>& web_data_service);
 
   // PasswordStore:
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
  private:
   class DBHandler;

@@ -116,16 +116,16 @@ class FakeHost : public apps::AppShimHandler::Host {
 
   MOCK_METHOD1(OnAppLaunchComplete, void(AppShimLaunchResult));
 
-  virtual void OnAppClosed() override {
+  void OnAppClosed() override {
     handler_->OnShimClose(this);
     ++close_count_;
   }
-  virtual void OnAppHide() override {}
-  virtual void OnAppRequestUserAttention(AppShimAttentionType type) override {}
-  virtual base::FilePath GetProfilePath() const override {
+  void OnAppHide() override {}
+  void OnAppRequestUserAttention(AppShimAttentionType type) override {}
+  base::FilePath GetProfilePath() const override {
     return profile_path_;
   }
-  virtual std::string GetAppId() const override { return app_id_; }
+  std::string GetAppId() const override { return app_id_; }
 
   int close_count() { return close_count_; }
 

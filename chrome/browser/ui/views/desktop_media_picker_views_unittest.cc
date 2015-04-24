@@ -23,9 +23,9 @@ namespace views {
 class DesktopMediaPickerViewsTest : public testing::Test {
  public:
   DesktopMediaPickerViewsTest() {}
-  virtual ~DesktopMediaPickerViewsTest() {}
+  ~DesktopMediaPickerViewsTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     bool enable_pixel_output = false;
     ui::ContextFactory* context_factory =
         ui::InitializeContextFactoryForTests(enable_pixel_output);
@@ -56,7 +56,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
                                    base::Unretained(this)));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     test_helper_->TearDown();
     ui::TerminateContextFactoryForTests();
   }

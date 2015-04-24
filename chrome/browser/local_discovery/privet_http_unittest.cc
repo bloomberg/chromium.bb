@@ -379,7 +379,7 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
   ~MockRegisterDelegate() {
   }
 
-  virtual void OnPrivetRegisterClaimToken(
+  void OnPrivetRegisterClaimToken(
       PrivetRegisterOperation* operation,
       const std::string& token,
       const GURL& url) override {
@@ -390,7 +390,7 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
       const std::string& token,
       const GURL& url));
 
-  virtual void OnPrivetRegisterError(
+  void OnPrivetRegisterError(
       PrivetRegisterOperation* operation,
       const std::string& action,
       PrivetRegisterOperation::FailureReason reason,
@@ -405,7 +405,7 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
                     PrivetRegisterOperation::FailureReason reason,
                     int printer_http_code));
 
-  virtual void OnPrivetRegisterDone(
+  void OnPrivetRegisterDone(
       PrivetRegisterOperation* operation,
       const std::string& device_id) override {
     OnPrivetRegisterDoneInternal(device_id);
@@ -439,9 +439,9 @@ class PrivetInfoTest : public PrivetHTTPTest {
  public:
   PrivetInfoTest() {}
 
-  virtual ~PrivetInfoTest() {}
+  ~PrivetInfoTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     info_operation_ = privet_client_->CreateInfoOperation(
         info_callback_.callback());
   }
@@ -485,10 +485,10 @@ class PrivetRegisterTest : public PrivetHTTPTest {
  public:
   PrivetRegisterTest() {
   }
-  virtual ~PrivetRegisterTest() {
+  ~PrivetRegisterTest() override {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     info_operation_ = privet_client_->CreateInfoOperation(
         info_callback_.callback());
     register_operation_ =
@@ -675,9 +675,9 @@ class PrivetCapabilitiesTest : public PrivetHTTPTest {
  public:
   PrivetCapabilitiesTest() {}
 
-  virtual ~PrivetCapabilitiesTest() {}
+  ~PrivetCapabilitiesTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     capabilities_operation_ = privet_client_->CreateCapabilitiesOperation(
         capabilities_callback_.callback());
   }
@@ -785,9 +785,9 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
  public:
   PrivetLocalPrintTest() {}
 
-  virtual ~PrivetLocalPrintTest() {}
+  ~PrivetLocalPrintTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     PrivetURLFetcher::ResetTokenMapForTests();
 
     local_print_operation_ = privet_client_->CreateLocalPrintOperation(

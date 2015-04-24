@@ -52,7 +52,7 @@ class ShellUtilShortcutTest : public testing::Test {
  protected:
   ShellUtilShortcutTest() : test_properties_(ShellUtil::CURRENT_USER) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     dist_ = BrowserDistribution::GetDistribution();
     ASSERT_TRUE(dist_ != NULL);
     product_.reset(new installer::Product(dist_));
@@ -811,7 +811,7 @@ class ShellUtilRegistryTest : public testing::Test {
   ShellUtilRegistryTest() {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER);
 
     // .test2 files already have a default application.

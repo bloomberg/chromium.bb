@@ -24,9 +24,9 @@ const char kBrowserBlacklistTrialEnabledGroupName[] = "Enabled";
 class ChromeBlacklistTrialTest : public testing::Test {
  protected:
   ChromeBlacklistTrialTest() {}
-  virtual ~ChromeBlacklistTrialTest() {}
+  ~ChromeBlacklistTrialTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     testing::Test::SetUp();
 
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER);

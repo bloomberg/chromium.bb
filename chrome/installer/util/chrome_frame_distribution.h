@@ -13,46 +13,45 @@
 
 class ChromeFrameDistribution : public BrowserDistribution {
  public:
-  virtual base::string16 GetBrowserProgIdPrefix() override;
+  base::string16 GetBrowserProgIdPrefix() override;
 
-  virtual base::string16 GetBrowserProgIdDesc() override;
+  base::string16 GetBrowserProgIdDesc() override;
 
-  virtual base::string16 GetDisplayName() override;
+  base::string16 GetDisplayName() override;
 
-  virtual base::string16 GetShortcutName(ShortcutType shortcut_type) override;
+  base::string16 GetShortcutName(ShortcutType shortcut_type) override;
 
-  virtual int GetIconIndex(ShortcutType shortcut_type) override;
+  int GetIconIndex(ShortcutType shortcut_type) override;
 
-  virtual base::string16 GetBaseAppName() override;
+  base::string16 GetBaseAppName() override;
 
-  virtual base::string16 GetInstallSubDir() override;
+  base::string16 GetInstallSubDir() override;
 
-  virtual base::string16 GetPublisherName() override;
+  base::string16 GetPublisherName() override;
 
-  virtual base::string16 GetAppDescription() override;
+  base::string16 GetAppDescription() override;
 
-  virtual base::string16 GetLongAppDescription() override;
+  base::string16 GetLongAppDescription() override;
 
-  virtual std::string GetSafeBrowsingName() override;
+  std::string GetSafeBrowsingName() override;
 
-  virtual std::string GetNetworkStatsServer() const override;
+  std::string GetNetworkStatsServer() const override;
 
-  virtual base::string16 GetUninstallLinkName() override;
+  base::string16 GetUninstallLinkName() override;
 
-  virtual base::string16 GetUninstallRegPath() override;
+  base::string16 GetUninstallRegPath() override;
 
-  virtual base::string16 GetIconFilename() override;
+  base::string16 GetIconFilename() override;
 
-  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
+  DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
 
-  virtual bool CanCreateDesktopShortcuts() override;
+  bool CanCreateDesktopShortcuts() override;
 
-  virtual bool GetCommandExecuteImplClsid(
-      base::string16* handler_class_uuid) override;
+  bool GetCommandExecuteImplClsid(base::string16* handler_class_uuid) override;
 
-  virtual void UpdateInstallStatus(bool system_install,
-      installer::ArchiveType archive_type,
-      installer::InstallStatus install_status) override;
+  void UpdateInstallStatus(bool system_install,
+                           installer::ArchiveType archive_type,
+                           installer::InstallStatus install_status) override;
 
  protected:
   friend class BrowserDistribution;

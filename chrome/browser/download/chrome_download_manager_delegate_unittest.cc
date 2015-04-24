@@ -74,22 +74,21 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
       : ChromeDownloadManagerDelegate(profile) {
   }
 
-  virtual ~TestChromeDownloadManagerDelegate() {}
+  ~TestChromeDownloadManagerDelegate() override {}
 
-  virtual safe_browsing::DownloadProtectionService*
+  safe_browsing::DownloadProtectionService*
       GetDownloadProtectionService() override {
     return NULL;
   }
 
-  virtual void NotifyExtensions(
-      content::DownloadItem* download,
-      const base::FilePath& suggested_virtual_path,
-      const NotifyExtensionsCallback& callback) override {
+  void NotifyExtensions(content::DownloadItem* download,
+                        const base::FilePath& suggested_virtual_path,
+                        const NotifyExtensionsCallback& callback) override {
     callback.Run(base::FilePath(),
                  DownloadPathReservationTracker::UNIQUIFY);
   }
 
-  virtual void ReserveVirtualPath(
+  void ReserveVirtualPath(
       content::DownloadItem* download,
       const base::FilePath& virtual_path,
       bool create_directory,
@@ -102,7 +101,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
         FROM_HERE, base::Bind(callback, virtual_path, true));
   }
 
-  virtual void PromptUserForDownloadPath(
+  void PromptUserForDownloadPath(
       DownloadItem* download,
       const base::FilePath& suggested_path,
       const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback)

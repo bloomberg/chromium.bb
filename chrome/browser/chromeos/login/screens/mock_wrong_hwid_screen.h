@@ -23,9 +23,9 @@ class MockWrongHWIDScreen : public WrongHWIDScreen {
 class MockWrongHWIDScreenActor : public WrongHWIDScreenActor {
  public:
   MockWrongHWIDScreenActor();
-  virtual ~MockWrongHWIDScreenActor();
+  ~MockWrongHWIDScreenActor() override;
 
-  virtual void SetDelegate(Delegate* delegate) override;
+  void SetDelegate(Delegate* delegate) override;
 
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());

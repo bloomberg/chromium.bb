@@ -19,22 +19,21 @@
 // system level install and setting as default browser.
 class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
  public:
-  virtual base::string16 GetBaseAppName() override;
-  virtual base::string16 GetShortcutName(ShortcutType shortcut_type) override;
-  virtual int GetIconIndex(ShortcutType shortcut_type) override;
-  virtual base::string16 GetStartMenuShortcutSubfolder(
+  base::string16 GetBaseAppName() override;
+  base::string16 GetShortcutName(ShortcutType shortcut_type) override;
+  int GetIconIndex(ShortcutType shortcut_type) override;
+  base::string16 GetStartMenuShortcutSubfolder(
       Subfolder subfolder_type) override;
-  virtual base::string16 GetBaseAppId() override;
-  virtual base::string16 GetBrowserProgIdPrefix() override;
-  virtual base::string16 GetBrowserProgIdDesc() override;
-  virtual base::string16 GetInstallSubDir() override;
-  virtual base::string16 GetUninstallRegPath() override;
-  virtual DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
-  virtual bool GetChromeChannel(base::string16* channel) override;
-  virtual bool GetCommandExecuteImplClsid(
-      base::string16* handler_class_uuid) override;
-  virtual bool ShouldSetExperimentLabels() override;
-  virtual bool HasUserExperiments() override;
+  base::string16 GetBaseAppId() override;
+  base::string16 GetBrowserProgIdPrefix() override;
+  base::string16 GetBrowserProgIdDesc() override;
+  base::string16 GetInstallSubDir() override;
+  base::string16 GetUninstallRegPath() override;
+  DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
+  bool GetChromeChannel(base::string16* channel) override;
+  bool GetCommandExecuteImplClsid(base::string16* handler_class_uuid) override;
+  bool ShouldSetExperimentLabels() override;
+  bool HasUserExperiments() override;
   // returns the channel name for GoogleChromeSxSDistribution
   static base::string16 ChannelName();
  private:

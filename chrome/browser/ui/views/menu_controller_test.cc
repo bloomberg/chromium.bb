@@ -13,17 +13,16 @@ class MenuControllerMnemonicTest : public MenuTestBase {
   MenuControllerMnemonicTest() {
   }
 
-  virtual ~MenuControllerMnemonicTest() {
-  }
+  ~MenuControllerMnemonicTest() override {}
 
   // MenuTestBase overrides:
-  virtual void BuildMenu(views::MenuItemView* menu) override {
+  void BuildMenu(views::MenuItemView* menu) override {
     ASSERT_NE(ui::VKEY_DIVIDE, '/');
     menu->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One&/"));
     menu->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
   }
 
-  virtual void DoTestWithMenuOpen() {
+  void DoTestWithMenuOpen() override {
     ASSERT_TRUE(menu()->GetSubmenu()->IsShowing());
     KeyPress(KEYCODE,
              CreateEventTask(this, &MenuControllerMnemonicTest::Step2));

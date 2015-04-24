@@ -64,7 +64,7 @@ class AutomationApiTest : public ExtensionApiTest {
   }
 
  public:
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 };

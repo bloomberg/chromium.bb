@@ -63,9 +63,9 @@ class StatusTrayStateChangerWin : public INotificationCB,
   void EnsureTrayIconVisible();
 
   // IUnknown.
-  virtual ULONG STDMETHODCALLTYPE AddRef() override;
-  virtual ULONG STDMETHODCALLTYPE Release() override;
-  virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID, PVOID*) override;
+  ULONG STDMETHODCALLTYPE AddRef() override;
+  ULONG STDMETHODCALLTYPE Release() override;
+  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID, PVOID*) override;
 
   // INotificationCB.
   // Notify is called in response to RegisterCallback for each current

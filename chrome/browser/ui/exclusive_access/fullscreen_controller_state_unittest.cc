@@ -51,8 +51,8 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   void UpdateFullscreenWithToolbar(bool with_toolbar) override;
   bool IsFullscreenWithToolbar() const override;
 #if defined(OS_WIN)
-  virtual void SetMetroSnapMode(bool enable) override;
-  virtual bool IsInMetroSnapMode() const override;
+  void SetMetroSnapMode(bool enable) override;
+  bool IsInMetroSnapMode() const override;
 #endif
   static const char* GetWindowStateString(WindowState state);
   WindowState state() const { return state_; }

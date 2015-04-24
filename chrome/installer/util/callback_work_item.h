@@ -33,10 +33,10 @@
 // }
 class CallbackWorkItem : public WorkItem {
  public:
-  virtual ~CallbackWorkItem();
+  ~CallbackWorkItem() override;
 
-  virtual bool Do() override;
-  virtual void Rollback() override;
+  bool Do() override;
+  void Rollback() override;
 
   bool IsRollback() const;
 

@@ -16,11 +16,11 @@ namespace wifi {
 class MockWifiManager : public WifiManager {
  public:
   MockWifiManager();
-  ~MockWifiManager();
+  ~MockWifiManager() override;
 
   MOCK_METHOD0(Start, void());
 
-  virtual void GetSSIDList(const SSIDListCallback& callback) override;
+  void GetSSIDList(const SSIDListCallback& callback) override;
 
   MOCK_METHOD0(GetSSIDListInternal, void());
 
@@ -28,7 +28,7 @@ class MockWifiManager : public WifiManager {
 
   MOCK_METHOD0(RequestScan, void());
 
-  virtual void ConfigureAndConnectNetwork(
+  void ConfigureAndConnectNetwork(
       const std::string& ssid,
       const WifiCredentials& credentials,
       const SuccessCallback& callback) override;
@@ -38,15 +38,15 @@ class MockWifiManager : public WifiManager {
 
   void CallConfigureAndConnectNetworkCallback(bool success);
 
-  virtual void ConnectToNetworkByID(const std::string& internal_id,
-                                    const SuccessCallback& callback) override;
+  void ConnectToNetworkByID(const std::string& internal_id,
+                            const SuccessCallback& callback) override;
 
   MOCK_METHOD1(ConnectToNetworkByIDInternal,
                void(const std::string& internal_id));
 
   void CallConnectToNetworkByIDCallback(bool success);
 
-  virtual void RequestNetworkCredentials(
+  void RequestNetworkCredentials(
       const std::string& internal_id,
       const CredentialsCallback& callback) override;
 
@@ -76,9 +76,9 @@ class MockWifiManager : public WifiManager {
 class MockWifiManagerFactory : public WifiManagerFactory {
  public:
   MockWifiManagerFactory();
-  virtual ~MockWifiManagerFactory();
+  ~MockWifiManagerFactory() override;
 
-  virtual scoped_ptr<WifiManager> CreateWifiManager() override;
+  scoped_ptr<WifiManager> CreateWifiManager() override;
 
   MockWifiManager* GetLastCreatedWifiManager();
 

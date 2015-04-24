@@ -22,10 +22,10 @@ class MockPasswordUIView : public PasswordUIView {
       : profile_(profile), password_manager_presenter_(this) {
     password_manager_presenter_.Initialize();
   }
-  virtual ~MockPasswordUIView() {}
-  virtual Profile* GetProfile() override;
+  ~MockPasswordUIView() override {}
+  Profile* GetProfile() override;
 #if !defined(OS_ANDROID)
-  virtual gfx::NativeWindow GetNativeWindow() const override;
+  gfx::NativeWindow GetNativeWindow() const override;
 #endif
   MOCK_METHOD2(ShowPassword, void(size_t, const base::string16&));
   MOCK_METHOD2(SetPasswordList,

@@ -76,8 +76,8 @@ class TestBrowserWindow : public BrowserWindow {
   void UpdateFullscreenWithToolbar(bool with_toolbar) override;
   bool IsFullscreenWithToolbar() const override;
 #if defined(OS_WIN)
-  virtual void SetMetroSnapMode(bool enable) override {}
-  virtual bool IsInMetroSnapMode() const override;
+  void SetMetroSnapMode(bool enable) override {}
+  bool IsInMetroSnapMode() const override;
 #endif
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override {}

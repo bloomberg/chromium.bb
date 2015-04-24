@@ -17,42 +17,40 @@ class ChromeBinariesOperations : public ProductOperations {
  public:
   ChromeBinariesOperations() {}
 
-  virtual void ReadOptions(const MasterPreferences& prefs,
-                           std::set<base::string16>* options) const override;
+  void ReadOptions(const MasterPreferences& prefs,
+                   std::set<base::string16>* options) const override;
 
-  virtual void ReadOptions(const base::CommandLine& uninstall_command,
-                           std::set<base::string16>* options) const override;
+  void ReadOptions(const base::CommandLine& uninstall_command,
+                   std::set<base::string16>* options) const override;
 
-  virtual void AddKeyFiles(
-      const std::set<base::string16>& options,
-      std::vector<base::FilePath>* key_files) const override;
+  void AddKeyFiles(const std::set<base::string16>& options,
+                   std::vector<base::FilePath>* key_files) const override;
 
-  virtual void AddComDllList(
-      const std::set<base::string16>& options,
-      std::vector<base::FilePath>* com_dll_list) const override;
+  void AddComDllList(const std::set<base::string16>& options,
+                     std::vector<base::FilePath>* com_dll_list) const override;
 
-  virtual void AppendProductFlags(const std::set<base::string16>& options,
-                                  base::CommandLine* cmd_line) const override;
+  void AppendProductFlags(const std::set<base::string16>& options,
+                          base::CommandLine* cmd_line) const override;
 
-  virtual void AppendRenameFlags(const std::set<base::string16>& options,
-                                 base::CommandLine* cmd_line) const override;
+  void AppendRenameFlags(const std::set<base::string16>& options,
+                         base::CommandLine* cmd_line) const override;
 
-  virtual bool SetChannelFlags(const std::set<base::string16>& options,
-                               bool set,
-                               ChannelInfo* channel_info) const override;
+  bool SetChannelFlags(const std::set<base::string16>& options,
+                       bool set,
+                       ChannelInfo* channel_info) const override;
 
-  virtual bool ShouldCreateUninstallEntry(
+  bool ShouldCreateUninstallEntry(
       const std::set<base::string16>& options) const override;
 
-  virtual void AddDefaultShortcutProperties(
+  void AddDefaultShortcutProperties(
       BrowserDistribution* dist,
       const base::FilePath& target_exe,
       ShellUtil::ShortcutProperties* properties) const override;
 
-  virtual void LaunchUserExperiment(const base::FilePath& setup_path,
-                                    const std::set<base::string16>& options,
-                                    InstallStatus status,
-                                    bool system_level) const override;
+  void LaunchUserExperiment(const base::FilePath& setup_path,
+                            const std::set<base::string16>& options,
+                            InstallStatus status,
+                            bool system_level) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBinariesOperations);

@@ -22,15 +22,13 @@ class AppWindowDesktopWindowTreeHostWin
   AppWindowDesktopWindowTreeHostWin(
       ChromeNativeAppWindowViewsWin* app_window,
       views::DesktopNativeWidgetAura* desktop_native_widget_aura);
-  virtual ~AppWindowDesktopWindowTreeHostWin();
+  ~AppWindowDesktopWindowTreeHostWin() override;
 
  private:
   // Overridden from DesktopWindowTreeHostWin:
-  virtual bool GetClientAreaInsets(gfx::Insets* insets) const override;
-  virtual void HandleFrameChanged() override;
-  virtual void PostHandleMSG(UINT message,
-                             WPARAM w_param,
-                             LPARAM l_param) override;
+  bool GetClientAreaInsets(gfx::Insets* insets) const override;
+  void HandleFrameChanged() override;
+  void PostHandleMSG(UINT message, WPARAM w_param, LPARAM l_param) override;
 
   // Updates the glass frame area by calling the DwmExtendFrameIntoClientArea
   // Windows function.

@@ -194,8 +194,8 @@ class MockDownloadTargetDeterminerDelegate
 class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
  public:
   // ::testing::Test
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   // Creates MockDownloadItem and sets up default expectations.
   content::MockDownloadItem* CreateActiveDownloadItem(
@@ -1952,17 +1952,17 @@ class MockPluginServiceFilter : public content::PluginServiceFilter {
  public:
   MOCK_METHOD1(MockPluginAvailable, bool(const base::FilePath&));
 
-  virtual bool IsPluginAvailable(int render_process_id,
-                                 int render_view_id,
-                                 const void* context,
-                                 const GURL& url,
-                                 const GURL& policy_url,
-                                 content::WebPluginInfo* plugin) override {
+  bool IsPluginAvailable(int render_process_id,
+                         int render_view_id,
+                         const void* context,
+                         const GURL& url,
+                         const GURL& policy_url,
+                         content::WebPluginInfo* plugin) override {
     return MockPluginAvailable(plugin->path);
   }
 
-  virtual bool CanLoadPlugin(int render_process_id,
-                             const base::FilePath& path) override {
+  bool CanLoadPlugin(int render_process_id,
+                     const base::FilePath& path) override {
     return true;
   }
 };
@@ -2014,7 +2014,7 @@ class DownloadTargetDeterminerTestWithPlugin
   DownloadTargetDeterminerTestWithPlugin()
       : old_plugin_service_filter_(NULL) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     content::PluginService* plugin_service =
         content::PluginService::GetInstance();
     plugin_service->Init();
@@ -2024,7 +2024,7 @@ class DownloadTargetDeterminerTestWithPlugin
     DownloadTargetDeterminerTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     content::PluginService::GetInstance()->SetFilter(
         old_plugin_service_filter_);
     DownloadTargetDeterminerTest::TearDown();

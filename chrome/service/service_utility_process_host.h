@@ -85,7 +85,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
 
   ServiceUtilityProcessHost(Client* client,
                             base::MessageLoopProxy* client_message_loop_proxy);
-  virtual ~ServiceUtilityProcessHost();
+  ~ServiceUtilityProcessHost() override;
 
   // Starts a process to render the specified pages in the given PDF file into
   // a metafile. Currently only implemented for Windows. If the PDF has fewer
@@ -113,9 +113,9 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   virtual base::FilePath GetUtilityProcessCmd();
 
   // ChildProcessHostDelegate implementation:
-  virtual void OnChildDisconnected() override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual const base::Process& GetProcess() const override;
+  void OnChildDisconnected() override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  const base::Process& GetProcess() const override;
 
  private:
   // Starts a process.  Returns true iff it succeeded.

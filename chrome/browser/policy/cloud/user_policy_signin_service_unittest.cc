@@ -151,7 +151,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     ASSERT_TRUE(IsRequestActive());
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(
         &device_management_service_);
 
@@ -208,7 +208,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     Mock::VerifyAndClearExpectations(mock_store_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(NULL);
     UserCloudPolicyManagerFactory::GetInstance()->ClearTestingFactory();
     // Free the profile before we clear out the browser prefs.

@@ -399,7 +399,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     full_hash->list_id = list_id;
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     // InProcessBrowserTest::SetUp() instantiates SafebrowsingService and
     // RegisterFactory has to be called before SafeBrowsingService is created.
     sb_factory_.reset(new TestSafeBrowsingServiceFactory(
@@ -410,7 +410,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     InProcessBrowserTest::TearDown();
 
     // Unregister test factories after InProcessBrowserTest::TearDown
@@ -420,7 +420,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     SafeBrowsingService::RegisterFactory(NULL);
   }
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Makes sure the auto update is not triggered during the test.
     // This test will fill up the database using testing prefixes
     // and urls.
@@ -443,7 +443,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(test_server()->Start());
   }
 

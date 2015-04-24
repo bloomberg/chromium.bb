@@ -29,57 +29,56 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // distribution_data contains Google Update related data that will be
   //   concatenated to the survey url if the file in local_data_path indicates
   //   the user has opted in to providing anonymous usage data.
-  virtual void DoPostUninstallOperations(
+  void DoPostUninstallOperations(
       const Version& version,
       const base::FilePath& local_data_path,
       const base::string16& distribution_data) override;
 
-  virtual base::string16 GetActiveSetupGuid() override;
+  base::string16 GetActiveSetupGuid() override;
 
-  virtual base::string16 GetShortcutName(ShortcutType shortcut_type) override;
+  base::string16 GetShortcutName(ShortcutType shortcut_type) override;
 
-  virtual base::string16 GetIconFilename() override;
+  base::string16 GetIconFilename() override;
 
-  virtual int GetIconIndex(ShortcutType shortcut_type) override;
+  int GetIconIndex(ShortcutType shortcut_type) override;
 
-  virtual base::string16 GetBaseAppName() override;
+  base::string16 GetBaseAppName() override;
 
-  virtual base::string16 GetBaseAppId() override;
+  base::string16 GetBaseAppId() override;
 
-  virtual base::string16 GetBrowserProgIdPrefix() override;
+  base::string16 GetBrowserProgIdPrefix() override;
 
-  virtual base::string16 GetBrowserProgIdDesc() override;
+  base::string16 GetBrowserProgIdDesc() override;
 
-  virtual base::string16 GetInstallSubDir() override;
+  base::string16 GetInstallSubDir() override;
 
-  virtual base::string16 GetPublisherName() override;
+  base::string16 GetPublisherName() override;
 
-  virtual base::string16 GetAppDescription() override;
+  base::string16 GetAppDescription() override;
 
-  virtual std::string GetSafeBrowsingName() override;
+  std::string GetSafeBrowsingName() override;
 
-  virtual std::string GetNetworkStatsServer() const override;
+  std::string GetNetworkStatsServer() const override;
 
   // This method reads data from the Google Update ClientState key for
   // potential use in the uninstall survey. It must be called before the
   // key returned by GetVersionKey() is deleted.
-  virtual base::string16 GetDistributionData(HKEY root_key) override;
+  base::string16 GetDistributionData(HKEY root_key) override;
 
-  virtual base::string16 GetUninstallLinkName() override;
+  base::string16 GetUninstallLinkName() override;
 
-  virtual base::string16 GetUninstallRegPath() override;
+  base::string16 GetUninstallRegPath() override;
 
-  virtual bool GetCommandExecuteImplClsid(
-      base::string16* handler_class_uuid) override;
+  bool GetCommandExecuteImplClsid(base::string16* handler_class_uuid) override;
 
-  virtual void UpdateInstallStatus(
+  void UpdateInstallStatus(
       bool system_install,
       installer::ArchiveType archive_type,
       installer::InstallStatus install_status) override;
 
-  virtual bool ShouldSetExperimentLabels() override;
+  bool ShouldSetExperimentLabels() override;
 
-  virtual bool HasUserExperiments() override;
+  bool HasUserExperiments() override;
 
  protected:
   // Disallow construction from others.

@@ -201,7 +201,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
  protected:
   NetworkConfigurationUpdaterTest() : certificate_importer_(NULL) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(false));
     provider_.Init();
@@ -231,7 +231,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     certificate_importer_owned_.reset(certificate_importer_);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     network_configuration_updater_.reset();
     provider_.Shutdown();
     base::RunLoop().RunUntilIdle();

@@ -54,9 +54,8 @@ class MojoWebUIController : public MojoWebUIControllerBase {
  public:
   explicit MojoWebUIController(content::WebUI* contents)
       : MojoWebUIControllerBase(contents), weak_factory_(this) {}
-  virtual ~MojoWebUIController() {}
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) override {
+  ~MojoWebUIController() override {}
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override {
     MojoWebUIControllerBase::RenderViewCreated(render_view_host);
     render_view_host->GetMainFrame()->GetServiceRegistry()->
         AddService<Interface>(

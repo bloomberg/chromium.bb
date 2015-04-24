@@ -165,9 +165,9 @@ class AutomaticProfileResetterDelegateTest
     : public extensions::ExtensionServiceTestBase {
  protected:
   AutomaticProfileResetterDelegateTest() {}
-  virtual ~AutomaticProfileResetterDelegateTest() {}
+  ~AutomaticProfileResetterDelegateTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     extensions::ExtensionServiceTestBase::SetUp();
     ExtensionServiceInitParams params = CreateDefaultInitParams();
     params.pref_file.clear();  // Prescribes a TestingPrefService to be created.
@@ -178,7 +178,7 @@ class AutomaticProfileResetterDelegateTest
         new AutomaticProfileResetterDelegateUnderTest(profile()));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     resetter_delegate_.reset();
     template_url_service_test_util_.reset();
     extensions::ExtensionServiceTestBase::TearDown();

@@ -115,8 +115,8 @@ class DeviceLocalAccountPolicyServiceTest
  protected:
   DeviceLocalAccountPolicyServiceTest();
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void InstallDevicePolicy() override;
 

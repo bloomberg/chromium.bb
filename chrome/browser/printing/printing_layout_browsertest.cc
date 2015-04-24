@@ -45,18 +45,18 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
     emf_path_ = browser_directory.AppendASCII("metafile_dumps");
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     // Make sure there is no left overs.
     CleanupDumpDirectory();
     InProcessBrowserTest::SetUp();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     InProcessBrowserTest::TearDown();
     base::DeleteFile(emf_path_, true);
   }
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchPath(switches::kDebugPrint, emf_path_);
   }
 

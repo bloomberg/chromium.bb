@@ -54,7 +54,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
   void AddHomePage(const GURL& home_page) override;
 
 #if defined(OS_WIN)
-  virtual void AddIE7PasswordInfo(
+  void AddIE7PasswordInfo(
       const importer::ImporterIE7PasswordInfo& password_info) override;
 #endif
 

@@ -30,10 +30,10 @@ struct ChromeUtilityMsg_GetSaveFileName_Params;
 class ShellHandler : public UtilityMessageHandler {
  public:
   ShellHandler();
-  virtual ~ShellHandler();
+  ~ShellHandler() override;
 
   // IPC::Listener implementation
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnOpenFileViaShell(const base::FilePath& full_path);

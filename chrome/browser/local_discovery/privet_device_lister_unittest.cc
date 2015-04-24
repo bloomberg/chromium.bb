@@ -169,10 +169,10 @@ class PrivetDeviceListerTest : public testing::Test {
   PrivetDeviceListerTest() : mock_client_(&mock_delegate_) {
   }
 
-  virtual ~PrivetDeviceListerTest() {
+  ~PrivetDeviceListerTest() override {
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     example_attrs_.push_back("tXtvers=1");
     example_attrs_.push_back("ty=My Printer");
     example_attrs_.push_back("nOte=This is my Printer");

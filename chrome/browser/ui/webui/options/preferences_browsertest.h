@@ -36,10 +36,10 @@ class RenderViewHost;
 class PreferencesBrowserTest : public InProcessBrowserTest {
  public:
   PreferencesBrowserTest();
-  ~PreferencesBrowserTest();
+  ~PreferencesBrowserTest() override;
 
   // InProcessBrowserTest implementation:
-  virtual void SetUpOnMainThread() override;
+  void SetUpOnMainThread() override;
 
   void OnPreferenceChanged(const std::string& pref_name);
 
@@ -49,7 +49,7 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
   void SetUpPrefs();
 
   // InProcessBrowserTest implementation:
-  virtual void SetUpInProcessBrowserTestFixture() override;
+  void SetUpInProcessBrowserTestFixture() override;
 
   // Sets user policies through the mock policy provider.
   void SetUserPolicies(const std::vector<std::string>& names,

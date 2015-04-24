@@ -26,7 +26,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
                        public content::NotificationObserver {
  public:
   PDFBrowserTest();
-  virtual ~PDFBrowserTest();
+  ~PDFBrowserTest() override;
 
  protected:
   // Use our own TestServer so that we can serve files from the pdf directory.
@@ -47,12 +47,12 @@ class PDFBrowserTest : public InProcessBrowserTest,
                                     content::ReadbackResponse response);
 
   // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) override;
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // InProcessBrowserTest
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // True if the snapshot differed from the expected value.
   bool snapshot_different_;

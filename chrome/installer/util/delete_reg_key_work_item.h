@@ -21,11 +21,11 @@ class RegistryKeyBackup;
 // the key and its subkeys take on their default security descriptors.
 class DeleteRegKeyWorkItem : public WorkItem {
  public:
-  virtual ~DeleteRegKeyWorkItem();
+  ~DeleteRegKeyWorkItem() override;
 
-  virtual bool Do() override;
+  bool Do() override;
 
-  virtual void Rollback() override;
+  void Rollback() override;
 
  private:
   friend class WorkItem;

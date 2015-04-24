@@ -16,7 +16,7 @@ class LegacyFirewallManagerTest : public ::testing::Test {
 
  protected:
   // Sets up the test fixture.
-  virtual void SetUp() override {
+  void SetUp() override {
     if (base::GetCurrentProcessIntegrityLevel() != base::HIGH_INTEGRITY) {
       LOG(WARNING) << "Not elevated. Skipping the test.";
       return;
@@ -29,7 +29,7 @@ class LegacyFirewallManagerTest : public ::testing::Test {
   }
 
   // Tears down the test fixture.
-  virtual void TearDown() override {
+  void TearDown() override {
     if (!skip_test_)
       manager_.DeleteRule();
   }

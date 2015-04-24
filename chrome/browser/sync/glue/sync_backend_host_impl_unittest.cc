@@ -151,9 +151,9 @@ class SyncBackendHostTest : public testing::Test {
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         fake_manager_(NULL) {}
 
-  virtual ~SyncBackendHostTest() {}
+  ~SyncBackendHostTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile(kTestProfileName);
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
@@ -184,7 +184,7 @@ class SyncBackendHostTest : public testing::Test {
     network_resources_.reset(new syncer::HttpBridgeNetworkResources());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (backend_) {
       backend_->StopSyncingForShutdown();
       backend_->Shutdown(syncer::STOP_SYNC);

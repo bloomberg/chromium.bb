@@ -19,22 +19,20 @@ class GlobalShortcutListenerWin : public GlobalShortcutListener,
                                   public gfx::SingletonHwnd::Observer {
  public:
   GlobalShortcutListenerWin();
-  virtual ~GlobalShortcutListenerWin();
+  ~GlobalShortcutListenerWin() override;
 
  private:
   // The implementation of our Window Proc, called by SingletonHwnd.
-  virtual void OnWndProc(HWND hwnd,
-                         UINT message,
-                         WPARAM wparam,
-                         LPARAM lparam) override;
+  void OnWndProc(HWND hwnd,
+                 UINT message,
+                 WPARAM wparam,
+                 LPARAM lparam) override;
 
   // GlobalShortcutListener implementation.
-  virtual void StartListening() override;
-  virtual void StopListening() override;
-  virtual bool RegisterAcceleratorImpl(
-      const ui::Accelerator& accelerator) override;
-  virtual void UnregisterAcceleratorImpl(
-      const ui::Accelerator& accelerator) override;
+  void StartListening() override;
+  void StopListening() override;
+  bool RegisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
+  void UnregisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
 
   // Whether this object is listening for global shortcuts.
   bool is_listening_;

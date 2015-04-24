@@ -57,7 +57,7 @@ class AutocompleteController : public AutocompleteProviderListener {
                          TemplateURLService* template_url_service,
                          AutocompleteControllerDelegate* delegate,
                          int provider_types);
-  ~AutocompleteController();
+  ~AutocompleteController() override;
 
   // Starts an autocomplete query, which continues until all providers are
   // done or the query is Stop()ed.  It is safe to Start() a new query without
@@ -96,7 +96,7 @@ class AutocompleteController : public AutocompleteProviderListener {
   void ExpireCopiedEntries();
 
   // AutocompleteProviderListener:
-  virtual void OnProviderUpdate(bool updated_matches) override;
+  void OnProviderUpdate(bool updated_matches) override;
 
   // Called when an omnibox event log entry is generated.
   // Populates provider_info with diagnostic information about the status

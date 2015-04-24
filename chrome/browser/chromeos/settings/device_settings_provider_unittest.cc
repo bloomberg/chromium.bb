@@ -52,7 +52,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
       : local_state_(TestingBrowserProcess::GetGlobal()),
         user_data_dir_override_(chrome::DIR_USER_DATA) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     DeviceSettingsTestBase::SetUp();
 
     EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
@@ -64,9 +64,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     Mock::VerifyAndClearExpectations(this);
   }
 
-  virtual void TearDown() override {
-    DeviceSettingsTestBase::TearDown();
-  }
+  void TearDown() override { DeviceSettingsTestBase::TearDown(); }
 
   // Helper routine to enable/disable all reporting settings in policy.
   void SetReportingSettings(bool enable_reporting, int frequency) {

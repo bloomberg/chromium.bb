@@ -14,11 +14,12 @@ class BrowserFrameAshWin : public BrowserFrameAsh {
   BrowserFrameAshWin(BrowserFrame* browser_frame, BrowserView* browser_view);
 
  protected:
-  virtual ~BrowserFrameAshWin();
+  ~BrowserFrameAshWin() override;
 
   // Overridden from aura::client::ActivationChangeObserver:
-  virtual void OnWindowFocused(aura::Window* gained_focus,
-                               aura::Window* lost_focus) override;
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameAshWin);
 };

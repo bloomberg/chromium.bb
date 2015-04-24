@@ -988,7 +988,7 @@ class GetUninstallCommandLine : public GoogleUpdateSettingsTest,
  protected:
   static const wchar_t kDummyCommand[];
 
-  virtual void SetUp() override {
+  void SetUp() override {
     GoogleUpdateSettingsTest::SetUp();
     system_install_ = GetParam();
     root_key_ = system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -1047,7 +1047,7 @@ class GetGoogleUpdateVersion : public GoogleUpdateSettingsTest,
  protected:
   static const wchar_t kDummyVersion[];
 
-  virtual void SetUp() override {
+  void SetUp() override {
     GoogleUpdateSettingsTest::SetUp();
     system_install_ = GetParam();
     root_key_ = system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -1165,7 +1165,7 @@ class CollectStatsConsent : public ::testing::TestWithParam<StatsState> {
   static void SetUpTestCase();
   static void TearDownTestCase();
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
   static void MakeChromeMultiInstall(HKEY root_key);
   static void ApplySetting(StatsState::StateSetting setting,
                            HKEY root_key,

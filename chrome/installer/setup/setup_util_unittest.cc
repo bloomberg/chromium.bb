@@ -35,12 +35,12 @@ namespace {
 
 class SetupUtilTestWithDir : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Create a temp directory for testing.
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Clean up test directory manually so we can fail if it leaks.
     ASSERT_TRUE(test_dir_.Delete());
   }
@@ -290,7 +290,7 @@ class FindArchiveToPatchTest : public SetupUtilTestWithDir {
     }
   };
 
-  virtual void SetUp() override {
+  void SetUp() override {
     SetupUtilTestWithDir::SetUp();
     product_version_ = Version("30.0.1559.0");
     max_version_ = Version("47.0.1559.0");
@@ -316,7 +316,7 @@ class FindArchiveToPatchTest : public SetupUtilTestWithDir {
     ASSERT_EQ(1, base::WriteFile(GetMaxVersionArchivePath(), "b", 1));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     original_state_.reset();
     SetupUtilTestWithDir::TearDown();
   }
@@ -411,7 +411,7 @@ namespace {
 
 class MigrateMultiToSingleTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     registry_override_manager_.OverrideRegistry(kRootKey);
   }
 

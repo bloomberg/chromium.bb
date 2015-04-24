@@ -169,7 +169,7 @@ class BrowserTestWithProfileShortcutManager : public InProcessBrowserTest {
  public:
   BrowserTestWithProfileShortcutManager() {}
 
-  virtual void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableProfileShortcutManager);
   }
 

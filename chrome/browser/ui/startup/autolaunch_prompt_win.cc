@@ -42,18 +42,17 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   explicit AutolaunchInfoBarDelegate(Profile* profile);
-  virtual ~AutolaunchInfoBarDelegate();
+  ~AutolaunchInfoBarDelegate() override;
 
   void set_should_expire() { should_expire_ = true; }
 
   // ConfirmInfoBarDelegate:
-  virtual int GetIconID() const override;
-  virtual bool ShouldExpireInternal(
-      const NavigationDetails& details) const override;
-  virtual base::string16 GetMessageText() const override;
-  virtual base::string16 GetButtonLabel(InfoBarButton button) const override;
-  virtual bool Accept() override;
-  virtual bool Cancel() override;
+  int GetIconID() const override;
+  bool ShouldExpireInternal(const NavigationDetails& details) const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  bool Accept() override;
+  bool Cancel() override;
 
   // Weak pointer to the profile, not owned by us.
   Profile* profile_;

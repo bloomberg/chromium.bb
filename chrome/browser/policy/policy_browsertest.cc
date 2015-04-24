@@ -850,9 +850,9 @@ class PolicyTest : public InProcessBrowserTest {
 class LocalePolicyTest : public PolicyTest {
  public:
   LocalePolicyTest() {}
-  virtual ~LocalePolicyTest() {}
+  ~LocalePolicyTest() override {}
 
-  virtual void SetUpInProcessBrowserTestFixture() override {
+  void SetUpInProcessBrowserTestFixture() override {
     PolicyTest::SetUpInProcessBrowserTestFixture();
     PolicyMap policies;
     policies.Set(key::kApplicationLocaleValue,

@@ -129,7 +129,7 @@ class FirstRunMasterPrefsBrowserTestT
   FirstRunMasterPrefsBrowserTestT() {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     SetMasterPreferencesForTest(Text);
     FirstRunMasterPrefsBrowserTestBase::SetUp();
   }

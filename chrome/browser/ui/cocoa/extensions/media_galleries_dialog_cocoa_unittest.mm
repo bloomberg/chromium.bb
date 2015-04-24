@@ -50,9 +50,9 @@ MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId pref_id) {
 class MediaGalleriesDialogTest : public testing::Test {
  public:
   MediaGalleriesDialogTest() {}
-  virtual ~MediaGalleriesDialogTest() {}
+  ~MediaGalleriesDialogTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     std::vector<base::string16> headers;
     headers.push_back(base::string16());
     headers.push_back(base::ASCIIToUTF16("header2"));
@@ -62,7 +62,7 @@ class MediaGalleriesDialogTest : public testing::Test {
         Times(AnyNumber());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     Mock::VerifyAndClearExpectations(&controller_);
     dialog_.reset();
   }

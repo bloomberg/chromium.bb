@@ -14,20 +14,19 @@ class FilePath;
 class ChromeMetroViewerProcessHost : public win8::MetroViewerProcessHost {
  public:
   ChromeMetroViewerProcessHost();
-  virtual ~ChromeMetroViewerProcessHost();
+  ~ChromeMetroViewerProcessHost() override;
 
  private:
   // win8::MetroViewerProcessHost implementation
-  virtual void OnChannelError() override;
+  void OnChannelError() override;
 
   // IPC::Listener implementation
-  virtual void OnChannelConnected(int32 peer_pid) override;
-  virtual void OnSetTargetSurface(gfx::NativeViewId target_surface,
-                                  float device_scale) override;
-  virtual void OnOpenURL(const base::string16& url) override;
-  virtual void OnHandleSearchRequest(
-      const base::string16& search_string) override;
-  virtual void OnWindowSizeChanged(uint32 width, uint32 height) override;
+  void OnChannelConnected(int32 peer_pid) override;
+  void OnSetTargetSurface(gfx::NativeViewId target_surface,
+                          float device_scale) override;
+  void OnOpenURL(const base::string16& url) override;
+  void OnHandleSearchRequest(const base::string16& search_string) override;
+  void OnWindowSizeChanged(uint32 width, uint32 height) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetroViewerProcessHost);
 };

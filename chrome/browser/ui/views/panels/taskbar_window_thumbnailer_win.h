@@ -25,7 +25,7 @@ class TaskbarWindowThumbnailerWin : public ui::HWNDMessageFilter {
  public:
   TaskbarWindowThumbnailerWin(HWND hwnd,
                               TaskbarWindowThumbnailerDelegateWin* delegate);
-  virtual ~TaskbarWindowThumbnailerWin();
+  ~TaskbarWindowThumbnailerWin() override;
 
   // Starts using the custom snapshot for live preview. The snapshot is only
   // captured once when the system requests it, so the updates of the panels'
@@ -48,11 +48,11 @@ class TaskbarWindowThumbnailerWin : public ui::HWNDMessageFilter {
 
  private:
   // Overridden from ui::HWNDMessageFilter:
-  virtual bool FilterMessage(HWND hwnd,
-                             UINT message,
-                             WPARAM w_param,
-                             LPARAM l_param,
-                             LRESULT* l_result) override;
+  bool FilterMessage(HWND hwnd,
+                     UINT message,
+                     WPARAM w_param,
+                     LPARAM l_param,
+                     LRESULT* l_result) override;
 
   // Message handlers.
   bool OnDwmSendIconicThumbnail(int width, int height, LRESULT* l_result);
