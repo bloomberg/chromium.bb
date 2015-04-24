@@ -60,7 +60,7 @@ uint32_t MenuEventDispatcher::DispatchEvent(const ui::PlatformEvent& event) {
         // Do not check mnemonics if the Alt or Ctrl modifiers are pressed.
         int flags = key_event->flags();
         if ((flags & (ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)) == 0) {
-          char c = ui::DomCodeToUsLayoutCharacter(key_event->code(), flags);
+          char c = ui::GetCharacterFromKeyCode(key_event->key_code(), flags);
           if (menu_controller_->SelectByChar(c)) {
             should_quit = true;
             should_perform_default = false;

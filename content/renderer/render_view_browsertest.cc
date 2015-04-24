@@ -223,8 +223,8 @@ class RenderViewImplTest : public RenderViewTest {
                         static_cast<ui::KeyboardCode>(key_code),
                         flags);
     ui::KeyEvent event2(xevent);
-    event2.set_character(
-        DomCodeToUsLayoutCharacter(event2.code(), event2.flags()));
+    event2.set_character(GetCharacterFromKeyCode(event2.key_code(),
+                                                 event2.flags()));
     ui::KeyEventTestApi test_event2(&event2);
     test_event2.set_is_char(true);
     NativeWebKeyboardEvent char_event(event2);
@@ -237,9 +237,8 @@ class RenderViewImplTest : public RenderViewTest {
     NativeWebKeyboardEvent keyup_event(event3);
     SendNativeKeyEvent(keyup_event);
 
-    long c = DomCodeToUsLayoutCharacter(
-        UsLayoutKeyboardCodeToDomCode(static_cast<ui::KeyboardCode>(key_code)),
-        flags);
+    long c = GetCharacterFromKeyCode(static_cast<ui::KeyboardCode>(key_code),
+                                     flags);
     output->assign(1, static_cast<base::char16>(c));
     return 1;
 #elif defined(USE_OZONE)
@@ -263,9 +262,8 @@ class RenderViewImplTest : public RenderViewTest {
     NativeWebKeyboardEvent keyup_web_event(keyup_event);
     SendNativeKeyEvent(keyup_web_event);
 
-    long c = DomCodeToUsLayoutCharacter(
-        UsLayoutKeyboardCodeToDomCode(static_cast<ui::KeyboardCode>(key_code)),
-        flags);
+    long c = GetCharacterFromKeyCode(static_cast<ui::KeyboardCode>(key_code),
+                                     flags);
     output->assign(1, static_cast<base::char16>(c));
     return 1;
 #else

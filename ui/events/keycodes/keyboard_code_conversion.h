@@ -15,7 +15,7 @@ namespace ui {
 enum class DomCode;
 enum class DomKey;
 
-// Helper functions to get the meaning of a DOM |code| in a
+// Helper functions to get the meaning of a Windows key code in a
 // platform independent way. It supports control characters as well.
 // It assumes a US keyboard layout is used, so it may only be used when there
 // is no native event or no better way to get the character.
@@ -29,6 +29,16 @@ enum class DomKey;
 // character according to US keyboard layout definition. Preferably, such
 // events should be created using a full KeyEvent constructor, explicitly
 // specifying the character and DOM 3 values as well as the legacy VKEY.
+//
+// TODO(kpschoedel): replace remaining uses of the ...FromKeyCode() functions
+// and remove them, to avoid future creation of underspecified key events.
+// crbug.com/444045
+EVENTS_BASE_EXPORT base::char16 GetCharacterFromKeyCode(KeyboardCode key_code,
+                                                        int flags);
+EVENTS_BASE_EXPORT bool GetMeaningFromKeyCode(KeyboardCode key_code,
+                                              int flags,
+                                              DomKey* dom_key,
+                                              base::char16* character);
 
 // Helper function to map a physical key state (dom_code and flags)
 // to a meaning (dom_key and character, together corresponding to the
@@ -40,8 +50,6 @@ enum class DomKey;
 // Returns true and sets the output parameters if the (dom_code, flags) pair
 // has an interpretation in the US English layout; otherwise the output
 // parameters are untouched.
-EVENTS_BASE_EXPORT base::char16 DomCodeToUsLayoutCharacter(DomCode dom_code,
-                                                           int flags);
 EVENTS_BASE_EXPORT bool DomCodeToUsLayoutMeaning(DomCode dom_code,
                                                  int flags,
                                                  DomKey* dom_key,

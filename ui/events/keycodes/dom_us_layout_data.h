@@ -60,7 +60,7 @@ const struct PrintableCodeEntry {
     {DomCode::COMMA, {',', '<'}},
     {DomCode::PERIOD, {'.', '>'}},
     {DomCode::SLASH, {'/', '?'}},
-    {DomCode::INTL_BACKSLASH, {'<', '>'}},
+    {DomCode::INTL_BACKSLASH, {'\\', '|'}},
     {DomCode::INTL_YEN, {0x00A5, '|'}},
     {DomCode::NUMPAD_DIVIDE, {'/', '/'}},
     {DomCode::NUMPAD_MULTIPLY, {'*', '*'}},
@@ -580,6 +580,7 @@ const struct DomCodeToKeyboardCodeEntry {
 const DomCodeToKeyboardCodeEntry kFallbackKeyboardCodeToDomCodeMap[] = {
     {DomCode::ALT_LEFT, VKEY_MENU},
     {DomCode::ALT_RIGHT, VKEY_ALTGR},
+    {DomCode::BACKQUOTE, VKEY_DBE_SBCSCHAR},
 #if defined(OS_POSIX)
     {DomCode::CONTEXT_MENU, VKEY_COMPOSE},
 #endif
@@ -605,7 +606,6 @@ const DomCodeToKeyboardCodeEntry kFallbackKeyboardCodeToDomCodeMap[] = {
     // VKEYs with no corresponding DomCode and no obvious USB usage code:
     //  VKEY_ACCEPT
     //  VKEY_BACKTAB
-    //  VKEY_DBE_SBCSCHAR
     //  VKEY_EREOF
     //  VKEY_FINAL
     //  VKEY_JUNJA
