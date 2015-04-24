@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/libevent/event.h"
 
 #if defined(OS_MACOSX)
@@ -344,6 +345,8 @@ void MessagePumpLibevent::OnLibeventNotification(int fd, short flags,
   WeakPtr<FileDescriptorWatcher> controller =
       static_cast<FileDescriptorWatcher*>(context)->weak_factory_.GetWeakPtr();
   DCHECK(controller.get());
+  TRACE_EVENT1("toplevel", "MessagePumpLibevent::OnLibeventNotification",
+               "fd", fd);
 
   MessagePumpLibevent* pump = controller->pump();
   pump->processed_io_events_ = true;
