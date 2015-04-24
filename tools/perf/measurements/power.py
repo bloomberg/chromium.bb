@@ -2,13 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import page_test
+import time
 
 from metrics import network
 from metrics import power
+from telemetry.core import util
+from telemetry.page import page_test
 
 
 class Power(page_test.PageTest):
+  """Measures power draw and idle wakeups during the page's interactions."""
+
   def __init__(self):
     super(Power, self).__init__()
     self._power_metric = None
@@ -29,3 +33,24 @@ class Power(page_test.PageTest):
     self._power_metric.Stop(page, tab)
     self._network_metric.AddResults(tab, results)
     self._power_metric.AddResults(tab, results)
+
+
+class QuiescentPower(page_test.PageTest):
+  """Measures power draw and idle wakeups after the page finished loading."""
+
+  # Amount of time to measure, in seconds.
+  SAMPLE_TIME = 30
+
+  def ValidateAndMeasurePage(self, page, tab, results):
+    if not tab.browser.platform.CanMonitorPower():
+      return
+
+    util.WaitFor(tab.HasReachedQuiescence, 60)
+
+    metric = power.PowerMetric(tab.browser.platform)
+    metric.Start(page, tab)
+
+    time.sleep(QuiescentPower.SAMPLE_TIME)
+
+    metric.Stop(page, tab)
+    metric.AddResults(tab, results)

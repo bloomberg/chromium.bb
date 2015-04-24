@@ -32,6 +32,12 @@ class CpuMetric(Metric):
   def AddResults(self, tab, results, trace_name='cpu_utilization'):
     assert self._stop_cpu, 'Must call Stop() first'
     cpu_stats = _SubtractCpuStats(self._stop_cpu, self._start_cpu)
+
+    # FIXME: Renderer process CPU times are impossible to compare correctly.
+    # http://crbug.com/419786#c11
+    if 'Renderer' in cpu_stats:
+      del cpu_stats['Renderer']
+
     # Add a result for each process type.
     for process_type in cpu_stats:
       trace_name_for_process = '%s_%s' % (trace_name, process_type.lower())
