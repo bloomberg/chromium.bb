@@ -140,15 +140,18 @@ remoting.Me2MeActivity.prototype.onConnectionFailed = function(error) {
         that.connect_(false);
         return;
       }
-      that.onError(error);
+      that.showErrorMessage_(error);
     };
     this.retryOnHostOffline_ = false;
 
     // The plugin will be re-created when the host finished refreshing
     remoting.hostList.refresh(onHostListRefresh);
-  } else {
-    this.onError(error);
+  } else if (!error.isNone()) {
+    this.showErrorMessage_(error);
   }
+
+  base.dispose(this.desktopActivity_);
+  this.desktopActivity_ = null;
 };
 
 /**
@@ -172,14 +175,23 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
       connectionInfo.session());
 };
 
-remoting.Me2MeActivity.prototype.onDisconnected = function() {
-  this.showFinishDialog_(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
+remoting.Me2MeActivity.prototype.onDisconnected = function(error) {
+  if (error.isNone()) {
+    this.showFinishDialog_(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
+  } else {
+    this.reconnector_.onConnectionDropped(error);
+    this.showErrorMessage_(error);
+  }
+
+  base.dispose(this.desktopActivity_);
+  this.desktopActivity_ = null;
 };
 
 /**
  * @param {!remoting.Error} error
+ * @private
  */
-remoting.Me2MeActivity.prototype.onError = function(error) {
+remoting.Me2MeActivity.prototype.showErrorMessage_ = function(error) {
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, error.getTag());
   this.showFinishDialog_(remoting.AppMode.CLIENT_CONNECT_FAILED_ME2ME);

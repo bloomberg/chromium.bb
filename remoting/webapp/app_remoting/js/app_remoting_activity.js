@@ -140,12 +140,12 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
           session.connect(host, credentialsProvider);
       });
     } else if (response && response.status == 'pending') {
-      this.onError(new remoting.Error(
+      this.onConnectionFailed(new remoting.Error(
           remoting.Error.Tag.SERVICE_UNAVAILABLE));
     }
   } else {
     console.error('Invalid "runApplication" response from server.');
-    this.onError(remoting.Error.fromHttpStatus(xhrResponse.status));
+    this.onConnectionFailed(remoting.Error.fromHttpStatus(xhrResponse.status));
   }
 };
 
@@ -166,28 +166,36 @@ remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
   }
 };
 
-remoting.AppRemotingActivity.prototype.onDisconnected = function() {
+/**
+ * @param {remoting.Error} error
+ */
+remoting.AppRemotingActivity.prototype.onDisconnected = function(error) {
+  if (error.isNone()) {
+    chrome.app.window.current().close();
+  } else {
+    this.showErrorMessage_(error);
+  }
   this.cleanup_();
-  chrome.app.window.current().close();
 };
 
 /**
  * @param {!remoting.Error} error
  */
 remoting.AppRemotingActivity.prototype.onConnectionFailed = function(error) {
-  this.onError(error);
+  remoting.LoadingWindow.close();
+  this.showErrorMessage_(error);
+  this.cleanup_();
 };
 
 /**
  * @param {!remoting.Error} error The error to be localized and displayed.
+ * @private
  */
-remoting.AppRemotingActivity.prototype.onError = function(error) {
+remoting.AppRemotingActivity.prototype.showErrorMessage_ = function(error) {
   console.error('Connection failed: ' + error.toString());
-  remoting.LoadingWindow.close();
   remoting.MessageWindow.showErrorMessage(
       chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
       chrome.i18n.getMessage(error.getTag()));
-  this.cleanup_();
 };
 
 })();

@@ -88,9 +88,11 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
   this.parentActivity_.onConnected(connectionInfo);
 };
 
-remoting.DesktopRemotingActivity.prototype.onDisconnected = function() {
-  this.parentActivity_.onDisconnected();
-  this.dispose();
+remoting.DesktopRemotingActivity.prototype.onDisconnected = function(reason) {
+  if (this.handleError_(reason)) {
+    return;
+  }
+  this.parentActivity_.onDisconnected(reason);
 };
 
 /**
@@ -98,24 +100,24 @@ remoting.DesktopRemotingActivity.prototype.onDisconnected = function() {
  */
 remoting.DesktopRemotingActivity.prototype.onConnectionFailed =
     function(error) {
+  if (this.handleError_(error)) {
+    return;
+  }
   this.parentActivity_.onConnectionFailed(error);
 };
 
 /**
  * @param {!remoting.Error} error The error to be localized and displayed.
+ * @return {boolean} returns true if the error is handled.
+ * @private
  */
-remoting.DesktopRemotingActivity.prototype.onError = function(error) {
-  console.error('Connection failed: ' + error.toString());
-
+remoting.DesktopRemotingActivity.prototype.handleError_ = function(error) {
   if (error.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED)) {
     remoting.setMode(remoting.AppMode.HOME);
     remoting.handleAuthFailureAndRelaunch();
-    return;
+    return true;
   }
-
-  this.parentActivity_.onError(error);
-
-  this.dispose();
+  return false;
 };
 
 remoting.DesktopRemotingActivity.prototype.dispose = function() {

@@ -49,11 +49,9 @@ remoting.SmartReconnector =
 
   var Events = remoting.ClientSession.Events;
   /** @private */
-  this.eventHooks_ = new base.Disposables(
-      new base.EventHook(clientSession, Events.stateChanged,
-                         this.stateChanged_.bind(this)),
+  this.eventHook_ =
       new base.EventHook(clientSession, Events.videoChannelStateChanged,
-                         this.videoChannelStateChanged_.bind(this)));
+                         this.videoChannelStateChanged_.bind(this));
 };
 
 // The online event only means the network adapter is enabled, but
@@ -80,18 +78,15 @@ remoting.SmartReconnector.prototype.reconnectAsync_ = function() {
 };
 
 /**
- * @param {remoting.ClientSession.StateEvent=} event
+ * @param {!remoting.Error} reason
  */
-remoting.SmartReconnector.prototype.stateChanged_ = function(event) {
-  var State = remoting.ClientSession.State;
-  if (event.previous === State.CONNECTED && event.current === State.FAILED) {
-    this.cancelPending_();
-    if (navigator.onLine) {
-      this.reconnect_();
-    } else {
-      this.pending_ = new base.DomEventHook(
-          window, 'online', this.reconnectAsync_.bind(this), false);
-    }
+remoting.SmartReconnector.prototype.onConnectionDropped = function(reason) {
+  this.cancelPending_();
+  if (navigator.onLine) {
+    this.reconnect_();
+  } else {
+    this.pending_ = new base.DomEventHook(
+        window, 'online', this.reconnectAsync_.bind(this), false);
   }
 };
 
@@ -121,8 +116,8 @@ remoting.SmartReconnector.prototype.cancelPending_ = function() {
 
 remoting.SmartReconnector.prototype.dispose = function() {
   this.cancelPending_();
-  base.dispose(this.eventHooks_);
-  this.eventHooks_ = null;
+  base.dispose(this.eventHook_);
+  this.eventHook_ = null;
 };
 
 })();

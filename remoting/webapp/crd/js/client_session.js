@@ -88,17 +88,15 @@ remoting.ClientSession = function(plugin, signalStrategy, listener) {
 
 /** @enum {string} */
 remoting.ClientSession.Events = {
-  stateChanged: 'stateChanged', // deprecated.
-  videoChannelStateChanged: 'videoChannelStateChanged',
+  videoChannelStateChanged: 'videoChannelStateChanged'
 };
 
 /**
  * @interface
  * [START]-------> [onConnected] ------> [onDisconnected]
- *    |                              |
- *    |-----> [OnConnectionFailed]   |----> [onError]
+ *    |
+ *    |-----> [OnConnectionFailed]
  *
- * TODO(kelvinp): Route session state changes through this interface.
  */
 remoting.ClientSession.EventHandler = function() {};
 
@@ -112,7 +110,7 @@ remoting.ClientSession.EventHandler.prototype.onConnectionFailed =
 
 /**
  * Called when a new session has been connected.  The |connectionInfo| will be
- * valid until onDisconnected() or onError() is called.
+ * valid until onDisconnected() is called.
  *
  * @param {!remoting.ConnectionInfo} connectionInfo
  */
@@ -121,14 +119,12 @@ remoting.ClientSession.EventHandler.prototype.onConnected =
 
 /**
  * Called when the current session has been disconnected.
+ *
+ * @param {!remoting.Error} reason Reason that the session is disconnected.
+ *     Set to remoting.Error.none() if there is no error.
  */
-remoting.ClientSession.EventHandler.prototype.onDisconnected = function() {};
-
-/**
- * Called when an error needs to be displayed to the user.
- * @param {!remoting.Error} error
- */
-remoting.ClientSession.EventHandler.prototype.onError = function(error) {};
+remoting.ClientSession.EventHandler.prototype.onDisconnected =
+    function(reason) {};
 
 // Note that the positive values in both of these enums are copied directly
 // from connection_to_host.h and must be kept in sync. Code in
@@ -163,19 +159,6 @@ remoting.ClientSession.State.fromString = function(state) {
     throw "Invalid ClientSession.State: " + state;
   }
   return remoting.ClientSession.State[state];
-};
-
-/**
-  @param {remoting.ClientSession.State} current
-  @param {remoting.ClientSession.State} previous
-  @constructor
-*/
-remoting.ClientSession.StateEvent = function(current, previous) {
-  /** @type {remoting.ClientSession.State} */
-  this.previous = previous
-
-  /** @type {remoting.ClientSession.State} */
-  this.current = current;
 };
 
 /** @enum {number} */
@@ -285,6 +268,10 @@ remoting.ClientSession.prototype.connect = function(host, credentialsProvider) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.disconnect = function(error) {
+  if (this.isFinished()) {
+    return;
+  }
+
   this.sendIq_(
       '<cli:iq ' +
           'to="' + this.host_.jabberId + '" ' +
@@ -551,7 +538,7 @@ remoting.ClientSession.prototype.notifyStateChanges_ =
 
     case remoting.ClientSession.State.CLOSED:
       console.log('Connection closed.');
-      this.listener_.onDisconnected();
+      this.listener_.onDisconnected(remoting.Error.none());
       break;
 
     case remoting.ClientSession.State.CONNECTION_CANCELED:
@@ -566,20 +553,12 @@ remoting.ClientSession.prototype.notifyStateChanges_ =
     case remoting.ClientSession.State.CONNECTION_DROPPED:
       error = this.getError();
       console.error('Connection dropped: ' + error.toString());
-      this.listener_.onError(error);
+      this.listener_.onDisconnected(error);
       break;
 
     default:
       console.error('Unexpected client plugin state: ' + newState);
-      // This should only happen if the web-app and client plugin get out of
-      // sync, and even then the version check should ensure compatibility.
-      this.listener_.onError(
-          new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
   }
-
-  this.raiseEvent(remoting.ClientSession.Events.stateChanged,
-    new remoting.ClientSession.StateEvent(newState, oldState)
-  );
 };
 
 /**

@@ -22,8 +22,7 @@ var logToServerStub;
 var SessionListener = function() {};
 SessionListener.prototype.onConnectionFailed = function(error) {};
 SessionListener.prototype.onConnected = function(connectionInfo) {};
-SessionListener.prototype.onDisconnected = function() {};
-SessionListener.prototype.onError = function(error) {};
+SessionListener.prototype.onDisconnected = function(error) {};
 
 /**
  * @param {remoting.ClientSession.ConnectionError=} opt_error
@@ -142,9 +141,9 @@ QUnit.test(
   var State = remoting.ClientSession.State;
 
   return connect().then(function() {
-    var onError = sinon.stub(listener, 'onError');
+    var onDisconnected = sinon.stub(listener, 'onDisconnected');
     session.disconnect(new remoting.Error(remoting.Error.Tag.P2P_FAILURE));
-    assert.equal(onError.callCount, 1);
+    assert.equal(onDisconnected.callCount, 1);
     assert.equal(logToServerStub.args[2][0], State.CONNECTION_DROPPED);
   });
 });

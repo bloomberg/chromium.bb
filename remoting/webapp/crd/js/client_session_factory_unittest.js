@@ -20,7 +20,7 @@ var listener;
 var SessionListener = function() {};
 SessionListener.prototype.onConnectionFailed = function(error) {};
 SessionListener.prototype.onConnected = function(connectionInfo) {};
-SessionListener.prototype.onDisconnected = function() {};
+SessionListener.prototype.onDisconnected = function(reason) {};
 SessionListener.prototype.onError = function(error) {};
 
 QUnit.module('ClientSessionFactory', {

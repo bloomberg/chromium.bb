@@ -74,7 +74,9 @@ remoting.It2MeActivity.prototype.stop = function() {
  * @param {!remoting.Error} error
  */
 remoting.It2MeActivity.prototype.onConnectionFailed = function(error) {
-  this.onError(error);
+  this.showErrorMessage_(error);
+  base.dispose(this.desktopActivity_);
+  this.desktopActivity_ = null;
 };
 
 /**
@@ -84,14 +86,22 @@ remoting.It2MeActivity.prototype.onConnected = function(connectionInfo) {
   this.accessCodeDialog_.inputField().value = '';
 };
 
-remoting.It2MeActivity.prototype.onDisconnected = function() {
-  this.showFinishDialog_(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
+remoting.It2MeActivity.prototype.onDisconnected = function(error) {
+  if (error.isNone()) {
+    this.showFinishDialog_(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
+  } else {
+    this.showErrorMessage_(error);
+  }
+
+  base.dispose(this.desktopActivity_);
+  this.desktopActivity_ = null;
 };
 
 /**
  * @param {!remoting.Error} error
+ * @private
  */
-remoting.It2MeActivity.prototype.onError = function(error) {
+remoting.It2MeActivity.prototype.showErrorMessage_ = function(error) {
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, error.getTag());
   this.showFinishDialog_(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
