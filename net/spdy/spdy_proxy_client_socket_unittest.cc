@@ -13,6 +13,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_unittest.h"
 #include "net/log/test_net_log.h"
@@ -1274,7 +1275,7 @@ TEST_P(SpdyProxyClientSocketTest, NetLog) {
   NetLog::Source sock_source = sock_->NetLog().source();
   sock_.reset();
 
-  TestNetLog::CapturedEntryList entry_list;
+  CapturedNetLogEntry::List entry_list;
   net_log_.GetEntriesForSource(sock_source, &entry_list);
 
   ASSERT_EQ(entry_list.size(), 10u);

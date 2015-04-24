@@ -14,8 +14,10 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_unittest.h"
+#include "net/log/test_net_log.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
@@ -233,7 +235,7 @@ TEST_P(TransportClientSocketTest, Connect) {
   // Wait for |listen_sock_| to accept a connection.
   connect_loop_.Run();
 
-  TestNetLog::CapturedEntryList net_log_entries;
+  CapturedNetLogEntry::List net_log_entries;
   net_log_.GetEntries(&net_log_entries);
   EXPECT_TRUE(
       LogContainsBeginEvent(net_log_entries, 0, NetLog::TYPE_SOCKET_ALIVE));

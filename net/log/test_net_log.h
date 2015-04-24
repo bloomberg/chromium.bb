@@ -21,18 +21,15 @@ namespace net {
 // net_test_support project.
 class TestNetLog : public NetLog {
  public:
-  // TODO(mmenke):  Get rid of these.
-  typedef CapturedNetLogEntry CapturedEntry;
-  typedef CapturedNetLogEntry::List CapturedEntryList;
-
   TestNetLog();
   ~TestNetLog() override;
 
   void SetCaptureMode(NetLogCaptureMode capture_mode);
 
   // Below methods are forwarded to capturing_net_log_observer_.
-  void GetEntries(CapturedEntryList* entry_list) const;
-  void GetEntriesForSource(Source source, CapturedEntryList* entry_list) const;
+  void GetEntries(CapturedNetLogEntry::List* entry_list) const;
+  void GetEntriesForSource(Source source,
+                           CapturedNetLogEntry::List* entry_list) const;
   size_t GetSize() const;
   void Clear();
 
@@ -56,11 +53,11 @@ class BoundTestNetLog {
   BoundNetLog bound() const { return net_log_; }
 
   // Fills |entry_list| with all entries in the log.
-  void GetEntries(TestNetLog::CapturedEntryList* entry_list) const;
+  void GetEntries(CapturedNetLogEntry::List* entry_list) const;
 
   // Fills |entry_list| with all entries in the log from the specified Source.
   void GetEntriesForSource(NetLog::Source source,
-                           TestNetLog::CapturedEntryList* entry_list) const;
+                           CapturedNetLogEntry::List* entry_list) const;
 
   // Returns number of entries in the log.
   size_t GetSize() const;

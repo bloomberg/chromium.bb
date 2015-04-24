@@ -13,8 +13,10 @@
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_unittest.h"
+#include "net/log/test_net_log.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
@@ -146,7 +148,7 @@ TEST_F(SOCKS5ClientSocketTest, CompleteHandshake) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(user_sock_->IsConnected());
 
-  TestNetLog::CapturedEntryList net_log_entries;
+  CapturedNetLogEntry::List net_log_entries;
   net_log_.GetEntries(&net_log_entries);
   EXPECT_TRUE(LogContainsBeginEvent(net_log_entries, 0,
                                     NetLog::TYPE_SOCKS5_CONNECT));
@@ -270,7 +272,7 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_EQ(ERR_IO_PENDING, rv);
 
-    TestNetLog::CapturedEntryList net_log_entries;
+    CapturedNetLogEntry::List net_log_entries;
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsBeginEvent(net_log_entries, 0,
                 NetLog::TYPE_SOCKS5_CONNECT));
@@ -301,7 +303,7 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_EQ(ERR_IO_PENDING, rv);
 
-    TestNetLog::CapturedEntryList net_log_entries;
+    CapturedNetLogEntry::List net_log_entries;
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsBeginEvent(net_log_entries, 0,
                                       NetLog::TYPE_SOCKS5_CONNECT));
@@ -330,7 +332,7 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
                                  hostname, 80, &net_log_);
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_EQ(ERR_IO_PENDING, rv);
-    TestNetLog::CapturedEntryList net_log_entries;
+    CapturedNetLogEntry::List net_log_entries;
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsBeginEvent(net_log_entries, 0,
                                       NetLog::TYPE_SOCKS5_CONNECT));
@@ -361,7 +363,7 @@ TEST_F(SOCKS5ClientSocketTest, PartialReadWrites) {
                                  hostname, 80, &net_log_);
     int rv = user_sock_->Connect(callback_.callback());
     EXPECT_EQ(ERR_IO_PENDING, rv);
-    TestNetLog::CapturedEntryList net_log_entries;
+    CapturedNetLogEntry::List net_log_entries;
     net_log_.GetEntries(&net_log_entries);
     EXPECT_TRUE(LogContainsBeginEvent(net_log_entries, 0,
                                       NetLog::TYPE_SOCKS5_CONNECT));

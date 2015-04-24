@@ -19,12 +19,13 @@ void TestNetLog::SetCaptureMode(NetLogCaptureMode capture_mode) {
   SetObserverCaptureMode(&capturing_net_log_observer_, capture_mode);
 }
 
-void TestNetLog::GetEntries(TestNetLog::CapturedEntryList* entry_list) const {
+void TestNetLog::GetEntries(CapturedNetLogEntry::List* entry_list) const {
   capturing_net_log_observer_.GetEntries(entry_list);
 }
 
-void TestNetLog::GetEntriesForSource(NetLog::Source source,
-                                     CapturedEntryList* entry_list) const {
+void TestNetLog::GetEntriesForSource(
+    NetLog::Source source,
+    CapturedNetLogEntry::List* entry_list) const {
   capturing_net_log_observer_.GetEntriesForSource(source, entry_list);
 }
 
@@ -43,14 +44,13 @@ BoundTestNetLog::BoundTestNetLog()
 BoundTestNetLog::~BoundTestNetLog() {
 }
 
-void BoundTestNetLog::GetEntries(
-    TestNetLog::CapturedEntryList* entry_list) const {
+void BoundTestNetLog::GetEntries(CapturedNetLogEntry::List* entry_list) const {
   capturing_net_log_.GetEntries(entry_list);
 }
 
 void BoundTestNetLog::GetEntriesForSource(
     NetLog::Source source,
-    TestNetLog::CapturedEntryList* entry_list) const {
+    CapturedNetLogEntry::List* entry_list) const {
   capturing_net_log_.GetEntriesForSource(source, entry_list);
 }
 

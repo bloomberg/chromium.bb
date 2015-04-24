@@ -30,7 +30,7 @@ base::Value* NetCaptureModeCallback(NetLogCaptureMode capture_mode) {
 
 TEST(NetLogTest, Basic) {
   TestNetLog net_log;
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   net_log.GetEntries(&entries);
   EXPECT_EQ(0u, entries.size());
 
@@ -63,7 +63,7 @@ TEST(NetLogTest, CaptureModes) {
     net_log.AddGlobalEntry(NetLog::TYPE_SOCKET_ALIVE,
                            base::Bind(NetCaptureModeCallback));
 
-    TestNetLog::CapturedEntryList entries;
+    CapturedNetLogEntry::List entries;
     net_log.GetEntries(&entries);
 
     ASSERT_EQ(1u, entries.size());

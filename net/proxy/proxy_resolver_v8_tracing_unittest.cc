@@ -18,8 +18,10 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_unittest.h"
+#include "net/log/test_net_log.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_error_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -152,12 +154,12 @@ TEST_F(ProxyResolverV8TracingTest, JavascriptError) {
 
   // Check the NetLogs -- there was 1 alert and 1 javascript error, and they
   // were output to both the global log, and per-request log.
-  TestNetLog::CapturedEntryList entries_list[2];
+  CapturedNetLogEntry::List entries_list[2];
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
-    const TestNetLog::CapturedEntryList& entries = entries_list[list_i];
+    const CapturedNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(2u, entries.size());
     EXPECT_TRUE(
         LogContainsEvent(entries, 0, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
@@ -206,12 +208,12 @@ TEST_F(ProxyResolverV8TracingTest, TooManyAlerts) {
 
   // Check the NetLogs -- the script generated 50 alerts, which were mirrored
   // to both the global and per-request logs.
-  TestNetLog::CapturedEntryList entries_list[2];
+  CapturedNetLogEntry::List entries_list[2];
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
-    const TestNetLog::CapturedEntryList& entries = entries_list[list_i];
+    const CapturedNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(50u, entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
       ASSERT_TRUE(
@@ -254,12 +256,12 @@ TEST_F(ProxyResolverV8TracingTest, TooManyEmptyAlerts) {
 
   // Check the NetLogs -- the script generated 50 alerts, which were mirrored
   // to both the global and per-request logs.
-  TestNetLog::CapturedEntryList entries_list[2];
+  CapturedNetLogEntry::List entries_list[2];
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
-    const TestNetLog::CapturedEntryList& entries = entries_list[list_i];
+    const CapturedNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1000u, entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
       ASSERT_TRUE(
@@ -332,12 +334,12 @@ TEST_F(ProxyResolverV8TracingTest, Dns) {
 
   // Check the NetLogs -- the script generated 1 alert, mirrored to both
   // the per-request and global logs.
-  TestNetLog::CapturedEntryList entries_list[2];
+  CapturedNetLogEntry::List entries_list[2];
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
-    const TestNetLog::CapturedEntryList& entries = entries_list[list_i];
+    const CapturedNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1u, entries.size());
     EXPECT_TRUE(
         LogContainsEvent(entries, 0, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
@@ -441,12 +443,12 @@ TEST_F(ProxyResolverV8TracingTest, FallBackToSynchronous1) {
 
   // Check the NetLogs -- the script generated 1 alert, mirrored to both
   // the per-request and global logs.
-  TestNetLog::CapturedEntryList entries_list[2];
+  CapturedNetLogEntry::List entries_list[2];
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
   for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
-    const TestNetLog::CapturedEntryList& entries = entries_list[list_i];
+    const CapturedNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1u, entries.size());
     EXPECT_TRUE(
         LogContainsEvent(entries, 0, NetLog::TYPE_PAC_JAVASCRIPT_ALERT,
@@ -614,7 +616,7 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
 
   // Check the NetLogs -- the script generated 2 alerts during initialization.
   EXPECT_EQ(0u, request_log.GetSize());
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   log.GetEntries(&entries);
 
   ASSERT_EQ(2u, entries.size());

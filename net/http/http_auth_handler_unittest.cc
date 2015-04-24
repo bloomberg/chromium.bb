@@ -11,6 +11,7 @@
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_request_info.h"
+#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log_unittest.h"
 #include "net/log/test_net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +51,7 @@ TEST(HttpAuthHandlerTest, NetLog) {
         if (async)
           test_callback.WaitForResult();
 
-        TestNetLog::CapturedEntryList entries;
+        CapturedNetLogEntry::List entries;
         capturing_net_log.GetEntries(&entries);
 
         EXPECT_EQ(2u, entries.size());

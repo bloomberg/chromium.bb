@@ -24,8 +24,10 @@
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
+#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_unittest.h"
+#include "net/log/test_net_log.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
@@ -772,7 +774,7 @@ TEST_F(ClientSocketPoolBaseTest, ConnectJob_TimedOut) {
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
   EXPECT_EQ(ERR_TIMED_OUT, delegate.WaitForResult());
 
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(6u, entries.size());
@@ -814,7 +816,7 @@ TEST_F(ClientSocketPoolBaseTest, BasicSynchronous) {
   handle.Reset();
   TestLoadTimingInfoNotConnected(handle);
 
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(4u, entries.size());
@@ -855,7 +857,7 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
   EXPECT_TRUE(handle.ssl_error_response_info().headers.get() == NULL);
   TestLoadTimingInfoNotConnected(handle);
 
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(3u, entries.size());
@@ -1690,7 +1692,7 @@ TEST_F(ClientSocketPoolBaseTest, BasicAsynchronous) {
   handle.Reset();
   TestLoadTimingInfoNotConnected(handle);
 
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(4u, entries.size());
@@ -1730,7 +1732,7 @@ TEST_F(ClientSocketPoolBaseTest,
   EXPECT_FALSE(handle.is_ssl_error());
   EXPECT_TRUE(handle.ssl_error_response_info().headers.get() == NULL);
 
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   log.GetEntries(&entries);
 
   EXPECT_EQ(3u, entries.size());
@@ -2244,7 +2246,7 @@ TEST_F(ClientSocketPoolBaseTest, DisableCleanupTimerReuse) {
   EXPECT_EQ(0, pool_->IdleSocketCountInGroup("a"));
   EXPECT_EQ(1, pool_->NumActiveSocketsInGroup("a"));
 
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEntryWithType(
       entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
@@ -2326,7 +2328,7 @@ TEST_F(ClientSocketPoolBaseTest, DisableCleanupTimerNoReuse) {
   EXPECT_EQ(0, pool_->IdleSocketCountInGroup("a"));
   EXPECT_EQ(1, pool_->NumActiveSocketsInGroup("a"));
 
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_FALSE(LogContainsEntryWithType(
       entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
@@ -2398,7 +2400,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSockets) {
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(handle.is_reused());
 
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEntryWithType(
       entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));

@@ -19,6 +19,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state.h"
+#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log_unittest.h"
 #include "net/log/test_net_log.h"
 #include "net/proxy/proxy_config_service_fixed.h"
@@ -412,7 +413,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   SendRequestAndExpectQuicResponse("hello!");
 
   // Check that the NetLog was filled reasonably.
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   net_log_.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 

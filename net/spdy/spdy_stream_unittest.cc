@@ -12,7 +12,9 @@
 #include "base/strings/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/request_priority.h"
+#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log_unittest.h"
+#include "net/log/test_net_log.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/buffered_spdy_framer.h"
@@ -293,7 +295,7 @@ TEST_P(SpdyStreamTest, StreamError) {
   EXPECT_TRUE(data.at_write_eof());
 
   // Check that the NetLog was filled reasonably.
-  TestNetLog::CapturedEntryList entries;
+  CapturedNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_LT(0u, entries.size());
 

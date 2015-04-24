@@ -11,6 +11,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "net/http/http_status_code.h"
+#include "net/log/captured_net_log_entry.h"
 #include "net/log/net_log.h"
 #include "net/log/test_net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,8 +31,8 @@ class DataReductionProxyEventStoreTest : public testing::Test {
         new DataReductionProxyEventCreator(event_store_.get()));
   }
 
-  net::TestNetLog::CapturedEntry GetSingleEntry() const {
-    net::TestNetLog::CapturedEntryList entries;
+  net::CapturedNetLogEntry GetSingleEntry() const {
+    net::CapturedNetLogEntry::List entries;
     net_log_->GetEntries(&entries);
     EXPECT_EQ(1u, entries.size());
     return entries[0];
@@ -63,7 +64,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddProxyEnabledEvent) {
       TestDataReductionProxyParams::DefaultFallbackOrigin(),
       TestDataReductionProxyParams::DefaultSSLOrigin());
   EXPECT_EQ(1u, event_store()->stored_events_.size());
-  net::TestNetLog::CapturedEntry entry = GetSingleEntry();
+  net::CapturedNetLogEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_ENABLED,
             entry.type);
 }
@@ -72,7 +73,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddProxyDisabledEvent) {
   EXPECT_EQ(0u, event_store()->stored_events_.size());
   event_creator()->AddProxyDisabledEvent(net_log());
   EXPECT_EQ(1u, event_store()->stored_events_.size());
-  net::TestNetLog::CapturedEntry entry = GetSingleEntry();
+  net::CapturedNetLogEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_ENABLED,
             entry.type);
 }
@@ -83,7 +84,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddBypassActionEvent) {
   event_creator()->AddBypassActionEvent(bound_net_log(), "bypass", GURL(),
                                         base::TimeDelta::FromMinutes(1));
   EXPECT_EQ(1u, event_store()->stored_events_.size());
-  net::TestNetLog::CapturedEntry entry = GetSingleEntry();
+  net::CapturedNetLogEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_BYPASS_REQUESTED,
             entry.type);
   EXPECT_NE(nullptr, event_store()->last_bypass_event_.get());
@@ -96,7 +97,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddBypassTypeEvent) {
                                       GURL(), base::TimeDelta::FromMinutes(1));
   EXPECT_EQ(1u, event_store()->stored_events_.size());
   EXPECT_EQ(1u, net_log()->GetSize());
-  net::TestNetLog::CapturedEntry entry = GetSingleEntry();
+  net::CapturedNetLogEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_BYPASS_REQUESTED,
             entry.type);
   EXPECT_NE(nullptr, event_store()->last_bypass_event_.get());
@@ -109,7 +110,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestBeginSecureProxyCheck) {
   event_creator()->BeginSecureProxyCheck(bound_net_log(), GURL());
   EXPECT_EQ(1u, event_store()->stored_events_.size());
   EXPECT_EQ(1u, net_log()->GetSize());
-  net::TestNetLog::CapturedEntry entry = GetSingleEntry();
+  net::CapturedNetLogEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_CANARY_REQUEST,
             entry.type);
   EXPECT_EQ(DataReductionProxyEventStorageDelegate::CHECK_PENDING,
@@ -123,7 +124,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheck) {
   event_creator()->EndSecureProxyCheck(bound_net_log(), 0, net::HTTP_OK, true);
   EXPECT_EQ(1u, event_store()->stored_events_.size());
   EXPECT_EQ(1u, net_log()->GetSize());
-  net::TestNetLog::CapturedEntry entry = GetSingleEntry();
+  net::CapturedNetLogEntry entry = GetSingleEntry();
   EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_CANARY_REQUEST,
             entry.type);
   EXPECT_EQ(DataReductionProxyEventStorageDelegate::CHECK_SUCCESS,
