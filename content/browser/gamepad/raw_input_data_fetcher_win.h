@@ -59,7 +59,7 @@ class RawInputDataFetcher
   ~RawInputDataFetcher();
 
   // DestructionObserver overrides.
-  virtual void WillDestroyCurrentMessageLoop() override;
+  void WillDestroyCurrentMessageLoop() override;
 
   bool Available() { return rawinput_available_; }
   void StartMonitor();

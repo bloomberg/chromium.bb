@@ -35,11 +35,11 @@ class WebAudioCapturerSource
 
   // WebAudioDestinationConsumer implementation.
   // setFormat() is called early on, so that we can configure the audio track.
-  virtual void setFormat(size_t number_of_channels, float sample_rate) override;
+  void setFormat(size_t number_of_channels, float sample_rate) override;
   // MediaStreamAudioDestinationNode periodically calls consumeAudio().
   // Called on the WebAudio audio thread.
-  virtual void consumeAudio(const blink::WebVector<const float*>& audio_data,
-      size_t number_of_frames) override;
+  void consumeAudio(const blink::WebVector<const float*>& audio_data,
+                    size_t number_of_frames) override;
 
   // Called when the WebAudioCapturerSource is hooking to a media audio track.
   // |track| is the sink of the data flow. |source_provider| is the source of
@@ -52,7 +52,7 @@ class WebAudioCapturerSource
 
  protected:
   friend class base::RefCountedThreadSafe<WebAudioCapturerSource>;
-  virtual ~WebAudioCapturerSource();
+  ~WebAudioCapturerSource() override;
 
  private:
   // Removes this object from a blink::WebMediaStreamSource with which it

@@ -156,7 +156,7 @@ TEST_F(MacSandboxTest, OpenSSLAccess) {
 // Test case for checking sandboxing of NSS initialization.
 class MacSandboxedNSSTestCase : public MacSandboxTestCase {
  public:
-  virtual bool SandboxedTest() override;
+  bool SandboxedTest() override;
 };
 
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedNSSTestCase);

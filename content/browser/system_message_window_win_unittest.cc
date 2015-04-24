@@ -18,10 +18,10 @@ namespace content {
 
 class SystemMessageWindowWinTest : public testing::Test {
  public:
-  virtual ~SystemMessageWindowWinTest() { }
+  ~SystemMessageWindowWinTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     system_monitor_.AddDevicesChangedObserver(&observer_);
   }
 

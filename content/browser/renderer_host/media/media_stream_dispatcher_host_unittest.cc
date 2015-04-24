@@ -115,12 +115,12 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   StreamDeviceInfoArray enumerated_devices_;
 
  private:
-  virtual ~MockMediaStreamDispatcherHost() {}
+  ~MockMediaStreamDispatcherHost() override {}
 
   // This method is used to dispatch IPC messages to the renderer. We intercept
   // these messages here and dispatch to our mock methods to verify the
   // conversation between this object and the renderer.
-  virtual bool Send(IPC::Message* message) override {
+  bool Send(IPC::Message* message) override {
     CHECK(message);
     current_ipc_ = message;
 

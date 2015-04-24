@@ -15,12 +15,14 @@ class PowerDataProviderIA : public PowerDataProvider {
  public:
   PowerDataProviderIA();
 
-  virtual ~PowerDataProviderIA();
+  ~PowerDataProviderIA() override;
 
   bool Initialize();
-  virtual PowerEventVector GetData() override;
-  virtual base::TimeDelta GetSamplingRate() override;
-  virtual AccuracyLevel GetAccuracyLevel() override { return High; }
+
+  // PowerDataProvider:
+  PowerEventVector GetData() override;
+  base::TimeDelta GetSamplingRate() override;
+  AccuracyLevel GetAccuracyLevel() override { return High; }
 
  private:
   CIntelPowerGadgetLib energy_lib_;

@@ -204,10 +204,10 @@ class Win32KLockdownRendererProcessHostTest : public RenderProcessHostTest {
  public:
   Win32KLockdownRendererProcessHostTest() {}
 
-  virtual ~Win32KLockdownRendererProcessHostTest() {}
+  ~Win32KLockdownRendererProcessHostTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kEnableWin32kRendererLockDown);
     RenderProcessHostTest::SetUp();

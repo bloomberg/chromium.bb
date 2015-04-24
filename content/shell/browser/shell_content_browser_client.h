@@ -78,8 +78,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       FileDescriptorInfo* mappings) override;
 #endif
 #if defined(OS_WIN)
-  virtual void PreSpawnRenderer(sandbox::TargetPolicy* policy,
-                                bool* success) override;
+  void PreSpawnRenderer(sandbox::TargetPolicy* policy, bool* success) override;
 #endif
 
   ShellBrowserContext* browser_context();

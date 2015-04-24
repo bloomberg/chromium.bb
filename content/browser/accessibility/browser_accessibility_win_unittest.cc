@@ -57,9 +57,9 @@ class CountedBrowserAccessibilityFactory : public BrowserAccessibilityFactory {
   CountedBrowserAccessibilityFactory();
 
  private:
-  virtual ~CountedBrowserAccessibilityFactory();
+  ~CountedBrowserAccessibilityFactory() override;
 
-  virtual BrowserAccessibility* Create() override;
+  BrowserAccessibility* Create() override;
 
   DISALLOW_COPY_AND_ASSIGN(CountedBrowserAccessibilityFactory);
 };
@@ -87,10 +87,10 @@ BrowserAccessibility* CountedBrowserAccessibilityFactory::Create() {
 class BrowserAccessibilityTest : public testing::Test {
  public:
   BrowserAccessibilityTest();
-  virtual ~BrowserAccessibilityTest();
+  ~BrowserAccessibilityTest() override;
 
  private:
-  virtual void SetUp() override;
+  void SetUp() override;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
 };

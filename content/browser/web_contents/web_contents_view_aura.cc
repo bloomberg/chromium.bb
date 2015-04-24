@@ -435,7 +435,7 @@ class WebContentsViewAura::WindowObserver
   // Note: this is hard coding how Chrome layer adds its dialogs. Since NPAPI is
   // going to be deprecated in a year, this is ok for now. The test for this is
   // PrintPreviewTest.WindowedNPAPIPluginHidden.
-  virtual void OnWindowAdded(aura::Window* new_window) override {
+  void OnWindowAdded(aura::Window* new_window) override {
     if (!new_window->Contains(view_->window_.get())) {
       // Skip the case when the parent moves to the root window.
       if (new_window != host_window_) {
@@ -453,7 +453,7 @@ class WebContentsViewAura::WindowObserver
     }
   }
 
-  virtual void OnWillRemoveWindow(aura::Window* window) override {
+  void OnWillRemoveWindow(aura::Window* window) override {
     if (window == view_->window_)
       return;
 
@@ -461,8 +461,7 @@ class WebContentsViewAura::WindowObserver
     UpdateConstrainedWindows(window);
   }
 
-  virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) override {
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
     if (window == view_->window_ ||
         window->parent() == host_window_ ||
         window->parent() == view_->window_->GetRootWindow()) {

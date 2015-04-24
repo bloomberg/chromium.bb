@@ -96,25 +96,25 @@ class MockCapturerSource : public media::AudioCapturerSource {
   MOCK_METHOD1(SetVolume, void(double volume));
   MOCK_METHOD1(SetAutomaticGainControl, void(bool enable));
 
-  virtual void Initialize(const media::AudioParameters& params,
-                          CaptureCallback* callback,
-                          int session_id) override {
+  void Initialize(const media::AudioParameters& params,
+                  CaptureCallback* callback,
+                  int session_id) override {
     DCHECK(params.IsValid());
     params_ = params;
     OnInitialize(params, callback, session_id);
   }
-  virtual void Start() override {
+  void Start() override {
     audio_thread_.reset(new FakeAudioThread(capturer_, params_));
     audio_thread_->Start();
     OnStart();
   }
-  virtual void Stop() override {
+  void Stop() override {
     audio_thread_->Stop();
     audio_thread_.reset();
     OnStop();
   }
  protected:
-  virtual ~MockCapturerSource() {}
+  ~MockCapturerSource() override {}
 
  private:
   scoped_ptr<FakeAudioThread> audio_thread_;

@@ -33,22 +33,22 @@ class MockCapturerSource : public media::AudioCapturerSource {
   MOCK_METHOD1(SetAutomaticGainControl, void(bool enable));
 
  protected:
-  virtual ~MockCapturerSource() {}
+  ~MockCapturerSource() override {}
 };
 
 class MockMediaStreamAudioSink : public MediaStreamAudioSink {
  public:
   MockMediaStreamAudioSink() {}
-  ~MockMediaStreamAudioSink() {}
-  virtual void OnData(const media::AudioBus& audio_bus,
-                      base::TimeTicks estimated_capture_time) override {
+  ~MockMediaStreamAudioSink() override {}
+  void OnData(const media::AudioBus& audio_bus,
+              base::TimeTicks estimated_capture_time) override {
     EXPECT_EQ(audio_bus.channels(), params_.channels());
     EXPECT_EQ(audio_bus.frames(), params_.frames_per_buffer());
     EXPECT_FALSE(estimated_capture_time.is_null());
     OnDataCallback();
   }
   MOCK_METHOD0(OnDataCallback, void());
-  virtual void OnSetFormat(const media::AudioParameters& params) override {
+  void OnSetFormat(const media::AudioParameters& params) override {
     params_ = params;
     FormatIsSet();
   }

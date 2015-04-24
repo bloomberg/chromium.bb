@@ -18,11 +18,11 @@ class ShellCrashReporterClient : public crash_reporter::CrashReporterClient {
 #if defined(OS_WIN)
   // Returns a textual description of the product type and version to include
   // in the crash report.
-  virtual void GetProductNameAndVersion(const base::FilePath& exe_path,
-                                        base::string16* product_name,
-                                        base::string16* version,
-                                        base::string16* special_build,
-                                        base::string16* channel_name) override;
+  void GetProductNameAndVersion(const base::FilePath& exe_path,
+                                base::string16* product_name,
+                                base::string16* version,
+                                base::string16* special_build,
+                                base::string16* channel_name) override;
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)

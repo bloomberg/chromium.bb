@@ -129,9 +129,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  virtual void SetParentNativeViewAccessible(
+  void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) override;
-  virtual gfx::NativeViewId GetParentForWindowlessPlugin() const override;
+  gfx::NativeViewId GetParentForWindowlessPlugin() const override;
 #endif
 
   // Overridden from ui::GestureEventHelper.

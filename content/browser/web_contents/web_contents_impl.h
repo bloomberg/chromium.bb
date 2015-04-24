@@ -246,7 +246,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool IsTreeOnlyAccessibilityModeForTesting() const override;
   bool IsFullAccessibilityModeForTesting() const override;
 #if defined(OS_WIN)
-  virtual void SetParentNativeViewAccessible(
+  void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) override;
 #endif
   const base::string16& GetTitle() const override;
@@ -431,7 +431,7 @@ class CONTENT_EXPORT WebContentsImpl
                          const IPC::Message& message) override;
   // RenderFrameHostDelegate has the same method, so list it there because this
   // interface is going away.
-  // virtual WebContents* GetAsWebContents() override;
+  // WebContents* GetAsWebContents() override;
   gfx::Rect GetRootWindowResizerRect() const override;
   void RenderViewCreated(RenderViewHost* render_view_host) override;
   void RenderViewReady(RenderViewHost* render_view_host) override;

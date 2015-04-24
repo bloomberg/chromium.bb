@@ -106,7 +106,7 @@ class PluginSandboxedProcessLauncherDelegate
   ~PluginSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  virtual bool ShouldSandbox() override {
+  bool ShouldSandbox() override {
     return false;
   }
 

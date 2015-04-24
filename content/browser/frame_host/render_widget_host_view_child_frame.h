@@ -125,9 +125,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  virtual void SetParentNativeViewAccessible(
+  void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) override;
-  virtual gfx::NativeViewId GetParentForWindowlessPlugin() const override;
+  gfx::NativeViewId GetParentForWindowlessPlugin() const override;
 #endif
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate) override;

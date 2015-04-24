@@ -32,10 +32,10 @@ namespace content {
 class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
  public:
   GamepadPlatformDataFetcherWin();
-  virtual ~GamepadPlatformDataFetcherWin();
-  virtual void GetGamepadData(blink::WebGamepads* pads,
-                              bool devices_changed_hint) override;
-  virtual void PauseHint(bool paused) override;
+  ~GamepadPlatformDataFetcherWin() override;
+  void GetGamepadData(blink::WebGamepads* pads,
+                      bool devices_changed_hint) override;
+  void PauseHint(bool paused) override;
 
  private:
   // XInput-specific implementation for GetGamepadData.

@@ -78,8 +78,8 @@ class GeopositionEqMatcher
   explicit GeopositionEqMatcher(const Geoposition& expected)
       : expected_(expected) {}
 
-  virtual bool MatchAndExplain(const Geoposition& actual,
-                               MatchResultListener* listener) const override {
+  bool MatchAndExplain(const Geoposition& actual,
+                       MatchResultListener* listener) const override {
     return actual.latitude == expected_.latitude &&
            actual.longitude == expected_.longitude &&
            actual.altitude == expected_.altitude &&
@@ -92,11 +92,11 @@ class GeopositionEqMatcher
            actual.error_message == expected_.error_message;
   }
 
-  virtual void DescribeTo(::std::ostream* os) const override {
+  void DescribeTo(::std::ostream* os) const override {
     *os << "which matches the expected position";
   }
 
-  virtual void DescribeNegationTo(::std::ostream* os) const override {
+  void DescribeNegationTo(::std::ostream* os) const override {
     *os << "which does not match the expected position";
   }
 

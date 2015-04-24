@@ -54,10 +54,10 @@ class DeleteAfterAnimation : public ui::ImplicitAnimationObserver {
  private:
   friend class base::DeleteHelper<DeleteAfterAnimation<T> >;
 
-  virtual ~DeleteAfterAnimation() {}
+  ~DeleteAfterAnimation() override {}
 
   // ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() override {
+  void OnImplicitAnimationsCompleted() override {
     // Deleting an observer when a ScopedLayerAnimationSettings is iterating
     // over them can cause a crash (which can happen during tests). So instead,
     // schedule this observer to be deleted soon.

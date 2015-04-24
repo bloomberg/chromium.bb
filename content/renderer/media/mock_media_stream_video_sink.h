@@ -17,11 +17,11 @@ namespace content {
 class MockMediaStreamVideoSink : public MediaStreamVideoSink {
  public:
   MockMediaStreamVideoSink();
-  virtual ~MockMediaStreamVideoSink();
+  ~MockMediaStreamVideoSink() override;
 
-  virtual void OnReadyStateChanged(
+  void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) override;
-  virtual void OnEnabledChanged(bool enabled) override;
+  void OnEnabledChanged(bool enabled) override;
 
   // Triggered when OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame)
   // is called.

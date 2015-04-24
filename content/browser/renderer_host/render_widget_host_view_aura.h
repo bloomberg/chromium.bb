@@ -226,9 +226,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnDidNavigateMainFrameToNewPage() override;
 
 #if defined(OS_WIN)
-  virtual void SetParentNativeViewAccessible(
+  void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) override;
-  virtual gfx::NativeViewId GetParentForWindowlessPlugin() const override;
+  gfx::NativeViewId GetParentForWindowlessPlugin() const override;
 #endif
 
   // Overridden from ui::TextInputClient:

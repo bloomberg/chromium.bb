@@ -50,7 +50,7 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
 
   explicit WebRtcLocalAudioSourceProvider(
       const blink::WebMediaStreamTrack& track);
-  virtual ~WebRtcLocalAudioSourceProvider();
+  ~WebRtcLocalAudioSourceProvider() override;
 
   // MediaStreamAudioSink implementation.
   void OnData(const media::AudioBus& audio_bus,
@@ -60,9 +60,9 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
       blink::WebMediaStreamSource::ReadyState state) override;
 
   // blink::WebAudioSourceProvider implementation.
-  virtual void setClient(blink::WebAudioSourceProviderClient* client) override;
-  virtual void provideInput(const blink::WebVector<float*>& audio_data,
-                            size_t number_of_frames) override;
+  void setClient(blink::WebAudioSourceProviderClient* client) override;
+  void provideInput(const blink::WebVector<float*>& audio_data,
+                    size_t number_of_frames) override;
 
   // media::AudioConverter::Inputcallback implementation.
   // This function is triggered by provideInput()on the WebAudio audio thread,

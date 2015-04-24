@@ -51,12 +51,11 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   ~PpapiPluginSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  virtual bool ShouldSandbox() override {
+  bool ShouldSandbox() override {
     return !is_broker_;
   }
 
-  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
-                              bool* success) {
+  void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
     if (is_broker_)
       return;
     // The Pepper process as locked-down as a renderer execpt that it can

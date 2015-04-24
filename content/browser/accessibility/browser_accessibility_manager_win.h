@@ -23,7 +23,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
-  virtual ~BrowserAccessibilityManagerWin();
+  ~BrowserAccessibilityManagerWin() override;
 
   static ui::AXTreeUpdate GetEmptyDocument();
 
@@ -37,8 +37,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void MaybeCallNotifyWinEvent(DWORD event, BrowserAccessibility* node);
 
   // AXTree methods
-  virtual void OnNodeWillBeDeleted(ui::AXNode* node) override;
-  virtual void OnNodeCreated(ui::AXNode* node) override;
+  void OnNodeWillBeDeleted(ui::AXNode* node) override;
+  void OnNodeCreated(ui::AXNode* node) override;
 
   // BrowserAccessibilityManager methods
   void OnWindowFocused() override;

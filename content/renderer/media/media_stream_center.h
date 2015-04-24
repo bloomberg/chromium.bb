@@ -30,37 +30,32 @@ class CONTENT_EXPORT MediaStreamCenter
  public:
   MediaStreamCenter(blink::WebMediaStreamCenterClient* client,
                     PeerConnectionDependencyFactory* factory);
-  virtual ~MediaStreamCenter();
+  ~MediaStreamCenter() override;
 
  private:
-  virtual void didCreateMediaStreamTrack(
+  void didCreateMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
-  virtual void didEnableMediaStreamTrack(
+  void didEnableMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
-  virtual void didDisableMediaStreamTrack(
+  void didDisableMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
-  virtual void didStopLocalMediaStream(
-      const blink::WebMediaStream& stream) override;
+  void didStopLocalMediaStream(const blink::WebMediaStream& stream) override;
 
-  virtual bool didStopMediaStreamTrack(
+  bool didStopMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
-  virtual blink::WebAudioSourceProvider*
-      createWebAudioSourceFromMediaStreamTrack(
-          const blink::WebMediaStreamTrack& track) override;
-
-
-  virtual void didCreateMediaStream(
-      blink::WebMediaStream& stream) override;
-
-  virtual bool didAddMediaStreamTrack(
-      const blink::WebMediaStream& stream,
+  blink::WebAudioSourceProvider* createWebAudioSourceFromMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
-  virtual bool didRemoveMediaStreamTrack(
+  void didCreateMediaStream(blink::WebMediaStream& stream) override;
+
+  bool didAddMediaStreamTrack(const blink::WebMediaStream& stream,
+                              const blink::WebMediaStreamTrack& track) override;
+
+  bool didRemoveMediaStreamTrack(
       const blink::WebMediaStream& stream,
       const blink::WebMediaStreamTrack& track) override;
 

@@ -181,11 +181,11 @@ class MockCanceledPluginServiceClient : public PluginProcessHost::Client {
         get_resource_context_called_(false) {
   }
 
-  virtual ~MockCanceledPluginServiceClient() {}
+  ~MockCanceledPluginServiceClient() override {}
 
   // Client implementation.
   MOCK_METHOD0(ID, int());
-  virtual ResourceContext* GetResourceContext() override {
+  ResourceContext* GetResourceContext() override {
     get_resource_context_called_ = true;
     return context_;
   }

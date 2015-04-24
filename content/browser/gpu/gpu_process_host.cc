@@ -158,7 +158,7 @@ class GpuSandboxedProcessLauncherDelegate
   ~GpuSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  virtual bool ShouldSandbox() override {
+  bool ShouldSandbox() override {
     bool sandbox = !cmd_line_->HasSwitch(switches::kDisableGpuSandbox);
     if(! sandbox) {
       DVLOG(1) << "GPU sandbox is disabled";
@@ -166,8 +166,8 @@ class GpuSandboxedProcessLauncherDelegate
     return sandbox;
   }
 
-  virtual void PreSandbox(bool* disable_default_policy,
-                          base::FilePath* exposed_dir) override {
+  void PreSandbox(bool* disable_default_policy,
+                  base::FilePath* exposed_dir) override {
     *disable_default_policy = true;
   }
 
@@ -175,8 +175,7 @@ class GpuSandboxedProcessLauncherDelegate
   // which is USER_RESTRICTED breaks both the DirectX backend and the OpenGL
   // backend. Note that the GPU process is connected to the interactive
   // desktop.
-  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
-                              bool* success) {
+  void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
     if (base::win::GetVersion() > base::win::VERSION_XP) {
       if (cmd_line_->GetSwitchValueASCII(switches::kUseGL) ==
           gfx::kGLImplementationDesktopName) {

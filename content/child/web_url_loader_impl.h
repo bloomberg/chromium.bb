@@ -38,7 +38,7 @@ class CONTENT_EXPORT WebURLLoaderImpl
   explicit WebURLLoaderImpl(
       ResourceDispatcher* resource_dispatcher,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  virtual ~WebURLLoaderImpl();
+  ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(
       const GURL& url,
@@ -46,19 +46,19 @@ class CONTENT_EXPORT WebURLLoaderImpl
       blink::WebURLResponse* response);
 
   // WebURLLoader methods:
-  virtual void loadSynchronously(
+  void loadSynchronously(
       const blink::WebURLRequest& request,
       blink::WebURLResponse& response,
       blink::WebURLError& error,
       blink::WebData& data) override;
-  virtual void loadAsynchronously(
+  void loadAsynchronously(
       const blink::WebURLRequest& request,
       blink::WebURLLoaderClient* client) override;
-  virtual void cancel() override;
-  virtual void setDefersLoading(bool value) override;
-  virtual void didChangePriority(blink::WebURLRequest::Priority new_priority,
-                                 int intra_priority_value) override;
-  virtual bool attachThreadedDataReceiver(
+  void cancel() override;
+  void setDefersLoading(bool value) override;
+  void didChangePriority(blink::WebURLRequest::Priority new_priority,
+                         int intra_priority_value) override;
+  bool attachThreadedDataReceiver(
       blink::WebThreadedDataReceiver* threaded_data_receiver) override;
 
  private:

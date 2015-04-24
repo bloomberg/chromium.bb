@@ -63,7 +63,7 @@ class PlatformEventObserver : public PlatformEventObserverBase,
   // The observer must automatically stop observing when destroyed in case it
   // did not stop before. Implementations of PlatformEventObserver must do
   // so by calling StopIfObserving() from their destructors.
-  virtual ~PlatformEventObserver() {
+  ~PlatformEventObserver() override {
     // If this assert fails, the derived destructor failed to invoke
     // StopIfObserving().
     DCHECK(!is_observing());
@@ -71,7 +71,7 @@ class PlatformEventObserver : public PlatformEventObserverBase,
 
   // Called when a new IPC message is received. Must be used to listen to the
   // responses from the browser process if any expected.
-  virtual bool OnControlMessageReceived(const IPC::Message& msg) override {
+  bool OnControlMessageReceived(const IPC::Message& msg) override {
     return false;
   }
 

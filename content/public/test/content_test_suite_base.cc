@@ -53,7 +53,7 @@ class ContentTestSuiteBaseListener : public testing::EmptyTestEventListener {
  public:
   ContentTestSuiteBaseListener() {
   }
-  virtual void OnTestEnd(const testing::TestInfo& test_info) override {
+  void OnTestEnd(const testing::TestInfo& test_info) override {
     BrowserThreadImpl::FlushThreadPoolHelperForTesting();
   }
  private:

@@ -129,7 +129,7 @@ class GLHelperHolder
   void Initialize();
 
   // WebGraphicsContextLostCallback implementation.
-  virtual void onContextLost() override;
+  void onContextLost() override;
 
   GLHelper* GetGLHelper() { return gl_helper_.get(); }
   bool IsLost() { return !context_.get() || context_->isContextLost(); }

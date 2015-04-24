@@ -20,16 +20,16 @@ namespace content {
 class FontCacheDispatcher : public IPC::MessageFilter, public IPC::Sender {
  public:
   FontCacheDispatcher();
-  virtual ~FontCacheDispatcher();
+  ~FontCacheDispatcher() override;
 
   // IPC::Sender implementation:
-  virtual bool Send(IPC::Message* message) override;
+  bool Send(IPC::Message* message) override;
 
  private:
   // IPC::MessageFilter implementation:
-  virtual void OnFilterAdded(IPC::Sender* sender) override;
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void OnChannelClosing() override;
+  void OnFilterAdded(IPC::Sender* sender) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelClosing() override;
 
   // Message handlers.
   void OnPreCacheFont(const LOGFONT& font);

@@ -140,13 +140,12 @@ class CursorCallbacks : public WebIDBCallbacks {
   explicit CursorCallbacks(scoped_ptr<WebIDBCursor>* cursor)
       : cursor_(cursor) {}
 
-  virtual void onSuccess(const WebData&,
-                         const WebVector<WebBlobInfo>&) override {}
-  virtual void onSuccess(WebIDBCursor* cursor,
-                         const WebIDBKey& key,
-                         const WebIDBKey& primaryKey,
-                         const WebData& value,
-                         const WebVector<WebBlobInfo>&) override {
+  void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) override {}
+  void onSuccess(WebIDBCursor* cursor,
+                 const WebIDBKey& key,
+                 const WebIDBKey& primaryKey,
+                 const WebData& value,
+                 const WebVector<WebBlobInfo>&) override {
     cursor_->reset(cursor);
   }
 

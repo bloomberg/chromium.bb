@@ -111,9 +111,9 @@ class CONTENT_EXPORT PluginServiceImpl
 #if defined(OS_MACOSX)
   void AppActivated() override;
 #elif defined(OS_WIN)
-  virtual bool GetPluginInfoFromWindow(HWND window,
-                                       base::string16* plugin_name,
-                                       base::string16* plugin_version) override;
+  bool GetPluginInfoFromWindow(HWND window,
+                               base::string16* plugin_name,
+                               base::string16* plugin_version) override;
 
   // Returns true iff the given HWND is a plugin.
   bool IsPluginWindow(HWND window);

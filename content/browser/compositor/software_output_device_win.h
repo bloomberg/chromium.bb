@@ -23,13 +23,13 @@ namespace content {
 class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
  public:
   explicit SoftwareOutputDeviceWin(ui::Compositor* compositor);
-  virtual ~SoftwareOutputDeviceWin();
+  ~SoftwareOutputDeviceWin() override;
 
-  virtual void Resize(const gfx::Size& viewport_pixel_size,
-                      float scale_factor) override;
-  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
-  virtual void EndPaint(cc::SoftwareFrameData* frame_data) override;
-  virtual void CopyToPixels(const gfx::Rect& rect, void* pixels) override;
+  void Resize(const gfx::Size& viewport_pixel_size,
+              float scale_factor) override;
+  SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
+  void EndPaint(cc::SoftwareFrameData* frame_data) override;
+  void CopyToPixels(const gfx::Rect& rect, void* pixels) override;
 
  private:
   HWND hwnd_;

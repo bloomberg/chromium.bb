@@ -18,15 +18,15 @@ class TimeZoneMonitorWin : public TimeZoneMonitor,
     gfx::SingletonHwnd::GetInstance()->AddObserver(this);
   }
 
-  virtual ~TimeZoneMonitorWin() {
+  ~TimeZoneMonitorWin() override {
     gfx::SingletonHwnd::GetInstance()->RemoveObserver(this);
   }
 
   // gfx::SingletonHwnd::Observer implementation.
-  virtual void OnWndProc(HWND hwnd,
-                         UINT message,
-                         WPARAM wparam,
-                         LPARAM lparam) override {
+  void OnWndProc(HWND hwnd,
+                 UINT message,
+                 WPARAM wparam,
+                 LPARAM lparam) override {
     if (message != WM_TIMECHANGE) {
       return;
     }

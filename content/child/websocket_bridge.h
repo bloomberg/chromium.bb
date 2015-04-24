@@ -31,26 +31,25 @@ class WebSocketBridge : public blink::WebSocketHandle {
   bool OnMessageReceived(const IPC::Message& message);
 
   // WebSocketHandle functions.
-  virtual void connect(const blink::WebURL& url,
-                       const blink::WebVector<blink::WebString>& protocols,
-                       const blink::WebSerializedOrigin& origin,
-                       blink::WebSocketHandleClient* client) override;
-  virtual void send(bool fin,
-                    WebSocketHandle::MessageType type,
-                    const char* data,
-                    size_t size) override;
-  virtual void flowControl(int64_t quota) override;
-  virtual void close(unsigned short code,
-                     const blink::WebString& reason) override;
+  void connect(const blink::WebURL& url,
+               const blink::WebVector<blink::WebString>& protocols,
+               const blink::WebSerializedOrigin& origin,
+               blink::WebSocketHandleClient* client) override;
+  void send(bool fin,
+            WebSocketHandle::MessageType type,
+            const char* data,
+            size_t size) override;
+  void flowControl(int64_t quota) override;
+  void close(unsigned short code, const blink::WebString& reason) override;
 
-  virtual void Disconnect();
+  void Disconnect();
 
   void set_render_frame_id(int id) {
     render_frame_id_ = id;
   }
 
  private:
-  virtual ~WebSocketBridge();
+  ~WebSocketBridge() override;
 
   void DidConnect(const std::string& selected_protocol,
                   const std::string& extensions);

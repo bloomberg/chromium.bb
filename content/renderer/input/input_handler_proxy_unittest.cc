@@ -75,7 +75,7 @@ WebGestureEvent CreateFling(WebGestureDevice source_device,
 class MockInputHandler : public cc::InputHandler {
  public:
   MockInputHandler() {}
-  virtual ~MockInputHandler() {}
+  ~MockInputHandler() override {}
 
   MOCK_METHOD0(PinchGestureBegin, void());
   MOCK_METHOD2(PinchGestureUpdate,
@@ -100,18 +100,18 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD0(ScrollEnd, void());
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
 
-  virtual scoped_ptr<cc::SwapPromiseMonitor>
-    CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) override {
-      return scoped_ptr<cc::SwapPromiseMonitor>();
+  scoped_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
+      ui::LatencyInfo* latency) override {
+    return scoped_ptr<cc::SwapPromiseMonitor>();
   }
 
   cc::ScrollElasticityHelper* CreateScrollElasticityHelper() override {
     return NULL;
   }
 
-  virtual void BindToClient(cc::InputHandlerClient* client) override {}
+  void BindToClient(cc::InputHandlerClient* client) override {}
 
-  virtual void MouseMoveAt(const gfx::Point& mouse_position) override {}
+  void MouseMoveAt(const gfx::Point& mouse_position) override {}
 
   MOCK_METHOD2(IsCurrentlyScrollingLayerAt,
                bool(const gfx::Point& point,
@@ -120,11 +120,11 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD1(HaveWheelEventHandlersAt, bool(const gfx::Point& point));
   MOCK_METHOD1(DoTouchEventsBlockScrollAt, bool(const gfx::Point& point));
 
-  virtual void SetRootLayerScrollOffsetDelegate(
+  void SetRootLayerScrollOffsetDelegate(
       cc::LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate)
       override {}
 
-  virtual void OnRootLayerDelegatedScrollOffsetChanged() override {}
+  void OnRootLayerDelegatedScrollOffsetChanged() override {}
 
   DISALLOW_COPY_AND_ASSIGN(MockInputHandler);
 };
@@ -163,14 +163,14 @@ class MockInputHandlerProxyClient
     : public content::InputHandlerProxyClient {
  public:
   MockInputHandlerProxyClient() {}
-  virtual ~MockInputHandlerProxyClient() {}
+  ~MockInputHandlerProxyClient() override {}
 
-  virtual void WillShutdown() override {}
+  void WillShutdown() override {}
 
   MOCK_METHOD1(TransferActiveWheelFlingAnimation,
                void(const WebActiveWheelFlingParameters&));
 
-  virtual blink::WebGestureCurve* CreateFlingAnimationCurve(
+  blink::WebGestureCurve* CreateFlingAnimationCurve(
       WebGestureDevice deviceSource,
       const WebFloatPoint& velocity,
       const WebSize& cumulative_scroll) override {
@@ -180,9 +180,9 @@ class MockInputHandlerProxyClient
   }
 
   MOCK_METHOD1(DidOverscroll, void(const DidOverscrollParams&));
-  virtual void DidStopFlinging() override {}
-  virtual void DidReceiveInputEvent(const blink::WebInputEvent&) override {}
-  virtual void DidAnimateForInput() override {}
+  void DidStopFlinging() override {}
+  void DidReceiveInputEvent(const blink::WebInputEvent&) override {}
+  void DidAnimateForInput() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputHandlerProxyClient);
@@ -192,7 +192,7 @@ class MockInputHandlerProxyClientWithDidReceiveInputEvent
     : public MockInputHandlerProxyClient {
  public:
   MockInputHandlerProxyClientWithDidReceiveInputEvent() {}
-  virtual ~MockInputHandlerProxyClientWithDidReceiveInputEvent() {}
+  ~MockInputHandlerProxyClientWithDidReceiveInputEvent() override {}
 
   MOCK_METHOD1(DidReceiveInputEvent, void(const blink::WebInputEvent&));
   MOCK_METHOD0(DidAnimateForInput, void());

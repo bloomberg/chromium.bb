@@ -153,19 +153,18 @@ class FontCollectionLoader
       : in_collection_building_mode_(false),
         create_static_cache_(false) {}
 
-  virtual ~FontCollectionLoader();
+  ~FontCollectionLoader() override;
 
   HRESULT RuntimeClassInitialize() {
     return S_OK;
   }
 
   // IDWriteFontCollectionLoader methods.
-  virtual HRESULT STDMETHODCALLTYPE
-      CreateEnumeratorFromKey(
-          IDWriteFactory* factory,
-          void const* key,
-          UINT32 key_size,
-          IDWriteFontFileEnumerator** file_enumerator) override;
+  HRESULT STDMETHODCALLTYPE
+  CreateEnumeratorFromKey(IDWriteFactory* factory,
+                          void const* key,
+                          UINT32 key_size,
+                          IDWriteFontFileEnumerator** file_enumerator) override;
 
   // Does all the initialization for required loading fonts from registry.
   static HRESULT Initialize(IDWriteFactory* factory);
@@ -493,7 +492,7 @@ class FontFileStream
                                 IDWriteFontFileStream> {
  public:
   // IDWriteFontFileStream methods.
-  virtual HRESULT STDMETHODCALLTYPE ReadFileFragment(
+  HRESULT STDMETHODCALLTYPE ReadFileFragment(
       void const** fragment_start,
       UINT64 file_offset,
       UINT64 fragment_size,
@@ -526,9 +525,9 @@ class FontFileStream
     return S_OK;
   }
 
-  virtual void STDMETHODCALLTYPE ReleaseFileFragment(void* context) override {}
+  void STDMETHODCALLTYPE ReleaseFileFragment(void* context) override {}
 
-  virtual HRESULT STDMETHODCALLTYPE GetFileSize(UINT64* file_size) override {
+  HRESULT STDMETHODCALLTYPE GetFileSize(UINT64* file_size) override {
     if (cached_data_) {
       *file_size = g_font_loader->GetCachedFileSize(font_key_);
       return S_OK;
@@ -541,8 +540,7 @@ class FontFileStream
     return S_OK;
   }
 
-  virtual HRESULT STDMETHODCALLTYPE GetLastWriteTime(
-      UINT64* last_write_time) override {
+  HRESULT STDMETHODCALLTYPE GetLastWriteTime(UINT64* last_write_time) override {
     if (cached_data_) {
       *last_write_time = 0;
       return S_OK;
@@ -623,7 +621,7 @@ class FontFileLoader
                                 IDWriteFontFileLoader> {
  public:
   // IDWriteFontFileLoader methods.
-  virtual HRESULT STDMETHODCALLTYPE
+  HRESULT STDMETHODCALLTYPE
   CreateStreamFromKey(void const* ref_key,
                       UINT32 ref_key_size,
                       IDWriteFontFileStream** stream) override {
@@ -642,7 +640,7 @@ class FontFileLoader
   }
 
   FontFileLoader() {}
-  virtual ~FontFileLoader() {}
+  ~FontFileLoader() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FontFileLoader);
@@ -654,7 +652,7 @@ class FontFileEnumerator
                                 IDWriteFontFileEnumerator> {
  public:
   // IDWriteFontFileEnumerator methods.
-  virtual HRESULT STDMETHODCALLTYPE MoveNext(BOOL* has_current_file) override {
+  HRESULT STDMETHODCALLTYPE MoveNext(BOOL* has_current_file) override {
     *has_current_file = FALSE;
 
     if (current_file_)
@@ -673,7 +671,7 @@ class FontFileEnumerator
     return S_OK;
   }
 
-  virtual HRESULT STDMETHODCALLTYPE
+  HRESULT STDMETHODCALLTYPE
   GetCurrentFontFile(IDWriteFontFile** font_file) override {
     if (!current_file_) {
       *font_file = NULL;
@@ -690,7 +688,7 @@ class FontFileEnumerator
                      IDWriteFontFileLoader* file_loader)
       : factory_(factory), file_loader_(file_loader), font_idx_(0) {}
 
-  virtual ~FontFileEnumerator() {}
+  ~FontFileEnumerator() override {}
 
   mswr::ComPtr<IDWriteFactory> factory_;
   mswr::ComPtr<IDWriteFontFile> current_file_;

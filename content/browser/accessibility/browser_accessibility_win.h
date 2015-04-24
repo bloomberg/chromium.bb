@@ -91,7 +91,7 @@ BrowserAccessibilityWin
 
   CONTENT_EXPORT BrowserAccessibilityWin();
 
-  CONTENT_EXPORT virtual ~BrowserAccessibilityWin();
+  CONTENT_EXPORT ~BrowserAccessibilityWin() override;
 
   // The Windows-specific unique ID, used as the child ID for MSAA methods
   // like NotifyWinEvent, and as the unique ID for IAccessible2 and ISimpleDOM.
@@ -108,11 +108,11 @@ BrowserAccessibilityWin
   //
   // BrowserAccessibility methods.
   //
-  CONTENT_EXPORT virtual void OnSubtreeWillBeDeleted() override;
-  CONTENT_EXPORT virtual void NativeAddReference() override;
-  CONTENT_EXPORT virtual void NativeReleaseReference() override;
-  CONTENT_EXPORT virtual bool IsNative() const override;
-  CONTENT_EXPORT virtual void OnLocationChanged() override;
+  CONTENT_EXPORT void OnSubtreeWillBeDeleted() override;
+  CONTENT_EXPORT void NativeAddReference() override;
+  CONTENT_EXPORT void NativeReleaseReference() override;
+  CONTENT_EXPORT bool IsNative() const override;
+  CONTENT_EXPORT void OnLocationChanged() override;
 
   //
   // IAccessible methods.

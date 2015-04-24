@@ -71,8 +71,8 @@ class MockRenderThread : public RenderThread {
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;
 #if defined(OS_WIN)
-  virtual void PreCacheFont(const LOGFONT& log_font) override;
-  virtual void ReleaseCachedFonts() override;
+  void PreCacheFont(const LOGFONT& log_font) override;
+  void ReleaseCachedFonts() override;
 #endif
   ServiceRegistry* GetServiceRegistry() override;
 

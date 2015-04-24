@@ -71,7 +71,7 @@ class MockDownloadManager : public DownloadManager {
   };
 
   MockDownloadManager();
-  virtual ~MockDownloadManager();
+  ~MockDownloadManager() override;
 
   // DownloadManager:
   MOCK_METHOD1(SetDelegate, void(DownloadManagerDelegate* delegate));
@@ -81,7 +81,7 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(Init, bool(BrowserContext* browser_context));
 
   // Gasket for handling scoped_ptr arguments.
-  virtual void StartDownload(
+  void StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
@@ -93,14 +93,14 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(RemoveDownloads, int(base::Time remove_begin));
   MOCK_METHOD0(RemoveAllDownloads, int());
   MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));
-  virtual void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) override {
+  void DownloadUrl(scoped_ptr<DownloadUrlParameters> params) override {
     DownloadUrlMock(params.get());
   }
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
 
   // Redirects to mock method to get around gmock 10 argument limit.
-  virtual DownloadItem* CreateDownloadItem(
+  DownloadItem* CreateDownloadItem(
       uint32 id,
       const base::FilePath& current_path,
       const base::FilePath& target_path,
