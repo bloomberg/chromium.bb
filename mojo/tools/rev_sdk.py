@@ -10,7 +10,7 @@ https://github.com/domokit/mojo/wiki/Rolling-code-between-chromium-and-mojo#mojo
 import os
 import sys
 from utils import commit
-from utils import mojo_root_dir
+from utils import chromium_root_dir
 from utils import system
 
 sdk_prefix_in_chromium = "third_party/mojo/src"
@@ -20,9 +20,15 @@ sdk_dirs_to_clone = [
   "nacl_bindings",
 ]
 
-
-services_prefix_in_mojo = "mojo/services"
-services_prefix_in_chromium = "third_party/mojo_services/src"
+# Individual files to preserve within the target repository during roll. These
+# are relative to |sdk_prefix_in_chromium| but are not maintained in the mojo
+# repository.
+preserved_chromium_files = [
+  "mojo/edk/DEPS",
+  "mojo/public/DEPS",
+  "mojo/public/platform/nacl/DEPS",
+  "nacl_bindings/DEPS",
+]
 
 # A dictionary mapping dirs to clone to their destination locations in Chromium.
 dirs_to_clone = {}
@@ -60,10 +66,17 @@ def rev(source_dir, chromium_dir):
   with open(version_filename, "w") as version_file:
     version_file.write(src_commit)
   system(["git", "add", version_filename], cwd=chromium_dir)
+
+  # Reset preserved files that were blown away.
+  for rel_path in preserved_chromium_files:
+    preserved_path = os.path.join(sdk_prefix_in_chromium, rel_path)
+    system(["git", "reset", "--", preserved_path])
+    system(["git", "checkout", preserved_path])
+
   commit("Update mojo sdk to rev " + src_commit, cwd=chromium_dir)
 
 if len(sys.argv) != 2:
-  print "usage: rev_sdk.py <chromium source dir>"
+  print "usage: rev_sdk.py <mojo source dir>"
   sys.exit(1)
 
-rev(mojo_root_dir, sys.argv[1])
+rev(sys.argv[1], chromium_root_dir)
