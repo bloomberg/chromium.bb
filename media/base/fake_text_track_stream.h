@@ -15,16 +15,16 @@ namespace media {
 class FakeTextTrackStream : public DemuxerStream {
  public:
   FakeTextTrackStream();
-  virtual ~FakeTextTrackStream();
+  ~FakeTextTrackStream() override;
 
   // DemuxerStream implementation.
-  virtual void Read(const ReadCB&) override;
+  void Read(const ReadCB&) override;
   MOCK_METHOD0(audio_decoder_config, AudioDecoderConfig());
   MOCK_METHOD0(video_decoder_config, VideoDecoderConfig());
-  virtual Type type() const override;
+  Type type() const override;
   MOCK_METHOD0(EnableBitstreamConverter, void());
-  virtual bool SupportsConfigChanges();
-  virtual VideoRotation video_rotation() override;
+  bool SupportsConfigChanges() override;
+  VideoRotation video_rotation() override;
 
   void SatisfyPendingRead(const base::TimeDelta& start,
                           const base::TimeDelta& duration,

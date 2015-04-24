@@ -116,16 +116,16 @@ class CdmWrapperImpl : public CdmWrapper {
         static_cast<CdmInterface*>(cdm_instance));
   }
 
-  virtual ~CdmWrapperImpl() {
+  ~CdmWrapperImpl() override {
     cdm_->Destroy();
   }
 
-  virtual void Initialize(bool allow_distinctive_identifier,
-                          bool allow_persistent_state) override {
+  void Initialize(bool allow_distinctive_identifier,
+                  bool allow_persistent_state) override {
     cdm_->Initialize(allow_distinctive_identifier, allow_persistent_state);
   }
 
-  virtual void SetServerCertificate(
+  void SetServerCertificate(
       uint32_t promise_id,
       const uint8_t* server_certificate_data,
       uint32_t server_certificate_data_size) override {
@@ -133,7 +133,7 @@ class CdmWrapperImpl : public CdmWrapper {
         promise_id, server_certificate_data, server_certificate_data_size);
   }
 
-  virtual void CreateSessionAndGenerateRequest(
+  void CreateSessionAndGenerateRequest(
       uint32_t promise_id,
       cdm::SessionType session_type,
       cdm::InitDataType init_data_type,
@@ -143,14 +143,14 @@ class CdmWrapperImpl : public CdmWrapper {
         promise_id, session_type, init_data_type, init_data, init_data_size);
   }
 
-  virtual void LoadSession(uint32_t promise_id,
+  void LoadSession(uint32_t promise_id,
                            cdm::SessionType session_type,
                            const char* session_id,
                            uint32_t session_id_size) override {
     cdm_->LoadSession(promise_id, session_type, session_id, session_id_size);
   }
 
-  virtual void UpdateSession(uint32_t promise_id,
+  void UpdateSession(uint32_t promise_id,
                              const char* session_id,
                              uint32_t session_id_size,
                              const uint8_t* response,
@@ -159,63 +159,63 @@ class CdmWrapperImpl : public CdmWrapper {
                         response_size);
   }
 
-  virtual void CloseSession(uint32_t promise_id,
-                            const char* session_id,
-                            uint32_t session_id_size) override {
+  void CloseSession(uint32_t promise_id,
+                    const char* session_id,
+                    uint32_t session_id_size) override {
     cdm_->CloseSession(promise_id, session_id, session_id_size);
   }
 
-  virtual void RemoveSession(uint32_t promise_id,
-                             const char* session_id,
-                             uint32_t session_id_size) override {
+  void RemoveSession(uint32_t promise_id,
+                     const char* session_id,
+                     uint32_t session_id_size) override {
     cdm_->RemoveSession(promise_id, session_id, session_id_size);
   }
 
-  virtual void TimerExpired(void* context) override {
+  void TimerExpired(void* context) override {
     cdm_->TimerExpired(context);
   }
 
-  virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
-                              cdm::DecryptedBlock* decrypted_buffer) override {
+  cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
+                      cdm::DecryptedBlock* decrypted_buffer) override {
     return cdm_->Decrypt(encrypted_buffer, decrypted_buffer);
   }
 
-  virtual cdm::Status InitializeAudioDecoder(
+  cdm::Status InitializeAudioDecoder(
       const cdm::AudioDecoderConfig& audio_decoder_config) override {
     return cdm_->InitializeAudioDecoder(audio_decoder_config);
   }
 
-  virtual cdm::Status InitializeVideoDecoder(
+  cdm::Status InitializeVideoDecoder(
       const cdm::VideoDecoderConfig& video_decoder_config) override {
     return cdm_->InitializeVideoDecoder(video_decoder_config);
   }
 
-  virtual void DeinitializeDecoder(cdm::StreamType decoder_type) override {
+  void DeinitializeDecoder(cdm::StreamType decoder_type) override {
     cdm_->DeinitializeDecoder(decoder_type);
   }
 
-  virtual void ResetDecoder(cdm::StreamType decoder_type) override {
+  void ResetDecoder(cdm::StreamType decoder_type) override {
     cdm_->ResetDecoder(decoder_type);
   }
 
-  virtual cdm::Status DecryptAndDecodeFrame(
+  cdm::Status DecryptAndDecodeFrame(
       const cdm::InputBuffer& encrypted_buffer,
       cdm::VideoFrame* video_frame) override {
     return cdm_->DecryptAndDecodeFrame(encrypted_buffer, video_frame);
   }
 
-  virtual cdm::Status DecryptAndDecodeSamples(
+  cdm::Status DecryptAndDecodeSamples(
       const cdm::InputBuffer& encrypted_buffer,
       cdm::AudioFrames* audio_frames) override {
     return cdm_->DecryptAndDecodeSamples(encrypted_buffer, audio_frames);
   }
 
-  virtual void OnPlatformChallengeResponse(
+  void OnPlatformChallengeResponse(
       const cdm::PlatformChallengeResponse& response) override {
     cdm_->OnPlatformChallengeResponse(response);
   }
 
-  virtual void OnQueryOutputProtectionStatus(
+  void OnQueryOutputProtectionStatus(
       cdm::QueryResult result,
       uint32_t link_mask,
       uint32_t output_protection_mask) override {

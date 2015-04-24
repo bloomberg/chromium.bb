@@ -46,14 +46,12 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
 
-  virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
-      override;
+  scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator() override;
 
-  virtual scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
-      override;
+  scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator() override;
 
  private:
-  virtual ~MockGpuVideoAcceleratorFactories();
+  ~MockGpuVideoAcceleratorFactories() override;
 
   DISALLOW_COPY_AND_ASSIGN(MockGpuVideoAcceleratorFactories);
 };

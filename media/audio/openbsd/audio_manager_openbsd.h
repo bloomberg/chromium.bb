@@ -17,26 +17,26 @@ class MEDIA_EXPORT AudioManagerOpenBSD : public AudioManagerBase {
   AudioManagerOpenBSD(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
-  virtual bool HasAudioOutputDevices() override;
-  virtual bool HasAudioInputDevices() override;
-  virtual AudioParameters GetInputStreamParameters(
+  bool HasAudioOutputDevices() override;
+  bool HasAudioInputDevices() override;
+  AudioParameters GetInputStreamParameters(
       const std::string& device_id) override;
 
   // Implementation of AudioManagerBase.
-  virtual AudioOutputStream* MakeLinearOutputStream(
+  AudioOutputStream* MakeLinearOutputStream(
       const AudioParameters& params) override;
-  virtual AudioOutputStream* MakeLowLatencyOutputStream(
+  AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
       const std::string& device_id) override;
-  virtual AudioInputStream* MakeLinearInputStream(
+  AudioInputStream* MakeLinearInputStream(
       const AudioParameters& params, const std::string& device_id) override;
-  virtual AudioInputStream* MakeLowLatencyInputStream(
+  AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params, const std::string& device_id) override;
 
  protected:
-  virtual ~AudioManagerOpenBSD();
+  ~AudioManagerOpenBSD() override;
 
-  virtual AudioParameters GetPreferredOutputStreamParameters(
+  AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const AudioParameters& input_params) override;
 

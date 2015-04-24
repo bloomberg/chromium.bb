@@ -20,17 +20,17 @@ namespace media {
 class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
  public:
   explicit FFmpegCdmVideoDecoder(ClearKeyCdmHost* host);
-  virtual ~FFmpegCdmVideoDecoder();
+  ~FFmpegCdmVideoDecoder() override;
 
   // CdmVideoDecoder implementation.
-  virtual bool Initialize(const cdm::VideoDecoderConfig& config) override;
-  virtual void Deinitialize() override;
-  virtual void Reset() override;
-  virtual cdm::Status DecodeFrame(const uint8_t* compressed_frame,
-                                  int32_t compressed_frame_size,
-                                  int64_t timestamp,
-                                  cdm::VideoFrame* decoded_frame) override;
-  virtual bool is_initialized() const override { return is_initialized_; }
+  bool Initialize(const cdm::VideoDecoderConfig& config) override;
+  void Deinitialize() override;
+  void Reset() override;
+  cdm::Status DecodeFrame(const uint8_t* compressed_frame,
+                          int32_t compressed_frame_size,
+                          int64_t timestamp,
+                          cdm::VideoFrame* decoded_frame) override;
+  bool is_initialized() const override { return is_initialized_; }
 
   // Returns true when |format| and |data_size| specify a supported video
   // output configuration.

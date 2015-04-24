@@ -62,7 +62,7 @@ class FileIOTest : public cdm::FileIOClient {
 
   FileIOTest(const CreateFileIOCB& create_file_io_cb,
              const std::string& test_name);
-  ~FileIOTest();
+  ~FileIOTest() override;
 
   // Adds a test step in this test. |this| object doesn't take the ownership of
   // |data|, which should be valid throughout the lifetime of |this| object.
@@ -96,11 +96,11 @@ class FileIOTest : public cdm::FileIOClient {
   static bool MatchesResult(const TestStep& a, const TestStep& b);
 
   // cdm::FileIOClient implementation.
-  virtual void OnOpenComplete(Status status) override;
-  virtual void OnReadComplete(Status status,
-                              const uint8_t* data,
-                              uint32_t data_size) override;
-  virtual void OnWriteComplete(Status status) override;
+  void OnOpenComplete(Status status) override;
+  void OnReadComplete(Status status,
+                      const uint8_t* data,
+                      uint32_t data_size) override;
+  void OnWriteComplete(Status status) override;
 
   // Runs the next step in this test case.
   void RunNextStep();

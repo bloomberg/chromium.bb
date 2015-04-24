@@ -21,12 +21,12 @@ class MockAudioRendererSink : public AudioRendererSink {
   MOCK_METHOD0(Play, void());
   MOCK_METHOD1(SetVolume, bool(double volume));
 
-  virtual void Initialize(const AudioParameters& params,
-                          RenderCallback* renderer) override;
+  void Initialize(const AudioParameters& params,
+                  RenderCallback* renderer) override;
   AudioRendererSink::RenderCallback* callback() { return callback_; }
 
  protected:
-  virtual ~MockAudioRendererSink();
+  ~MockAudioRendererSink() override;
 
  private:
   RenderCallback* callback_;
