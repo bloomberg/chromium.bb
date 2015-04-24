@@ -89,7 +89,7 @@ BrowserURLHandlerImpl* BrowserURLHandlerImpl::GetInstance() {
 }
 
 BrowserURLHandlerImpl::BrowserURLHandlerImpl() :
-    fixup_handler_(null_handler()) {
+    fixup_handler_(nullptr) {
   AddHandlerPair(&DebugURLHandler, BrowserURLHandlerImpl::null_handler());
 
   GetContentClient()->browser()->BrowserURLHandlerCreated(this);
@@ -102,7 +102,7 @@ BrowserURLHandlerImpl::~BrowserURLHandlerImpl() {
 }
 
 void BrowserURLHandlerImpl::SetFixupHandler(URLHandler handler) {
-  DCHECK_EQ(null_handler(), fixup_handler_);
+  DCHECK(fixup_handler_ == nullptr);
   fixup_handler_ = handler;
 }
 
