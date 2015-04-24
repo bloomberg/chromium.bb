@@ -347,7 +347,7 @@ function testAddContentScriptsWithNewWindowAPI(url) {
   });
 
   window.addEventListener('message', function(e) {
-    if (e.source != newwebview.contentWindow)
+    if (!newwebview || e.source != newwebview.contentWindow)
       return;
     var data = JSON.parse(e.data);
     if (data == RESPONSE_FROM_COMM_CHANNEL_1 &&
