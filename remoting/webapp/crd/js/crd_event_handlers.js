@@ -11,13 +11,6 @@ remoting.initElementEventHandlers = function() {
   var goHome = function() {
     remoting.setMode(remoting.AppMode.HOME);
   };
-  var goFinishedIT2Me = function() {
-    if (remoting.currentMode == remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME) {
-      remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
-    } else {
-      goHome();
-    }
-  };
   /** @type {Array<{event: string, id: string, fn: function(Event):void}>} */
   var it2me_actions = [
       { event: 'click', id: 'cancel-share-button', fn: remoting.cancelShare },
@@ -44,7 +37,6 @@ remoting.initElementEventHandlers = function() {
   ];
   /** @type {Array<{event: string, id: string, fn: function(Event):void}>} */
   var auth_actions = [
-      { event: 'click', id: 'cancel-connect-button', fn: goHome },
       { event: 'click', id: 'sign-out', fn:remoting.signOut },
       { event: 'click', id: 'token-refresh-error-ok', fn: goHome },
       { event: 'click', id: 'token-refresh-error-sign-in',

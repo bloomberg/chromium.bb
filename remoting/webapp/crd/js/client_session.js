@@ -269,6 +269,8 @@ remoting.ClientSession.prototype.connect = function(host, credentialsProvider) {
  */
 remoting.ClientSession.prototype.disconnect = function(error) {
   if (this.isFinished()) {
+    // Do not send the session-terminate Iq if disconnect() is already called or
+    // if it is initiated by the host.
     return;
   }
 

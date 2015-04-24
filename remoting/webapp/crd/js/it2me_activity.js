@@ -44,8 +44,11 @@ remoting.It2MeActivity.prototype.dispose = function() {
 remoting.It2MeActivity.prototype.start = function() {
   var that = this;
 
+  this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
+  remoting.app.setConnectionMode(remoting.Application.Mode.IT2ME);
+
   this.accessCodeDialog_.show().then(function(/** string */ accessCode) {
-    remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+    that.desktopActivity_.getConnectingDialog().show();
     return that.verifyAccessCode_(accessCode);
   }).then(function() {
     return remoting.identity.getToken();
@@ -55,7 +58,7 @@ remoting.It2MeActivity.prototype.start = function() {
     return that.onHostInfo_(response);
   }).then(function(/** remoting.Host */ host) {
     that.connect_(host);
-  }).catch(function(/** remoting.Error */ error) {
+  }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
     if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
       remoting.setMode(remoting.AppMode.HOME);
     } else {
@@ -63,7 +66,7 @@ remoting.It2MeActivity.prototype.start = function() {
       l10n.localizeElementFromTag(errorDiv, error.getTag());
       remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
     }
-  });
+  }));
 };
 
 remoting.It2MeActivity.prototype.stop = function() {
@@ -193,9 +196,6 @@ remoting.It2MeActivity.prototype.onHostInfo_ = function(xhrResponse) {
  * @private
  */
 remoting.It2MeActivity.prototype.connect_ = function(host) {
-  base.dispose(this.desktopActivity_);
-  this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
-  remoting.app.setConnectionMode(remoting.Application.Mode.IT2ME);
   this.desktopActivity_.start(
       host, new remoting.CredentialsProvider({ accessCode: this.passCode_ }));
 };

@@ -21,6 +21,7 @@ var remoting = remoting || {};
 
 /**
  * @constructor
+ * @param {remoting.ConnectingDialog} connectingDialog
  * @param {function()} reconnectCallback
  * @param {function()} disconnectCallback
  * @param {remoting.ClientSession} clientSession This represents the current
@@ -28,8 +29,8 @@ var remoting = remoting || {};
  *    connection state.
  * @implements {base.Disposable}
  */
-remoting.SmartReconnector =
-    function(reconnectCallback, disconnectCallback, clientSession) {
+remoting.SmartReconnector = function(connectingDialog, reconnectCallback,
+                                     disconnectCallback, clientSession) {
   /** @private */
   this.reconnectCallback_ = reconnectCallback;
 
@@ -46,6 +47,9 @@ remoting.SmartReconnector =
    * @private {base.Disposable}
    */
   this.pending_ = null;
+
+  /** @private */
+  this.connectingDialog_ = connectingDialog;
 
   var Events = remoting.ClientSession.Events;
   /** @private */
@@ -66,13 +70,12 @@ var CONNECTION_TIMEOUT_MS = 10000;
 remoting.SmartReconnector.prototype.reconnect_ = function() {
   this.cancelPending_();
   this.disconnectCallback_();
-  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
   this.reconnectCallback_();
 };
 
 remoting.SmartReconnector.prototype.reconnectAsync_ = function() {
   this.cancelPending_();
-  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+  this.connectingDialog_.show();
   this.pending_ =
       new base.OneShotTimer(this.reconnect_.bind(this), RECONNECT_DELAY_MS);
 };

@@ -30,6 +30,9 @@ remoting.DesktopRemotingActivity = function(parentActivity) {
       remoting.app_capabilities());
   /** @private {remoting.ClientSession} */
   this.session_ = null;
+  /** @private {remoting.ConnectingDialog} */
+  this.connectingDialog_ =
+      new remoting.ConnectingDialog(parentActivity.stop.bind(parentActivity));
 };
 
 /**
@@ -49,7 +52,10 @@ remoting.DesktopRemotingActivity.prototype.start =
       session.logHostOfflineErrors(!opt_suppressOfflineError);
       session.getLogger().setHostVersion(host.hostVersion);
       session.connect(host, credentialsProvider);
-  });
+  }).catch(remoting.Error.handler(
+    function(/** !remoting.Error */ error) {
+      that.parentActivity_.onConnectionFailed(error);
+  }));
 };
 
 remoting.DesktopRemotingActivity.prototype.stop = function() {
@@ -64,6 +70,7 @@ remoting.DesktopRemotingActivity.prototype.stop = function() {
  */
 remoting.DesktopRemotingActivity.prototype.onConnected =
     function(connectionInfo) {
+  this.connectingDialog_.hide();
   remoting.setMode(remoting.AppMode.IN_SESSION);
   if (!base.isAppsV2()) {
     remoting.toolbar.center();
@@ -126,6 +133,7 @@ remoting.DesktopRemotingActivity.prototype.dispose = function() {
   this.connectedView_ = null;
   base.dispose(this.session_);
   this.session_ = null;
+  this.connectingDialog_.hide();
 };
 
 /** @return {remoting.DesktopConnectedView} */
@@ -138,6 +146,11 @@ remoting.DesktopRemotingActivity.prototype.getConnectedView = function() {
  */
 remoting.DesktopRemotingActivity.prototype.getSession = function() {
   return this.session_;
+};
+
+/** @return {remoting.ConnectingDialog} */
+remoting.DesktopRemotingActivity.prototype.getConnectingDialog = function() {
+  return this.connectingDialog_;
 };
 
 })();

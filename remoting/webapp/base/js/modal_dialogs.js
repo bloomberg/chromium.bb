@@ -56,17 +56,17 @@ remoting.InputDialog.prototype.show = function() {
 /** @return {HTMLElement} */
 remoting.InputDialog.prototype.inputField = function() {
   return this.inputField_;
-}
+};
 
 /** @private */
 remoting.InputDialog.prototype.onSubmit_ = function() {
   this.deferred_.resolve(this.inputField_.value);
-}
+};
 
 /** @private */
 remoting.InputDialog.prototype.onCancel_ = function() {
   this.deferred_.reject(new remoting.Error(remoting.Error.Tag.CANCELLED));
-}
+};
 
 /**
  * @param {function():void} handler
@@ -97,7 +97,9 @@ remoting.InputDialog.prototype.createFormEventHandler_ = function(handler) {
  * @param {remoting.AppMode} mode
  * @param {HTMLElement} primaryButton
  * @param {HTMLElement=} opt_secondaryButton
+ *
  * @constructor
+ * @implements {base.Disposable}
  */
 remoting.MessageDialog = function(mode, primaryButton, opt_secondaryButton) {
   /** @private @const */
@@ -136,6 +138,15 @@ remoting.MessageDialog.prototype.show = function() {
   return this.deferred_.promise();
 };
 
+remoting.MessageDialog.prototype.dispose = function() {
+  base.dispose(this.eventHooks_);
+  this.eventHooks_ = null;
+  if (this.deferred_) {
+    this.deferred_.reject(new remoting.Error(remoting.Error.Tag.CANCELLED));
+  }
+  this.deferred_ = null;
+};
+
 /**
  * @param {remoting.MessageDialog.Result} result
  * @return {Function}
@@ -143,9 +154,35 @@ remoting.MessageDialog.prototype.show = function() {
  */
 remoting.MessageDialog.prototype.onClicked_ = function(result) {
   this.deferred_.resolve(result);
-  base.dispose(this.eventHooks_);
-  this.eventHooks_ = null;
   this.deferred_ = null;
+  this.dispose();
+};
+
+/**
+ * @param {Function} cancelCallback The callback to invoke when the user clicks
+ *     on the cancel button.
+ * @constructor
+ */
+remoting.ConnectingDialog = function(cancelCallback) {
+  /** @private */
+  this.dialog_ = new remoting.MessageDialog(
+      remoting.AppMode.CLIENT_CONNECTING,
+      document.getElementById('cancel-connect-button'));
+  /** @private */
+  this.onCancel_ = cancelCallback;
+};
+
+remoting.ConnectingDialog.prototype.show = function() {
+  var that = this;
+  this.dialog_.show().then(function() {
+    remoting.setMode(remoting.AppMode.HOME);
+    that.onCancel_();
+  // The promise rejects when the dialog is hidden.  Don't report that as error.
+  }).catch(remoting.Error.handler(base.doNothing));
+};
+
+remoting.ConnectingDialog.prototype.hide = function() {
+  this.dialog_.dispose();
 };
 
 })();

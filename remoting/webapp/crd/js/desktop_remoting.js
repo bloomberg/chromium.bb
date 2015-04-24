@@ -209,7 +209,7 @@ remoting.DesktopRemoting.prototype.disconnect_ = function() {
 remoting.DesktopRemoting.prototype.connectMe2Me_ = function(hostId) {
   var host = remoting.hostList.getHostForId(hostId);
   base.dispose(this.activity_);
-  this.activity_ = new remoting.Me2MeActivity(host);
+  this.activity_ = new remoting.Me2MeActivity(host, remoting.hostList);
   this.activity_.start();
 };
 

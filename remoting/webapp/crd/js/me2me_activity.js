@@ -11,13 +11,16 @@ var remoting = remoting || {};
 
 /**
  * @param {remoting.Host} host
+ * @param {remoting.HostList} hostList
  *
  * @constructor
  * @implements {remoting.Activity}
  */
-remoting.Me2MeActivity = function(host) {
+remoting.Me2MeActivity = function(host, hostList) {
   /** @private */
   this.host_ = host;
+  /** @private */
+  this.hostList_ = hostList;
   /** @private */
   this.pinDialog_ =
       new remoting.PinDialog(document.getElementById('pin-dialog'), host);
@@ -48,11 +51,11 @@ remoting.Me2MeActivity.prototype.start = function() {
     return that.host_.options.load();
   }).then(function() {
     that.connect_(true);
-  }).catch(function(/** remoting.Error */ error) {
+  }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
     if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
       remoting.setMode(remoting.AppMode.HOME);
     }
-  });
+  }));
 };
 
 remoting.Me2MeActivity.prototype.stop = function() {
@@ -69,9 +72,9 @@ remoting.Me2MeActivity.prototype.getDesktopActivity = function() {
  * @private
  */
 remoting.Me2MeActivity.prototype.connect_ = function(suppressHostOfflineError) {
-  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
   base.dispose(this.desktopActivity_);
   this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
+  this.desktopActivity_.getConnectingDialog().show();
   remoting.app.setConnectionMode(remoting.Application.Mode.ME2ME);
   this.desktopActivity_.start(this.host_, this.createCredentialsProvider_(),
                               suppressHostOfflineError);
@@ -106,16 +109,18 @@ remoting.Me2MeActivity.prototype.createCredentialsProvider_ = function() {
   var requestPin = function(supportsPairing, onPinFetched) {
     // Set time when PIN was requested.
     var authStartTime = new Date().getTime();
+    that.desktopActivity_.getConnectingDialog().hide();
     that.pinDialog_.show(supportsPairing).then(function(/** string */ pin) {
       remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
       // Done obtaining PIN information. Log time taken for PIN entry.
       var logToServer = that.desktopActivity_.getSession().getLogger();
       logToServer.setAuthTotalTime(new Date().getTime() - authStartTime);
       onPinFetched(pin);
-    }).catch(function(/** remoting.Error */ error) {
+    }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
       base.debug.assert(error.hasTag(remoting.Error.Tag.CANCELLED));
       remoting.setMode(remoting.AppMode.HOME);
-    });
+      that.stop();
+    }));
   };
 
   return new remoting.CredentialsProvider({
@@ -136,7 +141,7 @@ remoting.Me2MeActivity.prototype.onConnectionFailed = function(error) {
     var onHostListRefresh = function(/** boolean */ success) {
       if (success) {
         // Get the host from the hostList for the refreshed JID.
-        that.host_ = remoting.hostList.getHostForId(that.host_.hostId);
+        that.host_ = that.hostList_.getHostForId(that.host_.hostId);
         that.connect_(false);
         return;
       }
@@ -145,7 +150,7 @@ remoting.Me2MeActivity.prototype.onConnectionFailed = function(error) {
     this.retryOnHostOffline_ = false;
 
     // The plugin will be re-created when the host finished refreshing
-    remoting.hostList.refresh(onHostListRefresh);
+    this.hostList_.refresh(onHostListRefresh);
   } else if (!error.isNone()) {
     this.showErrorMessage_(error);
   }
@@ -170,6 +175,7 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
 
   base.dispose(this.reconnector_);
   this.reconnector_ = new remoting.SmartReconnector(
+      this.desktopActivity_.getConnectingDialog(),
       this.connect_.bind(this, false),
       this.stop.bind(this),
       connectionInfo.session());
