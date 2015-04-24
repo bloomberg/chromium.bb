@@ -76,6 +76,7 @@ cr.define('cr.login', function() {
     'constrained',   // Whether the extension is loaded in a constrained
                      // window.
     'clientId',      // Chrome client id.
+    'useEafe',       // Whether to use EAFE.
     'needPassword',  // Whether the host is interested in getting a password.
                      // If this set to |false|, |confirmPasswordCallback| is
                      // not called before dispatching |authCopleted|.
@@ -117,6 +118,9 @@ cr.define('cr.login', function() {
     this.deviceId_ = null;
     this.sessionIsEphemeral_ = null;
     this.onBeforeSetHeadersSet_ = false;
+
+    this.useEafe_ = false;
+    this.clientId_ = null;
 
     this.samlHandler_ = new cr.login.SamlHandler(this.webview_);
     this.confirmPasswordCallback = null;
@@ -193,6 +197,8 @@ cr.define('cr.login', function() {
         this.continueUrl_;
     this.isConstrainedWindow_ = data.constrained == '1';
     this.isNewGaiaFlowChromeOS = data.isNewGaiaFlowChromeOS;
+    this.useEafe_ = data.useEafe || false;
+    this.clientId_ = data.clientId;
 
     this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
     this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
@@ -432,6 +438,23 @@ cr.define('cr.login', function() {
       return;
     }
 
+    // EAFE passes back auth code via message.
+    if (this.useEafe_ &&
+        typeof e.data == 'object' &&
+        e.data.hasOwnProperty('authorizationCode')) {
+      assert(!this.oauth_code_);
+      this.oauth_code_ = e.data.authorizationCode;
+      this.dispatchEvent(
+          new CustomEvent('authCompleted',
+                          {
+                            detail: {
+                              authCodeOnly: true,
+                              authCode: this.oauth_code_
+                            }
+                          }));
+      return;
+    }
+
     // Gaia messages must be an object with 'method' property.
     if (typeof e.data != 'object' || !e.data.hasOwnProperty('method')) {
       return;
@@ -629,6 +652,21 @@ cr.define('cr.login', function() {
       this.dispatchEvent(new Event('ready'));
       // Focus webview after dispatching event when webview is already visible.
       this.webview_.focus();
+    }
+
+    // Sends client id to EAFE on every loadstop after a small timeout. This is
+    // needed because EAFE sits behind SSO and initialize asynchrounouly
+    // and we don't know for sure when it is loaded and ready to listen
+    // for message. The postMessage is guarded by EAFE's origin.
+    if (this.useEafe_) {
+      // An arbitrary small timeout for delivering the initial message.
+      var EAFE_INITIAL_MESSAGE_DELAY_IN_MS = 500;
+      window.setTimeout((function() {
+        var msg = {
+          'clientId': this.clientId_
+        };
+        this.webview_.contentWindow.postMessage(msg, this.idpOrigin_);
+      }).bind(this), EAFE_INITIAL_MESSAGE_DELAY_IN_MS);
     }
   };
 
