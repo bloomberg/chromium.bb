@@ -51,7 +51,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -927,12 +926,6 @@ void SAMLPolicyTest::SetUpOnMainThread() {
   user_manager::UserManager::Get()->SaveUserOAuthStatus(
       kDifferentDomainSAMLUserEmail,
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
-
-  // Set up fake networks.
-  DBusThreadManager::Get()
-      ->GetShillManagerClient()
-      ->GetTestInterface()
-      ->SetupDefaultEnvironment();
 }
 
 void SAMLPolicyTest::SetSAMLOfflineSigninTimeLimitPolicy(int limit) {

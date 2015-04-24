@@ -74,19 +74,21 @@ void OAuth2LoginManager::RestoreSession(
     net::URLRequestContextGetter* auth_request_context,
     SessionRestoreStrategy restore_strategy,
     const std::string& oauth2_refresh_token,
-    const std::string& oauth2_access_token) {
+    const std::string& auth_code) {
   DCHECK(user_profile_);
   auth_request_context_ = auth_request_context;
   restore_strategy_ = restore_strategy;
   refresh_token_ = oauth2_refresh_token;
-  oauthlogin_access_token_ = oauth2_access_token;
+  oauthlogin_access_token_ = std::string();
+  auth_code_ = auth_code;
   session_restore_start_ = base::Time::Now();
   SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_PREPARING);
   ContinueSessionRestore();
 }
 
 void OAuth2LoginManager::ContinueSessionRestore() {
-  if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR) {
+  if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR ||
+      restore_strategy_ == RESTORE_FROM_AUTH_CODE) {
     FetchOAuth2Tokens();
     return;
   }
@@ -237,23 +239,28 @@ void OAuth2LoginManager::OnNetworkError(int response_code) {
 
 void OAuth2LoginManager::FetchOAuth2Tokens() {
   DCHECK(auth_request_context_.get());
-  if (restore_strategy_ != RESTORE_FROM_COOKIE_JAR) {
-    NOTREACHED();
-    SetSessionRestoreState(SESSION_RESTORE_FAILED);
-    return;
-  }
-
   // If we have authenticated cookie jar, get OAuth1 token first, then fetch
   // SID/LSID cookies through OAuthLogin call.
-  SigninClient* signin_client =
-      ChromeSigninClientFactory::GetForProfile(user_profile_);
-  std::string signin_scoped_device_id =
-      signin_client->GetSigninScopedDeviceId();
+  if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR) {
+    SigninClient* signin_client =
+        ChromeSigninClientFactory::GetForProfile(user_profile_);
+    std::string signin_scoped_device_id =
+        signin_client->GetSigninScopedDeviceId();
 
-  oauth2_token_fetcher_.reset(
-      new OAuth2TokenFetcher(this, auth_request_context_.get()));
-  oauth2_token_fetcher_->StartExchangeFromCookies(std::string(),
-                                                  signin_scoped_device_id);
+    oauth2_token_fetcher_.reset(
+        new OAuth2TokenFetcher(this, auth_request_context_.get()));
+    oauth2_token_fetcher_->StartExchangeFromCookies(std::string(),
+                                                    signin_scoped_device_id);
+  } else if (restore_strategy_ == RESTORE_FROM_AUTH_CODE) {
+    DCHECK(!auth_code_.empty());
+    oauth2_token_fetcher_.reset(
+        new OAuth2TokenFetcher(this,
+                               g_browser_process->system_request_context()));
+    oauth2_token_fetcher_->StartExchangeFromAuthCode(auth_code_);
+  } else {
+    NOTREACHED();
+    SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
+  }
 }
 
 void OAuth2LoginManager::OnOAuth2TokensAvailable(
