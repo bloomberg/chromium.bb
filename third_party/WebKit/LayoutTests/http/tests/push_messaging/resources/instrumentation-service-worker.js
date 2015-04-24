@@ -15,8 +15,8 @@ self.addEventListener('message', function(workerEvent) {
             return;
 
         switch (event.data.command) {
-            case 'hasPermission':
-                self.registration.pushManager.hasPermission().then(function(permissionStatus) {
+            case 'permissionState':
+                self.registration.pushManager.permissionState().then(function(permissionStatus) {
                     port.postMessage({ command: event.data.command,
                                        success: true,
                                        permission: permissionStatus });

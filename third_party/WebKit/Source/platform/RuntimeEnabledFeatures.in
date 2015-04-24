@@ -121,8 +121,7 @@ PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test
 PushMessaging status=stable
 // Push messaging payloads are blocked on the Push API supporting encryption.
 PushMessagingData status=test
-// PushManager.hasPermission() is currently disabled, expecting Permissions API
-// to fulfill the same role.
+// PushManager.permissionState() is currently disabled.
 PushMessagingHasPermission status=test
 QuotaPromise status=experimental
 ReducedReferrerGranularity

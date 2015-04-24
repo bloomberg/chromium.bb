@@ -19,7 +19,7 @@ test(function() {
 
     assert_inherits(registration.pushManager, 'subscribe');
     assert_inherits(registration.pushManager, 'getSubscription');
-    assert_inherits(registration.pushManager, 'hasPermission');
+    assert_inherits(registration.pushManager, 'permissionState');
 
 }, 'PushManager should be exposed and have the expected interface.');
 

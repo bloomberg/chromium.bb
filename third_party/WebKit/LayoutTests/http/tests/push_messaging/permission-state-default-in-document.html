@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Push API: hasPermission resolves with denied when permission is denied</title>
+<title>Push API: permissionState resolves with default when no permission is set</title>
 <link rel="manifest" href="resources/push_manifest.json">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
@@ -10,21 +10,22 @@
 <body>
 <script>
 async_test(function(test) {
+    if (window.testRunner)
+        testRunner.setPermission('push-messaging', 'prompt', location.origin, location.origin);
+
     var workerUrl = 'resources/empty_worker.js';
     var workerScope = 'resources/scope/' + location.pathname;
     service_worker_unregister_and_register(test, workerUrl, workerScope)
         .then(function(serviceWorkerRegistration) {
-            // If running manually, deny permission when prompted.
-            if (window.testRunner)
-                testRunner.setPermission('push-messaging', 'denied', location.origin, location.origin);
-            return serviceWorkerRegistration.pushManager.hasPermission();
+            // If running manually, clear permissions before running this test.
+            return serviceWorkerRegistration.pushManager.permissionState();
         })
         .then(function(permissionStatus) {
-            assert_equals(permissionStatus, 'denied');
+            assert_equals(permissionStatus, 'default');
             return service_worker_unregister_and_done(test, workerScope);
         })
         .catch(unreached_rejection(test));
-}, 'Push API: hasPermission resolves with denied when permission is denied');
+}, 'Push API: permissionState() resolves with default when permission is not set');
 </script>
 </body>
 </html>

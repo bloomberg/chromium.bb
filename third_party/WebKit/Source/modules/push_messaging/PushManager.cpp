@@ -75,7 +75,7 @@ ScriptPromise PushManager::getSubscription(ScriptState* scriptState)
     return promise;
 }
 
-ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
+ScriptPromise PushManager::permissionState(ScriptState* scriptState)
 {
     if (scriptState->executionContext()->isDocument()) {
         Document* document = toDocument(scriptState->executionContext());
@@ -88,6 +88,11 @@ ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
     ScriptPromise promise = resolver->promise();
     pushProvider()->getPermissionStatus(m_registration->webRegistration(), new PushPermissionStatusCallbacks(resolver));
     return promise;
+}
+
+ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
+{
+    return permissionState(scriptState);
 }
 
 DEFINE_TRACE(PushManager)

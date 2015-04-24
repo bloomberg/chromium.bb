@@ -2,7 +2,7 @@
 <html>
 <head>
 <title>
-  hasPermission when called in service worker resolves with granted when permission is granted
+   Push API: permissionState when called in service worker resolves with default when no permission is set
 </title>
 <link rel="manifest" href="resources/push_manifest.json">
 <script src="../resources/testharness.js"></script>
@@ -12,30 +12,30 @@
 </head>
 <body>
 <script>
-// This test uses the test runner. If running manually, grant permission when prompted.
+// This test uses the test runner. If running manually, clear permissions before running this test.
 async_test(function(test) {
     if (window.testRunner)
-        testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
+        testRunner.setPermission('push-messaging', 'prompt', location.origin, location.origin);
 
     var script = 'resources/instrumentation-service-worker.js';
     var scope = 'resources/scope/' + location.pathname;
 
     getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
-        workerInfo.port.postMessage({command: 'hasPermission'});
+        workerInfo.port.postMessage({command: 'permissionState'});
 
         workerInfo.port.addEventListener('message', function(event) {
             if (typeof event.data != 'object' || !event.data.command)
                 assert_unreached('Invalid message from the service worker');
 
-            assert_equals(event.data.command, 'hasPermission');
+            assert_equals(event.data.command, 'permissionState');
             assert_true(event.data.success,
-                        'hasPermission should succeed. Error message: ' + event.data.errorMessage);
-            assert_equals(event.data.permission, 'granted');
+                        'permissionState should succeed. Error message: ' + event.data.errorMessage);
+            assert_equals(event.data.permission, 'default');
 
             test.done();
         });
     }).catch(unreached_rejection(test));
-}, 'hasPermission when called in service worker resolves with granted when permission is granted');
+}, 'permissionState when called in service worker resolves with default when no permission is set');
 </script>
 </body>
 </html>
