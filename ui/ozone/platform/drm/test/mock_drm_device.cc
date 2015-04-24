@@ -240,6 +240,10 @@ bool MockDrmDevice::CommitProperties(drmModePropertySet* properties,
   return false;
 }
 
+bool MockDrmDevice::SetCapability(uint64_t capability, uint64_t value) {
+  return false;
+}
+
 void MockDrmDevice::RunCallbacks() {
   while (!callbacks_.empty()) {
     PageFlipCallback callback = callbacks_.front();
