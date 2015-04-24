@@ -190,7 +190,7 @@ body.fakebox-focused #cursor {
 .icon-ntp #mv-tiles {
   background: rgba(255,255,255,0.2);
   border-radius: 4px;
-  height: calc(2 * 120px);
+  height: calc(2 * 112px);
   padding: calc(36px - 18px) calc(36px - 18px - 12px);
 }
 
