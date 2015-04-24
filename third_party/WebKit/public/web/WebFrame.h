@@ -50,8 +50,6 @@ class Context;
 class Function;
 class Object;
 class Value;
-// This will be cleaned up shortly.
-#define WEB_FRAME_USES_V8_LOCAL
 template <class T> class Local;
 }
 
