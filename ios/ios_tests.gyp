@@ -18,6 +18,8 @@
         'public/test/test_chrome_browser_provider.mm',
         'public/test/test_chrome_provider_initializer.cc',
         'public/test/test_chrome_provider_initializer.h',
+        'public/test/test_updatable_resource_provider.h',
+        'public/test/test_updatable_resource_provider.mm',
       ],
       'dependencies': [
         '../base/base.gyp:base',
