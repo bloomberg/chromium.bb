@@ -44,12 +44,6 @@ class ElfRelocations {
                 SymbolResolver* resolver,
                 Error* error);
 
-#if defined(__arm__) || defined(__aarch64__)
-  // Register packed relocations to apply.
-  // |packed_relocs| is a pointer to packed relocations data.
-  void RegisterPackedRelocations(uint8_t* packed_relocations);
-#endif
-
   // This function is used to adjust relocated addresses in a copy of an
   // existing section of an ELF binary. I.e. |src_addr|...|src_addr + size|
   // must be inside the mapped ELF binary, this function will first copy its
@@ -92,24 +86,68 @@ class ElfRelocations {
                         ELF::Addr src_reloc,
                         size_t dst_delta,
                         size_t map_delta);
-  void RelocateRela(size_t src_addr,
-                    size_t dst_addr,
-                    size_t map_addr,
-                    size_t size);
-  void RelocateRel(size_t src_addr,
-                   size_t dst_addr,
-                   size_t map_addr,
-                   size_t size);
+  template<typename Rel>
+  void RelocateRelocation(size_t src_addr,
+                          size_t dst_addr,
+                          size_t map_addr,
+                          size_t size);
 
 #if defined(__arm__) || defined(__aarch64__)
-  // Apply packed rel or rela relocations.  On error, return false.
-  bool ApplyPackedRel(const uint8_t* packed_relocations, Error* error);
-  bool ApplyPackedRela(const uint8_t* packed_relocations, Error* error);
+  // Packed relocations unpackers. Call the given handler for each
+  // relocation in the unpacking stream. There are two versions, one
+  // for REL, the other for RELA.
+  typedef bool (*RelRelocationHandler)(ElfRelocations* relocations,
+                                       const ELF::Rel* relocation,
+                                       void* opaque);
+  bool ForEachPackedRel(const uint8_t* packed_relocations,
+                        RelRelocationHandler handler,
+                        void* opaque);
 
-  // Apply packed relocations.
+  typedef bool (*RelaRelocationHandler)(ElfRelocations* relocations,
+                                        const ELF::Rela* relocation,
+                                        void* opaque);
+  bool ForEachPackedRela(const uint8_t* packed_relocations,
+                         RelaRelocationHandler handler,
+                         void* opaque);
+
+  // Apply packed REL and RELA relocations.  On error, return false.
+  bool ApplyPackedRels(const uint8_t* packed_relocations, Error* error);
+  static bool ApplyPackedRel(ElfRelocations* relocations,
+                             const ELF::Rel* relocation,
+                             void* opaque);
+  bool ApplyPackedRelas(const uint8_t* packed_relocations, Error* error);
+  static bool ApplyPackedRela(ElfRelocations* relocations,
+                              const ELF::Rela* relocation,
+                              void* opaque);
+
+  // Apply all packed relocations.
   // On error, return false and set |error| message.  No-op if no packed
-  // relocations were registered.
+  // relocations are present.
   bool ApplyPackedRelocations(Error* error);
+
+  // Relocate packed REL and RELA relocations.
+  template<typename Rel>
+  static bool RelocatePackedRelocation(ElfRelocations* relocations,
+                                       const Rel* rel,
+                                       void* opaque);
+
+  void RelocatePackedRels(const uint8_t* packed_relocations,
+                          size_t src_addr,
+                          size_t dst_addr,
+                          size_t map_addr,
+                          size_t size);
+  void RelocatePackedRelas(const uint8_t* packed_relocations,
+                           size_t src_addr,
+                           size_t dst_addr,
+                           size_t map_addr,
+                           size_t size);
+
+  // Relocate all packed relocations. No-op if no packed relocations
+  // are present.
+  void RelocatePackedRelocations(size_t src_addr,
+                                 size_t dst_addr,
+                                 size_t map_addr,
+                                 size_t size);
 #endif
 
 #if defined(__mips__)

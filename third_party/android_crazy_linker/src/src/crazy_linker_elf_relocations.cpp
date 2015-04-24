@@ -168,6 +168,9 @@ bool ElfRelocations::Init(const ElfView* view, Error* error) {
   phdr_ = view->phdr();
   phdr_count_ = view->phdr_count();
   load_bias_ = view->load_bias();
+#if defined(__arm__) || defined(__aarch64__)
+  packed_relocations_ = view->packed_relocations();
+#endif
 
   // We handle only Rel or Rela, but not both. If DT_RELA or DT_RELASZ
   // then we require DT_PLTREL to agree.
@@ -363,12 +366,9 @@ bool ElfRelocations::ApplyAll(const ElfSymbols* symbols,
 
 #if defined(__arm__) || defined(__aarch64__)
 
-void ElfRelocations::RegisterPackedRelocations(uint8_t* packed_relocations) {
-  packed_relocations_ = packed_relocations;
-}
-
-bool ElfRelocations::ApplyPackedRel(const uint8_t* packed_relocations,
-                                    Error* error) {
+bool ElfRelocations::ForEachPackedRel(const uint8_t* packed_relocations,
+                                      RelRelocationHandler handler,
+                                      void* opaque) {
   Leb128Decoder decoder(packed_relocations);
 
   // Find the count of pairs and the start address.
@@ -381,7 +381,7 @@ bool ElfRelocations::ApplyPackedRel(const uint8_t* packed_relocations,
   relocation.r_info = ELF_R_INFO(0, RELATIVE_RELOCATION_CODE);
   const ELF::Addr sym_addr = 0;
   const bool resolved = false;
-  if (!ApplyRelReloc(&relocation, sym_addr, resolved, error))
+  if (!handler(this, &relocation, opaque))
     return false;
 
   size_t unpacked_count = 1;
@@ -394,7 +394,7 @@ bool ElfRelocations::ApplyPackedRel(const uint8_t* packed_relocations,
     // Emit count relative relocations with delta offset.
     while (count) {
       relocation.r_offset += delta;
-      if (!ApplyRelReloc(&relocation, sym_addr, resolved, error))
+      if (!handler(this, &relocation, opaque))
         return false;
       unpacked_count++;
       count--;
@@ -406,8 +406,9 @@ bool ElfRelocations::ApplyPackedRel(const uint8_t* packed_relocations,
   return true;
 }
 
-bool ElfRelocations::ApplyPackedRela(const uint8_t* packed_relocations,
-                                     Error* error) {
+bool ElfRelocations::ForEachPackedRela(const uint8_t* packed_relocations,
+                                       RelaRelocationHandler handler,
+                                       void* opaque) {
   Sleb128Decoder decoder(packed_relocations);
 
   // Find the count of pairs.
@@ -430,7 +431,7 @@ bool ElfRelocations::ApplyPackedRela(const uint8_t* packed_relocations,
     relocation.r_offset = offset;
     relocation.r_info = ELF_R_INFO(0, RELATIVE_RELOCATION_CODE);
     relocation.r_addend = addend;
-    if (!ApplyRelaReloc(&relocation, sym_addr, resolved, error))
+    if (!handler(this, &relocation, opaque))
       return false;
     unpacked_count++;
     pairs--;
@@ -438,6 +439,36 @@ bool ElfRelocations::ApplyPackedRela(const uint8_t* packed_relocations,
 
   RLOG("%s: unpacked_count=%d\n", __FUNCTION__, unpacked_count);
   return true;
+}
+
+bool ElfRelocations::ApplyPackedRel(ElfRelocations* relocations,
+                                    const ELF::Rel* relocation,
+                                    void* opaque) {
+  Error* error = reinterpret_cast<Error*>(opaque);
+  const ELF::Addr sym_addr = 0;
+  const bool resolved = false;
+  return relocations->ApplyRelReloc(relocation, sym_addr, resolved, error);
+}
+
+bool ElfRelocations::ApplyPackedRels(const uint8_t* packed_relocations,
+                                     Error* error) {
+  void* opaque = error;
+  return ForEachPackedRel(packed_relocations, &ApplyPackedRel, opaque);
+}
+
+bool ElfRelocations::ApplyPackedRela(ElfRelocations* relocations,
+                                     const ELF::Rela* relocation,
+                                     void* opaque) {
+  Error* error = reinterpret_cast<Error*>(opaque);
+  const ELF::Addr sym_addr = 0;
+  const bool resolved = false;
+  return relocations->ApplyRelaReloc(relocation, sym_addr, resolved, error);
+}
+
+bool ElfRelocations::ApplyPackedRelas(const uint8_t* packed_relocations,
+                                      Error* error) {
+  void* opaque = error;
+  return ForEachPackedRela(packed_relocations, &ApplyPackedRela, opaque);
 }
 
 bool ElfRelocations::ApplyPackedRelocations(Error* error) {
@@ -449,7 +480,7 @@ bool ElfRelocations::ApplyPackedRelocations(Error* error) {
       packed_relocations_[1] == 'P' &&
       packed_relocations_[2] == 'R' &&
       packed_relocations_[3] == '1') {
-    return ApplyPackedRel(packed_relocations_ + 4, error);
+    return ApplyPackedRels(packed_relocations_ + 4, error);
   }
 
   // Check for an initial APA1 header, packed relocations with addend.
@@ -457,7 +488,7 @@ bool ElfRelocations::ApplyPackedRelocations(Error* error) {
       packed_relocations_[1] == 'P' &&
       packed_relocations_[2] == 'A' &&
       packed_relocations_[3] == '1') {
-    return ApplyPackedRela(packed_relocations_ + 4, error);
+    return ApplyPackedRelas(packed_relocations_ + 4, error);
   }
 
   error->Format("Bad packed relocations ident, expected APR1 or APA1");
@@ -910,19 +941,124 @@ void ElfRelocations::AdjustRelocation(ELF::Word rel_type,
   }
 }
 
-void ElfRelocations::RelocateRela(size_t src_addr,
-                                  size_t dst_addr,
-                                  size_t map_addr,
-                                  size_t size) {
+#if defined(__arm__) || defined(__aarch64__)
+
+struct AdjustRelocationArgs {
+  size_t src_addr;
+  size_t dst_addr;
+  size_t map_addr;
+  size_t size;
+};
+
+template<typename Rel>
+bool ElfRelocations::RelocatePackedRelocation(ElfRelocations* relocations,
+                                              const Rel* rel,
+                                              void* opaque) {
+  AdjustRelocationArgs* args = reinterpret_cast<AdjustRelocationArgs*>(opaque);
+  const size_t src_addr = args->src_addr;
+  const size_t dst_addr = args->dst_addr;
+  const size_t map_addr = args->map_addr;
+  const size_t size = args->size;
+
+  const size_t load_bias = relocations->load_bias_;
+
+  const size_t dst_delta = dst_addr - src_addr;
+  const size_t map_delta = map_addr - src_addr;
+
+  const ELF::Word rel_type = ELF_R_TYPE(rel->r_info);
+  const ELF::Word rel_symbol = ELF_R_SYM(rel->r_info);
+  ELF::Addr src_reloc = static_cast<ELF::Addr>(rel->r_offset + load_bias);
+
+  if (rel_type == 0 || rel_symbol != 0) {
+    // Ignore empty and symbolic relocations
+    return true;
+  }
+
+  if (src_reloc < src_addr || src_reloc >= src_addr + size) {
+    // Ignore entries that don't relocate addresses inside the source section.
+    return true;
+  }
+
+  relocations->AdjustRelocation(rel_type, src_reloc, dst_delta, map_delta);
+  return true;
+}
+
+template bool ElfRelocations::RelocatePackedRelocation<ELF::Rel>(
+    ElfRelocations* relocations, const ELF::Rel* rel, void* opaque);
+
+template bool ElfRelocations::RelocatePackedRelocation<ELF::Rela>(
+    ElfRelocations* relocations, const ELF::Rela* rel, void* opaque);
+
+void ElfRelocations::RelocatePackedRels(const uint8_t* packed_relocations,
+                                        size_t src_addr,
+                                        size_t dst_addr,
+                                        size_t map_addr,
+                                        size_t size) {
+  AdjustRelocationArgs args;
+  args.src_addr = src_addr;
+  args.dst_addr = dst_addr;
+  args.map_addr = map_addr;
+  args.size = size;
+  ForEachPackedRel(packed_relocations,
+                   &RelocatePackedRelocation<ELF::Rel>, &args);
+}
+
+void ElfRelocations::RelocatePackedRelas(const uint8_t* packed_relocations,
+                                         size_t src_addr,
+                                         size_t dst_addr,
+                                         size_t map_addr,
+                                         size_t size) {
+  AdjustRelocationArgs args;
+  args.src_addr = src_addr;
+  args.dst_addr = dst_addr;
+  args.map_addr = map_addr;
+  args.size = size;
+  ForEachPackedRela(packed_relocations,
+                    &RelocatePackedRelocation<ELF::Rela>, &args);
+}
+
+void ElfRelocations::RelocatePackedRelocations(size_t src_addr,
+                                               size_t dst_addr,
+                                               size_t map_addr,
+                                               size_t size) {
+  if (!packed_relocations_)
+    return;
+
+  // Check for an initial APR1 header, packed relocations.
+  if (packed_relocations_[0] == 'A' &&
+      packed_relocations_[1] == 'P' &&
+      packed_relocations_[2] == 'R' &&
+      packed_relocations_[3] == '1') {
+    RelocatePackedRels(packed_relocations_ + 4,
+                       src_addr, dst_addr, map_addr, size);
+  }
+
+  // Check for an initial APA1 header, packed relocations with addend.
+  if (packed_relocations_[0] == 'A' &&
+      packed_relocations_[1] == 'P' &&
+      packed_relocations_[2] == 'A' &&
+      packed_relocations_[3] == '1') {
+    RelocatePackedRelas(packed_relocations_ + 4,
+                        src_addr, dst_addr, map_addr, size);
+  }
+}
+
+#endif  // __arm__ || __aarch64__
+
+template<typename Rel>
+void ElfRelocations::RelocateRelocation(size_t src_addr,
+                                        size_t dst_addr,
+                                        size_t map_addr,
+                                        size_t size) {
   // Add this value to each source address to get the corresponding
   // destination address.
   const size_t dst_delta = dst_addr - src_addr;
   const size_t map_delta = map_addr - src_addr;
 
   // Ignore PLT relocations, which all target symbols (ignored here).
-  const ELF::Rela* rel = reinterpret_cast<ELF::Rela*>(relocations_);
-  const size_t relocations_count = relocations_size_ / sizeof(ELF::Rela);
-  const ELF::Rela* rel_limit = rel + relocations_count;
+  const Rel* rel = reinterpret_cast<Rel*>(relocations_);
+  const size_t relocations_count = relocations_size_ / sizeof(Rel);
+  const Rel* rel_limit = rel + relocations_count;
 
   for (; rel < rel_limit; ++rel) {
     const ELF::Word rel_type = ELF_R_TYPE(rel->r_info);
@@ -943,38 +1079,11 @@ void ElfRelocations::RelocateRela(size_t src_addr,
   }
 }
 
-void ElfRelocations::RelocateRel(size_t src_addr,
-                                 size_t dst_addr,
-                                 size_t map_addr,
-                                 size_t size) {
-  // Add this value to each source address to get the corresponding
-  // destination address.
-  const size_t dst_delta = dst_addr - src_addr;
-  const size_t map_delta = map_addr - src_addr;
+template void ElfRelocations::RelocateRelocation<ELF::Rel>(
+    size_t src_addr, size_t dst_addr, size_t map_addr, size_t size);
 
-  // Ignore PLT relocations, which all target symbols (ignored here).
-  const ELF::Rel* rel = reinterpret_cast<ELF::Rel*>(relocations_);
-  const size_t relocations_count = relocations_size_ / sizeof(ELF::Rel);
-  const ELF::Rel* rel_limit = rel + relocations_count;
-
-  for (; rel < rel_limit; ++rel) {
-    const ELF::Word rel_type = ELF_R_TYPE(rel->r_info);
-    const ELF::Word rel_symbol = ELF_R_SYM(rel->r_info);
-    ELF::Addr src_reloc = static_cast<ELF::Addr>(rel->r_offset + load_bias_);
-
-    if (rel_type == 0 || rel_symbol != 0) {
-      // Ignore empty and symbolic relocations
-      continue;
-    }
-
-    if (src_reloc < src_addr || src_reloc >= src_addr + size) {
-      // Ignore entries that don't relocate addresses inside the source section.
-      continue;
-    }
-
-    AdjustRelocation(rel_type, src_reloc, dst_delta, map_delta);
-  }
-}
+template void ElfRelocations::RelocateRelocation<ELF::Rela>(
+    size_t src_addr, size_t dst_addr, size_t map_addr, size_t size);
 
 void ElfRelocations::CopyAndRelocate(size_t src_addr,
                                      size_t dst_addr,
@@ -985,12 +1094,17 @@ void ElfRelocations::CopyAndRelocate(size_t src_addr,
            reinterpret_cast<void*>(src_addr),
            size);
 
+#if defined(__arm__) || defined(__aarch64__)
+  // Relocate packed relative relocations.
+  RelocatePackedRelocations(src_addr, dst_addr, map_addr, size);
+#endif
+
   // Relocate relocations.
   if (relocations_type_ == DT_REL)
-    RelocateRel(src_addr, dst_addr, map_addr, size);
+    RelocateRelocation<ELF::Rel>(src_addr, dst_addr, map_addr, size);
 
   if (relocations_type_ == DT_RELA)
-    RelocateRela(src_addr, dst_addr, map_addr, size);
+    RelocateRelocation<ELF::Rela>(src_addr, dst_addr, map_addr, size);
 
 #ifdef __mips__
   // Add this value to each source address to get the corresponding

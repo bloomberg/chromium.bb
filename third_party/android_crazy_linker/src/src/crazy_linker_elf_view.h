@@ -93,6 +93,16 @@ class ElfView {
   // ELF binary is mapped.On failure, return false and set |error| message.
   bool ProtectRelroSection(Error* error);
 
+#if defined(__arm__) || defined(__aarch64__)
+  // Register packed relocations to apply.
+  // |packed_relocs| is a pointer to packed relocations data.
+  void RegisterPackedRelocations(uint8_t* packed_relocations) {
+    packed_relocations_ = packed_relocations;
+  }
+
+  uint8_t* packed_relocations() const { return packed_relocations_; }
+#endif
+
  protected:
   const ELF::Phdr* phdr_;
   size_t phdr_count_;
@@ -102,6 +112,10 @@ class ElfView {
   ELF::Addr load_address_;
   size_t load_size_;
   size_t load_bias_;
+
+#if defined(__arm__) || defined(__aarch64__)
+  uint8_t* packed_relocations_;
+#endif
 };
 
 }  // namespace crazy

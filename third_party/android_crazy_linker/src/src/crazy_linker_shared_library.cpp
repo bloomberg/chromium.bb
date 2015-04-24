@@ -439,6 +439,9 @@ bool SharedLibrary::Load(const char* full_path,
     LOG("%s: Packed relocations stored at %p\n",
         __FUNCTION__,
         packed_relocations_);
+
+    // Add packed relocations to the view.
+    view_.RegisterPackedRelocations(packed_relocations_);
   }
 #endif
 
@@ -457,10 +460,6 @@ bool SharedLibrary::Relocate(LibraryList* lib_list,
 
   if (!relocations.Init(&view_, error))
     return false;
-
-#if defined(__arm__) || defined(__aarch64__)
-  relocations.RegisterPackedRelocations(packed_relocations_);
-#endif
 
   SharedLibraryResolver resolver(this, lib_list, preloads, dependencies);
   if (!relocations.ApplyAll(&symbols_, &resolver, error))

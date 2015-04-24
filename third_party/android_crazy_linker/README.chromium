@@ -74,3 +74,5 @@ Local Modifications:
 
 - Speculative fix for crbug/479220.
 
+- Fix RELRO sharing issue caused by packing relocations.
+
