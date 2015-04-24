@@ -117,11 +117,7 @@ jboolean IsDeprecatedSHA1Present(JNIEnv* env,
     static const int64_t kJanuary2016 = INT64_C(13096080000000000);
     if (content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, &cert) &&
         (ssl.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT) &&
-        cert->valid_expiry() > base::Time::FromInternalValue(kJanuary2016) &&
-        // NOTE: This use of SHA1IdentityUIWarning needs to be kept in sync
-        // with WebsiteSettings::Init().
-        base::FieldTrialList::FindFullName("SHA1IdentityUIWarning") ==
-            "Enabled") {
+        cert->valid_expiry() > base::Time::FromInternalValue(kJanuary2016)) {
       return true;
     }
   }

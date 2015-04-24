@@ -51,20 +51,6 @@ using content::WebContents;
 
 namespace {
 
-// Converts a SHA-1 field trial group into the appropriate SecurityLevel.
-bool GetSecurityLevelForFieldTrialGroup(const std::string& group,
-                                        ToolbarModel::SecurityLevel* level) {
-  if (group == "Error")
-    *level = ToolbarModel::SECURITY_ERROR;
-  else if (group == "Warning")
-    *level = ToolbarModel::SECURITY_WARNING;
-  else if (group == "HTTP")
-    *level = ToolbarModel::NONE;
-  else
-    return false;
-  return true;
-}
-
 ToolbarModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
   std::string choice = base::CommandLine::ForCurrentProcess()->
       GetSwitchValueASCII(switches::kMarkNonSecureAs);
@@ -136,37 +122,16 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
         // The internal representation of the dates for UI treatment of SHA-1.
         // See http://crbug.com/401365 for details
         static const int64_t kJanuary2017 = INT64_C(13127702400000000);
-        static const int64_t kJune2016 = INT64_C(13109213000000000);
         // kJanuary2016 needs to be kept in sync with
         // ToolbarModelAndroid::IsDeprecatedSHA1Present().
         static const int64_t kJanuary2016 = INT64_C(13096080000000000);
-
-        ToolbarModel::SecurityLevel security_level = NONE;
-        // Gated behind a field trial, so that it is possible to adjust the
-        // UI treatment (to be more or less severe, as necessary) over the
-        // course of multiple releases.
-        // See http://crbug.com/401365 for the timeline, with the end state
-        // being that > kJanuary2017 = Error, and > kJanuary2016 =
-        // Warning, and kJune2016 disappearing entirely.
         if (cert->valid_expiry() >=
-                base::Time::FromInternalValue(kJanuary2017) &&
-            GetSecurityLevelForFieldTrialGroup(
-                base::FieldTrialList::FindFullName("SHA1ToolbarUIJanuary2017"),
-                &security_level)) {
-          return security_level;
-        }
-        if (cert->valid_expiry() >= base::Time::FromInternalValue(kJune2016) &&
-            GetSecurityLevelForFieldTrialGroup(
-                base::FieldTrialList::FindFullName("SHA1ToolbarUIJune2016"),
-                &security_level)) {
-          return security_level;
+            base::Time::FromInternalValue(kJanuary2017)) {
+          return SECURITY_ERROR;
         }
         if (cert->valid_expiry() >=
-                base::Time::FromInternalValue(kJanuary2016) &&
-            GetSecurityLevelForFieldTrialGroup(
-                base::FieldTrialList::FindFullName("SHA1ToolbarUIJanuary2016"),
-                &security_level)) {
-          return security_level;
+            base::Time::FromInternalValue(kJanuary2016)) {
+          return SECURITY_WARNING;
         }
       }
       if (net::IsCertStatusError(ssl.cert_status)) {
