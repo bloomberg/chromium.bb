@@ -30860,6 +30860,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Profile.ValidateMenuItemInvalidIndex.IsGuest" enum="Boolean">
+  <owner>anthonyvd@chromium.org</owner>
+  <summary>
+    Whether the active profile is a guest profile when -validateMenuItem in the
+    ProfileMenuController gets an invalid value for the current profile's index.
+  </summary>
+</histogram>
+
+<histogram name="Profile.ValidateMenuItemInvalidIndex.ProfileCount">
+  <owner>anthonyvd@chromium.org</owner>
+  <summary>
+    The count of profiles in the avatar menu when -validateMenuItem in the
+    ProfileMenuController gets an invalid value for the current profile's index.
+  </summary>
+</histogram>
+
+<histogram name="Profile.ValidateMenuItemInvalidIndex.Selector"
+    enum="ValidateMenuItemSelectorType">
+  <owner>anthonyvd@chromium.org</owner>
+  <summary>
+    The selector associated with the menu item when -validateMenuItem in the
+    ProfileMenuController gets an invalid value for the current profile's index.
+  </summary>
+</histogram>
+
 <histogram name="Profile.VisitedLinksSize" units="MB">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Size of the visited links database.</summary>
@@ -63714,6 +63739,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="5" label="FLAGS_MISMATCH">Reject due to flags hash mismatch</int>
   <int value="6" label="CHECKSUM_MISMATCH">Reject due to checksum mismatch</int>
+</enum>
+
+<enum name="ValidateMenuItemSelectorType" type="int">
+  <int value="0"
+      label="The menu items' associated action is an unknown selector."/>
+  <int value="1" label="The menu item's associated action is -newProfile."/>
+  <int value="2" label="The menu item's associated action is -editProfile."/>
+  <int value="3"
+      label="The menu item's associated action is -switchToProfileFromMenu."/>
+  <int value="4"
+      label="The menu item's associated action is -switchToProfileFromDock."/>
 </enum>
 
 <enum name="ValidationFailures" type="int">
