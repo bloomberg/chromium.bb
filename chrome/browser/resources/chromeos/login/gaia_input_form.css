@@ -11,7 +11,21 @@ paper-input-decorator {
   margin-bottom: 50px;
 }
 
-paper-input-decorator /deep/ .unfocused-underline {
-  /* line color when the input is unfocused */
-  background-color: rgb(224, 224, 224);
+#paperInputDecorator /deep/ .unfocused-underline {
+  background-color: rgb(212, 212, 212);
+}
+
+#paperInputDecorator /deep/ .focused-underline {
+  background-color: rgb(66, 133, 244);
+}
+
+#paperInputDecorator /deep/ ::-webkit-input-placeholder,
+#paperInputDecorator /deep/ .label-text {
+    color: rgba(0, 0, 0, 0.54);
+}
+
+#paperInputDecorator {
+  font-size: 15px;
+  margin-bottom: 28px;
+  padding: 0;
 }

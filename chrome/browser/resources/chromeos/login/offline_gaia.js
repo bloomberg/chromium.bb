@@ -75,6 +75,7 @@ Polymer('offline-gaia', (function() {
     switchToEmailCard() {
       this.$.passwordInput.inputValue = '';
       this.$.passwordInput.setValid(true);
+      this.$.emailInput.setValid(true);
       this.$.backButton.hidden = true;
       this.$.animatedPages.selected = 0;
     },

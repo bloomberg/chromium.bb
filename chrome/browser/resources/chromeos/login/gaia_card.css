@@ -23,29 +23,18 @@
   position: relative;
 }
 
-.top-padding {
-  padding-top: 34px;
+.header-container {
+  padding: 34px 40px 16px;
 }
 
-.bottom-padding {
-  padding-bottom: 34px;
-}
-
-.side-padding {
-  padding-left: 40px;
-  padding-right: 40px;
-}
-
-::content /deep/ a.newgaia-link {
-  color: rgb(66, 133, 244);
-  font-size: 14px;
-  text-decoration: none;
+.footer-container {
+  padding: 24px 40px 34px;
 }
 
 ::content /deep/ .blue-button {
   background-color: rgb(66, 133, 244);
   color: rgb(255, 255, 255);
-  min-width: 88px
+  min-width: 90px;
 }
 
 ::content /deep/ .link-button {
@@ -65,8 +54,23 @@
 }
 
 ::content /deep/ p.gaia-body-text {
-  color: rgb(0, 0, 0);
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 14px;
+  margin: 0;
+}
+
+::content /deep/ p.email,
+::content /deep/ p.enterprise-info {
+  color: rgb(255, 255, 255);
   font-size: 15px;
+  margin: 8px 0 0 0;
+}
+
+::content /deep/ h1.welcome-message {
+  color: rgb(255, 255, 255);
+  font-size: 20px;
+  font-weight: normal;
+  margin-bottom: 0;
 }
 
 #bottom-overlay {

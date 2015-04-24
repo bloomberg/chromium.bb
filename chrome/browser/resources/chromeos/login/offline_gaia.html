@@ -41,8 +41,8 @@
       <section flex>
         <gaia-card>
           <div class="header" flex vertical layout end-justified start>
-            <h1 i18n-content="offlineLoginWelcome"></h1>
-            <p hidden?="{{!enterpriseInfo}}">
+            <h1 class="welcome-message" i18n-content="offlineLoginWelcome"></h1>
+            <p class="enterprise-info"  hidden?="{{!enterpriseInfo}}">
               {{enterpriseInfo}}
             </p>
           </div>
@@ -66,12 +66,10 @@
               i18n-values="errorMsg:offlineLoginInvalidPassword;
                            inputLabel:offlineLoginPassword;
                            buttonText:offlineLoginNextBtn">
-            <a href="#" class="newgaia-link"
-                on-tap="{{onForgotPasswordClicked}}"
-                on-keydown="{{onForgotPasswordKeyDown}}"
-                tabindex="0"
-                i18n-content="offlineLoginForgotPasswordBtn">
-            </a>
+            <gaia-paper-button noink class="link-button"
+                i18n-content="offlineLoginForgotPasswordBtn"
+                on-tap="{{onForgotPasswordClicked}}">
+            </gaia-paper-button>
             <paper-action-dialog id="forgotPasswordDlg" autoCloseDisabled
                 backdrop on-keydown="{{onKeyDownOnDialog}}">
               <p i18n-content="offlineLoginForgotPasswordDlg"></p>

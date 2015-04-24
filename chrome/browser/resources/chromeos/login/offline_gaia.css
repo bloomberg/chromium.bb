@@ -10,16 +10,6 @@
   width: 100%;
 }
 
-p {
-  font-size: 14px;
-  margin-top: 0;
-}
-
-h1 {
-  font-size: 20px;
-  font-weight: normal;
-}
-
 #backButton {
   color: rgb(255, 255, 255);
   left: 0;
