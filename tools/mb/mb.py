@@ -430,7 +430,7 @@ class MetaBuildWrapper(object):
       cmd = self.GNCmd('refs', self.args.path[0]) + [
              '//' + f, '--type=executable', '--all', '--as=output']
       ret, out, _ = self.Run(cmd)
-      if ret:
+      if ret and not 'The input matches no targets' in out:
         self.WriteFailureAndRaise('gn refs returned %d: %s' % (ret, out),
                                   output_path)
 

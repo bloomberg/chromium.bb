@@ -66,7 +66,7 @@ def NormalizeSymbolArguments(command_line):
 
   # Rename -g2 to -g.
   if '-g2' in command_line:
-    command_line[index('-g2')] = '-g'
+    command_line[command_line.index('-g2')] = '-g'
 
 
 def GetFlags(lines):

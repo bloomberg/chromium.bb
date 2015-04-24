@@ -153,6 +153,24 @@ class UnitTest(unittest.TestCase):
       'status': 'Found dependency (all)',
     })
 
+  def test_gn_analyze_missing_file(self):
+    files = {'/tmp/in.json': """{\
+               "files": ["foo/foo_unittest.cc"],
+               "targets": ["bar_unittests"]
+             }"""}
+    mbw = self.fake_mbw(files)
+    mbw.Call = lambda cmd: (
+        1, 'The input matches no targets, configs, or files\n', '')
+
+    self.check(['analyze', '-c', 'gn_debug', '//out/Default',
+                '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
+    out = json.loads(mbw.files['/tmp/out.json'])
+    self.assertEqual(out, {
+      'build_targets': [],
+      'targets': [],
+      'status': 'No dependency',
+    })
+
   def test_gyp_analyze(self):
     self.check(['analyze', '-c', 'gyp_rel_bot', '//out/Release',
                 '/tmp/in.json', '/tmp/out.json'],
