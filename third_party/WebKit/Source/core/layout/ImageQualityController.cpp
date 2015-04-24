@@ -184,19 +184,11 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, L
         }
     }
 
-    const AffineTransform& currentTransform = context->getCTM();
-    bool contextIsScaled = !currentTransform.isIdentityOrTranslationOrFlipped();
-
-    // Make sure to use the unzoomed image size, since if a full page zoom is in effect, the image
-    // is actually being scaled.
-    LayoutSize scaledImageSize = LayoutSize(currentTransform.mapSize(image->size()));
-    LayoutSize scaledLayoutSize = LayoutSize(currentTransform.mapSize(roundedIntSize(layoutSize)));
-
     // If the containing FrameView is being resized, paint at low quality until resizing is finished.
     if (LocalFrame* frame = object->document().frame()) {
         bool frameViewIsCurrentlyInLiveResize = frame->view() && frame->view()->inLiveResize();
         if (frameViewIsCurrentlyInLiveResize) {
-            set(object, innerMap, layer, scaledLayoutSize);
+            set(object, innerMap, layer, layoutSize);
             restartTimer();
             m_liveResizeOptimizationIsActive = true;
             return true;
@@ -208,10 +200,7 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, L
         }
     }
 
-    // See crbug.com/382491. This test is insufficient to ensure that there is no scale
-    // applied in the compositor, but it is probably adequate here. In the worst case we
-    // draw at high quality when we need not.
-    if (!contextIsScaled && scaledLayoutSize == scaledImageSize) {
+    if (layoutSize == image->size()) {
         // There is no scale in effect. If we had a scale in effect before, we can just remove this object from the list.
         removeLayer(object, innerMap, layer);
         return false;
@@ -219,17 +208,17 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, L
 
     // If an animated resize is active, paint in low quality and kick the timer ahead.
     if (m_animatedResizeIsActive) {
-        set(object, innerMap, layer, scaledLayoutSize);
-        if (oldSize != scaledLayoutSize)
+        set(object, innerMap, layer, layoutSize);
+        if (oldSize != layoutSize)
             restartTimer();
         return true;
     }
     // If this is the first time resizing this image, or its size is the
     // same as the last resize, draw at high res, but record the paint
     // size and set the timer.
-    if (isFirstResize || oldSize == scaledLayoutSize) {
+    if (isFirstResize || oldSize == layoutSize) {
         restartTimer();
-        set(object, innerMap, layer, scaledLayoutSize);
+        set(object, innerMap, layer, layoutSize);
         return false;
     }
     // If the timer is no longer active, draw at high quality and don't
@@ -242,7 +231,7 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, L
     // This object has been resized to two different sizes while the timer
     // is active, so draw at low quality, set the flag for animated resizes and
     // the object to the list for high quality redraw.
-    set(object, innerMap, layer, scaledLayoutSize);
+    set(object, innerMap, layer, layoutSize);
     m_animatedResizeIsActive = true;
     restartTimer();
     return true;
