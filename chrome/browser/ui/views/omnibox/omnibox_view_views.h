@@ -70,7 +70,6 @@ class OmniboxViewViews
   void OnTabChanged(const content::WebContents* web_contents) override;
   void ResetTabState(content::WebContents* web_contents) override;
   void Update() override;
-  void UpdatePlaceholderText() override;
   base::string16 GetText() const override;
   void SetUserText(const base::string16& text,
                    const base::string16& display_text,

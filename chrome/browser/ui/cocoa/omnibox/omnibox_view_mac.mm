@@ -214,8 +214,6 @@ void OmniboxViewMac::ResetTabState(WebContents* web_contents) {
 }
 
 void OmniboxViewMac::Update() {
-  UpdatePlaceholderText();
-
   if (model()->UpdatePermanentText()) {
     // Something visibly changed.  Re-enable URL replacement.
     controller()->GetToolbarModel()->set_url_replacement_enabled(true);
@@ -234,20 +232,6 @@ void OmniboxViewMac::Update() {
     // security level.  Dig in and figure out why this isn't a no-op
     // that should go away.
     EmphasizeURLComponents();
-  }
-}
-
-void OmniboxViewMac::UpdatePlaceholderText() {
-  if (OmniboxFieldTrial::DisplayHintTextWhenPossible()) {
-    NSDictionary* placeholder_attributes = @{
-      NSForegroundColorAttributeName : [NSColor disabledControlTextColor]
-    };
-    base::scoped_nsobject<NSMutableAttributedString> placeholder_text(
-        [[NSMutableAttributedString alloc]
-            initWithString:base::SysUTF16ToNSString(GetHintText())
-                attributes:placeholder_attributes]);
-    ApplyTextStyle(placeholder_text);
-    [[field_ cell] setPlaceholderAttributedString:placeholder_text];
   }
 }
 

@@ -313,12 +313,6 @@ bool OmniboxFieldTrial::EnableAnswersInSuggest() {
       kAnswersInSuggestRule) == "true";
 }
 
-bool OmniboxFieldTrial::DisplayHintTextWhenPossible() {
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kDisplayHintTextWhenPossibleRule) == "true";
-}
-
 bool OmniboxFieldTrial::DisableResultsCaching() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -405,8 +399,6 @@ const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
 const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
 const char OmniboxFieldTrial::kAnswersInSuggestRule[] = "AnswersInSuggest";
-const char OmniboxFieldTrial::kDisplayHintTextWhenPossibleRule[] =
-    "DisplayHintTextWhenPossible";
 const char OmniboxFieldTrial::kDisableResultsCachingRule[] =
     "DisableResultsCaching";
 const char

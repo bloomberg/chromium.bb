@@ -935,8 +935,6 @@ bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
                                        false, true);
   }
 
-  view_->UpdatePlaceholderText();
-
   content::RecordAction(base::UserMetricsAction("AcceptedKeywordHint"));
   UMA_HISTOGRAM_ENUMERATION(kEnteredKeywordModeHistogram, entered_method,
                             ENTERED_KEYWORD_MODE_NUM_ITEMS);
@@ -988,8 +986,6 @@ void OmniboxEditModel::ClearKeyword() {
     is_keyword_hint_ = false;
     view_->OnAfterPossibleChange();
   }
-
-  view_->UpdatePlaceholderText();
 }
 
 void OmniboxEditModel::OnSetFocus(bool control_down) {
@@ -1299,7 +1295,6 @@ bool OmniboxEditModel::OnAfterPossibleChange(const base::string16& old_text,
                                                    selection_start);
   view_->UpdatePopup();
   if (allow_exact_keyword_match_) {
-    view_->UpdatePlaceholderText();
     UMA_HISTOGRAM_ENUMERATION(kEnteredKeywordModeHistogram,
                               ENTERED_KEYWORD_MODE_VIA_SPACE_IN_MIDDLE,
                               ENTERED_KEYWORD_MODE_NUM_ITEMS);

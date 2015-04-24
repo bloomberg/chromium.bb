@@ -223,8 +223,6 @@ void OmniboxViewViews::ResetTabState(content::WebContents* web_contents) {
 }
 
 void OmniboxViewViews::Update() {
-  UpdatePlaceholderText();
-
   const ToolbarModel::SecurityLevel old_security_level = security_level_;
   security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
   if (model()->UpdatePermanentText()) {
@@ -256,11 +254,6 @@ void OmniboxViewViews::Update() {
   } else if (old_security_level != security_level_) {
     EmphasizeURLComponents();
   }
-}
-
-void OmniboxViewViews::UpdatePlaceholderText() {
-  if (OmniboxFieldTrial::DisplayHintTextWhenPossible())
-    set_placeholder_text(GetHintText());
 }
 
 base::string16 OmniboxViewViews::GetText() const {

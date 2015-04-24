@@ -250,15 +250,6 @@ class OmniboxFieldTrial {
   static bool EnableAnswersInSuggest();
 
   // ---------------------------------------------------------
-  // For the DisplayHintTextWhenPossible experiment that's part of the
-  // bundled omnibox field trial.
-
-  // Returns true if the omnibox should display hint text (Search
-  // <search engine> or type URL) when possible (i.e., the omnibox
-  // is otherwise non-empty).
-  static bool DisplayHintTextWhenPossible();
-
-  // ---------------------------------------------------------
   // For SearchProvider related experiments.
 
   // Returns true if the search provider should not be caching results.
@@ -323,7 +314,6 @@ class OmniboxFieldTrial {
   static const char kZeroSuggestRule[];
   static const char kZeroSuggestVariantRule[];
   static const char kAnswersInSuggestRule[];
-  static const char kDisplayHintTextWhenPossibleRule[];
   static const char kDisableResultsCachingRule[];
   static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
   static const char kSuggestPollingDelayMsRule[];

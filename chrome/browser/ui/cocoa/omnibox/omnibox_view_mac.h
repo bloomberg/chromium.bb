@@ -33,7 +33,6 @@ class OmniboxViewMac : public OmniboxView,
   void OnTabChanged(const content::WebContents* web_contents) override;
   void ResetTabState(content::WebContents* web_contents) override;
   void Update() override;
-  void UpdatePlaceholderText() override;
   void OpenMatch(const AutocompleteMatch& match,
                  WindowOpenDisposition disposition,
                  const GURL& alternate_nav_url,
