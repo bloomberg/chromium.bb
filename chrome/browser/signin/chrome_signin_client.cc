@@ -61,8 +61,10 @@ bool ChromeSigninClient::ProfileAllowsSigninCookies(Profile* profile) {
 bool ChromeSigninClient::SettingsAllowSigninCookies(
     CookieSettings* cookie_settings) {
   GURL gaia_url = GaiaUrls::GetInstance()->gaia_url();
+  GURL google_url = GaiaUrls::GetInstance()->google_url();
   return cookie_settings &&
-         cookie_settings->IsSettingCookieAllowed(gaia_url, gaia_url);
+         cookie_settings->IsSettingCookieAllowed(gaia_url, gaia_url) &&
+         cookie_settings->IsSettingCookieAllowed(google_url, google_url);
 }
 
 PrefService* ChromeSigninClient::GetPrefs() { return profile_->GetPrefs(); }

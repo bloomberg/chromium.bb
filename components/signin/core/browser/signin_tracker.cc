@@ -4,7 +4,6 @@
 
 #include "components/signin/core/browser/signin_tracker.h"
 
-#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
@@ -12,13 +11,11 @@
 
 SigninTracker::SigninTracker(ProfileOAuth2TokenService* token_service,
                              SigninManagerBase* signin_manager,
-                             AccountReconcilor* account_reconcilor,
                              GaiaCookieManagerService* cookie_manager_service,
                              SigninClient* client,
                              Observer* observer)
     : token_service_(token_service),
       signin_manager_(signin_manager),
-      account_reconcilor_(account_reconcilor),
       cookie_manager_service_(cookie_manager_service),
       client_(client),
       observer_(observer) {

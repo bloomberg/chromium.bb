@@ -8,8 +8,10 @@
 #include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/about_signin_internals.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/signin_internals_resources.h"
@@ -70,7 +72,15 @@ bool SignInInternalsUI::OverrideHandleWebUIMessage(
       web_ui()->CallJavascriptFunction(
           "chrome.signin.getSigninInfo.handleReply",
           *about_signin_internals->GetSigninStatus());
-      about_signin_internals->GetCookieAccountsAsync();
+
+      std::vector<std::pair<std::string, bool>> cookie_accounts;
+      GaiaCookieManagerService* cookie_manager_service =
+          GaiaCookieManagerServiceFactory::GetForProfile(profile);
+      if (cookie_manager_service->ListAccounts(&cookie_accounts)) {
+        about_signin_internals->OnGaiaAccountsInCookieUpdated(
+            cookie_accounts,
+            GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+      }
 
       return true;
     }

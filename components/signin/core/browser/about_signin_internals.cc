@@ -20,11 +20,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_switches.h"
-#include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_urls.h"
-#include "net/cookies/canonical_cookie.h"
 
 using base::Time;
 using namespace signin_internals_util;
@@ -135,12 +130,14 @@ AboutSigninInternals::AboutSigninInternals(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker,
     SigninManagerBase* signin_manager,
-    SigninErrorController* signin_error_controller)
+    SigninErrorController* signin_error_controller,
+    GaiaCookieManagerService* cookie_manager_service)
     : token_service_(token_service),
       account_tracker_(account_tracker),
       signin_manager_(signin_manager),
       client_(NULL),
-      signin_error_controller_(signin_error_controller) {}
+      signin_error_controller_(signin_error_controller),
+      cookie_manager_service_(cookie_manager_service) {}
 
 AboutSigninInternals::~AboutSigninInternals() {}
 
@@ -211,18 +208,14 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
   signin_error_controller_->AddObserver(this);
   signin_manager_->AddSigninDiagnosticsObserver(this);
   token_service_->AddDiagnosticsObserver(this);
-  cookie_changed_subscription_ = client_->AddCookieChangedCallback(
-      GaiaUrls::GetInstance()->gaia_url(),
-      "LSID",
-      base::Bind(&AboutSigninInternals::OnCookieChanged,
-                 base::Unretained(this)));
+  cookie_manager_service_->AddObserver(this);
 }
 
 void AboutSigninInternals::Shutdown() {
   signin_error_controller_->RemoveObserver(this);
   signin_manager_->RemoveSigninDiagnosticsObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
-  cookie_changed_subscription_.reset();
+  cookie_manager_service_->RemoveObserver(this);
 }
 
 void AboutSigninInternals::NotifyObservers() {
@@ -329,46 +322,8 @@ void AboutSigninInternals::OnAuthenticationResultReceived(std::string status) {
   NotifySigninValueChanged(AUTHENTICATION_RESULT_RECEIVED, status);
 }
 
-void AboutSigninInternals::OnCookieChanged(const net::CanonicalCookie& cookie,
-                                           bool removed) {
-  DCHECK_EQ("LSID", cookie.Name());
-  DCHECK_EQ(GaiaUrls::GetInstance()->gaia_url().host(), cookie.Domain());
-  if (cookie.IsSecure() && cookie.IsHttpOnly()) {
-    GetCookieAccountsAsync();
-  }
-}
-
 void AboutSigninInternals::OnErrorChanged() {
   NotifyObservers();
-}
-
-void AboutSigninInternals::GetCookieAccountsAsync() {
-  // Don't bother calling /ListAccounts if no one will observe the response.
-  if (!gaia_fetcher_ && signin_observers_.might_have_observers()) {
-    // There is no list account request in flight.
-    gaia_fetcher_.reset(new GaiaAuthFetcher(
-        this, GaiaConstants::kChromeSource, client_->GetURLRequestContext()));
-    gaia_fetcher_->StartListAccounts();
-  }
-}
-
-void AboutSigninInternals::OnListAccountsSuccess(const std::string& data) {
-  gaia_fetcher_.reset();
-
-  // Get account information from response data.
-  std::vector<std::pair<std::string, bool> > gaia_accounts;
-  bool valid_json = gaia::ParseListAccountsData(data, &gaia_accounts);
-  if (!valid_json) {
-    VLOG(1) << "AboutSigninInternals::OnListAccountsSuccess: parsing error";
-  } else {
-    OnListAccountsComplete(gaia_accounts);
-  }
-}
-
-void AboutSigninInternals::OnListAccountsFailure(
-    const GoogleServiceAuthError& error) {
-  gaia_fetcher_.reset();
-  VLOG(1) << "AboutSigninInternals::OnListAccountsFailure:" << error.ToString();
 }
 
 void AboutSigninInternals::GoogleSigninFailed(
@@ -387,8 +342,12 @@ void AboutSigninInternals::GoogleSignedOut(const std::string& account_id,
   NotifyObservers();
 }
 
-void AboutSigninInternals::OnListAccountsComplete(
-    std::vector<std::pair<std::string, bool> >& gaia_accounts) {
+void AboutSigninInternals::OnGaiaAccountsInCookieUpdated(
+    const std::vector<std::pair<std::string, bool> >& gaia_accounts,
+    const GoogleServiceAuthError& error) {
+  if (error.state() != GoogleServiceAuthError::NONE)
+    return;
+
   base::DictionaryValue cookie_status;
   base::ListValue* cookie_info = new base::ListValue();
   cookie_status.Set("cookie_info", cookie_info);

@@ -31,8 +31,9 @@ class MockObserver : public GaiaCookieManagerService::Observer {
 
   MOCK_METHOD2(OnAddAccountToCookieCompleted,
                void(const std::string&, const GoogleServiceAuthError&));
-  MOCK_METHOD1(GetCheckConnectionInfoCompleted, void(bool));
-
+  MOCK_METHOD2(OnGaiaAccountsInCookieUpdated,
+               void(const std::vector<std::pair<std::string, bool> >&,
+                    const GoogleServiceAuthError&));
  private:
   GaiaCookieManagerService* helper_;
 
@@ -59,6 +60,7 @@ class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
   virtual ~InstrumentedGaiaCookieManagerService() { total--; }
 
   MOCK_METHOD0(StartFetchingUbertoken, void());
+  MOCK_METHOD0(StartFetchingListAccounts, void());
   MOCK_METHOD0(StartFetchingMergeSession, void());
   MOCK_METHOD0(StartLogOutUrlFetch, void());
 
@@ -74,7 +76,7 @@ class GaiaCookieManagerServiceTest : public testing::Test {
         canceled_(GoogleServiceAuthError::REQUEST_CANCELED) {}
 
   OAuth2TokenService* token_service() { return &token_service_; }
-  SigninClient* signin_client() { return &signin_client_; }
+  TestSigninClient* signin_client() { return &signin_client_; }
 
   void SimulateUbertokenSuccess(UbertokenConsumer* consumer,
                                 const std::string& uber_token) {
@@ -94,6 +96,11 @@ class GaiaCookieManagerServiceTest : public testing::Test {
   void SimulateMergeSessionFailure(GaiaAuthConsumer* consumer,
                                    const GoogleServiceAuthError& error) {
     consumer->OnMergeSessionFailure(error);
+  }
+
+  void SimulateListAccountsSuccess(GaiaAuthConsumer* consumer,
+                                   const std::string& data) {
+    consumer->OnListAccountsSuccess(data);
   }
 
   void SimulateLogoutSuccess(net::URLFetcherDelegate* consumer) {
@@ -162,6 +169,17 @@ TEST_F(GaiaCookieManagerServiceTest, FailedMergeSession) {
   SimulateMergeSessionFailure(&helper, error());
   // Persistent error incurs no further retries.
   DCHECK(!helper.is_running());
+}
+
+TEST_F(GaiaCookieManagerServiceTest, AddAccountCookiesDisabled) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+  signin_client()->set_are_signin_cookies_allowed(false);
+
+  EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc1@gmail.com",
+                                                      canceled()));
+
+  helper.AddAccountToCookie("acc1@gmail.com");
 }
 
 TEST_F(GaiaCookieManagerServiceTest, MergeSessionRetried) {
@@ -378,7 +396,6 @@ TEST_F(GaiaCookieManagerServiceTest, LogOutAllAccountsBeforeAdd) {
   EXPECT_CALL(helper, StartLogOutUrlFetch());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc3@gmail.com",
                                                       no_error()));
-
   helper.AddAccountToCookie("acc2@gmail.com");
   SimulateMergeSessionSuccess(&helper, "token1");
 
@@ -445,8 +462,6 @@ TEST_F(GaiaCookieManagerServiceTest, CancelSignIn) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  std::vector<std::string> current_accounts;
-
   EXPECT_CALL(helper, StartFetchingUbertoken());
   EXPECT_CALL(observer, OnAddAccountToCookieCompleted("acc2@gmail.com",
                                                       canceled()));
@@ -460,6 +475,37 @@ TEST_F(GaiaCookieManagerServiceTest, CancelSignIn) {
 
   SimulateMergeSessionSuccess(&helper, "token1");
   SimulateLogoutSuccess(&helper);
+}
+
+TEST_F(GaiaCookieManagerServiceTest, ListAccountsFirstReturnsEmpty) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  std::vector<std::pair<std::string, bool> > list_accounts;
+
+  EXPECT_CALL(helper, StartFetchingListAccounts());
+
+  ASSERT_FALSE(helper.ListAccounts(&list_accounts));
+  ASSERT_TRUE(list_accounts.empty());
+}
+
+TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsOneAccount) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  std::vector<std::pair<std::string, bool> > list_accounts;
+  std::vector<std::pair<std::string, bool> > expected_accounts;
+  expected_accounts.push_back(std::pair<std::string, bool>(
+      "user@gmail.com", true));
+
+  EXPECT_CALL(helper, StartFetchingListAccounts());
+  EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(expected_accounts,
+                                                      no_error()));
+
+  ASSERT_FALSE(helper.ListAccounts(&list_accounts));
+
+  SimulateListAccountsSuccess(&helper,
+      "[\"f\", [[\"b\", 0, \"n\", \"user@gmail.com\", \"p\", 0, 0, 0, 0, 1]]]");
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {

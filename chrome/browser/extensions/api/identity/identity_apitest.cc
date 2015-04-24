@@ -19,12 +19,12 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_account_reconcilor.h"
+#include "chrome/browser/signin/fake_gaia_cookie_manager_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -555,8 +555,8 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
         context, &FakeSigninManagerBase::Build);
     ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
         context, &BuildFakeProfileOAuth2TokenService);
-    AccountReconcilorFactory::GetInstance()->SetTestingFactory(
-        context, &FakeAccountReconcilor::Build);
+    GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
+        context, &FakeGaiaCookieManagerService::Build);
   }
 
   void SetUpOnMainThread() override {
@@ -570,6 +570,8 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
         ProfileOAuth2TokenServiceFactory::GetInstance()->GetForProfile(
             profile()));
     ASSERT_TRUE(token_service_);
+    GaiaCookieManagerServiceFactory::GetInstance()->GetForProfile(profile())
+        ->Init();
   }
 
  protected:

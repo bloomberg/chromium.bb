@@ -13,11 +13,11 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class AccountTrackerService;
@@ -35,7 +35,7 @@ class AboutSigninInternals
     : public KeyedService,
       public signin_internals_util::SigninDiagnosticsObserver,
       public OAuth2TokenService::DiagnosticsObserver,
-      public GaiaAuthConsumer,
+      public GaiaCookieManagerService::Observer,
       SigninManagerBase::Observer,
       SigninErrorController::Observer {
  public:
@@ -52,7 +52,8 @@ class AboutSigninInternals
   AboutSigninInternals(ProfileOAuth2TokenService* token_service,
                        AccountTrackerService* account_tracker,
                        SigninManagerBase* signin_manager,
-                       SigninErrorController* signin_error_controller);
+                       SigninErrorController* signin_error_controller,
+                       GaiaCookieManagerService* cookie_manager_service);
   ~AboutSigninInternals() override;
 
   // Each instance of SigninInternalsUI adds itself as an observer to be
@@ -87,9 +88,10 @@ class AboutSigninInternals
   //  }
   scoped_ptr<base::DictionaryValue> GetSigninStatus();
 
-  // Triggers a ListAccounts call to acquire a list of the email addresses
-  // corresponding to the cookies residing on the current cookie jar.
-  void GetCookieAccountsAsync();
+  // GaiaCookieManagerService::Observer implementations.
+  void OnGaiaAccountsInCookieUpdated(
+      const std::vector<std::pair<std::string, bool> >& gaia_accounts,
+      const GoogleServiceAuthError& error) override;
 
  private:
   // Encapsulates diagnostic information about tokens for different services.
@@ -173,10 +175,6 @@ class AboutSigninInternals
   void OnTokenRemoved(const std::string& account_id,
                       const OAuth2TokenService::ScopeSet& scopes) override;
 
-  // GaiaAuthConsumer implementations.
-  void OnListAccountsSuccess(const std::string& data) override;
-  void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
-
   // SigninManagerBase::Observer implementations.
   void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
   void GoogleSigninSucceeded(const std::string& account_id,
@@ -186,15 +184,6 @@ class AboutSigninInternals
                                const std::string& username) override;
 
   void NotifyObservers();
-
-  // Callback for ListAccounts. Once the email addresses are fetched from GAIA,
-  // they are pushed to the signin_internals_ui.
-  void OnListAccountsComplete(
-      std::vector<std::pair<std::string, bool> >& gaia_accounts);
-
-  // Called when a cookie changes. If the cookie relates to a GAIA LSID cookie,
-  // then we call ListAccounts and update the UI element.
-  void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed);
 
   // SigninErrorController::Observer implementation
   void OnErrorChanged() override;
@@ -214,17 +203,14 @@ class AboutSigninInternals
   // Weak pointer to the SigninErrorController
   SigninErrorController* signin_error_controller_;
 
-  // Fetcher for information about accounts in the cookie jar from GAIA.
-  scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
+  // Weak pointer to the GaiaCookieManagerService
+  GaiaCookieManagerService* cookie_manager_service_;
 
   // Encapsulates the actual signin and token related values.
   // Most of the values are mirrored in the prefs for persistence.
   SigninStatus signin_status_;
 
   ObserverList<Observer> signin_observers_;
-
-  scoped_ptr<SigninClient::CookieChangedSubscription>
-      cookie_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutSigninInternals);
 };

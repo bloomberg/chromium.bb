@@ -13,6 +13,7 @@
 namespace {
 
 // Gaia service constants
+const char kDefaultGoogleUrl[] = "http://.google.com";
 const char kDefaultGaiaUrl[] = "https://accounts.google.com";
 const char kDefaultGoogleApisBaseUrl[] = "https://www.googleapis.com";
 
@@ -76,6 +77,8 @@ GaiaUrls* GaiaUrls::GetInstance() {
 }
 
 GaiaUrls::GaiaUrls() {
+  google_url_ = GetURLSwitchValueWithDefault(switches::kGoogleUrl,
+                                             kDefaultGoogleUrl);
   gaia_url_ = GetURLSwitchValueWithDefault(switches::kGaiaUrl, kDefaultGaiaUrl);
   lso_origin_url_ =
       GetURLSwitchValueWithDefault(switches::kLsoUrl, kDefaultGaiaUrl);
@@ -135,6 +138,10 @@ GaiaUrls::GaiaUrls() {
 }
 
 GaiaUrls::~GaiaUrls() {
+}
+
+const GURL& GaiaUrls::google_url() const {
+  return google_url_;
 }
 
 const GURL& GaiaUrls::gaia_url() const {

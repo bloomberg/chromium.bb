@@ -7,6 +7,10 @@
 
 namespace switches {
 
+// Specifies the domain of the APISID cookie. The default value is
+// "http://.google.com".
+extern const char kGoogleUrl[];
+
 // Specifies the path for GAIA authentication URL. The default value is
 // "https://accounts.google.com".
 extern const char kGaiaUrl[];

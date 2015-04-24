@@ -16,6 +16,7 @@ class GaiaUrls {
   static GaiaUrls* GetInstance();
 
   // The URLs for different calls in the Google Accounts programmatic login API.
+  const GURL& google_url() const;
   const GURL& gaia_url() const;
   const GURL& captcha_base_url() const;
   const GURL& client_login_url() const;
@@ -57,6 +58,7 @@ class GaiaUrls {
 
   friend struct DefaultSingletonTraits<GaiaUrls>;
 
+  GURL google_url_;
   GURL gaia_url_;
   GURL captcha_base_url_;
 

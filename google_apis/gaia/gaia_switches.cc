@@ -6,6 +6,7 @@
 
 namespace switches {
 
+const char kGoogleUrl[]                     = "google-url";
 const char kGaiaUrl[]                       = "gaia-url";
 const char kGoogleApisUrl[]                 = "google-apis-url";
 const char kLsoUrl[]                        = "lso-url";

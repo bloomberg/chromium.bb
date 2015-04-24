@@ -23,7 +23,6 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -37,7 +36,6 @@ class CanonicalCookie;
 
 class AccountReconcilor : public KeyedService,
                           public content_settings::Observer,
-                          public GaiaAuthConsumer,
                           public GaiaCookieManagerService::Observer,
                           public OAuth2TokenService::Observer,
                           public SigninManagerBase::Observer {
@@ -58,22 +56,10 @@ class AccountReconcilor : public KeyedService,
   // KeyedService implementation.
   void Shutdown() override;
 
- protected:
-  // Used during GetAccountsFromCookie.
-  // Stores a callback for the next action to perform.
-  typedef base::Callback<
-      void(const GoogleServiceAuthError& error,
-           const std::vector<std::pair<std::string, bool> >&)>
-      GetAccountsFromCookieCallback;
-
-  virtual void GetAccountsFromCookie(GetAccountsFromCookieCallback callback);
-
  private:
   bool IsRegisteredWithTokenService() const {
     return registered_with_token_service_;
   }
-
-  bool AreGaiaAccountsSet() const { return are_gaia_accounts_set_; }
 
   const std::vector<std::pair<std::string, bool> >& GetGaiaAccountsForTesting()
       const {
@@ -112,8 +98,6 @@ class AccountReconcilor : public KeyedService,
                            AddAccountToCookieCompletedWithBogusAccount);
 
   // Register and unregister with dependent services.
-  void RegisterForCookieChanges();
-  void UnregisterForCookieChanges();
   void RegisterWithSigninManager();
   void UnregisterWithSigninManager();
   void RegisterWithTokenService();
@@ -137,14 +121,9 @@ class AccountReconcilor : public KeyedService,
   void CalculateIfReconcileIsDone();
   void ScheduleStartReconcileIfChromeAccountsChanged();
 
-  void ContinueReconcileActionAfterGetGaiaAccounts(
-      const GoogleServiceAuthError& error,
-      const std::vector<std::pair<std::string, bool> >& accounts);
   void ValidateAccountsFromTokenService();
   // Note internally that this |account_id| is added to the cookie jar.
   bool MarkAccountAsAddedToCookie(const std::string& account_id);
-
-  void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed);
 
   // Overriden from content_settings::Observer.
   void OnContentSettingChanged(
@@ -153,14 +132,13 @@ class AccountReconcilor : public KeyedService,
       ContentSettingsType content_type,
       std::string resource_identifier) override;
 
-  // Overriden from GaiaAuthConsumer.
-  void OnListAccountsSuccess(const std::string& data) override;
-  void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
-
-  // Overriden from MergeSessionHelper::Observer.
+  // Overriden from GaiaGookieManagerService::Observer.
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
+  void OnGaiaAccountsInCookieUpdated(
+        const std::vector<std::pair<std::string, bool> >& accounts,
+        const GoogleServiceAuthError& error) override;
 
   // Overriden from OAuth2TokenService::Observer.
   void OnEndBatchChanges() override;
@@ -171,8 +149,6 @@ class AccountReconcilor : public KeyedService,
                              const std::string& password) override;
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
-
-  void MayBeDoNextListAccounts();
 
   // The ProfileOAuth2TokenService associated with this reconcilor.
   ProfileOAuth2TokenService* token_service_;
@@ -186,7 +162,6 @@ class AccountReconcilor : public KeyedService,
   // The GaiaCookieManagerService associated with this reconcilor.
   GaiaCookieManagerService* cookie_manager_service_;
 
-  scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
   bool registered_with_token_service_;
   bool registered_with_cookie_manager_service_;
   bool registered_with_content_settings_;
@@ -205,7 +180,6 @@ class AccountReconcilor : public KeyedService,
   // a pair that holds the email address of the account and a boolean that
   // indicates whether the account is valid or not.  The accounts in the vector
   // are ordered the in same way as the gaia cookie.
-  bool are_gaia_accounts_set_;
   std::vector<std::pair<std::string, bool> > gaia_accounts_;
 
   // Used during reconcile action.
@@ -214,11 +188,6 @@ class AccountReconcilor : public KeyedService,
   std::vector<std::string> chrome_accounts_;
   std::vector<std::string> add_to_cookie_;
   bool chrome_accounts_changed_;
-
-  std::deque<GetAccountsFromCookieCallback> get_gaia_accounts_callbacks_;
-
-  scoped_ptr<SigninClient::CookieChangedSubscription>
-      cookie_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilor);
 };

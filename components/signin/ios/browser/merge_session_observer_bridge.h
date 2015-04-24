@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 
-class AccountReconcilor;
 class GoogleServiceAuthError;
 
 @protocol MergeSessionObserverBridgeDelegate
