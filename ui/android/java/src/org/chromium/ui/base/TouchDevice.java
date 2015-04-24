@@ -57,7 +57,10 @@ public class TouchDevice {
         int pointerTypesVal = 0;
 
         for (int deviceId : InputDevice.getDeviceIds()) {
-            int sources = InputDevice.getDevice(deviceId).getSources();
+            InputDevice inputDevice = InputDevice.getDevice(deviceId);
+            if (inputDevice == null) continue;
+
+            int sources = inputDevice.getSources();
 
             if (hasSource(sources, InputDevice.SOURCE_MOUSE)
                     || hasSource(sources, InputDevice.SOURCE_STYLUS)
@@ -84,7 +87,10 @@ public class TouchDevice {
         int hoverTypesVal = 0;
 
         for (int deviceId : InputDevice.getDeviceIds()) {
-            int sources = InputDevice.getDevice(deviceId).getSources();
+            InputDevice inputDevice = InputDevice.getDevice(deviceId);
+            if (inputDevice == null) continue;
+
+            int sources = inputDevice.getSources();
 
             if (hasSource(sources, InputDevice.SOURCE_MOUSE)
                     || hasSource(sources, InputDevice.SOURCE_TOUCHPAD)
