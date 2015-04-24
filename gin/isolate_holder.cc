@@ -22,7 +22,11 @@ namespace {
 v8::ArrayBuffer::Allocator* g_array_buffer_allocator = nullptr;
 }  // namespace
 
-IsolateHolder::IsolateHolder() {
+IsolateHolder::IsolateHolder() : IsolateHolder(AccessMode::kSingleThread) {
+}
+
+IsolateHolder::IsolateHolder(AccessMode access_mode)
+    : access_mode_(access_mode) {
   v8::ArrayBuffer::Allocator* allocator = g_array_buffer_allocator;
   CHECK(allocator) << "You need to invoke gin::IsolateHolder::Initialize first";
   v8::Isolate::CreateParams params;

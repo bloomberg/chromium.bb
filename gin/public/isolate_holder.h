@@ -27,7 +27,14 @@ class GIN_EXPORT IsolateHolder {
     kStrictMode
   };
 
+  // Stores whether the client uses v8::Locker to access the isolate.
+  enum AccessMode {
+    kSingleThread,
+    kUseLocker
+  };
+
   IsolateHolder();
+  explicit IsolateHolder(AccessMode access_mode);
   ~IsolateHolder();
 
   // Should be invoked once before creating IsolateHolder instances to
@@ -52,10 +59,14 @@ class GIN_EXPORT IsolateHolder {
   // thread.
   void RemoveRunMicrotasksObserver();
 
+  // This method returns if v8::Locker is needed to access isolate.
+  AccessMode access_mode() const { return access_mode_; }
+
  private:
   v8::Isolate* isolate_;
   scoped_ptr<PerIsolateData> isolate_data_;
   scoped_ptr<RunMicrotasksObserver> task_observer_;
+  AccessMode access_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolateHolder);
 };

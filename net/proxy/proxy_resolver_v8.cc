@@ -376,7 +376,7 @@ class SharedIsolateFactory {
         has_initialized_v8_ = true;
       }
 
-      holder_.reset(new gin::IsolateHolder);
+      holder_.reset(new gin::IsolateHolder(gin::IsolateHolder::kUseLocker));
     }
 
     return holder_->isolate();
