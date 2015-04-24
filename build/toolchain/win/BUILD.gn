@@ -101,7 +101,7 @@ template("msvc_toolchain") {
       outputs = [
         "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
       ]
-      rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}}"
+      rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}"
     }
 
     tool("rc") {

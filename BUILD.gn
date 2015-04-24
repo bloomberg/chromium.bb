@@ -763,7 +763,7 @@ if (is_linux) {
     testonly = true
     deps = [
       "//ash:ash_unittests",  # FAILS 4/20/2015
-      "//base:base_unittests",  # PASSES 4/17/2015 in 32-bit, some 64-bit failures.
+      "//base:base_unittests",  # PASSES 4/20/2015
       "//cc:cc_unittests",  # PASSES 4/17/2015
       "//chrome_elf:chrome_elf_unittests",  # FAILS 4/20/2015
       "//chrome/test:browser_tests",

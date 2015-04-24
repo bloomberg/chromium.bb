@@ -97,11 +97,21 @@ config("common_linker_setup") {
 
 # Subsystem --------------------------------------------------------------------
 
+# This is appended to the subsystem to specify a minimum version.
+if (current_cpu == "x64") {
+  # The number after the comma is the minimum required OS version.
+  # 5.02 = Windows Server 2003.
+  subsystem_version_suffix = ",5.02"
+} else {
+  # Don't specify a min version on x86.
+  subsystem_version_suffix = ""
+}
+
 config("console") {
-  ldflags = [ "/SUBSYSTEM:CONSOLE" ]
+  ldflags = [ "/SUBSYSTEM:CONSOLE$subsystem_version_suffix" ]
 }
 config("windowed") {
-  ldflags = [ "/SUBSYSTEM:WINDOWS" ]
+  ldflags = [ "/SUBSYSTEM:WINDOWS$subsystem_version_suffix" ]
 }
 
 # Incremental linking ----------------------------------------------------------
