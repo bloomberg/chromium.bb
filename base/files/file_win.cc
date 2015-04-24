@@ -18,90 +18,6 @@ COMPILE_ASSERT(File::FROM_BEGIN   == FILE_BEGIN &&
                File::FROM_CURRENT == FILE_CURRENT &&
                File::FROM_END     == FILE_END, whence_matches_system);
 
-void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
-  ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!IsValid());
-
-  DWORD disposition = 0;
-
-  if (flags & FLAG_OPEN)
-    disposition = OPEN_EXISTING;
-
-  if (flags & FLAG_CREATE) {
-    DCHECK(!disposition);
-    disposition = CREATE_NEW;
-  }
-
-  if (flags & FLAG_OPEN_ALWAYS) {
-    DCHECK(!disposition);
-    disposition = OPEN_ALWAYS;
-  }
-
-  if (flags & FLAG_CREATE_ALWAYS) {
-    DCHECK(!disposition);
-    DCHECK(flags & FLAG_WRITE);
-    disposition = CREATE_ALWAYS;
-  }
-
-  if (flags & FLAG_OPEN_TRUNCATED) {
-    DCHECK(!disposition);
-    DCHECK(flags & FLAG_WRITE);
-    disposition = TRUNCATE_EXISTING;
-  }
-
-  if (!disposition) {
-    NOTREACHED();
-    return;
-  }
-
-  DWORD access = 0;
-  if (flags & FLAG_WRITE)
-    access = GENERIC_WRITE;
-  if (flags & FLAG_APPEND) {
-    DCHECK(!access);
-    access = FILE_APPEND_DATA;
-  }
-  if (flags & FLAG_READ)
-    access |= GENERIC_READ;
-  if (flags & FLAG_WRITE_ATTRIBUTES)
-    access |= FILE_WRITE_ATTRIBUTES;
-  if (flags & FLAG_EXECUTE)
-    access |= GENERIC_EXECUTE;
-
-  DWORD sharing = (flags & FLAG_EXCLUSIVE_READ) ? 0 : FILE_SHARE_READ;
-  if (!(flags & FLAG_EXCLUSIVE_WRITE))
-    sharing |= FILE_SHARE_WRITE;
-  if (flags & FLAG_SHARE_DELETE)
-    sharing |= FILE_SHARE_DELETE;
-
-  DWORD create_flags = 0;
-  if (flags & FLAG_ASYNC)
-    create_flags |= FILE_FLAG_OVERLAPPED;
-  if (flags & FLAG_TEMPORARY)
-    create_flags |= FILE_ATTRIBUTE_TEMPORARY;
-  if (flags & FLAG_HIDDEN)
-    create_flags |= FILE_ATTRIBUTE_HIDDEN;
-  if (flags & FLAG_DELETE_ON_CLOSE)
-    create_flags |= FILE_FLAG_DELETE_ON_CLOSE;
-  if (flags & FLAG_BACKUP_SEMANTICS)
-    create_flags |= FILE_FLAG_BACKUP_SEMANTICS;
-
-  file_.Set(CreateFile(name.value().c_str(), access, sharing, NULL,
-                       disposition, create_flags, NULL));
-
-  if (file_.IsValid()) {
-    error_details_ = FILE_OK;
-    async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
-
-    if (flags & (FLAG_OPEN_ALWAYS))
-      created_ = (ERROR_ALREADY_EXISTS != GetLastError());
-    else if (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE))
-      created_ = true;
-  } else {
-    error_details_ = OSErrorToFileError(GetLastError());
-  }
-}
-
 bool File::IsValid() const {
   return file_.IsValid();
 }
@@ -359,6 +275,90 @@ File::Error File::OSErrorToFileError(DWORD last_error) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownErrors.Windows",
                                   last_error);
       return FILE_ERROR_FAILED;
+  }
+}
+
+void File::DoInitialize(const FilePath& name, uint32 flags) {
+  ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsValid());
+
+  DWORD disposition = 0;
+
+  if (flags & FLAG_OPEN)
+    disposition = OPEN_EXISTING;
+
+  if (flags & FLAG_CREATE) {
+    DCHECK(!disposition);
+    disposition = CREATE_NEW;
+  }
+
+  if (flags & FLAG_OPEN_ALWAYS) {
+    DCHECK(!disposition);
+    disposition = OPEN_ALWAYS;
+  }
+
+  if (flags & FLAG_CREATE_ALWAYS) {
+    DCHECK(!disposition);
+    DCHECK(flags & FLAG_WRITE);
+    disposition = CREATE_ALWAYS;
+  }
+
+  if (flags & FLAG_OPEN_TRUNCATED) {
+    DCHECK(!disposition);
+    DCHECK(flags & FLAG_WRITE);
+    disposition = TRUNCATE_EXISTING;
+  }
+
+  if (!disposition) {
+    NOTREACHED();
+    return;
+  }
+
+  DWORD access = 0;
+  if (flags & FLAG_WRITE)
+    access = GENERIC_WRITE;
+  if (flags & FLAG_APPEND) {
+    DCHECK(!access);
+    access = FILE_APPEND_DATA;
+  }
+  if (flags & FLAG_READ)
+    access |= GENERIC_READ;
+  if (flags & FLAG_WRITE_ATTRIBUTES)
+    access |= FILE_WRITE_ATTRIBUTES;
+  if (flags & FLAG_EXECUTE)
+    access |= GENERIC_EXECUTE;
+
+  DWORD sharing = (flags & FLAG_EXCLUSIVE_READ) ? 0 : FILE_SHARE_READ;
+  if (!(flags & FLAG_EXCLUSIVE_WRITE))
+    sharing |= FILE_SHARE_WRITE;
+  if (flags & FLAG_SHARE_DELETE)
+    sharing |= FILE_SHARE_DELETE;
+
+  DWORD create_flags = 0;
+  if (flags & FLAG_ASYNC)
+    create_flags |= FILE_FLAG_OVERLAPPED;
+  if (flags & FLAG_TEMPORARY)
+    create_flags |= FILE_ATTRIBUTE_TEMPORARY;
+  if (flags & FLAG_HIDDEN)
+    create_flags |= FILE_ATTRIBUTE_HIDDEN;
+  if (flags & FLAG_DELETE_ON_CLOSE)
+    create_flags |= FILE_FLAG_DELETE_ON_CLOSE;
+  if (flags & FLAG_BACKUP_SEMANTICS)
+    create_flags |= FILE_FLAG_BACKUP_SEMANTICS;
+
+  file_.Set(CreateFile(name.value().c_str(), access, sharing, NULL,
+                       disposition, create_flags, NULL));
+
+  if (file_.IsValid()) {
+    error_details_ = FILE_OK;
+    async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
+
+    if (flags & (FLAG_OPEN_ALWAYS))
+      created_ = (ERROR_ALREADY_EXISTS != GetLastError());
+    else if (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE))
+      created_ = true;
+  } else {
+    error_details_ = OSErrorToFileError(GetLastError());
   }
 }
 

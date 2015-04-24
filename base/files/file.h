@@ -182,10 +182,6 @@ class BASE_EXPORT File {
   // Creates or opens the given file.
   void Initialize(const FilePath& name, uint32 flags);
 
-  // Creates or opens the given file, allowing paths with traversal ('..')
-  // components. Use only with extreme care.
-  void InitializeUnsafe(const FilePath& name, uint32 flags);
-
   bool IsValid() const;
 
   // Returns true if a new file was created (or an old one truncated to zero
@@ -353,6 +349,10 @@ class BASE_EXPORT File {
     unsigned int file_memory_checksum_;
   };
 #endif
+
+  // Creates or opens the given file. Only called if |name| has no traversal
+  // ('..') components.
+  void DoInitialize(const FilePath& name, uint32 flags);
 
   // TODO(tnagel): Reintegrate into Flush() once histogram isn't needed anymore,
   // cf. issue 473337.

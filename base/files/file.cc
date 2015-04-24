@@ -88,7 +88,7 @@ void File::Initialize(const FilePath& name, uint32 flags) {
     error_details_ = FILE_ERROR_ACCESS_DENIED;
     return;
   }
-  InitializeUnsafe(name, flags);
+  DoInitialize(name, flags);
 }
 #endif
 

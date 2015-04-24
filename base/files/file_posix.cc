@@ -166,96 +166,6 @@ void ProtectFileDescriptor(int fd) {
 void UnprotectFileDescriptor(int fd) {
 }
 
-// NaCl doesn't implement system calls to open files directly.
-#if !defined(OS_NACL)
-// TODO(erikkay): does it make sense to support FLAG_EXCLUSIVE_* here?
-void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
-  ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!IsValid());
-
-  int open_flags = 0;
-  if (flags & FLAG_CREATE)
-    open_flags = O_CREAT | O_EXCL;
-
-  created_ = false;
-
-  if (flags & FLAG_CREATE_ALWAYS) {
-    DCHECK(!open_flags);
-    DCHECK(flags & FLAG_WRITE);
-    open_flags = O_CREAT | O_TRUNC;
-  }
-
-  if (flags & FLAG_OPEN_TRUNCATED) {
-    DCHECK(!open_flags);
-    DCHECK(flags & FLAG_WRITE);
-    open_flags = O_TRUNC;
-  }
-
-  if (!open_flags && !(flags & FLAG_OPEN) && !(flags & FLAG_OPEN_ALWAYS)) {
-    NOTREACHED();
-    errno = EOPNOTSUPP;
-    error_details_ = FILE_ERROR_FAILED;
-    return;
-  }
-
-  if (flags & FLAG_WRITE && flags & FLAG_READ) {
-    open_flags |= O_RDWR;
-  } else if (flags & FLAG_WRITE) {
-    open_flags |= O_WRONLY;
-  } else if (!(flags & FLAG_READ) &&
-             !(flags & FLAG_WRITE_ATTRIBUTES) &&
-             !(flags & FLAG_APPEND) &&
-             !(flags & FLAG_OPEN_ALWAYS)) {
-    NOTREACHED();
-  }
-
-  if (flags & FLAG_TERMINAL_DEVICE)
-    open_flags |= O_NOCTTY | O_NDELAY;
-
-  if (flags & FLAG_APPEND && flags & FLAG_READ)
-    open_flags |= O_APPEND | O_RDWR;
-  else if (flags & FLAG_APPEND)
-    open_flags |= O_APPEND | O_WRONLY;
-
-  COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_equal_zero);
-
-  int mode = S_IRUSR | S_IWUSR;
-#if defined(OS_CHROMEOS)
-  mode |= S_IRGRP | S_IROTH;
-#endif
-
-  int descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
-
-  if (flags & FLAG_OPEN_ALWAYS) {
-    if (descriptor < 0) {
-      open_flags |= O_CREAT;
-      if (flags & FLAG_EXCLUSIVE_READ || flags & FLAG_EXCLUSIVE_WRITE)
-        open_flags |= O_EXCL;   // together with O_CREAT implies O_NOFOLLOW
-
-      descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
-      if (descriptor >= 0)
-        created_ = true;
-    }
-  }
-
-  if (descriptor < 0) {
-    error_details_ = File::OSErrorToFileError(errno);
-    return;
-  }
-
-  if (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE))
-    created_ = true;
-
-  if (flags & FLAG_DELETE_ON_CLOSE)
-    unlink(name.value().c_str());
-
-  async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
-  error_details_ = FILE_OK;
-  file_.reset(descriptor);
-  ProtectFileDescriptor(descriptor);
-}
-#endif  // !defined(OS_NACL)
-
 bool File::IsValid() const {
   return file_.is_valid();
 }
@@ -540,6 +450,96 @@ void File::MemoryCheckingScopedFD::Check() const {
 void File::MemoryCheckingScopedFD::UpdateChecksum() {
   ComputeMemoryChecksum(&file_memory_checksum_);
 }
+
+// NaCl doesn't implement system calls to open files directly.
+#if !defined(OS_NACL)
+// TODO(erikkay): does it make sense to support FLAG_EXCLUSIVE_* here?
+void File::DoInitialize(const FilePath& name, uint32 flags) {
+  ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsValid());
+
+  int open_flags = 0;
+  if (flags & FLAG_CREATE)
+    open_flags = O_CREAT | O_EXCL;
+
+  created_ = false;
+
+  if (flags & FLAG_CREATE_ALWAYS) {
+    DCHECK(!open_flags);
+    DCHECK(flags & FLAG_WRITE);
+    open_flags = O_CREAT | O_TRUNC;
+  }
+
+  if (flags & FLAG_OPEN_TRUNCATED) {
+    DCHECK(!open_flags);
+    DCHECK(flags & FLAG_WRITE);
+    open_flags = O_TRUNC;
+  }
+
+  if (!open_flags && !(flags & FLAG_OPEN) && !(flags & FLAG_OPEN_ALWAYS)) {
+    NOTREACHED();
+    errno = EOPNOTSUPP;
+    error_details_ = FILE_ERROR_FAILED;
+    return;
+  }
+
+  if (flags & FLAG_WRITE && flags & FLAG_READ) {
+    open_flags |= O_RDWR;
+  } else if (flags & FLAG_WRITE) {
+    open_flags |= O_WRONLY;
+  } else if (!(flags & FLAG_READ) &&
+             !(flags & FLAG_WRITE_ATTRIBUTES) &&
+             !(flags & FLAG_APPEND) &&
+             !(flags & FLAG_OPEN_ALWAYS)) {
+    NOTREACHED();
+  }
+
+  if (flags & FLAG_TERMINAL_DEVICE)
+    open_flags |= O_NOCTTY | O_NDELAY;
+
+  if (flags & FLAG_APPEND && flags & FLAG_READ)
+    open_flags |= O_APPEND | O_RDWR;
+  else if (flags & FLAG_APPEND)
+    open_flags |= O_APPEND | O_WRONLY;
+
+  COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_equal_zero);
+
+  int mode = S_IRUSR | S_IWUSR;
+#if defined(OS_CHROMEOS)
+  mode |= S_IRGRP | S_IROTH;
+#endif
+
+  int descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
+
+  if (flags & FLAG_OPEN_ALWAYS) {
+    if (descriptor < 0) {
+      open_flags |= O_CREAT;
+      if (flags & FLAG_EXCLUSIVE_READ || flags & FLAG_EXCLUSIVE_WRITE)
+        open_flags |= O_EXCL;   // together with O_CREAT implies O_NOFOLLOW
+
+      descriptor = HANDLE_EINTR(open(name.value().c_str(), open_flags, mode));
+      if (descriptor >= 0)
+        created_ = true;
+    }
+  }
+
+  if (descriptor < 0) {
+    error_details_ = File::OSErrorToFileError(errno);
+    return;
+  }
+
+  if (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE))
+    created_ = true;
+
+  if (flags & FLAG_DELETE_ON_CLOSE)
+    unlink(name.value().c_str());
+
+  async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
+  error_details_ = FILE_OK;
+  file_.reset(descriptor);
+  ProtectFileDescriptor(descriptor);
+}
+#endif  // !defined(OS_NACL)
 
 bool File::DoFlush() {
   ThreadRestrictions::AssertIOAllowed();
