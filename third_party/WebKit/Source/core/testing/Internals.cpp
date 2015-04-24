@@ -2280,11 +2280,7 @@ PassRefPtrWillBeRawPtr<ClientRectList> Internals::getTransitionElementRects()
         for (size_t j = 0; j < elementData[i].elements.size(); ++j)
             rects.append(elementData[i].elements[j].rect);
     }
-
-    Vector<FloatQuad> quads(rects.size());
-    for (size_t i = 0; i < rects.size(); ++i)
-        quads[i] = FloatRect(rects[i]);
-    return ClientRectList::create(quads);
+    return ClientRectList::create(rects);
 }
 
 void Internals::hideAllTransitionElements()

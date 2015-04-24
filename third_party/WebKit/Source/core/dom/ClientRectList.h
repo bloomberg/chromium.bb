@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/ClientRect.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -51,6 +52,13 @@ public:
     {
         return adoptRefWillBeNoop(new ClientRectList(quads));
     }
+
+    template<typename Rects>
+    static PassRefPtrWillBeRawPtr<ClientRectList> create(const Rects& rects)
+    {
+        return adoptRefWillBeNoop(new ClientRectList(rects));
+    }
+
     unsigned length() const;
     ClientRect* item(unsigned index);
     ClientRect* anonymousIndexedGetter(unsigned index) { return item(index); }
@@ -59,6 +67,15 @@ public:
 
 private:
     ClientRectList();
+
+    template<typename Rects>
+    explicit ClientRectList(const Rects& rects)
+    {
+        m_list.reserveInitialCapacity(rects.size());
+        for (const auto& r : rects)
+            m_list.append(ClientRect::create(FloatRect(r)));
+    }
+
     explicit ClientRectList(const Vector<FloatQuad>&);
 
     WillBeHeapVector<RefPtrWillBeMember<ClientRect>> m_list;
