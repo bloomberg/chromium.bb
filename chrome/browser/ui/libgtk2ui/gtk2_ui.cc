@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
 
+#include <math.h>
 #include <set>
 
 #include <pango/pango.h>
@@ -1427,8 +1428,9 @@ void Gtk2UI::UpdateDeviceScaleFactor(float device_scale_factor) {
 
 float Gtk2UI::GetDeviceScaleFactor() const {
   const int kCSSDefaultDPI = 96;
-  const float scale = GetDPI() / kCSSDefaultDPI;
-  return ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(scale));
+  float scale = GetDPI() / kCSSDefaultDPI;
+  // Round to 2 decimals, e.g. to 1.33.
+  return roundf(scale * 100) / 100;
 }
 
 }  // namespace libgtk2ui
