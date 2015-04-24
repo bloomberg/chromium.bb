@@ -2,20 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/i18n/rtl.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
-#include "chrome/grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -25,11 +20,17 @@ using views::GridLayout;
 
 namespace {
 
-// The ID of the column set for the bubble.
-const int kColumnSetId = 0;
+// The ID of the column set that holds the headings and the close button.
+const int kHeadingColumnSetId = 0;
 
-// The width of the left column.
-const int kLeftColumnWidth = 325;
+// The width of the columns that hold the heading texts and extension names.
+const int kTextColumnWidth = 325;
+
+// The ID of the column set that holds extension icons and names.
+const int kItemsColumnSetId = 1;
+
+// The size of extension icons, and width of the corresponding column.
+const int kIconSize = 32;
 
 class BundleInstalledBubble : public views::BubbleDelegateView,
                               public views::ButtonListener {
@@ -40,23 +41,38 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
       : views::BubbleDelegateView(anchor_view, arrow) {
     GridLayout* layout = GridLayout::CreatePanel(this);
     SetLayoutManager(layout);
-    views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
 
-    column_set->AddColumn(GridLayout::LEADING,
-                          GridLayout::FILL,
-                          0,  // no resizing
-                          GridLayout::USE_PREF,
-                          0,  // no fixed with
-                          kLeftColumnWidth);
-    column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
-    column_set->AddColumn(GridLayout::LEADING,
-                          GridLayout::LEADING,
-                          0,  // no resizing
-                          GridLayout::USE_PREF,
-                          0,  // no fixed width
-                          0); // no min width (only holds close button)
+    views::ColumnSet* heading_column_set =
+        layout->AddColumnSet(kHeadingColumnSetId);
+    heading_column_set->AddColumn(GridLayout::LEADING,
+                                  GridLayout::FILL,
+                                  100.0f,  // take all available space
+                                  GridLayout::USE_PREF,
+                                  0,  // no fixed width
+                                  kTextColumnWidth);
+    heading_column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
+    heading_column_set->AddColumn(GridLayout::TRAILING,
+                                  GridLayout::LEADING,
+                                  0,  // no resizing
+                                  GridLayout::USE_PREF,
+                                  0,  // no fixed width
+                                  0); // no min width (only holds close button)
 
-    layout->StartRow(0, kColumnSetId);
+    views::ColumnSet* items_column_set =
+        layout->AddColumnSet(kItemsColumnSetId);
+    items_column_set->AddColumn(GridLayout::CENTER,
+                                GridLayout::CENTER,
+                                0,  // no resizing
+                                GridLayout::FIXED,
+                                kIconSize,
+                                kIconSize);
+    items_column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
+    items_column_set->AddColumn(GridLayout::LEADING,
+                                GridLayout::CENTER,
+                                100.0f,  // take all available space
+                                GridLayout::USE_PREF,
+                                0,  // no fixed width
+                                kTextColumnWidth);
 
     AddContent(layout, bundle);
   }
@@ -65,32 +81,34 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
 
  private:
   void AddContent(GridLayout* layout, const BundleInstaller* bundle) {
-    base::string16 installed_heading = bundle->GetHeadingTextFor(
+    bool has_installed_items = bundle->HasItemWithState(
         BundleInstaller::Item::STATE_INSTALLED);
-    base::string16 failed_heading = bundle->GetHeadingTextFor(
+    bool has_failed_items = bundle->HasItemWithState(
         BundleInstaller::Item::STATE_FAILED);
 
     // Insert the list of installed items.
-    if (!installed_heading.empty()) {
-      layout->StartRow(0, kColumnSetId);
-      AddHeading(layout, installed_heading);
+    if (has_installed_items) {
+      layout->StartRow(0, kHeadingColumnSetId);
+      AddHeading(layout, bundle->GetHeadingTextFor(
+          BundleInstaller::Item::STATE_INSTALLED));
       AddCloseButton(layout, this);
       AddItemList(layout, bundle->GetItemsWithState(
           BundleInstaller::Item::STATE_INSTALLED));
 
       // Insert a line of padding if we're showing both sections.
-      if (!failed_heading.empty())
+      if (has_failed_items)
         layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     }
 
     // Insert the list of failed items.
-    if (!failed_heading.empty()) {
-      layout->StartRow(0, kColumnSetId);
-      AddHeading(layout, failed_heading);
+    if (has_failed_items) {
+      layout->StartRow(0, kHeadingColumnSetId);
+      AddHeading(layout, bundle->GetHeadingTextFor(
+          BundleInstaller::Item::STATE_FAILED));
 
       // The close button should be in the second column of the first row, so
       // we add it here if there was no installed items section.
-      if (installed_heading.empty())
+      if (!has_installed_items)
         AddCloseButton(layout, this);
 
       AddItemList(layout, bundle->GetItemsWithState(
@@ -101,18 +119,23 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
   }
 
   void AddItemList(GridLayout* layout, const BundleInstaller::ItemList& items) {
-    for (size_t i = 0; i < items.size(); ++i) {
-      base::string16 extension_name =
-          base::UTF8ToUTF16(items[i].localized_name);
-      base::i18n::AdjustStringForLocaleDirection(&extension_name);
+    for (const BundleInstaller::Item& item : items) {
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-      layout->StartRow(0, kColumnSetId);
-      views::Label* extension_label = new views::Label(
-          l10n_util::GetStringFUTF16(
-              IDS_EXTENSION_PERMISSION_LINE, extension_name));
+      layout->StartRow(0, kItemsColumnSetId);
+      gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(item.icon);
+      gfx::Size size(image.width(), image.height());
+      if (size.width() > kIconSize || size.height() > kIconSize)
+        size = gfx::Size(kIconSize, kIconSize);
+      views::ImageView* image_view = new views::ImageView;
+      image_view->SetImage(image);
+      image_view->SetImageSize(size);
+      layout->AddView(image_view);
+
+      views::Label* extension_label =
+          new views::Label(item.GetNameForDisplay());
       extension_label->SetMultiLine(true);
       extension_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      extension_label->SizeToFit(kLeftColumnWidth);
+      extension_label->SizeToFit(kTextColumnWidth);
       layout->AddView(extension_label);
     }
   }
@@ -136,7 +159,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
         heading, rb.GetFontList(ui::ResourceBundle::MediumFont));
     heading_label->SetMultiLine(true);
     heading_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    heading_label->SizeToFit(kLeftColumnWidth);
+    heading_label->SizeToFit(kTextColumnWidth);
     layout->AddView(heading_label);
   }
 

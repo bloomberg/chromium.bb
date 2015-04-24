@@ -66,6 +66,12 @@ const int kIconSize = 64;
 // align with the button below it.
 const int kIconOffset = 16;
 
+// Size of the icons of individual extensions for bundle installs.
+const int kSmallIconSize = 32;
+
+// Padding between extension icon and title for bundle installs.
+const int kSmallIconPadding = 6;
+
 // The dialog will resize based on its content, but this sets a maximum height
 // before overflowing a scrollbar.
 const int kDialogMaxHeight = 300;
@@ -77,10 +83,6 @@ const int kPermissionsLeftColumnWidth = 250;
 // Width of the left column of the dialog when the extension requests no
 // permissions.
 const int kNoPermissionsLeftColumnWidth = 200;
-
-// Width of the left column for bundle install prompts. There's only one column
-// in this case, so make it wider than normal.
-const int kBundleLeftColumnWidth = 300;
 
 // Width of the left column for external install prompts. The text is long in
 // this case, so make it wider than normal.
@@ -122,6 +124,36 @@ BulletedView::BulletedView(views::View* view) {
                         0);
   layout->StartRow(0, 0);
   layout->AddView(new views::Label(PrepareForDisplay(base::string16(), true)));
+  layout->AddView(view);
+}
+
+IconedView::IconedView(views::View* view, const gfx::ImageSkia& image) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(views::GridLayout::CENTER,
+                        views::GridLayout::LEADING,
+                        0,
+                        views::GridLayout::FIXED,
+                        kSmallIconSize,
+                        0);
+  column_set->AddPaddingColumn(0, kSmallIconPadding);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::CENTER,
+                        0,
+                        views::GridLayout::USE_PREF,
+                        0,  // No fixed width.
+                        0);
+  layout->StartRow(0, 0);
+
+  gfx::Size size(image.width(), image.height());
+  if (size.width() > kSmallIconSize || size.height() > kSmallIconSize)
+    size = gfx::Size(kSmallIconSize, kSmallIconSize);
+  views::ImageView* image_view = new views::ImageView;
+  image_view->SetImage(image);
+  image_view->SetImageSize(size);
+
+  layout->AddView(image_view);
   layout->AddView(view);
 }
 
@@ -204,8 +236,6 @@ void ExtensionInstallDialogView::InitView() {
       (prompt_->ShouldShowPermissions() + prompt_->GetRetainedFileCount()) > 0
           ? kPermissionsLeftColumnWidth
           : kNoPermissionsLeftColumnWidth;
-  if (is_bundle_install())
-    left_column_width = kBundleLeftColumnWidth;
   if (is_external_install())
     left_column_width = kExternalInstallLeftColumnWidth;
 
@@ -224,8 +254,7 @@ void ExtensionInstallDialogView::InitView() {
   scroll_view_->SetContents(scrollable_);
 
   int dialog_width = left_column_width + 2 * views::kPanelHorizMargin;
-  if (!is_bundle_install())
-    dialog_width += views::kPanelHorizMargin + kIconSize + kIconOffset;
+  dialog_width += views::kPanelHorizMargin + kIconSize + kIconOffset;
 
   if (prompt_->has_webstore_data()) {
     layout->StartRow(0, column_set_id);
@@ -261,19 +290,19 @@ void ExtensionInstallDialogView::InitView() {
   if (is_bundle_install()) {
     BundleInstaller::ItemList items = prompt_->bundle()->GetItemsWithState(
         BundleInstaller::Item::STATE_PENDING);
-    for (size_t i = 0; i < items.size(); ++i) {
-      base::string16 extension_name =
-          base::UTF8ToUTF16(items[i].localized_name);
-      base::i18n::AdjustStringForLocaleDirection(&extension_name);
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+    for (const BundleInstaller::Item& item : items) {
       layout->StartRow(0, column_set_id);
-      views::Label* extension_label = new views::Label(
-          PrepareForDisplay(extension_name, true));
+      views::Label* extension_label =
+          new views::Label(item.GetNameForDisplay());
       extension_label->SetMultiLine(true);
       extension_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      extension_label->SizeToFit(left_column_width);
-      layout->AddView(extension_label);
+      extension_label->SizeToFit(
+          left_column_width - kSmallIconSize - kSmallIconPadding);
+      gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(item.icon);
+      layout->AddView(new IconedView(extension_label, image));
     }
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   }
 
   bool has_permissions =
@@ -472,15 +501,13 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
                         views::GridLayout::USE_PREF,
                         0,  // no fixed width
                         left_column_width);
-  if (!is_bundle_install()) {
-    column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
-    column_set->AddColumn(views::GridLayout::TRAILING,
-                          views::GridLayout::LEADING,
-                          0,  // no resizing
-                          views::GridLayout::USE_PREF,
-                          0,  // no fixed width
-                          kIconSize);
-  }
+  column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
+  column_set->AddColumn(views::GridLayout::TRAILING,
+                        views::GridLayout::LEADING,
+                        0,  // no resizing
+                        views::GridLayout::USE_PREF,
+                        0,  // no fixed width
+                        kIconSize);
 
   layout->StartRow(0, column_set_id);
 
@@ -493,38 +520,37 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   heading->SizeToFit(left_column_width);
   layout->AddView(heading);
 
-  if (!is_bundle_install()) {
-    // Scale down to icon size, but allow smaller icons (don't scale up).
-    const gfx::ImageSkia* image = prompt_->icon().ToImageSkia();
-    gfx::Size size(image->width(), image->height());
-    if (size.width() > kIconSize || size.height() > kIconSize)
-      size = gfx::Size(kIconSize, kIconSize);
-    views::ImageView* icon = new views::ImageView();
-    icon->SetImageSize(size);
-    icon->SetImage(*image);
-    icon->SetHorizontalAlignment(views::ImageView::CENTER);
-    icon->SetVerticalAlignment(views::ImageView::CENTER);
-    if (single_detail_row) {
-      layout->AddView(icon);
-    } else {
-      int icon_row_span = 1;
-      if (is_inline_install()) {
-        // Also span the rating, user_count and store_link rows.
-        icon_row_span = 4;
-      } else if (prompt_->ShouldShowPermissions()) {
-        size_t permission_count = prompt_->GetPermissionCount(
-            ExtensionInstallPrompt::PermissionsType::ALL_PERMISSIONS);
-        // Also span the permission header and each of the permission rows (all
-        // have a padding row above it). This also works for the 'no special
-        // permissions' case.
-        icon_row_span = 3 + permission_count * 2;
-      } else if (prompt_->GetRetainedFileCount()) {
-        // Also span the permission header and the retained files container.
-        icon_row_span = 4;
-      }
-      layout->AddView(icon, 1, icon_row_span);
+  // Scale down to icon size, but allow smaller icons (don't scale up).
+  const gfx::ImageSkia* image = prompt_->icon().ToImageSkia();
+  gfx::Size size(image->width(), image->height());
+  if (size.width() > kIconSize || size.height() > kIconSize)
+    size = gfx::Size(kIconSize, kIconSize);
+  views::ImageView* icon = new views::ImageView();
+  icon->SetImageSize(size);
+  icon->SetImage(*image);
+  icon->SetHorizontalAlignment(views::ImageView::CENTER);
+  icon->SetVerticalAlignment(views::ImageView::CENTER);
+  if (single_detail_row) {
+    layout->AddView(icon);
+  } else {
+    int icon_row_span = 1;
+    if (is_inline_install()) {
+      // Also span the rating, user_count and store_link rows.
+      icon_row_span = 4;
+    } else if (prompt_->ShouldShowPermissions()) {
+      size_t permission_count = prompt_->GetPermissionCount(
+          ExtensionInstallPrompt::PermissionsType::ALL_PERMISSIONS);
+      // Also span the permission header and each of the permission rows (all
+      // have a padding row above it). This also works for the 'no special
+      // permissions' case.
+      icon_row_span = 3 + permission_count * 2;
+    } else if (prompt_->GetRetainedFileCount()) {
+      // Also span the permission header and the retained files container.
+      icon_row_span = 4;
     }
+    layout->AddView(icon, 1, icon_row_span);
   }
+
   return layout;
 }
 

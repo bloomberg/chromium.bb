@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/chrome_style.h"
+#include "chrome/browser/ui/cocoa/extensions/bundle_util.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -102,59 +103,90 @@ NSString* const kCellAttributesKey = @"cellAttributes";
 NSString* const kPermissionsDetailIndex = @"permissionsDetailIndex";
 NSString* const kPermissionsDetailType = @"permissionsDetailType";
 
+// Computes the |control|'s desired height to fit its contents, constrained to
+// be kMaxControlHeight at most.
+CGFloat ComputeDesiredControlHeight(NSControl* control) {
+  NSRect rect = [control frame];
+  rect.size.height = kMaxControlHeight;
+  return [[control cell] cellSizeForBounds:rect].height;
+}
+
 // Adjust the |control|'s height so that its content is not clipped.
-// This also adds the change in height to the |totalOffset| and shifts the
+// This also adds the change in height to the |total_offset| and shifts the
 // control down by that amount.
 void OffsetControlVerticallyToFitContent(NSControl* control,
-                                         CGFloat* totalOffset) {
+                                         CGFloat* total_offset) {
   // Adjust the control's height so that its content is not clipped.
-  NSRect currentRect = [control frame];
-  NSRect fitRect = currentRect;
-  fitRect.size.height = kMaxControlHeight;
-  CGFloat desiredHeight = [[control cell] cellSizeForBounds:fitRect].height;
-  CGFloat offset = desiredHeight - NSHeight(currentRect);
+  NSRect current_rect = [control frame];
+  CGFloat desired_height = ComputeDesiredControlHeight(control);
+  CGFloat offset = desired_height - NSHeight(current_rect);
 
-  [control setFrameSize:NSMakeSize(NSWidth(currentRect),
-                                   NSHeight(currentRect) + offset)];
+  [control setFrameSize:NSMakeSize(NSWidth(current_rect),
+                                   NSHeight(current_rect) + offset)];
 
-  *totalOffset += offset;
+  *total_offset += offset;
 
   // Move the control vertically by the new total offset.
   NSPoint origin = [control frame].origin;
-  origin.y -= *totalOffset;
+  origin.y -= *total_offset;
   [control setFrameOrigin:origin];
 }
 
-// Gets the desired height of |outlineView|. Simply using the view's frame
+// Adjust the |view|'s height so that its subviews are not clipped.
+// This also adds the change in height to the |total_offset| and shifts the
+// control down by that amount.
+void OffsetViewVerticallyToFitContent(NSView* view, CGFloat* total_offset) {
+  // Adjust the view's height so that its subviews are not clipped.
+  CGFloat desired_height = 0;
+  for (NSView* subview in [view subviews]) {
+    int required_height = NSMaxY([subview frame]);
+    if (required_height > desired_height)
+      desired_height = required_height;
+  }
+  NSRect current_rect = [view frame];
+  CGFloat offset = desired_height - NSHeight(current_rect);
+
+  [view setFrameSize:NSMakeSize(NSWidth(current_rect),
+                                NSHeight(current_rect) + offset)];
+
+  *total_offset += offset;
+
+  // Move the view vertically by the new total offset.
+  NSPoint origin = [view frame].origin;
+  origin.y -= *total_offset;
+  [view setFrameOrigin:origin];
+}
+
+// Gets the desired height of |outline_view|. Simply using the view's frame
 // doesn't work if an animation is pending.
-CGFloat GetDesiredOutlineViewHeight(NSOutlineView* outlineView) {
+CGFloat GetDesiredOutlineViewHeight(NSOutlineView* outline_view) {
   CGFloat height = 0;
-  for (NSInteger i = 0; i < [outlineView numberOfRows]; ++i)
-    height += NSHeight([outlineView rectOfRow:i]);
+  for (NSInteger i = 0; i < [outline_view numberOfRows]; ++i)
+    height += NSHeight([outline_view rectOfRow:i]);
   return height;
 }
 
-void OffsetOutlineViewVerticallyToFitContent(NSOutlineView* outlineView,
-                                             CGFloat* totalOffset) {
-  NSScrollView* scrollView = [outlineView enclosingScrollView];
-  NSRect frame = [scrollView frame];
-  CGFloat desiredHeight = GetDesiredOutlineViewHeight(outlineView);
-  if (desiredHeight > kMaxControlHeight)
-    desiredHeight = kMaxControlHeight;
-  CGFloat offset = desiredHeight - NSHeight(frame);
+void OffsetOutlineViewVerticallyToFitContent(NSOutlineView* outline_view,
+                                             CGFloat* total_offset) {
+  NSScrollView* scroll_view = [outline_view enclosingScrollView];
+  NSRect frame = [scroll_view frame];
+  CGFloat desired_height = GetDesiredOutlineViewHeight(outline_view);
+  if (desired_height > kMaxControlHeight)
+    desired_height = kMaxControlHeight;
+  CGFloat offset = desired_height - NSHeight(frame);
   frame.size.height += offset;
 
-  *totalOffset += offset;
+  *total_offset += offset;
 
   // Move the control vertically by the new total offset.
-  frame.origin.y -= *totalOffset;
-  [scrollView setFrame:frame];
+  frame.origin.y -= *total_offset;
+  [scroll_view setFrame:frame];
 }
 
-void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
+void AppendRatingStarsShim(const gfx::ImageSkia* skia_image, void* data) {
   ExtensionInstallViewController* controller =
       static_cast<ExtensionInstallViewController*>(data);
-  [controller appendRatingStar:skiaImage];
+  [controller appendRatingStar:skia_image];
 }
 
 void DrawBulletInFrame(NSRect frame) {
@@ -270,9 +302,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
         gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
   }
 
-  // The bundle install dialog has no icon.
-  if (![self isBundleInstall])
-    [iconView_ setImage:prompt_->icon().ToNSImage()];
+  [iconView_ setImage:prompt_->icon().ToNSImage()];
 
   // The dialog is laid out in the NIB exactly how we want it assuming that
   // each label fits on one line. However, for each label, we want to allow
@@ -309,22 +339,12 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
   }
 
   if ([self isBundleInstall]) {
-    // We display the list of extension names as a simple text string, seperated
-    // by newlines.
     BundleInstaller::ItemList items = prompt_->bundle()->GetItemsWithState(
         BundleInstaller::Item::STATE_PENDING);
+    PopulateBundleItemsList(items, itemsField_);
 
-    NSMutableString* joinedItems = [NSMutableString string];
-    for (size_t i = 0; i < items.size(); ++i) {
-      if (i > 0)
-        [joinedItems appendString:@"\n"];
-      [joinedItems appendString:base::SysUTF16ToNSString(
-          items[i].GetNameForDisplay())];
-    }
-    [itemsField_ setStringValue:joinedItems];
-
-    // Adjust the controls to fit the list of extensions.
-    OffsetControlVerticallyToFitContent(itemsField_, &totalOffset);
+    // Adjust the view to fit the list of extensions.
+    OffsetViewVerticallyToFitContent(itemsField_, &totalOffset);
   }
 
   // If there are any warnings, retained devices or retained files, then we

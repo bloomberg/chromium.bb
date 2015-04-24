@@ -95,9 +95,9 @@ typedef enum {
   base::scoped_nsobject<HyperlinkTextView> promo_;
   // Only shown for bundle installs.
   IBOutlet NSTextField* installedHeadingMsg_;
-  IBOutlet NSTextField* installedItemsMsg_;
+  IBOutlet NSView* installedItemsView_;
   IBOutlet NSTextField* failedHeadingMsg_;
-  IBOutlet NSTextField* failedItemsMsg_;
+  IBOutlet NSView* failedItemsView_;
 }
 
 @property(nonatomic, readonly) const extensions::BundleInstaller* bundle;

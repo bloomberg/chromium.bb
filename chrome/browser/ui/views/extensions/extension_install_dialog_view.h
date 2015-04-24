@@ -147,6 +147,15 @@ class BulletedView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(BulletedView);
 };
 
+// A simple view that prepends a view with an icon with the help of a grid
+// layout.
+class IconedView : public views::View {
+ public:
+  IconedView(views::View* view, const gfx::ImageSkia& image);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IconedView);
+};
+
 // A view to display text with an expandable details section.
 class ExpandableContainerView : public views::View,
                                 public views::ButtonListener,

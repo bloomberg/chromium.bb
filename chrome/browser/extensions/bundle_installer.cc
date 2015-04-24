@@ -93,7 +93,7 @@ BundleInstaller::Item::~Item() {}
 base::string16 BundleInstaller::Item::GetNameForDisplay() const {
   base::string16 name = base::UTF8ToUTF16(localized_name);
   base::i18n::AdjustStringForLocaleDirection(&name);
-  return l10n_util::GetStringFUTF16(IDS_EXTENSION_PERMISSION_LINE, name);
+  return name;
 }
 
 BundleInstaller::BundleInstaller(Browser* browser,
@@ -277,7 +277,7 @@ void BundleInstaller::ShowPrompt() {
     if (browser)
       web_contents = browser->tab_strip_model()->GetActiveWebContents();
     install_ui_.reset(new ExtensionInstallPrompt(web_contents));
-    install_ui_->ConfirmBundleInstall(this, permissions.get());
+    install_ui_->ConfirmBundleInstall(this, &icon_, permissions.get());
   }
 }
 

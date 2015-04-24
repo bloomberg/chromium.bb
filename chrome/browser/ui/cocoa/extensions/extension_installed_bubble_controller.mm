@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
+#include "chrome/browser/ui/cocoa/extensions/bundle_util.h"
 #include "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -337,12 +338,12 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
   if (type_ == extension_installed_bubble::kBundle) {
     NSInteger installedListHeight =
         [self addExtensionList:installedHeadingMsg_
-                      itemsMsg:installedItemsMsg_
+                     itemsView:installedItemsView_
                          state:BundleInstaller::Item::STATE_INSTALLED];
 
     NSInteger failedListHeight =
         [self addExtensionList:failedHeadingMsg_
-                      itemsMsg:failedItemsMsg_
+                     itemsView:failedItemsView_
                          state:BundleInstaller::Item::STATE_FAILED];
 
     newWindowHeight += installedListHeight + failedListHeight;
@@ -462,41 +463,36 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
 }
 
 - (NSInteger)addExtensionList:(NSTextField*)headingMsg
-                     itemsMsg:(NSTextField*)itemsMsg
+                    itemsView:(NSView*)itemsView
                         state:(BundleInstaller::Item::State)state {
   base::string16 heading = bundle_->GetHeadingTextFor(state);
   bool hidden = heading.empty();
   [headingMsg setHidden:hidden];
-  [itemsMsg setHidden:hidden];
+  [itemsView setHidden:hidden];
   if (hidden)
     return 0;
 
   [headingMsg setStringValue:base::SysUTF16ToNSString(heading)];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:headingMsg];
 
-  NSMutableString* joinedItems = [NSMutableString string];
-  BundleInstaller::ItemList items = bundle_->GetItemsWithState(state);
-  for (size_t i = 0; i < items.size(); ++i) {
-    if (i > 0)
-      [joinedItems appendString:@"\n"];
-    [joinedItems appendString:base::SysUTF16ToNSString(
-        items[i].GetNameForDisplay())];
-  }
+  CGFloat height =
+      PopulateBundleItemsList(bundle_->GetItemsWithState(state), itemsView);
 
-  [itemsMsg setStringValue:joinedItems];
-  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:itemsMsg];
+  NSRect frame = [itemsView frame];
+  frame.size.height = height;
+  [itemsView setFrame:frame];
 
   return NSHeight([headingMsg frame]) +
       extension_installed_bubble::kInnerVerticalMargin +
-      NSHeight([itemsMsg frame]);
+      NSHeight([itemsView frame]);
 }
 
 // Adjust y-position of messages to sit properly in new window height.
 - (void)setMessageFrames:(int)newWindowHeight {
   if (type_ == extension_installed_bubble::kBundle) {
     // Layout the messages from the bottom up.
-    NSTextField* msgs[] = { failedItemsMsg_, failedHeadingMsg_,
-                            installedItemsMsg_, installedHeadingMsg_ };
+    NSView* msgs[] = { failedItemsView_, failedHeadingMsg_,
+                       installedItemsView_, installedHeadingMsg_ };
     NSInteger offsetFromBottom = 0;
     BOOL isFirstVisible = YES;
     for (size_t i = 0; i < arraysize(msgs); ++i) {

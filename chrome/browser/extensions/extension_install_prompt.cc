@@ -665,6 +665,7 @@ ExtensionInstallPrompt::~ExtensionInstallPrompt() {
 
 void ExtensionInstallPrompt::ConfirmBundleInstall(
     extensions::BundleInstaller* bundle,
+    const SkBitmap* icon,
     const PermissionSet* permissions) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   bundle_ = bundle;
@@ -672,6 +673,7 @@ void ExtensionInstallPrompt::ConfirmBundleInstall(
   delegate_ = bundle;
   prompt_ = new Prompt(BUNDLE_INSTALL_PROMPT);
 
+  SetIcon(icon);
   ShowConfirmation();
 }
 
@@ -831,7 +833,8 @@ void ExtensionInstallPrompt::SetIcon(const SkBitmap* image) {
     // Let's set default icon bitmap whose size is equal to the default icon's
     // pixel size under maximal supported scale factor. If the bitmap is larger
     // than the one we need, it will be scaled down by the ui code.
-    icon_ = GetDefaultIconBitmapForMaxScaleFactor(extension_->is_app());
+    icon_ = GetDefaultIconBitmapForMaxScaleFactor(
+        extension_ ? extension_->is_app() : false);
   }
 }
 
@@ -926,7 +929,6 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case REPAIR_PROMPT:
     case DELEGATED_PERMISSIONS_PROMPT: {
       prompt_->set_extension(extension_);
-      prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
       prompt_->set_delegated_username(delegated_username_);
       break;
     }
@@ -938,6 +940,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
       NOTREACHED() << "Unknown message";
       return;
   }
+  prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
 
   g_last_prompt_type_for_tests = prompt_->type();
 

@@ -317,6 +317,7 @@ class ExtensionInstallPrompt
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
   virtual void ConfirmBundleInstall(
       extensions::BundleInstaller* bundle,
+      const SkBitmap* icon,
       const extensions::PermissionSet* permissions);
 
   // This is called by the standalone installer to verify whether the install

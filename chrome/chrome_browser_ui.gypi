@@ -967,6 +967,8 @@
       'browser/ui/cocoa/extensions/browser_actions_container_view.mm',
       'browser/ui/cocoa/extensions/browser_actions_controller.h',
       'browser/ui/cocoa/extensions/browser_actions_controller.mm',
+      'browser/ui/cocoa/extensions/bundle_util.h',
+      'browser/ui/cocoa/extensions/bundle_util.mm',
       'browser/ui/cocoa/extensions/device_permissions_dialog_controller.h',
       'browser/ui/cocoa/extensions/device_permissions_dialog_controller.mm',
       'browser/ui/cocoa/extensions/device_permissions_view_controller.h',

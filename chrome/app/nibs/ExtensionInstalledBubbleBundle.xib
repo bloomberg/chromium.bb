@@ -113,42 +113,20 @@
 									</object>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 								</object>
-								<object class="NSTextField" id="665888286">
+								<object class="NSView" id="665888286">
 									<reference key="NSNextResponder" ref="914312036"/>
 									<int key="NSvFlags">-2147483380</int>
 									<string key="NSFrame">{{12, 38}, {314, 17}}</string>
 									<reference key="NSSuperview" ref="914312036"/>
 									<bool key="NSEnabled">YES</bool>
-									<object class="NSTextFieldCell" key="NSCell" id="85879595">
-										<int key="NSCellFlags">67108864</int>
-										<int key="NSCellFlags2">272662528</int>
-										<string key="NSContents">Installed items</string>
-										<object class="NSFont" key="NSSupport" id="472995141">
-											<string key="NSName">LucidaGrande</string>
-											<double key="NSSize">13</double>
-											<int key="NSfFlags">1044</int>
-										</object>
-										<reference key="NSControlView" ref="665888286"/>
-										<reference key="NSBackgroundColor" ref="951604798"/>
-										<reference key="NSTextColor" ref="121031723"/>
-									</object>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 								</object>
-								<object class="NSTextField" id="531091173">
+								<object class="NSView" id="531091173">
 									<reference key="NSNextResponder" ref="914312036"/>
 									<int key="NSvFlags">-2147483380</int>
 									<string key="NSFrame">{{12, 88}, {314, 17}}</string>
 									<reference key="NSSuperview" ref="914312036"/>
 									<bool key="NSEnabled">YES</bool>
-									<object class="NSTextFieldCell" key="NSCell" id="226927715">
-										<int key="NSCellFlags">67108864</int>
-										<int key="NSCellFlags2">272662528</int>
-										<string key="NSContents">Installed items</string>
-										<reference key="NSSupport" ref="472995141"/>
-										<reference key="NSControlView" ref="531091173"/>
-										<reference key="NSBackgroundColor" ref="951604798"/>
-										<reference key="NSTextColor" ref="121031723"/>
-									</object>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 								</object>
 								<object class="NSButton" id="433090690">
@@ -161,7 +139,11 @@
 										<int key="NSCellFlags">67108864</int>
 										<int key="NSCellFlags2">134250496</int>
 										<string key="NSContents"/>
-										<reference key="NSSupport" ref="472995141"/>
+										<object class="NSFont" key="NSSupport" id="472995141">
+											<string key="NSName">LucidaGrande</string>
+											<double key="NSSize">13</double>
+											<int key="NSfFlags">1044</int>
+										</object>
 										<reference key="NSControlView" ref="433090690"/>
 										<int key="NSButtonFlags">139214848</int>
 										<int key="NSButtonFlags2">6</int>
@@ -215,7 +197,7 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">installedItemsMsg_</string>
+						<string key="label">installedItemsView_</string>
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="531091173"/>
 					</object>
@@ -231,7 +213,7 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">failedItemsMsg_</string>
+						<string key="label">failedItemsView_</string>
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="665888286"/>
 					</object>
@@ -339,16 +321,7 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">35</int>
 						<reference key="object" ref="531091173"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="226927715"/>
-						</object>
 						<reference key="parent" ref="914312036"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">36</int>
-						<reference key="object" ref="226927715"/>
-						<reference key="parent" ref="531091173"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">15</int>
@@ -367,16 +340,7 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">48</int>
 						<reference key="object" ref="665888286"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="85879595"/>
-						</object>
 						<reference key="parent" ref="914312036"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">49</int>
-						<reference key="object" ref="85879595"/>
-						<reference key="parent" ref="665888286"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">56</int>
