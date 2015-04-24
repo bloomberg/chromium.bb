@@ -3,9 +3,19 @@
 // found in the LICENSE file.
 
 var panelWindowId = 0;
+var panelLoaded = false;
 
 // This function is called by the panel during the test run.
 function panelCallback() {
+  panelLoaded = true;
+  maybeReadyForTest();
+}
+
+function maybeReadyForTest() {
+  // The order of the two callbacks is not guaranteed.
+  if( panelWindowId === 0 || !panelLoaded)
+    return;
+
   // We have now added a panel so the total counts is 2 (browser + panel).
   chrome.test.assertEq(2, chrome.extension.getViews().length);
   // Verify that we're able to get the view of the panel by its window id.
@@ -29,6 +39,7 @@ chrome.test.runTests([
             chrome.test.assertEq(true, win.alwaysOnTop);
             panelWindowId = win.id;
             // The panel will call back to us through panelCallback (above).
+            maybeReadyForTest();
         });
   }
 ]);
