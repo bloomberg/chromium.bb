@@ -151,7 +151,7 @@ void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
     DCHECK_LT(result, 0);
     ServiceWorkerMetrics::CountReadResponseResult(
         ServiceWorkerMetrics::READ_HEADERS_ERROR);
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
+    Done(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
     return;
   }
   DCHECK_GE(result, 0);
@@ -192,14 +192,22 @@ void ServiceWorkerReadFromCacheJob::SetupRangeResponse(int resource_size) {
       range_requested_, resource_size, true /* replace status line */);
 }
 
+void ServiceWorkerReadFromCacheJob::Done(const net::URLRequestStatus& status) {
+  if (!status.is_success()) {
+    version_->SetStartWorkerStatusCode(SERVICE_WORKER_ERROR_DISK_CACHE);
+    // TODO(falken): Retry and evict the SW if it fails again.
+  }
+  NotifyDone(status);
+}
+
 void ServiceWorkerReadFromCacheJob::OnReadComplete(int result) {
   ServiceWorkerMetrics::ReadResponseResult check_result;
   if (result == 0) {
     check_result = ServiceWorkerMetrics::READ_OK;
-    NotifyDone(net::URLRequestStatus());
+    Done(net::URLRequestStatus());
   } else if (result < 0) {
     check_result = ServiceWorkerMetrics::READ_DATA_ERROR;
-    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
+    Done(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
   } else {
     check_result = ServiceWorkerMetrics::READ_OK;
     SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status

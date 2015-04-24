@@ -348,12 +348,14 @@ bool IsInstalled(ServiceWorkerVersion::Status status) {
   switch (status) {
     case ServiceWorkerVersion::NEW:
     case ServiceWorkerVersion::INSTALLING:
-    case ServiceWorkerVersion::REDUNDANT:
       return false;
     case ServiceWorkerVersion::INSTALLED:
     case ServiceWorkerVersion::ACTIVATING:
     case ServiceWorkerVersion::ACTIVATED:
       return true;
+    case ServiceWorkerVersion::REDUNDANT:
+      NOTREACHED() << "Cannot use REDUNDANT here.";
+      return false;
   }
   NOTREACHED() << "Unexpected status: " << status;
   return false;
@@ -452,6 +454,11 @@ void ServiceWorkerVersion::StartWorker(
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
+  if (status_ == REDUNDANT) {
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    return;
+  }
+  prestart_status_ = status_;
 
   // Ensure the live registration during starting worker so that the worker can
   // get associated with it in SWDispatcherHost::OnSetHostedVersionId().
@@ -835,6 +842,11 @@ void ServiceWorkerVersion::ReportError(ServiceWorkerStatusCode status,
   } else {
     OnReportException(base::UTF8ToUTF16(status_message), -1, -1, GURL());
   }
+}
+
+void ServiceWorkerVersion::SetStartWorkerStatusCode(
+    ServiceWorkerStatusCode status) {
+  start_worker_status_ = status;
 }
 
 void ServiceWorkerVersion::Doom() {
@@ -1514,8 +1526,13 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     const StatusCallback& callback,
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& protect) {
-  if (status != SERVICE_WORKER_OK || is_redundant()) {
+  if (status != SERVICE_WORKER_OK) {
     RecordStartWorkerResult(status);
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    return;
+  }
+  if (is_redundant()) {
+    RecordStartWorkerResult(SERVICE_WORKER_ERROR_NOT_FOUND);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
     return;
   }
@@ -1742,17 +1759,13 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
   base::TimeTicks start_time = start_time_;
   ClearTick(&start_time_);
 
-  // Failing to start a redundant worker isn't interesting and very common when
-  // update dooms because the script is byte-to-byte identical.
-  if (is_redundant())
-    return;
-
-  ServiceWorkerMetrics::RecordStartWorkerStatus(status, IsInstalled(status_));
+  ServiceWorkerMetrics::RecordStartWorkerStatus(status,
+                                                IsInstalled(prestart_status_));
 
   if (status == SERVICE_WORKER_OK && !start_time.is_null() &&
       !skip_recording_startup_time_) {
     ServiceWorkerMetrics::RecordStartWorkerTime(GetTickDuration(start_time),
-                                                IsInstalled(status_));
+                                                IsInstalled(prestart_status_));
   }
 
   if (status != SERVICE_WORKER_ERROR_TIMEOUT)
@@ -1850,6 +1863,9 @@ ServiceWorkerStatusCode ServiceWorkerVersion::DeduceStartWorkerFailureReason(
     ServiceWorkerStatusCode default_code) {
   if (ping_state_ == PING_TIMED_OUT)
     return SERVICE_WORKER_ERROR_TIMEOUT;
+
+  if (start_worker_status_ != SERVICE_WORKER_OK)
+    return start_worker_status_;
 
   const net::URLRequestStatus& main_script_status =
       script_cache_map()->main_script_status();

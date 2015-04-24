@@ -55,6 +55,7 @@ class CONTENT_EXPORT ServiceWorkerReadFromCacheJob
   const net::HttpResponseInfo* http_info() const;
   bool is_range_request() const { return range_requested_.IsValid(); }
   void SetupRangeResponse(int response_data_size);
+  void Done(const net::URLRequestStatus& status);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<ServiceWorkerVersion> version_;

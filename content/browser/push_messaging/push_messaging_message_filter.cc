@@ -559,6 +559,7 @@ void PushMessagingMessageFilter::UnregisterHavingGottenSenderId(
     case SERVICE_WORKER_ERROR_STATE:
     case SERVICE_WORKER_ERROR_TIMEOUT:
     case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
+    case SERVICE_WORKER_ERROR_DISK_CACHE:
     case SERVICE_WORKER_ERROR_MAX_VALUE:
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);
@@ -734,6 +735,7 @@ void PushMessagingMessageFilter::DidGetRegistration(
     case SERVICE_WORKER_ERROR_STATE:
     case SERVICE_WORKER_ERROR_TIMEOUT:
     case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
+    case SERVICE_WORKER_ERROR_DISK_CACHE:
     case SERVICE_WORKER_ERROR_MAX_VALUE:
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);

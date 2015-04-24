@@ -450,7 +450,9 @@ void ServiceWorkerRegisterJob::CompleteInternal(
       if (should_uninstall_on_failure_)
         registration()->ClearWhenReady();
       if (new_version()) {
-        if (status != SERVICE_WORKER_ERROR_EXISTS)
+        if (status == SERVICE_WORKER_ERROR_EXISTS)
+          new_version()->SetStartWorkerStatusCode(SERVICE_WORKER_ERROR_EXISTS);
+        else
           new_version()->ReportError(status, status_message);
         registration()->UnsetVersion(new_version());
         new_version()->Doom();
