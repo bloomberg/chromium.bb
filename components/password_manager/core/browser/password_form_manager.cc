@@ -388,6 +388,10 @@ void PasswordFormManager::OnRequestDone(
   // the worse-scoring "protected" ones for later.
   ScopedVector<PasswordForm> protected_credentials;
   for (size_t i = 0; i < logins_result.size(); ++i) {
+    // Take ownership of the PasswordForm from the ScopedVector.
+    scoped_ptr<PasswordForm> login(logins_result[i]);
+    logins_result[i] = nullptr;
+
     if (credential_scores[i] < 0)
       continue;
     if (credential_scores[i] < best_score) {
@@ -399,45 +403,46 @@ void PasswordFormManager::OnRequestDone(
       // instead of explicitly handling empty path matches.
       bool is_credential_protected =
           observed_form_.scheme == PasswordForm::SCHEME_HTML &&
-          StartsWithASCII("/", logins_result[i]->origin.path(), true) &&
-          credential_scores[i] > 0 && !logins_result[i]->blacklisted_by_user;
+          StartsWithASCII("/", login->origin.path(), true) &&
+          credential_scores[i] > 0 && !login->blacklisted_by_user;
       // Passwords generated on a signup form must show on a login form even if
       // there are better-matching saved credentials. TODO(gcasto): We don't
       // want to cut credentials that were saved on signup forms even if they
       // weren't generated, but currently it's hard to distinguish between those
       // forms and two different login forms on the same domain. Filed
       // http://crbug.com/294468 to look into this.
-      is_credential_protected |=
-          logins_result[i]->type == PasswordForm::TYPE_GENERATED;
+      is_credential_protected |= login->type == PasswordForm::TYPE_GENERATED;
 
-      if (is_credential_protected) {
-        protected_credentials.push_back(logins_result[i]);
-        logins_result[i] = nullptr;
-      }
+      if (is_credential_protected)
+        protected_credentials.push_back(login.Pass());
       continue;
     }
 
     // If there is another best-score match for the same username, replace it.
     // TODO(vabr): Spare the replacing and keep the first instead of the last
     // candidate.
-    auto& best_match = best_matches_[logins_result[i]->username_value];
+    PasswordForm*& best_match = best_matches_[login->username_value];
     if (best_match == preferred_match_)
       preferred_match_ = nullptr;
     delete best_match;
-
-    best_match = logins_result[i];
-    logins_result[i] = nullptr;
-    preferred_match_ = best_match->preferred ? best_match : preferred_match_;
+    // Transfer ownership into the map.
+    best_match = login.release();
+    if (best_match->preferred)
+      preferred_match_ = best_match;
   }
 
   // Add the protected results if we don't already have a result with the same
   // username.
-  for (auto& protege : protected_credentials) {
-    auto& corresponding_best_match = best_matches_[protege->username_value];
-    if (!corresponding_best_match) {
-      corresponding_best_match = protege;
-      protege = nullptr;
-    }
+  for (ScopedVector<PasswordForm>::iterator it = protected_credentials.begin();
+       it != protected_credentials.end(); ++it) {
+    // Take ownership of the PasswordForm from the ScopedVector.
+    scoped_ptr<PasswordForm> protege(*it);
+    *it = nullptr;
+
+    PasswordForm*& corresponding_best_match =
+        best_matches_[protege->username_value];
+    if (!corresponding_best_match)
+      corresponding_best_match = protege.release();
   }
 
   client_->AutofillResultsComputed();

@@ -10,6 +10,7 @@
 
 #include "build/build_config.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/browser/field_types.h"
