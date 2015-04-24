@@ -408,7 +408,6 @@ void CreditCard::GetMatchingTypes(const base::string16& text,
   if (!card_number.empty() && StripSeparators(text) == card_number)
     matching_types->insert(CREDIT_CARD_NUMBER);
 
-NOTIMPLEMENTED() << " GETMATCINGTYPES " << text;
   int month;
   if (ConvertMonth(text, app_locale, &month) &&
       month == expiration_month_) {

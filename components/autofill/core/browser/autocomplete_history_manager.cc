@@ -127,16 +127,12 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
   //  - field was not identified as a CVC field (this is handled in
   //    AutofillManager)
   std::vector<FormFieldData> values;
-  for (std::vector<FormFieldData>::const_iterator iter =
-           form.fields.begin();
-       iter != form.fields.end(); ++iter) {
-    if (!iter->value.empty() &&
-        !iter->name.empty() &&
-        IsTextField(*iter) &&
-        iter->should_autocomplete &&
-        !autofill::IsValidCreditCardNumber(iter->value) &&
-        !autofill::IsSSN(iter->value)) {
-      values.push_back(*iter);
+  for (const FormFieldData& field : form.fields) {
+    if (!field.value.empty() && !field.name.empty() && IsTextField(field) &&
+        field.should_autocomplete &&
+        !autofill::IsValidCreditCardNumber(field.value) &&
+        !autofill::IsSSN(field.value)) {
+      values.push_back(field);
     }
   }
 

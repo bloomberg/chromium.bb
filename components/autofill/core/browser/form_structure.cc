@@ -363,31 +363,26 @@ FormStructure::FormStructure(const FormData& form)
       is_form_tag_(form.is_form_tag) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
-  for (std::vector<FormFieldData>::const_iterator field =
-           form.fields.begin();
-       field != form.fields.end(); ++field) {
-    if (!ShouldSkipField(*field)) {
+  for (const FormFieldData& field : form.fields) {
+    if (!ShouldSkipField(field)) {
       // Add all supported form fields (including with empty names) to the
       // signature.  This is a requirement for Autofill servers.
       form_signature_field_names_.append("&");
-      form_signature_field_names_.append(StripDigitsIfRequired(field->name));
+      form_signature_field_names_.append(StripDigitsIfRequired(field.name));
 
       ++active_field_count_;
     }
 
-    if (field->form_control_type == "password")
+    if (field.form_control_type == "password")
       has_password_field_ = true;
 
     // Generate a unique name for this field by appending a counter to the name.
     // Make sure to prepend the counter with a non-numeric digit so that we are
     // guaranteed to avoid collisions.
-    if (!unique_names.count(field->name))
-      unique_names[field->name] = 1;
-    else
-      ++unique_names[field->name];
-    base::string16 unique_name = field->name + base::ASCIIToUTF16("_") +
-        base::IntToString16(unique_names[field->name]);
-    fields_.push_back(new AutofillField(*field, unique_name));
+    base::string16 unique_name =
+        field.name + base::ASCIIToUTF16("_") +
+        base::IntToString16(++unique_names[field.name]);
+    fields_.push_back(new AutofillField(field, unique_name));
   }
 }
 
