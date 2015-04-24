@@ -7730,7 +7730,7 @@ static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     RefPtrWillBeRawPtr<XPathNSResolver> xPathNSResolverArg;
     {
-        xPathNSResolverArg = toXPathNSResolver(info.GetIsolate(), info[0]);
+        xPathNSResolverArg = toXPathNSResolver(ScriptState::current(info.GetIsolate()), info[0]);
     }
     impl->voidMethodXPathNSResolverArg(xPathNSResolverArg.release());
 }

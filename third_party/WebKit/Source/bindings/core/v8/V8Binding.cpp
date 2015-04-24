@@ -641,13 +641,13 @@ String toUSVString(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionS
     return replaceUnmatchedSurrogates(x);
 }
 
-PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(ScriptState* scriptState, v8::Handle<v8::Value> value)
 {
     RefPtrWillBeRawPtr<XPathNSResolver> resolver = nullptr;
-    if (V8XPathNSResolver::hasInstance(value, isolate))
+    if (V8XPathNSResolver::hasInstance(value, scriptState->isolate()))
         resolver = V8XPathNSResolver::toImpl(v8::Handle<v8::Object>::Cast(value));
     else if (value->IsObject())
-        resolver = V8CustomXPathNSResolver::create(value.As<v8::Object>(), isolate);
+        resolver = V8CustomXPathNSResolver::create(scriptState, value.As<v8::Object>());
     return resolver;
 }
 

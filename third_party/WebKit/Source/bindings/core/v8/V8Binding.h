@@ -526,7 +526,7 @@ inline v8::MaybeLocal<v8::Value> v8DateOrNaN(v8::Isolate* isolate, double value)
 
 // FIXME: Remove the special casing for NodeFilter and XPathNSResolver.
 PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Handle<v8::Object>, ScriptState*);
-PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Isolate*, v8::Handle<v8::Value>);
+PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(ScriptState*, v8::Handle<v8::Value>);
 
 bool toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*, ExceptionState&);
 
