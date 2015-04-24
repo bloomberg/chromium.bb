@@ -197,6 +197,8 @@ class RenderingHelper {
 #endif
 #endif
 
+  bool ignore_vsync_;
+
   gfx::AcceleratedWidget window_;
 
   gfx::Size screen_size_;

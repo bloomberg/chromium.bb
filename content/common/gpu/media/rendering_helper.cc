@@ -181,7 +181,7 @@ void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
   done->Signal();
 }
 
-RenderingHelper::RenderingHelper() {
+RenderingHelper::RenderingHelper() : ignore_vsync_(false) {
   window_ = gfx::kNullAcceleratedWidget;
   Clear();
 }
@@ -241,6 +241,9 @@ void RenderingHelper::Setup() {
   platform_window_delegate_.reset(new RenderingHelper::StubOzoneDelegate());
   window_ = platform_window_delegate_->accelerated_widget();
   gfx::Size window_size(800, 600);
+  // Ignore the vsync provider by default. On ChromeOS this will be set
+  // accordingly based on the display configuration.
+  ignore_vsync_ = true;
 #if defined(OS_CHROMEOS)
   // We hold onto the main loop here to wait for the DisplayController
   // to give us the size of the display so we can create a window of
@@ -257,9 +260,14 @@ void RenderingHelper::Setup() {
   display_configurator_->RemoveObserver(&display_setup_observer);
 
   gfx::Size framebuffer_size = display_configurator_->framebuffer_size();
-  if (!framebuffer_size.IsEmpty())
+  if (!framebuffer_size.IsEmpty()) {
     window_size = framebuffer_size;
+    ignore_vsync_ = false;
+  }
 #endif
+  if (ignore_vsync_)
+    DVLOG(1) << "Ignoring vsync provider";
+
   platform_window_delegate_->platform_window()->SetBounds(
       gfx::Rect(window_size));
 
@@ -471,7 +479,11 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   // in VideoDecodeAcceleratorTest.TearDown(), while the |rendering_helper_| is
   // a member of that class. (See video_decode_accelerator_unittest.cc.)
   gfx::VSyncProvider* vsync_provider = gl_surface_->GetVSyncProvider();
-  if (vsync_provider && frame_duration_ != base::TimeDelta())
+
+  // VSync providers rely on the underlying CRTC to get the timing. In headless
+  // mode the surface isn't associated with a CRTC so the vsync provider can not
+  // get the timing, meaning it will not call UpdateVsyncParameters() ever.
+  if (!ignore_vsync_ && vsync_provider && frame_duration_ != base::TimeDelta())
     vsync_provider->GetVSyncParameters(base::Bind(
         &RenderingHelper::UpdateVSyncParameters, base::Unretained(this), done));
   else
@@ -703,7 +715,7 @@ void RenderingHelper::RenderContent() {
   // in VideoDecodeAcceleratorTest.TearDown(), while the |rendering_helper_| is
   // a member of that class. (See video_decode_accelerator_unittest.cc.)
   gfx::VSyncProvider* vsync_provider = gl_surface_->GetVSyncProvider();
-  if (vsync_provider) {
+  if (vsync_provider && !ignore_vsync_) {
     vsync_provider->GetVSyncParameters(base::Bind(
         &RenderingHelper::UpdateVSyncParameters, base::Unretained(this),
         static_cast<base::WaitableEvent*>(NULL)));
