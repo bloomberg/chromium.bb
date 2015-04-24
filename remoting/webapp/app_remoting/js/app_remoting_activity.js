@@ -145,7 +145,13 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
     }
   } else {
     console.error('Invalid "runApplication" response from server.');
-    this.onConnectionFailed(remoting.Error.fromHttpStatus(xhrResponse.status));
+    // The orchestrator returns 403 if the user is not whitelisted to run the
+    // app, which gets translated to a generic error message, so pick something
+    // a bit more user-friendly.
+    var error = xhrResponse.status == 403 ?
+        new remoting.Error(remoting.Error.Tag.APP_NOT_AUTHORIZED) :
+        remoting.Error.fromHttpStatus(xhrResponse.status);
+    this.onConnectionFailed(error);
   }
 };
 
@@ -194,7 +200,7 @@ remoting.AppRemotingActivity.prototype.onConnectionFailed = function(error) {
 remoting.AppRemotingActivity.prototype.showErrorMessage_ = function(error) {
   console.error('Connection failed: ' + error.toString());
   remoting.MessageWindow.showErrorMessage(
-      chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
+      remoting.app.getApplicationName(),
       chrome.i18n.getMessage(error.getTag()));
 };
 

@@ -48,7 +48,7 @@ remoting.AppRemoting.prototype.getActivity = function() {
  */
 remoting.AppRemoting.prototype.signInFailed_ = function(error) {
   remoting.MessageWindow.showErrorMessage(
-      chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
+      this.getApplicationName(),
       chrome.i18n.getMessage(error.getTag()));
 };
 
