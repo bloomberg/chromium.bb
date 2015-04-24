@@ -51,6 +51,7 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   L"libwinhook.dll",                    // V-Bates.
   L"lmrn.dll",                          // Unknown.
   L"minisp.dll",                        // Unknown (suspected malware).
+  L"minisp32.dll",                      // Unknown (suspected malware).
   L"safetynut.dll",                     // Unknown (suspected adware).
   L"smdmf.dll",                         // Unknown (suspected adware).
   L"systemk.dll",                       // Unknown (suspected adware).

@@ -48658,6 +48658,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1763208296" label="safetynut.dll"/>
   <int value="1996673448" label="scdetour.dll"/>
   <int value="2060768492" label="libwinhook.dll"/>
+  <int value="2074150225" label="minisp32.dll"/>
   <int value="2117903235" label="cplushook.dll"/>
   <int value="2132270559" label="libsvn_tsvn32.dll"/>
 </enum>
