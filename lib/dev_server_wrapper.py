@@ -113,10 +113,12 @@ def GetXbuddyPath(path):
 # pylint: disable=import-error
 def GetImagePathWithXbuddy(path, board, version=None,
                            static_dir=DEFAULT_STATIC_DIR, lookup_only=False):
-  """Gets image path using xbuddy.
+  """Gets image path and resolved XBuddy path using xbuddy.
 
   Ask xbuddy to translate |path|, and if necessary, download and stage the
-  image, then return a translated path to the image.
+  image, then return a translated path to the image. Also returns the resolved
+  XBuddy path, which may be useful for subsequent calls in case the argument is
+  an alias.
 
   Args:
     path: The xbuddy path.
@@ -127,7 +129,9 @@ def GetImagePathWithXbuddy(path, board, version=None,
       artifact.
 
   Returns:
-    A translated path to the image: build-id/version/image_name.
+    A tuple consisting of a translated path to the image
+    (build-id/version/image_name) as well as the fully resolved XBuddy path (in
+    the case where |path| is an XBuddy alias).
   """
   # Import xbuddy for translating, downloading and staging the image.
   if not os.path.exists(DEVSERVER_PKG_DIR):
@@ -144,7 +148,9 @@ def GetImagePathWithXbuddy(path, board, version=None,
       build_id, file_name = xb.Translate(path_list)
     else:
       build_id, file_name = xb.Get(path_list)
-    return os.path.join(build_id, file_name)
+
+    resolved_path, _ = xb.LookupAlias(os.path.sep.join(path_list))
+    return os.path.join(build_id, file_name), resolved_path
   except xbuddy.XBuddyException as e:
     logging.error('Locating image "%s" failed. The path might not be valid or '
                   'the image might not exist.', path)

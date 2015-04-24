@@ -175,7 +175,7 @@ class USBImager(object):
       image_path = self.ChooseImageFromDirectory(self.image)
     else:
       # Translate the xbuddy path to get the exact image to use.
-      translated_path = ds_wrapper.GetImagePathWithXbuddy(
+      translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
           self.image, self.board, version=self.sdk_version,
           static_dir=_DEVSERVER_STATIC_DIR)
       image_path = ds_wrapper.TranslatedPathToLocalPath(
@@ -571,12 +571,12 @@ class RemoteDeviceUpdater(object):
                 static_dir=_DEVSERVER_STATIC_DIR)
           else:
             # Translate the xbuddy path to get the exact image to use.
-            translated_path = ds_wrapper.GetImagePathWithXbuddy(
+            translated_path, resolved_path = ds_wrapper.GetImagePathWithXbuddy(
                 self.image, self.board, version=self.sdk_version,
                 static_dir=_DEVSERVER_STATIC_DIR, lookup_only=True)
             logging.info('Using image %s', translated_path)
             # Convert the translated path to be used in the update request.
-            image_path = ds_wrapper.ConvertTranslatedPath(self.image,
+            image_path = ds_wrapper.ConvertTranslatedPath(resolved_path,
                                                           translated_path)
 
             # Launch a local devserver to generate/serve update payloads.

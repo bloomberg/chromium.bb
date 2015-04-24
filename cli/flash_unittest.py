@@ -54,7 +54,8 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
                      return_value='xbuddy/local/latest')
     self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
     self.PatchObject(dev_server_wrapper, 'GetImagePathWithXbuddy',
-                     return_value='taco-paladin/R36/chromiumos_test_image.bin')
+                     return_value=('taco-paladin/R36/chromiumos_test_image.bin',
+                                   'remote/taco-paladin/R36/test'))
     self.PatchObject(dev_server_wrapper, 'GetUpdatePayloads')
     self.PatchObject(remote_access, 'CHECK_INTERVAL', new=0)
     self.PatchObject(remote_access, 'ChromiumOSDevice')
@@ -147,7 +148,8 @@ class USBImagerTest(cros_test_lib.MockTempDirTestCase):
                      return_value='xbuddy/local/latest')
     self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
     self.PatchObject(dev_server_wrapper, 'GetImagePathWithXbuddy',
-                     return_value='taco-paladin/R36/chromiumos_test_image.bin')
+                     return_value=('taco-paladin/R36/chromiumos_test_image.bin',
+                                   'remote/taco-paladin/R36/test'))
     self.PatchObject(os.path, 'exists', return_value=True)
     self.PatchObject(brick_lib, 'FindBrickInPath', return_value=None)
 
@@ -178,7 +180,8 @@ class USBImagerTest(cros_test_lib.MockTempDirTestCase):
     with mock.patch.object(
         dev_server_wrapper,
         'GetImagePathWithXbuddy',
-        return_value='translated/xbuddy/path') as mock_xbuddy:
+        return_value=('translated/xbuddy/path',
+                      'resolved/xbuddy/path')) as mock_xbuddy:
       with mock.patch('os.path.isfile', return_value=False):
         with mock.patch('os.path.isdir', return_value=False):
           flash.Flash(self.Device('/dev/foo'), self.IMAGE)
