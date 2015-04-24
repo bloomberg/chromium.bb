@@ -42,10 +42,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/history/content/browser/download_constants_utils.h"
-#include "components/history/content/browser/history_database_helper.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_backend.h"
@@ -83,7 +80,6 @@
 
 using base::Time;
 using base::TimeDelta;
-using content::DownloadItem;
 
 namespace history {
 class HistoryBackendDBTest;
@@ -137,7 +133,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   void CreateBackendAndDatabase() {
     backend_ = new HistoryBackend(new BackendDelegate(this), nullptr);
     backend_->Init(std::string(), false,
-                   HistoryDatabaseParamsForPath(history_dir_));
+                   TestHistoryDatabaseParamsForPath(history_dir_));
     db_ = backend_->db_.get();
     DCHECK(in_mem_backend_) << "Mem backend should have been set by "
         "HistoryBackend::Init";
@@ -204,8 +200,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
                          512,
                          state,
                          DownloadDangerType::NOT_DANGEROUS,
-                         ToHistoryDownloadInterruptReason(
-                            content::DOWNLOAD_INTERRUPT_REASON_NONE),
+                         kTestDownloadInterruptReasonNone,
                          id,
                          false,
                          "by_ext_id",
@@ -263,8 +258,7 @@ TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
   EXPECT_EQ(512, downloads[0].total_bytes);
   EXPECT_EQ(DownloadState::COMPLETE, downloads[0].state);
   EXPECT_EQ(DownloadDangerType::NOT_DANGEROUS, downloads[0].danger_type);
-  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
-            downloads[0].interrupt_reason);
+  EXPECT_EQ(kTestDownloadInterruptReasonNone, downloads[0].interrupt_reason);
   EXPECT_FALSE(downloads[0].opened);
   EXPECT_EQ("by_ext_id", downloads[0].by_ext_id);
   EXPECT_EQ("by_ext_name", downloads[0].by_ext_name);
@@ -415,7 +409,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
           "FROM downloads ORDER BY id"));
       EXPECT_TRUE(statement.Step());
       EXPECT_EQ(1, statement.ColumnInt64(0));
-      EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+      EXPECT_EQ(DownloadInterruptReasonToInt(kTestDownloadInterruptReasonNone),
                 statement.ColumnInt(1));
       EXPECT_EQ("", statement.ColumnString(2));
       EXPECT_EQ("", statement.ColumnString(3));
@@ -427,7 +421,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
 
       EXPECT_TRUE(statement.Step());
       EXPECT_EQ(2, statement.ColumnInt64(0));
-      EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+      EXPECT_EQ(DownloadInterruptReasonToInt(kTestDownloadInterruptReasonNone),
                 statement.ColumnInt(1));
       EXPECT_EQ("/path/to/some/file", statement.ColumnString(2));
       EXPECT_EQ("/path/to/some/file", statement.ColumnString(3));
@@ -781,8 +775,7 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
                        512,
                        DownloadState::COMPLETE,
                        DownloadDangerType::NOT_DANGEROUS,
-                       ToHistoryDownloadInterruptReason(
-                          content::DOWNLOAD_INTERRUPT_REASON_NONE),
+                       kTestDownloadInterruptReasonNone,
                        1,
                        0,
                        "by_ext_id",
@@ -846,7 +839,8 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
     EXPECT_TRUE(statement1.Step());
     EXPECT_EQ(DownloadStateToInt(DownloadState::IN_PROGRESS),
               statement1.ColumnInt(0));
-    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, statement1.ColumnInt(1));
+    EXPECT_EQ(DownloadInterruptReasonToInt(kTestDownloadInterruptReasonNone),
+              statement1.ColumnInt(1));
     EXPECT_FALSE(statement1.Step());
   }
 
@@ -857,8 +851,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
   db_->QueryDownloads(&results);
   ASSERT_EQ(1u, results.size());
   EXPECT_EQ(DownloadState::INTERRUPTED, results[0].state);
-  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_CRASH,
-            results[0].interrupt_reason);
+  EXPECT_EQ(kTestDownloadInterruptReasonCrash, results[0].interrupt_reason);
 
   // Allow the update to propagate, shut down the DB, and confirm that
   // the query updated the on disk database as well.
@@ -877,7 +870,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
     EXPECT_TRUE(statement1.Step());
     EXPECT_EQ(DownloadStateToInt(DownloadState::INTERRUPTED),
               statement1.ColumnInt(0));
-    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_CRASH,
+    EXPECT_EQ(DownloadInterruptReasonToInt(kTestDownloadInterruptReasonCrash),
               statement1.ColumnInt(1));
     EXPECT_FALSE(statement1.Step());
   }
@@ -996,8 +989,8 @@ class HistoryTest : public testing::Test {
     history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
     ASSERT_TRUE(base::CreateDirectory(history_dir_));
     history_service_.reset(new history::HistoryService);
-    if (!history_service_->Init(std::string(),
-                                HistoryDatabaseParamsForPath(history_dir_))) {
+    if (!history_service_->Init(
+            std::string(), TestHistoryDatabaseParamsForPath(history_dir_))) {
       history_service_.reset();
       ADD_FAILURE();
     }

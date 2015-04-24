@@ -7,10 +7,8 @@
 #include "components/history/core/browser/history_database_params.h"
 
 namespace history {
-namespace {
 const DownloadInterruptReason kTestDownloadInterruptReasonNone = 0;
 const DownloadInterruptReason kTestDownloadInterruptReasonCrash = 1;
-}  // namespace
 
 TestHistoryDatabase::TestHistoryDatabase()
     : HistoryDatabase(kTestDownloadInterruptReasonNone,
