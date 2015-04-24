@@ -95,11 +95,6 @@
         "enum": ["allow", "deny", "default"]
       },
       {
-        "id": "RunLocation",
-        "type": "string",
-        "enum": ["document_start", "document_end", "document_idle"]
-      },
-      {
         "id": "ContentScriptDetails",
         "type": "object",
         "description": "Details of the content script to inject.",
@@ -137,8 +132,7 @@
             "description": "The list of JavaScript files to be injected into matching pages. These are injected in the order they appear in this array."
           },
           "run_at": {
-            // TODO(hanxi): change the reference to extensionTypes.RunAt after http://crbug.com/477457 is fixed.
-            "$ref": "RunLocation",
+            "$ref": "extensionTypes.RunAt",
             "optional": true,
             "description": "The soonest that the JavaScript or CSS will be injected into the tab. Defaults to \"document_idle\"."
           },
