@@ -36,9 +36,16 @@ class ApplicationManager {
  public:
   class Delegate {
    public:
-    virtual ~Delegate();
-    virtual GURL ResolveURL(const GURL& url);
-    virtual GURL ResolveMappings(const GURL& url);
+    // Gives the delegate a chance to apply any mappings for the specified url.
+    // This should not resolve 'mojo' urls, that is done by ResolveMojoURL().
+    virtual GURL ResolveMappings(const GURL& url) = 0;
+
+    // Used to map a url with the scheme 'mojo' to the appropriate url. Return
+    // |url| if the scheme is not 'mojo'.
+    virtual GURL ResolveMojoURL(const GURL& url) = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // API for testing.

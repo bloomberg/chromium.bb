@@ -63,8 +63,8 @@ class Context : public ApplicationManager::Delegate,
   class NativeViewportApplicationLoader;
 
   // ApplicationManager::Delegate overrides.
-  GURL ResolveURL(const GURL& url) override;
   GURL ResolveMappings(const GURL& url) override;
+  GURL ResolveMojoURL(const GURL& url) override;
 
   // ProcessDelegate implementation.
   void OnShutdownComplete() override;

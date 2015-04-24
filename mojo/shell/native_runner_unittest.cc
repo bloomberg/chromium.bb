@@ -78,9 +78,8 @@ class NativeApplicationLoaderTest : public testing::Test,
 
  private:
   // ApplicationManager::Delegate
-  GURL ResolveURL(const GURL& url) override { return url; }
-
   GURL ResolveMappings(const GURL& url) override { return url; }
+  GURL ResolveMojoURL(const GURL& url) override { return url; }
 };
 
 TEST_F(NativeApplicationLoaderTest, DoesNotExist) {

@@ -31,17 +31,6 @@ bool has_created_instance = false;
 
 }  // namespace
 
-ApplicationManager::Delegate::~Delegate() {
-}
-
-GURL ApplicationManager::Delegate::ResolveURL(const GURL& url) {
-  return url;
-}
-
-GURL ApplicationManager::Delegate::ResolveMappings(const GURL& url) {
-  return url;
-}
-
 class ApplicationManager::ContentHandlerConnection : public ErrorHandler {
  public:
   ContentHandlerConnection(ApplicationManager* manager,
@@ -136,7 +125,7 @@ void ApplicationManager::ConnectToApplicationWithParameters(
     return;
   }
 
-  GURL resolved_url = delegate_->ResolveURL(mapped_url);
+  GURL resolved_url = delegate_->ResolveMojoURL(mapped_url);
   if (ConnectToRunningApplication(resolved_url, requestor_url, &services,
                                   &exposed_services)) {
     return;
@@ -411,7 +400,8 @@ void ApplicationManager::SetNativeOptionsForURL(
     const GURL& url) {
   DCHECK(!url.has_query());  // Precondition.
   // Apply mappings and resolution to get the resolved URL.
-  GURL resolved_url = delegate_->ResolveURL(delegate_->ResolveMappings(url));
+  GURL resolved_url =
+      delegate_->ResolveMojoURL(delegate_->ResolveMappings(url));
   DCHECK(!resolved_url.has_query());  // Still shouldn't have query.
   // TODO(vtl): We should probably also remove/disregard the query string (and
   // maybe canonicalize in other ways).

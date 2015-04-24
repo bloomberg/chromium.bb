@@ -285,12 +285,12 @@ void Context::Shutdown() {
   base::MessageLoop::current()->Run();
 }
 
-GURL Context::ResolveURL(const GURL& url) {
-  return url_resolver_.ResolveMojoURL(url);
-}
-
 GURL Context::ResolveMappings(const GURL& url) {
   return url_resolver_.ApplyMappings(url);
+}
+
+GURL Context::ResolveMojoURL(const GURL& url) {
+  return url_resolver_.ResolveMojoURL(url);
 }
 
 void Context::OnShutdownComplete() {

@@ -402,9 +402,7 @@ class TestDelegate : public ApplicationManager::Delegate {
       return it->second;
     return url;
   }
-
-  // ApplicationManager::Delegate
-  GURL ResolveURL(const GURL& url) override {
+  GURL ResolveMojoURL(const GURL& url) override {
     GURL mapped_url = ResolveMappings(url);
     // The shell automatically map mojo URLs.
     if (mapped_url.scheme() == "mojo") {
