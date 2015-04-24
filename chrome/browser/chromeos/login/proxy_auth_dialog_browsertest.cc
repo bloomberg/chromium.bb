@@ -126,10 +126,8 @@ IN_PROC_BROWSER_TEST_P(ProxyAuthOnUserBoardScreenTest,
   }
 }
 
-// TODO(paulmeyer): Re-enable webview version of this test
-// (once http://crbug.com/452452 is fixed.
 INSTANTIATE_TEST_CASE_P(ProxyAuthOnUserBoardScreenTestSuite,
                         ProxyAuthOnUserBoardScreenTest,
-                        testing::Values(false));
+                        testing::Bool());
 
 }  // namespace chromeos

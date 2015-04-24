@@ -36,6 +36,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/guest_view/guest_view_base.h"
+#endif
+
 using autofill::PasswordForm;
 using content::BrowserThread;
 using content::NavigationController;
@@ -472,8 +476,29 @@ void ShowLoginPrompt(const GURL& request_url,
   password_manager::ContentPasswordManagerDriver* driver =
       handler->GetPasswordManagerDriverForLogin();
 
+  // The realm is controlled by the remote server, so there is no reason
+  // to believe it is of a reasonable length.
+  base::string16 elided_realm;
+  gfx::ElideString(base::UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
+
+  base::string16 host_and_port = base::ASCIIToUTF16(
+      request_url.scheme() + "://" + auth_info->challenger.ToString());
+  base::string16 explanation = elided_realm.empty() ?
+      l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
+                                 host_and_port) :
+      l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION,
+                                 host_and_port,
+                                 elided_realm);
+
   if (!driver) {
-    // Same logic as above.
+#if defined(ENABLE_EXTENSIONS)
+    // A WebContents in a <webview> (a GuestView type) does not have a password
+    // manager, but still needs to be able to show login prompts.
+    if (extensions::GuestViewBase::FromWebContents(parent_contents)) {
+      handler->BuildViewForPasswordManager(nullptr, explanation);
+      return;
+    }
+#endif
     handler->CancelAuth();
     return;
   }
@@ -493,19 +518,6 @@ void ShowLoginPrompt(const GURL& request_url,
   driver->OnPasswordFormsParsed(v);
   handler->SetPasswordManager(driver->GetPasswordManager());
 
-  // The realm is controlled by the remote server, so there is no reason
-  // to believe it is of a reasonable length.
-  base::string16 elided_realm;
-  gfx::ElideString(base::UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
-
-  base::string16 host_and_port = base::ASCIIToUTF16(
-      request_url.scheme() + "://" + auth_info->challenger.ToString());
-  base::string16 explanation = elided_realm.empty() ?
-      l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
-                                 host_and_port) :
-      l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION,
-                                 host_and_port,
-                                 elided_realm);
   handler->BuildViewForPasswordManager(driver->GetPasswordManager(),
                                        explanation);
 }

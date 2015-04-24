@@ -1039,11 +1039,9 @@ IN_PROC_BROWSER_TEST_P(WizardControllerProxyAuthOnSigninTest,
   auth_needed_waiter.Wait();
 }
 
-// TODO(paulmeyer): Re-enable webview version of this test
-// (drop this condition) once http://crbug.com/452452 is fixed.
 INSTANTIATE_TEST_CASE_P(WizardControllerProxyAuthOnSigninSuite,
                         WizardControllerProxyAuthOnSigninTest,
-                        testing::Values(false));
+                        testing::Bool());
 
 class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
  protected:
