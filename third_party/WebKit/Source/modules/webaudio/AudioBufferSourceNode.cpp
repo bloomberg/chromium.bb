@@ -47,6 +47,12 @@ const double DefaultGrainDuration = 0.020; // 20ms
 // to minimize linear interpolation aliasing.
 const double MaxRate = 1024;
 
+// Number of extra frames to use when determining if a source node can be stopped.  This should be
+// at least one rendering quantum, but we add one more quantum for good measure.  This doesn't need
+// to be extra precise, just more than one rendering quantum.  See |handleStoppableSourceNode()|.
+// FIXME: Expose the rendering quantum somehow instead of hardwiring a value here.
+const int kExtraStopFrames = 256;
+
 AudioBufferSourceHandler::AudioBufferSourceHandler(AudioNode& node, float sampleRate, AudioParamHandler& playbackRate, AudioParamHandler& detune)
     : AudioScheduledSourceHandler(NodeTypeAudioBufferSource, node, sampleRate)
     , m_buffer(nullptr)
@@ -490,8 +496,10 @@ double AudioBufferSourceHandler::computePlaybackRate()
     // Normally it's not an issue because buffers are loaded at the
     // AudioContext's sample-rate, but we can handle it in any case.
     double sampleRateFactor = 1.0;
-    if (buffer())
-        sampleRateFactor = buffer()->sampleRate() / sampleRate();
+    if (buffer()) {
+        // Use doubles to compute this to full accuracy.
+        sampleRateFactor = buffer()->sampleRate() / static_cast<double>(sampleRate());
+    }
 
     // Use finalValue() to incorporate changes of AudioParamTimeline and
     // AudioSummingJunction from m_playbackRate AudioParam.
@@ -542,10 +550,20 @@ void AudioBufferSourceHandler::clearPannerNode()
 
 void AudioBufferSourceHandler::handleStoppableSourceNode()
 {
-    // If the source node is not looping, and we have a buffer, we can determine when the
-    // source would stop playing.
+    // If the source node is not looping, and we have a buffer, we can determine when the source
+    // would stop playing.  This is intended to handle the (uncommon) scenario where start() has
+    // been called but is never connected to the destination (directly or indirectly).  By stopping
+    // the node, the node can be collected.  Otherwise, the node will never get collected, leaking
+    // memory.
     if (!loop() && buffer() && isPlayingOrScheduled()) {
-        double stopTime = m_startTime + buffer()->duration();
+        // See crbug.com/478301. If a source node is started via start(), the source may not start
+        // at that time but one quantum (128 frames) later.  But we compute the stop time based on
+        // the start time and the duration, so we end up stopping one quantum early.  Thus, add a
+        // little extra time; we just need to stop the source sometime after it should have stopped
+        // if it hadn't already.  We don't need to be super precise on when to stop.
+        double extraStopTime = kExtraStopFrames / static_cast<double>(context()->sampleRate());
+        double stopTime = m_startTime + buffer()->duration() + extraStopTime;
+
         if (context()->currentTime() > stopTime) {
             // The context time has passed the time when the source nodes should have stopped
             // playing. Stop the node now and deref it. (But don't run the onEnded event because the
