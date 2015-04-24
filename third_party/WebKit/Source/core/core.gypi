@@ -3800,6 +3800,7 @@
             'editing/FrameSelectionTest.cpp',
             'editing/InputMethodControllerTest.cpp',
             'editing/iterators/TextIteratorTest.cpp',
+            'editing/StyledMarkupSerializerTest.cpp',
             'editing/SurroundingTextTest.cpp',
             'editing/VisibleSelectionTest.cpp',
             'fetch/CachingCorrectnessTest.cpp',
