@@ -13,7 +13,7 @@ layer at (0,0) size 785x637 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBlockFlow {BLOCKQUOTE} at (40,17) size 520x588
                 LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 440x588
                   LayoutBlockFlow (anonymous) at (0,0) size 440x240
-                    LayoutTable {TABLE} at (180,0) size 260x499
+                    LayoutTable (floating) {TABLE} at (180,0) size 260x499
                       LayoutTableSection {TBODY} at (0,0) size 260x499
                         LayoutTableRow {TR} at (0,0) size 260x24
                           LayoutTableCell {TD} at (0,0) size 6x24 [bgcolor=#FFFFFF] [r=0 c=0 rs=1 cs=1]

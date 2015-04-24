@@ -4,7 +4,7 @@ layer at (0,0) size 800x291
   LayoutBlockFlow {HTML} at (0,0) size 800x291
     LayoutBlockFlow {BODY} at (8,16) size 784x259
       LayoutBlockFlow {P} at (0,0) size 784x259 [color=#000080]
-        LayoutImage {IMG} at (0,0) size 50x50
+        LayoutImage (floating) {IMG} at (0,0) size 50x50
         LayoutText {#text} at (50,4) size 333x17
           text run at (50,4) width 333: "\x{21E6} This text should flow around the box on the left. "
         LayoutInline {SPAN} at (0,0) size 783x254 [color=#C0C0C0]

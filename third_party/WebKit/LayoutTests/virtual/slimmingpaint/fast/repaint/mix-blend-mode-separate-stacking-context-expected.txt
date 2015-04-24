@@ -19,12 +19,12 @@
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (floating) DIV id='second'",
-        "LayoutBlockFlow (floating) DIV",
+        "LayoutBlockFlow (relative positioned) (floating) DIV",
         "LayoutBlockFlow (floating) DIV id='first'",
-        "LayoutBlockFlow (floating) DIV",
+        "LayoutBlockFlow (relative positioned) (floating) DIV",
         "LayoutBlockFlow (floating) DIV id='second'",
         "LayoutBlockFlow (floating) DIV id='third'",
-        "LayoutBlockFlow (floating) DIV id='fourth'",
+        "LayoutBlockFlow (relative positioned) (floating) DIV id='fourth'",
         "LayoutBlockFlow (floating) DIV"
       ]
     }

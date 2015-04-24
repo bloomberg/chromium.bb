@@ -56,7 +56,7 @@ layer at (0,0) size 785x1435 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             LayoutText {#text} at (0,18) size 33x18
               text run at (0,18) width 33: "Back"
 layer at (8,127) size 385x128
-  LayoutEmbeddedObject {object} at (0,0) size 384.50x128
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 384.50x128
     layer at (0,0) size 385x128
       LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
@@ -70,7 +70,7 @@ layer at (8,127) size 385x128
           LayoutSVGInlineText {#text} at (0,0) size 15x24
             chunk 1 (middle anchor) text run 1 at (52.78,27.00) startOffset 0 endOffset 1 width 14.44: "A"
 layer at (393,127) size 384x128
-  LayoutEmbeddedObject {object} at (384.50,0) size 384.50x128
+  LayoutEmbeddedObject (floating) {object} at (384.50,0) size 384.50x128
     layer at (0,0) size 385x128
       LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
@@ -84,7 +84,7 @@ layer at (393,127) size 384x128
           LayoutSVGInlineText {#text} at (0,0) size 13x24
             chunk 1 (middle anchor) text run 1 at (53.89,27.00) startOffset 0 endOffset 1 width 12.22: "L"
 layer at (8,255) size 256x449 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (0,128) size 256.30x449
+  LayoutEmbeddedObject (floating) {object} at (0,128) size 256.30x449
     layer at (0,0) size 256x449
       LayoutView at (0,0) size 256x449
     layer at (0,0) size 256x449
@@ -118,7 +118,7 @@ layer at (8,255) size 256x449 backgroundClip at (0,0) size 785x600 clip at (0,0)
             LayoutSVGInlineText {#text} at (0,0) size 13x24
               chunk 1 (middle anchor) text run 1 at (53.89,127.00) startOffset 0 endOffset 1 width 12.22: "E"
 layer at (264,255) size 256x256
-  LayoutEmbeddedObject {object} at (0,0) size 256.30x256
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 256.30x256
     layer at (0,0) size 256x256
       LayoutView at (0,0) size 256x256
     layer at (0,0) size 256x256
@@ -132,7 +132,7 @@ layer at (264,255) size 256x256
           LayoutSVGInlineText {#text} at (0,0) size 15x24
             chunk 1 (middle anchor) text run 1 at (32.78,47.00) startOffset 0 endOffset 1 width 14.44: "K"
 layer at (264,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (0,256) size 256.30x192
+  LayoutEmbeddedObject (floating) {object} at (0,256) size 256.30x192
     layer at (0,0) size 256x192
       LayoutView at (0,0) size 256x192
     layer at (0,0) size 256x192
@@ -146,7 +146,7 @@ layer at (264,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,
           LayoutSVGInlineText {#text} at (0,0) size 8x24
             chunk 1 (middle anchor) text run 1 at (36.11,37.00) startOffset 0 endOffset 1 width 7.78: "J"
 layer at (521,255) size 256x256
-  LayoutEmbeddedObject {object} at (0,0) size 256.30x256
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 256.30x256
     layer at (0,0) size 256x256
       LayoutView at (0,0) size 256x256
     layer at (0,0) size 256x256
@@ -176,7 +176,7 @@ layer at (521,255) size 256x256
             LayoutSVGInlineText {#text} at (0,0) size 15x24
               chunk 1 (middle anchor) text run 1 at (52.78,67.00) startOffset 0 endOffset 1 width 14.44: "O"
 layer at (521,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (0,256) size 256.30x192
+  LayoutEmbeddedObject (floating) {object} at (0,256) size 256.30x192
     layer at (0,0) size 256x192
       LayoutView at (0,0) size 256x192
     layer at (0,0) size 256x192
@@ -190,7 +190,7 @@ layer at (521,511) size 256x192 backgroundClip at (0,0) size 785x600 clip at (0,
           LayoutSVGInlineText {#text} at (0,0) size 15x24
             chunk 1 (middle anchor) text run 1 at (32.78,37.00) startOffset 0 endOffset 1 width 14.44: "Q"
 layer at (264,703) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (256.30,576) size 384.50x128
+  LayoutEmbeddedObject (floating) {object} at (256.30,576) size 384.50x128
     layer at (0,0) size 385x128
       LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
@@ -204,7 +204,7 @@ layer at (264,703) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,
           LayoutSVGInlineText {#text} at (0,0) size 12x24
             chunk 1 (middle anchor) text run 1 at (54.44,27.00) startOffset 0 endOffset 1 width 11.12: "F"
 layer at (8,831) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (0,704) size 384.50x128
+  LayoutEmbeddedObject (floating) {object} at (0,704) size 384.50x128
     layer at (0,0) size 385x128
       LayoutView at (0,0) size 385x128
     layer at (0,0) size 385x128
@@ -218,7 +218,7 @@ layer at (8,831) size 385x128 backgroundClip at (0,0) size 785x600 clip at (0,0)
           LayoutSVGInlineText {#text} at (0,0) size 7x24
             chunk 1 (middle anchor) text run 1 at (56.67,27.00) startOffset 0 endOffset 1 width 6.66: "I"
 layer at (393,831) size 96x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (0,0) size 96.13x192
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 96.13x192
     layer at (0,0) size 96x192
       LayoutView at (0,0) size 96x192
     layer at (0,0) size 96x192
@@ -229,7 +229,7 @@ layer at (393,831) size 96x192 backgroundClip at (0,0) size 785x600 clip at (0,0
             LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
         LayoutSVGRect {rect} at (0,0) size 96x192 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [x=1.00] [y=1.00] [width=28.00] [height=58.00]
 layer at (489,831) size 289x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (96.13,0) size 288.38x192
+  LayoutEmbeddedObject (floating) {object} at (96.13,0) size 288.38x192
     layer at (0,0) size 288x192
       LayoutView at (0,0) size 288x192
     layer at (0,0) size 288x192
@@ -243,7 +243,7 @@ layer at (489,831) size 289x192 backgroundClip at (0,0) size 785x600 clip at (0,
           LayoutSVGInlineText {#text} at (0,0) size 15x24
             chunk 1 (middle anchor) text run 1 at (37.78,37.00) startOffset 0 endOffset 1 width 14.44: "G"
 layer at (8,1023) size 192x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (0,0) size 192.25x192
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 192.25x192
     layer at (0,0) size 192x192
       LayoutView at (0,0) size 192x192
     layer at (0,0) size 192x192
@@ -257,7 +257,7 @@ layer at (8,1023) size 192x192 backgroundClip at (0,0) size 785x600 clip at (0,0
           LayoutSVGInlineText {#text} at (0,0) size 15x24
             chunk 1 (middle anchor) text run 1 at (22.78,37.00) startOffset 0 endOffset 1 width 14.44: "H"
 layer at (200,1023) size 193x192 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (192.25,0) size 192.25x192
+  LayoutEmbeddedObject (floating) {object} at (192.25,0) size 192.25x192
     layer at (0,0) size 192x192
       LayoutView at (0,0) size 192x192
     layer at (0,0) size 192x192
@@ -271,7 +271,7 @@ layer at (200,1023) size 193x192 backgroundClip at (0,0) size 785x600 clip at (0
           LayoutSVGInlineText {#text} at (0,0) size 14x24
             chunk 1 (middle anchor) text run 1 at (23.33,37.00) startOffset 0 endOffset 1 width 13.34: "R"
 layer at (393,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (384.50,896) size 192.25x128
+  LayoutEmbeddedObject (floating) {object} at (384.50,896) size 192.25x128
     layer at (0,0) size 192x128
       LayoutView at (0,0) size 192x128
     layer at (0,0) size 192x128
@@ -282,7 +282,7 @@ layer at (393,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0
             LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
         LayoutSVGEllipse {ellipse} at (0,0) size 192x128 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [cx=30.00] [cy=20.00] [rx=29.00] [ry=19.00]
 layer at (585,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (576.75,896) size 192.25x128
+  LayoutEmbeddedObject (floating) {object} at (576.75,896) size 192.25x128
     layer at (0,0) size 192x128
       LayoutView at (0,0) size 192x128
     layer at (0,0) size 192x128
@@ -293,7 +293,7 @@ layer at (585,1023) size 192x128 backgroundClip at (0,0) size 785x600 clip at (0
             LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFEEAA]
         LayoutSVGEllipse {ellipse} at (0,0) size 192x128 [stroke={[type=SOLID] [color=#FFCC33] [stroke width=2.00]}] [fill={[type=LINEAR-GRADIENT] [id="surface"]}] [cx=30.00] [cy=20.00] [rx=29.00] [ry=19.00]
 layer at (393,1151) size 288x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (0,0) size 288.38x128
+  LayoutEmbeddedObject (floating) {object} at (0,0) size 288.38x128
     layer at (0,0) size 288x128
       LayoutView at (0,0) size 288x128
     layer at (0,0) size 288x128
@@ -307,7 +307,7 @@ layer at (393,1151) size 288x128 backgroundClip at (0,0) size 785x600 clip at (0
           LayoutSVGInlineText {#text} at (0,0) size 12x24
             chunk 1 (middle anchor) text run 1 at (39.44,27.00) startOffset 0 endOffset 1 width 11.12: "S"
 layer at (681,1151) size 97x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutEmbeddedObject {object} at (288.38,0) size 96.13x128
+  LayoutEmbeddedObject (floating) {object} at (288.38,0) size 96.13x128
     layer at (0,0) size 96x128
       LayoutView at (0,0) size 96x128
     layer at (0,0) size 96x128

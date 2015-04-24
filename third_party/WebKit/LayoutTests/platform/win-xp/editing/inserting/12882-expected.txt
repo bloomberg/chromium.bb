@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,76) size 784x40
         LayoutText {#text} at (0,0) size 192x19
           text run at (0,0) width 192: "Four score and seven years ago"
-        LayoutImage {IMG} at (708,0) size 76x103
+        LayoutImage (floating) {IMG} at (708,0) size 76x103
         LayoutText {#text} at (192,0) size 677x39
           text run at (192,0) width 481: " our fathers brought forth on this continent a new nation, conceived in liberty and"
           text run at (673,0) width 4: " "

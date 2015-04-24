@@ -50,8 +50,8 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (199,65) width 326: "should not overlap the top or side borders of the DIV."
       LayoutBlockFlow {HR} at (365.28,400) size 38.44x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (2,410) size 765x50 [border: (5px solid #800080)]
-        LayoutImage {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
-        LayoutImage {IMG} at (745,5) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (745,5) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (20,5) size 704x39
           text run at (20,5) width 164: "This is text within the DIV. "
           text run at (184,5) width 540: "The floating images within this DIV should not go beyond the left or right inner edge of this"
@@ -87,9 +87,9 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (5,205) width 414: "should be side by side, whereas the third should be on the next \"line.\""
       LayoutBlockFlow {HR} at (365.28,748) size 38.44x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (2,758) size 360x210 [border: (5px solid #800080)]
-        LayoutImage {IMG} at (5,5) size 156x36 [border: (3px solid #000000)]
-        LayoutImage {IMG} at (161,5) size 156x36 [border: (3px solid #000000)]
-        LayoutImage {IMG} at (5,41) size 156x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (5,5) size 156x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (161,5) size 156x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (5,41) size 156x36 [border: (3px solid #000000)]
         LayoutText {#text} at (317,5) size 350x199
           text run at (317,5) width 38: "This is"
           text run at (317,25) width 22: "text"
@@ -137,8 +137,8 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (5,339) width 26: "first."
       LayoutBlockFlow {HR} at (365.28,1390) size 38.44x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (2,1400) size 410x246 [border: (5px solid #800080)]
-        LayoutImage {IMG} at (5,5) size 256x36 [border: (3px solid #000000)]
-        LayoutImage {IMG} at (149,41) size 256x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (5,5) size 256x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (149,41) size 256x36 [border: (3px solid #000000)]
         LayoutText {#text} at (261,5) size 400x235
           text run at (261,5) width 125: "This is text within the"
           text run at (5,41) width 35: "DIV. "
@@ -176,8 +176,8 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (5,105) width 27: "box."
       LayoutBlockFlow {HR} at (365.28,1834) size 38.44x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (2,1844) size 765x70 [border: (5px solid #800080)]
-        LayoutImage {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
-        LayoutImage {IMG} at (745,5) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (745,5) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (20,5) size 710x59
           text run at (20,5) width 164: "This is text within the DIV. "
           text run at (184,5) width 531: "The floating images within this DIV should not go beyond the top side of this DIV, which"
@@ -214,12 +214,12 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (20,5) size 172x19
           text run at (20,5) width 164: "This is text within the DIV. "
           text run at (184,5) width 8: "*"
-        LayoutImage {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (192,5) size 725x39
           text run at (192,5) width 553: " The floating images within this DIV should not go any higher than the line-box containing the"
           text run at (20,25) width 217: "inline content which precedes them. "
           text run at (237,25) width 12: "* "
-        LayoutImage {IMG} at (745,25) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (745,25) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (249,25) size 735x59
           text run at (249,25) width 486: "This means that the top side of each float can be, at most, as high as the top edge"
           text run at (5,45) width 560: "of the inline element containing the content just before the floating images occur in the source. "
@@ -275,21 +275,21 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (20,5) size 172x19
           text run at (20,5) width 164: "This is text within the DIV. "
           text run at (184,5) width 8: "*"
-        LayoutImage {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (192,5) size 710x39
           text run at (192,5) width 553: " The floating images within this DIV should not go any higher than the line-box containing the"
           text run at (35,25) width 217: "inline content which precedes them. "
           text run at (252,25) width 12: "* "
-        LayoutImage {IMG} at (745,25) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (745,25) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (264,25) size 305x19
           text run at (264,25) width 297: "This means that the top side of each float can be, "
           text run at (561,25) width 8: "*"
-        LayoutImage {IMG} at (20,25) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (20,25) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (569,25) size 679x39
           text run at (569,25) width 160: " at most, as high as the top"
           text run at (50,45) width 593: "edge of the inline element containing the content just before the floating images occur in the source. "
           text run at (643,45) width 8: "*"
-        LayoutImage {IMG} at (35,45) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (35,45) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (651,45) size 747x79
           text run at (651,45) width 69: " In order to"
           text run at (50,65) width 521: "mark these points clearly, an asterisk has been inserted just before each floated image. "
@@ -332,10 +332,10 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {DIV} at (2,3010) size 490x230 [border: (5px solid #800080)]
         LayoutText {#text} at (20,5) size 50x19
           text run at (20,5) width 50: "This is *"
-        LayoutImage {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (70,5) size 12x19
           text run at (70,5) width 12: " *"
-        LayoutImage {IMG} at (470,5) size 15x36 [border: (3px solid #000000)]
+        LayoutImage (floating) {IMG} at (470,5) size 15x36 [border: (3px solid #000000)]
         LayoutText {#text} at (82,5) size 479x219
           text run at (82,5) width 126: " text within the DIV. "
           text run at (208,5) width 256: "Under CSS1, the left floating image should"
@@ -389,8 +389,8 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (5,85) width 53: "the DIV."
               LayoutBlockFlow {HR} at (358.83,212) size 37.34x2 [border: (1px inset #EEEEEE)]
               LayoutBlockFlow {DIV} at (6,222) size 743x50 [border: (5px solid #800080)]
-                LayoutImage {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
-                LayoutImage {IMG} at (723,5) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (723,5) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (20,5) size 695x39
                   text run at (20,5) width 164: "This is text within the DIV. "
                   text run at (184,5) width 516: "The floating images within this DIV should not go beyond the left or right inner edge of"
@@ -426,9 +426,9 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (5,205) width 414: "should be side by side, whereas the third should be on the next \"line.\""
               LayoutBlockFlow {HR} at (358.83,560) size 37.34x2 [border: (1px inset #EEEEEE)]
               LayoutBlockFlow {DIV} at (6,570) size 360x210 [border: (5px solid #800080)]
-                LayoutImage {IMG} at (5,5) size 156x36 [border: (3px solid #000000)]
-                LayoutImage {IMG} at (161,5) size 156x36 [border: (3px solid #000000)]
-                LayoutImage {IMG} at (5,41) size 156x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (5,5) size 156x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (161,5) size 156x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (5,41) size 156x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (317,5) size 350x199
                   text run at (317,5) width 38: "This is"
                   text run at (317,25) width 22: "text"
@@ -476,8 +476,8 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (5,339) width 26: "first."
               LayoutBlockFlow {HR} at (358.83,1202) size 37.34x2 [border: (1px inset #EEEEEE)]
               LayoutBlockFlow {DIV} at (6,1212) size 410x246 [border: (5px solid #800080)]
-                LayoutImage {IMG} at (5,5) size 256x36 [border: (3px solid #000000)]
-                LayoutImage {IMG} at (149,41) size 256x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (5,5) size 256x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (149,41) size 256x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (261,5) size 400x235
                   text run at (261,5) width 125: "This is text within the"
                   text run at (5,41) width 35: "DIV. "
@@ -515,8 +515,8 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (5,105) width 128: "the right-floating box."
               LayoutBlockFlow {HR} at (358.83,1646) size 37.34x2 [border: (1px inset #EEEEEE)]
               LayoutBlockFlow {DIV} at (6,1656) size 743x70 [border: (5px solid #800080)]
-                LayoutImage {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
-                LayoutImage {IMG} at (723,5) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (723,5) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (20,5) size 710x59
                   text run at (20,5) width 164: "This is text within the DIV. "
                   text run at (184,5) width 531: "The floating images within this DIV should not go beyond the top side of this DIV, which"
@@ -553,12 +553,12 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (20,5) size 172x19
                   text run at (20,5) width 164: "This is text within the DIV. "
                   text run at (184,5) width 8: "*"
-                LayoutImage {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (192,5) size 703x39
                   text run at (192,5) width 531: " The floating images within this DIV should not go any higher than the line-box containing"
                   text run at (20,25) width 239: "the inline content which precedes them. "
                   text run at (259,25) width 12: "* "
-                LayoutImage {IMG} at (723,25) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (723,25) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (271,25) size 717x59
                   text run at (271,25) width 429: "This means that the top side of each float can be, at most, as high as the"
                   text run at (5,45) width 617: "top edge of the inline element containing the content just before the floating images occur in the source. "
@@ -618,21 +618,21 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (20,5) size 172x19
                   text run at (20,5) width 164: "This is text within the DIV. "
                   text run at (184,5) width 8: "*"
-                LayoutImage {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (192,5) size 688x39
                   text run at (192,5) width 531: " The floating images within this DIV should not go any higher than the line-box containing"
                   text run at (35,25) width 239: "the inline content which precedes them. "
                   text run at (274,25) width 12: "* "
-                LayoutImage {IMG} at (723,25) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (723,25) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (286,25) size 305x19
                   text run at (286,25) width 297: "This means that the top side of each float can be, "
                   text run at (583,25) width 8: "*"
-                LayoutImage {IMG} at (20,25) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (20,25) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (591,25) size 655x39
                   text run at (591,25) width 114: " at most, as high as"
                   text run at (50,45) width 639: "the top edge of the inline element containing the content just before the floating images occur in the source. "
                   text run at (689,45) width 8: "*"
-                LayoutImage {IMG} at (35,45) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (35,45) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (697,45) size 723x79
                   text run at (697,45) width 16: " In"
                   text run at (50,65) width 574: "order to mark these points clearly, an asterisk has been inserted just before each floated image. "
@@ -676,10 +676,10 @@ layer at (0,0) size 785x6501 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutBlockFlow {DIV} at (6,2881) size 490x230 [border: (5px solid #800080)]
                 LayoutText {#text} at (20,5) size 50x19
                   text run at (20,5) width 50: "This is *"
-                LayoutImage {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (5,5) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (70,5) size 12x19
                   text run at (70,5) width 12: " *"
-                LayoutImage {IMG} at (470,5) size 15x36 [border: (3px solid #000000)]
+                LayoutImage (floating) {IMG} at (470,5) size 15x36 [border: (3px solid #000000)]
                 LayoutText {#text} at (82,5) size 479x219
                   text run at (82,5) width 126: " text within the DIV. "
                   text run at (208,5) width 256: "Under CSS1, the left floating image should"

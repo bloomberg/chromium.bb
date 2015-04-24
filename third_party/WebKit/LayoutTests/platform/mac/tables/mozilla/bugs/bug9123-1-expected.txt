@@ -67,26 +67,26 @@ layer at (0,0) size 800x600
           text run at (20,18) width 228: "column gets the opposite treatment."
 layer at (19,72) size 110x15 clip at (20,73) size 108x13 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 110x15 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (37,74) size 90x0
   LayoutBlockFlow {DIV} at (18,2) size 90x0
 layer at (783,97) size 15x4 clip at (784,98) size 13x2 scrollWidth 17 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 15x4 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (801,99) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
 layer at (2,186) size 15x4 clip at (3,187) size 13x2 scrollWidth 17 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 15x4 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (20,188) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
 layer at (86,179) size 110x15 clip at (87,180) size 108x13 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 110x15 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (104,181) size 90x0
   LayoutBlockFlow {DIV} at (18,2) size 90x0
 layer at (715,186) size 15x4 clip at (716,187) size 13x2 scrollWidth 17 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 15x4 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (733,188) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0

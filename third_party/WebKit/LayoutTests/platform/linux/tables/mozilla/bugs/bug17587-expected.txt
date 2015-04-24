@@ -36,6 +36,6 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 0x0
 layer at (144,10) size 468x60 clip at (145,11) size 466x58
   LayoutBlockFlow {DIV} at (0,0) size 468x60 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (162,12) size 448x0
   LayoutBlockFlow {DIV} at (18,2) size 448x0

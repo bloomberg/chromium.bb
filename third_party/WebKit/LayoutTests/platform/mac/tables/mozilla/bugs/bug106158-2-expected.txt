@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           LayoutTableRow {TR} at (0,2) size 450x45
             LayoutTableCell {TD} at (2,2) size 446x45 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow (anonymous) at (1,1) size 444x18
-                LayoutTable {TABLE} at (0,0) size 444x19 [bgcolor=#FFFF00]
+                LayoutTable (floating) {TABLE} at (0,0) size 444x19 [bgcolor=#FFFF00]
                   LayoutTableSection {TBODY} at (0,0) size 444x19
                     LayoutTableRow {TR} at (0,0) size 444x19
                       LayoutTableCell {TD} at (0,0) size 444x19 [r=0 c=0 rs=1 cs=1]

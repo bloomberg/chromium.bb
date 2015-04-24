@@ -16,7 +16,7 @@ layer at (8,8) size 20x0
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 20x100
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 20x100
-    LayoutImage {IMG} at (0,0) size 20x100 [bgcolor=#C0C0C0]
+    LayoutImage (floating) {IMG} at (0,0) size 20x100 [bgcolor=#C0C0C0]
 layer at (8,8) size 20x96
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 20x96
     LayoutBlockFlow (anonymous) at (0,0) size 20x0

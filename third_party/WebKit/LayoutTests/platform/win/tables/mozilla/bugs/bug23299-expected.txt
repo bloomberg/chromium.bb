@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (0,0) size 800x600
-      LayoutTable {TABLE} at (0,0) size 111x36 [bgcolor=#0000FF]
+      LayoutTable (floating) {TABLE} at (0,0) size 111x36 [bgcolor=#0000FF]
         LayoutTableSection {TBODY} at (0,0) size 111x36
           LayoutTableRow {TR} at (0,0) size 111x36
             LayoutTableCell {TD} at (0,0) size 111x36 [r=0 c=0 rs=1 cs=1]
@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,18) size 111x17
                 text run at (0,18) width 111: "ALIGN=\"LEFT\""
               LayoutBR {BR} at (110,32) size 1x0
-      LayoutTable {TABLE} at (111,0) size 111x36 [bgcolor=#0000FF]
+      LayoutTable (floating) {TABLE} at (111,0) size 111x36 [bgcolor=#0000FF]
         LayoutTableSection {TBODY} at (0,0) size 111x36
           LayoutTableRow {TR} at (0,0) size 111x36
             LayoutTableCell {TD} at (0,0) size 111x36 [r=0 c=0 rs=1 cs=1]
@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,18) size 111x17
                 text run at (0,18) width 111: "ALIGN=\"LEFT\""
               LayoutBR {BR} at (110,32) size 1x0
-      LayoutTable {TABLE} at (222,0) size 111x36 [bgcolor=#0000FF]
+      LayoutTable (floating) {TABLE} at (222,0) size 111x36 [bgcolor=#0000FF]
         LayoutTableSection {TBODY} at (0,0) size 111x36
           LayoutTableRow {TR} at (0,0) size 111x36
             LayoutTableCell {TD} at (0,0) size 111x36 [r=0 c=0 rs=1 cs=1]

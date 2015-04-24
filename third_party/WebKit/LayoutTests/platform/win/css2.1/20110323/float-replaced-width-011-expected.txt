@@ -8,5 +8,5 @@ layer at (0,0) size 800x370
           text run at (0,0) width 747: "Test passes if the blue and orange boxes below are the same width, and the blue box is in the upper-left corner of the"
           text run at (0,18) width 67: "black box."
       LayoutBlockFlow {DIV} at (0,52) size 198x294 [border: (3px solid #000000)]
-        LayoutImage {IMG} at (3,3) size 96x96
+        LayoutImage (floating) {IMG} at (3,3) size 96x96
         LayoutBlockFlow {DIV} at (3,99) size 96x96 [bgcolor=#FFA500]

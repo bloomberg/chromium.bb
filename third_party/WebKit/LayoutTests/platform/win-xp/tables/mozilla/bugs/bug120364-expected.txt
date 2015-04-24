@@ -5,7 +5,7 @@ layer at (0,0) size 785x1813 backgroundClip at (0,0) size 785x600 clip at (0,0) 
     LayoutBlockFlow {BODY} at (8,8) size 769x584
       LayoutText {#text} at (0,0) size 20x19
         text run at (0,0) width 20: "foo"
-      LayoutTable {TABLE} at (653,0) size 116x1805
+      LayoutTable (floating) {TABLE} at (653,0) size 116x1805
         LayoutTableSection {TBODY} at (0,0) size 116x1805
           LayoutTableRow {TR} at (0,2) size 116x998
             LayoutTableCell {TD} at (2,2) size 112x82 [r=0 c=0 rs=1 cs=1]

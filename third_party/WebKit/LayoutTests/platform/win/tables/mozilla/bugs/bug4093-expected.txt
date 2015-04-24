@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow (anonymous) at (2,2) size 772x18
                 LayoutText {#text} at (0,0) size 12x17
                   text run at (0,0) width 12: "Y"
-                LayoutTable {TABLE} at (548,0) size 224x218
+                LayoutTable (floating) {TABLE} at (548,0) size 224x218
                   LayoutTableSection {TBODY} at (0,0) size 224x218
                     LayoutTableRow {TR} at (0,0) size 224x163
                       LayoutTableCell {TD} at (0,108) size 10x1 [r=0 c=0 rs=4 cs=1]

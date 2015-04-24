@@ -7,7 +7,7 @@ layer at (0,0) size 800x146
         LayoutText {#text} at (0,0) size 433x17
           text run at (0,0) width 433: "Test passes if the blue and orange boxes below are the same height."
 layer at (8,50) size 96x96
-  LayoutBlockFlow (floating) {DIV} at (0,34) size 96x96
-    LayoutImage {IMG} at (0,0) size 96x96
+  LayoutBlockFlow (relative positioned) (floating) {DIV} at (0,34) size 96x96
+    LayoutImage (floating) {IMG} at (0,0) size 96x96
 layer at (104,50) size 96x96
   LayoutBlockFlow (positioned) {DIV} at (96,0) size 96x96 [bgcolor=#FFA500]

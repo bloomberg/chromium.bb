@@ -8,7 +8,7 @@ layer at (10,10) size 10x10 scrollHeight 18
     LayoutBlockFlow {IMG} at (0,0) size 10x10
 layer at (10,14) size 10x10 backgroundClip at (10,14) size 10x6 clip at (11,15) size 8x5 outlineClip at (10,10) size 10x10 scrollWidth 17 scrollHeight 20
   LayoutBlockFlow {DIV} at (0,4) size 10x10 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (28,16) size 0x18 scrollWidth 49
   LayoutBlockFlow {DIV} at (18,2) size 0x18
     LayoutText {#text} at (0,0) size 49x17

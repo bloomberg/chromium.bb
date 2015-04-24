@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x138
   LayoutBlockFlow {HTML} at (0,0) size 800x138
     LayoutBlockFlow {BODY} at (8,8) size 784x0 [bgcolor=#FFFFFF]
-      LayoutTable {TABLE} at (0,0) size 78x130
+      LayoutTable (floating) {TABLE} at (0,0) size 78x130
         LayoutBlockFlow {CAPTION} at (0,0) size 78x20
           LayoutText {#text} at (0,0) size 78x19
             text run at (0,0) width 78: "height=\"105\""
@@ -28,7 +28,7 @@ layer at (0,0) size 800x138
             LayoutTableCell {TD} at (0,88) size 78x22 [r=4 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 60x19
                 text run at (1,1) width 60: "Entry #05"
-      LayoutTable {TABLE} at (78,0) size 78x130
+      LayoutTable (floating) {TABLE} at (78,0) size 78x130
         LayoutBlockFlow {CAPTION} at (0,0) size 78x20
           LayoutText {#text} at (0,0) size 78x19
             text run at (0,0) width 78: "height=\"106\""
@@ -53,7 +53,7 @@ layer at (0,0) size 800x138
             LayoutTableCell {TD} at (0,88) size 78x22 [r=4 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 60x19
                 text run at (1,1) width 60: "Entry #05"
-      LayoutTable {TABLE} at (156,0) size 78x130
+      LayoutTable (floating) {TABLE} at (156,0) size 78x130
         LayoutBlockFlow {CAPTION} at (0,0) size 78x20
           LayoutText {#text} at (0,0) size 78x19
             text run at (0,0) width 78: "height=\"107\""
@@ -78,7 +78,7 @@ layer at (0,0) size 800x138
             LayoutTableCell {TD} at (0,88) size 78x22 [r=4 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 60x19
                 text run at (1,1) width 60: "Entry #05"
-      LayoutTable {TABLE} at (234,0) size 78x130
+      LayoutTable (floating) {TABLE} at (234,0) size 78x130
         LayoutBlockFlow {CAPTION} at (0,0) size 78x20
           LayoutText {#text} at (0,0) size 78x19
             text run at (0,0) width 78: "height=\"108\""
@@ -103,7 +103,7 @@ layer at (0,0) size 800x138
             LayoutTableCell {TD} at (0,88) size 78x22 [r=4 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 60x19
                 text run at (1,1) width 60: "Entry #05"
-      LayoutTable {TABLE} at (312,0) size 78x130
+      LayoutTable (floating) {TABLE} at (312,0) size 78x130
         LayoutBlockFlow {CAPTION} at (0,0) size 78x20
           LayoutText {#text} at (0,0) size 78x19
             text run at (0,0) width 78: "height=\"109\""
@@ -128,7 +128,7 @@ layer at (0,0) size 800x138
             LayoutTableCell {TD} at (0,88) size 78x22 [r=4 c=0 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 60x19
                 text run at (1,1) width 60: "Entry #05"
-      LayoutTable {TABLE} at (390,0) size 78x130
+      LayoutTable (floating) {TABLE} at (390,0) size 78x130
         LayoutBlockFlow {CAPTION} at (0,0) size 78x20
           LayoutText {#text} at (0,0) size 78x19
             text run at (0,0) width 78: "height=\"110\""

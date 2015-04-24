@@ -52,14 +52,14 @@ layer at (0,0) size 785x756 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (150,40) width 98: "- can be directly"
           text run at (150,60) width 70: "composited"
 layer at (8,156) size 150x150
-  LayoutImage {IMG} at (0,0) size 150x150
+  LayoutImage (floating) {IMG} at (0,0) size 150x150
 layer at (268,156) size 160x160
-  LayoutImage {IMG} at (0,0) size 160x160 [border: (5px solid #0000FF)]
+  LayoutImage (floating) {IMG} at (0,0) size 160x160 [border: (5px solid #0000FF)]
 layer at (13,361) size 150x150
-  LayoutImage {IMG} at (5,5) size 150x150
+  LayoutImage (floating) {IMG} at (5,5) size 150x150
 layer at (268,356) size 150x150
-  LayoutImage {IMG} at (0,0) size 150x150 [bgcolor=#808080]
+  LayoutImage (floating) {IMG} at (0,0) size 150x150 [bgcolor=#808080]
 layer at (8,556) size 150x150 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutImage {IMG} at (0,0) size 150x150 [bgcolor=#FFA500]
+  LayoutImage (floating) {IMG} at (0,0) size 150x150 [bgcolor=#FFA500]
 layer at (268,556) size 150x150 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutImage {IMG} at (0,0) size 150x150
+  LayoutImage (floating) {IMG} at (0,0) size 150x150

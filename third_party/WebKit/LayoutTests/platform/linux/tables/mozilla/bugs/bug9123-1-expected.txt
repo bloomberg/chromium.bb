@@ -66,26 +66,26 @@ layer at (0,0) size 800x600
           text run at (20,20) width 138: "the opposite treatment."
 layer at (19,78) size 110x15 clip at (20,79) size 108x13 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 110x15 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (37,80) size 90x0
   LayoutBlockFlow {DIV} at (18,2) size 90x0
 layer at (783,104) size 15x4 clip at (784,105) size 13x2 scrollWidth 17 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 15x4 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (801,106) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
 layer at (2,178) size 15x4 clip at (3,179) size 13x2 scrollWidth 17 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 15x4 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (20,180) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0
 layer at (86,171) size 110x15 clip at (87,172) size 108x13 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 110x15 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (104,173) size 90x0
   LayoutBlockFlow {DIV} at (18,2) size 90x0
 layer at (715,178) size 15x4 clip at (716,179) size 13x2 scrollWidth 17 scrollHeight 18
   LayoutBlockFlow {DIV} at (0,0) size 15x4 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (733,180) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0

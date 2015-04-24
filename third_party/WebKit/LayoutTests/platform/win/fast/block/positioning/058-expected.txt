@@ -23,6 +23,6 @@ layer at (241,42) size 42x42
   LayoutBlockFlow (positioned) {IMG} at (0,0) size 42x42 [border: (1px solid #000000)]
 layer at (242,43) size 40x40 clip at (243,44) size 38x38
   LayoutBlockFlow {DIV} at (1,1) size 40x40 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (260,45) size 20x0
   LayoutBlockFlow {DIV} at (18,2) size 20x0

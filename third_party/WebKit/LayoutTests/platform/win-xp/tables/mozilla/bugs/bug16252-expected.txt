@@ -13,7 +13,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {BLOCKQUOTE} at (40,17) size 520x488
                 LayoutBlockFlow {BLOCKQUOTE} at (40,0) size 440x488
                   LayoutBlockFlow (anonymous) at (0,0) size 440x240
-                    LayoutTable {TABLE} at (180,0) size 260x317
+                    LayoutTable (floating) {TABLE} at (180,0) size 260x317
                       LayoutTableSection {TBODY} at (0,0) size 260x317
                         LayoutTableRow {TR} at (0,0) size 260x24
                           LayoutTableCell {TD} at (0,0) size 6x24 [bgcolor=#FFFFFF] [r=0 c=0 rs=1 cs=1]

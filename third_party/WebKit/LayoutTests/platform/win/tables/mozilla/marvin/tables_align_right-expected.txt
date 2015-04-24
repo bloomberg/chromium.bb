@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 456x17
         text run at (0,0) width 456: "The table displayed is two rows by three columns with right alignment."
       LayoutBR {BR} at (455,14) size 1x0
-      LayoutTable {TABLE} at (573,18) size 211x46
+      LayoutTable (floating) {TABLE} at (573,18) size 211x46
         LayoutTableSection {TBODY} at (0,0) size 211x46
           LayoutTableRow {TR} at (0,2) size 211x20
             LayoutTableCell {TD} at (2,2) size 68x20 [r=0 c=0 rs=1 cs=1]

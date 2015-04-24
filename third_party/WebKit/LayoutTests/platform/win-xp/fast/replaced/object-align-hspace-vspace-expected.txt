@@ -12,4 +12,4 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,275) size 784x20
         LayoutText {#text} at (0,0) size 210x19
           text run at (0,0) width 210: "align test (aligned to the right) -->>"
-      LayoutImage {OBJECT} at (551,311) size 233x175
+      LayoutImage (floating) {OBJECT} at (551,311) size 233x175

@@ -20,7 +20,7 @@ layer at (0,0) size 800x484
             text run at (621,22) width 16: "\x{21E6}"
         LayoutText {#text} at (639,22) size 5x17
           text run at (639,22) width 5: " "
-        LayoutImage {IMG} at (21,21) size 112x112 [color=#FF0000]
+        LayoutImage (floating) {IMG} at (21,21) size 112x112 [color=#FF0000]
         LayoutText {#text} at (643,22) size 588x37
           text run at (643,22) width 78: "dummy text"
           text run at (133,42) width 405: "dummy text dummy text dummy text dummy text dummy text "
@@ -29,7 +29,7 @@ layer at (0,0) size 800x484
             text run at (540,42) width 16: "\x{21E8}"
         LayoutText {#text} at (558,42) size 5x17
           text run at (558,42) width 5: " "
-        LayoutImage {IMG} at (619,41) size 112x112 [color=#FF0000]
+        LayoutImage (floating) {IMG} at (619,41) size 112x112 [color=#FF0000]
         LayoutText {#text} at (562,42) size 696x317
           text run at (562,42) width 50: "dummy"
           text run at (133,62) width 433: "text dummy text dummy text dummy text dummy text dummy text "

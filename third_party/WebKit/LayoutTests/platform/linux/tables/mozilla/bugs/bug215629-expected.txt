@@ -27,41 +27,41 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {IMG} at (554,1) size 173x51
 layer at (11,47) size 167x51 clip at (12,48) size 165x49
   LayoutBlockFlow {DIV} at (0,0) size 167x51 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (29,49) size 147x0
   LayoutBlockFlow {DIV} at (18,2) size 147x0
 layer at (178,47) size 181x51 clip at (179,48) size 179x49
   LayoutBlockFlow {DIV} at (0,0) size 181x51 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (196,49) size 161x0
   LayoutBlockFlow {DIV} at (18,2) size 161x0
 layer at (359,47) size 205x51 clip at (360,48) size 203x49
   LayoutBlockFlow {DIV} at (0,0) size 205x51 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (377,49) size 185x0
   LayoutBlockFlow {DIV} at (18,2) size 185x0
 layer at (564,47) size 173x51 clip at (565,48) size 171x49
   LayoutBlockFlow {DIV} at (0,0) size 173x51 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (582,49) size 153x0
   LayoutBlockFlow {DIV} at (18,2) size 153x0
 layer at (11,156) size 167x51 clip at (12,157) size 165x49
   LayoutBlockFlow {DIV} at (0,0) size 167x51 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (29,158) size 147x0
   LayoutBlockFlow {DIV} at (18,2) size 147x0
 layer at (178,156) size 181x51 clip at (179,157) size 179x49
   LayoutBlockFlow {DIV} at (0,0) size 181x51 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (196,158) size 161x0
   LayoutBlockFlow {DIV} at (18,2) size 161x0
 layer at (359,156) size 205x51 clip at (360,157) size 203x49
   LayoutBlockFlow {DIV} at (0,0) size 205x51 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (377,158) size 185x0
   LayoutBlockFlow {DIV} at (18,2) size 185x0
 layer at (564,156) size 173x51 clip at (565,157) size 171x49
   LayoutBlockFlow {DIV} at (0,0) size 173x51 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (582,158) size 153x0
   LayoutBlockFlow {DIV} at (18,2) size 153x0

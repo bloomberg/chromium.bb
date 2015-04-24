@@ -10,4 +10,4 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {UL} at (0,36) size 784x0
         LayoutBlockFlow (floating) {LI} at (100,0) size 100x100 [bgcolor=#FF0000]
 layer at (108,44) size 100x100
-  LayoutBlockFlow (floating) {LI} at (0,0) size 100x100 [bgcolor=#008000]
+  LayoutBlockFlow (relative positioned) (floating) {LI} at (0,0) size 100x100 [bgcolor=#008000]

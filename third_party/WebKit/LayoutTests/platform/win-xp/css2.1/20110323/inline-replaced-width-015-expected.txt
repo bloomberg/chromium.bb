@@ -10,14 +10,14 @@ layer at (8,52) size 300x200
   LayoutBlockFlow (relative positioned) {DIV} at (0,36) size 300x200 [bgcolor=#FF0000]
     LayoutBlockFlow {DIV} at (0,0) size 300x100 [bgcolor=#00FF00]
       LayoutBlockFlow {P} at (0,0) size 375x100
-        LayoutImage {IMG} at (0,0) size 100x100
+        LayoutImage (floating) {IMG} at (0,0) size 100x100
         LayoutImage {IMG} at (0,100) size 300x100
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,268) size 300x200
   LayoutBlockFlow (relative positioned) {DIV} at (0,252) size 300x200 [bgcolor=#FF0000]
     LayoutBlockFlow {DIV} at (0,0) size 300x100 [bgcolor=#00FF00]
       LayoutBlockFlow {P} at (0,0) size 375x100
-        LayoutImage {IMG} at (0,0) size 100x100
+        LayoutImage (floating) {IMG} at (0,0) size 100x100
         LayoutImage {IMG} at (0,100) size 300x100
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0

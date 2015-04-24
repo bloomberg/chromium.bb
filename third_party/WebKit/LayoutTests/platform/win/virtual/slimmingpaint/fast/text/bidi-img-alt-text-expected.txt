@@ -28,7 +28,7 @@ layer at (9,59) size 280x80 backgroundClip at (9,9) size 300x100 clip at (9,9) s
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (9,59) size 280x80 backgroundClip at (9,59) size 280x50 clip at (10,60) size 278x49 outlineClip at (9,9) size 300x100
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (27,61) size 260x18
   LayoutBlockFlow {DIV} at (18,2) size 260x18
     LayoutText {#text} at (0,0) size 8x17
@@ -42,7 +42,7 @@ layer at (315,59) size 280x80 backgroundClip at (315,9) size 300x100 clip at (31
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (315,59) size 280x80 backgroundClip at (315,59) size 280x50 clip at (316,60) size 278x49 outlineClip at (315,9) size 300x100
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (262,2) size 16x16
+    LayoutImage (floating) {IMG} at (262,2) size 16x16
 layer at (317,61) size 260x18
   LayoutBlockFlow {DIV} at (2,2) size 260x18
     LayoutText {#text} at (252,0) size 8x17
@@ -56,7 +56,7 @@ layer at (9,165) size 280x80 backgroundClip at (9,115) size 300x100 clip at (9,1
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (9,165) size 280x80 backgroundClip at (9,165) size 280x50 clip at (10,166) size 278x49 outlineClip at (9,115) size 300x100
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (27,167) size 260x18
   LayoutBlockFlow {DIV} at (18,2) size 260x18
     LayoutText {#text} at (0,0) size 16x17
@@ -70,7 +70,7 @@ layer at (315,165) size 280x80 backgroundClip at (315,115) size 300x100 clip at 
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (315,165) size 280x80 backgroundClip at (315,165) size 280x50 clip at (316,166) size 278x49 outlineClip at (315,115) size 300x100
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (262,2) size 16x16
+    LayoutImage (floating) {IMG} at (262,2) size 16x16
 layer at (317,167) size 260x18
   LayoutBlockFlow {DIV} at (2,2) size 260x18
     LayoutText {#text} at (244,0) size 16x17
@@ -84,7 +84,7 @@ layer at (9,271) size 280x80 backgroundClip at (9,221) size 300x100 clip at (9,2
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (9,271) size 280x80 backgroundClip at (9,271) size 280x50 clip at (10,272) size 278x49 outlineClip at (9,221) size 300x100
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (27,273) size 260x18
   LayoutBlockFlow {DIV} at (18,2) size 260x18
     LayoutText {#text} at (0,0) size 8x17
@@ -98,7 +98,7 @@ layer at (315,271) size 280x80 backgroundClip at (315,221) size 300x100 clip at 
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (315,271) size 280x80 backgroundClip at (315,271) size 280x50 clip at (316,272) size 278x49 outlineClip at (315,221) size 300x100
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (262,2) size 16x16
+    LayoutImage (floating) {IMG} at (262,2) size 16x16
 layer at (317,273) size 260x18
   LayoutBlockFlow {DIV} at (2,2) size 260x18
     LayoutText {#text} at (252,0) size 8x17
@@ -112,7 +112,7 @@ layer at (9,377) size 280x80 backgroundClip at (9,327) size 300x100 clip at (9,3
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (9,377) size 280x80 backgroundClip at (9,377) size 280x50 clip at (10,378) size 278x49 outlineClip at (9,327) size 300x100
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (27,379) size 260x18
   LayoutBlockFlow {DIV} at (18,2) size 260x18
     LayoutText {#text} at (0,0) size 70x17
@@ -128,7 +128,7 @@ layer at (315,377) size 280x80 backgroundClip at (315,327) size 300x100 clip at 
   LayoutBlockFlow (positioned) {IMG} at (1,51) size 280x80
 layer at (315,377) size 280x80 backgroundClip at (315,377) size 280x50 clip at (316,378) size 278x49 outlineClip at (315,327) size 300x100
   LayoutBlockFlow {DIV} at (0,0) size 280x80 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (262,2) size 16x16
+    LayoutImage (floating) {IMG} at (262,2) size 16x16
 layer at (317,379) size 260x18
   LayoutBlockFlow {DIV} at (2,2) size 260x18
     LayoutText {#text} at (190,0) size 70x17

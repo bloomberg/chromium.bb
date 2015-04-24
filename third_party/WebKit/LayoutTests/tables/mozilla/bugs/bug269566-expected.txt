@@ -6,4 +6,4 @@ layer at (0,0) size 800x45
       LayoutTableSection (anonymous) at (0,0) size 182x29
         LayoutTableRow (anonymous) at (0,0) size 182x29
           LayoutTableCell (anonymous) at (0,0) size 182x29 [r=0 c=0 rs=1 cs=1]
-            LayoutImage {IMG} at (0,0) size 182x29
+            LayoutImage (floating) {IMG} at (0,0) size 182x29

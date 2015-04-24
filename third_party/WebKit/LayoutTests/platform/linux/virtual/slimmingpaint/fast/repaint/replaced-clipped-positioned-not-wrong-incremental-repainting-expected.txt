@@ -13,7 +13,7 @@
       ],
       "paintInvalidationClients": [
         "LayoutBlockFlow (relative positioned) DIV id='shiftMe'",
-        "LayoutBlockFlow (floating) DIV class='imgContainer'",
+        "LayoutBlockFlow (relative positioned) (floating) DIV class='imgContainer'",
         "LayoutImage IMG",
         "LayoutText #text"
       ]

@@ -40,6 +40,6 @@ layer at (0,0) size 800x600
                           text run at (2,2) width 46: "Cell B2"
 layer at (10,158) size 10x200 clip at (11,159) size 8x198 scrollWidth 17
   LayoutBlockFlow {DIV} at (0,0) size 10x200 [border: (1px solid #C0C0C0)]
-    LayoutImage {IMG} at (2,2) size 16x16
+    LayoutImage (floating) {IMG} at (2,2) size 16x16
 layer at (28,160) size 0x0
   LayoutBlockFlow {DIV} at (18,2) size 0x0

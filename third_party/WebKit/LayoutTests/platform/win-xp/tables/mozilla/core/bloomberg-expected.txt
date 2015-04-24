@@ -285,7 +285,7 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutTableRow {TR} at (0,111) size 634x153
             LayoutTableCell {TD} at (148,111) size 303x128 [bgcolor=#FFFFFF] [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=2]
               LayoutInline {A} at (0,0) size 0x0
-                LayoutImage {IMG} at (4,4) size 288x26
+                LayoutImage (floating) {IMG} at (4,4) size 288x26
               LayoutBR {BR} at (295,4) size 0x19
               LayoutBR {BR} at (295,24) size 0x19
               LayoutInline {A} at (0,0) size 284x59

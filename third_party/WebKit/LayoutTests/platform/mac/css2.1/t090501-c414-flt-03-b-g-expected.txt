@@ -16,8 +16,8 @@ layer at (0,0) size 800x242
           text run at (0,24) width 63: "rectangle."
       LayoutBlockFlow {DIV} at (0,58) size 784x70
         LayoutBlockFlow {DIV} at (16,0) size 752x70 [color=#0000FF] [bgcolor=#000080]
-          LayoutImage {IMG} at (8,8) size 160x160
-          LayoutImage {IMG} at (584,8) size 160x160
+          LayoutImage (floating) {IMG} at (8,8) size 160x160
+          LayoutImage (floating) {IMG} at (584,8) size 160x160
           LayoutText {#text} at (168,8) size 400x54
             text run at (168,8) width 400: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
             text run at (168,26) width 202: "Blue rectangle. Blue rectangle. "

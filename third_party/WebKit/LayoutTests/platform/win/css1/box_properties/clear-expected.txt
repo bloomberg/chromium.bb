@@ -17,31 +17,31 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,48) width 160: ".four {clear: none;}"
           text run at (160,48) width 0: " "
       LayoutBlockFlow {HR} at (0,111) size 769x2 [border: (1px inset #EEEEEE)]
-      LayoutImage {IMG} at (0,121) size 15x50
+      LayoutImage (floating) {IMG} at (0,121) size 15x50
       LayoutBlockFlow {P} at (0,129) size 769x18
         LayoutText {#text} at (18,0) size 607x17
           text run at (18,0) width 607: "This text should be flowing past a tall orange rectangle on the left side of the browser window."
       LayoutBlockFlow (anonymous) at (0,163) size 769x18
         LayoutBR {BR} at (18,0) size 0x17
-        LayoutImage {IMG} at (0,18) size 15x50
+        LayoutImage (floating) {IMG} at (0,18) size 15x50
       LayoutBlockFlow {P} at (0,231) size 769x18
         LayoutText {#text} at (0,0) size 662x17
           text run at (0,0) width 662: "This paragraph should appear below the tall orange rectangle above and to the left, and not flow past it."
       LayoutBlockFlow (anonymous) at (0,265) size 769x18
         LayoutBR {BR} at (0,0) size 0x17
-        LayoutImage {IMG} at (754,18) size 15x50
+        LayoutImage (floating) {IMG} at (754,18) size 15x50
       LayoutBlockFlow {P} at (0,333) size 769x18
         LayoutText {#text} at (0,0) size 671x17
           text run at (0,0) width 671: "This paragraph should appear below the tall orange rectangle above and to the right, and not flow past it."
       LayoutBlockFlow (anonymous) at (0,367) size 769x18
         LayoutBR {BR} at (0,0) size 0x17
-        LayoutImage {IMG} at (0,18) size 15x50
-        LayoutImage {IMG} at (754,18) size 15x50
+        LayoutImage (floating) {IMG} at (0,18) size 15x50
+        LayoutImage (floating) {IMG} at (754,18) size 15x50
       LayoutBlockFlow {P} at (0,435) size 769x18
         LayoutText {#text} at (0,0) size 612x17
           text run at (0,0) width 612: "This paragraph should appear below the two tall orange rectangles, and not flow between them."
-      LayoutImage {IMG} at (0,469) size 15x50
-      LayoutImage {IMG} at (754,469) size 15x50
+      LayoutImage (floating) {IMG} at (0,469) size 15x50
+      LayoutImage (floating) {IMG} at (754,469) size 15x50
       LayoutBlockFlow {P} at (0,469) size 769x18
         LayoutText {#text} at (18,0) size 397x17
           text run at (18,0) width 397: "This paragraph should be between both tall orange rectangles."
@@ -59,31 +59,31 @@ layer at (0,0) size 785x965 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (4,4) size 4x17
                 text run at (4,4) width 4: " "
             LayoutTableCell {TD} at (12,26) size 679x400 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
-              LayoutImage {IMG} at (4,4) size 15x50
+              LayoutImage (floating) {IMG} at (4,4) size 15x50
               LayoutBlockFlow {P} at (4,4) size 671x18
                 LayoutText {#text} at (18,0) size 607x17
                   text run at (18,0) width 607: "This text should be flowing past a tall orange rectangle on the left side of the browser window."
               LayoutBlockFlow (anonymous) at (4,38) size 671x18
                 LayoutBR {BR} at (18,0) size 0x17
-                LayoutImage {IMG} at (0,18) size 15x50
+                LayoutImage (floating) {IMG} at (0,18) size 15x50
               LayoutBlockFlow {P} at (4,106) size 671x18
                 LayoutText {#text} at (0,0) size 662x17
                   text run at (0,0) width 662: "This paragraph should appear below the tall orange rectangle above and to the left, and not flow past it."
               LayoutBlockFlow (anonymous) at (4,140) size 671x18
                 LayoutBR {BR} at (0,0) size 0x17
-                LayoutImage {IMG} at (656,18) size 15x50
+                LayoutImage (floating) {IMG} at (656,18) size 15x50
               LayoutBlockFlow {P} at (4,208) size 671x18
                 LayoutText {#text} at (0,0) size 671x17
                   text run at (0,0) width 671: "This paragraph should appear below the tall orange rectangle above and to the right, and not flow past it."
               LayoutBlockFlow (anonymous) at (4,242) size 671x18
                 LayoutBR {BR} at (0,0) size 0x17
-                LayoutImage {IMG} at (0,18) size 15x50
-                LayoutImage {IMG} at (656,18) size 15x50
+                LayoutImage (floating) {IMG} at (0,18) size 15x50
+                LayoutImage (floating) {IMG} at (656,18) size 15x50
               LayoutBlockFlow {P} at (4,310) size 671x18
                 LayoutText {#text} at (0,0) size 612x17
                   text run at (0,0) width 612: "This paragraph should appear below the two tall orange rectangles, and not flow between them."
-              LayoutImage {IMG} at (4,344) size 15x50
-              LayoutImage {IMG} at (660,344) size 15x50
+              LayoutImage (floating) {IMG} at (4,344) size 15x50
+              LayoutImage (floating) {IMG} at (660,344) size 15x50
               LayoutBlockFlow {P} at (4,344) size 671x18
                 LayoutText {#text} at (18,0) size 397x17
                   text run at (18,0) width 397: "This paragraph should be between both tall orange rectangles."

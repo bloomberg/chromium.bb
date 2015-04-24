@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 448x102
           LayoutTableRow {TR} at (0,2) size 448x98
             LayoutTableCell {TD} at (2,2) size 444x98 [r=0 c=0 rs=1 cs=1]
-              LayoutTable {TABLE} at (1,1) size 442x26 [border: (1px solid #FF0000)]
+              LayoutTable (floating) {TABLE} at (1,1) size 442x26 [border: (1px solid #FF0000)]
                 LayoutTableSection {TBODY} at (1,1) size 440x24
                   LayoutTableRow {TR} at (0,2) size 440x20
                     LayoutTableCell {TD} at (2,2) size 436x20 [r=0 c=0 rs=1 cs=1]

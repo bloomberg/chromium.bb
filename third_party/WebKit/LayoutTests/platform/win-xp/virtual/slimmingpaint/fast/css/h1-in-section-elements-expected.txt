@@ -7,7 +7,7 @@ layer at (0,0) size 800x417
         LayoutText {#text} at (0,0) size 421x19
           text run at (0,0) width 421: "For each of pairs, the first one and the second one should be identical."
         LayoutText {#text} at (0,0) size 0x0
-      LayoutTable {TABLE} at (0,36) size 152x365
+      LayoutTable (floating) {TABLE} at (0,36) size 152x365
         LayoutTableSection {TBODY} at (0,0) size 152x365
           LayoutTableRow {TR} at (0,2) size 152x75
             LayoutTableCell {TD} at (2,2) size 73x74.81 [r=0 c=0 rs=1 cs=1]

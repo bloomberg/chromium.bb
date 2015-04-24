@@ -12,7 +12,7 @@ layer at (0,0) size 785x908 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {H6} at (0,105.41) size 769x13
         LayoutText {#text} at (0,0) size 125x13
           text run at (0,0) width 125: "\x{A9} \x{C9}ditions Eyrolles 1998"
-      LayoutTable {TABLE} at (193,143.38) size 576x46
+      LayoutTable (floating) {TABLE} at (193,143.38) size 576x46
         LayoutTableSection {TBODY} at (0,0) size 576x46
           LayoutTableRow {TR} at (0,2) size 576x20
             LayoutTableCell {TD} at (2,2) size 572x20 [r=0 c=0 rs=1 cs=3]
@@ -136,7 +136,7 @@ layer at (0,0) size 785x908 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (310,0) width 447: "CSS ci-dessus se retrouvent dans le formatage des tableaux ci-dessus,"
           text run at (0,18) width 60: "la valeur "
           text run at (59,18) width 165: "de ce test est 2 et 0 sinon."
-      LayoutTable {TABLE} at (193,764.38) size 576x46
+      LayoutTable (floating) {TABLE} at (193,764.38) size 576x46
         LayoutTableSection {TBODY} at (0,0) size 576x46
           LayoutTableRow {TR} at (0,2) size 576x20
             LayoutTableCell {TD} at (2,2) size 572x20 [r=0 c=0 rs=1 cs=3]

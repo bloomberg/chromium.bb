@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
           text run at (255,139) width 70: "to the PS2."
       LayoutBlockFlow {P} at (0,175) size 784x0
       LayoutBlockFlow {DIV} at (0,175) size 304x40 [border: (2px solid #008000)]
-        LayoutImage {IMG} at (197,5) size 105x70 [bgcolor=#800080]
+        LayoutImage (floating) {IMG} at (197,5) size 105x70 [bgcolor=#800080]
         LayoutText {#text} at (2,2) size 151x17
           text run at (2,2) width 151: "First non-breaking line."
         LayoutInline {NOBR} at (0,0) size 169x17
