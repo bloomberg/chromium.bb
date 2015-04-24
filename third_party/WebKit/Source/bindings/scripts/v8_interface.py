@@ -247,10 +247,10 @@ def interface_context(interface):
     unscopeables = []
     for attribute in interface.attributes:
         if 'Unscopeable' in attribute.extended_attributes:
-            unscopeables.append(attribute.name)
+            unscopeables.append((attribute.name, v8_utilities.runtime_enabled_function_name(attribute)))
     for method in interface.operations:
         if 'Unscopeable' in method.extended_attributes:
-            unscopeables.append(method.name)
+            unscopeables.append((method.name, v8_utilities.runtime_enabled_function_name(method)))
 
     context.update({
         'any_type_attributes': any_type_attributes,

@@ -262,7 +262,9 @@ interface TestObject {
     [Measure] attribute long measuredLongAttribute;
     [SameObject] attribute TestInterface sameObjectAttribute;
     [Unscopeable] attribute long unscopeableLongAttribute;
+    [Unscopeable, RuntimeEnabled=FeatureName] attribute long unscopeableRuntimeEnabledLongAttribute;
     [Unscopeable] void unscopeableVoidMethod();
+    [Unscopeable, RuntimeEnabled=FeatureName] void unscopeableRuntimeEnabledVoidMethod();
 
 
     // Methods

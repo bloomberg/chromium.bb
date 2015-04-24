@@ -950,8 +950,10 @@ if (v8CallBoolean(prototypeObject->HasOwnProperty(v8Context, unscopablesSymbol))
     unscopeables = prototypeObject->Get(v8Context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
 else
     unscopeables = v8::Object::New(isolate);
-{% for name in unscopeables %}
+{% for name, runtime_enabled_function in unscopeables %}
+{% filter runtime_enabled(runtime_enabled_function) %}
 unscopeables->ForceSet(v8Context, v8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
+{% endfilter %}
 {% endfor %}
 prototypeObject->ForceSet(v8Context, unscopablesSymbol, unscopeables).FromJust();
 {% endmacro %}
