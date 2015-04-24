@@ -3075,10 +3075,6 @@ void RenderViewImpl::DidHandleMouseEvent(const WebMouseEvent& event) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidHandleMouseEvent(event));
 }
 
-void RenderViewImpl::DidHandleTouchEvent(const WebTouchEvent& event) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidHandleTouchEvent(event));
-}
-
 bool RenderViewImpl::HasTouchEventHandlersAt(const gfx::Point& point) const {
   if (!webview())
     return false;

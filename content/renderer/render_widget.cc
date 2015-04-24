@@ -1289,8 +1289,6 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       DidHandleKeyEvent();
     if (WebInputEvent::isMouseEventType(input_event->type))
       DidHandleMouseEvent(*(static_cast<const WebMouseEvent*>(input_event)));
-    if (WebInputEvent::isTouchEventType(input_event->type))
-      DidHandleTouchEvent(*(static_cast<const WebTouchEvent*>(input_event)));
   }
 
 // TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with

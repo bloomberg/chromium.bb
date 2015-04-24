@@ -467,7 +467,6 @@ class CONTENT_EXPORT RenderViewImpl
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
   void DidHandleMouseEvent(const blink::WebMouseEvent& event) override;
-  void DidHandleTouchEvent(const blink::WebTouchEvent& event) override;
   bool HasTouchEventHandlersAt(const gfx::Point& point) const override;
   void OnSetFocus(bool enable) override;
   void OnWasHidden() override;
