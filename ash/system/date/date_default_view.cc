@@ -13,6 +13,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "ash/wm/lock_state_controller.h"
+#include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,6 +23,10 @@
 #include "ui/views/view.h"
 
 namespace {
+
+// The ISO-639 code for the Hebrew locale. The help icon asset is a '?' which is
+// not mirrored in this locale.
+const char kHebrewLocale[] = "he";
 
 const int kPaddingVertical = 19;
 
@@ -58,6 +63,13 @@ DateDefaultView::DateDefaultView(ash::user::LoginStatus login)
       this, IDR_AURA_UBER_TRAY_HELP, IDR_AURA_UBER_TRAY_HELP,
       IDR_AURA_UBER_TRAY_HELP_HOVER, IDR_AURA_UBER_TRAY_HELP_HOVER,
       IDS_ASH_STATUS_TRAY_HELP);
+  if (base::i18n::IsRTL() &&
+      base::i18n::GetConfiguredLocale() == kHebrewLocale) {
+    // The asset for the help button is a question mark '?'. Normally this asset
+    // is flipped in RTL locales, however Hebrew uses the LTR '?'. So the
+    // flipping must be disabled. (crbug.com/475237)
+    help_button_->EnableCanvasFlippingForRTLUI(false);
+  }
   help_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
   view->AddButton(help_button_);
