@@ -61,7 +61,7 @@ PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, 
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
     unsigned short button, unsigned short buttons,
-    PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, bool isSimulated, PlatformMouseEvent::SyntheticEventType syntheticEventType,
+    PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, DataTransfer* dataTransfer, bool isSimulated, PlatformMouseEvent::SyntheticEventType syntheticEventType,
     double uiCreateTime)
 {
     return adoptRefWillBeNoop(new MouseEvent(type, canBubble, cancelable, view,
@@ -85,7 +85,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
     unsigned short button, unsigned short buttons, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
-    PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, bool isSimulated, PlatformMouseEvent::SyntheticEventType syntheticEventType,
+    DataTransfer* dataTransfer, bool isSimulated, PlatformMouseEvent::SyntheticEventType syntheticEventType,
     double uiCreateTime)
     : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
         IntPoint(windowX, windowY),

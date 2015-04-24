@@ -471,7 +471,7 @@ bool Editor::dispatchCPPEvent(const AtomicString& eventType, DataTransferAccessP
     if (!target)
         return true;
 
-    RefPtrWillBeRawPtr<DataTransfer> dataTransfer = DataTransfer::create(
+    DataTransfer* dataTransfer = DataTransfer::create(
         DataTransfer::CopyAndPaste,
         policy,
         policy == DataTransferWritable
@@ -481,10 +481,8 @@ bool Editor::dispatchCPPEvent(const AtomicString& eventType, DataTransferAccessP
     RefPtrWillBeRawPtr<Event> evt = ClipboardEvent::create(eventType, true, true, dataTransfer);
     target->dispatchEvent(evt, IGNORE_EXCEPTION);
     bool noDefaultProcessing = evt->defaultPrevented();
-    if (noDefaultProcessing && policy == DataTransferWritable) {
-        RefPtrWillBeRawPtr<DataObject> dataObject = dataTransfer->dataObject();
-        Pasteboard::generalPasteboard()->writeDataObject(dataObject.release());
-    }
+    if (noDefaultProcessing && policy == DataTransferWritable)
+        Pasteboard::generalPasteboard()->writeDataObject(dataTransfer->dataObject());
 
     // invalidate clipboard here for security
     dataTransfer->setAccessPolicy(DataTransferNumb);

@@ -52,7 +52,7 @@ class Range;
 // Used for drag and drop and copy/paste.
 // Drag and Drop: http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html
 // Clipboard API (copy/paste): http://dev.w3.org/2006/webapi/clipops/clipops.html
-class CORE_EXPORT DataTransfer : public RefCountedWillBeGarbageCollectedFinalized<DataTransfer>, public ScriptWrappable {
+class CORE_EXPORT DataTransfer : public GarbageCollectedFinalized<DataTransfer>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // Whether this transfer is serving a drag-drop or copy-paste request.
@@ -61,7 +61,7 @@ public:
         DragAndDrop,
     };
 
-    static PassRefPtrWillBeRawPtr<DataTransfer> create(DataTransferType, DataTransferAccessPolicy, PassRefPtrWillBeRawPtr<DataObject>);
+    static DataTransfer* create(DataTransferType, DataTransferAccessPolicy, DataObject*);
     ~DataTransfer();
 
     bool isForCopyAndPaste() const { return m_transferType == CopyAndPaste; }
@@ -112,14 +112,14 @@ public:
 
     bool hasDropZoneType(const String&);
 
-    PassRefPtrWillBeRawPtr<DataTransferItemList> items();
+    DataTransferItemList* items();
 
-    PassRefPtrWillBeRawPtr<DataObject> dataObject() const;
+    DataObject* dataObject() const;
 
     DECLARE_TRACE();
 
 private:
-    DataTransfer(DataTransferType, DataTransferAccessPolicy, PassRefPtrWillBeRawPtr<DataObject>);
+    DataTransfer(DataTransferType, DataTransferAccessPolicy, DataObject*);
 
     void setDragImage(ImageResource*, Node*, const IntPoint&);
 
@@ -131,7 +131,7 @@ private:
     String m_dropEffect;
     String m_effectAllowed;
     DataTransferType m_transferType;
-    RefPtrWillBeMember<DataObject> m_dataObject;
+    Member<DataObject> m_dataObject;
 
     IntPoint m_dragLoc;
     ResourcePtr<ImageResource> m_dragImage;

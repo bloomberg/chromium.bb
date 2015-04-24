@@ -36,27 +36,25 @@
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
 class Blob;
 
-class CORE_EXPORT DataObjectItem : public RefCountedWillBeGarbageCollectedFinalized<DataObjectItem> {
+class CORE_EXPORT DataObjectItem : public GarbageCollectedFinalized<DataObjectItem> {
 public:
     enum Kind {
         StringKind,
         FileKind
     };
 
-    static PassRefPtrWillBeRawPtr<DataObjectItem> createFromString(const String& type, const String& data);
-    static PassRefPtrWillBeRawPtr<DataObjectItem> createFromFile(File*);
-    static PassRefPtrWillBeRawPtr<DataObjectItem> createFromURL(const String& url, const String& title);
-    static PassRefPtrWillBeRawPtr<DataObjectItem> createFromHTML(const String& html, const KURL& baseURL);
-    static PassRefPtrWillBeRawPtr<DataObjectItem> createFromSharedBuffer(const String& filename, PassRefPtr<SharedBuffer>);
-    static PassRefPtrWillBeRawPtr<DataObjectItem> createFromPasteboard(const String& type, uint64_t sequenceNumber);
+    static DataObjectItem* createFromString(const String& type, const String& data);
+    static DataObjectItem* createFromFile(File*);
+    static DataObjectItem* createFromURL(const String& url, const String& title);
+    static DataObjectItem* createFromHTML(const String& html, const KURL& baseURL);
+    static DataObjectItem* createFromSharedBuffer(const String& filename, PassRefPtr<SharedBuffer>);
+    static DataObjectItem* createFromPasteboard(const String& type, uint64_t sequenceNumber);
 
     Kind kind() const { return m_kind; }
     String type() const { return m_type; }
@@ -85,7 +83,7 @@ private:
     String m_type;
 
     String m_data;
-    PersistentWillBeMember<File> m_file;
+    Member<File> m_file;
     RefPtr<SharedBuffer> m_sharedBuffer;
     // Optional metadata. Currently used for URL, HTML, and dragging files in.
     String m_title;

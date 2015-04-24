@@ -35,11 +35,9 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItemList);
-
-PassRefPtrWillBeRawPtr<DataTransferItemList> DataTransferItemList::create(PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, PassRefPtrWillBeRawPtr<DataObject> list)
+DataTransferItemList* DataTransferItemList::create(DataTransfer* dataTransfer, DataObject* list)
 {
-    return adoptRefWillBeNoop(new DataTransferItemList(dataTransfer, list));
+    return new DataTransferItemList(dataTransfer, list);
 }
 
 size_t DataTransferItemList::length() const
@@ -49,11 +47,11 @@ size_t DataTransferItemList::length() const
     return m_dataObject->length();
 }
 
-PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::item(unsigned long index)
+DataTransferItem* DataTransferItemList::item(unsigned long index)
 {
     if (!m_dataTransfer->canReadTypes())
         return nullptr;
-    RefPtrWillBeRawPtr<DataObjectItem> item = m_dataObject->item(index);
+    DataObjectItem* item = m_dataObject->item(index);
     if (!item)
         return nullptr;
 
@@ -76,11 +74,11 @@ void DataTransferItemList::clear()
     m_dataObject->clearAll();
 }
 
-PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(const String& data, const String& type, ExceptionState& exceptionState)
+DataTransferItem* DataTransferItemList::add(const String& data, const String& type, ExceptionState& exceptionState)
 {
     if (!m_dataTransfer->canWriteData())
         return nullptr;
-    RefPtrWillBeRawPtr<DataObjectItem> item = m_dataObject->add(data, type);
+    DataObjectItem* item = m_dataObject->add(data, type);
     if (!item) {
         exceptionState.throwDOMException(NotSupportedError, "An item already exists for type '" + type + "'.");
         return nullptr;
@@ -88,17 +86,17 @@ PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(const String&
     return DataTransferItem::create(m_dataTransfer, item);
 }
 
-PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItemList::add(File* file)
+DataTransferItem* DataTransferItemList::add(File* file)
 {
     if (!m_dataTransfer->canWriteData())
         return nullptr;
-    RefPtrWillBeRawPtr<DataObjectItem> item = m_dataObject->add(file);
+    DataObjectItem* item = m_dataObject->add(file);
     if (!item)
         return nullptr;
     return DataTransferItem::create(m_dataTransfer, item);
 }
 
-DataTransferItemList::DataTransferItemList(PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, PassRefPtrWillBeRawPtr<DataObject> dataObject)
+DataTransferItemList::DataTransferItemList(DataTransfer* dataTransfer, DataObject* dataObject)
     : m_dataTransfer(dataTransfer)
     , m_dataObject(dataObject)
 {

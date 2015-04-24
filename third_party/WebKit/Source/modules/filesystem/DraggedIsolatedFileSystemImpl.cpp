@@ -39,10 +39,6 @@
 
 namespace blink {
 
-DraggedIsolatedFileSystemImpl::~DraggedIsolatedFileSystemImpl()
-{
-}
-
 DOMFileSystem* DraggedIsolatedFileSystemImpl::getDOMFileSystem(DataObject* host, ExecutionContext* executionContext)
 {
     DraggedIsolatedFileSystemImpl* draggedIsolatedFileSystem = from(host);
@@ -62,7 +58,7 @@ const char* DraggedIsolatedFileSystemImpl::supplementName()
 
 DraggedIsolatedFileSystemImpl* DraggedIsolatedFileSystemImpl::from(DataObject* dataObject)
 {
-    return static_cast<DraggedIsolatedFileSystemImpl*>(WillBeHeapSupplement<DataObject>::from(dataObject, supplementName()));
+    return static_cast<DraggedIsolatedFileSystemImpl*>(HeapSupplement<DataObject>::from(dataObject, supplementName()));
 }
 
 DraggedIsolatedFileSystemImpl::DraggedIsolatedFileSystemImpl(DataObject& host, const String& filesystemId)
@@ -73,13 +69,13 @@ DraggedIsolatedFileSystemImpl::DraggedIsolatedFileSystemImpl(DataObject& host, c
 DEFINE_TRACE(DraggedIsolatedFileSystemImpl)
 {
     visitor->trace(m_filesystem);
-    WillBeHeapSupplement<DataObject>::trace(visitor);
+    HeapSupplement<DataObject>::trace(visitor);
 }
 
 void DraggedIsolatedFileSystemImpl::prepareForDataObject(DataObject* dataObject, const String& filesystemId)
 {
-    OwnPtrWillBeRawPtr<DraggedIsolatedFileSystemImpl> fileSystem = create(*dataObject, filesystemId);
-    DraggedIsolatedFileSystemImpl::provideTo(*dataObject, DraggedIsolatedFileSystemImpl::supplementName(), fileSystem.release());
+    DraggedIsolatedFileSystemImpl* fileSystem = create(*dataObject, filesystemId);
+    DraggedIsolatedFileSystemImpl::provideTo(*dataObject, DraggedIsolatedFileSystemImpl::supplementName(), fileSystem);
 }
 
 } // namespace blink

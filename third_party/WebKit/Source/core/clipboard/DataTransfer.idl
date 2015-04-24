@@ -29,7 +29,7 @@
 // https://html.spec.whatwg.org/#the-datatransfer-interface
 
 [
-    WillBeGarbageCollected
+    GarbageCollected
 ] interface DataTransfer {
     // TODO(philipj): Remove [TreatReturnedNullStringAs=Undefined].
     [TreatReturnedNullStringAs=Undefined] attribute DOMString dropEffect;

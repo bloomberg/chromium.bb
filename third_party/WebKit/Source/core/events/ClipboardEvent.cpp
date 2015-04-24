@@ -29,7 +29,7 @@ ClipboardEvent::ClipboardEvent()
 {
 }
 
-ClipboardEvent::ClipboardEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<DataTransfer> clipboardData)
+ClipboardEvent::ClipboardEvent(const AtomicString& eventType, bool canBubble, bool cancelable, DataTransfer* clipboardData)
     : Event(eventType, canBubble, cancelable), m_clipboardData(clipboardData)
 {
 }

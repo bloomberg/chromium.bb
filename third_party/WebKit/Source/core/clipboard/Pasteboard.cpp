@@ -89,7 +89,7 @@ void Pasteboard::writeImage(Image* image, const KURL& url, const String& title)
     blink::Platform::current()->clipboard()->writeImage(webImage, blink::WebURL(url), blink::WebString(title));
 }
 
-void Pasteboard::writeDataObject(PassRefPtrWillBeRawPtr<DataObject> dataObject)
+void Pasteboard::writeDataObject(DataObject* dataObject)
 {
     blink::Platform::current()->clipboard()->writeDataObject(dataObject->toWebDragData());
 }

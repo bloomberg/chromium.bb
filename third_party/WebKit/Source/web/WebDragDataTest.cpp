@@ -13,7 +13,7 @@ namespace blink {
 
 TEST(WebDragDataTest, items)
 {
-    RefPtrWillBeRawPtr<DataObject> dataObject = DataObject::create();
+    DataObject* dataObject = DataObject::create();
 
     // Native file.
     dataObject->add(File::create("/native/path"));

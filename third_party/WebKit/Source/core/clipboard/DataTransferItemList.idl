@@ -32,7 +32,7 @@
 
 [
     TypeChecking=Interface,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface DataTransferItemList {
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter DataTransferItem (unsigned long index);

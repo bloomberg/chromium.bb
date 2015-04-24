@@ -39,11 +39,9 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItem);
-
-PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItem::create(PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, PassRefPtrWillBeRawPtr<DataObjectItem> item)
+DataTransferItem* DataTransferItem::create(DataTransfer* dataTransfer, DataObjectItem* item)
 {
-    return adoptRefWillBeNoop(new DataTransferItem(dataTransfer, item));
+    return new DataTransferItem(dataTransfer, item);
 }
 
 String DataTransferItem::kind() const
@@ -87,7 +85,7 @@ Blob* DataTransferItem::getAsFile() const
     return m_item->getAsFile();
 }
 
-DataTransferItem::DataTransferItem(PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, PassRefPtrWillBeRawPtr<DataObjectItem> item)
+DataTransferItem::DataTransferItem(DataTransfer* dataTransfer, DataObjectItem* item)
     : m_dataTransfer(dataTransfer)
     , m_item(item)
 {
@@ -100,4 +98,3 @@ DEFINE_TRACE(DataTransferItem)
 }
 
 } // namespace blink
-

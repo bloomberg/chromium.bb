@@ -38,7 +38,7 @@ public:
         return adoptRefWillBeNoop(new ClipboardEvent());
     }
 
-    static PassRefPtrWillBeRawPtr<ClipboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer)
+    static PassRefPtrWillBeRawPtr<ClipboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* dataTransfer)
     {
         return adoptRefWillBeNoop(new ClipboardEvent(type, canBubble, cancelable, dataTransfer));
     }
@@ -49,12 +49,12 @@ public:
 
 private:
     ClipboardEvent();
-    ClipboardEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<DataTransfer> clipboardData);
+    ClipboardEvent(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* clipboardData);
 
     virtual const AtomicString& interfaceName() const override;
     virtual bool isClipboardEvent() const override;
 
-    RefPtrWillBeMember<DataTransfer> m_clipboardData;
+    PersistentWillBeMember<DataTransfer> m_clipboardData;
 };
 
 } // namespace blink

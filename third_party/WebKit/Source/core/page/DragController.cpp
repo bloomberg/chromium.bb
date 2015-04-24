@@ -117,7 +117,7 @@ static PlatformMouseEvent createMouseEvent(DragData* dragData)
         PlatformMouseEvent::RealOrIndistinguishable, currentTime());
 }
 
-static PassRefPtrWillBeRawPtr<DataTransfer> createDraggingDataTransfer(DataTransferAccessPolicy policy, DragData* dragData)
+static DataTransfer* createDraggingDataTransfer(DataTransferAccessPolicy policy, DragData* dragData)
 {
     return DataTransfer::create(DataTransfer::DragAndDrop, policy, dragData->platformData());
 }
@@ -214,9 +214,9 @@ void DragController::dragExited(DragData* dragData)
     RefPtrWillBeRawPtr<FrameView> frameView(mainFrame->view());
     if (frameView) {
         DataTransferAccessPolicy policy = (!m_documentUnderMouse || m_documentUnderMouse->securityOrigin()->isLocal()) ? DataTransferReadable : DataTransferTypesReadable;
-        RefPtrWillBeRawPtr<DataTransfer> dataTransfer = createDraggingDataTransfer(policy, dragData);
+        DataTransfer* dataTransfer = createDraggingDataTransfer(policy, dragData);
         dataTransfer->setSourceOperation(dragData->draggingSourceOperationMask());
-        mainFrame->eventHandler().cancelDragAndDrop(createMouseEvent(dragData), dataTransfer.get());
+        mainFrame->eventHandler().cancelDragAndDrop(createMouseEvent(dragData), dataTransfer);
         dataTransfer->setAccessPolicy(DataTransferNumb); // invalidate clipboard here for security
     }
     mouseMovedIntoDocument(nullptr);
@@ -239,9 +239,9 @@ bool DragController::performDrag(DragData* dragData)
         bool preventedDefault = false;
         if (mainFrame->view()) {
             // Sending an event can result in the destruction of the view and part.
-            RefPtrWillBeRawPtr<DataTransfer> dataTransfer = createDraggingDataTransfer(DataTransferReadable, dragData);
+            DataTransfer* dataTransfer = createDraggingDataTransfer(DataTransferReadable, dragData);
             dataTransfer->setSourceOperation(dragData->draggingSourceOperationMask());
-            preventedDefault = mainFrame->eventHandler().performDragAndDrop(createMouseEvent(dragData), dataTransfer.get());
+            preventedDefault = mainFrame->eventHandler().performDragAndDrop(createMouseEvent(dragData), dataTransfer);
             dataTransfer->setAccessPolicy(DataTransferNumb); // Invalidate clipboard here for security
         }
         if (preventedDefault) {
@@ -595,12 +595,12 @@ bool DragController::tryDHTMLDrag(DragData* dragData, DragOperation& operation)
 
     RefPtrWillBeRawPtr<FrameView> viewProtector(mainFrame->view());
     DataTransferAccessPolicy policy = m_documentUnderMouse->securityOrigin()->isLocal() ? DataTransferReadable : DataTransferTypesReadable;
-    RefPtrWillBeRawPtr<DataTransfer> dataTransfer = createDraggingDataTransfer(policy, dragData);
+    DataTransfer* dataTransfer = createDraggingDataTransfer(policy, dragData);
     DragOperation srcOpMask = dragData->draggingSourceOperationMask();
     dataTransfer->setSourceOperation(srcOpMask);
 
     PlatformMouseEvent event = createMouseEvent(dragData);
-    if (!mainFrame->eventHandler().updateDragAndDrop(event, dataTransfer.get())) {
+    if (!mainFrame->eventHandler().updateDragAndDrop(event, dataTransfer)) {
         dataTransfer->setAccessPolicy(DataTransferNumb); // invalidate clipboard here for security
         return false;
     }

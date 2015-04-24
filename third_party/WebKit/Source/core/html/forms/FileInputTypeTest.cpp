@@ -53,8 +53,8 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles)
         HTMLInputElement::create(*document, nullptr, false);
     const RefPtrWillBeRawPtr<InputType> fileInput = FileInputType::create(*input);
 
-    const RefPtrWillBeRawPtr<DataObject> nativeFileRawDragData = DataObject::create();
-    const DragData nativeFileDragData(nativeFileRawDragData.get(), IntPoint(), IntPoint(), DragOperationCopy);
+    DataObject* nativeFileRawDragData = DataObject::create();
+    const DragData nativeFileDragData(nativeFileRawDragData, IntPoint(), IntPoint(), DragOperationCopy);
     nativeFileDragData.platformData()->add(File::create("/native/path"));
     nativeFileDragData.platformData()->setFilesystemId("fileSystemId");
     fileInput->receiveDroppedFiles(&nativeFileDragData);
@@ -62,8 +62,8 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles)
     ASSERT_EQ(1u, fileInput->files()->length());
     EXPECT_EQ(String("/native/path"), fileInput->files()->item(0)->path());
 
-    const RefPtrWillBeRawPtr<DataObject> nonNativeFileRawDragData = DataObject::create();
-    const DragData nonNativeFileDragData(nonNativeFileRawDragData.get(), IntPoint(), IntPoint(), DragOperationCopy);
+    DataObject* nonNativeFileRawDragData = DataObject::create();
+    const DragData nonNativeFileDragData(nonNativeFileRawDragData, IntPoint(), IntPoint(), DragOperationCopy);
     FileMetadata metadata;
     metadata.length = 1234;
     const KURL url(ParsedURLStringTag(), "filesystem:http://example.com/isolated/hash/non-native-file");

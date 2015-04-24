@@ -41,14 +41,12 @@ namespace blink {
 
 class DOMFileSystem;
 
-class DraggedIsolatedFileSystemImpl final : public NoBaseWillBeGarbageCollectedFinalized<DraggedIsolatedFileSystemImpl>, public DraggedIsolatedFileSystem, public WillBeHeapSupplement<DataObject> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystemImpl);
+class DraggedIsolatedFileSystemImpl final : public GarbageCollectedFinalized<DraggedIsolatedFileSystemImpl>, public DraggedIsolatedFileSystem, public HeapSupplement<DataObject> {
+    USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystemImpl);
 public:
-    virtual ~DraggedIsolatedFileSystemImpl();
-
-    static PassOwnPtrWillBeRawPtr<DraggedIsolatedFileSystemImpl> create(DataObject& host, const String& filesystemId)
+    static DraggedIsolatedFileSystemImpl* create(DataObject& host, const String& filesystemId)
     {
-        return adoptPtrWillBeNoop(new DraggedIsolatedFileSystemImpl(host, filesystemId));
+        return new DraggedIsolatedFileSystemImpl(host, filesystemId);
     }
 
     static DOMFileSystem* getDOMFileSystem(DataObject* host, ExecutionContext*);
@@ -62,7 +60,8 @@ public:
 
 private:
     DraggedIsolatedFileSystemImpl(DataObject& host, const String& filesystemId);
-    PersistentWillBeMember<DOMFileSystem> m_filesystem;
+
+    Member<DOMFileSystem> m_filesystem;
 };
 
 } // namespace blink

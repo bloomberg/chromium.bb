@@ -50,6 +50,7 @@ enum DragApplicationFlags {
 };
 
 class CORE_EXPORT DragData {
+    STACK_ALLOCATED();
 public:
     enum FilenameConversionPolicy { DoNotConvertFilenames, ConvertFilenames };
 
@@ -76,7 +77,7 @@ public:
 private:
     IntPoint m_clientPosition;
     IntPoint m_globalPosition;
-    DataObject* m_platformDragData;
+    Member<DataObject> m_platformDragData;
     DragOperation m_draggingSourceOperationMask;
     DragApplicationFlags m_applicationFlags;
 };

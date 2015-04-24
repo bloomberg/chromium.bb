@@ -49,7 +49,7 @@ public:
     static Pasteboard* generalPasteboard();
     void writePlainText(const String&, SmartReplaceOption);
     void writeImage(Image*, const KURL&, const String& title);
-    void writeDataObject(PassRefPtrWillBeRawPtr<DataObject>);
+    void writeDataObject(DataObject*);
     bool canSmartReplace();
     bool isHTMLAvailable();
     String plainText();

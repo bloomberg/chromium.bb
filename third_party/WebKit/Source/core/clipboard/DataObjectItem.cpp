@@ -39,49 +39,49 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromString(const String& type, const String& data)
+DataObjectItem* DataObjectItem::createFromString(const String& type, const String& data)
 {
-    RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(StringKind, type));
+    DataObjectItem* item = new DataObjectItem(StringKind, type);
     item->m_data = data;
-    return item.release();
+    return item;
 }
 
-PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromFile(File* file)
+DataObjectItem* DataObjectItem::createFromFile(File* file)
 {
-    RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(FileKind, file->type()));
+    DataObjectItem* item = new DataObjectItem(FileKind, file->type());
     item->m_file = file;
-    return item.release();
+    return item;
 }
 
-PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromURL(const String& url, const String& title)
+DataObjectItem* DataObjectItem::createFromURL(const String& url, const String& title)
 {
-    RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(StringKind, mimeTypeTextURIList));
+    DataObjectItem* item = new DataObjectItem(StringKind, mimeTypeTextURIList);
     item->m_data = url;
     item->m_title = title;
-    return item.release();
+    return item;
 }
 
-PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromHTML(const String& html, const KURL& baseURL)
+DataObjectItem* DataObjectItem::createFromHTML(const String& html, const KURL& baseURL)
 {
-    RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(StringKind, mimeTypeTextHTML));
+    DataObjectItem* item = new DataObjectItem(StringKind, mimeTypeTextHTML);
     item->m_data = html;
     item->m_baseURL = baseURL;
-    return item.release();
+    return item;
 }
 
-PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromSharedBuffer(const String& name, PassRefPtr<SharedBuffer> buffer)
+DataObjectItem* DataObjectItem::createFromSharedBuffer(const String& name, PassRefPtr<SharedBuffer> buffer)
 {
-    RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(FileKind, String()));
+    DataObjectItem* item = new DataObjectItem(FileKind, String());
     item->m_sharedBuffer = buffer;
     item->m_title = name;
-    return item.release();
+    return item;
 }
 
-PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromPasteboard(const String& type, uint64_t sequenceNumber)
+DataObjectItem* DataObjectItem::createFromPasteboard(const String& type, uint64_t sequenceNumber)
 {
     if (type == mimeTypeImagePng)
-        return adoptRefWillBeNoop(new DataObjectItem(FileKind, type, sequenceNumber));
-    return adoptRefWillBeNoop(new DataObjectItem(StringKind, type, sequenceNumber));
+        return new DataObjectItem(FileKind, type, sequenceNumber);
+    return new DataObjectItem(StringKind, type, sequenceNumber);
 }
 
 DataObjectItem::DataObjectItem(Kind kind, const String& type)

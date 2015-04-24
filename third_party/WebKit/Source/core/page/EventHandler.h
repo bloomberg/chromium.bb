@@ -201,7 +201,7 @@ public:
 private:
     static DragState& dragState();
 
-    PassRefPtrWillBeRawPtr<DataTransfer> createDraggingDataTransfer() const;
+    DataTransfer* createDraggingDataTransfer() const;
 
     bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelection&, TextGranularity);
     void selectClosestWordFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);

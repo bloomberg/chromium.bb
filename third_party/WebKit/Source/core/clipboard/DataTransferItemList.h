@@ -46,26 +46,25 @@ class File;
 
 class ExceptionState;
 
-class DataTransferItemList final : public RefCountedWillBeGarbageCollected<DataTransferItemList>, public ScriptWrappable {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItemList);
+class DataTransferItemList final : public GarbageCollected<DataTransferItemList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<DataTransferItemList> create(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObject>);
+    static DataTransferItemList* create(DataTransfer*, DataObject*);
 
     size_t length() const;
-    PassRefPtrWillBeRawPtr<DataTransferItem> item(unsigned long index);
+    DataTransferItem* item(unsigned long index);
     void deleteItem(unsigned long index, ExceptionState&);
     void clear();
-    PassRefPtrWillBeRawPtr<DataTransferItem> add(const String& data, const String& type, ExceptionState&);
-    PassRefPtrWillBeRawPtr<DataTransferItem> add(File*);
+    DataTransferItem* add(const String& data, const String& type, ExceptionState&);
+    DataTransferItem* add(File*);
 
     DECLARE_TRACE();
 
 private:
-    DataTransferItemList(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObject>);
+    DataTransferItemList(DataTransfer*, DataObject*);
 
-    RefPtrWillBeMember<DataTransfer> m_dataTransfer;
-    RefPtrWillBeMember<DataObject> m_dataObject;
+    Member<DataTransfer> m_dataTransfer;
+    Member<DataObject> m_dataObject;
 };
 
 } // namespace blink

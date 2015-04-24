@@ -278,7 +278,7 @@ DEFINE_TRACE(EventHandler)
 
 DragState& EventHandler::dragState()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<DragState>, state, (adoptPtrWillBeNoop(new DragState())));
+    DEFINE_STATIC_LOCAL(Persistent<DragState>, state, (new DragState()));
     return *state;
 }
 
@@ -4118,7 +4118,7 @@ bool EventHandler::passWheelEventToWidget(const PlatformWheelEvent& wheelEvent, 
     return toFrameView(&widget)->frame().eventHandler().handleWheelEvent(wheelEvent);
 }
 
-PassRefPtrWillBeRawPtr<DataTransfer> EventHandler::createDraggingDataTransfer() const
+DataTransfer* EventHandler::createDraggingDataTransfer() const
 {
     return DataTransfer::create(DataTransfer::DragAndDrop, DataTransferWritable, DataObject::create());
 }

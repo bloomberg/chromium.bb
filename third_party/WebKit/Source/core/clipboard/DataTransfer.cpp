@@ -105,9 +105,9 @@ static String normalizeType(const String& type, bool* convertToURL = 0)
     return cleanType;
 }
 
-PassRefPtrWillBeRawPtr<DataTransfer> DataTransfer::create(DataTransferType type, DataTransferAccessPolicy policy, PassRefPtrWillBeRawPtr<DataObject> dataObject)
+DataTransfer* DataTransfer::create(DataTransferType type, DataTransferAccessPolicy policy, DataObject* dataObject)
 {
-    return adoptRefWillBeNoop(new DataTransfer(type, policy, dataObject));
+    return new DataTransfer(type, policy, dataObject);
 }
 
 DataTransfer::~DataTransfer()
@@ -442,7 +442,7 @@ bool DataTransfer::hasDropZoneType(const String& keyword)
     return false;
 }
 
-PassRefPtrWillBeRawPtr<DataTransferItemList> DataTransfer::items()
+DataTransferItemList* DataTransfer::items()
 {
     // FIXME: According to the spec, we are supposed to return the same collection of items each
     // time. We now return a wrapper that always wraps the *same* set of items, so JS shouldn't be
@@ -450,12 +450,12 @@ PassRefPtrWillBeRawPtr<DataTransferItemList> DataTransfer::items()
     return DataTransferItemList::create(this, m_dataObject);
 }
 
-PassRefPtrWillBeRawPtr<DataObject> DataTransfer::dataObject() const
+DataObject* DataTransfer::dataObject() const
 {
     return m_dataObject;
 }
 
-DataTransfer::DataTransfer(DataTransferType type, DataTransferAccessPolicy policy, PassRefPtrWillBeRawPtr<DataObject> dataObject)
+DataTransfer::DataTransfer(DataTransferType type, DataTransferAccessPolicy policy, DataObject* dataObject)
     : m_policy(policy)
     , m_dropEffect("uninitialized")
     , m_effectAllowed("uninitialized")
@@ -526,7 +526,9 @@ String convertDragOperationToDropZoneOperation(DragOperation operation)
 DEFINE_TRACE(DataTransfer)
 {
     visitor->trace(m_dataObject);
+#if ENABLE(OILPAN)
     visitor->trace(m_dragImageElement);
+#endif
 }
 
 } // namespace blink

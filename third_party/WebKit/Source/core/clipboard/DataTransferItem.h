@@ -46,12 +46,11 @@ class DataTransfer;
 class StringCallback;
 class ExecutionContext;
 
-class CORE_EXPORT DataTransferItem final : public RefCountedWillBeGarbageCollected<DataTransferItem>, public ScriptWrappable {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItem);
+class CORE_EXPORT DataTransferItem final : public GarbageCollected<DataTransferItem>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(DataTransferItem);
 public:
-    static PassRefPtrWillBeRawPtr<DataTransferItem> create(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObjectItem>);
+    static DataTransferItem* create(DataTransfer*, DataObjectItem*);
 
     String kind() const;
     String type() const;
@@ -65,10 +64,10 @@ public:
     DECLARE_TRACE();
 
 private:
-    DataTransferItem(PassRefPtrWillBeRawPtr<DataTransfer>, PassRefPtrWillBeRawPtr<DataObjectItem>);
+    DataTransferItem(DataTransfer*, DataObjectItem*);
 
-    RefPtrWillBeMember<DataTransfer> m_dataTransfer;
-    RefPtrWillBeMember<DataObjectItem> m_item;
+    Member<DataTransfer> m_dataTransfer;
+    Member<DataObjectItem> m_item;
 };
 
 } // namespace blink
