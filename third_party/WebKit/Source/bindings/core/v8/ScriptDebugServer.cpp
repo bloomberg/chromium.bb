@@ -101,12 +101,12 @@ DEFINE_TRACE(ScriptDebugServer)
 {
 }
 
-bool ScriptDebugServer::enable()
+void ScriptDebugServer::enable()
 {
     ASSERT(!enabled());
     v8::HandleScope scope(m_isolate);
     v8::Debug::SetDebugEventListener(&ScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
-    return ensureDebuggerScriptCompiled();
+    ensureDebuggerScriptCompiled();
 }
 
 void ScriptDebugServer::disable()
@@ -677,10 +677,10 @@ void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8
     listener->didParseSource(sourceID, script, compileResult);
 }
 
-bool ScriptDebugServer::ensureDebuggerScriptCompiled()
+void ScriptDebugServer::ensureDebuggerScriptCompiled()
 {
     if (!m_debuggerScript.IsEmpty())
-        return true;
+        return;
 
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
@@ -688,10 +688,9 @@ bool ScriptDebugServer::ensureDebuggerScriptCompiled()
     v8::Local<v8::String> source = v8String(m_isolate, String(debuggerScriptSourceResource.data(), debuggerScriptSourceResource.size()));
     v8::Local<v8::Value> value;
     if (!V8ScriptRunner::compileAndRunInternalScript(source, m_isolate).ToLocal(&value))
-        return false;
+        return;
     ASSERT(value->IsObject());
     m_debuggerScript.Reset(m_isolate, v8::Local<v8::Object>::Cast(value));
-    return true;
 }
 
 v8::Local<v8::Object> ScriptDebugServer::debuggerScriptLocal() const
