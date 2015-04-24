@@ -200,10 +200,10 @@ def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
     True if the directory had to be created, False if otherwise.
 
   Raises:
-    EnvironmentError: if the makedir failed and it was non sudo.
-    RunCommandError: If sudo mode, and the command failed for any reason.
+    EnvironmentError: If the makedir failed.
+    RunCommandError: If using RunCommand and the command failed for any reason.
   """
-  if sudo:
+  if sudo and not (os.getuid() == 0 and user == 'root'):
     if os.path.isdir(path):
       return False
     cros_build_lib.SudoRunCommand(
