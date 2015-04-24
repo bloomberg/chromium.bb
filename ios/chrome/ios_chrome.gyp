@@ -236,6 +236,8 @@
         'browser/web/dom_altering_lock.mm',
         'browser/web_resource/ios_web_resource_service.cc',
         'browser/web_resource/ios_web_resource_service.h',
+        'browser/xcallback_parameters.h',
+        'browser/xcallback_parameters.mm',
       ],
     },
     {
