@@ -698,7 +698,7 @@ void WebstoreInstaller::UpdateDownloadProgress() {
 }
 
 void WebstoreInstaller::StartCrxInstaller(const DownloadItem& download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!crx_installer_.get());
 
   // The clock may be backward, e.g. daylight savings time just happenned.

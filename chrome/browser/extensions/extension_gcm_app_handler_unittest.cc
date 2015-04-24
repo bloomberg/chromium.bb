@@ -98,13 +98,13 @@ class Waiter {
 
  private:
   void PumpIOLoopCompleted() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     SignalCompleted();
   }
 
   void OnIOLoopPump() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     content::BrowserThread::PostTask(
         content::BrowserThread::IO,
@@ -113,7 +113,7 @@ class Waiter {
   }
 
   void OnIOLoopPumpCompleted() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,

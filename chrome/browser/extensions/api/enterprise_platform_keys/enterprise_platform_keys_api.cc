@@ -64,7 +64,7 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
 void EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey(
     const std::string& public_key_der,
     const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (error_message.empty()) {
     Respond(ArgumentList(api_epki::GenerateKey::Results::Create(
         std::vector<char>(public_key_der.begin(), public_key_der.end()))));
@@ -98,7 +98,7 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
 void EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates(
     scoped_ptr<net::CertificateList> certs,
     const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!error_message.empty()) {
     Respond(Error(error_message));
     return;
@@ -151,7 +151,7 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
 
 void EnterprisePlatformKeysImportCertificateFunction::OnImportedCertificate(
     const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (error_message.empty())
     Respond(NoArguments());
   else
@@ -190,7 +190,7 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
 
 void EnterprisePlatformKeysRemoveCertificateFunction::OnRemovedCertificate(
     const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (error_message.empty())
     Respond(NoArguments());
   else
@@ -215,7 +215,7 @@ EnterprisePlatformKeysInternalGetTokensFunction::Run() {
 void EnterprisePlatformKeysInternalGetTokensFunction::OnGotTokens(
     scoped_ptr<std::vector<std::string> > platform_keys_token_ids,
     const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!error_message.empty()) {
     Respond(Error(error_message));
     return;

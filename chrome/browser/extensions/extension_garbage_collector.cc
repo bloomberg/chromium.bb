@@ -159,7 +159,7 @@ void ExtensionGarbageCollector::GarbageCollectExtensionsOnFileThread(
 }
 
 void ExtensionGarbageCollector::GarbageCollectExtensions() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(context_);
   DCHECK(extension_prefs);
@@ -205,7 +205,7 @@ void ExtensionGarbageCollector::GarbageCollectExtensions() {
 }
 
 void ExtensionGarbageCollector::GarbageCollectIsolatedStorageIfNeeded() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(context_);
   DCHECK(extension_prefs);

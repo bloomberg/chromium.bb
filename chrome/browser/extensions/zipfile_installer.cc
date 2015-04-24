@@ -34,7 +34,7 @@ ZipFileInstaller::ZipFileInstaller(ExtensionService* extension_service)
 }
 
 void ZipFileInstaller::LoadFromZipFile(const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   zip_path_ = path;
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
@@ -101,7 +101,7 @@ void ZipFileInstaller::ReportErrorOnUIThread(const std::string& error) {
 }
 
 void ZipFileInstaller::OnUnzipSucceeded(const base::FilePath& unzipped_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -110,7 +110,7 @@ void ZipFileInstaller::OnUnzipSucceeded(const base::FilePath& unzipped_path) {
 }
 
 void ZipFileInstaller::OnUnzipFailed(const std::string& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,

@@ -53,7 +53,7 @@ void ChromeExtensionWebRequestEventRouterDelegate::LogExtensionActivity(
     const GURL& url,
     const std::string& api_call,
     scoped_ptr<base::DictionaryValue> details) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(
       browser_context))
     return;

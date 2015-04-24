@@ -152,7 +152,7 @@ StreamsPrivateAbortFunction::StreamsPrivateAbortFunction() {
 }
 
 ExtensionFunction::ResponseAction StreamsPrivateAbortFunction::Run() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &stream_url_));
   StreamsPrivateAPI::Get(browser_context())->AbortStream(
       extension_id(), GURL(stream_url_), base::Bind(
@@ -161,7 +161,7 @@ ExtensionFunction::ResponseAction StreamsPrivateAbortFunction::Run() {
 }
 
 void StreamsPrivateAbortFunction::OnClose() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   Respond(NoArguments());
 }
 

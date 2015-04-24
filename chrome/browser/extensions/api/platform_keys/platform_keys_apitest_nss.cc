@@ -162,7 +162,7 @@ class PlatformKeysTest : public ExtensionApiTest,
 
   void SetUpTestSystemSlotOnIO(content::ResourceContext* context,
                                const base::Closure& done_callback) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     test_system_slot_.reset(new crypto::ScopedTestSystemNSSKeySlot());
     ASSERT_TRUE(test_system_slot_->ConstructedSuccessfully());
 
@@ -171,7 +171,7 @@ class PlatformKeysTest : public ExtensionApiTest,
   }
 
   void TearDownTestSystemSlotOnIO(const base::Closure& done_callback) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     test_system_slot_.reset();
 
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,

@@ -80,7 +80,7 @@ void MigrateFileSystem(WeakPtr<extensions::AppDataMigrator> migrator,
                        StoragePartition* current_partition,
                        const extensions::Extension* extension,
                        const base::Closure& reply) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Since this method is static and it's being run as a closure task, check to
   // make sure the calling object is still around.
@@ -107,7 +107,7 @@ void MigrateLegacyPartition(WeakPtr<extensions::AppDataMigrator> migrator,
                             StoragePartition* current_partition,
                             const extensions::Extension* extension,
                             const base::Closure& reply) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   IndexedDBContext* indexed_db_context =
       current_partition->GetIndexedDBContext();
@@ -149,7 +149,7 @@ bool AppDataMigrator::NeedsMigration(const Extension* old,
 void AppDataMigrator::DoMigrationAndReply(const Extension* old,
                                           const Extension* extension,
                                           const base::Closure& reply) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(NeedsMigration(old, extension));
 
   // This should retrieve the general storage partition.

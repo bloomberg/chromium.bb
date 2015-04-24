@@ -122,7 +122,7 @@ class StorageEventObserver
       int64 next_threshold,
       const base::TimeDelta& rate,
       bool should_uma) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(quota_manager.get());
 
     GURL origin = site_url.GetOrigin();
@@ -147,7 +147,7 @@ class StorageEventObserver
   // Updates the threshold for an extension already being monitored.
   void UpdateThresholdForExtension(const std::string& extension_id,
                                    int64 next_threshold) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     for (OriginStorageStateMap::iterator it = origin_state_map_.begin();
          it != origin_state_map_.end();
@@ -161,7 +161,7 @@ class StorageEventObserver
 
   // Deregister as an observer for the extension's storage events.
   void StopObservingForExtension(const std::string& extension_id) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     for (OriginStorageStateMap::iterator it = origin_state_map_.begin();
          it != origin_state_map_.end(); ) {
@@ -186,7 +186,7 @@ class StorageEventObserver
 
   // Stop observing all storage events. Called during shutdown.
   void StopObserving() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     for (OriginStorageStateMap::iterator it = origin_state_map_.begin();
          it != origin_state_map_.end(); ++it) {
@@ -401,7 +401,7 @@ void ExtensionStorageMonitor::OnStorageThresholdExceeded(
     const std::string& extension_id,
     int64 next_threshold,
     int64 current_usage) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const Extension* extension = GetExtensionById(context_, extension_id);
   if (!extension)
