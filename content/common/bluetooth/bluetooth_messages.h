@@ -56,8 +56,8 @@
 // From: Device Discovery: requestDevice
 // http://webbluetoothcg.github.io/web-bluetooth/#device-discovery
 // """
-// Display a prompt to the user requesting that the user specify some devices
-// from the result of the scan. The UA should show the user the human-readable
+// Even if scanResult is empty, display a prompt to the user requesting that the
+// user select a device from it. The UA should show the user the human-readable
 // name of each device. If this name is not available because the UA's Bluetooth
 // system doesn't support privacy-enabled scans, the UA should allow the user to
 // indicate interest and then perform a privacy-disabled scan to retrieve the
@@ -66,20 +66,16 @@
 // The UA may allow the user to select a nearby device that does not match
 // filters.
 //
-// Wait for the user to have made their selection.
+// Wait for the user to have selected a device or cancelled the prompt.
 //
-// If the user cancels the prompt, reject the Promise with a NotFoundError and
-// abort these steps.
+// If the user cancels the prompt, reject promise with a NotFoundError and abort
+// these steps.
 //
-// Record the selected device in the origin's allowed devices list and the union
-// of the service UUIDs from filters and options.optionalServices in the device
-// and origin's allowed services list.
+// Add device to the origin's allowed devices map. with the union of the service
+// UUIDs from filters and options.optionalServices as allowed services.
 //
-// Connect to the device. ([BLUETOOTH41] 3.G.6.2.1) If the connection fails,
-// reject the Promise with a NetworkError and abort these steps.
-//
-// Resolve the Promise with a BluetoothDevice instance representing the selected
-// device.
+// Get the BluetoothDevice representing device and resolve promise with the
+// result.
 // """
 
 #include "ipc/ipc_message_macros.h"
