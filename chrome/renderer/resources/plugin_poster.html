@@ -4,32 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no">
 <script>
-function notifyDidFinishLoading() {
-  if (plugin.didFinishLoading)
-    plugin.didFinishLoading();
-}
+  window.onload = function() {
+    if (plugin.didFinishLoading)
+      plugin.didFinishLoading();
+  };
 
-document.onkeydown = function(e) {
-  if (e.keyIdentifier == 'Enter' || e.keyIdentifier == 'U+0020') {
-    plugin.load();
-    e.preventDefault();
-  }
-};
+  window.onkeydown = function(e) {
+    if (e.keyIdentifier == 'Enter' || e.keyIdentifier == 'U+0020') {
+      plugin.load();
+      e.preventDefault();
+    }
+  };
 </script>
 <link rel="stylesheet" href="plugin_placeholders.css"></link>
 <style>
 #outer {
-  position: relative;
   border: none;
   cursor: pointer;
+  position: relative;
 }
 
 #shielding {
   background-color: rgba(0, 0, 0, 0.5);
+  height: 100%;
+  left: 0px;
   position: absolute;
   top: 0px;
-  left: 0px;
-  height: 100%;
   width: 100%;
   z-index: 2;
 }
@@ -44,14 +44,15 @@ document.onkeydown = function(e) {
 
 #poster {
   height: 100%;
+  object-fit: contain;
   width: 100%;
   z-index: 1;
 }
 
 #inner_container {
   height: 100%;
-  width: 100%;
   position: relative;
+  width: 100%;
 }
 
 #inner {
@@ -61,8 +62,8 @@ document.onkeydown = function(e) {
 <base i18n-values="href:baseurl">
 </head>
 
-<body onload="notifyDidFinishLoading();">
-  <div i18n-values="title:name" id="outer" onclick="plugin.load()">
+<body>
+  <div i18n-values="title:name" id="outer">
     <img id="poster" i18n-values="srcset:poster">
     <div id="shielding">
       <div id="inner_container"
@@ -73,5 +74,14 @@ document.onkeydown = function(e) {
       </div>
     </div>
   </div>
+  <script>
+    document.getElementById('poster').onerror = function() {
+      this.hidden = true;
+    };
+
+    document.getElementById('outer').onclick = function() {
+      plugin.load();
+    };
+  </script>
 </body>
 </html>

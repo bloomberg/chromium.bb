@@ -136,6 +136,17 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePluginsUsePosters) {
   EXPECT_TRUE(IsPluginPeripheral("plugin"));
 }
 
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallPluginWithPoster) {
+  LoadHTML(
+      "<object id='plugin' type='application/x-ppapi-tests' "
+      "    width='400' height='100'>"
+      "  <param name='poster' value='snapshot1x.png 1x, snapshot2x.png 2x' />"
+      "</object>");
+  EXPECT_TRUE(IsPluginPeripheral("plugin"));
+
+  SimulateClickAndAwaitMarkedEssential("plugin", gfx::Point(50, 50));
+}
+
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, OriginWhitelisting) {
   LoadHTML(
       "<object id='plugin1' data='http://otherorigin.com/fake1.swf' "
