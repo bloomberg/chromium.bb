@@ -13,7 +13,7 @@ import("//testing/test.gni")
 # Common configuration for targets in the media directory.
 # NOT for exporting.
 config("media_config") {
-  defines = [ "MEDIA_IMPLEMENTATION" ]
+  defines = []
   if (!media_use_libvpx) {
     defines += [ "MEDIA_DISABLE_LIBVPX" ]
   }
@@ -35,6 +35,10 @@ config("media_config") {
   if (use_alsa) {
     defines += [ "USE_ALSA" ]
   }
+}
+
+config("media_implementation") {
+  defines = [ "MEDIA_IMPLEMENTATION" ]
 }
 
 config("media_dependent_config") {
@@ -278,6 +282,7 @@ component("media") {
 
   configs += [
     ":media_config",
+    ":media_implementation",
 
     # TODO(wolenetz): Fix size_t to int trunctaion in win64.
     # See http://crbug.com/171009
@@ -285,6 +290,7 @@ component("media") {
   ]
   all_dependent_configs = [ ":media_dependent_config" ]
 
+  allow_circular_includes_from = []
   cflags = []
   libs = []
   defines = []
@@ -334,14 +340,7 @@ component("media") {
     deps += [ "//third_party/libvpx" ]
   }
 
-  if (!is_android) {
-    sources += [
-      "filters/opus_audio_decoder.cc",
-      "filters/opus_audio_decoder.h",
-      "renderers/default_renderer_factory.cc",
-      "renderers/default_renderer_factory.h",
-    ]
-  } else {
+  if (is_android) {
     sources += [
       "midi/midi_manager_android.cc",
       "midi/usb_midi_device_android.cc",
@@ -358,6 +357,14 @@ component("media") {
       "//media/base/android:media_java",
       "//media/base/android:media_jni_headers",
       "//media/base/android:video_capture_jni_headers",
+    ]
+    allow_circular_includes_from = [ "//media/base/android" ]
+  } else {
+    sources += [
+      "filters/opus_audio_decoder.cc",
+      "filters/opus_audio_decoder.h",
+      "renderers/default_renderer_factory.cc",
+      "renderers/default_renderer_factory.h",
     ]
   }
 
@@ -514,7 +521,10 @@ component("media") {
 # Minimal media component for media/cast on iOS.
 if (is_ios) {
   component("media_for_cast_ios") {
-    configs += [ ":media_config" ]
+    configs += [
+      ":media_config",
+      ":media_implementation",
+    ]
     all_dependent_configs = [ ":media_dependent_config" ]
     include_dirs = [ "." ]
     libs = [ "CoreVideo.framework" ]
@@ -753,8 +763,10 @@ component("shared_memory_support") {
     "base/vector_math.cc",
     "base/vector_math.h",
   ]
-  configs += [ ":media_config" ]
-  defines = [ "MEDIA_IMPLEMENTATION" ]
+  configs += [
+    ":media_config",
+    ":media_implementation",
+  ]
   deps = [
     "//base",
   ]

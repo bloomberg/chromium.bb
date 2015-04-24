@@ -1654,6 +1654,7 @@
           ],
         },
         {
+          # GN version: //media/base:media_sse2
           'target_name': 'media_sse2',
           'type': 'static_library',
           'cflags': [

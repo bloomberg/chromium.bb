@@ -10,7 +10,8 @@ import("//build/config/linux/pkg_config.gni")
 import("//media/media_options.gni")
 
 source_set("base") {
-  visibility = [ "//media/*" ]
+  # This is part of the media component.
+  visibility = [ "//media" ]
   sources = [
     "audio_block_fifo.cc",
     "audio_block_fifo.h",
@@ -187,12 +188,19 @@ source_set("base") {
     "yuv_convert.cc",
     "yuv_convert.h",
   ]
+
+  allow_circular_includes_from = []
   defines = []
+  public_deps = []
   deps = [
+    "//ui/events:events_base",
     "//skia",
   ]
   libs = []
-  configs += [ "//media:media_config" ]
+  configs += [
+    "//media:media_config",
+    "//media:media_implementation",
+  ]
 
   if (media_use_ffmpeg) {
     sources += [
@@ -203,6 +211,12 @@ source_set("base") {
       "media_file_checker.cc",
       "media_file_checker.h",
     ]
+    if (is_win) {
+      sources += [ "media_win.cc" ]
+    } else if (is_posix) {
+      sources += [ "media_posix.cc" ]
+    }
+
     deps += [ "//third_party/ffmpeg" ]
   }
 
@@ -217,10 +231,13 @@ source_set("base") {
 
   if (is_android) {
     sources += [ "media_stub.cc" ]
-  } else if (is_win) {
-    sources += [ "media_win.cc" ]
-  } else if (is_posix) {
-    sources += [ "media_posix.cc" ]
+    public_deps = [
+      "//media/base/android",
+      "//media/base/android:media_java",
+      "//media/base/android:media_jni_headers",
+      "//media/base/android:video_capture_jni_headers",
+    ]
+    allow_circular_includes_from += [ "//media/base/android" ]
   }
 
   if (is_linux && use_x11) {
@@ -272,28 +289,30 @@ config("base_for_cast_ios_dependent_config") {
   defines = [ "MEDIA_FOR_CAST_IOS" ]
 }
 
-source_set("base_for_cast_ios") {
-  sources = [
-    "simd/convert_rgb_to_yuv.h",
-    "simd/convert_rgb_to_yuv_c.cc",
-    "simd/convert_yuv_to_rgb.h",
-    "simd/convert_yuv_to_rgb_c.cc",
-    "simd/filter_yuv.h",
-    "simd/filter_yuv_c.cc",
-    "video_frame.cc",
-    "video_frame.h",
-    "video_frame_metadata.cc",
-    "video_frame_metadata.h",
-    "video_util.cc",
-    "video_util.h",
-    "yuv_convert.cc",
-    "yuv_convert.h",
-  ]
-  configs += [
-    "//build/config/compiler:no_size_t_to_int_warning",
-    "//media:media_config",
-  ]
-  all_dependent_configs = [ ":base_for_cast_ios_dependent_config" ]
+if (is_ios) {
+  source_set("base_for_cast_ios") {
+    sources = [
+      "simd/convert_rgb_to_yuv.h",
+      "simd/convert_rgb_to_yuv_c.cc",
+      "simd/convert_yuv_to_rgb.h",
+      "simd/convert_yuv_to_rgb_c.cc",
+      "simd/filter_yuv.h",
+      "simd/filter_yuv_c.cc",
+      "video_frame.cc",
+      "video_frame.h",
+      "video_frame_metadata.cc",
+      "video_frame_metadata.h",
+      "video_util.cc",
+      "video_util.h",
+      "yuv_convert.cc",
+      "yuv_convert.h",
+    ]
+    configs += [
+      "//build/config/compiler:no_size_t_to_int_warning",
+      "//media:media_config",
+    ]
+    all_dependent_configs = [ ":base_for_cast_ios_dependent_config" ]
+  }
 }
 
 source_set("test_support") {
@@ -378,9 +397,9 @@ source_set("unittests") {
     "//media:media_config",
   ]
   deps = [
-    ":base",
     ":test_support",
     "//gpu/command_buffer/common",
+    "//media",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
@@ -416,8 +435,8 @@ source_set("perftests") {
   ]
   configs += [ "//media:media_config" ]
   deps = [
-    ":base",
     ":test_support",
+    "//media",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -438,7 +457,10 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       "simd/convert_rgb_to_yuv_ssse3.cc",
       "simd/filter_yuv_sse2.cc",
     ]
-    configs += [ "//media:media_config" ]
+    configs += [
+      "//media:media_config",
+      "//media:media_implementation",
+    ]
     if (!is_win) {
       cflags = [ "-msse2" ]
     }

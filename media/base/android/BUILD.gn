@@ -45,11 +45,13 @@ source_set("android") {
     "webaudio_media_codec_bridge.h",
     "webaudio_media_codec_info.h",
   ]
-  configs += [ "//media:media_config" ]
+  configs += [
+    "//media:media_config",
+    "//media:media_implementation",
+  ]
   deps = [
     ":media_jni_headers",
     "//media:shared_memory_support",
-    "//media/base",
     "//third_party/widevine/cdm:version_h",
     "//ui/gl",
     "//url",

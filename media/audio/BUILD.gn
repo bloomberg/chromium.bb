@@ -115,7 +115,10 @@ source_set("audio") {
   ]
   deps = []
   libs = []
-  configs += [ "//media:media_config" ]
+  configs += [
+    "//media:media_config",
+    "//media:media_implementation",
+  ]
 
   if (is_mac) {
     sources += [

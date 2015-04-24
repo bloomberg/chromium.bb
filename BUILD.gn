@@ -577,7 +577,6 @@ group("gn_only") {
       "//components/rappor:unit_tests",
       "//components/sessions:unit_tests",
       "//media/blink:media_blink_unittests",
-      "//media/base:base_for_cast_ios",
       "//media/cast:udp_proxy",
       "//native_client/src/trusted/platform_qualify:vcpuid",
       "//native_client/src/trusted/debug_stub:gdb_rsp_unittest",
