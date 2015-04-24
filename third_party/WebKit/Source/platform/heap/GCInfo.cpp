@@ -43,6 +43,7 @@ void GCInfoTable::ensureGCInfoIndex(const GCInfo* gcInfo, size_t* gcInfoIndexSlo
 
 void GCInfoTable::resize()
 {
+    static const int gcInfoZapValue = 0x33;
     // (Light) experimentation suggests that Blink doesn't need
     // more than this while handling content on popular web properties.
     const size_t initialSize = 512;
@@ -51,7 +52,7 @@ void GCInfoTable::resize()
     ASSERT(newSize < GCInfoTable::maxIndex);
     s_gcInfoTable = reinterpret_cast<GCInfo const**>(realloc(s_gcInfoTable, newSize * sizeof(GCInfo)));
     ASSERT(s_gcInfoTable);
-    memset(reinterpret_cast<uint8_t*>(s_gcInfoTable) + s_gcInfoTableSize * sizeof(GCInfo), 0, (newSize - s_gcInfoTableSize) * sizeof(GCInfo));
+    memset(reinterpret_cast<uint8_t*>(s_gcInfoTable) + s_gcInfoTableSize * sizeof(GCInfo), gcInfoZapValue, (newSize - s_gcInfoTableSize) * sizeof(GCInfo));
     s_gcInfoTableSize = newSize;
 }
 
