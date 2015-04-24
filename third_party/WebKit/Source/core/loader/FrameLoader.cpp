@@ -336,7 +336,7 @@ void FrameLoader::receivedFirstData()
     HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType);
     if (historyCommitType == StandardCommit && (m_documentLoader->urlForHistory().isEmpty() || (opener() && !m_currentItem && m_documentLoader->originalRequest().url().isEmpty())))
         historyCommitType = HistoryInertCommit;
-    else if (historyCommitType == InitialCommitInChildFrame && (!m_frame->tree().top()->isLocalFrame() || MixedContentChecker::isMixedContent(toLocalFrame(m_frame->tree().top())->document()->securityOrigin(), m_documentLoader->url())))
+    else if (historyCommitType == InitialCommitInChildFrame && MixedContentChecker::isMixedContent(m_frame->tree().top()->securityContext()->securityOrigin(), m_documentLoader->url()))
         historyCommitType = HistoryInertCommit;
     setHistoryItemStateForCommit(historyCommitType);
 

@@ -56,6 +56,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PinchViewport.h"
+#include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
@@ -7065,6 +7066,41 @@ TEST_F(WebFrameSwapTest, NavigateRemoteFrameViaLocation)
     // Manually reset to break WebViewHelper's dependency on the stack allocated
     // TestWebFrameClient.
     reset();
+}
+
+class CommitTypeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    explicit CommitTypeWebFrameClient()
+        : m_historyCommitType(WebHistoryInertCommit)
+    {
+    }
+
+    void didCommitProvisionalLoad(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType historyCommitType) override
+    {
+        m_historyCommitType = historyCommitType;
+    }
+
+    WebHistoryCommitType historyCommitType() const { return m_historyCommitType; }
+
+private:
+    WebHistoryCommitType m_historyCommitType;
+};
+
+TEST_F(WebFrameTest, RemoteFrameInitialCommitType)
+{
+    FrameTestHelpers::TestWebViewClient viewClient;
+    FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+    WebView* view = WebView::create(&viewClient);
+    view->setMainFrame(remoteClient.frame());
+    toRemoteFrame(toCoreFrame(view->mainFrame()))->securityContext()->setReplicatedOrigin(SecurityOrigin::create(toKURL(m_baseURL)));
+
+    // If an iframe has a remote main frame, ensure the inital commit is correctly identified as WebInitialCommitInChildFrame.
+    CommitTypeWebFrameClient childFrameClient;
+    WebLocalFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createLocalChild("", WebSandboxFlags::None, &childFrameClient);
+    registerMockedHttpURLLoad("foo.html");
+    FrameTestHelpers::loadFrame(childFrame, m_baseURL + "foo.html");
+    EXPECT_EQ(WebInitialCommitInChildFrame, childFrameClient.historyCommitType());
+    view->close();
 }
 
 class MockDocumentThreadableLoaderClient : public DocumentThreadableLoaderClient {
