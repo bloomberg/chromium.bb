@@ -2339,6 +2339,11 @@ TEST(HeapTest, HeapVectorShrinkInlineCapacity)
     vector1.shrinkToFit();
     EXPECT_GT(128u, vector1.capacity());
 
+    // TODO(sof): if the ASan support for 'contiguous containers' is enabled,
+    // Vector inline buffers are disabled; that constraint should be attempted
+    // removed, but until that time, disable testing handling of capacities
+    // of inline buffers.
+#if !defined(ANNOTATE_CONTIGUOUS_CONTAINER)
     // Shrinking switches the buffer from the external one to the inline one.
     vector1.shrink(inlineCapacity - 1);
     vector1.shrinkToFit();
@@ -2348,6 +2353,7 @@ TEST(HeapTest, HeapVectorShrinkInlineCapacity)
     vector1.shrink(1);
     vector1.shrinkToFit();
     EXPECT_EQ(inlineCapacity, vector1.capacity());
+#endif
 }
 
 template<typename T, size_t inlineCapacity, typename U>
