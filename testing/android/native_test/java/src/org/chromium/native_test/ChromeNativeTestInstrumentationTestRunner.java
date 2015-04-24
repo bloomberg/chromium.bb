@@ -12,9 +12,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 
-import org.chromium.test.support.ResultsBundleGenerator;
-import org.chromium.test.support.RobotiumBundleGenerator;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,6 +37,10 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
 
     private static final int ACCEPT_TIMEOUT_MS = 5000;
     private static final Pattern RE_TEST_OUTPUT = Pattern.compile("\\[ *([^ ]*) *\\] ?([^ ]+) .*");
+
+    private static interface ResultsBundleGenerator {
+        public Bundle generate(Map<String, TestResult> rawResults);
+    }
 
     private String mCommandLineFile;
     private String mCommandLineFlags;
@@ -90,7 +91,7 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
         }
 
         Log.i(TAG, "Getting results.");
-        Map<String, ResultsBundleGenerator.TestResult> results = parseResults(activityUnderTest);
+        Map<String, TestResult> results = parseResults(activityUnderTest);
 
         Log.i(TAG, "Parsing results and generating output.");
         return mBundleGenerator.generate(results);
@@ -116,14 +117,16 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
         return startActivitySync(i);
     }
 
+    private static enum TestResult {
+        PASSED, FAILED, ERROR, UNKNOWN
+    }
+
     /**
      *  Generates a map between test names and test results from the instrumented Activity's
      *  output.
      */
-    private Map<String, ResultsBundleGenerator.TestResult> parseResults(
-            Activity activityUnderTest) {
-        Map<String, ResultsBundleGenerator.TestResult> results =
-                new HashMap<String, ResultsBundleGenerator.TestResult>();
+    private Map<String, TestResult> parseResults(Activity activityUnderTest) {
+        Map<String, TestResult> results = new HashMap<String, TestResult>();
 
         BufferedReader r = null;
 
@@ -142,14 +145,14 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
                 boolean isFailure = false;
                 if (m.matches()) {
                     if (m.group(1).equals("RUN")) {
-                        results.put(m.group(2), ResultsBundleGenerator.TestResult.UNKNOWN);
+                        results.put(m.group(2), TestResult.UNKNOWN);
                     } else if (m.group(1).equals("FAILED")) {
-                        results.put(m.group(2), ResultsBundleGenerator.TestResult.FAILED);
+                        results.put(m.group(2), TestResult.FAILED);
                         isFailure = true;
                         mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT, l + "\n");
                         sendStatus(0, mLogBundle);
                     } else if (m.group(1).equals("OK")) {
-                        results.put(m.group(2), ResultsBundleGenerator.TestResult.PASSED);
+                        results.put(m.group(2), TestResult.PASSED);
                     }
                 }
 
@@ -180,6 +183,48 @@ public class ChromeNativeTestInstrumentationTestRunner extends Instrumentation {
             }
         }
         return results;
+    }
+
+    /**
+     * Creates a results bundle that emulates the one created by Robotium.
+     */
+    private static class RobotiumBundleGenerator implements ResultsBundleGenerator {
+        public Bundle generate(Map<String, TestResult> rawResults) {
+            Bundle resultsBundle = new Bundle();
+
+            int testsPassed = 0;
+            int testsFailed = 0;
+
+            for (Map.Entry<String, TestResult> entry : rawResults.entrySet()) {
+                switch (entry.getValue()) {
+                    case PASSED:
+                        ++testsPassed;
+                        break;
+                    case FAILED:
+                        // TODO(jbudorick): Remove this log message once AMP execution and
+                        // results handling has been stabilized.
+                        Log.d(TAG, "FAILED: " + entry.getKey());
+                        ++testsFailed;
+                        break;
+                    default:
+                        Log.w(TAG, "Unhandled: " + entry.getKey() + ", "
+                                + entry.getValue().toString());
+                        break;
+                }
+            }
+
+            StringBuilder resultBuilder = new StringBuilder();
+            if (testsFailed > 0) {
+                resultBuilder.append(
+                        "\nFAILURES!!! Tests run: " + Integer.toString(rawResults.size())
+                        + ", Failures: " + Integer.toString(testsFailed) + ", Errors: 0");
+            } else {
+                resultBuilder.append("\nOK (" + Integer.toString(testsPassed) + " tests)");
+            }
+            resultsBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT,
+                    resultBuilder.toString());
+            return resultsBundle;
+        }
     }
 
 }

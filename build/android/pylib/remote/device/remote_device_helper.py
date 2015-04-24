@@ -20,5 +20,4 @@ def TestHttpResponse(response, error_msg):
       error_msg: Error message to display if bad response is seen.
   """
   if response.status_code != 200:
-    raise RemoteDeviceError(
-        '%s (%d: %s)' % (error_msg, response.status_code, response.reason))
+    raise RemoteDeviceError(error_msg)
