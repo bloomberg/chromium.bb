@@ -320,6 +320,12 @@ bool PermissionsData::CanCaptureVisiblePage(int tab_id,
   return false;
 }
 
+PermissionsData::TabPermissionsMap
+PermissionsData::CopyTabSpecificPermissionsMap() const {
+  base::AutoLock auto_lock(runtime_lock_);
+  return tab_specific_permissions_;
+}
+
 scoped_refptr<const PermissionSet> PermissionsData::GetTabSpecificPermissions(
     int tab_id) const {
   base::AutoLock auto_lock(runtime_lock_);

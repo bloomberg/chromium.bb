@@ -60,8 +60,8 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
       id(extension->id()),
       creation_flags(extension->creation_flags()) {
   if (include_tab_permissions) {
-    const extensions::PermissionsData::TabPermissionsMap& tab_permissions =
-        extension->permissions_data()->tab_specific_permissions();
+    extensions::PermissionsData::TabPermissionsMap tab_permissions =
+        extension->permissions_data()->CopyTabSpecificPermissionsMap();
     for (const auto& pair : tab_permissions) {
       tab_specific_permissions[pair.first] =
           ExtensionMsg_PermissionSetStruct(*pair.second);

@@ -201,22 +201,19 @@ class PermissionsData {
   // page itself.
   bool CanCaptureVisiblePage(int tab_id, std::string* error) const;
 
-  const scoped_refptr<const PermissionSet>& active_permissions() const {
+  // Returns the tab permissions map.
+  TabPermissionsMap CopyTabSpecificPermissionsMap() const;
+
+  scoped_refptr<const PermissionSet> active_permissions() const {
     // We lock so that we can't also be setting the permissions while returning.
     base::AutoLock auto_lock(runtime_lock_);
     return active_permissions_unsafe_;
   }
 
-  const scoped_refptr<const PermissionSet>& withheld_permissions() const {
+  scoped_refptr<const PermissionSet> withheld_permissions() const {
     // We lock so that we can't also be setting the permissions while returning.
     base::AutoLock auto_lock(runtime_lock_);
     return withheld_permissions_unsafe_;
-  }
-
-  const TabPermissionsMap& tab_specific_permissions() const {
-    // We lock so that we can't also be setting the permissions while returning.
-    base::AutoLock auto_lock(runtime_lock_);
-    return tab_specific_permissions_;
   }
 
 #if defined(UNIT_TEST)
