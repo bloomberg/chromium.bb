@@ -122,12 +122,11 @@ class MetaBuildWrapper(object):
   def CmdGen(self):
     vals = self.GetConfig()
     if vals['type'] == 'gn':
-      self.RunGNGen(self.args.path[0], vals)
-    elif vals['type'] == 'gyp':
-      self.RunGYPGen(self.args.path[0], vals)
-    else:
-      raise MBErr('Unknown meta-build type "%s"' % vals['type'])
-    return 0
+      return self.RunGNGen(self.args.path[0], vals)
+    if vals['type'] == 'gyp':
+      return self.RunGYPGen(self.args.path[0], vals)
+
+    raise MBErr('Unknown meta-build type "%s"' % vals['type'])
 
   def CmdLookup(self):
     vals = self.GetConfig()

@@ -100,12 +100,12 @@ TEST_CONFIG = """\
 
 
 class UnitTest(unittest.TestCase):
-  def fake_mbw(self, files):
+  def fake_mbw(self, files=None):
     mbw = FakeMBW()
+    mbw.files.setdefault(mbw.default_config, TEST_CONFIG)
     if files:
       for path, contents in files.items():
         mbw.files[path] = contents
-    mbw.files.setdefault(mbw.default_config, TEST_CONFIG)
     return mbw
 
   def check(self, args, mbw=None, files=None, out=None, err=None, ret=None):
@@ -179,6 +179,12 @@ class UnitTest(unittest.TestCase):
   def test_gen(self):
     self.check(['gen', '-c', 'gn_debug', '//out/Default'], ret=0)
     self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], ret=0)
+
+  def test_gen_fails(self):
+    mbw = self.fake_mbw()
+    mbw.Call = lambda cmd: (1, '', '')
+    self.check(['gen', '-c', 'gn_debug', '//out/Default'], mbw=mbw, ret=1)
+    self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], mbw=mbw, ret=1)
 
   def test_goma_dir_expansion(self):
     self.check(['lookup', '-c', 'gyp_rel_bot', '-g', '/foo'], ret=0,
