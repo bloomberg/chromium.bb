@@ -16,9 +16,6 @@
 
 namespace crazy {
 
-// From android.os.Build.VERSION_CODES.LOLLIPOP.
-static const int SDK_VERSION_CODE_LOLLIPOP = 21;
-
 class Globals {
  public:
   Globals();

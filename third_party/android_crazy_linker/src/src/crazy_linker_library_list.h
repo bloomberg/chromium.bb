@@ -70,6 +70,7 @@ class LibraryList {
                            off_t file_offset,
                            SearchPathList* search_path_list,
                            bool no_map_exec_support_fallback_enabled,
+                           bool is_dependency_or_preload,
                            Error* error);
 
   // Return the full path of |lib_name| in the zip file
@@ -92,6 +93,7 @@ class LibraryList {
                                     uintptr_t load_address,
                                     SearchPathList* search_path_list,
                                     bool no_map_exec_support_fallback_enabled,
+                                    bool is_dependency_or_preload,
                                     Error* error);
 
   // Unload a given shared library. This really decrements the library's

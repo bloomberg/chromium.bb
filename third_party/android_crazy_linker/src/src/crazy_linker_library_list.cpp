@@ -21,6 +21,9 @@ namespace crazy {
 
 namespace {
 
+// From android.os.Build.VERSION_CODES.LOLLIPOP.
+static const int SDK_VERSION_CODE_LOLLIPOP = 21;
+
 // Page size for alignment in a zip file.
 const size_t kZipAlignmentPageSize = 4096;
 COMPILE_ASSERT(kZipAlignmentPageSize % PAGE_SIZE == 0,
@@ -61,8 +64,8 @@ struct SymbolLookupState {
 LibraryList::LibraryList() : head_(0), has_error_(false) {
   const int sdk_build_version = *Globals::GetSDKBuildVersion();
 
-  // If SDK version is Lollipop, we need to load anything listed in
-  // LD_PRELOAD explicitly, because dlsym() on the main executable
+  // If SDK version is Lollipop or earlier, we need to load anything
+  // listed in LD_PRELOAD explicitly, because dlsym() on the main executable
   // fails to lookup in preloads on those releases. Also, when doing our
   // symbol resolution we need to explicity search preloads *before* we
   // search the main executable, to ensure that preloads override symbols
@@ -76,15 +79,9 @@ LibraryList::LibraryList() : head_(0), has_error_(false) {
   // of them for us, and so by not loading preloads here our preloads list
   // remains empty, so that searching it for name lookups is a no-op.
   //
-  // If SDK version is earlier than Lollipop then we also do nothing.
-  // Pre-Lollipop platforms arguably have the same dlsym() issue, but for
-  // now we disable the dlsym() workround in order to try and address
-  // crbug/479220.
-  //
   // For more, see:
   //   https://code.google.com/p/android/issues/detail?id=74255
-  //   https://code.google.com/p/chromium/issues/detail?id=479220
-  if (sdk_build_version == SDK_VERSION_CODE_LOLLIPOP)
+  if (sdk_build_version <= SDK_VERSION_CODE_LOLLIPOP)
     LoadPreloads();
 }
 
@@ -138,6 +135,7 @@ void LibraryList::LoadPreloads() {
                                        0U /* file offset */,
                                        &search_path_list,
                                        no_map_exec_support_fallback_enabled,
+                                       true /* is_dependency_or_preload */,
                                        &error);
     if (!preload) {
       LOG("'%s' cannot be preloaded: ignored\n", lib_name.c_str());
@@ -318,6 +316,7 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
                                       off_t file_offset,
                                       SearchPathList* search_path_list,
                                       bool no_map_exec_support_fallback_enabled,
+                                      bool is_dependency_or_preload,
                                       Error* error) {
   const char* base_name = GetBaseNamePtr(lib_name);
 
@@ -347,9 +346,10 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
     return wrap;
   }
 
-  if (IsSystemLibrary(lib_name)) {
-    // This is a system library, probably because we're loading the
-    // library as a dependency.
+  // If this load is prompted by either dependencies or preloads, open
+  // normally with dlopen() and do not proceed to try and load the library
+  // crazily.
+  if (is_dependency_or_preload) {
     LOG("%s: Loading system library '%s'\n", __FUNCTION__, lib_name);
     ::dlerror();
     void* system_lib = dlopen(lib_name, dlopen_mode);
@@ -415,6 +415,7 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
                                           0U /* file offset */,
                                           search_path_list,
                                           no_map_exec_support_fallback_enabled,
+                                          true /* is_dependency_or_preload */,
                                           &dep_error);
     if (!dependency) {
       error->Format("When loading %s: %s", base_name, dep_error.c_str());
@@ -530,6 +531,7 @@ LibraryView* LibraryList::LoadLibraryInZipFile(
     uintptr_t load_address,
     SearchPathList* search_path_list,
     bool no_map_exec_support_fallback_enabled,
+    bool is_dependency_or_preload,
     Error* error) {
   int offset = FindMappableLibraryInZipFile(zip_file_path, lib_name, error);
   if (offset == CRAZY_OFFSET_FAILED) {
@@ -538,7 +540,8 @@ LibraryView* LibraryList::LoadLibraryInZipFile(
 
   return LoadLibrary(
       zip_file_path, dlopen_flags, load_address, offset,
-      search_path_list, no_map_exec_support_fallback_enabled, error);
+      search_path_list, no_map_exec_support_fallback_enabled,
+      is_dependency_or_preload, error);
 }
 
 void LibraryList::AddLibrary(LibraryView* wrap) {

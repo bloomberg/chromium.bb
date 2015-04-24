@@ -76,3 +76,5 @@ Local Modifications:
 
 - Fix RELRO sharing issue caused by packing relocations.
 
+- Correct fix for crbug/479220 (replace IsSystemLibrary() with caller flags).
+

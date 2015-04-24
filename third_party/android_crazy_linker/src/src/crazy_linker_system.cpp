@@ -87,26 +87,4 @@ bool PathIsFile(const char* path) {
 
 #endif  // !UNIT_TESTS
 
-// Returns true iff |lib_name| corresponds to one of the NDK-exposed
-// system libraries.
-bool IsSystemLibrary(const char* lib_name) {
-  static const char* const kSystemLibs[] = {
-      "libandroid.so",   "libc.so",         "libdl.so",     "libjnigraphics.so",
-      "liblog.so",       "libm.so",         "libstdc++.so", "libz.so",
-      "libEGL.so",       "libGLESv1_CM.so", "libGLESv2.so", "libGLESv3.so",
-      "libOpenMAXAL.so", "libOpenSLES.so",  "libsigchain.so", };
-  const size_t kSize = sizeof(kSystemLibs) / sizeof(kSystemLibs[0]);
-  const char* base_name = ::strrchr(lib_name, '/');
-  if (!base_name)
-    base_name = lib_name;
-  else
-    base_name += 1;
-
-  for (size_t n = 0; n < kSize; ++n) {
-    if (!strcmp(kSystemLibs[n], base_name))
-      return true;
-  }
-  return false;
-}
-
 }  // namespace crazy

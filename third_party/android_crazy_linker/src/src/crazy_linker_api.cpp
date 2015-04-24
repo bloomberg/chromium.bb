@@ -220,6 +220,7 @@ crazy_status_t crazy_library_open(crazy_library_t** library,
                                                   context->file_offset,
                                                   &context->search_paths,
                                                   false,
+                                                  false,
                                                   &context->error);
 
   if (!wrap)
@@ -253,6 +254,7 @@ crazy_status_t crazy_library_open_in_zip_file(crazy_library_t** library,
           context->load_address,
           &context->search_paths,
           context->no_map_exec_support_fallback_enabled,
+          false,
           &context->error);
 
   if (!wrap)

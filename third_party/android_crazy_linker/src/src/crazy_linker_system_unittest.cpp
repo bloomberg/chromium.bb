@@ -39,33 +39,4 @@ TEST(System, PathExistsWithBadPath) {
   EXPECT_FALSE(PathExists("/tmp/foo"));
 }
 
-TEST(System, IsSystemLibrary) {
-  SystemMock sys;
-  static const struct {
-    const char* name;
-    bool success;
-  } kData[] = {
-        {"libEGL.so", true},
-        {"libGLESv1_CM.so", true},
-        {"libGLESv1.so", false},
-        {"libGLESv2.so", true},
-        {"libOpenMAXAL.so", true},
-        {"libOpenSLES.so", true},
-        {"libandroid.so", true},
-        {"libc.so", true},
-        {"libdl.so", true},
-        {"libjnigraphics.so", true},
-        {"libm.so", true},
-        {"libstdc++.so", true},
-        {"libstlport.so", false},
-        {"libz.so", true},
-        {"/system/lib/libc.so", true},
-        {"/system/libc.so/libfoo.so", false},
-    };
-  for (size_t n = 0; n < ARRAY_LEN(kData); ++n) {
-    TEST_TEXT << "Checking " << kData[n].name;
-    EXPECT_EQ(kData[n].success, IsSystemLibrary(kData[n].name));
-  }
-}
-
 }  // namespace crazy

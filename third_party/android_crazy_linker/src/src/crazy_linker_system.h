@@ -76,10 +76,6 @@ String GetCurrentDirectory();
 // Returns the value of a given environment variable.
 const char* GetEnv(const char* var_name);
 
-// Returns true iff |lib_name| corresponds to one of the NDK-exposed
-// system libraries.
-bool IsSystemLibrary(const char* lib_name);
-
 }  // namespace crazy
 
 #endif  // CRAZY_LINKER_SYSTEM_H
