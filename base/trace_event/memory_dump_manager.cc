@@ -17,6 +17,8 @@
 #include "base/trace_event/malloc_dump_provider.h"
 #include "base/trace_event/process_memory_maps_dump_provider.h"
 #include "base/trace_event/process_memory_totals_dump_provider.h"
+#elif defined(OS_WIN)
+#include "base/trace_event/winheap_dump_provider_win.h"
 #endif
 
 namespace base {
@@ -165,6 +167,8 @@ void MemoryDumpManager::Initialize() {
   RegisterDumpProvider(ProcessMemoryTotalsDumpProvider::GetInstance());
   RegisterDumpProvider(ProcessMemoryMapsDumpProvider::GetInstance());
   RegisterDumpProvider(MallocDumpProvider::GetInstance());
+#elif defined(OS_WIN)
+  RegisterDumpProvider(WinHeapDumpProvider::GetInstance());
 #endif
 }
 

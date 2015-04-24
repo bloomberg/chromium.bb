@@ -42,6 +42,8 @@
       'trace_event/trace_event_system_stats_monitor.h',
       'trace_event/trace_event_win.cc',
       'trace_event/trace_event_win.h',
+      'trace_event/winheap_dump_provider_win.cc',
+      'trace_event/winheap_dump_provider_win.h',
     ],
     'conditions': [
       ['OS == "linux" or OS == "android"', {
@@ -63,6 +65,7 @@
       'trace_event/trace_event_system_stats_monitor_unittest.cc',
       'trace_event/trace_event_unittest.cc',
       'trace_event/trace_event_win_unittest.cc',
+      'trace_event/winheap_dump_provider_win_unittest.cc',
     ],
   },
 }
