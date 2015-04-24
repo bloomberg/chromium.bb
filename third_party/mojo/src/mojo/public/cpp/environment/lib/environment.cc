@@ -9,6 +9,7 @@
 #include "mojo/public/c/environment/logger.h"
 #include "mojo/public/cpp/environment/lib/default_async_waiter.h"
 #include "mojo/public/cpp/environment/lib/default_logger.h"
+#include "mojo/public/cpp/environment/lib/default_task_tracker.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 
 namespace mojo {
@@ -17,14 +18,20 @@ namespace {
 
 const MojoAsyncWaiter* g_default_async_waiter = nullptr;
 const MojoLogger* g_default_logger = nullptr;
+const TaskTracker* g_default_task_tracker = nullptr;
 
 void Init(const MojoAsyncWaiter* default_async_waiter,
-          const MojoLogger* default_logger) {
+          const MojoLogger* default_logger,
+          const TaskTracker* default_task_tracker) {
   g_default_async_waiter = default_async_waiter
                                ? default_async_waiter
                                : &internal::kDefaultAsyncWaiter;
   g_default_logger =
       default_logger ? default_logger : &internal::kDefaultLogger;
+
+  g_default_task_tracker = default_task_tracker
+                               ? default_task_tracker
+                               : &internal::kDefaultTaskTracker;
 
   RunLoop::SetUp();
 }
@@ -32,12 +39,13 @@ void Init(const MojoAsyncWaiter* default_async_waiter,
 }  // namespace
 
 Environment::Environment() {
-  Init(nullptr, nullptr);
+  Init(nullptr, nullptr, nullptr);
 }
 
 Environment::Environment(const MojoAsyncWaiter* default_async_waiter,
-                         const MojoLogger* default_logger) {
-  Init(default_async_waiter, default_logger);
+                         const MojoLogger* default_logger,
+                         const TaskTracker* default_task_tracker) {
+  Init(default_async_waiter, default_logger, default_task_tracker);
 }
 
 Environment::~Environment() {
@@ -59,6 +67,11 @@ const MojoAsyncWaiter* Environment::GetDefaultAsyncWaiter() {
 const MojoLogger* Environment::GetDefaultLogger() {
   assert(g_default_logger);  // Fails if not "inside" |Environment|.
   return g_default_logger;
+}
+
+// static
+const TaskTracker* Environment::GetDefaultTaskTracker() {
+  return g_default_task_tracker;
 }
 
 // static

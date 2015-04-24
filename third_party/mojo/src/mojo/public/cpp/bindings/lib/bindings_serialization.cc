@@ -4,8 +4,6 @@
 
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 
-#include "mojo/public/cpp/bindings/lib/bounds_checker.h"
-#include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
@@ -53,12 +51,6 @@ const void* DecodePointerRaw(const uint64_t* offset) {
   return reinterpret_cast<const char*>(offset) + *offset;
 }
 
-bool ValidateEncodedPointer(const uint64_t* offset) {
-  // Cast to uintptr_t so overflow behavior is well defined.
-  return reinterpret_cast<uintptr_t>(offset) + *offset >=
-         reinterpret_cast<uintptr_t>(offset);
-}
-
 void EncodeHandle(Handle* handle, std::vector<Handle>* handles) {
   if (handle->is_valid()) {
     handles->push_back(*handle);
@@ -84,32 +76,6 @@ void DecodeHandle(Handle* handle, std::vector<Handle>* handles) {
 
 void DecodeHandle(Interface_Data* data, std::vector<Handle>* handles) {
   DecodeHandle(&data->handle, handles);
-}
-
-bool ValidateStructHeaderAndClaimMemory(const void* data,
-                                        BoundsChecker* bounds_checker) {
-  if (!IsAligned(data)) {
-    ReportValidationError(VALIDATION_ERROR_MISALIGNED_OBJECT);
-    return false;
-  }
-  if (!bounds_checker->IsValidRange(data, sizeof(StructHeader))) {
-    ReportValidationError(VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
-    return false;
-  }
-
-  const StructHeader* header = static_cast<const StructHeader*>(data);
-
-  if (header->num_bytes < sizeof(StructHeader)) {
-    ReportValidationError(VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER);
-    return false;
-  }
-
-  if (!bounds_checker->ClaimMemory(data, header->num_bytes)) {
-    ReportValidationError(VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
-    return false;
-  }
-
-  return true;
 }
 
 }  // namespace internal

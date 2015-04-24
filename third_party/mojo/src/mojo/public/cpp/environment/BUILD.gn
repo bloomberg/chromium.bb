@@ -7,8 +7,9 @@ import("../../mojo_sdk.gni")
 mojo_sdk_source_set("environment") {
   sources = [
     "async_waiter.h",
-    "logging.h",
     "environment.h",
+    "logging.h",
+    "task_tracker.h",
   ]
 
   mojo_sdk_public_deps = [ "mojo/public/c/environment" ]
@@ -26,8 +27,12 @@ mojo_sdk_source_set("standalone") {
     "lib/default_async_waiter.h",
     "lib/default_logger.cc",
     "lib/default_logger.h",
+    "lib/default_task_tracker.cc",
+    "lib/default_task_tracker.h",
     "lib/environment.cc",
     "lib/logging.cc",
+    "lib/scoped_task_tracking.cc",
+    "lib/scoped_task_tracking.h",
   ]
 
   public_deps = [
@@ -36,6 +41,7 @@ mojo_sdk_source_set("standalone") {
 
   mojo_sdk_deps = [
     "mojo/public/c/environment",
+    "mojo/public/cpp/system",
     "mojo/public/cpp/utility",
   ]
 }

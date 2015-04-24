@@ -136,7 +136,7 @@ public class ServiceRegistryTest extends ContentShellTestBase {
         // Perform a few operations on the Calculator.
         Calculator.Proxy calculator = requestPair.first;
         CalcConnectionErrorHandler errorHandler = new CalcConnectionErrorHandler();
-        calculator.setErrorHandler(errorHandler);
+        calculator.getProxyHandler().setErrorHandler(errorHandler);
         CalcCallback callback = new CalcCallback();
 
         calculator.add(21, callback);
@@ -163,7 +163,7 @@ public class ServiceRegistryTest extends ContentShellTestBase {
                 Calculator.MANAGER.getInterfaceRequest(mCore);
         Calculator.Proxy calculator = requestPair.first;
         CalcConnectionErrorHandler errorHandler = new CalcConnectionErrorHandler();
-        calculator.setErrorHandler(errorHandler);
+        calculator.getProxyHandler().setErrorHandler(errorHandler);
         mCloseablesToClose.add(calculator);
         serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
 
@@ -192,7 +192,7 @@ public class ServiceRegistryTest extends ContentShellTestBase {
         requestPair = Calculator.MANAGER.getInterfaceRequest(mCore);
         calculator = requestPair.first;
         errorHandler = new CalcConnectionErrorHandler();
-        calculator.setErrorHandler(errorHandler);
+        calculator.getProxyHandler().setErrorHandler(errorHandler);
         mCloseablesToClose.add(calculator);
         serviceRegistryB.connectToRemoteService(Calculator.MANAGER, requestPair.second);
 

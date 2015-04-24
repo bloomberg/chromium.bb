@@ -117,7 +117,7 @@ func (impl *coreImpl) CreateDataPipe(opts *DataPipeOptions) (MojoResult, Produce
 	if opts == nil {
 		r, p, c = sysImpl.CreateDataPipeWithDefaultOptions()
 	} else {
-		r, p, c = sysImpl.CreateDataPipe(uint32(opts.flags), uint32(opts.elemSize), uint32(opts.capacity))
+		r, p, c = sysImpl.CreateDataPipe(uint32(opts.Flags), uint32(opts.ElemSize), uint32(opts.Capacity))
 	}
 	impl.mu.Unlock()
 	return MojoResult(r), impl.AcquireNativeHandle(MojoHandle(p)).ToProducerHandle(), impl.AcquireNativeHandle(MojoHandle(c)).ToConsumerHandle()
@@ -127,7 +127,7 @@ func (impl *coreImpl) CreateMessagePipe(opts *MessagePipeOptions) (MojoResult, M
 
 	var flags uint32
 	if opts != nil {
-		flags = uint32(opts.flags)
+		flags = uint32(opts.Flags)
 	}
 	impl.mu.Lock()
 	r, handle0, handle1 := sysImpl.CreateMessagePipe(flags)
@@ -138,7 +138,7 @@ func (impl *coreImpl) CreateMessagePipe(opts *MessagePipeOptions) (MojoResult, M
 func (impl *coreImpl) CreateSharedBuffer(opts *SharedBufferOptions, numBytes uint64) (MojoResult, SharedBufferHandle) {
 	var flags uint32
 	if opts != nil {
-		flags = uint32(opts.flags)
+		flags = uint32(opts.Flags)
 	}
 	impl.mu.Lock()
 	r, handle := sysImpl.CreateSharedBuffer(flags, numBytes)

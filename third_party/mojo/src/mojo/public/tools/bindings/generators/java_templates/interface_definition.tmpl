@@ -168,18 +168,18 @@ class {{interface|name}}_Internal {
             _message.{{param|name}} = {{param|name}};
 {%   endfor %}
 {%   if method.response_parameters != None %}
-            getMessageReceiver().acceptWithResponder(
+            getProxyHandler().getMessageReceiver().acceptWithResponder(
                     _message.serializeWithHeader(
-                            getCore(),
+                            getProxyHandler().getCore(),
                             new org.chromium.mojo.bindings.MessageHeader(
                                     {{method|method_ordinal_name}},
                                     {{flags_for_method(method, True)}},
                                     0)),
                     new {{method.response_param_struct|name}}ForwardToCallback(callback));
 {%   else %}
-            getMessageReceiver().accept(
+            getProxyHandler().getMessageReceiver().accept(
                     _message.serializeWithHeader(
-                            getCore(),
+                            getProxyHandler().getCore(),
                             new org.chromium.mojo.bindings.MessageHeader({{method|method_ordinal_name}})));
 {%   endif %}
         }

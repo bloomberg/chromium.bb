@@ -31,6 +31,31 @@ func init() {
 	mapHeader = DataHeader{24, 2}
 }
 
+const (
+	DifferentSizedArraysInMap     = "VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP"
+	IllegalHandle                 = "VALIDATION_ERROR_ILLEGAL_HANDLE"
+	IllegalMemoryRange            = "VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE"
+	IllegalPointer                = "VALIDATION_ERROR_ILLEGAL_POINTER"
+	MessageHeaderInvalidFlags     = "VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS"
+	MessageHeaderMissingRequestId = "VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID"
+	MessageHeaderUnknownMethod    = "VALIDATION_ERROR_MESSAGE_HEADER_UNKNOWN_METHOD"
+	MisalignedObject              = "VALIDATION_ERROR_MISALIGNED_OBJECT"
+	UnexpectedArrayHeader         = "VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER"
+	UnexpectedInvalidHandle       = "VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE"
+	UnexpectedNullPointer         = "VALIDATION_ERROR_UNEXPECTED_NULL_POINTER"
+	UnexpectedStructHeader        = "VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER"
+)
+
+// ValidationError is an error that can happen during message validation.
+type ValidationError struct {
+	ErrorCode string
+	Message   string
+}
+
+func (e *ValidationError) Error() string {
+	return e.Message
+}
+
 // Payload is an interface implemented by a mojo struct that can encode/decode
 // itself into mojo archive format.
 type Payload interface {
@@ -74,8 +99,20 @@ func (h *MessageHeader) Decode(decoder *Decoder) error {
 	}
 	numFields := header.ElementsOrVersion
 	if numFields < 2 || numFields > 3 {
-		return fmt.Errorf("Invalid message header: it should have 2 or 3 fileds, but has %d", numFields)
+		return &ValidationError{UnexpectedStructHeader,
+			fmt.Sprintf("invalid message header: it should have 2 or 3 fileds, but has %d", numFields),
+		}
 	}
+	expectedSize := uint32(dataHeaderSize + 2*4)
+	if numFields == 3 {
+		expectedSize += 8
+	}
+	if expectedSize != header.Size {
+		return &ValidationError{UnexpectedStructHeader,
+			fmt.Sprintf("unexpected struct header size: expected %d, but got %d", expectedSize, header.Size),
+		}
+	}
+
 	if h.Type, err = decoder.ReadUint32(); err != nil {
 		return err
 	}
@@ -84,14 +121,16 @@ func (h *MessageHeader) Decode(decoder *Decoder) error {
 	}
 	if numFields == 3 {
 		if h.Flags != MessageExpectsResponseFlag && h.Flags != MessageIsResponseFlag {
-			return fmt.Errorf("Message header flags(%v) should be MessageExpectsResponseFlag or MessageIsResponseFlag", h.Flags)
+			return &ValidationError{MessageHeaderInvalidFlags,
+				fmt.Sprintf("message header flags(%v) should be MessageExpectsResponseFlag or MessageIsResponseFlag", h.Flags),
+			}
 		}
 		if h.RequestId, err = decoder.ReadUint64(); err != nil {
 			return err
 		}
 	} else {
 		if h.Flags != MessageNoFlag {
-			return fmt.Errorf("Message header flags(%v) should be MessageNoFlag", h.Flags)
+			return &ValidationError{MessageHeaderMissingRequestId, "missing request ID in message header"}
 		}
 	}
 	return decoder.Finish()

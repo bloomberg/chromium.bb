@@ -120,8 +120,11 @@
         # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
         "../third_party/mojo/src/mojo/public/cpp/environment/async_waiter.h",
         "../third_party/mojo/src/mojo/public/cpp/environment/lib/async_waiter.cc",
-        "../third_party/mojo/src/mojo/public/cpp/environment/logging.h",
         "../third_party/mojo/src/mojo/public/cpp/environment/lib/logging.cc",
+        "../third_party/mojo/src/mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
+        "../third_party/mojo/src/mojo/public/cpp/environment/lib/scoped_task_tracking.cc",
+        "../third_party/mojo/src/mojo/public/cpp/environment/logging.h",
+        "../third_party/mojo/src/mojo/public/cpp/environment/task_tracker.h",
       ],
       'include_dirs': [
         '..',
@@ -156,6 +159,8 @@
         'environment/default_logger_impl.h',
         'environment/default_run_loop_impl.cc',
         'environment/default_run_loop_impl.h',
+        'environment/default_task_tracker_impl.cc',
+        'environment/default_task_tracker_impl.h',
       ],
       'include_dirs': [
         '..',

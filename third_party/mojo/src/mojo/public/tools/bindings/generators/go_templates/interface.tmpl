@@ -81,7 +81,7 @@ func CreateMessagePipeFor{{interface|name}}() ({{interface|name}}Request, {{inte
 }
 
 {% for method in interface.methods %}
-const {{interface|name(False)}}_{{method|name}}_Name = {{method.ordinal}}
+const {{interface|name(False)}}_{{method|name}}_Name uint32 = {{method.ordinal}}
 {% endfor %}
 
 type {{interface|name}}Proxy struct {
@@ -130,9 +130,20 @@ func (p *{{interface|name}}Proxy) {{method|name}}{{declare_request_params(method
 		p.Close_proxy()
 		return
 	}
+	if readResult.Message.Header.Flags != bindings.MessageIsResponseFlag {
+		err = &bindings.ValidationError{bindings.MessageHeaderInvalidFlags,
+			fmt.Sprintf("invalid message header flag: %v", readResult.Message.Header.Flags),
+		}
+		return
+	}
+	if got, want := readResult.Message.Header.Type, {{interface|name(False)}}_{{method|name}}_Name; got != want {
+		err = &bindings.ValidationError{bindings.MessageHeaderUnknownMethod,
+			fmt.Sprintf("invalid method in response: expected %v, got %v", want, got),
+		}
+		return
+	}
 	var response {{method.response_param_struct|name(False)}}
 	if err = readResult.Message.DecodePayload(&response); err != nil {
-		err = fmt.Errorf("can't decode response: %v", err.Error())
 		p.Close_proxy()
 		return
 	}
@@ -163,9 +174,18 @@ func (s *{{interface|name(False)}}Stub) Accept(message *bindings.Message) (err e
 	switch message.Header.Type {
 {% for method in interface.methods %}
 	case {{interface|name(False)}}_{{method|name}}_Name:
+{%   if method.response_parameters %}
+		if message.Header.Flags != bindings.MessageExpectsResponseFlag {
+{%   else %}
+		if message.Header.Flags != bindings.MessageNoFlag {
+{%   endif %}
+			return &bindings.ValidationError{bindings.MessageHeaderInvalidFlags,
+				fmt.Sprintf("invalid message header flag: %v", message.Header.Flags),
+			}
+		}
 		var request {{method.param_struct|name(False)}}
 		if err := message.DecodePayload(&request); err != nil {
-			return fmt.Errorf("can't decode request: %v", err.Error())
+			return err
 		}
 {%   if method.response_parameters %}
 		var response {{method.response_param_struct|name(False)}}
@@ -192,13 +212,16 @@ func (s *{{interface|name(False)}}Stub) Accept(message *bindings.Message) (err e
 		}
 		message, err = bindings.EncodeMessage(header, &response)
 		if err != nil {
-			return fmt.Errorf("can't encode response: %v", err.Error())
+			return err
 		}
 		return s.connector.WriteMessage(message)
 {%   endif %}
 {% endfor %}
 	default:
-		return fmt.Errorf("unsupported request type %v", message.Header.Type);
+		return &bindings.ValidationError{
+			bindings.MessageHeaderUnknownMethod,
+			fmt.Sprintf("unknown method %v", message.Header.Type),
+		}
 	}
 	return
 }

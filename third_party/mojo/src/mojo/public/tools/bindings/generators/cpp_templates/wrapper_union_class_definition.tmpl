@@ -21,8 +21,10 @@
   switch (tag_) {
 {%    for field in union.fields %}
     case Tag::{{field.name|upper}}:
-{%    if field.kind|is_object_kind %}
+{%    if field.kind|is_string_kind %}
       rv->set_{{field.name}}(*(data_.{{field.name}}));
+{%    elif field.kind|is_object_kind %}
+      rv->set_{{field.name}}(data_.{{field.name}}->Clone());
 {%-   else %}
       rv->set_{{field.name}}(data_.{{field.name}});
 {%-   endif %}
@@ -57,7 +59,7 @@ bool {{union.name}}::is_{{field.name}}() const {
   return tag_ == Tag::{{field.name|upper}};
 }
 
-{{field.kind|cpp_result_type}} {{union.name}}::get_{{field.name}}() const {
+{{field.kind|cpp_union_getter_return_type}} {{union.name}}::get_{{field.name}}() const {
   MOJO_DCHECK(tag_ == Tag::{{field.name|upper}});
 {%    if field.kind|is_object_kind %}
   return *(data_.{{field.name}});
@@ -70,6 +72,8 @@ void {{union.name}}::set_{{field.name}}({{field.kind|cpp_const_wrapper_type}} {{
   SwitchActive(Tag::{{field.name|upper}});
 {%    if field.kind|is_string_kind %}
   *(data_.{{field.name}}) = {{field.name}};
+{%    elif field.kind|is_object_kind %}
+  *(data_.{{field.name}}) = {{field.name}}.Pass();
 {%-   else %}
   data_.{{field.name}} = {{field.name}};
 {%-   endif %}
@@ -89,8 +93,8 @@ void {{union.name}}::SetActive(Tag new_active) {
   switch (new_active) {
 {%  for field in union.fields %}
     case Tag::{{field.name|upper}}:
-{%    if field.kind|is_string_kind %}
-      data_.{{field.name}} = new String();
+{%    if field.kind|is_object_kind %}
+      data_.{{field.name}} = new {{field.kind|cpp_wrapper_type}}();
 {%-   endif %}
       break;
 {%- endfor %}
@@ -103,7 +107,7 @@ void {{union.name}}::DestroyActive() {
   switch (tag_) {
 {%  for field in union.fields %}
     case Tag::{{field.name|upper}}:
-{%    if field.kind|is_string_kind %}
+{%    if field.kind|is_object_kind %}
       delete data_.{{field.name}};
 {%-   endif %}
       break;

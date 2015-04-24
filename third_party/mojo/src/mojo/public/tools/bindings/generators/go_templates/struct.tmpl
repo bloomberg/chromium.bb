@@ -43,7 +43,9 @@ func (s *{{struct|name(exported)}}) Decode(decoder *bindings.Decoder) error {
 		}
 		expectedSize := {{struct|name(False)}}_Versions[index].Size
 		if expectedSize != header.Size {
-			return fmt.Errorf("invalid struct header size: should be %d, but was %d", expectedSize, header.Size)
+			return &bindings.ValidationError{bindings.UnexpectedStructHeader,
+				fmt.Sprintf("invalid struct header size: should be %d, but was %d", expectedSize, header.Size),
+			}
 		}
 	}
 {% for byte in struct.bytes %}
@@ -151,7 +153,7 @@ if pointer{{level}} == 0 {
 	{{decodePointerValue('(*'~value~')', kind, level)|tab_indent()}}
 }
 {%   else %}
-	return fmt.Errorf("unexpected null pointer")
+	return &bindings.ValidationError{bindings.UnexpectedNullPointer, "unexpected null pointer"}
 } else {
 	{{decodePointerValue(value, kind, level)|tab_indent()}}
 }
@@ -172,7 +174,7 @@ if handle{{level}}.IsValid() {
 {%   if kind|is_nullable %}
 	{{value}} = nil
 {%   else %}
-	return fmt.Errorf("unexpected invalid handle")
+	return &bindings.ValidationError{bindings.UnexpectedInvalidHandle, "unexpected invalid handle"}
 {%   endif %}
 }
 {% elif kind|is_enum %}
@@ -204,7 +206,9 @@ if err != nil {
 }
 {%   if kind.length %}
 if len{{level}} != {{kind.length}} {
-	return fmt.Errorf("invalid array length: expected %d, got %d", {{kind.length}}, len{{level}})
+	return &bindings.ValidationError{bindings.UnexpectedArrayHeader,
+		fmt.Sprintf("invalid array length: expected %d, got %d", {{kind.length}}, len{{level}}),
+	}
 }
 {%   else %}
 {{value}} = make({{kind|go_type(False)}}, len{{level}})
@@ -228,7 +232,9 @@ var values{{level}} {{kind.value_kind|array|go_type}}
 	{{decode('values'~level, kind.value_kind|array, level+1)|tab_indent()}}
 }
 if len(keys{{level}}) != len(values{{level}}) {
-	return fmt.Errorf("Number of keys %d is different from number of values %d", len(keys{{level}}), len(values{{level}}))
+	return &bindings.ValidationError{bindings.DifferentSizedArraysInMap,
+		fmt.Sprintf("Number of keys %d is different from number of values %d", len(keys{{level}}), len(values{{level}})),
+	}
 }
 if err := decoder.Finish(); err != nil {
 	return err

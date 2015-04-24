@@ -27,11 +27,13 @@ namespace internal {
 
 template <typename MapType,
           typename DataType,
-          bool kValueIsMoveOnlyType = IsMoveOnlyType<MapType>::value>
+          bool value_is_move_only_type = IsMoveOnlyType<MapType>::value,
+          bool is_union =
+              IsUnionDataType<typename RemovePointer<DataType>::type>::value>
 struct MapSerializer;
 
 template <typename MapType, typename DataType>
-struct MapSerializer<MapType, DataType, false> {
+struct MapSerializer<MapType, DataType, false, false> {
   static size_t GetBaseArraySize(size_t count) {
     return Align(count * sizeof(DataType));
   }
@@ -39,7 +41,7 @@ struct MapSerializer<MapType, DataType, false> {
 };
 
 template <>
-struct MapSerializer<bool, bool, false> {
+struct MapSerializer<bool, bool, false, false> {
   static size_t GetBaseArraySize(size_t count) {
     return Align((count + 7) / 8);
   }
@@ -47,7 +49,7 @@ struct MapSerializer<bool, bool, false> {
 };
 
 template <typename H>
-struct MapSerializer<ScopedHandleBase<H>, H, true> {
+struct MapSerializer<ScopedHandleBase<H>, H, true, false> {
   static size_t GetBaseArraySize(size_t count) {
     return Align(count * sizeof(H));
   }
@@ -61,7 +63,8 @@ struct MapSerializer<
     S,
     typename EnableIf<IsPointer<typename WrapperTraits<S>::DataType>::value,
                       typename WrapperTraits<S>::DataType>::type,
-    true> {
+    true,
+    false> {
   typedef
       typename RemovePointer<typename WrapperTraits<S>::DataType>::type S_Data;
   static size_t GetBaseArraySize(size_t count) {
@@ -70,8 +73,18 @@ struct MapSerializer<
   static size_t GetItemSize(const S& item) { return GetSerializedSize_(item); }
 };
 
+template <typename U, typename U_Data>
+struct MapSerializer<U, U_Data*, true, true> {
+  static size_t GetBaseArraySize(size_t count) {
+    return count * sizeof(U_Data);
+  }
+  static size_t GetItemSize(const U& item) {
+    return GetSerializedSize_(item, true);
+  }
+};
+
 template <>
-struct MapSerializer<String, String_Data*, false> {
+struct MapSerializer<String, String_Data*, false, false> {
   static size_t GetBaseArraySize(size_t count) {
     return count * sizeof(StringPointer);
   }

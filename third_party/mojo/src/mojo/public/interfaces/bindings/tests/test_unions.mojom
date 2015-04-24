@@ -22,6 +22,10 @@ union PodUnion {
 union ObjectUnion {
   int8   f_int8;
   string f_string;
+  DummyStruct f_dummy;
+  DummyStruct? f_nullable;
+  array<int8> f_array_int8;
+  map<string, int8> f_map_int8;
 };
 
 struct DummyStruct {
@@ -33,6 +37,7 @@ struct SmallStruct {
   PodUnion? pod_union;
   array<PodUnion>? pod_union_array;
   array<DummyStruct>? s_array;
+  map<string, PodUnion>? pod_union_map;
 };
 
 struct SmallStructNonNullableUnion {

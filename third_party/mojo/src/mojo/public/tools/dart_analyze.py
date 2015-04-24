@@ -29,6 +29,8 @@ _IGNORED_PATTERNS = [
 
   # TODO: It seems like this should be re-enabled evenutally.
   re.compile(r'.*is a part and can not|^Only libraries can be analyzed'),
+  # TODO: Remove this once dev SDK includes Uri.directory constructor.
+  re.compile(r'.*The class \'Uri\' does not have a constructor \'directory\''),
 ]
 
 def _success(stamp_file):

@@ -4,6 +4,7 @@
 
 package org.chromium.mojo.bindings;
 
+import org.chromium.mojo.bindings.Interface.AbstractProxy.HandlerImpl;
 import org.chromium.mojo.bindings.Struct.DataHeader;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.Handle;
@@ -261,9 +262,9 @@ public class Encoder {
         }
         // If the instance is a proxy, pass the proxy's handle instead of creating a new stub.
         if (v instanceof Interface.AbstractProxy) {
-            Interface.AbstractProxy proxy = (Interface.AbstractProxy) v;
-            if (proxy.getMessageReceiver() instanceof HandleOwner) {
-                encode(((HandleOwner<?>) proxy.getMessageReceiver()).passHandle(), offset,
+            HandlerImpl handler = ((Interface.AbstractProxy) v).getProxyHandler();
+            if (handler.getMessageReceiver() instanceof HandleOwner) {
+                encode(((HandleOwner<?>) handler.getMessageReceiver()).passHandle(), offset,
                         nullable);
                 return;
             }

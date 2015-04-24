@@ -29,7 +29,7 @@ class {{union.name}} {
 
 {%  for field in union.fields %}
   bool is_{{field.name}}() const;
-  {{field.kind|cpp_result_type}} get_{{field.name}}() const;
+  {{field.kind|cpp_union_getter_return_type}} get_{{field.name}}() const;
   void set_{{field.name}}({{field.kind|cpp_const_wrapper_type}} {{field.name}});
 {%- endfor %}
 

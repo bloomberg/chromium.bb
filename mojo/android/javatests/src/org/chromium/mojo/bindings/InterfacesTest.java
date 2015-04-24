@@ -192,7 +192,7 @@ public class InterfacesTest extends MojoTestCase {
     private void checkProxy(NamedObject.Proxy proxy, MockNamedObjectImpl impl) {
         RecordingGetNameResponse callback = new RecordingGetNameResponse();
         CapturingErrorHandler errorHandler = new CapturingErrorHandler();
-        proxy.setErrorHandler(errorHandler);
+        proxy.getProxyHandler().setErrorHandler(errorHandler);
 
         if (impl != null) {
             assertNull(impl.getLastMojoException());

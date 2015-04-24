@@ -127,6 +127,8 @@
         'src/mojo/public/cpp/bindings/lib/validate_params.h',
         'src/mojo/public/cpp/bindings/lib/validation_errors.cc',
         'src/mojo/public/cpp/bindings/lib/validation_errors.h',
+        'src/mojo/public/cpp/bindings/lib/validation_util.cc',
+        'src/mojo/public/cpp/bindings/lib/validation_util.h',
       ],
     },
     {
@@ -155,9 +157,14 @@
         'src/mojo/public/cpp/environment/lib/default_async_waiter.h',
         'src/mojo/public/cpp/environment/lib/default_logger.cc',
         'src/mojo/public/cpp/environment/lib/default_logger.h',
+        'src/mojo/public/cpp/environment/lib/default_task_tracker.cc',
+        'src/mojo/public/cpp/environment/lib/default_task_tracker.h',
         'src/mojo/public/cpp/environment/lib/environment.cc',
         'src/mojo/public/cpp/environment/lib/logging.cc',
+        'src/mojo/public/cpp/environment/lib/scoped_task_tracking.cc',
+        'src/mojo/public/cpp/environment/lib/scoped_task_tracking.h',
         'src/mojo/public/cpp/environment/logging.h',
+        'src/mojo/public/cpp/environment/task_tracker.h',
       ],
       'include_dirs': [
         '../..',

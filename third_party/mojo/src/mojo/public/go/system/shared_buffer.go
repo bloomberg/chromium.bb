@@ -35,7 +35,7 @@ type sharedBuffer struct {
 func (h *sharedBuffer) DuplicateBufferHandle(opts *DuplicateBufferHandleOptions) (MojoResult, SharedBufferHandle) {
 	var flags uint32
 	if opts != nil {
-		flags = uint32(opts.flags)
+		flags = uint32(opts.Flags)
 	}
 	h.core.mu.Lock()
 	r, dup := sysImpl.DuplicateBufferHandle(uint32(h.mojoHandle), flags)

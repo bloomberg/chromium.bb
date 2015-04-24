@@ -30,84 +30,129 @@ public interface Interface extends ConnectionErrorHandler, Closeable {
      * {@link MessageReceiverWithResponder}, along with the response callback if needed.
      */
     public interface Proxy extends Interface {
+        /**
+         * Class allowing to interact with the proxy itself.
+         */
+        public interface Handler extends Closeable {
+            /**
+             * Sets the {@link ConnectionErrorHandler} that will be notified of errors.
+             */
+            public void setErrorHandler(ConnectionErrorHandler errorHandler);
+        }
 
         /**
-         * Set the {@link ConnectionErrorHandler} that will be notified of errors.
+         * Returns the {@link Handler} object allowing to interact with the proxy itself.
          */
-        public void setErrorHandler(ConnectionErrorHandler errorHandler);
-
+        public Handler getProxyHandler();
     }
 
     /**
      * Base implementation of {@link Proxy}.
      */
     abstract class AbstractProxy implements Proxy {
-
         /**
-         * The {@link Core} implementation to use.
+         * Implementation of {@link Handler}.
          */
-        private final Core mCore;
+        protected static class HandlerImpl implements Proxy.Handler, ConnectionErrorHandler {
+            /**
+             * The {@link Core} implementation to use.
+             */
+            private final Core mCore;
 
-        /**
-         * The {@link MessageReceiverWithResponder} that will receive a serialized message for each
-         * method call.
-         */
-        private final MessageReceiverWithResponder mMessageReceiver;
+            /**
+             * The {@link MessageReceiverWithResponder} that will receive a serialized message for
+             * each method call.
+             */
+            private final MessageReceiverWithResponder mMessageReceiver;
 
-        /**
-         * The {@link ConnectionErrorHandler} that will be notified of errors.
-         */
-        private ConnectionErrorHandler mErrorHandler = null;
+            /**
+             * The {@link ConnectionErrorHandler} that will be notified of errors.
+             */
+            private ConnectionErrorHandler mErrorHandler = null;
 
-        /**
-         * Constructor.
-         *
-         * @param core the Core implementation used to create pipes and access the async waiter.
-         * @param messageReceiver the message receiver to send message to.
-         */
-        protected AbstractProxy(Core core, MessageReceiverWithResponder messageReceiver) {
-            this.mCore = core;
-            this.mMessageReceiver = messageReceiver;
-        }
+            /**
+             * Constructor.
+             *
+             * @param core the Core implementation used to create pipes and access the async waiter.
+             * @param messageReceiver the message receiver to send message to.
+             */
+            protected HandlerImpl(Core core, MessageReceiverWithResponder messageReceiver) {
+                this.mCore = core;
+                this.mMessageReceiver = messageReceiver;
+            }
 
-        /**
-         * Returns the message receiver to send message to.
-         */
-        protected MessageReceiverWithResponder getMessageReceiver() {
-            return mMessageReceiver;
-        }
+            /**
+             * Returns the message receiver to send message to.
+             */
+            public MessageReceiverWithResponder getMessageReceiver() {
+                return mMessageReceiver;
+            }
 
-        /**
-         * Returns the Core implementation.
-         */
-        protected Core getCore() {
-            return mCore;
-        }
+            /**
+             * Returns the Core implementation.
+             */
+            public Core getCore() {
+                return mCore;
+            }
 
-        /**
-         * @see Proxy#setErrorHandler(ConnectionErrorHandler)
-         */
-        @Override
-        public void setErrorHandler(ConnectionErrorHandler errorHandler) {
-            this.mErrorHandler = errorHandler;
-        }
+            /**
+             * Sets the {@link ConnectionErrorHandler} that will be notified of errors.
+             */
+            @Override
+            public void setErrorHandler(ConnectionErrorHandler errorHandler) {
+                this.mErrorHandler = errorHandler;
+            }
 
-        /**
-         * @see ConnectionErrorHandler#onConnectionError(MojoException)
-         */
-        @Override
-        public void onConnectionError(MojoException e) {
-            if (mErrorHandler != null) {
-                mErrorHandler.onConnectionError(e);
+            /**
+             * @see ConnectionErrorHandler#onConnectionError(MojoException)
+             */
+            @Override
+            public void onConnectionError(MojoException e) {
+                if (mErrorHandler != null) {
+                    mErrorHandler.onConnectionError(e);
+                }
+            }
+
+            /**
+             * @see Closeable#close()
+             */
+            @Override
+            public void close() {
+                mMessageReceiver.close();
             }
         }
 
         /**
-         * @see Closeable#close()
+         * The handler associated with this proxy.
+         */
+        private final HandlerImpl mHandler;
+
+        protected AbstractProxy(Core core, MessageReceiverWithResponder messageReceiver) {
+            mHandler = new HandlerImpl(core, messageReceiver);
+        }
+
+        /**
+         * @see Interface#close()
          */
         @Override
         public void close() {
-            mMessageReceiver.close();
+            mHandler.close();
+        }
+
+        /**
+         * @see Proxy#getProxyHandler()
+         */
+        @Override
+        public HandlerImpl getProxyHandler() {
+            return mHandler;
+        }
+
+        /**
+         * @see ConnectionErrorHandler#onConnectionError(org.chromium.mojo.system.MojoException)
+         */
+        @Override
+        public void onConnectionError(MojoException e) {
+            mHandler.onConnectionError(e);
         }
     }
 

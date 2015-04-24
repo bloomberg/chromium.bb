@@ -25,6 +25,8 @@
 #include "mojo/public/cpp/bindings/lib/string_serialization.h"
 #include "mojo/public/cpp/bindings/lib/validate_params.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "mojo/public/cpp/bindings/lib/validation_util.h"
+#include "mojo/public/cpp/environment/lib/scoped_task_tracking.h"
 #include "mojo/public/cpp/environment/logging.h"
 
 {%- for namespace in namespaces_as_array %}

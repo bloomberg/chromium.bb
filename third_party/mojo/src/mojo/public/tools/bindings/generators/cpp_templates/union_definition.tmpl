@@ -57,10 +57,36 @@ void {{class_name}}::set_null() {
 
 void {{class_name}}::EncodePointersAndHandles(
     std::vector<mojo::Handle>* handles) {
-  // TODO(azani): Implement pointers and handles.
+  switch (tag) {
+{%- for field in union.fields %}
+    case {{enum_name}}::{{field.name|upper}}: {
+{%-   if field.kind|is_object_kind and not field.kind|is_union_kind %}
+      mojo::internal::Encode(
+          reinterpret_cast<{{field.kind|cpp_field_type}}*>(&data.f_{{field.name}}),
+          handles);
+{%-   elif field.kind|is_any_handle_kind %}
+      mojo::internal::EncodeHandle(&data.f_{{field.name}}, handles);
+{%-   endif %}
+      return;
+    }
+{%- endfor %}
+  }
 }
 
 void {{class_name}}::DecodePointersAndHandles(
     std::vector<mojo::Handle>* handles) {
-  // TODO(azani): Implement pointers and handles.
+  switch (tag) {
+{%- for field in union.fields %}
+    case {{enum_name}}::{{field.name|upper}}: {
+{%-   if field.kind|is_object_kind and not field.kind|is_union_kind %}
+      mojo::internal::Decode(
+          reinterpret_cast<{{field.kind|cpp_field_type}}*>(&data.f_{{field.name}}),
+          handles);
+{%-   elif field.kind|is_any_handle_kind %}
+      mojo::internal::DecodeHandle(&data.f_{{field.name}}, handles);
+{%-   endif %}
+      return;
+    }
+{%- endfor %}
+  }
 }

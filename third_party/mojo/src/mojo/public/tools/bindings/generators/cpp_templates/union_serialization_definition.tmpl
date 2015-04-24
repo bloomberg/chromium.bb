@@ -7,11 +7,12 @@ size_t GetSerializedSize_(const {{union.name}}Ptr& input, bool inlined) {
   if (!input)
     return size;
 
+  mojo::internal::UnionAccessor<{{union.name}}> input_acc(input.get());
   switch (input->which()) {
 {%  for field in union.fields %}
-{%    if field.kind|is_string_kind %}
+{%    if field.kind|is_object_kind %}
     case {{union.name}}::Tag::{{field.name|upper}}:
-      size += GetSerializedSize_(input->get_{{field.name}}());
+      size += GetSerializedSize_(*(input_acc.data()->{{field.name}}));
       break;
 {%-   endif %}
 {%- endfor %}
@@ -35,14 +36,31 @@ void SerializeUnion_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
     result->tag = input->which();
     switch (input->which()) {
 {%  for field in union.fields %}
-      case {{union.name}}::Tag::{{field.name|upper}}:
-{%    if field.kind|is_string_kind %}
+      case {{union.name}}::Tag::{{field.name|upper}}: {
+{%    if field.kind|is_object_kind %}
         {{field.kind|cpp_field_type}}* {{field.name}}_ptr = reinterpret_cast<{{field.kind|cpp_field_type}}*>(&result->data.f_{{field.name}});
+{%      if field.kind|is_string_kind %}
         Serialize_(*(input_acc.data()->{{field.name}}), buf, &{{field.name}}_ptr->ptr);
+{%      elif field.kind|is_struct_kind %}
+        Serialize_(mojo::internal::Forward(*(input_acc.data()->{{field.name}})), buf, &{{field.name}}_ptr->ptr);
+{%      elif field.kind|is_array_kind %}
+        const mojo::internal::ArrayValidateParams {{field.name}}_validate_params =
+            {{field.kind|get_array_validate_params|indent(16)}};
+        SerializeArray_(
+            mojo::internal::Forward(*(input_acc.data()->{{field.name}})),
+            buf, &{{field.name}}_ptr->ptr, &{{field.name}}_validate_params);
+{%      elif field.kind|is_map_kind %}
+        const mojo::internal::ArrayValidateParams {{field.name}}_validate_params =
+            {{field.kind.value_kind|get_map_validate_params|indent(16)}};
+        SerializeMap_(
+            mojo::internal::Forward(*(input_acc.data()->{{field.name}})),
+            buf, &{{field.name}}_ptr->ptr, &{{field.name}}_validate_params);
+{%-     endif %}
 {%    else %}
         result->data.f_{{field.name}} = input_acc.data()->{{field.name}};
 {%-   endif %}
         break;
+      }
 {%- endfor %}
     }
   } else if (inlined) {
@@ -60,8 +78,8 @@ void Deserialize_(internal::{{union.name}}_Data* input,
     mojo::internal::UnionAccessor<{{union.name}}> result_acc(result.get());
     switch (input->tag) {
 {%  for field in union.fields %}
-      case {{union.name}}::Tag::{{field.name|upper}}:
-{%    if field.kind|is_string_kind %}
+      case {{union.name}}::Tag::{{field.name|upper}}: {
+{%    if field.kind|is_object_kind %}
         result_acc.SwitchActive({{union.name}}::Tag::{{field.name|upper}});
         {{field.kind|cpp_field_type}}* {{field.name}}_ptr = reinterpret_cast<{{field.kind|cpp_field_type}}*>(&input->data.f_{{field.name}});
         Deserialize_({{field.name}}_ptr->ptr, result_acc.data()->{{field.name}});
@@ -69,6 +87,7 @@ void Deserialize_(internal::{{union.name}}_Data* input,
         result->set_{{field.name}}(input->data.f_{{field.name}});
 {%-   endif %}
         break;
+      }
 {%- endfor %}
     }
     *output = result.Pass();

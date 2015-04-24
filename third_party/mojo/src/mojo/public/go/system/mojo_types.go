@@ -101,27 +101,27 @@ type MojoHandleSignalsState struct {
 
 // DataPipeOptions is used to specify creation parameters for a data pipe.
 type DataPipeOptions struct {
-	flags MojoCreateDataPipeOptionsFlags
+	Flags MojoCreateDataPipeOptionsFlags
 	// The size of an element in bytes. All transactions and buffers will
 	// be an integral number of elements.
-	elemSize uint32
+	ElemSize uint32
 	// The capacity of the data pipe in bytes. Must be a multiple of elemSize.
-	capacity uint32
+	Capacity uint32
 }
 
 // MessagePipeOptions is used to specify creation parameters for a message pipe.
 type MessagePipeOptions struct {
-	flags MojoCreateMessagePipeOptionsFlags
+	Flags MojoCreateMessagePipeOptionsFlags
 }
 
 // SharedBufferOptions is used to specify creation parameters for a
 // shared buffer.
 type SharedBufferOptions struct {
-	flags MojoCreateSharedBufferOptionsFlags
+	Flags MojoCreateSharedBufferOptionsFlags
 }
 
 // DuplicateBufferHandleOptions is used to specify parameters in
 // duplicating access to a shared buffer.
 type DuplicateBufferHandleOptions struct {
-	flags MojoDuplicateBufferHandleOptionsFlags
+	Flags MojoDuplicateBufferHandleOptionsFlags
 }

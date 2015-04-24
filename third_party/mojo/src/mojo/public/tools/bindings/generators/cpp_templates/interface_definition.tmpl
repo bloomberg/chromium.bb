@@ -171,6 +171,7 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
+      mojo::internal::ScopedTaskTracking task_id("mojo.{{namespace_as_string}}.{{class_name}}.{{method.name}}", __FILE__, __LINE__);
 {%-     if method.response_parameters == None %}
       internal::{{class_name}}_{{method.name}}_Params_Data* params =
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
@@ -198,6 +199,7 @@ bool {{class_name}}Stub::AcceptWithResponder(
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
+      mojo::internal::ScopedTaskTracking task_id("mojo::{{namespace_as_string}}::{{class_name}}::{{method.name}}", __FILE__, __LINE__);
 {%-     if method.response_parameters != None %}
       internal::{{class_name}}_{{method.name}}_Params_Data* params =
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
@@ -231,49 +233,32 @@ bool {{class_name}}Stub::AcceptWithResponder(
 }
 
 bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
-{%- if interface.methods %}
-  if (message->has_flag(mojo::internal::kMessageIsResponse)) {
-    ReportValidationError(
-        mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
-    return false;
-  }
-  switch (message->header()->name) {
-{%-   for method in interface.methods %}
-    case internal::k{{class_name}}_{{method.name}}_Name: {
-{%-     if method.response_parameters != None %}
-      if (!message->has_flag(mojo::internal::kMessageExpectsResponse)) {
-        ReportValidationError(
-            mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
-        return false;
-      }
-{%-     else %}
-      if (message->has_flag(mojo::internal::kMessageExpectsResponse)) {
-        ReportValidationError(
-            mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
-        return false;
-      }
-{%-     endif %}
-      mojo::internal::BoundsChecker bounds_checker(
-          message->payload(), message->payload_num_bytes(),
-          message->handles()->size());
-      if (!internal::{{class_name}}_{{method.name}}_Params_Data::Validate(
-              message->payload(), &bounds_checker)) {
-        return false;
-      }
-      break;
-    }
-{%-   endfor %}
-    default: {
-      // Unrecognized message.
-      ReportValidationError(
-          mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_UNKNOWN_METHOD);
-      return false;
-    }
-  }
-{%- endif %}
-
   assert(sink_);
-  return sink_->Accept(message);
+  switch (message->header()->name) {
+{%- for method in interface.methods %}
+    case internal::k{{class_name}}_{{method.name}}_Name: {
+{%-   if method.response_parameters != None %}
+      if (!mojo::internal::ValidateMessageIsRequestExpectingResponse(message))
+        return false;
+{%-   else %}
+      if (!mojo::internal::ValidateMessageIsRequestWithoutResponse(message))
+        return false;
+{%-   endif %}
+      if (!mojo::internal::ValidateMessagePayload<
+               internal::{{class_name}}_{{method.name}}_Params_Data>(message)) {
+        return false;
+      }
+      return sink_->Accept(message);
+    }
+{%- endfor %}
+    default:
+      break;
+  }
+
+  // Unrecognized message.
+  ReportValidationError(
+      mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_UNKNOWN_METHOD);
+  return false;
 }
 
 {#--- Response validator definitions #}
@@ -283,35 +268,26 @@ bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
 }
 
 bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
-{%- if interface.methods %}
-  if (!message->has_flag(mojo::internal::kMessageIsResponse)) {
-    ReportValidationError(
-        mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAGS);
+  assert(sink_);
+  if (!mojo::internal::ValidateMessageIsResponse(message))
     return false;
-  }
   switch (message->header()->name) {
-{%-   for method in interface.methods if method.response_parameters != None %}
+{%- for method in interface.methods if method.response_parameters != None %}
     case internal::k{{class_name}}_{{method.name}}_Name: {
-      mojo::internal::BoundsChecker bounds_checker(
-          message->payload(), message->payload_num_bytes(),
-          message->handles()->size());
-      if (!internal::{{class_name}}_{{method.name}}_ResponseParams_Data::Validate(
-              message->payload(), &bounds_checker)) {
+      if (!mojo::internal::ValidateMessagePayload<
+               internal::{{class_name}}_{{method.name}}_ResponseParams_Data>(message)) {
         return false;
       }
+      return sink_->Accept(message);
+    }
+{%- endfor %}
+    default:
       break;
-    }
-{%-   endfor %}
-    default: {
-      // Unrecognized message.
-      ReportValidationError(
-          mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_UNKNOWN_METHOD);
-      return false;
-    }
   }
-{%- endif %}
 
-  assert(sink_);
-  return sink_->Accept(message);
+  // Unrecognized message.
+  ReportValidationError(
+      mojo::internal::VALIDATION_ERROR_MESSAGE_HEADER_UNKNOWN_METHOD);
+  return false;
 }
 {%- endif -%}

@@ -4,9 +4,9 @@
 
 import("../../mojo_sdk.gni")
 
-# Generate C++ and JavaScript source files from mojom files. The output files
-# will go under the generated file directory tree with the same path as each
-# input file.
+# Generate C++/JavaScript/Java/Python/Dart/Go source files from mojom files. The
+# output files will go under the generated file directory tree with the same
+# path as each input file.
 #
 # If a mojom target is intended for use in a client repo where the location of
 # the Mojo SDK will be different than its location in the Mojo repo,
@@ -48,6 +48,8 @@ template("mojom") {
           defined(invoker.mojo_sdk_public_deps),
       "\"sources\" or \"deps\" must be defined for the $target_name template.")
 
+  cpp_sources_suffix = "cpp_sources"
+  cpp_sources_target_name = "${target_name}_${cpp_sources_suffix}"
   if (defined(invoker.sources)) {
     generator_root = rebase_path("mojo/public/tools/bindings", ".", mojo_root)
     generator_script = "$generator_root/mojom_bindings_generator.py"
@@ -78,6 +80,11 @@ template("mojom") {
       "$generator_root/generators/cpp_templates/wrapper_class_definition.tmpl",
       "$generator_root/generators/cpp_templates/wrapper_union_class_declaration.tmpl",
       "$generator_root/generators/cpp_templates/wrapper_union_class_definition.tmpl",
+      "$generator_root/generators/dart_templates/enum_definition.tmpl",
+      "$generator_root/generators/dart_templates/interface_definition.tmpl",
+      "$generator_root/generators/dart_templates/module.lib.tmpl",
+      "$generator_root/generators/dart_templates/module_definition.tmpl",
+      "$generator_root/generators/dart_templates/struct_definition.tmpl",
       "$generator_root/generators/go_templates/enum.tmpl",
       "$generator_root/generators/go_templates/interface.tmpl",
       "$generator_root/generators/go_templates/source.tmpl",
@@ -100,6 +107,7 @@ template("mojom") {
       "$generator_root/generators/python_templates/module.py.tmpl",
       "$generator_root/generators/python_templates/module_macros.tmpl",
       "$generator_root/generators/mojom_cpp_generator.py",
+      "$generator_root/generators/mojom_dart_generator.py",
       "$generator_root/generators/mojom_go_generator.py",
       "$generator_root/generators/mojom_js_generator.py",
       "$generator_root/generators/mojom_java_generator.py",
@@ -126,12 +134,15 @@ template("mojom") {
     ]
     generator_js_outputs =
         [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
+    generator_dart_outputs =
+        [ "{{source_gen_dir}}/{{source_name_part}}.mojom.dart" ]
     generator_go_outputs = [ "${root_gen_dir}/go/src/{{source_dir}}/{{source_name_part}}/{{source_name_part}}.mojom.go" ]
     generator_python_outputs =
         [ "{{source_gen_dir}}/{{source_name_part}}_mojom.py" ]
     generator_java_outputs =
         [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
   }
+  generator_dart_zip_output = "$target_out_dir/$target_name.dartzip"
   generator_python_zip_output = "$target_out_dir/$target_name.pyzip"
 
   rebased_mojo_sdk_public_deps = []
@@ -163,12 +174,13 @@ template("mojom") {
     generator_target_name = target_name + "__generator"
     action_foreach(generator_target_name) {
       if (defined(invoker.visibility)) {
-        visibility = target_visibility + invoker.visibility
+        visibility = target_visibility + invoker.visibility +
+                     [ ":${cpp_sources_target_name}" ]
       }
       script = generator_script
       inputs = generator_sources
       sources = invoker.sources
-      outputs = generator_cpp_outputs +
+      outputs = generator_cpp_outputs + generator_dart_outputs +
                 generator_go_outputs + generator_java_outputs +
                 generator_js_outputs + generator_python_outputs
       args = [
@@ -203,7 +215,6 @@ template("mojom") {
       testonly = invoker.testonly
     }
     if (defined(invoker.sources)) {
-      sources = process_file_template(invoker.sources, generator_cpp_outputs)
       data = process_file_template(invoker.sources, generator_js_outputs)
     }
 
@@ -211,6 +222,9 @@ template("mojom") {
         rebase_path([ "mojo/public/build/config:mojo_sdk" ], ".", mojo_root)
 
     public_deps = rebase_path([ "mojo/public/cpp/bindings" ], ".", mojo_root)
+    if (defined(invoker.sources)) {
+      public_deps += [ ":${cpp_sources_target_name}" ]
+    }
     public_deps += rebased_mojo_sdk_public_deps
     if (defined(invoker.public_deps)) {
       public_deps += invoker.public_deps
@@ -226,6 +240,7 @@ template("mojom") {
     }
     data_deps = [
       ":${target_name}_python",
+      ":${target_name}_dart",
     ]
     if (defined(invoker.mojo_sdk_deps)) {
       foreach(sdk_dep, invoker.mojo_sdk_deps) {
@@ -297,6 +312,79 @@ template("mojom") {
     ]
     if (defined(invoker.sources)) {
       args += [ "--inputs=$rebase_inputs" ]
+    }
+  }
+
+  action("${target_name}_dart") {
+    script = rebase_path("mojo/public/tools/gn/zip.py", ".", mojo_root)
+
+    if (defined(invoker.sources)) {
+      inputs = process_file_template(invoker.sources, generator_dart_outputs)
+    }
+
+    deps = []
+    zip_inputs = []
+
+    foreach(d, all_deps) {
+      # Resolve the name, so that a target //mojo/something becomes
+      # //mojo/something:something and we can append "_dart" to get the dart
+      # dependency name.
+      full_name = get_label_info(d, "label_no_toolchain")
+      dep_name = get_label_info(d, "name")
+      dep_target_out_dir = get_label_info(d, "target_out_dir")
+      deps += [ "${full_name}_dart" ]
+      zip_inputs += [ "$dep_target_out_dir/$dep_name.dartzip" ]
+    }
+
+    output = generator_dart_zip_output
+    outputs = [
+      output,
+    ]
+
+    rebase_import_from =
+        rebase_path("$root_build_dir/gen/dart-gen", root_build_dir)
+    if (defined(invoker.sources)) {
+      rebase_inputs = rebase_path(inputs, root_build_dir)
+    }
+    rebase_zip_inputs = rebase_path(zip_inputs, root_build_dir)
+    rebase_output = rebase_path(output, root_build_dir)
+    args = [
+      "--base-dir=$rebase_import_from",
+      "--zip-inputs=$rebase_zip_inputs",
+      "--output=$rebase_output",
+    ]
+    if (defined(invoker.sources)) {
+      args += [ "--link-inputs=$rebase_inputs" ]
+    }
+  }
+
+  if (defined(invoker.sources)) {
+    # The generated C++ source files. The main reason to introduce this target
+    # is so that mojo/public/cpp/bindings can depend on mojom interfaces without
+    # circular dependencies. It means that the target is missing the dependency
+    # on mojo/public/cpp/bindings. No external targets should depend directly on
+    # this target *except* mojo/public/cpp/bindings and other *_cpp_sources
+    # targets.
+    source_set(cpp_sources_target_name) {
+      if (defined(invoker.visibility)) {
+        visibility = target_visibility + invoker.visibility
+      }
+      if (defined(invoker.testonly)) {
+        testonly = invoker.testonly
+      }
+      sources = process_file_template(invoker.sources, generator_cpp_outputs)
+      public_configs =
+          rebase_path([ "mojo/public/build/config:mojo_sdk" ], ".", mojo_root)
+      deps = [
+        ":$generator_target_name",
+      ]
+      foreach(d, all_deps) {
+        # Resolve the name, so that a target //mojo/something becomes
+        # //mojo/something:something and we can append cpp_sources_suffix to
+        # get the cpp dependency name.
+        full_name = get_label_info(d, "label_no_toolchain")
+        deps += [ "${full_name}_${cpp_sources_suffix}" ]
+      }
     }
   }
 
