@@ -169,6 +169,23 @@ class WorkonHelper(object):
     if not os.path.exists(self._sysroot):
       raise WorkonError('Sysroot %s is not setup.' % self._sysroot)
 
+    profile = os.path.join(self._sysroot, 'etc', 'portage')
+    self._unmasked_symlink = os.path.join(
+        profile, 'package.unmask', 'cros-workon')
+    self._keywords_symlink = os.path.join(
+        profile, 'package.keywords', 'cros-workon')
+    self._masked_symlink = os.path.join(
+        profile, 'package.mask', 'cros-workon')
+
+    # Clobber and re-create the WORKON_FILE symlinks every time. This is a
+    # trivial operation and eliminates all kinds of corner cases as well as any
+    # possible future renames of WORKON_FILE.
+    # In particular, we build the chroot as a board (amd64-host), bundle it and
+    # unpack it on /. After unpacking, the symlinks will point to
+    # .config/cros_workon/amd64-host instead of .config/cros_workon/host.
+    # Regenerating the symlinks here corrects it. crbug.com/23096.
+    self._RefreshSymlinks()
+
   @property
   def workon_file_path(self):
     """Returns path to the file holding our currently worked on atoms."""
@@ -201,6 +218,37 @@ class WorkonHelper(object):
         self._cached_overlays = portage_util.FindSysrootOverlays(self._sysroot)
 
     return self._cached_overlays
+
+  def _SetWorkedOnAtoms(self, atoms):
+    """Sets the unmasked atoms.
+
+    This will generate both the unmasked atom list and the masked atoms list as
+    the two files mention the same atom list.
+
+    Args:
+      atoms: Atoms to unmask.
+    """
+    _WriteLinesToFile(self.workon_file_path, atoms, '=', '-9999')
+    _WriteLinesToFile(self.masked_file_path, atoms, '<', '-9999')
+    self._RefreshSymlinks()
+
+  def _RefreshSymlinks(self):
+    """Recreates the symlinks.
+
+    This will create the three symlinks needed:
+    * package.mask/cros-workon: list of packages to mask.
+    * package.unmask/cros-workon: list of packages to unmask.
+    * package.keywords/cros-workon: list of hidden packages to accept.
+    """
+    for target, symlink in ((self.masked_file_path, self._masked_symlink),
+                            (self.workon_file_path, self._unmasked_symlink),
+                            (self.workon_file_path, self._keywords_symlink)):
+      if os.path.exists(target):
+        osutils.SafeMakedirs(os.path.dirname(symlink), sudo=True)
+        osutils.SafeSymlink(target, symlink, sudo=True)
+      else:
+        logging.debug("Symlink %s already exists. Don't recreated it."
+                      % symlink)
 
   def _AtomsToEbuilds(self, atoms):
     """Maps from a list of CP atoms to a list of corresponding -9999 ebuilds.
@@ -309,10 +357,6 @@ class WorkonHelper(object):
     """Returns a list of CP atoms that we're currently working on."""
     return _GetLinesFromFile(self.workon_file_path, '=', '-9999')
 
-  def _GetMaskedAtoms(self):
-    """Returns a list of stable CP atoms that are masked out."""
-    return _GetLinesFromFile(self.masked_file_path, '<', '-9999')
-
   def _FindEbuildForPackage(self, package):
     """Find an ebuild for a given atom (accepting even masked ebuilds).
 
@@ -393,7 +437,7 @@ class WorkonHelper(object):
       return
 
     should_repo_sync = False
-    for ebuild_path in self._AtomsToEbuild(atoms):
+    for ebuild_path in self._AtomsToEbuilds(atoms):
       infos = portage_util.GetRepositoryForEbuild(ebuild_path, self._sysroot)
       for info in infos:
         if not info.project:
@@ -465,8 +509,7 @@ class WorkonHelper(object):
 
     # Write out all these atoms to the appropriate files.
     current_atoms = new_atoms | existing_atoms
-    _WriteLinesToFile(self.workon_file_path, current_atoms, '=', '-9999')
-    _WriteLinesToFile(self.masked_file_path, current_atoms, '<', '-9999')
+    self._SetWorkedOnAtoms(current_atoms)
 
     self._AddProjectsToPartialManifests(new_atoms)
 
@@ -495,19 +538,17 @@ class WorkonHelper(object):
     else:
       atoms = self._GetCanonicalAtoms(packages)
 
-    worked_on_atoms = self._GetWorkedOnAtoms()
-    masked_out_atoms = self._GetMaskedAtoms()
+    current_atoms = self._GetWorkedOnAtoms()
     stopped_atoms = []
     for atom in atoms:
-      if not atom in worked_on_atoms:
+      if not atom in current_atoms:
         logging.warn('Not working on %s', atom)
         continue
-      worked_on_atoms.discard(atom)
-      masked_out_atoms.discard(atom)
+
+      current_atoms.discard(atom)
       stopped_atoms.append(atom)
 
-    _WriteLinesToFile(self.workon_file_path, worked_on_atoms, '=', '-9999')
-    _WriteLinesToFile(self.masked_file_path, masked_out_atoms, '<', '-9999')
+    self._SetWorkedOnAtoms(current_atoms)
 
     if stopped_atoms:
       # Legacy scripts used single quotes in their output, and we carry on this
