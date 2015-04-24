@@ -2189,15 +2189,10 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x88, 0x88 };
       IPAddressNumber address(kIPv6Address,
                               kIPv6Address + arraysize(kIPv6Address));
-      BoundNetLog probe_net_log = BoundNetLog::Make(
-          net_log.net_log(), NetLog::SOURCE_IPV6_REACHABILITY_CHECK);
-      probe_net_log.BeginEvent(NetLog::TYPE_IPV6_REACHABILITY_CHECK,
-                               net_log.source().ToEventParametersCallback());
-      bool rv6 = IsGloballyReachable(address, probe_net_log);
-      probe_net_log.EndEvent(NetLog::TYPE_IPV6_REACHABILITY_CHECK);
-      if (rv6) {
-        net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_IPV6_SUPPORTED);
-      } else {
+      bool rv6 = IsGloballyReachable(address, net_log);
+      net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_IPV6_REACHABILITY_CHECK,
+                       NetLog::BoolCallback("ipv6_available", rv6));
+      if (!rv6) {
         effective_address_family = ADDRESS_FAMILY_IPV4;
         effective_flags |= HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
       }

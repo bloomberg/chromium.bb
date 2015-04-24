@@ -54,8 +54,14 @@ EVENT_TYPE(REQUEST_ALIVE)
 //   }
 EVENT_TYPE(HOST_RESOLVER_IMPL_REQUEST)
 
-// This event is logged when IPv6 support is determined via IPv6 connect probe.
-EVENT_TYPE(HOST_RESOLVER_IMPL_IPV6_SUPPORTED)
+// This event is created (in a source of the same name) when the host resolver
+// creates a UDP socket to check for global IPv6 connectivity.
+// It contains the following parameter:
+//
+//   {
+//     "ipv6_available": <True if the probe indicates ipv6 connectivity>,
+//   }
+EVENT_TYPE(HOST_RESOLVER_IMPL_IPV6_REACHABILITY_CHECK)
 
 // This event is logged when a request is handled by a cache entry.
 EVENT_TYPE(HOST_RESOLVER_IMPL_CACHE_HIT)
@@ -2420,10 +2426,6 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_BEGIN)
 // This event is created when the Simple Cache finishes a CloseEntry call.  It
 // contains no parameters.
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_END)
-
-// This event is created (in a source of the same name) when the internal DNS
-// resolver creates a UDP socket to check for global IPv6 connectivity.
-EVENT_TYPE(IPV6_REACHABILITY_CHECK)
 
 // ------------------------------------------------------------------------
 // SDCH

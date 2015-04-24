@@ -41,6 +41,14 @@ base::Value* SourceEventParametersCallback(
   return event_params;
 }
 
+base::Value* NetLogBoolCallback(const char* name,
+                                bool value,
+                                NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue* event_params = new base::DictionaryValue();
+  event_params->SetBoolean(name, value);
+  return event_params;
+}
+
 base::Value* NetLogIntegerCallback(const char* name,
                                    int value,
                                    NetLogCaptureMode /* capture_mode */) {
@@ -345,6 +353,11 @@ const char* NetLog::EventPhaseToString(EventPhase phase) {
   }
   NOTREACHED();
   return NULL;
+}
+
+// static
+NetLog::ParametersCallback NetLog::BoolCallback(const char* name, bool value) {
+  return base::Bind(&NetLogBoolCallback, name, value);
 }
 
 // static

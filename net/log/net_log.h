@@ -261,7 +261,10 @@ class NET_EXPORT NetLog {
   // Returns a C-String symbolic name for |event_phase|.
   static const char* EventPhaseToString(EventPhase event_phase);
 
-  // Creates a ParametersCallback that encapsulates a single integer.
+  // Creates a ParametersCallback that encapsulates a single bool.
+  // Warning: |name| must remain valid for the life of the callback.
+  static ParametersCallback BoolCallback(const char* name, bool value);
+
   // Warning: |name| must remain valid for the life of the callback.
   // TODO(mmenke):  Rename this to be consistent with Int64Callback.
   static ParametersCallback IntegerCallback(const char* name, int value);
