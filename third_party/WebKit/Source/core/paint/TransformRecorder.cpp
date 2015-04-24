@@ -23,6 +23,8 @@ TransformRecorder::TransformRecorder(GraphicsContext& context, const DisplayItem
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
+        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context.displayItemList()->add(BeginTransformDisplayItem::create(m_client, transform));
     } else {
         BeginTransformDisplayItem beginTransform(m_client, transform);
@@ -37,6 +39,8 @@ TransformRecorder::~TransformRecorder()
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
+        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context.displayItemList()->add(EndTransformDisplayItem::create(m_client));
     } else {
         EndTransformDisplayItem endTransform(m_client);

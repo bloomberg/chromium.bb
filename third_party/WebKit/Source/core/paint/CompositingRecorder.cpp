@@ -29,6 +29,8 @@ void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext, con
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(graphicsContext.displayItemList());
+        if (graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         graphicsContext.displayItemList()->add(BeginCompositingDisplayItem::create(client, xferMode, opacity, bounds, colorFilter));
     } else {
         BeginCompositingDisplayItem beginCompositingDisplayItem(client, xferMode, opacity, bounds, colorFilter);
@@ -40,6 +42,8 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext, const
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(graphicsContext.displayItemList());
+        if (graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         graphicsContext.displayItemList()->add(EndCompositingDisplayItem::create(client));
     } else {
         EndCompositingDisplayItem endCompositingDisplayItem(client);

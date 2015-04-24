@@ -25,6 +25,8 @@ Transform3DRecorder::Transform3DRecorder(GraphicsContext& context, const Display
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
+        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context.displayItemList()->add(BeginTransform3DDisplayItem::create(m_client, m_type, transform));
     } else {
         BeginTransform3DDisplayItem beginTransform(m_client, m_type, transform);
@@ -40,6 +42,8 @@ Transform3DRecorder::~Transform3DRecorder()
     DisplayItem::Type endType = DisplayItem::transform3DTypeToEndTransform3DType(m_type);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
+        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context.displayItemList()->add(EndTransform3DDisplayItem::create(m_client, endType));
     } else {
         EndTransform3DDisplayItem endTransform(m_client, endType);

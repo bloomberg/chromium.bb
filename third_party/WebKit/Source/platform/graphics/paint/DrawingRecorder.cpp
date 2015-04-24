@@ -28,11 +28,14 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
+    ASSERT(context.displayItemList());
+    if (context.displayItemList()->displayItemConstructionIsDisabled())
+        return;
+
     ASSERT(DisplayItem::isDrawingType(displayItemType));
 #if ENABLE(ASSERT)
     context.setInDrawingRecorder(true);
 #endif
-    ASSERT(context.displayItemList());
     m_canUseCachedDrawing = context.displayItemList()->clientCacheIsValid(displayItemClient.displayItemClient())
         && !RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled();
 
@@ -48,6 +51,10 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
 DrawingRecorder::~DrawingRecorder()
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return;
+
+    ASSERT(m_context.displayItemList());
+    if (m_context.displayItemList()->displayItemConstructionIsDisabled())
         return;
 
 #if ENABLE(ASSERT)

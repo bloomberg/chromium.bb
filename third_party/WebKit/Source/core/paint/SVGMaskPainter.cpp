@@ -30,6 +30,8 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object, GraphicsContext* 
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
+        if (context->displayItemList()->displayItemConstructionIsDisabled())
+            return true;
         context->displayItemList()->add(BeginCompositingDisplayItem::create(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect));
     } else {
         BeginCompositingDisplayItem beginCompositingContent(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
@@ -55,6 +57,8 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext* c
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
+        if (context->displayItemList()->displayItemConstructionIsDisabled())
+            return;
         context->displayItemList()->add(EndCompositingDisplayItem::create(object));
     } else {
         EndCompositingDisplayItem endCompositingContent(object);

@@ -20,6 +20,8 @@ FloatClipRecorder::FloatClipRecorder(GraphicsContext& context, const DisplayItem
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
+        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context.displayItemList()->add(FloatClipDisplayItem::create(m_client, m_clipType, clipRect));
     } else {
         FloatClipDisplayItem clipDisplayItem(m_client, m_clipType, clipRect);
@@ -32,6 +34,8 @@ FloatClipRecorder::~FloatClipRecorder()
     DisplayItem::Type endType = DisplayItem::floatClipTypeToEndFloatClipType(m_clipType);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
+        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context.displayItemList()->add(EndFloatClipDisplayItem::create(m_client, endType));
     } else {
         EndFloatClipDisplayItem endClipDisplayItem(m_client, endType);

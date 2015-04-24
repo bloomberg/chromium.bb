@@ -100,6 +100,8 @@ void SVGClipPainter::postApplyStatefulResource(const LayoutObject& target, Graph
     case ClipperAppliedPath:
         // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
         if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            if (context->displayItemList()->displayItemConstructionIsDisabled())
+                return;
             context->displayItemList()->add(EndClipPathDisplayItem::create(target));
         } else {
             EndClipPathDisplayItem endClipPathDisplayItem(target);
@@ -128,6 +130,8 @@ void SVGClipPainter::drawClipMaskContent(GraphicsContext* context, const LayoutO
     TransformRecorder recorder(*context, layoutObject, contentTransformation);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
+        if (context->displayItemList()->displayItemConstructionIsDisabled())
+            return;
         context->displayItemList()->add(DrawingDisplayItem::create(layoutObject, DisplayItem::SVGClip, clipContentPicture));
     } else {
         DrawingDisplayItem clipPicture(layoutObject, DisplayItem::SVGClip, clipContentPicture);

@@ -38,7 +38,8 @@ void SubtreeRecorder::begin()
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
-
+    if (m_displayItemList->displayItemConstructionIsDisabled())
+        return;
     m_displayItemList->add(BeginSubtreeDisplayItem::create(m_subtreeRoot, DisplayItem::paintPhaseToBeginSubtreeType(m_paintPhase)));
     m_begun = true;
 }

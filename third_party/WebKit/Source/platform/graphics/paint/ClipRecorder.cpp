@@ -19,6 +19,8 @@ ClipRecorder::ClipRecorder(GraphicsContext& context, const DisplayItemClientWrap
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
+        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context.displayItemList()->add(ClipDisplayItem::create(m_client, type, pixelSnappedIntRect(clipRect), operation));
     } else {
         ClipDisplayItem clipDisplayItem(m_client, type, pixelSnappedIntRect(clipRect), operation);
@@ -31,6 +33,8 @@ ClipRecorder::~ClipRecorder()
     DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_type);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
+        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context.displayItemList()->add(EndClipDisplayItem::create(m_client, endType));
     } else {
         EndClipDisplayItem endClipDisplayItem(m_client, endType);

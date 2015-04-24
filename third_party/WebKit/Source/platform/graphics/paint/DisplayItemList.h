@@ -21,7 +21,10 @@ class PLATFORM_EXPORT DisplayItemList {
     WTF_MAKE_NONCOPYABLE(DisplayItemList);
     WTF_MAKE_FAST_ALLOCATED(DisplayItemList);
 public:
-    static PassOwnPtr<DisplayItemList> create() { return adoptPtr(new DisplayItemList); }
+    static PassOwnPtr<DisplayItemList> create()
+    {
+        return adoptPtr(new DisplayItemList());
+    }
 
     // These methods are called during paint invalidation.
     void invalidate(DisplayItemClient);
@@ -47,6 +50,9 @@ public:
         replay(context);
     }
 
+    bool displayItemConstructionIsDisabled() const { return m_constructionDisabled; }
+    void setDisplayItemConstructionIsDisabled(const bool disable) { m_constructionDisabled = disable; }
+
 #if ENABLE(ASSERT)
     size_t newDisplayItemsSize() const { return m_newDisplayItems.size(); }
 #endif
@@ -56,7 +62,9 @@ public:
 #endif
 
 protected:
-    DisplayItemList() : m_validlyCachedClientsDirty(false) { }
+    DisplayItemList()
+        : m_validlyCachedClientsDirty(false)
+        , m_constructionDisabled(false) { }
 
 private:
     friend class DisplayItemListTest;
@@ -96,6 +104,10 @@ private:
     // to avoid the cost of building and querying the hash table.
     mutable HashSet<DisplayItemClient> m_validlyCachedClients;
     mutable bool m_validlyCachedClientsDirty;
+
+    // Allow display item construction to be disabled to isolate the costs of construction
+    // in performance metrics.
+    bool m_constructionDisabled;
 
     // Scope ids are allocated per client to ensure that the ids are stable for non-invalidated
     // clients between frames, so that we can use the id to match new display items to cached

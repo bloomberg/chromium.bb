@@ -84,6 +84,8 @@ void ContentLayerDelegate::paintContents(
 
     DisplayItemList* displayItemList = m_painter->displayItemList();
     ASSERT(displayItemList);
+    displayItemList->setDisplayItemConstructionIsDisabled(
+        paintingControl == WebContentLayerClient::DisplayListConstructionDisabled);
 
     // We also disable caching when Painting or Construction are disabled. In both cases we would like
     // to compare assuming the full cost of recording, not the cost of re-using cached content.
@@ -102,7 +104,7 @@ void ContentLayerDelegate::paintContents(
 
     displayItemList->commitNewDisplayItems();
 
-    const DisplayItems& paintList = m_painter->displayItemList()->displayItems();
+    const DisplayItems& paintList = displayItemList->displayItems();
     for (DisplayItems::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
         (*it)->appendToWebDisplayItemList(webDisplayItemList);
 }

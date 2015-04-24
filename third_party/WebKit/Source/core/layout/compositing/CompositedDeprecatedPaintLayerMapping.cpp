@@ -2131,7 +2131,8 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
             OwnPtr<DisplayItem> clipDisplayItem = ClipDisplayItem::create(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
             if (context->displayItemList()) {
                 ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-                context->displayItemList()->add(clipDisplayItem.release());
+                if (!context->displayItemList()->displayItemConstructionIsDisabled())
+                    context->displayItemList()->add(clipDisplayItem.release());
             } else {
                 clipDisplayItem->replay(*context);
             }
@@ -2141,7 +2142,8 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
             OwnPtr<DisplayItem> endClipDisplayItem = EndClipDisplayItem::create(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
             if (context->displayItemList()) {
                 ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-                context->displayItemList()->add(endClipDisplayItem.release());
+                if (!context->displayItemList()->displayItemConstructionIsDisabled())
+                    context->displayItemList()->add(endClipDisplayItem.release());
             } else {
                 endClipDisplayItem->replay(*context);
             }

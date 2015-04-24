@@ -18,6 +18,8 @@ ClipPathRecorder::ClipPathRecorder(GraphicsContext& context, const DisplayItemCl
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
+        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context.displayItemList()->add(BeginClipPathDisplayItem::create(m_client, clipPath, windRule));
     } else {
         BeginClipPathDisplayItem clipPathDisplayItem(m_client, clipPath, windRule);
@@ -29,6 +31,8 @@ ClipPathRecorder::~ClipPathRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
+        if (m_context.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context.displayItemList()->add(EndClipPathDisplayItem::create(m_client));
     } else {
         EndClipPathDisplayItem endClipPathDisplayItem(m_client);

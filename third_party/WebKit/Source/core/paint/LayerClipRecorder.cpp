@@ -31,6 +31,8 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext, const Lay
         clipDisplayItem->replay(graphicsContext);
     } else {
         ASSERT(m_graphicsContext.displayItemList());
+        if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_graphicsContext.displayItemList()->add(clipDisplayItem.release());
     }
 }
@@ -77,9 +79,11 @@ void LayerClipRecorder::collectRoundedRectClips(DeprecatedPaintLayer& renderLaye
 LayerClipRecorder::~LayerClipRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        ASSERT(m_graphicsContext.displayItemList());
+        if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
+            return;
         DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
         OwnPtr<EndClipDisplayItem> endClip = EndClipDisplayItem::create(m_layoutObject, endType);
-        ASSERT(m_graphicsContext.displayItemList());
         m_graphicsContext.displayItemList()->add(endClip.release());
     } else {
         m_graphicsContext.restore();

@@ -61,7 +61,8 @@ BoxClipper::BoxClipper(LayoutBox& box, const PaintInfo& paintInfo, const LayoutP
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_paintInfo.context->displayItemList());
-        m_paintInfo.context->displayItemList()->add(clipDisplayItem.release());
+        if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled())
+            m_paintInfo.context->displayItemList()->add(clipDisplayItem.release());
     } else {
         clipDisplayItem->replay(*paintInfo.context);
     }
@@ -78,6 +79,8 @@ BoxClipper::~BoxClipper()
 
     DisplayItem::Type endType = DisplayItem::clipTypeToEndClipType(m_clipType);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        if (m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled())
+            return;
         OwnPtr<EndClipDisplayItem> endClipDisplayItem = EndClipDisplayItem::create(m_box, endType);
         ASSERT(m_paintInfo.context->displayItemList());
         m_paintInfo.context->displayItemList()->add(endClipDisplayItem.release());

@@ -58,13 +58,15 @@ FilterPainter::FilterPainter(DeprecatedPaintLayer& layer, GraphicsContext* conte
 
     ASSERT(m_layoutObject);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        FilterOperations filterOperations(layer.computeFilterOperations(m_layoutObject->styleRef()));
-        OwnPtr<WebFilterOperations> webFilterOperations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
-        builder.buildFilterOperations(filterOperations, webFilterOperations.get());
-        OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(*m_layoutObject, imageFilter, rootRelativeBounds, webFilterOperations.release());
-
         ASSERT(context->displayItemList());
-        context->displayItemList()->add(filterDisplayItem.release());
+        if (!context->displayItemList()->displayItemConstructionIsDisabled()) {
+            FilterOperations filterOperations(layer.computeFilterOperations(m_layoutObject->styleRef()));
+            OwnPtr<WebFilterOperations> webFilterOperations = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
+            builder.buildFilterOperations(filterOperations, webFilterOperations.get());
+            OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(*m_layoutObject, imageFilter, rootRelativeBounds, webFilterOperations.release());
+
+            context->displayItemList()->add(filterDisplayItem.release());
+        }
     } else {
         OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(*m_layoutObject, imageFilter, rootRelativeBounds);
 
@@ -82,6 +84,8 @@ FilterPainter::~FilterPainter()
     OwnPtr<EndFilterDisplayItem> endFilterDisplayItem = EndFilterDisplayItem::create(*m_layoutObject);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context->displayItemList());
+        if (m_context->displayItemList()->displayItemConstructionIsDisabled())
+            return;
         m_context->displayItemList()->add(endFilterDisplayItem.release());
     } else {
         endFilterDisplayItem->replay(*m_context);

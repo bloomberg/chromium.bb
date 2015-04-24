@@ -30,6 +30,7 @@ const DisplayItems& DisplayItemList::displayItems() const
 void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+    ASSERT(!m_constructionDisabled);
 
     if (displayItem->isEnd()) {
         ASSERT(!m_newDisplayItems.isEmpty());
