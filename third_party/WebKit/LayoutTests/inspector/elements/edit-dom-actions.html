@@ -190,6 +190,30 @@ function test()
             {
                 InspectorTest.editNodePartAndRun(node, "webkit-html-text-node", "var i = 0;\n    var j = 0;\n", done);
             }
+        },
+
+        function testEditSVGAttribute(next)
+        {
+            InspectorTest.domActionTestForNodeId("testEditSVG", "node-to-edit-svg-attribute", testBody, next);
+
+            function testBody(node, done)
+            {
+                var treeOutline = InspectorTest.firstElementsTreeOutline();
+                var treeElement = treeOutline.findTreeElement(node);
+                treeOutline._toggleEditAsHTML(node);
+                InspectorTest.runAfterPendingDispatches(step2);
+
+                function step2()
+                {
+                    var value = treeElement._editing.codeMirror.getValue();
+                    InspectorTest.addResult(value);
+                    treeElement._editing.codeMirror.setValue(value.replace("100", "110"));
+                    var event = InspectorTest.createKeyEvent("Enter");
+                    event.isMetaOrCtrlForTest = true;
+                    treeElement._htmlEditElement.dispatchEvent(event);
+                    InspectorTest.runAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
+                }
+            }
         }
     ]);
 }
@@ -259,6 +283,11 @@ Tests that user can mutate DOM by means of elements panel.
           }
 
         </script>
+    </div>
+
+    <div id="testEditSVG">
+        <svg id="node-to-edit-svg-attribute" xmlns:xlink="test" width="100">
+        </svg>
     </div>
 
     <div id="testEditCommentAsHTML">

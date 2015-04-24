@@ -147,3 +147,15 @@ Running: testEditScript
       </script>
   </div>
 
+Running: testEditSVGAttribute
+==== before ====
+- <div id="testEditSVG">
+      <svg id="node-to-edit-svg-attribute" xmlns:xlink="test" width="100">\n        </svg>
+  </div>
+<svg id="node-to-edit-svg-attribute" xmlns:xlink="test" width="100">
+        </svg>
+==== after ====
+- <div id="testEditSVG">
+      <svg id="node-to-edit-svg-attribute" xlink="test" width="110">\n        </svg>
+  </div>
+

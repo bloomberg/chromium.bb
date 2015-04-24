@@ -194,7 +194,7 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
         // FIXME: Create a function in Element for removing all properties. Take in account whether did/willModifyAttribute are important.
         while (oldElement->attributesWithoutUpdate().size()) {
             const Attribute& attribute = oldElement->attributesWithoutUpdate().at(0);
-            if (!m_domEditor->removeAttribute(oldElement, attribute.localName(), exceptionState))
+            if (!m_domEditor->removeAttribute(oldElement, attribute.name().toString(), exceptionState))
                 return false;
         }
 
