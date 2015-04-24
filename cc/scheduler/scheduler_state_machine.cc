@@ -388,10 +388,6 @@ bool SchedulerStateMachine::ShouldAnimate() const {
 }
 
 bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
-  // Do not send begin main frame too many times in a single frame.
-  if (send_begin_main_frame_funnel_)
-    return false;
-
   if (!needs_commit_)
     return false;
 
@@ -408,6 +404,10 @@ bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
 
 bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!CouldSendBeginMainFrame())
+    return false;
+
+  // Do not send begin main frame too many times in a single frame.
+  if (send_begin_main_frame_funnel_)
     return false;
 
   // Only send BeginMainFrame when there isn't another commit pending already.
