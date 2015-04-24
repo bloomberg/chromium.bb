@@ -1642,6 +1642,17 @@ static void markPointer(Visitor* visitor, HeapObjectHeader* header)
 {
     const GCInfo* gcInfo = Heap::gcInfo(header->gcInfoIndex());
     if (gcInfo->hasVTable() && !vTableInitialized(header->payload())) {
+        // We hit this branch when a GC strikes before GarbageCollected<>'s
+        // constructor runs.
+        //
+        // class A : public GarbageCollected<A> { virtual void f() = 0; };
+        // class B : public A {
+        //   B() : A(foo()) { };
+        // };
+        //
+        // If foo() allocates something and triggers a GC, the vtable of A
+        // has not yet been initialized. In this case, we should mark the A
+        // object without tracing any member of the A object.
         visitor->markHeaderNoTracing(header);
         ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
     } else {
