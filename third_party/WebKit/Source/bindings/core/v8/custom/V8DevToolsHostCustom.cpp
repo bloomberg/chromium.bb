@@ -141,15 +141,20 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
         return;
 
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "showContextMenuAtPoint", "DevToolsHost", info.Holder(), info.GetIsolate());
+    v8::Isolate* isolate = info.GetIsolate();
 
-    TONATIVE_VOID_EXCEPTIONSTATE(float, x, toRestrictedFloat(info.GetIsolate(), info[0], exceptionState), exceptionState);
-    TONATIVE_VOID_EXCEPTIONSTATE(float, y, toRestrictedFloat(info.GetIsolate(), info[1], exceptionState), exceptionState);
+    float x = toRestrictedFloat(isolate, info[0], exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    float y = toRestrictedFloat(isolate, info[1], exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
 
     v8::Local<v8::Value> array = v8::Local<v8::Value>::Cast(info[2]);
     if (!array->IsArray())
         return;
     ContextMenu menu;
-    if (!populateContextMenuItems(info.GetIsolate(), v8::Local<v8::Array>::Cast(array), menu))
+    if (!populateContextMenuItems(isolate, v8::Local<v8::Array>::Cast(array), menu))
         return;
 
     Document* document = nullptr;
@@ -159,7 +164,6 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(const v8::FunctionCallba
             return;
         document = V8HTMLDocument::toImpl(documentWrapper);
     } else {
-        v8::Isolate* isolate = info.GetIsolate();
         v8::Local<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(isolate->GetEnteredContext()->Global(), isolate);
         if (windowWrapper.IsEmpty())
             return;

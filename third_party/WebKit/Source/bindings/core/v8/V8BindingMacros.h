@@ -33,39 +33,6 @@
 
 namespace blink {
 
-// Naming scheme:
-// TO*_RETURNTYPE[_ARGTYPE]...
-// ...using _DEFAULT instead of _ANY..._ANY when returing a default value.
-
-// TODO(bashi): Remove TONATIVE_XXX.
-
-#define TONATIVE_VOID(type, var, value)        \
-    type var;                                  \
-    {                                          \
-        v8::TryCatch block;                    \
-        var = (value);                         \
-        if (UNLIKELY(block.HasCaught())) {     \
-            block.ReThrow();                   \
-            return;                            \
-        }                                      \
-    }
-
-#define TONATIVE_DEFAULT(type, var, value, retVal) \
-    type var;                                      \
-    {                                              \
-        v8::TryCatch block;                        \
-        var = (value);                             \
-        if (UNLIKELY(block.HasCaught())) {         \
-            block.ReThrow();                       \
-            return retVal;                         \
-        }                                          \
-    }
-
-#define TONATIVE_VOID_EXCEPTIONSTATE(type, var, value, exceptionState)  \
-    type var(value);                                                    \
-    if (UNLIKELY(exceptionState.throwIfNeeded()))                       \
-        return;
-
 // type is an instance of class template V8StringResource<>,
 // but Mode argument varies; using type (not Mode) for consistency
 // with other macros and ease of code generation
