@@ -90,7 +90,9 @@
     "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": [
-      "950D13BB9B4794F4CA2A68D3597E5DFAA47C88AE"  // Drive
+      "950D13BB9B4794F4CA2A68D3597E5DFAA47C88AE",  // Drive
+      "0EEB39B7A9A52CAAE6A072F83320435749B184A4",  // http://crbug.com/481210
+      "D4AF239830E1E038C9B60DA365B1EC9CB3BC5658"   // http://crbug.com/481210
     ]
   }, {
     "channel": "canary",
