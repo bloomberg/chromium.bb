@@ -163,6 +163,7 @@ public:
     void initializeNewContext() override;
     void bindFramebuffer(GLenum target, WebGLFramebuffer*) override;
     ScriptValue getParameter(ScriptState*, GLenum pname) override;
+    ScriptValue getTexParameter(ScriptState*, GLenum target, GLenum pname) override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -177,6 +178,7 @@ protected:
     bool validateCapability(const char* functionName, GLenum) override;
     bool validateBufferTarget(const char* functionName, GLenum target) override;
     bool validateAndUpdateBufferBindTarget(const char* functionName, GLenum, WebGLBuffer*) override;
+    WebGLTexture* validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap) override;
 
     RefPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
 };

@@ -1467,4 +1467,59 @@ DEFINE_TRACE(WebGL2RenderingContextBase)
     WebGLRenderingContextBase::trace(visitor);
 }
 
+WebGLTexture* WebGL2RenderingContextBase::validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap)
+{
+    switch (target) {
+    // FIXME: add 2D Array texture binding point and 3D texture binding point.
+    case GL_TEXTURE_2D_ARRAY:
+        // return m_textureUnits[m_activeTextureUnit].m_texture2DArrayBinding.get();
+        return nullptr;
+    case GL_TEXTURE_3D:
+        // return m_textureUnits[m_activeTextureUnit].m_texture3DBinding.get();
+        return nullptr;
+    default:
+        return WebGLRenderingContextBase::validateTextureBinding(functionName, target, useSixEnumsForCubeMap);
+    }
+}
+
+ScriptValue WebGL2RenderingContextBase::getTexParameter(ScriptState* scriptState, GLenum target, GLenum pname)
+{
+    if (isContextLost() || !validateTextureBinding("getTexParameter", target, false))
+        return ScriptValue::createNull(scriptState);
+
+    switch (pname) {
+    case GL_TEXTURE_WRAP_R:
+    case GL_TEXTURE_COMPARE_FUNC:
+    case GL_TEXTURE_COMPARE_MODE:
+    case GL_TEXTURE_IMMUTABLE_LEVELS:
+        {
+            GLint value = 0;
+            webContext()->getTexParameteriv(target, pname, &value);
+            return WebGLAny(scriptState, static_cast<unsigned>(value));
+        }
+    case GL_TEXTURE_IMMUTABLE_FORMAT:
+        {
+            GLint value = 0;
+            webContext()->getTexParameteriv(target, pname, &value);
+            return WebGLAny(scriptState, static_cast<bool>(value));
+        }
+    case GL_TEXTURE_BASE_LEVEL:
+    case GL_TEXTURE_MAX_LEVEL:
+        {
+            GLint value = 0;
+            webContext()->getTexParameteriv(target, pname, &value);
+            return WebGLAny(scriptState, value);
+        }
+    case GL_TEXTURE_MAX_LOD:
+    case GL_TEXTURE_MIN_LOD:
+        {
+            GLfloat value = 0.f;
+            webContext()->getTexParameterfv(target, pname, &value);
+            return WebGLAny(scriptState, value);
+        }
+    default:
+        return WebGLRenderingContextBase::getTexParameter(scriptState, target, pname);
+    }
+}
+
 } // namespace blink
