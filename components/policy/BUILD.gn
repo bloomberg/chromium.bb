@@ -64,6 +64,8 @@ if (enable_configuration_policy) {
 
   action("cloud_policy_code_generate") {
     script = "tools/generate_policy_source.py"
+    chrome_version_abspath = "//chrome/VERSION"
+    chrome_version_path = rebase_path(chrome_version_abspath, root_build_dir)
 
     if (is_chromeos) {
       chromeos_flag = "1"
@@ -72,6 +74,7 @@ if (enable_configuration_policy) {
     }
 
     inputs = [
+      chrome_version_abspath,
       "resources/policy_templates.json",
     ]
     outputs = [
@@ -100,6 +103,7 @@ if (enable_configuration_policy) {
           rebase_path(protobuf_decoder_path, root_build_dir),
       "--app-restrictions-definition=" +
           rebase_path(app_restrictions_path, root_build_dir),
+      chrome_version_path,
       target_os,
       chromeos_flag,
       rebase_path("resources/policy_templates.json", root_build_dir),

@@ -62,7 +62,7 @@ class PolicyDetails:
       self.caption = PolicyDetails._RemovePlaceholders(item['caption'])
       self.value = item['value']
 
-  def __init__(self, policy, os, is_chromium_os):
+  def __init__(self, policy, chrome_major_version, os, is_chromium_os):
     self.id = policy['id']
     self.name = policy['name']
     features = policy.get('features', {})
@@ -77,8 +77,18 @@ class PolicyDetails:
 
     expected_platform = 'chrome_os' if is_chromium_os else os.lower()
     self.platforms = []
-    for platform, version in [ p.split(':') for p in policy['supported_on'] ]:
-      if not version.endswith('-'):
+    for platform, version_range in [ p.split(':')
+                                     for p in policy['supported_on'] ]:
+      split_result = version_range.split('-')
+      if len(split_result) != 2:
+        raise RuntimeError('supported_on must have exactly one dash: "%s"' % p)
+      (version_min, version_max) = split_result
+      if version_min == '':
+        raise RuntimeError('supported_on must define a start version: "%s"' % p)
+
+      # Skip if the current Chromium version does not support the policy.
+      if (int(version_min) > chrome_major_version or
+          version_max != '' and int(version_max) < chrome_major_version):
         continue
 
       if platform.startswith('chrome.'):
@@ -127,6 +137,18 @@ class PolicyDetails:
     return result
 
 
+def ParseVersionFile(version_path):
+  major_version = None
+  for line in open(version_path, 'r').readlines():
+    key, val = line.rstrip('\r\n').split('=', 1)
+    if key == 'MAJOR':
+      major_version = val
+      break
+  if major_version is None:
+    raise RuntimeError('VERSION file does not contain major version.')
+  return major_version
+
+
 def main():
   parser = OptionParser(usage=__doc__)
   parser.add_option('--pch', '--policy-constants-header', dest='header_path',
@@ -155,17 +177,20 @@ def main():
 
   (opts, args) = parser.parse_args()
 
-  if len(args) != 3:
-    print 'exactly platform, chromium_os flag and input file must be specified.'
+  if len(args) != 4:
+    print('Please specify path to src/chrome/VERSION, platform, '
+          'chromium_os flag and input file as positional parameters.')
     parser.print_help()
     return 2
 
-  os = args[0]
-  is_chromium_os = args[1] == '1'
-  template_file_name = args[2]
+  version_path = args[0]
+  os = args[1]
+  is_chromium_os = args[2] == '1'
+  template_file_name = args[3]
 
+  major_version = ParseVersionFile(version_path)
   template_file_contents = _LoadJSONFile(template_file_name)
-  policy_details = [ PolicyDetails(policy, os, is_chromium_os)
+  policy_details = [ PolicyDetails(policy, major_version, os, is_chromium_os)
                      for policy in _Flatten(template_file_contents) ]
   sorted_policy_details = sorted(policy_details, key=lambda policy: policy.name)
 
