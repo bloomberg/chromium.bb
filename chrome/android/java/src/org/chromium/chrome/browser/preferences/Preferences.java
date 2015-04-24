@@ -18,7 +18,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceFragment.OnPreferenceStartFragmentCallback;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,7 +37,7 @@ import org.chromium.chrome.R;
  * may freely modify its activity's action bar or title. This mimics the behavior of
  * android.preference.PreferenceActivity.
  */
-public abstract class Preferences extends ActionBarActivity implements
+public abstract class Preferences extends AppCompatActivity implements
         OnPreferenceStartFragmentCallback {
 
     public static final String EXTRA_SHOW_FRAGMENT = "show_fragment";

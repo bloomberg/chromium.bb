@@ -10,7 +10,7 @@ import android.app.Notification;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Browser;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -65,7 +65,7 @@ import org.chromium.ui.base.WindowAndroid;
 /**
  * The {@link android.app.Activity} component of a basic test shell to test Chrome features.
  */
-public class ChromeShellActivity extends ActionBarActivity implements AppMenuPropertiesDelegate {
+public class ChromeShellActivity extends AppCompatActivity implements AppMenuPropertiesDelegate {
     private static final String TAG = "ChromeShellActivity";
 
     /**

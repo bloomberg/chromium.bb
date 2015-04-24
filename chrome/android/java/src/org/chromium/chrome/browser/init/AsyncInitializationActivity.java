@@ -10,7 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 /**
  * An activity that talks with application and activity level delegates for async initialization.
  */
-public abstract class AsyncInitializationActivity extends ActionBarActivity implements
+public abstract class AsyncInitializationActivity extends AppCompatActivity implements
         ChromeActivityNativeDelegate, BrowserParts {
     private static final LaunchHistogram sBadIntentMetric =
             new LaunchHistogram("Launch.InvalidIntent");

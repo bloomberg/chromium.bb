@@ -9,7 +9,7 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -36,7 +36,7 @@ import java.util.concurrent.Callable;
  *   [Sign-in page]
  * The activity might be run more than once, e.g. 1) for ToS and sign-in, and 2) for intro.
  */
-public class FirstRunActivity extends ActionBarActivity implements FirstRunPageDelegate {
+public class FirstRunActivity extends AppCompatActivity implements FirstRunPageDelegate {
     protected static final String TAG = "FirstRunActivity";
 
     // Incoming parameters:
