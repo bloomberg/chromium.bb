@@ -4,9 +4,9 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/basictypes.h"
+#include "base/strings/string_split.h"
 #include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,11 +16,11 @@ namespace {
 
 struct RequestCookieParsingTest {
   std::string str;
-  std::vector<std::pair<std::string, std::string> > parsed;
+  base::StringPairs parsed;
 };
 
 cookie_util::ParsedRequestCookies MakeParsedRequestCookies(
-    const std::vector<std::pair<std::string, std::string>>& data) {
+    const base::StringPairs& data) {
   cookie_util::ParsedRequestCookies parsed;
   for (size_t i = 0; i < data.size(); i++) {
     parsed.push_back(std::make_pair(base::StringPiece(data[i].first),
@@ -29,17 +29,15 @@ cookie_util::ParsedRequestCookies MakeParsedRequestCookies(
   return parsed;
 }
 
-void CheckParse(
-    const std::string& str,
-    const std::vector<std::pair<std::string, std::string> >& parsed_expected) {
+void CheckParse(const std::string& str,
+                const base::StringPairs& parsed_expected) {
   cookie_util::ParsedRequestCookies parsed;
   cookie_util::ParseRequestCookieLine(str, &parsed);
   EXPECT_EQ(MakeParsedRequestCookies(parsed_expected), parsed);
 }
 
-void CheckSerialize(
-    const std::vector<std::pair<std::string, std::string> >& parsed,
-    const std::string& str_expected) {
+void CheckSerialize(const base::StringPairs& parsed,
+                    const std::string& str_expected) {
   cookie_util::ParsedRequestCookies prc = MakeParsedRequestCookies(parsed);
   EXPECT_EQ(str_expected, cookie_util::SerializeRequestCookieLine(prc));
 }
