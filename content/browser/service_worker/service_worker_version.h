@@ -312,11 +312,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerURLRequestJobTest;
+  friend class ServiceWorkerVersionBrowserTest;
+
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, IdleTimeout);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, KeepAlive);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ListenerAvailability);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, SetDevToolsAttached);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWaitForeverInFetchTest, RequestTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerFailToStartTest, Timeout);
@@ -324,7 +324,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
                            TimeoutStartingWorker);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutWorkerInEvent);
-  friend class ServiceWorkerVersionBrowserTest;
 
   typedef ServiceWorkerVersion self;
   using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
@@ -489,9 +488,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
       ServiceWorkerStatusCode default_code);
 
   const int64 version_id_;
-  int64 registration_id_;
-  GURL script_url_;
-  GURL scope_;
+  const int64 registration_id_;
+  const GURL script_url_;
+  const GURL scope_;
+
   Status status_;
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;
   std::vector<StatusCallback> start_callbacks_;

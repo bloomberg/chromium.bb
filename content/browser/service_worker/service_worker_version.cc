@@ -370,8 +370,9 @@ ServiceWorkerVersion::ServiceWorkerVersion(
     int64 version_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : version_id_(version_id),
-      registration_id_(kInvalidServiceWorkerVersionId),
+      registration_id_(registration->id()),
       script_url_(script_url),
+      scope_(registration->pattern()),
       status_(NEW),
       context_(context),
       script_cache_map_(this, context),
@@ -379,10 +380,6 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       weak_factory_(this) {
   DCHECK(context_);
   DCHECK(registration);
-  if (registration) {
-    registration_id_ = registration->id();
-    scope_ = registration->pattern();
-  }
   context_->AddLiveVersion(this);
   embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();
   embedded_worker_->AddListener(this);
