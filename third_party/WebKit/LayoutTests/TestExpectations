@@ -2105,7 +2105,3 @@ crbug.com/479181 inspector-protocol/animation/animation-multiple-frames.html [ P
 crbug.com/479202 fast/forms/select/select-typeahead-with-spacekey.html [ Pass Failure ]
 crbug.com/479202 virtual/slimmingpaint/fast/forms/select/select-typeahead-with-spacekey.html [ Pass Failure ]
 
-crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-005.htm [ NeedsRebaseline ]
-crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-007.htm [ NeedsRebaseline ]
-crbug.com/479224 [ SnowLeopard ] ietestcenter/css3/text/textshadow-008.htm [ NeedsRebaseline ]
-
