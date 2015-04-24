@@ -1927,3 +1927,13 @@ UNINITIALIZED READ
 name=bug_470848
 blink_platform.dll!blink::Heap::RegionTree::lookup
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
+
+HANDLE LEAK
+name=https://crbug.com/480741
+system call NtDuplicateObject
+KERNELBASE.dll!DuplicateHandle
+KERNEL32.dll!DuplicateHandle
+base.dll!base::SharedMemory::ShareToProcessCommon
+gl_wrapper.dll!gfx::GLImageSharedMemory::Initialize
+content.dll!content::GpuChannel::CreateImageForGpuMemoryBuffer
+content.dll!content::GpuCommandBufferStub::OnCreateImage
