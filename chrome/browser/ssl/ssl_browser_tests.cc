@@ -42,7 +42,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -56,15 +55,10 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
-#include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
-#include "net/dns/host_resolver.h"
-#include "net/dns/mock_host_resolver.h"
-#include "net/http/http_transaction_factory.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 
 #if defined(USE_NSS_CERTS)
 #include "chrome/browser/net/nss_context.h"
@@ -272,33 +266,6 @@ class MockSSLCertReporter : public SSLCertReporter {
 };
 
 }  // namespace CertificateReporting
-
-void RootCertsChangedOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter> context_getter) {
-  net::CertDatabase::GetInstance()->NotifyObserversOfCACertChanged(NULL);
-  context_getter->GetURLRequestContext()
-      ->http_transaction_factory()
-      ->GetSession()
-      ->CloseAllConnections();
-}
-
-// Alerts the URLRequestContext for the given WebContents that a root
-// certificate has changed state or been removed. This, in turn, clears any
-// cached certificate validation in the cert verifier. This will also close all
-// connections in the socket pool of |contents|, so calls to this should be made
-// with care.
-void RootCertsChanged(WebContents* contents) {
-  scoped_refptr<net::URLRequestContextGetter> url_request_context =
-      contents->GetBrowserContext()->GetRequestContextForRenderProcess(
-          contents->GetRenderProcessHost()->GetID());
-  base::RunLoop run_loop;
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&RootCertsChangedOnIOThread, url_request_context),
-      run_loop.QuitClosure());
-  run_loop.Run();
-  base::RunLoop().RunUntilIdle();
-}
 
 }  // namespace
 
@@ -2349,29 +2316,31 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, InterstitialNotAffectedByHideShow) {
 // However, if this is followed by another visit, and a good certificate
 // is seen for the same host, the original exception is forgotten.
 IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
+  // It is necessary to use |https_server_expired_| rather than
+  // |https_server_mismatched| because the former shares a host with
+  // |https_server_| and cert exceptions are per host.
+  ASSERT_TRUE(https_server_expired_.Start());
   ASSERT_TRUE(https_server_.Start());
+
+  std::string https_server_expired_host =
+      https_server_.GetURL("files/ssl/google.html").host();
   std::string https_server_host =
       https_server_.GetURL("files/ssl/google.html").host();
+  ASSERT_EQ(https_server_expired_host, https_server_host);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  net::TestRootCerts* root_certs = net::TestRootCerts::GetInstance();
-
-  ASSERT_TRUE(root_certs);
-  root_certs->Clear();
 
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   ChromeSSLHostStateDelegate* state =
       reinterpret_cast<ChromeSSLHostStateDelegate*>(
           profile->GetSSLHostStateDelegate());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("files/ssl/google.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("files/ssl/google.html"));
 
   ProceedThroughInterstitial(tab);
   EXPECT_TRUE(state->HasAllowException(https_server_host));
 
-  ASSERT_TRUE(https_server_.LoadTestRootCert());
-  RootCertsChanged(tab);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("files/ssl/google.html"));
   ASSERT_FALSE(tab->GetInterstitialPage());
