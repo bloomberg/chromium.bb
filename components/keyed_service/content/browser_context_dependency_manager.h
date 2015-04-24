@@ -33,7 +33,7 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
   // a key to prevent multiple registrations on the same BrowserContext in
   // tests.
   void RegisterProfilePrefsForServices(
-      const content::BrowserContext* context,
+      content::BrowserContext* context,
       user_prefs::PrefRegistrySyncable* registry);
 
   // Called by each BrowserContext to alert us of its creation. Several
@@ -91,8 +91,7 @@ class KEYED_SERVICE_EXPORT BrowserContextDependencyManager
 
 #ifndef NDEBUG
   // DependencyManager:
-  void DumpContextDependencies(
-      const base::SupportsUserData* context) const final;
+  void DumpContextDependencies(base::SupportsUserData* context) const final;
 #endif  // NDEBUG
 
   // A list of callbacks to call just before executing

@@ -18,6 +18,8 @@
       'msvs_disabled_warnings': [ 4267, ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
+        'user_prefs',
       ],
       'sources': [
         'keyed_service/core/dependency_graph.cc',
@@ -55,12 +57,10 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
           'dependencies': [
-            'keyed_service_core',
             '../base/base.gyp:base',
-            '../base/base.gyp:base_prefs',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../content/content.gyp:content_common',
-            'user_prefs',
+            'keyed_service_core',
           ],
           'include_dirs': [
             '..',
@@ -89,7 +89,6 @@
           ],
           'dependencies': [
             '../base/base.gyp:base',
-            '../base/base.gyp:base_prefs',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../ios/web/ios_web.gyp:ios_web',
             'keyed_service_core',
@@ -98,10 +97,10 @@
             '..',
           ],
           'sources': [
+            'keyed_service/ios/browser_state_context_converter.cc',
+            'keyed_service/ios/browser_state_context_converter.h',
             'keyed_service/ios/browser_state_dependency_manager.cc',
             'keyed_service/ios/browser_state_dependency_manager.h',
-            'keyed_service/ios/browser_state_helper.cc',
-            'keyed_service/ios/browser_state_helper.h',
             'keyed_service/ios/browser_state_keyed_service_factory.cc',
             'keyed_service/ios/browser_state_keyed_service_factory.h',
             'keyed_service/ios/refcounted_browser_state_keyed_service_factory.cc',

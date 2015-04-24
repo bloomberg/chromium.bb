@@ -13,8 +13,8 @@ BrowserStateDependencyManager* BrowserStateDependencyManager::GetInstance() {
   return Singleton<BrowserStateDependencyManager>::get();
 }
 
-void BrowserStateDependencyManager::RegisterProfilePrefsForServices(
-    const web::BrowserState* context,
+void BrowserStateDependencyManager::RegisterBrowserStatePrefsForServices(
+    web::BrowserState* context,
     user_prefs::PrefRegistrySyncable* pref_registry) {
   RegisterPrefsForServices(context, pref_registry);
 }
@@ -62,6 +62,6 @@ void BrowserStateDependencyManager::DoCreateBrowserStateServices(
 
 #ifndef NDEBUG
 void BrowserStateDependencyManager::DumpContextDependencies(
-    const base::SupportsUserData* context) const {
+    base::SupportsUserData* context) const {
 }
 #endif  // NDEBUG

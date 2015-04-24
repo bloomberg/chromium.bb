@@ -34,8 +34,8 @@ class KEYED_SERVICE_EXPORT BrowserStateDependencyManager
   // |context| should be the BrowserState containing |registry| and is used as
   // a key to prevent multiple registrations on the same BrowserState in
   // tests.
-  void RegisterProfilePrefsForServices(
-      const web::BrowserState* context,
+  void RegisterBrowserStatePrefsForServices(
+      web::BrowserState* context,
       user_prefs::PrefRegistrySyncable* registry);
 
   // Called by each BrowserState to alert us of its creation. Service that
@@ -80,8 +80,7 @@ class KEYED_SERVICE_EXPORT BrowserStateDependencyManager
 
 #ifndef NDEBUG
   // DependencyManager:
-  void DumpContextDependencies(
-      const base::SupportsUserData* context) const final;
+  void DumpContextDependencies(base::SupportsUserData* context) const final;
 #endif  // NDEBUG
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStateDependencyManager);

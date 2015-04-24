@@ -57,14 +57,14 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory
 #ifndef NDEBUG
   // Debugging assertion that will NOTREACHED() is |context| is considered
   // stale. Should be used by subclasses when accessing |context|.
-  void AssertContextWasntDestroyed(const base::SupportsUserData* context) const;
+  void AssertContextWasntDestroyed(base::SupportsUserData* context) const;
 
   // Marks |context| as live (i.e., not stale). This method can be called as a
   // safeguard against |AssertContextWasntDestroyed()| checks going off due to
   // |context| aliasing am instance from a prior test (i.e., 0xWhatever might
   // be created, be destroyed, and then a new object might be created at
   // 0xWhatever).
-  void MarkContextLiveForTesting(const base::SupportsUserData* context);
+  void MarkContextLiveForTesting(base::SupportsUserData* context);
 #endif
 
   // Calls RegisterProfilePrefs() after doing house keeping required to work
@@ -72,13 +72,13 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory
   // TODO(gab): This method can be replaced by RegisterProfilePrefs() directly
   // once RegisterUserPrefsOnContextForTest() is phased out.
   void RegisterPrefsIfNecessaryForContext(
-      const base::SupportsUserData* context,
+      base::SupportsUserData* context,
       user_prefs::PrefRegistrySyncable* registry);
 
   // Returns the |user_pref::PrefRegistrySyncable| associated with |context|.
   // The way they are associated is controlled by the embedder.
-  virtual user_prefs::PrefRegistrySyncable* GetAssociatedPrefRegistry(
-      base::SupportsUserData* context) const = 0;
+  user_prefs::PrefRegistrySyncable* GetAssociatedPrefRegistry(
+      base::SupportsUserData* context) const;
 
   // Finds which context (if any) to use.
   virtual base::SupportsUserData* GetContextToUse(
@@ -109,10 +109,59 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory
   virtual void ContextDestroyed(base::SupportsUserData* context);
 
   // Returns whether the preferences have been registered on this context.
-  bool ArePreferencesSetOn(const base::SupportsUserData* context) const;
+  bool ArePreferencesSetOn(base::SupportsUserData* context) const;
 
   // Mark context has having preferences registered.
-  void MarkPreferencesSetOn(const base::SupportsUserData* context);
+  void MarkPreferencesSetOn(base::SupportsUserData* context);
+
+  // The iOS code downstream used BrowserContextKeyedServiceFactories. The code
+  // is currently ported to use BrowserStateKeyedServiceFactories instead but
+  // has to support mixed dependencies to ease the migration — which can then
+  // be done incrementally. This means that on iOS the DependencyManager can
+  // reference both type of factories and the context need to be converted to
+  // the correct typed context.
+  //
+  // GetTypedContext()/GetContextForDependencyManager() are there to supports
+  // the mixed dependencies. On all platform except iOS they are pass-through
+  // and returns the original object. On iOS, they convert the context to resp.
+  // web::BrowserState/content::BrowserContext casted as base::SupportsUserData.
+  //
+  // TODO(ios): migration is tracked by http://crbug.com/478763 and those two
+  // methods (and their *Internal implementation) must be removed once migration
+  // is complete.
+
+  // Returns the correctly typed context for the KeyedServiceFactory (either a
+  // content::BrowserContext for BrowserContextKeyedServiceFactory or a
+  // web::BrowserState for a BrowserStateKeyedServiceFactory) when using mixed
+  // dependency (iOS). Simple pass-through on all other platforms.
+  //
+  // TODO(ios): remove this method and its call-sites once iOS only uses
+  // BrowserStateKeyedServiceFactories, http://crbug.com/478763
+#if defined(OS_IOS)
+  virtual base::SupportsUserData* GetTypedContext(
+      base::SupportsUserData* context) const;
+#else
+  base::SupportsUserData* GetTypedContext(
+      base::SupportsUserData* context) const {
+    return context;
+  }
+#endif  // defined(OS_IOS)
+
+  // Returns the content::BrowserContext associated to |context| for interaction
+  // with the DependencyManager when using mixed dependency (iOS). Simple pass-
+  // through on all other platforms.
+  //
+  // TODO(ios): remove this method and its call-sites once iOS only uses
+  // BrowserStateKeyedServiceFactories, http://crbug.com/478763
+#if defined(OS_IOS)
+  virtual base::SupportsUserData* GetContextForDependencyManager(
+      base::SupportsUserData* context) const;
+#else
+  base::SupportsUserData* GetContextForDependencyManager(
+      base::SupportsUserData* context) const {
+    return context;
+  }
+#endif  // defined(OS_IOS)
 
  private:
   friend class DependencyManager;
@@ -135,7 +184,7 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory
   virtual void CreateServiceNow(base::SupportsUserData* context) = 0;
 
   // Contexts that have this service's preferences registered on them.
-  std::set<const base::SupportsUserData*> registered_preferences_;
+  std::set<base::SupportsUserData*> registered_preferences_;
 
 #if !defined(NDEBUG)
   // A static string passed in to the constructor. Should be unique across all

@@ -38,7 +38,7 @@ class SuggestionsServiceFactory : public BrowserStateKeyedServiceFactory {
   // BrowserStateKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       web::BrowserState* browser_state) const override;
-  void RegisterProfilePrefs(
+  void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsServiceFactory);

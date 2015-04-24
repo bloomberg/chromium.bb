@@ -19,7 +19,7 @@ const char kDumpBrowserContextDependencyGraphFlag[] =
 #endif  // NDEBUG
 
 void BrowserContextDependencyManager::RegisterProfilePrefsForServices(
-    const content::BrowserContext* context,
+    content::BrowserContext* context,
     user_prefs::PrefRegistrySyncable* pref_registry) {
   TRACE_EVENT0(
      "browser",
@@ -77,13 +77,15 @@ BrowserContextDependencyManager::GetInstance() {
   return Singleton<BrowserContextDependencyManager>::get();
 }
 
-BrowserContextDependencyManager::BrowserContextDependencyManager() {}
+BrowserContextDependencyManager::BrowserContextDependencyManager() {
+}
 
-BrowserContextDependencyManager::~BrowserContextDependencyManager() {}
+BrowserContextDependencyManager::~BrowserContextDependencyManager() {
+}
 
 #ifndef NDEBUG
 void BrowserContextDependencyManager::DumpContextDependencies(
-    const base::SupportsUserData* context) const {
+    base::SupportsUserData* context) const {
   // Whenever we try to build a destruction ordering, we should also dump a
   // dependency graph to "/path/to/context/context-dependencies.dot".
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

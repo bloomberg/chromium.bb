@@ -5,7 +5,6 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -95,16 +94,6 @@ KeyedService* BrowserContextKeyedServiceFactory::BuildServiceInstanceFor(
 bool BrowserContextKeyedServiceFactory::IsOffTheRecord(
     base::SupportsUserData* context) const {
   return static_cast<content::BrowserContext*>(context)->IsOffTheRecord();
-}
-
-user_prefs::PrefRegistrySyncable*
-BrowserContextKeyedServiceFactory::GetAssociatedPrefRegistry(
-    base::SupportsUserData* context) const {
-  PrefService* prefs = user_prefs::UserPrefs::Get(context);
-  user_prefs::PrefRegistrySyncable* registry =
-      static_cast<user_prefs::PrefRegistrySyncable*>(
-          prefs->DeprecatedGetPrefRegistry());
-  return registry;
 }
 
 base::SupportsUserData* BrowserContextKeyedServiceFactory::GetContextToUse(

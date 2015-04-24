@@ -45,7 +45,7 @@ class KEYED_SERVICE_EXPORT DependencyManager {
   // Registers preferences for all services via |registry| associated with
   // |context| (the association is managed by the embedder). The |context|
   // is used as a key to prevent multiple registration during tests.
-  void RegisterPrefsForServices(const base::SupportsUserData* context,
+  void RegisterPrefsForServices(base::SupportsUserData* context,
                                 user_prefs::PrefRegistrySyncable* registry);
 
   // Called upon creation of |context| to create services that want to be
@@ -68,14 +68,14 @@ class KEYED_SERVICE_EXPORT DependencyManager {
 #ifndef NDEBUG
   // Debugging assertion called as part of GetServiceForContext() in debug
   // mode. This will NOTREACHED() whenever the |context| is considered stale.
-  void AssertContextWasntDestroyed(const base::SupportsUserData* context);
+  void AssertContextWasntDestroyed(base::SupportsUserData* context);
 
   // Marks |context| as live (i.e., not stale). This method can be called as a
   // safeguard against |AssertContextWasntDestroyed()| checks going off due to
   // |context| aliasing am instance from a prior test (i.e., 0xWhatever might
   // be created, be destroyed, and then a new object might be created at
   // 0xWhatever).
-  void MarkContextLiveForTesting(const base::SupportsUserData* context);
+  void MarkContextLiveForTesting(base::SupportsUserData* context);
 
   // Dumps service dependency graph as a Graphviz dot file |dot_file| with a
   // title |top_level_name|. Helper for |DumpContextDependencies|.
@@ -89,7 +89,7 @@ class KEYED_SERVICE_EXPORT DependencyManager {
 #ifndef NDEBUG
   // Hook for subclass to dump the dependency graph of service for |context|.
   virtual void DumpContextDependencies(
-      const base::SupportsUserData* context) const = 0;
+      base::SupportsUserData* context) const = 0;
 #endif  // NDEBUG
 
   DependencyGraph dependency_graph_;
@@ -99,7 +99,7 @@ class KEYED_SERVICE_EXPORT DependencyManager {
   // These pointers are most likely invalid, but we keep track of their
   // locations in memory so we can nicely assert if we're asked to do anything
   // with them.
-  std::set<const base::SupportsUserData*> dead_context_pointers_;
+  std::set<base::SupportsUserData*> dead_context_pointers_;
 #endif  // NDEBUG
 };
 

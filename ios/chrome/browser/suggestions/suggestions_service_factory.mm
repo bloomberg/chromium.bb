@@ -75,7 +75,7 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
       thumbnail_manager.Pass(), blacklist_store.Pass());
 }
 
-void SuggestionsServiceFactory::RegisterProfilePrefs(
+void SuggestionsServiceFactory::RegisterBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   SuggestionsService::RegisterProfilePrefs(registry);
 }

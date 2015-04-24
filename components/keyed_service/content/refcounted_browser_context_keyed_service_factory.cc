@@ -5,11 +5,8 @@
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 
 void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
@@ -100,16 +97,6 @@ RefcountedBrowserContextKeyedServiceFactory::BuildServiceInstanceFor(
 bool RefcountedBrowserContextKeyedServiceFactory::IsOffTheRecord(
     base::SupportsUserData* context) const {
   return static_cast<content::BrowserContext*>(context)->IsOffTheRecord();
-}
-
-user_prefs::PrefRegistrySyncable*
-RefcountedBrowserContextKeyedServiceFactory::GetAssociatedPrefRegistry(
-    base::SupportsUserData* context) const {
-  PrefService* prefs = user_prefs::UserPrefs::Get(context);
-  user_prefs::PrefRegistrySyncable* registry =
-      static_cast<user_prefs::PrefRegistrySyncable*>(
-          prefs->DeprecatedGetPrefRegistry());
-  return registry;
 }
 
 base::SupportsUserData*

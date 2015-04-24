@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
+#include "components/keyed_service/ios/browser_state_context_converter.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/keyed_service/ios/browser_state_helper.h"
 #include "ios/web/public/browser_state.h"
 
 void RefcountedBrowserStateKeyedServiceFactory::SetTestingFactory(
@@ -86,25 +86,48 @@ void RefcountedBrowserStateKeyedServiceFactory::BrowserStateDestroyed(
 scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserStateKeyedServiceFactory::BuildServiceInstanceFor(
     base::SupportsUserData* context) const {
-  return BuildServiceInstanceFor(BrowserStateFromContext(context));
+  return BuildServiceInstanceFor(static_cast<web::BrowserState*>(context));
 }
 
 bool RefcountedBrowserStateKeyedServiceFactory::IsOffTheRecord(
     base::SupportsUserData* context) const {
-  return BrowserStateFromContext(context)->IsOffTheRecord();
+  return static_cast<web::BrowserState*>(context)->IsOffTheRecord();
 }
 
-user_prefs::PrefRegistrySyncable*
-RefcountedBrowserStateKeyedServiceFactory::GetAssociatedPrefRegistry(
+#if defined(OS_IOS)
+base::SupportsUserData*
+RefcountedBrowserStateKeyedServiceFactory::GetTypedContext(
     base::SupportsUserData* context) const {
-  NOTREACHED();
-  return nullptr;
+  if (context) {
+    BrowserStateContextConverter* context_converter =
+        BrowserStateContextConverter::GetInstance();
+    if (context_converter) {
+      context = context_converter->GetBrowserStateForContext(context);
+      DCHECK(context);
+    }
+  }
+  return context;
 }
+
+base::SupportsUserData*
+RefcountedBrowserStateKeyedServiceFactory::GetContextForDependencyManager(
+    base::SupportsUserData* context) const {
+  if (context) {
+    BrowserStateContextConverter* context_converter =
+        BrowserStateContextConverter::GetInstance();
+    if (context_converter) {
+      context = context_converter->GetBrowserContextForContext(context);
+      DCHECK(context);
+    }
+  }
+  return context;
+}
+#endif  // defined(OS_IOS)
 
 base::SupportsUserData*
 RefcountedBrowserStateKeyedServiceFactory::GetContextToUse(
     base::SupportsUserData* context) const {
-  return GetBrowserStateToUse(BrowserStateFromContext(context));
+  return GetBrowserStateToUse(static_cast<web::BrowserState*>(context));
 }
 
 bool RefcountedBrowserStateKeyedServiceFactory::ServiceIsCreatedWithContext()
@@ -114,15 +137,15 @@ bool RefcountedBrowserStateKeyedServiceFactory::ServiceIsCreatedWithContext()
 
 void RefcountedBrowserStateKeyedServiceFactory::ContextShutdown(
     base::SupportsUserData* context) {
-  BrowserStateShutdown(BrowserStateFromContext(context));
+  BrowserStateShutdown(static_cast<web::BrowserState*>(context));
 }
 
 void RefcountedBrowserStateKeyedServiceFactory::ContextDestroyed(
     base::SupportsUserData* context) {
-  BrowserStateDestroyed(BrowserStateFromContext(context));
+  BrowserStateDestroyed(static_cast<web::BrowserState*>(context));
 }
 
 void RefcountedBrowserStateKeyedServiceFactory::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  RegisterProfilePrefs(registry);
+  RegisterBrowserStatePrefs(registry);
 }

@@ -4,10 +4,7 @@
 
 #include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 
-#include "base/prefs/pref_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 
 BrowserContextKeyedBaseFactory::BrowserContextKeyedBaseFactory(
@@ -51,16 +48,6 @@ bool BrowserContextKeyedBaseFactory::ServiceIsNULLWhileTesting() const {
 void BrowserContextKeyedBaseFactory::BrowserContextDestroyed(
     content::BrowserContext* context) {
   KeyedServiceBaseFactory::ContextDestroyed(context);
-}
-
-user_prefs::PrefRegistrySyncable*
-BrowserContextKeyedBaseFactory::GetAssociatedPrefRegistry(
-    base::SupportsUserData* context) const {
-  PrefService* prefs = user_prefs::UserPrefs::Get(context);
-  user_prefs::PrefRegistrySyncable* registry =
-      static_cast<user_prefs::PrefRegistrySyncable*>(
-          prefs->DeprecatedGetPrefRegistry());
-  return registry;
 }
 
 base::SupportsUserData* BrowserContextKeyedBaseFactory::GetContextToUse(

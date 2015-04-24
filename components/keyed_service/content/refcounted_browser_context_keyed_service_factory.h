@@ -130,7 +130,7 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
   friend class BrowserContextDependencyManagerUnittests;
 
   // Registers any user preferences on this service. This is called by
-  // RegisterProfilePrefsIfNecessary() and should be overriden by any service
+  // RegisterPrefsIfNecessaryForContext() and should be overriden by any service
   // that wants to register profile-specific preferences.
   virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) {}
@@ -141,8 +141,6 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
   bool IsOffTheRecord(base::SupportsUserData* context) const final;
 
   // KeyedServiceBaseFactory:
-  user_prefs::PrefRegistrySyncable* GetAssociatedPrefRegistry(
-      base::SupportsUserData* context) const final;
   base::SupportsUserData* GetContextToUse(
       base::SupportsUserData* context) const final;
   bool ServiceIsCreatedWithContext() const final;
