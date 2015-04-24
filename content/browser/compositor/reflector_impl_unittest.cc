@@ -91,8 +91,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
   gfx::Size SurfaceSize() const override { return gfx::Size(256, 256); }
 };
 
-const gfx::Rect kSubRect = gfx::Rect(0, 0, 64, 64);
-const SkIRect kSkSubRect = SkIRect::MakeXYWH(0, 0, 64, 64);
+const gfx::Rect kSubRect(0, 0, 64, 64);
 
 }  // namespace
 
@@ -161,10 +160,10 @@ TEST_F(ReflectorImplTest, CheckNormalOutputSurface) {
   SetUpReflector();
   UpdateTexture();
   EXPECT_TRUE(mirroring_layer_->TextureFlipped());
-  EXPECT_EQ(SkRegion(SkIRect::MakeXYWH(
-                0, output_surface_->SurfaceSize().height() - kSubRect.height(),
-                kSubRect.width(), kSubRect.height())),
-            mirroring_layer_->damaged_region());
+  gfx::Rect expected_rect =
+      kSubRect + gfx::Vector2d(0, output_surface_->SurfaceSize().height()) -
+      gfx::Vector2d(0, kSubRect.height());
+  EXPECT_EQ(expected_rect, mirroring_layer_->damaged_region());
 }
 
 TEST_F(ReflectorImplTest, CheckInvertedOutputSurface) {
@@ -172,7 +171,7 @@ TEST_F(ReflectorImplTest, CheckInvertedOutputSurface) {
   SetUpReflector();
   UpdateTexture();
   EXPECT_FALSE(mirroring_layer_->TextureFlipped());
-  EXPECT_EQ(SkRegion(kSkSubRect), mirroring_layer_->damaged_region());
+  EXPECT_EQ(kSubRect, mirroring_layer_->damaged_region());
 }
 
 #if defined(USE_OZONE)
