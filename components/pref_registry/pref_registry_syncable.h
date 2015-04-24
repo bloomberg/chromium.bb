@@ -5,11 +5,9 @@
 #ifndef COMPONENTS_PREF_REGISTRY_PREF_REGISTRY_SYNCABLE_H_
 #define COMPONENTS_PREF_REGISTRY_PREF_REGISTRY_SYNCABLE_H_
 
-#include <set>
 #include <string>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/prefs/pref_registry.h"
 #include "components/pref_registry/pref_registry_export.h"
 
@@ -35,27 +33,29 @@ namespace user_prefs {
 // does this for Chrome.
 class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
  public:
-  // Enum used when registering preferences to determine if it should
-  // be synced or not. Syncable priority preferences are preferences that are
-  // never encrypted and are synced before other datatypes. Because they're
-  // never encrypted, on first sync, they can be synced down before the user
-  // is prompted for a passphrase.
-  enum PrefSyncStatus {
-    UNSYNCABLE_PREF,
-    SYNCABLE_PREF,
-    SYNCABLE_PRIORITY_PREF,
+  // Enum of flags used when registering preferences to determine if it should
+  // be synced or not. These flags are mutually exclusive, only one of them
+  // should ever be specified.
+  //
+  // Note: These must NOT overlap with PrefRegistry::PrefRegistrationFlags.
+  enum PrefRegistrationFlags {
+    // The pref will not be synced.
+    UNSYNCABLE_PREF = PrefRegistry::NO_REGISTRATION_FLAGS,
+
+    // The pref will be synced.
+    SYNCABLE_PREF = 1 << 1,
+
+    // The pref will be synced. The pref will never be encrypted and will be
+    // synced before other datatypes. Because they're never encrypted, on first
+    // sync, they can be synced down before the user is prompted for a
+    // passphrase.
+    SYNCABLE_PRIORITY_PREF = 1 << 2,
   };
 
-  typedef
-      base::Callback<void(const char* path, const PrefSyncStatus sync_status)>
-          SyncableRegistrationCallback;
+  typedef base::Callback<void(const char* path, uint32 flags)>
+      SyncableRegistrationCallback;
 
   PrefRegistrySyncable();
-
-  typedef base::hash_map<std::string, PrefSyncStatus> PrefToStatus;
-
-  // Retrieve the set of syncable preferences currently registered.
-  const PrefToStatus& syncable_preferences() const;
 
   // Exactly one callback can be set for the event of a syncable
   // preference being registered. It will be fired after the
@@ -66,37 +66,32 @@ class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
   // instead.
   void SetSyncableRegistrationCallback(const SyncableRegistrationCallback& cb);
 
+  // |flags| is a bitmask of PrefRegistrationFlags.
   void RegisterBooleanPref(const char* path,
                            bool default_value,
-                           PrefSyncStatus sync_status);
-  void RegisterIntegerPref(const char* path,
-                           int default_value,
-                           PrefSyncStatus sync_status);
+                           uint32 flags);
+  void RegisterIntegerPref(const char* path, int default_value, uint32 flags);
   void RegisterDoublePref(const char* path,
                           double default_value,
-                          PrefSyncStatus sync_status);
+                          uint32 flags);
   void RegisterStringPref(const char* path,
                           const std::string& default_value,
-                          PrefSyncStatus sync_status);
+                          uint32 flags);
   void RegisterFilePathPref(const char* path,
                             const base::FilePath& default_value,
-                            PrefSyncStatus sync_status);
-  void RegisterListPref(const char* path,
-                        PrefSyncStatus sync_status);
-  void RegisterDictionaryPref(const char* path,
-                              PrefSyncStatus sync_status);
+                            uint32 flags);
+  void RegisterListPref(const char* path, uint32 flags);
+  void RegisterDictionaryPref(const char* path, uint32 flags);
   void RegisterListPref(const char* path,
                         base::ListValue* default_value,
-                        PrefSyncStatus sync_status);
+                        uint32 flags);
   void RegisterDictionaryPref(const char* path,
                               base::DictionaryValue* default_value,
-                              PrefSyncStatus sync_status);
-  void RegisterInt64Pref(const char* path,
-                         int64 default_value,
-                         PrefSyncStatus sync_status);
+                              uint32 flags);
+  void RegisterInt64Pref(const char* path, int64 default_value, uint32 flags);
   void RegisterUint64Pref(const char* path,
                           uint64 default_value,
-                          PrefSyncStatus sync_status);
+                          uint32 flags);
 
   // Returns a new PrefRegistrySyncable that uses the same defaults
   // store.
@@ -105,14 +100,12 @@ class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
  private:
   ~PrefRegistrySyncable() override;
 
+  // |flags| is a bitmask of PrefRegistrationFlags.
   void RegisterSyncablePreference(const char* path,
                                   base::Value* default_value,
-                                  PrefSyncStatus sync_status);
+                                  uint32 flags);
 
   SyncableRegistrationCallback callback_;
-
-  // Contains the names of all registered preferences that are syncable.
-  PrefToStatus syncable_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefRegistrySyncable);
 };

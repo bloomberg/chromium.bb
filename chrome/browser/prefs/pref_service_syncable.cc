@@ -55,13 +55,11 @@ PrefServiceSyncable::PrefServiceSyncable(
                  base::Unretained(this)));
 
   // Add already-registered syncable preferences to PrefModelAssociator.
-  const user_prefs::PrefRegistrySyncable::PrefToStatus& syncable_preferences =
-      pref_registry->syncable_preferences();
-  for (user_prefs::PrefRegistrySyncable::PrefToStatus::const_iterator it =
-           syncable_preferences.begin();
-       it != syncable_preferences.end();
-       ++it) {
-    AddRegisteredSyncablePreference(it->first.c_str(), it->second);
+  for (PrefRegistry::const_iterator it = pref_registry->begin();
+       it != pref_registry->end(); ++it) {
+    const std::string& path = it->first;
+    AddRegisteredSyncablePreference(
+        path.c_str(), pref_registry_->GetRegistrationFlags(path));
   }
 
   // Watch for syncable preferences registered after this point.
@@ -162,17 +160,14 @@ void PrefServiceSyncable::RemoveSyncedPrefObserver(
   priority_pref_sync_associator_.RemoveSyncedPrefObserver(name, observer);
 }
 
-void PrefServiceSyncable::AddRegisteredSyncablePreference(
-    const char* path,
-    const user_prefs::PrefRegistrySyncable::PrefSyncStatus sync_status) {
+void PrefServiceSyncable::AddRegisteredSyncablePreference(const char* path,
+                                                          uint32 flags) {
   DCHECK(FindPreference(path));
-  if (sync_status == user_prefs::PrefRegistrySyncable::SYNCABLE_PREF) {
+  if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PREF) {
     pref_sync_associator_.RegisterPref(path);
-  } else if (sync_status ==
+  } else if (flags &
              user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF) {
     priority_pref_sync_associator_.RegisterPref(path);
-  } else {
-    NOTREACHED() << "invalid sync_status: " << sync_status;
   }
 }
 

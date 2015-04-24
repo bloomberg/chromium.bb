@@ -325,16 +325,15 @@ void OverrideFontFamily(WebPreferences* prefs,
   (*map)[script] = base::UTF8ToUTF16(pref_value);
 }
 
-void RegisterLocalizedFontPref(
-    user_prefs::PrefRegistrySyncable* registry,
-    const char* path,
-    int default_message_id,
-    user_prefs::PrefRegistrySyncable::PrefSyncStatus status) {
+void RegisterLocalizedFontPref(user_prefs::PrefRegistrySyncable* registry,
+                               const char* path,
+                               int default_message_id,
+                               uint32 flags) {
   int val = 0;
   bool success = base::StringToInt(l10n_util::GetStringUTF8(
       default_message_id), &val);
   DCHECK(success);
-  registry->RegisterIntegerPref(path, val, status);
+  registry->RegisterIntegerPref(path, val, flags);
 }
 
 }  // namespace
