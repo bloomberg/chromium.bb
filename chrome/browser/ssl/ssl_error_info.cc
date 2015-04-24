@@ -59,10 +59,13 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
     }
     case CERT_DATE_INVALID:
       if (cert->HasExpired()) {
+        // Make sure to round up to the smallest integer value not less than
+        // the expiration value (https://crbug.com/476758).
+        int expiration_value =
+            (base::Time::Now() - cert->valid_expiry()).InDays() + 1;
         details = l10n_util::GetStringFUTF16(
             IDS_CERT_ERROR_EXPIRED_DETAILS, UTF8ToUTF16(request_url.host()),
-            base::IntToString16(
-                (base::Time::Now() - cert->valid_expiry()).InDays()),
+            base::IntToString16(expiration_value),
             base::TimeFormatFriendlyDate(base::Time::Now()));
         short_description =
             l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_DESCRIPTION);
