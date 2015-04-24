@@ -138,10 +138,10 @@ input[type='checkbox']:checked {
 
   /* Print the full resolution image instead. */
   .gallery .image-container > canvas.fullres {
-    display: block !important;
     height: auto !important;
     max-height: 100%;
     max-width: 100%;
+    opacity: 1 !important;
     position: static !important;
     transform: none !important;
     visibility: visible !important;
