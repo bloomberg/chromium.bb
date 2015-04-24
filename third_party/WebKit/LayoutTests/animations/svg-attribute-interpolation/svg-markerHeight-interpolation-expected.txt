@@ -13,8 +13,6 @@ PASS: markerHeight from [55%] to [5em] was [450] at 0.2
 PASS: markerHeight from [55%] to [5em] was [250] at 0.6
 PASS: markerHeight from [55%] to [5em] was [50] at 1
 PASS: markerHeight from [10] to [20ex] was [10] at 0
-PASS: markerHeight from [10] to [20ex] was [40] at 0.2
-PASS: markerHeight from [10] to [20ex] was [100] at 0.6
 PASS: markerHeight from [10] to [20ex] was [20ex] at 1
 
 Web Animations API:
@@ -38,8 +36,5 @@ PASS: markerHeight from [55%] to [5em] was [50] at 1
 PASS: markerHeight from [55%] to [5em] was [0] at 1.4
 PASS: markerHeight from [10] to [20ex] was [0] at -0.4
 PASS: markerHeight from [10] to [20ex] was [10] at 0
-PASS: markerHeight from [10] to [20ex] was [40] at 0.2
-PASS: markerHeight from [10] to [20ex] was [100] at 0.6
 PASS: markerHeight from [10] to [20ex] was [20ex] at 1
-PASS: markerHeight from [10] to [20ex] was [220] at 1.4
 
