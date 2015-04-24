@@ -1088,7 +1088,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                'FROM clActionTable WHERE %s' % conds)
     query = '%s NATURAL JOIN (%s) as w' % (self._SQL_FETCH_ACTIONS, changes)
     results = self._Execute(query, values).fetchall()
-    return [clactions.CLAction(*values) for values in results]
+    return clactions.CLActionHistory(clactions.CLAction(*values)
+                                     for values in results)
 
   @minimum_schema(29)
   def HasBuildStageFailed(self, build_stage_id):

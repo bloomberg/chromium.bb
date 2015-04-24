@@ -6,17 +6,13 @@
 
 from __future__ import print_function
 
-import collections
 import datetime
 import numpy
 import re
 import sys
 
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import metadata_lib
 from chromite.lib import cidb
-from chromite.lib import clactions
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 
@@ -33,10 +29,8 @@ class CLStatsEngine(object):
 
   def __init__(self, db):
     self.db = db
-    self.actions = []
     self.builds = []
-    self.per_patch_actions = {}
-    self.per_cl_actions = {}
+    self.claction_history = None
     self.reasons = {}
     self.blames = {}
     self.summary = {}
@@ -65,30 +59,6 @@ class CLStatsEngine(object):
         for annotation in annotations:
           self.blames[build_number] += self.ProcessBlameString(
               annotation['blame_url'])
-
-  def CollateActions(self, actions):
-    """Collates a list of actions into per-patch and per-cl actions.
-
-    Returns a tuple (per_patch_actions, per_cl_actions) where each are
-    a dictionary mapping patches or cls to a list of CLActionWithBuildTuple
-    sorted in order of ascending timestamp.
-    """
-    per_patch_actions = {}
-    per_cl_actions = {}
-    for action in actions:
-      change_with_patch = action.patch
-      change_no_patch = metadata_lib.GerritChangeTuple(
-          action.change_number, change_with_patch.internal
-      )
-
-      per_patch_actions.setdefault(change_with_patch, []).append(action)
-      per_cl_actions.setdefault(change_no_patch, []).append(action)
-
-    for actions_map in [per_cl_actions, per_patch_actions]:
-      for key, value in actions_map.iteritems():
-        actions_map[key] = sorted(value, key=lambda x: x.timestamp)
-
-    return (per_patch_actions, per_cl_actions)
 
   @staticmethod
   def ProcessBlameString(blame_string):
@@ -173,68 +143,11 @@ class CLStatsEngine(object):
       logging.info('Sorting by build number.')
       self.builds.sort(key=lambda x: x['build_number'])
 
-    self.actions = self.db.GetActionHistory(start_date, end_date)
+    self.claction_history = self.db.GetActionHistory(start_date, end_date)
     self.GatherBuildAnnotations()
 
     self.builds_by_build_id.update(
         {b['id'] : b for b in self.builds})
-
-  def GetSubmittedPatchNumber(self, actions):
-    """Get the patch number of the final patchset submitted.
-
-    This function only makes sense for patches that were submitted.
-
-    Args:
-      actions: A list of actions for a single change.
-    """
-    submit = [a for a in actions if a.action == constants.CL_ACTION_SUBMITTED]
-    assert len(submit) > 0, 'Expected change to be submitted, got %r' % actions
-    if len(submit) > 1:
-      # Patches may be submitted more than once if we mark the patch as
-      # submitted when it is still in "SUBMITTING" state and Gerrit later bumps
-      # it back to "NEW". This should only happen due to Gerrit bugs.
-      logging.info('Change %s was submitted more than once: %r',
-                   submit[-1].patch, submit)
-
-    return submit[-1].patch_number
-
-  def ClassifyRejections(self, submitted_changes):
-    """Categorize rejected CLs, deciding whether the rejection was incorrect.
-
-    We figure out what patches were falsely rejected by looking for patches
-    which were later submitted unmodified after being rejected. These patches
-    are considered to be likely good CLs.
-
-    Args:
-      submitted_changes: A dict mapping submitted GerritChangeTuple objects to
-        a list of associated actions.
-
-    Yields:
-      change: The GerritChangeTuple that was rejected.
-      actions: A list of actions applicable to the CL.
-      a: The reject action that kicked out the CL.
-      falsely_rejected: Whether the CL was incorrectly rejected. A CL rejection
-        is considered incorrect if the same patch is later submitted, with no
-        changes. It's a heuristic.
-    """
-    for change, actions in submitted_changes.iteritems():
-      submitted_patch_number = self.GetSubmittedPatchNumber(actions)
-      picked_up_builds = set(x.build_id for x in actions
-                             if x.action == constants.CL_ACTION_PICKED_UP)
-      for a in actions:
-        if a.action == constants.CL_ACTION_KICKED_OUT:
-          # If the patch wasn't picked up in the run, this means that it "failed
-          # to apply" rather than "failed to validate". Ignore it.
-          picked_up = [x for x in actions if x.build_id == a.build_id and
-                       x.patch == a.patch and
-                       x.action == constants.CL_ACTION_PICKED_UP]
-          falsely_rejected = a.patch_number == submitted_patch_number
-          if picked_up:
-            patch_actions = [x for x in actions if
-                             a.patch_number == x.patch_number
-                             and x.build_id in picked_up_builds]
-            # Check whether the patch was updated after submission.
-            yield change, patch_actions, a, falsely_rejected
 
   def _PrintCounts(self, reasons, fmt):
     """Print a sorted list of reasons in descending order of frequency.
@@ -250,62 +163,7 @@ class CLStatsEngine(object):
     if not d:
       logging.info('  None')
 
-  def BotType(self, action):
-    """Return whether |action| applies to the CQ or PRE_CQ."""
-    build_config = action.build_config
-    if build_config.endswith('-%s' % cbuildbot_config.CONFIG_TYPE_PALADIN):
-      return constants.CQ
-    else:
-      return constants.PRE_CQ
-
-  def GoodPatchRejections(self, submitted_changes):
-    """Find good patches that were incorrectly rejected.
-
-    Args:
-      submitted_changes: A dict mapping submitted GerritChangeTuple objects to
-        a list of associated actions.
-
-    Returns:
-      A dict, where d[patch] = reject_actions for each good patch that was
-      incorrectly rejected.
-    """
-    # falsely_rejected_changes maps GerritChangeTuple objects to their actions.
-    # bad_cl_builds is a set of builds that contain a bad patch.
-    falsely_rejected_changes = {}
-    bad_cl_builds = set()
-    for x in self.ClassifyRejections(submitted_changes):
-      _, actions, a, falsely_rejected = x
-      if falsely_rejected:
-        falsely_rejected_changes[a.patch] = actions
-      elif self.BotType(a) == constants.PRE_CQ:
-        # If a developer writes a bad patch and it fails the Pre-CQ, it
-        # may cause many other patches from the same developer to be
-        # rejected. This is expected and correct behavior. Treat all of
-        # the patches in the Pre-CQ run as bad so that they don't skew our
-        # our statistics.
-        #
-        # Since we don't have a spreadsheet for the Pre-CQ, we guess what
-        # CLs were bad by looking at what patches needed to be changed
-        # before submission.
-        #
-        # NOTE: We intentionally only apply this logic to the Pre-CQ here.
-        # The CQ is different because it may have many innocent patches in
-        # a single run which should not be treated as bad.
-        bad_cl_builds.add(a.build_id)
-
-    # Make a list of candidate patches that got incorrectly rejected. We track
-    # them in a dict, setting good_patch_rejections[patch] = rejections for
-    # each patch.
-    good_patch_rejections = collections.defaultdict(list)
-    for v in falsely_rejected_changes.itervalues():
-      for a in v:
-        if (a.action == constants.CL_ACTION_KICKED_OUT and
-            a.build_id not in bad_cl_builds):
-          good_patch_rejections[a.patch].append(a)
-
-    return good_patch_rejections
-
-  def FalseRejectionRate(self, good_patch_count, good_patch_rejection_count):
+  def FalseRejectionRate(self, good_patch_count, false_rejection_count):
     """Calculate the false rejection ratio.
 
     This is the chance that a good patch will be rejected by the Pre-CQ or CQ
@@ -313,20 +171,20 @@ class CLStatsEngine(object):
 
     Args:
       good_patch_count: The number of good patches in the run.
-      good_patch_rejection_count: A dict containing the number of false
-        rejections for the CQ and PRE_CQ.
+      false_rejection_count: A dict containing the number of false rejections
+          for the CQ and PRE_CQ.
 
     Returns:
       A dict containing the false rejection ratios for CQ, PRE_CQ, and combined.
     """
     false_rejection_rate = dict()
-    for bot, rejection_count in good_patch_rejection_count.iteritems():
+    for bot, rejection_count in false_rejection_count.iteritems():
       false_rejection_rate[bot] = (
-          rejection_count * 100 / (rejection_count + good_patch_count)
+          rejection_count * 100. / (rejection_count + good_patch_count)
       )
     false_rejection_rate['combined'] = 0
     if good_patch_count:
-      rejection_count = sum(good_patch_rejection_count.values())
+      rejection_count = sum(false_rejection_count.values())
       false_rejection_rate['combined'] = (
           rejection_count * 100. / (good_patch_count + rejection_count)
       )
@@ -350,16 +208,6 @@ class CLStatsEngine(object):
     else:
       logging.info('No runs included.')
 
-    (self.per_patch_actions,
-     self.per_cl_actions) = self.CollateActions(self.actions)
-
-    submit_actions = [a for a in self.actions
-                      if a.action == constants.CL_ACTION_SUBMITTED]
-    reject_actions = [a for a in self.actions
-                      if a.action == constants.CL_ACTION_KICKED_OUT]
-    sbfail_actions = [a for a in self.actions
-                      if a.action == constants.CL_ACTION_SUBMIT_FAILED]
-
     build_reason_counts = {}
     for reasons in self.reasons.values():
       for reason in reasons:
@@ -369,84 +217,46 @@ class CLStatsEngine(object):
     unique_blames = set()
     for blames in self.blames.itervalues():
       unique_blames.update(blames)
-
     unique_cl_blames = {blame for blame in unique_blames if
                         EXTERNAL_CL_BASE_URL in blame}
 
-    submitted_changes = {k: v for k, v, in self.per_cl_actions.iteritems()
-                         if any(a.action == constants.CL_ACTION_SUBMITTED
-                                for a in v)}
-
-    # Count changes that were submitted, unless they were non-manifest changes
-    # which were submitted with no testing.
-    submitted_patches = {
-        k: v for k, v, in self.per_patch_actions.iteritems()
-        if any(a.action == constants.CL_ACTION_SUBMITTED and
-               a.reason != constants.STRATEGY_NONMANIFEST for a in v)}
-
-    patch_handle_times = [
-        clactions.GetCLHandlingTime(patch, actions) for
-        (patch, actions) in submitted_patches.iteritems()]
-
-    pre_cq_handle_times = [
-        clactions.GetPreCQTime(patch, actions) for
-        (patch, actions) in submitted_patches.iteritems()]
-
-    cq_wait_times = [
-        clactions.GetCQWaitTime(patch, actions) for
-        (patch, actions) in submitted_patches.iteritems()]
-
-    cq_handle_times = [
-        clactions.GetCQRunTime(patch, actions) for
-        (patch, actions) in submitted_patches.iteritems()]
-
-    # Count CLs that were rejected, then a subsequent patch was submitted.
-    # These are good candidates for bad CLs. We track them in a dict, setting
-    # submitted_after_new_patch[bot_type][patch] = actions for each bad patch.
-    submitted_after_new_patch = {}
-    for x in self.ClassifyRejections(submitted_changes):
-      change, actions, a, falsely_rejected = x
-      if not falsely_rejected:
-        d = submitted_after_new_patch.setdefault(self.BotType(a), {})
-        d[change] = actions
-
-    # Sort the candidate bad CLs in order of submit time.
-    bad_cl_candidates = {}
-    for bot_type, patch_actions in submitted_after_new_patch.items():
-      bad_cl_candidates[bot_type] = [
-          k for k, _ in sorted(patch_actions.items(),
-                               key=lambda x: x[1][-1].timestamp)]
+    # Shortcuts to some time aggregates about action history.
+    patch_handle_times = self.claction_history.GetPatchHandlingTimes().values()
+    pre_cq_handle_times = self.claction_history.GetPreCQHandlingTimes().values()
+    cq_wait_times = self.claction_history.GetCQWaitingTimes().values()
+    cq_handle_times = self.claction_history.GetCQHandlingTimes().values()
 
     # Calculate how many good patches were falsely rejected and why.
-    # good_patch_rejections maps patches to the rejection actions.
-    # patch_reason_counts maps failure reasons to counts.
-    # patch_blame_counts maps blame targets to counts.
-    good_patch_rejections = self.GoodPatchRejections(submitted_changes)
+    good_patch_rejections = self.claction_history.GetFalseRejections()
     patch_reason_counts = {}
     patch_blame_counts = {}
     for k, v in good_patch_rejections.iteritems():
       for a in v:
-        if a.action == constants.CL_ACTION_KICKED_OUT:
-          build = self.builds_by_build_id.get(a.build_id)
-          if self.BotType(a) == constants.CQ and build is not None:
-            build_number = build['build_number']
-            reasons = self.reasons.get(build_number, ['None'])
-            blames = self.blames.get(build_number, ['None'])
-            for x in reasons:
-              patch_reason_counts[x] = patch_reason_counts.get(x, 0) + 1
-            for x in blames:
-              patch_blame_counts[x] = patch_blame_counts.get(x, 0) + 1
+        build = self.builds_by_build_id.get(a.build_id)
+        if a.bot_type == constants.CQ and build is not None:
+          build_number = build['build_number']
+          reasons = self.reasons.get(build_number, ['None'])
+          blames = self.blames.get(build_number, ['None'])
+          for x in reasons:
+            patch_reason_counts[x] = patch_reason_counts.get(x, 0) + 1
+          for x in blames:
+            patch_blame_counts[x] = patch_blame_counts.get(x, 0) + 1
 
-    # good_patch_count: The number of good patches.
-    # good_patch_rejection_count maps the bot type (CQ or PRE_CQ) to the number
-    #   of times that bot has falsely rejected good patches.
-    good_patch_count = len(submit_actions)
-    good_patch_rejection_count = collections.defaultdict(int)
-    for k, v in good_patch_rejections.iteritems():
-      for a in v:
-        good_patch_rejection_count[self.BotType(a)] += 1
+    good_patch_count = len(self.claction_history.GetSubmittedPatches(False))
+    false_rejection_count = {}
+    bad_cl_candidates = {}
+    for bot_type in [constants.CQ, constants.PRE_CQ]:
+      rejections = self.claction_history.GetFalseRejections(bot_type)
+      false_rejection_count[bot_type] = sum(map(len,
+                                                rejections.values()))
+
+      rejections = self.claction_history.GetTrueRejections(bot_type)
+      rejected_cls = set([x.GetChangeTuple() for x in rejections.keys()])
+      bad_cl_candidates[bot_type] = self.claction_history.SortBySubmitTimes(
+          rejected_cls)
+
     false_rejection_rate = self.FalseRejectionRate(good_patch_count,
-                                                   good_patch_rejection_count)
+                                                   false_rejection_count)
 
     # This list counts how many times each good patch was rejected.
     rejection_counts = [0] * (good_patch_count - len(good_patch_rejections))
@@ -459,16 +269,16 @@ class CLStatsEngine(object):
         good_patch_rejection_breakdown.append((x, rejection_counts.count(x)))
 
     summary = {
-        'total_cl_actions': len(self.actions),
-        'unique_cls': len(self.per_cl_actions),
-        'unique_patches': len(self.per_patch_actions),
-        'submitted_patches': len(submit_actions),
-        'rejections': len(reject_actions),
-        'submit_fails': len(sbfail_actions),
+        'total_cl_actions': len(self.claction_history),
+        'unique_cls': len(self.claction_history.affected_cls),
+        'unique_patches': len(self.claction_history.affected_patches),
+        'submitted_patches': len(self.claction_history.submit_actions),
+        'rejections': len(self.claction_history.reject_actions),
+        'submit_fails': len(self.claction_history.submit_fail_actions),
         'good_patch_rejections': sum(rejection_counts),
         'mean_good_patch_rejections': numpy.mean(rejection_counts),
         'good_patch_rejection_breakdown': good_patch_rejection_breakdown,
-        'good_patch_rejection_count': dict(good_patch_rejection_count),
+        'good_patch_rejection_count': false_rejection_count,
         'false_rejection_rate': false_rejection_rate,
         'median_handling_time': numpy.median(patch_handle_times),
         'patch_handling_time': patch_handle_times,
@@ -482,9 +292,9 @@ class CLStatsEngine(object):
     logging.info('pre-CQ and CQ incorrectly rejected %s changes a total of '
                  '%s times (pre-CQ: %s; CQ: %s)',
                  len(good_patch_rejections),
-                 sum(good_patch_rejection_count.values()),
-                 good_patch_rejection_count[constants.PRE_CQ],
-                 good_patch_rejection_count[constants.CQ])
+                 sum(false_rejection_count.values()),
+                 false_rejection_count[constants.PRE_CQ],
+                 false_rejection_count[constants.CQ])
 
     logging.info('      Total CL actions: %d.', summary['total_cl_actions'])
     logging.info('    Unique CLs touched: %d.', summary['unique_cls'])

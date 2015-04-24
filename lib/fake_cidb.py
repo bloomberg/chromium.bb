@@ -183,7 +183,7 @@ class FakeCIDBConnection(object):
           item['timestamp'])
       values.append(row)
 
-    return [clactions.CLAction(*row) for row in values]
+    return clactions.CLActionHistory(clactions.CLAction(*row) for row in values)
 
   def GetBuildStatus(self, build_id):
     """Gets the status of the build."""

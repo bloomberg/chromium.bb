@@ -6,9 +6,12 @@
 
 from __future__ import print_function
 
+import collections
 import datetime
 import itertools
-import collections
+import operator
+
+from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 
 
@@ -37,6 +40,19 @@ CL_ACTION_COLUMNS = ['id', 'build_id', 'action', 'reason',
 
 _CLActionTuple = collections.namedtuple('_CLActionTuple', CL_ACTION_COLUMNS)
 
+_GerritChangeTuple = collections.namedtuple('_GerritChangeTuple',
+                                            ['gerrit_number', 'internal'])
+
+
+class GerritChangeTuple(_GerritChangeTuple):
+  """A tuple for a given Gerrit change."""
+
+  def __str__(self):
+    prefix = (constants.INTERNAL_CHANGE_PREFIX
+              if self.internal else constants.EXTERNAL_CHANGE_PREFIX)
+    return 'CL:%s%s' % (prefix, self.gerrit_number)
+
+
 _GerritPatchTuple = collections.namedtuple('_GerritPatchTuple',
                                            ['gerrit_number', 'patch_number',
                                             'internal'])
@@ -49,18 +65,8 @@ class GerritPatchTuple(_GerritPatchTuple):
               if self.internal else constants.EXTERNAL_CHANGE_PREFIX)
     return 'CL:%s%s#%s' % (prefix, self.gerrit_number, self.patch_number)
 
-
-_GerritChangeTuple = collections.namedtuple('_GerritChangeTuple',
-                                            ['gerrit_number', 'internal'])
-
-
-class GerritChangeTuple(_GerritChangeTuple):
-  """A tuple for a given Gerrit change."""
-
-  def __str__(self):
-    prefix = (constants.INTERNAL_CHANGE_PREFIX
-              if self.internal else constants.EXTERNAL_CHANGE_PREFIX)
-    return 'CL:%s%s' % (prefix, self.gerrit_number)
+  def GetChangeTuple(self):
+    return GerritChangeTuple(self.gerrit_number, self.internal)
 
 
 class CLAction(_CLActionTuple):
@@ -109,6 +115,19 @@ class CLAction(_CLActionTuple):
         patch_number=self.patch_number,
         internal=self.change_source == constants.CHANGE_SOURCE_INTERNAL
     )
+
+  @property
+  def bot_type(self):
+    """The type of bot that took this action.
+
+    Returns:
+        constants.CQ or constants.PRE_CQ depending on who took the action.
+    """
+    build_config = self.build_config
+    if build_config.endswith('-%s' % cbuildbot_config.CONFIG_TYPE_PALADIN):
+      return constants.CQ
+    else:
+      return constants.PRE_CQ
 
 
 def TranslatePreCQStatusToAction(status):
@@ -471,7 +490,36 @@ def GetPreCQConfigsToTest(changes, progress_map):
   return configs_to_test
 
 
-def IntersectIntervals(intervals):
+def GetRelevantChangesForBuilds(changes, action_history, build_ids):
+  """Get relevant changes for |build_ids| by examing CL actions.
+
+  Args:
+    changes: A list of GerritPatch instances to examine.
+    action_history: A list of CLAction instances.
+    build_ids: A list of build id to examine.
+
+  Returns:
+    A dictionary mapping a build id to a set of changes.
+  """
+  changes_map = dict()
+  relevant_actions = [x for x in action_history if x.build_id in build_ids]
+  for change in changes:
+    actions = ActionsForPatch(change, relevant_actions)
+    pickups = set([x.build_id for x in actions if
+                   x.action == constants.CL_ACTION_PICKED_UP])
+    discards = set([x.build_id for x in actions if
+                    x.action == constants.CL_ACTION_IRRELEVANT_TO_SLAVE])
+    relevant_build_ids = pickups - discards
+    for build_id in relevant_build_ids:
+      changes_map.setdefault(build_id, set()).add(change)
+
+  return changes_map
+
+
+# ##############################################################################
+# Aggregate history over a list of CLActions
+
+def _IntersectIntervals(intervals):
   """Gets the intersection of a set of intervals.
 
   Args:
@@ -502,7 +550,7 @@ def IntersectIntervals(intervals):
   return intersection
 
 
-def MeasureTimestampIntervals(intervals):
+def _MeasureTimestampIntervals(intervals):
   """Gets the length of a set of invervals.
 
   Args:
@@ -515,8 +563,8 @@ def MeasureTimestampIntervals(intervals):
   return sum(lengths, datetime.timedelta(0)).total_seconds()
 
 
-def GetIntervals(change, action_history, start_actions, stop_actions,
-                 start_at_beginning=False):
+def _GetIntervals(change, action_history, start_actions, stop_actions,
+                  start_at_beginning=False):
   """Get intervals corresponding to given start and stop actions.
 
   Args:
@@ -552,7 +600,7 @@ def GetIntervals(change, action_history, start_actions, stop_actions,
   return intervals
 
 
-def GetReadyIntervals(change, action_history):
+def _GetReadyIntervals(change, action_history):
   """Gets the time intervals in which |change| was fully ready.
 
   Args:
@@ -561,7 +609,7 @@ def GetReadyIntervals(change, action_history):
   """
   start = (constants.CL_ACTION_REQUEUED,)
   stop = (constants.CL_ACTION_SPECULATIVE, constants.CL_ACTION_KICKED_OUT)
-  return GetIntervals(change, action_history, start, stop, True)
+  return _GetIntervals(change, action_history, start, stop, True)
 
 
 def GetCLHandlingTime(change, action_history):
@@ -574,72 +622,339 @@ def GetCLHandlingTime(change, action_history):
     change: GerritPatch instance of a submitted change.
     action_history: List of CL actions.
   """
-  ready_intervals = GetReadyIntervals(change, action_history)
-  return MeasureTimestampIntervals(ready_intervals)
+  ready_intervals = _GetReadyIntervals(change, action_history)
+  return _MeasureTimestampIntervals(ready_intervals)
 
 
 def GetPreCQTime(change, action_history):
   """Returns the time spent waiting for the pre-cq to finish."""
-  ready_intervals = GetReadyIntervals(change, action_history)
+  ready_intervals = _GetReadyIntervals(change, action_history)
   start = (constants.CL_ACTION_SCREENED_FOR_PRE_CQ,)
   stop = (constants.CL_ACTION_PRE_CQ_FULLY_VERIFIED,)
-  precq_intervals = GetIntervals(change, action_history, start, stop)
-  return MeasureTimestampIntervals(
-      IntersectIntervals([ready_intervals, precq_intervals]))
+  precq_intervals = _GetIntervals(change, action_history, start, stop)
+  return _MeasureTimestampIntervals(
+      _IntersectIntervals([ready_intervals, precq_intervals]))
 
 
 def GetCQWaitTime(change, action_history):
   """Returns the time spent waiting for a CL to be picked up by the CQ."""
-  ready_intervals = GetReadyIntervals(change, action_history)
-  precq_passed_interval = GetIntervals(
+  ready_intervals = _GetReadyIntervals(change, action_history)
+  precq_passed_interval = _GetIntervals(
       change, action_history, (constants.CL_ACTION_PRE_CQ_PASSED,), ())
   relevant_configs = (constants.PRE_CQ_LAUNCHER_CONFIG, constants.CQ_MASTER)
   relevant_config_actions = [a for a in action_history
                              if a.build_config in relevant_configs]
   start = (constants.CL_ACTION_REQUEUED, constants.CL_ACTION_FORGIVEN)
   stop = (constants.CL_ACTION_PICKED_UP,)
-  waiting_intervals = GetIntervals(change, relevant_config_actions, start, stop,
-                                   True)
-  return MeasureTimestampIntervals(
-      IntersectIntervals([ready_intervals, waiting_intervals,
-                          precq_passed_interval]))
+  waiting_intervals = _GetIntervals(change, relevant_config_actions, start,
+                                    stop, True)
+  return _MeasureTimestampIntervals(
+      _IntersectIntervals([ready_intervals, waiting_intervals,
+                           precq_passed_interval]))
 
 
 def GetCQRunTime(change, action_history):
   """Returns the time spent testing a CL in the CQ."""
-  ready_intervals = GetReadyIntervals(change, action_history)
+  ready_intervals = _GetReadyIntervals(change, action_history)
   relevant_configs = (constants.CQ_MASTER,)
   relevant_config_actions = [a for a in action_history
                              if a.build_config in relevant_configs]
   start = (constants.CL_ACTION_PICKED_UP,)
   stop = (constants.CL_ACTION_FORGIVEN, constants.CL_ACTION_KICKED_OUT,
           constants.CL_ACTION_SUBMITTED)
-  testing_intervals = GetIntervals(change, relevant_config_actions, start, stop)
-  return MeasureTimestampIntervals(
-      IntersectIntervals([ready_intervals, testing_intervals]))
+  testing_intervals = _GetIntervals(change, relevant_config_actions, start,
+                                    stop)
+  return _MeasureTimestampIntervals(
+      _IntersectIntervals([ready_intervals, testing_intervals]))
 
 
-def GetRelevantChangesForBuilds(changes, action_history, build_ids):
-  """Get relevant changes for |build_ids| by examing CL actions.
+def _CLsForPatches(patches):
+  """Get GerritChangeTuples corresponding to the give GerritPatchTuples."""
+  return set(p.GetChangeTuple() for p in patches)
+
+
+def AffectedCLs(action_history):
+  """Get the CLs affected by a set of actions.
 
   Args:
-    changes: A list of GerritPatch instances to examine.
-    action_history: A list of CLAction instances.
-    build_ids: A list of build id to examine.
+    action_history: An iterable of CLActions.
 
   Returns:
-    A dictionary mapping a build id to a set of changes.
+    A set of GerritChangleTuple objects for the affected CLs.
   """
-  changes_map = dict()
-  relevant_actions = [x for x in action_history if x.build_id in build_ids]
-  for change in changes:
-    actions = ActionsForPatch(change, relevant_actions)
-    pickups = set([x.build_id for x in actions if
-                   x.action == constants.CL_ACTION_PICKED_UP])
-    discards = set([x.build_id for x in actions if
-                    x.action == constants.CL_ACTION_IRRELEVANT_TO_SLAVE])
-    relevant_build_ids = pickups - discards
-    for build_id in relevant_build_ids:
-      changes_map.setdefault(build_id, set()).add(change)
+  return _CLsForPatches(AffectedPatches(action_history))
 
-  return changes_map
+
+def AffectedPatches(action_history):
+  """Get the patches affected by a set of actions.
+
+  Args:
+    action_history: An iterable of CLActions.
+
+  Returns:
+    A set of GerritPatchTuple objects for the affected patches.
+  """
+  return set(a.patch for a in action_history)
+
+
+class CLActionHistory(object):
+  """Class to derive aggregate information from CLAction histories."""
+
+  def __init__(self, action_history):
+    """Initialize the object.
+
+    Args:
+      action_history: An iterable of CLAction objects to aggregate information
+          from.
+    """
+    # We preprocess this list to speed up various lookups. It shouldn't be
+    # messed with in the lifetime of the object.
+    self._action_history = tuple(sorted(action_history,
+                                        key=operator.attrgetter('timestamp')))
+
+    # Index the given action_history in various useful forms.
+    self._per_patch_actions = {}
+    self._per_cl_actions = {}
+    self._per_patch_reject_actions = {}
+
+    # Precompute some oft-used attributes.
+    self.submit_actions = [a for a in self._action_history
+                           if a.action == constants.CL_ACTION_SUBMITTED]
+    self.reject_actions = [a for a in self._action_history
+                           if a.action == constants.CL_ACTION_KICKED_OUT]
+    self.submit_fail_actions = [a for a in self._action_history if
+                                a.action == constants.CL_ACTION_SUBMIT_FAILED]
+    self.affected_patches = AffectedPatches(self._action_history)
+    self.affected_cls = _CLsForPatches(self.affected_patches)
+
+    for action in self._action_history:
+      patch = action.patch
+      self._per_patch_actions.setdefault(patch, []).append(action)
+      self._per_cl_actions.setdefault(patch.GetChangeTuple(), []).append(action)
+    for action in self.reject_actions:
+      patch = action.patch
+      self._per_patch_reject_actions.setdefault(patch, []).append(action)
+
+  def __iter__(self):
+    """Support iterating over the entire history."""
+    for a in self._action_history:
+      yield a
+
+  def __len__(self):
+    """Return the length of the entire history."""
+    return len(self._action_history)
+
+  def GetSubmittedPatches(self, exclude_irrelevant_submissions=True):
+    """Get a list of submitted patches from the action history.
+
+    Args:
+      exclude_irrelevant_submissions: Some CLs are submitted independent of our
+          CQ infrastructure. When True, we exclude those CLs, as they shouldn't
+          affect our statistics.
+
+    Returns:
+      set of submitted GerritPatchTuple objects.
+    """
+    relevant_actions = self.submit_actions
+    if exclude_irrelevant_submissions:
+      relevant_actions = [a for a in relevant_actions
+                          if a.reason != constants.STRATEGY_NONMANIFEST]
+    return AffectedPatches(relevant_actions)
+
+  def GetSubmittedCLs(self, exclude_irrelevant_submissions=True):
+    """Get a list of submitted patches from the action history.
+
+    Args:
+      exclude_irrelevant_submissions: Some CLs are submitted independent of our
+          CQ infrastructure. When True, we exclude those CLs, as they shouldn't
+          affect our statistics.
+
+    Returns:
+      set of submitted GerritPatchTuple objects.
+    """
+    return _CLsForPatches(
+        self.GetSubmittedPatches(exclude_irrelevant_submissions))
+
+  def SortBySubmitTimes(self, cls_or_patches):
+    """Sort the given patches or cls in ascending order of submit time.
+
+    Many functions in this class returns sets of cls/patches. This is convenient
+    to dedup objects returned from various sources. While presenting this
+    information to the user, it is often better to present them in a natural
+    'order'.
+
+    Args:
+      cls_or_patches: Iterable of GerritPatchTuples or GerritChangeTuple objects
+          to sort.
+
+    Returns:
+      list sorted in ascending order of submit time. Any patches/cls that were
+      not submitted are appended to the end in a deterministic order.
+    """
+    affected_cls_or_patches = self.affected_cls | self.affected_patches
+    unknown_changes = set(cls_or_patches) - affected_cls_or_patches
+    assert not unknown_changes, 'Unknown changes: %s' % str(unknown_changes)
+
+    per_change_final_submit_time = {}
+    per_change_first_action_time = {}
+    for change in cls_or_patches:
+      actions = self._GetCLOrPatchActions(change)
+      submit_actions = [x for x in actions
+                        if x.action == constants.CL_ACTION_SUBMITTED]
+      first_action = actions[0]
+
+      if submit_actions:
+        per_change_final_submit_time[change] = submit_actions[-1].timestamp
+      else:
+        per_change_first_action_time[change] = first_action.timestamp
+
+    sorted_changes = sorted(per_change_final_submit_time.keys(),
+                            key=per_change_final_submit_time.get)
+    # We want to sort the inflight changes in some stable order. Let's sort them
+    # by order of 'first action ever taken'
+    sorted_changes += sorted(per_change_first_action_time.keys(),
+                             key=lambda x: per_change_first_action_time[x])
+    return sorted_changes
+
+  # ############################################################################
+  # Summarize handling times in different stages based on the action history.
+  def GetPatchHandlingTimes(self):
+    """Get handling times of all submitted patches.
+
+    Returns:
+      {submitted_patch: handling_time} where submitted_patch is a
+      GerritPatchTuple for a submitted patch, and handling_time is the total
+      handling time for that patch.
+    """
+    return {k: GetCLHandlingTime(k, self._per_patch_actions[k])
+            for k in self.GetSubmittedPatches()}
+
+  def GetPreCQHandlingTimes(self):
+    """Get the time spent by all submitted patches in the pre-cq.
+
+    Returns:
+      {submitted_patch: precq_handling_time} where submitted_patch is a
+      GerritPatchTuple for a submitted patch, and precq_handling_time is the
+      handling time for that patch in the pre-cq.
+    """
+    return {k: GetPreCQTime(k, self._per_patch_actions[k])
+            for k in self.GetSubmittedPatches()}
+
+  def GetCQHandlingTimes(self):
+    """Get the time spent by all submitted patches in the cq.
+
+    Returns:
+      {submitted_patch: cq_handling_time} where submitted_patch is a
+      GerritPatchTuple for a submitted patch, and cq_handling_time is the
+      handling time for that patch in the cq.
+    """
+    return {k: GetCQRunTime(k, self._per_patch_actions[k])
+            for k in self.GetSubmittedPatches()}
+
+  def GetCQWaitingTimes(self):
+    """Get the time spent by all submitted patches waiting for the cq.
+
+    Returns:
+      {submitted_patch: cq_waiting_time} where submitted_patch is a
+      GerritPatchTuple for a submitted patch, and cq_waiting_time is the
+      time spent by that patch waiting for the cq.
+    """
+    return {k: GetCQWaitTime(k, self._per_patch_actions[k])
+            for k in self.GetSubmittedPatches()}
+
+  # ############################################################################
+  # Classify CLs as good/bad based on the action history.
+  def GetFalseRejections(self, bot_type=None):
+    """Get the changes that were good, but were rejected at some point.
+
+    We consider a patch to have been rejected falsely if it is later submitted
+    because a build with no difference to the change later considered it good.
+
+    Args:
+      bot_type: (optional) constants.PRE_CQ or constants.CQ to restrict the
+          actions considered.
+
+    Returns:
+      A map from rejected patch to a list of rejection actions of the relevant
+      bot_type in ascending order of timestamps.
+    """
+    rejections = self._GetPatchRejectionsByBuilds(bot_type)
+    submitted_patches = self.GetSubmittedPatches(
+        exclude_irrelevant_submissions=False)
+    candidates = set(rejections) & submitted_patches
+
+    # Filter out candidates that were rejected because they were batched
+    # together with truly bad patches in a pre_cq run.
+    bad_precq_builds = set()
+    precq_true_rejections = self.GetTrueRejections(constants.PRE_CQ)
+    for patch in precq_true_rejections:
+      for action in precq_true_rejections[patch]:
+        bad_precq_builds.add(action.build_id)
+
+    updated_candidates = {}
+    for patch in candidates:
+      updated_actions = [a for a  in rejections[patch]
+                         if a.build_id not in bad_precq_builds]
+      if updated_actions:
+        updated_candidates[patch] = updated_actions
+    return updated_candidates
+
+  def GetTrueRejections(self, bot_type=None):
+    """Get the changes that were bad, and were rejected.
+
+    A patch rejection is considered a true rejection if a new patch was uploaded
+    after the rejection. Note that we consider a rejection a true rejection only
+    if a subsequent patch was submitted.
+
+    Returns:
+      A map from rejected patch to a list of rejection actions of the relevant
+      bot_type in ascending order of timestamps.
+    """
+    rejections = self._GetPatchRejectionsByBuilds(bot_type)
+    submitted_patches = self.GetSubmittedPatches(
+        exclude_irrelevant_submissions=False)
+    submitted_cls = set([x.GetChangeTuple() for x in submitted_patches])
+
+    candidates = {}
+    for patch in set(rejections) - submitted_patches:
+      if patch.GetChangeTuple() in submitted_cls:
+        # Some other patch for the same was submitted.
+        candidates[patch] = rejections[patch]
+
+    return candidates
+
+  # ############################################################################
+  # Helper functions.
+  def _GetPatchRejectionsByBuilds(self, bot_type=None):
+    """Gets all patches that were rejected due to build failures.
+
+    This filters out rejections that were caused by failure to apply the patch.
+
+    Args:
+      bot_type: Optional bot_type to filter actions by.
+
+    Returns:
+      dict of rejected patches to rejection actions for the given bot_type.
+    """
+    rejected_patches = AffectedPatches(self.reject_actions)
+    candidates = collections.defaultdict(list)
+    for patch in rejected_patches:
+      relevant_builds = set(a.build_id for a in self._per_patch_actions[patch]
+                            if a.action == constants.CL_ACTION_PICKED_UP)
+      relevant_actions_iter = (a for a in self._per_patch_actions[patch]
+                               if a.action == constants.CL_ACTION_KICKED_OUT)
+      if bot_type is not None:
+        relevant_actions_iter = (a for a in relevant_actions_iter
+                                 if a.bot_type == bot_type)
+
+      for action in relevant_actions_iter:
+        if action.build_id in relevant_builds:
+          candidates[patch].append(action)
+    return dict(candidates)
+
+  def _GetCLOrPatchActions(self, cl_or_patch):
+    """Get cl/patch specific actions."""
+    if isinstance(cl_or_patch, GerritChangeTuple):
+      return self._per_cl_actions[cl_or_patch]
+    else:
+      return self._per_patch_actions[cl_or_patch]
