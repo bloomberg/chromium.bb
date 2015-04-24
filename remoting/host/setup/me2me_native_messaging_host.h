@@ -100,7 +100,8 @@ class Me2MeNativeMessagingHost
       scoped_ptr<base::DictionaryValue> response);
   void ProcessGetCredentialsFromAuthCode(
       scoped_ptr<base::DictionaryValue> message,
-      scoped_ptr<base::DictionaryValue> response);
+      scoped_ptr<base::DictionaryValue> response,
+      bool need_user_email);
 
   // These Send... methods get called on the DaemonController's internal thread,
   // or on the calling thread if called by the PairingRegistry.

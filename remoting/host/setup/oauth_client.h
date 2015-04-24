@@ -35,15 +35,17 @@ class OAuthClient : public gaia::GaiaOAuthClient::Delegate {
 
   ~OAuthClient() override;
 
-  // Redeems |auth_code| using |oauth_client_info| to obtain |refresh_token| and
-  // |access_token|, then uses the userinfo endpoint to obtain |user_email|.
-  // Calls CompletionCallback with |user_email| and |refresh_token| when done,
-  // or with empty strings on error.
-  // If a request is received while another one is  being processed, it is
-  // enqueued and processed after the first one is finished.
+  // Redeems |auth_code| using |oauth_client_info| to obtain
+  // |refresh_token| and |access_token|, then, if |need_user_email| is
+  // true, uses the userinfo endpoint to obtain |user_email|.  Calls
+  // CompletionCallback with |user_email| and |refresh_token| when
+  // done, or with empty strings on error.  If a request is received
+  // while another one is being processed, it is enqueued and
+  // processed after the first one is finished.
   void GetCredentialsFromAuthCode(
       const gaia::OAuthClientInfo& oauth_client_info,
       const std::string& auth_code,
+      bool need_user_email,
       CompletionCallback on_done);
 
   // gaia::GaiaOAuthClient::Delegate
@@ -61,10 +63,12 @@ class OAuthClient : public gaia::GaiaOAuthClient::Delegate {
   struct Request {
     Request(const gaia::OAuthClientInfo& oauth_client_info,
             const std::string& auth_code,
+            bool need_user_email,
             CompletionCallback on_done);
     virtual ~Request();
     gaia::OAuthClientInfo oauth_client_info;
     std::string auth_code;
+    bool need_user_email;
     CompletionCallback on_done;
   };
 
@@ -74,6 +78,7 @@ class OAuthClient : public gaia::GaiaOAuthClient::Delegate {
   std::queue<Request> pending_requests_;
   gaia::GaiaOAuthClient gaia_oauth_client_;
   std::string refresh_token_;
+  bool need_user_email_;
   CompletionCallback on_done_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuthClient);

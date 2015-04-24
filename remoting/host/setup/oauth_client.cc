@@ -23,13 +23,16 @@ OAuthClient::~OAuthClient() {
 void OAuthClient::GetCredentialsFromAuthCode(
     const gaia::OAuthClientInfo& oauth_client_info,
     const std::string& auth_code,
+    bool need_user_email,
     CompletionCallback on_done) {
 
   if (!on_done_.is_null()) {
-    pending_requests_.push(Request(oauth_client_info, auth_code, on_done));
+    pending_requests_.push(
+        Request(oauth_client_info, auth_code, need_user_email, on_done));
     return;
   }
 
+  need_user_email_ = need_user_email;
   on_done_ = on_done;
   // Map the authorization code to refresh and access tokens.
   gaia_oauth_client_.GetTokensFromAuthCode(oauth_client_info, auth_code,
@@ -41,8 +44,12 @@ void OAuthClient::OnGetTokensResponse(
     const std::string& access_token,
     int expires_in_seconds) {
   refresh_token_ = refresh_token;
-  // Get the email corresponding to the access token.
-  gaia_oauth_client_.GetUserEmail(access_token, kMaxGaiaRetries, this);
+  if (need_user_email_) {
+    // Get the email corresponding to the access token.
+    gaia_oauth_client_.GetUserEmail(access_token, kMaxGaiaRetries, this);
+  } else {
+    SendResponse("", refresh_token_);
+  }
 }
 
 void OAuthClient::OnRefreshTokenResponse(
@@ -64,7 +71,10 @@ void OAuthClient::SendResponse(const std::string& user_email,
     pending_requests_.pop();
     // GetCredentialsFromAuthCode is asynchronous, so it's safe to call it here.
     GetCredentialsFromAuthCode(
-        request.oauth_client_info, request.auth_code, request.on_done);
+        request.oauth_client_info,
+        request.auth_code,
+        request.need_user_email,
+        request.on_done);
   }
 }
 
@@ -83,9 +93,11 @@ void OAuthClient::OnNetworkError(int response_code) {
 OAuthClient::Request::Request(
     const gaia::OAuthClientInfo& oauth_client_info,
     const std::string& auth_code,
+    bool need_user_email,
     CompletionCallback on_done) {
   this->oauth_client_info = oauth_client_info;
   this->auth_code = auth_code;
+  this->need_user_email = need_user_email;
   this->on_done = on_done;
 }
 

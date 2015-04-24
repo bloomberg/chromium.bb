@@ -294,6 +294,14 @@ remoting.HostDaemonFacade.prototype.handleIncomingMessage_ =
         throw 'Missing userEmail or refreshToken';
       }
 
+    case 'getRefreshTokenFromAuthCodeResponse':
+      var refreshToken = base.getStringAttr(message, 'refreshToken');
+      if (refreshToken) {
+        return refreshToken;
+      } else {
+        throw 'Missing refreshToken';
+      }
+
     default:
       throw 'Unexpected native message: ' + message;
   }
@@ -495,7 +503,6 @@ remoting.HostDaemonFacade.prototype.getHostClientId = function() {
 };
 
 /**
- *
  * @param {string} authorizationCode OAuth authorization code.
  * @return {!Promise<{remoting.XmppCredentials}>}
  */
@@ -503,6 +510,18 @@ remoting.HostDaemonFacade.prototype.getCredentialsFromAuthCode =
     function(authorizationCode) {
   return this.postMessage_({
     type: 'getCredentialsFromAuthCode',
+    authorizationCode: authorizationCode
+  });
+};
+
+/**
+ * @param {string} authorizationCode OAuth authorization code.
+ * @return {!Promise<string>}
+ */
+remoting.HostDaemonFacade.prototype.getRefreshTokenFromAuthCode =
+    function(authorizationCode) {
+  return this.postMessage_({
+    type: 'getRefreshTokenFromAuthCode',
     authorizationCode: authorizationCode
   });
 };

@@ -49,7 +49,8 @@ const char* kServiceAccountRedirectUri = "oob";
 // Features supported in addition to the base protocol.
 const char* kSupportedFeatures[] = {
   "pairingRegistry",
-  "oauthClient"
+  "oauthClient",
+  "getRefreshTokenFromAuthCode",
 };
 
 // Helper to extract the "config" part of a message as a DictionaryValue.
@@ -160,7 +161,11 @@ void Me2MeNativeMessagingHost::OnMessage(scoped_ptr<base::Value> message) {
   } else if (type == "getHostClientId") {
     ProcessGetHostClientId(message_dict.Pass(), response.Pass());
   } else if (type == "getCredentialsFromAuthCode") {
-    ProcessGetCredentialsFromAuthCode(message_dict.Pass(), response.Pass());
+    ProcessGetCredentialsFromAuthCode(
+        message_dict.Pass(), response.Pass(), true);
+  } else if (type == "getRefreshTokenFromAuthCode") {
+    ProcessGetCredentialsFromAuthCode(
+        message_dict.Pass(), response.Pass(), false);
   } else {
     LOG(ERROR) << "Unsupported request type: " << type;
     OnError();
@@ -422,7 +427,8 @@ void Me2MeNativeMessagingHost::ProcessGetHostClientId(
 
 void Me2MeNativeMessagingHost::ProcessGetCredentialsFromAuthCode(
     scoped_ptr<base::DictionaryValue> message,
-    scoped_ptr<base::DictionaryValue> response) {
+    scoped_ptr<base::DictionaryValue> response,
+    bool need_user_email) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   std::string auth_code;
@@ -439,7 +445,7 @@ void Me2MeNativeMessagingHost::ProcessGetCredentialsFromAuthCode(
   };
 
   oauth_client_->GetCredentialsFromAuthCode(
-      oauth_client_info, auth_code, base::Bind(
+      oauth_client_info, auth_code, need_user_email, base::Bind(
           &Me2MeNativeMessagingHost::SendCredentialsResponse, weak_ptr_,
           base::Passed(&response)));
 }
@@ -513,7 +519,9 @@ void Me2MeNativeMessagingHost::SendCredentialsResponse(
     const std::string& refresh_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  response->SetString("userEmail", user_email);
+  if (!user_email.empty()) {
+    response->SetString("userEmail", user_email);
+  }
   response->SetString("refreshToken", refresh_token);
   channel_->SendMessage(response.Pass());
 }
