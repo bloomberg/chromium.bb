@@ -105,14 +105,14 @@ namespace WTF {
 
 #define WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(ClassName) \
 namespace WTF { \
-static_assert(!IsTriviallyDefaultConstructible<ClassName>::value || !IsTriviallyCopyAssignable<ClassName>::value, "macro not needed"); \
+static_assert(!IsTriviallyDefaultConstructible<ClassName>::value || !IsTriviallyMoveAssignable<ClassName>::value || !IsScalar<ClassName>::value, "macro not needed"); \
     template<> \
     struct VectorTraits<ClassName> : SimpleClassVectorTraits<ClassName> { }; \
 }
 
 #define WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(ClassName) \
 namespace WTF { \
-static_assert(!WTF::IsTriviallyDefaultConstructible<ClassName>::value || !IsTriviallyCopyAssignable<ClassName>::value, "macro not needed"); \
+static_assert(!IsTriviallyDefaultConstructible<ClassName>::value || !IsTriviallyMoveAssignable<ClassName>::value, "macro not needed"); \
     template<> \
     struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
     { \
@@ -123,7 +123,7 @@ static_assert(!WTF::IsTriviallyDefaultConstructible<ClassName>::value || !IsTriv
 
 #define WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(ClassName) \
 namespace WTF { \
-static_assert(!WTF::IsTriviallyDefaultConstructible<ClassName>::value, "macro not needed"); \
+static_assert(!IsTriviallyDefaultConstructible<ClassName>::value, "macro not needed"); \
     template<> \
     struct VectorTraits<ClassName> : VectorTraitsBase<ClassName> \
     { \
