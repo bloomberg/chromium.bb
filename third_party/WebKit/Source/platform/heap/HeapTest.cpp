@@ -5150,9 +5150,15 @@ static bool allocateAndReturnBool()
     return true;
 }
 
-class MixinWithGarbageCollectionInConstructor : public GarbageCollectedMixin {
+static bool checkGCForbidden()
+{
+    ASSERT(ThreadState::current()->isGCForbidden());
+    return true;
+}
+
+class MixinClass : public GarbageCollectedMixin {
 public:
-    MixinWithGarbageCollectionInConstructor() : m_dummy(allocateAndReturnBool())
+    MixinClass() : m_dummy(checkGCForbidden())
     {
     }
 private:
@@ -5161,7 +5167,7 @@ private:
 
 class ClassWithGarbageCollectingMixinConstructor
     : public GarbageCollected<ClassWithGarbageCollectingMixinConstructor>
-    , public MixinWithGarbageCollectionInConstructor {
+    , public MixinClass {
     USING_GARBAGE_COLLECTED_MIXIN(ClassWithGarbageCollectingMixinConstructor);
 public:
     static int s_traceCalled;

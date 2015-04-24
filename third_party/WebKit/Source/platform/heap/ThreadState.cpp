@@ -553,7 +553,7 @@ bool ThreadState::shouldSchedulePreciseGC()
 // These heuristics affect performance significantly.
 bool ThreadState::shouldForceConservativeGC()
 {
-    if (UNLIKELY(m_gcForbiddenCount))
+    if (UNLIKELY(isGCForbidden()))
         return false;
 
     // The estimated size is updated when the main thread finishes lazy
@@ -1007,6 +1007,7 @@ void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
         scopeMarker = adjustScopeMarkerForAdressSanitizer(scopeMarker);
 #endif
     ASSERT(stackState == NoHeapPointersOnStack || scopeMarker);
+    ASSERT(!isGCForbidden());
     runScheduledGC(stackState);
     ASSERT(!m_atSafePoint);
     m_atSafePoint = true;

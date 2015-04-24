@@ -561,9 +561,7 @@ public:
         }
     }
 
-#if ENABLE(ASSERT)
     bool isGCForbidden() const { return m_gcForbiddenCount; }
-#endif
 
     // vectorBackingHeap() returns a heap that the vector allocation should use.
     // We have four vector heaps and want to choose the best heap here.
