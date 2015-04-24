@@ -461,7 +461,8 @@ void IsHandledBySafePlugin(content::ResourceContext* resource_context,
   bool is_handled_safely =
       plugin_found &&
       (plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ||
-       plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS);
+       plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS ||
+       plugin_info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(callback, is_handled_safely));
 }

@@ -2106,6 +2106,75 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
   EXPECT_FALSE(target_info->is_filetype_handled_safely);
 }
 
+// Check if secure handling of filetypes is determined correctly for
+// BrowserPlugins.
+TEST_F(DownloadTargetDeterminerTestWithPlugin,
+       TargetDeterminer_CheckForSecureHandling_BrowserPlugin) {
+  // All test cases run with GetPathInDownloadDir(kInitialPath) as the inital
+  // path.
+  const base::FilePath::CharType kInitialPath[] =
+      FILE_PATH_LITERAL("some_path/bar.txt");
+  const char kTestMIMEType[] = "application/x-example-should-not-exist";
+
+  DownloadTestCase kSecureHandlingTestCase = {
+    AUTOMATIC,
+    content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    "http://example.com/foo.fakeext", "",
+    FILE_PATH_LITERAL(""),
+
+    FILE_PATH_LITERAL("foo.fakeext"),
+    DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+    EXPECT_CRDOWNLOAD
+  };
+
+  content::PluginService* plugin_service =
+      content::PluginService::GetInstance();
+
+  // Verify our test assumptions.
+  {
+    ForceRefreshOfPlugins();
+    std::vector<content::WebPluginInfo> info;
+    ASSERT_FALSE(plugin_service->GetPluginInfoArray(
+        GURL(), kTestMIMEType, false, &info, NULL));
+    ASSERT_EQ(0u, info.size())
+        << "Name: " << info[0].name << ", Path: " << info[0].path.value();
+  }
+
+  ON_CALL(*delegate(), GetFileMimeType(
+      GetPathInDownloadDir(FILE_PATH_LITERAL("foo.fakeext")), _))
+      .WillByDefault(WithArg<1>(
+          ScheduleCallback(kTestMIMEType)));
+  scoped_ptr<content::MockDownloadItem> item(
+      CreateActiveDownloadItem(1, kSecureHandlingTestCase));
+  scoped_ptr<DownloadTargetInfo> target_info =
+      RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
+                                  item.get());
+  EXPECT_FALSE(target_info->is_filetype_handled_safely);
+
+  // Register a BrowserPlugin. This should count as handling the filetype
+  // securely.
+  ScopedRegisterInternalPlugin browser_plugin(
+      plugin_service,
+      content::WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN,
+      test_download_dir().AppendASCII("browser_plugin"),
+      kTestMIMEType,
+      "fakeext");
+  EXPECT_CALL(mock_plugin_filter_, MockPluginAvailable(browser_plugin.path()))
+      .WillRepeatedly(Return(true));
+
+  target_info = RunDownloadTargetDeterminer(
+      GetPathInDownloadDir(kInitialPath), item.get());
+  EXPECT_TRUE(target_info->is_filetype_handled_safely);
+
+  // Try disabling the plugin. Handling should no longer be considered secure.
+  EXPECT_CALL(mock_plugin_filter_, MockPluginAvailable(browser_plugin.path()))
+      .WillRepeatedly(Return(false));
+  target_info = RunDownloadTargetDeterminer(
+      GetPathInDownloadDir(kInitialPath), item.get());
+  EXPECT_FALSE(target_info->is_filetype_handled_safely);
+}
+
 // Check if secure handling of filetypes is determined correctly for NPAPI
 // plugins.
 TEST_F(DownloadTargetDeterminerTestWithPlugin,
