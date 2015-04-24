@@ -100,6 +100,10 @@ html[dir=rtl] #close-button-item {
   background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_MASKED);
 }
 
+#close-button-item:hover {
+  cursor: pointer;
+}
+
 #back-button-item {
   background: transparent none;
   background-image: url(chrome://theme/IDR_LOGIN_BACK_BUTTTON);
@@ -125,6 +129,10 @@ html[dir=rtl] #back-button-item {
 
 #back-button-item:disabled {
   background-image: url(chrome://theme/IDR_LOGIN_BACK_BUTTTON_MASKED);
+}
+
+#back-button-item:hover {
+  cursor: pointer;
 }
 
 .signin-text {
