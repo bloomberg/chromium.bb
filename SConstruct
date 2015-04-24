@@ -311,10 +311,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'running_on_valgrind', default=False,
     desc='Compile and test using valgrind')
 
-  BitFromArgument(env, 'enable_tmpfs_redirect_var', default=False,
-    desc='Allow redirecting tmpfs location for shared memory '
-         '(by default, /dev/shm is used)')
-
   BitFromArgument(env, 'pp', default=False,
     desc='Enable pretty printing')
 
@@ -2535,11 +2531,6 @@ def MakeUnixLikeEnv(platform=None):
 
   if unix_like_env.Bit('werror'):
     unix_like_env.Append(LINKFLAGS=['-Werror'])
-
-  if unix_like_env.Bit('enable_tmpfs_redirect_var'):
-    unix_like_env.Append(CPPDEFINES=[['NACL_ENABLE_TMPFS_REDIRECT_VAR', '1']])
-  else:
-    unix_like_env.Append(CPPDEFINES=[['NACL_ENABLE_TMPFS_REDIRECT_VAR', '0']])
 
   return unix_like_env
 

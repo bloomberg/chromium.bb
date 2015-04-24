@@ -36,7 +36,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 
 
-#if NACL_LINUX && defined(NACL_ENABLE_TMPFS_REDIRECT_VAR)
+#if !NACL_ANDROID
 static const char kNaClTempPrefixVar[] = "NACL_TMPFS_PREFIX";
 #endif
 
@@ -145,22 +145,17 @@ NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
   return AshmemCreateRegion(length);
 #else
   /*
-   * /dev/shm is not always available on Linux.
-   * Sometimes it's mounted as noexec.
-   * To handle this case, sel_ldr can take a path
-   * to tmpfs from the environment.
+   * /dev/shm is not always available on Linux, and sometimes it's available
+   * but mounted with "noexec".  To handle this case, we allow an alternative
+   * temp directory to be specified via an environment variable.
    */
-#if NACL_LINUX && defined(NACL_ENABLE_TMPFS_REDIRECT_VAR)
-  if (NACL_ENABLE_TMPFS_REDIRECT_VAR) {
-    const char* prefix = getenv(kNaClTempPrefixVar);
-    if (prefix != NULL) {
-      fd = TryShmOrTempOpen(length, prefix, true);
-      if (fd >= 0) {
-        return fd;
-      }
+  const char* prefix = getenv(kNaClTempPrefixVar);
+  if (prefix != NULL) {
+    fd = TryShmOrTempOpen(length, prefix, true);
+    if (fd >= 0) {
+      return fd;
     }
   }
-#endif
 
   if (NACL_OSX && executable) {
     /*
