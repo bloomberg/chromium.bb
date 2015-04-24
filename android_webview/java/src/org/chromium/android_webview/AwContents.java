@@ -759,7 +759,7 @@ public class AwContents implements SmartClipProvider,
      * Called when the app has requested to exit fullscreen.
      */
     void requestExitFullscreen() {
-        mContentViewCore.getWebContents().exitFullscreen();
+        if (!isDestroyed()) mContentViewCore.getWebContents().exitFullscreen();
     }
 
     /**
