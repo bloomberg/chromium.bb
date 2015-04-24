@@ -9,7 +9,17 @@
         "type": "object",
         "properties": {
           "testType": {
-            "$ref": "simple_api.TestType",
+            "$ref": "simple_api.TestType"
+          },
+          "testEnumRequired": {
+            "$ref": "simple_api.TestEnum"
+          },
+          "testEnumOptional": {
+            "$ref": "simple_api.TestEnum",
+            "optional": true
+          },
+          "testEnumOptionalExtra": {
+            "$ref": "simple_api.TestEnum",
             "optional": true
           }
         }

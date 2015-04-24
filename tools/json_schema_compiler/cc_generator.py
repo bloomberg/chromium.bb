@@ -363,11 +363,16 @@ class _Generator(object):
     for prop in type_.properties.values():
       prop_var = 'this->%s' % prop.unix_name
       if prop.optional:
-        # Optional enum values are generated with a NONE enum value.
         underlying_type = self._type_helper.FollowRef(prop.type_)
         if underlying_type.property_type == PropertyType.ENUM:
-          c.Sblock('if (%s != %s) {' %
+          # Optional enum values are generated with a NONE enum value,
+          # potentially from another namespace.
+          maybe_namespace = ''
+          if underlying_type.namespace != self._namespace:
+            maybe_namespace = '%s::' % underlying_type.namespace.unix_name
+          c.Sblock('if (%s != %s%s) {' %
               (prop_var,
+               maybe_namespace,
                self._type_helper.GetEnumNoneValue(prop.type_)))
         else:
           c.Sblock('if (%s.get()) {' % prop_var)

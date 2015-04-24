@@ -24,6 +24,11 @@
             "description": "Some integer."
           }
         }
+      },
+      {
+        "id": "TestEnum",
+        "type": "string",
+        "enum": ["one", "two", "three"]
       }
     ],
     "functions": [

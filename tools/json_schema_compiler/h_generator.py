@@ -41,6 +41,12 @@ class _Generator(object):
     output_file = os.path.splitext(self._namespace.source_file)[0] + '.h'
     ifndef_name = cpp_util.GenerateIfndefName(output_file)
 
+    # Hack: tabs and windows have circular references, so only generate hard
+    # references for them (i.e. anything that can't be forward declared). In
+    # other cases, generate soft dependencies so that they can include
+    # non-optional types from other namespaces.
+    include_soft = self._namespace.name not in ('tabs', 'windows')
+
     (c.Append('#ifndef %s' % ifndef_name)
       .Append('#define %s' % ifndef_name)
       .Append()
@@ -53,15 +59,14 @@ class _Generator(object):
       .Append('#include "base/memory/linked_ptr.h"')
       .Append('#include "base/memory/scoped_ptr.h"')
       .Append('#include "base/values.h"')
-      .Cblock(self._type_helper.GenerateIncludes())
+      .Cblock(self._type_helper.GenerateIncludes(include_soft=include_soft))
       .Append()
     )
 
-    # TODO(calamity): These forward declarations should be #includes to allow
-    # $ref types from other files to be used as required params. This requires
-    # some detangling of windows and tabs which will currently lead to circular
-    # #includes.
-    c.Cblock(self._type_helper.GenerateForwardDeclarations())
+    # Hack: we're not generating soft includes for tabs and windows, so we need
+    # to generate forward declarations for them.
+    if not include_soft:
+      c.Cblock(self._type_helper.GenerateForwardDeclarations())
 
     cpp_namespace = cpp_util.GetCppNamespace(
         self._namespace.environment.namespace_pattern,
