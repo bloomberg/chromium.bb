@@ -1321,6 +1321,7 @@
             'editing/FormatBlockCommand.cpp',
             'editing/FormatBlockCommand.h',
             'editing/FrameSelection.cpp',
+            'editing/GranularityStrategy.cpp',
             'editing/HTMLInterchange.cpp',
             'editing/IndentOutdentCommand.cpp',
             'editing/IndentOutdentCommand.h',

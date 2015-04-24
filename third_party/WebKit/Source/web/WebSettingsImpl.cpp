@@ -756,6 +756,12 @@ void WebSettingsImpl::setSelectionIncludesAltImageText(bool enabled)
     m_settings->setSelectionIncludesAltImageText(enabled);
 }
 
+void WebSettingsImpl::setSelectionStrategy(SelectionStrategyType strategy)
+{
+    m_settings->setSelectionStrategy(static_cast<SelectionStrategy>(strategy));
+}
+
+
 void WebSettingsImpl::setSmartInsertDeleteEnabled(bool enabled)
 {
     m_settings->setSmartInsertDeleteEnabled(enabled);

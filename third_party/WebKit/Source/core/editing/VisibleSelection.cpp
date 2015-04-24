@@ -30,7 +30,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
-#include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/layout/LayoutObject.h"
@@ -350,7 +349,7 @@ void VisibleSelection::setBaseAndExtentToDeepEquivalents()
         m_baseIsFirst = comparePositions(m_base, m_extent) <= 0;
 }
 
-void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity)
+void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity, EWordSide wordSide)
 {
     ASSERT(m_base.isNotNull());
     ASSERT(m_extent.isNotNull());
@@ -362,13 +361,14 @@ void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity
         // Don't do any expansion.
         break;
     case WordGranularity: {
-        // General case: Select the word the caret is positioned inside of, or at the start of (RightWordIfOnBoundary).
+        // General case: Select the word the caret is positioned inside of.
+        // If the caret is on the word boundary, select the word according to |wordSide|.
         // Edge case: If the caret is after the last word in a soft-wrapped line or the last word in
         // the document, select that last word (LeftWordIfOnBoundary).
         // Edge case: If the caret is after the last word in a paragraph, select from the the end of the
         // last word to the line break (also RightWordIfOnBoundary);
         VisiblePosition visibleStart = VisiblePosition(m_start, m_affinity);
-        EWordSide side = RightWordIfOnBoundary;
+        EWordSide side = wordSide;
         if (isEndOfEditableOrNonEditableContent(visibleStart) || (isEndOfLine(visibleStart) && !isStartOfLine(visibleStart) && !isEndOfParagraph(visibleStart)))
             side = LeftWordIfOnBoundary;
         m_start = startOfWord(visibleStart, side).deepEquivalent();
@@ -408,7 +408,7 @@ void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity
         m_start = m_baseIsFirst ? m_base : m_extent;
 }
 
-void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity)
+void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity, EWordSide wordSide)
 {
     ASSERT(m_base.isNotNull());
     ASSERT(m_extent.isNotNull());
@@ -420,13 +420,14 @@ void VisibleSelection::setEndRespectingGranularity(TextGranularity granularity)
         // Don't do any expansion.
         break;
     case WordGranularity: {
-        // General case: Select the word the caret is positioned inside of, or at the start of (RightWordIfOnBoundary).
+        // General case: Select the word the caret is positioned inside of.
+        // If the caret is on the word boundary, select the word according to |wordSide|.
         // Edge case: If the caret is after the last word in a soft-wrapped line or the last word in
         // the document, select that last word (LeftWordIfOnBoundary).
         // Edge case: If the caret is after the last word in a paragraph, select from the the end of the
         // last word to the line break (also RightWordIfOnBoundary);
         VisiblePosition originalEnd(m_end, m_affinity);
-        EWordSide side = RightWordIfOnBoundary;
+        EWordSide side = wordSide;
         if (isEndOfEditableOrNonEditableContent(originalEnd) || (isEndOfLine(originalEnd) && !isStartOfLine(originalEnd) && !isEndOfParagraph(originalEnd)))
             side = LeftWordIfOnBoundary;
 

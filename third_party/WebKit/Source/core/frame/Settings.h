@@ -32,6 +32,7 @@
 #include "core/SettingsMacros.h"
 #include "core/css/PointerProperties.h"
 #include "core/editing/EditingBehaviorTypes.h"
+#include "core/editing/SelectionStrategy.h"
 #include "core/frame/SettingsDelegate.h"
 #include "platform/Timer.h"
 #include "platform/fonts/GenericFontFamilySettings.h"

@@ -93,6 +93,18 @@ public:
         HoverTypeHover = 1 << 2
     };
 
+    // Selection strategy defines how the selection granularity changes when the
+    // selection extent is moved.
+    enum class SelectionStrategyType {
+        // Always uses character granularity.
+        Character,
+        // "Expand by word, shrink by character" selection strategy.
+        // Uses character granularity when selection is shrinking. If the
+        // selection is expanding, granularity doesn't change until a word
+        // boundary is passed, after which the granularity switches to "word".
+        Direction
+    };
+
     // Sets value of a setting by its string identifier from Settings.in and
     // string representation of value. An enum's string representation is the
     // string representation of the integer value of the enum.
@@ -204,6 +216,7 @@ public:
     virtual void setSansSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setSelectTrailingWhitespaceEnabled(bool) = 0;
     virtual void setSelectionIncludesAltImageText(bool) = 0;
+    virtual void setSelectionStrategy(SelectionStrategyType) = 0;
     virtual void setSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setShouldPrintBackgrounds(bool) = 0;
     virtual void setShouldClearDocumentBackground(bool) = 0;

@@ -138,6 +138,7 @@ public:
     virtual void setSansSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     virtual void setSelectTrailingWhitespaceEnabled(bool override);
     virtual void setSelectionIncludesAltImageText(bool) override;
+    virtual void setSelectionStrategy(SelectionStrategyType) override;
     virtual void setSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     virtual void setShouldPrintBackgrounds(bool) override;
     virtual void setShouldClearDocumentBackground(bool) override;

@@ -42,6 +42,7 @@ namespace blink {
 
 class CharacterData;
 class LocalFrame;
+class GranularityStrategy;
 class GraphicsContext;
 class HTMLFormElement;
 class Text;
@@ -75,6 +76,7 @@ public:
         SpellCorrectionTriggered = 1 << 3,
         DoNotSetFocus = 1 << 4,
         DoNotUpdateAppearance = 1 << 5,
+        DoNotClearStrategy = 1 << 6,
     };
     typedef unsigned SetSelectionOptions; // Union of values in SetSelectionOption and EUserTriggered
     static inline EUserTriggered selectionOptionsToUserTriggered(SetSelectionOptions options)
@@ -123,8 +125,12 @@ public:
     bool modify(EAlteration, SelectionDirection, TextGranularity, EUserTriggered = NotUserTriggered);
     enum VerticalDirection { DirectionUp, DirectionDown };
     bool modify(EAlteration, unsigned verticalDistance, VerticalDirection, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded);
-    // Currently we support only CharaterGranularity and WordGranurarity.
-    void moveRangeSelectionExtent(const VisiblePosition&, TextGranularity);
+
+    // Moves the selection extent based on the selection granularity strategy.
+    // This function does not allow the selection to collapse. If the new extent
+    // is set to the same position as the current base, this function will do
+    // nothing.
+    void moveRangeSelectionExtent(const VisiblePosition&);
     void moveRangeSelection(const VisiblePosition& base, const VisiblePosition& extent, TextGranularity);
 
     TextGranularity granularity() const { return m_granularity; }
@@ -272,6 +278,8 @@ private:
 
     VisibleSelection validateSelection(const VisibleSelection&);
 
+    GranularityStrategy* granularityStrategy();
+
     RawPtrWillBeMember<LocalFrame> m_frame;
 
     LayoutUnit m_xPosForVerticalArrowNavigation;
@@ -298,6 +306,9 @@ private:
     bool m_isCaretBlinkingSuspended : 1;
     bool m_focused : 1;
     bool m_shouldShowBlockCursor : 1;
+
+    // Controls text granularity used to adjust the selection's extent in moveRangeSelectionExtent.
+    OwnPtr<GranularityStrategy> m_granularityStrategy;
 };
 
 inline EditingStyle* FrameSelection::typingStyle() const

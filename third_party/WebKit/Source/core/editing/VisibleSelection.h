@@ -30,6 +30,7 @@
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextGranularity.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleUnits.h"
 
 namespace blink {
 
@@ -145,8 +146,8 @@ public:
     void showTreeForThis() const;
 #endif
 
-    void setStartRespectingGranularity(TextGranularity);
-    void setEndRespectingGranularity(TextGranularity);
+    void setStartRespectingGranularity(TextGranularity, EWordSide = RightWordIfOnBoundary);
+    void setEndRespectingGranularity(TextGranularity, EWordSide = RightWordIfOnBoundary);
 
 private:
     void validate(TextGranularity = CharacterGranularity);

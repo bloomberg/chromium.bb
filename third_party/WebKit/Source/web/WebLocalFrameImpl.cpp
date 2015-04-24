@@ -1247,12 +1247,9 @@ void WebLocalFrameImpl::selectRange(const WebRange& webRange)
         frame()->selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, NotUserTriggered);
 }
 
-void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& pointInViewport, WebFrame::TextGranularity granularity)
+void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)
 {
-    blink::TextGranularity blinkGranularity = blink::CharacterGranularity;
-    if (granularity == WebFrame::WordGranularity)
-        blinkGranularity = blink::WordGranularity;
-    frame()->selection().moveRangeSelectionExtent(visiblePositionForViewportPoint(pointInViewport), blinkGranularity);
+    frame()->selection().moveRangeSelectionExtent(visiblePositionForViewportPoint(point));
 }
 
 void WebLocalFrameImpl::moveRangeSelection(const WebPoint& baseInViewport, const WebPoint& extentInViewport, WebFrame::TextGranularity granularity)

@@ -38,6 +38,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/editing/Editor.h"
+#include "core/editing/GranularityStrategy.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/SpellChecker.h"
@@ -222,6 +223,8 @@ void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelection& 
 
 void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelectionOptions options, CursorAlignOnScroll align, TextGranularity granularity)
 {
+    if (m_granularityStrategy && (options & FrameSelection::DoNotClearStrategy) == 0)
+        m_granularityStrategy->Clear();
     bool closeTyping = options & CloseTyping;
     bool shouldClearTypingStyle = options & ClearTypingStyle;
     EUserTriggered userTriggered = selectionOptionsToUserTriggered(options);
@@ -1173,6 +1176,8 @@ LayoutUnit FrameSelection::lineDirectionPointForBlockDirectionNavigation(EPositi
 void FrameSelection::clear()
 {
     m_granularity = CharacterGranularity;
+    if (m_granularityStrategy)
+        m_granularityStrategy->Clear();
     setSelection(VisibleSelection());
 }
 
@@ -1913,21 +1918,37 @@ bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position)
     return false;
 }
 
-void FrameSelection::moveRangeSelectionExtent(const VisiblePosition& extentPosition, TextGranularity granularity)
+GranularityStrategy* FrameSelection::granularityStrategy()
 {
-    if (isNone())
-        return;
+    // We do lazy initalization for m_granularityStrategy, because if we
+    // initialize it right in the constructor - the correct settings may not be
+    // set yet.
+    SelectionStrategy strategyType = SelectionStrategy::Character;
+    Settings* settings = m_frame ? m_frame->settings() : 0;
+    if (settings && settings->selectionStrategy() == SelectionStrategy::Direction)
+        strategyType = SelectionStrategy::Direction;
 
-    const VisiblePosition basePosition = m_selection.isBaseFirst() ? m_selection.visibleStart() : m_selection.visibleEnd();
-    VisibleSelection newSelection(basePosition, extentPosition);
-    if (newSelection.isBaseFirst())
-        newSelection.setEndRespectingGranularity(granularity);
+    if (m_granularityStrategy && m_granularityStrategy->GetType() == strategyType)
+        return m_granularityStrategy.get();
+
+    if (strategyType == SelectionStrategy::Direction)
+        m_granularityStrategy = adoptPtr(new DirectionGranularityStrategy());
     else
-        newSelection.setStartRespectingGranularity(granularity);
-    if (!newSelection.isRange())
+        m_granularityStrategy = adoptPtr(new CharacterGranularityStrategy());
+    return m_granularityStrategy.get();
+}
+
+void FrameSelection::moveRangeSelectionExtent(const VisiblePosition& extentPosition)
+{
+    if (isNone() || m_selection.visibleBase() == extentPosition)
         return;
 
-    setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | UserTriggered, FrameSelection::AlignCursorOnScrollIfNeeded, granularity);
+    VisibleSelection newSelection = granularityStrategy()->updateExtent(extentPosition, selection());
+    setSelection(
+        newSelection,
+        FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotClearStrategy | UserTriggered,
+        FrameSelection::AlignCursorOnScrollIfNeeded,
+        CharacterGranularity);
 }
 
 void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition, const VisiblePosition& extentPosition, TextGranularity granularity)
