@@ -16,7 +16,6 @@ class Connection;
 // Interface for finding a connection to a remote device.
 class ConnectionFinder {
  public:
-  ConnectionFinder() {}
   virtual ~ConnectionFinder() {}
 
   // Attempts to find a connection to a remote device. The finder will try to
@@ -27,9 +26,6 @@ class ConnectionFinder {
   typedef base::Callback<void(scoped_ptr<Connection> connection)>
       ConnectionCallback;
   virtual void Find(const ConnectionCallback& connection_callback) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ConnectionFinder);
 };
 
 }  // namespace proximity_auth

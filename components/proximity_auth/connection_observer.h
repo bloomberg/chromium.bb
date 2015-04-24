@@ -15,8 +15,8 @@ class WireMessage;
 class ConnectionObserver {
  public:
   // Called when the |connection|'s status changes from |old_status| to
-  // |new_status|.
-  virtual void OnConnectionStatusChanged(const Connection& connection,
+  // |new_status|. The |connectoin| is guaranteed to be non-null.
+  virtual void OnConnectionStatusChanged(Connection* connection,
                                          Connection::Status old_status,
                                          Connection::Status new_status) {}
 

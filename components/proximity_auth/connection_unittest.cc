@@ -59,7 +59,7 @@ class MockConnectionObserver : public ConnectionObserver {
   virtual ~MockConnectionObserver() {}
 
   MOCK_METHOD3(OnConnectionStatusChanged,
-               void(const Connection& connection,
+               void(Connection* connection,
                     Connection::Status old_status,
                     Connection::Status new_status));
   MOCK_METHOD2(OnMessageReceived,
@@ -143,10 +143,9 @@ TEST(ProximityAuthConnectionTest, SetStatus_NotifiesObserversOfStatusChange) {
   StrictMock<MockConnectionObserver> observer;
   connection.AddObserver(&observer);
 
-  EXPECT_CALL(
-      observer,
-      OnConnectionStatusChanged(
-          Ref(connection), Connection::DISCONNECTED, Connection::CONNECTED));
+  EXPECT_CALL(observer,
+              OnConnectionStatusChanged(&connection, Connection::DISCONNECTED,
+                                        Connection::CONNECTED));
   connection.SetStatus(Connection::CONNECTED);
 }
 

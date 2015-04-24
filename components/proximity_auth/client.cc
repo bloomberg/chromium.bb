@@ -177,10 +177,10 @@ void Client::HandleUnlockResponseMessage(const base::DictionaryValue& message) {
   FOR_EACH_OBSERVER(ClientObserver, observers_, OnUnlockResponse(true));
 }
 
-void Client::OnConnectionStatusChanged(const Connection& connection,
+void Client::OnConnectionStatusChanged(Connection* connection,
                                        Connection::Status old_status,
                                        Connection::Status new_status) {
-  DCHECK_EQ(&connection, connection_.get());
+  DCHECK_EQ(connection, connection_.get());
   if (new_status != Connection::CONNECTED) {
     VLOG(1) << "[Client] Secure channel disconnected...";
     connection_->RemoveObserver(this);

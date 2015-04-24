@@ -91,7 +91,7 @@ class Client : public ConnectionObserver {
   void HandleUnlockResponseMessage(const base::DictionaryValue& message);
 
   // ConnectionObserver:
-  void OnConnectionStatusChanged(const Connection& connection,
+  void OnConnectionStatusChanged(Connection* connection,
                                  Connection::Status old_status,
                                  Connection::Status new_status) override;
   void OnMessageReceived(const Connection& connection,

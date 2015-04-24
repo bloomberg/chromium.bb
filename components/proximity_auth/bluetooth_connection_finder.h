@@ -64,7 +64,7 @@ class BluetoothConnectionFinder : public ConnectionFinder,
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
 
   // ConnectionObserver:
-  void OnConnectionStatusChanged(const Connection& connection,
+  void OnConnectionStatusChanged(Connection* connection,
                                  Connection::Status old_status,
                                  Connection::Status new_status) override;
 

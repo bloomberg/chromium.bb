@@ -54,9 +54,8 @@ void Connection::SetStatus(Status status) {
 
   Status old_status = status_;
   status_ = status;
-  FOR_EACH_OBSERVER(ConnectionObserver,
-                    observers_,
-                    OnConnectionStatusChanged(*this, old_status, status_));
+  FOR_EACH_OBSERVER(ConnectionObserver, observers_,
+                    OnConnectionStatusChanged(this, old_status, status_));
 }
 
 void Connection::OnDidSendMessage(const WireMessage& message, bool success) {

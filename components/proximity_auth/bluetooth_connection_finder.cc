@@ -119,10 +119,10 @@ void BluetoothConnectionFinder::AdapterPoweredChanged(BluetoothAdapter* adapter,
 }
 
 void BluetoothConnectionFinder::OnConnectionStatusChanged(
-    const Connection& connection,
+    Connection* connection,
     Connection::Status old_status,
     Connection::Status new_status) {
-  DCHECK_EQ(&connection, connection_.get());
+  DCHECK_EQ(connection, connection_.get());
 
   if (connection_->IsConnected()) {
     base::TimeDelta elapsed = base::TimeTicks::Now() - start_time_;
