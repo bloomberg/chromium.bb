@@ -2480,7 +2480,7 @@ static bool ApproximatelyEqual(const gfx::Transform& a,
 
   for (int row = 0; row < 4; row++) {
     for (int col = 0; col < 4; col++) {
-      static const float delta =
+      const float delta =
           std::abs(a.matrix().get(row, col) - b.matrix().get(row, col));
       const float tolerance =
           col == 3 && row < 3 ? translation_tolerance : component_tolerance;

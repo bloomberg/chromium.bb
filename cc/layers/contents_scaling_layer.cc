@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/layers/contents_scaling_layer.h"
+#include "cc/trees/layer_tree_host.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace cc {
@@ -25,11 +26,23 @@ void ContentsScalingLayer::CalculateContentsScale(
     float* contents_scale_x,
     float* contents_scale_y,
     gfx::Size* content_bounds) {
+  float old_contents_scale_x = *contents_scale_x;
+  float old_contents_scale_y = *contents_scale_y;
+  gfx::Size old_content_bounds = *content_bounds;
   *contents_scale_x = ideal_contents_scale;
   *contents_scale_y = ideal_contents_scale;
   *content_bounds = ComputeContentBoundsForScale(
       ideal_contents_scale,
       ideal_contents_scale);
+
+  if (!layer_tree_host())
+    return;
+
+  if (old_contents_scale_x != *contents_scale_x ||
+      old_contents_scale_y != *contents_scale_y ||
+      old_content_bounds != *content_bounds) {
+    layer_tree_host()->property_trees()->needs_rebuild = true;
+  }
 }
 
 bool ContentsScalingLayer::Update(ResourceUpdateQueue* queue,
