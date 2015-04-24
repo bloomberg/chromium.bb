@@ -31390,6 +31390,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Renderer.LayoutMs" units="milliseconds">
+  <obsolete>
+    Deprecated as of 3/2015.
+  </obsolete>
   <owner>benjhayden@chromium.org</owner>
   <summary>
     Duration of the FrameView::performLayout trace event, which occurs at most
@@ -31398,6 +31401,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Renderer.LineLayoutMs" units="milliseconds">
+  <obsolete>
+    Deprecated as of 3/2015.
+  </obsolete>
   <owner>benjhayden@chromium.org</owner>
   <summary>
     Amount of time spent doing line layout during FrameView::performLayout.
