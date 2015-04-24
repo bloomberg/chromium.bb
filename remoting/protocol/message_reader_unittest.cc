@@ -279,7 +279,7 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
 
 // Read() returns error.
 TEST_F(MessageReaderTest, ReadError) {
-  socket_.set_next_read_error(net::ERR_FAILED);
+  socket_.AppendReadError(net::ERR_FAILED);
 
   // Add a message. It should never be read after the error above.
   AddMessage(kTestMessage1);

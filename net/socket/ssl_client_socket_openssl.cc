@@ -389,6 +389,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       policy_enforcer_(context.cert_policy_enforcer),
       net_log_(transport_->socket()->NetLog()),
       weak_factory_(this) {
+  DCHECK(cert_verifier_);
 }
 
 SSLClientSocketOpenSSL::~SSLClientSocketOpenSSL() {

@@ -2444,6 +2444,8 @@ SSLClientSocketNSS::SSLClientSocketNSS(
       transport_security_state_(context.transport_security_state),
       policy_enforcer_(context.cert_policy_enforcer),
       valid_thread_id_(base::kInvalidThreadId) {
+  DCHECK(cert_verifier_);
+
   EnterFunction("");
   InitCore();
   LeaveFunction("");

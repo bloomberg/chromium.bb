@@ -14,6 +14,7 @@
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
+#include "net/test/cert_test_util.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_session.h"
@@ -68,7 +69,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     ASSERT_TRUE(key_pair_.get());
   }
 
-  void RunChannelAuth(bool expected_fail) {
+  void RunChannelAuth(int expected_client_error, int expected_host_error) {
     client_fake_socket_.reset(new FakeStreamSocket());
     host_fake_socket_.reset(new FakeStreamSocket());
     client_fake_socket_->PairWith(host_fake_socket_.get());
@@ -87,14 +88,18 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     // callback.
     int callback_counter = 2;
 
-    if (expected_fail) {
-      EXPECT_CALL(client_callback_, OnDone(net::ERR_FAILED, nullptr))
-          .WillOnce(QuitThreadOnCounter(&callback_counter));
-      EXPECT_CALL(host_callback_, OnDone(net::ERR_FAILED, nullptr))
+    if (expected_client_error != net::OK) {
+      EXPECT_CALL(client_callback_, OnDone(expected_client_error, nullptr))
           .WillOnce(QuitThreadOnCounter(&callback_counter));
     } else {
       EXPECT_CALL(client_callback_, OnDone(net::OK, NotNull()))
           .WillOnce(QuitThreadOnCounter(&callback_counter));
+    }
+
+    if (expected_host_error != net::OK) {
+      EXPECT_CALL(host_callback_, OnDone(expected_host_error, nullptr))
+          .WillOnce(QuitThreadOnCounter(&callback_counter));
+    } else {
       EXPECT_CALL(host_callback_, OnDone(net::OK, NotNull()))
           .WillOnce(QuitThreadOnCounter(&callback_counter));
     }
@@ -149,7 +154,7 @@ TEST_F(SslHmacChannelAuthenticatorTest, SuccessfulAuth) {
   host_auth_ = SslHmacChannelAuthenticator::CreateForHost(
       host_cert_, key_pair_, kTestSharedSecret);
 
-  RunChannelAuth(false);
+  RunChannelAuth(net::OK, net::OK);
 
   ASSERT_TRUE(client_socket_.get() != nullptr);
   ASSERT_TRUE(host_socket_.get() != nullptr);
@@ -169,7 +174,26 @@ TEST_F(SslHmacChannelAuthenticatorTest, InvalidChannelSecret) {
   host_auth_ = SslHmacChannelAuthenticator::CreateForHost(
       host_cert_, key_pair_, kTestSharedSecret);
 
-  RunChannelAuth(true);
+  RunChannelAuth(net::ERR_FAILED, net::ERR_FAILED);
+
+  ASSERT_TRUE(host_socket_.get() == nullptr);
+}
+
+// Verify that channels cannot be using invalid certificate.
+TEST_F(SslHmacChannelAuthenticatorTest, InvalidCertificate) {
+  // Import a second certificate for the client to expect.
+  scoped_refptr<net::X509Certificate> host_cert2(
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem"));
+  std::string host_cert2_der;
+  ASSERT_TRUE(net::X509Certificate::GetDEREncoded(host_cert2->os_cert_handle(),
+                                                  &host_cert2_der));
+
+  client_auth_ = SslHmacChannelAuthenticator::CreateForClient(
+      host_cert2_der, kTestSharedSecret);
+  host_auth_ = SslHmacChannelAuthenticator::CreateForHost(
+      host_cert_, key_pair_, kTestSharedSecret);
+
+  RunChannelAuth(net::ERR_CERT_INVALID, net::ERR_CONNECTION_CLOSED);
 
   ASSERT_TRUE(host_socket_.get() == nullptr);
 }

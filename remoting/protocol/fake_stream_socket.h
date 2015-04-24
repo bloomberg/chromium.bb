@@ -45,13 +45,16 @@ class FakeStreamSocket : public net::StreamSocket {
   // Enables asynchronous Write().
   void set_async_write(bool async_write) { async_write_ = async_write; }
 
-  // Set error codes for the next Read() and Write() calls. Once returned the
-  // values are automatically reset to net::OK .
-  void set_next_read_error(int error) { next_read_error_ = error; }
+  // Set error codes for the next Write() call. Once returned the
+  // value is automatically reset to net::OK .
   void set_next_write_error(int error) { next_write_error_ = error; }
 
   // Appends |data| to the read buffer.
   void AppendInputData(const std::string& data);
+
+  // Causes Read() to fail with |error| once the read buffer is exhausted. If
+  // there is a currently pending Read, it is interrupted.
+  void AppendReadError(int error);
 
   // Pairs the socket with |peer_socket|. Deleting either of the paired sockets
   // unpairs them.
