@@ -46,10 +46,10 @@ const char* WorkerNavigatorStorageQuota::supplementName()
 
 WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::from(WorkerNavigator& navigator)
 {
-    WorkerNavigatorStorageQuota* supplement = static_cast<WorkerNavigatorStorageQuota*>(WillBeHeapSupplement<WorkerNavigator>::from(navigator, supplementName()));
+    WorkerNavigatorStorageQuota* supplement = static_cast<WorkerNavigatorStorageQuota*>(HeapSupplement<WorkerNavigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new WorkerNavigatorStorageQuota();
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -82,7 +82,7 @@ DEFINE_TRACE(WorkerNavigatorStorageQuota)
 {
     visitor->trace(m_temporaryStorage);
     visitor->trace(m_persistentStorage);
-    WillBeHeapSupplement<WorkerNavigator>::trace(visitor);
+    HeapSupplement<WorkerNavigator>::trace(visitor);
 }
 
 } // namespace blink

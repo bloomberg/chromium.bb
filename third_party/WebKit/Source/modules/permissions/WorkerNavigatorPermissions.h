@@ -13,13 +13,9 @@ namespace blink {
 class WorkerNavigator;
 class Permissions;
 
-class WorkerNavigatorPermissions final
-    : public NoBaseWillBeGarbageCollectedFinalized<WorkerNavigatorPermissions>
-    , public WillBeHeapSupplement<WorkerNavigator> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorPermissions);
+class WorkerNavigatorPermissions final : public GarbageCollected<WorkerNavigatorPermissions>, public HeapSupplement<WorkerNavigator> {
+    USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorPermissions);
 public:
-    virtual ~WorkerNavigatorPermissions();
-
     static WorkerNavigatorPermissions& from(WorkerNavigator&);
     static Permissions* permissions(WorkerNavigator&);
 
@@ -30,7 +26,7 @@ private:
 
     WorkerNavigatorPermissions();
 
-    PersistentWillBeMember<Permissions> m_permissions;
+    Member<Permissions> m_permissions;
 };
 
 } // namespace blink

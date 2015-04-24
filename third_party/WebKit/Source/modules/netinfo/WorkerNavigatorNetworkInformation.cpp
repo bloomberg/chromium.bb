@@ -14,23 +14,19 @@ WorkerNavigatorNetworkInformation::WorkerNavigatorNetworkInformation(WorkerNavig
 {
 }
 
-WorkerNavigatorNetworkInformation::~WorkerNavigatorNetworkInformation()
-{
-}
-
 WorkerNavigatorNetworkInformation& WorkerNavigatorNetworkInformation::from(WorkerNavigator& navigator, ExecutionContext* context)
 {
     WorkerNavigatorNetworkInformation* supplement = toWorkerNavigatorNetworkInformation(navigator, context);
     if (!supplement) {
         supplement = new WorkerNavigatorNetworkInformation(navigator, context);
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }
 
 WorkerNavigatorNetworkInformation* WorkerNavigatorNetworkInformation::toWorkerNavigatorNetworkInformation(WorkerNavigator& navigator, ExecutionContext* context)
 {
-    return static_cast<WorkerNavigatorNetworkInformation*>(WillBeHeapSupplement<WorkerNavigator>::from(navigator, supplementName()));
+    return static_cast<WorkerNavigatorNetworkInformation*>(HeapSupplement<WorkerNavigator>::from(navigator, supplementName()));
 }
 
 const char* WorkerNavigatorNetworkInformation::supplementName()
@@ -46,7 +42,7 @@ NetworkInformation* WorkerNavigatorNetworkInformation::connection(ExecutionConte
 DEFINE_TRACE(WorkerNavigatorNetworkInformation)
 {
     visitor->trace(m_connection);
-    WillBeHeapSupplement<WorkerNavigator>::trace(visitor);
+    HeapSupplement<WorkerNavigator>::trace(visitor);
 }
 
 NetworkInformation* WorkerNavigatorNetworkInformation::connection(ExecutionContext* context)

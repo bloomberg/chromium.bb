@@ -30,7 +30,7 @@
 
 [
     Exposed=Worker,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface WorkerNavigator {
 };
 

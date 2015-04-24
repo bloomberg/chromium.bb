@@ -31,19 +31,16 @@
 #include "core/dom/DOMURLUtilsReadOnly.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
-class WorkerLocation final : public RefCountedWillBeGarbageCollectedFinalized<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
+class WorkerLocation final : public GarbageCollectedFinalized<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<WorkerLocation> create(const KURL& url)
+    static WorkerLocation* create(const KURL& url)
     {
-        return adoptRefWillBeNoop(new WorkerLocation(url));
+        return new WorkerLocation(url);
     }
 
     virtual KURL url() const override { return m_url; }

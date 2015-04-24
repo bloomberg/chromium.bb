@@ -32,19 +32,17 @@
 #include "core/frame/NavigatorOnLine.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class WorkerNavigator final : public RefCountedWillBeGarbageCollectedFinalized<WorkerNavigator>, public ScriptWrappable, public NavigatorCPU, public NavigatorID, public NavigatorOnLine, public WillBeHeapSupplementable<WorkerNavigator> {
+class WorkerNavigator final : public GarbageCollectedFinalized<WorkerNavigator>, public ScriptWrappable, public NavigatorCPU, public NavigatorID, public NavigatorOnLine, public HeapSupplementable<WorkerNavigator> {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigator);
+    USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigator);
 public:
-    static PassRefPtrWillBeRawPtr<WorkerNavigator> create(const String& userAgent)
+    static WorkerNavigator* create(const String& userAgent)
     {
-        return adoptRefWillBeNoop(new WorkerNavigator(userAgent));
+        return new WorkerNavigator(userAgent);
     }
     virtual ~WorkerNavigator();
 

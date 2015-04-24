@@ -39,8 +39,8 @@
 
 namespace blink {
 
-class WorkerNavigatorStorageQuota final : public NoBaseWillBeGarbageCollected<WorkerNavigatorStorageQuota>, public WillBeHeapSupplement<WorkerNavigator> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
+class WorkerNavigatorStorageQuota final : public GarbageCollected<WorkerNavigatorStorageQuota>, public HeapSupplement<WorkerNavigator> {
+    USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
 public:
     static WorkerNavigatorStorageQuota& from(WorkerNavigator&);
 
@@ -55,8 +55,8 @@ private:
     explicit WorkerNavigatorStorageQuota();
     static const char* supplementName();
 
-    mutable PersistentWillBeMember<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable PersistentWillBeMember<DeprecatedStorageQuota> m_persistentStorage;
+    mutable Member<DeprecatedStorageQuota> m_temporaryStorage;
+    mutable Member<DeprecatedStorageQuota> m_persistentStorage;
 };
 
 } // namespace blink

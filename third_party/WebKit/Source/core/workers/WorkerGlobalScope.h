@@ -171,8 +171,8 @@ private:
     V8CacheOptions m_v8CacheOptions;
 
     mutable RefPtrWillBeMember<WorkerConsole> m_console;
-    mutable RefPtrWillBeMember<WorkerLocation> m_location;
-    mutable RefPtrWillBeMember<WorkerNavigator> m_navigator;
+    mutable PersistentWillBeMember<WorkerLocation> m_location;
+    mutable PersistentWillBeMember<WorkerNavigator> m_navigator;
 
     mutable UseCounter::CountBits m_deprecationWarningBits;
 
