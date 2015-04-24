@@ -6,6 +6,7 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_info.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -306,6 +307,8 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
     ServiceWorkerStatusCode status) {
   if (!context_ || activating_version != active_version())
     return;
+  ServiceWorkerMetrics::RecordActivateEventStatus(status);
+
   // "If activateFailed is true, then:..."
   if (status != SERVICE_WORKER_OK) {
     // "Set registration's active worker to null." (The spec's step order may

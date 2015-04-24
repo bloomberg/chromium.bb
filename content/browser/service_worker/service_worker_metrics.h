@@ -62,6 +62,9 @@ class ServiceWorkerMetrics {
   static void RecordStartWorkerTime(const base::TimeDelta& time,
                                     bool is_installed);
 
+  static void RecordActivateEventStatus(ServiceWorkerStatusCode status);
+  static void RecordInstallEventStatus(ServiceWorkerStatusCode status);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };

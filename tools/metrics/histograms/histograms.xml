@@ -35053,7 +35053,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ServiceWorker.ActivateEventExecutionTime" units="millisecond">
   <owner>shimazu@chromium.org</owner>
-  <summary>Execution time of ServiceWorkerGlobalScope.onactivate.</summary>
+  <summary>
+    Execution time of ServiceWorkerGlobalScope.onactivate. Includes the time for
+    waitUntil() promise to settle.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.ActivateEventStatus"
+    enum="ServiceWorkerStatusCode">
+  <owner>falken@chromium.org</owner>
+  <summary>The result of dispatching the activate event to the worker.</summary>
 </histogram>
 
 <histogram name="ServiceWorker.Database.DestroyDatabaseResult"
@@ -35111,12 +35120,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="ServiceWorker.FetchEventExecutionTime" units="millisecond">
   <owner>shimazu@chromium.org</owner>
-  <summary>Execution time of ServiceWorkerGlobalScope.onfetch.</summary>
+  <summary>
+    Execution time of ServiceWorkerGlobalScope.onfetch. Includes the time for
+    the respondWith() promise to settle.
+  </summary>
 </histogram>
 
 <histogram name="ServiceWorker.InstallEventExecutionTime" units="millisecond">
   <owner>shimazu@chromium.org</owner>
-  <summary>Execution time of ServiceWorkerGlobalScope.oninstall.</summary>
+  <summary>
+    Execution time of ServiceWorkerGlobalScope.oninstall. Includes the time for
+    the waitUntil() promise to settle.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.InstallEventStatus"
+    enum="ServiceWorkerStatusCode">
+  <owner>falken@chromium.org</owner>
+  <summary>The result of dispatching the install event to the worker.</summary>
 </histogram>
 
 <histogram name="ServiceWorker.MessageEventExecutionTime" units="millisecond">

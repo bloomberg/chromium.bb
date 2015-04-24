@@ -95,4 +95,16 @@ void ServiceWorkerMetrics::RecordStartWorkerTime(const base::TimeDelta& time,
     UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartNewWorker.Time", time);
 }
 
+void ServiceWorkerMetrics::RecordActivateEventStatus(
+    ServiceWorkerStatusCode status) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.ActivateEventStatus", status,
+                            SERVICE_WORKER_ERROR_MAX_VALUE);
+}
+
+void ServiceWorkerMetrics::RecordInstallEventStatus(
+    ServiceWorkerStatusCode status) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.InstallEventStatus", status,
+                            SERVICE_WORKER_ERROR_MAX_VALUE);
+}
+
 }  // namespace content
