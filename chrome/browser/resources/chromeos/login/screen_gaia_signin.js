@@ -32,7 +32,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       'onWebviewError',
       'onFrameError',
       'updateCancelButtonState',
-      'showWhitelistCheckFailedError'
+      'showWhitelistCheckFailedError',
+      'updateDeviceId',
     ],
 
     /**
@@ -152,6 +153,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           'backButton', this.onBackButton_.bind(this));
       this.gaiaAuthHost_.addEventListener(
           'showView', this.onShowView_.bind(this));
+      this.gaiaAuthHost_.addEventListener('attemptLogin',
+                                          this.onAttemptLogin_.bind(this));
       this.gaiaAuthHost_.confirmPasswordCallback =
           this.onAuthConfirmPassword_.bind(this);
       this.gaiaAuthHost_.noPasswordCallback =
@@ -425,7 +428,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         params.chromeType = data.chromeType;
         params.isNewGaiaFlowChromeOS = true;
         $('login-header-bar').showGuestButton = true;
-        this.gaiaAuthHost_.setDeviceId(data.deviceId);
+        params.deviceId = data.deviceId;
       }
 
       if (data.gaiaEndpoint)
@@ -632,6 +635,16 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       chrome.send('loginWebuiReady');
       chrome.send('loginVisible', ['gaia-signin']);
+    },
+
+    /**
+     * Invoked when the auth host emits 'attemptLogin' event.
+     * @param {Object} Message object with |detail| field keeping email:
+     * like {detail: 'user@gmail.com'} .
+     * @private
+     */
+    onAttemptLogin_: function(e) {
+      chrome.send('attemptLogin', [e.detail]);
     },
 
     /**
@@ -943,6 +956,18 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       if (!show)
         Oobe.showSigninUI();
+    },
+
+    /**
+     * Inform Gaia of new deviceId.
+     * @param {data} Object like {'deviceId': 'test-device-id'}
+     */
+    updateDeviceId: function(data) {
+      if (!this.isNewGaiaFlow)
+        return;
+
+      if (data && data.deviceId)
+        this.gaiaAuthHost_.updateDeviceId(data.deviceId);
     },
   };
 });

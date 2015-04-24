@@ -133,6 +133,8 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   void HandleToggleEasyBootstrap();
 
+  void HandleAttemptLogin(const std::string& email);
+
   void HandleToggleWebviewSignin();
 
   // This is called when ConsumerManagementService::SetOwner() returns.
@@ -202,6 +204,9 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   SigninScreenHandlerDelegate* Delegate();
 
+  // Returns temporary unused device Id.
+  std::string GetTemporaryDeviceId();
+
   // Current state of Gaia frame.
   FrameState frame_state_;
 
@@ -267,6 +272,10 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // GAIA extension loader.
   scoped_ptr<ScopedGaiaAuthExtension> auth_extension_;
+
+  // Temporary DeviceId to be used for new users.
+  // If it's empty, new deviceId should be generated.
+  std::string temporary_device_id_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
 

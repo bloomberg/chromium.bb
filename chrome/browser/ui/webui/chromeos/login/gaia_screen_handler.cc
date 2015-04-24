@@ -416,6 +416,7 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleToggleWebviewSignin);
   AddCallback("toggleEasyBootstrap",
               &GaiaScreenHandler::HandleToggleEasyBootstrap);
+  AddCallback("attemptLogin", &GaiaScreenHandler::HandleAttemptLogin);
 }
 
 void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {
@@ -576,6 +577,21 @@ void GaiaScreenHandler::HandleToggleEasyBootstrap() {
   const bool kSilentLoad = true;
   const bool kNoOfflineUI = false;
   LoadAuthExtension(kForceReload, kSilentLoad, kNoOfflineUI);
+}
+
+void GaiaScreenHandler::HandleAttemptLogin(const std::string& email) {
+  std::string device_id =
+      user_manager::UserManager::Get()->GetKnownUserDeviceId(
+          gaia::CanonicalizeEmail(email));
+
+  if (!device_id.empty() && StartupUtils::IsWebviewSigninEnabled()) {
+    base::DictionaryValue params;
+    params.SetString("deviceId", device_id);
+    CallJS("updateDeviceId", params);
+  } else {
+    // Mark current temporary device Id as used.
+    temporary_device_id_ = std::string();
+  }
 }
 
 void GaiaScreenHandler::HandleGaiaUIReady() {
@@ -920,10 +936,14 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
     context.has_users = !Delegate()->GetUsers().empty();
   }
 
-  if (context.device_id.empty()) {
-    context.device_id = base::GenerateGUID();
-    DCHECK(!context.device_id.empty());
+  if (!context.email.empty()) {
+    context.device_id = user_manager::UserManager::Get()->GetKnownUserDeviceId(
+        gaia::CanonicalizeEmail(context.email));
   }
+
+  if (context.device_id.empty())
+    context.device_id = GetTemporaryDeviceId();
+
   context.session_is_ephemeral =
       ChromeUserManager::Get()->AreEphemeralUsersEnabled();
 
@@ -944,6 +964,14 @@ SigninScreenHandlerDelegate* GaiaScreenHandler::Delegate() {
 
 void GaiaScreenHandler::SetSigninScreenHandler(SigninScreenHandler* handler) {
   signin_screen_handler_ = handler;
+}
+
+std::string GaiaScreenHandler::GetTemporaryDeviceId() {
+  if (temporary_device_id_.empty())
+    temporary_device_id_ = base::GenerateGUID();
+
+  DCHECK(!temporary_device_id_.empty());
+  return temporary_device_id_;
 }
 
 }  // namespace chromeos

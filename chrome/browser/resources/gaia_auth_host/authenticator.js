@@ -248,7 +248,7 @@ cr.define('cr.login', function() {
         url = appendParam(url, 'client_id', data.clientId);
       if (data.enterpriseDomain)
         url = appendParam(url, 'manageddomain', data.enterpriseDomain);
-      this.setDeviceId(data.deviceId);
+      this.deviceId_ = data.deviceId;
       this.sessionIsEphemeral_ = data.sessionIsEphemeral;
     } else {
       url = appendParam(url, 'continue', this.continueUrl_);
@@ -267,13 +267,6 @@ cr.define('cr.login', function() {
     if (data.emailDomain)
       url = appendParam(url, 'emaildomain', data.emailDomain);
     return url;
-  };
-
-  /**
-   * Invoked when deviceId is set or updated.
-   */
-  Authenticator.prototype.setDeviceId = function(deviceId) {
-    this.deviceId_ = deviceId;
   };
 
   /**
@@ -401,11 +394,7 @@ cr.define('cr.login', function() {
     if (this.isNewGaiaFlowChromeOS && this.deviceId_) {
       var headers = details.requestHeaders;
       var found = false;
-      var deviceId;
-      if (this.sessionIsEphemeral_)
-        deviceId = EPHEMERAL_DEVICE_ID_PREFIX + this.deviceId_;
-      else
-        deviceId = this.deviceId_;
+      var deviceId = this.getGAIADeviceId_();
 
       for (var i = 0, l = headers.length; i < l; ++i) {
         if (headers[i].name == X_DEVICE_ID_HEADER) {
@@ -425,17 +414,16 @@ cr.define('cr.login', function() {
   };
 
   /**
-   * Invoked when an HTML5 message is received from the webview element.
+   * Returns true if given HTML5 message is received from the webview element.
    * @param {object} e Payload of the received HTML5 message.
-   * @private
    */
-  Authenticator.prototype.onMessageFromWebview_ = function(e) {
+  Authenticator.prototype.isGaiaMessage = function(e) {
     if (!this.isWebviewEvent_(e))
-      return;
+      return false;
 
     // The event origin does not have a trailing slash.
     if (e.origin != this.idpOrigin_.substring(0, this.idpOrigin_.length - 1)) {
-      return;
+      return false;
     }
 
     // EAFE passes back auth code via message.
@@ -457,14 +445,30 @@ cr.define('cr.login', function() {
 
     // Gaia messages must be an object with 'method' property.
     if (typeof e.data != 'object' || !e.data.hasOwnProperty('method')) {
-      return;
+      return false;
     }
+    return true;
+  };
+
+  /**
+   * Invoked when an HTML5 message is received from the webview element.
+   * @param {object} e Payload of the received HTML5 message.
+   * @private
+   */
+  Authenticator.prototype.onMessageFromWebview_ = function(e) {
+    if (!this.isGaiaMessage(e))
+      return;
 
     var msg = e.data;
     if (msg.method == 'attemptLogin') {
       this.email_ = msg.email;
       this.password_ = msg.password;
       this.chooseWhatToSync_ = msg.chooseWhatToSync;
+      // We need to dispatch only first event, before user enters password.
+      if (!msg.password) {
+        this.dispatchEvent(
+            new CustomEvent('attemptLogin', {detail: msg.email}));
+      }
     } else if (msg.method == 'dialogShown') {
       this.dispatchEvent(new Event('dialogShown'));
     } else if (msg.method == 'dialogHidden') {
@@ -626,8 +630,10 @@ cr.define('cr.login', function() {
     var currentUrl = this.webview_.src;
     if (currentUrl.lastIndexOf(this.idpOrigin_) == 0) {
       var msg = {
-        'method': 'handshake'
+        'method': 'handshake',
+        'deviceId': this.getGAIADeviceId_(),
       };
+
       this.webview_.contentWindow.postMessage(msg, currentUrl);
     }
   };
@@ -691,6 +697,37 @@ cr.define('cr.login', function() {
     // TODO(dzhioev): remove the message. http://crbug.com/469522
     var webviewWindow = this.webview_.contentWindow;
     return !!webviewWindow && webviewWindow === e.source;
+  };
+
+  /**
+   * Format deviceId for GAIA .
+   * @return {string} deviceId.
+   * @private
+   */
+  Authenticator.prototype.getGAIADeviceId_ = function() {
+    // deviceId_ is empty when we do not need to send it. For example,
+    // in case of device enrollment.
+    if (!(this.isNewGaiaFlowChromeOS && this.deviceId_))
+      return;
+
+    if (this.sessionIsEphemeral_)
+      return EPHEMERAL_DEVICE_ID_PREFIX + this.deviceId_;
+    else
+      return this.deviceId_;
+  };
+
+  /**
+   * Informs Gaia of new deviceId to be used.
+   */
+  Authenticator.prototype.updateDeviceId = function(deviceId) {
+    this.deviceId_ = deviceId;
+    var msg = {
+      'method': 'updateDeviceId',
+      'deviceId': this.getGAIADeviceId_(),
+    };
+
+    var currentUrl = this.webview_.src;
+    this.webview_.contentWindow.postMessage(msg, currentUrl);
   };
 
   /**
