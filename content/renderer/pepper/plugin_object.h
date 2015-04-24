@@ -84,7 +84,7 @@ class PluginObject : public gin::Wrappable<PluginObject>,
   const PPP_Class_Deprecated* ppp_class_;
   void* ppp_class_data_;
 
-  v8::StdPersistentValueMap<std::string, v8::FunctionTemplate> template_cache_;
+  v8::StdGlobalValueMap<std::string, v8::FunctionTemplate> template_cache_;
 
   base::WeakPtrFactory<PluginObject> weak_factory_;
 

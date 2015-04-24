@@ -40,7 +40,7 @@ class V8SchemaRegistry {
   v8::Handle<v8::Context> GetOrCreateContext(v8::Isolate* isolate);
 
   // Cache of schemas. Created lazily by GetOrCreateContext.
-  typedef v8::StdPersistentValueMap<std::string, v8::Object> SchemaCache;
+  typedef v8::StdGlobalValueMap<std::string, v8::Object> SchemaCache;
   scoped_ptr<SchemaCache> schema_cache_;
 
   // Single per-instance gin::ContextHolder to create v8::Values.
