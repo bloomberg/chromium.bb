@@ -5,13 +5,13 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_TRAP_H__
 #define SANDBOX_LINUX_SECCOMP_BPF_TRAP_H__
 
-#include <signal.h>
 #include <stdint.h>
 
 #include <map>
 
 #include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
+#include "sandbox/linux/system_headers/linux_signal.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
@@ -57,11 +57,11 @@ class SANDBOX_EXPORT Trap : public bpf_dsl::TrapRegistry {
   // break subsequent system calls that trigger a SIGSYS.
   ~Trap() = delete;
 
-  static void SigSysAction(int nr, siginfo_t* info, void* void_context);
+  static void SigSysAction(int nr, LinuxSigInfo* info, void* void_context);
 
   // Make sure that SigSys is not inlined in order to get slightly better crash
   // dumps.
-  void SigSys(int nr, siginfo_t* info, void* void_context)
+  void SigSys(int nr, LinuxSigInfo* info, void* void_context)
       __attribute__((noinline));
   // We have a global singleton that handles all of our SIGSYS traps. This
   // variable must never be deallocated after it has been set up initially, as

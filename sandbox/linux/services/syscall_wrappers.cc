@@ -12,12 +12,14 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cstring>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
 #include "sandbox/linux/system_headers/capability.h"
+#include "sandbox/linux/system_headers/linux_signal.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
 namespace sandbox {
@@ -136,5 +138,95 @@ int sys_chroot(const char* path) {
 int sys_unshare(int flags) {
   return syscall(__NR_unshare, flags);
 }
+
+int sys_sigprocmask(int how, const sigset_t* set, decltype(nullptr) oldset) {
+  // In some toolchain (in particular Android and PNaCl toolchain),
+  // sigset_t is 32 bits, but Linux ABI requires 64 bits.
+  uint64_t linux_value = 0;
+  std::memcpy(&linux_value, set, std::min(sizeof(sigset_t), sizeof(uint64_t)));
+  return syscall(__NR_rt_sigprocmask, how, &linux_value, nullptr,
+                 sizeof(linux_value));
+}
+
+#if defined(MEMORY_SANITIZER) || \
+    (defined(ARCH_CPU_X86_64) && defined(__GNUC__) && !defined(__clang__))
+// If MEMORY_SANITIZER is enabled, it is necessary to call sigaction() here,
+// rather than the direct syscall (sys_sigaction() defined by ourselves).
+// It is because, if MEMORY_SANITIZER is enabled, sigaction is wrapped, and
+// |act->sa_handler| is injected in order to unpoisonize the memory passed via
+// callback's arguments. Please see msan_interceptors.cc for more details.
+// So, if the direct syscall is used, as MEMORY_SANITIZER does not know about
+// it, sigaction() invocation in other places would be broken (in more precise,
+// returned |oldact| would have a broken |sa_handler| callback).
+// Practically, it would break NaCl's signal handler installation.
+// cf) native_client/src/trusted/service_runtime/linux/nacl_signal.c.
+//
+// Also on x86_64 architecture, we need naked function for rt_sigreturn.
+// However, there is no simple way to define it with GCC. Note that the body
+// of function is actually very small (only two instructions), but we need to
+// define much debug information in addition, otherwise backtrace() used by
+// base::StackTrace would not work so that some tests would fail.
+int sys_sigaction(int signum,
+                  const struct sigaction* act,
+                  struct sigaction* oldact) {
+  return sigaction(signum, act, oldact);
+}
+#else
+// struct sigaction is different ABI from the Linux's.
+struct KernelSigAction {
+  void (*kernel_handler)(int);
+  uint32_t sa_flags;
+  void (*sa_restorer)(void);
+  uint64_t sa_mask;
+};
+
+// On X86_64 arch, it is necessary to set sa_restorer always.
+#if defined(ARCH_CPU_X86_64)
+#if !defined(SA_RESTORER)
+#define SA_RESTORER 0x04000000
+#endif
+
+// rt_sigreturn is a special system call that interacts with the user land
+// stack. Thus, here prologue must not be created, which implies syscall()
+// does not work properly, too. Note that rt_sigreturn will never return.
+static __attribute__((naked)) void sys_rt_sigreturn() {
+  // Just invoke rt_sigreturn system call.
+  asm volatile ("syscall\n"
+                :: "a"(__NR_rt_sigreturn));
+}
+#endif
+
+int sys_sigaction(int signum,
+                  const struct sigaction* act,
+                  struct sigaction* oldact) {
+  KernelSigAction kernel_act = {};
+  if (act) {
+    kernel_act.kernel_handler = act->sa_handler;
+    std::memcpy(&kernel_act.sa_mask, &act->sa_mask,
+                std::min(sizeof(kernel_act.sa_mask), sizeof(act->sa_mask)));
+    kernel_act.sa_flags = act->sa_flags;
+
+#if defined(ARCH_CPU_X86_64)
+    if (!(kernel_act.sa_flags & SA_RESTORER)) {
+      kernel_act.sa_flags |= SA_RESTORER;
+      kernel_act.sa_restorer = sys_rt_sigreturn;
+    }
+#endif
+  }
+
+  KernelSigAction kernel_oldact = {};
+  int result = syscall(__NR_rt_sigaction, signum, act ? &kernel_act : nullptr,
+                       oldact ? &kernel_oldact : nullptr, sizeof(uint64_t));
+  if (result == 0 && oldact) {
+    oldact->sa_handler = kernel_oldact.kernel_handler;
+    sigemptyset(&oldact->sa_mask);
+    std::memcpy(&oldact->sa_mask, &kernel_oldact.sa_mask,
+                std::min(sizeof(kernel_act.sa_mask), sizeof(act->sa_mask)));
+    oldact->sa_flags = kernel_oldact.sa_flags;
+  }
+  return result;
+}
+
+#endif  // defined(MEMORY_SANITIZER)
 
 }  // namespace sandbox
