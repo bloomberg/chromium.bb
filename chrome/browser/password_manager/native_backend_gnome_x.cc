@@ -206,7 +206,7 @@ ScopedVector<PasswordForm> ConvertFormList(GList* found,
       } else {
         LOG(WARNING) << "Unable to access password from list element!";
       }
-      forms.push_back(form.release());
+      forms.push_back(form.Pass());
     } else {
       LOG(WARNING) << "Could not initialize PasswordForm from attributes!";
     }

@@ -121,7 +121,7 @@ TEST_F(PasswordStoreDefaultTest, NonASCIIData) {
   ScopedVector<PasswordForm> expected_forms;
   for (unsigned int i = 0; i < arraysize(form_data); ++i) {
     expected_forms.push_back(
-        CreatePasswordFormFromDataForTesting(form_data[i]).release());
+        CreatePasswordFormFromDataForTesting(form_data[i]).Pass());
     store->AddLogin(*expected_forms.back());
   }
 

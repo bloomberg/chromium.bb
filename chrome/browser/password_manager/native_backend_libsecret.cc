@@ -601,7 +601,7 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
       } else {
         VLOG(1) << "Unable to access password from list element!";
       }
-      forms.push_back(form.release());
+      forms.push_back(form.Pass());
     } else {
       VLOG(1) << "Could not initialize PasswordForm from attributes!";
     }

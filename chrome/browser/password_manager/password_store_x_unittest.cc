@@ -256,7 +256,7 @@ void InitExpectedForms(bool autofillable,
         autofillable,
         false,
         static_cast<double>(i + 1)};
-    forms->push_back(CreatePasswordFormFromDataForTesting(data).release());
+    forms->push_back(CreatePasswordFormFromDataForTesting(data).Pass());
   }
 }
 

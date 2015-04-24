@@ -225,7 +225,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   ScopedVector<PasswordForm> all_forms;
   for (size_t i = 0; i < arraysize(form_data); ++i) {
     all_forms.push_back(
-        CreatePasswordFormFromDataForTesting(form_data[i]).release());
+        CreatePasswordFormFromDataForTesting(form_data[i]).Pass());
     store->AddLogin(*all_forms.back());
   }
   base::MessageLoop::current()->RunUntilIdle();

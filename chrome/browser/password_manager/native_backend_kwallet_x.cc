@@ -226,7 +226,7 @@ bool DeserializeValueSize(const std::string& signon_realm,
               generation_upload_status);
     }
 
-    converted_forms.push_back(form.release());
+    converted_forms.push_back(form.Pass());
   }
 
   forms->swap(converted_forms);

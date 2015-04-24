@@ -970,7 +970,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
 
   // Feed the incomplete credentials to the manager.
   ScopedVector<PasswordForm> simulated_results;
-  simulated_results.push_back(incomplete_form.release());
+  simulated_results.push_back(incomplete_form.Pass());
   form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
 
   form_manager.ProvisionallySave(
@@ -1372,7 +1372,7 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
   client_with_store.KillDriver();
 
   ScopedVector<PasswordForm> simulated_results;
-  simulated_results.push_back(form.release());
+  simulated_results.push_back(form.Pass());
   form_manager.OnGetPasswordStoreResults(simulated_results.Pass());
 }
 
