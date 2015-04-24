@@ -2360,6 +2360,10 @@ crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-con
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-redirect-nocors-other-https.html [ Slow ]
 crbug.com/458491 [ Win ] http/tests/fetch/serviceworker-proxied/fetch-access-control-redirect-other-https.html [ Slow ]
 
+crbug.com/480769 [ Linux Release ] http/tests/inspector/service-workers/service-worker-manager.html [ Crash Pass ]
+crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Slow ]
+crbug.com/480769 [ Release ] http/tests/inspector/service-workers/service-worker-agents.html [ Crash Pass ]
+
 crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-vertical-lr.html [ Skip ]
 crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-vertical-rl.html [ Skip ]
 crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Skip ]
