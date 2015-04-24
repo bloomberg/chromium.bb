@@ -280,6 +280,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   beacon.http_response_code = response_code;
   beacon.start_time = request.load_timing_info.request_start;
   beacon.elapsed = time_->NowTicks() - beacon.start_time;
+  beacon.was_proxied = request.response_info.was_fetched_via_proxy;
   beacon.domain = request.url.host();
   context_manager_.RouteBeacon(request.url, beacon);
 }

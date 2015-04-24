@@ -30,6 +30,7 @@ DomainReliabilityBeacon MakeBeacon(MockableTime* time) {
   beacon.status = "ok";
   beacon.chrome_error = net::OK;
   beacon.server_ip = "127.0.0.1";
+  beacon.was_proxied = false;
   beacon.protocol = "HTTP";
   beacon.http_response_code = 200;
   beacon.elapsed = base::TimeDelta::FromMilliseconds(250);
@@ -179,7 +180,8 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
           "\"http_response_code\":200,\"network_changed\":false,"
           "\"protocol\":\"HTTP\",\"request_age_ms\":300250,"
           "\"request_elapsed_ms\":250,\"resource\":\"always_report\","
-          "\"server_ip\":\"127.0.0.1\",\"status\":\"ok\"}],"
+          "\"server_ip\":\"127.0.0.1\",\"status\":\"ok\","
+          "\"was_proxied\":false}],"
       "\"reporter\":\"test-reporter\","
       "\"resources\":[{\"failed_requests\":0,\"name\":\"always_report\","
           "\"successful_requests\":1}]}";
@@ -216,7 +218,8 @@ TEST_F(DomainReliabilityContextTest, ReportUpload_NetworkChanged) {
           "\"http_response_code\":200,\"network_changed\":true,"
           "\"protocol\":\"HTTP\",\"request_age_ms\":300250,"
           "\"request_elapsed_ms\":250,\"resource\":\"always_report\","
-          "\"server_ip\":\"127.0.0.1\",\"status\":\"ok\"}],"
+          "\"server_ip\":\"127.0.0.1\",\"status\":\"ok\","
+          "\"was_proxied\":false}],"
       "\"reporter\":\"test-reporter\","
       "\"resources\":[{\"failed_requests\":0,\"name\":\"always_report\","
           "\"successful_requests\":1}]}";

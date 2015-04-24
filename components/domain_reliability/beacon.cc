@@ -33,6 +33,7 @@ Value* DomainReliabilityBeacon::ToValue(
     beacon_value->Set("failure_data", failure_value);
   }
   beacon_value->SetString("server_ip", server_ip);
+  beacon_value->SetBoolean("was_proxied", was_proxied);
   beacon_value->SetString("protocol", protocol);
   if (http_response_code >= 0)
     beacon_value->SetInteger("http_response_code", http_response_code);

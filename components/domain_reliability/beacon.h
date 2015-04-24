@@ -39,6 +39,9 @@ struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   int chrome_error;
   // IP address of the server the request went to.
   std::string server_ip;
+  // Whether the request went through a proxy. If true, |server_ip| will be
+  // empty.
+  bool was_proxied;
   // Protocol used to make the request.
   std::string protocol;
   // HTTP response code returned by the server, or -1 if none was received.
