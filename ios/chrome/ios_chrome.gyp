@@ -156,6 +156,7 @@
         'browser/pref_names.h',
         'browser/prefs/pref_observer_bridge.h',
         'browser/prefs/pref_observer_bridge.mm',
+        'browser/procedural_block_types.h',
         'browser/snapshots/snapshot_cache.h',
         'browser/snapshots/snapshot_cache.mm',
         'browser/snapshots/snapshot_manager.h',
