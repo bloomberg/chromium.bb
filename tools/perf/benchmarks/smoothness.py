@@ -236,7 +236,7 @@ class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
     return smoothness.Smoothness(enable_auto_issuing_marker=False)
 
 
-@benchmark.Enabled('chromeos')
+@benchmark.Enabled('android', 'chromeos')
 class SmoothnessToughScrollingWhileZoomedInCases(benchmark.Benchmark):
   """Measures rendering statistics for pinch-zooming then diagonal scrolling"""
   page_set = page_sets.ToughScrollingWhileZoomedInCasesPageSet
