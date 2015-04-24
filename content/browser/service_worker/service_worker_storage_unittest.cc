@@ -526,7 +526,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
           live_registration.get(), kScript, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_version->script_cache_map()->SetResources(resources);
-  live_registration->SetWaitingVersion(live_version.get());
+  live_registration->SetWaitingVersion(live_version);
   live_registration->set_last_update_check(kYesterday);
   EXPECT_EQ(SERVICE_WORKER_OK,
             StoreRegistration(live_registration, live_version));
@@ -617,7 +617,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   scoped_refptr<ServiceWorkerVersion> temp_version =
       found_registration->waiting_version();
   temp_version->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  found_registration->SetActiveVersion(temp_version.get());
+  found_registration->SetActiveVersion(temp_version);
   temp_version = NULL;
   EXPECT_EQ(SERVICE_WORKER_OK, UpdateToActiveState(found_registration));
   found_registration->set_last_update_check(kToday);
@@ -683,7 +683,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
       new ServiceWorkerVersion(
           live_registration.get(), kScript, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLING);
-  live_registration->SetWaitingVersion(live_version.get());
+  live_registration->SetWaitingVersion(live_version);
 
   // Should not be findable, including by GetAllRegistrations.
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
@@ -805,7 +805,7 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
       new ServiceWorkerVersion(
           live_registration.get(), kScript, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
-  live_registration->SetWaitingVersion(live_version.get());
+  live_registration->SetWaitingVersion(live_version);
   EXPECT_EQ(SERVICE_WORKER_OK,
             StoreRegistration(live_registration, live_version));
 
@@ -1256,7 +1256,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       registration_.get(), script_, storage()->NewVersionId(), context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::NEW);
-  registration_->SetWaitingVersion(live_version.get());
+  registration_->SetWaitingVersion(live_version);
 
   // Writing the registration should move the old version's resources to the
   // purgeable list but keep them available.
@@ -1310,7 +1310,7 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
       new ServiceWorkerVersion(
           live_registration1.get(), kScript1, kVersionId1, context_ptr_);
   live_version1->SetStatus(ServiceWorkerVersion::INSTALLED);
-  live_registration1->SetWaitingVersion(live_version1.get());
+  live_registration1->SetWaitingVersion(live_version1);
 
   // Registration for "/scope/foo".
   const GURL kScope2("http://www.example.com/scope/foo");
@@ -1324,7 +1324,7 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
       new ServiceWorkerVersion(
           live_registration2.get(), kScript2, kVersionId2, context_ptr_);
   live_version2->SetStatus(ServiceWorkerVersion::INSTALLED);
-  live_registration2->SetWaitingVersion(live_version2.get());
+  live_registration2->SetWaitingVersion(live_version2);
 
   // Registration for "/scope/foobar".
   const GURL kScope3("http://www.example.com/scope/foobar");
@@ -1338,7 +1338,7 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
       new ServiceWorkerVersion(
           live_registration3.get(), kScript3, kVersionId3, context_ptr_);
   live_version3->SetStatus(ServiceWorkerVersion::INSTALLED);
-  live_registration3->SetWaitingVersion(live_version3.get());
+  live_registration3->SetWaitingVersion(live_version3);
 
   // Notify storage of they being installed.
   storage()->NotifyInstallingRegistration(live_registration1.get());

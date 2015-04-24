@@ -94,9 +94,9 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // Sets the corresposding version attribute and resets the position
   // (if any) left vacant (ie. by a waiting version being promoted).
   // Also notifies listeners via OnVersionAttributesChanged.
-  void SetActiveVersion(ServiceWorkerVersion* version);
-  void SetWaitingVersion(ServiceWorkerVersion* version);
-  void SetInstallingVersion(ServiceWorkerVersion* version);
+  void SetActiveVersion(const scoped_refptr<ServiceWorkerVersion>& version);
+  void SetWaitingVersion(const scoped_refptr<ServiceWorkerVersion>& version);
+  void SetInstallingVersion(const scoped_refptr<ServiceWorkerVersion>& version);
 
   // If version is the installing, waiting, active version of this
   // registation, the method will reset that field to NULL, and notify
@@ -142,10 +142,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   ~ServiceWorkerRegistration() override;
 
-  void SetVersionInternal(
-      ServiceWorkerVersion* version,
-      scoped_refptr<ServiceWorkerVersion>* data_member,
-      int change_flag);
   void UnsetVersionInternal(
       ServiceWorkerVersion* version,
       ChangedVersionAttributesMask* mask);

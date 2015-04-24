@@ -84,23 +84,54 @@ ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
 }
 
 void ServiceWorkerRegistration::SetActiveVersion(
-    ServiceWorkerVersion* version) {
+    const scoped_refptr<ServiceWorkerVersion>& version) {
   should_activate_when_ready_ = false;
-  SetVersionInternal(version, &active_version_,
-                     ChangedVersionAttributesMask::ACTIVE_VERSION);
+  if (active_version_ == version)
+    return;
+
+  ChangedVersionAttributesMask mask;
+  if (version)
+    UnsetVersionInternal(version.get(), &mask);
+  if (active_version_)
+    active_version_->RemoveListener(this);
+  active_version_ = version;
+  if (active_version_)
+    active_version_->AddListener(this);
+  mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
+
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnVersionAttributesChanged(this, mask, GetInfo()));
 }
 
 void ServiceWorkerRegistration::SetWaitingVersion(
-    ServiceWorkerVersion* version) {
+    const scoped_refptr<ServiceWorkerVersion>& version) {
   should_activate_when_ready_ = false;
-  SetVersionInternal(version, &waiting_version_,
-                     ChangedVersionAttributesMask::WAITING_VERSION);
+  if (waiting_version_ == version)
+    return;
+
+  ChangedVersionAttributesMask mask;
+  if (version)
+    UnsetVersionInternal(version.get(), &mask);
+  waiting_version_ = version;
+  mask.add(ChangedVersionAttributesMask::WAITING_VERSION);
+
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnVersionAttributesChanged(this, mask, GetInfo()));
 }
 
 void ServiceWorkerRegistration::SetInstallingVersion(
-    ServiceWorkerVersion* version) {
-  SetVersionInternal(version, &installing_version_,
-                     ChangedVersionAttributesMask::INSTALLING_VERSION);
+    const scoped_refptr<ServiceWorkerVersion>& version) {
+  if (installing_version_ == version)
+    return;
+
+  ChangedVersionAttributesMask mask;
+  if (version)
+    UnsetVersionInternal(version.get(), &mask);
+  installing_version_ = version;
+  mask.add(ChangedVersionAttributesMask::INSTALLING_VERSION);
+
+  FOR_EACH_OBSERVER(Listener, listeners_,
+                    OnVersionAttributesChanged(this, mask, GetInfo()));
 }
 
 void ServiceWorkerRegistration::UnsetVersion(ServiceWorkerVersion* version) {
@@ -113,27 +144,6 @@ void ServiceWorkerRegistration::UnsetVersion(ServiceWorkerVersion* version) {
     FOR_EACH_OBSERVER(Listener, listeners_,
                       OnVersionAttributesChanged(this, mask, info));
   }
-}
-
-void ServiceWorkerRegistration::SetVersionInternal(
-    ServiceWorkerVersion* version,
-    scoped_refptr<ServiceWorkerVersion>* data_member,
-    int change_flag) {
-  if (version == data_member->get())
-    return;
-  scoped_refptr<ServiceWorkerVersion> protect(version);
-  ChangedVersionAttributesMask mask;
-  if (version)
-    UnsetVersionInternal(version, &mask);
-  if (*data_member && *data_member == active_version_)
-    active_version_->RemoveListener(this);
-  *data_member = version;
-  if (active_version_.get() && active_version_.get() == version)
-    active_version_->AddListener(this);
-  mask.add(change_flag);
-  ServiceWorkerRegistrationInfo info = GetInfo();
-  FOR_EACH_OBSERVER(Listener, listeners_,
-                    OnVersionAttributesChanged(this, mask, info));
 }
 
 void ServiceWorkerRegistration::UnsetVersionInternal(
@@ -276,7 +286,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
 
   // "6. Set serviceWorkerRegistration.activeWorker to activatingWorker."
   // "7. Set serviceWorkerRegistration.waitingWorker to null."
-  SetActiveVersion(activating_version.get());
+  SetActiveVersion(activating_version);
 
   // "8. Run the [[UpdateState]] algorithm passing registration.activeWorker and
   // "activating" as arguments."

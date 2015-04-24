@@ -1297,9 +1297,9 @@ ServiceWorkerStorage::GetOrCreateRegistration(
   }
 
   if (version->status() == ServiceWorkerVersion::ACTIVATED)
-    registration->SetActiveVersion(version.get());
+    registration->SetActiveVersion(version);
   else if (version->status() == ServiceWorkerVersion::INSTALLED)
-    registration->SetWaitingVersion(version.get());
+    registration->SetWaitingVersion(version);
   else
     NOTREACHED();
 

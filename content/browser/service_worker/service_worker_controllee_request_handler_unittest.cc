@@ -103,7 +103,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
 
   // Store an activated worker.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  registration_->SetActiveVersion(version_.get());
+  registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
       version_.get(),
@@ -146,7 +146,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Store a registration that is installed but not activated yet.
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
-  registration_->SetWaitingVersion(version_.get());
+  registration_->SetWaitingVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
       version_.get(),
@@ -195,7 +195,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   // Store a registration so the call to FindRegistrationForDocument will read
   // from the database.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  registration_->SetActiveVersion(version_.get());
+  registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
       version_.get(),

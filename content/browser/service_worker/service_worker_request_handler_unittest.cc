@@ -61,7 +61,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-    registration_->SetActiveVersion(version_.get());
+    registration_->SetActiveVersion(version_);
     context()->storage()->StoreRegistration(
         registration_.get(),
         version_.get(),

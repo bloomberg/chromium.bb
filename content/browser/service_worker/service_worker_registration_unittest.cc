@@ -105,7 +105,7 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
 
   RegistrationListener listener;
   registration->AddListener(&listener);
-  registration->SetActiveVersion(version_1.get());
+  registration->SetActiveVersion(version_1);
 
   EXPECT_EQ(version_1.get(), registration->active_version());
   EXPECT_EQ(registration, listener.observed_registration_);
@@ -120,7 +120,7 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
             kInvalidServiceWorkerVersionId);
   listener.Reset();
 
-  registration->SetInstallingVersion(version_2.get());
+  registration->SetInstallingVersion(version_2);
 
   EXPECT_EQ(version_2.get(), registration->installing_version());
   EXPECT_EQ(ChangedVersionAttributesMask::INSTALLING_VERSION,
@@ -132,7 +132,7 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
             kInvalidServiceWorkerVersionId);
   listener.Reset();
 
-  registration->SetWaitingVersion(version_2.get());
+  registration->SetWaitingVersion(version_2);
 
   EXPECT_EQ(version_2.get(), registration->waiting_version());
   EXPECT_FALSE(registration->installing_version());

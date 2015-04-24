@@ -648,7 +648,7 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   ASSERT_EQ(SERVICE_WORKER_OK, status);
 
   version->SetStatus(ServiceWorkerVersion::INSTALLED);
-  registration->SetWaitingVersion(version.get());
+  registration->SetWaitingVersion(version);
   EXPECT_EQ(ServiceWorkerVersion::RUNNING,
             version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, version->status());
@@ -1030,7 +1030,7 @@ TEST_F(ServiceWorkerJobTest, Update_NewestVersionChanged) {
                                GURL("http://www.example.com/new_worker.js"),
                                2L /* dummy version id */,
                                helper_->context()->AsWeakPtr());
-  registration->SetWaitingVersion(version.get());
+  registration->SetWaitingVersion(version);
 
   base::RunLoop().RunUntilIdle();
 
