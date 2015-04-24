@@ -84,13 +84,13 @@ component("net") {
   include_dirs = []
 
   public_deps = [
+    ":net_quic_proto",
     "//crypto",
     "//crypto:platform",
     "//url",
   ]
   deps = [
     ":net_resources",
-    ":net_quic_proto",
     "//base",
     "//base:prefs",
     "//base/third_party/dynamic_annotations",
@@ -510,6 +510,8 @@ grit("net_resources") {
 }
 
 proto_library("net_quic_proto") {
+  visibility = [ "//net" ]  # Part of the net component.
+
   sources = [
     "quic/proto/cached_network_parameters.proto",
     "quic/proto/source_address_token.proto",
@@ -1148,7 +1150,6 @@ if (is_linux) {
       ":balsa",
       ":epoll_server",
       ":net",
-      ":net_quic_proto",
       "//base",
       "//base/third_party/dynamic_annotations",
       "//crypto",
@@ -1181,7 +1182,6 @@ if (is_linux) {
       ":epoll_server",
       ":epoll_quic_tools",
       ":net",
-      ":net_quic_proto",
       ":simple_quic_tools",
       "//base",
       "//third_party/boringssl",
@@ -1255,7 +1255,6 @@ source_set("simple_quic_tools") {
   ]
   deps = [
     ":net",
-    ":net_quic_proto",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//url",
@@ -1280,10 +1279,10 @@ executable("quic_server") {
   ]
   deps = [
     ":net",
-    ":net_quic_proto",
     ":simple_quic_tools",
     "//base",
     "//third_party/boringssl",
+    "//third_party/protobuf:protobuf_lite",
   ]
 }
 
@@ -1302,7 +1301,6 @@ if (!is_android && !is_mac) {
       ":extras",
       ":http_server",
       ":net",
-      ":net_quic_proto",
       ":simple_quic_tools",
       ":test_support",
       "//base",
