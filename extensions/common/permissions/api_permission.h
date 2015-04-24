@@ -56,6 +56,7 @@ class APIPermission {
     kAudio,
     kAudioCapture,
     kAudioModem,
+    kAutofillPrivate,
     kAutomation,
     kAutoTestPrivate,
     kBackground,

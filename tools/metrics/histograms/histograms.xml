@@ -51305,6 +51305,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1010" label="FILEMANAGERPRIVATE_CONFIGUREPROVIDEDFILESYSTEM"/>
   <int value="1011" label="SEARCHENGINESPRIVATE_GETDEFAULTSEARCHENGINES"/>
   <int value="1012" label="SEARCHENGINESPRIVATE_SETSELECTEDSEARCHENGINE"/>
+  <int value="1013" label="AUTOFILLPRIVATE_SAVEADDRESS"/>
+  <int value="1014" label="AUTOFILLPRIVATE_GETADDRESSCOMPONENTS"/>
+  <int value="1015" label="AUTOFILLPRIVATE_SAVECREDITCARD"/>
+  <int value="1016" label="AUTOFILLPRIVATE_REMOVEENTRY"/>
+  <int value="1017" label="AUTOFILLPRIVATE_VALIDATEPHONENUMBERS"/>
+  <int value="1018" label="AUTOFILLPRIVATE_MASKCREDITCARD"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
