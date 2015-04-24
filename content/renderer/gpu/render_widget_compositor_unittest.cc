@@ -57,6 +57,7 @@ class RenderWidgetCompositorTest : public testing::Test {
   ~RenderWidgetCompositorTest() override {}
 
  protected:
+  base::MessageLoop loop_;
   MockRenderThread render_thread_;
   scoped_refptr<TestRenderWidget> render_widget_;
   scoped_ptr<FakeCompositorDependencies> compositor_deps_;

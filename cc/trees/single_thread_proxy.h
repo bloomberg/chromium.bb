@@ -172,8 +172,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   // This is the callback for the scheduled RequestNewOutputSurface.
   base::CancelableClosure output_surface_creation_callback_;
 
-  scoped_ptr<BeginFrameSource> external_begin_frame_source_;
-
   base::WeakPtrFactory<SingleThreadProxy> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleThreadProxy);

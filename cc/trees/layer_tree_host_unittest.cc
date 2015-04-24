@@ -86,6 +86,46 @@ class LayerTreeHostTest : public LayerTreeTest {
   PrioritizedResourceManager* contents_texture_manager_;
 };
 
+class LayerTreeHostTestSetNeedsCommitInsideLayout : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void Layout() override {
+    // This shouldn't cause a second commit to happen.
+    layer_tree_host()->SetNeedsCommit();
+  }
+
+  void DidCommit() override {
+    EXPECT_EQ(1, layer_tree_host()->source_frame_number());
+    EndTest();
+  }
+
+  void AfterTest() override {}
+};
+
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(
+    LayerTreeHostTestSetNeedsCommitInsideLayout);
+
+class LayerTreeHostTestSetNeedsUpdateInsideLayout : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void Layout() override {
+    // This shouldn't cause a second commit to happen.
+    layer_tree_host()->SetNeedsUpdateLayers();
+  }
+
+  void DidCommit() override {
+    EXPECT_EQ(1, layer_tree_host()->source_frame_number());
+    EndTest();
+  }
+
+  void AfterTest() override {}
+};
+
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(
+    LayerTreeHostTestSetNeedsUpdateInsideLayout);
+
 // Test if the LTHI receives ReadyToActivate notifications from the TileManager
 // when no raster tasks get scheduled.
 class LayerTreeHostTestReadyToActivateEmpty : public LayerTreeHostTest {
