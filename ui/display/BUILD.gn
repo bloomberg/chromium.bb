@@ -5,134 +5,138 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-component("display") {
-  sources = [
-    "chromeos/apply_content_protection_task.cc",
-    "chromeos/apply_content_protection_task.h",
-    "chromeos/configure_displays_task.cc",
-    "chromeos/configure_displays_task.h",
-    "chromeos/display_configurator.cc",
-    "chromeos/display_configurator.h",
-    "chromeos/display_layout_manager.h",
-    "chromeos/display_util.cc",
-    "chromeos/display_util.h",
-    "chromeos/ozone/display_configurator_ozone.cc",
-    "chromeos/query_content_protection_task.cc",
-    "chromeos/query_content_protection_task.h",
-    "chromeos/update_display_configuration_task.cc",
-    "chromeos/update_display_configuration_task.h",
-    "chromeos/x11/display_configurator_x11.cc",
-    "chromeos/x11/display_mode_x11.cc",
-    "chromeos/x11/display_mode_x11.h",
-    "chromeos/x11/display_snapshot_x11.cc",
-    "chromeos/x11/display_snapshot_x11.h",
-    "chromeos/x11/display_util_x11.cc",
-    "chromeos/x11/display_util_x11.h",
-    "chromeos/x11/native_display_delegate_x11.cc",
-    "chromeos/x11/native_display_delegate_x11.h",
-    "chromeos/x11/native_display_event_dispatcher_x11.cc",
-    "chromeos/x11/native_display_event_dispatcher_x11.h",
-    "display_export.h",
-    "display_switches.cc",
-    "display_switches.h",
-  ]
-
-  defines = [ "DISPLAY_IMPLEMENTATION" ]
-
-  deps = [
-    "//base",
-    "//ui/display/util",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-  ]
-
-  if (use_x11) {
-    configs += [
-      "//build/config/linux:x11",
-      "//build/config/linux:xext",
-      "//build/config/linux:xi",
-      "//build/config/linux:xrandr",
+if (is_chromeos) {
+  component("display") {
+    sources = [
+      "chromeos/apply_content_protection_task.cc",
+      "chromeos/apply_content_protection_task.h",
+      "chromeos/configure_displays_task.cc",
+      "chromeos/configure_displays_task.h",
+      "chromeos/display_configurator.cc",
+      "chromeos/display_configurator.h",
+      "chromeos/display_layout_manager.h",
+      "chromeos/display_util.cc",
+      "chromeos/display_util.h",
+      "chromeos/ozone/display_configurator_ozone.cc",
+      "chromeos/query_content_protection_task.cc",
+      "chromeos/query_content_protection_task.h",
+      "chromeos/update_display_configuration_task.cc",
+      "chromeos/update_display_configuration_task.h",
+      "chromeos/x11/display_configurator_x11.cc",
+      "chromeos/x11/display_mode_x11.cc",
+      "chromeos/x11/display_mode_x11.h",
+      "chromeos/x11/display_snapshot_x11.cc",
+      "chromeos/x11/display_snapshot_x11.h",
+      "chromeos/x11/display_util_x11.cc",
+      "chromeos/x11/display_util_x11.h",
+      "chromeos/x11/native_display_delegate_x11.cc",
+      "chromeos/x11/native_display_delegate_x11.h",
+      "chromeos/x11/native_display_event_dispatcher_x11.cc",
+      "chromeos/x11/native_display_event_dispatcher_x11.h",
+      "display_export.h",
+      "display_switches.cc",
+      "display_switches.h",
     ]
-    deps += [ "//ui/events/platform" ]
-    if (is_chromeos) {
-      sources -= [ "chromeos/ozone/display_configurator_ozone.cc" ]
-    }
-  }
 
-  if (is_chromeos) {
-    deps += [ "//ui/display/types" ]
+    defines = [ "DISPLAY_IMPLEMENTATION" ]
+
+    deps = [
+      "//base",
+      "//ui/display/util",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+    ]
+
     if (use_x11) {
-      deps += [ "//ui/gfx/x" ]
-    }
-  }
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-    if (is_chromeos) {
-      sources -= [
-        "chromeos/x11/display_configurator_x11.cc",
-        "chromeos/x11/display_mode_x11.cc",
-        "chromeos/x11/display_mode_x11.h",
-        "chromeos/x11/display_snapshot_x11.cc",
-        "chromeos/x11/display_snapshot_x11.h",
-        "chromeos/x11/display_util_x11.cc",
-        "chromeos/x11/display_util_x11.h",
-        "chromeos/x11/native_display_delegate_x11.cc",
-        "chromeos/x11/native_display_delegate_x11.h",
-        "chromeos/x11/native_display_event_dispatcher_x11.cc",
-        "chromeos/x11/native_display_event_dispatcher_x11.h",
+      configs += [
+        "//build/config/linux:x11",
+        "//build/config/linux:xext",
+        "//build/config/linux:xi",
+        "//build/config/linux:xrandr",
       ]
+      deps += [ "//ui/events/platform" ]
+      if (is_chromeos) {
+        sources -= [ "chromeos/ozone/display_configurator_ozone.cc" ]
+      }
+    }
+
+    if (is_chromeos) {
+      deps += [ "//ui/display/types" ]
+      if (use_x11) {
+        deps += [ "//ui/gfx/x" ]
+      }
+    }
+
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+      if (is_chromeos) {
+        sources -= [
+          "chromeos/x11/display_configurator_x11.cc",
+          "chromeos/x11/display_mode_x11.cc",
+          "chromeos/x11/display_mode_x11.h",
+          "chromeos/x11/display_snapshot_x11.cc",
+          "chromeos/x11/display_snapshot_x11.h",
+          "chromeos/x11/display_util_x11.cc",
+          "chromeos/x11/display_util_x11.h",
+          "chromeos/x11/native_display_delegate_x11.cc",
+          "chromeos/x11/native_display_delegate_x11.h",
+          "chromeos/x11/native_display_event_dispatcher_x11.cc",
+          "chromeos/x11/native_display_event_dispatcher_x11.h",
+        ]
+      }
     }
   }
-}
 
-component("test_util") {
-  output_name = "display_test_util"
-  sources = [
-    "chromeos/test/test_display_snapshot.cc",
-    "chromeos/test/test_display_snapshot.h",
-  ]
+  component("test_util") {
+    output_name = "display_test_util"
+    sources = [
+      "chromeos/test/test_display_snapshot.cc",
+      "chromeos/test/test_display_snapshot.h",
+    ]
 
-  defines = [ "DISPLAY_IMPLEMENTATION" ]
+    defines = [ "DISPLAY_IMPLEMENTATION" ]
 
-  public_deps = [
-    ":display",
-  ]
-  deps = [
-    "//base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-  ]
+    public_deps = [
+      ":display",
+    ]
+    deps = [
+      "//base",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+    ]
 
-  if (is_chromeos) {
-    deps += [ "//ui/display/types" ]
+    if (is_chromeos) {
+      deps += [ "//ui/display/types" ]
+    }
+  }
+
+  source_set("test_support") {
+    testonly = true
+    sources = [
+      "chromeos/test/action_logger.cc",
+      "chromeos/test/action_logger.h",
+      "chromeos/test/action_logger_util.cc",
+      "chromeos/test/action_logger_util.h",
+      "chromeos/test/test_display_layout_manager.cc",
+      "chromeos/test/test_display_layout_manager.h",
+      "chromeos/test/test_native_display_delegate.cc",
+      "chromeos/test/test_native_display_delegate.h",
+    ]
+
+    public_deps = [
+      ":display",
+    ]
+    deps = [
+      "//base",
+      "//ui/display/types",
+      "//ui/gfx",
+      "//ui/gfx/geometry",
+    ]
   }
 }
 
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "chromeos/test/action_logger.cc",
-    "chromeos/test/action_logger.h",
-    "chromeos/test/action_logger_util.cc",
-    "chromeos/test/action_logger_util.h",
-    "chromeos/test/test_display_layout_manager.cc",
-    "chromeos/test/test_display_layout_manager.h",
-    "chromeos/test/test_native_display_delegate.cc",
-    "chromeos/test/test_native_display_delegate.h",
-  ]
-
-  public_deps = [
-    ":display",
-  ]
-  deps = [
-    "//base",
-    "//ui/display/types",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-  ]
-}
-
+# This test covers the ChromeOS "display" target as well as the cross-platform
+# //display/util target.
 test("display_unittests") {
   sources = [
     "chromeos/apply_content_protection_task_unittest.cc",
@@ -147,7 +151,6 @@ test("display_unittests") {
   ]
 
   deps = [
-    ":test_util",
     "//base",
     "//base/test:run_all_unittests",
     "//testing/gtest",
@@ -159,6 +162,7 @@ test("display_unittests") {
     deps += [
       ":display",
       ":test_support",
+      ":test_util",
       "//base/test:test_support",
       "//ui/display/types",
     ]

@@ -400,6 +400,9 @@ source_set("sync_core") {
     "util/time.h",
   ]
 
+  public_deps = [
+    "//sync/internal_api/attachments/proto",
+  ]
   deps = [
     "//base",
     "//base:i18n",
@@ -411,7 +414,6 @@ source_set("sync_core") {
     "//third_party/leveldatabase",
     "//third_party/zlib",
     "//url",
-    "//sync/internal_api/attachments/proto",
     "//sync/protocol",
   ]
 
@@ -651,7 +653,6 @@ test("sync_unit_tests") {
     "//sql",
     "//sql:test_support",
     "//sync",
-    "//sync/internal_api/attachments/proto",
     "//sync/protocol",
     "//testing/gmock",
     "//testing/gtest",
