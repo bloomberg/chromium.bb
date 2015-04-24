@@ -364,9 +364,11 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, NewVerifyModuleExportModified) {
   ASSERT_EQ(1U, modification_map[kTestExportName].size());
   uint32_t export_offset = modification_map[kTestExportName][0]->file_offset();
 
-  // Edit another exported function. VerifyModule should now report both.
+  // Edit another exported function. VerifyModule should now report both. Add
+  // one to the address so that this modification and the previous are not
+  // coalesced in the event that the first export is only one byte (e.g., ret).
+  ScopedModuleModifier<1> mod2(GetAddressOfExport(kTestDllMainExportName) + 1);
   state.Clear();
-  ScopedModuleModifier<1> mod2(GetAddressOfExport(kTestDllMainExportName));
   result = NewVerifyModule(kTestDllNames[0], &state);
   EXPECT_EQ(MODULE_STATE_MODIFIED, result.state);
   ASSERT_EQ(2, state.modification_size());
