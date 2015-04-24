@@ -22,6 +22,7 @@ struct WebRect;
 
 namespace content {
 
+class PepperWebPluginImpl;
 class RenderFrameImpl;
 
 class CONTENT_EXPORT PluginInstanceThrottlerImpl
@@ -42,7 +43,7 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   const gfx::Size& GetSize() const override;
   void NotifyAudioThrottled() override;
 
-  void SetWebPlugin(blink::WebPlugin* web_plugin);
+  void SetWebPlugin(PepperWebPluginImpl* web_plugin);
 
   bool needs_representative_keyframe() const {
     return state_ == THROTTLER_STATE_AWAITING_KEYFRAME;
@@ -88,7 +89,7 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
 
   bool is_hidden_for_placeholder_;
 
-  blink::WebPlugin* web_plugin_;
+  PepperWebPluginImpl* web_plugin_;
 
   // Holds a reference to the last received frame. This doesn't actually copy
   // the pixel data, but rather increments the reference count to the pixels.
@@ -99,6 +100,9 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
 
   // Number of frames we've examined to find a keyframe.
   int frames_examined_;
+
+  // Plugin module name as of initialization.
+  std::string plugin_module_name_;
 
   // Plugin's unobscured dimensions as of initialization.
   gfx::Size unobscured_size_;

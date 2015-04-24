@@ -350,6 +350,7 @@
       'browser/net/websocket_browsertest.cc',
       'browser/password_manager/password_manager_browsertest.cc',
       'browser/pdf/pdf_extension_test.cc',
+      'browser/plugins/plugin_power_saver_browsertest.cc',
       'browser/prefetch/prefetch_browsertest.cc',
       'browser/prefs/pref_functional_browsertest.cc',
       'browser/prefs/pref_service_browsertest.cc',
@@ -2004,6 +2005,7 @@
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
         '../v8/tools/gyp/v8.gyp:v8',
         # Runtime dependencies
+        '../ppapi/ppapi_internal.gyp:power_saver_test_plugin',
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../remoting/remoting.gyp:remoting_browser_test_resources',
         '../remoting/remoting.gyp:remoting_webapp_unittests',

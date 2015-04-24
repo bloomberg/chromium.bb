@@ -21,6 +21,7 @@
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
+#include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/pepper/ppapi_preferences_builder.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/ppb_proxy_impl.h"
@@ -245,6 +246,14 @@ uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
 
 PP_Bool IsOutOfProcess() { return PP_FALSE; }
 
+PP_Bool IsPeripheral(PP_Instance instance_id) {
+  PepperPluginInstanceImpl* plugin_instance =
+      host_globals->GetInstance(instance_id);
+  if (!plugin_instance || !plugin_instance->throttler())
+    return PP_FALSE;
+  return PP_FromBool(plugin_instance->throttler()->power_saver_enabled());
+}
+
 void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
   PepperPluginInstanceImpl* plugin_instance =
       host_globals->GetInstance(instance);
@@ -288,11 +297,17 @@ void RunV8GC(PP_Instance instance) {
 }
 
 const PPB_Testing_Private testing_interface = {
-    &ReadImageData,                    &RunMessageLoop,
-    &QuitMessageLoop,                  &GetLiveObjectsForInstance,
-    &IsOutOfProcess,                   &SimulateInputEvent,
-    &GetDocumentURL,                   &GetLiveVars,
-    &SetMinimumArrayBufferSizeForShmem,&RunV8GC};
+    &ReadImageData,
+    &RunMessageLoop,
+    &QuitMessageLoop,
+    &GetLiveObjectsForInstance,
+    &IsOutOfProcess,
+    &IsPeripheral,
+    &SimulateInputEvent,
+    &GetDocumentURL,
+    &GetLiveVars,
+    &SetMinimumArrayBufferSizeForShmem,
+    &RunV8GC};
 
 // GetInterface ----------------------------------------------------------------
 

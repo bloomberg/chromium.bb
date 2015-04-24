@@ -8,7 +8,12 @@
 #include "base/time/time.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "content/renderer/render_frame_impl.h"
+#include "ppapi/shared_impl/ppapi_constants.h"
+#include "ppapi/shared_impl/scoped_pp_var.h"
+#include "ppapi/shared_impl/var.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
@@ -98,6 +103,14 @@ void PluginInstanceThrottlerImpl::MarkPluginEssential(
 
   if (was_throttled)
     FOR_EACH_OBSERVER(Observer, observer_list_, OnThrottleStateChange());
+
+  // Notify the Power Saver test plugin of a peripheral status change.
+  if (web_plugin_ && web_plugin_->instance() &&
+      plugin_module_name_ == ppapi::kPowerSaverTestPluginName) {
+    web_plugin_->instance()->HandleMessage(ppapi::ScopedPPVar(
+        ppapi::ScopedPPVar::PassRef(),
+        ppapi::StringVar::StringToPPVar("peripheralStatusChange")));
+  }
 }
 
 void PluginInstanceThrottlerImpl::SetHiddenForPlaceholder(bool hidden) {
@@ -119,7 +132,8 @@ void PluginInstanceThrottlerImpl::NotifyAudioThrottled() {
   audio_throttled_frame_timeout_.Reset();
 }
 
-void PluginInstanceThrottlerImpl::SetWebPlugin(blink::WebPlugin* web_plugin) {
+void PluginInstanceThrottlerImpl::SetWebPlugin(
+    PepperWebPluginImpl* web_plugin) {
   DCHECK(!web_plugin_);
   web_plugin_ = web_plugin;
 }
@@ -129,6 +143,7 @@ void PluginInstanceThrottlerImpl::Initialize(
     const GURL& content_origin,
     const std::string& plugin_module_name,
     const gfx::Size& unobscured_size) {
+  plugin_module_name_ = plugin_module_name;
   unobscured_size_ = unobscured_size;
 
   // |frame| may be nullptr in tests.

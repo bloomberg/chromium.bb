@@ -14,6 +14,14 @@ namespace ppapi {
 // used to kill inactive plugins by the embedder host.
 const unsigned kKeepaliveThrottleIntervalDefaultMilliseconds = 5000;
 
+#if defined(OS_WIN)
+const char kPowerSaverTestPluginName[] = "power_saver_test_plugin.dll";
+#elif defined(OS_MACOSX)
+const char kPowerSaverTestPluginName[] = "power_saver_test_plugin.plugin";
+#elif defined(OS_POSIX)
+const char kPowerSaverTestPluginName[] = "libpower_saver_test_plugin.so";
+#endif
+
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_PPAPI_CONSTANTS_H_

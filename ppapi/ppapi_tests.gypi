@@ -80,6 +80,26 @@
 #      ],
     },
     {
+      # GN version: //ppapi:power_saver_test_plugin
+      'target_name': 'power_saver_test_plugin',
+      'type': 'loadable_module',
+      'sources': [
+        'tests/power_saver_test_plugin.cc',
+        'tests/test_utils.cc',
+      ],
+      'dependencies': [
+        'ppapi.gyp:ppapi_cpp',
+        'ppapi_internal.gyp:ppapi_shared',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'mac_bundle': 1,
+          'product_name': 'power_saver_test_plugin',
+          'product_extension': 'plugin',
+        }],
+      ],
+    },
+    {
       # GN version: //ppapi/proxy:test_support
       #             //ppapi/shared_impl:test_support
       'target_name': 'ppapi_unittest_shared',

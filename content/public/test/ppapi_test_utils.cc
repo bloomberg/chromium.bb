@@ -9,8 +9,34 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "content/public/common/content_switches.h"
+#include "ppapi/shared_impl/ppapi_constants.h"
 
 namespace ppapi {
+
+namespace {
+
+bool RegisterPlugin(
+    base::CommandLine* command_line,
+    const base::FilePath::StringType& library_name,
+    const base::FilePath::StringType& extra_registration_parameters) {
+  base::FilePath plugin_dir;
+  if (!PathService::Get(base::DIR_MODULE, &plugin_dir))
+    return false;
+
+  base::FilePath plugin_path = plugin_dir.Append(library_name);
+
+  // Append the switch to register the pepper plugin.
+  if (!base::PathExists(plugin_path))
+    return false;
+  base::FilePath::StringType pepper_plugin = plugin_path.value();
+  pepper_plugin.append(extra_registration_parameters);
+  pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
+  command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
+                                   pepper_plugin);
+  return true;
+}
+
+}  // namespace
 
 std::string StripTestPrefixes(const std::string& test_name) {
   if (test_name.find("DISABLED_") == 0)
@@ -26,27 +52,21 @@ bool RegisterTestPlugin(base::CommandLine* command_line) {
 bool RegisterTestPluginWithExtraParameters(
     base::CommandLine* command_line,
     const base::FilePath::StringType& extra_registration_parameters) {
-  base::FilePath plugin_dir;
-  if (!PathService::Get(base::DIR_MODULE, &plugin_dir))
-    return false;
-
 #if defined(OS_WIN)
-  base::FilePath plugin_path = plugin_dir.Append(L"ppapi_tests.dll");
+  base::FilePath::StringType plugin_library = L"ppapi_tests.dll";
 #elif defined(OS_MACOSX)
-  base::FilePath plugin_path = plugin_dir.Append("ppapi_tests.plugin");
+  base::FilePath::StringType plugin_library = "ppapi_tests.plugin";
 #elif defined(OS_POSIX)
-  base::FilePath plugin_path = plugin_dir.Append("libppapi_tests.so");
+  base::FilePath::StringType plugin_library = "libppapi_tests.so";
 #endif
+  return RegisterPlugin(command_line, plugin_library,
+                        extra_registration_parameters);
+}
 
-  // Append the switch to register the pepper plugin.
-  if (!base::PathExists(plugin_path))
-    return false;
-  base::FilePath::StringType pepper_plugin = plugin_path.value();
-  pepper_plugin.append(extra_registration_parameters);
-  pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
-  command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                   pepper_plugin);
-  return true;
+bool RegisterPowerSaverTestPlugin(base::CommandLine* command_line) {
+  base::FilePath::StringType library_name =
+      base::FilePath::FromUTF8Unsafe(ppapi::kPowerSaverTestPluginName).value();
+  return RegisterPlugin(command_line, library_name, FILE_PATH_LITERAL(""));
 }
 
 }  // namespace ppapi

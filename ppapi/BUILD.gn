@@ -44,6 +44,18 @@ shared_library("ppapi_tests") {
   ]
 }
 
+shared_library("power_saver_test_plugin") {
+  sources = [
+    "tests/power_saver_test_plugin.cc",
+    "tests/test_utils.cc",
+  ]
+
+  deps = [
+    "//ppapi/cpp",
+    "//ppapi/shared_impl",
+  ]
+}
+
 test("ppapi_unittests") {
   sources = [
     "host/resource_message_filter_unittest.cc",

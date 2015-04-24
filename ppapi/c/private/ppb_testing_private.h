@@ -93,6 +93,10 @@ struct PPB_Testing_Private_1_0 {
    */
   PP_Bool (*IsOutOfProcess)(void);
   /**
+   * Returns PP_TRUE if the plugin is peripheral, PP_FALSE otherwise.
+   */
+  PP_Bool (*IsPeripheral)(PP_Instance instance);
+  /**
    * Passes the input event to the browser, which sends it back to the
    * plugin. The plugin should implement PPP_InputEvent and register for
    * the input event type.

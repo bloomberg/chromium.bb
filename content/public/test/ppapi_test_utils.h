@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 
 namespace base {
@@ -22,13 +23,19 @@ std::string StripTestPrefixes(const std::string& test_name);
 
 // Registers the PPAPI test plugin to application/x-ppapi-tests. Returns true
 // on success, and false otherwise.
-bool RegisterTestPlugin(base::CommandLine* command_line);
+bool RegisterTestPlugin(base::CommandLine* command_line) WARN_UNUSED_RESULT;
 
 // Registers the PPAPI test plugin with some some extra parameters. Returns true
 // on success and false otherwise.
 bool RegisterTestPluginWithExtraParameters(
     base::CommandLine* command_line,
-    const base::FilePath::StringType& extra_registration_parameters);
+    const base::FilePath::StringType& extra_registration_parameters)
+    WARN_UNUSED_RESULT;
+
+// Registers the Power Saver test plugin to application/x-ppapi-tests.
+// Returns true on success, and false otherwise.
+bool RegisterPowerSaverTestPlugin(base::CommandLine* command_line)
+    WARN_UNUSED_RESULT;
 
 }  // namespace ppapi
 

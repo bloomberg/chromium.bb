@@ -80,6 +80,18 @@ PP_Bool IsOutOfProcess() {
   return PP_TRUE;
 }
 
+PP_Bool IsPeripheral(PP_Instance instance_id) {
+  ProxyAutoLock lock;
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
+  if (!dispatcher)
+    return PP_FALSE;
+
+  PP_Bool result = PP_FALSE;
+  dispatcher->Send(new PpapiHostMsg_PPBTesting_IsPeripheral(
+      API_ID_PPB_TESTING, instance_id, &result));
+  return result;
+}
+
 void SimulateInputEvent(PP_Instance instance_id, PP_Resource input_event) {
   ProxyAutoLock lock;
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance_id);
@@ -133,17 +145,17 @@ void RunV8GC(PP_Instance instance) {
 }
 
 const PPB_Testing_Private testing_interface = {
-  &ReadImageData,
-  &RunMessageLoop,
-  &QuitMessageLoop,
-  &GetLiveObjectsForInstance,
-  &IsOutOfProcess,
-  &SimulateInputEvent,
-  &GetDocumentURL,
-  &GetLiveVars,
-  &SetMinimumArrayBufferSizeForShmem,
-  &RunV8GC
-};
+    &ReadImageData,
+    &RunMessageLoop,
+    &QuitMessageLoop,
+    &GetLiveObjectsForInstance,
+    &IsOutOfProcess,
+    &IsPeripheral,
+    &SimulateInputEvent,
+    &GetDocumentURL,
+    &GetLiveVars,
+    &SetMinimumArrayBufferSizeForShmem,
+    &RunV8GC};
 
 }  // namespace
 
@@ -174,6 +186,7 @@ bool PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgReadImageData)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
                         OnMsgGetLiveObjectsForInstance)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_IsPeripheral, OnMsgIsPeripheral)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_SimulateInputEvent,
                         OnMsgSimulateInputEvent)
     IPC_MESSAGE_HANDLER(
@@ -204,6 +217,11 @@ void PPB_Testing_Proxy::OnMsgQuitMessageLoop(PP_Instance instance) {
 void PPB_Testing_Proxy::OnMsgGetLiveObjectsForInstance(PP_Instance instance,
                                                        uint32_t* result) {
   *result = ppb_testing_impl_->GetLiveObjectsForInstance(instance);
+}
+
+void PPB_Testing_Proxy::OnMsgIsPeripheral(PP_Instance instance,
+                                          PP_Bool* result) {
+  *result = ppb_testing_impl_->IsPeripheral(instance);
 }
 
 void PPB_Testing_Proxy::OnMsgSimulateInputEvent(

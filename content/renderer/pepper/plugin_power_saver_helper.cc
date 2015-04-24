@@ -9,6 +9,7 @@
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
+#include "ppapi/shared_impl/ppapi_constants.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
@@ -121,8 +122,11 @@ bool PluginPowerSaverHelper::ShouldThrottleContent(
     *cross_origin_main_content = false;
 
   // This feature has only been tested throughly with Flash thus far.
-  if (plugin_module_name != content::kFlashPluginName)
+  // It is also enabled for the Power Saver test plugin for browser tests.
+  if (plugin_module_name != content::kFlashPluginName &&
+      plugin_module_name != ppapi::kPowerSaverTestPluginName) {
     return false;
+  }
 
   if (width <= 0 || height <= 0)
     return false;

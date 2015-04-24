@@ -77,6 +77,11 @@ interface PPB_Testing_Private {
    * otherwise.
    */
   PP_Bool IsOutOfProcess();
+  
+  /**
+   * Returns PP_TRUE if the plugin is peripheral, PP_FALSE otherwise.
+   */
+  PP_Bool IsPeripheral([in] PP_Instance instance);
 
   /**
    * Passes the input event to the browser, which sends it back to the
