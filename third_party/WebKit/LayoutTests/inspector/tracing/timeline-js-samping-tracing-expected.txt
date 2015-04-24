@@ -7,8 +7,8 @@ JSFrame: 220.000 / 0.603 c
 JSFrame: 221.125 / 0.599 c
 JSFrame: 222.000 / 3.500 d
 JSFrame: 222.000 / 3.500 e
-JSFrame: 225.500 / 0.813 f
-JSFrame: 225.500 / 0.813 g
+JSFrame: 225.500 / 0.758 f
+JSFrame: 225.500 / 0.758 g
 JSFrame: 228.125 / 0.877 e
 JSFrame: 228.125 / 0.877 g
 JSFrame: 230.000 / 0.808 f
