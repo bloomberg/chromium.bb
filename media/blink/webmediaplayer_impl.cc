@@ -5,6 +5,7 @@
 #include "media/blink/webmediaplayer_impl.h"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <string>
 #include <vector>
@@ -14,7 +15,6 @@
 #include "base/callback_helpers.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
-#include "base/float_util.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -486,7 +486,7 @@ blink::WebTimeRanges WebMediaPlayerImpl::seekable() const {
   // Allow a special exception for seeks to zero for streaming sources with a
   // finite duration; this allows looping to work.
   const bool allow_seek_to_zero = data_source_ && data_source_->IsStreaming() &&
-                                  base::IsFinite(seekable_end);
+                                  std::isfinite(seekable_end);
 
   // TODO(dalecurtis): Technically this allows seeking on media which return an
   // infinite duration so long as DataSource::IsStreaming() is false.  While not

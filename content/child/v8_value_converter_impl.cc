@@ -4,11 +4,11 @@
 
 #include "content/child/v8_value_converter_impl.h"
 
+#include <cmath>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/float_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -309,7 +309,7 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
 
   if (val->IsNumber()) {
     double val_as_double = val.As<v8::Number>()->Value();
-    if (!base::IsFinite(val_as_double))
+    if (!std::isfinite(val_as_double))
       return NULL;
     return new base::FundamentalValue(val_as_double);
   }

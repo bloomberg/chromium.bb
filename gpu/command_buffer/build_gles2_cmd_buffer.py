@@ -4525,7 +4525,7 @@ class StateSetHandler(TypeHandler):
         # Make this behavior consistent within Chromium, and avoid leaking GL
         # errors by generating the error in the command buffer instead of
         # letting the GL driver generate it.
-        code.append("base::IsNaN(%s)" % args[ndx].name)
+        code.append("std::isnan(%s)" % args[ndx].name)
       if len(code):
         file.Write("  if (%s) {\n" % " ||\n      ".join(code))
         file.Write(

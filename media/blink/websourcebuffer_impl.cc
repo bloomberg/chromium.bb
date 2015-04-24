@@ -4,19 +4,19 @@
 
 #include "media/blink/websourcebuffer_impl.h"
 
+#include <cmath>
 #include <limits>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/float_util.h"
 #include "media/filters/chunk_demuxer.h"
 #include "third_party/WebKit/public/platform/WebSourceBufferClient.h"
 
 namespace media {
 
 static base::TimeDelta DoubleToTimeDelta(double time) {
-  DCHECK(!base::IsNaN(time));
+  DCHECK(!std::isnan(time));
   DCHECK_NE(time, -std::numeric_limits<double>::infinity());
 
   if (time == std::numeric_limits<double>::infinity())

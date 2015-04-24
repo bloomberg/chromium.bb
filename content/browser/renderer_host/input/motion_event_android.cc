@@ -6,8 +6,9 @@
 
 #include <android/input.h>
 
+#include <cmath>
+
 #include "base/android/jni_android.h"
-#include "base/float_util.h"
 #include "jni/MotionEvent_jni.h"
 #include "ui/events/event_constants.h"
 
@@ -92,7 +93,7 @@ base::TimeTicks FromAndroidTime(int64 time_ms) {
 }
 
 float ToValidFloat(float x) {
-  if (base::IsNaN(x))
+  if (std::isnan(x))
     return 0.f;
 
   // Wildly large orientation values have been observed in the wild after device

@@ -5,9 +5,9 @@
 #include "cc/base/histograms.h"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 
-#include "base/float_util.h"
 #include "base/numerics/safe_conversions.h"
 
 namespace cc {
@@ -38,7 +38,7 @@ void ScopedUMAHistogramAreaTimerBase::GetHistogramValues(
   elapsed = std::max(
       elapsed, base::TimeDelta::FromMicroseconds(kMinimumTimeMicroseconds));
   double area_per_time = area / elapsed.InMillisecondsF();
-  DCHECK(!base::IsNaN(area_per_time));
+  DCHECK(!std::isnan(area_per_time));
   *time_microseconds = base::saturated_cast<Sample>(elapsed.InMicroseconds());
   *pixels_per_ms = base::saturated_cast<Sample>(area_per_time);
 }

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #include "base/basictypes.h"
-#include "base/float_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,8 +41,7 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
   ASSERT_TRUE(float_infinity_value.get());
   EXPECT_TRUE(float_infinity_value->IsType(GinJavaBridgeValue::TYPE_NONFINITE));
   EXPECT_TRUE(float_infinity_value->GetAsNonFinite(&native_float));
-  EXPECT_FALSE(base::IsFinite(native_float));
-  EXPECT_FALSE(base::IsNaN(native_float));
+  EXPECT_TRUE(std::isinf(native_float));
 
   EXPECT_FALSE(undefined_value->GetAsObjectID(&native_object_id));
 
@@ -57,8 +57,7 @@ TEST_F(GinJavaBridgeValueTest, BasicValues) {
   EXPECT_TRUE(
       double_infinity_value->IsType(GinJavaBridgeValue::TYPE_NONFINITE));
   EXPECT_TRUE(double_infinity_value->GetAsNonFinite(&native_float));
-  EXPECT_FALSE(base::IsFinite(native_float));
-  EXPECT_FALSE(base::IsNaN(native_float));
+  EXPECT_TRUE(std::isinf(native_float));
 
   EXPECT_FALSE(undefined_value->GetAsObjectID(&native_object_id));
 

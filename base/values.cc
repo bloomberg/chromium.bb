@@ -7,9 +7,9 @@
 #include <string.h>
 
 #include <algorithm>
+#include <cmath>
 #include <ostream>
 
-#include "base/float_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/move.h"
@@ -175,7 +175,7 @@ FundamentalValue::FundamentalValue(int in_value)
 
 FundamentalValue::FundamentalValue(double in_value)
     : Value(TYPE_DOUBLE), double_value_(in_value) {
-  if (!IsFinite(double_value_)) {
+  if (!std::isfinite(double_value_)) {
     NOTREACHED() << "Non-finite (i.e. NaN or positive/negative infinity) "
                  << "values cannot be represented in JSON";
     double_value_ = 0.0;

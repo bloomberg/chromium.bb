@@ -4,7 +4,8 @@
 
 #include "content/renderer/java/gin_java_bridge_value_converter.h"
 
-#include "base/float_util.h"
+#include <cmath>
+
 #include "base/values.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "content/renderer/java/gin_java_bridge_object.h"
@@ -148,7 +149,7 @@ bool GinJavaBridgeValueConverter::FromV8ArrayBuffer(
 bool GinJavaBridgeValueConverter::FromV8Number(v8::Handle<v8::Number> value,
                                                base::Value** out) const {
   double double_value = value->Value();
-  if (base::IsFinite(double_value))
+  if (std::isfinite(double_value))
     return false;
   *out = GinJavaBridgeValue::CreateNonFiniteValue(double_value).release();
   return true;

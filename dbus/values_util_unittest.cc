@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/float_util.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

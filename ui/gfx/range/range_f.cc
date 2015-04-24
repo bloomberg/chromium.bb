@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/float_util.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 

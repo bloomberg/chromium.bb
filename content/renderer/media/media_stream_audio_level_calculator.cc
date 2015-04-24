@@ -4,7 +4,8 @@
 
 #include "content/renderer/media/media_stream_audio_level_calculator.h"
 
-#include "base/float_util.h"
+#include <cmath>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "media/base/audio_bus.h"
@@ -21,7 +22,7 @@ float MaxAmplitude(const float* audio_data, int length) {
     if (absolute > max)
       max = absolute;
   }
-  DCHECK(base::IsFinite(max));
+  DCHECK(std::isfinite(max));
   return max;
 }
 

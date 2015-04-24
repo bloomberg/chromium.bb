@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "base/float_util.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -53,7 +52,7 @@ void AudioPowerMonitor::Scan(const AudioBus& buffer, int num_frames) {
     const std::pair<float, float> ewma_and_max = vector_math::EWMAAndMaxPower(
         average_power_, buffer.channel(i), num_frames, sample_weight_);
     // If data in audio buffer is garbage, ignore its effect on the result.
-    if (!base::IsFinite(ewma_and_max.first)) {
+    if (!std::isfinite(ewma_and_max.first)) {
       sum_power += average_power_;
     } else {
       sum_power += ewma_and_max.first;

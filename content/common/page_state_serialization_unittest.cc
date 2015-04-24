@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <math.h>
+#include <cmath>
 
 #include "base/base64.h"
 #include "base/files/file_util.h"
-#include "base/float_util.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
@@ -47,8 +46,8 @@ void ExpectEquality(const ExplodedHttpBodyElement& a,
   EXPECT_EQ(a.filesystem_url, b.filesystem_url);
   EXPECT_EQ(a.file_start, b.file_start);
   EXPECT_EQ(a.file_length, b.file_length);
-  if (!(base::IsNaN(a.file_modification_time) &&
-        base::IsNaN(b.file_modification_time))) {
+  if (!(std::isnan(a.file_modification_time) &&
+        std::isnan(b.file_modification_time))) {
     EXPECT_DOUBLE_EQ(a.file_modification_time, b.file_modification_time);
   }
   EXPECT_EQ(a.blob_uuid, b.blob_uuid);

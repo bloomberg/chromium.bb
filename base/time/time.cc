@@ -4,12 +4,12 @@
 
 #include "base/time/time.h"
 
+#include <cmath>
 #include <ios>
 #include <limits>
 #include <ostream>
 #include <sstream>
 
-#include "base/float_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -161,7 +161,7 @@ time_t Time::ToTimeT() const {
 
 // static
 Time Time::FromDoubleT(double dt) {
-  if (dt == 0 || IsNaN(dt))
+  if (dt == 0 || std::isnan(dt))
     return Time();  // Preserve 0 so we can tell it doesn't exist.
   if (dt == std::numeric_limits<double>::infinity())
     return Max();

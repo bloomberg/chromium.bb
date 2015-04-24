@@ -5,9 +5,9 @@
 #include "ui/events/gesture_detection/scale_gesture_detector.h"
 
 #include <limits.h>
+
 #include <cmath>
 
-#include "base/float_util.h"
 #include "base/logging.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/gesture_detection/scale_gesture_listeners.h"
@@ -286,7 +286,7 @@ void ScaleGestureDetector::AddTouchHistory(const MotionEvent& ev) {
   float total = 0;
   int sample_count = 0;
   for (int i = 0; i < count; i++) {
-    const bool has_last_accepted = !base::IsNaN(touch_history_last_accepted_);
+    const bool has_last_accepted = !std::isnan(touch_history_last_accepted_);
     const int history_size = static_cast<int>(ev.GetHistorySize());
     const int pointersample_count = history_size + 1;
     for (int h = 0; h < pointersample_count; h++) {
@@ -302,10 +302,10 @@ void ScaleGestureDetector::AddTouchHistory(const MotionEvent& ev) {
         major = touch_max_major_;
       total += major;
 
-      if (base::IsNaN(touch_upper_) || major > touch_upper_) {
+      if (std::isnan(touch_upper_) || major > touch_upper_) {
         touch_upper_ = major;
       }
-      if (base::IsNaN(touch_lower_) || major < touch_lower_) {
+      if (std::isnan(touch_lower_) || major < touch_lower_) {
         touch_lower_ = major;
       }
 

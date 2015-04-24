@@ -6,10 +6,11 @@
 
 #include <unistd.h>
 
+#include <cmath>
+
 #include "base/android/event_log.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/float_util.h"
 #include "content/browser/android/java/gin_java_script_to_java_types_coercion.h"
 #include "content/browser/android/java/java_method.h"
 #include "content/browser/android/java/jni_helper.h"
@@ -256,7 +257,7 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       float result = object
                          ? env->CallFloatMethodA(object, id, parameters)
                          : env->CallStaticFloatMethodA(clazz, id, parameters);
-      if (base::IsFinite(result)) {
+      if (std::isfinite(result)) {
         result_wrapper.AppendDouble(result);
       } else {
         result_wrapper.Append(
@@ -268,7 +269,7 @@ void GinJavaMethodInvocationHelper::InvokeMethod(jobject object,
       double result = object
                           ? env->CallDoubleMethodA(object, id, parameters)
                           : env->CallStaticDoubleMethodA(clazz, id, parameters);
-      if (base::IsFinite(result)) {
+      if (std::isfinite(result)) {
         result_wrapper.AppendDouble(result);
       } else {
         result_wrapper.Append(

@@ -5,12 +5,12 @@
 #include "base/trace_event/trace_event_impl.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
-#include "base/float_util.h"
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
 #include "base/lazy_instance.h"
@@ -647,7 +647,7 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
       //        should be made into a common method.
       std::string real;
       double val = value.as_double;
-      if (IsFinite(val)) {
+      if (std::isfinite(val)) {
         real = DoubleToString(val);
         // Ensure that the number has a .0 if there's no decimal or 'e'.  This
         // makes sure that when we read the JSON back, it's interpreted as a
@@ -665,7 +665,7 @@ void TraceEvent::AppendValueAsJSON(unsigned char type,
           // "-.1" bad "-0.1" good
           real.insert(1, "0");
         }
-      } else if (IsNaN(val)){
+      } else if (std::isnan(val)){
         // The JSON spec doesn't allow NaN and Infinity (since these are
         // objects in EcmaScript).  Use strings instead.
         real = "\"NaN\"";

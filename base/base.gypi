@@ -227,7 +227,6 @@
           'files/scoped_file.h',
           'files/scoped_temp_dir.cc',
           'files/scoped_temp_dir.h',
-          'float_util.h',
           'format_macros.h',
           'gtest_prod_util.h',
           'guid.cc',

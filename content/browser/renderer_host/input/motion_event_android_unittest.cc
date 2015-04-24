@@ -5,7 +5,6 @@
 #include <android/input.h>
 
 #include "base/android/jni_android.h"
-#include "base/float_util.h"
 #include "content/browser/renderer_host/input/motion_event_android.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
