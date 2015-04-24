@@ -79,6 +79,9 @@ html {
   height: 100%;
   line-height: 1.4;
   text-rendering: optimizeLegibility;
+  transition-property: color, background-color;
+  transition-duration: 0.5s;
+  transition-timing-function: ease;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }
@@ -93,7 +96,7 @@ html {
 }
 
 .dark {
-  color: #FFF;
+  color: #DDD;
   background-color: #000;
 }
 
@@ -202,12 +205,22 @@ body {
 
 /* Link colors for light, dark and sepia themes */
 
-a:link {
+.light a:link,
+.sepia a:link {
   color: #55F;
 }
 
-a:visited {
+.dark a:link {
+  color: #88F;
+}
+
+.light a:visited,
+.sepia a:visited {
   color: #902290;
+}
+
+.dark a:visited {
+  color: #D872D8;
 }
 
 blockquote {
@@ -216,15 +229,14 @@ blockquote {
 }
 
 cite {
-  color: rgba(0, 0, 0, .54);
+  opacity: .54;
   font-style: italic;
 }
 
 hr {
-  background-color: #e4dfdf;
-  border: none;
-  height: 1px;
-  margin: inherit auto;
+  opacity: .5;
+  border-style: solid;
+  height: 1px 0 0 0;
   width: 75%;
 }
 
@@ -235,9 +247,8 @@ h1 {
 }
 
 q {
-  color: #222;
+  opacity: .8;
   display:block;
-  font-size: 1.5rem;
   font-style: italic;
   font-weight: 600;
   line-height: 1.444;
@@ -265,7 +276,7 @@ figcaption,
 img+[class*='caption'],
 object+[class*='caption'],
 video+[class*='caption'] {
-  color: rgba(0,0,0,.54);
+  opacity: .54;
   display: table;
   font-style: italic;
   margin: 0 auto;
@@ -314,6 +325,10 @@ pre {
   padding-bottom: 120px;
 }
 
+#feedbackContainer {
+  font-size: 14px;
+}
+
 .footerFeedback {
   background-color: #4285F4;
   clear: both;
@@ -331,7 +346,7 @@ pre {
 }
 
 #feedbackQuestion {
-  font-size: 20px;
+  font-size: 1.4em;
   font-weight: 700;
   text-align: center;
   width: 100%;
