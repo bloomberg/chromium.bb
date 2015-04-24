@@ -198,6 +198,35 @@ ui::WindowShowState ConvertToWindowShowState(windows::WindowState state) {
   return ui::SHOW_STATE_DEFAULT;
 }
 
+bool IsValidStateForWindowsCreateFunction(
+    const windows::Create::Params::CreateData* create_data) {
+  if (!create_data)
+    return true;
+
+  bool has_bound = create_data->left || create_data->top ||
+                   create_data->width || create_data->height;
+  bool is_panel =
+      create_data->type == windows::CreateType::CREATE_TYPE_PANEL ||
+      create_data->type == windows::CreateType::CREATE_TYPE_DETACHED_PANEL;
+
+  switch (create_data->state) {
+    case windows::WINDOW_STATE_MINIMIZED:
+      // If minimised, default focused state should be unfocused.
+      return !(create_data->focused && *create_data->focused) && !has_bound &&
+             !is_panel;
+    case windows::WINDOW_STATE_MAXIMIZED:
+    case windows::WINDOW_STATE_FULLSCREEN:
+      // If maximised/fullscreen, default focused state should be focused.
+      return !(create_data->focused && !*create_data->focused) && !has_bound &&
+             !is_panel;
+    case windows::WINDOW_STATE_NORMAL:
+    case windows::WINDOW_STATE_NONE:
+      return true;
+  }
+  NOTREACHED();
+  return true;
+}
+
 }  // namespace
 
 void ZoomModeToZoomSettings(ZoomController::ZoomMode zoom_mode,
@@ -419,6 +448,11 @@ bool WindowsCreateFunction::RunSync() {
                     &tab_index,
                     &error_))
       return false;
+  }
+
+  if (!IsValidStateForWindowsCreateFunction(create_data)) {
+    error_ = keys::kInvalidWindowStateError;
+    return false;
   }
 
   Profile* window_profile = GetProfile();

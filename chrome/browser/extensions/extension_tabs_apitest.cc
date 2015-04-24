@@ -254,6 +254,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_GetViewsOfCreatedWindow) {
       << message_;
 }
 
-// Adding a new test? Awesome. But API tests are the old hotness. The
-// new hotness is extension_test_utils. See tabs_test.cc for an example.
+// Adding a new test? Awesome. But API tests are the old hotness. The new
+// hotness is extension_function_test_utils. See tabs_test.cc for an example.
 // We are trying to phase out many uses of API tests as they tend to be flaky.

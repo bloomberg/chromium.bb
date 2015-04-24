@@ -42,8 +42,19 @@ namespace utils = extension_function_test_utils;
 
 namespace {
 using ExtensionTabsTest = InProcessBrowserTest;
-using ExtensionWindowCreateTest = InProcessBrowserTest;
-}
+
+class ExtensionWindowCreateTest : public InProcessBrowserTest {
+ public:
+  // Runs chrome.windows.create(), expecting an error.
+  std::string RunCreateWindowExpectError(const std::string& args) {
+    scoped_refptr<WindowsCreateFunction> function(new WindowsCreateFunction);
+    function->set_extension(test_util::CreateEmptyExtension().get());
+    return api_test_utils::RunFunctionAndReturnError(function.get(), args,
+                                                     browser()->profile());
+  }
+};
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
   int window_id = ExtensionTabUtil::GetWindowId(browser());
@@ -592,6 +603,42 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
   // from the window server.
   EXPECT_TRUE(new_window->window()->IsMinimized());
 #endif
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, ValidateCreateWindowState) {
+  EXPECT_TRUE(
+      MatchPattern(RunCreateWindowExpectError(
+                       "[{\"state\": \"fullscreen\", \"type\": \"panel\"}]"),
+                   keys::kInvalidWindowStateError));
+  EXPECT_TRUE(
+      MatchPattern(RunCreateWindowExpectError(
+                       "[{\"state\": \"maximized\", \"type\": \"panel\"}]"),
+                   keys::kInvalidWindowStateError));
+  EXPECT_TRUE(
+      MatchPattern(RunCreateWindowExpectError(
+                       "[{\"state\": \"minimized\", \"type\": \"panel\"}]"),
+                   keys::kInvalidWindowStateError));
+  EXPECT_TRUE(
+      MatchPattern(RunCreateWindowExpectError(
+                       "[{\"state\": \"minimized\", \"focused\": true}]"),
+                   keys::kInvalidWindowStateError));
+  EXPECT_TRUE(
+      MatchPattern(RunCreateWindowExpectError(
+                       "[{\"state\": \"maximized\", \"focused\": false}]"),
+                   keys::kInvalidWindowStateError));
+  EXPECT_TRUE(
+      MatchPattern(RunCreateWindowExpectError(
+                       "[{\"state\": \"fullscreen\", \"focused\": false}]"),
+                   keys::kInvalidWindowStateError));
+  EXPECT_TRUE(MatchPattern(RunCreateWindowExpectError(
+                               "[{\"state\": \"minimized\", \"width\": 500}]"),
+                           keys::kInvalidWindowStateError));
+  EXPECT_TRUE(MatchPattern(RunCreateWindowExpectError(
+                               "[{\"state\": \"maximized\", \"width\": 500}]"),
+                           keys::kInvalidWindowStateError));
+  EXPECT_TRUE(MatchPattern(RunCreateWindowExpectError(
+                               "[{\"state\": \"fullscreen\", \"width\": 500}]"),
+                           keys::kInvalidWindowStateError));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
