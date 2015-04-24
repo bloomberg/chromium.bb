@@ -45,9 +45,8 @@ ino_t Html5Fs::HashPath(const Path& path) {
 
   // Apply a running DJB2a to each part of the path
   for (size_t segment = 0; segment < path.Size(); segment++) {
-    const char *ptr = path.Part(segment).c_str();
-    size_t len = path.Part(segment).length();
-    hash = HashPathSegment(hash, ptr, len);
+    const std::string& part = path.Part(segment);
+    hash = HashPathSegment(hash, part.c_str(), part.length());
   }
   return hash;
 }

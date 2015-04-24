@@ -12,7 +12,7 @@ function $(id) {
 
 // Called by the common.js module.
 function domContentLoaded(name, tc, config, width, height) {
-  navigator.webkitPersistentStorage.requestQuota(1024 * 1024,
+  navigator.webkitPersistentStorage.requestQuota(5 * 1024 * 1024,
       function(bytes) {
         common.updateStatus(
             'Allocated ' + bytes + ' bytes of persistant storage.');
