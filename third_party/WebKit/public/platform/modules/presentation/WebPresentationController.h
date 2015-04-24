@@ -5,13 +5,15 @@
 #ifndef WebPresentationController_h
 #define WebPresentationController_h
 
+#include "public/platform/WebCommon.h"
+
 namespace blink {
 
 class WebPresentationSessionClient;
 enum class WebPresentationSessionState;
 
 // The delegate Blink provides to WebPresentationClient in order to get updates.
-class WebPresentationController {
+class BLINK_PLATFORM_EXPORT WebPresentationController {
 public:
     virtual ~WebPresentationController() { }
 

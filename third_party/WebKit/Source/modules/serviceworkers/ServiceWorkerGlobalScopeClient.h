@@ -33,6 +33,7 @@
 
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerClients.h"
+#include "modules/ModulesExport.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebServiceWorkerClientsClaimCallbacks.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
@@ -52,7 +53,7 @@ class WebURL;
 class WorkerClients;
 
 // See WebServiceWorkerContextClient for documentation for the methods in this class.
-class ServiceWorkerGlobalScopeClient : public WillBeHeapSupplement<WorkerClients> {
+class MODULES_EXPORT ServiceWorkerGlobalScopeClient : public WillBeHeapSupplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
 public:
     virtual ~ServiceWorkerGlobalScopeClient() { }
@@ -88,7 +89,7 @@ protected:
     ServiceWorkerGlobalScopeClient() { }
 };
 
-void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients*, PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient>);
+MODULES_EXPORT void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients*, PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient>);
 
 } // namespace blink
 

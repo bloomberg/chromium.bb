@@ -31,8 +31,10 @@
 
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -45,7 +47,8 @@ class Page;
 
 typedef String ErrorString;
 
-class InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, InspectorFrontend::Database>, public InspectorBackendDispatcher::DatabaseCommandHandler {
+class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, InspectorFrontend::Database>, public InspectorBackendDispatcher::DatabaseCommandHandler {
+    WTF_MAKE_NONCOPYABLE(InspectorDatabaseAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorDatabaseAgent> create(Page* page)
     {

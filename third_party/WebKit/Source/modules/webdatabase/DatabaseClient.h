@@ -32,6 +32,7 @@
 #define DatabaseClient_h
 
 #include "core/page/Page.h"
+#include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -43,7 +44,7 @@ class ExecutionContext;
 class InspectorDatabaseAgent;
 class Page;
 
-class DatabaseClient : public WillBeHeapSupplement<Page> {
+class MODULES_EXPORT DatabaseClient : public WillBeHeapSupplement<Page> {
     WTF_MAKE_NONCOPYABLE(DatabaseClient);
 public:
     DatabaseClient();
@@ -63,7 +64,7 @@ private:
     InspectorDatabaseAgent* m_inspectorAgent;
 };
 
-void provideDatabaseClientTo(Page&, PassOwnPtrWillBeRawPtr<DatabaseClient>);
+MODULES_EXPORT void provideDatabaseClientTo(Page&, PassOwnPtrWillBeRawPtr<DatabaseClient>);
 
 } // namespace blink
 

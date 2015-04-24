@@ -32,6 +32,7 @@
 
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
@@ -52,7 +53,7 @@ class WorkerThreadStartupData;
 
 typedef RequestOrUSVString RequestInfo;
 
-class ServiceWorkerGlobalScope final : public WorkerGlobalScope {
+class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> create(ServiceWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);

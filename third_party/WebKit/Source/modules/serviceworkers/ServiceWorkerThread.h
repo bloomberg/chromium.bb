@@ -32,12 +32,13 @@
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerThread.h"
+#include "modules/ModulesExport.h"
 
 namespace blink {
 
 class WorkerThreadStartupData;
 
-class ServiceWorkerThread final : public WorkerThread {
+class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
 public:
     static PassRefPtr<ServiceWorkerThread> create(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
     virtual ~ServiceWorkerThread();

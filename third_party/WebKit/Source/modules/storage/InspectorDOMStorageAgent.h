@@ -31,6 +31,7 @@
 
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "modules/ModulesExport.h"
 #include "modules/storage/StorageArea.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
@@ -45,7 +46,7 @@ class StorageArea;
 
 typedef String ErrorString;
 
-class InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, InspectorFrontend::DOMStorage>, public InspectorBackendDispatcher::DOMStorageCommandHandler {
+class MODULES_EXPORT InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, InspectorFrontend::DOMStorage>, public InspectorBackendDispatcher::DOMStorageCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorDOMStorageAgent> create(Page* page)
     {

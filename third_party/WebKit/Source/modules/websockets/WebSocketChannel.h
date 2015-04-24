@@ -32,6 +32,7 @@
 #define WebSocketChannel_h
 
 #include "core/frame/ConsoleTypes.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -47,7 +48,7 @@ class WebSocketChannelClient;
 // FIXME: WebSocketChannel needs to be RefCountedGarbageCollected to support manual ref/deref
 // in MainThreadWebSocketChannelImpl. We should change it to GarbageCollectedFinalized once
 // we remove MainThreadWebSocketChannelImpl.
-class WebSocketChannel : public RefCountedGarbageCollected<WebSocketChannel> {
+class MODULES_EXPORT WebSocketChannel : public RefCountedGarbageCollected<WebSocketChannel> {
     WTF_MAKE_NONCOPYABLE(WebSocketChannel);
 public:
     WebSocketChannel() { }

@@ -31,6 +31,7 @@
 #ifndef MIDIClient_h
 #define MIDIClient_h
 
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -38,7 +39,7 @@ namespace blink {
 class LocalFrame;
 class MIDIAccessInitializer;
 
-class MIDIClient {
+class MODULES_EXPORT MIDIClient {
 public:
     virtual void requestSysexPermission(MIDIAccessInitializer*) = 0;
     virtual void cancelSysexPermissionRequest(MIDIAccessInitializer*) = 0;
@@ -46,7 +47,7 @@ public:
     virtual ~MIDIClient() { }
 };
 
-void provideMIDITo(LocalFrame&, PassOwnPtr<MIDIClient>);
+MODULES_EXPORT void provideMIDITo(LocalFrame&, PassOwnPtr<MIDIClient>);
 
 } // namespace blink
 

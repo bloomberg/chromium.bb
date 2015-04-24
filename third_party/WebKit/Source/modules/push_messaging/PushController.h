@@ -6,6 +6,7 @@
 #define PushController_h
 
 #include "core/frame/LocalFrame.h"
+#include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -35,7 +36,7 @@ private:
     WebPushClient* m_client;
 };
 
-void providePushControllerTo(LocalFrame&, WebPushClient*);
+MODULES_EXPORT void providePushControllerTo(LocalFrame&, WebPushClient*);
 
 } // namespace blink
 

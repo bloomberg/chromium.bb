@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "modules/ModulesExport.h"
 #include "modules/webmidi/MIDIAccessor.h"
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "modules/webmidi/MIDIPort.h"
@@ -18,7 +19,7 @@ namespace blink {
 class MIDIOptions;
 class ScriptState;
 
-class MIDIAccessInitializer : public ScriptPromiseResolver, public MIDIAccessorClient {
+class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver, public MIDIAccessorClient {
     WILL_BE_USING_PRE_FINALIZER(MIDIAccessInitializer, dispose);
 public:
     struct PortDescriptor {

@@ -3,6 +3,7 @@ include_rules = [
     "+core",
     "+heap",
     "-modules",
+    "+modules/ModulesExport.h",
     "+modules/quota",
     "+platform",
     "+public/platform",

@@ -27,6 +27,7 @@
 #ifndef ExecutionContextTask_h
 #define ExecutionContextTask_h
 
+#include "core/CoreExport.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
@@ -37,7 +38,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class ExecutionContextTask {
+class CORE_EXPORT ExecutionContextTask {
     WTF_MAKE_NONCOPYABLE(ExecutionContextTask);
     WTF_MAKE_FAST_ALLOCATED(ExecutionContextTask);
 public:

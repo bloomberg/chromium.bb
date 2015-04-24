@@ -26,6 +26,7 @@
 #ifndef StorageNamespace_h
 #define StorageNamespace_h
 
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -39,7 +40,7 @@ namespace blink {
 class SecurityOrigin;
 class StorageArea;
 
-class StorageNamespace {
+class MODULES_EXPORT StorageNamespace {
 public:
     explicit StorageNamespace(PassOwnPtr<blink::WebStorageNamespace>);
     ~StorageNamespace();

@@ -7,6 +7,7 @@
 
 #include "core/dom/Document.h"
 #include "core/workers/WorkerClients.h"
+#include "modules/ModulesExport.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -16,7 +17,7 @@ class WebServiceWorkerProvider;
 
 // This mainly exists to provide access to WebServiceWorkerProvider.
 // Owned by Document (or WorkerClients).
-class ServiceWorkerContainerClient final
+class MODULES_EXPORT ServiceWorkerContainerClient final
     : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerContainerClient>
     , public WillBeHeapSupplement<Document>
     , public WillBeHeapSupplement<WorkerClients> {
@@ -43,7 +44,7 @@ protected:
     OwnPtr<WebServiceWorkerProvider> m_provider;
 };
 
-void provideServiceWorkerContainerClientToWorker(WorkerClients*, PassOwnPtr<WebServiceWorkerProvider>);
+MODULES_EXPORT void provideServiceWorkerContainerClientToWorker(WorkerClients*, PassOwnPtr<WebServiceWorkerProvider>);
 
 } // namespace blink
 

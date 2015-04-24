@@ -6,6 +6,7 @@
 #define FetchEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/fetch/Request.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/FetchEventInit.h"
@@ -21,7 +22,7 @@ class RespondWithObserver;
 // A fetch event is dispatched by the client to a service worker's script
 // context. RespondWithObserver can be used to notify the client about the
 // service worker's response.
-class FetchEvent final : public ExtendableEvent {
+class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create();

@@ -32,6 +32,7 @@
 #define StorageQuotaClient_h
 
 #include "core/page/Page.h"
+#include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebStorageQuotaType.h"
@@ -59,7 +60,7 @@ public:
     static StorageQuotaClient* from(ExecutionContext*);
 };
 
-void provideStorageQuotaClientTo(Page&, PassOwnPtrWillBeRawPtr<StorageQuotaClient>);
+MODULES_EXPORT void provideStorageQuotaClientTo(Page&, PassOwnPtrWillBeRawPtr<StorageQuotaClient>);
 
 } // namespace blink
 

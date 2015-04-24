@@ -6,6 +6,7 @@
 #define NavigatorServiceWorker_h
 
 #include "core/frame/Navigator.h"
+#include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
@@ -15,7 +16,7 @@ class Document;
 class Navigator;
 class ServiceWorkerContainer;
 
-class NavigatorServiceWorker final : public NoBaseWillBeGarbageCollected<NavigatorServiceWorker>, public WillBeHeapSupplement<Navigator>, DOMWindowProperty {
+class MODULES_EXPORT NavigatorServiceWorker final : public NoBaseWillBeGarbageCollected<NavigatorServiceWorker>, public WillBeHeapSupplement<Navigator>, DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorServiceWorker);
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorServiceWorker);
 public:

@@ -26,6 +26,7 @@
 #ifndef SpeechRecognitionClient_h
 #define SpeechRecognitionClient_h
 
+#include "modules/ModulesExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -44,7 +45,7 @@ public:
     virtual ~SpeechRecognitionClient() { }
 };
 
-void provideSpeechRecognitionTo(Page&, PassOwnPtr<SpeechRecognitionClient>);
+MODULES_EXPORT void provideSpeechRecognitionTo(Page&, PassOwnPtr<SpeechRecognitionClient>);
 
 } // namespace blink
 

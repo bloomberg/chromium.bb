@@ -31,6 +31,7 @@
 #ifndef WebSocketChannelClient_h
 #define WebSocketChannelClient_h
 
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -39,7 +40,7 @@
 
 namespace blink {
 
-class WebSocketChannelClient : public GarbageCollectedMixin {
+class MODULES_EXPORT WebSocketChannelClient : public GarbageCollectedMixin {
 public:
     virtual ~WebSocketChannelClient() { }
     virtual void didConnect(const String& subprotocol, const String& extensions) { }

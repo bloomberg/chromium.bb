@@ -27,6 +27,7 @@
 #define SpeechGrammarList_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/ModulesExport.h"
 #include "modules/speech/SpeechGrammar.h"
 #include "platform/heap/Handle.h"
 
@@ -34,7 +35,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class SpeechGrammarList final : public GarbageCollected<SpeechGrammarList>, public ScriptWrappable {
+class MODULES_EXPORT SpeechGrammarList final : public GarbageCollected<SpeechGrammarList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SpeechGrammarList* create();

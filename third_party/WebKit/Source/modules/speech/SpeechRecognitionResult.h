@@ -27,12 +27,13 @@
 #define SpeechRecognitionResult_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/ModulesExport.h"
 #include "modules/speech/SpeechRecognitionAlternative.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class SpeechRecognitionResult final : public GarbageCollected<SpeechRecognitionResult>, public ScriptWrappable {
+class MODULES_EXPORT SpeechRecognitionResult final : public GarbageCollected<SpeechRecognitionResult>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SpeechRecognitionResult* create(const HeapVector<Member<SpeechRecognitionAlternative>>&, bool final);

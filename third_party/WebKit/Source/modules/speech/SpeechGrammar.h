@@ -27,6 +27,7 @@
 #define SpeechGrammar_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
@@ -35,7 +36,7 @@ namespace blink {
 
 class ExecutionContext;
 
-class SpeechGrammar final : public GarbageCollectedFinalized<SpeechGrammar>, public ScriptWrappable {
+class MODULES_EXPORT SpeechGrammar final : public GarbageCollectedFinalized<SpeechGrammar>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SpeechGrammar* create(); // FIXME: The spec is not clear on what the constructor should look like.

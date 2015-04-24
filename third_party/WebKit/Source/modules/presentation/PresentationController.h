@@ -6,6 +6,7 @@
 #define PresentationController_h
 
 #include "core/frame/LocalFrameLifecycleObserver.h"
+#include "modules/ModulesExport.h"
 #include "modules/presentation/Presentation.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -20,7 +21,7 @@ enum class WebPresentationSessionState;
 
 // The coordinator between the various page exposed properties and the content
 // layer represented via |WebPresentationClient|.
-class PresentationController final
+class MODULES_EXPORT PresentationController final
     : public NoBaseWillBeGarbageCollectedFinalized<PresentationController>
     , public WillBeHeapSupplement<LocalFrame>
     , public LocalFrameLifecycleObserver

@@ -31,6 +31,7 @@
 #ifndef QuotaTracker_h
 #define QuotaTracker_h
 
+#include "modules/ModulesExport.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/HashMap.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -39,7 +40,7 @@
 
 namespace blink {
 
-class QuotaTracker {
+class MODULES_EXPORT QuotaTracker {
 public:
     static QuotaTracker& instance();
 

@@ -6,6 +6,7 @@
 #define RespondWithObserver_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -18,7 +19,7 @@ class ScriptValue;
 
 // This class observes the service worker's handling of a FetchEvent and
 // notifies the client.
-class RespondWithObserver final : public GarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
+class MODULES_EXPORT RespondWithObserver final : public GarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RespondWithObserver);
 public:
     static RespondWithObserver* create(ExecutionContext*, int eventID, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType);

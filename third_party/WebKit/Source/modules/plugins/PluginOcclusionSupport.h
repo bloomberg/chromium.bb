@@ -20,6 +20,7 @@
 #ifndef PluginOcclusionSupport_h
 #define PluginOcclusionSupport_h
 
+#include "modules/ModulesExport.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -27,7 +28,7 @@ class Element;
 class Widget;
 class IntRect;
 
-void getPluginOcclusions(Element*, Widget* parentWidget, const IntRect& frameRect, Vector<IntRect>& occlusions);
+MODULES_EXPORT void getPluginOcclusions(Element*, Widget* parentWidget, const IntRect& frameRect, Vector<IntRect>& occlusions);
 
 } // namespace blink
 

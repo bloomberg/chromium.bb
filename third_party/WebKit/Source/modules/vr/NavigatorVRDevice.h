@@ -7,11 +7,13 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "modules/ModulesExport.h"
 #include "modules/vr/VRDevice.h"
 #include "modules/vr/VRHardwareUnit.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebVector.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -20,8 +22,9 @@ class Navigator;
 class VRController;
 class VRHardwareUnitCollection;
 
-class NavigatorVRDevice final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorVRDevice>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
+class MODULES_EXPORT NavigatorVRDevice final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorVRDevice>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorVRDevice);
+    WTF_MAKE_NONCOPYABLE(NavigatorVRDevice);
 public:
     static NavigatorVRDevice* from(Document&);
     static NavigatorVRDevice& from(Navigator&);

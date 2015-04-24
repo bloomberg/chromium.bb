@@ -31,6 +31,7 @@
 #ifndef WebServiceWorkerProviderClient_h
 #define WebServiceWorkerProviderClient_h
 
+#include "public/platform/WebCommon.h"
 #include "public/platform/WebMessagePortChannel.h"
 
 namespace blink {
@@ -40,7 +41,7 @@ class WebString;
 
 // This class is the interface for embedders to talk to
 // ServiceWorkerContainer.
-class WebServiceWorkerProviderClient {
+class BLINK_PLATFORM_EXPORT WebServiceWorkerProviderClient {
 public:
     virtual ~WebServiceWorkerProviderClient() { }
 

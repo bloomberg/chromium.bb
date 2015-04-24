@@ -6,6 +6,7 @@
 #define PushEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/push_messaging/PushEventInit.h"
 #include "modules/push_messaging/PushMessageData.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
@@ -15,7 +16,7 @@
 
 namespace blink {
 
-class PushEvent final : public ExtendableEvent {
+class MODULES_EXPORT PushEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PushEvent> create()

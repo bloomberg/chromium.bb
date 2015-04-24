@@ -26,6 +26,7 @@
 #define AudioNode_h
 
 #include "modules/EventTargetModules.h"
+#include "modules/ModulesExport.h"
 #include "platform/audio/AudioBus.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -63,7 +64,7 @@ class ExceptionState;
 // Be careful to avoid reference cycles. If an AudioHandler has a reference
 // cycle including the owner AudioNode, objects in the cycle are never
 // collected.
-class AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
+class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
 public:
     enum { ProcessingSizeInFrames = 128 };
 

@@ -6,6 +6,7 @@
 #define WaitUntilObserver_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "modules/ModulesExport.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/Timer.h"
 #include "wtf/Forward.h"
@@ -19,7 +20,7 @@ class ScriptState;
 class ScriptValue;
 
 // Created for each ExtendableEvent instance.
-class WaitUntilObserver final : public GarbageCollectedFinalized<WaitUntilObserver>, public ContextLifecycleObserver {
+class MODULES_EXPORT WaitUntilObserver final : public GarbageCollectedFinalized<WaitUntilObserver>, public ContextLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WaitUntilObserver);
 public:
     enum EventType {

@@ -7,6 +7,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindowLifecycleObserver.h"
+#include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
@@ -15,7 +16,7 @@ namespace blink {
 class Document;
 class Event;
 
-class DOMWindowStorageController final : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowStorageController>, public WillBeHeapSupplement<Document>, public DOMWindowLifecycleObserver {
+class MODULES_EXPORT DOMWindowStorageController final : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowStorageController>, public WillBeHeapSupplement<Document>, public DOMWindowLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorageController);
 public:
     virtual ~DOMWindowStorageController();

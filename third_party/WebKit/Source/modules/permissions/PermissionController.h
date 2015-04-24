@@ -6,13 +6,14 @@
 #define PermissionController_h
 
 #include "core/frame/LocalFrameLifecycleObserver.h"
+#include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 
 namespace blink {
 
 class WebPermissionClient;
 
-class PermissionController final
+class MODULES_EXPORT PermissionController final
     : public NoBaseWillBeGarbageCollectedFinalized<PermissionController>
     , public WillBeHeapSupplement<LocalFrame>
     , public LocalFrameLifecycleObserver {

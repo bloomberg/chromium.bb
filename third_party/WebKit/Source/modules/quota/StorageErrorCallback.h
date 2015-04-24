@@ -33,6 +33,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
@@ -48,7 +49,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(DOMError*) = 0;
 
-    class CallbackTask final : public ExecutionContextTask {
+    class MODULES_EXPORT CallbackTask final : public ExecutionContextTask {
     public:
         static PassOwnPtr<CallbackTask> create(StorageErrorCallback* callback, ExceptionCode ec)
         {

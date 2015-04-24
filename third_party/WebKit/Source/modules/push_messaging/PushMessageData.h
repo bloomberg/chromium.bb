@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -17,7 +18,7 @@ class DOMArrayBuffer;
 class ExceptionState;
 class ScriptState;
 
-class PushMessageData final : public GarbageCollectedFinalized<PushMessageData>, public ScriptWrappable {
+class MODULES_EXPORT PushMessageData final : public GarbageCollectedFinalized<PushMessageData>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:

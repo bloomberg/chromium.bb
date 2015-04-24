@@ -6,6 +6,7 @@
 #define StorageNamespaceController_h
 
 #include "core/page/Page.h"
+#include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -15,7 +16,7 @@ class InspectorDOMStorageAgent;
 class StorageClient;
 class StorageNamespace;
 
-class StorageNamespaceController final : public NoBaseWillBeGarbageCollectedFinalized<StorageNamespaceController>, public WillBeHeapSupplement<Page> {
+class MODULES_EXPORT StorageNamespaceController final : public NoBaseWillBeGarbageCollectedFinalized<StorageNamespaceController>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StorageNamespaceController);
 public:
     StorageNamespace* sessionStorage(bool optionalCreate = true);

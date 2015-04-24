@@ -29,6 +29,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
+#include "modules/ModulesExport.h"
 #include "modules/speech/SpeechGrammarList.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "platform/heap/Handle.h"
@@ -44,7 +45,7 @@ class MediaStreamTrack;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
 
-class SpeechRecognition final : public RefCountedGarbageCollectedEventTargetWithInlineData<SpeechRecognition>, public PageLifecycleObserver, public ActiveDOMObject {
+class MODULES_EXPORT SpeechRecognition final : public RefCountedGarbageCollectedEventTargetWithInlineData<SpeechRecognition>, public PageLifecycleObserver, public ActiveDOMObject {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechRecognition>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
     DEFINE_WRAPPERTYPEINFO();
