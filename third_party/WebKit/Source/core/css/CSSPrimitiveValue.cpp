@@ -1056,9 +1056,12 @@ String CSSPrimitiveValue::customCSSText() const
         case CSS_CUSTOM_IDENT:
             text = quoteCSSStringIfNeeded(m_value.string);
             break;
-        case CSS_STRING:
-            text = quoteCSSString(m_value.string);
+        case CSS_STRING: {
+            StringBuilder result;
+            serializeString(m_value.string, result);
+            text = result.toString();
             break;
+        }
         case CSS_URI:
             text = "url(" + quoteCSSURLIfNeeded(m_value.string) + ")";
             break;

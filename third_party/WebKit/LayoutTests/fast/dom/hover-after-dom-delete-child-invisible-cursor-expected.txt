@@ -4,11 +4,11 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Mouse is visible, moving it over the red div.
-PASS blueText is "'Hovered.'"
-PASS redText is "'Hovered.'"
+PASS blueText is "\"Hovered.\""
+PASS redText is "\"Hovered.\""
 Setting mouse cursor to be invisible.
-PASS blueText is "'Hovered.'"
-PASS redText is "'Hovered.'"
+PASS blueText is "\"Hovered.\""
+PASS redText is "\"Hovered.\""
 Deleting red div.
-PASS blueText is "'Hovered.'"
+PASS blueText is "\"Hovered.\""
 

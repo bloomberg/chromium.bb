@@ -11,7 +11,7 @@ PASS redDiv.innerHTML is "Red hovered."
 PASS blueDiv.innerHTML is ""
 Mouse is visible, deleting the red div.
 PASS blueDiv.offsetTop is 50
-PASS blueText is "'Hovered.'"
+PASS blueText is "\"Hovered.\""
 Adding the red and blue divs.
 PASS blueDiv.offsetTop is 200
 PASS redDiv.offsetTop is 50
