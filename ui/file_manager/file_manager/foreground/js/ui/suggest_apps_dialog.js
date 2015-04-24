@@ -131,7 +131,10 @@ SuggestAppsDialog.prototype.showInternal_ =
   this.text_.hidden = true;
   this.dialogText_ = '';
 
-  this.onDialogClosed_ = onDialogClosed;
+  if (!this.widget_.isInInitialState()) {
+    onDialogClosed(SuggestAppsDialog.Result.CANCELLED, null);
+    return;
+  }
 
   var dialogShown = false;
 
@@ -145,6 +148,9 @@ SuggestAppsDialog.prototype.showInternal_ =
           /** @return {!Promise.<CWSWidgetContainer.ResolveReason>} */
           function() {
             dialogShown = true;
+            // This is not set before so it doesn't polute state if the previous
+            // dialog hasn't finished hiding.
+            this.onDialogClosed_ = onDialogClosed;
             return this.widget_.start(options, webStoreUrl);
           }.bind(this))
       .then(
@@ -157,12 +163,20 @@ SuggestAppsDialog.prototype.showInternal_ =
           /** @param {string} error */
           function(error) {
             console.error('Failed to start CWS widget: ' + error);
-            this.result_ = SuggestAppsDialog.Result.FAILED;
-            if (dialogShown) {
-              this.hide();
-            } else {
-              this.onHide_();
+
+            // If the widget dialog was not shown, consider the widget
+            // canceled.
+            if (!dialogShown) {
+              // Reset any widget state set in |this.widget_.ready()|. The
+              // returned value is ignored because it doesn't influence the
+              // value reported by dialog.
+              this.widget_.finalizeAndGetResult();
+              onDialogClosed(SuggestAppsDialog.Result.CANCELLED, null);
+              return;
             }
+
+            this.result_ = SuggestAppsDialog.Result.FAILED;
+            this.hide();
           }.bind(this));
 };
 

@@ -305,6 +305,13 @@ CWSWidgetContainer.prototype.createTokenGetter_ = function() {
 };
 
 /**
+ * @return {boolean} Whether the container is in initial state, i.e. inactive.
+ */
+CWSWidgetContainer.prototype.isInInitialState = function() {
+  return this.state_ === CWSWidgetContainer.State.UNINITIALIZED;
+};
+
+/**
  * Ensures that the widget container is in the state where it can properly
  * handle showing the Chrome Web Store webview.
  * @return {Promise} Resolved when the container is ready to be used.
@@ -655,11 +662,15 @@ CWSWidgetContainer.prototype.reset_ = function () {
     this.webviewClient_ = null;
   }
 
-  if (this.webview_)
+  if (this.webview_) {
     this.webviewContainer_.removeChild(this.webview_);
+    this.webview_ = null;
+  }
 
-  if (this.appInstaller_)
+  if (this.appInstaller_) {
     this.appInstaller_.cancel();
+    this.appInstaller_ = null;
+  }
 
   this.options_ = null;
 
