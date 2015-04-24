@@ -251,8 +251,8 @@ void SVGTransformList::setValueAsString(const String& value, ExceptionState& exc
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGTransformList::cloneForAnimation(const String& value) const
 {
-    ASSERT_NOT_REACHED();
-    return nullptr;
+    ASSERT(RuntimeEnabledFeatures::webAnimationsSVGEnabled());
+    return SVGListPropertyHelper::cloneForAnimation(value);
 }
 
 PassRefPtrWillBeRawPtr<SVGTransformList> SVGTransformList::create(SVGTransformType transformType, const String& value)

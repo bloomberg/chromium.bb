@@ -12,9 +12,62 @@
 namespace blink {
 
 template<typename InterpolationType, typename NonInterpolableType>
-class ListSVGInterpolationImpl;
+class ListSVGInterpolationImpl : public SVGInterpolation {
+public:
+    typedef typename InterpolationType::ListType ListType;
+    typedef typename InterpolationType::ListType::ItemPropertyType ItemPropertyType;
 
-// TODO(ericwilligers): Implement ListSVGInterpolationImpl for non-void NonInterpolableType
+    static PassRefPtrWillBeRawPtr<ListSVGInterpolationImpl<InterpolationType, NonInterpolableType>> maybeCreate(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
+    {
+        ASSERT(start->type() == ListType::classType());
+        ASSERT(end->type() == ListType::classType());
+
+        ListType* startList = static_cast<ListType*>(start);
+        ListType* endList = static_cast<ListType*>(end);
+        if (startList->length() != endList->length())
+            return nullptr;
+
+        size_t length = startList->length();
+        for (size_t i = 0; i < length; i++) {
+            if (!InterpolationType::canCreateFrom(startList->at(i), endList->at(i))) {
+                return nullptr;
+            }
+        }
+
+        Vector<NonInterpolableType> nonInterpolableData(length);
+        OwnPtrWillBeRawPtr<InterpolableList> startValue = InterpolableList::create(length);
+        OwnPtrWillBeRawPtr<InterpolableList> endValue = InterpolableList::create(length);
+        for (size_t i = 0; i < length; i++) {
+            startValue->set(i, InterpolationType::toInterpolableValue(startList->at(i), &nonInterpolableData.at(i)));
+            endValue->set(i, InterpolationType::toInterpolableValue(endList->at(i), nullptr));
+        }
+
+        return adoptRefWillBeNoop(new ListSVGInterpolationImpl<InterpolationType, NonInterpolableType>(startValue.release(), endValue.release(), attribute, nonInterpolableData));
+    }
+
+private:
+    ListSVGInterpolationImpl(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute, Vector<NonInterpolableType> nonInterpolableData)
+        : SVGInterpolation(start, end, attribute)
+    {
+        m_nonInterpolableData.swap(nonInterpolableData);
+    }
+
+    static PassRefPtrWillBeRawPtr<ListType> fromInterpolableValue(const InterpolableValue& value, const Vector<NonInterpolableType>& m_nonInterpolableData)
+    {
+        const InterpolableList& listValue = toInterpolableList(value);
+        RefPtrWillBeRawPtr<ListType> result = ListType::create();
+        for (size_t i = 0; i < listValue.length(); i++)
+            result->append(InterpolationType::fromInterpolableValue(*listValue.get(i), m_nonInterpolableData.at(i)));
+        return result.release();
+    }
+
+    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const
+    {
+        return fromInterpolableValue(*m_cachedValue, m_nonInterpolableData);
+    }
+
+    Vector<NonInterpolableType> m_nonInterpolableData;
+};
 
 template<typename InterpolationType>
 class ListSVGInterpolationImpl<InterpolationType, void> : public SVGInterpolation {

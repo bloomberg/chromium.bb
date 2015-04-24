@@ -213,6 +213,22 @@
     return String([rect.x, rect.y, rect.width, rect.height]);
   }
 
+  function serializeSVGTransformList(transformList) {
+    var elements = [];
+    for (var index = 0; index < transformList.numberOfItems; ++index) {
+      var transform = transformList.getItem(index);
+      elements.push(transform.type);
+      elements.push(transform.angle);
+      elements.push(transform.matrix.a);
+      elements.push(transform.matrix.b);
+      elements.push(transform.matrix.c);
+      elements.push(transform.matrix.d);
+      elements.push(transform.matrix.e);
+      elements.push(transform.matrix.f);
+    }
+    return String(elements);
+  }
+
   var svgNamespace = 'http://www.w3.org/2000/svg';
   var xlinkNamespace = 'http://www.w3.org/1999/xlink';
 
@@ -272,6 +288,8 @@
       result = serializeSVGPreserveAspectRatio(result);
     else if (result instanceof SVGRect)
       result = serializeSVGRect(result);
+    else if (result instanceof SVGTransformList)
+      result = serializeSVGTransformList(result);
 
     if (typeof result !== 'string' && typeof result !== 'number' && typeof result !== 'boolean') {
       console.log('Attribute value has unexpected type: ' + result);
@@ -312,6 +330,7 @@
     'offset',
     'order',
     'r',
+    'transform',
     'width',
   ];
 
@@ -329,6 +348,76 @@
       keyframes[1][attributeName] = params.to;
     }
     return keyframes;
+  }
+
+  function appendAnimate(target, attributeName, from, to)
+  {
+    var animateElement = document.createElementNS(svgNamespace, 'animate');
+    animateElement.setAttribute('attributeName', namespacedAttributeName(attributeName));
+    animateElement.setAttribute('attributeType', 'XML');
+    if (attributeName === 'class') {
+      // Preserve the existing classes as we use them to select elements.
+      animateElement.setAttribute('from', target['className'].baseVal + ' ' + from);
+      animateElement.setAttribute('to', target['className'].baseVal + ' ' + to);
+    } else {
+      animateElement.setAttribute('from', from);
+      animateElement.setAttribute('to', to);
+    }
+    animateElement.setAttribute('begin', '0');
+    animateElement.setAttribute('dur', '1');
+    animateElement.setAttribute('fill', 'freeze');
+    target.appendChild(animateElement);
+  }
+
+  function appendAnimateTransform(target, attributeName, from, to)
+  {
+    var animateElement = document.createElementNS(svgNamespace, 'animate');
+    animateElement.setAttribute('attributeName', namespacedAttributeName(attributeName));
+    animateElement.setAttribute('attributeType', 'XML');
+    if (attributeName === 'class') {
+      // Preserve the existing classes as we use them to select elements.
+      animateElement.setAttribute('from', target['className'].baseVal + ' ' + from);
+      animateElement.setAttribute('to', target['className'].baseVal + ' ' + to);
+    } else {
+      animateElement.setAttribute('from', from);
+      animateElement.setAttribute('to', to);
+    }
+    animateElement.setAttribute('begin', '0');
+    animateElement.setAttribute('dur', '1');
+    animateElement.setAttribute('fill', 'freeze');
+    target.appendChild(animateElement);
+  }
+
+  // Append animateTransform elements to parents of target.
+  function appendAnimateTransform(target, attributeName, from, to)
+  {
+    var currentElement = target;
+    var parents = [];
+    from = from.split(')');
+    to = to.split(')');
+    // Discard empty string at end.
+    from.pop();
+    to.pop();
+
+    // SMIL requires separate animateTransform elements for each transform in the list.
+    if (from.length !== 1 || to.length !== 1)
+      return;
+
+    from = from[0].split('(');
+    to = to[0].split('(');
+    if (from[0].trim() !== to[0].trim())
+        return;
+
+    var animateTransformElement = document.createElementNS(svgNamespace, 'animateTransform');
+    animateTransformElement.setAttribute('attributeName', namespacedAttributeName(attributeName));
+    animateTransformElement.setAttribute('attributeType', 'XML');
+    animateTransformElement.setAttribute('type', from[0].trim());
+    animateTransformElement.setAttribute('from', from[1]);
+    animateTransformElement.setAttribute('to', to[1]);
+    animateTransformElement.setAttribute('begin', '0');
+    animateTransformElement.setAttribute('dur', '1');
+    animateTransformElement.setAttribute('fill', 'freeze');
+    target.appendChild(animateTransformElement);
   }
 
   function makeInterpolationTest(testType, fraction, testId, caseId, params, expectation) {
@@ -371,21 +460,10 @@
     {
       fragmentAttachedListeners.push(function() {
         if (testType === 'smil') {
-          var animateElement = document.createElementNS(svgNamespace, 'animate');
-          animateElement.setAttribute('attributeName', namespacedAttributeName(attributeName));
-          animateElement.setAttribute('attributeType', 'XML');
-          if (attributeName === 'class') {
-            // Preserve the existing classes as we use them to select elements.
-            animateElement.setAttribute('from', target['className'].baseVal + ' ' + params.from);
-            animateElement.setAttribute('to', target['className'].baseVal + ' ' + params.to);
-          } else {
-            animateElement.setAttribute('from', params.from);
-            animateElement.setAttribute('to', params.to);
-          }
-          animateElement.setAttribute('begin', '0');
-          animateElement.setAttribute('dur', '1');
-          animateElement.setAttribute('fill', 'freeze');
-          target.appendChild(animateElement);
+          if (attributeName.toLowerCase().indexOf('transform') === -1)
+            appendAnimate(target, attributeName, params.from, params.to);
+          else
+            appendAnimateTransform(target, attributeName, params.from, params.to);
 
           targetContainer.pauseAnimations();
           targetContainer.setCurrentTime(fraction);

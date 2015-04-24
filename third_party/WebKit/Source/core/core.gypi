@@ -945,6 +945,8 @@
             'animation/TimingCalculations.h',
             'animation/TimingInput.cpp',
             'animation/TimingInput.h',
+            'animation/TransformSVGInterpolation.cpp',
+            'animation/TransformSVGInterpolation.h',
             'animation/VisibilityStyleInterpolation.cpp',
             'animation/VisibilityStyleInterpolation.h',
             'animation/animatable/AnimatableClipPathOperation.cpp',
