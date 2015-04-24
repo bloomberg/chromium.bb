@@ -59,7 +59,8 @@ component("gcm") {
 }
 
 proto_library("proto") {
-  visibility = [ ":*" ]
+  # This is part of the gcm component.
+  visibility = [ ":gcm" ]
   sources = [
     "protocol/android_checkin.proto",
     "protocol/checkin.proto",
@@ -71,7 +72,7 @@ proto_library("proto") {
   defines = [ "GCM_IMPLEMENTATION" ]
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "base/fake_encryptor.cc",
@@ -103,11 +104,11 @@ executable("mcs_probe") {
 
   deps = [
     ":gcm",
-    ":proto",
     ":test_support",
     "//base",
     "//net",
     "//net:test_support",
+    "//third_party/protobuf:protobuf_lite",
   ]
 }
 
@@ -129,12 +130,13 @@ test("gcm_unit_tests") {
   ]
 
   deps = [
-    ":proto",
+    ":gcm",
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//net",
     "//net:test_support",
     "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
   ]
 }

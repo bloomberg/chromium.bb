@@ -58,8 +58,6 @@ source_set("test_support") {
     "command_buffer/service/gles2_cmd_decoder_mock.cc",
   ]
 
-  configs += [ ":gpu_implementation" ]
-
   public_deps = [
     ":gpu",
     "//gpu/command_buffer/client:gles2_interface",
