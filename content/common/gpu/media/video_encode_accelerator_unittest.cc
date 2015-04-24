@@ -52,9 +52,6 @@ const unsigned int kNumExtraInputFrames = 4;
 // Maximum delay between requesting a keyframe and receiving one, in frames.
 // Arbitrarily chosen as a reasonable requirement.
 const unsigned int kMaxKeyframeDelay = 4;
-// Value to use as max frame number for keyframe detection.
-const unsigned int kMaxFrameNum =
-    std::numeric_limits<unsigned int>::max() - kMaxKeyframeDelay;
 // Default initial bitrate.
 const uint32 kDefaultBitrate = 2000000;
 // Default ratio of requested_subsequent_bitrate to initial_bitrate
@@ -301,7 +298,6 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
            0U)
       << "Stream byte size is not a product of calculated frame byte size";
   CHECK_GT(test_stream->num_frames, 0UL);
-  CHECK_LE(test_stream->num_frames, kMaxFrameNum);
 }
 
 // Parse |data| into its constituent parts, set the various output fields
@@ -709,7 +705,7 @@ VEAClient::VEAClient(TestStream* test_stream,
       save_to_file_(save_to_file),
       keyframe_period_(keyframe_period),
       num_keyframes_requested_(0),
-      next_keyframe_at_(kMaxFrameNum),
+      next_keyframe_at_(0),
       force_bitrate_(force_bitrate),
       current_requested_bitrate_(0),
       current_framerate_(0),
@@ -1101,14 +1097,17 @@ bool VEAClient::HandleEncodedFrame(bool keyframe) {
   // earlier than we requested one (in time), and not later than
   // kMaxKeyframeDelay frames after the frame, for which we requested
   // it, comes back encoded.
-  EXPECT_LE(num_encoded_frames_, next_keyframe_at_ + kMaxKeyframeDelay);
-
   if (keyframe) {
-    if (num_keyframes_requested_ > 0)
+    if (num_keyframes_requested_ > 0 &&
+        num_encoded_frames_ > next_keyframe_at_) {
       --num_keyframes_requested_;
-    next_keyframe_at_ += keyframe_period_;
+      next_keyframe_at_ += keyframe_period_;
+    }
     seen_keyframe_in_this_buffer_ = true;
   }
+
+  if (num_keyframes_requested_ > 0)
+    EXPECT_LE(num_encoded_frames_, next_keyframe_at_ + kMaxKeyframeDelay);
 
   if (num_encoded_frames_ == num_frames_to_encode_ / 2) {
     VerifyStreamProperties();
