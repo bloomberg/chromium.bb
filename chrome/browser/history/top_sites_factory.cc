@@ -6,9 +6,11 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -85,10 +87,26 @@ TopSitesFactory* TopSitesFactory::GetInstance() {
   return Singleton<TopSitesFactory>::get();
 }
 
+// static
+scoped_refptr<history::TopSites> TopSitesFactory::BuildTopSites(
+    content::BrowserContext* context,
+    const std::vector<history::PrepopulatedPage>& prepopulated_page_list) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  scoped_refptr<history::TopSitesImpl> top_sites(new history::TopSitesImpl(
+      profile->GetPrefs(), HistoryServiceFactory::GetForProfile(
+                               profile, ServiceAccessType::EXPLICIT_ACCESS),
+      prefs::kNtpMostVisitedURLsBlacklist, prepopulated_page_list));
+  top_sites->Init(context->GetPath().Append(chrome::kTopSitesFilename),
+                  content::BrowserThread::GetMessageLoopProxyForThread(
+                      content::BrowserThread::DB));
+  return top_sites;
+}
+
 TopSitesFactory::TopSitesFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
           "TopSites",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 TopSitesFactory::~TopSitesFactory() {
@@ -98,13 +116,7 @@ scoped_refptr<RefcountedKeyedService> TopSitesFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   history::PrepopulatedPageList prepopulated_pages;
   InitializePrepopulatedPageList(&prepopulated_pages);
-
-  history::TopSitesImpl* top_sites = new history::TopSitesImpl(
-      static_cast<Profile*>(context), prepopulated_pages);
-  top_sites->Init(context->GetPath().Append(chrome::kTopSitesFilename),
-                  content::BrowserThread::GetMessageLoopProxyForThread(
-                      content::BrowserThread::DB));
-  return make_scoped_refptr(top_sites);
+  return BuildTopSites(context, prepopulated_pages);
 }
 
 bool TopSitesFactory::ServiceIsNULLWhileTesting() const {

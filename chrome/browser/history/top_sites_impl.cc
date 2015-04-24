@@ -21,10 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/values.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/page_usage_data.h"
@@ -39,7 +36,6 @@
 using base::DictionaryValue;
 
 namespace history {
-
 namespace {
 
 void RunOrPostGetMostVisitedURLsCallback(
@@ -90,16 +86,22 @@ const int kTopSitesImageQuality = 100;
 // Initially, histogram is not recorded.
 bool TopSitesImpl::histogram_recorded_ = false;
 
-TopSitesImpl::TopSitesImpl(Profile* profile,
+TopSitesImpl::TopSitesImpl(PrefService* pref_service,
+                           HistoryService* history_service,
+                           const char* blacklist_pref_name,
                            const PrepopulatedPageList& prepopulated_pages)
-    : backend_(NULL),
+    : backend_(nullptr),
       cache_(new TopSitesCache()),
       thread_safe_cache_(new TopSitesCache()),
-      profile_(profile),
       last_num_urls_changed_(0),
       prepopulated_pages_(prepopulated_pages),
+      pref_service_(pref_service),
+      blacklist_pref_name_(blacklist_pref_name),
+      history_service_(history_service),
       loaded_(false),
       history_service_observer_(this) {
+  DCHECK(pref_service_);
+  DCHECK(blacklist_pref_name_);
 }
 
 void TopSitesImpl::Init(
@@ -306,7 +308,7 @@ void TopSitesImpl::SyncWithHistory() {
 
 bool TopSitesImpl::HasBlacklistedItems() const {
   const base::DictionaryValue* blacklist =
-      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
+      pref_service_->GetDictionary(blacklist_pref_name_);
   return blacklist && !blacklist->empty();
 }
 
@@ -315,8 +317,7 @@ void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
 
   base::Value* dummy = base::Value::CreateNullValue();
   {
-    DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kNtpMostVisitedURLsBlacklist);
+    DictionaryPrefUpdate update(pref_service_, blacklist_pref_name_);
     base::DictionaryValue* blacklist = update.Get();
     blacklist->SetWithoutPathExpansion(GetURLHash(url), dummy);
   }
@@ -328,10 +329,9 @@ void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
 void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   {
-    DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kNtpMostVisitedURLsBlacklist);
+    DictionaryPrefUpdate update(pref_service_, blacklist_pref_name_);
     base::DictionaryValue* blacklist = update.Get();
-    blacklist->RemoveWithoutPathExpansion(GetURLHash(url), NULL);
+    blacklist->RemoveWithoutPathExpansion(GetURLHash(url), nullptr);
   }
   ResetThreadSafeCache();
   NotifyTopSitesChanged();
@@ -340,15 +340,14 @@ void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
 bool TopSitesImpl::IsBlacklisted(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const base::DictionaryValue* blacklist =
-      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
+      pref_service_->GetDictionary(blacklist_pref_name_);
   return blacklist && blacklist->HasKey(GetURLHash(url));
 }
 
 void TopSitesImpl::ClearBlacklistedURLs() {
   DCHECK(thread_checker_.CalledOnValidThread());
   {
-    DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kNtpMostVisitedURLsBlacklist);
+    DictionaryPrefUpdate update(pref_service_, blacklist_pref_name_);
     base::DictionaryValue* blacklist = update.Get();
     blacklist->Clear();
   }
@@ -357,7 +356,8 @@ void TopSitesImpl::ClearBlacklistedURLs() {
 }
 
 void TopSitesImpl::ShutdownOnUIThread() {
-  profile_ = NULL;
+  history_service_ = nullptr;
+  history_service_observer_.RemoveAll();
   // Cancel all requests so that the service doesn't callback to us after we've
   // invoked Shutdown (this could happen if we have a pending request and
   // Shutdown is invoked).
@@ -430,21 +430,14 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
 
 base::CancelableTaskTracker::TaskId TopSitesImpl::StartQueryForMostVisited() {
   DCHECK(loaded_);
-  if (!profile_)
+  if (!history_service_)
     return base::CancelableTaskTracker::kBadTaskId;
 
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  // |hs| may be null during unit tests.
-  if (hs) {
-    return hs->QueryMostVisitedURLs(
-        num_results_to_request_from_history(),
-        kDaysOfHistory,
-        base::Bind(&TopSitesImpl::OnTopSitesAvailableFromHistory,
-                   base::Unretained(this)),
-        &cancelable_task_tracker_);
-  }
-  return base::CancelableTaskTracker::kBadTaskId;
+  return history_service_->QueryMostVisitedURLs(
+      num_results_to_request_from_history(), kDaysOfHistory,
+      base::Bind(&TopSitesImpl::OnTopSitesAvailableFromHistory,
+                 base::Unretained(this)),
+      &cancelable_task_tracker_);
 }
 
 bool TopSitesImpl::IsKnownURL(const GURL& url) {
@@ -683,7 +676,7 @@ void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
   // Log the number of times ApplyBlacklist is called so we can compute the
   // average number of blacklisted items per user.
   const base::DictionaryValue* blacklist =
-      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
+      pref_service_->GetDictionary(blacklist_pref_name_);
   UMA_HISTOGRAM_BOOLEAN("TopSites.NumberOfApplyBlacklist", true);
   UMA_HISTOGRAM_COUNTS_100("TopSites.NumberOfBlacklistedItems",
       (blacklist ? blacklist->size() : 0));
@@ -797,7 +790,7 @@ int TopSitesImpl::num_results_to_request_from_history() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const base::DictionaryValue* blacklist =
-      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
+      pref_service_->GetDictionary(blacklist_pref_name_);
   return kNonForcedTopSitesNumber + (blacklist ? blacklist->size() : 0);
 }
 
@@ -830,11 +823,8 @@ void TopSitesImpl::MoveStateToLoaded() {
   for (size_t i = 0; i < pending_callbacks.size(); i++)
     pending_callbacks[i].Run(filtered_urls_all, filtered_urls_nonforced);
 
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  // |hs| may be null during unit tests.
-  if (hs)
-    history_service_observer_.Add(hs);
+  if (history_service_)
+    history_service_observer_.Add(history_service_);
 
   NotifyTopSitesLoaded();
 }
@@ -917,10 +907,6 @@ void TopSitesImpl::OnURLsDeleted(HistoryService* history_service,
     SetTopSites(new_top_sites, CALL_LOCATION_FROM_OTHER_PLACES);
   }
   StartQueryForMostVisited();
-}
-
-void TopSitesImpl::HistoryServiceBeingDeleted(HistoryService* history_service) {
-  history_service_observer_.Remove(history_service);
 }
 
 }  // namespace history

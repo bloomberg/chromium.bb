@@ -40,13 +40,7 @@ scoped_refptr<RefcountedKeyedService> BuildTopSitesImpl(
   PrepopulatedPageList prepopulated_pages;
   prepopulated_pages.push_back(PrepopulatedPage(GURL(kPrepopulatedPageURL),
                                                 base::string16(), -1, -1, 0));
-
-  scoped_refptr<TopSitesImpl> top_sites =
-      new TopSitesImpl(static_cast<Profile*>(context), prepopulated_pages);
-  top_sites->Init(
-      context->GetPath().Append(chrome::kTopSitesFilename),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
-  return top_sites;
+  return TopSitesFactory::BuildTopSites(context, prepopulated_pages);
 }
 
 // Used by WaitForHistory, see it for details.

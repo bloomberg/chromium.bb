@@ -7,6 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/history/top_sites_impl.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +20,10 @@ namespace {
 class MockTopSites : public history::TopSitesImpl {
  public:
   explicit MockTopSites(Profile* profile)
-      : history::TopSitesImpl(profile, history::PrepopulatedPageList()),
+      : history::TopSitesImpl(profile->GetPrefs(),
+                              nullptr,
+                              prefs::kNtpMostVisitedURLsBlacklist,
+                              history::PrepopulatedPageList()),
         capacity_(1) {}
 
   // history::TopSitesImpl overrides.

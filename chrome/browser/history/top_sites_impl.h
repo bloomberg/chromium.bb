@@ -32,7 +32,7 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
-class Profile;
+class PrefService;
 
 namespace base {
 class FilePath;
@@ -43,6 +43,7 @@ class SingleThreadTaskRunner;
 
 namespace history {
 
+class HistoryService;
 class TopSitesCache;
 class TopSitesImplTest;
 
@@ -52,7 +53,9 @@ class TopSitesImplTest;
 // db using TopSitesBackend.
 class TopSitesImpl : public TopSites, public HistoryServiceObserver {
  public:
-  TopSitesImpl(Profile* profile,
+  TopSitesImpl(PrefService* pref_service,
+               HistoryService* history_service,
+               const char* blacklist_pref_name,
                const PrepopulatedPageList& prepopulated_pages);
 
   // Initializes TopSitesImpl.
@@ -236,8 +239,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
                      bool expired,
                      const URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
-  void HistoryServiceBeingDeleted(HistoryService* history_service) override;
-
 
   // Ensures that non thread-safe methods are called on the correct thread.
   base::ThreadChecker thread_checker_;
@@ -251,8 +252,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // you hold |lock_|). The data in |thread_safe_cache_| has blacklisted and
   // pinned urls applied (|cache_| does not).
   scoped_ptr<TopSitesCache> thread_safe_cache_;
-
-  Profile* profile_;
 
   // Lock used to access |thread_safe_cache_|.
   mutable base::Lock lock_;
@@ -283,6 +282,17 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   // URL List of prepopulated page.
   PrepopulatedPageList prepopulated_pages_;
+
+  // PrefService holding the NTP URL blacklist dictionary. Must outlive
+  // TopSitesImpl.
+  PrefService* pref_service_;
+
+  // Key for the NTP URL blacklist dictionary in PrefService.
+  const char* blacklist_pref_name_;
+
+  // HistoryService that TopSitesImpl can query. May be null, but if defined it
+  // must outlive TopSitesImpl.
+  HistoryService* history_service_;
 
   // Are we loaded?
   bool loaded_;

@@ -5,19 +5,18 @@
 #ifndef CHROME_BROWSER_HISTORY_TOP_SITES_FACTORY_H_
 #define CHROME_BROWSER_HISTORY_TOP_SITES_FACTORY_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 
 class Profile;
 
-namespace history {
-class TopSites;
-}
-
 template <typename T>
 struct DefaultSingletonTraits;
 
 namespace history {
+struct PrepopulatedPage;
 class TopSites;
 }
 
@@ -37,6 +36,12 @@ class TopSitesFactory : public RefcountedBrowserContextKeyedServiceFactory {
 
   // Get the singleton instance of the factory.
   static TopSitesFactory* GetInstance();
+
+  // Creates a TopSites service for |context| with |prepopulated_page_list|.
+  // Public for testing.
+  static scoped_refptr<history::TopSites> BuildTopSites(
+      content::BrowserContext* context,
+      const std::vector<history::PrepopulatedPage>& prepopulated_page_list);
 
  private:
   friend struct DefaultSingletonTraits<TopSitesFactory>;
