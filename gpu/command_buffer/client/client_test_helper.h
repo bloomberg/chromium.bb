@@ -63,14 +63,14 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
 class MockClientCommandBuffer : public MockCommandBufferBase {
  public:
   MockClientCommandBuffer();
-  virtual ~MockClientCommandBuffer();
+  ~MockClientCommandBuffer() override;
 
   // This is so we can use all the gmock functions when Flush is called.
   MOCK_METHOD0(OnFlush, void());
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 id));
 
-  virtual void Flush(int32 put_offset) override;
-  virtual void OrderingBarrier(int32 put_offset) override;
+  void Flush(int32 put_offset) override;
+  void OrderingBarrier(int32 put_offset) override;
 
   void DelegateToFake();
 };
