@@ -207,8 +207,6 @@ public:
 
     void acceptLanguagesChanged();
 
-    virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
-
 private:
     // Rather than simply inheriting LocalFrameLifecycleObserver like most other
     // classes, LocalDOMWindow hides its LocalFrameLifecycleObserver with

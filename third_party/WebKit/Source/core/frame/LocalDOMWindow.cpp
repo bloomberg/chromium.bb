@@ -1577,10 +1577,4 @@ LocalFrame* LocalDOMWindow::frame() const
     return m_frameObserver->frame();
 }
 
-v8::Handle<v8::Object> LocalDOMWindow::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT_NOT_REACHED(); // LocalDOMWindow has [Custom=ToV8].
-    return v8::Handle<v8::Object>();
-}
-
 } // namespace blink

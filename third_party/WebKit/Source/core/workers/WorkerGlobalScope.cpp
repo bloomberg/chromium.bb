@@ -384,6 +384,20 @@ void WorkerGlobalScope::removeURLFromMemoryCacheInternal(const KURL& url)
     memoryCache()->removeURLFromCache(url);
 }
 
+v8::Handle<v8::Object> WorkerGlobalScope::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*)
+{
+    // WorkerGlobalScope must never be wrapped with wrap method.  The global
+    // object of ECMAScript environment is used as the wrapper.
+    RELEASE_ASSERT_NOT_REACHED();
+    return v8::Handle<v8::Object>();
+}
+
+v8::Handle<v8::Object> WorkerGlobalScope::associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper)
+{
+    RELEASE_ASSERT_NOT_REACHED(); // same as wrap method
+    return v8::Handle<v8::Object>();
+}
+
 DEFINE_TRACE(WorkerGlobalScope)
 {
 #if ENABLE(OILPAN)
