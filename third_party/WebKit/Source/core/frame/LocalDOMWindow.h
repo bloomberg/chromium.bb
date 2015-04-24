@@ -257,7 +257,7 @@ private:
     WillBeHeapHashSet<RawPtrWillBeWeakMember<DOMWindowProperty>> m_properties;
 
     mutable PersistentWillBeMember<Screen> m_screen;
-    mutable RefPtrWillBeMember<History> m_history;
+    mutable PersistentWillBeMember<History> m_history;
     mutable RefPtrWillBeMember<BarProp> m_locationbar;
     mutable RefPtrWillBeMember<BarProp> m_menubar;
     mutable RefPtrWillBeMember<BarProp> m_personalbar;

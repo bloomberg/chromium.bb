@@ -32,8 +32,6 @@
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -42,13 +40,13 @@ class KURL;
 class ExecutionContext;
 class ExceptionState;
 
-class History final : public RefCountedWillBeGarbageCollectedFinalized<History>, public ScriptWrappable, public DOMWindowProperty {
+class History final : public GarbageCollectedFinalized<History>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(History);
 public:
-    static PassRefPtrWillBeRawPtr<History> create(LocalFrame* frame)
+    static History* create(LocalFrame* frame)
     {
-        return adoptRefWillBeNoop(new History(frame));
+        return new History(frame);
     }
 
     unsigned length() const;
