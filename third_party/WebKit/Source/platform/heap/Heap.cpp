@@ -2299,14 +2299,12 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     double markingTimeInMilliseconds = WTF::currentTimeMS() - timeStamp;
     s_estimatedMarkingTimePerByte = totalObjectSize ? (markingTimeInMilliseconds / 1000 / totalObjectSize) : 0;
 
-    if (Platform::current()) {
-        Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", markingTimeInMilliseconds, 0, 10 * 1000, 50);
-        Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", Heap::allocatedObjectSize() / 1024, 0, 4 * 1024 * 1024, 50);
-        Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", Heap::allocatedSpace() / 1024, 0, 4 * 1024 * 1024, 50);
-        Platform::current()->histogramEnumeration("BlinkGC.GCReason", reason, NumberOfGCReason);
-        Heap::reportMemoryUsageHistogram();
-        WTF::Partitions::reportMemoryUsageHistogram();
-    }
+    Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", markingTimeInMilliseconds, 0, 10 * 1000, 50);
+    Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", Heap::allocatedObjectSize() / 1024, 0, 4 * 1024 * 1024, 50);
+    Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", Heap::allocatedSpace() / 1024, 0, 4 * 1024 * 1024, 50);
+    Platform::current()->histogramEnumeration("BlinkGC.GCReason", reason, NumberOfGCReason);
+    Heap::reportMemoryUsageHistogram();
+    WTF::Partitions::reportMemoryUsageHistogram();
 
     if (state->isMainThread())
         ScriptForbiddenScope::exit();
@@ -2447,8 +2445,7 @@ void Heap::reportMemoryUsageHistogram()
     if (sizeInMB > observedMaxSizeInMB) {
         // Send a UseCounter only when we see the highest memory usage
         // we've ever seen.
-        if (Platform::current())
-            Platform::current()->histogramEnumeration("BlinkGC.CommittedSize", sizeInMB, supportedMaxSizeInMB);
+        Platform::current()->histogramEnumeration("BlinkGC.CommittedSize", sizeInMB, supportedMaxSizeInMB);
         observedMaxSizeInMB = sizeInMB;
     }
 }
