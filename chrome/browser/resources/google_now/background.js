@@ -202,6 +202,7 @@ var tasks = buildTaskManager(areTasksConflicting);
 // Add error processing to API calls.
 wrapper.instrumentChromeApiFunction('gcm.onMessage.addListener', 0);
 wrapper.instrumentChromeApiFunction('gcm.register', 1);
+wrapper.instrumentChromeApiFunction('gcm.unregister', 0);
 wrapper.instrumentChromeApiFunction('metricsPrivate.getVariationParams', 1);
 wrapper.instrumentChromeApiFunction('notifications.clear', 1);
 wrapper.instrumentChromeApiFunction('notifications.create', 2);
@@ -1027,7 +1028,8 @@ function stopPollingCards() {
  */
 function initialize() {
   recordEvent(GoogleNowEvent.EXTENSION_START);
-  registerForGcm();
+  // TODO(skare): Reenable, after signin.
+  unregisterFromGcm();
   onStateChange();
 }
 
@@ -1307,6 +1309,24 @@ function getGcmRegistrationId() {
             }
           });
         });
+      });
+}
+
+/**
+ * Unregisters from GCM if previously registered.
+ */
+function unregisterFromGcm() {
+  fillFromChromeLocalStorage({gcmRegistrationId: undefined})
+      .then(function(items) {
+        if (items.gcmRegistrationId) {
+          console.log('Unregistering from gcm.');
+          instrumented.gcm.unregister(function() {
+            if (!chrome.runtime.lastError) {
+              chrome.storage.local.remove(
+                ['gcmNotificationKey', 'gcmRegistrationId']);
+            }
+          });
+        }
       });
 }
 
