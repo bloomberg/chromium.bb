@@ -270,7 +270,9 @@ are declared in build/common.gypi.
       </if>
 
       <!-- Media Router specific strings -->
-      <part file="media_router_strings.grdp" />
+      <if expr="enable_media_router">
+        <part file="media_router_strings.grdp" />
+      </if>
 
       <!-- TODO add all of your "string table" messages here.  Remember to
       change nontranslateable parts of the messages into placeholders (using the
