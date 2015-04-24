@@ -687,10 +687,10 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
 
   base::FilePath recording = CreateTemporaryWaveFile();
 
-  // Note: the sound clip is about 13 seconds: record for 20 seconds to get some
+  // Note: the sound clip is 21.6 seconds: record for 25 seconds to get some
   // safety margins on each side.
   AudioRecorder recorder;
-  ASSERT_TRUE(recorder.StartRecording(base::TimeDelta::FromSeconds(20),
+  ASSERT_TRUE(recorder.StartRecording(base::TimeDelta::FromSeconds(25),
                                       recording));
 
   PlayAudioFileThroughWebAudio(left_tab);
