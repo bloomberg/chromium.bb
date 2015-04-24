@@ -27,6 +27,7 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
@@ -92,8 +93,9 @@ const int kMinCardsMajor = 3;
 const int kOverviewSelectorTransitionMilliseconds = 100;
 
 // The color and opacity of the overview selector.
-const SkColor kWindowOverviewSelectionColor = SK_ColorBLACK;
-const unsigned char kWindowOverviewSelectorOpacity = 128;
+const SkColor kWindowSelectionColor = SkColorSetARGB(128, 0, 0, 0);
+const SkColor kWindowSelectionBorderColor = SkColorSetARGB(38, 255, 255, 255);
+const int kWindowSelectionBorderThickness = 2;
 
 // The minimum amount of spacing between the bottom of the text filtering
 // text field and the top of the selection widget on the first row of items.
@@ -368,7 +370,9 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
 
   views::View* content_view = new views::View;
   content_view->set_background(
-      views::Background::CreateSolidBackground(kWindowOverviewSelectionColor));
+      views::Background::CreateSolidBackground(kWindowSelectionColor));
+  content_view->SetBorder(views::Border::CreateSolidBorder(
+      kWindowSelectionBorderThickness, kWindowSelectionBorderColor));
   selection_widget_->SetContentsView(content_view);
   selection_widget_->GetNativeWindow()->parent()->StackChildAtBottom(
       selection_widget_->GetNativeWindow());
@@ -438,11 +442,11 @@ void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     selection_widget_->SetBounds(SelectedWindow()->target_bounds());
-    selection_widget_->SetOpacity(kWindowOverviewSelectorOpacity);
+    selection_widget_->SetOpacity(255);
     return;
   }
   selection_widget_->SetBounds(SelectedWindow()->target_bounds());
-  selection_widget_->SetOpacity(kWindowOverviewSelectorOpacity);
+  selection_widget_->SetOpacity(255);
 }
 
 }  // namespace ash
