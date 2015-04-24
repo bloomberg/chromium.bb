@@ -80,10 +80,6 @@ static bool hasCSSPropertyNamePrefix(const String& propertyName, const char* pre
     return false;
 }
 
-struct CSSPropertyInfo {
-    CSSPropertyID propID;
-};
-
 static CSSPropertyID parseCSSPropertyID(v8::Isolate* isolate, const String& propertyName)
 {
     unsigned length = propertyName.length();
@@ -140,21 +136,19 @@ static CSSPropertyID parseCSSPropertyID(v8::Isolate* isolate, const String& prop
 // Example: 'backgroundPositionY' -> 'background-position-y'
 //
 // Also, certain prefixes such as 'css-' are stripped.
-static CSSPropertyInfo* cssPropertyInfo(v8::Local<v8::String> v8PropertyName, v8::Isolate* isolate)
+static CSSPropertyID cssPropertyInfo(v8::Local<v8::String> v8PropertyName, v8::Isolate* isolate)
 {
     String propertyName = toCoreString(v8PropertyName);
-    typedef HashMap<String, CSSPropertyInfo*> CSSPropertyInfoMap;
-    DEFINE_STATIC_LOCAL(CSSPropertyInfoMap, map, ());
-    CSSPropertyInfo* propInfo = map.get(propertyName);
-    if (!propInfo) {
-        propInfo = new CSSPropertyInfo();
-        propInfo->propID = parseCSSPropertyID(isolate, propertyName);
-        map.add(propertyName, propInfo);
-    }
-    if (!propInfo->propID)
-        return 0;
-    ASSERT(CSSPropertyMetadata::isEnabledProperty(propInfo->propID));
-    return propInfo;
+    typedef HashMap<String, CSSPropertyID> CSSPropertyIDMap;
+    DEFINE_STATIC_LOCAL(CSSPropertyIDMap, map, ());
+    CSSPropertyIDMap::iterator iter = map.find(propertyName);
+    if (iter != map.end())
+        return iter->value;
+
+    CSSPropertyID unresolvedProperty = parseCSSPropertyID(isolate, propertyName);
+    map.add(propertyName, unresolvedProperty);
+    ASSERT(!unresolvedProperty || CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
+    return unresolvedProperty;
 }
 
 void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>& info)
@@ -198,12 +192,12 @@ void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::Name> v8Name,
 void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // Search the style declaration.
-    CSSPropertyInfo* propInfo = cssPropertyInfo(name.As<v8::String>(), info.GetIsolate());
+    CSSPropertyID unresolvedProperty = cssPropertyInfo(name.As<v8::String>(), info.GetIsolate());
 
     // Do not handle non-property names.
-    if (!propInfo)
+    if (!unresolvedProperty)
         return;
-    CSSPropertyID resolvedProperty = resolveCSSPropertyID(propInfo->propID);
+    CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
 
     CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
     RefPtrWillBeRawPtr<CSSValue> cssValue = impl->getPropertyCSSValueInternal(resolvedProperty);
@@ -221,13 +215,13 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::Name> name, 
     if (!name->IsString())
         return;
     CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
-    CSSPropertyInfo* propInfo = cssPropertyInfo(name.As<v8::String>(), info.GetIsolate());
-    if (!propInfo)
+    CSSPropertyID unresolvedProperty = cssPropertyInfo(name.As<v8::String>(), info.GetIsolate());
+    if (!unresolvedProperty)
         return;
 
     TOSTRING_VOID(V8StringResource<TreatNullAsNullString>, propertyValue, value);
-    ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(resolveCSSPropertyID(propInfo->propID)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
-    impl->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, exceptionState);
+    ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(resolveCSSPropertyID(unresolvedProperty)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
+    impl->setPropertyInternal(unresolvedProperty, propertyValue, false, exceptionState);
 
     if (exceptionState.throwIfNeeded())
         return;
