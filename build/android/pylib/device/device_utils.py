@@ -854,29 +854,27 @@ class DeviceUtils(object):
     if not real_device_path:
       return [(host_path, device_path)]
 
-    host_hash_tuples = md5sum.CalculateHostMd5Sums([real_host_path])
+    host_checksums = md5sum.CalculateHostMd5Sums([real_host_path])
     device_paths_to_md5 = (
         real_device_path if os.path.isfile(real_host_path)
         else ('%s/%s' % (real_device_path, os.path.relpath(p, real_host_path))
-              for _, p in host_hash_tuples))
-    device_hash_tuples = md5sum.CalculateDeviceMd5Sums(
+              for p in host_checksums.iterkeys()))
+    device_checksums = md5sum.CalculateDeviceMd5Sums(
         device_paths_to_md5, self)
 
     if os.path.isfile(host_path):
-      if (not device_hash_tuples
-          or device_hash_tuples[0].hash != host_hash_tuples[0].hash):
+      host_checksum = host_checksums.get(real_host_path)
+      device_checksum = device_checksums.get(real_device_path)
+      if host_checksum != device_checksum:
         return [(host_path, device_path)]
       else:
         return []
     else:
-      device_tuple_dict = dict((d.path, d.hash) for d in device_hash_tuples)
       to_push = []
-      for host_hash, host_abs_path in (
-          (h.hash, h.path) for h in host_hash_tuples):
+      for host_abs_path, host_checksum in host_checksums.iteritems():
         device_abs_path = '%s/%s' % (
             real_device_path, os.path.relpath(host_abs_path, real_host_path))
-        if (device_abs_path not in device_tuple_dict
-            or device_tuple_dict[device_abs_path] != host_hash):
+        if (device_checksums.get(device_abs_path) != host_checksum):
           to_push.append((host_abs_path, device_abs_path))
       return to_push
 

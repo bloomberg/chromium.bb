@@ -335,7 +335,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     with open(pickle_path, 'r') as pickle_file:
       pickle_data = pickle.loads(pickle_file.read())
-    jar_md5, _ = md5sum.CalculateHostMd5Sums(jar_path)[0]
+    jar_md5 = md5sum.CalculateHostMd5Sums(jar_path)[jar_path]
 
     try:
       if pickle_data['VERSION'] != _PICKLE_FORMAT_VERSION:
@@ -377,7 +377,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
             if is_test_class(c)]
 
   def _SaveTestsToPickle(self, pickle_path, jar_path, tests):
-    jar_md5, _ = md5sum.CalculateHostMd5Sums(jar_path)[0]
+    jar_md5 = md5sum.CalculateHostMd5Sums(jar_path)[jar_path]
     pickle_data = {
       'VERSION': _PICKLE_FORMAT_VERSION,
       'JAR_MD5SUM': jar_md5,
