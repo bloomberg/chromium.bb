@@ -137,3 +137,34 @@ TEST_F('OutputE2ETest', 'Headings', function() {
       ]}, o.toSpannable());
   });
 });
+
+TEST_F('OutputE2ETest', 'Audio', function() {
+  this.runWithLoadedTree('<audio src="foo.mp3" controls></audio>',
+    function(root) {
+      var el = root.firstChild.firstChild.firstChild.firstChild;
+      var range = cursors.Range.fromNode(el);
+      var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+      assertEqualsJSON({string_: 'media control|Tool bar|||play|Button',
+          spans_:
+              // Entered container toolbar.
+
+              // Button.
+              [{value: 'name', start: 23, end: 23},
+              {value: 'value', start: 24, end: 24},
+              {value: 'description', start: 25, end: 29},
+              {value: 'role', start: 30, end: 36},
+
+              // Button earcon.
+              {value: {}, start: 30, end: 36}]
+          }, o.toSpannableForTest());
+
+      el = el.nextSibling;
+      var prevRange = range;
+      range = cursors.Range.fromNode(el);
+      var o = new Output().withSpeechAndBraille(range, prevRange, 'navigate');
+      assertEqualsJSON({string_: '0, , slider|audio time scrubber',
+          spans_:
+              [{value: 'help', start: 12, end: 31}]
+          }, o.toSpannableForTest());
+  });
+});

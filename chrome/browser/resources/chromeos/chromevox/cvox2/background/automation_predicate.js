@@ -57,6 +57,7 @@ AutomationPredicate.link =
 AutomationPredicate.leaf = function(node) {
   return !node.firstChild ||
       node.role == chrome.automation.RoleType.button ||
+      node.role == chrome.automation.RoleType.slider ||
       node.children.every(function(n) {
         return n.state.invisible;
       });
