@@ -4,6 +4,7 @@
 
 #include "dbus/values_util.h"
 
+#include <cmath>
 #include <vector>
 
 #include "base/json/json_writer.h"
@@ -357,7 +358,7 @@ TEST(ValuesUtilTest, PopDoubleToIntDictionary) {
   const std::vector<int32> values(kValues, kValues + arraysize(kValues));
   std::vector<double> keys(values.size());
   for (size_t i = 0; i != values.size(); ++i)
-    keys[i] = sqrt(values[i]);
+    keys[i] = std::sqrt(values[i]);
 
   // Append a dictionary.
   scoped_ptr<Response> response(Response::CreateEmpty());
