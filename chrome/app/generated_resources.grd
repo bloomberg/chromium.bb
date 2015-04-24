@@ -5876,6 +5876,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_TOUCH_EDITING_DESCRIPTION" desc="Description of the flag to enable touch based text editing.">
         Touch editing can be initiated by tapping on a textfield or a selected text.
       </message>
+      <message name="IDS_FLAGS_TOUCH_SELECTION_STRATEGY_NAME" desc="Name of the flag that controls touch based text selection strategy.">
+        Touch text selection strategy
+      </message>
+      <message name="IDS_FLAGS_TOUCH_SELECTION_STRATEGY_DESCRIPTION" desc="Description of the flag that controls touch based text selection strategy.">
+        Controls how text selection granularity changes when touch text selection handles are dragged. Non-default behavior is experimental.
+      </message>
+      <message name="IDS_TOUCH_SELECTION_STRATEGY_CHARACTER" desc="Description for the touch text selection strategy which always uses character granularity.">
+        Character
+      </message>
+      <message name="IDS_TOUCH_SELECTION_STRATEGY_DIRECTION" desc="Description for the touch text selection strategy which is based on the direction in which the handle is dragged.">
+        Direction
+      </message>
       <message name="IDS_FLAGS_WALLET_SERVICE_USE_SANDBOX_NAME" desc="Title for the flag to use the Online Wallet sandbox servers (instead of production).">
         Use Wallet sandbox servers
       </message>

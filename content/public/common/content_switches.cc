@@ -785,6 +785,11 @@ const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 // Type of the current test harness ("browser" or "ui").
 const char kTestType[]                      = "test-type";
 
+// Controls how text selection granularity changes when touch text selection
+// handles are dragged. Should be "character" or "direction". If not specified,
+// the platform default is used.
+const char kTouchTextSelectionStrategy[]    = "touch-selection-strategy";
+
 // Causes TRACE_EVENT flags to be recorded beginning with shutdown. Optionally,
 // can specify the specific trace categories to include (e.g.
 // --trace-shutdown=base,net) otherwise, all events are recorded.
