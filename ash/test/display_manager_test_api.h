@@ -11,6 +11,16 @@
 #include "base/basictypes.h"
 #include "ui/display/types/display_constants.h"
 
+namespace gfx {
+class Point;
+}
+
+namespace ui {
+namespace test {
+class EventGenerator;
+}
+}
+
 namespace ash {
 class DisplayManager;
 
@@ -18,6 +28,11 @@ namespace test {
 
 class DisplayManagerTestApi {
  public:
+  // Test if moving a mouse to |point_in_screen| warps it to another
+  // display.
+  static bool TestIfMouseWarpsAt(ui::test::EventGenerator& event_generator,
+                                 const gfx::Point& point_in_screen);
+
   explicit DisplayManagerTestApi(DisplayManager* display_manager);
   virtual ~DisplayManagerTestApi();
 

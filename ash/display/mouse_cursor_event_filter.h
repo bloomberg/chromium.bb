@@ -19,7 +19,7 @@ class Window;
 }
 
 namespace ash {
-class SharedDisplayEdgeIndicator;
+class DisplayEdgeController;
 
 // An event filter that controls mouse location in extended desktop
 // environment.
@@ -44,66 +44,22 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
   void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
-  friend class DragWindowResizerTest;
+  friend class test::DisplayManagerTestApi;
+  friend class ExtendedMouseWarpControllerTest;
   friend class MouseCursorEventFilterTest;
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, DoNotWarpTwice);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, SetMouseWarpModeFlag);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
-                           IndicatorBoundsTestOnRight);
-  FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
-                           IndicatorBoundsTestOnLeft);
-  FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
-                           IndicatorBoundsTestOnTopBottom);
-  FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,
                            WarpMouseDifferentScaleDisplaysInNative);
-
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, WarpMousePointer);
 
-  // Moves the cursor to the point inside the root that is closest to
-  // the point_in_screen, which is outside of the root window.
-  static void MoveCursorTo(aura::Window* root,
-                           const gfx::Point& point_in_screen);
-
-  // Warps the mouse cursor to an alternate root window when the
-  // mouse location in |event|, hits the edge of the event target's root and
-  // the mouse cursor is considered to be in an alternate display.
-  // Returns true if/ the cursor was moved.
-  bool WarpMouseCursorIfNecessary(ui::MouseEvent* event);
-
-  bool WarpMouseCursorInNativeCoords(const gfx::Point& point_in_native,
-                                     const gfx::Point& point_in_screen);
-
-  // Update the edge/indicator bounds based on the current
-  // display configuration.
-  void UpdateHorizontalEdgeBounds();
-  void UpdateVerticalEdgeBounds();
-
-  // Returns the source and destination window. When |src_window| is
-  // |drag_soruce_root_| when it is set. Otherwise, the |src_window|
-  // is always the primary root window, because there is no difference
-  // between moving src to dst and moving dst to src.
-  void GetSrcAndDstRootWindows(aura::Window** src_window,
-                               aura::Window** dst_window);
-
-  bool WarpMouseCursorIfNecessaryForTest(aura::Window* target_root,
-                                         const gfx::Point& point_in_screen);
+  MouseWarpController* mouse_warp_controller_for_test() {
+    return mouse_warp_controller_.get();
+  }
 
   bool mouse_warp_enabled_;
 
-  // The bounds for warp hole windows. |dst_indicator_bounds_| is kept
-  // in the instance for testing.
-  gfx::Rect src_indicator_bounds_;
-  gfx::Rect dst_indicator_bounds_;
-
-  gfx::Rect src_edge_bounds_in_native_;
-  gfx::Rect dst_edge_bounds_in_native_;
-
-  // The root window in which the dragging started.
-  aura::Window* drag_source_root_;
-
-  // Shows the area where a window can be dragged in to/out from
-  // another display.
-  scoped_ptr<SharedDisplayEdgeIndicator> shared_display_edge_indicator_;
+  scoped_ptr<MouseWarpController> mouse_warp_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseCursorEventFilter);
 };

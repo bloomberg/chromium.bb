@@ -4,16 +4,14 @@
 
 #include "ash/display/mouse_cursor_event_filter.h"
 
+#include "ash/display/display_layout_store.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
-#include "ash/display/display_layout_store.h"
-#include "ash/display/display_manager.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/events/event_utils.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/screen.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
@@ -27,30 +25,9 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
     return Shell::GetInstance()->mouse_cursor_filter();
   }
 
-  bool WarpMouseCursorIfNecessary(aura::Window* target_root,
-                                  gfx::Point point_in_screen) {
-    bool is_warped = event_filter()->WarpMouseCursorIfNecessaryForTest(
-        target_root, point_in_screen);
-    return is_warped;
-  }
-
-  bool WarpMouseCursorIfNecessaryWithDragRoot(
-      aura::Window* drag_source_root,
-      aura::Window* target_root,
-      gfx::Point point_in_screen) {
-    gfx::Point location = drag_source_root->bounds().CenterPoint();
-    ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, location, location,
-                           ui::EventTimeForNow(), 0, 0);
-    ui::Event::DispatcherApi(&pressed).set_target(drag_source_root);
-    event_filter()->OnMouseEvent(&pressed);
-    bool is_warped = event_filter()->WarpMouseCursorIfNecessaryForTest(
-        target_root, point_in_screen);
-
-    ui::MouseEvent released(ui::ET_MOUSE_RELEASED, location, location,
-                            ui::EventTimeForNow(), 0, 0);
-    ui::Event::DispatcherApi(&released).set_target(drag_source_root);
-    event_filter()->OnMouseEvent(&released);
-    return is_warped;
+  bool TestIfMouseWarpsAt(const gfx::Point& point_in_screen) {
+    return test::DisplayManagerTestApi::TestIfMouseWarpsAt(GetEventGenerator(),
+                                                           point_in_screen);
   }
 
  private:
@@ -70,35 +47,30 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
       Shell::GetInstance()->display_manager()->layout_store()->
           default_display_layout().position);
 
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[0], gfx::Point(11, 11)));
-  EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[1], gfx::Point(11, 11)));
+  EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(11, 11)));
 
   // Touch the right edge of the primary root window. Pointer should warp.
-  EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[0], gfx::Point(499, 11)));
+  EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(499, 11)));
   EXPECT_EQ("501,11",  // by 2px.
             aura::Env::GetInstance()->last_mouse_location().ToString());
 
   // Touch the left edge of the secondary root window. Pointer should warp.
-  EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[1], gfx::Point(500, 11)));
+  EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(500, 11)));
   EXPECT_EQ("498,11",  // by 2px.
             aura::Env::GetInstance()->last_mouse_location().ToString());
 
   // Touch the left edge of the primary root window.
-  EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[0], gfx::Point(0, 11)));
+  EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(0, 11)));
   // Touch the top edge of the primary root window.
-  EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[0], gfx::Point(11, 0)));
+  EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(11, 0)));
   // Touch the bottom edge of the primary root window.
-  EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[0],
-                                          gfx::Point(11, 499)));
+  EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(11, 499)));
   // Touch the right edge of the secondary root window.
-  EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[1],
-                                          gfx::Point(999, 11)));
+  EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(999, 11)));
   // Touch the top edge of the secondary root window.
-  EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[1], gfx::Point(11, 0)));
+  EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(11, 0)));
   // Touch the bottom edge of the secondary root window.
-  EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[1],
-                                          gfx::Point(11, 499)));
+  EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(11, 499)));
 }
 
 // Verifies if the mouse pointer correctly moves to another display even when
@@ -114,19 +86,15 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
       Shell::GetInstance()->display_manager()->
           GetCurrentDisplayLayout().position);
 
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(623, 123));
-
   // Touch the left edge of the secondary root window. Pointer should NOT warp
   // because 1px left of (0, 500) is outside the primary root window.
-  EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[1], gfx::Point(0, 500)));
-  EXPECT_EQ("623,123",  // by 2px.
+  EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(501, 500)));
+  EXPECT_EQ("501,500",
             aura::Env::GetInstance()->last_mouse_location().ToString());
 
   // Touch the left edge of the secondary root window. Pointer should warp
   // because 1px left of (0, 480) is inside the primary root window.
-  EXPECT_TRUE(
-      WarpMouseCursorIfNecessary(root_windows[1], gfx::Point(500, 480)));
+  EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(500, 480)));
   EXPECT_EQ("498,480",  // by 2px.
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
@@ -146,164 +114,37 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
                 ->GetCurrentDisplayLayout()
                 .position);
 
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(900, 123));
 
-  EXPECT_TRUE(event_filter()->WarpMouseCursorIfNecessaryForTest(
-      root_windows[0], gfx::Point(499, 123)));
+  EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(499, 123)));
   EXPECT_EQ("500,123",
             aura::Env::GetInstance()->last_mouse_location().ToString());
-
   // Touch the edge of 2nd display again and make sure it warps to
   // 1st dislay.
-  EXPECT_TRUE(event_filter()->WarpMouseCursorIfNecessaryForTest(
-      root_windows[1], gfx::Point(500, 123)));
-  EXPECT_EQ("498,123",
+  EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(500, 123)));
+  // TODO(oshima): Due to a bug in EventGenerator, the screen coordinates
+  // is shrinked by dsf once. Fix this.
+  EXPECT_EQ("498,61",
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
 
-// Verifies if MouseCursorEventFilter::set_mouse_warp_mode() works as expected.
+// Verifies if MouseCursorEventFilter::set_mouse_warp_enabled() works as
+// expected.
 TEST_F(MouseCursorEventFilterTest, SetMouseWarpModeFlag) {
   if (!SupportsMultipleDisplays())
     return;
 
   UpdateDisplay("500x500,500x500");
 
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(1, 1));
-
   event_filter()->set_mouse_warp_enabled(false);
-  EXPECT_FALSE(WarpMouseCursorIfNecessary(root_windows[0],
-                                          gfx::Point(499, 11)));
-  EXPECT_EQ("1,1",
+  EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(499, 11)));
+  EXPECT_EQ("499,11",
             aura::Env::GetInstance()->last_mouse_location().ToString());
+
   event_filter()->set_mouse_warp_enabled(true);
-  EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[0], gfx::Point(499, 11)));
+  EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(499, 11)));
   EXPECT_EQ("501,11",
             aura::Env::GetInstance()->last_mouse_location().ToString());
-}
-
-// Verifies if MouseCursorEventFilter's bounds calculation works correctly.
-TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnRight) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  UpdateDisplay("360x360,700x700");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayLayout layout(DisplayLayout::RIGHT, 0);
-  display_manager->SetLayoutForCurrentDisplays(layout);
-  event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("359,16 1x344", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("360,0 1x360", event_filter()->dst_indicator_bounds_.ToString());
-  event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("360,16 1x344", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("359,0 1x360", event_filter()->dst_indicator_bounds_.ToString());
-
-  // Move 2nd display downwards a bit.
-  layout.offset = 5;
-  display_manager->SetLayoutForCurrentDisplays(layout);
-  event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  // This is same as before because the 2nd display's y is above
-  // the indicator's x.
-  EXPECT_EQ("359,16 1x344", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("360,5 1x355", event_filter()->dst_indicator_bounds_.ToString());
-  event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("360,21 1x339", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("359,5 1x355", event_filter()->dst_indicator_bounds_.ToString());
-
-  // Move it down further so that the shared edge is shorter than
-  // minimum hole size (160).
-  layout.offset = 200;
-  display_manager->SetLayoutForCurrentDisplays(layout);
-  event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("359,200 1x160", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("360,200 1x160", event_filter()->dst_indicator_bounds_.ToString());
-  event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("360,200 1x160", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("359,200 1x160", event_filter()->dst_indicator_bounds_.ToString());
-
-  // Now move 2nd display upwards
-  layout.offset = -5;
-  display_manager->SetLayoutForCurrentDisplays(layout);
-  event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("359,16 1x344", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("360,0 1x360", event_filter()->dst_indicator_bounds_.ToString());
-  event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  // 16 px are reserved on 2nd display from top, so y must be
-  // (16 - 5) = 11
-  EXPECT_EQ("360,11 1x349", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("359,0 1x360", event_filter()->dst_indicator_bounds_.ToString());
-
-  event_filter()->HideSharedEdgeIndicator();
-}
-
-TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnLeft) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  UpdateDisplay("360x360,700x700");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayLayout layout(DisplayLayout::LEFT, 0);
-  display_manager->SetLayoutForCurrentDisplays(layout);
-  event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("0,16 1x344", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("-1,0 1x360", event_filter()->dst_indicator_bounds_.ToString());
-  event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("-1,16 1x344", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,0 1x360", event_filter()->dst_indicator_bounds_.ToString());
-
-  layout.offset = 250;
-  display_manager->SetLayoutForCurrentDisplays(layout);
-  event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("0,250 1x110", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("-1,250 1x110", event_filter()->dst_indicator_bounds_.ToString());
-  event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("-1,250 1x110", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,250 1x110", event_filter()->dst_indicator_bounds_.ToString());
-  event_filter()->HideSharedEdgeIndicator();
-}
-
-TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnTopBottom) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  UpdateDisplay("360x360,700x700");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  DisplayLayout layout(DisplayLayout::TOP, 0);
-  display_manager->SetLayoutForCurrentDisplays(layout);
-  event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("0,0 360x1", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,-1 360x1", event_filter()->dst_indicator_bounds_.ToString());
-  event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("0,-1 360x1", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,0 360x1", event_filter()->dst_indicator_bounds_.ToString());
-
-  layout.offset = 250;
-  display_manager->SetLayoutForCurrentDisplays(layout);
-  event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("250,0 110x1", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("250,-1 110x1", event_filter()->dst_indicator_bounds_.ToString());
-  event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("250,-1 110x1", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("250,0 110x1", event_filter()->dst_indicator_bounds_.ToString());
-
-  layout.position = DisplayLayout::BOTTOM;
-  layout.offset = 0;
-  display_manager->SetLayoutForCurrentDisplays(layout);
-  event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("0,359 360x1", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,360 360x1", event_filter()->dst_indicator_bounds_.ToString());
-  event_filter()->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("0,360 360x1", event_filter()->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,359 360x1", event_filter()->dst_indicator_bounds_.ToString());
-
-  event_filter()->HideSharedEdgeIndicator();
 }
 
 // Verifies cursor's device scale factor is updated when a cursor has moved
@@ -317,15 +158,13 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetLayoutForCurrentDisplays(
       DisplayLayout(DisplayLayout::RIGHT, 0));
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  ASSERT_EQ(2U, root_windows.size());
   test::CursorManagerTestApi cursor_test_api(
       Shell::GetInstance()->cursor_manager());
 
   EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
-  WarpMouseCursorIfNecessary(root_windows[0], gfx::Point(399, 200));
+  TestIfMouseWarpsAt(gfx::Point(399, 200));
   EXPECT_EQ(2.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
-  WarpMouseCursorIfNecessary(root_windows[1], gfx::Point(400, 200));
+  TestIfMouseWarpsAt(gfx::Point(400, 200));
   EXPECT_EQ(1.0f, cursor_test_api.GetCurrentCursor().device_scale_factor());
 }
 

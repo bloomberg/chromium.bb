@@ -21,6 +21,10 @@
 #include "ui/display/chromeos/display_configurator.h"
 #endif
 
+namespace aura {
+class Window;
+}
+
 namespace gfx {
 class Display;
 class Insets;
@@ -32,6 +36,7 @@ namespace ash {
 class AcceleratorControllerTest;
 class DisplayController;
 class DisplayLayoutStore;
+class MouseWarpController;
 class ScreenAsh;
 
 namespace test {
@@ -289,6 +294,12 @@ class ASH_EXPORT DisplayManager
   // Creates mirror window asynchronously if the software mirror mode
   // is enabled.
   void CreateMirrorWindowAsyncIfAny();
+
+  // Creates a MouseWarpController for the current display
+  // configuration. |drag_source| is the window where dragging
+  // started, or nullptr otherwise.
+  scoped_ptr<MouseWarpController> CreateMouseWarpController(
+      aura::Window* drag_source) const;
 
   // Create a screen instance to be used during shutdown.
   void CreateScreenForShutdown() const;

@@ -8,9 +8,13 @@
 
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/extended_mouse_warp_controller.h"
+#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/shell.h"
 #include "base/strings/string_split.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 
 namespace ash {
@@ -40,6 +44,27 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
 }
 
 }  // namespace
+
+// static
+bool DisplayManagerTestApi::TestIfMouseWarpsAt(
+    ui::test::EventGenerator& event_generator,
+    const gfx::Point& point_in_screen) {
+  aura::Window* context = Shell::GetAllRootWindows()[0];
+  ExtendedMouseWarpController* warp_controller =
+      static_cast<ExtendedMouseWarpController*>(
+          Shell::GetInstance()
+              ->mouse_cursor_filter()
+              ->mouse_warp_controller_for_test());
+  warp_controller->allow_non_native_event_for_test();
+
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(context);
+  gfx::Display original_display =
+      screen->GetDisplayNearestPoint(point_in_screen);
+  event_generator.MoveMouseTo(point_in_screen);
+  return original_display.id() !=
+         screen->GetDisplayNearestPoint(
+                     aura::Env::GetInstance()->last_mouse_location()).id();
+}
 
 DisplayManagerTestApi::DisplayManagerTestApi(DisplayManager* display_manager)
     : display_manager_(display_manager) {}
