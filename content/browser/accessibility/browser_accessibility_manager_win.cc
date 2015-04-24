@@ -261,12 +261,6 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case ui::AX_EVENT_LOAD_COMPLETE:
       event_id = IA2_EVENT_DOCUMENT_LOAD_COMPLETE;
       break;
-    case ui::AX_EVENT_MENU_LIST_ITEM_SELECTED:
-      event_id = EVENT_OBJECT_FOCUS;
-      break;
-    case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
-      event_id = EVENT_OBJECT_VALUECHANGE;
-      break;
     case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
       event_id = EVENT_SYSTEM_SCROLLINGEND;
       break;

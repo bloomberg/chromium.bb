@@ -3179,9 +3179,9 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   // WebKit stores the main accessible text in the "value" - swap it so
   // that it's the "name".
   if (name.empty() &&
-      (GetRole() == ui::AX_ROLE_LIST_BOX_OPTION ||
-       GetRole() == ui::AX_ROLE_STATIC_TEXT ||
-       GetRole() == ui::AX_ROLE_LIST_MARKER)) {
+      (GetRole() == ui::AX_ROLE_STATIC_TEXT ||
+       GetRole() == ui::AX_ROLE_LIST_MARKER ||
+       IsListBoxOptionOrMenuListOption())) {
     base::string16 tmp = value;
     value = name;
     name = tmp;
@@ -3298,10 +3298,22 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
     bool is_selected_now = (ia_state() & STATE_SYSTEM_SELECTED) != 0;
     bool was_selected_before =
         (old_win_attributes_->ia_state & STATE_SYSTEM_SELECTED) != 0;
-    if (is_selected_now && !was_selected_before) {
-      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SELECTIONADD, this);
-    } else if (!is_selected_now && was_selected_before) {
-      manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SELECTIONREMOVE, this);
+    if (is_selected_now || was_selected_before) {
+      bool multiselect = false;
+      if (GetParent() && GetParent()->HasState(ui::AX_STATE_MULTISELECTABLE))
+        multiselect = true;
+
+      if (multiselect) {
+        // In a multi-select box, fire SELECTIONADD and SELECTIONREMOVE events.
+        if (is_selected_now && !was_selected_before) {
+          manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SELECTIONADD, this);
+        } else if (!is_selected_now && was_selected_before) {
+          manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SELECTIONREMOVE, this);
+        }
+      } else if (is_selected_now && !was_selected_before) {
+        // In a single-select box, only fire SELECTION events.
+        manager->MaybeCallNotifyWinEvent(EVENT_OBJECT_SELECTION, this);
+      }
     }
 
     // Fire an event if this container object has scrolled.
@@ -3461,7 +3473,7 @@ base::string16 BrowserAccessibilityWin::GetValueText() {
 }
 
 base::string16 BrowserAccessibilityWin::TextForIAccessibleText() {
-  if (IsEditableText())
+  if (IsEditableText() || GetRole() == ui::AX_ROLE_MENU_LIST_OPTION)
     return value();
   return (GetRole() == ui::AX_ROLE_STATIC_TEXT) ? name() : hypertext();
 }
@@ -3585,6 +3597,26 @@ LONG BrowserAccessibilityWin::FindBoundary(
 
 BrowserAccessibilityWin* BrowserAccessibilityWin::GetFromID(int32 id) {
   return manager()->GetFromID(id)->ToBrowserAccessibilityWin();
+}
+
+bool BrowserAccessibilityWin::IsListBoxOptionOrMenuListOption() {
+  if (!GetParent())
+    return false;
+
+  int32 role = GetRole();
+  int32 parent_role = GetParent()->GetRole();
+
+  if (role == ui::AX_ROLE_LIST_BOX_OPTION &&
+      parent_role == ui::AX_ROLE_LIST_BOX) {
+    return true;
+  }
+
+  if (role == ui::AX_ROLE_MENU_LIST_OPTION &&
+      parent_role == ui::AX_ROLE_MENU_LIST_POPUP) {
+    return true;
+  }
+
+  return false;
 }
 
 void BrowserAccessibilityWin::InitRoleAndState() {
@@ -3909,10 +3941,12 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_role = IA2_ROLE_RADIO_MENU_ITEM;
       break;
     case ui::AX_ROLE_MENU_LIST_POPUP:
-      ia_role = ROLE_SYSTEM_CLIENT;
+      ia_role = ROLE_SYSTEM_LIST;
+      ia2_state &= ~(IA2_STATE_EDITABLE);
       break;
     case ui::AX_ROLE_MENU_LIST_OPTION:
       ia_role = ROLE_SYSTEM_LISTITEM;
+      ia2_state &= ~(IA2_STATE_EDITABLE);
       if (ia_state & STATE_SYSTEM_SELECTABLE) {
         ia_state |= STATE_SYSTEM_FOCUSABLE;
         if (HasState(ui::AX_STATE_FOCUSED))

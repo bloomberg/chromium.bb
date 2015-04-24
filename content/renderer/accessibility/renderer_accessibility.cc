@@ -253,13 +253,6 @@ void RendererAccessibility::SendPendingAccessibilityEvents() {
     if (!tree_source_.IsInTree(obj))
       continue;
 
-    // When we get a "selected children changed" event, Blink
-    // doesn't also send us events for each child that changed
-    // selection state, so make sure we re-send that whole subtree.
-    if (event.event_type == ui::AX_EVENT_SELECTED_CHILDREN_CHANGED) {
-      serializer_.DeleteClientSubtree(obj);
-    }
-
     AccessibilityHostMsg_EventParams event_msg;
     tree_source_.CollectChildFrameIdMapping(
         &event_msg.node_to_frame_routing_id_map,

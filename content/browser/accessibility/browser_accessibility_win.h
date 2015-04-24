@@ -873,6 +873,10 @@ BrowserAccessibilityWin
   // does not make a new reference.
   BrowserAccessibilityWin* GetFromID(int32 id);
 
+  // Returns true if this is a list box option with a parent of type list box,
+  // or a menu list option with a parent of type menu list popup.
+  bool IsListBoxOptionOrMenuListOption();
+
   // Windows-specific unique ID (unique within the browser process),
   // used for get_accChild, NotifyWinEvent, and as the unique ID for
   // IAccessible2 and ISimpleDOM.

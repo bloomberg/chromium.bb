@@ -773,33 +773,47 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (NSArray*)selectedChildren {
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-
   BrowserAccessibilityManager* manager = browserAccessibility_->manager();
-  BrowserAccessibility* focusedChild =
-      manager->GetFocus(browserAccessibility_);
-  if (focusedChild && focusedChild != browserAccessibility_) {
+  BrowserAccessibility* focusedChild = manager->GetFocus(browserAccessibility_);
+
+  // If it's not multiselectable, try to skip iterating over the
+  // children.
+  if (!GetState(browserAccessibility_, ui::AX_STATE_MULTISELECTABLE)) {
     // First try the focused child.
-    [ret addObject:focusedChild->ToBrowserAccessibilityCocoa()];
-  } else {
+    if (focusedChild && focusedChild != browserAccessibility_) {
+      [ret addObject:focusedChild->ToBrowserAccessibilityCocoa()];
+      return ret;
+    }
+
     // Next try the active descendant.
     int activeDescendantId;
     if (browserAccessibility_->GetIntAttribute(
             ui::AX_ATTR_ACTIVEDESCENDANT_ID, &activeDescendantId)) {
       BrowserAccessibility* activeDescendant =
           manager->GetFromID(activeDescendantId);
-      if (activeDescendant)
+      if (activeDescendant) {
         [ret addObject:activeDescendant->ToBrowserAccessibilityCocoa()];
-    } else {
-      // Otherwise return any children with the "selected" state, which
-      // may come from aria-selected.
-      uint32 childCount = browserAccessibility_->PlatformChildCount();
-      for (uint32 index = 0; index < childCount; ++index) {
-        BrowserAccessibility* child =
-            browserAccessibility_->PlatformGetChild(index);
-        if (child->HasState(ui::AX_STATE_SELECTED))
-          [ret addObject:child->ToBrowserAccessibilityCocoa()];
+        return ret;
       }
     }
+  }
+
+  // If it's multiselectable or if the previous attempts failed,
+  // return any children with the "selected" state, which may
+  // come from aria-selected.
+  uint32 childCount = browserAccessibility_->PlatformChildCount();
+  for (uint32 index = 0; index < childCount; ++index) {
+    BrowserAccessibility* child =
+      browserAccessibility_->PlatformGetChild(index);
+    if (child->HasState(ui::AX_STATE_SELECTED))
+      [ret addObject:child->ToBrowserAccessibilityCocoa()];
+  }
+
+  // And if nothing's selected but one has focus, use the focused one.
+  if ([ret count] == 0 &&
+      focusedChild &&
+      focusedChild != browserAccessibility_) {
+    [ret addObject:focusedChild->ToBrowserAccessibilityCocoa()];
   }
 
   return ret;

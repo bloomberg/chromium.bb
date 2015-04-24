@@ -1,0 +1,2 @@
+AXSelectedChildrenChanged on AXList
+AXFocusedUIElementChanged on AXList

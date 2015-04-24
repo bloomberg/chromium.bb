@@ -44,8 +44,14 @@ ui::AXTreeUpdate BrowserAccessibilityManagerMac::GetEmptyDocument() {
 
 BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus(
     BrowserAccessibility* root) {
-  BrowserAccessibility* node = GetActiveDescendantFocus(root);
-  return node;
+  // On Mac, list boxes should always get focus on the whole list, otherwise
+  // information about the number of selected items will never be reported.
+  BrowserAccessibility* node = BrowserAccessibilityManager::GetFocus(root);
+  if (node && node->GetRole() == ui::AX_ROLE_LIST_BOX)
+    return node;
+
+  // For other roles, follow the active descendant.
+  return GetActiveDescendantFocus(root);
 }
 
 void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
@@ -53,6 +59,15 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     BrowserAccessibility* node) {
   if (!node->IsNative())
     return;
+
+  if (event_type == ui::AX_EVENT_FOCUS &&
+      node->GetRole() == ui::AX_ROLE_LIST_BOX_OPTION &&
+      node->HasState(ui::AX_STATE_SELECTED) &&
+      node->GetParent() &&
+      node->GetParent()->GetRole() == ui::AX_ROLE_LIST_BOX) {
+    node = node->GetParent();
+    SetFocus(node, false);
+  }
 
   // Refer to AXObjectCache.mm (webkit).
   NSString* event_id = @"";
@@ -139,6 +154,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       LOG(WARNING) << "Unknown accessibility event: " << event_type;
       return;
   }
+
   BrowserAccessibilityCocoa* native_node = node->ToBrowserAccessibilityCocoa();
   DCHECK(native_node);
   NSAccessibilityPostNotification(native_node, event_id);
