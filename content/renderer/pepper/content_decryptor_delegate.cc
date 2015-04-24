@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "media/base/audio_buffer.h"
@@ -53,7 +54,7 @@ namespace {
 // reference-count of 0. If |data| is NULL, sets |*resource| to NULL. Returns
 // true upon success and false if any error happened.
 bool MakeBufferResource(PP_Instance instance,
-                        const uint8* data,
+                        const uint8_t* data,
                         uint32_t size,
                         scoped_refptr<PPB_Buffer_Impl>* resource) {
   TRACE_EVENT0("media", "ContentDecryptorDelegate - MakeBufferResource");
@@ -83,7 +84,7 @@ bool MakeBufferResource(PP_Instance instance,
 // Returns true if copy succeeded. Returns false if copy failed, e.g. if the
 // |array_size| is smaller than the |str| length.
 template <uint32_t array_size>
-bool CopyStringToArray(const std::string& str, uint8 (&array)[array_size]) {
+bool CopyStringToArray(const std::string& str, uint8_t(&array)[array_size]) {
   if (array_size < str.size())
     return false;
 
@@ -345,7 +346,7 @@ MediaKeys::MessageType PpCdmMessageTypeToMediaMessageType(
 
 // TODO(xhwang): Unify EME UMA reporting code when prefixed EME is deprecated.
 // See http://crbug.com/412987 for details.
-void ReportSystemCodeUMA(const std::string& key_system, uint32 system_code) {
+void ReportSystemCodeUMA(const std::string& key_system, uint32_t system_code) {
   // Sparse histogram macro does not cache the histogram, so it's safe to use
   // macro with non-static histogram name here.
   UMA_HISTOGRAM_SPARSE_SLOWLY(
@@ -405,12 +406,10 @@ void ContentDecryptorDelegate::InstanceCrashed() {
 }
 
 void ContentDecryptorDelegate::SetServerCertificate(
-    const uint8_t* certificate,
-    uint32_t certificate_length,
+    const std::vector<uint8_t>& certificate,
     scoped_ptr<media::SimpleCdmPromise> promise) {
-  if (!certificate ||
-      certificate_length < media::limits::kMinCertificateLength ||
-      certificate_length > media::limits::kMaxCertificateLength) {
+  if (certificate.size() < media::limits::kMinCertificateLength ||
+      certificate.size() > media::limits::kMaxCertificateLength) {
     promise->reject(
         media::MediaKeys::INVALID_ACCESS_ERROR, 0, "Incorrect certificate.");
     return;
@@ -419,7 +418,8 @@ void ContentDecryptorDelegate::SetServerCertificate(
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var certificate_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          certificate_length, certificate);
+          base::checked_cast<uint32>(certificate.size()),
+          vector_as_array(&certificate));
   plugin_decryption_interface_->SetServerCertificate(
       pp_instance_, promise_id, certificate_array);
 }
@@ -427,13 +427,13 @@ void ContentDecryptorDelegate::SetServerCertificate(
 void ContentDecryptorDelegate::CreateSessionAndGenerateRequest(
     MediaKeys::SessionType session_type,
     media::EmeInitDataType init_data_type,
-    const uint8* init_data,
-    int init_data_length,
+    const std::vector<uint8_t>& init_data,
     scoped_ptr<NewSessionCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          init_data_length, init_data);
+          base::checked_cast<uint32>(init_data.size()),
+          vector_as_array(&init_data));
   plugin_decryption_interface_->CreateSessionAndGenerateRequest(
       pp_instance_, promise_id, MediaSessionTypeToPpSessionType(session_type),
       MediaInitDataTypeToPpInitDataType(init_data_type), init_data_array);
@@ -451,13 +451,13 @@ void ContentDecryptorDelegate::LoadSession(
 
 void ContentDecryptorDelegate::UpdateSession(
     const std::string& session_id,
-    const uint8* response,
-    int response_length,
+    const std::vector<uint8_t>& response,
     scoped_ptr<SimpleCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   PP_Var response_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
-          response_length, response);
+          base::checked_cast<uint32>(response.size()),
+          vector_as_array(&response));
   plugin_decryption_interface_->UpdateSession(
       pp_instance_, promise_id, StringVar::StringToPPVar(session_id),
       response_array);
@@ -734,11 +734,11 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   return true;
 }
 
-void ContentDecryptorDelegate::OnPromiseResolved(uint32 promise_id) {
+void ContentDecryptorDelegate::OnPromiseResolved(uint32_t promise_id) {
   cdm_promise_adapter_.ResolvePromise(promise_id);
 }
 
-void ContentDecryptorDelegate::OnPromiseResolvedWithSession(uint32 promise_id,
+void ContentDecryptorDelegate::OnPromiseResolvedWithSession(uint32_t promise_id,
                                                             PP_Var session_id) {
   StringVar* session_id_string = StringVar::FromPPVar(session_id);
   DCHECK(session_id_string);
@@ -746,9 +746,9 @@ void ContentDecryptorDelegate::OnPromiseResolvedWithSession(uint32 promise_id,
 }
 
 void ContentDecryptorDelegate::OnPromiseRejected(
-    uint32 promise_id,
+    uint32_t promise_id,
     PP_CdmExceptionCode exception_code,
-    uint32 system_code,
+    uint32_t system_code,
     PP_Var error_description) {
   ReportSystemCodeUMA(key_system_, system_code);
 
@@ -770,9 +770,10 @@ void ContentDecryptorDelegate::OnSessionMessage(PP_Var session_id,
   DCHECK(session_id_string);
 
   ArrayBufferVar* message_array_buffer = ArrayBufferVar::FromPPVar(message);
-  std::vector<uint8> message_vector;
+  std::vector<uint8_t> message_vector;
   if (message_array_buffer) {
-    const uint8* data = static_cast<const uint8*>(message_array_buffer->Map());
+    const uint8_t* data =
+        static_cast<const uint8_t*>(message_array_buffer->Map());
     message_vector.assign(data, data + message_array_buffer->ByteLength());
   }
 
@@ -849,7 +850,7 @@ void ContentDecryptorDelegate::OnSessionClosed(PP_Var session_id) {
 void ContentDecryptorDelegate::OnLegacySessionError(
     PP_Var session_id,
     PP_CdmExceptionCode exception_code,
-    uint32 system_code,
+    uint32_t system_code,
     PP_Var error_description) {
   ReportSystemCodeUMA(key_system_, system_code);
 
@@ -949,7 +950,7 @@ void ContentDecryptorDelegate::DeliverBlock(
   // TODO(tomfinegan): Find a way to take ownership of the shared memory
   // managed by the PPB_Buffer_Dev, and avoid the extra copy.
   scoped_refptr<media::DecoderBuffer> decrypted_buffer(
-      media::DecoderBuffer::CopyFrom(static_cast<uint8*>(mapper.data()),
+      media::DecoderBuffer::CopyFrom(static_cast<uint8_t*>(mapper.data()),
                                      block_info->data_size));
   decrypted_buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(block_info->tracking_info.timestamp));
@@ -968,13 +969,13 @@ static void BufferNoLongerNeeded(
 
 // Enters |resource|, maps shared memory and returns pointer of mapped data.
 // Returns NULL if any error occurs.
-static uint8* GetMappedBuffer(PP_Resource resource,
-                              scoped_refptr<PPB_Buffer_Impl>* ppb_buffer) {
+static uint8_t* GetMappedBuffer(PP_Resource resource,
+                                scoped_refptr<PPB_Buffer_Impl>* ppb_buffer) {
   EnterResourceNoLock<PPB_Buffer_API> enter(resource, true);
   if (!enter.succeeded())
     return NULL;
 
-  uint8* mapped_data = static_cast<uint8*>(enter.object()->Map());
+  uint8_t* mapped_data = static_cast<uint8_t*>(enter.object()->Map());
   if (!enter.object()->IsMapped() || !mapped_data)
     return NULL;
 
@@ -1018,7 +1019,7 @@ void ContentDecryptorDelegate::DeliverFrame(
   }
 
   scoped_refptr<PPB_Buffer_Impl> ppb_buffer;
-  uint8* frame_data = GetMappedBuffer(decrypted_frame, &ppb_buffer);
+  uint8_t* frame_data = GetMappedBuffer(decrypted_frame, &ppb_buffer);
   if (!frame_data) {
     FreeBuffer(frame_info->tracking_info.buffer_id);
     video_decode_cb.Run(Decryptor::kError, NULL);
@@ -1208,7 +1209,7 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
   // TODO(jrummell): Pass ownership of data() directly to AudioBuffer to avoid
   // the copy. Since it is possible to get multiple buffers, it would need to be
   // sliced and ref counted appropriately. http://crbug.com/255576.
-  const uint8* cur = static_cast<uint8*>(mapper.data());
+  const uint8_t* cur = static_cast<uint8_t*>(mapper.data());
   size_t bytes_left = data_size;
 
   const int audio_bytes_per_frame =
@@ -1218,8 +1219,7 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
     return false;
 
   // Allocate space for the channel pointers given to AudioBuffer.
-  std::vector<const uint8*> channel_ptrs(audio_channel_count_,
-                                         static_cast<const uint8*>(NULL));
+  std::vector<const uint8_t*> channel_ptrs(audio_channel_count_, nullptr);
   do {
     int64 timestamp = 0;
     int64 frame_size = -1;

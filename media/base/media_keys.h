@@ -89,8 +89,7 @@ class MEDIA_EXPORT MediaKeys{
 
   // Provides a server certificate to be used to encrypt messages to the
   // license server.
-  virtual void SetServerCertificate(const uint8* certificate_data,
-                                    int certificate_data_length,
+  virtual void SetServerCertificate(const std::vector<uint8_t>& certificate,
                                     scoped_ptr<SimpleCdmPromise> promise) = 0;
 
   // Creates a session with |session_type|. Then generates a request with the
@@ -105,8 +104,7 @@ class MEDIA_EXPORT MediaKeys{
   virtual void CreateSessionAndGenerateRequest(
       SessionType session_type,
       EmeInitDataType init_data_type,
-      const uint8* init_data,
-      int init_data_length,
+      const std::vector<uint8_t>& init_data,
       scoped_ptr<NewSessionCdmPromise> promise) = 0;
 
   // Loads a session with the |session_id| provided.
@@ -118,8 +116,7 @@ class MEDIA_EXPORT MediaKeys{
 
   // Updates a session specified by |session_id| with |response|.
   virtual void UpdateSession(const std::string& session_id,
-                             const uint8* response,
-                             int response_length,
+                             const std::vector<uint8_t>& response,
                              scoped_ptr<SimpleCdmPromise> promise) = 0;
 
   // Closes the session specified by |session_id|. The CDM should resolve or
@@ -151,7 +148,7 @@ class MEDIA_EXPORT MediaKeys{
 
 typedef base::Callback<void(const std::string& session_id,
                             MediaKeys::MessageType message_type,
-                            const std::vector<uint8>& message,
+                            const std::vector<uint8_t>& message,
                             const GURL& legacy_destination_url)>
     SessionMessageCB;
 
@@ -163,7 +160,7 @@ typedef base::Callback<void(const std::string& session_id)> SessionClosedCB;
 
 typedef base::Callback<void(const std::string& session_id,
                             MediaKeys::Exception exception,
-                            uint32 system_code,
+                            uint32_t system_code,
                             const std::string& error_message)>
     LegacySessionErrorCB;
 

@@ -90,8 +90,7 @@ PpapiDecryptor::~PpapiDecryptor() {
 }
 
 void PpapiDecryptor::SetServerCertificate(
-    const uint8* certificate_data,
-    int certificate_data_length,
+    const std::vector<uint8_t>& certificate,
     scoped_ptr<media::SimpleCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
@@ -101,15 +100,13 @@ void PpapiDecryptor::SetServerCertificate(
     return;
   }
 
-  CdmDelegate()->SetServerCertificate(
-      certificate_data, certificate_data_length, promise.Pass());
+  CdmDelegate()->SetServerCertificate(certificate, promise.Pass());
 }
 
 void PpapiDecryptor::CreateSessionAndGenerateRequest(
     SessionType session_type,
     media::EmeInitDataType init_data_type,
-    const uint8* init_data,
-    int init_data_length,
+    const std::vector<uint8_t>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
@@ -120,8 +117,7 @@ void PpapiDecryptor::CreateSessionAndGenerateRequest(
   }
 
   CdmDelegate()->CreateSessionAndGenerateRequest(session_type, init_data_type,
-                                                 init_data, init_data_length,
-                                                 promise.Pass());
+                                                 init_data, promise.Pass());
 }
 
 void PpapiDecryptor::LoadSession(
@@ -140,8 +136,7 @@ void PpapiDecryptor::LoadSession(
 
 void PpapiDecryptor::UpdateSession(
     const std::string& session_id,
-    const uint8* response,
-    int response_length,
+    const std::vector<uint8_t>& response,
     scoped_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
 
@@ -149,8 +144,7 @@ void PpapiDecryptor::UpdateSession(
     promise->reject(INVALID_STATE_ERROR, 0, "CdmDelegate() does not exist.");
     return;
   }
-  CdmDelegate()->UpdateSession(session_id, response, response_length,
-                               promise.Pass());
+  CdmDelegate()->UpdateSession(session_id, response, promise.Pass());
 }
 
 void PpapiDecryptor::CloseSession(const std::string& session_id,
@@ -393,7 +387,7 @@ void PpapiDecryptor::OnDecoderInitialized(StreamType stream_type,
 
 void PpapiDecryptor::OnSessionMessage(const std::string& session_id,
                                       MessageType message_type,
-                                      const std::vector<uint8>& message,
+                                      const std::vector<uint8_t>& message,
                                       const GURL& legacy_destination_url) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   session_message_cb_.Run(session_id, message_type, message,
@@ -429,7 +423,7 @@ void PpapiDecryptor::OnSessionClosed(const std::string& session_id) {
 void PpapiDecryptor::OnLegacySessionError(
     const std::string& session_id,
     MediaKeys::Exception exception_code,
-    uint32 system_code,
+    uint32_t system_code,
     const std::string& error_description) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   legacy_session_error_cb_.Run(session_id, exception_code, system_code,

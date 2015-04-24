@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "media/base/cdm_callback_promise.h"
@@ -317,12 +318,12 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
         // key ID as the init_data.
         // http://crbug.com/460308
         decryptor->CreateSessionAndGenerateRequest(
-            MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, kKeyId,
-            arraysize(kKeyId), CreateSessionPromise(RESOLVED));
+            MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+            std::vector<uint8>(kKeyId, kKeyId + arraysize(kKeyId)),
+            CreateSessionPromise(RESOLVED));
       } else {
         decryptor->CreateSessionAndGenerateRequest(
-            MediaKeys::TEMPORARY_SESSION, init_data_type,
-            vector_as_array(&init_data), init_data.size(),
+            MediaKeys::TEMPORARY_SESSION, init_data_type, init_data,
             CreateSessionPromise(RESOLVED));
       }
       EXPECT_FALSE(current_session_id_.empty());
@@ -342,8 +343,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     std::string jwk = GenerateJWKSet(
         kSecretKey, arraysize(kSecretKey), key_id, key_id_length);
     decryptor->UpdateSession(current_session_id_,
-                             reinterpret_cast<const uint8*>(jwk.data()),
-                             jwk.size(),
+                             std::vector<uint8>(jwk.begin(), jwk.end()),
                              CreatePromise(RESOLVED));
   }
 
@@ -379,13 +379,11 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
       // key ID as the init_data.
       // http://crbug.com/460308
       decryptor->CreateSessionAndGenerateRequest(
-          MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
-          vector_as_array(&key_id), key_id.size(),
+          MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, key_id,
           CreateSessionPromise(RESOLVED));
     } else {
       decryptor->CreateSessionAndGenerateRequest(
-          MediaKeys::TEMPORARY_SESSION, init_data_type,
-          vector_as_array(&init_data), init_data.size(),
+          MediaKeys::TEMPORARY_SESSION, init_data_type, init_data,
           CreateSessionPromise(RESOLVED));
     }
 
@@ -395,8 +393,7 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
                                      vector_as_array(&key_id),
                                      key_id.size());
     decryptor->UpdateSession(current_session_id_,
-                             reinterpret_cast<const uint8*>(jwk.data()),
-                             jwk.size(),
+                             std::vector<uint8>(jwk.begin(), jwk.end()),
                              CreatePromise(RESOLVED));
   }
 

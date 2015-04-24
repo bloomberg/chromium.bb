@@ -40,10 +40,10 @@ const int kMinimumBoxSizeInBytes = 32;
 
 // SystemID for the Common System.
 // https://w3c.github.io/encrypted-media/cenc-format.html#common-system
-const uint8 kCommonSystemId[] = { 0x10, 0x77, 0xef, 0xec,
-                                  0xc0, 0xb2, 0x4d, 0x02,
-                                  0xac, 0xe3, 0x3c, 0x1e,
-                                  0x52, 0xe2, 0xfb, 0x4b };
+const uint8_t kCommonSystemId[] = { 0x10, 0x77, 0xef, 0xec,
+                                    0xc0, 0xb2, 0x4d, 0x02,
+                                    0xac, 0xe3, 0x3c, 0x1e,
+                                    0x52, 0xe2, 0xfb, 0x4b };
 
 #define RCHECK(x)   \
   do {              \
@@ -52,10 +52,10 @@ const uint8 kCommonSystemId[] = { 0x10, 0x77, 0xef, 0xec,
   } while (0)
 
 // Helper function to read up to 32 bits from a bit stream.
-static uint32 ReadBits(BitReader* reader, int num_bits) {
+static uint32_t ReadBits(BitReader* reader, int num_bits) {
   DCHECK_GE(reader->bits_available(), num_bits);
   DCHECK((num_bits > 0) && (num_bits <= 32));
-  uint32 value;
+  uint32_t value;
   reader->ReadBits(num_bits, &value);
   return value;
 }
@@ -63,7 +63,7 @@ static uint32 ReadBits(BitReader* reader, int num_bits) {
 // Checks whether the next 16 bytes matches the Common SystemID.
 // Assumes |reader| has enough data.
 static bool IsCommonSystemID(BitReader* reader) {
-  for (uint32 i = 0; i < arraysize(kCommonSystemId); ++i) {
+  for (uint32_t i = 0; i < arraysize(kCommonSystemId); ++i) {
     if (ReadBits(reader, 8) != kCommonSystemId[i])
       return false;
   }
@@ -100,11 +100,11 @@ static bool ValidBoxHeader(BitReader* reader, uint32* size) {
   return available_bytes >= *size;
 }
 
-bool ValidatePsshInput(const uint8* input, size_t input_length) {
+bool ValidatePsshInput(const std::vector<uint8_t>& input) {
   size_t offset = 0;
-  while (offset < input_length) {
+  while (offset < input.size()) {
     // Create a BitReader over the remaining part of the buffer.
-    BitReader reader(input + offset, input_length - offset);
+    BitReader reader(&input[offset], input.size() - offset);
     uint32 size;
     RCHECK(ValidBoxHeader(&reader, &size));
 
@@ -113,18 +113,16 @@ bool ValidatePsshInput(const uint8* input, size_t input_length) {
   }
 
   // Only valid if this contains 0 or more 'pssh' boxes.
-  return offset == input_length;
+  return offset == input.size();
 }
 
-bool GetKeyIdsForCommonSystemId(const uint8* input,
-                                int input_length,
-                                std::vector<std::vector<uint8>>* key_ids) {
-  int offset = 0;
-  std::vector<std::vector<uint8>> result;
+bool GetKeyIdsForCommonSystemId(const std::vector<uint8_t>& input,
+                                KeyIdList* key_ids) {
+  size_t offset = 0;
+  KeyIdList result;
 
-  while (offset < input_length) {
-    // Create a BitReader over the remaining part of the buffer.
-    BitReader reader(input + offset, input_length - offset);
+  while (offset < input.size()) {
+    BitReader reader(&input[offset], input.size() - offset);
     uint32 size;
     RCHECK(ValidBoxHeader(&reader, &size));
 
@@ -132,7 +130,7 @@ bool GetKeyIdsForCommonSystemId(const uint8* input,
     offset += size;
 
     // Check the version, as KIDs only available if version > 0.
-    uint8 version = ReadBits(&reader, 8);
+    uint8_t version = ReadBits(&reader, 8);
     if (version == 0)
       continue;
 
@@ -142,23 +140,24 @@ bool GetKeyIdsForCommonSystemId(const uint8* input,
       continue;
 
     // Validate SystemID
-    RCHECK(static_cast<uint32>(reader.bits_available()) >=
+    RCHECK(static_cast<uint32_t>(reader.bits_available()) >=
            arraysize(kCommonSystemId) * 8);
     if (!IsCommonSystemID(&reader))
       continue;  // Not Common System, so try the next pssh box.
 
     // Since version > 0, next field is the KID_count.
-    RCHECK(static_cast<uint32>(reader.bits_available()) >= sizeof(uint32) * 8);
-    uint32 count = ReadBits(&reader, 32);
+    RCHECK(static_cast<uint32_t>(reader.bits_available()) >=
+           sizeof(uint32_t) * 8);
+    uint32_t count = ReadBits(&reader, 32);
 
     if (count == 0)
       continue;
 
     // Make sure there is enough data for all the KIDs specified, and then
     // extract them.
-    RCHECK(static_cast<uint32>(reader.bits_available()) > count * 16 * 8);
+    RCHECK(static_cast<uint32_t>(reader.bits_available()) > count * 16 * 8);
     while (count > 0) {
-      std::vector<uint8> key;
+      std::vector<uint8_t> key;
       key.reserve(16);
       for (int i = 0; i < 16; ++i) {
         key.push_back(ReadBits(&reader, 8));

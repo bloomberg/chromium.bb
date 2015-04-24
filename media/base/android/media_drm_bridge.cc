@@ -15,6 +15,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
@@ -92,13 +94,12 @@ typedef std::vector<uint8> UUID;
 // 1, If multiple PSSH boxes are found,the "Data" of the first matching PSSH box
 // will be set in |pssh_data|.
 // 2, Only PSSH and TENC boxes are allowed in |data|. TENC boxes are skipped.
-bool GetPsshData(const uint8* data,
-                 int data_size,
+bool GetPsshData(const std::vector<uint8_t>& data,
                  const UUID& uuid,
                  std::vector<uint8>* pssh_data) {
-  const uint8* cur = data;
-  const uint8* data_end = data + data_size;
-  int bytes_left = data_size;
+  int bytes_left = base::checked_cast<int>(data.size());
+  const uint8_t* cur = &data[0];
+  const uint8_t* data_end = cur + bytes_left;
 
   while (bytes_left > 0) {
     const uint8* box_head = cur;
@@ -427,8 +428,7 @@ bool MediaDrmBridge::SetSecurityLevel(SecurityLevel security_level) {
 }
 
 void MediaDrmBridge::SetServerCertificate(
-    const uint8* certificate_data,
-    int certificate_data_length,
+    const std::vector<uint8_t>& certificate,
     scoped_ptr<media::SimpleCdmPromise> promise) {
   promise->reject(NOT_SUPPORTED_ERROR, 0,
                   "SetServerCertificate() is not supported.");
@@ -437,8 +437,7 @@ void MediaDrmBridge::SetServerCertificate(
 void MediaDrmBridge::CreateSessionAndGenerateRequest(
     SessionType session_type,
     media::EmeInitDataType init_data_type,
-    const uint8* init_data,
-    int init_data_length,
+    const std::vector<uint8_t>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
   DVLOG(1) << __FUNCTION__;
 
@@ -456,15 +455,15 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
   if (std::equal(scheme_uuid_.begin(), scheme_uuid_.end(), kWidevineUuid) &&
       init_data_type == media::EmeInitDataType::CENC) {
     std::vector<uint8> pssh_data;
-    if (!GetPsshData(init_data, init_data_length, scheme_uuid_, &pssh_data)) {
+    if (!GetPsshData(init_data, scheme_uuid_, &pssh_data)) {
       promise->reject(INVALID_ACCESS_ERROR, 0, "Invalid PSSH data.");
       return;
     }
-    j_init_data =
-        base::android::ToJavaByteArray(env, &pssh_data[0], pssh_data.size());
+    j_init_data = base::android::ToJavaByteArray(
+        env, vector_as_array(&pssh_data), pssh_data.size());
   } else {
-    j_init_data =
-        base::android::ToJavaByteArray(env, init_data, init_data_length);
+    j_init_data = base::android::ToJavaByteArray(
+        env, vector_as_array(&init_data), init_data.size());
   }
 
   ScopedJavaLocalRef<jstring> j_mime =
@@ -483,14 +482,13 @@ void MediaDrmBridge::LoadSession(
 
 void MediaDrmBridge::UpdateSession(
     const std::string& session_id,
-    const uint8* response,
-    int response_length,
+    const std::vector<uint8_t>& response,
     scoped_ptr<media::SimpleCdmPromise> promise) {
   DVLOG(1) << __FUNCTION__;
 
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jbyteArray> j_response =
-      base::android::ToJavaByteArray(env, response, response_length);
+  ScopedJavaLocalRef<jbyteArray> j_response = base::android::ToJavaByteArray(
+      env, vector_as_array(&response), response.size());
   ScopedJavaLocalRef<jbyteArray> j_session_id = base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(session_id.data()),
       session_id.size());

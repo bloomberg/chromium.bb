@@ -16,15 +16,6 @@
 
 namespace media {
 
-static mojo::Array<uint8_t> CreateMojoArray(const uint8_t* data, int length) {
-  DCHECK(data);
-  DCHECK_GT(length, 0);
-  std::vector<uint8_t> vector(data, data + length);
-  mojo::Array<uint8_t> array;
-  array.Swap(&vector);
-  return array.Pass();
-}
-
 template <typename PromiseType>
 static void RejectPromise(scoped_ptr<PromiseType> promise,
                           mojo::CdmPromiseResultPtr result) {
@@ -62,11 +53,10 @@ MojoCdm::~MojoCdm() {
   DVLOG(1) << __FUNCTION__;
 }
 
-void MojoCdm::SetServerCertificate(const uint8_t* certificate_data,
-                                   int certificate_data_length,
+void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
                                    scoped_ptr<SimpleCdmPromise> promise) {
   remote_cdm_->SetServerCertificate(
-      CreateMojoArray(certificate_data, certificate_data_length),
+      mojo::Array<uint8_t>::From(certificate),
       base::Bind(&MojoCdm::OnPromiseResult<>, weak_factory_.GetWeakPtr(),
                  base::Passed(&promise)));
 }
@@ -74,13 +64,12 @@ void MojoCdm::SetServerCertificate(const uint8_t* certificate_data,
 void MojoCdm::CreateSessionAndGenerateRequest(
     SessionType session_type,
     EmeInitDataType init_data_type,
-    const uint8_t* init_data,
-    int init_data_length,
+    const std::vector<uint8_t>& init_data,
     scoped_ptr<NewSessionCdmPromise> promise) {
   remote_cdm_->CreateSessionAndGenerateRequest(
       static_cast<mojo::ContentDecryptionModule::SessionType>(session_type),
       static_cast<mojo::ContentDecryptionModule::InitDataType>(init_data_type),
-      CreateMojoArray(init_data, init_data_length),
+      mojo::Array<uint8_t>::From(init_data),
       base::Bind(&MojoCdm::OnPromiseResult<std::string>,
                  weak_factory_.GetWeakPtr(), base::Passed(&promise)));
 }
@@ -96,11 +85,10 @@ void MojoCdm::LoadSession(SessionType session_type,
 }
 
 void MojoCdm::UpdateSession(const std::string& session_id,
-                            const uint8_t* response,
-                            int response_length,
+                            const std::vector<uint8_t>& response,
                             scoped_ptr<SimpleCdmPromise> promise) {
   remote_cdm_->UpdateSession(
-      session_id, CreateMojoArray(response, response_length),
+      session_id, mojo::Array<uint8_t>::From(response),
       base::Bind(&MojoCdm::OnPromiseResult<>, weak_factory_.GetWeakPtr(),
                  base::Passed(&promise)));
 }

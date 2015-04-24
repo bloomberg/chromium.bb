@@ -322,7 +322,8 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
                      promise_id)));
   decryptor_.CreateSessionAndGenerateRequest(
       ConvertSessionType(session_type), ConvertInitDataType(init_data_type),
-      init_data, init_data_size, promise.Pass());
+      std::vector<uint8_t>(init_data, init_data + init_data_size),
+      promise.Pass());
 
   if (key_system_ == kExternalClearKeyFileIOTestKeySystem)
     StartFileIOTest();
@@ -361,9 +362,9 @@ void ClearKeyCdm::LoadSession(uint32 promise_id,
           base::Bind(&ClearKeyCdm::OnPromiseFailed,
                      base::Unretained(this),
                      promise_id)));
-  decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                             EmeInitDataType::WEBM, NULL, 0,
-                                             promise.Pass());
+  decryptor_.CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM,
+      std::vector<uint8_t>(), promise.Pass());
 }
 
 void ClearKeyCdm::UpdateSession(uint32 promise_id,
@@ -384,7 +385,8 @@ void ClearKeyCdm::UpdateSession(uint32 promise_id,
       base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                  promise_id)));
   decryptor_.UpdateSession(
-      web_session_str, response, response_size, promise.Pass());
+      web_session_str, std::vector<uint8_t>(response, response + response_size),
+      promise.Pass());
 
   if (!renewal_timer_set_) {
     ScheduleNextRenewal();
@@ -721,8 +723,7 @@ void ClearKeyCdm::LoadLoadableSession() {
       base::Bind(&ClearKeyCdm::OnPromiseFailed, base::Unretained(this),
                  promise_id_for_emulated_loadsession_)));
   decryptor_.UpdateSession(session_id_for_emulated_loadsession_,
-                           reinterpret_cast<const uint8*>(jwk_set.data()),
-                           jwk_set.size(),
+                           std::vector<uint8_t>(jwk_set.begin(), jwk_set.end()),
                            promise.Pass());
 }
 

@@ -93,8 +93,8 @@ void WebContentDecryptionModuleImpl::setServerCertificate(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(server_certificate);
   adapter_->SetServerCertificate(
-      server_certificate,
-      base::saturated_cast<int>(server_certificate_length),
+      std::vector<uint8>(server_certificate,
+                         server_certificate + server_certificate_length),
       scoped_ptr<SimpleCdmPromise>(
           new CdmResultPromise<>(result, std::string())));
 }

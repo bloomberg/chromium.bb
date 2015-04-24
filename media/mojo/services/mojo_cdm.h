@@ -5,6 +5,8 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_CDM_H_
 #define MEDIA_MOJO_SERVICES_MOJO_CDM_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_keys.h"
@@ -33,21 +35,18 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
   ~MojoCdm() final;
 
   // MediaKeys implementation.
-  void SetServerCertificate(const uint8_t* certificate_data,
-                            int certificate_data_length,
+  void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             scoped_ptr<SimpleCdmPromise> promise) final;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
       EmeInitDataType init_data_type,
-      const uint8_t* init_data,
-      int init_data_length,
+      const std::vector<uint8_t>& init_data,
       scoped_ptr<NewSessionCdmPromise> promise) final;
   void LoadSession(SessionType session_type,
                    const std::string& session_id,
                    scoped_ptr<NewSessionCdmPromise> promise) final;
   void UpdateSession(const std::string& session_id,
-                     const uint8_t* response,
-                     int response_length,
+                     const std::vector<uint8_t>& response,
                      scoped_ptr<SimpleCdmPromise> promise) final;
   void CloseSession(const std::string& session_id,
                     scoped_ptr<SimpleCdmPromise> promise) final;

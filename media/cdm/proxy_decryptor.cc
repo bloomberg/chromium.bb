@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "media/base/cdm_callback_promise.h"
 #include "media/base/cdm_factory.h"
@@ -216,9 +217,8 @@ void ProxyDecryptor::OnPermissionStatus(
   // on Android) and the permission status will be evaluated then.
   DVLOG_IF(1, !granted) << "Permission request rejected.";
 
-  media_keys_->CreateSessionAndGenerateRequest(
-      session_type, init_data_type, vector_as_array(&init_data),
-      init_data.size(), promise.Pass());
+  media_keys_->CreateSessionAndGenerateRequest(session_type, init_data_type,
+                                               init_data, promise.Pass());
 }
 
 void ProxyDecryptor::AddKey(const uint8* key,
@@ -271,12 +271,14 @@ void ProxyDecryptor::AddKey(const uint8* key,
         GenerateJWKSet(key, key_length, init_data, init_data_length);
     DCHECK(!jwk.empty());
     media_keys_->UpdateSession(new_session_id,
-                               reinterpret_cast<const uint8*>(jwk.data()),
-                               jwk.size(), promise.Pass());
+                               std::vector<uint8_t>(jwk.begin(), jwk.end()),
+                               promise.Pass());
     return;
   }
 
-  media_keys_->UpdateSession(new_session_id, key, key_length, promise.Pass());
+  media_keys_->UpdateSession(new_session_id,
+                             std::vector<uint8_t>(key, key + key_length),
+                             promise.Pass());
 }
 
 void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {

@@ -86,21 +86,18 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
 
   // MediaKeys (via BrowserCdm) implementation.
   void SetServerCertificate(
-      const uint8* certificate_data,
-      int certificate_data_length,
+      const std::vector<uint8_t>& certificate,
       scoped_ptr<media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
       media::EmeInitDataType init_data_type,
-      const uint8* init_data,
-      int init_data_length,
+      const std::vector<uint8_t>& init_data,
       scoped_ptr<media::NewSessionCdmPromise> promise) override;
   void LoadSession(SessionType session_type,
                    const std::string& session_id,
                    scoped_ptr<media::NewSessionCdmPromise> promise) override;
   void UpdateSession(const std::string& session_id,
-                     const uint8* response,
-                     int response_length,
+                     const std::vector<uint8_t>& response,
                      scoped_ptr<media::SimpleCdmPromise> promise) override;
   void CloseSession(const std::string& session_id,
                     scoped_ptr<media::SimpleCdmPromise> promise) override;

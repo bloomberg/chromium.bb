@@ -9,6 +9,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -67,7 +68,7 @@ class BrowserCdmCast : public ::media::BrowserCdm {
 
  protected:
   void OnSessionMessage(const std::string& session_id,
-                        const std::vector<uint8>& message,
+                        const std::vector<uint8_t>& message,
                         const GURL& destination_url);
   void OnSessionClosed(const std::string& session_id);
   void OnSessionKeysChange(const std::string& session_id,
@@ -75,19 +76,6 @@ class BrowserCdmCast : public ::media::BrowserCdm {
 
  private:
   friend class BrowserCdmCastUi;
-
-  // Helper methods for forwarding calls to methods that take raw pointers.
-  void SetServerCertificateHelper(
-      const std::vector<uint8>& certificate_data,
-      scoped_ptr<::media::SimpleCdmPromise> promise);
-  void CreateSessionAndGenerateRequestHelper(
-      ::media::MediaKeys::SessionType session_type,
-      ::media::EmeInitDataType init_data_type,
-      const std::vector<uint8>& init_data,
-      scoped_ptr<::media::NewSessionCdmPromise> promise);
-  void UpdateSessionHelper(const std::string& session_id,
-                           const std::vector<uint8>& response,
-                           scoped_ptr<::media::SimpleCdmPromise> promise);
 
   ::media::SessionMessageCB session_message_cb_;
   ::media::SessionClosedCB session_closed_cb_;
@@ -122,21 +110,18 @@ class BrowserCdmCastUi : public ::media::BrowserCdm {
  private:
   // ::media::MediaKeys implementation:
   void SetServerCertificate(
-      const uint8* certificate_data,
-      int certificate_data_length,
+      const std::vector<uint8_t>& certificate,
       scoped_ptr<::media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       ::media::MediaKeys::SessionType session_type,
       ::media::EmeInitDataType init_data_type,
-      const uint8* init_data,
-      int init_data_length,
+      const std::vector<uint8_t>& init_data,
       scoped_ptr<::media::NewSessionCdmPromise> promise) override;
   void LoadSession(::media::MediaKeys::SessionType session_type,
                    const std::string& session_id,
                    scoped_ptr<::media::NewSessionCdmPromise> promise) override;
   void UpdateSession(const std::string& session_id,
-                     const uint8* response,
-                     int response_length,
+                     const std::vector<uint8_t>& response,
                      scoped_ptr<::media::SimpleCdmPromise> promise) override;
   void CloseSession(const std::string& session_id,
                     scoped_ptr<::media::SimpleCdmPromise> promise) override;

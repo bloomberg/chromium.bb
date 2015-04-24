@@ -324,8 +324,7 @@ void BrowserCdmManager::OnSetServerCertificate(
     return;
   }
 
-  cdm->SetServerCertificate(&certificate[0], certificate.size(),
-                            promise.Pass());
+  cdm->SetServerCertificate(certificate, promise.Pass());
 }
 
 void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
@@ -405,7 +404,7 @@ void BrowserCdmManager::OnUpdateSession(int render_frame_id,
     return;
   }
 
-  cdm->UpdateSession(session_id, &response[0], response.size(), promise.Pass());
+  cdm->UpdateSession(session_id, response, promise.Pass());
 }
 
 void BrowserCdmManager::OnCloseSession(int render_frame_id,
@@ -577,8 +576,8 @@ void BrowserCdmManager::CreateSessionAndGenerateRequestIfPermitted(
   // Only the temporary session type is supported in browser CDM path.
   // TODO(xhwang): Add SessionType support if needed.
   cdm->CreateSessionAndGenerateRequest(media::MediaKeys::TEMPORARY_SESSION,
-                                       init_data_type, &init_data[0],
-                                       init_data.size(), promise.Pass());
+                                       init_data_type, init_data,
+                                       promise.Pass());
 }
 
 }  // namespace content

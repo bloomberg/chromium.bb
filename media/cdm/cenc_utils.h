@@ -9,12 +9,13 @@
 
 #include "base/basictypes.h"
 #include "media/base/media_export.h"
+#include "media/cdm/json_web_key.h"
 
 namespace media {
 
 // Validate that |input| is a set of concatenated 'pssh' boxes and the sizes
 // match. Returns true if |input| looks valid, false otherwise.
-MEDIA_EXPORT bool ValidatePsshInput(const uint8* input, size_t input_length);
+MEDIA_EXPORT bool ValidatePsshInput(const std::vector<uint8_t>& input);
 
 // Gets the Key Ids from a 'pssh' box for the Common SystemID among one or
 // more concatenated 'pssh' boxes. If |input| looks valid, then true is
@@ -24,10 +25,8 @@ MEDIA_EXPORT bool ValidatePsshInput(const uint8* input, size_t input_length);
 // found, or are included but don't contain any key IDs. This should be
 // fixed once the test files are updated to include correct 'pssh' boxes.
 // http://crbug.com/460308
-MEDIA_EXPORT bool GetKeyIdsForCommonSystemId(
-    const uint8* input,
-    int input_length,
-    std::vector<std::vector<uint8>>* key_ids);
+MEDIA_EXPORT bool GetKeyIdsForCommonSystemId(const std::vector<uint8_t>& input,
+                                             KeyIdList* key_ids);
 
 }  // namespace media
 

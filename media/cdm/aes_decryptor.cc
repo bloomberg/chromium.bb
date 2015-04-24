@@ -105,7 +105,7 @@ void AesDecryptor::SessionIdDecryptionKeyMap::Erase(
   key_list_.erase(position);
 }
 
-uint32 AesDecryptor::next_session_id_ = 1;
+uint32_t AesDecryptor::next_session_id_ = 1;
 
 enum ClearBytesBufferSel {
   kSrcContainsClearBytes,
@@ -114,8 +114,8 @@ enum ClearBytesBufferSel {
 
 static void CopySubsamples(const std::vector<SubsampleEntry>& subsamples,
                            const ClearBytesBufferSel sel,
-                           const uint8* src,
-                           uint8* dst) {
+                           const uint8_t* src,
+                           uint8_t* dst) {
   for (size_t i = 0; i < subsamples.size(); i++) {
     const SubsampleEntry& subsample = subsamples[i];
     if (sel == kSrcContainsClearBytes) {
@@ -167,7 +167,7 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
 
     // TODO(xhwang): Find a way to avoid this data copy.
     return DecoderBuffer::CopyFrom(
-        reinterpret_cast<const uint8*>(decrypted_text.data()),
+        reinterpret_cast<const uint8_t*>(decrypted_text.data()),
         decrypted_text.size());
   }
 
@@ -192,7 +192,7 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
 
   // No need to decrypt if there is no encrypted data.
   if (total_encrypted_size <= 0) {
-    return DecoderBuffer::CopyFrom(reinterpret_cast<const uint8*>(sample),
+    return DecoderBuffer::CopyFrom(reinterpret_cast<const uint8_t*>(sample),
                                    sample_size);
   }
 
@@ -202,9 +202,10 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   // copy all encrypted subsamples to a contiguous buffer, decrypt them, then
   // copy the decrypted bytes over the encrypted bytes in the output.
   // TODO(strobe): attempt to reduce number of memory copies
-  scoped_ptr<uint8[]> encrypted_bytes(new uint8[total_encrypted_size]);
+  scoped_ptr<uint8_t[]> encrypted_bytes(new uint8_t[total_encrypted_size]);
   CopySubsamples(subsamples, kSrcContainsClearBytes,
-                 reinterpret_cast<const uint8*>(sample), encrypted_bytes.get());
+                 reinterpret_cast<const uint8_t*>(sample),
+                 encrypted_bytes.get());
 
   base::StringPiece encrypted_text(
       reinterpret_cast<const char*>(encrypted_bytes.get()),
@@ -217,9 +218,9 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   DCHECK_EQ(decrypted_text.size(), encrypted_text.size());
 
   scoped_refptr<DecoderBuffer> output = DecoderBuffer::CopyFrom(
-      reinterpret_cast<const uint8*>(sample), sample_size);
+      reinterpret_cast<const uint8_t*>(sample), sample_size);
   CopySubsamples(subsamples, kDstContainsClearBytes,
-                 reinterpret_cast<const uint8*>(decrypted_text.data()),
+                 reinterpret_cast<const uint8_t*>(decrypted_text.data()),
                  output->writable_data());
   return output;
 }
@@ -242,8 +243,7 @@ AesDecryptor::~AesDecryptor() {
   key_map_.clear();
 }
 
-void AesDecryptor::SetServerCertificate(const uint8* certificate_data,
-                                        int certificate_data_length,
+void AesDecryptor::SetServerCertificate(const std::vector<uint8_t>& certificate,
                                         scoped_ptr<SimpleCdmPromise> promise) {
   promise->reject(
       NOT_SUPPORTED_ERROR, 0, "SetServerCertificate() is not supported.");
@@ -252,8 +252,7 @@ void AesDecryptor::SetServerCertificate(const uint8* certificate_data,
 void AesDecryptor::CreateSessionAndGenerateRequest(
     SessionType session_type,
     EmeInitDataType init_data_type,
-    const uint8* init_data,
-    int init_data_length,
+    const std::vector<uint8_t>& init_data,
     scoped_ptr<NewSessionCdmPromise> promise) {
   std::string session_id(base::UintToString(next_session_id_++));
   valid_sessions_.insert(session_id);
@@ -261,27 +260,26 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
   // For now, the AesDecryptor does not care about |session_type|.
   // TODO(jrummell): Validate |session_type|.
 
-  std::vector<uint8> message;
+  std::vector<uint8_t> message;
   // TODO(jrummell): Since unprefixed will never send NULL, remove this check
   // when prefixed EME is removed (http://crbug.com/249976).
-  if (init_data && init_data_length) {
-    std::vector<std::vector<uint8>> keys;
+  if (!init_data.empty()) {
+    std::vector<std::vector<uint8_t>> keys;
     switch (init_data_type) {
       case EmeInitDataType::WEBM:
         // |init_data| is simply the key needed.
-        keys.push_back(
-            std::vector<uint8>(init_data, init_data + init_data_length));
+        keys.push_back(init_data);
         break;
       case EmeInitDataType::CENC:
         // |init_data| is a set of 0 or more concatenated 'pssh' boxes.
-        if (!GetKeyIdsForCommonSystemId(init_data, init_data_length, &keys)) {
+        if (!GetKeyIdsForCommonSystemId(init_data, &keys)) {
           promise->reject(NOT_SUPPORTED_ERROR, 0,
                           "No supported PSSH box found.");
           return;
         }
         break;
       case EmeInitDataType::KEYIDS: {
-        std::string init_data_string(init_data, init_data + init_data_length);
+        std::string init_data_string(init_data.begin(), init_data.end());
         std::string error_message;
         if (!ExtractKeyIdsFromKeyIdsInitData(init_data_string, &keys,
                                              &error_message)) {
@@ -315,11 +313,9 @@ void AesDecryptor::LoadSession(SessionType session_type,
 }
 
 void AesDecryptor::UpdateSession(const std::string& session_id,
-                                 const uint8* response,
-                                 int response_length,
+                                 const std::vector<uint8_t>& response,
                                  scoped_ptr<SimpleCdmPromise> promise) {
-  CHECK(response);
-  CHECK_GT(response_length, 0);
+  CHECK(!response.empty());
 
   // TODO(jrummell): Convert back to a DCHECK once prefixed EME is removed.
   if (valid_sessions_.find(session_id) == valid_sessions_.end()) {
@@ -327,8 +323,7 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
     return;
   }
 
-  std::string key_string(reinterpret_cast<const char*>(response),
-                         response_length);
+  std::string key_string(response.begin(), response.end());
 
   KeyIdAndKeyPairs keys;
   SessionType session_type = MediaKeys::TEMPORARY_SESSION;

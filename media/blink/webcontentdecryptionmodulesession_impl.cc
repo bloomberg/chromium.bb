@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/cdm_key_information.h"
@@ -110,12 +111,11 @@ static bool SanitizeInitData(EmeInitDataType init_data_type,
       return true;
 
     case EmeInitDataType::CENC:
-      if (!ValidatePsshInput(init_data, init_data_length)) {
+      sanitized_init_data->assign(init_data, init_data + init_data_length);
+      if (!ValidatePsshInput(*sanitized_init_data)) {
         error_message->assign("Initialization data for CENC is incorrect.");
         return false;
       }
-
-      sanitized_init_data->assign(init_data, init_data + init_data_length);
       return true;
 
     case EmeInitDataType::KEYIDS: {
@@ -173,6 +173,7 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     size_t init_data_length,
     blink::WebEncryptedMediaSessionType session_type,
     blink::WebContentDecryptionModuleResult result) {
+  DCHECK(init_data);
   DCHECK(session_id_.empty());
 
   // From https://w3c.github.io/encrypted-media/#generateRequest.
@@ -225,9 +226,7 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
   //     instance value.
   // 9.7 Use the cdm to execute the following steps:
   adapter_->InitializeNewSession(
-      eme_init_data_type, vector_as_array(&sanitized_init_data),
-      base::saturated_cast<int>(sanitized_init_data.size()),
-      convertSessionType(session_type),
+      eme_init_data_type, sanitized_init_data, convertSessionType(session_type),
       scoped_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result, adapter_->GetKeySystemUMAPrefix() + kGenerateRequestUMAName,
           base::Bind(
@@ -260,7 +259,7 @@ void WebContentDecryptionModuleSessionImpl::update(
   DCHECK(response);
   DCHECK(!session_id_.empty());
   adapter_->UpdateSession(
-      session_id_, response, base::saturated_cast<int>(response_length),
+      session_id_, std::vector<uint8>(response, response + response_length),
       scoped_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
           result, adapter_->GetKeySystemUMAPrefix() + kUpdateSessionUMAName)));
 }

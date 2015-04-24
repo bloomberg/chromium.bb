@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
@@ -39,21 +40,18 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
 
   // MediaKeys implementation.
   void SetServerCertificate(
-      const uint8* certificate_data,
-      int certificate_data_length,
+      const std::vector<uint8_t>& certificate,
       scoped_ptr<media::SimpleCdmPromise> promise) override;
   void CreateSessionAndGenerateRequest(
       SessionType session_type,
       media::EmeInitDataType init_data_type,
-      const uint8* init_data,
-      int init_data_length,
+      const std::vector<uint8_t>& init_data,
       scoped_ptr<media::NewSessionCdmPromise> promise) override;
   void LoadSession(SessionType session_type,
                    const std::string& session_id,
                    scoped_ptr<media::NewSessionCdmPromise> promise) override;
   void UpdateSession(const std::string& session_id,
-                     const uint8* response,
-                     int response_length,
+                     const std::vector<uint8_t>& response,
                      scoped_ptr<media::SimpleCdmPromise> promise) override;
   void CloseSession(const std::string& session_id,
                     scoped_ptr<media::SimpleCdmPromise> promise) override;
@@ -68,12 +66,12 @@ class ProxyMediaKeys : public media::MediaKeys, public media::CdmContext {
   // Callbacks.
   void OnSessionMessage(const std::string& session_id,
                         media::MediaKeys::MessageType message_type,
-                        const std::vector<uint8>& message,
+                        const std::vector<uint8_t>& message,
                         const GURL& legacy_destination_url);
   void OnSessionClosed(const std::string& session_id);
   void OnLegacySessionError(const std::string& session_id,
                             media::MediaKeys::Exception exception,
-                            uint32 system_code,
+                            uint32_t system_code,
                             const std::string& error_message);
   void OnSessionKeysChange(const std::string& session_id,
                            bool has_additional_usable_key,

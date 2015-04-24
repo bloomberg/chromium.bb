@@ -68,7 +68,7 @@ void BrowserCdmCast::LoadSession(
 }
 
 void BrowserCdmCast::OnSessionMessage(const std::string& session_id,
-                                      const std::vector<uint8>& message,
+                                      const std::vector<uint8_t>& message,
                                       const GURL& destination_url) {
   // Note: Message type is not supported in Chromecast. Do our best guess here.
   ::media::MediaKeys::MessageType message_type =
@@ -97,31 +97,6 @@ void BrowserCdmCast::OnSessionKeysChange(
   session_keys_change_cb_.Run(session_id, true, cdm_keys_info.Pass());
 
   player_tracker_impl_->NotifyNewKey();
-}
-
-void BrowserCdmCast::SetServerCertificateHelper(
-    const std::vector<uint8>& certificate_data,
-    scoped_ptr<::media::SimpleCdmPromise> promise) {
-  SetServerCertificate(certificate_data.data(),
-                       certificate_data.size(),
-                       promise.Pass());
-}
-
-void BrowserCdmCast::CreateSessionAndGenerateRequestHelper(
-    ::media::MediaKeys::SessionType session_type,
-    ::media::EmeInitDataType init_data_type,
-    const std::vector<uint8>& init_data,
-    scoped_ptr<::media::NewSessionCdmPromise> promise) {
-  CreateSessionAndGenerateRequest(
-      session_type, init_data_type, init_data.data(), init_data.size(),
-      promise.Pass());
-}
-
-void BrowserCdmCast::UpdateSessionHelper(
-    const std::string& session_id,
-    const std::vector<uint8>& response,
-    scoped_ptr<::media::SimpleCdmPromise> promise) {
-  UpdateSession(session_id, response.data(), response.size(), promise.Pass());
 }
 
 // A macro runs current member function on |cdm_loop_| thread.
@@ -160,29 +135,26 @@ BrowserCdmCast* BrowserCdmCastUi::browser_cdm_cast() const {
 }
 
 void BrowserCdmCastUi::SetServerCertificate(
-    const uint8* certificate_data,
-    int certificate_data_length,
+    const std::vector<uint8_t>& certificate,
     scoped_ptr<::media::SimpleCdmPromise> promise) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FORWARD_ON_CDM_THREAD(
-      SetServerCertificateHelper,
-      std::vector<uint8>(certificate_data,
-                         certificate_data + certificate_data_length),
+      SetServerCertificate,
+      certificate,
       base::Passed(&promise));
 }
 
 void BrowserCdmCastUi::CreateSessionAndGenerateRequest(
     ::media::MediaKeys::SessionType session_type,
     ::media::EmeInitDataType init_data_type,
-    const uint8* init_data,
-    int init_data_length,
+    const std::vector<uint8_t>& init_data,
     scoped_ptr<::media::NewSessionCdmPromise> promise) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FORWARD_ON_CDM_THREAD(
-      CreateSessionAndGenerateRequestHelper,
+      CreateSessionAndGenerateRequest,
       session_type,
       init_data_type,
-      std::vector<uint8>(init_data, init_data + init_data_length),
+      init_data,
       base::Passed(&promise));
 }
 
@@ -197,14 +169,13 @@ void BrowserCdmCastUi::LoadSession(
 
 void BrowserCdmCastUi::UpdateSession(
     const std::string& session_id,
-    const uint8* response,
-    int response_length,
+    const std::vector<uint8_t>& response,
     scoped_ptr<::media::SimpleCdmPromise> promise) {
   DCHECK(thread_checker_.CalledOnValidThread());
   FORWARD_ON_CDM_THREAD(
-      UpdateSessionHelper,
+      UpdateSession,
       session_id,
-      std::vector<uint8>(response, response + response_length),
+      response,
       base::Passed(&promise));
 }
 

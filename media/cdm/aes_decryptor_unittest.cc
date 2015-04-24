@@ -285,9 +285,9 @@ class AesDecryptorTest : public testing::Test {
     DCHECK(!key_id.empty());
     EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
                                         GURL::EmptyGURL()));
-    decryptor_.CreateSessionAndGenerateRequest(
-        MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, &key_id[0],
-        key_id.size(), CreateSessionPromise(RESOLVED));
+    decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
+                                               EmeInitDataType::WEBM, key_id,
+                                               CreateSessionPromise(RESOLVED));
     // This expects the promise to be called synchronously, which is the case
     // for AesDecryptor.
     return session_id_;
@@ -335,8 +335,7 @@ class AesDecryptorTest : public testing::Test {
     }
 
     decryptor_.UpdateSession(session_id,
-                             reinterpret_cast<const uint8*>(key.c_str()),
-                             key.length(),
+                             std::vector<uint8>(key.begin(), key.end()),
                              CreatePromise(expected_result));
   }
 
@@ -432,29 +431,29 @@ class AesDecryptorTest : public testing::Test {
 TEST_F(AesDecryptorTest, CreateSessionWithNullInitData) {
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                             EmeInitDataType::WEBM, NULL, 0,
-                                             CreateSessionPromise(RESOLVED));
+  decryptor_.CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
+      CreateSessionPromise(RESOLVED));
 }
 
 TEST_F(AesDecryptorTest, MultipleCreateSession) {
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                             EmeInitDataType::WEBM, NULL, 0,
-                                             CreateSessionPromise(RESOLVED));
+  decryptor_.CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
+      CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                             EmeInitDataType::WEBM, NULL, 0,
-                                             CreateSessionPromise(RESOLVED));
+  decryptor_.CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
+      CreateSessionPromise(RESOLVED));
 
   EXPECT_CALL(*this,
               OnSessionMessage(IsNotEmpty(), _, IsEmpty(), GURL::EmptyGURL()));
-  decryptor_.CreateSessionAndGenerateRequest(MediaKeys::TEMPORARY_SESSION,
-                                             EmeInitDataType::WEBM, NULL, 0,
-                                             CreateSessionPromise(RESOLVED));
+  decryptor_.CreateSessionAndGenerateRequest(
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::WEBM, std::vector<uint8>(),
+      CreateSessionPromise(RESOLVED));
 }
 
 TEST_F(AesDecryptorTest, CreateSessionWithCencInitData) {
@@ -475,8 +474,9 @@ TEST_F(AesDecryptorTest, CreateSessionWithCencInitData) {
   EXPECT_CALL(*this, OnSessionMessage(IsNotEmpty(), _, IsJSONDictionary(),
                                       GURL::EmptyGURL()));
   decryptor_.CreateSessionAndGenerateRequest(
-      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC, init_data,
-      arraysize(init_data), CreateSessionPromise(RESOLVED));
+      MediaKeys::TEMPORARY_SESSION, EmeInitDataType::CENC,
+      std::vector<uint8>(init_data, init_data + arraysize(init_data)),
+      CreateSessionPromise(RESOLVED));
 }
 
 TEST_F(AesDecryptorTest, CreateSessionWithKeyIdsInitData) {
@@ -487,7 +487,7 @@ TEST_F(AesDecryptorTest, CreateSessionWithKeyIdsInitData) {
                                       GURL::EmptyGURL()));
   decryptor_.CreateSessionAndGenerateRequest(
       MediaKeys::TEMPORARY_SESSION, EmeInitDataType::KEYIDS,
-      reinterpret_cast<const uint8*>(init_data), arraysize(init_data) - 1,
+      std::vector<uint8>(init_data, init_data + arraysize(init_data) - 1),
       CreateSessionPromise(RESOLVED));
 }
 

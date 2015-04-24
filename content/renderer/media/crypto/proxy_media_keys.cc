@@ -40,21 +40,16 @@ ProxyMediaKeys::~ProxyMediaKeys() {
 }
 
 void ProxyMediaKeys::SetServerCertificate(
-    const uint8* certificate_data,
-    int certificate_data_length,
+    const std::vector<uint8_t>& certificate,
     scoped_ptr<media::SimpleCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
-  manager_->SetServerCertificate(
-      cdm_id_, promise_id,
-      std::vector<uint8>(certificate_data,
-                         certificate_data + certificate_data_length));
+  manager_->SetServerCertificate(cdm_id_, promise_id, certificate);
 }
 
 void ProxyMediaKeys::CreateSessionAndGenerateRequest(
     SessionType session_type,
     media::EmeInitDataType init_data_type,
-    const uint8* init_data,
-    int init_data_length,
+    const std::vector<uint8_t>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
   if (session_type != media::MediaKeys::TEMPORARY_SESSION) {
     promise->reject(NOT_SUPPORTED_ERROR, 0,
@@ -83,8 +78,7 @@ void ProxyMediaKeys::CreateSessionAndGenerateRequest(
 
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
   manager_->CreateSessionAndGenerateRequest(
-      cdm_id_, promise_id, create_session_init_data_type,
-      std::vector<uint8>(init_data, init_data + init_data_length));
+      cdm_id_, promise_id, create_session_init_data_type, init_data);
 }
 
 void ProxyMediaKeys::LoadSession(
@@ -99,13 +93,10 @@ void ProxyMediaKeys::LoadSession(
 
 void ProxyMediaKeys::UpdateSession(
     const std::string& session_id,
-    const uint8* response,
-    int response_length,
+    const std::vector<uint8_t>& response,
     scoped_ptr<media::SimpleCdmPromise> promise) {
   uint32_t promise_id = cdm_promise_adapter_.SavePromise(promise.Pass());
-  manager_->UpdateSession(
-      cdm_id_, promise_id, session_id,
-      std::vector<uint8>(response, response + response_length));
+  manager_->UpdateSession(cdm_id_, promise_id, session_id, response);
 }
 
 void ProxyMediaKeys::CloseSession(const std::string& session_id,
@@ -137,7 +128,7 @@ int ProxyMediaKeys::GetCdmId() const {
 void ProxyMediaKeys::OnSessionMessage(
     const std::string& session_id,
     media::MediaKeys::MessageType message_type,
-    const std::vector<uint8>& message,
+    const std::vector<uint8_t>& message,
     const GURL& legacy_destination_url) {
   session_message_cb_.Run(session_id, message_type, message,
                           legacy_destination_url);
@@ -149,7 +140,7 @@ void ProxyMediaKeys::OnSessionClosed(const std::string& session_id) {
 
 void ProxyMediaKeys::OnLegacySessionError(const std::string& session_id,
                                           media::MediaKeys::Exception exception,
-                                          uint32 system_code,
+                                          uint32_t system_code,
                                           const std::string& error_message) {
   legacy_session_error_cb_.Run(session_id, exception, system_code,
                                error_message);

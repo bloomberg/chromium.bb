@@ -50,11 +50,9 @@ void CdmSessionAdapter::CreateCdm(
 }
 
 void CdmSessionAdapter::SetServerCertificate(
-    const uint8* server_certificate,
-    int server_certificate_length,
+    const std::vector<uint8_t>& certificate,
     scoped_ptr<SimpleCdmPromise> promise) {
-  cdm_->SetServerCertificate(server_certificate, server_certificate_length,
-                             promise.Pass());
+  cdm_->SetServerCertificate(certificate, promise.Pass());
 }
 
 WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::CreateSession() {
@@ -79,12 +77,11 @@ void CdmSessionAdapter::UnregisterSession(const std::string& session_id) {
 
 void CdmSessionAdapter::InitializeNewSession(
     EmeInitDataType init_data_type,
-    const uint8* init_data,
-    int init_data_length,
+    const std::vector<uint8_t>& init_data,
     MediaKeys::SessionType session_type,
     scoped_ptr<NewSessionCdmPromise> promise) {
   cdm_->CreateSessionAndGenerateRequest(session_type, init_data_type, init_data,
-                                        init_data_length, promise.Pass());
+                                        promise.Pass());
 }
 
 void CdmSessionAdapter::LoadSession(MediaKeys::SessionType session_type,
@@ -94,10 +91,9 @@ void CdmSessionAdapter::LoadSession(MediaKeys::SessionType session_type,
 }
 
 void CdmSessionAdapter::UpdateSession(const std::string& session_id,
-                                      const uint8* response,
-                                      int response_length,
+                                      const std::vector<uint8_t>& response,
                                       scoped_ptr<SimpleCdmPromise> promise) {
-  cdm_->UpdateSession(session_id, response, response_length, promise.Pass());
+  cdm_->UpdateSession(session_id, response, promise.Pass());
 }
 
 void CdmSessionAdapter::CloseSession(const std::string& session_id,
@@ -146,7 +142,7 @@ void CdmSessionAdapter::OnCdmCreated(
 void CdmSessionAdapter::OnSessionMessage(
     const std::string& session_id,
     MediaKeys::MessageType message_type,
-    const std::vector<uint8>& message,
+    const std::vector<uint8_t>& message,
     const GURL& /* legacy_destination_url */) {
   WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
@@ -187,7 +183,7 @@ void CdmSessionAdapter::OnSessionClosed(const std::string& session_id) {
 void CdmSessionAdapter::OnLegacySessionError(
     const std::string& session_id,
     MediaKeys::Exception exception_code,
-    uint32 system_code,
+    uint32_t system_code,
     const std::string& error_message) {
   // Error events not used by unprefixed EME.
   // TODO(jrummell): Remove when prefixed EME removed.

@@ -8,6 +8,7 @@
 #include <map>
 #include <queue>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_helpers.h"
@@ -60,21 +61,18 @@ class ContentDecryptorDelegate {
   void InstanceCrashed();
 
   // Provides access to PPP_ContentDecryptor_Private.
-  void SetServerCertificate(const uint8_t* certificate,
-                            uint32_t certificate_length,
+  void SetServerCertificate(const std::vector<uint8_t>& certificate,
                             scoped_ptr<media::SimpleCdmPromise> promise);
   void CreateSessionAndGenerateRequest(
       media::MediaKeys::SessionType session_type,
       media::EmeInitDataType init_data_type,
-      const uint8* init_data,
-      int init_data_length,
+      const std::vector<uint8_t>& init_data,
       scoped_ptr<media::NewSessionCdmPromise> promise);
   void LoadSession(media::MediaKeys::SessionType session_type,
                    const std::string& session_id,
                    scoped_ptr<media::NewSessionCdmPromise> promise);
   void UpdateSession(const std::string& session_id,
-                     const uint8* response,
-                     int response_length,
+                     const std::vector<uint8_t>& response,
                      scoped_ptr<media::SimpleCdmPromise> promise);
   void CloseSession(const std::string& session_id,
                     scoped_ptr<media::SimpleCdmPromise> promise);
@@ -103,11 +101,11 @@ class ContentDecryptorDelegate {
       const media::Decryptor::VideoDecodeCB& video_decode_cb);
 
   // PPB_ContentDecryptor_Private dispatching methods.
-  void OnPromiseResolved(uint32 promise_id);
-  void OnPromiseResolvedWithSession(uint32 promise_id, PP_Var session_id);
-  void OnPromiseRejected(uint32 promise_id,
+  void OnPromiseResolved(uint32_t promise_id);
+  void OnPromiseResolvedWithSession(uint32_t promise_id, PP_Var session_id);
+  void OnPromiseRejected(uint32_t promise_id,
                          PP_CdmExceptionCode exception_code,
-                         uint32 system_code,
+                         uint32_t system_code,
                          PP_Var error_description);
   void OnSessionMessage(PP_Var session_id,
                         PP_CdmMessageType message_type,
@@ -121,7 +119,7 @@ class ContentDecryptorDelegate {
   void OnSessionClosed(PP_Var session_id);
   void OnLegacySessionError(PP_Var session_id,
                             PP_CdmExceptionCode exception_code,
-                            uint32 system_code,
+                            uint32_t system_code,
                             PP_Var error_description);
   void DeliverBlock(PP_Resource decrypted_block,
                     const PP_DecryptedBlockInfo* block_info);
