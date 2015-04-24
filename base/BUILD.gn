@@ -1463,6 +1463,15 @@ if (is_android) {
     DEPRECATED_java_in_dir = "test/android/javatests/src"
   }
 
+  # GYP: //base.gyp:base_junit_tests
+  junit_binary("base_junit_tests") {
+    java_files = [ "android/junit/src/org/chromium/base/LogTest.java" ]
+    deps = [
+      ":base_java",
+      ":base_java_test_support",
+    ]
+  }
+
   # GYP: //base.gyp:base_java_application_state
   # GYP: //base.gyp:base_java_library_load_from_apk_status_codes
   # GYP: //base.gyp:base_java_library_process_type

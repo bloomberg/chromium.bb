@@ -1501,6 +1501,23 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN: //base:base_junit_tests
+          'target_name': 'base_junit_tests',
+          'type': 'none',
+          'dependencies': [
+            'base_java',
+            'base_java_test_support',
+            '../testing/android/junit/junit_test.gyp:junit_test_support',
+          ],
+          'variables': {
+             'main_class': 'org.chromium.testing.local.JunitTestMain',
+             'src_paths': [
+               '../base/android/junit/',
+             ],
+           },
+          'includes': [ '../build/host_jar.gypi' ],
+        },
+        {
           # GN: //base:base_javatests
           'target_name': 'base_javatests',
           'type': 'none',
