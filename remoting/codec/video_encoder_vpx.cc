@@ -45,10 +45,6 @@ void SetCommonCodecParameters(vpx_codec_enc_cfg_t* config,
   config->g_timebase.num = 1;
   config->g_timebase.den = 1000;
 
-  // Adjust default target bit-rate to account for actual desktop size.
-  config->rc_target_bitrate = size.width() * size.height() *
-      config->rc_target_bitrate / config->g_w / config->g_h;
-
   config->g_w = size.width();
   config->g_h = size.height();
   config->g_pass = VPX_RC_ONE_PASS;
@@ -71,6 +67,10 @@ void SetCommonCodecParameters(vpx_codec_enc_cfg_t* config,
 
 void SetVp8CodecParameters(vpx_codec_enc_cfg_t* config,
                            const webrtc::DesktopSize& size) {
+  // Adjust default target bit-rate to account for actual desktop size.
+  config->rc_target_bitrate = size.width() * size.height() *
+      config->rc_target_bitrate / config->g_w / config->g_h;
+
   SetCommonCodecParameters(config, size);
 
   // Value of 2 means using the real time profile. This is basically a
@@ -97,10 +97,14 @@ void SetVp9CodecParameters(vpx_codec_enc_cfg_t* config,
     // Disable quantization entirely, putting the encoder in "lossless" mode.
     config->rc_min_quantizer = 0;
     config->rc_max_quantizer = 0;
+    config->rc_end_usage = VPX_VBR;
   } else {
-    // Lossy encode using the same settings as for VP8.
-    config->rc_min_quantizer = 20;
+    config->rc_min_quantizer = 4;
     config->rc_max_quantizer = 30;
+    config->rc_end_usage = VPX_CBR;
+    // In the absence of a good bandwidth estimator set the target bitrate to a
+    // conservative default.
+    config->rc_target_bitrate = 500;
   }
 }
 
