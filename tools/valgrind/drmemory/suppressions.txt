@@ -774,10 +774,3 @@ name=http://crbug.com/476586b
 *!cc::LayerTreeHost::BeginMainFrame
 *!cc::ThreadProxy::BeginMainFrame
 *!base::internal::InvokeHelper<>::MakeItSo
-
-UNADDRESSABLE ACCESS
-name=https://crbug.com/480650
-wtf.dll!WTF::String::make16BitFrom8BitSource
-blink_platform.dll!blink::normalizeCharacters
-blink_platform.dll!blink::HarfBuzzShaper::HarfBuzzShaper
-*!`anonymous namespace'::HarfBuzzShaperTest*
