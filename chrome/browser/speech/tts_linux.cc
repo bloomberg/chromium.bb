@@ -192,6 +192,10 @@ bool TtsPlatformImplLinux::Speak(
   libspeechd_loader_.spd_set_voice_rate(conn_, 100 * log10(rate) / log10(3));
   libspeechd_loader_.spd_set_voice_pitch(conn_, 100 * log10(pitch) / log10(3));
 
+  // Support languages other than the default
+  if (!lang.empty())
+    libspeechd_loader_.spd_set_language(conn_, lang.c_str());
+
   utterance_ = utterance;
   utterance_id_ = utterance_id;
 

@@ -1124,6 +1124,7 @@
                      'spd_set_synthesis_voice',
                      'spd_list_modules',
                      'spd_set_output_module',
+                     'spd_set_language',
           ],
           'message': 'Generating libspeechd library loader',
           'process_outputs_as_sources': 1,
