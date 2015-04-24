@@ -100,9 +100,6 @@ void NinePatchLayerImpl::AppendQuads(
   if (!resource)
     return;
 
-  // TODO(danakj): crbug.com/455931
-  layer_tree_impl()->resource_provider()->ValidateResource(resource);
-
   static const bool flipped = false;
   static const bool nearest_neighbor = false;
   static const bool premultiplied_alpha = true;
@@ -234,6 +231,7 @@ void NinePatchLayerImpl::AppendQuads(
                  vertex_opacity,
                  flipped,
                  nearest_neighbor);
+    ValidateQuadResources(quad);
   }
 
   visible_rect =
@@ -255,6 +253,7 @@ void NinePatchLayerImpl::AppendQuads(
                  vertex_opacity,
                  flipped,
                  nearest_neighbor);
+    ValidateQuadResources(quad);
   }
 
   visible_rect =
@@ -276,6 +275,7 @@ void NinePatchLayerImpl::AppendQuads(
                  vertex_opacity,
                  flipped,
                  nearest_neighbor);
+    ValidateQuadResources(quad);
   }
 
   visible_rect =
@@ -297,6 +297,7 @@ void NinePatchLayerImpl::AppendQuads(
                  vertex_opacity,
                  flipped,
                  nearest_neighbor);
+    ValidateQuadResources(quad);
   }
 
   visible_rect =
@@ -318,6 +319,7 @@ void NinePatchLayerImpl::AppendQuads(
                  vertex_opacity,
                  flipped,
                  nearest_neighbor);
+    ValidateQuadResources(quad);
   }
 
   visible_rect =
@@ -339,6 +341,7 @@ void NinePatchLayerImpl::AppendQuads(
                  vertex_opacity,
                  flipped,
                  nearest_neighbor);
+    ValidateQuadResources(quad);
   }
 
   visible_rect =
@@ -360,6 +363,7 @@ void NinePatchLayerImpl::AppendQuads(
                  vertex_opacity,
                  flipped,
                  nearest_neighbor);
+    ValidateQuadResources(quad);
   }
 
   visible_rect =
@@ -381,6 +385,7 @@ void NinePatchLayerImpl::AppendQuads(
                  vertex_opacity,
                  flipped,
                  nearest_neighbor);
+    ValidateQuadResources(quad);
   }
 
   if (fill_center_) {
@@ -403,6 +408,7 @@ void NinePatchLayerImpl::AppendQuads(
                    vertex_opacity,
                    flipped,
                    nearest_neighbor);
+      ValidateQuadResources(quad);
     }
   }
 }

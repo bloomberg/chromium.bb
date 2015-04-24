@@ -260,9 +260,6 @@ void TiledLayerImpl::AppendQuads(RenderPass* render_pass,
       float tile_height = static_cast<float>(tiler_->tile_size().height());
       gfx::Size texture_size(tile_width, tile_height);
 
-      // TODO(danakj): crbug.com/455931
-      layer_tree_impl()->resource_provider()->ValidateResource(
-          tile->resource_id());
       TileDrawQuad* quad = render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
       quad->SetNew(shared_quad_state,
                    tile_rect,
@@ -273,6 +270,7 @@ void TiledLayerImpl::AppendQuads(RenderPass* render_pass,
                    texture_size,
                    tile->contents_swizzled(),
                    false);
+      ValidateQuadResources(quad);
     }
   }
 }

@@ -863,10 +863,9 @@ ResourceProvider::Resource* ResourceProvider::InsertResource(
 
 ResourceProvider::Resource* ResourceProvider::GetResource(ResourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(danakj): crbug.com/455931
-  CHECK(id);
+  DCHECK(id);
   ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
+  DCHECK(it != resources_.end());
   return &it->second;
 }
 
@@ -2044,7 +2043,7 @@ GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {
   return active_unit;
 }
 
-void ResourceProvider::ValidateResource(ResourceId id) {
+void ResourceProvider::ValidateResource(ResourceId id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(id);
   DCHECK(resources_.find(id) != resources_.end());

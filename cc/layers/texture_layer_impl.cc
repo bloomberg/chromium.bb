@@ -167,8 +167,6 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   ResourceProvider::ResourceId id =
       valid_texture_copy_ ? texture_copy_->id() : external_texture_resource_;
-  // TODO(danakj): crbug.com/455931
-  layer_tree_impl()->resource_provider()->ValidateResource(id);
   quad->SetNew(shared_quad_state,
                quad_rect,
                opaque_rect,
@@ -181,6 +179,7 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
                vertex_opacity_,
                flipped_,
                nearest_neighbor_);
+  ValidateQuadResources(quad);
 }
 
 SimpleEnclosedRegion TextureLayerImpl::VisibleContentOpaqueRegion() const {

@@ -746,6 +746,23 @@ void LayerImpl::NoteLayerPropertyChangedForDescendants() {
   SetNeedsPushProperties();
 }
 
+#if DCHECK_IS_ON()
+// Verify that the resource id is valid.
+static ResourceProvider::ResourceId ValidateResource(
+    const ResourceProvider* provider,
+    ResourceProvider::ResourceId id) {
+  provider->ValidateResource(id);
+  return id;
+}
+#endif
+
+void LayerImpl::ValidateQuadResourcesInternal(DrawQuad* quad) const {
+#if DCHECK_IS_ON()
+  quad->IterateResources(
+      base::Bind(&ValidateResource, layer_tree_impl_->resource_provider()));
+#endif
+}
+
 const char* LayerImpl::LayerTypeAsString() const {
   return "cc::LayerImpl";
 }

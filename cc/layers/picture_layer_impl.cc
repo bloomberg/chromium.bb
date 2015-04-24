@@ -208,6 +208,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
                  visible_geometry_rect, texture_rect, texture_size,
                  nearest_neighbor_, RGBA_8888, quad_content_rect,
                  max_contents_scale, raster_source_);
+    ValidateQuadResources(quad);
     return;
   }
 
@@ -305,15 +306,13 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
             append_quads_data->num_incomplete_tiles++;
           }
 
-          // TODO(danakj): crbug.com/455931
-          layer_tree_impl()->resource_provider()->ValidateResource(
-              draw_info.resource_id());
           TileDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
           quad->SetNew(shared_quad_state, geometry_rect, opaque_rect,
                        visible_geometry_rect, draw_info.resource_id(),
                        texture_rect, draw_info.resource_size(),
                        draw_info.contents_swizzled(), nearest_neighbor_);
+          ValidateQuadResources(quad);
           has_draw_quad = true;
           break;
         }
@@ -322,6 +321,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
               render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
           quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
                        draw_info.solid_color(), false);
+          ValidateQuadResources(quad);
           has_draw_quad = true;
           break;
         }
@@ -346,6 +346,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
                      visible_geometry_rect,
                      color,
                      false);
+        ValidateQuadResources(quad);
       }
 
       if (geometry_rect.Intersects(scaled_viewport_for_tile_priority)) {

@@ -159,9 +159,6 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
   bool nearest_neighbor = false;
   TextureDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  // TODO(danakj): crbug.com/455931
-  layer_tree_impl()->resource_provider()->ValidateResource(
-      resources_.back()->id());
   quad->SetNew(shared_quad_state,
                quad_rect,
                opaque_rect,
@@ -174,6 +171,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
                vertex_opacity,
                flipped,
                nearest_neighbor);
+  ValidateQuadResources(quad);
 }
 
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(

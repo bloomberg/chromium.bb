@@ -110,9 +110,6 @@ void UIResourceLayerImpl::AppendQuads(
   if (!resource)
     return;
 
-  // TODO(danakj): crbug.com/455931
-  layer_tree_impl()->resource_provider()->ValidateResource(resource);
-
   static const bool flipped = false;
   static const bool nearest_neighbor = false;
   static const bool premultiplied_alpha = true;
@@ -144,6 +141,7 @@ void UIResourceLayerImpl::AppendQuads(
                vertex_opacity_,
                flipped,
                nearest_neighbor);
+  ValidateQuadResources(quad);
 }
 
 const char* UIResourceLayerImpl::LayerTypeAsString() const {

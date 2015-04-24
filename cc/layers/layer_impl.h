@@ -247,6 +247,13 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
                            AppendQuadsData* append_quads_data) {}
   virtual void DidDraw(ResourceProvider* resource_provider);
 
+  // Verify that the resource ids in the quad are valid.
+  void ValidateQuadResources(DrawQuad* quad) const {
+#if DCHECK_IS_ON()
+    ValidateQuadResourcesInternal(quad);
+#endif
+  }
+
   virtual void GetContentsResourceId(ResourceProvider::ResourceId* resource_id,
                                      gfx::Size* resource_size) const;
 
@@ -669,6 +676,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
  private:
+  void ValidateQuadResourcesInternal(DrawQuad* quad) const;
+
   void PushScrollOffset(const gfx::ScrollOffset* scroll_offset);
   // If the new scroll offset is assigned from the root scroll offset delegate,
   // LayerImpl won't inform the root scroll offset delegate about the scroll

@@ -408,14 +408,6 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
   }
 }
 
-// TODO(danakj): crbug.com/455931
-static ResourceProvider::ResourceId ValidateResource(
-    ResourceProvider* provider,
-    ResourceProvider::ResourceId id) {
-  provider->ValidateResource(id);
-  return id;
-}
-
 void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     RenderPass* render_pass,
     const RenderPass* delegated_render_pass,
@@ -487,9 +479,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
       DrawQuad* output_quad = render_pass->CopyFromAndAppendDrawQuad(
           delegated_quad, output_shared_quad_state);
       output_quad->visible_rect = quad_visible_rect;
-      // TODO(danakj): crbug.com/455931
-      output_quad->IterateResources(base::Bind(
-          &ValidateResource, layer_tree_impl()->resource_provider()));
+      ValidateQuadResources(output_quad);
     } else {
       RenderPassId delegated_contributing_render_pass_id =
           RenderPassDrawQuad::MaterialCast(delegated_quad)->render_pass_id;
@@ -507,9 +497,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
               RenderPassDrawQuad::MaterialCast(delegated_quad),
               output_shared_quad_state, output_contributing_render_pass_id);
       output_quad->visible_rect = quad_visible_rect;
-      // TODO(danakj): crbug.com/455931
-      output_quad->IterateResources(base::Bind(
-          &ValidateResource, layer_tree_impl()->resource_provider()));
+      ValidateQuadResources(output_quad);
     }
   }
 }

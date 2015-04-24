@@ -434,7 +434,7 @@ class CC_EXPORT ResourceProvider {
 
   OutputSurface* output_surface() { return output_surface_; }
 
-  void ValidateResource(ResourceId id);
+  void ValidateResource(ResourceId id) const;
 
  private:
   struct Resource {

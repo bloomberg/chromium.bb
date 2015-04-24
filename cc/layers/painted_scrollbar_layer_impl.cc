@@ -103,14 +103,13 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   if (thumb_resource_id && !visible_thumb_quad_rect.IsEmpty()) {
     gfx::Rect opaque_rect;
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    // TODO(danakj): crbug.com/455931
-    layer_tree_impl()->resource_provider()->ValidateResource(thumb_resource_id);
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state, scaled_thumb_quad_rect, opaque_rect,
                  scaled_visible_thumb_quad_rect, thumb_resource_id,
                  premultipled_alpha, uv_top_left, uv_bottom_right,
                  SK_ColorTRANSPARENT, opacity, flipped, nearest_neighbor);
+    ValidateQuadResources(quad);
   }
 
   gfx::Rect track_quad_rect(bounds());
@@ -124,14 +123,13 @@ void PaintedScrollbarLayerImpl::AppendQuads(
     gfx::Rect opaque_rect(contents_opaque() ? scaled_track_quad_rect
                                             : gfx::Rect());
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    // TODO(danakj): crbug.com/455931
-    layer_tree_impl()->resource_provider()->ValidateResource(track_resource_id);
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state, scaled_track_quad_rect, opaque_rect,
                  scaled_visible_track_quad_rect, track_resource_id,
                  premultipled_alpha, uv_top_left, uv_bottom_right,
                  SK_ColorTRANSPARENT, opacity, flipped, nearest_neighbor);
+    ValidateQuadResources(quad);
   }
 }
 
