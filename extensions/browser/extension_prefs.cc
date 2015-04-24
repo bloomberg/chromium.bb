@@ -1866,7 +1866,11 @@ ExtensionPrefs::ExtensionPrefs(
       app_sorting_(app_sorting.Pass()),
       time_provider_(time_provider.Pass()),
       extensions_disabled_(extensions_disabled) {
+  // TODO(mgiuca): Added these checks to try and diagnose
+  // http://crbug.com/476648. Remove them after the investigation is concluded.
+  CHECK(this);
   app_sorting_->SetExtensionScopedPrefs(this);
+  app_sorting_->CheckExtensionScopedPrefs();
   MakePathsRelative();
 
   // Ensure that any early observers are watching before prefs are initialized.

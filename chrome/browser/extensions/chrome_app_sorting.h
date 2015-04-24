@@ -29,6 +29,7 @@ class ChromeAppSorting : public AppSorting {
 
   // AppSorting implementation:
   void SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) override;
+  void CheckExtensionScopedPrefs() const override;
   void SetExtensionSyncService(
       ExtensionSyncService* extension_sync_service) override;
   void Initialize(const extensions::ExtensionIdList& extension_ids) override;

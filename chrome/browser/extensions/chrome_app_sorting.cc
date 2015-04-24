@@ -60,6 +60,10 @@ void ChromeAppSorting::SetExtensionScopedPrefs(ExtensionScopedPrefs* prefs) {
   extension_scoped_prefs_ = prefs;
 }
 
+void ChromeAppSorting::CheckExtensionScopedPrefs() const {
+  CHECK(extension_scoped_prefs_);
+}
+
 void ChromeAppSorting::SetExtensionSyncService(
     ExtensionSyncService* extension_sync_service) {
   extension_sync_service_ = extension_sync_service;
@@ -67,6 +71,7 @@ void ChromeAppSorting::SetExtensionSyncService(
 
 void ChromeAppSorting::Initialize(
     const extensions::ExtensionIdList& extension_ids) {
+  CHECK(extension_scoped_prefs_);
   InitializePageOrdinalMap(extension_ids);
 
   MigrateAppIndex(extension_ids);
@@ -470,6 +475,9 @@ syncer::StringOrdinal ChromeAppSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
 
 void ChromeAppSorting::InitializePageOrdinalMap(
     const extensions::ExtensionIdList& extension_ids) {
+  // TODO(mgiuca): Added this CHECK to try and diagnose http://crbug.com/476648.
+  // Remove it after the investigation is concluded.
+  CHECK(extension_scoped_prefs_);
   for (extensions::ExtensionIdList::const_iterator ext_it =
            extension_ids.begin(); ext_it != extension_ids.end(); ++ext_it) {
     AddOrdinalMapping(*ext_it,
