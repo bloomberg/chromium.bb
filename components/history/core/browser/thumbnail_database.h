@@ -232,6 +232,8 @@ class ThumbnailDatabase {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, RetainDataForPageUrls);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest,
+                           RetainDataForPageUrlsExpiresRetainedFavicons);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version3);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version4);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, Version5);

@@ -1607,8 +1607,12 @@ void HistoryBackend::MergeFavicon(
             bitmap_id_sizes[i].bitmap_id, base::Time::Now());
         bitmap_identical = true;
       } else {
+        // Expire the favicon bitmap because sync can provide incorrect
+        // |bitmap_data|. See crbug.com/474421 for more details. Expiring the
+        // favicon bitmap causes it to be redownloaded the next time that the
+        // user visits any page which uses |icon_url|.
         thumbnail_db_->SetFaviconBitmap(bitmap_id_sizes[i].bitmap_id,
-                                        bitmap_data, base::Time::Now());
+                                        bitmap_data, base::Time());
         replaced_bitmap = true;
       }
       break;

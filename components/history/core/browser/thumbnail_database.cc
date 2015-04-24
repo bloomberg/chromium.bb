@@ -1143,13 +1143,19 @@ bool ThumbnailDatabase::RetainDataForPageUrls(
       "ON (old.id = mapping.old_icon_id)";
   const char kDropOldFaviconsTable[] = "DROP TABLE old_favicons";
 
+  // Set the retained favicon bitmaps to be expired (last_updated == 0).
+  // The user may be deleting their favicon bitmaps because the favicon bitmaps
+  // are incorrect. Expiring a favicon bitmap causes it to be redownloaded when
+  // the user visits a page associated with the favicon bitmap. See
+  // crbug.com/474421 for an example of a bug which caused favicon bitmaps to
+  // become incorrect.
   const char kRenameFaviconBitmapsTable[] =
       "ALTER TABLE favicon_bitmaps RENAME TO old_favicon_bitmaps";
   const char kCopyFaviconBitmaps[] =
       "INSERT INTO favicon_bitmaps "
       "  (icon_id, last_updated, image_data, width, height, last_requested) "
-      "SELECT mapping.new_icon_id, old.last_updated, "
-      "    old.image_data, old.width, old.height, old.last_requested "
+      "SELECT mapping.new_icon_id, 0, old.image_data, old.width, old.height,"
+      "    old.last_requested "
       "FROM old_favicon_bitmaps AS old "
       "JOIN temp.icon_id_mapping AS mapping "
       "ON (old.icon_id = mapping.old_icon_id)";

@@ -15,12 +15,15 @@
 #include "base/guid.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
@@ -31,9 +34,12 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/domain_reliability/service.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -50,6 +56,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/favicon_size.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -429,6 +437,96 @@ class RemoveHistoryTester {
   history::HistoryService* history_service_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveHistoryTester);
+};
+
+class RemoveFaviconTester {
+ public:
+  RemoveFaviconTester()
+      : got_favicon_(false),
+        got_expired_favicon_(false),
+        history_service_(nullptr),
+        favicon_service_(nullptr) {}
+
+  bool Init(TestingProfile* profile) WARN_UNUSED_RESULT {
+    // Create the history service if it has not been created yet.
+    history_service_ = HistoryServiceFactory::GetForProfile(
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
+    if (!history_service_) {
+      if (!profile->CreateHistoryService(true, false))
+        return false;
+      history_service_ = HistoryServiceFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS);
+    }
+
+    profile->CreateFaviconService();
+    favicon_service_ = FaviconServiceFactory::GetForProfile(
+        profile, ServiceAccessType::EXPLICIT_ACCESS);
+    return true;
+  }
+
+  // Returns true if there is a favicon stored for |page_url| in the favicon
+  // database.
+  bool HasFaviconForPageURL(const GURL& page_url) {
+    RequestFaviconSyncForPageURL(page_url);
+    return got_favicon_;
+  }
+
+  // Returns true if:
+  // - There is a favicon stored for |page_url| in the favicon database.
+  // - The stored favicon is expired.
+  bool HasExpiredFaviconForPageURL(const GURL& page_url) {
+    RequestFaviconSyncForPageURL(page_url);
+    return got_expired_favicon_;
+  }
+
+  // Adds a visit to history and stores an arbitrary favicon bitmap for
+  // |page_url|.
+  void VisitAndAddFavicon(const GURL& page_url) {
+    history_service_->AddPage(page_url, base::Time::Now(), nullptr, 0, GURL(),
+        history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+        history::SOURCE_BROWSED, false);
+
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(gfx::kFaviconSize, gfx::kFaviconSize);
+    bitmap.eraseColor(SK_ColorBLUE);
+    favicon_service_->SetFavicons(page_url, page_url, favicon_base::FAVICON,
+                                  gfx::Image::CreateFrom1xBitmap(bitmap));
+  }
+
+ private:
+  // Synchronously requests the favicon for |page_url| from the favicon
+  // database.
+  void RequestFaviconSyncForPageURL(const GURL& page_url) {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    favicon_service_->GetRawFaviconForPageURL(
+        page_url,
+        favicon_base::FAVICON,
+        gfx::kFaviconSize,
+        base::Bind(&RemoveFaviconTester::SaveResultAndQuit,
+                   base::Unretained(this)),
+        &tracker_);
+    run_loop.Run();
+  }
+
+  // Callback for HistoryService::QueryURL.
+  void SaveResultAndQuit(const favicon_base::FaviconRawBitmapResult& result) {
+    got_favicon_ = result.is_valid();
+    got_expired_favicon_ = result.is_valid() && result.expired;
+    quit_closure_.Run();
+  }
+
+  // For favicon requests.
+  base::CancelableTaskTracker tracker_;
+  bool got_favicon_;
+  bool got_expired_favicon_;
+  base::Closure quit_closure_;
+
+  // Owned by TestingProfile.
+  history::HistoryService* history_service_;
+  favicon::FaviconService* favicon_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveFaviconTester);
 };
 
 class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
@@ -1191,6 +1289,48 @@ TEST_F(BrowsingDataRemoverTest, RemoveMultipleTypesHistoryProhibited) {
             ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT);
 }
 #endif
+
+// Test that clearing history deletes favicons not associated with bookmarks.
+TEST_F(BrowsingDataRemoverTest, RemoveFaviconsForever) {
+  GURL page_url("http://a");
+
+  RemoveFaviconTester favicon_tester;
+  ASSERT_TRUE(favicon_tester.Init(GetProfile()));
+  favicon_tester.VisitAndAddFavicon(page_url);
+  ASSERT_TRUE(favicon_tester.HasFaviconForPageURL(page_url));
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+                                BrowsingDataRemover::REMOVE_HISTORY, false);
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
+  EXPECT_FALSE(favicon_tester.HasFaviconForPageURL(page_url));
+}
+
+// Test that a bookmark's favicon is expired and not deleted when clearing
+// history. Expiring the favicon causes the bookmark's favicon to be updated
+// when the user next visits the bookmarked page. Expiring the bookmark's
+// favicon is useful when the bookmark's favicon becomes incorrect (See
+// crbug.com/474421 for a sample bug which causes this).
+TEST_F(BrowsingDataRemoverTest, ExpireBookmarkFavicons) {
+  GURL bookmarked_page("http://a");
+
+  TestingProfile* profile = GetProfile();
+  profile->CreateBookmarkModel(true);
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfile(profile);
+  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+  bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
+                         base::ASCIIToUTF16("a"), bookmarked_page);
+
+  RemoveFaviconTester favicon_tester;
+  ASSERT_TRUE(favicon_tester.Init(GetProfile()));
+  favicon_tester.VisitAndAddFavicon(bookmarked_page);
+  ASSERT_TRUE(favicon_tester.HasFaviconForPageURL(bookmarked_page));
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+                                BrowsingDataRemover::REMOVE_HISTORY, false);
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
+  EXPECT_TRUE(favicon_tester.HasExpiredFaviconForPageURL(bookmarked_page));
+}
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,

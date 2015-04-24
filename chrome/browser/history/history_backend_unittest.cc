@@ -2044,7 +2044,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLNotInDB) {
   EXPECT_EQ(icon_url, icon_mappings[0].icon_url);
 
   EXPECT_TRUE(GetOnlyFaviconBitmap(icon_mappings[0].icon_id, &favicon_bitmap));
-  EXPECT_NE(base::Time(), favicon_bitmap.last_updated);
+  EXPECT_EQ(base::Time(), favicon_bitmap.last_updated);
   EXPECT_TRUE(BitmapDataEqual('b', favicon_bitmap.bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmap.pixel_size);
 }
@@ -2112,7 +2112,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
   EXPECT_EQ(icon_url1, icon_mappings[0].icon_url);
 
   EXPECT_TRUE(GetOnlyFaviconBitmap(icon_mappings[0].icon_id, &favicon_bitmap));
-  EXPECT_NE(base::Time(), favicon_bitmap.last_updated);
+  EXPECT_EQ(base::Time(), favicon_bitmap.last_updated);
   EXPECT_TRUE(BitmapDataEqual('b', favicon_bitmap.bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmap.pixel_size);
 
@@ -2230,7 +2230,7 @@ TEST_F(HistoryBackendTest, MergeFaviconIconURLMappedToDifferentPageURL) {
   EXPECT_NE(0, favicon_id);
 
   EXPECT_TRUE(GetOnlyFaviconBitmap(favicon_id, &favicon_bitmap));
-  EXPECT_NE(base::Time(), favicon_bitmap.last_updated);
+  EXPECT_EQ(base::Time(), favicon_bitmap.last_updated);
   EXPECT_TRUE(BitmapDataEqual('b', favicon_bitmap.bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmap.pixel_size);
 

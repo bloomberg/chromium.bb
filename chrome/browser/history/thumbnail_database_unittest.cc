@@ -387,6 +387,31 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
   EXPECT_EQ(original_schema, db.db_.GetSchema());
 }
 
+// Test that RetainDataForPageUrls() expires retained favicons.
+TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrlsExpiresRetainedFavicons) {
+  ThumbnailDatabase db(NULL);
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  scoped_refptr<base::RefCountedStaticMemory> favicon1(
+      new base::RefCountedStaticMemory(kBlob1, sizeof(kBlob1)));
+  favicon_base::FaviconID kept_id = db.AddFavicon(
+      kIconUrl1, favicon_base::FAVICON, favicon1, base::Time::Now(),
+      gfx::Size());
+  db.AddIconMapping(kPageUrl1, kept_id);
+
+  EXPECT_TRUE(db.RetainDataForPageUrls(std::vector<GURL>(1u, kPageUrl1)));
+
+  favicon_base::FaviconID new_favicon_id = db.GetFaviconIDForFaviconURL(
+      kIconUrl1, favicon_base::FAVICON, nullptr);
+  ASSERT_NE(0, new_favicon_id);
+  std::vector<FaviconBitmap> new_favicon_bitmaps;
+  db.GetFaviconBitmaps(new_favicon_id, &new_favicon_bitmaps);
+
+  ASSERT_EQ(1u, new_favicon_bitmaps.size());
+  EXPECT_EQ(0, new_favicon_bitmaps[0].last_updated.ToInternalValue());
+}
+
 // Tests that deleting a favicon deletes the favicon row and favicon bitmap
 // rows from the database.
 TEST_F(ThumbnailDatabaseTest, DeleteFavicon) {
