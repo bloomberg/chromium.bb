@@ -311,6 +311,7 @@ ONC_EXPORT extern const char kServerCAPEMs[];
 ONC_EXPORT extern const char kServerCARef[];
 ONC_EXPORT extern const char kServerCARefs[];
 ONC_EXPORT extern const char kUseSystemCAs[];
+ONC_EXPORT extern const char kUseProactiveKeyCaching[];
 }  // namespace eap
 
 namespace vpn {

@@ -67,6 +67,7 @@ const OncFieldSignature eap_fields[] = {
     {::onc::eap::kServerCARef, &kStringSignature},
     {::onc::eap::kServerCARefs, &kStringListSignature},
     {::onc::eap::kUseSystemCAs, &kBoolSignature},
+    {::onc::eap::kUseProactiveKeyCaching, &kBoolSignature},
     {NULL}};
 
 const OncFieldSignature ipsec_fields[] = {

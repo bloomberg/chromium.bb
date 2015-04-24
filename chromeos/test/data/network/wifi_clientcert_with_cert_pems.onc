@@ -9,6 +9,7 @@
         "EAP": {
             "Outer": "EAP-TLS",
             "Identity": "abc ${LOGIN_ID}@my.domain.com",
+            "UseProactiveKeyCaching": true,
             "UseSystemCAs": true,
             "ClientCertType": "Pattern",
             "ClientCertPattern": {

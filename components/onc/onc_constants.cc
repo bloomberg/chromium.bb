@@ -293,6 +293,7 @@ const char kServerCAPEMs[] = "ServerCAPEMs";
 const char kServerCARef[] = "ServerCARef";
 const char kServerCARefs[] = "ServerCARefs";
 const char kUseSystemCAs[] = "UseSystemCAs";
+const char kUseProactiveKeyCaching[] = "UseProactiveKeyCaching";
 }  // namespace eap
 
 namespace vpn {

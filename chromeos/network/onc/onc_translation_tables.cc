@@ -33,6 +33,8 @@ const FieldTranslationEntry eap_fields[] = {
     {::onc::eap::kSaveCredentials, shill::kSaveCredentialsProperty},
     {::onc::eap::kServerCAPEMs, shill::kEapCaCertPemProperty},
     {::onc::eap::kUseSystemCAs, shill::kEapUseSystemCasProperty},
+    {::onc::eap::kUseProactiveKeyCaching,
+     shill::kEapUseProactiveKeyCachingProperty},
     {NULL}};
 
 const FieldTranslationEntry ipsec_fields[] = {
