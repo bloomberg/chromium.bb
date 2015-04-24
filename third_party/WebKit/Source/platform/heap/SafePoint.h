@@ -13,22 +13,11 @@ namespace blink {
 class SafePointScope final {
     WTF_MAKE_NONCOPYABLE(SafePointScope);
 public:
-    enum ScopeNesting {
-        NoNesting,
-        AllowNesting
-    };
-
-    explicit SafePointScope(ThreadState::StackState stackState, ScopeNesting nesting = NoNesting)
+    explicit SafePointScope(ThreadState::StackState stackState)
         : m_state(ThreadState::current())
     {
-        if (m_state->isAtSafePoint()) {
-            RELEASE_ASSERT(nesting == AllowNesting);
-            // We can ignore stackState because there should be no heap object
-            // pointers manipulation after outermost safepoint was entered.
-            m_state = nullptr;
-        } else {
-            m_state->enterSafePoint(stackState, this);
-        }
+        RELEASE_ASSERT(!m_state->isAtSafePoint());
+        m_state->enterSafePoint(stackState, this);
     }
 
     ~SafePointScope()

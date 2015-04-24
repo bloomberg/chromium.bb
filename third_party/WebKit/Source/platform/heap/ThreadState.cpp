@@ -1106,7 +1106,7 @@ void ThreadState::preSweep()
 void ThreadState::addInterruptor(Interruptor* interruptor)
 {
     checkThread();
-    SafePointScope scope(HeapPointersOnStack, SafePointScope::AllowNesting);
+    SafePointScope scope(HeapPointersOnStack);
     {
         MutexLocker locker(threadAttachMutex());
         m_interruptors.append(interruptor);
@@ -1116,7 +1116,7 @@ void ThreadState::addInterruptor(Interruptor* interruptor)
 void ThreadState::removeInterruptor(Interruptor* interruptor)
 {
     checkThread();
-    SafePointScope scope(HeapPointersOnStack, SafePointScope::AllowNesting);
+    SafePointScope scope(HeapPointersOnStack);
     {
         MutexLocker locker(threadAttachMutex());
         size_t index = m_interruptors.find(interruptor);
