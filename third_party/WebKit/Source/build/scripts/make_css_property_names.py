@@ -115,16 +115,23 @@ const Property* findProperty(register const char* str, register unsigned int len
 
 const char* getPropertyName(CSSPropertyID id)
 {
-    ASSERT(id >= firstCSSProperty && id <= lastUnresolvedCSSProperty);
+    if (id < firstCSSProperty)
+        return 0;
     int index = id - firstCSSProperty;
+    if (index >= numCSSProperties)
+        return 0;
     return propertyNameStringsPool + propertyNameStringsOffsets[index];
 }
 
 const AtomicString& getPropertyNameAtomicString(CSSPropertyID id)
 {
-    ASSERT(id >= firstCSSProperty && id <= lastUnresolvedCSSProperty);
+    if (id < firstCSSProperty)
+        return nullAtom;
     int index = id - firstCSSProperty;
-    static AtomicString* propertyStrings = new AtomicString[lastUnresolvedCSSProperty]; // Intentionally never destroyed.
+    if (index >= numCSSProperties)
+        return nullAtom;
+
+    static AtomicString* propertyStrings = new AtomicString[numCSSProperties]; // Intentionally never destroyed.
     AtomicString& propertyString = propertyStrings[index];
     if (propertyString.isNull()) {
         const char* propertyName = propertyNameStringsPool + propertyNameStringsOffsets[index];
@@ -190,25 +197,20 @@ class CSSPropertyNamesWriter(css_properties.CSSProperties):
         }
 
     def generate_implementation(self):
-        enum_value_to_name = {property['enum_value']: property['name'] for property in self._properties_including_aliases}
         property_offsets = []
-        property_names = []
         current_offset = 0
-        for enum_value in range(1, max(enum_value_to_name) + 1):
+        for property in self._properties_including_aliases:
             property_offsets.append(current_offset)
-            if enum_value in enum_value_to_name:
-                name = enum_value_to_name[enum_value]
-                property_names.append(name)
-                current_offset += len(name) + 1
+            current_offset += len(property["name"]) + 1
 
         css_name_and_enum_pairs = [(property['name'], property['property_id']) for property in self._properties_including_aliases]
 
         gperf_input = GPERF_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'class_name': self.class_name,
-            'property_name_strings': '\n'.join('    "%s\\0"' % name for name in property_names),
-            'property_name_offsets': '\n'.join('    %d,' % offset for offset in property_offsets),
-            'property_to_enum_map': '\n'.join('%s, %s' % property for property in css_name_and_enum_pairs),
+            'property_name_strings': '\n'.join(map(lambda property: '    "%(name)s\\0"' % property, self._properties_including_aliases)),
+            'property_name_offsets': '\n'.join(map(lambda offset: '    %d,' % offset, property_offsets)),
+            'property_to_enum_map': '\n'.join(map(lambda property: '%s, %s' % property, css_name_and_enum_pairs)),
         }
         # FIXME: If we could depend on Python 2.7, we would use subprocess.check_output
         gperf_args = [self.gperf_path, '--key-positions=*', '-P', '-n']

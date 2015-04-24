@@ -49,10 +49,6 @@ shouldBe("computedStyle.transitionProperty", "'all, all'");
 shouldBe("style.webkitTransitionProperty", "'all, all'");
 shouldBe("computedStyle.webkitTransitionProperty", "'all, all'");
 
-style.transitionProperty = "-webkit-transform-origin";
-shouldBe("style.transitionProperty", "'-webkit-transform-origin'");
-shouldBe("computedStyle.transitionProperty", "'-webkit-transform-origin'");
-
 style.transitionProperty = "background-position";
 shouldBe("style.transitionProperty", "'background-position'");
 shouldBe("computedStyle.transitionProperty", "'background-position'");
