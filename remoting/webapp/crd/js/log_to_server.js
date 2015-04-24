@@ -31,6 +31,8 @@ remoting.LogToServer = function(signalStrategy) {
   this.connectionType_ = '';
   /** @private */
   this.authTotalTime_ = 0;
+  /** @private {string} */
+  this.hostVersion_ = '';
 
   this.setSessionId_();
   signalStrategy.sendConnectionSetupResults(this);
@@ -62,7 +64,7 @@ remoting.LogToServer.prototype.logClientSessionStateChange =
   // Log the session state change.
   var entry = remoting.ServerLogEntry.makeClientSessionStateChange(
       state, connectionError);
-  entry.addHostFields();
+  entry.addClientOSFields();
   entry.addChromeVersionField();
   entry.addWebappVersionField();
   entry.addSessionIdField(this.sessionId_);
@@ -156,7 +158,7 @@ remoting.LogToServer.prototype.logAccumulatedStatistics_ = function() {
   var entry = remoting.ServerLogEntry.makeStats(this.statsAccumulator_,
                                                 this.connectionType_);
   if (entry) {
-    entry.addHostFields();
+    entry.addClientOSFields();
     entry.addChromeVersionField();
     entry.addWebappVersionField();
     entry.addSessionIdField(this.sessionId_);
@@ -178,6 +180,9 @@ remoting.LogToServer.prototype.log_ = function(entry) {
       (new Date().getTime() - this.sessionStartTime_ -
           this.authTotalTime_) / 1000.0;
   entry.addSessionDuration(sessionDurationInSeconds);
+  // The host-version will be blank for logs before a session has been created.
+  // For example, the signal-strategy log-entries won't have host version info.
+  entry.addHostVersion(this.hostVersion_);
 
   // Send the stanza to the debug log.
   console.log('Enqueueing log entry:');
@@ -258,5 +263,13 @@ remoting.LogToServer.generateSessionId_ = function() {
  */
 remoting.LogToServer.prototype.setAuthTotalTime = function(totalTime) {
   this.authTotalTime_ = totalTime;
+};
+
+/**
+ * @param {string} hostVersion Version of the host for current session.
+ * @return {void} Nothing.
+ */
+remoting.LogToServer.prototype.setHostVersion = function(hostVersion) {
+  this.hostVersion_ = hostVersion;
 };
 

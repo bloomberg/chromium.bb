@@ -47,6 +47,7 @@ remoting.DesktopRemotingActivity.prototype.start =
     function(/** remoting.ClientSession */ session) {
       that.session_ = session;
       session.logHostOfflineErrors(!opt_suppressOfflineError);
+      session.getLogger().setHostVersion(host.hostVersion);
       session.connect(host, credentialsProvider);
   });
 };

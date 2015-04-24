@@ -159,6 +159,9 @@ remoting.ServerLogEntry.KEY_BROWSER_VERSION_ = 'browser-version';
 remoting.ServerLogEntry.KEY_WEBAPP_VERSION_ = 'webapp-version';
 
 /** @private */
+remoting.ServerLogEntry.KEY_HOST_VERSION_ = 'host-version';
+
+/** @private */
 remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_ID_OLD_ = 'session-id-old';
 
 /** @private */
@@ -367,7 +370,7 @@ remoting.ServerLogEntry.prototype.addSessionIdField = function(sessionId) {
 /**
  * Adds fields describing the host to this log entry.
  */
-remoting.ServerLogEntry.prototype.addHostFields = function() {
+remoting.ServerLogEntry.prototype.addClientOSFields = function() {
   var host = remoting.ServerLogEntry.getHostData_();
   if (host) {
     if (host.os_name.length > 0) {
@@ -474,6 +477,15 @@ remoting.ServerLogEntry.prototype.addWebappVersionField = function() {
   if (manifest && manifest.version) {
     this.set_(remoting.ServerLogEntry.KEY_WEBAPP_VERSION_, manifest.version);
   }
+};
+
+/**
+ * Adds a field specifying the host version to this log entry.
+ * @param {string} hostVersion Version of the host for current session.
+ * @return {void} Nothing.
+ */
+remoting.ServerLogEntry.prototype.addHostVersion = function(hostVersion) {
+  this.set_(remoting.ServerLogEntry.KEY_HOST_VERSION_, hostVersion);
 };
 
 /**
