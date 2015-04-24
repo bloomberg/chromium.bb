@@ -20,9 +20,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
-#include "net/base/load_flags.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
 using content::WebContents;
@@ -236,51 +233,6 @@ bool ParseContentScripts(
 
 namespace extensions {
 
-// WebUIURLFetcher downloads the content of a file by giving its |url| on WebUI.
-// Each WebUIURLFetcher is associated with a given |render_process_id,
-// render_view_id| pair.
-class WebViewInternalExecuteCodeFunction::WebUIURLFetcher
-    : public net::URLFetcherDelegate {
- public:
-  WebUIURLFetcher(
-      content::BrowserContext* context,
-      const WebViewInternalExecuteCodeFunction::WebUILoadFileCallback& callback)
-      : context_(context), callback_(callback) {}
-  ~WebUIURLFetcher() override {}
-
-  void Start(int render_process_id, int render_view_id, const GURL& url) {
-    fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::GET, this));
-    fetcher_->SetRequestContext(context_->GetRequestContext());
-    fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
-
-    content::AssociateURLFetcherWithRenderFrame(
-        fetcher_.get(), url, render_process_id, render_view_id);
-    fetcher_->Start();
-  }
-
- private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    CHECK_EQ(fetcher_.get(), source);
-
-    std::string data;
-    bool result = false;
-    if (fetcher_->GetStatus().status() == net::URLRequestStatus::SUCCESS) {
-      result = fetcher_->GetResponseAsString(&data);
-      DCHECK(result);
-    }
-    fetcher_.reset();
-    callback_.Run(result, data);
-    callback_.Reset();
-  }
-
-  content::BrowserContext* context_;
-  WebViewInternalExecuteCodeFunction::WebUILoadFileCallback callback_;
-  scoped_ptr<net::URLFetcher> fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUIURLFetcher);
-};
-
 bool WebViewInternalExtensionFunction::RunAsync() {
   int instance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
@@ -379,7 +331,7 @@ const GURL& WebViewInternalExecuteCodeFunction::GetWebViewSrc() const {
 
 bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
     const std::string& file_src,
-    const WebUILoadFileCallback& callback) {
+    const WebUIURLFetcher::WebUILoadFileCallback& callback) {
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
   WebViewGuest* guest = WebViewGuest::From(
@@ -390,9 +342,10 @@ bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
   GURL owner_base_url(guest->GetOwnerSiteURL().GetWithEmptyPath());
   GURL file_url(owner_base_url.Resolve(file_src));
 
-  url_fetcher_.reset(new WebUIURLFetcher(this->browser_context(), callback));
-  url_fetcher_->Start(render_view_host()->GetProcess()->GetID(),
-                      render_view_host()->GetRoutingID(), file_url);
+  url_fetcher_.reset(new WebUIURLFetcher(
+      this->browser_context(), render_view_host()->GetProcess()->GetID(),
+      render_view_host()->GetRoutingID(), file_url, callback));
+  url_fetcher_->Start();
   return true;
 }
 
@@ -465,8 +418,9 @@ WebViewInternalAddContentScriptsFunction::Run() {
       WebViewContentScriptManager::Get(browser_context());
   DCHECK(manager);
 
-  manager->AddContentScripts(sender_web_contents, params->instance_id, host_id,
-                             result);
+  manager->AddContentScripts(sender_web_contents,
+                             render_view_host()->GetRoutingID(),
+                             params->instance_id, host_id, result);
 
   return RespondNow(NoArguments());
 }

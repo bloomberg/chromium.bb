@@ -7,21 +7,15 @@
 #include <set>
 #include <string>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/version.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/file_util.h"
 
 using content::BrowserThread;
 using content::BrowserContext;
@@ -29,111 +23,6 @@ using content::BrowserContext;
 namespace extensions {
 
 namespace {
-
-using LoadScriptsCallback =
-    base::Callback<void(scoped_ptr<UserScriptList>,
-                        scoped_ptr<base::SharedMemory>)>;
-
-UserScriptLoader::SubstitutionMap* GetLocalizationMessages(
-    const UserScriptLoader::HostsInfo& hosts_info,
-    const HostID& host_id) {
-  UserScriptLoader::HostsInfo::const_iterator iter = hosts_info.find(host_id);
-  if (iter == hosts_info.end())
-    return nullptr;
-  return file_util::LoadMessageBundleSubstitutionMap(
-      iter->second.first, host_id.id(), iter->second.second);
-}
-
-void LoadUserScripts(
-    UserScriptList* user_scripts,
-    const UserScriptLoader::HostsInfo& hosts_info,
-    const std::set<int>& added_script_ids,
-    const scoped_refptr<ContentVerifier>& verifier,
-    UserScriptLoader::LoadUserScriptsContentFunction callback) {
-  for (UserScriptList::iterator script = user_scripts->begin();
-       script != user_scripts->end();
-       ++script) {
-    if (added_script_ids.count(script->id()) == 0)
-      continue;
-    scoped_ptr<UserScriptLoader::SubstitutionMap> localization_messages(
-        GetLocalizationMessages(hosts_info, script->host_id()));
-    for (size_t k = 0; k < script->js_scripts().size(); ++k) {
-      UserScript::File& script_file = script->js_scripts()[k];
-      if (script_file.GetContent().empty())
-        callback.Run(script->host_id(), &script_file, NULL, verifier);
-    }
-    for (size_t k = 0; k < script->css_scripts().size(); ++k) {
-      UserScript::File& script_file = script->css_scripts()[k];
-      if (script_file.GetContent().empty())
-        callback.Run(script->host_id(), &script_file,
-                     localization_messages.get(), verifier);
-    }
-  }
-}
-
-// Pickle user scripts and return pointer to the shared memory.
-scoped_ptr<base::SharedMemory> Serialize(const UserScriptList& scripts) {
-  Pickle pickle;
-  pickle.WriteSizeT(scripts.size());
-  for (UserScriptList::const_iterator script = scripts.begin();
-       script != scripts.end();
-       ++script) {
-    // TODO(aa): This can be replaced by sending content script metadata to
-    // renderers along with other extension data in ExtensionMsg_Loaded.
-    // See crbug.com/70516.
-    script->Pickle(&pickle);
-    // Write scripts as 'data' so that we can read it out in the slave without
-    // allocating a new string.
-    for (size_t j = 0; j < script->js_scripts().size(); j++) {
-      base::StringPiece contents = script->js_scripts()[j].GetContent();
-      pickle.WriteData(contents.data(), contents.length());
-    }
-    for (size_t j = 0; j < script->css_scripts().size(); j++) {
-      base::StringPiece contents = script->css_scripts()[j].GetContent();
-      pickle.WriteData(contents.data(), contents.length());
-    }
-  }
-
-  // Create the shared memory object.
-  base::SharedMemory shared_memory;
-
-  base::SharedMemoryCreateOptions options;
-  options.size = pickle.size();
-  options.share_read_only = true;
-  if (!shared_memory.Create(options))
-    return scoped_ptr<base::SharedMemory>();
-
-  if (!shared_memory.Map(pickle.size()))
-    return scoped_ptr<base::SharedMemory>();
-
-  // Copy the pickle to shared memory.
-  memcpy(shared_memory.memory(), pickle.data(), pickle.size());
-
-  base::SharedMemoryHandle readonly_handle;
-  if (!shared_memory.ShareReadOnlyToProcess(base::GetCurrentProcessHandle(),
-                                            &readonly_handle))
-    return scoped_ptr<base::SharedMemory>();
-
-  return make_scoped_ptr(new base::SharedMemory(readonly_handle,
-                                                /*read_only=*/true));
-}
-
-void LoadScriptsOnFileThread(
-    scoped_ptr<UserScriptList> user_scripts,
-    const UserScriptLoader::HostsInfo& hosts_info,
-    const std::set<int>& added_script_ids,
-    const scoped_refptr<ContentVerifier>& verifier,
-    UserScriptLoader::LoadUserScriptsContentFunction function,
-    LoadScriptsCallback callback) {
-  DCHECK(user_scripts.get());
-  LoadUserScripts(user_scripts.get(), hosts_info, added_script_ids,
-                  verifier, function);
-  scoped_ptr<base::SharedMemory> memory = Serialize(*user_scripts);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(callback, base::Passed(&user_scripts), base::Passed(&memory)));
-}
 
 // Helper function to parse greasesmonkey headers
 bool GetDeclarationValue(const base::StringPiece& line,
@@ -250,30 +139,14 @@ bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
   return true;
 }
 
-void UserScriptLoader::LoadScriptsForTest(UserScriptList* user_scripts) {
-  HostsInfo info;
-  std::set<int> added_script_ids;
-  for (UserScriptList::iterator it = user_scripts->begin();
-       it != user_scripts->end();
-       ++it) {
-    added_script_ids.insert(it->id());
-  }
-  LoadUserScripts(user_scripts, info, added_script_ids,
-                  NULL /* no verifier for testing */,
-                  GetLoadUserScriptsFunction());
-}
-
-UserScriptLoader::UserScriptLoader(
-    BrowserContext* browser_context,
-    const HostID& host_id,
-    const scoped_refptr<ContentVerifier>& content_verifier)
+UserScriptLoader::UserScriptLoader(BrowserContext* browser_context,
+                                   const HostID& host_id)
     : user_scripts_(new UserScriptList()),
       clear_scripts_(false),
       ready_(false),
       pending_load_(false),
       browser_context_(browser_context),
       host_id_(host_id),
-      content_verifier_(content_verifier),
       weak_factory_(this) {
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_CREATED,
@@ -291,6 +164,12 @@ void UserScriptLoader::AddScripts(const std::set<UserScript>& scripts) {
     added_scripts_.insert(*it);
   }
   AttemptLoad();
+}
+
+void UserScriptLoader::AddScripts(const std::set<UserScript>& scripts,
+                                  int render_process_id,
+                                  int render_view_id) {
+  AddScripts(scripts);
 }
 
 void UserScriptLoader::RemoveScripts(const std::set<UserScript>& scripts) {
@@ -382,32 +261,60 @@ void UserScriptLoader::StartLoad() {
   for (const UserScript& script : changed_scripts)
     changed_hosts_.insert(script.host_id());
 
-  // |changed_hosts_| before passing it to LoadScriptsOnFileThread.
-  UpdateHostsInfo(changed_hosts_);
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&LoadScriptsOnFileThread, base::Passed(&user_scripts_),
-                 hosts_info_, added_script_ids, content_verifier_,
-                 GetLoadUserScriptsFunction(),
-                 base::Bind(&UserScriptLoader::OnScriptsLoaded,
-                            weak_factory_.GetWeakPtr())));
+  LoadScripts(user_scripts_.Pass(), changed_hosts_, added_script_ids,
+              base::Bind(&UserScriptLoader::OnScriptsLoaded,
+                         weak_factory_.GetWeakPtr()));
 
   clear_scripts_ = false;
   added_scripts_.clear();
   removed_scripts_.clear();
-  user_scripts_.reset(NULL);
+  user_scripts_.reset();
 }
 
-void UserScriptLoader::AddHostInfo(const HostID& host_id,
-                                   const PathAndDefaultLocale& location) {
-  if (hosts_info_.find(host_id) != hosts_info_.end())
-    return;
-  hosts_info_[host_id] = location;
-}
+// static
+scoped_ptr<base::SharedMemory> UserScriptLoader::Serialize(
+    const UserScriptList& scripts) {
+  Pickle pickle;
+  pickle.WriteSizeT(scripts.size());
+  for (const UserScript& script : scripts) {
+    // TODO(aa): This can be replaced by sending content script metadata to
+    // renderers along with other extension data in ExtensionMsg_Loaded.
+    // See crbug.com/70516.
+    script.Pickle(&pickle);
+    // Write scripts as 'data' so that we can read it out in the slave without
+    // allocating a new string.
+    for (const UserScript::File& script_file : script.js_scripts()) {
+      base::StringPiece contents = script_file.GetContent();
+      pickle.WriteData(contents.data(), contents.length());
+    }
+    for (const UserScript::File& script_file : script.css_scripts()) {
+      base::StringPiece contents = script_file.GetContent();
+      pickle.WriteData(contents.data(), contents.length());
+    }
+  }
 
-void UserScriptLoader::RemoveHostInfo(const HostID& host_id) {
-  hosts_info_.erase(host_id);
+  // Create the shared memory object.
+  base::SharedMemory shared_memory;
+
+  base::SharedMemoryCreateOptions options;
+  options.size = pickle.size();
+  options.share_read_only = true;
+  if (!shared_memory.Create(options))
+    return scoped_ptr<base::SharedMemory>();
+
+  if (!shared_memory.Map(pickle.size()))
+    return scoped_ptr<base::SharedMemory>();
+
+  // Copy the pickle to shared memory.
+  memcpy(shared_memory.memory(), pickle.data(), pickle.size());
+
+  base::SharedMemoryHandle readonly_handle;
+  if (!shared_memory.ShareReadOnlyToProcess(base::GetCurrentProcessHandle(),
+                                            &readonly_handle))
+    return scoped_ptr<base::SharedMemory>();
+
+  return make_scoped_ptr(new base::SharedMemory(readonly_handle,
+                                                /*read_only=*/true));
 }
 
 void UserScriptLoader::SetReady(bool ready) {

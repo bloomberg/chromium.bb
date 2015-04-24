@@ -109,6 +109,7 @@ WebViewContentScriptManager* WebViewContentScriptManager::Get(
 
 void WebViewContentScriptManager::AddContentScripts(
     content::WebContents* embedder_web_contents,
+    int embedder_routing_id,
     int view_instance_id,
     const HostID& host_id,
     const std::set<UserScript>& scripts) {
@@ -153,7 +154,7 @@ void WebViewContentScriptManager::AddContentScripts(
   }
 
   // Step 3: adds new scripts to the master.
-  master->AddScripts(scripts);
+  master->AddScripts(scripts, embedder_process_id, embedder_routing_id);
 
   // Step 4: creates owner web contents observer for the given
   // |embedder_web_contents| if it doesn't exist.

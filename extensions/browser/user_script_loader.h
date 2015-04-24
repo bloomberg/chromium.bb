@@ -29,8 +29,6 @@ class RenderProcessHost;
 
 namespace extensions {
 
-class ContentVerifier;
-
 // Manages one "logical unit" of user scripts in shared memory by constructing a
 // new shared memory region when the set of scripts changes. Also notifies
 // renderers of new shared memory region when new renderers appear, or when
@@ -40,31 +38,30 @@ class ContentVerifier;
 // scripts to load/unload on this logical unit of scripts.
 class UserScriptLoader : public content::NotificationObserver {
  public:
-  using PathAndDefaultLocale = std::pair<base::FilePath, std::string>;
-  using HostsInfo = std::map<HostID, PathAndDefaultLocale>;
-
-  using SubstitutionMap = std::map<std::string, std::string>;
-  using LoadUserScriptsContentFunction =
-      base::Callback<bool(const HostID&,
-                          UserScript::File*,
-                          const SubstitutionMap*,
-                          const scoped_refptr<ContentVerifier>&)>;
+  using LoadScriptsCallback =
+      base::Callback<void(scoped_ptr<UserScriptList>,
+                          scoped_ptr<base::SharedMemory>)>;
 
   // Parses the includes out of |script| and returns them in |includes|.
   static bool ParseMetadataHeader(const base::StringPiece& script_text,
                                   UserScript* script);
 
   UserScriptLoader(content::BrowserContext* browser_context,
-                   const HostID& host_id,
-                   const scoped_refptr<ContentVerifier>& content_verifier);
+                   const HostID& host_id);
   ~UserScriptLoader() override;
-
-  // A wrapper around the method to load user scripts, which is normally run on
-  // the file thread. Exposed only for tests.
-  void LoadScriptsForTest(UserScriptList* user_scripts);
 
   // Add |scripts| to the set of scripts managed by this loader.
   void AddScripts(const std::set<UserScript>& scripts);
+
+  // Add |scripts| to the set of scripts managed by this loader.
+  // The fetch of the content of the script starts URL request
+  // to the associated render specified by
+  // |render_process_id, render_view_id|.
+  // TODO(hanxi): The renderer information doesn't really belong in this base
+  // class, but it's not an easy fix.
+  virtual void AddScripts(const std::set<UserScript>& scripts,
+                          int render_process_id,
+                          int render_view_id);
 
   // Remove |scripts| from the set of scripts managed by this loader.
   void RemoveScripts(const std::set<UserScript>& scripts);
@@ -78,24 +75,16 @@ class UserScriptLoader : public content::NotificationObserver {
   // Returns true if we have any scripts ready.
   bool scripts_ready() const { return shared_memory_.get() != NULL; }
 
+  // Pickle user scripts and return pointer to the shared memory.
+  static scoped_ptr<base::SharedMemory> Serialize(
+      const extensions::UserScriptList& scripts);
+
  protected:
-  // Updates |hosts_info_| to contain info for each element of
-  // |changed_hosts_|.
-  virtual void UpdateHostsInfo(const std::set<HostID>& changed_hosts) = 0;
-
-  // Returns a function pointer of a static funcion to load user scripts.
-  // Derived classes can specify their ways to load scripts in the static
-  // function they return.
-  // Note: It has to be safe to call multiple times.
-  virtual LoadUserScriptsContentFunction GetLoadUserScriptsFunction() = 0;
-
-  // Adds the |host_id, location| to the |hosts_info_| map.
-  // Only inserts the entry to the map when the given host_id doesn't
-  // exists.
-  void AddHostInfo(const HostID& host_id, const PathAndDefaultLocale& location);
-
-  // Removes the entries with the given host_id from the |hosts_info_| map.
-  void RemoveHostInfo(const HostID& host_id);
+  // Allows the derived classes have different ways to load user scripts.
+  virtual void LoadScripts(scoped_ptr<UserScriptList> user_scripts,
+                           const std::set<HostID>& changed_hosts,
+                           const std::set<int>& added_script_ids,
+                           LoadScriptsCallback callback) = 0;
 
   // Sets the flag if the initial set of hosts has finished loading; if it's
   // set to be true, calls AttempLoad() to bootstrap.
@@ -144,9 +133,6 @@ class UserScriptLoader : public content::NotificationObserver {
   // List of scripts from currently-installed extensions we should load.
   scoped_ptr<UserScriptList> user_scripts_;
 
-  // Maps host info needed for localization to a host ID.
-  HostsInfo hosts_info_;
-
   // The mutually-exclusive sets of scripts that were added or removed since the
   // last script load.
   std::set<UserScript> added_scripts_;
@@ -177,9 +163,6 @@ class UserScriptLoader : public content::NotificationObserver {
   // ID of the host that owns these scripts, if any. This is only set to a
   // non-empty value for declarative user script shared memory regions.
   HostID host_id_;
-
-  // Manages content verification of the loaded user scripts.
-  scoped_refptr<ContentVerifier> content_verifier_;
 
   base::WeakPtrFactory<UserScriptLoader> weak_factory_;
 

@@ -16,12 +16,16 @@ class BrowserContext;
 
 namespace extensions {
 
+class ContentVerifier;
 class ExtensionRegistry;
 
 // UserScriptLoader for extensions.
 class ExtensionUserScriptLoader : public UserScriptLoader,
                                   public ExtensionRegistryObserver {
  public:
+  using PathAndDefaultLocale = std::pair<base::FilePath, std::string>;
+  using HostsInfo = std::map<HostID, PathAndDefaultLocale>;
+
   // The listen_for_extension_system_loaded is only set true when initilizing
   // the Extension System, e.g, when constructs SharedUserScriptMaster in
   // ExtensionSystemImpl.
@@ -30,10 +34,20 @@ class ExtensionUserScriptLoader : public UserScriptLoader,
                             bool listen_for_extension_system_loaded);
   ~ExtensionUserScriptLoader() override;
 
+  // A wrapper around the method to load user scripts, which is normally run on
+  // the file thread. Exposed only for tests.
+  void LoadScriptsForTest(UserScriptList* user_scripts);
+
  private:
   // UserScriptLoader:
-  void UpdateHostsInfo(const std::set<HostID>& changed_hosts) override;
-  LoadUserScriptsContentFunction GetLoadUserScriptsFunction() override;
+  void LoadScripts(scoped_ptr<UserScriptList> user_scripts,
+                   const std::set<HostID>& changed_hosts,
+                   const std::set<int>& added_script_ids,
+                   LoadScriptsCallback callback) override;
+
+  // Updates |hosts_info_| to contain info for each element of
+  //  |changed_hosts_|.
+  void UpdateHostsInfo(const std::set<HostID>& changed_hosts);
 
   // ExtensionRegistryObserver:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -43,6 +57,12 @@ class ExtensionUserScriptLoader : public UserScriptLoader,
   // Initiates script load when we have been waiting for the extension system
   // to be ready.
   void OnExtensionSystemReady();
+
+  // Maps host info needed for localization to a host ID.
+  HostsInfo hosts_info_;
+
+  // Manages content verification of the loaded user scripts.
+  scoped_refptr<ContentVerifier> content_verifier_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

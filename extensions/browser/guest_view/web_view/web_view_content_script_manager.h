@@ -38,6 +38,7 @@ class WebViewContentScriptManager : public base::SupportsUserData::Data {
   // Adds content scripts for the guest specified by the |embedder_web_contents,
   // view_instance_id|.
   void AddContentScripts(content::WebContents* embedder_web_contents,
+                         int embedder_routing_id,
                          int view_instance_id,
                          const HostID& host_id,
                          const std::set<UserScript>& user_scripts);

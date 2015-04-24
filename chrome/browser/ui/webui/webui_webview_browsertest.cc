@@ -52,3 +52,74 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCodeFromFile) {
       "testExecuteScriptCodeFromFile",
       new base::StringValue(GetTestUrl("empty.html").spec())));
 }
+
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScript) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testAddContentScript",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddMultiContentScripts) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testAddMultiContentScripts",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebUIWebViewBrowserTest,
+    AddContentScriptWithSameNameShouldOverwriteTheExistingOne) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testAddContentScriptWithSameNameShouldOverwriteTheExistingOne",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebUIWebViewBrowserTest,
+    AddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testAddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddAndRemoveContentScripts) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testAddAndRemoveContentScripts",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
+                       AddContentScriptsWithNewWindowAPI) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testAddContentScriptsWithNewWindowAPI",
+      new base::StringValue(GetTestUrl("guest_from_opener.html").spec())));
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
+                       ContentScriptIsInjectedAfterTerminateAndReloadWebView) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testContentScriptIsInjectedAfterTerminateAndReloadWebView",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
+                       ContentScriptExistsAsLongAsWebViewTagExists) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testContentScriptExistsAsLongAsWebViewTagExists",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}

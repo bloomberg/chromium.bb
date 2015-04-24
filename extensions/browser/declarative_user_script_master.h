@@ -5,8 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_DECLARATIVE_USER_SCRIPT_MASTER_H_
 #define EXTENSIONS_BROWSER_DECLARATIVE_USER_SCRIPT_MASTER_H_
 
+#include <set>
+
+#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
-#include "extensions/browser/extension_user_script_loader.h"
+#include "extensions/common/host_id.h"
 
 namespace content {
 class BrowserContext;
@@ -15,6 +18,7 @@ class BrowserContext;
 namespace extensions {
 
 class UserScript;
+class UserScriptLoader;
 
 // Manages declarative user scripts for a single extension. Owns a
 // UserScriptLoader to which file loading and shared memory management
@@ -30,9 +34,13 @@ class DeclarativeUserScriptMaster {
   // script load is in progress.
   void AddScript(const UserScript& script);
 
-  // Adds a set of scripts to shared memory region. This may not happen right
-  // away if a script load is in progress.
-  void AddScripts(const std::set<UserScript>& scripts);
+  // Adds a set of scripts to shared meomory region. The fetch of the content
+  // of the script on WebUI requires to start URL request to the associated
+  // render specified by |render_process_id, render_view_id|.
+  // This may not happen right away if a script load is in progress.
+  void AddScripts(const std::set<UserScript>& scripts,
+                  int render_process_id,
+                  int render_view_id);
 
   // Removes script from shared memory region. This may not happen right away if
   // a script load is in progress.
@@ -54,7 +62,7 @@ class DeclarativeUserScriptMaster {
 
   // Script loader that handles loading contents of scripts into shared memory
   // and notifying renderers of script updates.
-  ExtensionUserScriptLoader loader_;
+  scoped_ptr<UserScriptLoader> loader_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeUserScriptMaster);
 };

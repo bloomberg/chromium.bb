@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "extensions/browser/api/declarative/declarative_rule.h"
 #include "extensions/browser/declarative_user_script_master.h"
+#include "extensions/common/user_script.h"
 
 namespace base {
 class Time;

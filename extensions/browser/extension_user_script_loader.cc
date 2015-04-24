@@ -33,6 +33,8 @@ namespace extensions {
 
 namespace {
 
+using SubstitutionMap = std::map<std::string, std::string>;
+
 // Verifies file contents as they are read.
 void VerifyContent(const scoped_refptr<ContentVerifier>& verifier,
                    const std::string& extension_id,
@@ -50,11 +52,10 @@ void VerifyContent(const scoped_refptr<ContentVerifier>& verifier,
 }
 
 // Loads user scripts from the extension who owns these scripts.
-bool ExtensionLoadScriptContent(
-    const HostID& host_id,
-    UserScript::File* script_file,
-    const UserScriptLoader::SubstitutionMap* localization_messages,
-    const scoped_refptr<ContentVerifier>& verifier) {
+bool LoadScriptContent(const HostID& host_id,
+                       UserScript::File* script_file,
+                       const SubstitutionMap* localization_messages,
+                       const scoped_refptr<ContentVerifier>& verifier) {
   DCHECK(script_file);
   std::string content;
   const base::FilePath& path = ExtensionResource::GetFilePath(
@@ -108,15 +109,61 @@ bool ExtensionLoadScriptContent(
   return true;
 }
 
+SubstitutionMap* GetLocalizationMessages(
+    const ExtensionUserScriptLoader::HostsInfo& hosts_info,
+    const HostID& host_id) {
+  ExtensionUserScriptLoader::HostsInfo::const_iterator iter =
+      hosts_info.find(host_id);
+  if (iter == hosts_info.end())
+    return nullptr;
+  return file_util::LoadMessageBundleSubstitutionMap(
+      iter->second.first, host_id.id(), iter->second.second);
+}
+
+void LoadUserScripts(UserScriptList* user_scripts,
+                     const ExtensionUserScriptLoader::HostsInfo& hosts_info,
+                     const std::set<int>& added_script_ids,
+                     const scoped_refptr<ContentVerifier>& verifier) {
+  for (UserScript& script : *user_scripts) {
+    if (added_script_ids.count(script.id()) == 0)
+      continue;
+    scoped_ptr<SubstitutionMap> localization_messages(
+        GetLocalizationMessages(hosts_info, script.host_id()));
+    for (UserScript::File& script_file : script.js_scripts()) {
+      if (script_file.GetContent().empty())
+        LoadScriptContent(script.host_id(), &script_file, nullptr, verifier);
+    }
+    for (UserScript::File& script_file : script.css_scripts()) {
+      if (script_file.GetContent().empty())
+        LoadScriptContent(script.host_id(), &script_file,
+                          localization_messages.get(), verifier);
+    }
+  }
+}
+
+void LoadScriptsOnFileThread(
+    scoped_ptr<UserScriptList> user_scripts,
+    const ExtensionUserScriptLoader::HostsInfo& hosts_info,
+    const std::set<int>& added_script_ids,
+    const scoped_refptr<ContentVerifier>& verifier,
+    UserScriptLoader::LoadScriptsCallback callback) {
+  DCHECK(user_scripts.get());
+  LoadUserScripts(user_scripts.get(), hosts_info, added_script_ids, verifier);
+  scoped_ptr<base::SharedMemory> memory =
+      UserScriptLoader::Serialize(*user_scripts);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::Passed(&user_scripts), base::Passed(&memory)));
+}
+
 }  // namespace
 
 ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     BrowserContext* browser_context,
     const HostID& host_id,
     bool listen_for_extension_system_loaded)
-    : UserScriptLoader(
-          browser_context,
-          host_id,
+    : UserScriptLoader(browser_context, host_id),
+      content_verifier_(
           ExtensionSystem::Get(browser_context)->content_verifier()),
       extension_registry_observer_(this),
       weak_factory_(this) {
@@ -135,6 +182,30 @@ ExtensionUserScriptLoader::ExtensionUserScriptLoader(
 ExtensionUserScriptLoader::~ExtensionUserScriptLoader() {
 }
 
+void ExtensionUserScriptLoader::LoadScriptsForTest(
+    UserScriptList* user_scripts) {
+  HostsInfo info;
+  std::set<int> added_script_ids;
+  for (UserScript& script : *user_scripts)
+    added_script_ids.insert(script.id());
+
+  LoadUserScripts(user_scripts, info, added_script_ids,
+                  nullptr /* no verifier for testing */);
+}
+
+void ExtensionUserScriptLoader::LoadScripts(
+    scoped_ptr<UserScriptList> user_scripts,
+    const std::set<HostID>& changed_hosts,
+    const std::set<int>& added_script_ids,
+    LoadScriptsCallback callback) {
+  UpdateHostsInfo(changed_hosts);
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&LoadScriptsOnFileThread, base::Passed(&user_scripts),
+                 hosts_info_, added_script_ids, content_verifier_, callback));
+}
+
 void ExtensionUserScriptLoader::UpdateHostsInfo(
     const std::set<HostID>& changed_hosts) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
@@ -145,22 +216,18 @@ void ExtensionUserScriptLoader::UpdateHostsInfo(
     // which leads to the above lookup failing. In this case, just continue.
     if (!extension)
       continue;
-    AddHostInfo(host_id, ExtensionSet::ExtensionPathAndDefaultLocale(
-                             extension->path(),
-                             LocaleInfo::GetDefaultLocale(extension)));
+    if (hosts_info_.find(host_id) != hosts_info_.end())
+      continue;
+    hosts_info_[host_id] = ExtensionSet::ExtensionPathAndDefaultLocale(
+        extension->path(), LocaleInfo::GetDefaultLocale(extension));
   }
-}
-
-UserScriptLoader::LoadUserScriptsContentFunction
-ExtensionUserScriptLoader::GetLoadUserScriptsFunction() {
-  return base::Bind(&ExtensionLoadScriptContent);
 }
 
 void ExtensionUserScriptLoader::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  RemoveHostInfo(HostID(HostID::EXTENSIONS, extension->id()));
+  hosts_info_.erase(HostID(HostID::EXTENSIONS, extension->id()));
 }
 
 void ExtensionUserScriptLoader::OnExtensionSystemReady() {

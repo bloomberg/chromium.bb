@@ -8,6 +8,7 @@
 #include "extensions/browser/api/capture_web_contents_function.h"
 #include "extensions/browser/api/execute_code_function.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/browser/guest_view/web_view/web_ui/web_ui_url_fetcher.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
 // WARNING: WebViewInternal could be loaded in an unblessed context, thus any
@@ -54,11 +55,6 @@ class WebViewInternalExecuteCodeFunction
     : public extensions::ExecuteCodeFunction {
  public:
   WebViewInternalExecuteCodeFunction();
-  // Called when a file URL request is complete.
-  // Parameters:
-  // - whether the request is success.
-  // - If yes, the content of the file.
-  using WebUILoadFileCallback = base::Callback<void(bool, const std::string&)>;
 
  protected:
   ~WebViewInternalExecuteCodeFunction() override;
@@ -74,11 +70,9 @@ class WebViewInternalExecuteCodeFunction
   bool LoadFile(const std::string& file) override;
 
  private:
-  class WebUIURLFetcher;
-
   // Loads a file url on WebUI.
   bool LoadFileForWebUI(const std::string& file_src,
-                        const WebUILoadFileCallback& callback);
+                        const WebUIURLFetcher::WebUILoadFileCallback& callback);
 
   // Contains extension resource built from path of file which is
   // specified in JSON arguments.
