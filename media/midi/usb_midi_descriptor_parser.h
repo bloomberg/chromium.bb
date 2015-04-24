@@ -5,6 +5,7 @@
 #ifndef MEDIA_MIDI_USB_MIDI_DESCRIPTOR_PARSER_H_
 #define MEDIA_MIDI_USB_MIDI_DESCRIPTOR_PARSER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -21,6 +22,24 @@ class UsbMidiDevice;
 // for collecting USB-MIDI jacks information from the descriptor.
 class MEDIA_EXPORT UsbMidiDescriptorParser {
  public:
+  struct DeviceInfo {
+    DeviceInfo()
+        : vendor_id(0),
+          product_id(0),
+          bcd_device_version(0),
+          manufacturer_index(0),
+          product_index(0) {}
+    uint16 vendor_id;
+    uint16 product_id;
+    // The higher one byte represents the "major" number and the lower one byte
+    // represents the "minor" number.
+    uint16 bcd_device_version;
+    uint8 manufacturer_index;
+    uint8 product_index;
+
+    static std::string BcdVersionToString(uint16);
+  };
+
   UsbMidiDescriptorParser();
   ~UsbMidiDescriptorParser();
 
@@ -32,11 +51,14 @@ class MEDIA_EXPORT UsbMidiDescriptorParser {
              size_t size,
              std::vector<UsbMidiJack>* jacks);
 
+  bool ParseDeviceInfo(const uint8* data, size_t size, DeviceInfo* info);
+
  private:
   bool ParseInternal(UsbMidiDevice* device,
                      const uint8* data,
                      size_t size,
                      std::vector<UsbMidiJack>* jacks);
+  bool ParseDevice(const uint8* data, size_t size, DeviceInfo* info);
   bool ParseInterface(const uint8* data, size_t size);
   bool ParseCSInterface(UsbMidiDevice* device, const uint8* data, size_t size);
   bool ParseEndpoint(const uint8* data, size_t size);

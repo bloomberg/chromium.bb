@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 
 namespace media {
 
@@ -58,7 +59,19 @@ class JackMatcher {
   uint8 id_;
 };
 
+int DecodeBcd(uint8 byte) {
+  DCHECK_LT((byte & 0xf0) >> 4, 0xa);
+  DCHECK_LT(byte & 0x0f, 0xa);
+  return ((byte & 0xf0) >> 4) * 10 + (byte & 0x0f);
+}
+
 }  // namespace
+
+std::string UsbMidiDescriptorParser::DeviceInfo::BcdVersionToString(
+    uint16 version) {
+  return base::StringPrintf("%d.%02d", DecodeBcd(version >> 8),
+                            DecodeBcd(version & 0xff));
+}
 
 UsbMidiDescriptorParser::UsbMidiDescriptorParser()
     : is_parsing_usb_midi_interface_(false),
@@ -77,6 +90,31 @@ bool UsbMidiDescriptorParser::Parse(UsbMidiDevice* device,
     jacks->clear();
   Clear();
   return result;
+}
+
+bool UsbMidiDescriptorParser::ParseDeviceInfo(
+    const uint8* data, size_t size, DeviceInfo* info) {
+  *info = DeviceInfo();
+  for (const uint8* current = data;
+       current < data + size;
+       current += current[0]) {
+    uint8 length = current[0];
+    if (length < 2) {
+      DVLOG(1) << "Descriptor Type is not accessible.";
+      return false;
+    }
+    if (current + length > data + size) {
+      DVLOG(1) << "The header size is incorrect.";
+      return false;
+    }
+    DescriptorType descriptor_type = static_cast<DescriptorType>(current[1]);
+    if (descriptor_type != TYPE_DEVICE)
+      continue;
+    // We assume that ParseDevice doesn't modify |*info| if it returns false.
+    return ParseDevice(current, length, info);
+  }
+  // No DEVICE descriptor is found.
+  return false;
 }
 
 bool UsbMidiDescriptorParser::ParseInternal(UsbMidiDevice* device,
@@ -126,6 +164,21 @@ bool UsbMidiDescriptorParser::ParseInternal(UsbMidiDevice* device,
         break;
     }
   }
+  return true;
+}
+
+bool UsbMidiDescriptorParser::ParseDevice(
+    const uint8* data, size_t size, DeviceInfo* info) {
+  if (size < 0x12) {
+    DVLOG(1) << "DEVICE header size is incorrect.";
+    return false;
+  }
+
+  info->vendor_id = data[8] | (data[9] << 8);
+  info->product_id = data[0xa] | (data[0xb] << 8);
+  info->bcd_device_version = data[0xc] | (data[0xd] << 8);
+  info->manufacturer_index = data[0xe];
+  info->product_index = data[0xf];
   return true;
 }
 

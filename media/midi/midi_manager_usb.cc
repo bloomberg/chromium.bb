@@ -124,7 +124,7 @@ void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
 
 bool MidiManagerUsb::AddPorts(UsbMidiDevice* device, int device_id) {
   UsbMidiDescriptorParser parser;
-  std::vector<uint8> descriptor = device->GetDescriptor();
+  std::vector<uint8> descriptor = device->GetDescriptors();
   const uint8* data = descriptor.size() > 0 ? &descriptor[0] : NULL;
   std::vector<UsbMidiJack> jacks;
   bool parse_result = parser.Parse(device,
@@ -134,30 +134,25 @@ bool MidiManagerUsb::AddPorts(UsbMidiDevice* device, int device_id) {
   if (!parse_result)
     return false;
 
+  std::string manufacturer(device->GetManufacturer());
+  std::string product_name(device->GetProductName());
+  std::string version(device->GetDeviceVersion());
+
   for (size_t j = 0; j < jacks.size(); ++j) {
+    // Port ID must be unique in a MIDI manager. This ID setting is
+    // sufficiently unique although there is no user-friendly meaning.
+    // TODO(yhirano): Use a hashed string as ID.
+    std::string id(
+        base::StringPrintf("port-%d-%ld", device_id, static_cast<long>(j)));
     if (jacks[j].direction() == UsbMidiJack::DIRECTION_OUT) {
       output_streams_.push_back(new UsbMidiOutputStream(jacks[j]));
-      // TODO(yhirano): Set appropriate properties.
-      // TODO(yhiran): Port ID should contain product ID / vendor ID.
-      // Port ID must be unique in a MIDI manager. This (and the below) ID
-      // setting is sufficiently unique although there is no user-friendly
-      // meaning.
-      MidiPortInfo port;
-      port.state = MIDI_PORT_OPENED;
-      port.id = base::StringPrintf("port-%d-%ld",
-                                   device_id,
-                                   static_cast<long>(j));
-      AddOutputPort(port);
+      AddOutputPort(MidiPortInfo(id, manufacturer, product_name, version,
+                                 MIDI_PORT_OPENED));
     } else {
       DCHECK_EQ(jacks[j].direction(), UsbMidiJack::DIRECTION_IN);
       input_stream_->Add(jacks[j]);
-      // TODO(yhirano): Set appropriate properties.
-      MidiPortInfo port;
-      port.state = MIDI_PORT_OPENED;
-      port.id = base::StringPrintf("port-%d-%ld",
-                                   device_id,
-                                   static_cast<long>(j));
-      AddInputPort(port);
+      AddInputPort(MidiPortInfo(id, manufacturer, product_name, version,
+                                MIDI_PORT_OPENED));
     }
   }
   return true;

@@ -13,7 +13,7 @@ namespace {
 TEST(UsbMidiDescriptorParserTest, ParseEmpty) {
   UsbMidiDescriptorParser parser;
   std::vector<UsbMidiJack> jacks;
-  EXPECT_TRUE(parser.Parse(NULL, NULL, 0, &jacks));
+  EXPECT_TRUE(parser.Parse(nullptr, nullptr, 0, &jacks));
   EXPECT_TRUE(jacks.empty());
 }
 
@@ -21,7 +21,7 @@ TEST(UsbMidiDescriptorParserTest, InvalidSize) {
   UsbMidiDescriptorParser parser;
   std::vector<UsbMidiJack> jacks;
   uint8 data[] = {0x04};
-  EXPECT_FALSE(parser.Parse(NULL, data, arraysize(data), &jacks));
+  EXPECT_FALSE(parser.Parse(nullptr, data, arraysize(data), &jacks));
   EXPECT_TRUE(jacks.empty());
 }
 
@@ -35,7 +35,7 @@ TEST(UsbMidiDescriptorParserTest, NonExistingJackIsAssociated) {
     0x24, 0x01, 0x00, 0x01, 0x07, 0x00, 0x05, 0x25, 0x01, 0x01,
     0x01,
   };
-  EXPECT_FALSE(parser.Parse(NULL, data, arraysize(data), &jacks));
+  EXPECT_FALSE(parser.Parse(nullptr, data, arraysize(data), &jacks));
   EXPECT_TRUE(jacks.empty());
 }
 
@@ -50,7 +50,7 @@ TEST(UsbMidiDescriptorParserTest,
     0x24, 0x01, 0x00, 0x01, 0x07, 0x00, 0x05, 0x25, 0x01, 0x01,
     0x01,
   };
-  EXPECT_TRUE(parser.Parse(NULL, data, arraysize(data), &jacks));
+  EXPECT_TRUE(parser.Parse(nullptr, data, arraysize(data), &jacks));
   EXPECT_TRUE(jacks.empty());
 }
 
@@ -74,26 +74,48 @@ TEST(UsbMidiDescriptorParserTest, Parse) {
     0x03, 0x09, 0x05, 0x82, 0x02, 0x20, 0x00, 0x00, 0x00, 0x00,
     0x05, 0x25, 0x01, 0x01, 0x07,
   };
-  EXPECT_TRUE(parser.Parse(NULL, data, arraysize(data), &jacks));
+  EXPECT_TRUE(parser.Parse(nullptr, data, arraysize(data), &jacks));
   ASSERT_EQ(3u, jacks.size());
 
   EXPECT_EQ(2u, jacks[0].jack_id);
   EXPECT_EQ(0u, jacks[0].cable_number);
   EXPECT_EQ(2u, jacks[0].endpoint_number());
   EXPECT_EQ(UsbMidiJack::DIRECTION_OUT, jacks[0].direction());
-  EXPECT_EQ(NULL, jacks[0].device);
+  EXPECT_EQ(nullptr, jacks[0].device);
 
   EXPECT_EQ(3u, jacks[1].jack_id);
   EXPECT_EQ(1u, jacks[1].cable_number);
   EXPECT_EQ(2u, jacks[1].endpoint_number());
   EXPECT_EQ(UsbMidiJack::DIRECTION_OUT, jacks[1].direction());
-  EXPECT_EQ(NULL, jacks[1].device);
+  EXPECT_EQ(nullptr, jacks[1].device);
 
   EXPECT_EQ(7u, jacks[2].jack_id);
   EXPECT_EQ(0u, jacks[2].cable_number);
   EXPECT_EQ(2u, jacks[2].endpoint_number());
   EXPECT_EQ(UsbMidiJack::DIRECTION_IN, jacks[2].direction());
-  EXPECT_EQ(NULL, jacks[2].device);
+  EXPECT_EQ(nullptr, jacks[2].device);
+}
+
+TEST(UsbMidiDescriptorParserTest, ParseDeviceInfoEmpty) {
+  UsbMidiDescriptorParser parser;
+  UsbMidiDescriptorParser::DeviceInfo info;
+  EXPECT_FALSE(parser.ParseDeviceInfo(nullptr, 0, &info));
+}
+
+TEST(UsbMidiDescriptorParserTest, ParseDeviceInfo) {
+  UsbMidiDescriptorParser parser;
+  UsbMidiDescriptorParser::DeviceInfo info;
+  uint8 data[] = {
+    0x12, 0x01, 0x10, 0x01, 0x00, 0x00, 0x00, 0x08, 0x01, 0x23,
+    0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x00, 0x0a,
+  };
+  EXPECT_TRUE(parser.ParseDeviceInfo(data, arraysize(data), &info));
+
+  EXPECT_EQ(0x2301, info.vendor_id);
+  EXPECT_EQ(0x6745, info.product_id);
+  EXPECT_EQ(0xab89, info.bcd_device_version);
+  EXPECT_EQ(0xcd, info.manufacturer_index);
+  EXPECT_EQ(0xef, info.product_index);
 }
 
 }  // namespace

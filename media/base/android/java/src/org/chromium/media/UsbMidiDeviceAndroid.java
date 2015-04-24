@@ -20,6 +20,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,6 +74,16 @@ class UsbMidiDeviceAndroid {
      * Audio interface subclass code for MIDI.
      */
     static final int MIDI_SUBCLASS = 3;
+
+    /**
+     * The request type to request a USB descriptor.
+     */
+    static final int REQUEST_GET_DESCRIPTOR = 0x06;
+
+    /**
+     * The STRING descriptor type.
+     */
+    static final int STRING_DESCRIPTOR_TYPE = 0x03;
 
     /**
      * Constructs a UsbMidiDeviceAndroid.
@@ -255,6 +266,27 @@ class UsbMidiDeviceAndroid {
             return new byte[0];
         }
         return mConnection.getRawDescriptors();
+    }
+
+    /**
+     * Returns the string descriptor bytes for the given index
+     * @param index index of the descriptor
+     * @return the string descriptor bytes for the given index.
+     */
+    @CalledByNative
+    byte[] getStringDescriptor(int index) {
+        if (mConnection == null) {
+            return new byte[0];
+        }
+        byte[] buffer = new byte[255];
+        int type = UsbConstants.USB_DIR_IN | UsbConstants.USB_TYPE_STANDARD;
+        int request = REQUEST_GET_DESCRIPTOR;
+        int value = (STRING_DESCRIPTOR_TYPE << 8) | index;
+        int read = mConnection.controlTransfer(type, request, value, 0, buffer, buffer.length, 0);
+        if (read < 0) {
+            return new byte[0];
+        }
+        return Arrays.copyOf(buffer, read);
     }
 
     /**

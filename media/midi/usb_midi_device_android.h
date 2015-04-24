@@ -6,6 +6,7 @@
 #define MEDIA_MIDI_USB_MIDI_DEVICE_ANDROID_H_
 
 #include <jni.h>
+#include <string>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
@@ -26,7 +27,10 @@ class MEDIA_EXPORT UsbMidiDeviceAndroid : public UsbMidiDevice {
   ~UsbMidiDeviceAndroid() override;
 
   // UsbMidiDevice implementation.
-  std::vector<uint8> GetDescriptor() override;
+  std::vector<uint8> GetDescriptors() override;
+  std::string GetManufacturer() override;
+  std::string GetProductName() override;
+  std::string GetDeviceVersion() override;
   void Send(int endpoint_number, const std::vector<uint8>& data) override;
 
   // Called by the Java world.
@@ -38,9 +42,19 @@ class MEDIA_EXPORT UsbMidiDeviceAndroid : public UsbMidiDevice {
   static bool RegisterUsbMidiDevice(JNIEnv* env);
 
  private:
+  void GetDescriptorsInternal();
+  void InitDeviceInfo();
+  std::vector<uint8> GetStringDescriptor(int index);
+  std::string GetString(int index, const std::string& backup);
+
   // The actual device object.
   base::android::ScopedJavaGlobalRef<jobject> raw_device_;
   UsbMidiDeviceDelegate* delegate_;
+
+  std::vector<uint8> descriptors_;
+  std::string manufacturer_;
+  std::string product_;
+  std::string device_version_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(UsbMidiDeviceAndroid);
 };

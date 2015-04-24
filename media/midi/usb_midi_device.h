@@ -66,8 +66,17 @@ class MEDIA_EXPORT UsbMidiDevice {
 
   virtual ~UsbMidiDevice() {}
 
-  // Returns the descriptor of this device.
-  virtual std::vector<uint8> GetDescriptor() = 0;
+  // Returns the descriptors of this device.
+  virtual std::vector<uint8> GetDescriptors() = 0;
+
+  // Return the name of the manufacturer.
+  virtual std::string GetManufacturer() = 0;
+
+  // Retur the name of the device.
+  virtual std::string GetProductName() = 0;
+
+  // Return the device version.
+  virtual std::string GetDeviceVersion() = 0;
 
   // Sends |data| to the given USB endpoint of this device.
   virtual void Send(int endpoint_number, const std::vector<uint8>& data) = 0;
