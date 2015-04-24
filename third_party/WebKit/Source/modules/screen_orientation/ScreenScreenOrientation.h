@@ -6,6 +6,7 @@
 #define ScreenScreenOrientation_h
 
 #include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -13,13 +14,10 @@ class ScreenOrientation;
 class Screen;
 class ScriptState;
 
-class ScreenScreenOrientation final
-    : public NoBaseWillBeGarbageCollectedFinalized<ScreenScreenOrientation>
-    , public WillBeHeapSupplement<Screen> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenScreenOrientation);
+class ScreenScreenOrientation final : public GarbageCollected<ScreenScreenOrientation>, public HeapSupplement<Screen> {
+    USING_GARBAGE_COLLECTED_MIXIN(ScreenScreenOrientation);
 public:
     static ScreenScreenOrientation& from(Screen&);
-    virtual ~ScreenScreenOrientation();
 
     static ScreenOrientation* orientation(ScriptState*, Screen&);
 
@@ -28,7 +26,7 @@ public:
 private:
     static const char* supplementName();
 
-    PersistentWillBeMember<ScreenOrientation> m_orientation;
+    Member<ScreenOrientation> m_orientation;
 };
 
 } // namespace blink

@@ -34,20 +34,19 @@
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
 class LocalFrame;
 
-class Screen final : public RefCountedWillBeGarbageCollected<Screen>, public ScriptWrappable, public DOMWindowProperty, public WillBeHeapSupplementable<Screen> {
+// TODO(Oilpan): when ~DOMWindowProperty is removed, derive from GarbageCollected<> instead.
+class Screen final : public GarbageCollectedFinalized<Screen>, public ScriptWrappable, public DOMWindowProperty, public HeapSupplementable<Screen> {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Screen);
+    USING_GARBAGE_COLLECTED_MIXIN(Screen);
 public:
-    static PassRefPtrWillBeRawPtr<Screen> create(LocalFrame* frame)
+    static Screen* create(LocalFrame* frame)
     {
-        return adoptRefWillBeNoop(new Screen(frame));
+        return new Screen(frame);
     }
 
     unsigned height() const;

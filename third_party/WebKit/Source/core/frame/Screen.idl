@@ -28,7 +28,7 @@
 
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface Screen {
     readonly attribute unsigned long height;
     readonly attribute unsigned long width;
@@ -39,4 +39,3 @@
     readonly attribute unsigned long availHeight;
     readonly attribute unsigned long availWidth;
 };
-

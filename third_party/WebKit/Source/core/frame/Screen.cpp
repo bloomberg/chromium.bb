@@ -120,9 +120,7 @@ unsigned Screen::availWidth() const
 
 DEFINE_TRACE(Screen)
 {
-#if ENABLE(OILPAN)
     HeapSupplementable<Screen>::trace(visitor);
-#endif
     DOMWindowProperty::trace(visitor);
 }
 

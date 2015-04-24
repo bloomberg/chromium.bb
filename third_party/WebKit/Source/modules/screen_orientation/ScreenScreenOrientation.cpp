@@ -14,16 +14,12 @@ namespace blink {
 // static
 ScreenScreenOrientation& ScreenScreenOrientation::from(Screen& screen)
 {
-    ScreenScreenOrientation* supplement = static_cast<ScreenScreenOrientation*>(WillBeHeapSupplement<Screen>::from(screen, supplementName()));
+    ScreenScreenOrientation* supplement = static_cast<ScreenScreenOrientation*>(HeapSupplement<Screen>::from(screen, supplementName()));
     if (!supplement) {
         supplement = new ScreenScreenOrientation();
-        provideTo(screen, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(screen, supplementName(), supplement);
     }
     return *supplement;
-}
-
-ScreenScreenOrientation::~ScreenScreenOrientation()
-{
 }
 
 // static
@@ -31,12 +27,12 @@ ScreenOrientation* ScreenScreenOrientation::orientation(ScriptState* state, Scre
 {
     ScreenScreenOrientation& self = ScreenScreenOrientation::from(screen);
     if (!screen.frame())
-        return 0;
+        return nullptr;
 
     if (!self.m_orientation)
         self.m_orientation = ScreenOrientation::create(screen.frame());
 
-    return self.m_orientation.get();
+    return self.m_orientation;
 }
 
 const char* ScreenScreenOrientation::supplementName()
@@ -47,7 +43,7 @@ const char* ScreenScreenOrientation::supplementName()
 DEFINE_TRACE(ScreenScreenOrientation)
 {
     visitor->trace(m_orientation);
-    WillBeHeapSupplement<Screen>::trace(visitor);
+    HeapSupplement<Screen>::trace(visitor);
 }
 
 } // namespace blink
