@@ -17,8 +17,16 @@ class ASH_EXPORT ScreenRotationAnimator {
   explicit ScreenRotationAnimator(int64 display_id);
   ~ScreenRotationAnimator();
 
-  // Rotates |display_| to the |new_rotation| orientation, for the given
-  // |source|. The rotation will also become active.
+  // Returns true if the screen rotation animation can be completed
+  // successfully. For example an animation is not possible if |display_id_|
+  // specifies a gfx::Display that is not currently active. See
+  // www.crbug.com/479503.
+  bool CanAnimate() const;
+
+  // Rotates the gfx::Display specified by |display_id_| to the |new_rotation|
+  // orientation, for the given |source|. The rotation will also become active.
+  // Clients should only call |Rotate(gfx::Display::Rotation)| if |CanAnimate()|
+  // returns true.
   void Rotate(gfx::Display::Rotation new_rotation,
               gfx::Display::RotationSource source);
 

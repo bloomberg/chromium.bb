@@ -279,6 +279,13 @@ ScreenRotationAnimator::ScreenRotationAnimator(int64 display_id)
 ScreenRotationAnimator::~ScreenRotationAnimator() {
 }
 
+bool ScreenRotationAnimator::CanAnimate() const {
+  return Shell::GetInstance()
+      ->display_manager()
+      ->GetDisplayForId(display_id_)
+      .is_valid();
+}
+
 void ScreenRotationAnimator::Rotate(gfx::Display::Rotation new_rotation,
                                     gfx::Display::RotationSource source) {
   const gfx::Display::Rotation current_rotation =

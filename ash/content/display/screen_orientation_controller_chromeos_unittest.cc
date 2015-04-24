@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "ash/ash_switches.h"
 #include "ash/content/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/display_info.h"
@@ -9,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
@@ -34,6 +37,12 @@ namespace {
 
 const float kDegreesToRadians = 3.1415926f / 180.0f;
 const float kMeanGravity = 9.8066f;
+
+DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
+  DisplayInfo info(id, "dummy", false);
+  info.SetBounds(bounds);
+  return info;
+}
 
 void EnableMaximizeMode(bool enable) {
   Shell::GetInstance()
@@ -593,6 +602,50 @@ TEST_F(ScreenOrientationControllerTest, InternalDisplayNotAvailableAtStartup) {
   gfx::Display::SetInternalDisplayId(internal_display_id);
   SetInternalDisplayRotation(gfx::Display::ROTATE_90);
   EXPECT_TRUE(RotationLocked());
+}
+
+// Verifies rotating an inactive Display is sucessful.
+TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
+  const int64 kInternalDisplayId = 9;
+  const int64 kExternalDisplayId = 10;
+  const gfx::Display::Rotation kNewRotation = gfx::Display::ROTATE_180;
+
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+
+  const DisplayInfo internal_display_info =
+      CreateDisplayInfo(kInternalDisplayId, gfx::Rect(0, 0, 500, 500));
+  const DisplayInfo external_display_info =
+      CreateDisplayInfo(kExternalDisplayId, gfx::Rect(1, 1, 500, 500));
+
+  std::vector<DisplayInfo> display_info_list_two_active;
+  display_info_list_two_active.push_back(internal_display_info);
+  display_info_list_two_active.push_back(external_display_info);
+
+  std::vector<DisplayInfo> display_info_list_one_active;
+  display_info_list_one_active.push_back(external_display_info);
+
+  // The DisplayInfo list with two active displays needs to be added first so
+  // that the DisplayManager can track the |internal_display_info| as inactive
+  // instead of non-existent.
+  ash::Shell::GetInstance()->display_manager()->UpdateDisplays(
+      display_info_list_two_active);
+  ash::Shell::GetInstance()->display_manager()->UpdateDisplays(
+      display_info_list_one_active);
+
+  test::DisplayManagerTestApi(display_manager)
+      .SetInternalDisplayId(kInternalDisplayId);
+
+  ASSERT_NE(kNewRotation, display_manager->GetDisplayInfo(kInternalDisplayId)
+                              .GetActiveRotation());
+
+  delegate()->SetDisplayRotation(kNewRotation,
+                                 gfx::Display::ROTATION_SOURCE_ACTIVE);
+
+  // TODO(bruthig): Uncomment when www.crbug.com/480703 is fixed. This test
+  // still adds value by ensuring a crash does not occur. See
+  // www.crbug.com/479503.
+  // ASSERT_EQ(kNewRotation, display_manager->GetDisplayInfo(kInternalDisplayId)
+  //     .GetActiveRotation());
 }
 
 }  // namespace ash
