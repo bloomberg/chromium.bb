@@ -29,10 +29,42 @@ Note: If paths to input files are passed in this way, it is important that:
 import optparse
 import os
 import sys
+import xml.dom.minidom
 
 from util import build_utils
 
 import write_ordered_libraries
+
+class AndroidManifest(object):
+  def __init__(self, path):
+    self.path = path
+    dom = xml.dom.minidom.parse(path)
+    manifests = dom.getElementsByTagName('manifest')
+    assert len(manifests) == 1
+    self.manifest = manifests[0]
+
+  def GetInstrumentation(self):
+    instrumentation_els = self.manifest.getElementsByTagName('instrumentation')
+    if len(instrumentation_els) == 0:
+      return None
+    if len(instrumentation_els) != 1:
+      raise Exception(
+          'More than one <instrumentation> element found in %s' % self.path)
+    return instrumentation_els[0]
+
+  def CheckInstrumentation(self, expected_package):
+    instr = self.GetInstrumentation()
+    if not instr:
+      raise Exception('No <instrumentation> elements found in %s' % self.path)
+    instrumented_package = instr.getAttributeNS(
+        'http://schemas.android.com/apk/res/android', 'targetPackage')
+    if instrumented_package != expected_package:
+      raise Exception(
+          'Wrong instrumented package. Expected %s, got %s'
+          % (expected_package, instrumented_package))
+
+  def GetPackageName(self):
+    return self.manifest.getAttribute('package')
 
 
 dep_config_cache = {}
@@ -158,7 +190,6 @@ def main(argv):
   }
   deps_info = config['deps_info']
 
-
   if options.type == 'java_library' and not options.bypass_platform_checks:
     deps_info['requires_android'] = options.requires_android
     deps_info['supports_android'] = options.supports_android
@@ -175,7 +206,6 @@ def main(argv):
     if deps_not_support_android and options.supports_android:
       raise Exception('Not all deps support the Android platform: ' +
           str(deps_not_support_android))
-
 
   if options.type in ['java_library', 'android_apk']:
     javac_classpath = [c['jar_path'] for c in direct_library_deps]
@@ -234,6 +264,10 @@ def main(argv):
     deps_dex_files = [
         p for p in deps_dex_files if not p in tested_apk_deps_dex_files]
 
+    tested_apk_config = GetDepConfig(options.tested_apk_config)
+    expected_tested_package = tested_apk_config['package_name']
+    AndroidManifest(options.android_manifest).CheckInstrumentation(
+        expected_tested_package)
 
   # Dependencies for the final dex file of an apk or a 'deps_dex'.
   if options.type in ['android_apk', 'deps_dex']:
@@ -242,13 +276,17 @@ def main(argv):
     # TODO(cjhopman): proguard version
     dex_config['dependency_dex_files'] = deps_dex_files
 
-
   if options.type == 'android_apk':
     config['dist_jar'] = {
       'dependency_jars': [
         c['jar_path'] for c in all_library_deps
       ]
     }
+    manifest = AndroidManifest(options.android_manifest)
+    deps_info['package_name'] = manifest.GetPackageName()
+    if not options.tested_apk_config and manifest.GetInstrumentation():
+      # This must then have instrumentation only for itself.
+      manifest.CheckInstrumentation(manifest.GetPackageName())
 
     library_paths = []
     java_libraries_list = []

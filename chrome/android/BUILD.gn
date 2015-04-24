@@ -451,6 +451,7 @@ android_library("chrome_shell_test_java") {
 # GYP: //chrome/chrome_tests.gypi:chrome_shell_test_apk
 android_apk("chrome_shell_test_apk") {
   testonly = true
+  apk_under_test = ":chrome_shell_apk"
   deps = [
     ":chrome_javatests",
     ":chrome_shell_test_java",
@@ -477,6 +478,7 @@ if (false) {
   # TODO(GYP): We need sync/sync_tests.gypi:test_support_sync_proto_java to be ported.
   # crbug.com/475612
   android_apk("chrome_sync_shell_test_apk") {
+    apk_under_test = ":chrome_sync_shell_apk"
     testonly = true
     deps = [
       ":chrome_java",

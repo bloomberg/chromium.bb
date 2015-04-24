@@ -314,6 +314,8 @@ template("write_build_config") {
           "--android-manifest",
           rebase_path(invoker.android_manifest, root_build_dir),
         ]
+      } else {
+        assert(!is_apk, "apk build configs require an android_manifest")
       }
       if (defined(invoker.custom_package)) {
         args += [

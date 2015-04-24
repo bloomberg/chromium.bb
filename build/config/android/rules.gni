@@ -1194,6 +1194,7 @@ template("android_apk") {
   }
 
   assert(defined(invoker.final_apk_path) || defined(invoker.apk_name))
+  assert(defined(invoker.android_manifest))
   gen_dir = "$target_gen_dir/$target_name"
   base_path = "$gen_dir/$target_name"
   _build_config = "$target_gen_dir/$target_name.build_config"
@@ -1279,6 +1280,7 @@ template("android_apk") {
     }
   }
 
+  _android_manifest = invoker.android_manifest
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
 
   write_build_config("${_template_name}__build_config") {
@@ -1286,6 +1288,7 @@ template("android_apk") {
     dex_path = final_dex_path
     resources_zip = resources_zip_path
     build_config = _build_config
+    android_manifest = _android_manifest
 
     if (defined(invoker.deps)) {
       deps = invoker.deps
@@ -1303,7 +1306,7 @@ template("android_apk") {
   final_deps += [ ":${_template_name}__process_resources" ]
   process_resources("${_template_name}__process_resources") {
     srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
-    android_manifest = invoker.android_manifest
+    android_manifest = _android_manifest
     resource_dirs = [ "//build/android/ant/empty/res" ]
     zip_path = resources_zip_path
     generate_constant_ids = true
@@ -1349,7 +1352,7 @@ template("android_apk") {
     supports_android = true
     requires_android = true
     override_build_config = _build_config
-    android_manifest = invoker.android_manifest
+    android_manifest = _android_manifest
     chromium_code = true
     if (defined(invoker.java_files)) {
       java_files = invoker.java_files
@@ -1457,7 +1460,7 @@ template("android_apk") {
   final_deps += [ ":${_template_name}__create" ]
   create_apk("${_template_name}__create") {
     apk_path = _final_apk_path
-    android_manifest = invoker.android_manifest
+    android_manifest = _android_manifest
     resources_zip = all_resources_zip_path
     dex_path = final_dex_path
     load_library_from_apk = _load_library_from_apk
@@ -1550,8 +1553,7 @@ template("unittest_apk") {
   }
 
   android_apk(target_name) {
-    _apk_name = apk_name
-    final_apk_path = "$root_build_dir/${_apk_name}_apk/${_apk_name}-debug.apk"
+    final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
     java_files = [
       "//testing/android/native_test/java/src/org/chromium/native_test/ChromeNativeTestActivity.java",
       "//testing/android/native_test/java/src/org/chromium/native_test/ChromeNativeTestInstrumentationTestRunner.java",
