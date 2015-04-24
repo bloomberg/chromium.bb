@@ -55,7 +55,7 @@ public:
     virtual ~ScriptDebugServer();
     DECLARE_VIRTUAL_TRACE();
 
-    void enable();
+    bool enable();
     void disable();
 
     static void setContextDebugData(v8::Local<v8::Context>, const String& contextDebugData);
@@ -131,7 +131,7 @@ protected:
 
 private:
     bool enabled() const;
-    void ensureDebuggerScriptCompiled();
+    bool ensureDebuggerScriptCompiled();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
     v8::Local<v8::Object> debuggerScriptLocal() const;
     void clearBreakpoints();

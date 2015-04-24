@@ -64,7 +64,9 @@ void WorkerScriptDebugServer::setContextDebugData(v8::Local<v8::Context> context
 void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
 {
     ASSERT(!m_listener);
-    enable();
+    // enable() may fail when the worker thread is stopping.
+    if (!enable())
+        return;
     m_listener = listener;
     reportCompiledScripts(workerContextDebugId, listener);
 }
