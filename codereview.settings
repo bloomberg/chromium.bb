@@ -1,0 +1,5 @@
+CODE_REVIEW_SERVER: webrtc-codereview.appspot.com
+CC_LIST: webrtc-reviews@webrtc.org
+VIEW_VC: https://chromium.googlesource.com/external/webrtc/deps/third_party/openmax/+/
+TRY_ON_UPLOAD: False
+PROJECT: webrtc
