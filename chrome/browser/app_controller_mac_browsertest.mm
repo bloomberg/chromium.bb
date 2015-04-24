@@ -22,11 +22,13 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
+#include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -77,6 +79,13 @@ void SendAppleEventToOpenUrlToAppController(const GURL& url) {
   NSAppleEventDescriptor* shortcut_event = AppleEventToOpenUrl(url);
 
   method_invoke(controller, get_url, shortcut_event, NULL);
+}
+
+void RunClosureWhenProfileInitialized(const base::Closure& closure,
+                                      Profile* profile,
+                                      Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED)
+    closure.Run();
 }
 
 }  // namespace
@@ -425,6 +434,71 @@ class AppControllerMainMenuBrowserTest : public InProcessBrowserTest {
   AppControllerMainMenuBrowserTest() {
   }
 };
+
+IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
+    HistoryMenuResetAfterProfileDeletion) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  AppController* ac = [NSApp delegate];
+
+  // Use the existing profile as profile 1.
+  Profile* profile1 = browser()->profile();
+
+  // Create profile 2.
+  base::FilePath profile2_path =
+      profile_manager->GenerateNextProfileDirectoryPath();
+  base::RunLoop run_loop;
+  profile_manager->CreateProfileAsync(
+      profile2_path,
+      base::Bind(&RunClosureWhenProfileInitialized,
+                 run_loop.QuitClosure()),
+                 base::string16(),
+                 base::string16(),
+                 std::string());
+  run_loop.Run();
+  Profile* profile2 = profile_manager->GetProfileByPath(profile2_path);
+  ASSERT_TRUE(profile2);
+
+  // Switch the controller to profile1.
+  [ac windowChangedToProfile:profile1];
+  base::RunLoop().RunUntilIdle();
+
+  // Verify the controller's History Menu corresponds to profile1.
+  EXPECT_TRUE([ac historyMenuBridge]->service());
+  EXPECT_EQ([ac historyMenuBridge]->service(),
+      HistoryServiceFactory::GetForProfile(profile1,
+                                           ServiceAccessType::EXPLICIT_ACCESS));
+
+  // Load profile2's History Service backend so it will be assigned to the
+  // HistoryMenuBridge when windowChangedToProfile is called, or else this test
+  // will fail flaky.
+  ui_test_utils::WaitForHistoryToLoad(
+      HistoryServiceFactory::GetForProfile(profile2,
+                                           ServiceAccessType::EXPLICIT_ACCESS));
+  // Switch the controller to profile2.
+  [ac windowChangedToProfile:profile2];
+  base::RunLoop().RunUntilIdle();
+
+  // Verify the controller's History Menu has changed.
+  EXPECT_TRUE([ac historyMenuBridge]->service());
+  EXPECT_EQ([ac historyMenuBridge]->service(),
+      HistoryServiceFactory::GetForProfile(profile2,
+                                           ServiceAccessType::EXPLICIT_ACCESS));
+  EXPECT_NE(
+      HistoryServiceFactory::GetForProfile(profile1,
+                                           ServiceAccessType::EXPLICIT_ACCESS),
+      HistoryServiceFactory::GetForProfile(profile2,
+                                           ServiceAccessType::EXPLICIT_ACCESS));
+
+  // Delete profile2.
+  profile_manager->ScheduleProfileForDeletion(
+      profile2->GetPath(), ProfileManager::CreateCallback());
+  base::RunLoop().RunUntilIdle();
+
+  // Verify the controller's history is back to profile1.
+  EXPECT_EQ([ac historyMenuBridge]->service(),
+      HistoryServiceFactory::GetForProfile(profile1,
+                                           ServiceAccessType::EXPLICIT_ACCESS));
+}
 
 IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
     BookmarksMenuIsRestoredAfterProfileSwitch) {
