@@ -517,15 +517,15 @@ def is_expose_js_accessors(interface, attribute):
         return False
 
     # These attributes must not be accessors on prototype chains.
-    if (attribute.is_static or
+    if (is_constructor_attribute(attribute) or
+            attribute.is_static or
             'Unforgeable' in attribute.extended_attributes or
             'OverrideBuiltins' in interface.extended_attributes):
         return False
 
     # FIXME: We should move all of the following DOM attributes to prototype
     # chains.
-    if (is_constructor_attribute(attribute) or
-            has_custom_getter(attribute) or
+    if (has_custom_getter(attribute) or
             has_custom_setter(attribute) or
             interface.name == 'Window' or
             v8_utilities.indexed_property_getter(interface) or
