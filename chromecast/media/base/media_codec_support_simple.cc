@@ -4,6 +4,8 @@
 
 #include "chromecast/media/base/media_codec_support.h"
 
+#include "base/bind.h"
+
 namespace chromecast {
 namespace media {
 
