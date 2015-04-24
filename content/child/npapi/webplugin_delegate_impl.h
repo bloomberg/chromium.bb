@@ -437,10 +437,6 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // This flag indicates whether we started tracking a user gesture message.
   bool user_gesture_message_posted_;
 
-  // Runnable Method Factory used to invoke the OnUserGestureEnd method
-  // asynchronously.
-  base::WeakPtrFactory<WebPluginDelegateImpl> user_gesture_msg_factory_;
-
   // Handle to the mouse hook installed for certain windowed plugins like
   // flash.
   HHOOK mouse_hook_;
@@ -469,6 +465,12 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
 
   // True if NPP_New did not return an error.
   bool creation_succeeded_;
+
+#if defined(OS_WIN)
+  // Runnable Method Factory used to invoke the OnUserGestureEnd method
+  // asynchronously.
+  base::WeakPtrFactory<WebPluginDelegateImpl> user_gesture_msg_factory_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegateImpl);
 };

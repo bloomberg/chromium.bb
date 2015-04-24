@@ -122,11 +122,11 @@ class WifiManagerNonChromeos::WifiServiceWrapper
 
   scoped_refptr<base::MessageLoopProxy> callback_runner_;
 
-  base::WeakPtrFactory<WifiServiceWrapper> weak_factory_;
-
 #if defined(OS_WIN)
   scoped_refptr<CredentialGetterWin> credential_getter_;
 #endif  // OS_WIN
+
+  base::WeakPtrFactory<WifiServiceWrapper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiServiceWrapper);
 };

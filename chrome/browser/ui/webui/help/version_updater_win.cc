@@ -62,11 +62,11 @@ class VersionUpdaterWin : public VersionUpdater {
 
   void BeginUpdateCheckOnFileThread(bool install_if_newer);
 
-  // Used for callbacks.
-  base::WeakPtrFactory<VersionUpdaterWin> weak_factory_;
-
   // Callback used to communicate update status to the client.
   StatusCallback callback_;
+
+  // Used for callbacks.
+  base::WeakPtrFactory<VersionUpdaterWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VersionUpdaterWin);
 };

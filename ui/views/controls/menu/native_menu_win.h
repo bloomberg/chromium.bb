@@ -146,7 +146,6 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   // See comment in MenuMessageHook for details on these.
   NativeMenuWin* menu_to_select_;
   int position_to_select_;
-  base::WeakPtrFactory<NativeMenuWin> menu_to_select_factory_;
 
   // If we're a submenu, this is our parent.
   NativeMenuWin* parent_;
@@ -155,6 +154,8 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   // the menu is showing. It is used to detect if the menu was deleted while
   // running.
   bool* destroyed_flag_;
+
+  base::WeakPtrFactory<NativeMenuWin> menu_to_select_factory_;
 
   // Ugly: a static pointer to the instance of this class that currently
   // has a menu open, because our hook function that receives keyboard

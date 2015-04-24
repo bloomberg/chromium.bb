@@ -522,12 +522,12 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       make_context_current_(make_context_current),
       codec_(media::kUnknownVideoCodec),
       decoder_thread_("DXVAVideoDecoderThread"),
-      weak_this_factory_(this),
       weak_ptr_(weak_this_factory_.GetWeakPtr()),
       pending_flush_(false),
       use_dx11_(false),
       dx11_video_format_converter_media_type_needs_init_(true),
-      gl_context_(gl_context) {
+      gl_context_(gl_context),
+      weak_this_factory_(this) {
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
 }

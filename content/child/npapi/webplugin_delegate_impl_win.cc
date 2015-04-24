@@ -239,14 +239,14 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       handle_event_message_filter_hook_(NULL),
       handle_event_pump_messages_event_(NULL),
       user_gesture_message_posted_(false),
-      user_gesture_msg_factory_(this),
       handle_event_depth_(0),
       mouse_hook_(NULL),
       first_set_window_call_(true),
       plugin_has_focus_(false),
       has_webkit_focus_(false),
       containing_view_has_focus_(true),
-      creation_succeeded_(false) {
+      creation_succeeded_(false),
+      user_gesture_msg_factory_(this) {
   memset(&window_, 0, sizeof(window_));
 
   const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
