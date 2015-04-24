@@ -43,7 +43,7 @@ const int kMaxMalwareIPPerRequest = 5;
 void FilterBenignIpsOnIOThread(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     IPUrlMap* ips) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (IPUrlMap::iterator it = ips->begin(); it != ips->end();) {
     if (!database_manager.get() ||
         !database_manager->MatchMalwareIP(it->first)) {
@@ -179,7 +179,7 @@ BrowserFeatureExtractor::~BrowserFeatureExtractor() {
 void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
                                               ClientPhishingRequest* request,
                                               const DoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(info);
   DCHECK_EQ(0U, request->url().find("http:"));
@@ -248,7 +248,7 @@ void BrowserFeatureExtractor::ExtractMalwareFeatures(
     BrowseInfo* info,
     ClientMalwareRequest* request,
     const MalwareDoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   // Grab the IPs because they might go away before we're done
@@ -302,7 +302,7 @@ void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
 void BrowserFeatureExtractor::StartExtractFeatures(
     scoped_ptr<ClientPhishingRequest> request,
     const DoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   history::HistoryService* history;
   if (!request || !request->IsInitialized() || !GetHistoryService(&history)) {
     callback.Run(false, request.Pass());
@@ -324,7 +324,7 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
     bool success,
     const history::URLRow& row,
     const history::VisitVector& visits) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(!callback.is_null());
   if (!success) {
@@ -391,7 +391,7 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
     bool success,
     int num_visits,
     base::Time first_visit) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(!callback.is_null());
   if (!success) {
@@ -422,7 +422,7 @@ void BrowserFeatureExtractor::QueryHttpsHostVisitsDone(
     bool success,
     int num_visits,
     base::Time first_visit) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(!callback.is_null());
   if (!success) {
@@ -473,7 +473,7 @@ void BrowserFeatureExtractor::FinishExtractMalwareFeatures(
     scoped_ptr<IPUrlMap> bad_ips,
     MalwareDoneCallback callback,
     scoped_ptr<ClientMalwareRequest> request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int matched_bad_ips = 0;
   for (IPUrlMap::const_iterator it = bad_ips->begin();
        it != bad_ips->end(); ++it) {

@@ -119,12 +119,12 @@ ClientSideDetectionService::~ClientSideDetectionService() {
 // static
 ClientSideDetectionService* ClientSideDetectionService::Create(
     net::URLRequestContextGetter* request_context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return new ClientSideDetectionService(request_context_getter);
 }
 
 void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SendModelToRenderers();  // always refresh the renderer state
   if (enabled == enabled_)
     return;
@@ -167,7 +167,7 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
 void ClientSideDetectionService::SendClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
     const ClientReportPhishingRequestCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClientSideDetectionService::StartClientReportPhishingRequest,
@@ -177,7 +177,7 @@ void ClientSideDetectionService::SendClientReportPhishingRequest(
 void ClientSideDetectionService::SendClientReportMalwareRequest(
     ClientMalwareRequest* verdict,
     const ClientReportMalwareRequestCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClientSideDetectionService::StartClientReportMalwareRequest,
@@ -223,7 +223,7 @@ void ClientSideDetectionService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_CREATED);
   if (!model_.get()) {
     // Model might not be ready or maybe there was an error.
@@ -308,7 +308,7 @@ void ClientSideDetectionService::EndFetchModel(ClientModelStatus status) {
 void ClientSideDetectionService::StartClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
     const ClientReportPhishingRequestCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<ClientPhishingRequest> request(verdict);
 
   if (!enabled_) {
@@ -349,7 +349,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
 void ClientSideDetectionService::StartClientReportMalwareRequest(
     ClientMalwareRequest* verdict,
     const ClientReportMalwareRequestCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<ClientMalwareRequest> request(verdict);
 
   if (!enabled_) {

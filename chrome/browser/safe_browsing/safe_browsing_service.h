@@ -104,7 +104,7 @@ class SafeBrowsingService
 
   safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service() const {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return csd_service_.get();
   }
 
@@ -112,7 +112,7 @@ class SafeBrowsingService
   // is destroyed.
   safe_browsing::DownloadProtectionService*
       download_protection_service() const {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return download_service_.get();
   }
 

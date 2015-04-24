@@ -34,7 +34,7 @@ SandboxedZipAnalyzer::SandboxedZipAnalyzer(
 }
 
 void SandboxedZipAnalyzer::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Starting the analyzer will block on opening the zip file, so run this
   // on a worker thread.  The task does not need to block shutdown.
   if (!BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
@@ -112,7 +112,7 @@ bool SandboxedZipAnalyzer::OnMessageReceived(const IPC::Message& message) {
 }
 
 void SandboxedZipAnalyzer::StartProcessOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   utility_process_host_ = content::UtilityProcessHost::Create(
       this,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get())
@@ -125,7 +125,7 @@ void SandboxedZipAnalyzer::StartProcessOnIOThread() {
 }
 
 void SandboxedZipAnalyzer::OnUtilityProcessStarted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::ProcessHandle utility_process =
       content::RenderProcessHost::run_renderer_in_process() ?
           base::GetCurrentProcessHandle() :
@@ -144,7 +144,7 @@ void SandboxedZipAnalyzer::OnUtilityProcessStarted() {
 
 void SandboxedZipAnalyzer::OnAnalyzeZipFileFinished(
     const zip_analyzer::Results& results) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (callback_called_)
     return;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

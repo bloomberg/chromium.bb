@@ -135,7 +135,7 @@ SafeBrowsingURLRequestContextGetter::~SafeBrowsingURLRequestContextGetter() {}
 
 net::URLRequestContext*
 SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(sb_service_->url_request_context_.get());
 
   return sb_service_->url_request_context_.get();
@@ -302,7 +302,7 @@ void SafeBrowsingService::ShutDown() {
 
 // Binhash verification is only enabled for UMA users for now.
 bool SafeBrowsingService::DownloadBinHashNeeded() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(FULL_SAFE_BROWSING)
   return (database_manager_->download_protection_enabled() &&
@@ -315,7 +315,7 @@ bool SafeBrowsingService::DownloadBinHashNeeded() const {
 }
 
 net::URLRequestContextGetter* SafeBrowsingService::url_request_context() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return url_request_context_getter_.get();
 }
 
@@ -330,12 +330,12 @@ SafeBrowsingService::database_manager() const {
 }
 
 SafeBrowsingProtocolManager* SafeBrowsingService::protocol_manager() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return protocol_manager_;
 }
 
 SafeBrowsingPingManager* SafeBrowsingService::ping_manager() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return ping_manager_;
 }
 
@@ -402,7 +402,7 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "455469 SafeBrowsingService::InitURLRequestContextOnIOThread 1"));
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!url_request_context_.get());
 
   scoped_refptr<net::CookieStore> cookie_store(
@@ -427,7 +427,7 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
 }
 
 void SafeBrowsingService::DestroyURLRequestContextOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   url_request_context_->AssertNoURLRequests();
 
@@ -481,7 +481,7 @@ void SafeBrowsingService::StartOnIOThread(
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "455469 SafeBrowsingService::StartOnIOThread 1"));
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (enabled_)
     return;
   enabled_ = true;
@@ -517,7 +517,7 @@ void SafeBrowsingService::StartOnIOThread(
 }
 
 void SafeBrowsingService::StopOnIOThread(bool shutdown) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
   database_manager_->StopOnIOThread(shutdown);
@@ -540,7 +540,7 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
 }
 
 void SafeBrowsingService::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -559,14 +559,14 @@ void SafeBrowsingService::Observe(int type,
                                   const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CREATED: {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+      DCHECK_CURRENTLY_ON(BrowserThread::UI);
       Profile* profile = content::Source<Profile>(source).ptr();
       if (!profile->IsOffTheRecord())
         AddPrefService(profile->GetPrefs());
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+      DCHECK_CURRENTLY_ON(BrowserThread::UI);
       Profile* profile = content::Source<Profile>(source).ptr();
       if (!profile->IsOffTheRecord())
         RemovePrefService(profile->GetPrefs());

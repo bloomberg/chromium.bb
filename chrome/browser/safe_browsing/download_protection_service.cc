@@ -255,7 +255,7 @@ class DownloadUrlSBClient : public DownloadSBClient {
         database_manager_(database_manager) { }
 
   void StartCheck() override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (!database_manager_.get() ||
         database_manager_->CheckDownloadUrl(url_chain_, this)) {
       CheckDone(SB_THREAT_TYPE_SAFE);
@@ -313,14 +313,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
         type_(ClientDownloadRequest::WIN_EXECUTABLE),
         start_time_(base::TimeTicks::Now()),
         weakptr_factory_(this) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     item_->AddObserver(this);
   }
 
   void Start() {
     DVLOG(2) << "Starting SafeBrowsing download check for: "
              << item_->DebugString(true);
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // TODO(noelutz): implement some cache to make sure we don't issue the same
     // request over and over again if a user downloads the same binary multiple
     // times.
@@ -362,7 +362,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   // Start a timeout to cancel the request if it takes too long.
   // This should only be called after we have finished accessing the file.
   void StartTimeout() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!service_) {
       // Request has already been cancelled.
       return;
@@ -380,7 +380,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   // Canceling a request will cause us to always report the result as UNKNOWN
   // unless a pending request is about to call FinishRequest.
   void Cancel() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (fetcher_.get()) {
       // The DownloadProtectionService is going to release its reference, so we
       // might be destroyed before the URLFetcher completes.  Cancel the
@@ -404,7 +404,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   // From the net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* source) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(source, fetcher_.get());
     DVLOG(2) << "Received a response for URL: "
              << item_->GetUrlChain().back() << ": success="
@@ -504,7 +504,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   friend class base::DeleteHelper<CheckClientDownloadRequest>;
 
   ~CheckClientDownloadRequest() override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(item_ == NULL);
   }
 
@@ -529,7 +529,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void StartExtractFileFeatures() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(item_);  // Called directly from Start(), item should still exist.
     // Since we do blocking I/O, offload this to a worker thread.
     // The task does not need to block shutdown.
@@ -570,7 +570,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void StartExtractZipFeatures() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(item_);  // Called directly from Start(), item should still exist.
     zip_analysis_start_time_ = base::TimeTicks::Now();
     // We give the zip analyzer a weak pointer to this object.  Since the
@@ -583,7 +583,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void OnZipAnalysisFinished(const zip_analyzer::Results& results) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!service_)
       return;
     if (results.success) {
@@ -614,7 +614,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void CheckWhitelists() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     if (!database_manager_.get()) {
       PostFinishTask(UNKNOWN, REASON_SB_DISABLED);
@@ -675,7 +675,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void GetTabRedirects() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!service_)
       return;
 
@@ -702,7 +702,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   void OnGotTabRedirects(const GURL& url,
                          const history::RedirectList* redirect_list) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(url, tab_url_);
     if (!service_)
       return;
@@ -716,7 +716,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void SendRequest() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // This is our last chance to check whether the request has been canceled
     // before sending it.
@@ -807,7 +807,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   void FinishRequest(DownloadCheckResult result,
                      DownloadCheckResultReason reason) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (finished_) {
       return;
     }
@@ -867,7 +867,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   bool CertificateChainIsWhitelisted(
       const ClientDownloadRequest_CertificateChain& chain) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (chain.element_size() < 2) {
       // We need to have both a signing certificate and its issuer certificate
       // present to construct a whitelist entry.
@@ -961,12 +961,12 @@ DownloadProtectionService::DownloadProtectionService(
 }
 
 DownloadProtectionService::~DownloadProtectionService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CancelPendingRequests();
 }
 
 void DownloadProtectionService::SetEnabled(bool enabled) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (enabled == enabled_) {
     return;
   }
@@ -1022,12 +1022,12 @@ bool DownloadProtectionService::IsSupportedDownload(
 DownloadProtectionService::ClientDownloadRequestSubscription
 DownloadProtectionService::RegisterClientDownloadRequestCallback(
     const ClientDownloadRequestCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return client_download_request_callbacks_.Add(callback);
 }
 
 void DownloadProtectionService::CancelPendingRequests() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (std::set<scoped_refptr<CheckClientDownloadRequest> >::iterator it =
            download_requests_.begin();
        it != download_requests_.end();) {
@@ -1041,7 +1041,7 @@ void DownloadProtectionService::CancelPendingRequests() {
 
 void DownloadProtectionService::RequestFinished(
     CheckClientDownloadRequest* request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::set<scoped_refptr<CheckClientDownloadRequest> >::iterator it =
       download_requests_.find(request);
   DCHECK(it != download_requests_.end());

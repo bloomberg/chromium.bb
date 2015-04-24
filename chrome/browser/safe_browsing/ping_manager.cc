@@ -35,7 +35,7 @@ const char kExtendedReportingUploadUrl[] =
 SafeBrowsingPingManager* SafeBrowsingPingManager::Create(
     net::URLRequestContextGetter* request_context_getter,
     const SafeBrowsingProtocolConfig& config) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return new SafeBrowsingPingManager(request_context_getter, config);
 }
 

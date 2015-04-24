@@ -138,7 +138,7 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
   // Helper function which calls OnBlockingPageComplete for this client
   // object.
   void InvokeOnBlockingPageComplete(const UrlCheckCallback& callback) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // Note: this will delete the client object in the case of the CsdClient
     // implementation.
     if (!callback.is_null())
