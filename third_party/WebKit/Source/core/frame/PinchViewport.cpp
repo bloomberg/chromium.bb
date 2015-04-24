@@ -328,7 +328,8 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
 {
     TRACE_EVENT1("blink", "PinchViewport::attachToLayerTree", "currentLayerTreeRoot", (bool)currentLayerTreeRoot);
     if (!currentLayerTreeRoot) {
-        m_innerViewportScrollLayer->removeAllChildren();
+        if (m_innerViewportScrollLayer)
+            m_innerViewportScrollLayer->removeAllChildren();
         return;
     }
 
