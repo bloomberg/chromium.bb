@@ -4,6 +4,8 @@
 
 source_set("trace_event") {
   sources = [
+    "java_heap_dump_provider_android.cc",
+    "java_heap_dump_provider_android.h",
     "memory_allocator_attributes_type_info.cc",
     "memory_allocator_attributes_type_info.h",
     "memory_allocator_dump.cc",

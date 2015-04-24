@@ -4,6 +4,8 @@
 {
   'variables': {
     'trace_event_sources' : [
+      'trace_event/java_heap_dump_provider_android.cc',
+      'trace_event/java_heap_dump_provider_android.h',
       'trace_event/memory_allocator_attributes_type_info.cc',
       'trace_event/memory_allocator_attributes_type_info.h',
       'trace_event/memory_allocator_dump.cc',
