@@ -89,7 +89,6 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
                             full_width,
                             0);
       break;
-
     case DOUBLE_BUTTON_COLUMN_SET:
       column_set->AddColumn(views::GridLayout::TRAILING,
                             views::GridLayout::CENTER,
@@ -127,6 +126,7 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
                             views::GridLayout::USE_PREF,
                             0,
                             0);
+      break;
     case TRIPLE_BUTTON_COLUMN_SET:
       column_set->AddColumn(views::GridLayout::LEADING,
                             views::GridLayout::CENTER,
