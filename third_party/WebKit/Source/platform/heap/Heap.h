@@ -2184,10 +2184,14 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer)
     // Use the payload size as recorded by the heap to determine how many
     // elements to finalize.
     size_t length = header->payloadSize() / sizeof(T);
-    T* array = reinterpret_cast<T*>(pointer);
-    for (unsigned i = 0; i < length; ++i) {
-        array[i].~T();
-    }
+    T* buffer = reinterpret_cast<T*>(pointer);
+#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
+    // Like for trace(), have no option but to mark the whole container
+    // as accessible.
+    ANNOTATE_CHANGE_SIZE(buffer, length, 0, length);
+#endif
+    for (unsigned i = 0; i < length; ++i)
+        buffer[i].~T();
 }
 
 template<typename Table>
