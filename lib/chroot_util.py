@@ -16,7 +16,7 @@ from chromite.lib import sysroot_lib
 
 if cros_build_lib.IsInsideChroot():
   # These import libraries outside chromite. See brbug.com/472.
-  from chromite.lib import workon_helper
+  from chromite.scripts import cros_list_modified_packages as workon
   from chromite.scripts import cros_setup_toolchains as toolchain
 
 
@@ -39,17 +39,13 @@ def GetEmergeCommand(sysroot=None):
   return cmd
 
 
-def Emerge(packages, brick=None, board=None, host=False, blueprint=None,
-           with_deps=True, rebuild_deps=True, use_binary=True, jobs=None,
-           debug_output=False):
+def Emerge(packages, sysroot, with_deps=True, rebuild_deps=True,
+           use_binary=True, jobs=None, debug_output=False):
   """Emerge the specified |packages|.
 
   Args:
     packages: List of packages to emerge.
-    brick: The brick to build packages for. Ignored if |host|.
-    board: The board name to build for. Ignored if |host| or |brick|.
-    host: If True, emerge to host.
-    blueprint: Blueprint to build.
+    sysroot: Path to the sysroot in which to emerge.
     with_deps: Whether to include dependencies.
     rebuild_deps: Whether to rebuild dependencies.
     use_binary: Whether to use binary packages.
@@ -59,36 +55,24 @@ def Emerge(packages, brick=None, board=None, host=False, blueprint=None,
   Raises:
     cros_build_lib.RunCommandError: If emerge returns an error.
   """
+  cros_build_lib.AssertInsideChroot()
   if not packages:
     raise ValueError('No packages provided')
-
-  # TODO(bsimonnet): Once cros_workon supports --sysroot, remove this case
-  # distinction and accept only sysroot as parameter.
-  if host:
-    brick = board = None
-    sysroot = '/'
-  elif board:
-    sysroot = cros_build_lib.GetSysroot(board)
-  elif brick:
-    board = brick.FriendlyName()
-    sysroot = cros_build_lib.GetSysroot(board)
-  elif blueprint:
-    sysroot = cros_build_lib.GetSysroot(blueprint.FriendlyName())
 
   cmd = GetEmergeCommand(sysroot)
   cmd.append('-uNv')
 
-  if not blueprint:
-    modified_packages = workon_helper.WorkonHelper(sysroot).ListAtoms()
-    if modified_packages:
-      mod_pkg_list = ' '.join(modified_packages)
-      cmd += ['--reinstall-atoms=' + mod_pkg_list,
-              '--usepkg-exclude=' + mod_pkg_list]
+  modified_packages = workon.ListModifiedWorkonPackages(
+      sysroot_lib.Sysroot(sysroot))
+  if modified_packages:
+    mod_pkg_list = ' '.join(modified_packages)
+    cmd += ['--reinstall-atoms=' + mod_pkg_list,
+            '--usepkg-exclude=' + mod_pkg_list]
 
   cmd.append('--deep' if with_deps else '--nodeps')
   if use_binary:
     cmd += ['-g', '--with-bdeps=y']
-    if host:
+    if sysroot == '/':
       # Only update toolchains in the chroot when binpkgs are available. The
       # toolchain rollout process only takes place when the chromiumos sdk
       # builder finishes a successful build and pushes out binpkgs.
@@ -120,7 +104,7 @@ def UpdateChroot(brick=None, board=None, update_host_packages=True):
 
   # Update the host before updating the board.
   if update_host_packages:
-    Emerge(list(_HOST_PKGS), host=True)
+    Emerge(list(_HOST_PKGS), '/')
 
   # Automatically discard all CONFIG_PROTECT'ed files. Those that are
   # protected should not be overwritten until the variable is changed.

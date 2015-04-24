@@ -13,7 +13,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
 if cros_build_lib.IsInsideChroot():
-  from chromite.lib import workon_helper
+  from chromite.scripts import cros_list_modified_packages
 
 # pylint: disable=protected-access
 
@@ -40,8 +40,7 @@ class ChrootUtilTest(cros_test_lib.MockTempDirTestCase):
     """Tests correct invocation of emerge."""
 
     packages = ['foo-app/bar', 'sys-baz/clap']
-    self.PatchObject(workon_helper.WorkonHelper, '__init__', return_value=None)
-    self.PatchObject(workon_helper.WorkonHelper, 'ListAtoms',
+    self.PatchObject(cros_list_modified_packages, 'ListModifiedWorkonPackages',
                      return_value=[packages[0]])
 
     toolchain_packages = chroot_util._GetToolchainPackages()
@@ -49,9 +48,8 @@ class ChrootUtilTest(cros_test_lib.MockTempDirTestCase):
                      return_value=toolchain_packages)
     toolchain_package_list = ' '.join(toolchain_packages)
 
-    board = 'fooboard'
     input_values = [
-        [True, False],  # host
+        ['/', '/build/thesysrootname'],  # sysroot
         [True, False],  # with_deps
         [True, False],  # rebuild_deps
         [True, False],  # use_binary
@@ -59,19 +57,20 @@ class ChrootUtilTest(cros_test_lib.MockTempDirTestCase):
         [True, False],  # debug_output
     ]
     inputs = itertools.product(*input_values)
-    for host, with_deps, rebuild_deps, use_binary, jobs, debug_output in inputs:
-      chroot_util.Emerge(packages, board=board, host=host,
-                         with_deps=with_deps, rebuild_deps=rebuild_deps,
-                         use_binary=use_binary, jobs=jobs,
-                         debug_output=debug_output)
+    for (sysroot, with_deps, rebuild_deps, use_binary,
+         jobs, debug_output) in inputs:
+      chroot_util.Emerge(packages, sysroot=sysroot, with_deps=with_deps,
+                         rebuild_deps=rebuild_deps, use_binary=use_binary,
+                         jobs=jobs, debug_output=debug_output)
       cmd = self.last_rc_cmd
-      self.assertEquals(not host, any(p.startswith('--sysroot') for p in cmd))
+      self.assertEquals(sysroot != '/',
+                        any(p.startswith('--sysroot') for p in cmd))
       self.assertEquals(with_deps, '--deep' in cmd)
       self.assertEquals(not with_deps, '--nodeps' in cmd)
       self.assertEquals(rebuild_deps, '--rebuild-if-unbuilt' in cmd)
       self.assertEquals(use_binary, '-g' in cmd)
       self.assertEquals(use_binary, '--with-bdeps=y' in cmd)
-      self.assertEquals(use_binary and host,
+      self.assertEquals(use_binary and sysroot == '/',
                         '--useoldpkg-atoms=%s' % toolchain_package_list in cmd)
       self.assertEquals(bool(jobs), '--jobs=%d' % jobs in cmd)
       self.assertEquals(debug_output, '--show-output' in cmd)

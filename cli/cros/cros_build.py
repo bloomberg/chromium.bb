@@ -140,8 +140,7 @@ To just build a single package:
     if self.chroot_update and self.host:
       chroot_util.UpdateChroot()
 
-    chroot_util.Emerge(self.build_pkgs, brick=self.brick, board=self.board,
-                       host=self.host, blueprint=self.blueprint,
+    chroot_util.Emerge(self.build_pkgs, self.sysroot,
                        with_deps=self.options.deps,
                        rebuild_deps=self.options.rebuild_deps,
                        use_binary=self.options.binary, jobs=self.options.jobs,
