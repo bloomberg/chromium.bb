@@ -1,0 +1,58 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+assert(is_win)
+
+executable("app_installer") {
+  sources = [
+    "/win/app_installer_main.cc"
+  ]
+
+  configs -= [ "//build/config/win:console" ]
+  configs += [ "//build/config/win:windowed" ]
+
+  deps = [
+    ":util",
+    "//base",
+  ]
+
+  # TODO(GYP) manifest.
+}
+
+source_set("util") {
+  sources = [
+    "win/app_installer_util.cc",
+    "win/app_installer_util.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/common",
+    "//chrome/common:constants",
+    "//chrome/installer/launcher_support",
+    "//chrome/installer/util",
+    "//chrome/installer/util:strings",
+    "//content/public/common",
+    "//net",
+    "//third_party/omaha:extractor",
+  ]
+}
+
+test("app_installer_unittests") {
+  sources = [
+    "win/app_installer_util_unittest.cc",
+  ]
+
+  deps = [
+    ":util",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+
+  # TODO(GYP) manifest
+}

@@ -107,6 +107,7 @@
     ['OS=="win"', {
       'targets': [
         {
+          # GN version: //chrome/installer/util
           'target_name': 'installer_util',
           'type': 'static_library',
           'variables': {

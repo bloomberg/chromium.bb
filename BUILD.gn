@@ -766,6 +766,7 @@ if (is_linux) {
       "//base:base_unittests",  # PASSES 4/20/2015
       "//cc:cc_unittests",  # PASSES 4/17/2015
       "//chrome_elf:chrome_elf_unittests",  # FAILS 4/20/2015
+      "//chrome/app_installer:app_installer_unittests",
       "//chrome/test:browser_tests",
       "//chrome/test:interactive_ui_tests",
       "//chrome/test:sync_integration_tests",  # Note: need to turn off incremental linking for debug.
@@ -816,8 +817,8 @@ if (is_linux) {
       "//ui/gfx:gfx_unittests",  # PASSES (with assertion failure?) 4/20/2015
       "//ui/message_center:message_center_unittests",  # PASSES 4/20/2015
       "//ui/touch_selection:ui_touch_selection_unittests",  # PASSES 4/20/2015
-      "//ui/views:views_unittests",  # Same as WM unittests
-      "//ui/wm:wm_unittests",  # CRASHES, looks like something simple missing.
+      "//ui/views:views_unittests",  # TooltipControllerTest failures
+      "//ui/wm:wm_unittests",  # PASSES 4/21/2015
       "//url:url_unittests",  # PASSES 4/17/2015
 
       # TODO(GYP) installer_util_unittests

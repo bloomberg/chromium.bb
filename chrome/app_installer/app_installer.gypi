@@ -7,6 +7,7 @@
     ['OS=="win"', {
       'targets': [
         {
+          # GN version: //chrome/app_installer:util
           'target_name': 'app_installer_util',
           'type': 'static_library',
           'dependencies': [
@@ -32,6 +33,7 @@
         # TODO(jackhou): Add a version resource (using
         # version_resource_rules.gypi).
         {
+          # GN version: //chrome/app_installer
           'target_name': 'app_installer',
           'type': 'executable',
           'dependencies': [
@@ -57,6 +59,7 @@
           },
         },
         {
+          # GN version: //chrome/installer/app_installer:app_installer_unittests
           'target_name': 'app_installer_unittests',
           'type': 'executable',
           'dependencies': [

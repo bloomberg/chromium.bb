@@ -26,7 +26,10 @@ if (enable_extensions) {
   }
 
   # GYP version: extensions/extensions.gyp:extensions_common
-  source_set("common") {
+  # This must be a static library because extensions common depends on
+  # GetTrustedICAPublicKey in extensions/browser which isn't always linked
+  # in. TODO(brettw): This reverse dependency should be fixed.
+  static_library("common") {
     sources = rebase_path(extensions_gypi_values.extensions_common_sources,
                           ".",
                           "//extensions")
@@ -63,17 +66,16 @@ if (enable_extensions) {
     ]
 
     if (use_openssl) {
-      ssl_sources =
+      sources +=
           rebase_path(extensions_gypi_values.extensions_common_sources_openssl,
                       ".",
                       "//extensions")
-      sources += ssl_sources
+      deps += [ "//third_party/boringssl" ]
     } else {
-      nonssl_sources = rebase_path(
+      sources += rebase_path(
               extensions_gypi_values.extensions_common_sources_nonopenssl,
               ".",
               "//extensions")
-      sources += nonssl_sources
     }
 
     if (enable_nacl) {

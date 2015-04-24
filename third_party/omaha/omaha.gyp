@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //third_party/omaha:extractor
       'target_name': 'omaha_extractor',
       'type': 'static_library',
       'sources': [

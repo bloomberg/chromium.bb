@@ -185,6 +185,7 @@
           },
         },
         {
+          # GN version: //chrome/installer/launcher_support
           'target_name': 'launcher_support',
           'type': 'static_library',
           'include_dirs': [
