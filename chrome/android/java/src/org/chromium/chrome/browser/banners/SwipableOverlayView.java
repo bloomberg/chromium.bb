@@ -653,7 +653,7 @@ public abstract class SwipableOverlayView extends ScrollView {
                         PropertyValuesHolder.ofFloat("translationY", getTranslationY(), y));
 
         mCurrentAnimation = new AnimatorSet();
-        mCurrentAnimation.setDuration(duration);
+        mCurrentAnimation.setDuration(Math.max(duration, 0));
         mCurrentAnimation.playTogether(alphaAnimator, translationXAnimator, translationYAnimator);
         mCurrentAnimation.addListener(mAnimatorListenerAdapter);
         mCurrentAnimation.setInterpolator(mInterpolator);
