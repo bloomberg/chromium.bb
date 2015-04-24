@@ -1841,6 +1841,15 @@ TEST_F(ShelfViewTest, Launcher_LaunchTaskIsRecordedWhenNewWindowIsCreated) {
   EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_LaunchTask"));
 }
 
+// Verifies that a Launcher_MinimizeTask UMA user action is recorded when
+// selecting an icon causes an existing window to be minimized.
+TEST_F(ShelfViewTest, Launcher_MinimizeTaskIsRecordedWhenWindowIsMinimized) {
+  base::UserActionTester user_action_tester;
+  test_api_->RecordIconActivatedAction(
+      ShelfItemDelegate::kExistingWindowMinimized);
+  EXPECT_EQ(1, user_action_tester.GetActionCount("Launcher_MinimizeTask"));
+}
+
 // Verifies that a Launcher_SwitchTask UMA user action is recorded when
 // selecting an icon causes an existing window to be activated.
 TEST_F(ShelfViewTest,

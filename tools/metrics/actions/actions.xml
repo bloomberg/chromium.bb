@@ -7091,6 +7091,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Launcher_MinimizeTask">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <description>
+    Recorded when the user minimizes an existing task by clicking an icon in the
+    shelf.
+  </description>
+</action>
+
 <action name="Launcher_SwitchTask">
   <owner>bruthig@google.com</owner>
   <owner>tdanderson@google.com</owner>

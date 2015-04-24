@@ -1768,7 +1768,6 @@ void ShelfView::RecordIconActivatedAction(
     ShelfItemDelegate::PerformedAction performed_action) {
   switch (performed_action) {
     case ShelfItemDelegate::kNoAction:
-    case ShelfItemDelegate::kExistingWindowMinimized:
     case ShelfItemDelegate::kAppListMenuShown:
       break;
     case ShelfItemDelegate::kNewWindowCreated:
@@ -1778,6 +1777,10 @@ void ShelfView::RecordIconActivatedAction(
     case ShelfItemDelegate::kExistingWindowActivated:
       Shell::GetInstance()->metrics()->RecordUserMetricsAction(
           UMA_LAUNCHER_SWITCH_TASK);
+      break;
+    case ShelfItemDelegate::kExistingWindowMinimized:
+      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+          UMA_LAUNCHER_MINIMIZE_TASK);
       break;
   }
 }
