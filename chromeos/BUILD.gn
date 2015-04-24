@@ -140,6 +140,7 @@ test("chromeos_unittests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/icu",
     "//url",
     ":cryptohome_proto",
     ":power_manager_proto",
