@@ -26,11 +26,8 @@ scoped_ptr<VideoEncoder> VideoEncoder::Create(
 #if defined(OS_MACOSX) || defined(OS_IOS)
   if (!video_config.use_external_encoder &&
       H264VideoToolboxEncoder::IsSupported(video_config)) {
-    return scoped_ptr<VideoEncoder>(
-        new SizeAdaptableH264VideoToolboxVideoEncoder(
-            cast_environment,
-            video_config,
-            status_change_cb));
+    return scoped_ptr<VideoEncoder>(new H264VideoToolboxEncoder(
+        cast_environment, video_config, status_change_cb));
   }
 #endif  // defined(OS_MACOSX)
 

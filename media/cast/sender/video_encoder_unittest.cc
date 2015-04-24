@@ -101,6 +101,10 @@ class VideoEncoderTest
         is_testing_video_toolbox_encoder();
   }
 
+  bool encoder_has_resize_delay() const {
+    return is_testing_platform_encoder() && !is_testing_video_toolbox_encoder();
+  }
+
   VideoEncoder* video_encoder() const {
     return video_encoder_.get();
   }
@@ -282,14 +286,13 @@ TEST_P(VideoEncoderTest, GeneratesKeyFrameThenOnlyDeltaFrames) {
   uint32 reference_frame_id = 0;
   const gfx::Size frame_size(1280, 720);
 
-  // For the platform encoders, the first one or more frames is dropped while
-  // the encoder initializes.  Then, for all encoders, expect one key frame is
-  // delivered.
+  // Some encoders drop one or more frames initially while the encoder
+  // initializes. Then, for all encoders, expect one key frame is delivered.
   bool accepted_first_frame = false;
   do {
     accepted_first_frame = EncodeAndCheckDelivery(
         CreateTestVideoFrame(frame_size), frame_id, reference_frame_id);
-    if (!is_testing_platform_encoder())
+    if (!encoder_has_resize_delay())
       EXPECT_TRUE(accepted_first_frame);
     RunTasksAndAdvanceClock();
   } while (!accepted_first_frame);
@@ -365,28 +368,28 @@ TEST_P(VideoEncoderTest, EncodesVariedFrameSizes) {
 
   uint32 frame_id = 0;
 
-  // Encode one frame at each size.  For the platform encoders, expect no frames
-  // to be delivered since each frame size change will sprun re-initialization
-  // of the underlying encoder.  Otherwise, expect all key frames to come out.
+  // Encode one frame at each size. For encoders with a resize delay, except no
+  // frames to be delivered since each frame size change will sprun
+  // re-initialization of the underlying encoder. Otherwise expect all key
+  // frames to come out.
   for (const auto& frame_size : frame_sizes) {
-    EXPECT_EQ(!is_testing_platform_encoder(),
-              EncodeAndCheckDelivery(CreateTestVideoFrame(frame_size),
-                                     frame_id,
+    EXPECT_EQ(!encoder_has_resize_delay(),
+              EncodeAndCheckDelivery(CreateTestVideoFrame(frame_size), frame_id,
                                      frame_id));
     RunTasksAndAdvanceClock();
-    if (!is_testing_platform_encoder())
+    if (!encoder_has_resize_delay())
       ++frame_id;
   }
 
-  // Encode 10+ frames at each size.  For the platform decoders, expect the
-  // first one or more frames are dropped while the encoder re-inits.  Then, for
-  // all encoders, expect one key frame followed by all delta frames.
+  // Encode 10+ frames at each size. For encoders with a resize delay, expect
+  // the first one or more frames are dropped while the encoder re-inits. Then,
+  // for all encoders, expect one key frame followed by all delta frames.
   for (const auto& frame_size : frame_sizes) {
     bool accepted_first_frame = false;
     do {
       accepted_first_frame = EncodeAndCheckDelivery(
           CreateTestVideoFrame(frame_size), frame_id, frame_id);
-      if (!is_testing_platform_encoder())
+      if (!encoder_has_resize_delay())
         EXPECT_TRUE(accepted_first_frame);
       RunTasksAndAdvanceClock();
     } while (!accepted_first_frame);
