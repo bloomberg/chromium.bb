@@ -23,7 +23,7 @@ layer at (8,50) size 100x17
     LayoutText {#text} at (0,0) size 100x17
       text run at (0,0) width 100: "Content before."
 layer at (8,87) size 784x22
-  LayoutBlockFlow (anonymous) at (0,36.72) size 784x22
+  LayoutBlockFlow (anonymous) (relative positioned) at (0,36.72) size 784x22
     LayoutBlockFlow {H3} at (0,0) size 784x22
       LayoutText {#text} at (0,0) size 146x21
         text run at (0,0) width 146: "Bold with margin."
@@ -34,7 +34,7 @@ layer at (8,127) size 84x17
 layer at (8,164) size 0x0
   LayoutInline (relative positioned) {SPAN} at (0,0) size 0x0
 layer at (8,164) size 784x22
-  LayoutBlockFlow (anonymous) at (0,0) size 784x22
+  LayoutBlockFlow (anonymous) (relative positioned) at (0,0) size 784x22
     LayoutBlockFlow {H3} at (0,0) size 784x22
       LayoutText {#text} at (0,0) size 148x21
         text run at (0,0) width 148: "No content before."
@@ -47,7 +47,7 @@ layer at (8,239) size 96x17
     LayoutText {#text} at (0,0) size 96x17
       text run at (0,0) width 96: "Content before"
 layer at (8,276) size 784x22
-  LayoutBlockFlow (anonymous) at (0,36.72) size 784x22
+  LayoutBlockFlow (anonymous) (relative positioned) at (0,36.72) size 784x22
     LayoutBlockFlow {H3} at (0,0) size 784x22
       LayoutText {#text} at (0,0) size 174x21
         text run at (0,0) width 174: "But No Content After"
@@ -56,7 +56,7 @@ layer at (8,316) size 0x0
 layer at (8,316) size 0x0
   LayoutInline (relative positioned) {SPAN} at (0,0) size 0x0
 layer at (8,316) size 784x22
-  LayoutBlockFlow (anonymous) at (0,0) size 784x22
+  LayoutBlockFlow (anonymous) (relative positioned) at (0,0) size 784x22
     LayoutBlockFlow {H3} at (0,0) size 784x22
       LayoutText {#text} at (0,0) size 213x21
         text run at (0,0) width 213: "No content before or after."

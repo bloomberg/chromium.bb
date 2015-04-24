@@ -18,7 +18,7 @@ layer at (8,242) size 68x18
     LayoutText {#text} at (0,0) size 68x18
       text run at (0,0) width 68: "Filler Text"
 layer at (8,260) size 192x18
-  LayoutBlockFlow (anonymous) at (0,18) size 192x18
+  LayoutBlockFlow (anonymous) (relative positioned) at (0,18) size 192x18
     LayoutBlockFlow {DIV} at (0,0) size 192x18 [bgcolor=#FFA500]
       LayoutText {#text} at (0,0) size 68x18
         text run at (0,0) width 68: "Filler Text"
@@ -29,7 +29,7 @@ layer at (8,470) size 68x18
     LayoutText {#text} at (0,0) size 68x18
       text run at (0,0) width 68: "Filler Text"
 layer at (8,488) size 192x18
-  LayoutBlockFlow (anonymous) at (0,54) size 192x18
+  LayoutBlockFlow (anonymous) (relative positioned) at (0,54) size 192x18
     LayoutBlockFlow {DIV} at (0,0) size 192x18 [bgcolor=#FFA500]
       LayoutText {#text} at (0,0) size 68x18
         text run at (0,0) width 68: "Filler Text"
@@ -41,7 +41,7 @@ layer at (8,506) size 68x18
     LayoutText {#text} at (0,0) size 68x18
       text run at (0,0) width 68: "Filler Text"
 layer at (8,332) size 192x18
-  LayoutBlockFlow (anonymous) at (0,90) size 192x18
+  LayoutBlockFlow (anonymous) (relative positioned) at (0,90) size 192x18
     LayoutBlockFlow {DIV} at (0,0) size 192x18 [bgcolor=#FFA500]
       LayoutText {#text} at (0,0) size 68x18
         text run at (0,0) width 68: "Filler Text"

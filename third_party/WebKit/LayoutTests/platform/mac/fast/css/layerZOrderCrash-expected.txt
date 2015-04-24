@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 631: "To reproduce this bug outside of DumpRenderTree, click the link below. If broken, we will crash. "
         LayoutBR {BR} at (630,14) size 1x0
 layer at (8,26) size 60x88
-  LayoutTable {TABLE} at (0,18) size 60x88
+  LayoutTable (relative positioned) {TABLE} at (0,18) size 60x88
     LayoutTableSection {TBODY} at (0,0) size 60x88
       LayoutTableRow {TR} at (0,2) size 60x20
         LayoutTableCell {TD} at (2,2) size 56x20 [r=0 c=0 rs=1 cs=1]
@@ -18,7 +18,7 @@ layer at (8,26) size 60x88
       LayoutTableRow {TR} at (0,24) size 60x62
         LayoutTableCell {TD} at (2,24) size 56x62 [r=1 c=0 rs=1 cs=1]
 layer at (11,51) size 54x60
-  LayoutTable {TABLE} at (1,1) size 54x60
+  LayoutTable (relative positioned) {TABLE} at (1,1) size 54x60
     LayoutTableSection {TBODY} at (0,0) size 54x60
       LayoutTableRow {TR} at (0,2) size 54x56
         LayoutTableCell {TD} at (2,2) size 50x56 [r=0 c=0 rs=1 cs=1]

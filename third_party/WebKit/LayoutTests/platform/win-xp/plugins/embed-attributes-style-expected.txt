@@ -23,8 +23,8 @@ layer at (0,0) size 800x600
           text run at (52,87) width 4: " "
           text run at (56,87) width 93: "hidden attribute"
 layer at (8,74) size 50x100
-  LayoutEmbeddedObject {EMBED} at (0,0) size 50x100
+  LayoutEmbeddedObject (relative positioned) {EMBED} at (0,0) size 50x100
 layer at (8,179) size 50x100
-  LayoutEmbeddedObject {EMBED} at (0,0) size 50x100
+  LayoutEmbeddedObject (relative positioned) {EMBED} at (0,0) size 50x100
 layer at (8,284) size 52x102
-  LayoutEmbeddedObject {EMBED} at (0,0) size 52x102 [border: (1px dashed #000000)]
+  LayoutEmbeddedObject (relative positioned) {EMBED} at (0,0) size 52x102 [border: (1px dashed #000000)]

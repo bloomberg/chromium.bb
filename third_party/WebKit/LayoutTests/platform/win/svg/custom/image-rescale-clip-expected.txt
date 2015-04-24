@@ -14,4 +14,4 @@ layer at (8,8) size 160x105 backgroundClip at (8,8) size 150x15 clip at (8,8) si
     LayoutText {#text} at (0,0) size 0x0
     LayoutText {#text} at (0,0) size 0x0
 layer at (13,13) size 160x105 backgroundClip at (8,8) size 150x15 clip at (8,8) size 150x15 outlineClip at (8,8) size 150x15
-  LayoutImage {IMG} at (0,0) size 160x105
+  LayoutImage (relative positioned) {IMG} at (0,0) size 160x105

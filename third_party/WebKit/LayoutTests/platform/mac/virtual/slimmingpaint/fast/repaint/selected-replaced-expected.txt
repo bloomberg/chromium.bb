@@ -14,7 +14,7 @@
         "InlineBox",
         "RootInlineBox",
         "LayoutBlockFlow (anonymous)",
-        "LayoutImage IMG id='test' class='moved'"
+        "LayoutImage (relative positioned) IMG id='test' class='moved'"
       ]
     }
   ]

@@ -15,7 +15,7 @@ layer at (200,242) size 76x18
     LayoutText {#text} at (0,0) size 76x18
       text run at (0,0) width 76: "Filler Text1"
 layer at (200,260) size 192x18
-  LayoutBlockFlow (anonymous) at (0,18) size 192x18
+  LayoutBlockFlow (anonymous) (relative positioned) at (0,18) size 192x18
     LayoutBlockFlow {DIV} at (0,0) size 192x18 [bgcolor=#FFA500]
       LayoutText {#text} at (0,0) size 68x18
         text run at (0,0) width 68: "Filler Text"

@@ -7,7 +7,7 @@ layer at (0,0) size 800x386
         LayoutText {#text} at (0,0) size 164x18
           text run at (0,0) width 164: "All cells should be green."
 layer at (8,26) size 340x176
-  LayoutTable {TABLE} at (0,18) size 340x176 [border: (1px solid #000000)]
+  LayoutTable (relative positioned) {TABLE} at (0,18) size 340x176 [border: (1px solid #000000)]
     LayoutTableSection {TBODY} at (1,1) size 338x174
       LayoutTableRow {TR} at (0,10) size 338x72
         LayoutTableCell {TD} at (10,10) size 72x2 [bgcolor=#008000] [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
@@ -28,7 +28,7 @@ layer at (184,120) size 70x70
 layer at (266,120) size 70x70
   LayoutBlockFlow (positioned) {DIV} at (258,94) size 70x70 [bgcolor=#008000]
 layer at (8,202) size 340x176
-  LayoutTable {TABLE} at (0,194) size 340x176 [border: (1px solid #000000)]
+  LayoutTable (relative positioned) {TABLE} at (0,194) size 340x176 [border: (1px solid #000000)]
     LayoutTableSection {TBODY} at (1,1) size 338x174
       LayoutTableRow {TR} at (0,10) size 338x72
         LayoutTableCell {TD} at (256,10) size 72x2 [bgcolor=#008000] [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]

@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (150,20) size 123x19
           text run at (150,20) width 123: ". It should not crash."
 layer at (8,64) size 6x6
-  LayoutTable {TABLE} at (0,56) size 6x6
+  LayoutTable (relative positioned) {TABLE} at (0,56) size 6x6
     LayoutTableSection {TBODY} at (0,0) size 6x6
       LayoutTableRow {TR} at (0,2) size 6x2
         LayoutTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]

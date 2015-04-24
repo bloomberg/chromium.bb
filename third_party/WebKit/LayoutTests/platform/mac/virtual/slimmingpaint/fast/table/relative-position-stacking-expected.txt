@@ -12,6 +12,6 @@ layer at (0,0) size 800x134
           LayoutTableRow {TR} at (0,0) size 100x100
             LayoutTableCell {TD} at (0,50) size 100x0 [bgcolor=#FF0000] [r=1 c=0 rs=1 cs=1]
 layer at (8,26) size 100x0
-  LayoutTableCell {TD} at (0,0) size 100x0 [r=0 c=0 rs=1 cs=1]
+  LayoutTableCell (relative positioned) {TD} at (0,0) size 100x0 [r=0 c=0 rs=1 cs=1]
     LayoutBlockFlow {DIV} at (0,0) size 100x0
       LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#008000]

@@ -12,11 +12,11 @@
         [312, 112, 454, 469]
       ],
       "paintInvalidationClients": [
-        "LayoutTableCell TD id='cellToScroll' class='relative'",
+        "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
         "LayoutBlockFlow (relative positioned) DIV class='relative red'",
         "LayoutBlockFlow (positioned) DIV class='absolute green'",
         "HorizontalScrollbar",
-        "LayoutTableCell TD id='cellToScroll' class='relative'"
+        "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'"
       ]
     }
   ]
