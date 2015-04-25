@@ -120,11 +120,18 @@ public:
     }
 
 private:
-    void fired(Timer<AsyncMethodRunner<TargetClass>>*) { (m_object->*m_method)(); }
+    void fired(Timer<AsyncMethodRunner<TargetClass>>*)
+    {
+        // TODO(Oilpan): when AsyncMethodRunner is on the heap, this check becomes
+        // redundant; handled directly by Timer<> instead.
+        if (!TimerIsObjectAliveTrait<TargetClass>::isHeapObjectAlive(m_object))
+            return;
+        (m_object->*m_method)();
+    }
 
     Timer<AsyncMethodRunner<TargetClass>> m_timer;
 
-    // FIXME: oilpan: AsyncMethodRunner should be moved to the heap and m_object should be traced.
+    // TODO(Oilpan): AsyncMethodRunner should be moved to the heap and m_object should be traced.
     // This raw pointer is safe as long as AsyncMethodRunner<X> is held by the X itself
     // (That's the case in the current code base).
     GC_PLUGIN_IGNORE("363031")
