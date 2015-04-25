@@ -41,6 +41,24 @@ message CertLoggerRequest {
   repeated string pin = 5;
 };
 
+// A wrapper proto containing an encrypted CertLoggerRequest
+message EncryptedCertLoggerRequest {
+  // An encrypted, serialized CertLoggerRequest
+  required bytes encrypted_report = 1;
+  // The server public key version that was used to derive the shared secret.
+  required uint32 server_public_key_version = 2;
+  // The client public key that corresponds to the private key that was used
+  // to derive the shared secret.
+  required bytes client_public_key = 3;
+  // The encryption algorithm used to encrypt the report.
+  enum Algorithm {
+    UNKNOWN_ALGORITHM = 0;
+    AEAD_ECDH_AES_128_CTR_HMAC_SHA256 = 1;
+  }
+  optional Algorithm algorithm = 4
+      [default = AEAD_ECDH_AES_128_CTR_HMAC_SHA256];
+};
+
 // The response sent back to the user.
 message CertLoggerResponse {
   enum ResponseCode {
@@ -53,4 +71,3 @@ message CertLoggerResponse {
   };
   required ResponseCode response = 1;
 };
-

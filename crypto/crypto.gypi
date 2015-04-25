@@ -27,6 +27,8 @@
       # NOTE: all transitive dependencies of HMAC on windows need
       #     to be placed in the source list above.
       '<@(hmac_win64_related_sources)',
+      'aead_openssl.cc',
+      'aead_openssl.h',
       'apple_keychain.h',
       'apple_keychain_ios.mm',
       'apple_keychain_mac.mm',
