@@ -36,10 +36,6 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 
 
-#if !NACL_ANDROID
-static const char kNaClTempPrefixVar[] = "NACL_TMPFS_PREFIX";
-#endif
-
 /*
  * The pathname or SHM-namespace prefixes for memory objects created
  * by CreateMemoryObject().
@@ -85,7 +81,9 @@ int NaClWouldBlock(void) {
 #if !NACL_ANDROID
 static Atomic32 memory_object_count = 0;
 
-static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
+
+static int TryShmOrTempOpen(size_t length, bool use_temp) {
+  const char* prefix = use_temp ? kShmTempPrefix : kShmOpenPrefix;
   char name[PATH_MAX];
   if (0 == length) {
     return -1;
@@ -126,6 +124,30 @@ static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
     /* Retry only if we got EEXIST. */
   }
 }
+
+#if NACL_LINUX
+/*
+ * Attempt to set PROT_EXEC on memory mapped from a shm_open fd, and return
+ * true if this is successful, false otherwise.  On many linux installations
+ * /dev/shm is mounted with 'noexec' which causes this to fail.
+ */
+static bool DetermineDevShmExecutable() {
+  size_t pagesize = sysconf(_SC_PAGESIZE);
+  int fd = TryShmOrTempOpen(pagesize, false);
+  if (fd < 0)
+    return false;
+
+  bool result = false;
+  void *mapping = mmap(NULL, pagesize, PROT_READ, MAP_SHARED, fd, 0);
+  if (mapping != MAP_FAILED) {
+    if (mprotect(mapping, pagesize, PROT_READ | PROT_EXEC) == 0)
+      result = true;
+    CHECK(munmap(mapping, pagesize) == 0);
+  }
+  CHECK(close(fd) == 0);
+  return result;
+}
+#endif
 #endif
 
 NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
@@ -144,30 +166,32 @@ NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
 #if NACL_ANDROID
   return AshmemCreateRegion(length);
 #else
-  /*
-   * /dev/shm is not always available on Linux, and sometimes it's available
-   * but mounted with "noexec".  To handle this case, we allow an alternative
-   * temp directory to be specified via an environment variable.
-   */
-  const char* prefix = getenv(kNaClTempPrefixVar);
-  if (prefix != NULL) {
-    fd = TryShmOrTempOpen(length, prefix, true);
-    if (fd >= 0) {
-      return fd;
-    }
-  }
-
-  if (NACL_OSX && executable) {
+  bool use_shm_open = true;
+  if (executable) {
     /*
      * On Mac OS X, shm_open() gives us file descriptors that the OS
      * won't mmap() with PROT_EXEC, which is no good for the dynamic
      * code region, so we must use /tmp instead.
      */
-    return TryShmOrTempOpen(length, kShmTempPrefix, true);
+    if (NACL_OSX)
+      use_shm_open = false;
+#if NACL_LINUX
+    /*
+     * On Linux this depends on how the system is configured (usually the
+     * presence of noexec on the /dev/shm mount point) so we need to determine
+     * this via am empirical test.
+     */
+    static bool s_dev_shm_executable = DetermineDevShmExecutable();
+    if (!s_dev_shm_executable) {
+      NaClLog(1, "NaClCreateMemoryObjectFunc: PROT_EXEC not supported by "
+                 "shm_open(), falling back to /tmp for shared exectuable "
+                 "memory.\n");
+    }
+    use_shm_open = s_dev_shm_executable;
+#endif
   }
 
-  /* Try shm_open(). */
-  return TryShmOrTempOpen(length, kShmOpenPrefix, false);
+  return TryShmOrTempOpen(length, !use_shm_open);
 #endif  /* !NACL_ANDROID */
 }
 
