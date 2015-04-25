@@ -214,7 +214,7 @@ void SpellcheckHunspellDictionary::OnURLFetchComplete(
 
 GURL SpellcheckHunspellDictionary::GetDictionaryURL() {
   static const char kDownloadServerUrl[] =
-      "http://cache.pack.google.com/edgedl/chrome/dict/";
+      "https://redirector.gvt1.com/edgedl/chrome/dict/";
   std::string bdict_file = dictionary_file_.path.BaseName().MaybeAsASCII();
 
   DCHECK(!bdict_file.empty());
