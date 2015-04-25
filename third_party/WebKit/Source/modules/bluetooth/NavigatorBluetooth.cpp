@@ -12,10 +12,10 @@ namespace blink {
 
 NavigatorBluetooth& NavigatorBluetooth::from(Navigator& navigator)
 {
-    NavigatorBluetooth* supplement = static_cast<NavigatorBluetooth*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorBluetooth* supplement = static_cast<NavigatorBluetooth*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorBluetooth();
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -35,14 +35,12 @@ Bluetooth* NavigatorBluetooth::bluetooth()
 DEFINE_TRACE(NavigatorBluetooth)
 {
     visitor->trace(m_bluetooth);
-    WillBeHeapSupplement<Navigator>::trace(visitor);
+    HeapSupplement<Navigator>::trace(visitor);
 }
 
 NavigatorBluetooth::NavigatorBluetooth()
 {
 }
-
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorBluetooth);
 
 const char* NavigatorBluetooth::supplementName()
 {

@@ -5,6 +5,7 @@
 #ifndef NavigatorBeacon_h
 #define NavigatorBeacon_h
 
+#include "core/frame/LocalFrameLifecycleObserver.h"
 #include "core/frame/Navigator.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -17,10 +18,11 @@ class ExecutionContext;
 class KURL;
 class ArrayBufferViewOrBlobOrStringOrFormData;
 
-class NavigatorBeacon final : public NoBaseWillBeGarbageCollected<NavigatorBeacon>, public WillBeHeapSupplement<Navigator> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorBeacon);
+class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>, public LocalFrameLifecycleObserver, public HeapSupplement<Navigator> {
+    USING_GARBAGE_COLLECTED_MIXIN(NavigatorBeacon);
 public:
     static NavigatorBeacon& from(Navigator&);
+    virtual ~NavigatorBeacon();
 
     static bool sendBeacon(ExecutionContext*, Navigator&, const String&, const ArrayBufferViewOrBlobOrStringOrFormData&, ExceptionState&);
 
@@ -36,7 +38,6 @@ private:
     bool beaconResult(ExecutionContext*, bool allowed, int sentBytes);
 
     int m_transmittedBytes;
-    Navigator& m_navigator;
 };
 
 } // namespace blink

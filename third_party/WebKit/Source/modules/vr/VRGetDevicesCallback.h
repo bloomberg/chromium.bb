@@ -26,7 +26,7 @@ public:
 
 private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
-    RefPtrWillBePersistent<VRHardwareUnitCollection> m_hardwareUnits;
+    Persistent<VRHardwareUnitCollection> m_hardwareUnits;
 };
 
 } // namespace blink

@@ -42,11 +42,13 @@ NavigatorDoNotTrack::NavigatorDoNotTrack(LocalFrame* frame)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorDoNotTrack);
+NavigatorDoNotTrack::~NavigatorDoNotTrack()
+{
+}
 
 DEFINE_TRACE(NavigatorDoNotTrack)
 {
-    WillBeHeapSupplement<Navigator>::trace(visitor);
+    HeapSupplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
@@ -57,10 +59,10 @@ const char* NavigatorDoNotTrack::supplementName()
 
 NavigatorDoNotTrack& NavigatorDoNotTrack::from(Navigator& navigator)
 {
-    NavigatorDoNotTrack* supplement = static_cast<NavigatorDoNotTrack*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorDoNotTrack* supplement = static_cast<NavigatorDoNotTrack*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorDoNotTrack(navigator.frame());
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }

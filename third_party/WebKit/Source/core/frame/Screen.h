@@ -39,7 +39,6 @@ namespace blink {
 
 class LocalFrame;
 
-// TODO(Oilpan): when ~DOMWindowProperty is removed, derive from GarbageCollected<> instead.
 class Screen final : public GarbageCollectedFinalized<Screen>, public ScriptWrappable, public DOMWindowProperty, public HeapSupplementable<Screen> {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Screen);

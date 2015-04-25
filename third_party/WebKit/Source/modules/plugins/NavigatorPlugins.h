@@ -15,16 +15,13 @@ class DOMPluginArray;
 class LocalFrame;
 class Navigator;
 
-class NavigatorPlugins final
-    : public NoBaseWillBeGarbageCollected<NavigatorPlugins>
-    , public WillBeHeapSupplement<Navigator>
-    , DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorPlugins);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorPlugins);
+class NavigatorPlugins final : public GarbageCollectedFinalized<NavigatorPlugins>, public HeapSupplement<Navigator>, public DOMWindowProperty {
+    USING_GARBAGE_COLLECTED_MIXIN(NavigatorPlugins);
 public:
     static NavigatorPlugins& from(Navigator&);
     static NavigatorPlugins* toNavigatorPlugins(Navigator&);
-    static const char* supplementName();
+
+    virtual ~NavigatorPlugins();
 
     static DOMPluginArray* plugins(Navigator&);
     static DOMMimeTypeArray* mimeTypes(Navigator&);
@@ -34,6 +31,8 @@ public:
 
 private:
     explicit NavigatorPlugins(Navigator&);
+
+    static const char* supplementName();
 
     DOMPluginArray* plugins(LocalFrame*) const;
     DOMMimeTypeArray* mimeTypes(LocalFrame*) const;

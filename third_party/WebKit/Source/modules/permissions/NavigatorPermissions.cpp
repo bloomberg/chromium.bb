@@ -14,10 +14,6 @@ NavigatorPermissions::NavigatorPermissions()
 {
 }
 
-NavigatorPermissions::~NavigatorPermissions()
-{
-}
-
 // static
 const char* NavigatorPermissions::supplementName()
 {
@@ -27,10 +23,10 @@ const char* NavigatorPermissions::supplementName()
 // static
 NavigatorPermissions& NavigatorPermissions::from(Navigator& navigator)
 {
-    NavigatorPermissions* supplement = static_cast<NavigatorPermissions*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorPermissions* supplement = static_cast<NavigatorPermissions*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorPermissions();
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -47,7 +43,7 @@ Permissions* NavigatorPermissions::permissions(Navigator& navigator)
 DEFINE_TRACE(NavigatorPermissions)
 {
     visitor->trace(m_permissions);
-    WillBeHeapSupplement<Navigator>::trace(visitor);
+    HeapSupplement<Navigator>::trace(visitor);
 }
 
 } // namespace blink

@@ -33,10 +33,10 @@ NavigatorVRDevice* NavigatorVRDevice::from(Document& document)
 
 NavigatorVRDevice& NavigatorVRDevice::from(Navigator& navigator)
 {
-    NavigatorVRDevice* supplement = static_cast<NavigatorVRDevice*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorVRDevice* supplement = static_cast<NavigatorVRDevice*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorVRDevice(navigator.frame());
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -76,7 +76,7 @@ DEFINE_TRACE(NavigatorVRDevice)
 {
     visitor->trace(m_hardwareUnits);
 
-    WillBeHeapSupplement<Navigator>::trace(visitor);
+    HeapSupplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

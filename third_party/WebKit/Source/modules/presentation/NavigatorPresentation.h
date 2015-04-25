@@ -13,26 +13,21 @@ namespace blink {
 class Navigator;
 class Presentation;
 
-class NavigatorPresentation final
-    : public NoBaseWillBeGarbageCollectedFinalized<NavigatorPresentation>
-    , public WillBeHeapSupplement<Navigator> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorPresentation);
+class NavigatorPresentation final : public GarbageCollectedFinalized<NavigatorPresentation>, public HeapSupplement<Navigator> {
+    USING_GARBAGE_COLLECTED_MIXIN(NavigatorPresentation);
 public:
-    virtual ~NavigatorPresentation();
-
     static NavigatorPresentation& from(Navigator&);
     static Presentation* presentation(Navigator&);
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    static const char* supplementName();
-
     NavigatorPresentation();
 
+    static const char* supplementName();
     Presentation* presentation();
 
-    PersistentWillBeMember<Presentation> m_presentation;
+    Member<Presentation> m_presentation;
 };
 
 } // namespace blink

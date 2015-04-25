@@ -42,7 +42,9 @@ NavigatorStorageQuota::NavigatorStorageQuota(LocalFrame* frame)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorStorageQuota);
+NavigatorStorageQuota::~NavigatorStorageQuota()
+{
+}
 
 const char* NavigatorStorageQuota::supplementName()
 {
@@ -51,10 +53,10 @@ const char* NavigatorStorageQuota::supplementName()
 
 NavigatorStorageQuota& NavigatorStorageQuota::from(Navigator& navigator)
 {
-    NavigatorStorageQuota* supplement = static_cast<NavigatorStorageQuota*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorStorageQuota* supplement = static_cast<NavigatorStorageQuota*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorStorageQuota(navigator.frame());
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -100,7 +102,7 @@ DEFINE_TRACE(NavigatorStorageQuota)
     visitor->trace(m_storageQuota);
     visitor->trace(m_temporaryStorage);
     visitor->trace(m_persistentStorage);
-    WillBeHeapSupplement<Navigator>::trace(visitor);
+    HeapSupplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

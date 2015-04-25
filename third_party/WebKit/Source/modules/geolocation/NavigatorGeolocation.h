@@ -30,11 +30,11 @@ class LocalFrame;
 class Geolocation;
 class Navigator;
 
-class NavigatorGeolocation final : public NoBaseWillBeGarbageCollected<NavigatorGeolocation>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorGeolocation);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorGeolocation);
+class NavigatorGeolocation final : public GarbageCollectedFinalized<NavigatorGeolocation>, public HeapSupplement<Navigator>, public DOMWindowProperty {
+    USING_GARBAGE_COLLECTED_MIXIN(NavigatorGeolocation);
 public:
     static NavigatorGeolocation& from(Navigator&);
+    virtual ~NavigatorGeolocation();
 
     static Geolocation* geolocation(Navigator&);
     Geolocation* geolocation();
@@ -42,10 +42,11 @@ public:
     DECLARE_TRACE();
 
 private:
-    NavigatorGeolocation(LocalFrame*);
+    explicit NavigatorGeolocation(LocalFrame*);
+
     static const char* supplementName();
 
-    PersistentWillBeMember<Geolocation> m_geolocation;
+    Member<Geolocation> m_geolocation;
 };
 
 } // namespace blink

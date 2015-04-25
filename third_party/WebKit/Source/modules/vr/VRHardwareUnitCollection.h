@@ -14,7 +14,7 @@ namespace blink {
 
 class WebVRDevice;
 
-class VRHardwareUnitCollection final : public RefCountedWillBeGarbageCollected<VRHardwareUnitCollection> {
+class VRHardwareUnitCollection final : public GarbageCollected<VRHardwareUnitCollection> {
 public:
     explicit VRHardwareUnitCollection(VRController*);
 
@@ -24,8 +24,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PersistentWillBeMember<VRController> m_controller;
-    PersistentHeapVectorWillBeHeapVector<Member<VRHardwareUnit>> m_hardwareUnits;
+    Member<VRController> m_controller;
+    HeapVector<Member<VRHardwareUnit>> m_hardwareUnits;
 };
 
 } // namespace blink

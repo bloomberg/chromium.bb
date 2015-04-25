@@ -42,8 +42,8 @@ class Gamepad;
 class GamepadList;
 class Navigator;
 
-class MODULES_EXPORT NavigatorGamepad final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorGamepad>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty, public PlatformEventController, public DOMWindowLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
+class MODULES_EXPORT NavigatorGamepad final : public GarbageCollectedFinalized<NavigatorGamepad>, public HeapSupplement<Navigator>, public DOMWindowProperty, public PlatformEventController, public DOMWindowLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 public:
     static NavigatorGamepad* from(Document&);
     static NavigatorGamepad& from(Navigator&);
@@ -81,8 +81,8 @@ private:
     virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
     virtual void didRemoveAllEventListeners(LocalDOMWindow*) override;
 
-    PersistentWillBeMember<GamepadList> m_gamepads;
-    PersistentHeapDequeWillBeHeapDeque<Member<Gamepad>> m_pendingEvents;
+    Member<GamepadList> m_gamepads;
+    HeapDeque<Member<Gamepad>> m_pendingEvents;
     AsyncMethodRunner<NavigatorGamepad> m_dispatchOneEventRunner;
 };
 

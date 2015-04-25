@@ -263,7 +263,7 @@ private:
     mutable RefPtrWillBeMember<BarProp> m_statusbar;
     mutable RefPtrWillBeMember<BarProp> m_toolbar;
     mutable PersistentWillBeMember<Console> m_console;
-    mutable RefPtrWillBeMember<Navigator> m_navigator;
+    mutable PersistentWillBeMember<Navigator> m_navigator;
     mutable RefPtrWillBeMember<StyleMedia> m_media;
 
     String m_status;

@@ -14,10 +14,6 @@ NavigatorBattery::NavigatorBattery()
 {
 }
 
-NavigatorBattery::~NavigatorBattery()
-{
-}
-
 ScriptPromise NavigatorBattery::getBattery(ScriptState* scriptState, Navigator& navigator)
 {
     return NavigatorBattery::from(navigator).getBattery(scriptState);
@@ -38,10 +34,10 @@ const char* NavigatorBattery::supplementName()
 
 NavigatorBattery& NavigatorBattery::from(Navigator& navigator)
 {
-    NavigatorBattery* supplement = static_cast<NavigatorBattery*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorBattery* supplement = static_cast<NavigatorBattery*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorBattery();
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -49,7 +45,7 @@ NavigatorBattery& NavigatorBattery::from(Navigator& navigator)
 DEFINE_TRACE(NavigatorBattery)
 {
     visitor->trace(m_batteryManager);
-    WillBeHeapSupplement<Navigator>::trace(visitor);
+    HeapSupplement<Navigator>::trace(visitor);
 }
 
 } // namespace blink

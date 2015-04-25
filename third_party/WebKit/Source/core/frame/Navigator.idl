@@ -20,7 +20,7 @@
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/timers.html#navigator
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface Navigator {
     readonly attribute boolean cookieEnabled; // FIXME: move to NavigatorStorageUtils
 

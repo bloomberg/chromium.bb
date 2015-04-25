@@ -22,8 +22,8 @@ class Navigator;
 class VRController;
 class VRHardwareUnitCollection;
 
-class MODULES_EXPORT NavigatorVRDevice final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorVRDevice>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorVRDevice);
+class MODULES_EXPORT NavigatorVRDevice final : public GarbageCollectedFinalized<NavigatorVRDevice>, public HeapSupplement<Navigator>, public DOMWindowProperty {
+    USING_GARBAGE_COLLECTED_MIXIN(NavigatorVRDevice);
     WTF_MAKE_NONCOPYABLE(NavigatorVRDevice);
 public:
     static NavigatorVRDevice* from(Document&);
@@ -45,7 +45,7 @@ private:
 
     static const char* supplementName();
 
-    RefPtrWillBeMember<VRHardwareUnitCollection> m_hardwareUnits;
+    Member<VRHardwareUnitCollection> m_hardwareUnits;
 };
 
 } // namespace blink

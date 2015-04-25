@@ -18,7 +18,9 @@ NavigatorPlugins::NavigatorPlugins(Navigator& navigator)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorPlugins);
+NavigatorPlugins::~NavigatorPlugins()
+{
+}
 
 // static
 NavigatorPlugins& NavigatorPlugins::from(Navigator& navigator)
@@ -26,7 +28,7 @@ NavigatorPlugins& NavigatorPlugins::from(Navigator& navigator)
     NavigatorPlugins* supplement = toNavigatorPlugins(navigator);
     if (!supplement) {
         supplement = new NavigatorPlugins(navigator);
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -34,7 +36,7 @@ NavigatorPlugins& NavigatorPlugins::from(Navigator& navigator)
 // static
 NavigatorPlugins* NavigatorPlugins::toNavigatorPlugins(Navigator& navigator)
 {
-    return static_cast<NavigatorPlugins*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
+    return static_cast<NavigatorPlugins*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
 }
 
 // static
@@ -87,7 +89,7 @@ DEFINE_TRACE(NavigatorPlugins)
 {
     visitor->trace(m_plugins);
     visitor->trace(m_mimeTypes);
-    WillBeHeapSupplement<Navigator>::trace(visitor);
+    HeapSupplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

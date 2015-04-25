@@ -35,7 +35,9 @@ NavigatorGeolocation::NavigatorGeolocation(LocalFrame* frame)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorGeolocation);
+NavigatorGeolocation::~NavigatorGeolocation()
+{
+}
 
 const char* NavigatorGeolocation::supplementName()
 {
@@ -44,10 +46,10 @@ const char* NavigatorGeolocation::supplementName()
 
 NavigatorGeolocation& NavigatorGeolocation::from(Navigator& navigator)
 {
-    NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorGeolocation(navigator.frame());
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -67,7 +69,7 @@ Geolocation* NavigatorGeolocation::geolocation()
 DEFINE_TRACE(NavigatorGeolocation)
 {
     visitor->trace(m_geolocation);
-    WillBeHeapSupplement<Navigator>::trace(visitor);
+    HeapSupplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

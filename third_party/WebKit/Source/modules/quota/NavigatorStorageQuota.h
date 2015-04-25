@@ -42,11 +42,11 @@ class LocalFrame;
 class Navigator;
 class StorageQuota;
 
-class NavigatorStorageQuota final : public NoBaseWillBeGarbageCollected<NavigatorStorageQuota>, public WillBeHeapSupplement<Navigator>, public DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorStorageQuota);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorStorageQuota);
+class NavigatorStorageQuota final : public GarbageCollectedFinalized<NavigatorStorageQuota>, public HeapSupplement<Navigator>, public DOMWindowProperty {
+    USING_GARBAGE_COLLECTED_MIXIN(NavigatorStorageQuota);
 public:
     static NavigatorStorageQuota& from(Navigator&);
+    virtual ~NavigatorStorageQuota();
 
     static StorageQuota* storageQuota(Navigator&);
     static DeprecatedStorageQuota* webkitTemporaryStorage(Navigator&);
@@ -62,9 +62,9 @@ private:
     explicit NavigatorStorageQuota(LocalFrame*);
     static const char* supplementName();
 
-    mutable PersistentWillBeMember<StorageQuota> m_storageQuota;
-    mutable PersistentWillBeMember<DeprecatedStorageQuota> m_temporaryStorage;
-    mutable PersistentWillBeMember<DeprecatedStorageQuota> m_persistentStorage;
+    mutable Member<StorageQuota> m_storageQuota;
+    mutable Member<DeprecatedStorageQuota> m_temporaryStorage;
+    mutable Member<DeprecatedStorageQuota> m_persistentStorage;
 };
 
 } // namespace blink

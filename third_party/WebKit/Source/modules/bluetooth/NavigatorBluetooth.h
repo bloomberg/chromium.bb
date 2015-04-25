@@ -13,11 +13,8 @@ namespace blink {
 class Bluetooth;
 class Navigator;
 
-class NavigatorBluetooth final
-    : public NoBaseWillBeGarbageCollected<NavigatorBluetooth>
-    , public WillBeHeapSupplement<Navigator> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorBluetooth);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NavigatorBluetooth);
+class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>, public HeapSupplement<Navigator> {
+    USING_GARBAGE_COLLECTED_MIXIN(NavigatorBluetooth);
 public:
     // Gets, or creates, NavigatorBluetooth supplement on Navigator.
     // See platform/Supplementable.h
@@ -32,7 +29,7 @@ private:
     NavigatorBluetooth();
     static const char* supplementName();
 
-    PersistentWillBeMember<Bluetooth> m_bluetooth;
+    Member<Bluetooth> m_bluetooth;
 };
 
 } // namespace blink

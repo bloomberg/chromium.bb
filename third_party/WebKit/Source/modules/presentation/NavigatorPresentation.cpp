@@ -14,10 +14,6 @@ NavigatorPresentation::NavigatorPresentation()
 {
 }
 
-NavigatorPresentation::~NavigatorPresentation()
-{
-}
-
 // static
 const char* NavigatorPresentation::supplementName()
 {
@@ -27,10 +23,10 @@ const char* NavigatorPresentation::supplementName()
 // static
 NavigatorPresentation& NavigatorPresentation::from(Navigator& navigator)
 {
-    NavigatorPresentation* supplement = static_cast<NavigatorPresentation*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorPresentation* supplement = static_cast<NavigatorPresentation*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorPresentation();
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -44,13 +40,13 @@ Presentation* NavigatorPresentation::presentation(Navigator& navigator)
             return nullptr;
         self.m_presentation = Presentation::create(navigator.frame());
     }
-    return self.m_presentation.get();
+    return self.m_presentation;
 }
 
 DEFINE_TRACE(NavigatorPresentation)
 {
     visitor->trace(m_presentation);
-    WillBeHeapSupplement<Navigator>::trace(visitor);
+    HeapSupplement<Navigator>::trace(visitor);
 }
 
 } // namespace blink

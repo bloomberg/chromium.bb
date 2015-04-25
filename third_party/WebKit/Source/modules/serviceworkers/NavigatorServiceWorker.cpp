@@ -18,12 +18,14 @@ NavigatorServiceWorker::NavigatorServiceWorker(Navigator& navigator)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NavigatorServiceWorker);
+NavigatorServiceWorker::~NavigatorServiceWorker()
+{
+}
 
 NavigatorServiceWorker* NavigatorServiceWorker::from(Document& document)
 {
     if (!document.frame() || !document.frame()->domWindow())
-        return 0;
+        return nullptr;
     Navigator& navigator = *document.frame()->domWindow()->navigator();
     return &from(navigator);
 }
@@ -33,7 +35,7 @@ NavigatorServiceWorker& NavigatorServiceWorker::from(Navigator& navigator)
     NavigatorServiceWorker* supplement = toNavigatorServiceWorker(navigator);
     if (!supplement) {
         supplement = new NavigatorServiceWorker(navigator);
-        provideTo(navigator, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(navigator, supplementName(), supplement);
         // Initialize ServiceWorkerContainer too.
         supplement->serviceWorker();
     }
@@ -42,7 +44,7 @@ NavigatorServiceWorker& NavigatorServiceWorker::from(Navigator& navigator)
 
 NavigatorServiceWorker* NavigatorServiceWorker::toNavigatorServiceWorker(Navigator& navigator)
 {
-    return static_cast<NavigatorServiceWorker*>(WillBeHeapSupplement<Navigator>::from(navigator, supplementName()));
+    return static_cast<NavigatorServiceWorker*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
 }
 
 const char* NavigatorServiceWorker::supplementName()
@@ -75,7 +77,7 @@ void NavigatorServiceWorker::willDetachGlobalObjectFromFrame()
 DEFINE_TRACE(NavigatorServiceWorker)
 {
     visitor->trace(m_serviceWorker);
-    WillBeHeapSupplement<Navigator>::trace(visitor);
+    HeapSupplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
