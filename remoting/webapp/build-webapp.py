@@ -109,7 +109,8 @@ def processJinjaTemplate(input_file, include_paths, output_file, context):
 def buildWebApp(buildtype, version, destination, zip_path,
                 manifest_template, webapp_type, appid, app_client_id, app_name,
                 app_description, app_capabilities, manifest_key, files,
-                locales_listfile, jinja_paths, service_environment, use_gcd):
+                files_listfile, locales_listfile, jinja_paths,
+                service_environment, use_gcd):
   """Does the main work of building the webapp directory and zipfile.
 
   Args:
@@ -121,8 +122,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
     manifest_template: jinja2 template file for manifest.
     webapp_type: webapp type ("v1", "v2", "v2_pnacl" or "app_remoting").
     appid: A string with the Remoting Application Id (only used for app
-             remoting webapps). If supplied, it defaults to using the
-             test API server.
+           remoting webapps). If supplied, it defaults to using the
+           test API server.
     app_client_id: The OAuth2 client ID for the webapp.
     app_name: A string with the name of the application.
     app_description: A string with the description of the application.
@@ -131,9 +132,14 @@ def buildWebApp(buildtype, version, destination, zip_path,
     manifest_key: The manifest key for the webapp.
     files: An array of strings listing the paths for resources to include
            in this webapp.
+    files_listfile: The name of a file containing a list of files, one per
+                    line, identifying the resources to include in this webapp.
+                    This is an alternate to specifying the files directly via
+                    the 'files' option. The files listed in this file are
+                    appended to the files passed via the 'files' option, if any.
     locales_listfile: The name of a file containing a list of locales, one per
-             line, which are copied, along with their directory structure, from
-             the _locales directory down.
+                      line, which are copied, along with their directory
+                      structure, from the _locales directory down.
     jinja_paths: An array of paths to search for {%include} directives in
                  addition to the directory containing the manifest template.
     service_environment: Used to point the webapp to one of the
@@ -148,6 +154,12 @@ def buildWebApp(buildtype, version, destination, zip_path,
   with open(locales_listfile) as input:
     for s in input:
       locales.append(s.rstrip())
+
+  # Load the files from the files_listfile.
+  if files_listfile:
+    with open(files_listfile) as input:
+      for s in input:
+        files.append(s.rstrip())
 
   # Ensure a fresh directory.
   try:
@@ -437,6 +449,7 @@ def main():
   parser.add_argument('--appid')
   parser.add_argument('--app_client_id', default='')
   parser.add_argument('--manifest_key', default='')
+  parser.add_argument('--files_listfile', default='', metavar='PATH')
   parser.add_argument('--locales_listfile', default='', metavar='PATH')
   parser.add_argument('--jinja_paths', nargs='*', default=[], metavar='PATH')
   parser.add_argument('--service_environment', default='', metavar='ENV')

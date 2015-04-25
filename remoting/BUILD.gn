@@ -24,12 +24,8 @@ group("remoting_all") {
     #"//app_remoting_webapp.gyp:ar_sample_app",
   ]
 
-  if ((is_linux && !is_chromeos) || is_mac) {
-    deps += [
-      # TODO(gyp) Enable this for Windows once the webapp can be built without
-      # exceeding the 8k cmd line limit on Windows.
-      "//remoting/webapp",
-    ]
+  if ((is_linux && !is_chromeos) || is_mac || is_win) {
+    deps += [ "//remoting/webapp" ]
   }
 
   if (is_win) {

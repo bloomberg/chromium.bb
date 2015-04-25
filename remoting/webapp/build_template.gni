@@ -72,6 +72,16 @@ template("remoting_webapp") {
       "$target_gen_dir/wcs_sandbox.html",
     ]
 
+    # Create a file that contains a list of all the resource files needed
+    # to build the webapp. This is needed to avoid problems on platforms that
+    # limit the size of a command line.
+    file_list = "$target_gen_dir/${target_name}_file_list.txt"
+    files = []
+    files += rebase_path(generated_html_files, root_build_dir)
+    files += rebase_path(remoting_webapp_crd_files, root_build_dir)
+    files += rebase_path(extra_files, root_build_dir)
+    write_file(file_list, files)
+
     args = [
       buildtype,
       version_full,
@@ -80,9 +90,10 @@ template("remoting_webapp") {
       rebase_path("crd/manifest.json.jinja2", root_build_dir),
       webapp_type,
     ]
-    args += rebase_path(generated_html_files, root_build_dir)
-    args += rebase_path(remoting_webapp_crd_files, root_build_dir)
-    args += rebase_path(extra_files, root_build_dir)
+    args += [
+      "--files_listfile",
+      rebase_path(file_list, root_build_dir),
+    ]
     args += [
       "--locales_listfile",
       listfile_rel,
