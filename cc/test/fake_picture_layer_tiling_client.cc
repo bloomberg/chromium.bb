@@ -17,20 +17,21 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
       twin_set_(nullptr),
       twin_tiling_(nullptr),
       recycled_twin_tiling_(nullptr),
-      max_tile_priority_bin_(TilePriority::NOW) {
+      max_tile_priority_bin_(TilePriority::NOW),
+      tree_(ACTIVE_TREE) {
 }
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
     ResourceProvider* resource_provider)
-    : resource_pool_(
-          ResourcePool::Create(resource_provider, GL_TEXTURE_2D)),
-      tile_manager_(new FakeTileManager(
-          &tile_manager_client_, resource_pool_.get())),
+    : resource_pool_(ResourcePool::Create(resource_provider, GL_TEXTURE_2D)),
+      tile_manager_(
+          new FakeTileManager(&tile_manager_client_, resource_pool_.get())),
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),
       recycled_twin_tiling_(nullptr),
-      max_tile_priority_bin_(TilePriority::NOW) {
+      max_tile_priority_bin_(TilePriority::NOW),
+      tree_(ACTIVE_TREE) {
 }
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
