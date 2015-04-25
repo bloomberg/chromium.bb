@@ -168,7 +168,7 @@ std::string GetMd5Digest(const base::FilePath& file_path,
 
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
-  return MD5DigestToBase16(digest);
+  return base::MD5DigestToBase16(digest);
 }
 
 FileStreamMd5Digester::FileStreamMd5Digester()
@@ -207,7 +207,7 @@ void FileStreamMd5Digester::OnChunkRead(const ResultCallback& callback,
     // EOF.
     base::MD5Digest digest;
     base::MD5Final(&digest, &md5_context_);
-    std::string result = MD5DigestToBase16(digest);
+    std::string result = base::MD5DigestToBase16(digest);
     callback.Run(result);
     return;
   }
