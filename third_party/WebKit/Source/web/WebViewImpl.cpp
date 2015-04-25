@@ -1052,8 +1052,19 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
             // Suppress the next keypress event unless the focused node is a plugin node.
             // (Flash needs these keypress events to handle non-US keyboards.)
             Element* element = focusedElement();
-            if (!element || !element->layoutObject() || !element->layoutObject()->isEmbeddedObject())
+            if (element && element->layoutObject() && element->layoutObject()->isEmbeddedObject()) {
+                if (event.windowsKeyCode == VKEY_TAB) {
+                    // If the plugin supports keyboard focus then we should not send a tab keypress event.
+                    Widget* widget = toLayoutPart(element->layoutObject())->widget();
+                    if (widget && widget->isPluginContainer()) {
+                        WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
+                        if (plugin && plugin->supportsKeyboardFocus())
+                            m_suppressNextKeypressEvent = true;
+                    }
+                }
+            } else {
                 m_suppressNextKeypressEvent = true;
+            }
         }
         return true;
     }
