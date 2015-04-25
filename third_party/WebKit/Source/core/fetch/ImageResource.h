@@ -129,11 +129,6 @@ private:
     IntSize svgImageSizeForLayoutObject(const LayoutObject*) const;
     blink::Image* svgImageForLayoutObject(const LayoutObject*);
 
-    virtual void switchClientsToRevalidatedResource() override;
-
-    typedef pair<IntSize, float> SizeAndZoom;
-    typedef HashMap<const ImageResourceClient*, SizeAndZoom> ContainerSizeRequests;
-    ContainerSizeRequests m_pendingContainerSizeRequests;
     float m_devicePixelRatioHeaderValue;
 
     typedef HashMap<const ImageResourceClient*, RefPtr<SVGImageForContainer>> ImageForContainerMap;

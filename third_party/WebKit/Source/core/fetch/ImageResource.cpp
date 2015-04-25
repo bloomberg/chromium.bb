@@ -110,31 +110,10 @@ void ImageResource::didRemoveClient(ResourceClient* c)
 {
     ASSERT(c);
     ASSERT(c->resourceClientType() == ImageResourceClient::expectedType());
-    m_pendingContainerSizeRequests.remove(static_cast<ImageResourceClient*>(c));
     if (m_imageForContainerMap)
         m_imageForContainerMap->remove(static_cast<ImageResourceClient*>(c));
 
     Resource::didRemoveClient(c);
-}
-
-void ImageResource::switchClientsToRevalidatedResource()
-{
-    ASSERT(resourceToRevalidate());
-    ASSERT(resourceToRevalidate()->isImage());
-    // Pending container size requests need to be transferred to the revalidated resource.
-    if (!m_pendingContainerSizeRequests.isEmpty()) {
-        // A copy of pending size requests is needed as they are deleted during Resource::switchClientsToRevalidateResource().
-        ContainerSizeRequests switchContainerSizeRequests;
-        for (const auto& containerSizeRequest : m_pendingContainerSizeRequests)
-            switchContainerSizeRequests.set(containerSizeRequest.key, containerSizeRequest.value);
-        Resource::switchClientsToRevalidatedResource();
-        ImageResource* revalidatedImageResource = toImageResource(resourceToRevalidate());
-        for (const auto& containerSizeRequest : switchContainerSizeRequests)
-            revalidatedImageResource->setContainerSizeForLayoutObject(containerSizeRequest.key, containerSizeRequest.value.first, containerSizeRequest.value.second);
-        return;
-    }
-
-    Resource::switchClientsToRevalidatedResource();
 }
 
 bool ImageResource::isSafeToUnlock() const
@@ -155,7 +134,6 @@ void ImageResource::destroyDecodedDataIfPossible()
 
 void ImageResource::allClientsRemoved()
 {
-    m_pendingContainerSizeRequests.clear();
     if (m_image && !errorOccurred())
         m_image->resetAnimation();
     Resource::allClientsRemoved();
@@ -223,10 +201,8 @@ void ImageResource::setContainerSizeForLayoutObject(const ImageResourceClient* l
         return;
     ASSERT(layoutObject);
     ASSERT(containerZoom);
-    if (!m_image) {
-        m_pendingContainerSizeRequests.set(layoutObject, SizeAndZoom(containerSize, containerZoom));
+    if (!m_image)
         return;
-    }
     if (!m_image->isSVGImage()) {
         m_image->setContainerSize(containerSize);
         return;
@@ -307,7 +283,6 @@ void ImageResource::clear()
 {
     prune();
     clearImage();
-    m_pendingContainerSizeRequests.clear();
     setEncodedSize(0);
 }
 
@@ -328,15 +303,6 @@ inline void ImageResource::createImage()
         m_imageForContainerMap = adoptPtr(new ImageForContainerMap);
     } else {
         m_image = BitmapImage::create(this);
-    }
-
-    if (m_image) {
-        // Send queued container size requests.
-        if (m_image->usesContainerSize()) {
-            for (const auto& containerSizeRequest : m_pendingContainerSizeRequests)
-                setContainerSizeForLayoutObject(containerSizeRequest.key, containerSizeRequest.value.first, containerSizeRequest.value.second);
-        }
-        m_pendingContainerSizeRequests.clear();
     }
 }
 
