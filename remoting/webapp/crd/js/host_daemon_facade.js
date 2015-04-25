@@ -84,12 +84,19 @@ remoting.HostDaemonFacade.prototype.initialize_ = function() {
  * @private
  */
 remoting.HostDaemonFacade.prototype.connectNative_ = function() {
+  var that = this;
   try {
     this.port_ = chrome.runtime.connectNative(
         'com.google.chrome.remote_desktop');
     this.port_.onMessage.addListener(this.onIncomingMessageCallback_);
     this.port_.onDisconnect.addListener(this.onDisconnectCallback_);
-    return this.postMessageInternal_({type: 'hello'});
+    return this.postMessageInternal_({type: 'hello'}).then(function(reply) {
+      that.version_ = base.getStringAttr(reply, 'version');
+      // Old versions of the native messaging host do not return this list.
+      // Those versions default to the empty list of supported features.
+      that.supportedFeatures_ =
+          base.getArrayAttr(reply, 'supportedFeatures', []);
+    });
   } catch (/** @type {*} */ err) {
     console.log('Native Messaging initialization failed: ', err);
     throw remoting.Error.unexpected();
@@ -131,7 +138,7 @@ remoting.HostDaemonFacade.prototype.hasFeature = function(feature) {
  * Initializes that the Daemon if necessary and posts the supplied message.
  *
  * @param {{type: string}} message The message to post.
- * @return {!Promise}
+ * @return {!Promise<!Object>}
  * @private
  */
 remoting.HostDaemonFacade.prototype.postMessage_ =
@@ -152,7 +159,7 @@ remoting.HostDaemonFacade.prototype.postMessage_ =
  * any other fields set depending on the message type.
  *
  * @param {{type: string}} message The message to post.
- * @return {!Promise}
+ * @return {!Promise<!Object>}
  * @private
  */
 remoting.HostDaemonFacade.prototype.postMessageInternal_ = function(message) {
@@ -191,119 +198,10 @@ remoting.HostDaemonFacade.prototype.onIncomingMessage_ = function(message) {
     if (type != reply.type) {
       throw 'Expected reply type: ' + reply.type + ', got: ' + type;
     }
-
-    reply.deferred.resolve(this.handleIncomingMessage_(message));
+    reply.deferred.resolve(message);
   } catch (/** @type {*} */ e) {
     console.error('Error while processing native message', e);
     reply.deferred.reject(remoting.Error.unexpected());
-  }
-};
-
-/**
- * Handler for incoming Native Messages.
- *
- * TODO(jrw) Consider refactoring so each method handles its own
- * response, e.g.:
- *
- * remoting.HostDaemonFacade.prototype.generateKeyPair = function() {
- *   this.postMessage_({type: 'generateKeyPair'}).then(function(message) {
- *     return {
- *       privateKey: base.getStringAttr(message, 'privateKey'),
- *       publicKey: base.getStringAttr(message, 'publicKey')
- *     }
- *   });
- * };
- *
- * @param {Object} message The received message.
- * @return {*}
- * @private
- */
-remoting.HostDaemonFacade.prototype.handleIncomingMessage_ =
-    function(message) {
-  var type = base.getStringAttr(message, 'type');
-
-  switch (type) {
-    case 'helloResponse':
-      this.version_ = base.getStringAttr(message, 'version');
-      // Old versions of the native messaging host do not return this list.
-      // Those versions default to the empty list of supported features.
-      this.supportedFeatures_ =
-          base.getArrayAttr(message, 'supportedFeatures', []);
-      return null;
-
-    case 'getHostNameResponse':
-      return base.getStringAttr(message, 'hostname');
-
-    case 'getPinHashResponse':
-      return base.getStringAttr(message, 'hash');
-
-    case 'generateKeyPairResponse':
-      return {
-        privateKey: base.getStringAttr(message, 'privateKey'),
-        publicKey: base.getStringAttr(message, 'publicKey')
-      };
-
-    case 'updateDaemonConfigResponse':
-      return remoting.HostController.AsyncResult.fromString(
-          base.getStringAttr(message, 'result'));
-
-    case 'getDaemonConfigResponse':
-      return base.getObjectAttr(message, 'config');
-
-    case 'getUsageStatsConsentResponse':
-      return {
-        supported: base.getBooleanAttr(message, 'supported'),
-        allowed: base.getBooleanAttr(message, 'allowed'),
-        setByPolicy: base.getBooleanAttr(message, 'setByPolicy')
-      };
-
-    case 'startDaemonResponse':
-    case 'stopDaemonResponse':
-      return remoting.HostController.AsyncResult.fromString(
-          base.getStringAttr(message, 'result'));
-
-    case 'getDaemonStateResponse':
-      return remoting.HostController.State.fromString(
-        base.getStringAttr(message, 'state'));
-
-    case 'getPairedClientsResponse':
-      var pairedClients = remoting.PairedClient.convertToPairedClientArray(
-          message['pairedClients']);
-      if (pairedClients != null) {
-        return pairedClients;
-      } else {
-        throw 'No paired clients!';
-      }
-
-    case 'clearPairedClientsResponse':
-    case 'deletePairedClientResponse':
-      return base.getBooleanAttr(message, 'result');
-
-    case 'getHostClientIdResponse':
-      return base.getStringAttr(message, 'clientId');
-
-    case 'getCredentialsFromAuthCodeResponse':
-      var userEmail = base.getStringAttr(message, 'userEmail');
-      var refreshToken = base.getStringAttr(message, 'refreshToken');
-      if (userEmail && refreshToken) {
-        return {
-          userEmail: userEmail,
-          refreshToken: refreshToken
-        };
-      } else {
-        throw 'Missing userEmail or refreshToken';
-      }
-
-    case 'getRefreshTokenFromAuthCodeResponse':
-      var refreshToken = base.getStringAttr(message, 'refreshToken');
-      if (refreshToken) {
-        return refreshToken;
-      } else {
-        throw 'Missing refreshToken';
-      }
-
-    default:
-      throw 'Unexpected native message: ' + message;
   }
 };
 
@@ -339,7 +237,9 @@ remoting.HostDaemonFacade.prototype.onDisconnect_ = function() {
  * @return {!Promise<string>}
  */
 remoting.HostDaemonFacade.prototype.getHostName = function() {
-  return this.postMessage_({type: 'getHostName'});
+  return this.postMessage_({type: 'getHostName'}).then(function(reply) {
+    return base.getStringAttr(reply, 'hostname');
+  });
 };
 
 /**
@@ -355,6 +255,8 @@ remoting.HostDaemonFacade.prototype.getPinHash = function(hostId, pin) {
       type: 'getPinHash',
       hostId: hostId,
       pin: pin
+  }).then(function(reply) {
+    return base.getStringAttr(reply, 'hash');
   });
 };
 
@@ -366,7 +268,12 @@ remoting.HostDaemonFacade.prototype.getPinHash = function(hostId, pin) {
  * @return {!Promise<remoting.KeyPair>}
  */
 remoting.HostDaemonFacade.prototype.generateKeyPair = function() {
-  return this.postMessage_({type: 'generateKeyPair'});
+  return this.postMessage_({type: 'generateKeyPair'}).then(function(reply) {
+    return {
+      privateKey: base.getStringAttr(reply, 'privateKey'),
+      publicKey: base.getStringAttr(reply, 'publicKey')
+    };
+  });
 };
 
 /**
@@ -386,6 +293,9 @@ remoting.HostDaemonFacade.prototype.updateDaemonConfig = function(config) {
   return this.postMessage_({
       type: 'updateDaemonConfig',
       config: config
+  }).then(function(reply) {
+    return remoting.HostController.AsyncResult.fromString(
+        base.getStringAttr(reply, 'result'));
   });
 };
 
@@ -395,7 +305,9 @@ remoting.HostDaemonFacade.prototype.updateDaemonConfig = function(config) {
  * @return {!Promise<Object>}
  */
 remoting.HostDaemonFacade.prototype.getDaemonConfig = function() {
-  return this.postMessage_({type: 'getDaemonConfig'});
+  return this.postMessage_({type: 'getDaemonConfig'}).then(function(reply) {
+    return base.getObjectAttr(reply, 'config');
+  });
 };
 
 /**
@@ -421,7 +333,14 @@ remoting.HostDaemonFacade.prototype.getDaemonVersion = function() {
  * @return {!Promise<remoting.UsageStatsConsent>}
  */
 remoting.HostDaemonFacade.prototype.getUsageStatsConsent = function() {
-  return this.postMessage_({type: 'getUsageStatsConsent'});
+  return this.postMessage_({type: 'getUsageStatsConsent'}).
+      then(function(reply) {
+        return {
+          supported: base.getBooleanAttr(reply, 'supported'),
+          allowed: base.getBooleanAttr(reply, 'allowed'),
+          setByPolicy: base.getBooleanAttr(reply, 'setByPolicy')
+        };
+      });
 };
 
 /**
@@ -438,6 +357,9 @@ remoting.HostDaemonFacade.prototype.startDaemon = function(config, consent) {
       type: 'startDaemon',
       config: config,
       consent: consent
+  }).then(function(reply) {
+    return remoting.HostController.AsyncResult.fromString(
+        base.getStringAttr(reply, 'result'));
   });
 };
 
@@ -450,7 +372,10 @@ remoting.HostDaemonFacade.prototype.startDaemon = function(config, consent) {
  */
 remoting.HostDaemonFacade.prototype.stopDaemon =
     function() {
-  return this.postMessage_({type: 'stopDaemon'});
+  return this.postMessage_({type: 'stopDaemon'}).then(function(reply) {
+    return remoting.HostController.AsyncResult.fromString(
+        base.getStringAttr(reply, 'result'));
+  });
 };
 
 /**
@@ -459,7 +384,10 @@ remoting.HostDaemonFacade.prototype.stopDaemon =
  * @return {!Promise<remoting.HostController.State>}
  */
 remoting.HostDaemonFacade.prototype.getDaemonState = function() {
-  return this.postMessage_({type: 'getDaemonState'});
+  return this.postMessage_({type: 'getDaemonState'}).then(function(reply) {
+    return remoting.HostController.State.fromString(
+        base.getStringAttr(reply, 'state'));
+ });
 };
 
 /**
@@ -468,7 +396,15 @@ remoting.HostDaemonFacade.prototype.getDaemonState = function() {
  * @return {!Promise<Array<remoting.PairedClient>>}
  */
 remoting.HostDaemonFacade.prototype.getPairedClients = function() {
-  return this.postMessage_({type: 'getPairedClients'});
+  return this.postMessage_({type: 'getPairedClients'}).then(function(reply) {
+    var pairedClients =remoting.PairedClient.convertToPairedClientArray(
+        reply['pairedClients']);
+    if (pairedClients != null) {
+      return pairedClients;
+    } else {
+      throw remoting.Error.unexpected('No paired clients!');
+    }
+  });
 };
 
 /**
@@ -477,7 +413,9 @@ remoting.HostDaemonFacade.prototype.getPairedClients = function() {
  * @return {!Promise<boolean>}
  */
 remoting.HostDaemonFacade.prototype.clearPairedClients = function() {
-  return this.postMessage_({type: 'clearPairedClients'});
+  return this.postMessage_({type: 'clearPairedClients'}).then(function(reply) {
+    return base.getBooleanAttr(reply, 'result');
+  });
 };
 
 /**
@@ -490,6 +428,8 @@ remoting.HostDaemonFacade.prototype.deletePairedClient = function(client) {
   return this.postMessage_({
     type: 'deletePairedClient',
     clientId: client
+  }).then(function(reply) {
+    return base.getBooleanAttr(reply, 'result');
   });
 };
 
@@ -499,7 +439,9 @@ remoting.HostDaemonFacade.prototype.deletePairedClient = function(client) {
  * @return {!Promise<string>}
  */
 remoting.HostDaemonFacade.prototype.getHostClientId = function() {
-  return this.postMessage_({type: 'getHostClientId'});
+  return this.postMessage_({type: 'getHostClientId'}).then(function(reply) {
+    return base.getStringAttr(reply, 'clientId');
+  });
 };
 
 /**
@@ -511,6 +453,17 @@ remoting.HostDaemonFacade.prototype.getCredentialsFromAuthCode =
   return this.postMessage_({
     type: 'getCredentialsFromAuthCode',
     authorizationCode: authorizationCode
+  }).then(function(reply) {
+    var userEmail = base.getStringAttr(reply, 'userEmail');
+    var refreshToken = base.getStringAttr(reply, 'refreshToken');
+    if (userEmail && refreshToken) {
+      return {
+        userEmail: userEmail,
+        refreshToken: refreshToken
+      };
+    } else {
+      throw remoting.Error.unexpected('Missing userEmail or refreshToken');
+    }
   });
 };
 
@@ -523,5 +476,12 @@ remoting.HostDaemonFacade.prototype.getRefreshTokenFromAuthCode =
   return this.postMessage_({
     type: 'getRefreshTokenFromAuthCode',
     authorizationCode: authorizationCode
+  }).then(function(reply) {
+    var refreshToken = base.getStringAttr(reply, 'refreshToken');
+    if (refreshToken) {
+      return refreshToken
+    } else {
+      throw remoting.Error.unexpected('Missing refreshToken');
+    }
   });
 };
