@@ -124,7 +124,7 @@ typedef WTF::HashMap<const DeprecatedPaintLayer*, Vector<LayoutRect>> LayerHitTe
 const int showTreeCharacterOffset = 39;
 #endif
 
-// Base class for all rendering tree objects.
+// Base class for all layout tree objects.
 class CORE_EXPORT LayoutObject : public ImageResourceClient {
     friend class LayoutBlock;
     friend class LayoutBlockFlow;
@@ -182,7 +182,7 @@ public:
 
     LayoutObject* lastLeafChild() const;
 
-    // The following six functions are used when the render tree hierarchy changes to make sure layers get
+    // The following six functions are used when the layout tree hierarchy changes to make sure layers get
     // properly added and removed.  Since containership can be implemented by any subclass, and since a hierarchy
     // can contain a mixture of boxes and other object types, these functions need to be in the base class.
     DeprecatedPaintLayer* enclosingLayer() const;
@@ -223,7 +223,7 @@ public:
         bool m_preexistingForbidden;
     };
 
-    void assertRendererLaidOut() const
+    void assertLaidOut() const
     {
 #ifndef NDEBUG
         if (needsLayout())
@@ -234,11 +234,11 @@ public:
 
     void assertSubtreeIsLaidOut() const
     {
-        for (const LayoutObject* renderer = this; renderer; renderer = renderer->nextInPreOrder())
-            renderer->assertRendererLaidOut();
+        for (const LayoutObject* layoutObject = this; layoutObject; layoutObject = layoutObject->nextInPreOrder())
+            layoutObject->assertLaidOut();
     }
 
-    void assertRendererClearedPaintInvalidationState() const
+    void assertClearedPaintInvalidationState() const
     {
 #ifndef NDEBUG
         if (paintInvalidationStateIsDirty()) {
@@ -250,13 +250,13 @@ public:
 
     void assertSubtreeClearedPaintInvalidationState() const
     {
-        for (const LayoutObject* renderer = this; renderer; renderer = renderer->nextInPreOrder())
-            renderer->assertRendererClearedPaintInvalidationState();
+        for (const LayoutObject* layoutObject = this; layoutObject; layoutObject = layoutObject->nextInPreOrder())
+            layoutObject->assertClearedPaintInvalidationState();
     }
 
 #endif
 
-    // Correct version of !rendererHasNoBoxEffectObsolete().
+    // Correct version of !layoutObjectHasNoBoxEffectObsolete().
     bool hasBoxEffect() const
     {
         return hasBoxDecorationBackground() || style()->hasVisualOverflowingEffect();
@@ -442,8 +442,8 @@ public:
     FlowThreadState flowThreadState() const { return m_bitfields.flowThreadState(); }
     void setFlowThreadState(FlowThreadState state) { m_bitfields.setFlowThreadState(state); }
 
-    // FIXME: Until all SVG renders can be subclasses of LayoutSVGModelObject we have
-    // to add SVG renderer methods to LayoutObject with an ASSERT_NOT_REACHED() default implementation.
+    // FIXME: Until all SVG layoutObjects can be subclasses of LayoutSVGModelObject we have
+    // to add SVG layoutObject methods to LayoutObject with an ASSERT_NOT_REACHED() default implementation.
     bool isSVG() const { return isOfType(LayoutObjectSVG); }
     bool isSVGRoot() const { return isOfType(LayoutObjectSVGRoot); }
     bool isSVGContainer() const { return isOfType(LayoutObjectSVGContainer); }
@@ -462,8 +462,8 @@ public:
     bool isSVGResourceFilter() const { return isOfType(LayoutObjectSVGResourceFilter); }
     bool isSVGResourceFilterPrimitive() const { return isOfType(LayoutObjectSVGResourceFilterPrimitive); }
 
-    // FIXME: Those belong into a SVG specific base-class for all renderers (see above)
-    // Unfortunately we don't have such a class yet, because it's not possible for all renderers
+    // FIXME: Those belong into a SVG specific base-class for all layoutObjects (see above)
+    // Unfortunately we don't have such a class yet, because it's not possible for all layoutObjects
     // to inherit from LayoutSVGObject -> LayoutObject (some need LayoutBlock inheritance for instance)
     virtual void setNeedsTransformUpdate() { }
     virtual void setNeedsBoundariesUpdate();
@@ -493,13 +493,13 @@ public:
     // most callsites want localToParentTransform() instead.
     virtual AffineTransform localTransform() const;
 
-    // Returns the full transform mapping from local coordinates to local coords for the parent SVG renderer
+    // Returns the full transform mapping from local coordinates to local coords for the parent SVG layoutObject
     // This includes any viewport transforms and x/y offsets as well as the transform="" value off the element.
     virtual const AffineTransform& localToParentTransform() const;
 
     // SVG uses FloatPoint precise hit testing, and passes the point in parent
     // coordinates instead of in paint invalidaiton container coordinates. Eventually the
-    // rest of the rendering tree will move to a similar model.
+    // rest of the layout tree will move to a similar model.
     virtual bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
 
     bool isAnonymous() const { return m_bitfields.isAnonymous(); }
@@ -624,8 +624,8 @@ public:
     // FIXME: Why does LayoutPart need this? crbug.com/422457
     void clearNode() { m_node = nullptr; }
 
-    // Returns the styled node that caused the generation of this renderer.
-    // This is the same as node() except for renderers of :before, :after and
+    // Returns the styled node that caused the generation of this layoutObject.
+    // This is the same as node() except for layoutObjects of :before, :after and
     // :first-letter pseudo elements for which their parent node is returned.
     Node* generatingNode() const { return isPseudoElement() ? node()->parentOrShadowHostNode() : node(); }
 
@@ -637,7 +637,7 @@ public:
 
     // Returns the object containing this one. Can be different from parent for positioned elements.
     // If paintInvalidationContainer and paintInvalidationContainerSkipped are not null, on return *paintInvalidationContainerSkipped
-    // is true if the renderer returned is an ancestor of paintInvalidationContainer.
+    // is true if the layoutObject returned is an ancestor of paintInvalidationContainer.
     LayoutObject* container(const LayoutBoxModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
     LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
 
@@ -773,7 +773,7 @@ public:
     // Convert a local point into the coordinate system of backing coordinates. Also returns the backing layer if needed.
     FloatPoint localToInvalidationBackingPoint(const LayoutPoint&, DeprecatedPaintLayer** backingLayer = nullptr);
 
-    // Return the offset from the container() renderer (excluding transforms). In multi-column layout,
+    // Return the offset from the container() layoutObject (excluding transforms). In multi-column layout,
     // different offsets apply at different points, so return the offset that applies to the given point.
     virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const;
     // Return the offset from an object up the container() chain. Asserts that none of the intermediate objects have transforms.
@@ -856,7 +856,7 @@ public:
     // Returns the paint invalidation rect for this LayoutObject in the coordinate space of the paint backing (typically a GraphicsLayer) for |paintInvalidationContainer|.
     LayoutRect computePaintInvalidationRect(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const;
 
-    // Returns the rect bounds needed to invalidate the paint of this object, in the coordinate space of the rendering backing of |paintInvalidationContainer|
+    // Returns the rect bounds needed to invalidate the paint of this object, in the coordinate space of the layoutObject backing of |paintInvalidationContainer|
     LayoutRect boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const;
 
     // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
@@ -870,7 +870,7 @@ public:
     void invalidatePaintRectangle(const LayoutRect&) const;
     void invalidatePaintRectangleNotInvalidatingDisplayItemClients(const LayoutRect& r) const { invalidatePaintRectangleInternal(r); }
 
-    // Walk the tree after layout issuing paint invalidations for renderers that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
+    // Walk the tree after layout issuing paint invalidations for layoutObjects that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
     virtual void invalidateTreeIfNeeded(PaintInvalidationState&);
 
     virtual void invalidatePaintForOverflow();
@@ -936,14 +936,14 @@ public:
     virtual bool shouldPaintSelectionGaps() const { return false; }
 
     /**
-     * Returns the local coordinates of the caret within this render object.
-     * @param caretOffset zero-based offset determining position within the render object.
+     * Returns the local coordinates of the caret within this layout object.
+     * @param caretOffset zero-based offset determining position within the layout object.
      * @param extraWidthToEndOfLine optional out arg to give extra width to end of line -
      * useful for character range rect computations
      */
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0);
 
-    // When performing a global document tear-down, the renderer of the document is cleared. We use this
+    // When performing a global document tear-down, the layoutObject of the document is cleared. We use this
     // as a hook to detect the case of document destruction and don't waste time doing unnecessary work.
     bool documentBeingDestroyed() const;
 
@@ -996,8 +996,8 @@ public:
     virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const;
 
-    // Pushes state onto LayoutGeometryMap about how to map coordinates from this renderer to its container, or ancestorToStopAt (whichever is encountered first).
-    // Returns the renderer which was mapped to (container or ancestorToStopAt).
+    // Pushes state onto LayoutGeometryMap about how to map coordinates from this layoutObject to its container, or ancestorToStopAt (whichever is encountered first).
+    // Returns the layoutObject which was mapped to (container or ancestorToStopAt).
     virtual const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const;
 
     bool shouldUseTransformFromContainer(const LayoutObject* container) const;
@@ -1007,11 +1007,11 @@ public:
 
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const { }
 
-    // Compute a list of hit-test rectangles per layer rooted at this renderer.
+    // Compute a list of hit-test rectangles per layer rooted at this layoutObject.
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const;
 
-    // Return the renderer whose background style is used to paint the root background. Should only be called on the renderer for which isDocumentElement() is true.
-    LayoutObject* rendererForRootBackground();
+    // Return the layoutObject whose background style is used to paint the root background. Should only be called on the layoutObject for which isDocumentElement() is true.
+    LayoutObject* layoutObjectForRootBackground();
 
     RespectImageOrientationEnum shouldRespectImageOrientation() const;
 
@@ -1033,7 +1033,7 @@ public:
 
     virtual void clearPaintInvalidationState(const PaintInvalidationState&);
 
-    // Indicates whether this render object was re-laid-out since the last frame.
+    // Indicates whether this layout object was re-laid-out since the last frame.
     // The flag will be cleared during invalidateTreeIfNeeded.
     bool layoutDidGetCalledSinceLastFrame() const { return m_bitfields.layoutDidGetCalledSinceLastFrame(); }
 
@@ -1160,18 +1160,18 @@ protected:
 
     void setDocumentForAnonymous(Document* document) { ASSERT(isAnonymous()); m_node = document; }
 
-    // Add hit-test rects for the render tree rooted at this node to the provided collection on a
+    // Add hit-test rects for the layout tree rooted at this node to the provided collection on a
     // per-Layer basis.
     // currentLayer must be the enclosing layer, and layerOffset is the current offset within
-    // this layer. Subclass implementations will add any offset for this renderer within it's
+    // this layer. Subclass implementations will add any offset for this layoutObject within it's
     // container, so callers should provide only the offset of the container within it's layer.
     // containerRect is a rect that has already been added for the currentLayer which is likely to
     // be a container for child elements. Any rect wholly contained by containerRect can be
     // skipped.
     virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const;
 
-    // Add hit-test rects for this renderer only to the provided list. layerOffset is the offset
-    // of this renderer within the current layer that should be used for each result.
+    // Add hit-test rects for this layoutObject only to the provided list. layerOffset is the offset
+    // of this layoutObject within the current layer that should be used for each result.
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { };
 
     virtual PaintInvalidationReason paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,
@@ -1242,7 +1242,7 @@ private:
 
     bool isTextOrSVGChild() const { return isText() || (isSVG() && !isSVGRoot()); }
 
-    static bool isAllowedToModifyRenderTreeStructure(Document&);
+    static bool isAllowedToModifyLayoutTreeStructure(Document&);
 
     const LayoutBoxModelObject* invalidatePaintRectangleInternal(const LayoutRect&) const;
 
@@ -1420,19 +1420,19 @@ private:
     LayoutRect m_previousPaintInvalidationRect;
 
     // This stores the position in the paint invalidation backing's coordinate.
-    // It is used to detect renderer shifts that forces a full invalidation.
+    // It is used to detect layoutObject shifts that forces a full invalidation.
     LayoutPoint m_previousPositionFromPaintInvalidationBacking;
 
     static unsigned s_instanceCount;
 };
 
-// FIXME: remove this once the render object lifecycle ASSERTS are no longer hit.
-class DeprecatedDisableModifyRenderTreeStructureAsserts {
-    WTF_MAKE_NONCOPYABLE(DeprecatedDisableModifyRenderTreeStructureAsserts);
+// FIXME: remove this once the layout object lifecycle ASSERTS are no longer hit.
+class DeprecatedDisableModifyLayoutTreeStructureAsserts {
+    WTF_MAKE_NONCOPYABLE(DeprecatedDisableModifyLayoutTreeStructureAsserts);
 public:
-    DeprecatedDisableModifyRenderTreeStructureAsserts();
+    DeprecatedDisableModifyLayoutTreeStructureAsserts();
 
-    static bool canModifyRenderTreeStateInAnyState();
+    static bool canModifyLayoutTreeStateInAnyState();
 
 private:
     TemporaryChange<bool> m_disabler;
@@ -1551,11 +1551,11 @@ inline bool LayoutObject::preservesNewline() const
 
 inline bool LayoutObject::layerCreationAllowedForSubtree() const
 {
-    LayoutObject* parentRenderer = parent();
-    while (parentRenderer) {
-        if (parentRenderer->isSVGHiddenContainer())
+    LayoutObject* parentLayoutObject = parent();
+    while (parentLayoutObject) {
+        if (parentLayoutObject->isSVGHiddenContainer())
             return false;
-        parentRenderer = parentRenderer->parent();
+        parentLayoutObject = parentLayoutObject->parent();
     }
 
     return true;
@@ -1602,41 +1602,41 @@ inline void makeMatrixRenderable(TransformationMatrix& matrix, bool has3DRenderi
         matrix.makeAffine();
 }
 
-inline int adjustForAbsoluteZoom(int value, LayoutObject* renderer)
+inline int adjustForAbsoluteZoom(int value, LayoutObject* layoutObject)
 {
-    return adjustForAbsoluteZoom(value, renderer->style());
+    return adjustForAbsoluteZoom(value, layoutObject->style());
 }
 
-inline double adjustDoubleForAbsoluteZoom(double value, LayoutObject& renderer)
+inline double adjustDoubleForAbsoluteZoom(double value, LayoutObject& layoutObject)
 {
-    ASSERT(renderer.style());
-    return adjustDoubleForAbsoluteZoom(value, *renderer.style());
+    ASSERT(layoutObject.style());
+    return adjustDoubleForAbsoluteZoom(value, *layoutObject.style());
 }
 
-inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, LayoutObject& renderer)
+inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, LayoutObject& layoutObject)
 {
-    ASSERT(renderer.style());
-    return adjustLayoutUnitForAbsoluteZoom(value, *renderer.style());
+    ASSERT(layoutObject.style());
+    return adjustLayoutUnitForAbsoluteZoom(value, *layoutObject.style());
 }
 
-inline void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, LayoutObject& renderer)
+inline void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, LayoutObject& layoutObject)
 {
-    float zoom = renderer.style()->effectiveZoom();
+    float zoom = layoutObject.style()->effectiveZoom();
     if (zoom != 1)
         quad.scale(1 / zoom, 1 / zoom);
 }
 
-inline void adjustFloatRectForAbsoluteZoom(FloatRect& rect, LayoutObject& renderer)
+inline void adjustFloatRectForAbsoluteZoom(FloatRect& rect, LayoutObject& layoutObject)
 {
-    float zoom = renderer.style()->effectiveZoom();
+    float zoom = layoutObject.style()->effectiveZoom();
     if (zoom != 1)
         rect.scale(1 / zoom, 1 / zoom);
 }
 
-inline double adjustScrollForAbsoluteZoom(double value, LayoutObject& renderer)
+inline double adjustScrollForAbsoluteZoom(double value, LayoutObject& layoutObject)
 {
-    ASSERT(renderer.style());
-    return adjustScrollForAbsoluteZoom(value, *renderer.style());
+    ASSERT(layoutObject.style());
+    return adjustScrollForAbsoluteZoom(value, *layoutObject.style());
 }
 
 #define DEFINE_LAYOUT_OBJECT_TYPE_CASTS(thisType, predicate) \

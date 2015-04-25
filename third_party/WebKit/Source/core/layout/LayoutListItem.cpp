@@ -271,7 +271,7 @@ void LayoutListItem::updateMarkerLocationAndInvalidateWidth()
 
     // FIXME: We should not modify the structure of the render tree
     // during layout. crbug.com/370461
-    DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+    DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
     LayoutState* layoutState = view()->layoutState();
     LayoutFlowThread* currentFlowThread = nullptr;
     if (layoutState) {

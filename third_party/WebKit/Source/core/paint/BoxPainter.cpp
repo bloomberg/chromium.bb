@@ -164,12 +164,12 @@ void BoxPainter::paintRootBoxFillLayers(const PaintInfo& paintInfo)
     if (paintInfo.skipRootBackground())
         return;
 
-    LayoutObject* rootBackgroundRenderer = m_layoutBox.rendererForRootBackground();
+    LayoutObject* rootBackgroundLayoutObject = m_layoutBox.layoutObjectForRootBackground();
 
-    const FillLayer& bgLayer = rootBackgroundRenderer->style()->backgroundLayers();
-    Color bgColor = rootBackgroundRenderer->resolveColor(CSSPropertyBackgroundColor);
+    const FillLayer& bgLayer = rootBackgroundLayoutObject->style()->backgroundLayers();
+    Color bgColor = rootBackgroundLayoutObject->resolveColor(CSSPropertyBackgroundColor);
 
-    paintFillLayers(paintInfo, bgColor, bgLayer, scrolledBackgroundRect(), BackgroundBleedNone, SkXfermode::kSrcOver_Mode, rootBackgroundRenderer);
+    paintFillLayers(paintInfo, bgColor, bgLayer, scrolledBackgroundRect(), BackgroundBleedNone, SkXfermode::kSrcOver_Mode, rootBackgroundLayoutObject);
 }
 
 void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, const FillLayer& fillLayer, const LayoutRect& rect,

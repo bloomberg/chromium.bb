@@ -1739,7 +1739,7 @@ Color CompositedDeprecatedPaintLayerMapping::layoutObjectBackgroundColor() const
 {
     LayoutObject* backgroundLayoutObject = layoutObject();
     if (backgroundLayoutObject->isDocumentElement())
-        backgroundLayoutObject = backgroundLayoutObject->rendererForRootBackground();
+        backgroundLayoutObject = backgroundLayoutObject->layoutObjectForRootBackground();
 
     return backgroundLayoutObject->resolveColor(CSSPropertyBackgroundColor);
 }

@@ -119,7 +119,7 @@ LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object, LayoutObj
 {
     // FIXME: We should not modify the structure of the layout tree during
     // layout. crbug.com/370459
-    DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+    DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
 
     LayoutFullScreen* fullscreenLayoutObject = LayoutFullScreen::createAnonymous(document);
     fullscreenLayoutObject->updateStyle();
@@ -159,7 +159,7 @@ void LayoutFullScreen::unwrapLayoutObject()
 {
     // FIXME: We should not modify the structure of the layout tree during
     // layout. crbug.com/370459
-    DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+    DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
 
     if (parent()) {
         for (LayoutObject* child = firstChild(); child; child = firstChild()) {

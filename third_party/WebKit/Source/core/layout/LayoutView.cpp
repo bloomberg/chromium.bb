@@ -821,7 +821,7 @@ LayoutObject* LayoutView::backgroundRenderer() const
 {
     if (Element* documentElement = document().documentElement()) {
         if (LayoutObject* rootObject = documentElement->layoutObject())
-            return rootObject->rendererForRootBackground();
+            return rootObject->layoutObjectForRootBackground();
     }
     return 0;
 }

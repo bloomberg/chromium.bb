@@ -47,8 +47,8 @@ SubtreeLayoutScope::~SubtreeLayoutScope()
     RELEASE_ASSERT(!m_root.needsLayout());
 
 #if ENABLE(ASSERT)
-    for (auto* renderer : m_renderersToLayout)
-        renderer->assertRendererLaidOut();
+    for (auto* layoutObject : m_layoutObjectsToLayout)
+        layoutObject->assertLaidOut();
 #endif
 }
 
@@ -64,10 +64,10 @@ void SubtreeLayoutScope::setChildNeedsLayout(LayoutObject* descendant)
     descendant->setChildNeedsLayout(MarkContainerChain, this);
 }
 
-void SubtreeLayoutScope::addRendererToLayout(LayoutObject* renderer)
+void SubtreeLayoutScope::recordObjectMarkedForLayout(LayoutObject* layoutObject)
 {
 #if ENABLE(ASSERT)
-    m_renderersToLayout.add(renderer);
+    m_layoutObjectsToLayout.add(layoutObject);
 #endif
 }
 

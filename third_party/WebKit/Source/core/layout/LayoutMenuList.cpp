@@ -290,7 +290,7 @@ void LayoutMenuList::setText(const String& s)
         if (!m_buttonText || !m_buttonText->isBR()) {
             // FIXME: We should not modify the structure of the render tree
             // during layout. crbug.com/370462
-            DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+            DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
             if (m_buttonText)
                 m_buttonText->destroy();
             m_buttonText = new LayoutBR(&document());
@@ -303,7 +303,7 @@ void LayoutMenuList::setText(const String& s)
         } else {
             // FIXME: We should not modify the structure of the render tree
             // during layout. crbug.com/370462
-            DeprecatedDisableModifyRenderTreeStructureAsserts disabler;
+            DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
             if (m_buttonText)
                 m_buttonText->destroy();
             m_buttonText = new LayoutText(&document(), s.impl());

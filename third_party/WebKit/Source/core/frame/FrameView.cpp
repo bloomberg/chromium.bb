@@ -2605,7 +2605,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     ASSERT(!needsLayout());
     ASSERT(!m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate());
 #if ENABLE(ASSERT)
-    m_frame->document()->layoutView()->assertRendererLaidOut();
+    m_frame->document()->layoutView()->assertLaidOut();
 #endif
 
     updateWidgetPositionsIfNeeded();

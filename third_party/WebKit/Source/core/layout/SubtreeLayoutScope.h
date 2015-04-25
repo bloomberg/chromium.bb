@@ -38,7 +38,7 @@
 // e.g. for the purposes of doing a multipass layout.
 //
 // It should only be used during layout. Outside of layout, you should
-// just call renderer->setNeedsLayout() directly.
+// just call layoutObject->setNeedsLayout() directly.
 //
 // It ensures that you don't accidentally mark part of the tree as
 // needing layout and not actually lay it out.
@@ -56,13 +56,13 @@ public:
     void setChildNeedsLayout(LayoutObject* descendant);
 
     LayoutObject& root() { return m_root; }
-    void addRendererToLayout(LayoutObject* renderer);
+    void recordObjectMarkedForLayout(LayoutObject*);
 
 private:
     LayoutObject& m_root;
 
 #if ENABLE(ASSERT)
-    HashSet<LayoutObject*> m_renderersToLayout;
+    HashSet<LayoutObject*> m_layoutObjectsToLayout;
 #endif
 };
 
