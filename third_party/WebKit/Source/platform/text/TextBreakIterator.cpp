@@ -225,6 +225,53 @@ static inline int nextBreakablePositionBreakAllInternal(LazyLineBreakIterator& l
     return len;
 }
 
+static inline bool shouldKeepAfter(UChar lastCh, UChar ch, UChar nextCh)
+{
+    UChar preCh = U_MASK(u_charType(ch)) & U_GC_M_MASK ? lastCh : ch;
+    return U_MASK(u_charType(preCh)) & (U_GC_L_MASK | U_GC_N_MASK)
+        && !WTF::Unicode::hasLineBreakingPropertyComplexContext(preCh)
+        && U_MASK(u_charType(nextCh)) & (U_GC_L_MASK | U_GC_N_MASK)
+        && !WTF::Unicode::hasLineBreakingPropertyComplexContext(nextCh);
+}
+
+static inline int nextBreakablePositionKeepAllInternal(LazyLineBreakIterator& lazyBreakIterator, const UChar* str, unsigned length, int pos)
+{
+    int len = static_cast<int>(length);
+    int nextBreak = -1;
+
+    UChar lastLastCh = pos > 1 ? str[pos - 2] : static_cast<UChar>(lazyBreakIterator.secondToLastCharacter());
+    UChar lastCh = pos > 0 ? str[pos - 1] : static_cast<UChar>(lazyBreakIterator.lastCharacter());
+    unsigned priorContextLength = lazyBreakIterator.priorContextLength();
+    for (int i = pos; i < len; i++) {
+        UChar ch = str[i];
+
+        if (isBreakableSpace(ch) || shouldBreakAfter(lastLastCh, lastCh, ch))
+            return i;
+
+        if (!shouldKeepAfter(lastLastCh, lastCh, ch) && (needsLineBreakIterator(ch) || needsLineBreakIterator(lastCh))) {
+            if (nextBreak < i) {
+                // Don't break if positioned at start of primary context and there is no prior context.
+                if (i || priorContextLength) {
+                    TextBreakIterator* breakIterator = lazyBreakIterator.get(priorContextLength);
+                    if (breakIterator) {
+                        nextBreak = breakIterator->following(i - 1 + priorContextLength);
+                        if (nextBreak >= 0) {
+                            nextBreak -= priorContextLength;
+                        }
+                    }
+                }
+            }
+            if (i == nextBreak && !isBreakableSpace(lastCh))
+                return i;
+        }
+
+        lastLastCh = lastCh;
+        lastCh = ch;
+    }
+
+    return len;
+}
+
 int LazyLineBreakIterator::nextBreakablePositionIgnoringNBSP(int pos)
 {
     if (m_string.is8Bit())
@@ -239,5 +286,11 @@ int LazyLineBreakIterator::nextBreakablePositionBreakAll(int pos)
     return nextBreakablePositionBreakAllInternal<UChar>(*this, m_string.characters16(), m_string.length(), pos);
 }
 
+int LazyLineBreakIterator::nextBreakablePositionKeepAll(int pos)
+{
+    if (m_string.is8Bit())
+        return nextBreakablePosition<LChar>(*this, m_string.characters8(), m_string.length(), pos);
+    return nextBreakablePositionKeepAllInternal(*this, m_string.characters16(), m_string.length(), pos);
+}
 
 } // namespace blink

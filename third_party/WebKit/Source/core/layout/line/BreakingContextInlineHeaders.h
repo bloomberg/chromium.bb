@@ -552,12 +552,14 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     bool breakWords = m_currentStyle->breakWords() && ((m_autoWrap && !m_width.committedWidth()) || m_currWS == PRE);
     bool midWordBreak = false;
     bool breakAll = m_currentStyle->wordBreak() == BreakAllWordBreak && m_autoWrap;
+    bool keepAll = m_currentStyle->wordBreak() == KeepAllWordBreak && m_autoWrap;
     bool prohibitBreakInside = m_currentStyle->hasTextCombine() && layoutText->isCombineText() && toLayoutTextCombine(layoutText)->isCombined();
     float hyphenWidth = 0;
 
     if (isSVGText) {
         breakWords = false;
         breakAll = false;
+        keepAll = false;
     }
 
     if (layoutText->isWordBreak()) {
@@ -606,7 +608,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         }
 
         int nextBreakablePosition = m_current.nextBreakablePosition();
-        bool betweenWords = c == '\n' || (m_currWS != PRE && !m_atStart && m_renderTextInfo.m_lineBreakIterator.isBreakable(m_current.offset(), nextBreakablePosition, breakAll ? LineBreakType::BreakAll : LineBreakType::Normal));
+        bool betweenWords = c == '\n' || (m_currWS != PRE && !m_atStart && m_renderTextInfo.m_lineBreakIterator.isBreakable(m_current.offset(), nextBreakablePosition, breakAll ? LineBreakType::BreakAll : keepAll ? LineBreakType::KeepAll : LineBreakType::Normal));
         m_current.setNextBreakablePosition(nextBreakablePosition);
 
         if (betweenWords || midWordBreak) {

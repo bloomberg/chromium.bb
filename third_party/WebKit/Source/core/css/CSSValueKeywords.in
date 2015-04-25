@@ -588,6 +588,7 @@ discard
 // word-break
 //
 break-all
+keep-all
 
 //
 // word-wrap

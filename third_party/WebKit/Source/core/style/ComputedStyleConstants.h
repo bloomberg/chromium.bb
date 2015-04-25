@@ -190,10 +190,10 @@ enum EUserSelect {
 // CSS3 Image Values
 enum ObjectFit { ObjectFitFill, ObjectFitContain, ObjectFitCover, ObjectFitNone, ObjectFitScaleDown };
 
-// Word Break Values. Matches WinIE, rather than CSS3
+// Word Break Values. Matches WinIE and CSS3
 
 enum EWordBreak {
-    NormalWordBreak, BreakAllWordBreak, BreakWordBreak
+    NormalWordBreak, BreakAllWordBreak, KeepAllWordBreak, BreakWordBreak
 };
 
 enum EOverflowWrap {
