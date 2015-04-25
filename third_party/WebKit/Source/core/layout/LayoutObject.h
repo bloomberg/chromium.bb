@@ -1059,8 +1059,6 @@ public:
 
     virtual bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransformRelatedProperty() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
 
-    void setNeedsOverflowRecalcAfterStyleChange();
-
     virtual LayoutRect viewRect() const;
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
@@ -1201,6 +1199,8 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    void setNeedsOverflowRecalcAfterStyleChange();
+
     inline bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&) const;
 
     // FIXME: This should be 'markContaingBoxChainForOverflowRecalc when we make LayoutBox
