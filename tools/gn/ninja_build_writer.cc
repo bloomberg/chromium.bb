@@ -191,6 +191,7 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
   // isn't unique, also skip it. The exception is for the toplevel targets
   // which we also find.
   std::map<std::string, int> small_name_count;
+  std::map<std::string, int> exe_count;
   std::vector<const Target*> toplevel_targets;
   base::hash_set<std::string> target_files;
   for (const auto& target : default_toolchain_targets_) {
@@ -208,6 +209,11 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
         dir_string[dir_string.size() - 1] == '/' &&  // "/" at end.
         dir_string.compare(2, label.name().size(), label.name()) == 0)
       toplevel_targets.push_back(target);
+
+    // Look for executables; later we will generate phony rules for them
+    // even if there are non-executable targets with the same name.
+    if (target->output_type() == Target::EXECUTABLE)
+      exe_count[label.name()]++;
   }
 
   for (const auto& target : default_toolchain_targets_) {
@@ -236,9 +242,13 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
         WritePhonyRule(target, target_file, medium_name);
     }
 
-    // Write short names for ones which are unique.
-    if (small_name_count[label.name()] == 1)
+    // Write short names for ones which are either completely unique or there
+    // at least only one of them in the default toolchain that is an exe.
+    if (small_name_count[label.name()] == 1 ||
+        (target->output_type() == Target::EXECUTABLE &&
+         exe_count[label.name()] == 1)) {
       WritePhonyRule(target, target_file, label.name());
+    }
 
     if (!all_rules.empty())
       all_rules.append(" $\n    ");
