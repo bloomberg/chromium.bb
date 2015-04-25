@@ -168,9 +168,6 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, L
     if (object->style()->imageRendering() == ImageRenderingOptimizeContrast)
         return true;
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        return false;
-
     // Look ourselves up in the hashtables.
     ObjectLayerSizeMap::iterator i = m_objectLayerSizeMap.find(object);
     LayerSizeMap* innerMap = i != m_objectLayerSizeMap.end() ? &i->value : 0;
