@@ -1937,3 +1937,15 @@ base.dll!base::SharedMemory::ShareToProcessCommon
 gl_wrapper.dll!gfx::GLImageSharedMemory::Initialize
 content.dll!content::GpuChannel::CreateImageForGpuMemoryBuffer
 content.dll!content::GpuCommandBufferStub::OnCreateImage
+
+HANDLE LEAK
+name=https://crbug.com/481305
+system call NtCreateSection
+KERNELBASE.dll!CreateFileMappingW
+base.dll!base::SharedMemory::Create
+base.dll!base::SharedMemory::CreateAnonymous
+content.dll!content::ChildThreadImpl::AllocateSharedMemory
+content.dll!content::RenderThreadImpl::HostAllocateSharedMemoryBuffer
+content.dll!content::RenderThreadImpl::AllocateSharedMemory
+...
+content.dll!content::WebGraphicsContext3DCommandBufferImpl::CreateContext
