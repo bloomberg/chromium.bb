@@ -12,6 +12,7 @@
 namespace sandbox {
 namespace {
 
+#if !defined(THREAD_SANITIZER)
 SANDBOX_TEST_ALLOW_NOISE(Trap, SigSysAction) {
   // This creates a global Trap instance, and registers the signal handler
   // (Trap::SigSysAction).
@@ -23,6 +24,7 @@ SANDBOX_TEST_ALLOW_NOISE(Trap, SigSysAction) {
   // "Unexpected SIGSYS received." so it is necessary to allow the noise.
   raise(SIGSYS);
 }
+#endif
 
 }  // namespace
 }  // namespace sandbox
