@@ -41,9 +41,9 @@
       overridden by a -n or --no-overwrite flag
 
     - All files are converted to work in WebKit:
-         1. Paths to testharness.js and vendor-prefix.js files are modified to
-            point to Webkit's copy of them in LayoutTests/resources, using the
-            correct relative path from the new location.
+         1. Paths to testharness.js scripts and vendor-prefix.js files are
+            modified to point to Webkit's copy of them in LayoutTests/resources,
+            using the correct relative path from the new location.
          2. All CSS properties requiring the -webkit-vendor prefix are prefixed
             (the list of what needs prefixes is read from Source/WebCore/CSS/CSSProperties.in).
          3. Each reftest has its own copy of its reference file following

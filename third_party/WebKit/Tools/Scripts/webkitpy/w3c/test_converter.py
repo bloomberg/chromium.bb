@@ -157,8 +157,8 @@ class _W3CTestConverter(HTMLParser):
                 target_attr = 'href'
             for attr_name, attr_value in attrs:
                 if attr_name == target_attr:
-                    new_path = re.sub('/resources/testharness',
-                                      self.resources_relpath + '/testharness',
+                    new_path = re.sub('/resources/(?=testharness|idlharness|WebIDLParser)',
+                                      self.resources_relpath + '/',
                                       attr_value)
                     converted = re.sub(re.escape(attr_value), new_path, converted)
                     new_path = re.sub('/common/vendor-prefix',
