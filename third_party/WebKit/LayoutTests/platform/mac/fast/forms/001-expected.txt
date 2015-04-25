@@ -12,7 +12,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (0,0) size 131x82 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutMenuList {SELECT} at (1,1) size 129x80 [bgcolor=#F8F8F8] [border: (40px solid #FF0000)]
                 LayoutBlockFlow (anonymous) at (40,40) size 49x16
-                  LayoutText at (8,1) size 20x13
+                  LayoutText (anonymous) at (8,1) size 20x13
                     text run at (8,1) width 20: "Foo"
             LayoutTableCell {TD} at (131,40) size 649x2 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
       LayoutBlockFlow {P} at (0,160.44) size 784x24

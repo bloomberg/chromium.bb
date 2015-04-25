@@ -15,26 +15,26 @@ layer at (0,0) size 800x238
           LayoutText {#text} at (0,0) size 8x18
             text run at (0,0) width 8: "1"
           LayoutInline {<pseudo:after>} at (0,0) size 54x18
-            LayoutTextFragment at (8,0) size 54x18
+            LayoutTextFragment (anonymous) at (8,0) size 54x18
               text run at (8,0) width 54: "(href=1)"
       LayoutBlockFlow {P} at (0,120) size 784x18
         LayoutInline {A} at (0,0) size 62x18 [color=#0000EE]
           LayoutText {#text} at (0,0) size 8x18
             text run at (0,0) width 8: "2"
           LayoutInline {<pseudo:after>} at (0,0) size 54x18
-            LayoutTextFragment at (8,0) size 54x18
+            LayoutTextFragment (anonymous) at (8,0) size 54x18
               text run at (8,0) width 54: "(href=2)"
       LayoutBlockFlow {P} at (0,154) size 784x18
         LayoutInline {A} at (0,0) size 62x18 [color=#0000EE]
           LayoutText {#text} at (0,0) size 8x18
             text run at (0,0) width 8: "3"
           LayoutInline {<pseudo:after>} at (0,0) size 54x18
-            LayoutTextFragment at (8,0) size 54x18
+            LayoutTextFragment (anonymous) at (8,0) size 54x18
               text run at (8,0) width 54: "(href=3)"
       LayoutBlockFlow {P} at (0,188) size 784x18
         LayoutInline {A} at (0,0) size 62x18 [color=#0000EE]
           LayoutText {#text} at (0,0) size 8x18
             text run at (0,0) width 8: "4"
           LayoutInline {<pseudo:after>} at (0,0) size 54x18
-            LayoutTextFragment at (8,0) size 54x18
+            LayoutTextFragment (anonymous) at (8,0) size 54x18
               text run at (8,0) width 54: "(href=4)"

@@ -5,7 +5,7 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutMenuList {SELECT} at (0,0) size 59x18 [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 59x18
-          LayoutText at (8,2) size 28x13
+          LayoutText (anonymous) at (8,2) size 28x13
             text run at (8,2) width 28: "Hello"
       LayoutBlockFlow (anonymous) at (0,18) size 784x18
         LayoutText {#text} at (0,0) size 297x18

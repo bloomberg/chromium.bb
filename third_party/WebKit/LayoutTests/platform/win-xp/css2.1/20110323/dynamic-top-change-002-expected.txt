@@ -8,7 +8,7 @@ layer at (0,0) size 800x52
           text run at (0,0) width 144: "There should be no red."
 layer at (8,32) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (8,32) size 100x100
-    LayoutTable at (0,0) size 100x100
+    LayoutTable (anonymous) at (0,0) size 100x100
       LayoutTableSection (anonymous) at (0,0) size 100x100
         LayoutTableRow {DIV} at (0,0) size 100x100
           LayoutTableCell (anonymous) at (0,0) size 100x100 [r=0 c=0 rs=1 cs=1]

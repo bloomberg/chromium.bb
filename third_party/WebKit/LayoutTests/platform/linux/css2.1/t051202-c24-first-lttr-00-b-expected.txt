@@ -5,7 +5,7 @@ layer at (0,0) size 800x247
     LayoutBlockFlow {BODY} at (8,16) size 784x215 [color=#0000FF]
       LayoutBlockFlow {P} at (0,0) size 784x40
         LayoutInline {<pseudo:first-letter>} at (0,0) size 9x19 [color=#008000]
-          LayoutTextFragment at (0,0) size 9x19
+          LayoutTextFragment (anonymous) at (0,0) size 9x19
             text run at (0,0) width 9: "T"
         LayoutTextFragment {#text} at (9,0) size 18x19
           text run at (9,0) width 18: "he "
@@ -24,7 +24,7 @@ layer at (0,0) size 800x247
           text run at (0,20) width 145: "agent has failed this test."
       LayoutBlockFlow {P} at (0,56) size 784x57
         LayoutInline {<pseudo:first-letter>} at (0,0) size 19x36 [color=#008000]
-          LayoutTextFragment at (0,0) size 19x36
+          LayoutTextFragment (anonymous) at (0,0) size 19x36
             text run at (0,0) width 19: "T"
         LayoutTextFragment {#text} at (19,13) size 18x19
           text run at (19,13) width 18: "he "
@@ -48,7 +48,7 @@ layer at (0,0) size 800x247
           text run at (98,37) width 225: "then the user agent has failed this test."
       LayoutBlockFlow {P} at (0,129) size 784x86
         LayoutInline {<pseudo:first-letter>} at (0,0) size 58x64 [color=#008000]
-          LayoutTextFragment at (0,1) size 58x64
+          LayoutTextFragment (anonymous) at (0,1) size 58x64
             text run at (0,1) width 58: "\"T"
         LayoutTextFragment {#text} at (58,36) size 18x19
           text run at (58,36) width 18: "he "

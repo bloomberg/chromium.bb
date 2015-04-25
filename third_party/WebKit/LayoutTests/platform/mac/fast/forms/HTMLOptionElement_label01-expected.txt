@@ -8,6 +8,6 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (686,14) size 1x0
       LayoutMenuList {SELECT} at (0,18) size 197x18 [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 197x18
-          LayoutText at (8,2) size 166x13
+          LayoutText (anonymous) at (8,2) size 166x13
             text run at (8,2) width 166: "the label for this element is \"1\""
       LayoutText {#text} at (0,0) size 0x0

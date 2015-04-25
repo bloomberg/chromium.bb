@@ -29,7 +29,7 @@ layer at (0,0) size 800x600
           LayoutInline {SPAN} at (0,0) size 147x110
             LayoutInline {B} at (0,0) size 0x0
             LayoutInline {<pseudo:after>} at (0,0) size 147x110
-              LayoutTextFragment at (0,0) size 147x110
+              LayoutTextFragment (anonymous) at (0,0) size 147x110
                 text run at (0,0) width 147: "not "
           LayoutText {#text} at (146,0) size 153x110
             text run at (146,0) width 153: "fail."

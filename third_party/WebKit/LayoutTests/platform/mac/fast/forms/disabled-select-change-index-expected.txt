@@ -5,22 +5,22 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutMenuList {SELECT} at (0,0) size 57x18 [color=#808080] [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 57x18
-          LayoutText at (8,2) size 26x13
+          LayoutText (anonymous) at (8,2) size 26x13
             text run at (8,2) width 26: "PASS"
       LayoutBR {BR} at (57,13) size 0x0
       LayoutMenuList {SELECT} at (0,18) size 57x18 [color=#808080] [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 57x18
-          LayoutText at (8,2) size 26x13
+          LayoutText (anonymous) at (8,2) size 26x13
             text run at (8,2) width 26: "PASS"
       LayoutBR {BR} at (57,31) size 0x0
       LayoutMenuList {SELECT} at (0,36) size 57x18 [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 57x18
-          LayoutText at (8,2) size 26x13
+          LayoutText (anonymous) at (8,2) size 26x13
             text run at (8,2) width 26: "PASS"
       LayoutBR {BR} at (57,49) size 0x0
       LayoutMenuList {SELECT} at (0,54) size 57x18 [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 57x18
-          LayoutText at (8,2) size 26x13
+          LayoutText (anonymous) at (8,2) size 26x13
             text run at (8,2) width 26: "PASS"
       LayoutBR {BR} at (57,67) size 0x0
       LayoutBR {BR} at (42,98) size 1x0

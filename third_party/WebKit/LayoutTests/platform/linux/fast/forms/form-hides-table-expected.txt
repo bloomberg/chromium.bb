@@ -90,7 +90,7 @@ layer at (0,0) size 800x694 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                           LayoutText {#text} at (1,1) size 114x19
                             text run at (1,1) width 114: "display: inline-table"
       LayoutBlockFlow {DIV} at (0,386) size 784x42
-        LayoutTable at (0,0) size 155x42
+        LayoutTable (anonymous) at (0,0) size 155x42
           LayoutTableSection {DIV} at (0,0) size 155x42
             LayoutTableRow (anonymous) at (0,0) size 155x42
               LayoutTableCell (anonymous) at (0,0) size 155x42 [r=0 c=0 rs=1 cs=1]
@@ -102,7 +102,7 @@ layer at (0,0) size 800x694 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                           LayoutText {#text} at (1,1) size 149x19
                             text run at (1,1) width 149: "display: table-row-group"
       LayoutBlockFlow {DIV} at (0,428) size 784x42
-        LayoutTable at (0,0) size 172x42
+        LayoutTable (anonymous) at (0,0) size 172x42
           LayoutTableSection {DIV} at (0,0) size 172x42
             LayoutTableRow (anonymous) at (0,0) size 172x42
               LayoutTableCell (anonymous) at (0,0) size 172x42 [r=0 c=0 rs=1 cs=1]
@@ -114,7 +114,7 @@ layer at (0,0) size 800x694 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                           LayoutText {#text} at (1,1) size 166x19
                             text run at (1,1) width 166: "display: table-header-group"
       LayoutBlockFlow {DIV} at (0,470) size 784x42
-        LayoutTable at (0,0) size 167x42
+        LayoutTable (anonymous) at (0,0) size 167x42
           LayoutTableSection {DIV} at (0,0) size 167x42
             LayoutTableRow (anonymous) at (0,0) size 167x42
               LayoutTableCell (anonymous) at (0,0) size 167x42 [r=0 c=0 rs=1 cs=1]
@@ -126,7 +126,7 @@ layer at (0,0) size 800x694 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                           LayoutText {#text} at (1,1) size 161x19
                             text run at (1,1) width 161: "display: table-footer-group"
       LayoutBlockFlow {DIV} at (0,512) size 784x42
-        LayoutTable at (0,0) size 114x42
+        LayoutTable (anonymous) at (0,0) size 114x42
           LayoutTableSection (anonymous) at (0,0) size 114x42
             LayoutTableRow {DIV} at (0,0) size 114x42
               LayoutTableCell (anonymous) at (0,0) size 114x42 [r=0 c=0 rs=1 cs=1]
@@ -138,13 +138,13 @@ layer at (0,0) size 800x694 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                           LayoutText {#text} at (1,1) size 108x19
                             text run at (1,1) width 108: "display: table-row"
       LayoutBlockFlow {DIV} at (0,554) size 784x0
-        LayoutTable at (0,0) size 0x0
+        LayoutTable (anonymous) at (0,0) size 0x0
           LayoutTableCol {DIV} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,554) size 784x0
-        LayoutTable at (0,0) size 0x0
+        LayoutTable (anonymous) at (0,0) size 0x0
           LayoutTableCol {DIV} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,554) size 784x42
-        LayoutTable at (0,0) size 110x42
+        LayoutTable (anonymous) at (0,0) size 110x42
           LayoutTableSection (anonymous) at (0,0) size 110x42
             LayoutTableRow (anonymous) at (0,0) size 110x42
               LayoutTableCell {DIV} at (0,0) size 110x42 [r=0 c=0 rs=1 cs=1]
@@ -156,7 +156,7 @@ layer at (0,0) size 800x694 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                           LayoutText {#text} at (1,1) size 104x19
                             text run at (1,1) width 104: "display: table-cell"
       LayoutBlockFlow {DIV} at (0,596) size 784x82
-        LayoutTable at (0,0) size 51x82
+        LayoutTable (anonymous) at (0,0) size 51x82
           LayoutBlockFlow {DIV} at (0,0) size 51x82
             LayoutBlockFlow {FORM} at (0,0) size 51x66
               LayoutTable {TABLE} at (0,0) size 51x66

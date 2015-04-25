@@ -14,73 +14,73 @@ layer at (0,0) size 800x94
       LayoutBlockFlow {DIV} at (0,34) size 784x18
         LayoutInline {SPAN} at (0,0) size 10x17
           LayoutInline {<pseudo:before>} at (0,0) size 10x17
-            LayoutCounter at (0,0) size 10x17
+            LayoutCounter (anonymous) at (0,0) size 10x17
               text run at (0,0) width 10: "\x{25A0}"
         LayoutText {#text} at (9,0) size 5x17
           text run at (9,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 11x17
           LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter at (13,0) size 11x17
+            LayoutCounter (anonymous) at (13,0) size 11x17
               text run at (13,0) width 11: "\x{25A0}"
         LayoutText {#text} at (23,0) size 5x17
           text run at (23,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 10x17
           LayoutInline {<pseudo:before>} at (0,0) size 10x17
-            LayoutCounter at (27,0) size 10x17
+            LayoutCounter (anonymous) at (27,0) size 10x17
               text run at (27,0) width 10: "\x{25A0}"
         LayoutText {#text} at (36,0) size 5x17
           text run at (36,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 11x17
           LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter at (40,0) size 11x17
+            LayoutCounter (anonymous) at (40,0) size 11x17
               text run at (40,0) width 11: "\x{25A0}"
         LayoutText {#text} at (50,0) size 5x17
           text run at (50,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 11x17
           LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter at (54,0) size 11x17
+            LayoutCounter (anonymous) at (54,0) size 11x17
               text run at (54,0) width 11: "\x{25A0}"
         LayoutText {#text} at (64,0) size 5x17
           text run at (64,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 10x17
           LayoutInline {<pseudo:before>} at (0,0) size 10x17
-            LayoutCounter at (68,0) size 10x17
+            LayoutCounter (anonymous) at (68,0) size 10x17
               text run at (68,0) width 10: "\x{25A0}"
         LayoutText {#text} at (77,0) size 5x17
           text run at (77,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 11x17
           LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter at (81,0) size 11x17
+            LayoutCounter (anonymous) at (81,0) size 11x17
               text run at (81,0) width 11: "\x{25A0}"
         LayoutText {#text} at (91,0) size 5x17
           text run at (91,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 11x17
           LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter at (95,0) size 11x17
+            LayoutCounter (anonymous) at (95,0) size 11x17
               text run at (95,0) width 11: "\x{25A0}"
         LayoutText {#text} at (105,0) size 5x17
           text run at (105,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 10x17
           LayoutInline {<pseudo:before>} at (0,0) size 10x17
-            LayoutCounter at (109,0) size 10x17
+            LayoutCounter (anonymous) at (109,0) size 10x17
               text run at (109,0) width 10: "\x{25A0}"
         LayoutText {#text} at (118,0) size 5x17
           text run at (118,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 11x17
           LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter at (122,0) size 11x17
+            LayoutCounter (anonymous) at (122,0) size 11x17
               text run at (122,0) width 11: "\x{25A0}"
         LayoutText {#text} at (132,0) size 5x17
           text run at (132,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 11x17
           LayoutInline {<pseudo:before>} at (0,0) size 11x17
-            LayoutCounter at (136,0) size 11x17
+            LayoutCounter (anonymous) at (136,0) size 11x17
               text run at (136,0) width 11: "\x{25A0}"
         LayoutText {#text} at (146,0) size 5x17
           text run at (146,0) width 5: " "
         LayoutInline {SPAN} at (0,0) size 10x17
           LayoutInline {<pseudo:before>} at (0,0) size 10x17
-            LayoutCounter at (150,0) size 10x17
+            LayoutCounter (anonymous) at (150,0) size 10x17
               text run at (150,0) width 10: "\x{25A0}"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,52) size 784x18

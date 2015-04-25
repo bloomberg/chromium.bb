@@ -27,7 +27,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                 LayoutInline {FONT} at (0,0) size 62x28
                   LayoutMenuList {SELECT} at (2,2) size 62x18 [bgcolor=#F8F8F8]
                     LayoutBlockFlow (anonymous) at (0,0) size 62x18
-                      LayoutText at (8,2) size 31x13
+                      LayoutText (anonymous) at (8,2) size 31x13
                         text run at (8,2) width 31: "menu"
             LayoutTableCell {TD} at (132,4) size 18x19 [r=0 c=2 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 16x17 [border: (2px solid #0000FF)]
@@ -50,7 +50,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               LayoutBlockFlow {DIV} at (1,1) size 66x22 [border: (2px solid #0000FF)]
                 LayoutMenuList {SELECT} at (2,2) size 62x18 [bgcolor=#F8F8F8]
                   LayoutBlockFlow (anonymous) at (0,0) size 62x18
-                    LayoutText at (8,2) size 31x13
+                    LayoutText (anonymous) at (8,2) size 31x13
                       text run at (8,2) width 31: "menu"
             LayoutTableCell {TD} at (132,4) size 18x19 [r=0 c=2 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 16x17 [border: (2px solid #0000FF)]
@@ -73,7 +73,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                 LayoutInline {FONT} at (0,0) size 62x13
                   LayoutMenuList {SELECT} at (2,2) size 62x18 [bgcolor=#F8F8F8]
                     LayoutBlockFlow (anonymous) at (0,0) size 62x18
-                      LayoutText at (8,2) size 31x13
+                      LayoutText (anonymous) at (8,2) size 31x13
                         text run at (8,2) width 31: "menu"
             LayoutTableCell {TD} at (132,4) size 18x19 [r=0 c=2 rs=1 cs=1]
               LayoutBlockFlow {DIV} at (1,1) size 16x17 [border: (2px solid #0000FF)]
@@ -115,7 +115,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (93,0) width 7: " "
           LayoutMenuList {SELECT} at (99.55,9) size 62x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 62x18
-              LayoutText at (8,2) size 31x13
+              LayoutText (anonymous) at (8,2) size 31x13
                 text run at (8,2) width 31: "menu"
           LayoutText {#text} at (161,0) size 7x28
             text run at (161,0) width 7: " "
@@ -135,7 +135,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (79,0) width 5: " "
         LayoutMenuList {SELECT} at (83.55,1) size 62x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 62x18
-            LayoutText at (8,2) size 31x13
+            LayoutText (anonymous) at (8,2) size 31x13
               text run at (8,2) width 31: "menu"
         LayoutText {#text} at (145,0) size 5x18
           text run at (145,0) width 5: " "
@@ -156,7 +156,7 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (69,4) width 3: " "
           LayoutMenuList {SELECT} at (71.55,1) size 62x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 62x18
-              LayoutText at (8,2) size 31x13
+              LayoutText (anonymous) at (8,2) size 31x13
                 text run at (8,2) width 31: "menu"
           LayoutText {#text} at (133,4) size 4x13
             text run at (133,4) width 4: " "
@@ -187,35 +187,35 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 0x0
           LayoutMenuList {SELECT} at (0,9) size 36x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 36x18
-              LayoutBR at (8,2) size 0x13 [bgcolor=#F8F8F8]
+              LayoutBR (anonymous) at (8,2) size 0x13 [bgcolor=#F8F8F8]
           LayoutText {#text} at (36,0) size 6x28
             text run at (36,0) width 6: " "
           LayoutMenuList {SELECT} at (42,9) size 36x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 36x18
-              LayoutText at (8,2) size 5x13
+              LayoutText (anonymous) at (8,2) size 5x13
                 text run at (8,2) width 5: "|"
           LayoutText {#text} at (78,0) size 6x28
             text run at (78,0) width 6: " "
           LayoutMenuList {SELECT} at (84,9) size 85x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 85x18
-              LayoutText at (8,2) size 54x13
+              LayoutText (anonymous) at (8,2) size 54x13
                 text run at (8,2) width 54: "xxxxxxxx"
           LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,561.88) size 784x19
         LayoutMenuList {SELECT} at (0,1) size 36x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 36x18
-            LayoutBR at (8,2) size 0x13 [bgcolor=#F8F8F8]
+            LayoutBR (anonymous) at (8,2) size 0x13 [bgcolor=#F8F8F8]
         LayoutText {#text} at (36,0) size 4x18
           text run at (36,0) width 4: " "
         LayoutMenuList {SELECT} at (40,1) size 36x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 36x18
-            LayoutText at (8,2) size 5x13
+            LayoutText (anonymous) at (8,2) size 5x13
               text run at (8,2) width 5: "|"
         LayoutText {#text} at (76,0) size 4x18
           text run at (76,0) width 4: " "
         LayoutMenuList {SELECT} at (80,1) size 85x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 85x18
-            LayoutText at (8,2) size 54x13
+            LayoutText (anonymous) at (8,2) size 54x13
               text run at (8,2) width 54: "xxxxxxxx"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,580.88) size 784x18
@@ -223,18 +223,18 @@ layer at (0,0) size 800x615 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 0x0
           LayoutMenuList {SELECT} at (0,0) size 36x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 36x18
-              LayoutBR at (8,2) size 0x13 [bgcolor=#F8F8F8]
+              LayoutBR (anonymous) at (8,2) size 0x13 [bgcolor=#F8F8F8]
           LayoutText {#text} at (36,3) size 3x13
             text run at (36,3) width 3: " "
           LayoutMenuList {SELECT} at (38.50,0) size 36x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 36x18
-              LayoutText at (8,2) size 5x13
+              LayoutText (anonymous) at (8,2) size 5x13
                 text run at (8,2) width 5: "|"
           LayoutText {#text} at (74,3) size 3x13
             text run at (74,3) width 3: " "
           LayoutMenuList {SELECT} at (77,0) size 85x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 85x18
-              LayoutText at (8,2) size 54x13
+              LayoutText (anonymous) at (8,2) size 54x13
                 text run at (8,2) width 54: "xxxxxxxx"
           LayoutText {#text} at (0,0) size 0x0
 layer at (16,244) size 67x13

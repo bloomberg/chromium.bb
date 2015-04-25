@@ -13,5 +13,5 @@ layer at (0,0) size 800x294
       LayoutBlockFlow {DIV} at (0,68) size 202x202 [border: (1px solid #000000)]
 layer at (9,85) size 200x200
   LayoutBlockFlow {<pseudo:after>} at (1,1) size 200x200
-    LayoutTextFragment at (0,0) size 66x18
+    LayoutTextFragment (anonymous) at (0,0) size 66x18
       text run at (0,0) width 66: "Generated"

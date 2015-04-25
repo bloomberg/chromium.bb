@@ -64,7 +64,7 @@ layer at (0,0) size 800x600
             text run at (0,1) width 73: "select box: "
           LayoutMenuList {SELECT} at (72.86,0) size 32x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 30x18
-              LayoutText at (4,1) size 7x16
+              LayoutText (anonymous) at (4,1) size 7x16
                 text run at (4,1) width 7: "1"
           LayoutText {#text} at (104,1) size 68x17
             text run at (104,1) width 68: " the end ..."

@@ -31,7 +31,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (1,1) size 26x20
                 LayoutBlockFlow {P} at (0,0) size 26x20
                   LayoutBlockFlow (floating) {<pseudo:first-letter>} at (0,0) size 11x20 [color=#008000]
-                    LayoutTextFragment at (0,0) size 11x19
+                    LayoutTextFragment (anonymous) at (0,0) size 11x19
                       text run at (0,0) width 11: "A"
                   LayoutTextFragment {#text} at (11,0) size 15x19
                     text run at (11,0) width 15: "-Z"
@@ -41,13 +41,13 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (2,2) size 28x22 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {P} at (1,1) size 26x20
                 LayoutBlockFlow (floating) {<pseudo:first-letter>} at (0,0) size 11x20 [color=#008000]
-                  LayoutTextFragment at (0,0) size 11x19
+                  LayoutTextFragment (anonymous) at (0,0) size 11x19
                     text run at (0,0) width 11: "A"
                 LayoutTextFragment {#text} at (11,0) size 15x19
                   text run at (11,0) width 15: "-Z"
       LayoutBlockFlow {P} at (0,160) size 784x20
         LayoutBlockFlow (floating) {<pseudo:first-letter>} at (0,0) size 11x20 [color=#008000]
-          LayoutTextFragment at (0,0) size 11x19
+          LayoutTextFragment (anonymous) at (0,0) size 11x19
             text run at (0,0) width 11: "A"
         LayoutTextFragment {#text} at (11,0) size 15x19
           text run at (11,0) width 15: "-Z"

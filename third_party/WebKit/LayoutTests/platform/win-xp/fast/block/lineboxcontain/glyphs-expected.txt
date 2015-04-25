@@ -13,7 +13,7 @@ layer at (0,0) size 800x280
           text run at (1,-3) width 259: "this block should hug the lowercase glyphs."
       LayoutBlockFlow {P} at (0,196) size 784x60
         LayoutBlockFlow (floating) {<pseudo:first-letter>} at (0,0) size 21x24
-          LayoutTextFragment at (0,-8) size 21x41
+          LayoutTextFragment (anonymous) at (0,-8) size 21x41
             text run at (0,-8) width 21: "T"
         LayoutTextFragment {#text} at (23,0) size 389x19
           text run at (23,0) width 389: "he first letter here should look nicer because it uses glyph bounds"

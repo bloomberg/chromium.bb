@@ -5,7 +5,7 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
     LayoutBlockFlow {BODY} at (8,8) size 769x735 [bgcolor=#CCCCCC]
       LayoutBlockFlow {P} at (0,0) size 769x20
         LayoutInline {<pseudo:first-letter>} at (0,0) size 9x19 [color=#800000]
-          LayoutTextFragment at (0,0) size 9x19
+          LayoutTextFragment (anonymous) at (0,0) size 9x19
             text run at (0,0) width 9: "T"
         LayoutTextFragment {#text} at (9,0) size 328x19
           text run at (9,0) width 328: "he style declarations which apply to the text below are:"
@@ -21,7 +21,7 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {HR} at (0,113) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,131) size 769x60
         LayoutInline {<pseudo:first-letter>} at (0,0) size 9x19 [color=#800000]
-          LayoutTextFragment at (0,0) size 9x19
+          LayoutTextFragment (anonymous) at (0,0) size 9x19
             text run at (0,0) width 9: "T"
         LayoutTextFragment {#text} at (9,0) size 758x59
           text run at (9,0) width 414: "he first letter of this paragraph, and only that one, should be maroon. "
@@ -31,7 +31,7 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,40) width 24: "line."
       LayoutBlockFlow {P} at (0,207) size 769x77
         LayoutInline {<pseudo:first-letter>} at (0,0) size 19x36 [color=#800000]
-          LayoutTextFragment at (0,0) size 19x36
+          LayoutTextFragment (anonymous) at (0,0) size 19x36
             text run at (0,0) width 19: "T"
         LayoutTextFragment {#text} at (19,13) size 766x63
           text run at (19,13) width 582: "he first letter of this paragraph, and only that one, should be a larger font size, as well as maroon. "
@@ -41,7 +41,7 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,57) width 194: "displayed on more than one line."
       LayoutBlockFlow {P} at (0,300) size 769x106
         LayoutInline {<pseudo:first-letter>} at (0,0) size 75x64 [color=#800000]
-          LayoutTextFragment at (0,1) size 75x64
+          LayoutTextFragment (anonymous) at (0,1) size 75x64
             text run at (0,1) width 75: "\"W"
         LayoutTextFragment {#text} at (75,36) size 768x69
           text run at (75,36) width 305: "e should check for quotation support,\" it was said. "
@@ -63,7 +63,7 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             LayoutTableCell {TD} at (12,28) size 755x283 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {P} at (4,4) size 747x60
                 LayoutInline {<pseudo:first-letter>} at (0,0) size 9x19 [color=#800000]
-                  LayoutTextFragment at (0,0) size 9x19
+                  LayoutTextFragment (anonymous) at (0,0) size 9x19
                     text run at (0,0) width 9: "T"
                 LayoutTextFragment {#text} at (9,0) size 732x59
                   text run at (9,0) width 414: "he first letter of this paragraph, and only that one, should be maroon. "
@@ -73,7 +73,7 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,40) width 79: "than one line."
               LayoutBlockFlow {P} at (4,80) size 747x77
                 LayoutInline {<pseudo:first-letter>} at (0,0) size 19x36 [color=#800000]
-                  LayoutTextFragment at (0,0) size 19x36
+                  LayoutTextFragment (anonymous) at (0,0) size 19x36
                     text run at (0,0) width 19: "T"
                 LayoutTextFragment {#text} at (19,13) size 727x63
                   text run at (19,13) width 582: "he first letter of this paragraph, and only that one, should be a larger font size, as well as maroon. "
@@ -83,7 +83,7 @@ layer at (0,0) size 785x751 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   text run at (0,57) width 310: "paragraph must be displayed on more than one line."
               LayoutBlockFlow {P} at (4,173) size 747x106
                 LayoutInline {<pseudo:first-letter>} at (0,0) size 75x64 [color=#800000]
-                  LayoutTextFragment at (0,1) size 75x64
+                  LayoutTextFragment (anonymous) at (0,1) size 75x64
                     text run at (0,1) width 75: "\"W"
                 LayoutTextFragment {#text} at (75,36) size 733x69
                   text run at (75,36) width 305: "e should check for quotation support,\" it was said. "

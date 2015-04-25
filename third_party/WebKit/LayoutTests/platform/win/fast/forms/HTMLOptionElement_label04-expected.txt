@@ -8,6 +8,6 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (609,14) size 1x0
       LayoutMenuList {SELECT} at (0,18) size 485x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow (anonymous) at (1,1) size 483x18
-          LayoutText at (4,1) size 460x16
+          LayoutText (anonymous) at (4,1) size 460x16
             text run at (4,1) width 460: "the label attribute is mentioned but no value is specified; this text should appear"
       LayoutText {#text} at (0,0) size 0x0

@@ -220,7 +220,7 @@ layer at (0,0) size 785x1217 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 514x18
           text run at (0,0) width 514: "Anonymous TABLE, TABLE_ROW, TABLE_ROW_GROUP, TABLE_CELL"
       LayoutBlockFlow {DIV} at (0,1119.42) size 769x74 [border: (1px solid #000000)]
-        LayoutTable at (1,1) size 24x72
+        LayoutTable (anonymous) at (1,1) size 24x72
           LayoutTableSection (anonymous) at (0,18) size 24x36
             LayoutTableRow {DIV} at (0,0) size 24x18
               LayoutTableCell (anonymous) at (0,0) size 24x18 [r=0 c=0 rs=1 cs=1]

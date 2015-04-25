@@ -7,5 +7,5 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,6) size 784x20
         LayoutMenuList {SELECT} at (0,0) size 25x20 [bgcolor=#FFFFFF] [border: (1px solid #008000)]
           LayoutBlockFlow (anonymous) at (1,1) size 23x18
-            LayoutBR at (4,1) size 0x16 [bgcolor=#FFFFFF]
+            LayoutBR (anonymous) at (4,1) size 0x16 [bgcolor=#FFFFFF]
         LayoutText {#text} at (0,0) size 0x0

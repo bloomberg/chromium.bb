@@ -5,7 +5,7 @@ layer at (0,0) size 800x34
     LayoutBlockFlow {BODY} at (8,8) size 784x18
       LayoutInline {A} at (0,0) size 119x18 [color=#0000EE]
         LayoutInline {<pseudo:before>} at (0,0) size 10x18
-          LayoutImage at (0,4) size 10x10
+          LayoutImage (anonymous) at (0,4) size 10x10
         LayoutText {#text} at (10,0) size 109x18
           text run at (10,0) width 109: "What's going on."
       LayoutText {#text} at (0,0) size 0x0

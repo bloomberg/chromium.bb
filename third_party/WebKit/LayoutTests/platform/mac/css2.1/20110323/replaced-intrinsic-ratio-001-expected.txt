@@ -16,7 +16,7 @@ layer at (0,0) size 800x823 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           text run at (0,-1) width 24: "      "
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (1,337) size 240x16
-      LayoutTable at (1,449) size 240x79
+      LayoutTable (anonymous) at (1,449) size 240x79
         LayoutTableSection (anonymous) at (0,0) size 240x79
           LayoutTableRow (anonymous) at (0,0) size 240x79
             LayoutTableCell {P} at (0,0) size 240x79 [r=0 c=0 rs=1 cs=1]

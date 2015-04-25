@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
           text run at (0,152) width 306: "Five Spaces (with leading/trailing whitespace): "
         LayoutMenuList {SELECT} at (305.25,153) size 92x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 92x18
-            LayoutText at (8,2) size 61x13
+            LayoutText (anonymous) at (8,2) size 61x13
               text run at (8,2) width 61: "Five Spaces"
         LayoutBR {BR} at (397,166) size 1x0
         LayoutBR {BR} at (0,171) size 0x18
@@ -27,7 +27,7 @@ layer at (0,0) size 800x600
           text run at (0,189) width 292: "Five Tabs (with leading/trailing whitespace): "
         LayoutMenuList {SELECT} at (291.92,190) size 81x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 81x18
-            LayoutText at (8,2) size 50x13
+            LayoutText (anonymous) at (8,2) size 50x13
               text run at (8,2) width 50: "Five Tabs"
         LayoutBR {BR} at (372,203) size 1x0
         LayoutBR {BR} at (0,208) size 0x18
@@ -35,7 +35,7 @@ layer at (0,0) size 800x600
           text run at (0,226) width 129: "Mixed Whitespace: "
         LayoutMenuList {SELECT} at (128.84,227) size 81x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 81x18
-            LayoutText at (8,2) size 50x13
+            LayoutText (anonymous) at (8,2) size 50x13
               text run at (8,2) width 50: "Five Tabs"
         LayoutText {#text} at (0,0) size 0x0
 layer at (80,41) size 67x59 clip at (81,42) size 54x57 scrollHeight 56
