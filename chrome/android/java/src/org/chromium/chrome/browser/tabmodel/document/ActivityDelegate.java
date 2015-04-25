@@ -91,8 +91,9 @@ public class ActivityDelegate {
             if (!isValidActivity(isIncognito, intent)) continue;
 
             int tabId = getTabIdFromIntent(intent);
+            if (tabId == Tab.INVALID_TAB_ID) continue;
+
             String initialUrl = getInitialUrlForDocument(intent);
-            if (tabId == Tab.INVALID_TAB_ID || initialUrl == null) continue;
             entries.add(new Entry(tabId, initialUrl));
         }
         return entries;
