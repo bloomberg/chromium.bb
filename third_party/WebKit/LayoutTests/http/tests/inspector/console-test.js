@@ -212,13 +212,6 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
         InspectorTest.addResult(result[i]);
 }
 
-InspectorTest.dumpConsoleClassesBrief = function()
-{
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
-    for (var i = 0; i < messageViews.length; ++i)
-        InspectorTest.addResult(messageViews[i].toMessageElement().className);
-}
-
 InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilter)
 {
     var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;

@@ -5,7 +5,6 @@
 #include "config.h"
 #include "bindings/core/v8/RejectedPromises.h"
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -15,13 +14,11 @@
 
 namespace blink {
 
-static const unsigned maxReportedHandlersPendingResolution = 1000;
-
 class RejectedPromises::Message final : public NoBaseWillBeGarbageCollectedFinalized<RejectedPromises::Message> {
 public:
-    static PassOwnPtrWillBeRawPtr<Message> create(ScriptState* scriptState, v8::Handle<v8::Promise> promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+    static PassOwnPtrWillBeRawPtr<Message> create(const ScriptValue& promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
     {
-        return adoptPtrWillBeNoop(new Message(scriptState, promise, exception, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack));
+        return adoptPtrWillBeNoop(new Message(promise, exception, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack));
     }
 
     DEFINE_INLINE_TRACE()
@@ -29,73 +26,9 @@ public:
         visitor->trace(m_callStack);
     }
 
-    bool isCollected()
-    {
-        return m_collected;
-    }
-
-    bool hasPromise(v8::Handle<v8::Value> promise)
-    {
-        ScriptState::Scope scope(m_scriptState);
-        return promise == m_promise.newLocal(m_scriptState->isolate());
-    }
-
-    void report()
-    {
-        if (!m_scriptState->contextIsValid())
-            return;
-        // If execution termination has been triggered, quietly bail out.
-        if (v8::V8::IsExecutionTerminating(m_scriptState->isolate()))
-            return;
-        ExecutionContext* executionContext = m_scriptState->executionContext();
-        if (!executionContext)
-            return;
-
-        ScriptState::Scope scope(m_scriptState);
-        v8::Handle<v8::Value> value = m_promise.newLocal(m_scriptState->isolate());
-        // Either collected or https://crbug.com/450330
-        if (value.IsEmpty() || !value->IsPromise())
-            return;
-        ASSERT(!v8::Handle<v8::Promise>::Cast(value)->HasHandler());
-
-        const String errorMessage = "Uncaught (in promise)";
-        Vector<ScriptValue> args;
-        args.append(ScriptValue(m_scriptState, v8String(m_scriptState->isolate(), errorMessage)));
-        args.append(m_exception);
-        RefPtrWillBeRawPtr<ScriptArguments> arguments = ScriptArguments::create(m_scriptState, args);
-
-        String embedderErrorMessage = m_errorMessage;
-        if (embedderErrorMessage.isEmpty())
-            embedderErrorMessage = errorMessage;
-        else if (embedderErrorMessage.startsWith("Uncaught "))
-            embedderErrorMessage.insert(" (in promise)", 8);
-
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, m_resourceName, m_lineNumber, m_columnNumber);
-        consoleMessage->setScriptArguments(arguments);
-        consoleMessage->setCallStack(m_callStack);
-        consoleMessage->setScriptId(m_scriptId);
-        m_consoleMessageId = consoleMessage->assignMessageId();
-        executionContext->addConsoleMessage(consoleMessage.release());
-
-        m_callStack.clear();
-        m_exception.clear();
-    }
-
-    void revoke()
-    {
-        ExecutionContext* executionContext = m_scriptState->executionContext();
-        if (!executionContext)
-            return;
-
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, RevokedErrorMessageLevel, "Handler added to rejected promise");
-        consoleMessage->setRelatedMessageId(m_consoleMessageId);
-        executionContext->addConsoleMessage(consoleMessage.release());
-    }
-
 private:
-    Message(ScriptState* scriptState, v8::Handle<v8::Promise> promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
-        : m_scriptState(scriptState)
-        , m_promise(scriptState->isolate(), promise)
+    Message(const ScriptValue& promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+        : m_promise(promise)
         , m_exception(exception)
         , m_errorMessage(errorMessage)
         , m_resourceName(resourceName)
@@ -103,29 +36,19 @@ private:
         , m_lineNumber(lineNumber)
         , m_columnNumber(columnNumber)
         , m_callStack(callStack)
-        , m_consoleMessageId(0)
-        , m_collected(false)
     {
-        m_promise.setWeak(this, &Message::didCollectPromise);
     }
 
-    static void didCollectPromise(const v8::WeakCallbackInfo<Message>& data)
-    {
-        data.GetParameter()->m_collected = true;
-        data.GetParameter()->m_promise.clear();
-    }
+    friend class RejectedPromises;
 
-    ScriptState* m_scriptState;
-    ScopedPersistent<v8::Promise> m_promise;
-    ScriptValue m_exception;
-    String m_errorMessage;
-    String m_resourceName;
-    int m_scriptId;
-    int m_lineNumber;
-    int m_columnNumber;
-    RefPtrWillBeMember<ScriptCallStack> m_callStack;
-    unsigned m_consoleMessageId;
-    bool m_collected;
+    const ScriptValue m_promise;
+    const ScriptValue m_exception;
+    const String m_errorMessage;
+    const String m_resourceName;
+    const int m_scriptId;
+    const int m_lineNumber;
+    const int m_columnNumber;
+    const RefPtrWillBeMember<ScriptCallStack> m_callStack;
 };
 
 RejectedPromises::RejectedPromises()
@@ -137,36 +60,14 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RejectedPromises);
 DEFINE_TRACE(RejectedPromises)
 {
     visitor->trace(m_queue);
-    visitor->trace(m_reportedAsErrors);
 }
 
-void RejectedPromises::rejectedWithNoHandler(ScriptState* scriptState, v8::PromiseRejectMessage data, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+void RejectedPromises::add(ScriptState* scriptState, v8::PromiseRejectMessage data, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
 {
-    m_queue.append(Message::create(scriptState, data.GetPromise(), ScriptValue(scriptState, data.GetValue()), errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack));
-}
+    v8::Handle<v8::Promise> promise = data.GetPromise();
+    OwnPtrWillBeRawPtr<Message> message = Message::create(ScriptValue(scriptState, promise), ScriptValue(scriptState, data.GetValue()), errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack);
 
-void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
-{
-    // First look it up in the pending messages and fast return, it'll be covered by processQueue().
-    for (auto it = m_queue.begin(); it != m_queue.end(); ++it) {
-        if ((*it)->isCollected() || (*it)->hasPromise(data.GetPromise())) {
-            m_queue.remove(it);
-            continue;
-        }
-    }
-
-    // Then look it up in the reported errors.
-    for (auto it = m_reportedAsErrors.begin(); it != m_reportedAsErrors.end(); ++it) {
-        if ((*it)->isCollected()) {
-            m_reportedAsErrors.remove(it);
-            continue;
-        }
-        if ((*it)->hasPromise(data.GetPromise())) {
-            (*it)->revoke();
-            m_reportedAsErrors.remove(it);
-            break;
-        }
-    }
+    m_queue.append(message.release());
 }
 
 void RejectedPromises::dispose()
@@ -176,21 +77,45 @@ void RejectedPromises::dispose()
 
 void RejectedPromises::processQueue()
 {
-    // Remove collected handlers.
-    for (auto it = m_reportedAsErrors.begin(); it != m_reportedAsErrors.end(); ++it) {
-        if ((*it)->isCollected())
-            m_reportedAsErrors.remove(it);
-    }
-
     while (!m_queue.isEmpty()) {
         OwnPtrWillBeRawPtr<Message> message = m_queue.takeFirst();
-        if (message->isCollected())
+        ScriptState* scriptState = message->m_promise.scriptState();
+        if (!scriptState->contextIsValid())
+            continue;
+        // If execution termination has been triggered, quietly bail out.
+        if (v8::V8::IsExecutionTerminating(scriptState->isolate()))
+            continue;
+        ExecutionContext* executionContext = scriptState->executionContext();
+        if (!executionContext)
             continue;
 
-        message->report();
-        m_reportedAsErrors.append(message.release());
-        if (m_reportedAsErrors.size() > maxReportedHandlersPendingResolution)
-            m_reportedAsErrors.removeFirst();
+        ScriptState::Scope scope(scriptState);
+
+        ASSERT(!message->m_promise.isEmpty());
+        v8::Handle<v8::Value> value = message->m_promise.v8Value();
+        // https://crbug.com/450330
+        if (value.IsEmpty() || !value->IsPromise())
+            continue;
+        if (v8::Handle<v8::Promise>::Cast(value)->HasHandler())
+            continue;
+
+        const String errorMessage = "Uncaught (in promise)";
+        Vector<ScriptValue> args;
+        args.append(ScriptValue(scriptState, v8String(scriptState->isolate(), errorMessage)));
+        args.append(message->m_exception);
+        RefPtrWillBeRawPtr<ScriptArguments> arguments = ScriptArguments::create(scriptState, args);
+
+        String embedderErrorMessage = message->m_errorMessage;
+        if (embedderErrorMessage.isEmpty())
+            embedderErrorMessage = errorMessage;
+        else if (embedderErrorMessage.startsWith("Uncaught "))
+            embedderErrorMessage.insert(" (in promise)", 8);
+
+        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, message->m_resourceName, message->m_lineNumber, message->m_columnNumber);
+        consoleMessage->setScriptArguments(arguments);
+        consoleMessage->setCallStack(message->m_callStack);
+        consoleMessage->setScriptId(message->m_scriptId);
+        executionContext->addConsoleMessage(consoleMessage.release());
     }
 }
 
