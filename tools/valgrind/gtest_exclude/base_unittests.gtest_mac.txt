@@ -18,3 +18,6 @@ ProcessMemoryTest.MacMallocFailureDoesNotTerminate
 MessageLoopTestTypeUI.RecursivePosts
 MessageLoopTestTypeIO.RecursivePosts
 MessageLoopTestTypeDefault.RecursivePosts
+
+# Check-fails on Valgrind/Mac, see https://crbug.com/481290
+MessagePumpLibeventTest.QuitWatcher
