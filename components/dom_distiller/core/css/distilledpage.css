@@ -73,9 +73,11 @@ th {
 
 /* Base typography. */
 
-body,
 html {
   font-size: 14px;
+}
+
+body {
   height: 100%;
   line-height: 1.4;
   text-rendering: optimizeLegibility;
@@ -154,11 +156,11 @@ h6 {
 /* Margins for Show Original link. */
 
 #showOriginal {
-  margin: auto 1.296rem 1.296rem 1.296rem;
+  margin: auto 1.296rem 1.296rem 5%;
 }
 
 #content {
-  margin: 0.2rem;
+  margin: 0.2rem 2.2%;
 }
 
 /* Main margins. */
@@ -340,6 +342,7 @@ pre {
 }
 
 .feedbackContent {
+  font-size: 14px;
   background-color: #4285F4;
   clear: both;
   padding: 14px;

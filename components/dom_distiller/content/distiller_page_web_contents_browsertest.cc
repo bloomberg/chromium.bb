@@ -5,6 +5,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
 #include "components/dom_distiller/content/web_contents_main_frame_observer.h"
@@ -100,6 +101,11 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
     quit_closure_.Run();
   }
 
+  void OnJsExecutionDone(base::Closure callback, const base::Value* value) {
+    js_result_.reset(value->DeepCopy());
+    callback.Run();
+  }
+
  private:
   void AddComponentsResources() {
     base::FilePath pak_file;
@@ -119,8 +125,10 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
   void SetUpTestServer() {
     base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    path = path.AppendASCII("components/test/data/dom_distiller");
-    embedded_test_server()->ServeFilesFromDirectory(path);
+    embedded_test_server()->ServeFilesFromDirectory(
+        path.AppendASCII("components/test/data/dom_distiller"));
+    embedded_test_server()->ServeFilesFromDirectory(
+        path.AppendASCII("components/dom_distiller/core/javascript"));
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   }
 
@@ -133,6 +141,7 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
   DistillerPageWebContents* distiller_page_;
   base::Closure quit_closure_;
   scoped_ptr<proto::DomDistillerResult> distiller_result_;
+  scoped_ptr<base::Value> js_result_;
 };
 
 // Use this class to be able to leak the WebContents, which is needed for when
@@ -456,6 +465,42 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, TestTitleNeverEmpty) {
     EXPECT_THAT(html, HasSubstr(no_title));
     EXPECT_THAT(html, Not(HasSubstr(some_title)));
   }
+}
+
+IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
+                       TestPinch) {
+  // Load the test file in content shell and wait until it has fully loaded.
+  content::WebContents* web_contents = shell()->web_contents();
+  dom_distiller::WebContentsMainFrameObserver::CreateForWebContents(
+      web_contents);
+  base::RunLoop url_loaded_runner;
+  WebContentsMainFrameHelper main_frame_loaded(web_contents,
+                                               url_loaded_runner.QuitClosure(),
+                                               true);
+  web_contents->GetController().LoadURL(
+      embedded_test_server()->GetURL("/pinch_tester.html"),
+      content::Referrer(),
+      ui::PAGE_TRANSITION_TYPED,
+      std::string());
+  url_loaded_runner.Run();
+
+  // Execute the JS to run the tests, and wait until it has finished.
+  base::RunLoop run_loop;
+  web_contents->GetMainFrame()->ExecuteJavaScript(
+      base::UTF8ToUTF16("(function() {return pinchtest.run();})();"),
+      base::Bind(&DistillerPageWebContentsTest::OnJsExecutionDone,
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // Convert to dictionary and parse the results.
+  const base::DictionaryValue* dict;
+  ASSERT_TRUE(js_result_);
+  ASSERT_TRUE(js_result_->GetAsDictionary(&dict));
+
+  ASSERT_TRUE(dict->HasKey("success"));
+  bool success;
+  ASSERT_TRUE(dict->GetBoolean("success", &success));
+  EXPECT_TRUE(success);
 }
 
 }  // namespace dom_distiller

@@ -163,3 +163,209 @@ document.getElementById('feedbackContainer').addEventListener('animationend',
       contentWrap.style.paddingBottom = '0px';
     }, true);
 
+document.getElementById('contentWrap').addEventListener('transitionend',
+    function(e) {
+      var contentWrap = document.getElementById('contentWrap');
+      contentWrap.style.transition = '';
+    }, true);
+
+var pincher = (function() {
+  'use strict';
+  // When users pinch in Reader Mode, the page would zoom in or out as if it
+  // is a normal web page allowing user-zoom. At the end of pinch gesture, the
+  // page would do text reflow. These pinch-to-zoom and text reflow effects
+  // are not native, but are emulated using CSS and JavaScript.
+  //
+  // In order to achieve near-native zooming and panning frame rate, fake 3D
+  // transform is used so that the layer doesn't repaint for each frame.
+  //
+  // After the text reflow, the web content shown in the viewport should
+  // roughly be the same paragraph before zooming.
+  //
+  // The control point of font size is the html element, so that both "em" and
+  // "rem" are adjusted.
+  //
+  // TODO(wychen): Improve scroll position when elementFromPoint is body.
+
+  var pinching = false;
+  var fontSizeAnchor = 1.0;
+
+  var focusElement = null;
+  var focusPos = 0;
+  var initClientMid;
+
+  var clampedScale = 1;
+
+  var lastSpan;
+  var lastClientMid;
+
+  var scale = 1;
+  var shiftX;
+  var shiftY;
+
+  // The zooming speed relative to pinching speed.
+  const FONT_SCALE_MULTIPLIER = 0.5;
+  const MIN_SPAN_LENGTH = 20;
+
+  // The font size is guaranteed to be in px.
+  var baseSize =
+      parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+  var refreshTransform = function() {
+    var slowedScale = Math.exp(Math.log(scale) * FONT_SCALE_MULTIPLIER);
+    clampedScale = Math.max(0.4, Math.min(2.5, fontSizeAnchor * slowedScale));
+
+    // Use "fake" 3D transform so that the layer is not repainted.
+    // With 2D transform, the frame rate would be much lower.
+    document.body.style.transform =
+        'translate3d(' + shiftX + 'px,' +
+                         shiftY + 'px, 0px)' +
+        'scale(' + clampedScale/fontSizeAnchor + ')';
+  };
+
+  function endPinch() {
+    pinching = false;
+
+    document.body.style.transformOrigin = '';
+    document.body.style.transform = '';
+    document.documentElement.style.fontSize = clampedScale * baseSize + "px";
+
+    var rect = focusElement.getBoundingClientRect();
+    var targetTop = focusPos * (rect.bottom - rect.top) + rect.top +
+        document.body.scrollTop - (initClientMid.y + shiftY);
+    document.body.scrollTop = targetTop;
+  }
+
+  function touchSpan(e) {
+    var count = e.touches.length;
+    var mid = touchClientMid(e);
+    var sum = 0;
+    for (var i = 0; i < count; i++) {
+      var dx = (e.touches[i].clientX - mid.x);
+      var dy = (e.touches[i].clientY - mid.y);
+      sum += Math.hypot(dx, dy);
+    }
+    // Avoid very small span.
+    return Math.max(MIN_SPAN_LENGTH, sum/count);
+  }
+
+  function touchClientMid(e) {
+    var count = e.touches.length;
+    var sumX = 0;
+    var sumY = 0;
+    for (var i = 0; i < count; i++) {
+      sumX += e.touches[i].clientX;
+      sumY += e.touches[i].clientY;
+    }
+    return {x: sumX/count, y: sumY/count};
+  }
+
+  function touchPageMid(e) {
+    var clientMid = touchClientMid(e);
+    return {x: clientMid.x - e.touches[0].clientX + e.touches[0].pageX,
+            y: clientMid.y - e.touches[0].clientY + e.touches[0].pageY};
+  }
+
+  return {
+    handleTouchStart: function(e) {
+      if (e.touches.length < 2) return;
+      e.preventDefault();
+
+      var span = touchSpan(e);
+      var clientMid = touchClientMid(e);
+
+      if (e.touches.length > 2) {
+        lastSpan = span;
+        lastClientMid = clientMid;
+        refreshTransform();
+        return;
+      }
+
+      scale = 1;
+      shiftX = 0;
+      shiftY = 0;
+
+      pinching = true;
+      fontSizeAnchor =
+          parseFloat(getComputedStyle(document.documentElement).fontSize) /
+          baseSize;
+
+      var pinchOrigin = touchPageMid(e);
+      document.body.style.transformOrigin =
+          pinchOrigin.x + 'px ' + pinchOrigin.y  + 'px';
+
+      // Try to preserve the pinching center after text reflow.
+      // This is accurate to the HTML element level.
+      focusElement = document.elementFromPoint(clientMid.x, clientMid.y);
+      var rect = focusElement.getBoundingClientRect();
+      initClientMid = clientMid;
+      focusPos = (initClientMid.y - rect.top) / (rect.bottom - rect.top);
+
+      lastSpan = span;
+      lastClientMid = clientMid;
+
+      refreshTransform();
+    },
+
+    handleTouchMove: function(e) {
+      if (!pinching) return;
+      if (e.touches.length < 2) return;
+      e.preventDefault();
+
+      var span = touchSpan(e);
+      var clientMid = touchClientMid(e);
+
+      scale *= touchSpan(e) / lastSpan;
+      shiftX += clientMid.x - lastClientMid.x;
+      shiftY += clientMid.y - lastClientMid.y;
+
+      refreshTransform();
+
+      lastSpan = span;
+      lastClientMid = clientMid;
+    },
+
+    handleTouchEnd: function(e) {
+      if (!pinching) return;
+      e.preventDefault();
+
+      var span = touchSpan(e);
+      var clientMid = touchClientMid(e);
+
+      if (e.touches.length >= 2) {
+        lastSpan = span;
+        lastClientMid = clientMid;
+        refreshTransform();
+        return;
+      }
+
+      endPinch();
+    },
+
+    handleTouchCancel: function(e) {
+      endPinch();
+    },
+
+    reset: function() {
+      scale = 1;
+      shiftX = 0;
+      shiftY = 0;
+      clampedScale = 1;
+      document.documentElement.style.fontSize = clampedScale * baseSize + "px";
+    },
+
+    status: function() {
+      return {
+        scale: scale,
+        clampedScale: clampedScale,
+        shiftX: shiftX,
+        shiftY: shiftY
+      };
+    }
+  };
+}());
+
+window.addEventListener('touchstart', pincher.handleTouchStart, false);
+window.addEventListener('touchmove', pincher.handleTouchMove, false);
+window.addEventListener('touchend', pincher.handleTouchEnd, false);
+window.addEventListener('touchcancel', pincher.handleTouchCancel, false);

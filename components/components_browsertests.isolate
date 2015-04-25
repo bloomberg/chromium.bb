@@ -56,6 +56,7 @@
       'variables': {
         'files': [
           'test/data/',
+          'dom_distiller/core/javascript/',
           '../third_party/dom_distiller_js/dist/test/data/',
         ],
       },
