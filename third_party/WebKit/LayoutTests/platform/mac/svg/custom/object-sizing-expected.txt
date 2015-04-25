@@ -13,7 +13,7 @@ layer at (0,0) size 800x392
           text run at (0,0) width 169: "Expected results"
       LayoutBlockFlow {ul} at (0,313.81) size 784x54
         LayoutListItem {li} at (40,0) size 744x18
-          LayoutListMarker at (-17,0) size 7x18: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (0,0) size 29x18
             text run at (0,0) width 29: "The "
           LayoutInline {code} at (0,0) size 25x15
@@ -22,7 +22,7 @@ layer at (0,0) size 800x392
           LayoutText {#text} at (52,0) size 248x18
             text run at (52,0) width 248: " containing the object appears in green"
         LayoutListItem {li} at (40,18) size 744x18
-          LayoutListMarker at (-17,0) size 7x18: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (0,0) size 29x18
             text run at (0,0) width 29: "The "
           LayoutInline {code} at (0,0) size 48x15
@@ -31,7 +31,7 @@ layer at (0,0) size 800x392
           LayoutText {#text} at (75,0) size 278x18
             text run at (75,0) width 278: " appears in orange. Its height is set at 13em"
         LayoutListItem {li} at (40,36) size 744x18
-          LayoutListMarker at (-17,0) size 7x18: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (0,0) size 174x18
             text run at (0,0) width 174: "The blue line is 13em wide"
 layer at (8,8) size 208x208

@@ -39,18 +39,18 @@ layer at (0,0) size 440x600
             text run at (20,327) width 4: "."
         LayoutBlockFlow {OL} at (148,0) size 260x350.39
           LayoutListItem {LI} at (0,40) size 40x310.39
-            LayoutListMarker at (0,-21) size 19x16: "1"
+            LayoutListMarker (anonymous) at (0,-21) size 19x16: "1"
             LayoutText {#text} at (0,0) size 39x287
               text run at (0,0) width 154: "New larger PowerBook. "
               text run at (0,154) width 133: "Still 1 GHz, but with a"
               text run at (20,0) width 141: "17-inch screen. $3299."
           LayoutListItem {LI} at (40,40) size 40x310.39
-            LayoutListMarker at (0,-21) size 19x16: "2"
+            LayoutListMarker (anonymous) at (0,-21) size 19x16: "2"
             LayoutText {#text} at (0,0) size 39x295
               text run at (0,0) width 295: "New smaller PowerBook, with a 12-inch screen."
               text run at (20,0) width 44: "$1799."
           LayoutListItem {LI} at (80,40) size 80x310.39
-            LayoutListMarker at (0,-21) size 19x16: "3"
+            LayoutListMarker (anonymous) at (0,-21) size 19x16: "3"
             LayoutText {#text} at (0,0) size 19x91
               text run at (0,0) width 91: "New browser: "
             LayoutInline {A} at (0,0) size 19x35 [color=#0000EE]
@@ -79,13 +79,13 @@ layer at (0,0) size 440x600
               text run at (60,34) width 117: "Only runs on 10.2. "
               text run at (60,151) width 144: "Currently in public beta."
           LayoutListItem {LI} at (160,40) size 40x310.39
-            LayoutListMarker at (0,-21) size 19x16: "4"
+            LayoutListMarker (anonymous) at (0,-21) size 19x16: "4"
             LayoutText {#text} at (0,0) size 39x309
               text run at (0,0) width 230: "New presentation software: Keynote. "
               text run at (0,230) width 79: "The software"
               text run at (20,0) width 100: "Steve Jobs uses."
           LayoutListItem {LI} at (200,40) size 40x310.39
-            LayoutListMarker at (0,-21) size 19x16: "5"
+            LayoutListMarker (anonymous) at (0,-21) size 19x16: "5"
             LayoutText {#text} at (0,0) size 19x103
               text run at (0,0) width 103: "New versions of "
             LayoutInline {A} at (0,0) size 19x42 [color=#0000EE]
@@ -111,7 +111,7 @@ layer at (0,0) size 440x600
             LayoutText {#text} at (20,129) size 19x57
               text run at (20,129) width 57: ", for $49."
           LayoutListItem {LI} at (240,40) size 20x310.39
-            LayoutListMarker at (0,-21) size 19x16: "6"
+            LayoutListMarker (anonymous) at (0,-21) size 19x16: "6"
             LayoutInline {A} at (0,0) size 19x107 [color=#0000EE]
               LayoutText {#text} at (0,0) size 19x107
                 text run at (0,0) width 107: "Final Cut Express"
@@ -121,42 +121,42 @@ layer at (0,0) size 440x600
       LayoutBlockFlow {DIV} at (0,0) size 332x584
         LayoutBlockFlow {UL} at (0,0) size 160x584
           LayoutListItem {LI} at (0,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x38 [color=#0000EE]
               LayoutText {#text} at (0,506) size 19x38
                 text run at (0,506) width 38: "About"
           LayoutListItem {LI} at (20,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x53 [color=#0000EE]
               LayoutText {#text} at (0,491) size 19x53
                 text run at (0,491) width 53: "Site map"
           LayoutListItem {LI} at (40,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x53 [color=#0000EE]
               LayoutText {#text} at (0,491) size 19x53
                 text run at (0,491) width 53: "Archives"
           LayoutListItem {LI} at (60,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x50 [color=#0000EE]
               LayoutText {#text} at (0,494) size 19x50
                 text run at (0,494) width 50: "Projects"
           LayoutListItem {LI} at (80,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x42 [color=#0000EE]
               LayoutText {#text} at (0,502) size 19x42
                 text run at (0,502) width 42: "Photos"
           LayoutListItem {LI} at (100,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x53 [color=#0000EE]
               LayoutText {#text} at (0,491) size 19x53
                 text run at (0,491) width 53: "Statistics"
           LayoutListItem {LI} at (120,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x136 [color=#0000EE]
               LayoutText {#text} at (0,408) size 19x136
                 text run at (0,408) width 136: "Accessibility statement"
           LayoutListItem {LI} at (140,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x28 [color=#0000EE]
               LayoutText {#text} at (0,435) size 19x28
                 text run at (0,435) width 28: "RSS"
@@ -169,38 +169,38 @@ layer at (0,0) size 440x600
               text run at (0,539) width 5: ")"
         LayoutBlockFlow {UL} at (176,0) size 20x584
           LayoutListItem {LI} at (0,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x85 [color=#0000EE]
               LayoutText {#text} at (0,459) size 19x85
                 text run at (0,459) width 85: "What is RSS?"
         LayoutBlockFlow {UL} at (212,0) size 120x584
           LayoutListItem {LI} at (0,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x88 [color=#0000EE]
               LayoutText {#text} at (0,456) size 19x88
                 text run at (0,456) width 88: "RSS Validator"
           LayoutListItem {LI} at (20,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x135 [color=#0000EE]
               LayoutText {#text} at (0,409) size 19x135
                 text run at (0,409) width 135: "Dive Into Accessibility"
           LayoutListItem {LI} at (40,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x96 [color=#0000EE]
               LayoutText {#text} at (0,448) size 19x96
                 text run at (0,448) width 96: "Dive Into OS X"
           LayoutListItem {LI} at (60,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x92 [color=#0000EE]
               LayoutText {#text} at (0,452) size 19x92
                 text run at (0,452) width 92: "Dive Into J2EE"
           LayoutListItem {LI} at (80,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x102 [color=#0000EE]
               LayoutText {#text} at (0,442) size 19x102
                 text run at (0,442) width 102: "Dive Into Python"
           LayoutListItem {LI} at (100,40) size 20x544
-            LayoutListMarker at (0,292.39) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,292.39) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x43 [color=#0000EE]
               LayoutText {#text} at (0,501) size 19x43
                 text run at (0,501) width 43: "r\x{E9}sum\x{E9}"

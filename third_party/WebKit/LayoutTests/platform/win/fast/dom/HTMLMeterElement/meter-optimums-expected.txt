@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 144: "optimum=450"
       LayoutBlockFlow {UL} at (0,143.25) size 784x90
         LayoutListItem {LI} at (40,0) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "value=150: "
           LayoutBlockFlow {METER} at (76.11,1.19) size 80x16
@@ -22,7 +22,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 20x16
         LayoutListItem {LI} at (40,18) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "value=450: "
           LayoutBlockFlow {METER} at (76.11,1.19) size 80x16
@@ -30,7 +30,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 36x16
         LayoutListItem {LI} at (40,36) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "value=750: "
           LayoutBlockFlow {METER} at (76.11,1.19) size 80x16
@@ -38,7 +38,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
         LayoutListItem {LI} at (40,54) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 61x17
             text run at (0,0) width 61: "value=0: "
           LayoutBlockFlow {METER} at (60.11,1.19) size 80x16
@@ -46,7 +46,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,72) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 85x17
             text run at (0,0) width 85: "value=1000: "
           LayoutBlockFlow {METER} at (84.11,1.19) size 80x16
@@ -58,7 +58,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 144: "optimum=150"
       LayoutBlockFlow {UL} at (0,300.06) size 784x90
         LayoutListItem {LI} at (40,0) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "value=150: "
           LayoutBlockFlow {METER} at (76.11,1.19) size 80x16
@@ -66,7 +66,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 20x16
         LayoutListItem {LI} at (40,18) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "value=450: "
           LayoutBlockFlow {METER} at (76.11,1.19) size 80x16
@@ -74,7 +74,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 36x16
         LayoutListItem {LI} at (40,36) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "value=750: "
           LayoutBlockFlow {METER} at (76.11,1.19) size 80x16
@@ -82,7 +82,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
         LayoutListItem {LI} at (40,54) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 61x17
             text run at (0,0) width 61: "value=0: "
           LayoutBlockFlow {METER} at (60.11,1.19) size 80x16
@@ -90,7 +90,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,72) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 85x17
             text run at (0,0) width 85: "value=1000: "
           LayoutBlockFlow {METER} at (84.11,1.19) size 80x16
@@ -102,7 +102,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 144: "optimum=750"
       LayoutBlockFlow {UL} at (0,456.88) size 784x90
         LayoutListItem {LI} at (40,0) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "value=150: "
           LayoutBlockFlow {METER} at (76.11,1.19) size 80x16
@@ -110,7 +110,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 20x16
         LayoutListItem {LI} at (40,18) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "value=450: "
           LayoutBlockFlow {METER} at (76.11,1.19) size 80x16
@@ -118,7 +118,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 36x16
         LayoutListItem {LI} at (40,36) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 77x17
             text run at (0,0) width 77: "value=750: "
           LayoutBlockFlow {METER} at (76.11,1.19) size 80x16
@@ -126,7 +126,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 60x16
         LayoutListItem {LI} at (40,54) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 61x17
             text run at (0,0) width 61: "value=0: "
           LayoutBlockFlow {METER} at (60.11,1.19) size 80x16
@@ -134,7 +134,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,72) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 85x17
             text run at (0,0) width 85: "value=1000: "
           LayoutBlockFlow {METER} at (84.11,1.19) size 80x16

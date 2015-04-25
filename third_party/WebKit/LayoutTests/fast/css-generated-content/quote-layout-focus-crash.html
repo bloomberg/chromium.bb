@@ -17,7 +17,7 @@
 <p>Bug 109616 - ASSERT(!layoutObject()->needsLayout()) when calling Element::focus() with generated content</p>
 
 <!--
-    This is testing a case where LayoutQuote::updateDepth would mark the LayoutQuote
+    This is testing a case where LayoutQuote (anonymous)::updateDepth would mark the LayoutQuote (anonymous)
     and its ancestors as needing layout in the middle of a layout of its ancestor.
     When its ancestor finishes the layout it will mark itself and the ancestors
     farther up as no longer needing layout. The end result is some subtree
@@ -32,7 +32,7 @@
             \
              LayoutBlockFlow (generated content) <- needsLayout
                 \
-                 LayoutQuote <- needsLayout
+                 LayoutQuote (anonymous) <- needsLayout
 -->
 
 <div class="positioned"></div>

@@ -237,7 +237,7 @@ public:
 
     LayoutPoint flipFloatForWritingModeForChild(const FloatingObject*, const LayoutPoint&) const;
 
-    virtual const char* name() const override;
+    virtual const char* name() const override { return "LayoutBlockFlow"; }
 
 protected:
     void rebuildFloatsFromIntruding();

@@ -1008,11 +1008,4 @@ LayoutUnit LayoutDeprecatedFlexibleBox::allowedChildFlex(LayoutBox* child, bool 
     return 0;
 }
 
-const char* LayoutDeprecatedFlexibleBox::name() const
-{
-    if (isAnonymous())
-        return "LayoutDeprecatedFlexibleBox (anonymous)";
-    return "LayoutDeprecatedFlexibleBox";
-}
-
 } // namespace blink

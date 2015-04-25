@@ -24,7 +24,7 @@ layer at (0,0) size 800x600
             text run at (0,0) width 83: "display: block"
       LayoutBlockFlow {DIV} at (0,128) size 784x20
         LayoutListItem {FORM} at (0,0) size 784x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 96x19
             text run at (0,0) width 96: "display: list-item"
       LayoutBlockFlow {DIV} at (0,164) size 784x20

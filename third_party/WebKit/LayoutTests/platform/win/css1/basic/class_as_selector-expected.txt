@@ -35,7 +35,7 @@ layer at (0,0) size 800x600
           text run at (280,0) width 0: " "
       LayoutBlockFlow {UL} at (0,297) size 784x18
         LayoutListItem {LI} at (40,0) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 240x17
             text run at (0,0) width 240: "This sentence should NOT be purple."
       LayoutTable {TABLE} at (0,331) size 592x238 [border: (1px outset #808080)]
@@ -68,6 +68,6 @@ layer at (0,0) size 800x600
                   text run at (280,0) width 0: " "
               LayoutBlockFlow {UL} at (4,172) size 570x18
                 LayoutListItem {LI} at (40,0) size 530x18
-                  LayoutListMarker at (-17,0) size 7x17: bullet
+                  LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
                   LayoutText {#text} at (0,0) size 240x17
                     text run at (0,0) width 240: "This sentence should NOT be purple."

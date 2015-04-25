@@ -42,7 +42,7 @@ public:
     LayoutGrid(Element*);
     virtual ~LayoutGrid();
 
-    virtual const char* name() const override;
+    virtual const char* name() const override { return "LayoutGrid"; }
 
     virtual void layoutBlock(bool relayoutChildren) override;
 

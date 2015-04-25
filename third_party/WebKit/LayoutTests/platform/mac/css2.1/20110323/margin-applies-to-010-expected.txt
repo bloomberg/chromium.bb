@@ -10,4 +10,4 @@ layer at (0,0) size 800x68
 layer at (8,68) size 340x340
   LayoutBlockFlow (positioned) {DIV} at (8,68) size 340x340 [border: (10px solid #0000FF)]
     LayoutListItem {DIV} at (60,60) size 220x220 [border: (10px solid #FFA500)]
-      LayoutListMarker at (-17,10) size 7x18: bullet
+      LayoutListMarker (anonymous) at (-17,10) size 7x18: bullet

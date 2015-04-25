@@ -231,7 +231,7 @@ public:
     HashSet<LayoutTableCell*>& overflowingCells() { return m_overflowingCells; }
     bool hasMultipleCellLevels() { return m_hasMultipleCellLevels; }
 
-    virtual const char* name() const override { return isAnonymous() ? "LayoutTableSection (anonymous)" : "LayoutTableSection"; }
+    virtual const char* name() const override { return "LayoutTableSection"; }
 
 protected:
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;

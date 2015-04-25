@@ -11,6 +11,6 @@ layer at (0,0) size 800x600
           LayoutBlockFlow {DD} at (36,0) size 20x584
             LayoutBlockFlow {UL} at (0,0) size 20x584
               LayoutListItem {LI} at (0,0) size 20x584
-                LayoutListMarker at (3,0) size 12x9
+                LayoutListMarker (anonymous) at (3,0) size 12x9
                 LayoutText {#text} at (0,16) size 19x107
                   text run at (0,16) width 107: "LI text is here too"

@@ -6,12 +6,12 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 40x584
         LayoutBlockFlow {UL} at (0,0) size 40x584
           LayoutListItem {LI} at (0,40) size 20x544
-            LayoutListMarker at (0,-18) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,-18) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x37 [color=#0000EE]
               LayoutText {#text} at (0,507) size 19x37
                 text run at (0,507) width 37: "Home"
           LayoutListItem {LI} at (20,40) size 20x544
-            LayoutListMarker at (0,-18) size 19x7: bullet
+            LayoutListMarker (anonymous) at (0,-18) size 19x7: bullet
             LayoutInline {A} at (0,0) size 19x53 [color=#0000EE]
               LayoutText {#text} at (0,491) size 19x53
                 text run at (0,491) width 53: "Archives"

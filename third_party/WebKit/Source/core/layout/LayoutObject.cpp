@@ -1094,6 +1094,14 @@ String LayoutObject::decoratedName() const
     StringBuilder name;
     name.append(this->name());
 
+    if (isAnonymous())
+        name.append(" (anonymous)");
+    if (style()) {
+        if (isAnonymousColumnsBlock())
+            name.append(" (anonymous multi-column)");
+        if (isAnonymousColumnSpanBlock())
+            name.append(" (anonymous multi-column span)");
+    }
     if (isOutOfFlowPositioned())
         name.append(" (positioned)");
     if (isRelPositioned())

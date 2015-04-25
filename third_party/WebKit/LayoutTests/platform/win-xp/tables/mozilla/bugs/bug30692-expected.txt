@@ -8,12 +8,12 @@ layer at (0,0) size 800x600
           text run at (0,0) width 458: "BUG: Inside a cell, \"height:x%\" is ignored. It looks like 'auto' is used instead."
         LayoutBR {BR} at (458,15) size 0x0
       LayoutListItem {LI} at (0,20) size 784x20
-        LayoutListMarker at (-1,0) size 7x19: bullet
+        LayoutListMarker (anonymous) at (-1,0) size 7x19: bullet
         LayoutText {#text} at (15,0) size 249x19
           text run at (15,0) width 249: "Absolute units work correctly (eg. 50px)."
       LayoutListItem {LI} at (0,40) size 784x492
         LayoutBlockFlow (anonymous) at (0,0) size 784x20
-          LayoutListMarker at (-1,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-1,0) size 7x19: bullet
           LayoutText {#text} at (15,0) size 169x19
             text run at (15,0) width 169: "\"width:x%\" works correctly."
         LayoutBlockFlow {HR} at (0,28) size 784x2 [border: (1px inset #EEEEEE)]

@@ -26,36 +26,36 @@ layer at (0,0) size 785x737 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {UL} at (0,199) size 769x160
         LayoutListItem {LI} at (40,0) size 729x120
           LayoutBlockFlow (anonymous) at (0,0) size 729x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 534x19
               text run at (0,0) width 534: "Purple unvisited, lime (light green) visited, maroon (dark red) while active (being clicked):"
           LayoutBlockFlow {UL} at (0,20) size 729x100
             LayoutListItem {LI} at (40,0) size 689x20
-              LayoutListMarker at (-18,0) size 7x19: white bullet
+              LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutInline {A} at (0,0) size 109x19 [color=#800080]
                 LayoutText {#text} at (0,0) size 109x19
                   text run at (0,0) width 109: "W3C Web server"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,20) size 689x20
-              LayoutListMarker at (-18,0) size 7x19: white bullet
+              LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutInline {A} at (0,0) size 110x19 [color=#800080]
                 LayoutText {#text} at (0,0) size 110x19
                   text run at (0,0) width 110: "NIST Web server"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,40) size 689x20
-              LayoutListMarker at (-18,0) size 7x19: white bullet
+              LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutInline {A} at (0,0) size 122x19 [color=#800080]
                 LayoutText {#text} at (0,0) size 122x19
                   text run at (0,0) width 122: "CWRU Web server"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,60) size 689x20
-              LayoutListMarker at (-18,0) size 7x19: white bullet
+              LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutInline {A} at (0,0) size 46x19 [color=#800080]
                 LayoutText {#text} at (0,0) size 46x19
                   text run at (0,0) width 46: "Yahoo!"
               LayoutText {#text} at (0,0) size 0x0
             LayoutListItem {LI} at (40,80) size 689x20
-              LayoutListMarker at (-18,0) size 7x19: white bullet
+              LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutInline {A} at (0,0) size 54x19 [color=#800080]
                 LayoutText {#text} at (0,0) size 54x19
                   text run at (0,0) width 54: "Erewhon"
@@ -63,12 +63,12 @@ layer at (0,0) size 785x737 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 text run at (54,0) width 209: " (don't click on it, it goes nowhere)"
         LayoutListItem {LI} at (40,120) size 729x40
           LayoutBlockFlow (anonymous) at (0,0) size 729x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 192x19
               text run at (0,0) width 192: "Dark green in any circumstance:"
           LayoutBlockFlow {UL} at (0,20) size 729x20
             LayoutListItem {LI} at (40,0) size 689x20
-              LayoutListMarker at (-18,0) size 7x19: white bullet
+              LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutInline {A} at (0,0) size 122x19 [color=#006600]
                 LayoutText {#text} at (0,0) size 122x19
                   text run at (0,0) width 122: "CWRU Web server"
@@ -102,36 +102,36 @@ layer at (0,0) size 785x737 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBlockFlow {UL} at (4,40) size 747x160
                 LayoutListItem {LI} at (40,0) size 707x120
                   LayoutBlockFlow (anonymous) at (0,0) size 707x20
-                    LayoutListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                     LayoutText {#text} at (0,0) size 534x19
                       text run at (0,0) width 534: "Purple unvisited, lime (light green) visited, maroon (dark red) while active (being clicked):"
                   LayoutBlockFlow {UL} at (0,20) size 707x100
                     LayoutListItem {LI} at (40,0) size 667x20
-                      LayoutListMarker at (-18,0) size 7x19: white bullet
+                      LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
                       LayoutInline {A} at (0,0) size 109x19 [color=#800080]
                         LayoutText {#text} at (0,0) size 109x19
                           text run at (0,0) width 109: "W3C Web server"
                       LayoutText {#text} at (0,0) size 0x0
                     LayoutListItem {LI} at (40,20) size 667x20
-                      LayoutListMarker at (-18,0) size 7x19: white bullet
+                      LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
                       LayoutInline {A} at (0,0) size 110x19 [color=#800080]
                         LayoutText {#text} at (0,0) size 110x19
                           text run at (0,0) width 110: "NIST Web server"
                       LayoutText {#text} at (0,0) size 0x0
                     LayoutListItem {LI} at (40,40) size 667x20
-                      LayoutListMarker at (-18,0) size 7x19: white bullet
+                      LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
                       LayoutInline {A} at (0,0) size 122x19 [color=#800080]
                         LayoutText {#text} at (0,0) size 122x19
                           text run at (0,0) width 122: "CWRU Web server"
                       LayoutText {#text} at (0,0) size 0x0
                     LayoutListItem {LI} at (40,60) size 667x20
-                      LayoutListMarker at (-18,0) size 7x19: white bullet
+                      LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
                       LayoutInline {A} at (0,0) size 46x19 [color=#800080]
                         LayoutText {#text} at (0,0) size 46x19
                           text run at (0,0) width 46: "Yahoo!"
                       LayoutText {#text} at (0,0) size 0x0
                     LayoutListItem {LI} at (40,80) size 667x20
-                      LayoutListMarker at (-18,0) size 7x19: white bullet
+                      LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
                       LayoutInline {A} at (0,0) size 54x19 [color=#800080]
                         LayoutText {#text} at (0,0) size 54x19
                           text run at (0,0) width 54: "Erewhon"
@@ -139,12 +139,12 @@ layer at (0,0) size 785x737 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                         text run at (54,0) width 209: " (don't click on it, it goes nowhere)"
                 LayoutListItem {LI} at (40,120) size 707x40
                   LayoutBlockFlow (anonymous) at (0,0) size 707x20
-                    LayoutListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                     LayoutText {#text} at (0,0) size 192x19
                       text run at (0,0) width 192: "Dark green in any circumstance:"
                   LayoutBlockFlow {UL} at (0,20) size 707x20
                     LayoutListItem {LI} at (40,0) size 667x20
-                      LayoutListMarker at (-18,0) size 7x19: white bullet
+                      LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
                       LayoutInline {A} at (0,0) size 122x19 [color=#006600]
                         LayoutText {#text} at (0,0) size 122x19
                           text run at (0,0) width 122: "CWRU Web server"

@@ -62,7 +62,7 @@ public:
 
     static LayoutRubyRun* staticCreateRubyRun(const LayoutObject* parentRuby);
 
-    virtual const char* name() const override { return "LayoutRubyRun (anonymous)"; }
+    virtual const char* name() const override { return "LayoutRubyRun"; }
 
 protected:
     LayoutRubyBase* createRubyBase() const;

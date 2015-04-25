@@ -7,7 +7,7 @@ layer at (0,0) size 800x88
         LayoutListItem {LI} at (40,0) size 744x56
           LayoutBlockFlow {FORM} at (0,0) size 744x22
             LayoutBlockFlow {P} at (0,0) size 744x22
-              LayoutListMarker at (-17,2) size 7x17: bullet
+              LayoutListMarker (anonymous) at (-17,2) size 7x17: bullet
               LayoutTextControl {INPUT} at (0,0) size 313x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
               LayoutText {#text} at (0,0) size 0x0
           LayoutBlockFlow {P} at (0,38) size 744x18

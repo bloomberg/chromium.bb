@@ -98,7 +98,7 @@ public:
 
     bool hitTestCulledInline(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset);
 
-    virtual const char* name() const override;
+    virtual const char* name() const override { return "LayoutInline"; }
 
 protected:
     virtual void willBeDestroyed() override;

@@ -17,7 +17,7 @@ layer at (0,0) size 800x600
 layer at (8,-4) size 381x20 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {UL} at (8,-4) size 381x20
     LayoutListItem {LI} at (40,0) size 341x20
-      LayoutListMarker at (-18,0) size 7x19: bullet
+      LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
       LayoutText {#text} at (0,0) size 341x19
         text run at (0,0) width 106: "This is a list item. "
         text run at (106,0) width 235: "You should see a list marker to the left."

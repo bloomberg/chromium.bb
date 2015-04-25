@@ -31,19 +31,19 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (0,0) width 82: "Top menu"
         LayoutBlockFlow {UL} at (24,34.19) size 155.20x80
           LayoutListItem {LI} at (0,0) size 155.20x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 33x19
               text run at (0,0) width 33: "green"
           LayoutListItem {LI} at (0,20) size 155.20x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 58x19
               text run at (0,0) width 58: "white text"
           LayoutListItem {LI} at (0,40) size 155.20x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 90x19
               text run at (0,0) width 90: "0.5em padding"
           LayoutListItem {LI} at (0,60) size 155.20x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 82x19
               text run at (0,0) width 82: "0.5em margin"
       LayoutBlockFlow (floating) {DIV} at (0,335.38) size 192x125.38 [color=#FFFFFF] [bgcolor=#0000FF]
@@ -52,19 +52,19 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             text run at (0,0) width 109: "Bottom menu"
         LayoutBlockFlow {UL} at (24,34.19) size 155.20x80
           LayoutListItem {LI} at (0,0) size 155.20x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 101x19
               text run at (0,0) width 101: "blue background"
           LayoutListItem {LI} at (0,20) size 155.20x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 58x19
               text run at (0,0) width 58: "white text"
           LayoutListItem {LI} at (0,40) size 155.20x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 90x19
               text run at (0,0) width 90: "0.5em padding"
           LayoutListItem {LI} at (0,60) size 155.20x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
             LayoutText {#text} at (0,0) size 82x19
               text run at (0,0) width 82: "0.5em margin"
       LayoutBlockFlow {DIV} at (224,200) size 528x235.88 [bgcolor=#FFFF00]
@@ -101,19 +101,19 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                     text run at (0,0) width 82: "Top menu"
                 LayoutBlockFlow {UL} at (24,34.19) size 155.20x80
                   LayoutListItem {LI} at (0,0) size 155.20x20
-                    LayoutListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                     LayoutText {#text} at (0,0) size 33x19
                       text run at (0,0) width 33: "green"
                   LayoutListItem {LI} at (0,20) size 155.20x20
-                    LayoutListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                     LayoutText {#text} at (0,0) size 58x19
                       text run at (0,0) width 58: "white text"
                   LayoutListItem {LI} at (0,40) size 155.20x20
-                    LayoutListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                     LayoutText {#text} at (0,0) size 90x19
                       text run at (0,0) width 90: "0.5em padding"
                   LayoutListItem {LI} at (0,60) size 155.20x20
-                    LayoutListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                     LayoutText {#text} at (0,0) size 82x19
                       text run at (0,0) width 82: "0.5em margin"
               LayoutBlockFlow (floating) {DIV} at (4,139.38) size 192x125.38 [color=#FFFFFF] [bgcolor=#0000FF]
@@ -122,19 +122,19 @@ layer at (0,0) size 800x806 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                     text run at (0,0) width 109: "Bottom menu"
                 LayoutBlockFlow {UL} at (24,34.19) size 155.20x80
                   LayoutListItem {LI} at (0,0) size 155.20x20
-                    LayoutListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                     LayoutText {#text} at (0,0) size 101x19
                       text run at (0,0) width 101: "blue background"
                   LayoutListItem {LI} at (0,20) size 155.20x20
-                    LayoutListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                     LayoutText {#text} at (0,0) size 58x19
                       text run at (0,0) width 58: "white text"
                   LayoutListItem {LI} at (0,40) size 155.20x20
-                    LayoutListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                     LayoutText {#text} at (0,0) size 90x19
                       text run at (0,0) width 90: "0.5em padding"
                   LayoutListItem {LI} at (0,60) size 155.20x20
-                    LayoutListMarker at (-18,0) size 7x19: bullet
+                    LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
                     LayoutText {#text} at (0,0) size 82x19
                       text run at (0,0) width 82: "0.5em margin"
               LayoutBlockFlow {DIV} at (228,4) size 314x315.88 [bgcolor=#FFFF00]

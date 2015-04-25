@@ -776,13 +776,6 @@ LayoutUnit LayoutInline::marginAfter(const ComputedStyle* otherStyle) const
     return computeMargin(this, style()->marginAfterUsing(otherStyle ? otherStyle : style()));
 }
 
-const char* LayoutInline::name() const
-{
-    if (isAnonymous())
-        return "LayoutInline (anonymous)";
-    return "LayoutInline";
-}
-
 bool LayoutInline::nodeAtPoint(HitTestResult& result,
     const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {

@@ -265,7 +265,7 @@ layer at (0,0) size 785x1696 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (19,1) width 1: "\x{202A}"
       LayoutBlockFlow {UL} at (0,1646) size 769x18
         LayoutListItem {LI} at (40,0) size 729x18
-          LayoutListMarker at (-17,0) size 7x18: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (0,0) size 718x18
             text run at (0,0) width 718: "test id=test: the right-most character of rendering result of <PDF>abc<PDF> in RTL block should be c: Success"
 selection start: position 3 of child 0 {#text} of child 20 {DIV} of child 1 {DIV} of body

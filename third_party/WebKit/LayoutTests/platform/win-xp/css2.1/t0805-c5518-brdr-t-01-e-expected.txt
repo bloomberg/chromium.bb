@@ -35,27 +35,27 @@ layer at (0,0) size 800x326
       LayoutBlockFlow {UL} at (0,162) size 784x132
         LayoutListItem {LI} at (40,0) size 744x84 [border: (2px solid #0000FF) none]
           LayoutBlockFlow (anonymous) at (0,2) size 744x22
-            LayoutListMarker at (-18,2) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,2) size 7x19: bullet
             LayoutText {#text} at (0,2) size 55x19
               text run at (0,2) width 55: "HERE \x{21E7}"
           LayoutBlockFlow {UL} at (0,24) size 744x60
             LayoutListItem {LI} at (40,0) size 704x20
-              LayoutListMarker at (-18,0) size 7x19: white bullet
+              LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutText {#text} at (0,0) size 70x19
                 text run at (0,0) width 70: "dummy text"
             LayoutListItem {LI} at (40,20) size 704x20
-              LayoutListMarker at (-18,0) size 7x19: white bullet
+              LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutText {#text} at (0,0) size 70x19
                 text run at (0,0) width 70: "dummy text"
             LayoutListItem {LI} at (40,40) size 704x20
-              LayoutListMarker at (-18,0) size 7x19: white bullet
+              LayoutListMarker (anonymous) at (-18,0) size 7x19: white bullet
               LayoutText {#text} at (0,0) size 70x19
                 text run at (0,0) width 70: "dummy text"
         LayoutListItem {LI} at (40,84) size 744x24 [border: (2px solid #0000FF) none]
-          LayoutListMarker at (-18,4) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,4) size 7x19: bullet
           LayoutText {#text} at (0,4) size 55x19
             text run at (0,4) width 55: "HERE \x{21E7}"
         LayoutListItem {LI} at (40,108) size 744x24 [border: (2px solid #0000FF) none]
-          LayoutListMarker at (-18,4) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,4) size 7x19: bullet
           LayoutText {#text} at (0,4) size 55x19
             text run at (0,4) width 55: "HERE \x{21E7}"

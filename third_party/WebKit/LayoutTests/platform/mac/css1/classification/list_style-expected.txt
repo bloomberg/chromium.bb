@@ -15,13 +15,13 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {HR} at (0,77) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {UL} at (0,95) size 784x36
         LayoutListItem {LI} at (40,0) size 744x36
-          LayoutListMarker at (0,0) size 19.55x18: "A"
+          LayoutListMarker (anonymous) at (0,0) size 19.55x18: "A"
           LayoutText {#text} at (19,0) size 695x36
             text run at (19,0) width 676: "The text in this item should not behave as expected; that is, it should line up with the capital-A on the left"
             text run at (0,18) width 345: "margin, leaving no blank space beneath the capital-A."
       LayoutBlockFlow {UL} at (0,147) size 784x37
         LayoutListItem {LI} at (40,0) size 744x37
-          LayoutListMarker at (-22,0) size 15x15
+          LayoutListMarker (anonymous) at (-22,0) size 15x15
           LayoutText {#text} at (0,1) size 727x36
             text run at (0,1) width 489: "The text in this item have an orange square for its bullet; failing that, a disc. "
             text run at (488,1) width 239: "Also, the bullet should be outside the"
@@ -40,13 +40,13 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (12,26) size 770x113 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
               LayoutBlockFlow {UL} at (4,4) size 762x36
                 LayoutListItem {LI} at (40,0) size 722x36
-                  LayoutListMarker at (0,0) size 19.55x18: "A"
+                  LayoutListMarker (anonymous) at (0,0) size 19.55x18: "A"
                   LayoutText {#text} at (19,0) size 695x36
                     text run at (19,0) width 676: "The text in this item should not behave as expected; that is, it should line up with the capital-A on the left"
                     text run at (0,18) width 345: "margin, leaving no blank space beneath the capital-A."
               LayoutBlockFlow {UL} at (4,56) size 762x37
                 LayoutListItem {LI} at (40,0) size 722x37
-                  LayoutListMarker at (-22,0) size 15x15
+                  LayoutListMarker (anonymous) at (-22,0) size 15x15
                   LayoutText {#text} at (0,1) size 703x36
                     text run at (0,1) width 489: "The text in this item have an orange square for its bullet; failing that, a disc. "
                     text run at (488,1) width 215: "Also, the bullet should be outside"

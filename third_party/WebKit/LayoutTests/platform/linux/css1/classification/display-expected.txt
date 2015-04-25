@@ -40,7 +40,7 @@ layer at (0,0) size 785x873 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (320,40) width 102: " is being ignored."
         LayoutText {#text} at (0,0) size 0x0
       LayoutListItem {P} at (48,259) size 721x60
-        LayoutListMarker at (-18,0) size 7x19: black square
+        LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
         LayoutText {#text} at (0,0) size 701x19
           text run at (0,0) width 701: "This sentence should be treated as a list-item, and therefore be rendered however this user agent displays list items (if"
         LayoutInline {CODE} at (0,0) size 120x16
@@ -100,7 +100,7 @@ layer at (0,0) size 785x873 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                     text run at (320,40) width 102: " is being ignored."
                 LayoutText {#text} at (0,0) size 0x0
               LayoutListItem {P} at (52,116) size 699x60
-                LayoutListMarker at (-18,0) size 7x19: black square
+                LayoutListMarker (anonymous) at (-18,0) size 7x19: black square
                 LayoutText {#text} at (0,0) size 685x39
                   text run at (0,0) width 685: "This sentence should be treated as a list-item, and therefore be rendered however this user agent displays list items"
                   text run at (0,20) width 16: "(if "

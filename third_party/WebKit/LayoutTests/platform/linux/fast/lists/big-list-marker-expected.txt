@@ -9,6 +9,6 @@ layer at (0,0) size 800x600
           text run at (492,0) width 101: "See bug #11957"
       LayoutBlockFlow {UL} at (0,36) size 784x40 [border: (10px dashed #000000)]
         LayoutListItem {LI} at (50,10) size 724x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 251x19
             text run at (0,0) width 251: "The list-marker should be the normal size."

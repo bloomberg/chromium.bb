@@ -10,28 +10,28 @@ layer at (0,0) size 800x336
       LayoutBlockFlow {UL} at (0,34) size 588x270
         LayoutListItem {LI} at (40,0) size 548x72 [border: none (3px solid #FFA500) none]
           LayoutBlockFlow (anonymous) at (0,0) size 545x18
-            LayoutListMarker at (-17,0) size 7x17: bullet
+            LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
             LayoutText {#text} at (0,0) size 107x17
               text run at (0,0) width 107: "Orange orange..."
           LayoutBlockFlow {UL} at (0,18) size 408.75x54
             LayoutListItem {LI} at (40,0) size 368.75x18
-              LayoutListMarker at (-17,0) size 7x17: white bullet
+              LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
               LayoutText {#text} at (0,0) size 116x17
                 text run at (0,0) width 116: "...orange orange..."
             LayoutListItem {LI} at (40,18) size 368.75x18
-              LayoutListMarker at (-17,0) size 7x17: white bullet
+              LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
               LayoutText {#text} at (0,0) size 116x17
                 text run at (0,0) width 116: "...orange orange..."
             LayoutListItem {LI} at (40,36) size 368.75x18
-              LayoutListMarker at (-17,0) size 7x17: white bullet
+              LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
               LayoutText {#text} at (0,0) size 108x17
                 text run at (0,0) width 108: "...orange orange."
         LayoutListItem {LI} at (40,72) size 548x18 [border: none (3px solid #00FF00) none]
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 38x17
             text run at (0,0) width 38: "Lime."
         LayoutListItem {LI} at (40,90) size 548x180 [border: none (3px solid #FFFF00) none]
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 523x179
             text run at (0,0) width 337: "Yellow yellow yellow yellow yellow yellow yellow "
             text run at (336,0) width 187: "yellow yellow yellow yellow"

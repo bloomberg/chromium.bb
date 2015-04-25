@@ -222,7 +222,7 @@ public:
     }
 #endif
 
-    virtual const char* name() const override { return isAnonymous() ? "LayoutTableCell (anonymous)" : "LayoutTableCell"; }
+    virtual const char* name() const override { return "LayoutTableCell"; }
 
 protected:
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;

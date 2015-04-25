@@ -28,15 +28,15 @@ layer at (0,0) size 800x600
           LayoutBlockFlow {UL} at (0,0) size 744x54
             LayoutBlockFlow {UL} at (40,0) size 704x54
               LayoutListItem {LI} at (40,0) size 664x18
-                LayoutListMarker at (-17,0) size 7x17: white bullet
+                LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
                 LayoutText {#text} at (0,0) size 25x17
                   text run at (0,0) width 25: "Foo"
               LayoutListItem {LI} at (40,18) size 664x18
-                LayoutListMarker at (-17,0) size 7x17: white bullet
+                LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
                 LayoutText {#text} at (0,0) size 24x17
                   text run at (0,0) width 24: "Bar"
               LayoutListItem {LI} at (40,36) size 664x18
-                LayoutListMarker at (-17,0) size 7x17: white bullet
+                LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
                 LayoutText {#text} at (0,0) size 25x17
                   text run at (0,0) width 25: "Baz"
         LayoutBlockFlow {BLOCKQUOTE} at (40,140) size 744x54

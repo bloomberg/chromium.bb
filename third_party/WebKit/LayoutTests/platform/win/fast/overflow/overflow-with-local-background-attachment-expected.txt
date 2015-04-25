@@ -5,15 +5,15 @@ layer at (0,0) size 800x292
     LayoutBlockFlow {BODY} at (8,16) size 784x268
       LayoutBlockFlow {UL} at (0,0) size 784x54 [color=#000080]
         LayoutListItem {LI} at (40,0) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 340x17
             text run at (0,0) width 340: "You should not see the background under the border."
         LayoutListItem {LI} at (40,18) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 350x17
             text run at (0,0) width 350: "As you scroll the element below the cats should move."
         LayoutListItem {LI} at (40,36) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 300x17
             text run at (0,0) width 300: "The cats should be on a light grey background."
 layer at (8,86) size 390x198 clip at (38,116) size 315x138 scrollHeight 360

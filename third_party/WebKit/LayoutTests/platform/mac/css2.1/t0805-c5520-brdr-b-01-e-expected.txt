@@ -36,26 +36,26 @@ layer at (0,0) size 800x332
         LayoutListItem {LI} at (40,0) size 744x80 [border: none (2px solid #0000FF) none]
           LayoutBlockFlow {UL} at (0,0) size 744x54
             LayoutListItem {LI} at (40,0) size 704x18
-              LayoutListMarker at (-57,0) size 7x18: bullet
-              LayoutListMarker at (-17,0) size 7x18: white bullet
+              LayoutListMarker (anonymous) at (-57,0) size 7x18: bullet
+              LayoutListMarker (anonymous) at (-17,0) size 7x18: white bullet
               LayoutText {#text} at (0,0) size 77x18
                 text run at (0,0) width 77: "dummy text"
             LayoutListItem {LI} at (40,18) size 704x18
-              LayoutListMarker at (-17,0) size 7x18: white bullet
+              LayoutListMarker (anonymous) at (-17,0) size 7x18: white bullet
               LayoutText {#text} at (0,0) size 77x18
                 text run at (0,0) width 77: "dummy text"
             LayoutListItem {LI} at (40,36) size 704x18
-              LayoutListMarker at (-17,0) size 7x18: white bullet
+              LayoutListMarker (anonymous) at (-17,0) size 7x18: white bullet
               LayoutText {#text} at (0,0) size 77x18
                 text run at (0,0) width 77: "dummy text"
           LayoutBlockFlow (anonymous) at (0,54) size 744x24
             LayoutText {#text} at (0,4) size 62x18
               text run at (0,4) width 62: "HERE \x{21E9}"
         LayoutListItem {LI} at (40,80) size 744x26 [border: none (2px solid #0000FF) none]
-          LayoutListMarker at (-17,4) size 7x18: bullet
+          LayoutListMarker (anonymous) at (-17,4) size 7x18: bullet
           LayoutText {#text} at (0,4) size 62x18
             text run at (0,4) width 62: "HERE \x{21E9}"
         LayoutListItem {LI} at (40,106) size 744x26 [border: none (2px solid #0000FF) none]
-          LayoutListMarker at (-17,4) size 7x18: bullet
+          LayoutListMarker (anonymous) at (-17,4) size 7x18: bullet
           LayoutText {#text} at (0,4) size 62x18
             text run at (0,4) width 62: "HERE \x{21E9}"

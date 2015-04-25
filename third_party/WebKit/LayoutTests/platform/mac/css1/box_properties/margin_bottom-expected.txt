@@ -53,19 +53,19 @@ layer at (0,0) size 785x1729 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,0) width 238: "This element also has a class of zero."
       LayoutBlockFlow {UL} at (0,735.25) size 769x97 [bgcolor=#00FFFF]
         LayoutListItem {LI} at (40,0) size 729x18
-          LayoutListMarker at (-17,0) size 7x18: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (0,0) size 433x18
             text run at (0,0) width 433: "This list has a margin-bottom of 25px, and a light blue background."
         LayoutListItem {LI} at (40,18) size 729x18
-          LayoutListMarker at (-17,0) size 7x18: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (0,0) size 269x18
             text run at (0,0) width 269: "Therefore, it ought to have such a margin."
         LayoutListItem {LI} at (40,36) size 729x18
-          LayoutListMarker at (-17,0) size 7x18: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (0,0) size 605x18
             text run at (0,0) width 605: "This list item has a bottom margin of 25px, which should cause it to be offset in some fashion."
         LayoutListItem {LI} at (40,79) size 729x18
-          LayoutListMarker at (-17,0) size 7x18: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
           LayoutText {#text} at (0,0) size 304x18
             text run at (0,0) width 304: "This list item has no special styles applied to it."
       LayoutBlockFlow {P} at (0,857.25) size 769x54 [bgcolor=#00FFFF]
@@ -120,19 +120,19 @@ layer at (0,0) size 785x1729 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,0) width 238: "This element also has a class of zero."
               LayoutBlockFlow {UL} at (4,541.75) size 747x97 [bgcolor=#00FFFF]
                 LayoutListItem {LI} at (40,0) size 707x18
-                  LayoutListMarker at (-17,0) size 7x18: bullet
+                  LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
                   LayoutText {#text} at (0,0) size 433x18
                     text run at (0,0) width 433: "This list has a margin-bottom of 25px, and a light blue background."
                 LayoutListItem {LI} at (40,18) size 707x18
-                  LayoutListMarker at (-17,0) size 7x18: bullet
+                  LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
                   LayoutText {#text} at (0,0) size 269x18
                     text run at (0,0) width 269: "Therefore, it ought to have such a margin."
                 LayoutListItem {LI} at (40,36) size 707x18
-                  LayoutListMarker at (-17,0) size 7x18: bullet
+                  LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
                   LayoutText {#text} at (0,0) size 605x18
                     text run at (0,0) width 605: "This list item has a bottom margin of 25px, which should cause it to be offset in some fashion."
                 LayoutListItem {LI} at (40,79) size 707x18
-                  LayoutListMarker at (-17,0) size 7x18: bullet
+                  LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
                   LayoutText {#text} at (0,0) size 304x18
                     text run at (0,0) width 304: "This list item has no special styles applied to it."
               LayoutBlockFlow {P} at (4,663.75) size 747x54 [bgcolor=#00FFFF]

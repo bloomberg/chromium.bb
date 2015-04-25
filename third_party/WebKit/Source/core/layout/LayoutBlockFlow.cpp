@@ -3150,20 +3150,4 @@ void LayoutBlockFlow::positionDialog()
     dialog->setCentered(top);
 }
 
-const char* LayoutBlockFlow::name() const
-{
-    if (style()) {
-        if (isAnonymousColumnsBlock())
-            return "LayoutBlockFlow (anonymous multi-column)";
-        if (isAnonymousColumnSpanBlock())
-            return "LayoutBlockFlow (anonymous multi-column span)";
-        if (isAnonymousBlock())
-            return "LayoutBlockFlow (anonymous)";
-    }
-    if (isAnonymous())
-        return "LayoutBlockFlow (anonymous)";
-    return "LayoutBlockFlow";
-}
-
-
 } // namespace blink

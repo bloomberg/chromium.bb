@@ -8,7 +8,7 @@ layer at (0,0) size 800x96
           text run at (0,0) width 370: "The following two boxes should be identical, to the pixel."
       LayoutBlockFlow {OL} at (80,34) size 160x18 [color=#FFFFFF] [bgcolor=#000080]
         LayoutListItem {LI} at (0,0) size 160x18
-          LayoutListMarker at (-20,0) size 16x18: "1"
+          LayoutListMarker (anonymous) at (-20,0) size 16x18: "1"
           LayoutInline {SPAN} at (0,0) size 12x18 [color=#000080]
             LayoutText {#text} at (0,0) size 12x18
               text run at (0,0) width 12: "1."
@@ -16,7 +16,7 @@ layer at (0,0) size 800x96
             text run at (12,0) width 32: " Test"
       LayoutBlockFlow {OL} at (80,53.59) size 160x18 [color=#000080] [bgcolor=#000080]
         LayoutListItem {LI} at (0,0) size 160x18
-          LayoutListMarker at (0,0) size 16x18: "1"
+          LayoutListMarker (anonymous) at (0,0) size 16x18: "1"
           LayoutInline {SPAN} at (0,0) size 28x18 [color=#FFFFFF]
             LayoutText {#text} at (16,0) size 28x18
               text run at (16,0) width 28: "Test"

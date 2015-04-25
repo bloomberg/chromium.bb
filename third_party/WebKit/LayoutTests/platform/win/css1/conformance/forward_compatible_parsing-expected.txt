@@ -170,7 +170,7 @@ layer at (0,0) size 785x4107 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,18) width 278: "other standards (e.g., font names or URLs.)"
       LayoutBlockFlow {OL} at (0,1505) size 769x18
         LayoutListItem {LI} at (40,0) size 729x18
-          LayoutListMarker at (-20,0) size 16x17: "1"
+          LayoutListMarker (anonymous) at (-20,0) size 16x17: "1"
           LayoutText {#text} at (0,0) size 636x17
             text run at (0,0) width 636: "This ordered list item should be black, because the declaration has an invalid pseudo-class selector."
       LayoutBlockFlow {P} at (0,1539) size 769x36
@@ -179,7 +179,7 @@ layer at (0,0) size 785x4107 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (0,18) width 114: "not the first child."
       LayoutBlockFlow {UL} at (0,1591) size 769x36
         LayoutListItem {LI} at (40,0) size 729x36
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 704x35
             text run at (0,0) width 704: "This unordered list item should be black, because, according to CSS1, the selector is invalid, and according to"
             text run at (0,18) width 233: "CSS2, the selector should not apply."
@@ -392,7 +392,7 @@ layer at (0,0) size 785x4107 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,18) width 278: "other standards (e.g., font names or URLs.)"
               LayoutBlockFlow {OL} at (4,598) size 747x18
                 LayoutListItem {LI} at (40,0) size 707x18
-                  LayoutListMarker at (-20,0) size 16x17: "1"
+                  LayoutListMarker (anonymous) at (-20,0) size 16x17: "1"
                   LayoutText {#text} at (0,0) size 636x17
                     text run at (0,0) width 636: "This ordered list item should be black, because the declaration has an invalid pseudo-class selector."
               LayoutBlockFlow {P} at (4,632) size 747x36
@@ -401,7 +401,7 @@ layer at (0,0) size 785x4107 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,18) width 197: "paragraph is not the first child."
               LayoutBlockFlow {UL} at (4,684) size 747x36
                 LayoutListItem {LI} at (40,0) size 707x36
-                  LayoutListMarker at (-17,0) size 7x17: bullet
+                  LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
                   LayoutText {#text} at (0,0) size 704x35
                     text run at (0,0) width 704: "This unordered list item should be black, because, according to CSS1, the selector is invalid, and according to"
                     text run at (0,18) width 233: "CSS2, the selector should not apply."

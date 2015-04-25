@@ -12,8 +12,8 @@ layer at (0,0) size 800x176
         LayoutListItem {LI} at (40,0) size 744x18
           LayoutBlockFlow {UL} at (0,0) size 744x18
             LayoutListItem {LI} at (40,0) size 704x18
-              LayoutListMarker at (-57,0) size 7x17: bullet
-              LayoutListMarker at (-17,0) size 7x17: white bullet
+              LayoutListMarker (anonymous) at (-57,0) size 7x17: bullet
+              LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
               LayoutText {#text} at (0,0) size 256x17
                 text run at (0,0) width 256: "Both bullets should be on the same line."
 layer at (8,8) size 80x80

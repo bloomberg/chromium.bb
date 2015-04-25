@@ -8,11 +8,11 @@ layer at (0,0) size 800x600
           text run at (0,0) width 360: "Meters with border values"
       LayoutBlockFlow {UL} at (0,58.44) size 784x300
         LayoutListItem {LI} at (40,0) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 152x19
             text run at (0,0) width 152: "min,low,optimal,high,max"
         LayoutListItem {LI} at (40,20) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutInline {B} at (0,0) size 8x19
             LayoutText {#text} at (0,0) size 8x19
               text run at (0,0) width 8: "9"
@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,40) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutInline {B} at (0,0) size 16x19
             LayoutText {#text} at (0,0) size 16x19
               text run at (0,0) width 16: "10"
@@ -34,7 +34,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,60) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 20x19
             text run at (0,0) width 20: "10,"
           LayoutInline {B} at (0,0) size 16x19
@@ -49,7 +49,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (183,0) size 105x19
             text run at (183,0) width 105: "(should be green)"
         LayoutListItem {LI} at (40,80) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "10,20,"
           LayoutInline {B} at (0,0) size 16x19
@@ -64,7 +64,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (183,0) size 105x19
             text run at (183,0) width 105: "(should be green)"
         LayoutListItem {LI} at (40,100) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 60x19
             text run at (0,0) width 60: "10,20,30,"
           LayoutInline {B} at (0,0) size 16x19
@@ -79,7 +79,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (183,0) size 105x19
             text run at (183,0) width 105: "(should be green)"
         LayoutListItem {LI} at (40,120) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 80x19
             text run at (0,0) width 80: "10,20,30,40,"
           LayoutInline {B} at (0,0) size 16x19
@@ -94,7 +94,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (183,0) size 111x19
             text run at (183,0) width 111: "(should be yellow)"
         LayoutListItem {LI} at (40,140) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 99x19
             text run at (0,0) width 99: "10,20,30,40,50|"
           LayoutInline {B} at (0,0) size 16x19
@@ -109,7 +109,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (202,0) size 111x19
             text run at (202,0) width 111: "(should be yellow)"
         LayoutListItem {LI} at (40,160) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 20x19
             text run at (0,0) width 20: "10,"
           LayoutInline {B} at (0,0) size 16x19
@@ -122,7 +122,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,180) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 60x19
             text run at (0,0) width 60: "10,20,30,"
           LayoutInline {B} at (0,0) size 16x19
@@ -137,7 +137,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (183,0) size 105x19
             text run at (183,0) width 105: "(should be green)"
         LayoutListItem {LI} at (40,200) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutInline {B} at (0,0) size 8x19
             LayoutText {#text} at (0,0) size 8x19
               text run at (0,0) width 8: "9"
@@ -148,7 +148,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,220) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "10,10,"
           LayoutInline {B} at (0,0) size 16x19
@@ -161,7 +161,7 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {DIV} at (0,0) size 80x16
                 LayoutBlockFlow {DIV} at (0,0) size 0x16
         LayoutListItem {LI} at (40,240) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "10,20,"
           LayoutInline {B} at (0,0) size 16x19
@@ -176,7 +176,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (183,0) size 105x19
             text run at (183,0) width 105: "(should be green)"
         LayoutListItem {LI} at (40,260) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 99x19
             text run at (0,0) width 99: "10,20,30,30,30|"
           LayoutInline {B} at (0,0) size 16x19
@@ -191,7 +191,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (202,0) size 105x19
             text run at (202,0) width 105: "(should be green)"
         LayoutListItem {LI} at (40,280) size 744x20
-          LayoutListMarker at (-18,0) size 7x19: bullet
+          LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutText {#text} at (0,0) size 40x19
             text run at (0,0) width 40: "10,20,"
           LayoutInline {B} at (0,0) size 16x19

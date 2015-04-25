@@ -15,7 +15,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (0,0) size 510x100 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {UL} at (1,1) size 508x82
                 LayoutListItem {LI} at (40,0) size 468x82
-                  LayoutListMarker at (-17,0) size 7x18: bullet
+                  LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
                   LayoutText {#text} at (0,0) size 199x18
                     text run at (0,0) width 199: "The XML Files Resources List"
                   LayoutText {#text} at (0,0) size 0x0
@@ -47,7 +47,7 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (0,0) size 510x100 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {UL} at (1,1) size 508x82
                 LayoutListItem {LI} at (40,0) size 468x82
-                  LayoutListMarker at (-17,0) size 7x18: bullet
+                  LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
                   LayoutText {#text} at (0,0) size 199x18
                     text run at (0,0) width 199: "The XML Files Resources List"
                   LayoutImage {IMG} at (0,18) size 468x60

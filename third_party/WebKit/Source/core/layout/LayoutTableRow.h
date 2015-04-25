@@ -95,7 +95,7 @@ public:
 
     void addOverflowFromCell(const LayoutTableCell*);
 
-    virtual const char* name() const override { return isAnonymous() ? "LayoutTableRow (anonymous)" : "LayoutTableRow"; }
+    virtual const char* name() const override { return "LayoutTableRow"; }
 
 private:
     virtual LayoutObjectChildList* virtualChildren() override { return children(); }

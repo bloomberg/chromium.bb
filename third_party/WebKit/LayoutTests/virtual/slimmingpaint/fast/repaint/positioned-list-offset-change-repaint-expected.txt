@@ -17,7 +17,7 @@
         "InlineBox",
         "LayoutBlockFlow (positioned) UL id='list'",
         "LayoutListItem (positioned) LI",
-        "LayoutListMarker",
+        "LayoutListMarker (anonymous)",
         "LayoutImage IMG",
         "LayoutText #text"
       ]

@@ -13,6 +13,6 @@ layer at (0,0) size 800x116
           text run at (0,0) width 224: " This line should be green. "
       LayoutBlockFlow {UL} at (0,66) size 784x18
         LayoutListItem {LI} at (40,0) size 744x18
-          LayoutListMarker at (-17,0) size 7x17: bullet
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
           LayoutText {#text} at (0,0) size 166x17
             text run at (0,0) width 166: "This line should be green."

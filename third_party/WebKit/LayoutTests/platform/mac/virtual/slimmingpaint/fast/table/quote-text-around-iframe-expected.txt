@@ -8,7 +8,7 @@ layer at (0,0) size 800x348
           LayoutTableRow {Q} at (0,0) size 695x316
             LayoutTableCell (anonymous) at (0,0) size 695x316 [r=0 c=0 rs=1 cs=1]
               LayoutInline {<pseudo:before>} at (0,0) size 14x37
-                LayoutQuote at (0,0) size 14x37
+                LayoutQuote (anonymous) at (0,0) size 14x37
                   LayoutTextFragment at (0,279) size 14x37
                     text run at (0,279) width 14: "\""
               LayoutText {#text} at (13,279) size 32x37
@@ -16,7 +16,7 @@ layer at (0,0) size 800x348
               LayoutText {#text} at (652,279) size 30x37
                 text run at (652,279) width 30: "B "
               LayoutInline {<pseudo:after>} at (0,0) size 14x37
-                LayoutQuote at (0,0) size 14x37
+                LayoutQuote (anonymous) at (0,0) size 14x37
                   LayoutTextFragment at (681,279) size 14x37
                     text run at (681,279) width 14: "\""
 layer at (60,16) size 608x308

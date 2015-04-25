@@ -19,13 +19,13 @@
         "LayoutBlockFlow DIV",
         "LayoutInline Q id='q2' class='q-changed'",
         "LayoutInline \u003Cpseudo:before\u003E",
-        "LayoutQuote",
+        "LayoutQuote (anonymous)",
         "LayoutTextFragment",
         "InlineTextBox '{'",
         "LayoutText #text",
         "InlineTextBox 'quote 2'",
         "LayoutInline \u003Cpseudo:after\u003E",
-        "LayoutQuote",
+        "LayoutQuote (anonymous)",
         "LayoutTextFragment",
         "InlineTextBox '}'"
       ]

@@ -7,4 +7,4 @@ layer at (0,0) size 800x160
         LayoutText {#text} at (0,0) size 364x17
           text run at (0,0) width 364: "Test passes if there is a box with rounded corners below."
       LayoutListItem {DIV} at (0,34) size 102x102 [border: (3px solid #008000)]
-        LayoutListMarker at (-17,3) size 7x17: bullet
+        LayoutListMarker (anonymous) at (-17,3) size 7x17: bullet

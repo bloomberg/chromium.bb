@@ -39,7 +39,7 @@ layer at (0,0) size 800x694 backgroundClip at (0,0) size 800x600 clip at (0,0) s
       LayoutBlockFlow {DIV} at (0,156) size 784x46
         LayoutListItem {DIV} at (0,0) size 784x46
           LayoutBlockFlow (anonymous) at (0,0) size 784x20
-            LayoutListMarker at (-18,0) size 7x19: bullet
+            LayoutListMarker (anonymous) at (-18,0) size 7x19: bullet
           LayoutBlockFlow {FORM} at (0,20) size 784x26
             LayoutTable {TABLE} at (0,0) size 102x26
               LayoutTableSection {TBODY} at (0,0) size 102x26
