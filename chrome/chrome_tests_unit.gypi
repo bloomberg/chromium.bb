@@ -1523,6 +1523,7 @@
       'browser/ui/toolbar/wrench_menu_model_unittest.cc',
       'browser/ui/website_settings/permission_menu_model_unittest.cc',
       'browser/ui/webui/help/version_updater_chromeos_unittest.cc',
+      'browser/ui/webui/media_router/media_cast_mode_unittest.cc',
       'browser/ui/webui/ntp/ntp_user_data_logger_unittest.cc',
       'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',
       'browser/ui/webui/options/autofill_options_handler_unittest.cc',

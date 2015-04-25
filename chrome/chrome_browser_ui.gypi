@@ -1447,6 +1447,10 @@
     'chrome_browser_ui_media_router_sources': [
       'browser/ui/toolbar/media_router_action.h',
       'browser/ui/toolbar/media_router_action.cc',
+      'browser/ui/webui/media_router/media_cast_mode.cc',
+      'browser/ui/webui/media_router/media_cast_mode.h',
+      'browser/ui/webui/media_router/media_sink_with_cast_modes.cc',
+      'browser/ui/webui/media_router/media_sink_with_cast_modes.h',
     ],
     'chrome_browser_ui_non_mac_sources': [
       'browser/ui/web_contents_sizer.cc',
@@ -3131,6 +3135,9 @@
           'sources': [ '<@(chrome_browser_ui_google_now_non_android_sources)' ],
         }],
         ['enable_media_router==1', {
+	  'dependencies': [
+	      'browser/media/router/media_router.gyp:media_router',
+	  ],
           'sources': [ '<@(chrome_browser_ui_media_router_sources)' ],
         }],
         ['enable_supervised_users==0', {
