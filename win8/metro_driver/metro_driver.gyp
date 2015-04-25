@@ -31,19 +31,9 @@
         {
           'target_name': 'metro_driver_version_resources',
           'type': 'none',
-          'conditions': [
-            ['branding == "Chrome"', {
-              'variables': {
-                 'branding_path': '../../chrome/app/theme/google_chrome/BRANDING',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                 'branding_path': '../../chrome/app/theme/chromium/BRANDING',
-              },
-            }],
-          ],
           'variables': {
             'output_dir': 'metro_driver',
+            'branding_path': '../../chrome/app/theme/<(branding_path_component)/BRANDING',
             'template_input_path': '../../chrome/app/chrome_version.rc.version',
           },
           'sources': [

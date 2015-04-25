@@ -69,19 +69,9 @@
       # GN version: //third_party/widevine/cdm:widevinecdmadapter_resources
       'target_name': 'widevinecdmadapter_resources',
       'type': 'none',
-      'conditions': [
-        ['branding == "Chrome"', {
-          'variables': {
-            'branding_path': '../../../chrome/app/theme/google_chrome/BRANDING',
-          },
-        }, { # else branding!="Chrome"
-          'variables': {
-            'branding_path': '../../../chrome/app/theme/chromium/BRANDING',
-          },
-        }],
-      ],
       'variables': {
         'output_dir': '.',
+        'branding_path': '../../../chrome/app/theme/<(branding_path_component)/BRANDING',
         'template_input_path': '../../../chrome/app/chrome_version.rc.version',
         'extra_variable_files_arguments': [ '-f', 'BRANDING' ],
         'extra_variable_files': [ 'BRANDING' ], # NOTE: matches that above
