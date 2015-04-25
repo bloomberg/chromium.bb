@@ -149,6 +149,25 @@ class BrilloSdkTest(cros_test_lib.MockTempDirTestCase):
     sdk_version_file = project_sdk.VersionFile(self.sdk_path)
     self.assertEqual('1.2.3', osutils.ReadFile(sdk_version_file))
 
+  def testDownloadSdkFailureCleanup(self):
+    """Tests DownloadSdk() with a numeric version."""
+
+    # Create sdk_path, and put something in it so we confirm it's gone.
+    osutils.Touch(os.path.join(self.sdk_path, 'contents'), makedirs=True)
+
+    # Prep for failure via the repo mock.
+    class FakeException(Exception):
+      """Raised to simulate a failure."""
+
+    self.mock_repo.side_effect = FakeException('Testing a failure.')
+
+    # Run, and fail.
+    with self.assertRaises(FakeException):
+      brillo_sdk._DownloadSdk(gs.GSContext(), self.sdk_path, '1.2.3')
+
+    # Make sure the SDK dir was cleaned up.
+    self.assertFalse(os.path.exists(self.sdk_path))
+
 
 class BrilloSdkTestUpdateBootstrap(cros_test_lib.MockTempDirTestCase):
   """Test the bootstrap update functionality of brillo_sdk.

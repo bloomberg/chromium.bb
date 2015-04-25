@@ -45,42 +45,47 @@ def _DownloadSdk(gs_ctx, sdk_dir, version):
     version: Project SDK version to sync. Can be a version number or 'tot';
       'latest' should be resolved before calling this.
   """
-  # Create the SDK dir, if it doesn't already exist.
-  osutils.SafeMakedirs(sdk_dir)
+  try:
+    # Create the SDK dir, if it doesn't already exist.
+    osutils.SafeMakedirs(sdk_dir)
 
-  repo_cmd = os.path.join(constants.BOOTSTRAP_DIR, 'repo')
+    repo_cmd = os.path.join(constants.BOOTSTRAP_DIR, 'repo')
 
-  logging.notice('Fetching files. This could take a few minutes...')
-  # TOT is a special case, handle it first.
-  if version.lower() == 'tot':
-    # Init new repo.
-    repo = repository.RepoRepository(
-        constants.MANIFEST_URL, sdk_dir, groups='project_sdk',
-        repo_cmd=repo_cmd)
-    # Sync it.
-    repo.Sync()
-    return
+    logging.notice('Fetching files. This could take a few minutes...')
+    # TOT is a special case, handle it first.
+    if version.lower() == 'tot':
+      # Init new repo.
+      repo = repository.RepoRepository(
+          constants.MANIFEST_URL, sdk_dir, groups='project_sdk',
+          repo_cmd=repo_cmd)
+      # Sync it.
+      repo.Sync()
+      return
 
-  with tempfile.NamedTemporaryFile() as manifest:
-    # Fetch manifest into temp file.
-    manifest_url = os.path.join(constants.BRILLO_RELEASE_MANIFESTS_URL,
-                                '%s.xml' % version)
-    gs_ctx.Copy(manifest_url, manifest.name)
+    with tempfile.NamedTemporaryFile() as manifest:
+      # Fetch manifest into temp file.
+      manifest_url = os.path.join(constants.BRILLO_RELEASE_MANIFESTS_URL,
+                                  '%s.xml' % version)
+      gs_ctx.Copy(manifest_url, manifest.name)
 
-    manifest_git_dir = os.path.join(sdk_dir, _BRILLO_SDK_LOCAL_MANIFEST_REPO)
+      manifest_git_dir = os.path.join(sdk_dir, _BRILLO_SDK_LOCAL_MANIFEST_REPO)
 
-    # Convert manifest into a git repository for the repo command.
-    repository.PrepManifestForRepo(manifest_git_dir, manifest.name)
+      # Convert manifest into a git repository for the repo command.
+      repository.PrepManifestForRepo(manifest_git_dir, manifest.name)
 
-    # Fetch the SDK.
-    repo = repository.RepoRepository(manifest_git_dir, sdk_dir, depth=1,
-                                     repo_cmd=repo_cmd)
-    repo.Sync()
+      # Fetch the SDK.
+      repo = repository.RepoRepository(manifest_git_dir, sdk_dir, depth=1,
+                                       repo_cmd=repo_cmd)
+      repo.Sync()
 
-  # TODO(dgarrett): Embed this step into the manifest itself.
-  # Write out the SDK Version.
-  sdk_version_file = project_sdk.VersionFile(sdk_dir)
-  osutils.WriteFile(sdk_version_file, version)
+    # TODO(dgarrett): Embed this step into the manifest itself.
+    # Write out the SDK Version.
+    sdk_version_file = project_sdk.VersionFile(sdk_dir)
+    osutils.WriteFile(sdk_version_file, version)
+  except:
+    # If we fail for any reason, remove the partial/corrupt SDK.
+    osutils.RmDir(sdk_dir, ignore_missing=True)
+    raise
 
 
 def _UpdateBootstrap(bootstrap_path):
