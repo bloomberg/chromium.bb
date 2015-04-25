@@ -173,9 +173,9 @@ LayoutBlockFlow::~LayoutBlockFlow()
 
 LayoutBlockFlow* LayoutBlockFlow::createAnonymous(Document* document)
 {
-    LayoutBlockFlow* renderer = new LayoutBlockFlow(0);
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
+    LayoutBlockFlow* layoutBlockFlow = new LayoutBlockFlow(0);
+    layoutBlockFlow->setDocumentForAnonymous(document);
+    return layoutBlockFlow;
 }
 
 LayoutObject* LayoutBlockFlow::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
@@ -799,13 +799,13 @@ static inline LayoutUnit calculateMinimumPageHeight(const ComputedStyle& style, 
 void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta, LayoutFlowThread* flowThread)
 {
     // FIXME: For now we paginate using line overflow. This ensures that lines don't overlap at all when we
-    // put a strut between them for pagination purposes. However, this really isn't the desired rendering, since
+    // put a strut between them for pagination purposes. However, this really isn't the desired layout, since
     // the line on the top of the next page will appear too far down relative to the same kind of line at the top
     // of the first column.
     //
-    // The rendering we would like to see is one where the lineTopWithLeading is at the top of the column, and any line overflow
+    // The layout we would like to see is one where the lineTopWithLeading is at the top of the column, and any line overflow
     // simply spills out above the top of the column. This effect would match what happens at the top of the first column.
-    // We can't achieve this rendering, however, until we stop columns from clipping to the column bounds (thus allowing
+    // We can't achieve this layout, however, until we stop columns from clipping to the column bounds (thus allowing
     // for overflow to occur), and then cache visible overflow for each column rect.
     //
     // Furthermore, the paint we have to do when a column has overflow has to be special. We need to exclude
@@ -1965,8 +1965,8 @@ void LayoutBlockFlow::styleDidChange(StyleDifference diff, const ComputedStyle* 
 
                 if (currBlock->hasOverhangingFloats()) {
                     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-                        LayoutBox* renderer = (*it)->layoutObject();
-                        if (currBlock->hasOverhangingFloat(renderer)) {
+                        LayoutBox* layoutBox = (*it)->layoutObject();
+                        if (currBlock->hasOverhangingFloat(layoutBox)) {
                             parentBlockFlow = currBlock;
                             break;
                         }
@@ -2032,7 +2032,7 @@ void LayoutBlockFlow::moveAllChildrenIncludingFloatsTo(LayoutBlock* toBlock, boo
     LayoutBlockFlow* toBlockFlow = toLayoutBlockFlow(toBlock);
     moveAllChildrenTo(toBlockFlow, fullRemoveInsert);
 
-    // When a portion of the render tree is being detached, anonymous blocks
+    // When a portion of the layout tree is being detached, anonymous blocks
     // will be combined as their children are deleted. In this process, the
     // anonymous block later in the tree is merged into the one preceeding it.
     // It can happen that the later block (this) contains floats that the
@@ -2087,9 +2087,9 @@ void LayoutBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendan
             && !floatingObject->layoutObject()->hasSelfPaintingLayer()
             && (floatingObject->shouldPaint() || (paintAllDescendants && floatingObject->layoutObject()->isDescendantOf(this)))) {
 
-            LayoutBox* floatingRenderer = floatingObject->layoutObject();
-            floatingRenderer->setShouldDoFullPaintInvalidation();
-            floatingRenderer->invalidatePaintForOverhangingFloats(false);
+            LayoutBox* floatingLayoutBox = floatingObject->layoutObject();
+            floatingLayoutBox->setShouldDoFullPaintInvalidation();
+            floatingLayoutBox->invalidatePaintForOverhangingFloats(false);
         }
     }
 }
@@ -2189,9 +2189,9 @@ void LayoutBlockFlow::clearFloats(EClear clear)
         setLogicalHeight(newY);
 }
 
-bool LayoutBlockFlow::containsFloat(LayoutBox* renderer) const
+bool LayoutBlockFlow::containsFloat(LayoutBox* layoutBox) const
 {
-    return m_floatingObjects && m_floatingObjects->set().contains<FloatingObjectHashTranslator>(renderer);
+    return m_floatingObjects && m_floatingObjects->set().contains<FloatingObjectHashTranslator>(layoutBox);
 }
 
 void LayoutBlockFlow::removeFloatingObjects()
@@ -2507,13 +2507,13 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width)
     return true;
 }
 
-bool LayoutBlockFlow::hasOverhangingFloat(LayoutBox* renderer)
+bool LayoutBlockFlow::hasOverhangingFloat(LayoutBox* layoutBox)
 {
     if (!m_floatingObjects || hasColumns() || !parent())
         return false;
 
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-    FloatingObjectSetIterator it = floatingObjectSet.find<FloatingObjectHashTranslator>(renderer);
+    FloatingObjectSetIterator it = floatingObjectSet.find<FloatingObjectHashTranslator>(layoutBox);
     if (it == floatingObjectSet.end())
         return false;
 

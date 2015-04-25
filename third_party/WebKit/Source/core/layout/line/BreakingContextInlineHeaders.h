@@ -631,7 +631,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             wordMeasurements.grow(wordMeasurements.size() + 1);
             WordMeasurement& wordMeasurement = wordMeasurements.last();
 
-            wordMeasurement.renderer = layoutText;
+            wordMeasurement.layoutText = layoutText;
             wordMeasurement.endOffset = m_current.offset();
             wordMeasurement.startOffset = lastSpace;
 
@@ -796,7 +796,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
     wordMeasurements.grow(wordMeasurements.size() + 1);
     WordMeasurement& wordMeasurement = wordMeasurements.last();
-    wordMeasurement.renderer = layoutText;
+    wordMeasurement.layoutText = layoutText;
 
     // IMPORTANT: current.m_pos is > length here!
     float additionalTempWidth = m_ignoringSpaces ? 0 : textWidth(layoutText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts);

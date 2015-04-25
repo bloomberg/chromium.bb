@@ -53,7 +53,7 @@ LineWidth::LineWidth(LayoutBlockFlow& block, bool isFirstLine, IndentTextOrNot s
 void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
 {
     LayoutUnit height = m_block.logicalHeight();
-    LayoutUnit logicalHeight = m_block.minLineHeightForReplacedRenderer(m_isFirstLine, replacedHeight);
+    LayoutUnit logicalHeight = m_block.minLineHeightForReplacedObject(m_isFirstLine, replacedHeight);
     m_left = m_block.logicalLeftOffsetForLine(height, shouldIndentText(), logicalHeight).toFloat();
     m_right = m_block.logicalRightOffsetForLine(height, shouldIndentText(), logicalHeight).toFloat();
 

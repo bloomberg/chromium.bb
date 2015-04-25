@@ -79,7 +79,7 @@ public:
     virtual LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override final;
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
 
-    LayoutUnit minLineHeightForReplacedRenderer(bool isFirstLine, LayoutUnit replacedHeight) const;
+    LayoutUnit minLineHeightForReplacedObject(bool isFirstLine, LayoutUnit replacedHeight) const;
 
     LineBoxList* lineBoxes() { return &m_lineBoxes; }
 
@@ -184,12 +184,12 @@ public:
     using LayoutBoxModelObject::continuation;
     using LayoutBoxModelObject::setContinuation;
 
-    static LayoutBlock* createAnonymousWithParentRendererAndDisplay(const LayoutObject*, EDisplay = BLOCK);
-    static LayoutBlockFlow* createAnonymousColumnsWithParentRenderer(const LayoutObject*);
-    static LayoutBlockFlow* createAnonymousColumnSpanWithParentRenderer(const LayoutObject*);
-    LayoutBlock* createAnonymousBlock(EDisplay display = BLOCK) const { return createAnonymousWithParentRendererAndDisplay(this, display); }
-    LayoutBlockFlow* createAnonymousColumnsBlock() const { return createAnonymousColumnsWithParentRenderer(this); }
-    LayoutBlockFlow* createAnonymousColumnSpanBlock() const { return createAnonymousColumnSpanWithParentRenderer(this); }
+    static LayoutBlock* createAnonymousWithParentAndDisplay(const LayoutObject*, EDisplay = BLOCK);
+    static LayoutBlockFlow* createAnonymousColumnsWithParent(const LayoutObject*);
+    static LayoutBlockFlow* createAnonymousColumnSpanWithParent(const LayoutObject*);
+    LayoutBlock* createAnonymousBlock(EDisplay display = BLOCK) const { return createAnonymousWithParentAndDisplay(this, display); }
+    LayoutBlockFlow* createAnonymousColumnsBlock() const { return createAnonymousColumnsWithParent(this); }
+    LayoutBlockFlow* createAnonymousColumnSpanBlock() const { return createAnonymousColumnSpanWithParent(this); }
 
     virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override;
 
@@ -440,7 +440,7 @@ protected:
     // column balancer to help set a good minimum column height.
     void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight);
 
-    // Adjust from painting offsets to the local coords of this renderer
+    // Adjust from painting offsets to the local coords of this layoutObject
     void offsetForContents(LayoutPoint&) const;
 
     bool requiresColumns(int desiredColumnCount) const;

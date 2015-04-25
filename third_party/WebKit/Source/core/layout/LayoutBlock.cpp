@@ -370,7 +370,7 @@ void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
     if (TrackedLayoutBoxListHashSet* positionedObjects = this->positionedObjects()) {
         for (auto* box : *positionedObjects) {
 
-            // One of the renderers we're skipping over here may be the child's paint invalidation container,
+            // One of the layoutObjects we're skipping over here may be the child's paint invalidation container,
             // so we can't pass our own paint invalidation container along.
             const LayoutBoxModelObject& paintInvalidationContainerForChild = *box->containerForPaintInvalidation();
 
@@ -384,7 +384,7 @@ void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
                 continue;
             }
 
-            // If the positioned renderer is absolutely positioned and it is inside
+            // If the positioned layoutObject is absolutely positioned and it is inside
             // a relatively positioned inline element, we need to account for
             // the inline elements position in PaintInvalidationState.
             if (box->style()->position() == AbsolutePosition) {
@@ -439,7 +439,7 @@ void LayoutBlock::addChildToContinuation(LayoutObject* newChild, LayoutObject* b
         // Don't attempt to insert into something that isn't a LayoutBlockFlow (block
         // container). While the DOM nodes of |beforeChild| and |newChild| are siblings, there may
         // be anonymous table wrapper objects around |beforeChild| on the layout side. Therefore,
-        // find the nearest LayoutBlockFlow. If it turns out that the new renderer doesn't belong
+        // find the nearest LayoutBlockFlow. If it turns out that the new layoutObject doesn't belong
         // inside the anonymous table, this will make sure that it's really put on the outside. If
         // it turns out that it does belong inside it, the normal child insertion machinery will
         // make sure it ends up there, and at the right place too. We cannot just guess that it's
@@ -560,7 +560,7 @@ LayoutBlockFlow* LayoutBlock::containingColumnsBlock(bool allowAnonymousColumnBl
             || curr->isInlineBlockOrInlineTable())
             return 0;
 
-        // FIXME: Renderers that do special management of their children (tables, buttons,
+        // FIXME: LayoutObjects that do special management of their children (tables, buttons,
         // lists, flexboxes, etc.) breaks when the flow is split through them. Disabling
         // multi-column for them to avoid this problem.)
         if (!curr->isLayoutBlockFlow() || curr->isListItem())
@@ -586,8 +586,8 @@ LayoutBlock* LayoutBlock::clone() const
         cloneBlock = createAnonymousBlock();
         cloneBlock->setChildrenInline(childrenInline());
     } else {
-        LayoutObject* cloneRenderer = toElement(node())->createLayoutObject(styleRef());
-        cloneBlock = toLayoutBlock(cloneRenderer);
+        LayoutObject* cloneLayoutObject = toElement(node())->createLayoutObject(styleRef());
+        cloneBlock = toLayoutBlock(cloneLayoutObject);
         cloneBlock->setStyle(mutableStyle());
 
         // This takes care of setting the right value of childrenInline in case
@@ -815,7 +815,7 @@ void LayoutBlock::addChildIgnoringAnonymousColumnBlocks(LayoutObject* newChild, 
             // there is an anonymous container within this object that contains the beforeChild.
             LayoutObject* beforeChildAnonymousContainer = beforeChildContainer;
             if (beforeChildAnonymousContainer->isAnonymousBlock()
-                // Full screen renderers and full screen placeholders act as anonymous blocks, not tables:
+                // Full screen layoutObjects and full screen placeholders act as anonymous blocks, not tables:
                 || beforeChildAnonymousContainer->isLayoutFullScreen()
                 || beforeChildAnonymousContainer->isLayoutFullScreenPlaceholder()
                 ) {
@@ -2390,7 +2390,7 @@ static PositionWithAffinity positionForPointRespectingEditingBoundaries(LayoutBl
     // FIXME: This is wrong if the child's writing-mode is different from the parent's.
     LayoutPoint pointInChildCoordinates(toLayoutPoint(pointInParentCoordinates - childLocation));
 
-    // If this is an anonymous renderer, we just recur normally
+    // If this is an anonymous layoutObject, we just recur normally
     Node* childNode = child->nonPseudoNode();
     if (!childNode)
         return child->positionForPoint(pointInChildCoordinates);
@@ -3194,7 +3194,7 @@ int LayoutBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
     return fontMetrics.ascent(baselineType) + (lineHeight(firstLine, direction, linePositionMode) - fontMetrics.height()) / 2;
 }
 
-LayoutUnit LayoutBlock::minLineHeightForReplacedRenderer(bool isFirstLine, LayoutUnit replacedHeight) const
+LayoutUnit LayoutBlock::minLineHeightForReplacedObject(bool isFirstLine, LayoutUnit replacedHeight) const
 {
     if (!document().inNoQuirksMode() && replacedHeight)
         return replacedHeight;
@@ -3522,7 +3522,7 @@ void LayoutBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint
     if (inlineElementContinuation()) {
         // FIXME: This check really isn't accurate.
         bool nextInlineHasLineBox = inlineElementContinuation()->firstLineBox();
-        // FIXME: This is wrong. The principal renderer may not be the continuation preceding this block.
+        // FIXME: This is wrong. The principal layoutObject may not be the continuation preceding this block.
         // FIXME: This is wrong for vertical writing-modes.
         // https://bugs.webkit.org/show_bug.cgi?id=46781
         bool prevInlineHasLineBox = toLayoutInline(inlineElementContinuation()->node()->layoutObject())->firstLineBox();
@@ -3572,10 +3572,10 @@ void LayoutBlock::computeSelfHitTestRects(Vector<LayoutRect>& rects, const Layou
 LayoutBox* LayoutBlock::createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const
 {
     if (isAnonymousColumnsBlock())
-        return createAnonymousColumnsWithParentRenderer(parent);
+        return createAnonymousColumnsWithParent(parent);
     if (isAnonymousColumnSpanBlock())
-        return createAnonymousColumnSpanWithParentRenderer(parent);
-    return createAnonymousWithParentRendererAndDisplay(parent, style()->display());
+        return createAnonymousColumnSpanWithParent(parent);
+    return createAnonymousWithParentAndDisplay(parent, style()->display());
 }
 
 LayoutUnit LayoutBlock::nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule pageBoundaryRule) const
@@ -3721,7 +3721,7 @@ const char* LayoutBlock::name() const
     return "LayoutBlock";
 }
 
-LayoutBlock* LayoutBlock::createAnonymousWithParentRendererAndDisplay(const LayoutObject* parent, EDisplay display)
+LayoutBlock* LayoutBlock::createAnonymousWithParentAndDisplay(const LayoutObject* parent, EDisplay display)
 {
     // FIXME: Do we need to convert all our inline displays to block-type in the anonymous logic ?
     EDisplay newDisplay;
@@ -3740,7 +3740,7 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentRendererAndDisplay(const Layo
     return newBox;
 }
 
-LayoutBlockFlow* LayoutBlock::createAnonymousColumnsWithParentRenderer(const LayoutObject* parent)
+LayoutBlockFlow* LayoutBlock::createAnonymousColumnsWithParent(const LayoutObject* parent)
 {
     RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
     newStyle->inheritColumnPropertiesFrom(parent->styleRef());
@@ -3751,7 +3751,7 @@ LayoutBlockFlow* LayoutBlock::createAnonymousColumnsWithParentRenderer(const Lay
     return newBox;
 }
 
-LayoutBlockFlow* LayoutBlock::createAnonymousColumnSpanWithParentRenderer(const LayoutObject* parent)
+LayoutBlockFlow* LayoutBlock::createAnonymousColumnSpanWithParent(const LayoutObject* parent)
 {
     RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
     newStyle->setColumnSpan(ColumnSpanAll);
@@ -3762,13 +3762,13 @@ LayoutBlockFlow* LayoutBlock::createAnonymousColumnSpanWithParentRenderer(const 
     return newBox;
 }
 
-static bool recalcNormalFlowChildOverflowIfNeeded(LayoutObject* renderer)
+static bool recalcNormalFlowChildOverflowIfNeeded(LayoutObject* layoutObject)
 {
-    if (renderer->isOutOfFlowPositioned() || !renderer->needsOverflowRecalcAfterStyleChange())
+    if (layoutObject->isOutOfFlowPositioned() || !layoutObject->needsOverflowRecalcAfterStyleChange())
         return false;
 
-    ASSERT(renderer->isLayoutBlock());
-    return toLayoutBlock(renderer)->recalcOverflowAfterStyleChange();
+    ASSERT(layoutObject->isLayoutBlock());
+    return toLayoutBlock(layoutObject)->recalcOverflowAfterStyleChange();
 }
 
 bool LayoutBlock::recalcChildOverflowAfterStyleChange()
@@ -3781,10 +3781,10 @@ bool LayoutBlock::recalcChildOverflowAfterStyleChange()
     if (childrenInline()) {
         ListHashSet<RootInlineBox*> lineBoxes;
         for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
-            LayoutObject* renderer = walker.current();
-            if (recalcNormalFlowChildOverflowIfNeeded(renderer)) {
+            LayoutObject* layoutObject = walker.current();
+            if (recalcNormalFlowChildOverflowIfNeeded(layoutObject)) {
                 childrenOverflowChanged = true;
-                if (InlineBox* inlineBoxWrapper = toLayoutBlock(renderer)->inlineBoxWrapper())
+                if (InlineBox* inlineBoxWrapper = toLayoutBlock(layoutObject)->inlineBoxWrapper())
                     lineBoxes.add(&inlineBoxWrapper->root());
             }
         }

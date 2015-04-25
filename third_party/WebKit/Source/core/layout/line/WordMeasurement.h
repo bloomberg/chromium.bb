@@ -34,14 +34,14 @@ class LayoutText;
 class WordMeasurement {
 public:
     WordMeasurement()
-        : renderer(0)
+        : layoutText(0)
         , width(0)
         , startOffset(0)
         , endOffset(0)
     {
     }
 
-    LayoutText* renderer;
+    LayoutText* layoutText;
     float width;
     int startOffset;
     int endOffset;
