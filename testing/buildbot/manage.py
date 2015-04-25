@@ -97,7 +97,11 @@ def main():
     filename = os.path.basename(filepath)
     with open(filepath) as f:
       content = f.read()
-    config = json.loads(content)
+    try:
+      config = json.loads(content)
+    except ValueError as e:
+      print "Exception raised while checking %s: %s" % (filepath, e)
+      raise
     for builder, data in sorted(config.iteritems()):
       if builder in SKIP:
         # Oddities.
