@@ -91,7 +91,7 @@ public:
     virtual int inlineBlockBaseline(LineDirectionMode direction) const override { return lastLineBoxBaseline(direction); }
 
 private:
-    virtual bool isIntristicallyScrollable(ScrollbarOrientation orientation) const override
+    virtual bool isIntrinsicallyScrollable(ScrollbarOrientation orientation) const override
     {
         return orientation == HorizontalScrollbar;
     }

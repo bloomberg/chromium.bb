@@ -565,7 +565,7 @@ public:
 
     // Elements such as the <input> field override this to specify that they are scrollable
     // outside the context of the CSS overflow style
-    virtual bool isIntristicallyScrollable(ScrollbarOrientation orientation) const { return false; }
+    virtual bool isIntrinsicallyScrollable(ScrollbarOrientation orientation) const { return false; }
 
     bool hasUnsplittableScrollingOverflow() const;
     bool isUnsplittableForPagination() const;

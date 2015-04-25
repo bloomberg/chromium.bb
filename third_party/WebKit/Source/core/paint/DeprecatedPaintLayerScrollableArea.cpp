@@ -546,7 +546,7 @@ void DeprecatedPaintLayerScrollableArea::deregisterForAnimation()
 
 bool DeprecatedPaintLayerScrollableArea::userInputScrollable(ScrollbarOrientation orientation) const
 {
-    if (box().isIntristicallyScrollable(orientation))
+    if (box().isIntrinsicallyScrollable(orientation))
         return true;
 
     EOverflow overflowStyle = (orientation == HorizontalScrollbar) ?
@@ -1356,7 +1356,7 @@ void DeprecatedPaintLayerScrollableArea::updateCompositingLayersAfterScroll()
 bool DeprecatedPaintLayerScrollableArea::usesCompositedScrolling() const
 {
     // Scroll form controls on the main thread so they exhibit correct touch scroll event bubbling
-    if (box().isIntristicallyScrollable(VerticalScrollbar) || box().isIntristicallyScrollable(HorizontalScrollbar))
+    if (box().isIntrinsicallyScrollable(VerticalScrollbar) || box().isIntrinsicallyScrollable(HorizontalScrollbar))
         return false;
 
     // See https://codereview.chromium.org/176633003/ for the tests that fail without this disabler.
