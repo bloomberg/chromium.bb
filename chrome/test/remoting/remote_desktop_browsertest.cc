@@ -487,6 +487,7 @@ void RemoteDesktopBrowserTest::LoadBrowserTestJavaScript(
   LoadScript(content, FILE_PATH_LITERAL("mock_session_connector.js"));
   LoadScript(content, FILE_PATH_LITERAL("mock_signal_strategy.js"));
   LoadScript(content, FILE_PATH_LITERAL("timeout_waiter.js"));
+  LoadScript(content, FILE_PATH_LITERAL("sinon.js"));
 }
 
 void RemoteDesktopBrowserTest::Cleanup() {

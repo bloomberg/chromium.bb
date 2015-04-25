@@ -84,7 +84,16 @@ browserTest.Bump_Scroll.prototype.run = function(data) {
   if (!base.isAppsV2()) {
     browserTest.fail(
         'Bump-scroll requires full-screen, which can only be activated ' +
-        'programmatically in apps v2.')
+        'programmatically in apps v2.');
+  }
+
+  var mockConnection = new remoting.MockConnection();
+  mockConnection.plugin().mock$useDefaultBehavior(
+      remoting.MockClientPlugin.AuthMethod.PIN);
+
+  function cleanup() {
+    mockConnection.restore();
+    browserTest.disconnect();
   }
 
   this.testVerifyScroll().then(function() {
@@ -109,11 +118,11 @@ browserTest.Bump_Scroll.prototype.run = function(data) {
     this.scrollDirection.bind(this, 0.5, 0.0)  // Top edge
   ).then(
     function(value) {
-      browserTest.disconnect();
+      cleanup();
       return browserTest.pass(value);
     },
     function(error) {
-      browserTest.disconnect();
+      cleanup();
       return browserTest.fail(error);
     }
   );

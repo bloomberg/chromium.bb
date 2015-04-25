@@ -29,6 +29,10 @@ remoting.MockClientPlugin = function() {
       new remoting.ClientPlugin.HostDesktopImpl(this, base.doNothing);
   /** @private */
   this.extensions_ = new remoting.ProtocolExtensionManager(base.doNothing);
+
+  /** @private {remoting.CredentialsProvider} */
+  this.credentials_ = null;
+
   /** @private {remoting.ClientPlugin.ConnectionEventHandler} */
   this.connectionEventHandler_ = null;
 
@@ -73,6 +77,7 @@ remoting.MockClientPlugin.prototype.initialize = function(onDone) {
 
 remoting.MockClientPlugin.prototype.connect =
     function(host, localJid, credentialsProvider) {
+  this.credentials_ = credentialsProvider;
   this.onConnectDeferred_.resolve();
 };
 
@@ -163,6 +168,50 @@ remoting.MockClientPlugin.prototype.mock$setConnectionStatus = function(
 };
 
 /**
+ * @param {remoting.MockClientPlugin.AuthMethod} authMethod
+ * @return {Promise}
+ */
+remoting.MockClientPlugin.prototype.mock$authenticate = function(authMethod) {
+  var AuthMethod = remoting.MockClientPlugin.AuthMethod;
+  var deferred = new base.Deferred();
+
+  var that = this;
+  switch(authMethod) {
+    case AuthMethod.PIN:
+    case AuthMethod.ACCESS_CODE:
+      this.credentials_.getPIN(true).then(function() {
+        deferred.resolve();
+      });
+      break;
+    case AuthMethod.THIRD_PARTY:
+      this.credentials_.getThirdPartyToken(
+          'fake_token_url', 'fake_host_publicKey', 'fake_scope'
+      ).then(function() {
+        deferred.resolve();
+      });
+      break;
+    case AuthMethod.PAIRING:
+      deferred.resolve();
+  }
+  return deferred.promise();
+};
+
+/**
+ * @param {remoting.MockClientPlugin.AuthMethod} authMethod
+ */
+remoting.MockClientPlugin.prototype.mock$useDefaultBehavior =
+    function(authMethod) {
+  var that = this;
+  var State = remoting.ClientSession.State;
+  this.mock$onConnect().then(function() {
+    that.mock$setConnectionStatus(State.CONNECTING);
+    return that.mock$authenticate(authMethod);
+  }).then(function() {
+    that.mock$setConnectionStatus(State.CONNECTED);
+  });
+};
+
+/**
  * @constructor
  * @implements {remoting.ClientPluginFactory}
  */
@@ -236,3 +285,11 @@ remoting.MockConnection.prototype.restore = function() {
 };
 
 })();
+
+/** @enum {string} */
+remoting.MockClientPlugin.AuthMethod = {
+  ACCESS_CODE: 'accessCode',
+  PIN: 'pin',
+  THIRD_PARTY: 'thirdParty',
+  PAIRING: 'pairing'
+};

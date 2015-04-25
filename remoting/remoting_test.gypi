@@ -334,6 +334,7 @@
           'destination': '<(PRODUCT_DIR)/remoting/browser_test_resources',
             'files': [
               '<@(remoting_webapp_browsertest_all_js_files)',
+              '../third_party/sinonjs/src/sinon.js',
             ],
         },
       ], # end of copies
