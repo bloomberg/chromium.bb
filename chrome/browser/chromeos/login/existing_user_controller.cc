@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_user_flow.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/signin/oauth2_token_initializer.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -596,7 +597,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   //  Bootstrap experiment       F            N/A
   const bool has_auth_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION &&
-      (user_context.GetAuthCode().empty() ||
+      (user_context.GetAccessToken().empty() ||
        user_context.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML) &&
       user_context.GetAuthFlow() != UserContext::AUTH_FLOW_EASY_BOOTSTRAP;
 
@@ -1123,6 +1124,17 @@ void ExistingUserController::DoCompleteLogin(const UserContext& user_context) {
     return;
   }
 
+  // Fetch OAuth2 tokens if we have an auth code and are not using SAML.
+  // SAML uses cookies to get tokens.
+  if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML &&
+      !user_context.GetAuthCode().empty()) {
+    oauth2_token_initializer_.reset(new OAuth2TokenInitializer);
+    oauth2_token_initializer_->Start(
+        user_context, base::Bind(&ExistingUserController::OnOAuth2TokensFetched,
+                                 weak_factory_.GetWeakPtr()));
+    return;
+  }
+
   PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
 }
 
@@ -1197,6 +1209,17 @@ void ExistingUserController::OnBootstrapUserContextInitialized(
           user_context,
           bootstrap_user_context_initializer_->random_key_used()));
 
+  PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
+}
+
+void ExistingUserController::OnOAuth2TokensFetched(
+    bool success,
+    const UserContext& user_context) {
+  if (!success) {
+    LOG(ERROR) << "OAuth2 token fetch failed.";
+    OnAuthFailure(AuthFailure(AuthFailure::NETWORK_AUTH_FAILED));
+    return;
+  }
   PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
 }
 

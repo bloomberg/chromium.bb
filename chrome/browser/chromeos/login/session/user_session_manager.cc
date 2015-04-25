@@ -1218,8 +1218,6 @@ void UserSessionManager::InitSessionRestoreStrategy() {
 
   if (has_auth_cookies_) {
     session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR;
-  } else if (!user_context_.GetAuthCode().empty()) {
-    session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_AUTH_CODE;
   } else if (!user_context_.GetRefreshToken().empty()) {
     session_restore_strategy_ =
         OAuth2LoginManager::RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN;
@@ -1267,7 +1265,7 @@ void UserSessionManager::RestoreAuthSessionImpl(
   }
   login_manager->RestoreSession(auth_request_context, session_restore_strategy_,
                                 user_context_.GetRefreshToken(),
-                                user_context_.GetAuthCode());
+                                user_context_.GetAccessToken());
 }
 
 void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {

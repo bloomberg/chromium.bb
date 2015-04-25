@@ -19,6 +19,7 @@ UserContext::UserContext(const UserContext& other)
       key_(other.key_),
       auth_code_(other.auth_code_),
       refresh_token_(other.refresh_token_),
+      access_token_(other.access_token_),
       user_id_hash_(other.user_id_hash_),
       is_using_oauth_(other.is_using_oauth_),
       auth_flow_(other.auth_flow_),
@@ -49,14 +50,13 @@ UserContext::~UserContext() {
 }
 
 bool UserContext::operator==(const UserContext& context) const {
-  return context.user_id_ == user_id_ &&
-         context.gaia_id_ == gaia_id_ &&
-         context.key_ == key_ &&
-         context.auth_code_ == auth_code_ &&
+  return context.user_id_ == user_id_ && context.gaia_id_ == gaia_id_ &&
+         context.key_ == key_ && context.auth_code_ == auth_code_ &&
+         context.refresh_token_ == refresh_token_ &&
+         context.access_token_ == access_token_ &&
          context.user_id_hash_ == user_id_hash_ &&
          context.is_using_oauth_ == is_using_oauth_ &&
-         context.auth_flow_ == auth_flow_ &&
-         context.user_type_ == user_type_ &&
+         context.auth_flow_ == auth_flow_ && context.user_type_ == user_type_ &&
          context.public_session_locale_ == public_session_locale_ &&
          context.public_session_input_method_ == public_session_input_method_;
 }
@@ -87,6 +87,10 @@ const std::string& UserContext::GetAuthCode() const {
 
 const std::string& UserContext::GetRefreshToken() const {
   return refresh_token_;
+}
+
+const std::string& UserContext::GetAccessToken() const {
+  return access_token_;
 }
 
 const std::string& UserContext::GetUserIDHash() const {
@@ -140,6 +144,10 @@ void UserContext::SetAuthCode(const std::string& auth_code) {
 
 void UserContext::SetRefreshToken(const std::string& refresh_token) {
   refresh_token_ = refresh_token;
+}
+
+void UserContext::SetAccessToken(const std::string& access_token) {
+  access_token_ = access_token;
 }
 
 void UserContext::SetUserIDHash(const std::string& user_id_hash) {
