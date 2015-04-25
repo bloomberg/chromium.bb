@@ -25,61 +25,55 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
                                   webrtc::PeerConnectionObserver* observer);
 
   // PeerConnectionInterface implementation.
-  virtual rtc::scoped_refptr<webrtc::StreamCollectionInterface>
+  rtc::scoped_refptr<webrtc::StreamCollectionInterface>
       local_streams() override;
-  virtual rtc::scoped_refptr<webrtc::StreamCollectionInterface>
+  rtc::scoped_refptr<webrtc::StreamCollectionInterface>
       remote_streams() override;
-  virtual bool AddStream(
+  bool AddStream(
       webrtc::MediaStreamInterface* local_stream) override;
-  virtual void RemoveStream(
+  void RemoveStream(
       webrtc::MediaStreamInterface* local_stream) override;
-  virtual rtc::scoped_refptr<webrtc::DtmfSenderInterface>
+  rtc::scoped_refptr<webrtc::DtmfSenderInterface>
       CreateDtmfSender(webrtc::AudioTrackInterface* track) override;
-  virtual rtc::scoped_refptr<webrtc::DataChannelInterface>
+  rtc::scoped_refptr<webrtc::DataChannelInterface>
       CreateDataChannel(const std::string& label,
                         const webrtc::DataChannelInit* config) override;
-
-  virtual bool GetStats(webrtc::StatsObserver* observer,
-                        webrtc::MediaStreamTrackInterface* track) {
-    return false;
-  }
-  virtual bool GetStats(webrtc::StatsObserver* observer,
-                        webrtc::MediaStreamTrackInterface* track,
-                        StatsOutputLevel level) override;
+  bool GetStats(webrtc::StatsObserver* observer,
+                webrtc::MediaStreamTrackInterface* track,
+                StatsOutputLevel level) override;
 
   // Set Call this function to make sure next call to GetStats fail.
   void SetGetStatsResult(bool result) { getstats_result_ = result; }
 
-  virtual SignalingState signaling_state() override {
+  SignalingState signaling_state() override {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kStable;
   }
-  virtual IceState ice_state() override {
+  IceState ice_state() override {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kIceNew;
   }
-  virtual IceConnectionState ice_connection_state() override {
+  IceConnectionState ice_connection_state() override {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kIceConnectionNew;
   }
-  virtual IceGatheringState ice_gathering_state() override {
+  IceGatheringState ice_gathering_state() override {
     NOTIMPLEMENTED();
     return PeerConnectionInterface::kIceGatheringNew;
   }
-  virtual void Close() override {
+  void Close() override {
     NOTIMPLEMENTED();
   }
 
-  virtual const webrtc::SessionDescriptionInterface* local_description()
-      const override;
-  virtual const webrtc::SessionDescriptionInterface* remote_description()
+  const webrtc::SessionDescriptionInterface* local_description() const override;
+  const webrtc::SessionDescriptionInterface* remote_description()
       const override;
 
   // JSEP01 APIs
-  virtual void CreateOffer(
+  void CreateOffer(
       webrtc::CreateSessionDescriptionObserver* observer,
       const webrtc::MediaConstraintsInterface* constraints) override;
-  virtual void CreateAnswer(
+  void CreateAnswer(
       webrtc::CreateSessionDescriptionObserver* observer,
       const webrtc::MediaConstraintsInterface* constraints) override;
   MOCK_METHOD2(SetLocalDescription,
@@ -94,12 +88,10 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   void SetRemoteDescriptionWorker(
       webrtc::SetSessionDescriptionObserver* observer,
       webrtc::SessionDescriptionInterface* desc);
-  virtual bool UpdateIce(
-      const IceServers& configuration,
-      const webrtc::MediaConstraintsInterface* constraints) override;
-  virtual bool AddIceCandidate(
-      const webrtc::IceCandidateInterface* candidate) override;
-  virtual void RegisterUMAObserver(webrtc::UMAObserver* observer) override;
+  bool UpdateIce(const IceServers& configuration,
+                 const webrtc::MediaConstraintsInterface* constraints) override;
+  bool AddIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
+  void RegisterUMAObserver(webrtc::UMAObserver* observer) override;
 
   void AddRemoteStream(webrtc::MediaStreamInterface* stream);
 

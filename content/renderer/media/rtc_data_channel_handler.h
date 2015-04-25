@@ -37,26 +37,24 @@ class CONTENT_EXPORT RtcDataChannelHandler
   RtcDataChannelHandler(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
       webrtc::DataChannelInterface* channel);
-  virtual ~RtcDataChannelHandler();
+  ~RtcDataChannelHandler() override;
 
   // blink::WebRTCDataChannelHandler implementation.
-  virtual void setClient(
+  void setClient(
       blink::WebRTCDataChannelHandlerClient* client) override;
-  virtual blink::WebString label() override;
-  virtual bool isReliable() override;
-  virtual bool ordered() const override;
-  virtual unsigned short maxRetransmitTime() const override;
-  virtual unsigned short maxRetransmits() const override;
-  virtual blink::WebString protocol() const override;
-  virtual bool negotiated() const override;
-  virtual unsigned short id() const override;
-  // TODO(bemasc): Mark |state()| as |override| once https://codereview.chromium.org/782843003/
-  // lands in Blink and rolls into Chromium.
-  virtual blink::WebRTCDataChannelHandlerClient::ReadyState state() const;
-  virtual unsigned long bufferedAmount() override;
-  virtual bool sendStringData(const blink::WebString& data) override;
-  virtual bool sendRawData(const char* data, size_t length) override;
-  virtual void close() override;
+  blink::WebString label() override;
+  bool isReliable() override;
+  bool ordered() const override;
+  unsigned short maxRetransmitTime() const override;
+  unsigned short maxRetransmits() const override;
+  blink::WebString protocol() const override;
+  bool negotiated() const override;
+  unsigned short id() const override;
+  blink::WebRTCDataChannelHandlerClient::ReadyState state() const override;
+  unsigned long bufferedAmount() override;
+  bool sendStringData(const blink::WebString& data) override;
+  bool sendRawData(const char* data, size_t length) override;
+  void close() override;
 
   const scoped_refptr<webrtc::DataChannelInterface>& channel() const;
 
