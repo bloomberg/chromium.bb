@@ -42,11 +42,11 @@ layer at (0,0) size 800x610 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutTableSection (anonymous) at (1,1) size 230x34
           LayoutTableRow (anonymous) at (0,2) size 230x30
             LayoutTableCell {THEAD} at (2,2) size 104x30 [r=0 c=0 rs=1 cs=1]
-              LayoutTable at (0,0) size 104x30
+              LayoutTable (anonymous) at (0,0) size 104x30
                 LayoutTableSection (anonymous) at (0,0) size 104x30
                   LayoutTableRow (anonymous) at (0,2) size 104x26
                     LayoutTableCell {TR} at (2,2) size 100x26 [r=0 c=0 rs=1 cs=1]
-                      LayoutTable at (0,0) size 100x26
+                      LayoutTable (anonymous) at (0,0) size 100x26
                         LayoutTableSection (anonymous) at (0,0) size 100x26
                           LayoutTableRow (anonymous) at (0,2) size 100x22
                             LayoutTableCell {TD} at (2,2) size 47x22 [r=0 c=0 rs=1 cs=1]
@@ -56,11 +56,11 @@ layer at (0,0) size 800x610 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                               LayoutText {#text} at (1,1) size 45x19
                                 text run at (1,1) width 45: "Head 2"
             LayoutTableCell {TFOOT} at (108,2) size 120x30 [r=0 c=1 rs=1 cs=1]
-              LayoutTable at (0,0) size 120x30
+              LayoutTable (anonymous) at (0,0) size 120x30
                 LayoutTableSection (anonymous) at (0,0) size 120x30
                   LayoutTableRow (anonymous) at (0,2) size 120x26
                     LayoutTableCell {TR} at (2,2) size 116x26 [r=0 c=0 rs=1 cs=1]
-                      LayoutTable at (0,0) size 116x26
+                      LayoutTable (anonymous) at (0,0) size 116x26
                         LayoutTableSection (anonymous) at (0,0) size 116x26
                           LayoutTableRow (anonymous) at (0,2) size 116x22
                             LayoutTableCell {TD} at (2,2) size 55x22 [r=0 c=0 rs=1 cs=1]
@@ -72,7 +72,7 @@ layer at (0,0) size 800x610 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,35) size 230x28
           LayoutTableRow (anonymous) at (0,0) size 230x26
             LayoutTableCell {TR} at (2,0) size 104x26 [r=0 c=0 rs=1 cs=1]
-              LayoutTable at (0,0) size 82x26
+              LayoutTable (anonymous) at (0,0) size 82x26
                 LayoutTableSection (anonymous) at (0,0) size 82x26
                   LayoutTableRow (anonymous) at (0,2) size 82x22
                     LayoutTableCell {TD} at (2,2) size 38x22 [r=0 c=0 rs=1 cs=1]
@@ -82,7 +82,7 @@ layer at (0,0) size 800x610 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                       LayoutText {#text} at (1,1) size 36x19
                         text run at (1,1) width 36: "Cell 2"
             LayoutTableCell {TR} at (108,0) size 120x26 [r=0 c=1 rs=1 cs=1]
-              LayoutTable at (0,0) size 82x26
+              LayoutTable (anonymous) at (0,0) size 82x26
                 LayoutTableSection (anonymous) at (0,0) size 82x26
                   LayoutTableRow (anonymous) at (0,2) size 82x22
                     LayoutTableCell {TD} at (2,2) size 38x22 [r=0 c=0 rs=1 cs=1]
@@ -100,7 +100,7 @@ layer at (0,0) size 800x610 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutTableCell (anonymous) at (2,2) size 116x52 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {THEAD} at (0,0) size 116x26
                 LayoutBlockFlow {TR} at (0,0) size 116x26
-                  LayoutTable at (0,0) size 100x26
+                  LayoutTable (anonymous) at (0,0) size 100x26
                     LayoutTableSection (anonymous) at (0,0) size 100x26
                       LayoutTableRow (anonymous) at (0,2) size 100x22
                         LayoutTableCell {TD} at (2,2) size 47x22 [r=0 c=0 rs=1 cs=1]
@@ -111,7 +111,7 @@ layer at (0,0) size 800x610 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                             text run at (1,1) width 45: "Head 2"
               LayoutBlockFlow {TFOOT} at (0,26) size 116x26
                 LayoutBlockFlow {TR} at (0,0) size 116x26
-                  LayoutTable at (0,0) size 116x26
+                  LayoutTable (anonymous) at (0,0) size 116x26
                     LayoutTableSection (anonymous) at (0,0) size 116x26
                       LayoutTableRow (anonymous) at (0,2) size 116x22
                         LayoutTableCell {TD} at (2,2) size 55x22 [r=0 c=0 rs=1 cs=1]
@@ -124,7 +124,7 @@ layer at (0,0) size 800x610 backgroundClip at (0,0) size 800x600 clip at (0,0) s
           LayoutTableRow (anonymous) at (0,0) size 120x52
             LayoutTableCell (anonymous) at (2,0) size 116x52 [r=0 c=0 rs=1 cs=1]
               LayoutBlockFlow {TR} at (0,0) size 116x26
-                LayoutTable at (0,0) size 82x26
+                LayoutTable (anonymous) at (0,0) size 82x26
                   LayoutTableSection (anonymous) at (0,0) size 82x26
                     LayoutTableRow (anonymous) at (0,2) size 82x22
                       LayoutTableCell {TD} at (2,2) size 38x22 [r=0 c=0 rs=1 cs=1]
@@ -134,7 +134,7 @@ layer at (0,0) size 800x610 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                         LayoutText {#text} at (1,1) size 36x19
                           text run at (1,1) width 36: "Cell 2"
               LayoutBlockFlow {TR} at (0,26) size 116x26
-                LayoutTable at (0,0) size 82x26
+                LayoutTable (anonymous) at (0,0) size 82x26
                   LayoutTableSection (anonymous) at (0,0) size 82x26
                     LayoutTableRow (anonymous) at (0,2) size 82x22
                       LayoutTableCell {TD} at (2,2) size 38x22 [r=0 c=0 rs=1 cs=1]
@@ -143,7 +143,7 @@ layer at (0,0) size 800x610 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                       LayoutTableCell {TD} at (42,2) size 38x22 [r=0 c=1 rs=1 cs=1]
                         LayoutText {#text} at (1,1) size 36x19
                           text run at (1,1) width 36: "Cell 4"
-      LayoutTable at (0,390) size 302x202
+      LayoutTable (anonymous) at (0,390) size 302x202
         LayoutTableSection (anonymous) at (0,0) size 302x202
           LayoutTableRow (anonymous) at (0,0) size 302x202
             LayoutTableCell {P} at (0,0) size 302x202 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]

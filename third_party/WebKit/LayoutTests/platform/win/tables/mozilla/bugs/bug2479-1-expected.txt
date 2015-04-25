@@ -33,7 +33,7 @@ layer at (0,0) size 785x942 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 66x26
           text run at (0,0) width 66: "Rule 2"
       LayoutBlockFlow {DIV} at (0,228.06) size 769x18
-        LayoutTable at (0,0) size 584x18
+        LayoutTable (anonymous) at (0,0) size 584x18
           LayoutTableSection (anonymous) at (0,0) size 584x18
             LayoutTableRow (anonymous) at (0,0) size 584x18
               LayoutTableCell {SPAN} at (0,0) size 146x18 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
@@ -49,7 +49,7 @@ layer at (0,0) size 785x942 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 146x17
                   text run at (0,0) width 146: "Table 1, Row 1, Cell 4"
       LayoutBlockFlow {DIV} at (0,262.06) size 769x54
-        LayoutTable at (0,0) size 584x54
+        LayoutTable (anonymous) at (0,0) size 584x54
           LayoutTableSection (anonymous) at (0,0) size 584x54
             LayoutTableRow (anonymous) at (0,0) size 584x18
               LayoutTableCell {SPAN} at (0,0) size 146x18 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]
@@ -98,7 +98,7 @@ layer at (0,0) size 785x942 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,0) width 433: "This section does not test the behavior of columns, column groups, "
           text run at (432,0) width 76: "or captions."
       LayoutBlockFlow {DIV} at (0,416.88) size 769x54
-        LayoutTable at (0,0) size 584x54
+        LayoutTable (anonymous) at (0,0) size 584x54
           LayoutTableSection (anonymous) at (0,0) size 584x54
             LayoutTableRow {SPAN} at (0,0) size 584x18 [bgcolor=#00FFFF]
               LayoutTableCell {SPAN} at (0,0) size 146x18 [r=0 c=0 rs=1 cs=1]
@@ -143,7 +143,7 @@ layer at (0,0) size 785x942 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutText {#text} at (0,0) size 724x17
           text run at (0,0) width 724: "Note: table-header-group and table-footer-group are tested only in their HTML order, and they only appear once."
       LayoutBlockFlow {DIV} at (0,520.88) size 769x90
-        LayoutTable at (0,0) size 584x90
+        LayoutTable (anonymous) at (0,0) size 584x90
           LayoutTableSection {SPAN} at (0,0) size 584x18 [bgcolor=#00FFFF]
             LayoutTableRow (anonymous) at (0,0) size 584x18
               LayoutTableCell {SPAN} at (0,0) size 146x18 [bgcolor=#00FFFF] [r=0 c=0 rs=1 cs=1]

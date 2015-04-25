@@ -18,7 +18,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (66,25) size 0x0
         LayoutMenuList (floating) {SELECT} at (10,30) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText at (4,1) size 24x16
+            LayoutText (anonymous) at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         LayoutText {#text} at (0,0) size 0x0
         LayoutButton {INPUT} at (10,50) size 200x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
@@ -35,7 +35,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (66,25) size 0x0
         LayoutMenuList (floating) {SELECT} at (10,30) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText at (4,1) size 24x16
+            LayoutText (anonymous) at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         LayoutText {#text} at (0,0) size 0x0
         LayoutButton (floating) {INPUT} at (110,30) size 100x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
@@ -54,7 +54,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBR {BR} at (56,15) size 0x0
           LayoutMenuList (floating) {SELECT} at (0,20) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 98x18
-              LayoutText at (4,1) size 24x16
+              LayoutText (anonymous) at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           LayoutText {#text} at (0,0) size 0x0
         LayoutButton {INPUT} at (110,30) size 28x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
@@ -73,7 +73,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBR {BR} at (56,15) size 0x0
           LayoutMenuList (floating) {SELECT} at (0,20) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 98x18
-              LayoutText at (4,1) size 24x16
+              LayoutText (anonymous) at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           LayoutText {#text} at (0,0) size 0x0
         LayoutButton {INPUT} at (110,30) size 100x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
@@ -91,7 +91,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (66,25) size 0x0
         LayoutMenuList (floating) {SELECT} at (10,30) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText at (4,1) size 24x16
+            LayoutText (anonymous) at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         LayoutText {#text} at (0,0) size 0x0
         LayoutTable (floating) {TABLE} at (110,30) size 100x32 [border: (2px outset #808080)]
@@ -112,7 +112,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (66,25) size 0x0
         LayoutMenuList (floating) {SELECT} at (10,30) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText at (4,1) size 24x16
+            LayoutText (anonymous) at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         LayoutText {#text} at (0,0) size 0x0
         LayoutTable (floating) {TABLE} at (10,50) size 200x72 [border: (2px outset #808080)]
@@ -136,7 +136,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBR {BR} at (56,15) size 0x0
           LayoutMenuList (floating) {SELECT} at (0,20) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 98x18
-              LayoutText at (4,1) size 24x16
+              LayoutText (anonymous) at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           LayoutText {#text} at (0,0) size 0x0
         LayoutTable {TABLE} at (10,50) size 200x72 [border: (2px outset #808080)]
@@ -160,7 +160,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBR {BR} at (56,15) size 0x0
           LayoutMenuList (floating) {SELECT} at (0,20) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 98x18
-              LayoutText at (4,1) size 24x16
+              LayoutText (anonymous) at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           LayoutText {#text} at (0,0) size 0x0
         LayoutTable {TABLE} at (110,30) size 100x112 [border: (2px outset #808080)]
@@ -184,7 +184,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (66,25) size 0x0
         LayoutMenuList (floating) {SELECT} at (10,30) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText at (4,1) size 24x16
+            LayoutText (anonymous) at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
@@ -199,7 +199,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (66,25) size 0x0
         LayoutMenuList (floating) {SELECT} at (10,30) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText at (4,1) size 24x16
+            LayoutText (anonymous) at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
@@ -214,7 +214,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBR {BR} at (56,15) size 0x0
           LayoutMenuList (floating) {SELECT} at (0,20) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 98x18
-              LayoutText at (4,1) size 24x16
+              LayoutText (anonymous) at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow (anonymous) at (10,130) size 200x20
@@ -231,7 +231,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBR {BR} at (56,15) size 0x0
           LayoutMenuList (floating) {SELECT} at (0,20) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 98x18
-              LayoutText at (4,1) size 24x16
+              LayoutText (anonymous) at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow (anonymous) at (10,130) size 200x20
@@ -245,7 +245,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (66,25) size 0x0
         LayoutMenuList (floating) {SELECT} at (10,30) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText at (4,1) size 24x16
+            LayoutText (anonymous) at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow (floating) {HR} at (112,32) size 80x2 [border: (1px inset #EEEEEE)]
@@ -260,7 +260,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (66,25) size 0x0
         LayoutMenuList (floating) {SELECT} at (10,30) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText at (4,1) size 24x16
+            LayoutText (anonymous) at (4,1) size 24x16
               text run at (4,1) width 24: "One"
         LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow (floating) {HR} at (112,32) size 2x2 [border: (1px inset #EEEEEE)]
@@ -276,7 +276,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBR {BR} at (56,15) size 0x0
           LayoutMenuList (floating) {SELECT} at (0,20) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 98x18
-              LayoutText at (4,1) size 24x16
+              LayoutText (anonymous) at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {HR} at (10,50) size 200x2 [border: (1px inset #EEEEEE)]
@@ -293,7 +293,7 @@ layer at (0,0) size 785x2414 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           LayoutBR {BR} at (56,15) size 0x0
           LayoutMenuList (floating) {SELECT} at (0,20) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 98x18
-              LayoutText at (4,1) size 24x16
+              LayoutText (anonymous) at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
           LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {HR} at (110,38) size 100x2 [border: (1px inset #EEEEEE)]

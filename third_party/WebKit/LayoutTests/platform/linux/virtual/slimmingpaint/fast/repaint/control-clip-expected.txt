@@ -20,7 +20,7 @@
         "RootInlineBox",
         "LayoutMenuList SELECT id='popup'",
         "LayoutBlockFlow (anonymous)",
-        "LayoutText",
+        "LayoutText (anonymous)",
         "InlineTextBox 'SUCCESS'",
         "LayoutBlockFlow (anonymous)",
         "LayoutText #text",

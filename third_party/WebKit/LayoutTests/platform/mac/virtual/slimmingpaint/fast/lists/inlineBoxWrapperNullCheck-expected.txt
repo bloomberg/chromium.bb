@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 190x44
         LayoutBlockFlow {UL} at (0,0) size 190x44
           LayoutListItem {LI} at (40,0) size 150x44
-            LayoutListMarker at (-17,26) size 7x18: bullet
+            LayoutListMarker (anonymous) at (-17,26) size 7x18: bullet
             LayoutInline {A} at (0,0) size 150x18
               LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {IMG} at (0,0) size 150x40

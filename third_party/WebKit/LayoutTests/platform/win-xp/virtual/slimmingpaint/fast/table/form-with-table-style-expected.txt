@@ -50,48 +50,48 @@ layer at (0,0) size 800x600
                 LayoutText {#text} at (0,0) size 114x19
                   text run at (0,0) width 114: "display: inline-table"
       LayoutBlockFlow {DIV} at (0,308) size 784x20
-        LayoutTable at (0,0) size 149x20
+        LayoutTable (anonymous) at (0,0) size 149x20
           LayoutTableSection {FORM} at (0,0) size 149x20
             LayoutTableRow (anonymous) at (0,0) size 149x20
               LayoutTableCell (anonymous) at (0,0) size 149x20 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (0,0) size 149x19
                   text run at (0,0) width 149: "display: table-row-group"
       LayoutBlockFlow {DIV} at (0,328) size 784x20
-        LayoutTable at (0,0) size 166x20
+        LayoutTable (anonymous) at (0,0) size 166x20
           LayoutTableSection {FORM} at (0,0) size 166x20
             LayoutTableRow (anonymous) at (0,0) size 166x20
               LayoutTableCell (anonymous) at (0,0) size 166x20 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (0,0) size 166x19
                   text run at (0,0) width 166: "display: table-header-group"
       LayoutBlockFlow {DIV} at (0,348) size 784x20
-        LayoutTable at (0,0) size 161x20
+        LayoutTable (anonymous) at (0,0) size 161x20
           LayoutTableSection {FORM} at (0,0) size 161x20
             LayoutTableRow (anonymous) at (0,0) size 161x20
               LayoutTableCell (anonymous) at (0,0) size 161x20 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (0,0) size 161x19
                   text run at (0,0) width 161: "display: table-footer-group"
       LayoutBlockFlow {DIV} at (0,368) size 784x20
-        LayoutTable at (0,0) size 108x20
+        LayoutTable (anonymous) at (0,0) size 108x20
           LayoutTableSection (anonymous) at (0,0) size 108x20
             LayoutTableRow {FORM} at (0,0) size 108x20
               LayoutTableCell (anonymous) at (0,0) size 108x20 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (0,0) size 108x19
                   text run at (0,0) width 108: "display: table-row"
       LayoutBlockFlow {DIV} at (0,388) size 784x0
-        LayoutTable at (0,0) size 0x0
+        LayoutTable (anonymous) at (0,0) size 0x0
           LayoutTableCol {FORM} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,388) size 784x0
-        LayoutTable at (0,0) size 0x0
+        LayoutTable (anonymous) at (0,0) size 0x0
           LayoutTableCol {FORM} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,388) size 784x20
-        LayoutTable at (0,0) size 104x20
+        LayoutTable (anonymous) at (0,0) size 104x20
           LayoutTableSection (anonymous) at (0,0) size 104x20
             LayoutTableRow (anonymous) at (0,0) size 104x20
               LayoutTableCell {FORM} at (0,0) size 104x20 [r=0 c=0 rs=1 cs=1]
                 LayoutText {#text} at (0,0) size 104x19
                   text run at (0,0) width 104: "display: table-cell"
       LayoutBlockFlow {DIV} at (0,408) size 784x76
-        LayoutTable at (0,0) size 45x76
+        LayoutTable (anonymous) at (0,0) size 45x76
           LayoutBlockFlow {FORM} at (0,0) size 45x60
             LayoutText {#text} at (0,0) size 45x59
               text run at (0,0) width 45: "display:"

@@ -12,7 +12,7 @@
       "paintInvalidationClients": [
         "LayoutBlockFlow DIV class='hitregion'",
         "LayoutBlockFlow (positioned) \u003Cpseudo:after\u003E",
-        "LayoutTextFragment"
+        "LayoutTextFragment (anonymous)"
       ]
     }
   ]
