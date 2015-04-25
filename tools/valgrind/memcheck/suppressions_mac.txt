@@ -280,3 +280,21 @@
    fun:_ZN2v88internal18StackFrameIteratorC1EPNS0_7IsolateE
    fun:_ZN2v88internal7Isolate11FindHandlerEv
 }
+{
+   bug_481286a
+   Memcheck:Leak
+   ...
+   fun:CSSM_CL_CertGetFirstCachedFieldValue
+   ...
+   fun:SecTrustEvaluate
+}
+{
+   bug_481286b
+   Memcheck:Leak
+   ...
+   fun:CSSM_CL_CertGetFirstCachedFieldValue
+   fun:_ZN8Security12KeychainCore11Certificate19copyFirstFieldValueERK9cssm_data
+   fun:_ZN8Security12KeychainCore11Certificate9publicKeyEv
+   fun:SecCertificateCopyPublicKey
+   fun:_ZN3net15X509Certificate16GetPublicKeyInfoEP23OpaqueSecCertificateRef*
+}
