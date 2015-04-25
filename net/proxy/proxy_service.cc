@@ -868,6 +868,10 @@ class ProxyService::PacRequest
   int QueryDidComplete(int result_code) {
     DCHECK(!was_cancelled());
 
+    // Clear |resolve_job_| so is_started() returns false while
+    // DidFinishResolvingProxy() runs.
+    resolve_job_ = nullptr;
+
     // Note that DidFinishResolvingProxy might modify |results_|.
     int rv = service_->DidFinishResolvingProxy(url_, load_flags_,
                                                network_delegate_, results_,
@@ -882,7 +886,6 @@ class ProxyService::PacRequest
     results_->proxy_resolve_end_time_ = TimeTicks::Now();
 
     // Reset the state associated with in-progress-resolve.
-    resolve_job_ = NULL;
     config_id_ = ProxyConfig::kInvalidConfigID;
     config_source_ = PROXY_CONFIG_SOURCE_UNKNOWN;
 
@@ -1399,6 +1402,7 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
     net_log.AddEventWithNetErrorCode(
         NetLog::TYPE_PROXY_SERVICE_RESOLVED_PROXY_LIST, result_code);
 
+    bool reset_config = result_code == ERR_PAC_SCRIPT_TERMINATED;
     if (!config_.pac_mandatory()) {
       // Fall-back to direct when the proxy resolver fails. This corresponds
       // with a javascript runtime error in the PAC script.
@@ -1416,6 +1420,14 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
         network_delegate->NotifyResolveProxy(url, load_flags, *this, result);
     } else {
       result_code = ERR_MANDATORY_PROXY_CONFIGURATION_FAILED;
+    }
+    if (reset_config) {
+      ResetProxyConfig(false);
+      // If the ProxyResolver crashed, force it to be re-initialized for the
+      // next request by resetting the proxy config. If there are other pending
+      // requests, trigger the recreation immediately so those requests retry.
+      if (pending_requests_.size() > 1)
+        ApplyProxyConfigIfAvailable();
     }
   }
 

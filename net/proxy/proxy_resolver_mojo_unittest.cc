@@ -401,6 +401,12 @@ class ProxyResolverMojoTest : public testing::Test {
               proxy_resolver_mojo_->SetPacScript(pac_script, pac_callback));
   }
 
+  void DeleteProxyResolverCallback(const CompletionCallback& callback,
+                                   int result) {
+    proxy_resolver_mojo_.reset();
+    callback.Run(result);
+  }
+
   MockHostResolver mock_host_resolver_;
   TestMojoProxyResolverFactory mojo_proxy_resolver_factory_;
   scoped_ptr<ProxyResolverMojo> proxy_resolver_mojo_;
@@ -525,6 +531,34 @@ TEST_F(ProxyResolverMojoTest, SetPacScript_CancelAndSetAgain) {
   EXPECT_EQ(ERR_IO_PENDING, proxy_resolver_mojo_->SetPacScript(
                                 pac_script, callback2.callback()));
   EXPECT_EQ(ERR_UNEXPECTED, callback2.GetResult(ERR_IO_PENDING));
+}
+
+TEST_F(ProxyResolverMojoTest, SetPacScript_DeleteInCallback) {
+  mojo_proxy_resolver_factory_.AddFuturePacScriptAction(
+      0, SetPacScriptAction::ReturnResult(OK));
+  scoped_refptr<ProxyResolverScriptData> pac_script(
+      ProxyResolverScriptData::FromUTF8(kScriptData));
+  TestCompletionCallback callback;
+  EXPECT_EQ(OK,
+            callback.GetResult(proxy_resolver_mojo_->SetPacScript(
+                pac_script,
+                base::Bind(&ProxyResolverMojoTest::DeleteProxyResolverCallback,
+                           base::Unretained(this), callback.callback()))));
+  EXPECT_EQ(1, mojo_proxy_resolver_factory_.num_create_calls());
+}
+
+TEST_F(ProxyResolverMojoTest, SetPacScript_DeleteInCallbackFromDisconnect) {
+  mojo_proxy_resolver_factory_.AddFuturePacScriptAction(
+      0, SetPacScriptAction::Disconnect());
+  scoped_refptr<ProxyResolverScriptData> pac_script(
+      ProxyResolverScriptData::FromUTF8(kScriptData));
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED,
+            callback.GetResult(proxy_resolver_mojo_->SetPacScript(
+                pac_script,
+                base::Bind(&ProxyResolverMojoTest::DeleteProxyResolverCallback,
+                           base::Unretained(this), callback.callback()))));
+  EXPECT_EQ(1, mojo_proxy_resolver_factory_.num_create_calls());
 }
 
 TEST_F(ProxyResolverMojoTest, GetProxyForURL) {
@@ -730,6 +764,39 @@ TEST_F(ProxyResolverMojoTest, DisconnectAndReconnectInCallback) {
   EXPECT_EQ("DIRECT", request->results().ToPacString());
 
   EXPECT_EQ(2, mojo_proxy_resolver_factory_.num_create_calls());
+}
+
+TEST_F(ProxyResolverMojoTest, GetProxyForURL_DeleteInCallback) {
+  mojo_proxy_resolver_factory_.AddFutureGetProxyAction(
+      0, GetProxyForUrlAction::ReturnServers(
+             GURL(kExampleUrl), ProxyServersFromPacString("DIRECT")));
+  SetPacScript(0);
+  ProxyInfo results;
+  TestCompletionCallback callback;
+  ProxyResolver::RequestHandle handle;
+  BoundNetLog net_log;
+  EXPECT_EQ(OK,
+            callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
+                GURL(kExampleUrl), &results,
+                base::Bind(&ProxyResolverMojoTest::DeleteProxyResolverCallback,
+                           base::Unretained(this), callback.callback()),
+                &handle, net_log)));
+}
+
+TEST_F(ProxyResolverMojoTest, GetProxyForURL_DeleteInCallbackFromDisconnect) {
+  mojo_proxy_resolver_factory_.AddFutureGetProxyAction(
+      0, GetProxyForUrlAction::Disconnect(GURL(kExampleUrl)));
+  SetPacScript(0);
+  ProxyInfo results;
+  TestCompletionCallback callback;
+  ProxyResolver::RequestHandle handle;
+  BoundNetLog net_log;
+  EXPECT_EQ(ERR_PAC_SCRIPT_TERMINATED,
+            callback.GetResult(proxy_resolver_mojo_->GetProxyForURL(
+                GURL(kExampleUrl), &results,
+                base::Bind(&ProxyResolverMojoTest::DeleteProxyResolverCallback,
+                           base::Unretained(this), callback.callback()),
+                &handle, net_log)));
 }
 
 }  // namespace net

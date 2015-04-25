@@ -740,6 +740,148 @@ TEST_F(ProxyServiceTest, ProxyResolverFails) {
   EXPECT_EQ("foopy_valid:8080", info.proxy_server().ToURI());
 }
 
+TEST_F(ProxyServiceTest, ProxyResolverTerminatedDuringRequest) {
+  // Test what happens when the ProxyResolver fails with a fatal error while
+  // a GetProxyForURL() call is in progress.
+
+  MockProxyConfigService* config_service =
+      new MockProxyConfigService("http://foopy/proxy.pac");
+
+  MockAsyncProxyResolver resolver;
+
+  ProxyService service(
+      config_service,
+      make_scoped_ptr(new ForwardingProxyResolverFactory(&resolver)), nullptr);
+
+  // Start first resolve request.
+  GURL url("http://www.google.com/");
+  ProxyInfo info;
+  TestCompletionCallback callback1;
+  int rv =
+      service.ResolveProxy(url, net::LOAD_NORMAL, &info, callback1.callback(),
+                           nullptr, nullptr, BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  ASSERT_TRUE(resolver.pending_set_pac_script_request());
+  EXPECT_EQ(GURL("http://foopy/proxy.pac"),
+            resolver.pending_set_pac_script_request()->script_data()->url());
+  resolver.pending_set_pac_script_request()->CompleteNow(OK);
+
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
+
+  // Fail the first resolve request in MockAsyncProxyResolver.
+  resolver.pending_requests()[0]->CompleteNow(ERR_PAC_SCRIPT_TERMINATED);
+
+  // Although the proxy resolver failed the request, ProxyService implicitly
+  // falls-back to DIRECT.
+  EXPECT_EQ(OK, callback1.WaitForResult());
+  EXPECT_TRUE(info.is_direct());
+
+  // Failed PAC executions still have proxy resolution times.
+  EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
+  EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
+  EXPECT_LE(info.proxy_resolve_start_time(), info.proxy_resolve_end_time());
+
+  // With no other requests, the ProxyService waits for a new request before
+  // initializing a new ProxyResolver.
+  EXPECT_FALSE(resolver.pending_set_pac_script_request());
+
+  TestCompletionCallback callback2;
+  rv = service.ResolveProxy(url, net::LOAD_NORMAL, &info, callback2.callback(),
+                            nullptr, nullptr, BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  ASSERT_TRUE(resolver.pending_set_pac_script_request());
+  EXPECT_EQ(GURL("http://foopy/proxy.pac"),
+            resolver.pending_set_pac_script_request()->script_data()->url());
+  resolver.pending_set_pac_script_request()->CompleteNow(OK);
+
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url, resolver.pending_requests()[0]->url());
+
+  // This time we will have the resolver succeed.
+  resolver.pending_requests()[0]->results()->UseNamedProxy("foopy_valid:8080");
+  resolver.pending_requests()[0]->CompleteNow(OK);
+
+  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_FALSE(info.is_direct());
+  EXPECT_EQ("foopy_valid:8080", info.proxy_server().ToURI());
+}
+
+TEST_F(ProxyServiceTest,
+       ProxyResolverTerminatedDuringRequestWithConcurrentRequest) {
+  // Test what happens when the ProxyResolver fails with a fatal error while
+  // a GetProxyForURL() call is in progress.
+
+  MockProxyConfigService* config_service =
+      new MockProxyConfigService("http://foopy/proxy.pac");
+
+  MockAsyncProxyResolver resolver;
+
+  ProxyService service(
+      config_service,
+      make_scoped_ptr(new ForwardingProxyResolverFactory(&resolver)), nullptr);
+
+  // Start two resolve requests.
+  GURL url1("http://www.google.com/");
+  GURL url2("https://www.google.com/");
+  ProxyInfo info;
+  TestCompletionCallback callback1;
+  int rv =
+      service.ResolveProxy(url1, net::LOAD_NORMAL, &info, callback1.callback(),
+                           nullptr, nullptr, BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  TestCompletionCallback callback2;
+  rv = service.ResolveProxy(url2, net::LOAD_NORMAL, &info, callback2.callback(),
+                            nullptr, nullptr, BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  ASSERT_TRUE(resolver.pending_set_pac_script_request());
+  EXPECT_EQ(GURL("http://foopy/proxy.pac"),
+            resolver.pending_set_pac_script_request()->script_data()->url());
+  resolver.pending_set_pac_script_request()->CompleteNow(OK);
+
+  ASSERT_EQ(2u, resolver.pending_requests().size());
+  EXPECT_EQ(url1, resolver.pending_requests()[0]->url());
+  EXPECT_EQ(url2, resolver.pending_requests()[1]->url());
+
+  // Fail the first resolve request in MockAsyncProxyResolver.
+  resolver.pending_requests()[0]->CompleteNow(ERR_PAC_SCRIPT_TERMINATED);
+
+  // Although the proxy resolver failed the request, ProxyService implicitly
+  // falls-back to DIRECT.
+  EXPECT_EQ(OK, callback1.WaitForResult());
+  EXPECT_TRUE(info.is_direct());
+
+  // Failed PAC executions still have proxy resolution times.
+  EXPECT_FALSE(info.proxy_resolve_start_time().is_null());
+  EXPECT_FALSE(info.proxy_resolve_end_time().is_null());
+  EXPECT_LE(info.proxy_resolve_start_time(), info.proxy_resolve_end_time());
+
+  // The second request is cancelled when the proxy resolver terminates.
+  ASSERT_EQ(1u, resolver.cancelled_requests().size());
+  EXPECT_EQ(url2, resolver.cancelled_requests()[0]->url());
+
+  // Since a second request was in progress, the ProxyService starts
+  // initializating a new ProxyResolver.
+  ASSERT_TRUE(resolver.pending_set_pac_script_request());
+  EXPECT_EQ(GURL("http://foopy/proxy.pac"),
+            resolver.pending_set_pac_script_request()->script_data()->url());
+  resolver.pending_set_pac_script_request()->CompleteNow(OK);
+
+  ASSERT_EQ(1u, resolver.pending_requests().size());
+  EXPECT_EQ(url2, resolver.pending_requests()[0]->url());
+
+  // This request succeeds.
+  resolver.pending_requests()[0]->results()->UseNamedProxy("foopy_valid:8080");
+  resolver.pending_requests()[0]->CompleteNow(OK);
+
+  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_FALSE(info.is_direct());
+  EXPECT_EQ("foopy_valid:8080", info.proxy_server().ToURI());
+}
+
 TEST_F(ProxyServiceTest, ProxyScriptFetcherFailsDownloadingMandatoryPac) {
   // Test what happens when the ProxyScriptResolver fails to download a
   // mandatory PAC script.

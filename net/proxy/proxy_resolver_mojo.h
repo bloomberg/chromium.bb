@@ -71,8 +71,6 @@ class ProxyResolverMojo : public ProxyResolver, public mojo::ErrorHandler {
 
   void SetUpServices();
 
-  void AbortPendingRequests();
-
   void RemoveJob(Job* job);
 
   // Connection to the Mojo proxy resolver.

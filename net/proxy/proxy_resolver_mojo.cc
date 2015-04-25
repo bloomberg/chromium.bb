@@ -100,9 +100,10 @@ void ProxyResolverMojo::Job::ReportResult(
     DVLOG(1) << "Servers: " << results_->ToPacString();
   }
 
-  callback_.Run(error);
+  CompletionCallback callback = callback_;
   callback_.Reset();
   resolver_->RemoveJob(this);
+  callback.Run(error);
 }
 
 void ProxyResolverMojo::Job::LoadStateChanged(int32_t load_state) {
@@ -163,8 +164,11 @@ void ProxyResolverMojo::OnSetPacScriptDone(
   DCHECK(!set_pac_script_callback_.IsCancelled());
   DVLOG(1) << "ProxyResolverMojo::OnSetPacScriptDone: " << result;
 
-  callback.Run(result);
+  // |callback| is owned by |set_pac_script_callback_|, so make a copy before
+  // cancelling.
+  auto callback_copy = callback;
   set_pac_script_callback_.Cancel();
+  callback_copy.Run(result);
 }
 
 void ProxyResolverMojo::SetUpServices() {
@@ -182,26 +186,6 @@ void ProxyResolverMojo::SetUpServices() {
   mojo_proxy_resolver_ptr_.set_error_handler(this);
 }
 
-void ProxyResolverMojo::AbortPendingRequests() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!set_pac_script_callback_.IsCancelled()) {
-    set_pac_script_callback_.callback().Run(ERR_PAC_SCRIPT_TERMINATED);
-    set_pac_script_callback_.Cancel();
-  }
-
-  // Need to use this loop because deleting a Job will cause its callback to be
-  // run with a failure error code, which may cause other Jobs to be deleted.
-  while (!pending_jobs_.empty()) {
-    auto it = pending_jobs_.begin();
-    Job* job = *it;
-    pending_jobs_.erase(it);
-
-    // Deleting the job will cause its completion callback to be run with an
-    // ERR_PAC_SCRIPT_TERMINATED error.
-    delete job;
-  }
-}
-
 void ProxyResolverMojo::OnConnectionError() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "ProxyResolverMojo::OnConnectionError";
@@ -210,10 +194,11 @@ void ProxyResolverMojo::OnConnectionError() {
   // will happen on the next |SetPacScript()| request.
   mojo_proxy_resolver_ptr_.reset();
 
-  // Aborting requests will invoke their callbacks, which may call
-  // |SetPacScript()| and re-create the connection. So disconnect from the Mojo
-  // service (above) before aborting the pending requests.
-  AbortPendingRequests();
+  // This callback may call |SetPacScript()| and re-create the connection. So
+  // disconnect from the Mojo service (above) before aborting the pending
+  // request.
+  if (!set_pac_script_callback_.IsCancelled())
+    set_pac_script_callback_.callback().Run(ERR_PAC_SCRIPT_TERMINATED);
 }
 
 void ProxyResolverMojo::RemoveJob(Job* job) {
