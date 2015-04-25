@@ -559,7 +559,6 @@
       'common/mac/mock_launchd.cc',
       'common/mac/mock_launchd.h',
       'common/mac/objc_zombie_unittest.mm',
-      'common/origin_util_unittest.cc',
       'common/partial_circular_buffer_unittest.cc',
       'common/pref_names_util_unittest.cc',
       'common/search_urls_unittest.cc',

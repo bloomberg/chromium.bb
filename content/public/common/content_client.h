@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_CONTENT_CLIENT_H_
 #define CONTENT_PUBLIC_COMMON_CONTENT_CLIENT_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -133,6 +134,12 @@ class CONTENT_EXPORT ContentClient {
       int sandbox_type,
       int* sandbox_profile_resource_id) const;
 #endif
+
+  // Gives the embedder a chance to register additional schemes and origins
+  // that need to be considered trustworthy.
+  // See https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
+  virtual void AddSecureSchemesAndOrigins(std::set<std::string>* schemes,
+                                          std::set<GURL>* origins) {}
 
  private:
   friend class ContentClientInitializer;  // To set these pointers.

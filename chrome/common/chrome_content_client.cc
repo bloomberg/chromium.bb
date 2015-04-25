@@ -551,3 +551,14 @@ bool ChromeContentClient::GetSandboxProfileForSandboxType(
   return false;
 }
 #endif
+
+void ChromeContentClient::AddSecureSchemesAndOrigins(
+    std::set<std::string>* schemes,
+    std::set<GURL>* origins) {
+  schemes->insert(content::kChromeUIScheme);
+  schemes->insert(extensions::kExtensionScheme);
+  schemes->insert(extensions::kExtensionResourceScheme);
+
+  // TODO(kinuko): Handle command-line options for whitelisting
+  // insecure origins. crbug.com/441605
+}

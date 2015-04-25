@@ -22,6 +22,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/origin_util.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
@@ -50,12 +51,8 @@ bool AllOriginsMatch(const GURL& url_a, const GURL& url_b, const GURL& url_c) {
          url_a.GetOrigin() == url_c.GetOrigin();
 }
 
-// TODO(dominicc): When crbug.com/362214 is fixed use that to be
-// consistent with Blink's
-// SecurityOrigin::canAccessFeatureRequiringSecureOrigin.
 bool OriginCanAccessServiceWorkers(const GURL& url) {
-  return url.SchemeIsHTTPOrHTTPS() &&
-      (url.SchemeIsSecure() || net::IsLocalhost(url.host()));
+  return url.SchemeIsHTTPOrHTTPS() && IsOriginSecure(url);
 }
 
 bool CanRegisterServiceWorker(const GURL& document_url,

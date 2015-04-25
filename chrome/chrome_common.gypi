@@ -85,8 +85,6 @@
       'common/multi_process_lock_linux.cc',
       'common/multi_process_lock_mac.cc',
       'common/multi_process_lock_win.cc',
-      'common/origin_util.cc',
-      'common/origin_util.h',
       'common/omnibox_focus_state.h',
       'common/partial_circular_buffer.cc',
       'common/partial_circular_buffer.h',

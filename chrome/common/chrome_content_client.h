@@ -72,6 +72,9 @@ class ChromeContentClient : public content::ContentClient {
       int sandbox_type,
       int* sandbox_profile_resource_id) const override;
 #endif
+
+  void AddSecureSchemesAndOrigins(std::set<std::string>* schemes,
+                                  std::set<GURL>* origins) override;
 };
 
 #endif  // CHROME_COMMON_CHROME_CONTENT_CLIENT_H_
