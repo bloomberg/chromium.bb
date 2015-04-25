@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/authenticator_test_base.h"
@@ -53,9 +54,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
     void OnTokenFetched(const std::string& token,
                         const std::string& shared_secret) {
       ASSERT_FALSE(on_token_fetched_.is_null());
-      TokenFetchedCallback on_token_fetched = on_token_fetched_;
-      on_token_fetched_.Reset();
-      on_token_fetched.Run(token, shared_secret);
+      base::ResetAndReturn(&on_token_fetched_).Run(token, shared_secret);
     }
 
    private:
@@ -79,9 +78,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
 
     void OnTokenValidated(const std::string& shared_secret) {
       ASSERT_FALSE(on_token_validated_.is_null());
-      TokenValidatedCallback on_token_validated = on_token_validated_;
-      on_token_validated_.Reset();
-      on_token_validated.Run(shared_secret);
+      base::ResetAndReturn(&on_token_validated_).Run(shared_secret);
     }
 
     const GURL& token_url() const override { return token_url_; }

@@ -4,6 +4,8 @@
 
 #include "remoting/client/token_fetcher_proxy.h"
 
+#include "base/callback_helpers.h"
+
 namespace remoting {
 
 TokenFetcherProxy::TokenFetcherProxy(
@@ -29,8 +31,7 @@ void TokenFetcherProxy::FetchThirdPartyToken(
 void TokenFetcherProxy::OnTokenFetched(
     const std::string& token, const std::string& shared_secret) {
   if (!token_fetched_callback_.is_null()) {
-    token_fetched_callback_.Run(token, shared_secret);
-    token_fetched_callback_.Reset();
+    base::ResetAndReturn(&token_fetched_callback_).Run(token, shared_secret);
   }
 }
 

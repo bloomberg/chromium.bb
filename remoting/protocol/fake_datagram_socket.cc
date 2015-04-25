@@ -5,6 +5,7 @@
 #include "remoting/protocol/fake_datagram_socket.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/address_list.h"
@@ -36,9 +37,7 @@ void FakeDatagramSocket::AppendInputPacket(const std::string& data) {
     int result = CopyReadData(read_buffer_.get(), read_buffer_size_);
     read_buffer_ = nullptr;
 
-    net::CompletionCallback callback = read_callback_;
-    read_callback_.Reset();
-    callback.Run(result);
+    base::ResetAndReturn(&read_callback_).Run(result);
   }
 }
 

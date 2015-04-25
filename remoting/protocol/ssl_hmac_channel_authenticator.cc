@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "crypto/secure_util.h"
 #include "net/base/host_port_pair.h"
@@ -313,20 +314,12 @@ void SslHmacChannelAuthenticator::CheckDone(bool* callback_called) {
     if (callback_called)
       *callback_called = true;
 
-    CallDoneCallback(net::OK, socket_.Pass());
+    base::ResetAndReturn(&done_callback_).Run(net::OK, socket_.Pass());
   }
 }
 
 void SslHmacChannelAuthenticator::NotifyError(int error) {
-  CallDoneCallback(error, nullptr);
-}
-
-void SslHmacChannelAuthenticator::CallDoneCallback(
-    int error,
-    scoped_ptr<net::StreamSocket> socket) {
-  DoneCallback callback = done_callback_;
-  done_callback_.Reset();
-  callback.Run(error, socket.Pass());
+  base::ResetAndReturn(&done_callback_).Run(error, nullptr);
 }
 
 }  // namespace protocol

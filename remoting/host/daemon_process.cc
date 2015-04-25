@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -285,9 +286,7 @@ void DaemonProcess::Stop() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   if (!stopped_callback_.is_null()) {
-    base::Closure stopped_callback = stopped_callback_;
-    stopped_callback_.Reset();
-    stopped_callback.Run();
+    base::ResetAndReturn(&stopped_callback_).Run();
   }
 }
 

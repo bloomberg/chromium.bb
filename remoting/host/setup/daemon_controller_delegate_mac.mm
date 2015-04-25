@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -175,12 +176,10 @@ void DaemonControllerDelegateMac::PreferencePaneCallbackDelegate(
     return;
   }
 
-  DCHECK(!current_callback_.is_null());
-  DaemonController::CompletionCallback done = current_callback_;
-  current_callback_.Reset();
-  done.Run(result);
-
   DeregisterForPreferencePaneNotifications();
+
+  DCHECK(!current_callback_.is_null());
+  base::ResetAndReturn(&current_callback_).Run(result);
 }
 
 // static

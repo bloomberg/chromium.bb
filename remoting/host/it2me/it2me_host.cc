@@ -5,6 +5,7 @@
 #include "remoting/host/it2me/it2me_host.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "net/socket/client_socket_factory.h"
@@ -371,8 +372,7 @@ void It2MeHost::OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies) {
   policy_received_ = true;
 
   if (!pending_connect_.is_null()) {
-    pending_connect_.Run();
-    pending_connect_.Reset();
+    base::ResetAndReturn(&pending_connect_).Run();
   }
 }
 

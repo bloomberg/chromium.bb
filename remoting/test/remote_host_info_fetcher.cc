@@ -5,6 +5,7 @@
 #include "remoting/test/remote_host_info_fetcher.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -88,16 +89,14 @@ void RemoteHostInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   if (response_code != net::HTTP_OK) {
     LOG(ERROR) << "RemoteHostInfo request failed with error code: "
                << response_code;
-    remote_host_info_callback_.Run(remote_host_info);
-    remote_host_info_callback_.Reset();
+    base::ResetAndReturn(&remote_host_info_callback_).Run(remote_host_info);
     return;
   }
 
   std::string response_string;
   if (!request_->GetResponseAsString(&response_string)) {
     LOG(ERROR) << "Failed to retrieve RemoteHostInfo response data";
-    remote_host_info_callback_.Run(remote_host_info);
-    remote_host_info_callback_.Reset();
+    base::ResetAndReturn(&remote_host_info_callback_).Run(remote_host_info);
     return;
   }
 
@@ -106,8 +105,7 @@ void RemoteHostInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!response_value ||
       !response_value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Failed to parse response string to JSON";
-    remote_host_info_callback_.Run(remote_host_info);
-    remote_host_info_callback_.Reset();
+    base::ResetAndReturn(&remote_host_info_callback_).Run(remote_host_info);
     return;
   }
 
@@ -117,8 +115,7 @@ void RemoteHostInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     response->GetString("status", &remote_host_status);
   } else {
     LOG(ERROR) << "Failed to convert parsed JSON to a dictionary object";
-    remote_host_info_callback_.Run(remote_host_info);
-    remote_host_info_callback_.Reset();
+    base::ResetAndReturn(&remote_host_info_callback_).Run(remote_host_info);
     return;
   }
 
@@ -133,8 +130,7 @@ void RemoteHostInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     response->GetString("sharedSecret", &remote_host_info.shared_secret);
   }
 
-  remote_host_info_callback_.Run(remote_host_info);
-  remote_host_info_callback_.Reset();
+  base::ResetAndReturn(&remote_host_info_callback_).Run(remote_host_info);
 }
 
 }  // namespace test

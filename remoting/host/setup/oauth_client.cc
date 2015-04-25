@@ -4,6 +4,7 @@
 
 #include "remoting/host/setup/oauth_client.h"
 
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 
 namespace {
@@ -61,9 +62,7 @@ void OAuthClient::OnRefreshTokenResponse(
 
 void OAuthClient::SendResponse(const std::string& user_email,
                                const std::string& refresh_token) {
-  CompletionCallback on_done = on_done_;
-  on_done_.Reset();
-  on_done.Run(user_email, refresh_token);
+  base::ResetAndReturn(&on_done_).Run(user_email, refresh_token);
 
   // Process the next request in the queue.
   if (pending_requests_.size()) {

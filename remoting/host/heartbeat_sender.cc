@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
@@ -105,9 +106,7 @@ bool HeartbeatSender::OnSignalStrategyIncomingStanza(
 void HeartbeatSender::OnHostOfflineReasonTimeout() {
   DCHECK(!host_offline_reason_ack_callback_.is_null());
 
-  base::Callback<void(bool)> local_callback = host_offline_reason_ack_callback_;
-  host_offline_reason_ack_callback_.Reset();
-  local_callback.Run(false);
+  base::ResetAndReturn(&host_offline_reason_ack_callback_).Run(false);
 }
 
 void HeartbeatSender::OnHostOfflineReasonAck() {
@@ -122,11 +121,10 @@ void HeartbeatSender::OnHostOfflineReasonAck() {
   // Run the ACK callback under a clean stack via PostTask() (because the
   // callback can end up deleting |this| HeartbeatSender [i.e. when used from
   // HostSignalingManager]).
-  base::Closure fully_bound_ack_callback =
-      base::Bind(host_offline_reason_ack_callback_, true);
-  host_offline_reason_ack_callback_.Reset();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                fully_bound_ack_callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(base::ResetAndReturn(&host_offline_reason_ack_callback_),
+                 true));
 }
 
 void HeartbeatSender::SetHostOfflineReason(

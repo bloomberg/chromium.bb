@@ -5,6 +5,7 @@
 #include "remoting/host/register_support_host_request.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -178,9 +179,7 @@ void RegisterSupportHostRequest::CallCallback(
   signal_strategy_->RemoveListener(this);
   signal_strategy_ = nullptr;
 
-  RegisterCallback callback = callback_;
-  callback_.Reset();
-  callback.Run(success, support_id, lifetime);
+  base::ResetAndReturn(&callback_).Run(success, support_id, lifetime);
 }
 
 }  // namespace remoting

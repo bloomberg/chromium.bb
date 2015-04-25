@@ -5,6 +5,7 @@
 #include "remoting/signaling/iq_sender.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -138,11 +139,8 @@ void IqRequest::SetTimeout(base::TimeDelta timeout) {
 }
 
 void IqRequest::CallCallback(const buzz::XmlElement* stanza) {
-  if (!callback_.is_null()) {
-    IqSender::ReplyCallback callback(callback_);
-    callback_.Reset();
-    callback.Run(this, stanza);
-  }
+  if (!callback_.is_null())
+    base::ResetAndReturn(&callback_).Run(this, stanza);
 }
 
 void IqRequest::OnTimeout() {

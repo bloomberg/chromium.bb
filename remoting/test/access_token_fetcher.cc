@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -149,8 +150,8 @@ void AccessTokenFetcher::OnGetTokenInfoResponse(
     DVLOG(1) << "Access Token has been validated";
   }
 
-  access_token_callback_.Run(access_token_, refresh_token_);
-  access_token_callback_.Reset();
+  base::ResetAndReturn(&access_token_callback_)
+      .Run(access_token_, refresh_token_);
 }
 
 void AccessTokenFetcher::OnOAuthError() {
@@ -159,8 +160,8 @@ void AccessTokenFetcher::OnOAuthError() {
   access_token_.clear();
   refresh_token_.clear();
 
-  access_token_callback_.Run(access_token_, refresh_token_);
-  access_token_callback_.Reset();
+  base::ResetAndReturn(&access_token_callback_)
+      .Run(access_token_, refresh_token_);
 }
 
 void AccessTokenFetcher::OnNetworkError(int response_code) {
@@ -170,8 +171,8 @@ void AccessTokenFetcher::OnNetworkError(int response_code) {
   access_token_.clear();
   refresh_token_.clear();
 
-  access_token_callback_.Run(access_token_, refresh_token_);
-  access_token_callback_.Reset();
+  base::ResetAndReturn(&access_token_callback_)
+      .Run(access_token_, refresh_token_);
 }
 
 void AccessTokenFetcher::ValidateAccessToken() {
