@@ -465,7 +465,6 @@
       "mojo_public_system_unittests",
       "mojo_public_utility_unittests",
       "mojo_system_unittests",
-      "nacl_loader_unittests",
       "net_unittests",
       "ppapi_unittests",
       "printing_unittests",
