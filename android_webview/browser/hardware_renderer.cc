@@ -5,6 +5,7 @@
 #include "android_webview/browser/hardware_renderer.h"
 
 #include "android_webview/browser/aw_gl_surface.h"
+#include "android_webview/browser/aw_render_thread_context_provider.h"
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
@@ -22,7 +23,6 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ui/gfx/frame_time.h"
@@ -30,53 +30,8 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
-#include "webkit/common/gpu/context_provider_in_process.h"
 
 namespace android_webview {
-
-namespace {
-
-using gpu_blink::WebGraphicsContext3DImpl;
-using gpu_blink::WebGraphicsContext3DInProcessCommandBufferImpl;
-
-scoped_refptr<cc::ContextProvider> CreateContext(
-    scoped_refptr<gfx::GLSurface> surface,
-    scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
-  const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-
-  blink::WebGraphicsContext3D::Attributes attributes;
-  attributes.antialias = false;
-  attributes.depth = false;
-  attributes.stencil = false;
-  attributes.shareResources = true;
-  attributes.noAutomaticFlushes = true;
-  gpu::gles2::ContextCreationAttribHelper attribs_for_gles2;
-  WebGraphicsContext3DImpl::ConvertAttributes(
-      attributes, &attribs_for_gles2);
-  attribs_for_gles2.lose_context_when_out_of_memory = true;
-
-  scoped_ptr<gpu::GLInProcessContext> context(gpu::GLInProcessContext::Create(
-      service,
-      surface,
-      surface->IsOffscreen(),
-      gfx::kNullAcceleratedWidget,
-      surface->GetSize(),
-      NULL /* share_context */,
-      false /* share_resources */,
-      attribs_for_gles2,
-      gpu_preference,
-      gpu::GLInProcessContextSharedMemoryLimits(),
-      nullptr,
-      nullptr));
-  DCHECK(context.get());
-
-  return webkit::gpu::ContextProviderInProcess::Create(
-      WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
-          context.Pass(), attributes),
-      "Parent-Compositor");
-}
-
-}  // namespace
 
 HardwareRenderer::HardwareRenderer(SharedRendererState* state)
     : shared_renderer_state_(state),
@@ -240,8 +195,8 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
 
 void HardwareRenderer::RequestNewOutputSurface() {
   scoped_refptr<cc::ContextProvider> context_provider =
-      CreateContext(gl_surface_,
-                    DeferredGpuCommandService::GetInstance());
+      AwRenderThreadContextProvider::Create(
+          gl_surface_, DeferredGpuCommandService::GetInstance());
   scoped_ptr<ParentOutputSurface> output_surface_holder(
       new ParentOutputSurface(context_provider));
   output_surface_ = output_surface_holder.get();

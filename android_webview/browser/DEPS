@@ -29,8 +29,6 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
 
-  "+webkit/gpu",
-
   # Temporary until we bundle our own favicon. See
   # AwContentBrowserClient::GetDefaultFavicon
   "!ui/resources/grit/ui_resources.h",
