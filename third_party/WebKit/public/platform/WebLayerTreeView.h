@@ -141,6 +141,8 @@ public:
 
     // Debugging / dangerous ---------------------------------------------
 
+    virtual int layerTreeId() const { return 0; }
+
     // Toggles the FPS counter in the HUD layer
     virtual void setShowFPSCounter(bool) { }
 

@@ -944,6 +944,9 @@ void WebFrameWidgetImpl::initializeLayerTreeView()
         m_layerTreeView = m_client->layerTreeView();
     }
 
+    if (WebDevToolsAgentImpl* devTools = m_localRoot->devToolsAgentImpl())
+        devTools->layerTreeViewChanged(m_layerTreeView);
+
     m_page->settings().setAcceleratedCompositingEnabled(m_layerTreeView);
 
     // FIXME: only unittests, click to play, Android priting, and printing (for headers and footers)

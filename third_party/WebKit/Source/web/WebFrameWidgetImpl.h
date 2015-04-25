@@ -140,6 +140,8 @@ public:
     // the page is shutting down, but will be valid at all other times.
     Page* page() const { return m_page; }
 
+    WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
+
     // Returns true if the event leads to scrolling.
     static bool mapKeyCodeForScroll(
         int keyCode,

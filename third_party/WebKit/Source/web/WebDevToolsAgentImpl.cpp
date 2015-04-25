@@ -82,6 +82,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDevToolsAgentClient.h"
@@ -256,8 +257,12 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
 {
     WebViewImpl* view = frame->viewImpl();
     bool isMainFrame = view && view->mainFrameImpl() == frame;
-    if (!isMainFrame)
-        return adoptPtrWillBeNoop(new WebDevToolsAgentImpl(frame, client, frame->inspectorOverlay()));
+    if (!isMainFrame) {
+        WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, frame->inspectorOverlay());
+        if (frame->frameWidget())
+            agent->layerTreeViewChanged(frame->frameWidget()->layerTreeView());
+        return adoptPtrWillBeNoop(agent);
+    }
 
     WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, view->inspectorOverlay());
     agent->registerAgent(InspectorRenderingAgent::create(view));
@@ -270,6 +275,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
     agent->registerAgent(InspectorAccessibilityAgent::create(view->page()));
     agent->registerAgent(InspectorDOMStorageAgent::create(view->page()));
     agent->registerAgent(InspectorCacheStorageAgent::create());
+    agent->layerTreeViewChanged(view->layerTreeView());
     return adoptPtrWillBeNoop(agent);
 }
 
@@ -584,6 +590,11 @@ void WebDevToolsAgentImpl::willAddPageOverlay(const GraphicsLayer* layer)
 void WebDevToolsAgentImpl::didRemovePageOverlay(const GraphicsLayer* layer)
 {
     m_layerTreeAgent->didRemovePageOverlay(layer);
+}
+
+void WebDevToolsAgentImpl::layerTreeViewChanged(WebLayerTreeView* layerTreeView)
+{
+    m_tracingAgent->setLayerTreeId(layerTreeView ? layerTreeView->layerTreeId() : 0);
 }
 
 void WebDevToolsAgentImpl::enableTracing(const String& categoryFilter)
