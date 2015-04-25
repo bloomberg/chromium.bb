@@ -741,6 +741,10 @@ void RenderWidgetCompositor::setDeferCommits(bool defer_commits) {
   layer_tree_host_->SetDeferCommits(defer_commits);
 }
 
+int RenderWidgetCompositor::layerTreeId() const {
+  return layer_tree_host_->id();
+}
+
 void RenderWidgetCompositor::setShowFPSCounter(bool show) {
   cc::LayerTreeDebugState debug_state = layer_tree_host_->debug_state();
   debug_state.show_fps_counter = show;

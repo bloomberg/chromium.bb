@@ -119,6 +119,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   virtual void clearViewportLayers() override;
   virtual void registerSelection(const blink::WebSelection& selection) override;
   virtual void clearSelection() override;
+  virtual int layerTreeId() const;
   virtual void setShowFPSCounter(bool show);
   virtual void setShowPaintRects(bool show);
   virtual void setShowDebugBorders(bool show);
