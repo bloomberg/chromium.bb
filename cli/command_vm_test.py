@@ -242,7 +242,5 @@ class CommandVMTest(object):
       self.SetUp()
       self.RunTests()
       logging.info('All tests completed successfully.')
-    except Exception as e:
-      cros_build_lib.Die(e)
     finally:
       self.TearDown()
