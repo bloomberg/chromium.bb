@@ -204,8 +204,8 @@
           'conditions': [
             ['arm_neon_optional==1', {
               # Run-time NEON detection.
-              'includes': [
-                '../../../build/android/cpufeatures.gypi',
+              'dependencies': [
+                '../../../build/android/ndk.gyp:cpu_features',
               ],
               'link_settings' : {
                 'libraries': [
