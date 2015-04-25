@@ -62,4 +62,8 @@ void DrawingDisplayItem::AsValueInto(
   array->EndDictionary();
 }
 
+scoped_ptr<DrawingDisplayItem> DrawingDisplayItem::Clone() {
+  return Create(picture_);
+}
+
 }  // namespace cc

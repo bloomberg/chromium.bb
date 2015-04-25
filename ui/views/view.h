@@ -24,6 +24,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_owner.h"
+#include "ui/compositor/paint_cache.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target.h"
 #include "ui/gfx/geometry/insets.h"
@@ -1508,6 +1509,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Border.
   scoped_ptr<Border> border_;
+
+  // Cached output of painting to be reused in future frames until invalidated.
+  ui::PaintCache paint_cache_;
 
   // RTL painting --------------------------------------------------------------
 

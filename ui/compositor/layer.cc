@@ -750,14 +750,13 @@ void Layer::PaintContentsToDisplayList(
     const gfx::Rect& clip,
     ContentLayerClient::PaintingControlSetting painting_control) {
   TRACE_EVENT1("ui", "Layer::PaintContentsToDisplayList", "name", name_);
+  gfx::Rect local_bounds(bounds().size());
+  gfx::Rect invalidation(
+      gfx::IntersectRects(damaged_region_.bounds(), local_bounds));
+  DCHECK(clip.Contains(invalidation));
   ClearDamagedRects();
   if (!delegate_)
     return;
-  // TODO(danakj): Save the invalidation on the layer and pass that down
-  // instead of the |clip| here. That will break everything until View
-  // early-outs emit cached display items instead of nothing.
-  gfx::Rect invalidation = clip;
-  DCHECK(clip.Contains(invalidation));
   delegate_->OnPaintLayer(
       PaintContext(display_list, device_scale_factor_, clip, invalidation));
 }

@@ -65,6 +65,8 @@
         'layer_tree_owner.cc',
         'layer_tree_owner.h',
         'layer_type.h',
+        'paint_cache.cc',
+        'paint_cache.h',
         'paint_context.cc',
         'paint_context.h',
         'paint_recorder.cc',
