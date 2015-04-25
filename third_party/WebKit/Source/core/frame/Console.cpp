@@ -59,9 +59,7 @@ DEFINE_TRACE(Console)
 {
     ConsoleBase::trace(visitor);
     DOMWindowProperty::trace(visitor);
-#if ENABLE(OILPAN)
     HeapSupplementable<Console>::trace(visitor);
-#endif
 }
 
 ExecutionContext* Console::context()

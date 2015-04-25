@@ -29,7 +29,7 @@
 
 [
     NoInterfaceObject,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface ConsoleBase {
     [CallWith=(ScriptArguments,ScriptState)] void debug();
     [CallWith=(ScriptArguments,ScriptState)] void error();

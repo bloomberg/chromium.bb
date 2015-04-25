@@ -38,15 +38,13 @@
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
 class ConsoleMessage;
 class ScriptArguments;
 
-class ConsoleBase : public RefCountedWillBeGarbageCollectedFinalized<ConsoleBase>, public ScriptWrappable {
+class ConsoleBase : public GarbageCollectedFinalized<ConsoleBase>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     void debug(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);

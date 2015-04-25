@@ -47,9 +47,9 @@ class WorkerGlobalScope;
 class WorkerConsole final : public ConsoleBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<WorkerConsole> create(WorkerGlobalScope* scope)
+    static WorkerConsole* create(WorkerGlobalScope* scope)
     {
-        return adoptRefWillBeNoop(new WorkerConsole(scope));
+        return new WorkerConsole(scope);
     }
     virtual ~WorkerConsole();
 

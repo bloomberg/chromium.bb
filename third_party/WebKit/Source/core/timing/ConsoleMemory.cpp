@@ -10,21 +10,19 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ConsoleMemory);
-
 DEFINE_TRACE(ConsoleMemory)
 {
     visitor->trace(m_memory);
-    WillBeHeapSupplement<Console>::trace(visitor);
+    HeapSupplement<Console>::trace(visitor);
 }
 
 // static
 ConsoleMemory& ConsoleMemory::from(Console& console)
 {
-    ConsoleMemory* supplement = static_cast<ConsoleMemory*>(WillBeHeapSupplement<Console>::from(console, supplementName()));
+    ConsoleMemory* supplement = static_cast<ConsoleMemory*>(HeapSupplement<Console>::from(console, supplementName()));
     if (!supplement) {
         supplement = new ConsoleMemory();
-        provideTo(console, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(console, supplementName(), supplement);
     }
     return *supplement;
 }

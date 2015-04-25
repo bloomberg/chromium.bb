@@ -41,13 +41,13 @@ namespace blink {
 
 class LocalFrame;
 
-class Console final : public ConsoleBase, public DOMWindowProperty, public WillBeHeapSupplementable<Console> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Console);
+class Console final : public ConsoleBase, public DOMWindowProperty, public HeapSupplementable<Console> {
+    USING_GARBAGE_COLLECTED_MIXIN(Console);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Console> create(LocalFrame* frame)
+    static Console* create(LocalFrame* frame)
     {
-        return adoptRefWillBeNoop(new Console(frame));
+        return new Console(frame);
     }
     virtual ~Console();
 

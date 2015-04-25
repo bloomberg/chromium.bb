@@ -12,9 +12,8 @@ namespace blink {
 class Console;
 class MemoryInfo;
 
-class ConsoleMemory final : public NoBaseWillBeGarbageCollectedFinalized<ConsoleMemory>, public WillBeHeapSupplement<Console> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ConsoleMemory);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(ConsoleMemory);
+class ConsoleMemory final : public GarbageCollected<ConsoleMemory>, public HeapSupplement<Console> {
+    USING_GARBAGE_COLLECTED_MIXIN(ConsoleMemory);
 public:
     static ConsoleMemory& from(Console&);
     static MemoryInfo* memory(Console&);
@@ -26,7 +25,7 @@ private:
     static const char* supplementName() { return "ConsoleMemory"; }
     MemoryInfo* memory();
 
-    PersistentWillBeMember<MemoryInfo> m_memory;
+    Member<MemoryInfo> m_memory;
 };
 
 } // namespace blink

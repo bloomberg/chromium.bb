@@ -174,7 +174,7 @@ private:
     String m_userAgent;
     V8CacheOptions m_v8CacheOptions;
 
-    mutable RefPtrWillBeMember<WorkerConsole> m_console;
+    mutable PersistentWillBeMember<WorkerConsole> m_console;
     mutable PersistentWillBeMember<WorkerLocation> m_location;
     mutable PersistentWillBeMember<WorkerNavigator> m_navigator;
 

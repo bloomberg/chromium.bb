@@ -262,7 +262,7 @@ private:
     mutable RefPtrWillBeMember<BarProp> m_scrollbars;
     mutable RefPtrWillBeMember<BarProp> m_statusbar;
     mutable RefPtrWillBeMember<BarProp> m_toolbar;
-    mutable RefPtrWillBeMember<Console> m_console;
+    mutable PersistentWillBeMember<Console> m_console;
     mutable RefPtrWillBeMember<Navigator> m_navigator;
     mutable RefPtrWillBeMember<StyleMedia> m_media;
 
