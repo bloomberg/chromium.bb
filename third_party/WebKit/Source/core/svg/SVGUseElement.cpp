@@ -373,7 +373,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 
     // Do not allow self-referencing.
     // 'target' may be null, if it's a non SVG namespaced element.
-    if (!target || target == this)
+    if (!target || target == this || isDisallowedElement(target))
         return;
 
     // Set up root SVG element in shadow tree.
