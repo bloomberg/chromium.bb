@@ -10,7 +10,7 @@ layer at (0,0) size 800x522
       LayoutBlockFlow {DIV} at (0,34) size 784x232
         LayoutMenuList {SELECT} at (0,0) size 500x22 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 498x20
-            LayoutText at (4,1) size 177x17
+            LayoutText (anonymous) at (4,1) size 177x17
               text run at (4,1) width 36: "First "
               text run at (39,1) width 54 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA}"
               text run at (92,1) width 19: "03"
@@ -25,7 +25,7 @@ layer at (0,0) size 800x522
             text run at (115,10) width 25: " fifth"
         LayoutMenuList {SELECT} at (0,58) size 500x22 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 498x20
-            LayoutText at (4,1) size 177x17
+            LayoutText (anonymous) at (4,1) size 177x17
               text run at (4,1) width 26: "fifth"
               text run at (29,1) width 59 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} "
               text run at (87,1) width 19: "03"
@@ -40,14 +40,14 @@ layer at (0,0) size 800x522
             text run at (116,10) width 24: "First"
         LayoutMenuList {SELECT} at (0,116) size 500x22 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 498x20
-            LayoutText at (4,1) size 177x17
+            LayoutText (anonymous) at (4,1) size 177x17
               text run at (4,1) width 177 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
         LayoutBlockFlow {DIV} at (0,138) size 470x36
           LayoutText {#text} at (10,10) size 130x15
             text run at (10,10) width 130 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
         LayoutMenuList {SELECT} at (0,174) size 500x22 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 498x20
-            LayoutText at (4,1) size 177x17
+            LayoutText (anonymous) at (4,1) size 177x17
               text run at (4,1) width 177 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
         LayoutBlockFlow {DIV} at (0,196) size 470x36
           LayoutText {#text} at (10,10) size 130x15
@@ -55,7 +55,7 @@ layer at (0,0) size 800x522
       LayoutBlockFlow {DIV} at (0,266) size 784x232
         LayoutMenuList {SELECT} at (0,0) size 500x22 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 498x20
-            LayoutText at (317,1) size 177x17
+            LayoutText (anonymous) at (317,1) size 177x17
               text run at (317,1) width 36: "First "
               text run at (352,1) width 54 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA}"
               text run at (405,1) width 19: "03"
@@ -70,7 +70,7 @@ layer at (0,0) size 800x522
             text run at (435,10) width 25: " fifth"
         LayoutMenuList {SELECT} at (0,58) size 500x22 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 498x20
-            LayoutText at (317,1) size 177x17
+            LayoutText (anonymous) at (317,1) size 177x17
               text run at (317,1) width 26: "fifth"
               text run at (342,1) width 59 RTL: ") \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} "
               text run at (400,1) width 19: "03"
@@ -85,14 +85,14 @@ layer at (0,0) size 800x522
             text run at (436,10) width 24: "First"
         LayoutMenuList {SELECT} at (0,116) size 500x22 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 498x20
-            LayoutText at (317,1) size 177x17
+            LayoutText (anonymous) at (317,1) size 177x17
               text run at (317,1) width 177 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
         LayoutBlockFlow {DIV} at (0,138) size 470x36
           LayoutText {#text} at (330,10) size 130x15
             text run at (330,10) width 130 LTR override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
         LayoutMenuList {SELECT} at (0,174) size 500x22 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 498x20
-            LayoutText at (317,1) size 177x17
+            LayoutText (anonymous) at (317,1) size 177x17
               text run at (317,1) width 177 RTL override: "First \x{5E9}\x{5E0}\x{5D9}\x{5D4} (03) \x{5E8}\x{5D1}\x{5D9}\x{5E2}\x{5D9}\x{5EA} fifth"
         LayoutBlockFlow {DIV} at (0,196) size 470x36
           LayoutText {#text} at (330,10) size 130x15

@@ -75,7 +75,7 @@ layer at (0,0) size 800x540
           LayoutListItem {TABLE} at (33,19) size 692x46 [border: (1px dashed #000000)]
             LayoutBlockFlow (anonymous) at (1,1) size 690x18
               LayoutListMarker (anonymous) at (-20.09,0) size 15.09x18: "a"
-            LayoutTable at (1,19) size 195x26
+            LayoutTable (anonymous) at (1,19) size 195x26
               LayoutTableSection {TBODY} at (0,0) size 195x26
                 LayoutTableRow {TR} at (0,2) size 195x22
                   LayoutTableCell {TD} at (2,2) size 95x22 [border: (1px dotted #000000)] [r=0 c=0 rs=1 cs=1]
@@ -87,7 +87,7 @@ layer at (0,0) size 800x540
           LayoutListItem {TABLE} at (33,65) size 692x46 [border: (1px dashed #000000)]
             LayoutBlockFlow (anonymous) at (1,1) size 690x18
               LayoutListMarker (anonymous) at (-21,0) size 16x18: "b"
-            LayoutTable at (1,19) size 219x26
+            LayoutTable (anonymous) at (1,19) size 219x26
               LayoutTableSection {TBODY} at (0,0) size 219x26
                 LayoutTableRow {TR} at (0,2) size 219x22
                   LayoutTableCell {TD} at (2,2) size 107x22 [border: (1px dotted #000000)] [r=0 c=0 rs=1 cs=1]

@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutTable at (0,0) size 138x18
+      LayoutTable (anonymous) at (0,0) size 138x18
         LayoutTableSection (anonymous) at (0,0) size 138x18
           LayoutTableRow {A} at (0,0) size 138x18 [color=#0000EE]
             LayoutTableCell (anonymous) at (0,0) size 138x18 [r=0 c=0 rs=1 cs=1]

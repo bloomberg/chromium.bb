@@ -423,7 +423,7 @@ layer at (0,0) size 785x2662 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (0,0) size 0x19
         LayoutText {#text} at (0,20) size 581x19
           text run at (0,20) width 581: "This is a table formed from a list with display of table-row and list items with display of table-cell."
-      LayoutTable at (0,1342.44) size 193x20
+      LayoutTable (anonymous) at (0,1342.44) size 193x20
         LayoutTableSection (anonymous) at (0,0) size 193x20
           LayoutTableRow {UL} at (0,0) size 193x20 [bgcolor=#FFA500]
             LayoutTableCell {LI} at (0,0) size 33x20 [r=0 c=0 rs=1 cs=1]
@@ -446,7 +446,7 @@ layer at (0,0) size 785x2662 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,20) size 626x19
           text run at (0,20) width 626: "This is a table formed from a list with display of table-row-group and list items with display of table-cell. "
         LayoutBR {BR} at (0,0) size 0x0
-      LayoutTable at (0,1402.44) size 218x20
+      LayoutTable (anonymous) at (0,1402.44) size 218x20
         LayoutTableSection {UL} at (0,0) size 218x20
           LayoutTableRow (anonymous) at (0,0) size 218x20
             LayoutTableCell {LI} at (0,0) size 33x20 [bgcolor=#FFA500] [r=0 c=0 rs=1 cs=1]
@@ -471,7 +471,7 @@ layer at (0,0) size 785x2662 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutBR {BR} at (0,0) size 0x19
         LayoutText {#text} at (0,20) size 386x19
           text run at (0,20) width 386: "This is like the previous table plus the list's overflow property set"
-      LayoutTable at (0,1462.44) size 218x20
+      LayoutTable (anonymous) at (0,1462.44) size 218x20
         LayoutTableSection {UL} at (0,0) size 218x20
           LayoutTableRow (anonymous) at (0,0) size 218x20
             LayoutTableCell {LI} at (0,0) size 33x20 [bgcolor=#FFA500] [r=0 c=0 rs=1 cs=1]

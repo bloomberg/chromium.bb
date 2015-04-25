@@ -1,0 +1,35 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 55x17
+          text run at (0,0) width 55: "Test for "
+        LayoutInline {I} at (0,0) size 334x17
+          LayoutInline {A} at (0,0) size 157x17 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 157x17
+              text run at (54,0) width 157: "rdar://problem/7898436"
+          LayoutText {#text} at (210,0) size 178x17
+            text run at (210,0) width 178: " :after content is duplicated"
+        LayoutText {#text} at (387,0) size 5x17
+          text run at (387,0) width 5: "."
+      LayoutBlockFlow {P} at (0,34) size 784x18
+        LayoutText {#text} at (0,0) size 518x17
+          text run at (0,0) width 518: "The test passed if the word \x{201C}not\x{201D} appears exactly once in the following sentence:"
+      LayoutBlockFlow {DIV} at (0,68) size 784x222
+        LayoutBlockFlow (anonymous) at (0,0) size 784x111
+          LayoutText {#text} at (0,2) size 454x107
+            text run at (0,2) width 454: "The test did"
+          LayoutInline {SPAN} at (0,0) size 0x0
+            LayoutInline {B} at (0,0) size 0x0
+        LayoutBlockFlow (anonymous) at (0,111) size 784x0
+          LayoutBlockFlow {DIV} at (0,0) size 784x0
+        LayoutBlockFlow (anonymous) at (0,111) size 784x111
+          LayoutInline {SPAN} at (0,0) size 147x107
+            LayoutInline {B} at (0,0) size 0x0
+            LayoutInline {<pseudo:after>} at (0,0) size 147x107
+              LayoutTextFragment (anonymous) at (0,2) size 147x107
+                text run at (0,2) width 147: "not "
+          LayoutText {#text} at (146,2) size 153x107
+            text run at (146,2) width 153: "fail."

@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           LayoutTableSection (anonymous) at (0,0) size 512x128
             LayoutTableRow (anonymous) at (0,0) size 512x128
               LayoutTableCell (anonymous) at (0,0) size 512x128 [r=0 c=0 rs=1 cs=1]
-                LayoutTextFragment at (0,0) size 512x128
+                LayoutTextFragment (anonymous) at (0,0) size 512x128
                   text run at (0,0) width 512: "ABCD"
         LayoutBlockFlow (anonymous) at (0,128) size 784x128
           LayoutText {#text} at (0,0) size 384x128

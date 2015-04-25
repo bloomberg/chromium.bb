@@ -7,5 +7,5 @@ layer at (0,0) size 800x34
         LayoutText {#text} at (0,0) size 30x18
           text run at (0,0) width 30: "Text"
       LayoutTable {table} at (0,18) size 0x0
-      LayoutTable at (0,18) size 0x0
+      LayoutTable (anonymous) at (0,18) size 0x0
         LayoutTableCol {colgroup} at (0,0) size 0x0

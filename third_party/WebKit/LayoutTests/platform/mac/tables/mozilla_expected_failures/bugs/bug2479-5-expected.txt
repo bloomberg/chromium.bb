@@ -2,7 +2,7 @@ layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1426
   LayoutView at (0,0) size 800x600
 layer at (8,8) size 769x1410 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (8,8) size 769x1410 [bgcolor=#008000] [border: (16px solid #00FF00)]
-    LayoutTable at (16,16) size 737x1378
+    LayoutTable (anonymous) at (16,16) size 737x1378
       LayoutTableSection (anonymous) at (0,0) size 737x1378
         LayoutTableRow (anonymous) at (0,0) size 737x1378
           LayoutTableCell {HEAD} at (0,0) size 239x490 [color=#FFFFFF] [bgcolor=#FF0000] [border: (5px solid #FFFFFF)] [r=0 c=0 rs=1 cs=1]
@@ -140,7 +140,7 @@ layer at (8,8) size 769x1410 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                   text run at (0,0) width 263: "How does your browser fare on this test?"
                 LayoutMenuList {SELECT} at (0,19) size 454x18 [color=#000000] [bgcolor=#F8F8F8]
                   LayoutBlockFlow (anonymous) at (0,0) size 454x18
-                    LayoutText at (8,2) size 215x13
+                    LayoutText (anonymous) at (8,2) size 215x13
                       text run at (8,2) width 215: "Document renders exactly as described."
                 LayoutText {#text} at (0,0) size 0x0
                 LayoutInline {LABEL} at (0,0) size 195x18

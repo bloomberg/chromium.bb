@@ -16,7 +16,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (262,15) size 0x0
         LayoutMenuList {SELECT} at (0,20) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText at (31,1) size 63x16
+            LayoutText (anonymous) at (31,1) size 63x16
               text run at (31,1) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
               text run at (73,1) width 21: "abc"
         LayoutBR {BR} at (100,35) size 0x0
@@ -31,7 +31,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (105,35) size 0x0
         LayoutMenuList {SELECT} at (0,40) size 200x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 198x18
-            LayoutText at (4,1) size 63x16
+            LayoutText (anonymous) at (4,1) size 63x16
               text run at (4,1) width 21: "abc"
               text run at (25,1) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
         LayoutBR {BR} at (200,55) size 0x0
@@ -46,7 +46,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (68,35) size 0x0
         LayoutMenuList {SELECT} at (0,40) size 100x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 98x18
-            LayoutText at (4,1) size 63x16
+            LayoutText (anonymous) at (4,1) size 63x16
               text run at (4,1) width 21: "abc"
               text run at (25,1) width 42 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
         LayoutBR {BR} at (100,55) size 0x0

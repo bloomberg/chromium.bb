@@ -10,6 +10,6 @@ layer at (0,0) size 800x600
               LayoutBlockFlow {FORM} at (2,2) size 390x18
                 LayoutMenuList {SELECT} at (0,0) size 54x18 [bgcolor=#F8F8F8]
                   LayoutBlockFlow (anonymous) at (0,0) size 54x18
-                    LayoutText at (8,2) size 23x13
+                    LayoutText (anonymous) at (8,2) size 23x13
                       text run at (8,2) width 23: "Test"
                 LayoutText {#text} at (0,0) size 0x0

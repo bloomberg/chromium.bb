@@ -135,7 +135,7 @@ layer at (0,0) size 785x2623 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 246x22
           text run at (0,0) width 246: "4.1 Inheritance through a DIV"
       LayoutBlockFlow {DIV} at (0,1745.56) size 769x76 [color=#FFFFFF] [bgcolor=#000000]
-        LayoutTable at (0,0) size 769x76
+        LayoutTable (anonymous) at (0,0) size 769x76
           LayoutTableSection (anonymous) at (0,0) size 769x76
             LayoutTableRow {DIV} at (0,0) size 769x76
               LayoutTableCell (anonymous) at (0,0) size 769x76 [r=0 c=0 rs=1 cs=1]
@@ -145,7 +145,7 @@ layer at (0,0) size 785x2623 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {H3} at (0,1840.28) size 769x23
         LayoutText {#text} at (0,0) size 250x22
           text run at (0,0) width 250: "4.2 Styles set directly on ROW"
-      LayoutTable at (0,1882) size 769x76
+      LayoutTable (anonymous) at (0,1882) size 769x76
         LayoutTableSection (anonymous) at (0,0) size 769x76
           LayoutTableRow {DIV} at (0,0) size 769x76 [color=#FFFFFF] [bgcolor=#000000]
             LayoutTableCell (anonymous) at (0,0) size 769x76 [r=0 c=0 rs=1 cs=1]
@@ -159,7 +159,7 @@ layer at (0,0) size 785x2623 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 246x22
           text run at (0,0) width 246: "5.1 Inheritance through a DIV"
       LayoutBlockFlow {DIV} at (0,2066.53) size 769x76 [color=#FFFFFF] [bgcolor=#000000]
-        LayoutTable at (0,0) size 769x76
+        LayoutTable (anonymous) at (0,0) size 769x76
           LayoutTableSection (anonymous) at (0,0) size 769x76
             LayoutTableRow (anonymous) at (0,0) size 769x76
               LayoutTableCell {DIV} at (0,0) size 769x76 [r=0 c=0 rs=1 cs=1]
@@ -169,7 +169,7 @@ layer at (0,0) size 785x2623 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {H3} at (0,2161.25) size 769x23
         LayoutText {#text} at (0,0) size 253x22
           text run at (0,0) width 253: "5.2 Styles set directly on CELL"
-      LayoutTable at (0,2202.97) size 769x76
+      LayoutTable (anonymous) at (0,2202.97) size 769x76
         LayoutTableSection (anonymous) at (0,0) size 769x76
           LayoutTableRow (anonymous) at (0,0) size 769x76
             LayoutTableCell {DIV} at (0,0) size 769x76 [color=#FFFFFF] [bgcolor=#000000] [r=0 c=0 rs=1 cs=1]
@@ -185,7 +185,7 @@ layer at (0,0) size 785x2623 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (0,0) width 254: "How does your browser fare on this test? "
           LayoutMenuList {SELECT} at (254,0) size 506x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 504x18
-              LayoutText at (4,1) size 481x16
+              LayoutText (anonymous) at (4,1) size 481x16
                 text run at (4,1) width 481: "The tests all render identically, and this browser may or may not grok CSS2 tables."
           LayoutText {#text} at (0,0) size 0x0
           LayoutInline {LABEL} at (0,0) size 220x19

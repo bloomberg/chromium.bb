@@ -5,15 +5,15 @@ layer at (0,0) size 785x1342 backgroundClip at (0,0) size 785x600 clip at (0,0) 
     LayoutBlockFlow {BODY} at (8,16) size 769x1310.44
 layer at (8,16) size 760x425
   LayoutBlockFlow {DIV} at (0,0) size 760x424.81 [border: (5px solid #800000)]
-    LayoutBlockFlow (anonymous multi-column span) at (5,13) size 750x66.81 [color=#FFFFFF]
+    LayoutBlockFlow (anonymous) (anonymous multi-column span) at (5,13) size 750x66.81 [color=#FFFFFF]
       LayoutBlockFlow {H2} at (0,19.91) size 750x27 [color=#000000] [bgcolor=#EEEEEE]
         LayoutText {#text} at (0,0) size 666x26
           text run at (0,0) width 666: "This is a spanning element at the beginning of the columns block."
 layer at (13,21) size 750x8
-  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x8
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,5) size 750x8
     LayoutBlockFlow {SPAN} at (0,8) size 367x0 [color=#FFFFFF] [bgcolor=#000000]
 layer at (13,96) size 750x340
-  LayoutBlockFlow (anonymous multi-column) at (5,79.81) size 750x340
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,79.81) size 750x340
     LayoutBlockFlow {SPAN} at (0,16) size 367x198 [color=#FFFFFF] [bgcolor=#000000]
       LayoutText {#text} at (0,0) size 367x197
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
@@ -57,12 +57,12 @@ layer at (13,96) size 750x340
         text run at (0,416) width 76: "enim ac mi."
 layer at (8,457) size 760x423 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutBlockFlow {DIV} at (0,440.81) size 760x422.81 [border: (5px solid #800000)]
-    LayoutBlockFlow (anonymous multi-column span) at (5,343) size 750x66.81 [color=#FFFFFF]
+    LayoutBlockFlow (anonymous) (anonymous multi-column span) at (5,343) size 750x66.81 [color=#FFFFFF]
       LayoutBlockFlow {H2} at (0,19.91) size 750x27 [color=#000000] [bgcolor=#EEEEEE]
         LayoutText {#text} at (0,0) size 602x26
           text run at (0,0) width 602: "This is a spanning element at the end of the columns block."
 layer at (13,462) size 750x338 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x338
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,5) size 750x338
     LayoutBlockFlow (anonymous) at (0,0) size 367x410
       LayoutText {#text} at (0,0) size 367x409
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
@@ -105,17 +105,17 @@ layer at (13,462) size 750x338 backgroundClip at (0,0) size 785x600 clip at (0,0
         text run at (0,198) width 357: "dolor sit amet, consectetuer adipiscing elit. Nulla varius"
         text run at (0,216) width 76: "enim ac mi."
 layer at (13,867) size 750x8 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutBlockFlow (anonymous multi-column) at (5,409.81) size 750x8
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,409.81) size 750x8
     LayoutBlockFlow {SPAN} at (0,8) size 367x0 [color=#FFFFFF] [bgcolor=#000000]
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,896) size 760x430 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutBlockFlow {DIV} at (0,879.63) size 760x430.81 [border: (5px solid #800000)]
-    LayoutBlockFlow (anonymous multi-column span) at (5,145) size 750x66.81 [color=#FFFFFF]
+    LayoutBlockFlow (anonymous) (anonymous multi-column span) at (5,145) size 750x66.81 [color=#FFFFFF]
       LayoutBlockFlow {H2} at (0,19.91) size 750x27 [color=#000000] [bgcolor=#EEEEEE]
         LayoutText {#text} at (0,0) size 635x26
           text run at (0,0) width 635: "This is a spanning element in the middle of the columns block."
 layer at (13,901) size 750x140 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x140
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,5) size 750x140
     LayoutBlockFlow (anonymous) at (0,0) size 367x212
       LayoutText {#text} at (0,0) size 367x211
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
@@ -134,7 +134,7 @@ layer at (13,901) size 750x140 backgroundClip at (0,0) size 785x600 clip at (0,0
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 158: "Nulla varius enim ac mi."
 layer at (13,1107) size 750x214 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutBlockFlow (anonymous multi-column) at (5,211.81) size 750x214
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,211.81) size 750x214
     LayoutBlockFlow {SPAN} at (0,16) size 367x198 [color=#FFFFFF] [bgcolor=#000000]
       LayoutText {#text} at (0,0) size 367x197
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."

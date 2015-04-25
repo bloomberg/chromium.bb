@@ -27,7 +27,7 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (97,281) size 1x0
       LayoutMenuList {SELECT} at (0,285) size 159x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow (anonymous) at (1,1) size 157x18
-          LayoutText at (4,1) size 134x16
+          LayoutText (anonymous) at (4,1) size 134x16
             text run at (4,1) width 134: "this should be selected"
       LayoutText {#text} at (159,286) size 4x17
         text run at (159,286) width 4: " "
@@ -37,7 +37,7 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (164,319) size 1x0
       LayoutMenuList {SELECT} at (0,323) size 159x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow (anonymous) at (1,1) size 157x18
-          LayoutText at (4,1) size 134x16
+          LayoutText (anonymous) at (4,1) size 134x16
             text run at (4,1) width 134: "this should be selected"
       LayoutText {#text} at (159,324) size 4x17
         text run at (159,324) width 4: " "
@@ -48,7 +48,7 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (216,357) size 1x0
       LayoutMenuList {SELECT} at (0,361) size 159x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
         LayoutBlockFlow (anonymous) at (1,1) size 157x18
-          LayoutText at (4,1) size 134x16
+          LayoutText (anonymous) at (4,1) size 134x16
             text run at (4,1) width 134: "this should be selected"
       LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 155x70 clip at (9,27) size 138x68 scrollY 119.00 scrollHeight 238

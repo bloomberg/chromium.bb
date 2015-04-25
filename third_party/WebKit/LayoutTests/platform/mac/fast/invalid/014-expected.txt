@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {FORM} at (0,18) size 784x18
         LayoutMenuList {SELECT} at (0,0) size 39x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 39x18
-            LayoutText at (8,2) size 8x13
+            LayoutText (anonymous) at (8,2) size 8x13
               text run at (8,2) width 8: "A"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,52) size 784x0
@@ -20,7 +20,7 @@ layer at (470,46) size 43x46
     LayoutBlockFlow {FORM} at (2,2) size 39x18
       LayoutMenuList {SELECT} at (0,0) size 39x18 [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 39x18
-          LayoutText at (8,2) size 8x13
+          LayoutText (anonymous) at (8,2) size 8x13
             text run at (8,2) width 8: "A"
       LayoutText {#text} at (0,0) size 0x0
 layer at (470,42) size 4x4

@@ -7,7 +7,7 @@ layer at (0,0) size 800x292
         LayoutText {#text} at (0,0) size 480x19
           text run at (0,0) width 480: "The following two blocks should be identical, including overflow. (Force bidi: \x{D7}\x{90})"
       LayoutBlockFlow {DIV} at (32,52) size 720x80 [color=#FFFF00] [bgcolor=#000000]
-        LayoutTable at (24,24) size 256x32
+        LayoutTable (anonymous) at (24,24) size 256x32
           LayoutTableSection (anonymous) at (0,0) size 256x32
             LayoutTableRow {P} at (0,0) size 256x32
               LayoutTableCell (anonymous) at (0,0) size 256x32 [r=0 c=0 rs=1 cs=1]
@@ -51,7 +51,7 @@ layer at (0,0) size 800x292
                   LayoutText {#text} at (233,-2) size 23x36
                     text run at (233,-2) width 23: "m"
       LayoutBlockFlow {DIV} at (32,164) size 720x80 [color=#FFFF00] [bgcolor=#000000]
-        LayoutTable at (24,24) size 256x32
+        LayoutTable (anonymous) at (24,24) size 256x32
           LayoutTableSection (anonymous) at (0,0) size 256x32
             LayoutTableRow {P} at (0,0) size 256x32
               LayoutTableCell (anonymous) at (0,0) size 256x32 [r=0 c=0 rs=1 cs=1]

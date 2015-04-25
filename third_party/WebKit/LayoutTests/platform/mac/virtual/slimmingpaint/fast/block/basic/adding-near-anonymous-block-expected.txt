@@ -23,7 +23,7 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (98,0) size 82x18
             text run at (98,0) width 82: "a single line."
         LayoutBlockFlow {<pseudo:after>} at (0,18) size 784x18
-          LayoutTextFragment at (0,0) size 199x18
+          LayoutTextFragment (anonymous) at (0,0) size 199x18
             text run at (0,0) width 199: "This should be the second line."
       LayoutBlockFlow {DIV} at (0,88) size 784x18
         LayoutBlockFlow {DIV} at (0,0) size 784x0

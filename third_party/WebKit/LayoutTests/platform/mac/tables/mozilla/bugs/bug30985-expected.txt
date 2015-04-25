@@ -7,7 +7,7 @@ layer at (0,0) size 800x58
         LayoutText {#text} at (0,0) size 262x18
           text run at (0,0) width 262: "This is the first of two lines on this page."
       LayoutBlockFlow {TABLE} at (0,18) size 784x24
-        LayoutTable at (0,0) size 286x24
+        LayoutTable (anonymous) at (0,0) size 286x24
           LayoutTableSection {TBODY} at (0,0) size 286x24
             LayoutTableRow (anonymous) at (0,2) size 286x20
               LayoutTableCell (anonymous) at (2,2) size 282x20 [r=0 c=0 rs=1 cs=1]

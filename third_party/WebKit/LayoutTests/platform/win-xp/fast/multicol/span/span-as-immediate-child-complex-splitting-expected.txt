@@ -5,16 +5,16 @@ layer at (0,0) size 785x1623 backgroundClip at (0,0) size 785x600 clip at (0,0) 
     LayoutBlockFlow {BODY} at (8,16) size 769x1590.88
 layer at (8,16) size 760x504
   LayoutBlockFlow {DIV} at (0,0) size 760x503.63 [border: (5px solid #800000)]
-    LayoutBlockFlow (anonymous multi-column span) at (5,225) size 750x66.81
+    LayoutBlockFlow (anonymous) (anonymous multi-column span) at (5,225) size 750x66.81
       LayoutBlockFlow {H2} at (0,19.91) size 750x27 [bgcolor=#EEEEEE]
         LayoutText {#text} at (0,0) size 191x26
           text run at (0,0) width 191: "This is a first span."
-    LayoutBlockFlow (anonymous multi-column span) at (5,311.81) size 750x66.81
+    LayoutBlockFlow (anonymous) (anonymous multi-column span) at (5,311.81) size 750x66.81
       LayoutBlockFlow {H2} at (0,19.91) size 750x27 [bgcolor=#EEEEEE]
         LayoutText {#text} at (0,0) size 218x26
           text run at (0,0) width 218: "This is a second span."
 layer at (13,21) size 750x220
-  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x220
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,5) size 750x220
     LayoutText {#text} at (0,0) size 367x419
       text run at (0,0) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
       text run at (0,20) width 367: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis lectus."
@@ -39,11 +39,11 @@ layer at (13,21) size 750x220
       text run at (0,380) width 350: "pede. Lorem ipsum dolor sit amet, consectetuer adipiscing"
       text run at (0,400) width 21: "elit."
 layer at (13,308) size 750x20
-  LayoutBlockFlow (anonymous multi-column) at (5,291.81) size 750x20
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,291.81) size 750x20
     LayoutText {#text} at (0,0) size 349x19
       text run at (0,0) width 349: "This text should be sitting between two spanning elements."
 layer at (13,395) size 750x120
-  LayoutBlockFlow (anonymous multi-column) at (5,378.63) size 750x120
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,378.63) size 750x120
     LayoutText {#text} at (0,0) size 367x239
       text run at (0,0) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
       text run at (0,20) width 367: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis lectus."
@@ -60,16 +60,16 @@ layer at (13,395) size 750x120
       text run at (0,220) width 143: "Nulla varius enim ac mi."
 layer at (8,536) size 760x535 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutBlockFlow {DIV} at (0,519.63) size 760x535.63 [border: (5px solid #800000)]
-    LayoutBlockFlow (anonymous multi-column span) at (5,141) size 750x66.81
+    LayoutBlockFlow (anonymous) (anonymous multi-column span) at (5,141) size 750x66.81
       LayoutBlockFlow {H2} at (0,19.91) size 750x27 [bgcolor=#EEEEEE]
         LayoutText {#text} at (0,0) size 191x26
           text run at (0,0) width 191: "This is a first span."
-    LayoutBlockFlow (anonymous multi-column span) at (5,343.81) size 750x66.81
+    LayoutBlockFlow (anonymous) (anonymous multi-column span) at (5,343.81) size 750x66.81
       LayoutBlockFlow {H2} at (0,19.91) size 750x27 [bgcolor=#EEEEEE]
         LayoutText {#text} at (0,0) size 218x26
           text run at (0,0) width 218: "This is a second span."
 layer at (13,541) size 750x136 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x136
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,5) size 750x136
     LayoutBlockFlow {P} at (0,16) size 367x220
       LayoutText {#text} at (0,0) size 367x219
         text run at (0,0) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
@@ -84,7 +84,7 @@ layer at (13,541) size 750x136 backgroundClip at (0,0) size 785x600 clip at (0,0
         text run at (0,180) width 350: "pede. Lorem ipsum dolor sit amet, consectetuer adipiscing"
         text run at (0,200) width 21: "elit."
 layer at (13,743) size 750x136 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutBlockFlow (anonymous multi-column) at (5,207.81) size 750x136
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,207.81) size 750x136
     LayoutBlockFlow {P} at (0,16) size 367x220
       LayoutText {#text} at (0,0) size 367x219
         text run at (0,0) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
@@ -99,7 +99,7 @@ layer at (13,743) size 750x136 backgroundClip at (0,0) size 785x600 clip at (0,0
         text run at (0,180) width 350: "pede. Lorem ipsum dolor sit amet, consectetuer adipiscing"
         text run at (0,200) width 21: "elit."
 layer at (13,946) size 750x120 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutBlockFlow (anonymous multi-column) at (5,410.63) size 750x120
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,410.63) size 750x120
     LayoutText {#text} at (0,0) size 367x239
       text run at (0,0) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
       text run at (0,20) width 367: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis lectus."
@@ -116,16 +116,16 @@ layer at (13,946) size 750x120 backgroundClip at (0,0) size 785x600 clip at (0,0
       text run at (0,220) width 143: "Nulla varius enim ac mi."
 layer at (8,1087) size 760x520 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   LayoutBlockFlow {DIV} at (0,1071.25) size 760x519.63 [border: (5px solid #800000)]
-    LayoutBlockFlow (anonymous multi-column span) at (5,125) size 750x66.81
+    LayoutBlockFlow (anonymous) (anonymous multi-column span) at (5,125) size 750x66.81
       LayoutBlockFlow {H2} at (0,19.91) size 750x27 [bgcolor=#EEEEEE]
         LayoutText {#text} at (0,0) size 191x26
           text run at (0,0) width 191: "This is a first span."
-    LayoutBlockFlow (anonymous multi-column span) at (5,327.81) size 750x66.81
+    LayoutBlockFlow (anonymous) (anonymous multi-column span) at (5,327.81) size 750x66.81
       LayoutBlockFlow {H2} at (0,19.91) size 750x27 [bgcolor=#EEEEEE]
         LayoutText {#text} at (0,0) size 218x26
           text run at (0,0) width 218: "This is a second span."
 layer at (13,1092) size 750x120 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutBlockFlow (anonymous multi-column) at (5,5) size 750x120
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,5) size 750x120
     LayoutBlockFlow (anonymous) at (0,0) size 367x0
       LayoutInline {SPAN} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
@@ -147,7 +147,7 @@ layer at (13,1092) size 750x120 backgroundClip at (0,0) size 785x600 clip at (0,
       LayoutInline {SPAN} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
 layer at (13,1279) size 750x136 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutBlockFlow (anonymous multi-column) at (5,191.81) size 750x136
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,191.81) size 750x136
     LayoutBlockFlow {P} at (0,16) size 367x220
       LayoutText {#text} at (0,0) size 367x219
         text run at (0,0) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
@@ -162,7 +162,7 @@ layer at (13,1279) size 750x136 backgroundClip at (0,0) size 785x600 clip at (0,
         text run at (0,180) width 350: "pede. Lorem ipsum dolor sit amet, consectetuer adipiscing"
         text run at (0,200) width 21: "elit."
 layer at (13,1482) size 750x120 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
-  LayoutBlockFlow (anonymous multi-column) at (5,394.63) size 750x120
+  LayoutBlockFlow (anonymous) (anonymous multi-column) at (5,394.63) size 750x120
     LayoutText {#text} at (0,0) size 367x239
       text run at (0,0) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
       text run at (0,20) width 367: "Nulla varius enim ac mi. Curabitur sollicitudin felis quis lectus."

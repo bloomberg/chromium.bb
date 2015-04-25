@@ -24,7 +24,7 @@ layer at (8,94) size 100x50
   LayoutBlockFlow {DIV} at (0,86) size 100x50
     LayoutMenuList {SELECT} at (0,0) size 80x18 [bgcolor=#F8F8F8]
       LayoutBlockFlow (anonymous) at (0,0) size 80x18
-        LayoutText at (8,2) size 148x13
+        LayoutText (anonymous) at (8,2) size 148x13
           text run at (8,2) width 148: "Lorem ipsum dolor sit amet"
     LayoutText {#text} at (0,0) size 0x0
 layer at (8,164) size 100x50 clip at (8,164) size 100x35 scrollWidth 156

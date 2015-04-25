@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 587: "If the browser does not crash as you click to the right of each of the lines below, it passes the test."
       LayoutBlockFlow {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,102) size 784x80
-        LayoutTable at (0,0) size 166x80
+        LayoutTable (anonymous) at (0,0) size 166x80
           LayoutTableSection (anonymous) at (0,20) size 166x40
             LayoutTableRow {DIV} at (0,0) size 166x20
               LayoutTableCell (anonymous) at (0,0) size 166x20 [r=0 c=0 rs=1 cs=1]
