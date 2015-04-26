@@ -13,7 +13,7 @@
 namespace blink {
 
 // static
-PassRefPtrWillBeRawPtr<DOMException> PresentationError::take(WebPresentationError* errorRaw)
+DOMException* PresentationError::take(WebPresentationError* errorRaw)
 {
     ASSERT(errorRaw);
     OwnPtr<WebPresentationError> error = adoptPtr(errorRaw);

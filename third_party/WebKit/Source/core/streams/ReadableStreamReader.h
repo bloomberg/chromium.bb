@@ -45,7 +45,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    using ClosedPromise = ScriptPromiseProperty<Member<ReadableStreamReader>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException>>;
+    using ClosedPromise = ScriptPromiseProperty<Member<ReadableStreamReader>, ToV8UndefinedGenerator, Member<DOMException>>;
 
     const Member<ReadableStream> m_stream;
     ReadableStream::State m_stateAfterRelease;

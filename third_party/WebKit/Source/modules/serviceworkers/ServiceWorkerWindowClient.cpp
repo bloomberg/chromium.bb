@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/PageVisibilityState.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"

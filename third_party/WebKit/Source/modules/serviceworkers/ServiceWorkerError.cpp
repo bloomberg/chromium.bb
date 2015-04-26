@@ -31,20 +31,20 @@
 #include "config.h"
 #include "ServiceWorkerError.h"
 
+#include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 
 using blink::WebServiceWorkerError;
 
 namespace blink {
 
-static PassRefPtrWillBeRawPtr<DOMException> createException(
-    ExceptionCode code, const String& defaultMessage, const String& message)
+static DOMException* createException(ExceptionCode code, const String& defaultMessage, const String& message)
 {
     return DOMException::create(code, message.isEmpty() ? defaultMessage : message);
 }
 
 // static
-PassRefPtrWillBeRawPtr<DOMException> ServiceWorkerError::take(ScriptPromiseResolver*, WebType* webErrorRaw)
+DOMException* ServiceWorkerError::take(ScriptPromiseResolver*, WebType* webErrorRaw)
 {
     OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
     switch (webError->errorType) {

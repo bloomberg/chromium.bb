@@ -29,7 +29,6 @@
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMArrayPiece.h"
-#include "core/dom/DOMException.h"
 #include "modules/EventTargetModules.h"
 #include "modules/encryptedmedia/MediaKeyStatusMap.h"
 #include "platform/Timer.h"
@@ -39,6 +38,7 @@
 
 namespace blink {
 
+class DOMException;
 class GenericEventQueue;
 class MediaKeys;
 
@@ -130,7 +130,7 @@ private:
     bool m_isClosed; // Is the CDM finished with this session?
 
     // Keep track of the closed promise.
-    typedef ScriptPromiseProperty<Member<MediaKeySession>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException>> ClosedPromise;
+    typedef ScriptPromiseProperty<Member<MediaKeySession>, ToV8UndefinedGenerator, Member<DOMException>> ClosedPromise;
     Member<ClosedPromise> m_closedPromise;
 
     HeapDeque<Member<PendingAction>> m_pendingActions;

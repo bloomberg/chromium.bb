@@ -5,12 +5,13 @@
 #include "config.h"
 #include "modules/geofencing/GeofencingError.h"
 
+#include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<DOMException> GeofencingError::take(ScriptPromiseResolver*, WebType* webErrorRaw)
+DOMException* GeofencingError::take(ScriptPromiseResolver*, WebType* webErrorRaw)
 {
     OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
     switch (webError->errorType) {

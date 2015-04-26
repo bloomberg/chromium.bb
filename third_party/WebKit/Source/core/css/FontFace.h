@@ -91,8 +91,8 @@ public:
 
     LoadStatus loadStatus() const { return m_status; }
     void setLoadStatus(LoadStatus);
-    void setError(PassRefPtrWillBeRawPtr<DOMException> = nullptr);
-    DOMException* error() const { return m_error.get(); }
+    void setError(DOMException* = nullptr);
+    DOMException* error() const { return m_error; }
     FontTraits traits() const;
     CSSFontFace* cssFontFace() { return m_cssFontFace.get(); }
 
@@ -129,7 +129,7 @@ private:
     void loadInternal(ExecutionContext*);
     ScriptPromise fontStatusPromise(ScriptState*);
 
-    typedef ScriptPromiseProperty<RawPtrWillBeMember<FontFace>, RawPtrWillBeMember<FontFace>, RefPtrWillBeMember<DOMException>> LoadedProperty;
+    typedef ScriptPromiseProperty<RawPtrWillBeMember<FontFace>, RawPtrWillBeMember<FontFace>, Member<DOMException>> LoadedProperty;
 
     AtomicString m_family;
     RefPtrWillBeMember<CSSValue> m_src;
@@ -140,7 +140,7 @@ private:
     RefPtrWillBeMember<CSSValue> m_variant;
     RefPtrWillBeMember<CSSValue> m_featureSettings;
     LoadStatus m_status;
-    RefPtrWillBeMember<DOMException> m_error;
+    PersistentWillBeMember<DOMException> m_error;
 
     PersistentWillBeMember<LoadedProperty> m_loadedProperty;
     OwnPtrWillBeMember<CSSFontFace> m_cssFontFace;

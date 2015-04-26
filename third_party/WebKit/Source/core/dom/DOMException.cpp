@@ -98,14 +98,14 @@ DOMException::DOMException(unsigned short code, const String& name, const String
     m_unsanitizedMessage = unsanitizedMessage;
 }
 
-PassRefPtrWillBeRawPtr<DOMException> DOMException::create(ExceptionCode ec, const String& sanitizedMessage, const String& unsanitizedMessage)
+DOMException* DOMException::create(ExceptionCode ec, const String& sanitizedMessage, const String& unsanitizedMessage)
 {
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
-    return adoptRefWillBeNoop(new DOMException(entry->code,
+    return new DOMException(entry->code,
         entry->name ? entry->name : "Error",
         sanitizedMessage.isNull() ? String(entry->message) : sanitizedMessage,
-        unsanitizedMessage));
+        unsanitizedMessage);
 }
 
 String DOMException::toString() const

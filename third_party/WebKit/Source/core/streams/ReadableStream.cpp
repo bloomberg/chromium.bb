@@ -113,7 +113,7 @@ ScriptPromise ReadableStream::cancelInternal(ScriptState* scriptState, ScriptVal
     return m_source->cancelSource(scriptState, reason).then(ConstUndefined::create(scriptState));
 }
 
-void ReadableStream::error(PassRefPtrWillBeRawPtr<DOMException> exception)
+void ReadableStream::error(DOMException* exception)
 {
     if (m_state != ReadableStream::Readable)
         return;

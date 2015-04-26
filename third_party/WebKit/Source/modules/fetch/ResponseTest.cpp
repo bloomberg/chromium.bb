@@ -66,7 +66,7 @@ public:
     {
         m_blobHandle = blobHandle;
     }
-    void didFail(PassRefPtrWillBeRawPtr<DOMException> exception) override
+    void didFail(DOMException* exception) override
     {
         m_exception = exception;
     }
@@ -74,14 +74,14 @@ public:
     {
         return m_blobHandle;
     }
-    PassRefPtrWillBeRawPtr<DOMException> exception()
+    DOMException* exception()
     {
         return m_exception;
     }
 
 private:
     RefPtr<BlobDataHandle> m_blobHandle;
-    RefPtrWillBeMember<DOMException> m_exception;
+    Member<DOMException> m_exception;
 };
 
 

@@ -351,7 +351,7 @@ void FontFace::setLoadStatus(LoadStatus status)
     }
 }
 
-void FontFace::setError(PassRefPtrWillBeRawPtr<DOMException> error)
+void FontFace::setError(DOMException* error)
 {
     if (!m_error)
         m_error = error ? error : DOMException::create(NetworkError);

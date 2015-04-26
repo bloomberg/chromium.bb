@@ -162,7 +162,7 @@ void BodyStreamBuffer::close()
         m_observer->onClose();
 }
 
-void BodyStreamBuffer::error(PassRefPtrWillBeRawPtr<DOMException> exception)
+void BodyStreamBuffer::error(DOMException* exception)
 {
     ASSERT(exception);
     ASSERT(!m_isClosed);

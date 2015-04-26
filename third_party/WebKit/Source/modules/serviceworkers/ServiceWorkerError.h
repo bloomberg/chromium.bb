@@ -31,20 +31,20 @@
 #ifndef ServiceWorkerError_h
 #define ServiceWorkerError_h
 
-#include "core/dom/DOMException.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebServiceWorkerError.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
+class DOMException;
 class ScriptPromiseResolver;
 
 class ServiceWorkerError {
 public:
     // For CallbackPromiseAdapter
     typedef WebServiceWorkerError WebType;
-    static PassRefPtrWillBeRawPtr<DOMException> take(ScriptPromiseResolver*, WebType* webErrorRaw);
+    static DOMException* take(ScriptPromiseResolver*, WebType* webErrorRaw);
     static void dispose(WebType* webErrorRaw);
 
 private:

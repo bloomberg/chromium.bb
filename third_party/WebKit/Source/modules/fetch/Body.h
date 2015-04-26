@@ -21,6 +21,7 @@ namespace blink {
 
 class BodyStreamBuffer;
 class BodyStreamSource;
+class DOMException;
 class ReadableByteStream;
 class ScriptState;
 
@@ -102,7 +103,7 @@ private:
     virtual void didFinishLoading() override;
     virtual void didFail(FileError::ErrorCode) override;
 
-    void didBlobHandleReceiveError(PassRefPtrWillBeRawPtr<DOMException>);
+    void didBlobHandleReceiveError(DOMException*);
 
     // We use BlobDataHandle or BodyStreamBuffer as data container of the Body.
     // BodyStreamBuffer is used only when the Response object is created by

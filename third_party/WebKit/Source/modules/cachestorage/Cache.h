@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
-#include "core/dom/DOMException.h"
 #include "modules/ModulesExport.h"
 #include "modules/cachestorage/CacheQueryOptions.h"
 #include "modules/fetch/GlobalFetch.h"
@@ -22,6 +21,7 @@
 
 namespace blink {
 
+class DOMException;
 class ExceptionState;
 class Response;
 class Request;
@@ -45,7 +45,7 @@ public:
     ScriptPromise keys(ScriptState*, ExceptionState&);
     ScriptPromise keys(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
 
-    static PassRefPtrWillBeRawPtr<DOMException> domExceptionForCacheError(WebServiceWorkerCacheError);
+    static DOMException* domExceptionForCacheError(WebServiceWorkerCacheError);
 
     static WebServiceWorkerCache::QueryParams toWebQueryParams(const CacheQueryOptions&);
 

@@ -18,7 +18,7 @@ namespace blink {
 
 namespace {
 
-PassRefPtrWillBeRawPtr<DOMException> createNoImplementationException()
+DOMException* createNoImplementationException()
 {
     return DOMException::create(NotSupportedError, "No CacheStorage implementation provided.");
 }

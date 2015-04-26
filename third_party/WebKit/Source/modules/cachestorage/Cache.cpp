@@ -202,7 +202,7 @@ public:
         m_cache->webCache()->dispatchBatch(new CachePutCallbacks(m_resolver.get()), batchOperations);
         cleanup();
     }
-    void didFail(PassRefPtrWillBeRawPtr<DOMException> exception) override
+    void didFail(DOMException* exception) override
     {
         ScriptState* state = m_resolver->scriptState();
         ScriptState::Scope scope(state);
@@ -374,7 +374,7 @@ ScriptPromise Cache::addAllImpl(ScriptState* scriptState, const Vector<Request*>
     return fetchPromise.then(FetchResolvedForAdd::create(scriptState, this, requests[0]));
 }
 
-PassRefPtrWillBeRawPtr<DOMException> Cache::domExceptionForCacheError(WebServiceWorkerCacheError reason)
+DOMException* Cache::domExceptionForCacheError(WebServiceWorkerCacheError reason)
 {
     switch (reason) {
     case WebServiceWorkerCacheErrorNotImplemented:

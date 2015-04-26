@@ -15,7 +15,7 @@ class DOMException;
 // A container of methods taking care of WebPresentationError in WebCallbacks subclasses.
 class PresentationError final {
 public:
-    static PassRefPtrWillBeRawPtr<DOMException> take(WebPresentationError*);
+    static DOMException* take(WebPresentationError*);
     static void dispose(WebPresentationError*);
 
 private:

@@ -148,9 +148,8 @@ private:
         m_pendingReads.clear();
     }
 
-    void rejectAllPendingReads(PassRefPtrWillBeRawPtr<DOMException> r) override
+    void rejectAllPendingReads(DOMException* reason) override
     {
-        RefPtrWillBeRawPtr<DOMException> reason = r;
         for (auto& resolver : m_pendingReads)
             resolver->reject(reason);
         m_pendingReads.clear();

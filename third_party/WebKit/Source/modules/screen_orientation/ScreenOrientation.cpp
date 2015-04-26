@@ -158,13 +158,13 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state, const AtomicString& lo
     Document* document = m_frame ? m_frame->document() : 0;
 
     if (!document || !controller()) {
-        RefPtrWillBeRawPtr<DOMException> exception = DOMException::create(InvalidStateError, "The object is no longer associated to a document.");
+        DOMException* exception = DOMException::create(InvalidStateError, "The object is no longer associated to a document.");
         resolver->reject(exception);
         return promise;
     }
 
     if (document->isSandboxed(SandboxOrientationLock)) {
-        RefPtrWillBeRawPtr<DOMException> exception = DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-orientation-lock' flag.");
+        DOMException* exception = DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-orientation-lock' flag.");
         resolver->reject(exception);
         return promise;
     }

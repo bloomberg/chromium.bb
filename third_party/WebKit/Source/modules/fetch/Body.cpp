@@ -35,7 +35,7 @@ public:
         m_body->readAsyncFromBlob(handle);
         m_body = nullptr;
     }
-    void didFail(PassRefPtrWillBeRawPtr<DOMException> exception) override
+    void didFail(DOMException* exception) override
     {
         ASSERT(m_body);
         m_body->didBlobHandleReceiveError(exception);
@@ -261,7 +261,7 @@ private:
         }
     }
 
-    PassRefPtrWillBeRawPtr<DOMException> exception()
+    DOMException* exception()
     {
         if (m_state != Errored)
             return nullptr;
@@ -585,7 +585,7 @@ void Body::didFail(FileError::ErrorCode code)
     }
 }
 
-void Body::didBlobHandleReceiveError(PassRefPtrWillBeRawPtr<DOMException> exception)
+void Body::didBlobHandleReceiveError(DOMException* exception)
 {
     if (!m_resolver)
         return;

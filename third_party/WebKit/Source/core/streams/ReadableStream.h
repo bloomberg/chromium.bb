@@ -53,10 +53,10 @@ public:
 
     virtual bool hasPendingReads() const = 0;
     virtual void resolveAllPendingReadsAsDone() = 0;
-    virtual void rejectAllPendingReads(PassRefPtrWillBeRawPtr<DOMException>) = 0;
+    virtual void rejectAllPendingReads(DOMException*) = 0;
 
     void close();
-    void error(PassRefPtrWillBeRawPtr<DOMException>);
+    void error(DOMException*);
 
     void didSourceStart();
 
@@ -77,8 +77,8 @@ protected:
     void readInternalPostAction();
 
 private:
-    using WaitPromise = ScriptPromiseProperty<Member<ReadableStream>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException>>;
-    using ClosedPromise = ScriptPromiseProperty<Member<ReadableStream>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException>>;
+    using WaitPromise = ScriptPromiseProperty<Member<ReadableStream>, ToV8UndefinedGenerator, Member<DOMException>>;
+    using ClosedPromise = ScriptPromiseProperty<Member<ReadableStream>, ToV8UndefinedGenerator, Member<DOMException>>;
 
     virtual bool isQueueEmpty() const = 0;
     virtual void clearQueue() = 0;
@@ -94,7 +94,7 @@ private:
     bool m_isPulling;
     State m_state;
 
-    RefPtrWillBeMember<DOMException> m_exception;
+    Member<DOMException> m_exception;
     Member<ReadableStreamReader> m_reader;
 };
 

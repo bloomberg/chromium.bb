@@ -5,12 +5,12 @@
 #ifndef SyncError_h
 #define SyncError_h
 
-#include "core/dom/DOMException.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/background_sync/WebSyncError.h"
 
 namespace blink {
 
+class DOMException;
 class ScriptPromiseResolver;
 
 class SyncError {
@@ -18,7 +18,7 @@ class SyncError {
 public:
     // For CallbackPromiseAdapter.
     using WebType = WebSyncError;
-    static PassRefPtrWillBeRawPtr<DOMException> take(ScriptPromiseResolver*, WebType*);
+    static DOMException* take(ScriptPromiseResolver*, WebType*);
     static void dispose(WebType*);
 
 private:

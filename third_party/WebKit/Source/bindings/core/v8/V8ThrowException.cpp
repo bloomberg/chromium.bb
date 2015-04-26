@@ -73,8 +73,8 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate,
 
     v8::TryCatch tryCatch;
 
-    RefPtrWillBeRawPtr<DOMException> domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
-    v8::Local<v8::Value> exception = toV8(domException.get(), sanitizedCreationContext, isolate);
+    DOMException* domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
+    v8::Local<v8::Value> exception = toV8(domException, sanitizedCreationContext, isolate);
 
     if (tryCatch.HasCaught()) {
         ASSERT(exception.IsEmpty());
