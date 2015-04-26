@@ -145,7 +145,7 @@ static bool getTypeFromAsAttribute(const String& as, Resource::Type& type)
         return false;
     // TODO(yoav): Return false also when the `as` value is not a valid one.
     // TODO(yoav): Add actual types here and make sure priorities work accordingly.
-    type = Resource::Raw;
+    type = Resource::LinkSubresource;
     return true;
 }
 

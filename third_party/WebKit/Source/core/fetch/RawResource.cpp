@@ -56,6 +56,7 @@ void RawResource::didAddClient(ResourceClient* c)
     // this resource to be evicted from the cache and all clients to be removed,
     // so a protector is necessary.
     ResourcePtr<RawResource> protect(this);
+    ASSERT(c->resourceClientType() == RawResourceClient::expectedType());
     RawResourceClient* client = static_cast<RawResourceClient*>(c);
     for (const auto& redirect : redirectChain()) {
         ResourceRequest request(redirect.m_request);
