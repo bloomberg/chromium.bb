@@ -32,10 +32,6 @@ class WebViewGuestDelegate {
   typedef std::vector<linked_ptr<api::web_view_internal::ContextMenuItem> >
       MenuItemVector;
 
-  // Clears http cache for this guest's StoragePartition.
-  virtual void ClearCache(base::Time remove_since,
-                          const base::Closure& callback) = 0;
-
   // Called when context menu operation was handled.
   virtual bool HandleContextMenu(const content::ContextMenuParams& params) = 0;
 

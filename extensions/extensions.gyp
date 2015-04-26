@@ -124,6 +124,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
+        '../components/components.gyp:browsing_data',
         '../components/components.gyp:device_event_log_component',
         '../components/components.gyp:keyed_service_content',
         '../components/components.gyp:keyed_service_core',

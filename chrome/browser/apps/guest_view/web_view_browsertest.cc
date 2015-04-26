@@ -89,6 +89,7 @@ namespace {
 const char kEmptyResponsePath[] = "/close-socket";
 const char kRedirectResponsePath[] = "/server-redirect";
 const char kUserAgentRedirectResponsePath[] = "/detect-user-agent";
+const char kCacheResponsePath[] = "/cache-control-response";
 const char kRedirectResponseFullPath[] =
     "/extensions/platform_apps/web_view/shim/guest_redirect.html";
 
@@ -254,40 +255,6 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
   scoped_refptr<content::MessageLoopRunner> check_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebContentsDelegate);
-};
-
-class MockWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
- public:
-  explicit MockWebViewGuestDelegate(extensions::WebViewGuest* web_view_guest)
-      : web_view_guest_(web_view_guest), clear_cache_called_(false) {}
-  ~MockWebViewGuestDelegate() override {}
-
-  // WebViewGuestDelegate implementation.
-  void ClearCache(base::Time remove_since,
-                  const base::Closure& callback) override {
-    clear_cache_called_ = true;
-    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
-  }
-  bool HandleContextMenu(const content::ContextMenuParams& params) override {
-    return false;
-  }
-  void OnAttachWebViewHelpers(content::WebContents* contents) override {}
-  void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) override {}
-  void OnDidInitialize() override {}
-  void OnDocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override {}
-  void OnGuestDestroyed() override {}
-  void OnShowContextMenu(
-      int request_id,
-      const WebViewGuestDelegate::MenuItemVector* items) override {}
-
-  bool clear_cache_called() { return clear_cache_called_; }
-
- private:
-  extensions::WebViewGuest* web_view_guest_;
-  bool clear_cache_called_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockWebViewGuestDelegate);
 };
 
 // This class intercepts download request from the guest.
@@ -608,12 +575,25 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   static scoped_ptr<net::test_server::HttpResponse> EmptyResponseHandler(
       const std::string& path,
       const net::test_server::HttpRequest& request) {
-    if (StartsWithASCII(path, request.relative_url, true)) {
-      return scoped_ptr<net::test_server::HttpResponse>(
-          new EmptyHttpResponse);
-    }
+    if (StartsWithASCII(path, request.relative_url, true))
+      return scoped_ptr<net::test_server::HttpResponse>(new EmptyHttpResponse);
 
     return scoped_ptr<net::test_server::HttpResponse>();
+  }
+
+  // Handles |request| by serving cache-able response.
+  static scoped_ptr<net::test_server::HttpResponse> CacheControlResponseHandler(
+      const std::string& path,
+      const net::test_server::HttpRequest& request) {
+    if (!StartsWithASCII(path, request.relative_url, true))
+      return scoped_ptr<net::test_server::HttpResponse>();
+
+    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse);
+    http_response->AddCustomHeader("Cache-control", "max-age=3600");
+    http_response->set_content_type("text/plain");
+    http_response->set_content("dummy text");
+    return http_response.Pass();
   }
 
   // Shortcut to return the current MenuManager.
@@ -662,6 +642,9 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
               &WebViewTest::UserAgentResponseHandler,
               kUserAgentRedirectResponsePath,
               embedded_test_server()->GetURL(kRedirectResponseFullPath)));
+
+      embedded_test_server()->RegisterRequestHandler(base::Bind(
+          &WebViewTest::CacheControlResponseHandler, kCacheResponsePath));
     }
 
     LoadAndLaunchPlatformApp(app_location.c_str(), "Launched");
@@ -2434,25 +2417,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ClearDataCache) {
-  LoadAppWithGuest("web_view/clear_data_cache");
-  content::WebContents* guest_web_contents = GetGuestWebContents();
-  auto guest = extensions::WebViewGuest::FromWebContents(guest_web_contents);
-  ASSERT_TRUE(guest);
-  scoped_ptr<extensions::WebViewGuestDelegate> mock_web_view_guest_delegate(
-      new MockWebViewGuestDelegate(guest));
-  scoped_ptr<extensions::WebViewGuestDelegate> orig_web_view_guest_delegate =
-      guest->SetDelegateForTesting(mock_web_view_guest_delegate.Pass());
-
-  ASSERT_TRUE(GetEmbedderWebContents());
-  ExtensionTestMessageListener clear_data_done_listener(
-      "WebViewTest.CLEAR_DATA_DONE", false);
-  EXPECT_TRUE(content::ExecuteScript(
-      GetEmbedderWebContents(), base::StringPrintf("testClearDataCache()")));
-  EXPECT_TRUE(clear_data_done_listener.WaitUntilSatisfied());
-
-  // Reset delegate back to original once we're done mocking.
-  mock_web_view_guest_delegate =
-      guest->SetDelegateForTesting(orig_web_view_guest_delegate.Pass());
+  TestHelper("testClearCache", "web_view/clear_data_cache", NEEDS_TEST_SERVER);
 }
 
 // This test is disabled on Win due to being flaky. http://crbug.com/294592

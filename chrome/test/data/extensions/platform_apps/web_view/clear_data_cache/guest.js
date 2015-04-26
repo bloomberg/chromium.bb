@@ -5,24 +5,33 @@
 var LOG = function(msg) { window.console.log(msg); };
 LOG('Guest script loading.');
 
-// The window reference of the embedder to send post message reply.
-var embedderWindowChannel = null;
+var fail = function() {
+  // Embedder catches this message and fails the test.
+  LOG('ERROR');
+};
 
-// A value that uniquely identifies the guest sending the messages to the
-// embedder.
-var channelId = 0;
-var notifyEmbedder = function(msg_array) {
-  var msg = msg_array.concat([channelId]);
-  embedderWindowChannel.postMessage(JSON.stringify(msg), '*');
+var sendXhr = function() {
+  var xhr = new XMLHttpRequest();
+  xhr.onload = function() {
+    LOG('xhr.onload');
+    if (xhr.responseText != 'dummy text') {
+      fail();
+    }
+  };
+  xhr.onerror = function() {
+    fail();
+  };
+  xhr.open('GET', '/cache-control-response', true);
+  xhr.send();
 };
 
 var onPostMessageReceived = function(e) {
-  embedderWindowChannel = e.source;
   var data = JSON.parse(e.data);
-  if (data[0] == 'connect') {
-    channelId = data[1];
-    notifyEmbedder(['connected']);
+  if (data[0] != 'sendXhr') {
+    fail();
     return;
   }
+
+  sendXhr();
 };
 window.addEventListener('message', onPostMessageReceived, false);

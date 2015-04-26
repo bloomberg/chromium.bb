@@ -7,6 +7,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/browsing_data/storage_partition_http_cache_data_remover.h"
+#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -705,15 +707,25 @@ bool WebViewGuest::ClearData(base::Time remove_since,
     return false;
 
   if (removal_mask & webview::WEB_VIEW_REMOVE_DATA_MASK_CACHE) {
-    if (web_view_guest_delegate_) {
-      // First clear http cache data and then clear the rest in
-      // |ClearDataInternal|.
-      web_view_guest_delegate_->ClearCache(
-          remove_since, base::Bind(&WebViewGuest::ClearDataInternal,
-                                   weak_ptr_factory_.GetWeakPtr(), remove_since,
-                                   removal_mask, callback));
-      return true;
-    }
+    // First clear http cache data and then clear the rest in
+    // |ClearDataInternal|.
+    int render_process_id = web_contents()->GetRenderProcessHost()->GetID();
+    // We need to clear renderer cache separately for our process because
+    // StoragePartitionHttpCacheDataRemover::ClearData() does not clear that.
+    web_cache::WebCacheManager::GetInstance()->Remove(render_process_id);
+    web_cache::WebCacheManager::GetInstance()->ClearCacheForProcess(
+        render_process_id);
+
+    base::Closure cache_removal_done_callback = base::Bind(
+        &WebViewGuest::ClearDataInternal, weak_ptr_factory_.GetWeakPtr(),
+        remove_since, removal_mask, callback);
+    // StoragePartitionHttpCacheDataRemover removes itself when it is done.
+    // components/, move |ClearCache| to WebViewGuest: http//crbug.com/471287.
+    browsing_data::StoragePartitionHttpCacheDataRemover::CreateForRange(
+        partition, remove_since, base::Time::Now())
+        ->Remove(cache_removal_done_callback);
+
+    return true;
   }
 
   ClearDataInternal(remove_since, removal_mask, callback);

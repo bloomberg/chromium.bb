@@ -27,8 +27,6 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
   ~ChromeWebViewGuestDelegate() override;
 
   // WebViewGuestDelegate implementation.
-  void ClearCache(base::Time remove_since,
-                  const base::Closure& done_callback) override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   void OnAttachWebViewHelpers(content::WebContents* contents) override;
   void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) override;

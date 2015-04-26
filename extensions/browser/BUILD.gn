@@ -44,6 +44,7 @@ source_set("browser") {
                           "//extensions")
 
     deps += [
+      "//components/browsing_data",
       "//components/onc",
       "//components/storage_monitor",
       "//components/update_client",
