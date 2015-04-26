@@ -213,7 +213,7 @@ void EnhancedBookmarksBridge::MoveBookmark(JNIEnv* env,
                                            jobject obj,
                                            jobject j_bookmark_id_obj,
                                            jobject j_parent_id_obj) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(enhanced_bookmark_model_->loaded());
 
   long bookmark_id = JavaBookmarkIdGetId(env, j_bookmark_id_obj);

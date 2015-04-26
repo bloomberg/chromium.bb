@@ -89,7 +89,7 @@ void BookmarkImageServiceAndroid::RetrieveSalientImageFromContext(
     content::RenderFrameHost* render_frame_host,
     const GURL& page_url,
     bool update_bookmark) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (IsPageUrlInProgress(page_url))
     return;  // A request for this URL is already in progress.
 
@@ -259,7 +259,7 @@ void BookmarkImageServiceAndroid::BitmapFetcherHandler::Start(
 void BookmarkImageServiceAndroid::BitmapFetcherHandler::OnFetchComplete(
     const GURL& url,
     const SkBitmap* bitmap) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   scoped_ptr<gfx::Image> image;
   if (bitmap) {

@@ -59,7 +59,7 @@ class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
   ~TokenLoadingJob() {}
 
   void PerformWorkOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DictionaryPrefUpdate update(g_browser_process->local_state(),
                                 prefs::kGeolocationAccessToken);
     base::DictionaryValue* token_dictionary = update.Get();
@@ -114,7 +114,7 @@ ChromeAccessTokenStore::~ChromeAccessTokenStore() {}
 
 static void SetAccessTokenOnUIThread(const GURL& server_url,
                                      const base::string16& token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DictionaryPrefUpdate update(g_browser_process->local_state(),
                               prefs::kGeolocationAccessToken);
   base::DictionaryValue* access_token_dictionary = update.Get();

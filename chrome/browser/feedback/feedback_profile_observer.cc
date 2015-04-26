@@ -39,7 +39,7 @@ void FeedbackProfileObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
 
   Profile* profile = content::Source<Profile>(source).ptr();

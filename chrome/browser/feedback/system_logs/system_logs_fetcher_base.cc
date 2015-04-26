@@ -27,7 +27,7 @@ SystemLogsFetcherBase::SystemLogsFetcherBase()
 SystemLogsFetcherBase::~SystemLogsFetcherBase() {}
 
 void SystemLogsFetcherBase::Fetch(const SysLogsFetcherCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
 
@@ -42,7 +42,7 @@ void SystemLogsFetcherBase::Fetch(const SysLogsFetcherCallback& callback) {
 
 void SystemLogsFetcherBase::AddResponse(const std::string& source_name,
                                         SystemLogsResponse* response) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   VLOG(1) << "Received SystemLogSource: " << source_name;
 

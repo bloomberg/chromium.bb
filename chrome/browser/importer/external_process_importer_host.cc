@@ -84,7 +84,7 @@ void ExternalProcessImporterHost::NotifyImportItemEnded(
 }
 
 void ExternalProcessImporterHost::NotifyImportEnded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   firefox_lock_.reset();
   if (observer_)
     observer_->ImportEnded();

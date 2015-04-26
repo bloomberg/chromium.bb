@@ -18,7 +18,7 @@ class SystemLogsMemoryHandler : public MemoryDetails {
   // Sends the data to the callback.
   // MemoryDetails override.
   void OnDetailsAvailable() override {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);
     (*response)["mem_usage"] = ToLogString();
@@ -40,7 +40,7 @@ MemoryDetailsLogSource::~MemoryDetailsLogSource() {
 }
 
 void MemoryDetailsLogSource::Fetch(const SysLogsSourceCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   scoped_refptr<SystemLogsMemoryHandler>
