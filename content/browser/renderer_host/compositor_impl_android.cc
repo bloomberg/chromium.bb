@@ -58,7 +58,6 @@
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/frame_time.h"
-#include "webkit/common/gpu/context_provider_in_process.h"
 
 namespace content {
 

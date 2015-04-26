@@ -877,7 +877,6 @@
             '../ui/compositor/compositor.gyp:compositor_test_support',
             '../ui/surface/surface.gyp:surface',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
           ],
           'export_dependent_settings': [
             '../third_party/WebKit/public/blink.gyp:blink',

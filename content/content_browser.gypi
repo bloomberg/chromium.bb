@@ -1895,6 +1895,7 @@
         '../media/media.gyp:media',
         '../mojo/mojo_base.gyp:libmojo_system_java',
         '../ui/android/ui_android.gyp:ui_android',
+        '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
         'content.gyp:content_jni_headers',
       ],
       'defines': ['APPCACHE_USE_SIMPLE_CACHE'],
