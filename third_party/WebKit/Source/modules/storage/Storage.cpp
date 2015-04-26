@@ -33,12 +33,12 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<Storage> Storage::create(LocalFrame* frame, PassOwnPtrWillBeRawPtr<StorageArea> storageArea)
+Storage* Storage::create(LocalFrame* frame, StorageArea* storageArea)
 {
-    return adoptRefWillBeNoop(new Storage(frame, storageArea));
+    return new Storage(frame, storageArea);
 }
 
-Storage::Storage(LocalFrame* frame, PassOwnPtrWillBeRawPtr<StorageArea> storageArea)
+Storage::Storage(LocalFrame* frame, StorageArea* storageArea)
     : DOMWindowProperty(frame)
     , m_storageArea(storageArea)
 {
@@ -46,7 +46,9 @@ Storage::Storage(LocalFrame* frame, PassOwnPtrWillBeRawPtr<StorageArea> storageA
     ASSERT(m_storageArea);
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Storage);
+Storage::~Storage()
+{
+}
 
 String Storage::anonymousIndexedGetter(unsigned index, ExceptionState& exceptionState)
 {
@@ -128,4 +130,4 @@ DEFINE_TRACE(Storage)
     DOMWindowProperty::trace(visitor);
 }
 
-}
+} // namespace blink

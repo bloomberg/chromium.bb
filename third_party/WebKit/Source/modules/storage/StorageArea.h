@@ -48,10 +48,10 @@ enum StorageType {
     SessionStorage
 };
 
-class MODULES_EXPORT StorageArea final : public NoBaseWillBeGarbageCollectedFinalized<StorageArea>, public LocalFrameLifecycleObserver {
+class MODULES_EXPORT StorageArea final : public GarbageCollectedFinalized<StorageArea>, public LocalFrameLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StorageArea);
 public:
-    static PassOwnPtrWillBeRawPtr<StorageArea> create(PassOwnPtr<WebStorageArea>, StorageType);
+    static StorageArea* create(PassOwnPtr<WebStorageArea>, StorageType);
 
     virtual ~StorageArea();
 

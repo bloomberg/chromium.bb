@@ -34,9 +34,9 @@ private:
     explicit DOMWindowStorage(LocalDOMWindow&);
     static const char* supplementName();
 
-    LocalDOMWindow& m_window;
-    mutable RefPtrWillBeMember<Storage> m_sessionStorage;
-    mutable RefPtrWillBeMember<Storage> m_localStorage;
+    RawPtrWillBeMember<LocalDOMWindow> m_window;
+    mutable PersistentWillBeMember<Storage> m_sessionStorage;
+    mutable PersistentWillBeMember<Storage> m_localStorage;
 
 };
 

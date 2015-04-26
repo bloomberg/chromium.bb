@@ -47,9 +47,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<StorageArea> StorageArea::create(PassOwnPtr<WebStorageArea> storageArea, StorageType storageType)
+StorageArea* StorageArea::create(PassOwnPtr<WebStorageArea> storageArea, StorageType storageType)
 {
-    return adoptPtrWillBeNoop(new StorageArea(storageArea, storageType));
+    return new StorageArea(storageArea, storageType);
 }
 
 StorageArea::StorageArea(PassOwnPtr<WebStorageArea> storageArea, StorageType storageType)

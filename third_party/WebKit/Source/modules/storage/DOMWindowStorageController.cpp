@@ -19,9 +19,7 @@ DOMWindowStorageController::DOMWindowStorageController(Document& document)
 {
 }
 
-DOMWindowStorageController::~DOMWindowStorageController()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowStorageController);
 
 DEFINE_TRACE(DOMWindowStorageController)
 {

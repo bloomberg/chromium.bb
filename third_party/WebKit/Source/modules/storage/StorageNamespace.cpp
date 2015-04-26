@@ -44,7 +44,7 @@ StorageNamespace::~StorageNamespace()
 {
 }
 
-PassOwnPtrWillBeRawPtr<StorageArea> StorageNamespace::localStorageArea(SecurityOrigin* origin)
+StorageArea* StorageNamespace::localStorageArea(SecurityOrigin* origin)
 {
     ASSERT(isMainThread());
     static WebStorageNamespace* localStorageNamespace = nullptr;
@@ -53,7 +53,7 @@ PassOwnPtrWillBeRawPtr<StorageArea> StorageNamespace::localStorageArea(SecurityO
     return StorageArea::create(adoptPtr(localStorageNamespace->createStorageArea(origin->toString())), LocalStorage);
 }
 
-PassOwnPtrWillBeRawPtr<StorageArea> StorageNamespace::storageArea(SecurityOrigin* origin)
+StorageArea* StorageNamespace::storageArea(SecurityOrigin* origin)
 {
     return StorageArea::create(adoptPtr(m_webStorageNamespace->createStorageArea(origin->toString())), SessionStorage);
 }

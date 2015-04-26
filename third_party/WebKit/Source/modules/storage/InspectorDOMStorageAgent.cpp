@@ -112,7 +112,7 @@ void InspectorDOMStorageAgent::disable(ErrorString*)
 void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String>>>& items)
 {
     LocalFrame* frame;
-    OwnPtrWillBeRawPtr<StorageArea> storageArea = findStorageArea(errorString, storageId, frame);
+    StorageArea* storageArea = findStorageArea(errorString, storageId, frame);
     if (!storageArea)
         return;
 
@@ -144,7 +144,7 @@ static String toErrorString(ExceptionState& exceptionState)
 void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key, const String& value)
 {
     LocalFrame* frame;
-    OwnPtrWillBeRawPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
+    StorageArea* storageArea = findStorageArea(0, storageId, frame);
     if (!storageArea) {
         *errorString = "Storage not found";
         return;
@@ -158,7 +158,7 @@ void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, const
 void InspectorDOMStorageAgent::removeDOMStorageItem(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key)
 {
     LocalFrame* frame;
-    OwnPtrWillBeRawPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
+    StorageArea* storageArea = findStorageArea(0, storageId, frame);
     if (!storageArea) {
         *errorString = "Storage not found";
         return;
@@ -205,7 +205,7 @@ static LocalFrame* findFrameWithSecurityOrigin(LocalFrame* inspectedFrame, const
     return nullptr;
 }
 
-PassOwnPtrWillBeRawPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, LocalFrame*& targetFrame)
+StorageArea* InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, LocalFrame*& targetFrame)
 {
     String securityOrigin;
     bool isLocalStorage = false;
@@ -235,4 +235,3 @@ PassOwnPtrWillBeRawPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(Er
 }
 
 } // namespace blink
-

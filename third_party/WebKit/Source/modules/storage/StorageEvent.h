@@ -67,7 +67,7 @@ private:
     String m_oldValue;
     String m_newValue;
     String m_url;
-    RefPtrWillBeMember<Storage> m_storageArea;
+    PersistentWillBeMember<Storage> m_storageArea;
 };
 
 } // namespace blink

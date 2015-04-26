@@ -32,7 +32,6 @@
 #include "modules/storage/StorageArea.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -40,12 +39,12 @@ namespace blink {
 class ExceptionState;
 class LocalFrame;
 
-class Storage final : public RefCountedWillBeGarbageCollected<Storage>, public ScriptWrappable, public DOMWindowProperty {
+class Storage final : public GarbageCollectedFinalized<Storage>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Storage);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(Storage);
 public:
-    static PassRefPtrWillBeRawPtr<Storage> create(LocalFrame*, PassOwnPtrWillBeRawPtr<StorageArea>);
+    static Storage* create(LocalFrame*, StorageArea*);
+    virtual ~Storage();
 
     unsigned length(ExceptionState& ec) const { return m_storageArea->length(ec, m_frame); }
     String key(unsigned index, ExceptionState& ec) const { return m_storageArea->key(index, ec, m_frame); }
@@ -69,9 +68,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    Storage(LocalFrame*, PassOwnPtrWillBeRawPtr<StorageArea>);
+    Storage(LocalFrame*, StorageArea*);
 
-    OwnPtrWillBeMember<StorageArea> m_storageArea;
+    Member<StorageArea> m_storageArea;
 };
 
 } // namespace blink

@@ -51,7 +51,7 @@ template bool DictionaryHelper::get(const Dictionary&, const String& key, Member
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<MediaStream>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<Headers>& value);
 template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<PushMessageData>& value);
-template bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtrWillBeMember<Storage>& value);
+template bool DictionaryHelper::get(const Dictionary&, const String& key, Member<Storage>& value);
 
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<MIDIPort>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<SpeechRecognitionResultList>& value);
@@ -59,6 +59,6 @@ template bool DictionaryHelper::convert(const Dictionary&, Dictionary::Conversio
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<MediaStream>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<Headers>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<PushMessageData>& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtrWillBeMember<Storage>& value);
+template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<Storage>& value);
 
 } // namespace blink

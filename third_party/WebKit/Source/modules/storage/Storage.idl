@@ -24,7 +24,7 @@
  */
 
 [
-    WillBeGarbageCollected
+    GarbageCollected
 ] interface Storage {
     [NotEnumerable, RaisesException] getter DOMString (unsigned long index);
     [RaisesException] setter DOMString (unsigned long index, DOMString value);

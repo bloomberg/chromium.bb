@@ -20,7 +20,7 @@ namespace blink {
 
 DOMWindowStorage::DOMWindowStorage(LocalDOMWindow& window)
     : DOMWindowProperty(window.frame())
-    , m_window(window)
+    , m_window(&window)
 {
 }
 
@@ -28,6 +28,7 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowStorage);
 
 DEFINE_TRACE(DOMWindowStorage)
 {
+    visitor->trace(m_window);
     visitor->trace(m_sessionStorage);
     visitor->trace(m_localStorage);
     WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
@@ -65,10 +66,10 @@ Storage* DOMWindowStorage::localStorage(DOMWindow& window, ExceptionState& excep
 
 Storage* DOMWindowStorage::sessionStorage(ExceptionState& exceptionState) const
 {
-    if (!m_window.isCurrentlyDisplayedInFrame())
+    if (!m_window->isCurrentlyDisplayedInFrame())
         return nullptr;
 
-    Document* document = m_window.document();
+    Document* document = m_window->document();
     if (!document)
         return nullptr;
 
@@ -84,32 +85,32 @@ Storage* DOMWindowStorage::sessionStorage(ExceptionState& exceptionState) const
     }
 
     if (m_sessionStorage) {
-        if (!m_sessionStorage->area()->canAccessStorage(m_window.frame())) {
+        if (!m_sessionStorage->area()->canAccessStorage(m_window->frame())) {
             exceptionState.throwSecurityError(accessDeniedMessage);
             return nullptr;
         }
-        return m_sessionStorage.get();
+        return m_sessionStorage;
     }
 
     Page* page = document->page();
     if (!page)
         return nullptr;
 
-    OwnPtrWillBeRawPtr<StorageArea> storageArea = StorageNamespaceController::from(page)->sessionStorage()->storageArea(document->securityOrigin());
-    if (!storageArea->canAccessStorage(m_window.frame())) {
+    StorageArea* storageArea = StorageNamespaceController::from(page)->sessionStorage()->storageArea(document->securityOrigin());
+    if (!storageArea->canAccessStorage(m_window->frame())) {
         exceptionState.throwSecurityError(accessDeniedMessage);
         return nullptr;
     }
 
-    m_sessionStorage = Storage::create(m_window.frame(), storageArea.release());
-    return m_sessionStorage.get();
+    m_sessionStorage = Storage::create(m_window->frame(), storageArea);
+    return m_sessionStorage;
 }
 
 Storage* DOMWindowStorage::localStorage(ExceptionState& exceptionState) const
 {
-    if (!m_window.isCurrentlyDisplayedInFrame())
+    if (!m_window->isCurrentlyDisplayedInFrame())
         return nullptr;
-    Document* document = m_window.document();
+    Document* document = m_window->document();
     if (!document)
         return nullptr;
     String accessDeniedMessage = "Access is denied for this document.";
@@ -123,23 +124,23 @@ Storage* DOMWindowStorage::localStorage(ExceptionState& exceptionState) const
         return nullptr;
     }
     if (m_localStorage) {
-        if (!m_localStorage->area()->canAccessStorage(m_window.frame())) {
+        if (!m_localStorage->area()->canAccessStorage(m_window->frame())) {
             exceptionState.throwSecurityError(accessDeniedMessage);
             return nullptr;
         }
-        return m_localStorage.get();
+        return m_localStorage;
     }
     // FIXME: Seems this check should be much higher?
     FrameHost* host = document->frameHost();
     if (!host || !host->settings().localStorageEnabled())
         return nullptr;
-    OwnPtrWillBeRawPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
-    if (!storageArea->canAccessStorage(m_window.frame())) {
+    StorageArea* storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
+    if (!storageArea->canAccessStorage(m_window->frame())) {
         exceptionState.throwSecurityError(accessDeniedMessage);
         return nullptr;
     }
-    m_localStorage = Storage::create(m_window.frame(), storageArea.release());
-    return m_localStorage.get();
+    m_localStorage = Storage::create(m_window->frame(), storageArea);
+    return m_localStorage;
 }
 
 } // namespace blink

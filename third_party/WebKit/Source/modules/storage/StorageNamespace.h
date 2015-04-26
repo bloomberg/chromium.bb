@@ -45,9 +45,9 @@ public:
     explicit StorageNamespace(PassOwnPtr<blink::WebStorageNamespace>);
     ~StorageNamespace();
 
-    static PassOwnPtrWillBeRawPtr<StorageArea> localStorageArea(SecurityOrigin*);
+    static StorageArea* localStorageArea(SecurityOrigin*);
 
-    PassOwnPtrWillBeRawPtr<StorageArea> storageArea(SecurityOrigin*);
+    StorageArea* storageArea(SecurityOrigin*);
     bool isSameNamespace(const blink::WebStorageNamespace& sessionNamespace) const;
 
 private:
