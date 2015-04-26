@@ -100,10 +100,10 @@ font-weight animatable, inherited, font, type_name=FontWeight, name_for_methods=
 text-rendering inherited, font, type_name=TextRenderingMode
 zoom custom_all
 
-align-content custom_all
-align-items custom_all
+align-content initial=initialContentAlignment, converter=convertContentAlignmentData
+align-items initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
 alignment-baseline svg
-align-self custom_all
+align-self initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
 animation-delay custom_all
 animation-direction custom_all
 animation-duration custom_all
@@ -196,9 +196,9 @@ grid-template-rows runtime_flag=CSSGridLayout, custom_all
 height animatable, initial=initialSize, converter=convertLengthSizing
 image-rendering inherited
 isolation runtime_flag=CSSCompositing
-justify-content custom_all
-justify-items runtime_flag=CSSGridLayout, custom_all
-justify-self runtime_flag=CSSGridLayout, custom_all
+justify-content initial=initialContentAlignment, converter=convertContentAlignmentData
+justify-items runtime_flag=CSSGridLayout, initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
+justify-self runtime_flag=CSSGridLayout, initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
 left animatable, initial=initialOffset, converter=convertLengthOrAuto
 letter-spacing animatable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
 lighting-color animatable, svg, converter=convertSVGColor

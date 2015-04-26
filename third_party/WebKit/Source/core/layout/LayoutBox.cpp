@@ -2135,7 +2135,7 @@ static bool columnFlexItemHasStretchAlignment(const LayoutObject* flexitem)
     ASSERT(parent->style()->isColumnFlexDirection());
     if (flexitem->style()->marginStart().isAuto() || flexitem->style()->marginEnd().isAuto())
         return false;
-    return flexitem->style()->alignSelf() == ItemPositionStretch || (flexitem->style()->alignSelf() == ItemPositionAuto && parent->style()->alignItems() == ItemPositionStretch);
+    return flexitem->style()->alignSelfPosition() == ItemPositionStretch || (flexitem->style()->alignSelfPosition() == ItemPositionAuto && parent->style()->alignItemsPosition() == ItemPositionStretch);
 }
 
 static bool isStretchingColumnFlexItem(const LayoutObject* flexitem)

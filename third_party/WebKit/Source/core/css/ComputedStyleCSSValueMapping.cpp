@@ -1513,11 +1513,11 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyEmptyCells:
         return cssValuePool().createValue(style.emptyCells());
     case CSSPropertyAlignContent:
-        return valueForContentPositionAndDistributionWithOverflowAlignment(resolveContentAlignmentAuto(style.alignContent(), style.alignContentDistribution(), styledNode), style.alignContentOverflowAlignment(), style.alignContentDistribution());
+        return valueForContentPositionAndDistributionWithOverflowAlignment(resolveContentAlignmentAuto(style.alignContentPosition(), style.alignContentDistribution(), styledNode), style.alignContentOverflowAlignment(), style.alignContentDistribution());
     case CSSPropertyAlignItems:
-        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.alignItems(), styledNode), style.alignItemsOverflowAlignment(), NonLegacyPosition);
+        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.alignItemsPosition(), styledNode), style.alignItemsOverflowAlignment(), NonLegacyPosition);
     case CSSPropertyAlignSelf:
-        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.alignSelf(), styledNode->parentNode()), style.alignSelfOverflowAlignment(), NonLegacyPosition);
+        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.alignSelfPosition(), styledNode->parentNode()), style.alignSelfOverflowAlignment(), NonLegacyPosition);
     case CSSPropertyFlex:
         return valuesForShorthandProperty(flexShorthand(), style, renderer, styledNode, allowVisitedStyle);
     case CSSPropertyFlexBasis:
@@ -1533,7 +1533,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyFlexWrap:
         return cssValuePool().createValue(style.flexWrap());
     case CSSPropertyJustifyContent:
-        return valueForContentPositionAndDistributionWithOverflowAlignment(resolveContentAlignmentAuto(style.justifyContent(), style.justifyContentDistribution(), styledNode), style.justifyContentOverflowAlignment(), style.justifyContentDistribution());
+        return valueForContentPositionAndDistributionWithOverflowAlignment(resolveContentAlignmentAuto(style.justifyContentPosition(), style.justifyContentDistribution(), styledNode), style.justifyContentOverflowAlignment(), style.justifyContentDistribution());
     case CSSPropertyOrder:
         return cssValuePool().createValue(style.order(), CSSPrimitiveValue::CSS_NUMBER);
     case CSSPropertyFloat:
@@ -1669,9 +1669,9 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyIsolation:
         return cssValuePool().createValue(style.isolation());
     case CSSPropertyJustifyItems:
-        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.justifyItems(), styledNode), style.justifyItemsOverflowAlignment(), style.justifyItemsPositionType());
+        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.justifyItemsPosition(), styledNode), style.justifyItemsOverflowAlignment(), style.justifyItemsPositionType());
     case CSSPropertyJustifySelf:
-        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.justifySelf(), styledNode->parentNode()), style.justifySelfOverflowAlignment(), NonLegacyPosition);
+        return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.justifySelfPosition(), styledNode->parentNode()), style.justifySelfOverflowAlignment(), NonLegacyPosition);
     case CSSPropertyLeft:
         return valueForPositionOffset(style, CSSPropertyLeft, renderer);
     case CSSPropertyLetterSpacing:

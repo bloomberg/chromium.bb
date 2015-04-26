@@ -99,8 +99,8 @@ void LayoutFullScreen::updateStyle()
     fullscreenStyle->font().update(nullptr);
 
     fullscreenStyle->setDisplay(FLEX);
-    fullscreenStyle->setJustifyContent(ContentPositionCenter);
-    fullscreenStyle->setAlignItems(ItemPositionCenter);
+    fullscreenStyle->setJustifyContentPosition(ContentPositionCenter);
+    fullscreenStyle->setAlignItemsPosition(ItemPositionCenter);
     fullscreenStyle->setFlexDirection(FlowColumn);
 
     fullscreenStyle->setPosition(FixedPosition);

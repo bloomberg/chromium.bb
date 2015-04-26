@@ -37,6 +37,8 @@
 #include "core/style/LineClampValue.h"
 #include "core/style/NinePieceImage.h"
 #include "core/style/ShapeValue.h"
+#include "core/style/StyleContentAlignmentData.h"
+#include "core/style/StyleSelfAlignmentData.h"
 #include "platform/LengthPoint.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -145,20 +147,16 @@ public:
 
     Vector<String> m_callbackSelectors;
 
+    StyleContentAlignmentData m_alignContent;
+    StyleSelfAlignmentData m_alignItems;
+    StyleSelfAlignmentData m_alignSelf;
+    StyleContentAlignmentData m_justifyContent;
+    StyleSelfAlignmentData m_justifyItems;
+    StyleSelfAlignmentData m_justifySelf;
+
     unsigned m_pageSizeType : 2; // PageSizeType
     unsigned m_transformStyle3D : 1; // ETransformStyle3D
     unsigned m_backfaceVisibility : 1; // EBackfaceVisibility
-
-    unsigned m_alignContent : 4; // ContentPosition
-    unsigned m_alignContentDistribution : 3; // ContentDistributionType
-    unsigned m_alignContentOverflowAlignment : 2; // OverflowAlignment
-    unsigned m_alignItems : 4; // ItemPosition
-    unsigned m_alignItemsOverflowAlignment : 2; // OverflowAlignment
-    unsigned m_alignSelf : 4; // ItemPosition
-    unsigned m_alignSelfOverflowAlignment : 2; // OverflowAlignment
-    unsigned m_justifyContent : 4; // ContentPosition
-    unsigned m_justifyContentDistribution : 3; // ContentDistributionType
-    unsigned m_justifyContentOverflowAlignment : 2; // OverflowAlignment
 
     unsigned userDrag : 2; // EUserDrag
     unsigned textOverflow : 1; // Whether or not lines that spill out should be truncated with "..."
@@ -185,13 +183,6 @@ public:
     unsigned m_objectFit : 3; // ObjectFit
 
     unsigned m_isolation : 1; // Isolation
-
-    unsigned m_justifyItems : 4; // ItemPosition
-    unsigned m_justifyItemsOverflowAlignment : 2; // OverflowAlignment
-    unsigned m_justifyItemsPositionType: 1; // Whether or not alignment uses the 'legacy' keyword.
-
-    unsigned m_justifySelf : 4; // ItemPosition
-    unsigned m_justifySelfOverflowAlignment : 2; // OverflowAlignment
 
     // ScrollBehavior. 'scroll-behavior' has 2 accepted values, but ScrollBehavior has a third
     // value (that can only be specified using CSSOM scroll APIs) so 2 bits are needed.

@@ -179,10 +179,7 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldSt
         || !oldStyle->contentDataEquivalent(newStyle)
         || oldStyle->hasTextCombine() != newStyle->hasTextCombine()
         || oldStyle->justifyItems() != newStyle->justifyItems()
-        || oldStyle->justifyItemsOverflowAlignment() != newStyle->justifyItemsOverflowAlignment()
-        || oldStyle->justifyItemsPositionType() != newStyle->justifyItemsPositionType()
-        || oldStyle->alignItems() != newStyle->alignItems()
-        || oldStyle->alignItemsOverflowAlignment() != newStyle->alignItemsOverflowAlignment())
+        || oldStyle->alignItems() != newStyle->alignItems())
         return Reattach;
 
     if (oldStyle->inheritedNotEqual(*newStyle))
@@ -200,16 +197,16 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldSt
 ItemPosition ComputedStyle::resolveAlignment(const ComputedStyle& parentStyle, const ComputedStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
 {
     // The auto keyword computes to the parent's align-items computed value, or to "stretch", if not set or "auto".
-    if (childStyle.alignSelf() == ItemPositionAuto)
-        return (parentStyle.alignItems() == ItemPositionAuto) ? resolvedAutoPositionForLayoutObject : parentStyle.alignItems();
-    return childStyle.alignSelf();
+    if (childStyle.alignSelfPosition() == ItemPositionAuto)
+        return (parentStyle.alignItemsPosition() == ItemPositionAuto) ? resolvedAutoPositionForLayoutObject : parentStyle.alignItemsPosition();
+    return childStyle.alignSelfPosition();
 }
 
 ItemPosition ComputedStyle::resolveJustification(const ComputedStyle& parentStyle, const ComputedStyle& childStyle, ItemPosition resolvedAutoPositionForLayoutObject)
 {
-    if (childStyle.justifySelf() == ItemPositionAuto)
-        return (parentStyle.justifyItems() == ItemPositionAuto) ? resolvedAutoPositionForLayoutObject : parentStyle.justifyItems();
-    return childStyle.justifySelf();
+    if (childStyle.justifySelfPosition() == ItemPositionAuto)
+        return (parentStyle.justifyItemsPosition() == ItemPositionAuto) ? resolvedAutoPositionForLayoutObject : parentStyle.justifyItemsPosition();
+    return childStyle.justifySelfPosition();
 }
 
 void ComputedStyle::inheritFrom(const ComputedStyle& inheritParent, IsAtShadowBoundary isAtShadowBoundary)
@@ -649,12 +646,11 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const
 
     if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
         if (rareNonInheritedData->m_alignContent != other.rareNonInheritedData->m_alignContent
-            || rareNonInheritedData->m_alignContentDistribution != other.rareNonInheritedData->m_alignContentDistribution
             || rareNonInheritedData->m_alignItems != other.rareNonInheritedData->m_alignItems
             || rareNonInheritedData->m_alignSelf != other.rareNonInheritedData->m_alignSelf
-            || rareNonInheritedData->m_alignSelfOverflowAlignment != other.rareNonInheritedData->m_alignSelfOverflowAlignment
             || rareNonInheritedData->m_justifyContent != other.rareNonInheritedData->m_justifyContent
-            || rareNonInheritedData->m_justifyContentDistribution != other.rareNonInheritedData->m_justifyContentDistribution)
+            || rareNonInheritedData->m_justifyItems != other.rareNonInheritedData->m_justifyItems
+            || rareNonInheritedData->m_justifySelf != other.rareNonInheritedData->m_justifySelf)
             return true;
     }
 

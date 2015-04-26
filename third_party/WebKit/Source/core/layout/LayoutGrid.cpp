@@ -1731,7 +1731,7 @@ static bool contentDistributionOffset(LayoutUnit availableFreeSpace, ContentPosi
 
 void LayoutGrid::computeContentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, GridSizingData& sizingData) const
 {
-    ContentPosition position = styleRef().justifyContent();
+    ContentPosition position = styleRef().justifyContentPosition();
     ContentDistributionType distribution = styleRef().justifyContentDistribution();
     // If <content-distribution> value can't be applied, 'position' will become the associated
     // <content-position> fallback value.
@@ -1777,7 +1777,7 @@ void LayoutGrid::computeContentPositionAndDistributionColumnOffset(LayoutUnit av
 
 void LayoutGrid::computeContentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, GridSizingData& sizingData) const
 {
-    ContentPosition position = styleRef().alignContent();
+    ContentPosition position = styleRef().alignContentPosition();
     ContentDistributionType distribution = styleRef().alignContentDistribution();
     // If <content-distribution> value can't be applied, 'position' will become the associated
     // <content-position> fallback value.
