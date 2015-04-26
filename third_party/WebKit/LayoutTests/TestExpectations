@@ -388,9 +388,8 @@ crbug.com/433727 [ XP ] http/tests/cachestorage/worker/cache-put.html [ Pass Tim
 crbug.com/433727 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout Failure ]
 
 # Flaky tests under Linux Aura
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_COLOR32_MATH rebaseline
-# crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html [ ImageOnlyFailure Pass ]
-# crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
+crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html [ ImageOnlyFailure Pass ]
+crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]
 
 crbug.com/395877 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
@@ -800,11 +799,10 @@ crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 crbug.com/231910 virtual/slimmingpaint/fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_COLOR32_MATH rebaseline
-# crbug.com/469190 [ XP Release ] fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
-# crbug.com/469190 [ XP Release ] virtual/slimmingpaint/fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
-# crbug.com/469190 [ XP Release ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure Failure ]
-# crbug.com/469190 [ XP ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ ImageOnlyFailure ]
+crbug.com/469190 [ XP Release ] fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
+crbug.com/469190 [ XP Release ] virtual/slimmingpaint/fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
+crbug.com/469190 [ XP Release ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure Failure ]
+crbug.com/469190 [ XP ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ ImageOnlyFailure ]
 crbug.com/469190 [ XP Release ] svg/as-background-image/svg-as-background-4.html [ Pass ImageOnlyFailure Failure ]
 
 # TODO(enne): rebaseline these and leave them as flaky timeouts
@@ -1146,8 +1144,7 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 crbug.com/306222 virtual/slimmingpaint/fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_COLOR32_MATH rebaseline
-# crbug.com/362434 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
+crbug.com/362434 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ ImageOnlyFailure Pass ]
 
 crbug.com/362499 [ Mac ] touchadjustment/context-menu-text-subtargets.html [ Failure Pass ]
 crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
@@ -1668,8 +1665,7 @@ crbug.com/382491 virtual/slimmingpaint/fast/forms/textarea/textarea-appearance-b
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
 crbug.com/421854 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/atsui-bidi-control.html [ Timeout Crash ]
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_COLOR32_MATH rebaseline
-# crbug.com/421854 [ Debug SnowLeopard ] fast/dom/52776.html [ Crash ]
+crbug.com/421854 [ Debug SnowLeopard ] fast/dom/52776.html [ Crash ]
 crbug.com/421854 [ Debug SnowLeopard ] fast/text/zero-width-characters-complex-script.html [ Crash ]
 crbug.com/421854 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/zero-width-characters-complex-script.html [ Crash ]
 crbug.com/421854 [ SnowLeopard Debug ] virtual/slimmingpaint/fast/text/zero-width-characters-complex-script.html [ Crash ]
@@ -1717,9 +1713,8 @@ crbug.com/450706 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video.html [ P
 crbug.com/421412 [ MountainLion Mavericks Retina ] virtual/antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/016.html [ Failure ImageOnlyFailure ]
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_COLOR32_MATH
-# crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/fieldset-stretch-to-legend.html [ Failure ImageOnlyFailure ]
-# crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/relative-painted-twice.html [ Failure ImageOnlyFailure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/basic/fieldset-stretch-to-legend.html [ Failure ImageOnlyFailure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/relative-painted-twice.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/008.html [ Failure ImageOnlyFailure ]
 # Reinstate after crbug.com/17217 rebaselines.
 #crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/025.html [ Failure ImageOnlyFailure ]
@@ -1999,8 +1994,7 @@ crbug.com/453781 fast/hidpi/image-srcset-src-selection-2x.html [ Pass Failure ]
 crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 
 # Minor failure only on Mac 10.6 Debug.
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_COLOR32_MATH rebaseline
-# crbug.com/459305 [ Mac Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
+crbug.com/459305 [ Mac Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 crbug.com/457137 [ Win ] webaudio/osc-sine-sweep-snr.html [ Pass Failure ]
 
@@ -2051,18 +2045,17 @@ crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
 crbug.com/463892 inspector/agents-enable-disable.html [ Skip ]
 
-# TODO(fmalita): re-enable after SK_SUPPORT_LEGACY_COLOR32_MATH rebaseline
-# crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon-evenodd.html [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon-nonzero.html [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon.html [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-html-background.html [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Debug ] fast/backgrounds/transformed-html-body-background.html [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Debug ] fast/transforms/transformed-caret.html [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Debug ] fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Debug ] virtual/slimmingpaint/fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
-# crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
+crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon-evenodd.html [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon-nonzero.html [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] css3/masking/clip-path-polygon.html [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-html-background.html [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] fast/backgrounds/transformed-html-body-background.html [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] fast/transforms/transformed-caret.html [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] virtual/slimmingpaint/fast/transforms/transformed-document-element.html [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
+crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
 crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-background.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/as-background-image/svg-as-background-4.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 svg/custom/massive-coordinates.svg [ Pass ImageOnlyFailure ]
