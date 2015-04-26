@@ -1926,13 +1926,11 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
 {
     ASSERT(exitedNode != enteredNode);
 
-    // First, dispatch mouseout and mouseover events (which bubble to ancestors)
+    // First, dispatch mouseout event (which bubbles to ancestors)
     if (exitedNode)
         exitedNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseout, 0, enteredNode);
-    if (enteredNode)
-        enteredNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseover, 0, exitedNode);
 
-    // Then dispatch mouseenter and mouseleave events. These are non-bubbling events, and they are dispatched if there
+    // A note on mouseenter and mouseleave: These are non-bubbling events, and they are dispatched if there
     // is a capturing event handler on an ancestor or a normal event handler on the element itself. This special
     // handling is necessary to avoid O(n^2) capturing event handler checks.
     //
@@ -1992,6 +1990,10 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
         if (exitedNodeHasCapturingAncestor || exitedAncestors[j]->hasEventListeners(EventTypeNames::mouseleave))
             exitedAncestors[j]->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseleave, 0, enteredNode);
     }
+
+    // Dispatch mouseover event (which bubbles to ancestors) after the mouseleave events are sent.
+    if (enteredNode)
+        enteredNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseover, 0, exitedNode);
 
     // Determine if there is a capturing mouseenter listener in an ancestor. This must be done /after/ dispatching the
     // mouseleave events because the handler for mouseleave might set a capturing mouseenter handler.

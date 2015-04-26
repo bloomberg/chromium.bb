@@ -15,11 +15,11 @@ PASS wasInside['green'] is false
 green received mousemove
 -- sending gestureTap to blue --
 green received mouseout
-blue received mouseover
 green received mouseleave
 PASS wasInside['green'] is true
 lightgreen received mouseleave
 PASS wasInside['lightgreen'] is true
+blue received mouseover
 lightblue received mouseenter
 PASS wasInside['lightblue'] is false
 blue received mouseenter
@@ -29,32 +29,32 @@ blue received mousemove
 blue received mousemove
 -- sending gestureTap to lightblue --
 blue received mouseout
-lightblue received mouseover
 blue received mouseleave
 PASS wasInside['blue'] is true
+lightblue received mouseover
 lightblue received mousemove
 --- Interleaved tap/mouse tests ---
 -- sending mouseMove to lightgreen --
 lightblue received mouseout
-lightgreen received mouseover
 lightblue received mouseleave
 PASS wasInside['lightblue'] is true
+lightgreen received mouseover
 lightgreen received mouseenter
 PASS wasInside['lightgreen'] is false
 lightgreen received mousemove
 -- sending gestureTap to lightblue --
 lightgreen received mouseout
-lightblue received mouseover
 lightgreen received mouseleave
 PASS wasInside['lightgreen'] is true
+lightblue received mouseover
 lightblue received mouseenter
 PASS wasInside['lightblue'] is false
 lightblue received mousemove
 -- sending mouseMove to lightgreen --
 lightblue received mouseout
-lightgreen received mouseover
 lightblue received mouseleave
 PASS wasInside['lightblue'] is true
+lightgreen received mouseover
 lightgreen received mouseenter
 PASS wasInside['lightgreen'] is false
 lightgreen received mousemove
