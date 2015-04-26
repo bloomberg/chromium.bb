@@ -293,7 +293,6 @@ protected:
     void setDecodedSize(size_t);
     void didAccessDecodedData();
 
-    virtual void switchClientsToRevalidatedResource();
     void clearResourceToRevalidate();
     void updateResponseAfterRevalidation(const ResourceResponse& validatingResponse);
 
@@ -349,6 +348,7 @@ private:
     bool addClientToSet(ResourceClient*);
     void cancelTimerFired(Timer<Resource>*);
 
+    void switchClientsToRevalidatedResource();
     void revalidationSucceeded(const ResourceResponse&);
     void revalidationFailed();
 
