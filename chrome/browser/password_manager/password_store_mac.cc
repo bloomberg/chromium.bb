@@ -1154,6 +1154,27 @@ bool PasswordStoreMac::FillBlacklistLogins(ScopedVector<PasswordForm>* forms) {
   return login_metadata_db_ && login_metadata_db_->GetBlacklistLogins(forms);
 }
 
+void PasswordStoreMac::AddSiteStatsImpl(
+    const password_manager::InteractionsStats& stats) {
+  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  if (login_metadata_db_)
+    login_metadata_db_->stats_table().AddRow(stats);
+}
+
+void PasswordStoreMac::RemoveSiteStatsImpl(const GURL& origin_domain) {
+  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  if (login_metadata_db_)
+    login_metadata_db_->stats_table().RemoveRow(origin_domain);
+}
+
+scoped_ptr<password_manager::InteractionsStats>
+PasswordStoreMac::GetSiteStatsImpl(const GURL& origin_domain) {
+  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+  return login_metadata_db_
+             ? login_metadata_db_->stats_table().GetRow(origin_domain)
+             : scoped_ptr<password_manager::InteractionsStats>();
+}
+
 bool PasswordStoreMac::AddToKeychainIfNecessary(const PasswordForm& form) {
   if (form.blacklisted_by_user) {
     return true;

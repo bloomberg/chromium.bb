@@ -346,6 +346,7 @@
       'password_manager/core/browser/password_store_unittest.cc',
       'password_manager/core/browser/password_syncable_service_unittest.cc',
       'password_manager/core/browser/psl_matching_helper_unittest.cc',
+      'password_manager/core/browser/statistics_table_unittest.cc',
       'password_manager/core/common/credential_manager_types_unittest.cc',
     ],
     'policy_unittest_sources': [

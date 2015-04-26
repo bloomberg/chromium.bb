@@ -59,8 +59,11 @@ class PasswordStoreDefault : public PasswordStore {
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
+  void AddSiteStatsImpl(const InteractionsStats& stats) override;
+  void RemoveSiteStatsImpl(const GURL& origin_domain) override;
+  scoped_ptr<InteractionsStats> GetSiteStatsImpl(
+      const GURL& origin_domain) override;
 
- protected:
   inline bool DeleteAndRecreateDatabaseFile() {
     return login_db_->DeleteAndRecreateDatabaseFile();
   }

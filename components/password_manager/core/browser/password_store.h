@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "sync/api/syncable_service.h"
 
 namespace autofill {
@@ -128,6 +129,16 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void ReportMetrics(const std::string& sync_username,
                              bool custom_passphrase_sync_enabled);
 
+  // Adds or replaces the statistics for the domain |stats.origin_domain|.
+  void AddSiteStats(const InteractionsStats& stats);
+
+  // Removes the statistics for |origin_domain|.
+  void RemoveSiteStats(const GURL& origin_domain);
+
+  // Retrieves the statistics for |origin_domain| and notifies |consumer| on
+  // completion. The request will be cancelled if the consumer is destroyed.
+  void GetSiteStats(const GURL& origin_domain, PasswordStoreConsumer* consumer);
+
   // Adds an observer to be notified when the password store data changes.
   void AddObserver(Observer* observer);
 
@@ -161,6 +172,8 @@ class PasswordStore : protected PasswordStoreSync,
     // will not be notified.
     void NotifyConsumerWithResults(
         ScopedVector<autofill::PasswordForm> results);
+
+    void NotifyWithSiteStatistics(scoped_ptr<InteractionsStats> stats);
 
     void set_ignore_logins_cutoff(base::Time cutoff) {
       ignore_logins_cutoff_ = cutoff;
@@ -235,6 +248,13 @@ class PasswordStore : protected PasswordStoreSync,
   // Finds all blacklist PasswordForms, and notifies the consumer.
   virtual void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request) = 0;
 
+  // Synchronous implementation for manipulating with statistics.
+  virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
+  virtual void RemoveSiteStatsImpl(const GURL& origin_domain) = 0;
+  // Returns a raw pointer so that InteractionsStats can be forward declared.
+  virtual scoped_ptr<InteractionsStats> GetSiteStatsImpl(
+      const GURL& origin_domain) WARN_UNUSED_RESULT = 0;
+
   // Log UMA stats for number of bulk deletions.
   void LogStatsForBulkDeletion(int num_deletions);
 
@@ -287,6 +307,10 @@ class PasswordStore : protected PasswordStoreSync,
                                           base::Time delete_end);
   void RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
                                          base::Time delete_end);
+
+  // Notifies |request| about the stats for |origin_domain|.
+  void NotifySiteStats(const GURL& origin_domain,
+                       scoped_ptr<GetLoginsRequest> request);
 
   // Extended version of GetLoginsImpl that also returns credentials stored for
   // the specified affiliated Android applications. That is, it finds all

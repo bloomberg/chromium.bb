@@ -139,4 +139,15 @@ bool TestPasswordStore::FillBlacklistLogins(
   return true;
 }
 
+void TestPasswordStore::AddSiteStatsImpl(const InteractionsStats& stats) {
+}
+
+void TestPasswordStore::RemoveSiteStatsImpl(const GURL& origin_domain) {
+}
+
+scoped_ptr<InteractionsStats> TestPasswordStore::GetSiteStatsImpl(
+    const GURL& origin_domain) {
+  return scoped_ptr<InteractionsStats>();
+}
+
 }  // namespace password_manager

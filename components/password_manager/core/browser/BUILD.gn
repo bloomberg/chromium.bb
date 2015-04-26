@@ -72,6 +72,8 @@ static_library("browser") {
     "password_syncable_service.h",
     "psl_matching_helper.cc",
     "psl_matching_helper.h",
+    "statistics_table.cc",
+    "statistics_table.h",
     "test_affiliation_fetcher_factory.h",
     "webdata/logins_table.cc",
     "webdata/logins_table.h",

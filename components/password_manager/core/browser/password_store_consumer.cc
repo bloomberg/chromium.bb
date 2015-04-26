@@ -4,12 +4,18 @@
 
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
+#include "components/password_manager/core/browser/statistics_table.h"
+
 namespace password_manager {
 
 PasswordStoreConsumer::PasswordStoreConsumer() : weak_ptr_factory_(this) {
 }
 
 PasswordStoreConsumer::~PasswordStoreConsumer() {
+}
+
+void PasswordStoreConsumer::OnGetSiteStatistics(
+    scoped_ptr<InteractionsStats> stats) {
 }
 
 }  // namespace password_manager

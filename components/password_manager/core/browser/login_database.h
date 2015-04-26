@@ -16,6 +16,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 
@@ -108,6 +109,8 @@ class LoginDatabase {
   // whether further use of this login database will succeed is unspecified.
   bool DeleteAndRecreateDatabaseFile();
 
+  StatisticsTable& stats_table() { return stats_table_; }
+
  private:
   // Result values for encryption/decryption actions.
   enum EncryptionResult {
@@ -165,6 +168,7 @@ class LoginDatabase {
   base::FilePath db_path_;
   mutable sql::Connection db_;
   sql::MetaTable meta_table_;
+  StatisticsTable stats_table_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };

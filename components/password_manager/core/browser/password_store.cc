@@ -59,6 +59,13 @@ void PasswordStore::GetLoginsRequest::NotifyConsumerWithResults(
                             consumer_weak_, base::Passed(&results)));
 }
 
+void PasswordStore::GetLoginsRequest::NotifyWithSiteStatistics(
+    scoped_ptr<InteractionsStats> stats) {
+  origin_loop_->PostTask(FROM_HERE,
+                         base::Bind(&PasswordStoreConsumer::OnGetSiteStatistics,
+                                    consumer_weak_, base::Passed(&stats)));
+}
+
 PasswordStore::PasswordStore(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner)
@@ -161,6 +168,22 @@ void PasswordStore::ReportMetrics(const std::string& sync_username,
     task_runner->PostDelayedTask(FROM_HERE, task,
                                  base::TimeDelta::FromSeconds(30));
   }
+}
+
+void PasswordStore::AddSiteStats(const InteractionsStats& stats) {
+  ScheduleTask(base::Bind(&PasswordStore::AddSiteStatsImpl, this, stats));
+}
+
+void PasswordStore::RemoveSiteStats(const GURL& origin_domain) {
+  ScheduleTask(
+      base::Bind(&PasswordStore::RemoveSiteStatsImpl, this, origin_domain));
+}
+
+void PasswordStore::GetSiteStats(const GURL& origin_domain,
+                                 PasswordStoreConsumer* consumer) {
+  scoped_ptr<GetLoginsRequest> request(new GetLoginsRequest(consumer));
+  ScheduleTask(base::Bind(&PasswordStore::NotifySiteStats, this, origin_domain,
+                          base::Passed(&request)));
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
@@ -300,6 +323,11 @@ void PasswordStore::RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
   PasswordStoreChangeList changes =
       RemoveLoginsSyncedBetweenImpl(delete_begin, delete_end);
   NotifyLoginsChanged(changes);
+}
+
+void PasswordStore::NotifySiteStats(const GURL& origin_domain,
+                                    scoped_ptr<GetLoginsRequest> request) {
+  request->NotifyWithSiteStatistics(GetSiteStatsImpl(origin_domain));
 }
 
 void PasswordStore::GetLoginsWithAffiliationsImpl(

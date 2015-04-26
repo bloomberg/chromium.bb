@@ -86,6 +86,11 @@ class PasswordStoreMac : public password_manager::PasswordStore {
       ScopedVector<autofill::PasswordForm>* forms) override;
   bool FillBlacklistLogins(
       ScopedVector<autofill::PasswordForm>* forms) override;
+  void AddSiteStatsImpl(
+      const password_manager::InteractionsStats& stats) override;
+  void RemoveSiteStatsImpl(const GURL& origin_domain) override;
+  scoped_ptr<password_manager::InteractionsStats> GetSiteStatsImpl(
+      const GURL& origin_domain) override;
 
   // Adds the given form to the Keychain if it's something we want to store
   // there (i.e., not a blacklist entry). Returns true if the operation

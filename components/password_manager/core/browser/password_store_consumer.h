@@ -16,6 +16,8 @@ struct PasswordForm;
 
 namespace password_manager {
 
+struct InteractionsStats;
+
 // Reads from the PasswordStore are done asynchronously on a separate
 // thread. PasswordStoreConsumer provides the virtual callback method, which is
 // guaranteed to be executed on this (the UI) thread. It also provides the
@@ -25,9 +27,12 @@ class PasswordStoreConsumer {
  public:
   PasswordStoreConsumer();
 
-  // Called when the request is finished, with the associated |results|.
+  // Called when the GetLogins() request is finished, with the associated
+  // |results|.
   virtual void OnGetPasswordStoreResults(
       ScopedVector<autofill::PasswordForm> results) = 0;
+
+  virtual void OnGetSiteStatistics(scoped_ptr<InteractionsStats> stats);
 
   // The base::CancelableTaskTracker can be used for cancelling the
   // tasks associated with the consumer.
