@@ -38,8 +38,8 @@ private:
     DOMMimeTypeArray* mimeTypes(LocalFrame*) const;
     bool javaEnabled(LocalFrame*) const;
 
-    mutable RefPtrWillBeMember<DOMPluginArray> m_plugins;
-    mutable RefPtrWillBeMember<DOMMimeTypeArray> m_mimeTypes;
+    mutable Member<DOMPluginArray> m_plugins;
+    mutable Member<DOMMimeTypeArray> m_mimeTypes;
 };
 
 } // namespace blink

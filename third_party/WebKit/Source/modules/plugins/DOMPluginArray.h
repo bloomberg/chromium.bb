@@ -26,26 +26,24 @@
 #include "modules/plugins/DOMPlugin.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
 class LocalFrame;
 class PluginData;
 
-class DOMPluginArray final : public RefCountedWillBeGarbageCollected<DOMPluginArray>, public ScriptWrappable, public DOMWindowProperty {
+class DOMPluginArray final : public GarbageCollectedFinalized<DOMPluginArray>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMPluginArray);
 public:
-    static PassRefPtrWillBeRawPtr<DOMPluginArray> create(LocalFrame* frame)
+    static DOMPluginArray* create(LocalFrame* frame)
     {
-        return adoptRefWillBeNoop(new DOMPluginArray(frame));
+        return new DOMPluginArray(frame);
     }
 
     unsigned length() const;
-    PassRefPtrWillBeRawPtr<DOMPlugin> item(unsigned index);
-    PassRefPtrWillBeRawPtr<DOMPlugin> namedItem(const AtomicString& propertyName);
+    DOMPlugin* item(unsigned index);
+    DOMPlugin* namedItem(const AtomicString& propertyName);
 
     void refresh(bool reload);
 
@@ -58,4 +56,4 @@ private:
 
 } // namespace blink
 
-#endif // PluginArray_h
+#endif // DOMPluginArray_h

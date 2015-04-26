@@ -34,18 +34,18 @@ namespace blink {
 class LocalFrame;
 class PluginData;
 
-class DOMMimeTypeArray final : public RefCountedWillBeGarbageCollected<DOMMimeTypeArray>, public ScriptWrappable, public DOMWindowProperty {
+class DOMMimeTypeArray final : public GarbageCollectedFinalized<DOMMimeTypeArray>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMMimeTypeArray);
 public:
-    static PassRefPtrWillBeRawPtr<DOMMimeTypeArray> create(LocalFrame* frame)
+    static DOMMimeTypeArray* create(LocalFrame* frame)
     {
-        return adoptRefWillBeNoop(new DOMMimeTypeArray(frame));
+        return new DOMMimeTypeArray(frame);
     }
 
     unsigned length() const;
-    PassRefPtrWillBeRawPtr<DOMMimeType> item(unsigned index);
-    PassRefPtrWillBeRawPtr<DOMMimeType> namedItem(const AtomicString& propertyName);
+    DOMMimeType* item(unsigned index);
+    DOMMimeType* namedItem(const AtomicString& propertyName);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -56,4 +56,4 @@ private:
 
 } // namespace blink
 
-#endif // MimeTypeArray_h
+#endif // DOMMimeTypeArray_h

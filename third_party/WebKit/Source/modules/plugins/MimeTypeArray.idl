@@ -19,7 +19,7 @@
 */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     ImplementedAs=DOMMimeTypeArray
 ] interface MimeTypeArray {
     readonly attribute unsigned long length;

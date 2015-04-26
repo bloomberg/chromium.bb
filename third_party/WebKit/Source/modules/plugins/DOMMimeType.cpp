@@ -66,7 +66,7 @@ const String &DOMMimeType::description() const
     return mimeClassInfo().desc;
 }
 
-PassRefPtrWillBeRawPtr<DOMPlugin> DOMMimeType::enabledPlugin() const
+DOMPlugin* DOMMimeType::enabledPlugin() const
 {
     // FIXME: allowPlugins is just a client call. We should not need
     // to bounce through the loader to get there.

@@ -46,7 +46,7 @@ unsigned DOMMimeTypeArray::length() const
     return data->mimes().size();
 }
 
-PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::item(unsigned index)
+DOMMimeType* DOMMimeTypeArray::item(unsigned index)
 {
     PluginData* data = getPluginData();
     if (!data)
@@ -57,7 +57,7 @@ PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::item(unsigned index)
     return DOMMimeType::create(data, m_frame, index);
 }
 
-PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::namedItem(const AtomicString& propertyName)
+DOMMimeType* DOMMimeTypeArray::namedItem(const AtomicString& propertyName)
 {
     PluginData* data = getPluginData();
     if (!data)

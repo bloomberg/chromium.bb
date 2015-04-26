@@ -46,7 +46,7 @@ unsigned DOMPluginArray::length() const
     return data->plugins().size();
 }
 
-PassRefPtrWillBeRawPtr<DOMPlugin> DOMPluginArray::item(unsigned index)
+DOMPlugin* DOMPluginArray::item(unsigned index)
 {
     PluginData* data = pluginData();
     if (!data)
@@ -57,7 +57,7 @@ PassRefPtrWillBeRawPtr<DOMPlugin> DOMPluginArray::item(unsigned index)
     return DOMPlugin::create(data, m_frame, index);
 }
 
-PassRefPtrWillBeRawPtr<DOMPlugin> DOMPluginArray::namedItem(const AtomicString& propertyName)
+DOMPlugin* DOMPluginArray::namedItem(const AtomicString& propertyName)
 {
     PluginData* data = pluginData();
     if (!data)

@@ -25,20 +25,19 @@
 #include "modules/plugins/DOMMimeType.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class PluginData;
 
-class DOMPlugin final : public RefCountedWillBeGarbageCollectedFinalized<DOMPlugin>, public ScriptWrappable, public LocalFrameLifecycleObserver {
+class DOMPlugin final : public GarbageCollectedFinalized<DOMPlugin>, public ScriptWrappable, public LocalFrameLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMPlugin);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<DOMPlugin> create(PluginData* pluginData, LocalFrame* frame, unsigned index)
+    static DOMPlugin* create(PluginData* pluginData, LocalFrame* frame, unsigned index)
     {
-        return adoptRefWillBeNoop(new DOMPlugin(pluginData, frame, index));
+        return new DOMPlugin(pluginData, frame, index);
     }
     virtual ~DOMPlugin();
 
@@ -48,8 +47,8 @@ public:
 
     unsigned length() const;
 
-    PassRefPtrWillBeRawPtr<DOMMimeType> item(unsigned index);
-    PassRefPtrWillBeRawPtr<DOMMimeType> namedItem(const AtomicString& propertyName);
+    DOMMimeType* item(unsigned index);
+    DOMMimeType* namedItem(const AtomicString& propertyName);
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -25,8 +25,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -34,20 +32,20 @@ namespace blink {
 class DOMPlugin;
 class LocalFrame;
 
-class DOMMimeType final : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public LocalFrameLifecycleObserver {
+class DOMMimeType final : public GarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public LocalFrameLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<DOMMimeType> create(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)
+    static DOMMimeType* create(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)
     {
-        return adoptRefWillBeNoop(new DOMMimeType(pluginData, frame, index));
+        return new DOMMimeType(pluginData, frame, index);
     }
     virtual ~DOMMimeType();
 
     const String& type() const;
     String suffixes() const;
     const String& description() const;
-    PassRefPtrWillBeRawPtr<DOMPlugin> enabledPlugin() const;
+    DOMPlugin* enabledPlugin() const;
 
     DECLARE_VIRTUAL_TRACE();
 
