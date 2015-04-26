@@ -74,7 +74,7 @@ namespace blink {
 
 static bool isArchiveMIMEType(const String& mimeType)
 {
-    return mimeType == "multipart/related";
+    return equalIgnoringCase("multipart/related", mimeType);
 }
 
 DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, const SubstituteData& substituteData)
@@ -386,7 +386,7 @@ bool DocumentLoader::shouldContinueForResponse() const
         return false;
 
     // Prevent remote web archives from loading because they can claim to be from any domain and thus avoid cross-domain security checks.
-    if (equalIgnoringCase("multipart/related", m_response.mimeType()) && !SchemeRegistry::shouldTreatURLSchemeAsLocal(m_request.url().protocol()))
+    if (isArchiveMIMEType(m_response.mimeType()) && !SchemeRegistry::shouldTreatURLSchemeAsLocal(m_request.url().protocol()))
         return false;
 
     return true;
