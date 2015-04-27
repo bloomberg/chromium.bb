@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
 import android.net.MailTo;
-import android.os.Build;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
@@ -101,9 +100,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                                 TemplateUrlService.getInstance()
                                         .getDefaultSearchEngineTemplateUrl().getShortName()));
             }
-
-            menu.findItem(R.id.contextmenu_copy_image).setVisible(
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN);
         }
     }
 
