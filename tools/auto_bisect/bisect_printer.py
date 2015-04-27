@@ -64,7 +64,7 @@ To run locally:
 REPRO_STEPS_TRYJOB = """
 To reproduce on a performance try bot:
  1. Edit run-perf-test.cfg
- 2. $ git try -b <bot> --svn_repo='svn://svn.chromium.org/chrome-try/try-perf'
+ 2. git try -b bot-name --svn_repo='svn://svn.chromium.org/chrome-try/try-perf'
 
 Notes:
  a) Follow the in-file instructions in run-perf-test.cfg.
@@ -81,7 +81,7 @@ https://sites.google.com/a/chromium.org/dev/developers/performance-try-bots"""
 REPRO_STEPS_TRYJOB_TELEMETRY = """
 To reproduce on a performance try bot:
 %(command)s
-(Where <bot-name> comes from tools/perf/run_benchmark --browser=list)
+(Where bot-name comes from tools/perf/run_benchmark --browser=list)
 
 For more details please visit
 https://sites.google.com/a/chromium.org/dev/developers/performance-try-bots
@@ -120,7 +120,8 @@ class BisectPrinter(object):
         else:
           build_status = 'Bad'
 
-      print '  %20s  %40s  %s' % (revision_state.depot, revision_state.revision,
+      print '  %20s  %40s  %s' % (revision_state.depot,
+                                  revision_state.revision,
                                   build_status)
     print
 
@@ -343,7 +344,7 @@ class BisectPrinter(object):
     print REPRO_STEPS_LOCAL
     if bisect_utils.IsTelemetryCommand(self.opts.command):
       telemetry_command = re.sub(r'--browser=[^\s]+',
-                                 '--browser=<bot-name>',
+                                 '--browser=bot-name',
                                  command)
       print REPRO_STEPS_TRYJOB_TELEMETRY % {'command': telemetry_command}
     else:
