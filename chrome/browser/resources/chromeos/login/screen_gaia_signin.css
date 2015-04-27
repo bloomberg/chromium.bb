@@ -69,21 +69,24 @@ throbber-notice {
   display: none;
 }
 
-#close-button-item {
+.custom-gaia-button {
   background: transparent none;
-  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON);
   background-position: center;
   background-repeat: no-repeat;
-  height: 14px;
+  height: 34px;
   position: absolute;
-  right: 15px;
-  top: 15px;
-  width: 14px;
+  top: 0;
+  width: 34px;
   z-index: 1;
 }
 
+#close-button-item {
+  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON);
+  right: 0;
+}
+
 html[dir=rtl] #close-button-item {
-  left: 15px;
+  left: 0;
   right: auto;
 }
 
@@ -105,22 +108,14 @@ html[dir=rtl] #close-button-item {
 }
 
 #back-button-item {
-  background: transparent none;
   background-image: url(chrome://theme/IDR_LOGIN_BACK_BUTTTON);
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 18px;
-  left: 14px;
-  position: absolute;
-  top: 14px;
-  width: 18px;
-  z-index: 1;
+  left: 0;
 }
 
 html[dir=rtl] #back-button-item {
   -webkit-transform: scaleX(-1);
   left: auto;
-  right: 14px;
+  right: 0;
 }
 
 .new-gaia-flow .full-width #back-button-item {
