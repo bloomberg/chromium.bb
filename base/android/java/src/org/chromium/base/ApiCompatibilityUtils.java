@@ -375,4 +375,16 @@ public class ApiCompatibilityUtils {
             return res.getDrawable(id);
         }
     }
+
+    /**
+     * @see android.content.res.Resources#getDrawableForDensity(int id, int density).
+     */
+    @SuppressWarnings("deprecation")
+    public static Drawable getDrawableForDensity(Resources res, int id, int density) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return res.getDrawableForDensity(id, density, null);
+        } else {
+            return res.getDrawableForDensity(id, density);
+        }
+    }
 }

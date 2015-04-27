@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -22,7 +21,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -153,14 +151,9 @@ public class BookmarkUtils {
         return bitmap;
     }
 
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
     private static Bitmap getBitmapFromResourceId(Context context, int id, int density) {
-        Drawable drawable = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-            drawable = context.getResources().getDrawableForDensity(id, density);
-        } else {
-            drawable = ApiCompatibilityUtils.getDrawable(context.getResources(), id);
-        }
+        Drawable drawable = ApiCompatibilityUtils.getDrawableForDensity(
+                context.getResources(), id, density);
 
         if (drawable instanceof BitmapDrawable) {
             BitmapDrawable bd = (BitmapDrawable) drawable;
