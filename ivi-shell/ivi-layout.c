@@ -2738,29 +2738,10 @@ ivi_layout_surface_configure(struct ivi_layout_surface *ivisurf,
 			     int32_t width, int32_t height)
 {
 	struct ivi_layout *layout = get_instance();
-	int32_t in_init = 0;
-	ivisurf->surface->width_from_buffer  = width;
-	ivisurf->surface->height_from_buffer = height;
 
-	if (ivisurf->prop.source_width == 0 || ivisurf->prop.source_height == 0) {
-		in_init = 1;
-	}
-
-	/* FIXME: when sourceHeight/Width is used as clipping range in image buffer */
-	/* if (ivisurf->prop.sourceWidth == 0 || ivisurf->prop.sourceHeight == 0) { */
-		ivisurf->pending.prop.source_width = width;
-		ivisurf->pending.prop.source_height = height;
-		ivisurf->prop.source_width = width;
-		ivisurf->prop.source_height = height;
-	/* } */
-
-	ivisurf->event_mask |= IVI_NOTIFICATION_CONFIGURE;
-
-	if (in_init) {
-		wl_signal_emit(&layout->surface_notification.configure_changed, ivisurf);
-	} else {
-		ivi_layout_commit_changes();
-	}
+	/* emit callback which is set by ivi-layout api user */
+	wl_signal_emit(&layout->surface_notification.configure_changed,
+		       ivisurf);
 }
 
 static int32_t
