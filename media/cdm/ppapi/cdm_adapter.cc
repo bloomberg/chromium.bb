@@ -105,10 +105,16 @@ PP_DecryptResult CdmStatusToPpDecryptResult(cdm::Status status) {
       return PP_DECRYPTRESULT_DECRYPT_ERROR;
     case cdm::kDecodeError:
       return PP_DECRYPTRESULT_DECODE_ERROR;
-    default:
-      PP_NOTREACHED();
-      return PP_DECRYPTRESULT_DECODE_ERROR;
+    case cdm::kSessionError:
+    case cdm::kDeferredInitialization:
+      // kSessionError and kDeferredInitialization are only used by the
+      // Initialize* methods internally and never returned. Deliver*
+      // methods should never use these values.
+      break;
   }
+
+  PP_NOTREACHED();
+  return PP_DECRYPTRESULT_DECRYPT_ERROR;
 }
 
 PP_DecryptedFrameFormat CdmVideoFormatToPpDecryptedFrameFormat(
