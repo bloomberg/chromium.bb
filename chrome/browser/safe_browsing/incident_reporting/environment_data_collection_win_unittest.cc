@@ -216,8 +216,11 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   EXPECT_EQ(ClientIncidentReport_EnvironmentData_Process_ModuleState::
                 MODULE_STATE_MODIFIED,
             process_report.module_state(0).modified_state());
+  // See comment above about AddressSantizier.
+#if !defined(ADDRESS_SANITIZER)
   EXPECT_EQ(std::string(kTestExportName),
             process_report.module_state(0).modified_export(0));
+#endif
 }
 #endif  // _WIN64
 
