@@ -40,7 +40,7 @@ SpellCheckerSubMenuObserver::~SpellCheckerSubMenuObserver() {
 
 void SpellCheckerSubMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Add available spell-checker languages to the sub menu.
   content::BrowserContext* browser_context = proxy_->GetBrowserContext();

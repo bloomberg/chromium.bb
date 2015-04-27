@@ -52,7 +52,7 @@ SpellingMenuObserver::~SpellingMenuObserver() {
 }
 
 void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!params.misspelled_word.empty() ||
       params.dictionary_suggestions.empty());
 

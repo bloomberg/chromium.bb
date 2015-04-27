@@ -44,7 +44,7 @@ SpellCheckerSubMenuObserver::~SpellCheckerSubMenuObserver() {
 
 void SpellCheckerSubMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Add an item that toggles the spelling panel.
   submenu_model_.AddCheckItem(
