@@ -55,6 +55,8 @@ static_library("browser") {
     "top_sites_cache.h",
     "top_sites_database.cc",
     "top_sites_database.h",
+    "top_sites_impl.cc",
+    "top_sites_impl.h",
     "top_sites_observer.h",
     "typed_url_syncable_service.cc",
     "typed_url_syncable_service.h",
@@ -80,7 +82,10 @@ static_library("browser") {
 
   deps = [
     "//base",
+    "//base:i18n",
+    "//base:prefs",
     "//components/favicon_base",
+    "//components/history/core/common",
     "//components/keyed_service/core",
     "//components/query_parser",
     "//components/signin/core/browser",

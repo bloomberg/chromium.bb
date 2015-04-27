@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_TOP_SITES_IMPL_H_
-#define CHROME_BROWSER_HISTORY_TOP_SITES_IMPL_H_
+#ifndef COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_IMPL_H_
+#define COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_IMPL_H_
 
 #include <list>
 #include <set>
@@ -317,4 +317,4 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_TOP_SITES_IMPL_H_
+#endif  // COMPONENTS_HISTORY_CORE_BROWSER_TOP_SITES_IMPL_H_

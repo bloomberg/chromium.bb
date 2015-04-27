@@ -1609,8 +1609,6 @@
       'browser/history/history_utils.h',
       'browser/history/top_sites_factory.cc',
       'browser/history/top_sites_factory.h',
-      'browser/history/top_sites_impl.cc',
-      'browser/history/top_sites_impl.h',
       'browser/history/web_history_service_factory.cc',
       'browser/history/web_history_service_factory.h',
     ],
