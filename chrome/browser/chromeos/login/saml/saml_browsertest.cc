@@ -267,7 +267,7 @@ scoped_ptr<HttpResponse> FakeSamlIdp::BuildHTMLResponse(
 // iframe (false) GAIA sign in.
 class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
  public:
-  SamlTest() : saml_load_injected_(false) {
+  SamlTest() {
     set_use_webview(GetParam());
     set_initialize_fake_merge_session(false);
   }
@@ -299,21 +299,23 @@ class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
     OobeBaseTest::SetUpOnMainThread();
   }
 
+  void SetupAuthFlowChangeListener() {
+    ASSERT_TRUE(content::ExecuteScript(
+        GetLoginUI()->GetWebContents(),
+        "$('gaia-signin').gaiaAuthHost_.addEventListener('authFlowChange',"
+            "function f() {"
+              "$('gaia-signin').gaiaAuthHost_.removeEventListener("
+                  "'authFlowChange', f);"
+              "window.domAutomationController.setAutomationId(0);"
+              "window.domAutomationController.send("
+                  "$('gaia-signin').isSAML() ? 'SamlLoaded' : 'GaiaLoaded');"
+            "});"));
+  }
+
   virtual void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
     WaitForSigninScreen();
 
-    if (!saml_load_injected_) {
-      saml_load_injected_ = true;
-
-      ASSERT_TRUE(content::ExecuteScript(
-          GetLoginUI()->GetWebContents(),
-          "$('gaia-signin').gaiaAuthHost_.addEventListener('authFlowChange',"
-              "function() {"
-                "window.domAutomationController.setAutomationId(0);"
-                "window.domAutomationController.send("
-                    "$('gaia-signin').isSAML() ? 'SamlLoaded' : 'GaiaLoaded');"
-              "});"));
-    }
+    SetupAuthFlowChangeListener();
 
     content::DOMMessageQueue message_queue;  // Start observe before SAML.
     GetLoginDisplay()->ShowSigninScreenForCreds(gaia_email, "");
@@ -358,8 +360,6 @@ class SamlTest : public OobeBaseTest, public testing::WithParamInterface<bool> {
  private:
   FakeSamlIdp fake_saml_idp_;
 
-  bool saml_load_injected_;
-
   DISALLOW_COPY_AND_ASSIGN(SamlTest);
 };
 
@@ -379,6 +379,8 @@ IN_PROC_BROWSER_TEST_P(SamlTest, SamlUI) {
   if (!use_webview()) {
     JsExpect("!$('cancel-add-user-button').hidden");
   }
+
+  SetupAuthFlowChangeListener();
 
   // Click on 'cancel'.
   content::DOMMessageQueue message_queue;  // Observe before 'cancel'.
@@ -404,13 +406,6 @@ IN_PROC_BROWSER_TEST_P(SamlTest, SamlUI) {
 
 // Tests the sign-in flow when the credentials passing API is used.
 IN_PROC_BROWSER_TEST_P(SamlTest, CredentialPassingAPI) {
-  // Disabled for webview because the script is injected using
-  // webview.executeScript and there is no way to control the injection time.
-  // As a result, this test is flaky and fails about 20% of the time.
-  // TODO(xiyuan): Re-enable when webview.addContentScript API is ready.
-  if (use_webview())
-    return;
-
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);

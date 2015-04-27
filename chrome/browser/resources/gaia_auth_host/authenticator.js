@@ -571,6 +571,7 @@ cr.define('cr.login', function() {
                             deviceId: this.deviceId_ || ''
                           }
                         }));
+    this.clearCredentials_();
   };
 
   /**
