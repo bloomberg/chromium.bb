@@ -140,6 +140,14 @@ AtkUtilAuraLinux* AtkUtilAuraLinux::GetInstance() {
 }
 
 AtkUtilAuraLinux::AtkUtilAuraLinux() {
+}
+
+void AtkUtilAuraLinux::Initialize(
+    scoped_refptr<base::TaskRunner> init_task_runner) {
+  // TODO(k.czech): use |init_task_runner| to post a task to do the
+  // initialization rather than doing it on this thread.
+  // http://crbug.com/468112
+
   // Register our util class.
   g_type_class_unref(g_type_class_ref(ATK_UTIL_AURALINUX_TYPE));
 

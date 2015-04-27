@@ -8,6 +8,10 @@
 #include "base/memory/singleton.h"
 #include "ui/accessibility/ax_export.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace ui {
 
 // This singleton class initializes ATK (accessibility toolkit) and
@@ -20,6 +24,8 @@ class AtkUtilAuraLinux {
 
   AtkUtilAuraLinux();
   virtual ~AtkUtilAuraLinux();
+
+  void Initialize(scoped_refptr<base::TaskRunner> init_task_runner);
 
  private:
   friend struct DefaultSingletonTraits<AtkUtilAuraLinux>;

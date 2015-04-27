@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/common/chrome_version_info.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -387,6 +388,16 @@ ui::ContextFactory* ChromeViewsDelegate::GetContextFactory() {
 std::string ChromeViewsDelegate::GetApplicationName() {
   return chrome::VersionInfo().Name();
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+scoped_refptr<base::TaskRunner>
+    ChromeViewsDelegate::GetTaskRunnerForAuraLinuxAccessibilityInit() {
+  // This should be on the FILE thread so that we can open libatk-bridge.so
+  // without blocking.
+  return content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::FILE);
+}
+#endif
 
 #if defined(OS_WIN)
 int ChromeViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,

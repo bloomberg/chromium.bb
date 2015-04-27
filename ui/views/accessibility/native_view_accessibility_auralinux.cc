@@ -125,6 +125,13 @@ class AuraLinuxApplication
           ViewsDelegate::views_delegate->GetApplicationName());
     }
     ui::AXPlatformNodeAuraLinux::SetApplication(platform_node_);
+    if (ViewsDelegate::views_delegate) {
+      scoped_refptr<base::TaskRunner> init_task_runner =
+          ViewsDelegate::views_delegate->
+          GetTaskRunnerForAuraLinuxAccessibilityInit();
+      if (init_task_runner)
+        ui::AXPlatformNodeAuraLinux::StaticInitialize(init_task_runner);
+    }
   }
 
   ~AuraLinuxApplication() override {

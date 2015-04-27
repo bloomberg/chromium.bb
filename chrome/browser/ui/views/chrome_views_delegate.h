@@ -49,6 +49,10 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 #endif
   ui::ContextFactory* GetContextFactory() override;
   std::string GetApplicationName() override;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  scoped_refptr<base::TaskRunner>
+      GetTaskRunnerForAuraLinuxAccessibilityInit() override;
+#endif
 #if defined(OS_WIN)
   int GetAppbarAutohideEdges(HMONITOR monitor,
                              const base::Closure& callback) override;
