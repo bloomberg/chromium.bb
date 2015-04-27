@@ -248,7 +248,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTestBase);
 };
 
-// RenderVIewTest-based tests crash on Android
+// RenderViewTest-based tests crash on Android
 // http://crbug.com/187500
 #if defined(OS_ANDROID)
 #define MAYBE_PrintWebViewHelperTest DISABLED_PrintWebViewHelperTest
@@ -505,7 +505,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, PrintLayoutTest) {
 // These print preview tests do not work on Chrome OS yet.
 #if !defined(OS_CHROMEOS)
 
-// RenderVIewTest-based tests crash on Android
+// RenderViewTest-based tests crash on Android
 // http://crbug.com/187500
 #if defined(OS_ANDROID)
 #define MAYBE_PrintWebViewHelperPreviewTest \

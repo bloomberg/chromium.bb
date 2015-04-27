@@ -26,7 +26,7 @@ struct PrintMsg_PrintPage_Params;
 struct PrintMsg_PrintPages_Params;
 struct PrintHostMsg_SetOptionsFromDocument_Params;
 
-// RenderVIewTest-based tests crash on Android
+// RenderViewTest-based tests crash on Android
 // http://crbug.com/187500
 #if defined(OS_ANDROID)
 #define MAYBE_PrintWebViewHelperTest DISABLED_PrintWebViewHelperTest

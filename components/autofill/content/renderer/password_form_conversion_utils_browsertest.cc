@@ -105,7 +105,7 @@ class PasswordFormBuilder {
   DISALLOW_COPY_AND_ASSIGN(PasswordFormBuilder);
 };
 
-// RenderVIewTest-based tests crash on Android
+// RenderViewTest-based tests crash on Android
 // http://crbug.com/187500
 #if defined(OS_ANDROID)
 #define MAYBE_PasswordFormConversionUtilsTest \
