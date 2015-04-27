@@ -338,7 +338,22 @@
       {
         "name": "back",
         "type": "function",
-        "description": "Navigates backward one history entry if possible. Equivalent to <code>go(-1)</code>."
+        "description": "Navigates backward one history entry if possible. Equivalent to <code>go(-1)</code>.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after the navigation has either failed or completed successfully.",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean",
+                "description": "Indicates whether the navigation was successful."
+              }
+            ]
+          }
+        ]
       },
       {
         "name": "canGoBack",
@@ -439,7 +454,21 @@
         "name": "forward",
         "type": "function",
         "description": "Navigates forward one history entry if possible. Equivalent to <code>go(1)</code>.",
-        "parameters": []
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after the navigation has either failed or completed successfully.",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean",
+                "description": "Indicates whether the navigation was successful."
+              }
+            ]
+          }
+        ]
       },
       {
         "name": "getProcessId",
@@ -506,6 +535,7 @@
           {
             "type": "function",
             "name": "callback",
+            "description": "Called after the navigation has either failed or completed successfully.",
             "optional": true,
             "parameters": [
               {
