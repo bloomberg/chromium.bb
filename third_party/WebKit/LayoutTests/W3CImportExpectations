@@ -1,7 +1,8 @@
 # This file controls which subdirectories of the w3c test repos we do (or don't) import.
 #
 # This file acts as a blacklist; directories and files not listed here will automatically
-# be found and imported.
+# be found and imported. The only exception is that the manual tests (i.e. those with a
+# filename ending with "-manual.html" or "-manual.htm") are never imported.
 
 imported/csswg-test/compositing-1 [ Skip ]
 imported/csswg-test/css-align-3 [ Skip ]
@@ -72,6 +73,7 @@ imported/web-platform-tests/config.default.json [ Skip ]
 imported/web-platform-tests/conformance-checkers [ Skip ]
 imported/web-platform-tests/content-security-policy [ Skip ]
 imported/web-platform-tests/cors [ Skip ]
+imported/web-platform-tests/csp [ Skip ]
 # imported/web-platform-tests/custom-elements [ Pass ]
 imported/web-platform-tests/custom-elements/registering-custom-elements/unresolved-element-pseudoclass [ Skip ]
 imported/web-platform-tests/docs [ Skip ]
@@ -80,6 +82,7 @@ imported/web-platform-tests/domparsing [ Skip ]
 imported/web-platform-tests/domxpath [ Skip ]
 imported/web-platform-tests/eventsource [ Skip ]
 imported/web-platform-tests/ext-xhtml-pubid [ Skip ]
+imported/web-platform-tests/fetch [ Skip ]
 imported/web-platform-tests/fonts [ Skip ]
 imported/web-platform-tests/geolocation-API [ Skip ]
 imported/web-platform-tests/hr-time [ Skip ]
@@ -89,7 +92,11 @@ imported/web-platform-tests/html-longdesc [ Skip ]
 imported/web-platform-tests/html-media-capture [ Skip ]
 imported/web-platform-tests/http [ Skip ]
 imported/web-platform-tests/images [ Skip ]
+imported/web-platform-tests/infrastructure [ Skip ]
 imported/web-platform-tests/js [ Skip ]
+imported/web-platform-tests/lint [ Skip ]
+imported/web-platform-tests/lint.whitelist [ Skip ]
+imported/web-platform-tests/manifest [ Skip ]
 imported/web-platform-tests/media [ Skip ]
 imported/web-platform-tests/media-source [ Skip ]
 # imported/web-platform-tests/mediacapture-streams [ Pass ]
@@ -99,7 +106,6 @@ imported/web-platform-tests/notifications [ Skip ]
 imported/web-platform-tests/old-tests [ Skip ]
 imported/web-platform-tests/page-visibility [ Skip ]
 imported/web-platform-tests/performance-timeline [ Skip ]
-imported/web-platform-tests/pointerevents [ Skip ]
 imported/web-platform-tests/pointerlock [ Skip ]
 imported/web-platform-tests/progress-events [ Skip ]
 imported/web-platform-tests/proximity [ Skip ]
@@ -108,6 +114,7 @@ imported/web-platform-tests/resource-timing [ Skip ]
 imported/web-platform-tests/resources [ Skip ]
 imported/web-platform-tests/selectors [ Skip ]
 imported/web-platform-tests/selectors-api [ Skip ]
+imported/web-platform-tests/serve [ Skip ]
 imported/web-platform-tests/serve.py [ Skip ]
 imported/web-platform-tests/server-side.md [ Skip ]
 imported/web-platform-tests/service-workers [ Skip ]
@@ -163,9 +170,3 @@ imported/web-platform-tests/shadow-dom/styles/not-apply-in-shadow-root-001.html 
 # Uses custom request handler
 imported/web-platform-tests/encoding/single-byte-decoder.html [ Skip ]
 imported/web-platform-tests/encoding/resources/single-byte-raw.py [ Skip ]
-
-# http://crbug.com/443386 : Skip manual tests explicitly until the import script knows how to do it
-imported/web-platform-tests/gamepad/events-manual.html [ Skip ]
-imported/web-platform-tests/gamepad/getgamepads-polling-manual.html [ Skip ]
-imported/web-platform-tests/gamepad/idlharness-manual.html [ Skip ]
-imported/web-platform-tests/gamepad/timestamp-manual.html [ Skip ]

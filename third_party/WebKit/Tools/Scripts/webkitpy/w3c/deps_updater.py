@@ -97,6 +97,11 @@ class DepsUpdater(object):
         self.cd('')
         self.run(['git', 'add', '--all', 'LayoutTests/imported/%s' % repo])
 
+        self.print_('## deleting manual tests')
+        files_to_delete = self.fs.files_under(dest_repo, file_filter=self.is_manual_test)
+        for subpath in files_to_delete:
+            self.remove('LayoutTests', 'imported', subpath)
+
         self.print_('## deleting any orphaned baselines')
         previous_baselines = self.fs.files_under(dest_repo, file_filter=self.is_baseline)
         for subpath in previous_baselines:
@@ -129,6 +134,9 @@ class DepsUpdater(object):
             self.print_('## Done: changes imported and committed')
         else:
             self.print_('## Done: no changes to import')
+
+    def is_manual_test(self, fs, dirname, basename):
+        return basename.endswith('-manual.html') or basename.endswith('-manual.htm')
 
     def is_baseline(self, fs, dirname, basename):
         return basename.endswith('-expected.txt')
