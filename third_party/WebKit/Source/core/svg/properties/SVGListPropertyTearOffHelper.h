@@ -162,6 +162,11 @@ public:
 
     PassRefPtrWillBeRawPtr<ItemTearOffType> removeItem(unsigned long index, ExceptionState& exceptionState)
     {
+        if (toDerived()->isImmutable()) {
+            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
+            return nullptr;
+        }
+
         RefPtrWillBeRawPtr<ItemPropertyType> value = toDerived()->target()->removeItem(index, exceptionState);
         toDerived()->commitChange();
 
