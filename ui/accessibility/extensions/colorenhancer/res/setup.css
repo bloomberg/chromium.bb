@@ -74,6 +74,7 @@ table input[type="button"] {
   height: 40px;
   line-height: 1em;
   width: 40px;
+  pointer-events: none;
 }
 
 #severity {

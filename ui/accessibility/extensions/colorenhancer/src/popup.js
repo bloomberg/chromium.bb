@@ -107,7 +107,7 @@ function createTestRow(type) {
   var toCssColor = function(rgb) {
     return 'rgb(' + rgb.join(',') + ')';
   };
-  var row = document.createElement('div');
+  var row = document.createElement('label');
   row.classList.add('row');
 
   var button = document.createElement('input');
@@ -120,6 +120,7 @@ function createTestRow(type) {
   button.addEventListener('change', function() {
     onTypeChange(this.value);
   });
+  button.setAttribute('aria-label', type);
 
   SWATCH_COLORS.forEach(function(data) {
     var swatch = document.querySelector('.swatch.template').cloneNode(true);
@@ -320,6 +321,13 @@ function onReset() {
  * currently visible tab.
  */
 function initialize() {
+  var i18nElements = document.querySelectorAll('*[i18n-content]');
+  for (var i = 0; i < i18nElements.length; i++) {
+    var elem = i18nElements[i];
+    var msg = elem.getAttribute('i18n-content');
+    elem.textContent = chrome.i18n.getMessage(msg);
+  }
+
   $('setup').onclick = function() {
     $('setup-panel').classList.remove('collapsed');
     // Store current settings in the event of a canceled setup.

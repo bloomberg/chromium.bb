@@ -274,7 +274,7 @@
         Degree
       </message>
       <message desc="Title for a dropdown selecting between colors to enhance." name="IDS_COLOR_ENHANCER_TYPE_CHOICE">
-        Improve perception for:
+        Step 1: Select the row with the faintest stars:
       </message>
       <message desc="Choice to enhancing the red color." name="IDS_COLOR_ENHANCER_TYPE_RED">
         Red
@@ -285,20 +285,27 @@
       <message desc="Choice to enhancing the blue color." name="IDS_COLOR_ENHANCER_TYPE_BLUE">
         Blue
       </message>
-      <message desc="Title for button that will apply these settings to all currently open websites." name="IDS_COLOR_ENHANCER_RESET">
-        Apply to all sites
-      </message>
       <message desc="Title for checkbox that enables the extension." name="IDS_COLOR_ENHANCER_ENABLE">
         Enable?
       </message>
-      <message desc="Title for checkbox that enables color vision deficiency simulation." name="IDS_COLOR_ENHANCER_SIMULATE">
-        Simulate?
-      </message>
       <message desc="Title for slider changes color vision deficiency severity." name="IDS_COLOR_ENHANCER_SEVERITY">
-        Severity
+        Step 2: Adjust the slider until all of the stars are visible in the
+        selected row
       </message>
-      <message desc="Title for section containing advanced settings." name="IDS_COLOR_ENHANCER_ADVANCED">
-        Advanced settings
+      <message desc="Title for the heading before the section containing setup." name="IDS_COLOR_ENHANCER_SETUP_HEADING">
+        Setup:
+      </message>
+      <message desc="Button that resets the color enhancer extension to its default state." name="IDS_COLOR_ENHANCER_RESET">
+        Reset
+      </message>
+      <message desc="OK button for the color enhancer setup." name="IDS_COLOR_ENHANCER_OK">
+        OK
+      </message>
+      <message desc="Cancel button for the color enhancer setup." name="IDS_COLOR_ENHANCER_CANCEL">
+        Cancel
+      </message>
+      <message desc="Button for the color enhancer popup that opens the Setup part of the popup." name="IDS_COLOR_ENHANCER_SETUP_BUTTON">
+        Setup
       </message>
 
     </messages>

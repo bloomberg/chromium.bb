@@ -16,14 +16,13 @@
 <script type="text/javascript" src="popup.js"></script>
 </head>
 <body>
-  <h2><span i18n-content="IDS_COLOR_ENHANCER_APPNAME">Color Enhancer<span></h2>
+  <h2><span i18n-content="color_enhancer_appname"><span></h2>
 
   <table>
     <tr>
-      <th><span i18n-content="IDS_COLOR_ENHANCER_ENABLE">Enable?</span></th>
+      <th><span i18n-content="color_enhancer_enable"></span></th>
       <th>
-        <span i18n-content="IDS_COLOR_ENHANCER_ADJUSTMENT_FACTOR">
-          Color adjustment
+        <span i18n-content="color_enhancer_adjustment_factor">
         </span>
       </th>
     </tr>
@@ -34,21 +33,19 @@
           defaultValue="0.5">
       </td>
       <td>
-        <!-- TOOD(kevers): i18n -->
-        <input id="setup" type="button" value="Setup">
+        <button id="setup" i18n-content="color_enhancer_setup_button"></button>
       </td>
     </tr>
   </table>
   </div>
 
-  <div id="setup-panel" class = "collapsed">
-    <h3><span i18n-content="IDS_COLOR_ENHANCER_ADVANCED">Setup:</span></h3>
+  <div id="setup-panel" class="collapsed">
+    <h3><span i18n-content="color_enhancer_setup_heading"></span></h3>
     <section id="step-1">
       <div>
-        <span i18n-content="IDS_COLOR_ENHANCER_TYPE_CHOICE">
-          Step 1: Select the row with the faintest stars:
+        <span i18n-content="color_enhancer_type_choice">
         </span>
-      </div>  
+      </div>
       <div class="template swatch">
         <span>&#x22c6</span>
       </div>
@@ -59,18 +56,15 @@
     </section>
     <section id="step-2">
       <div>
-        <span i18n-content="IDS_COLOR_ENHANCER_SEVERITY">
-          Step 2: Adjust the slider until all of the stars are visible in the
-          selected row
+        <span i18n-content="color_enhancer_severity">
         </span>
         <input id="severity" type="range" min=0 max=1.0 step=0.1 value="0">
       </div>
     </section>
     <div id="setup-button-strip" class="row">
-      <!-- TODO(kevers): i18n -->
-      <input id="reset" type="button" value="Reset">
-      <input id="ok" type="button" value="OK">
-      <input id="cancel" type="button" value="Cancel">
+      <button id="reset" i18n-content="color_enhancer_reset"></button>
+      <button id="ok" i18n-content="color_enhancer_ok"></button>
+      <button id="cancel" i18n-content="color_enhancer_cancel"></button>
     </div>
   </div>
 </body>
