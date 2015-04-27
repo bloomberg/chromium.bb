@@ -80,7 +80,7 @@ protected:
     HashMap<IntSize, RefPtr<Image>> m_images; // A cache of Image objects by image size.
 
 #if ENABLE(OILPAN)
-    // FIXME: Oilpan: when/if we can make the renderer point directly to the CSSImageGenerator value using
+    // FIXME: Oilpan: when/if we can make the layoutObject point directly to the CSSImageGenerator value using
     // a member we don't need to have this hack where we keep a persistent to the instance as long as
     // there are clients in the LayoutObjectSizeCountMap.
     GC_PLUGIN_IGNORE("366546")

@@ -95,7 +95,7 @@ using namespace blink;
 void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element)
 {
     // If any changes to CSS Animations were detected, stash the update away for application after the
-    // render object is updated if we're in the appropriate scope.
+    // layout object is updated if we're in the appropriate scope.
     if (state.animationUpdate())
         element.ensureElementAnimations().cssAnimations().setPendingUpdate(state.takeAnimationUpdate());
 }
@@ -540,7 +540,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
     ASSERT(!hasPendingAuthorStyleSheets());
     ASSERT(!m_needCollectFeatures);
 
-    // Once an element has a renderer, we don't try to destroy it, since otherwise the renderer
+    // Once an element has a layoutObject, we don't try to destroy it, since otherwise the layoutObject
     // will vanish if a style recalc happens during loading.
     if (sharingBehavior == AllowStyleSharing && !document().isRenderingReady() && !element->layoutObject()) {
         if (!s_styleNotYetAvailable) {
@@ -720,13 +720,13 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElement(Element
 
 PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
 {
-    LayoutObject* parentRenderer = parent.layoutObject();
-    if (!parentRenderer)
+    LayoutObject* parentLayoutObject = parent.layoutObject();
+    if (!parentLayoutObject)
         return nullptr;
 
     // The first letter pseudo element has to look up the tree and see if any
     // of the ancestors are first letter.
-    if (pseudoId < FIRST_INTERNAL_PSEUDOID && pseudoId != FIRST_LETTER && !parentRenderer->style()->hasPseudoStyle(pseudoId))
+    if (pseudoId < FIRST_INTERNAL_PSEUDOID && pseudoId != FIRST_LETTER && !parentLayoutObject->style()->hasPseudoStyle(pseudoId))
         return nullptr;
 
     if (pseudoId == BACKDROP && !parent.isInTopLayer())
@@ -735,10 +735,10 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     if (pseudoId == FIRST_LETTER && (parent.isSVGElement() || !FirstLetterPseudoElement::firstLetterTextRenderer(parent)))
         return nullptr;
 
-    if (!canHaveGeneratedChildren(*parentRenderer))
+    if (!canHaveGeneratedChildren(*parentLayoutObject))
         return nullptr;
 
-    ComputedStyle* parentStyle = parentRenderer->mutableStyle();
+    ComputedStyle* parentStyle = parentLayoutObject->mutableStyle();
     if (ComputedStyle* cachedStyle = parentStyle->getCachedPseudoStyle(pseudoId)) {
         if (!pseudoElementRendererIsNeeded(cachedStyle))
             return nullptr;
@@ -953,7 +953,7 @@ void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCo
 }
 
 // -------------------------------------------------------------------------------------
-// this is mostly boring stuff on how to apply a certain rule to the renderstyle...
+// this is mostly boring stuff on how to apply a certain rule to the Computedstyle...
 
 bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Element* animatingElement)
 {

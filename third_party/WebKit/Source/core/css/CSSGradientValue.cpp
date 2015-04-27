@@ -51,18 +51,18 @@ DEFINE_TRACE(CSSGradientColorStop)
     visitor->trace(m_color);
 }
 
-PassRefPtr<Image> CSSGradientValue::image(LayoutObject* renderer, const IntSize& size)
+PassRefPtr<Image> CSSGradientValue::image(LayoutObject* layoutObject, const IntSize& size)
 {
     if (size.isEmpty())
         return nullptr;
 
     bool cacheable = isCacheable();
     if (cacheable) {
-        if (!clients().contains(renderer))
+        if (!clients().contains(layoutObject))
             return nullptr;
 
         // Need to look up our size.  Create a string of width*height to use as a hash key.
-        Image* result = getImage(renderer, size);
+        Image* result = getImage(layoutObject, size);
         if (result)
             return result;
     }
@@ -70,12 +70,12 @@ PassRefPtr<Image> CSSGradientValue::image(LayoutObject* renderer, const IntSize&
     // We need to create an image.
     RefPtr<Gradient> gradient;
 
-    const ComputedStyle* rootStyle = renderer->document().documentElement()->computedStyle();
-    CSSToLengthConversionData conversionData(renderer->style(), rootStyle, renderer->view(), renderer->style()->effectiveZoom());
+    const ComputedStyle* rootStyle = layoutObject->document().documentElement()->computedStyle();
+    CSSToLengthConversionData conversionData(layoutObject->style(), rootStyle, layoutObject->view(), layoutObject->style()->effectiveZoom());
     if (isLinearGradientValue())
-        gradient = toCSSLinearGradientValue(this)->createGradient(conversionData, size, *renderer);
+        gradient = toCSSLinearGradientValue(this)->createGradient(conversionData, size, *layoutObject);
     else
-        gradient = toCSSRadialGradientValue(this)->createGradient(conversionData, size, *renderer);
+        gradient = toCSSRadialGradientValue(this)->createGradient(conversionData, size, *layoutObject);
 
     RefPtr<Image> newImage = GradientGeneratedImage::create(gradient, size);
     if (cacheable)

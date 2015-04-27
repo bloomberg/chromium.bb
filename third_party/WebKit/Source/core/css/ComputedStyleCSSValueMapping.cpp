@@ -150,7 +150,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForFillSourceType(EMaskSourceType t
     return nullptr;
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(const ComputedStyle& style, CSSPropertyID propertyID, const LayoutObject* renderer)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(const ComputedStyle& style, CSSPropertyID propertyID, const LayoutObject* layoutObject)
 {
     Length offset;
     switch (propertyID) {
@@ -170,10 +170,10 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(const ComputedSty
         return nullptr;
     }
 
-    if (offset.isPercent() && renderer && renderer->isBox() && renderer->isPositioned()) {
+    if (offset.isPercent() && layoutObject && layoutObject->isBox() && layoutObject->isPositioned()) {
         LayoutUnit containingBlockSize = (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
-            toLayoutBox(renderer)->containingBlockLogicalWidthForContent() :
-            toLayoutBox(renderer)->containingBlockLogicalHeightForGetComputedStyle();
+            toLayoutBox(layoutObject)->containingBlockLogicalWidthForContent() :
+            toLayoutBox(layoutObject)->containingBlockLogicalHeightForGetComputedStyle();
         return zoomAdjustedPixelValue(valueForLength(offset, containingBlockSize), style);
     }
     if (offset.isAuto()) {
@@ -396,29 +396,29 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valueForItemPositionWithOverflowAlig
     return result.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForGridShorthand(const StylePropertyShorthand& shorthand, const ComputedStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForGridShorthand(const StylePropertyShorthand& shorthand, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
-        RefPtrWillBeRawPtr<CSSValue> value = ComputedStyleCSSValueMapping::get(shorthand.properties()[i], style, renderer, styledNode, allowVisitedStyle);
+        RefPtrWillBeRawPtr<CSSValue> value = ComputedStyleCSSValueMapping::get(shorthand.properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
         ASSERT(value);
         list->append(value.release());
     }
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const StylePropertyShorthand& shorthand, const ComputedStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForShorthandProperty(const StylePropertyShorthand& shorthand, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (size_t i = 0; i < shorthand.length(); ++i) {
-        RefPtrWillBeRawPtr<CSSValue> value = ComputedStyleCSSValueMapping::get(shorthand.properties()[i], style, renderer, styledNode, allowVisitedStyle);
+        RefPtrWillBeRawPtr<CSSValue> value = ComputedStyleCSSValueMapping::get(shorthand.properties()[i], style, layoutObject, styledNode, allowVisitedStyle);
         ASSERT(value);
         list->append(value);
     }
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const ComputedStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> ret = CSSValueList::createCommaSeparated();
     const FillLayer* currLayer = &style.backgroundLayers();
@@ -426,7 +426,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> valuesForBackgroundShorthand(const C
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSlashSeparated();
         RefPtrWillBeRawPtr<CSSValueList> beforeSlash = CSSValueList::createSpaceSeparated();
         if (!currLayer->next()) { // color only for final layer
-            RefPtrWillBeRawPtr<CSSValue> value = ComputedStyleCSSValueMapping::get(CSSPropertyBackgroundColor, style, renderer, styledNode, allowVisitedStyle);
+            RefPtrWillBeRawPtr<CSSValue> value = ComputedStyleCSSValueMapping::get(CSSPropertyBackgroundColor, style, layoutObject, styledNode, allowVisitedStyle);
             ASSERT(value);
             beforeSlash->append(value);
         }
@@ -579,11 +579,11 @@ static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& order
     list.append(lineNames.release());
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, const LayoutObject* renderer, const ComputedStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, const LayoutObject* layoutObject, const ComputedStyle& style)
 {
     const Vector<GridTrackSize>& trackSizes = direction == ForColumns ? style.gridTemplateColumns() : style.gridTemplateRows();
     const OrderedNamedGridLines& orderedNamedGridLines = direction == ForColumns ? style.orderedNamedGridColumnLines() : style.orderedNamedGridRowLines();
-    bool isLayoutGrid = renderer && renderer->isLayoutGrid();
+    bool isLayoutGrid = layoutObject && layoutObject->isLayoutGrid();
 
     // Handle the 'none' case.
     bool trackListIsEmpty = trackSizes.isEmpty();
@@ -591,7 +591,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDir
         // For grids we should consider every listed track, whether implicitly or explicitly created. If we don't have
         // any explicit track and there are no children then there are no implicit tracks. We cannot simply check the
         // number of rows/columns in our internal grid representation because it's always at least 1x1 (see r143331).
-        trackListIsEmpty = !toLayoutBlock(renderer)->firstChild();
+        trackListIsEmpty = !toLayoutBlock(layoutObject)->firstChild();
     }
 
     if (trackListIsEmpty) {
@@ -601,7 +601,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridTrackList(GridTrackSizingDir
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (isLayoutGrid) {
-        const Vector<LayoutUnit>& trackPositions = direction == ForColumns ? toLayoutGrid(renderer)->columnPositions() : toLayoutGrid(renderer)->rowPositions();
+        const Vector<LayoutUnit>& trackPositions = direction == ForColumns ? toLayoutGrid(layoutObject)->columnPositions() : toLayoutGrid(layoutObject)->rowPositions();
         // There are at least #tracks + 1 grid lines (trackPositions). Apart from that, the grid container can generate implicit grid tracks,
         // so we'll have more trackPositions than trackSizes as the latter only contain the explicit grid.
         ASSERT(trackPositions.size() - 1 >= trackSizes.size());
@@ -642,12 +642,12 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridPosition(const GridPosition&
     return list;
 }
 
-static LayoutRect sizingBox(const LayoutObject* renderer)
+static LayoutRect sizingBox(const LayoutObject* layoutObject)
 {
-    if (!renderer->isBox())
+    if (!layoutObject->isBox())
         return LayoutRect();
 
-    const LayoutBox* box = toLayoutBox(renderer);
+    const LayoutBox* box = toLayoutBox(layoutObject);
     return box->style()->boxSizing() == BORDER_BOX ? box->borderBoxRect() : box->computedCSSContentBoxRect();
 }
 
@@ -932,14 +932,14 @@ static PassRefPtrWillBeRawPtr<CSSFunctionValue> valueForMatrixTransform(const Tr
     return transformValue.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(const LayoutObject* renderer, const ComputedStyle& style)
+static PassRefPtrWillBeRawPtr<CSSValue> computedTransform(const LayoutObject* layoutObject, const ComputedStyle& style)
 {
-    if (!renderer || !renderer->hasTransformRelatedProperty() || !style.hasTransform())
+    if (!layoutObject || !layoutObject->hasTransformRelatedProperty() || !style.hasTransform())
         return cssValuePool().createIdentifierValue(CSSValueNone);
 
     IntRect box;
-    if (renderer->isBox())
-        box = pixelSnappedIntRect(toLayoutBox(renderer)->borderBoxRect());
+    if (layoutObject->isBox())
+        box = pixelSnappedIntRect(toLayoutBox(layoutObject)->borderBoxRect());
 
     TransformationMatrix transform;
     style.applyTransform(transform, LayoutSize(box.size()), ComputedStyle::ExcludeTransformOrigin, ComputedStyle::ExcludeMotionPath);
@@ -1045,14 +1045,14 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const ComputedStyle& style
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> valuesForSidesShorthand(const StylePropertyShorthand& shorthand, const ComputedStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+static PassRefPtrWillBeRawPtr<CSSValueList> valuesForSidesShorthand(const StylePropertyShorthand& shorthand, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     // Assume the properties are in the usual order top, right, bottom, left.
-    RefPtrWillBeRawPtr<CSSValue> topValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[0], style, renderer, styledNode, allowVisitedStyle);
-    RefPtrWillBeRawPtr<CSSValue> rightValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[1], style, renderer, styledNode, allowVisitedStyle);
-    RefPtrWillBeRawPtr<CSSValue> bottomValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[2], style, renderer, styledNode, allowVisitedStyle);
-    RefPtrWillBeRawPtr<CSSValue> leftValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[3], style, renderer, styledNode, allowVisitedStyle);
+    RefPtrWillBeRawPtr<CSSValue> topValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[0], style, layoutObject, styledNode, allowVisitedStyle);
+    RefPtrWillBeRawPtr<CSSValue> rightValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[1], style, layoutObject, styledNode, allowVisitedStyle);
+    RefPtrWillBeRawPtr<CSSValue> bottomValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[2], style, layoutObject, styledNode, allowVisitedStyle);
+    RefPtrWillBeRawPtr<CSSValue> leftValue = ComputedStyleCSSValueMapping::get(shorthand.properties()[3], style, layoutObject, styledNode, allowVisitedStyle);
 
     // All 4 properties must be specified.
     if (!topValue || !rightValue || !bottomValue || !leftValue)
@@ -1284,7 +1284,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::valueForFilter(co
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const ComputedStyle& style, const LayoutObject* renderer, Node* styledNode, bool allowVisitedStyle)
+PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
 {
     const SVGComputedStyle& svgStyle = style.svgStyle();
     propertyID = CSSProperty::resolveDirectionAwareProperty(propertyID, style.direction(), style.writingMode());
@@ -1424,7 +1424,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyBorderLeftWidth:
         return zoomAdjustedPixelValue(style.borderLeftWidth(), style);
     case CSSPropertyBottom:
-        return valueForPositionOffset(style, CSSPropertyBottom, renderer);
+        return valueForPositionOffset(style, CSSPropertyBottom, layoutObject);
     case CSSPropertyWebkitBoxAlign:
         return cssValuePool().createValue(style.boxAlign());
     case CSSPropertyWebkitBoxDecorationBreak:
@@ -1519,13 +1519,13 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyAlignSelf:
         return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.alignSelfPosition(), styledNode->parentNode()), style.alignSelfOverflowAlignment(), NonLegacyPosition);
     case CSSPropertyFlex:
-        return valuesForShorthandProperty(flexShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(flexShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyFlexBasis:
         return zoomAdjustedPixelValueForLength(style.flexBasis(), style);
     case CSSPropertyFlexDirection:
         return cssValuePool().createValue(style.flexDirection());
     case CSSPropertyFlexFlow:
-        return valuesForShorthandProperty(flexFlowShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(flexFlowShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyFlexGrow:
         return cssValuePool().createValue(style.flexGrow());
     case CSSPropertyFlexShrink:
@@ -1617,9 +1617,9 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return specifiedValueForGridTrackSize(style.gridAutoRows(), style);
 
     case CSSPropertyGridTemplateColumns:
-        return valueForGridTrackList(ForColumns, renderer, style);
+        return valueForGridTrackList(ForColumns, layoutObject, style);
     case CSSPropertyGridTemplateRows:
-        return valueForGridTrackList(ForRows, renderer, style);
+        return valueForGridTrackList(ForRows, layoutObject, style);
 
     case CSSPropertyGridColumnStart:
         return valueForGridPosition(style.gridColumnStart());
@@ -1630,15 +1630,15 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyGridRowEnd:
         return valueForGridPosition(style.gridRowEnd());
     case CSSPropertyGridColumn:
-        return valuesForGridShorthand(gridColumnShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForGridShorthand(gridColumnShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyGridRow:
-        return valuesForGridShorthand(gridRowShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForGridShorthand(gridRowShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyGridArea:
-        return valuesForGridShorthand(gridAreaShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForGridShorthand(gridAreaShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyGridTemplate:
-        return valuesForGridShorthand(gridTemplateShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForGridShorthand(gridTemplateShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyGrid:
-        return valuesForGridShorthand(gridShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForGridShorthand(gridShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyGridTemplateAreas:
         if (!style.namedGridAreaRowCount()) {
             ASSERT(!style.namedGridAreaColumnCount());
@@ -1648,12 +1648,12 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return CSSGridTemplateAreasValue::create(style.namedGridArea(), style.namedGridAreaRowCount(), style.namedGridAreaColumnCount());
 
     case CSSPropertyHeight:
-        if (renderer) {
+        if (layoutObject) {
             // According to http://www.w3.org/TR/CSS2/visudet.html#the-height-property,
             // the "height" property does not apply for non-replaced inline elements.
-            if (!renderer->isReplaced() && renderer->isInline())
+            if (!layoutObject->isReplaced() && layoutObject->isInline())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
-            return zoomAdjustedPixelValue(sizingBox(renderer).height(), style);
+            return zoomAdjustedPixelValue(sizingBox(layoutObject).height(), style);
         }
         return zoomAdjustedPixelValueForLength(style.height(), style);
     case CSSPropertyWebkitHighlight:
@@ -1673,7 +1673,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyJustifySelf:
         return valueForItemPositionWithOverflowAlignment(resolveAlignmentAuto(style.justifySelfPosition(), styledNode->parentNode()), style.justifySelfOverflowAlignment(), NonLegacyPosition);
     case CSSPropertyLeft:
-        return valueForPositionOffset(style, CSSPropertyLeft, renderer);
+        return valueForPositionOffset(style, CSSPropertyLeft, layoutObject);
     case CSSPropertyLetterSpacing:
         if (!style.letterSpacing())
             return cssValuePool().createIdentifierValue(CSSValueNormal);
@@ -1698,36 +1698,36 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return cssValuePool().createValue(style.locale(), CSSPrimitiveValue::CSS_STRING);
     case CSSPropertyMarginTop: {
         Length marginTop = style.marginTop();
-        if (marginTop.isFixed() || !renderer || !renderer->isBox())
+        if (marginTop.isFixed() || !layoutObject || !layoutObject->isBox())
             return zoomAdjustedPixelValueForLength(marginTop, style);
-        return zoomAdjustedPixelValue(toLayoutBox(renderer)->marginTop(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->marginTop(), style);
     }
     case CSSPropertyMarginRight: {
         Length marginRight = style.marginRight();
-        if (marginRight.isFixed() || !renderer || !renderer->isBox())
+        if (marginRight.isFixed() || !layoutObject || !layoutObject->isBox())
             return zoomAdjustedPixelValueForLength(marginRight, style);
         float value;
         if (marginRight.isPercent()) {
             // LayoutBox gives a marginRight() that is the distance between the right-edge of the child box
             // and the right-edge of the containing box, when display == BLOCK. Let's calculate the absolute
             // value of the specified margin-right % instead of relying on LayoutBox's marginRight() value.
-            value = minimumValueForLength(marginRight, toLayoutBox(renderer)->containingBlockLogicalWidthForContent()).toFloat();
+            value = minimumValueForLength(marginRight, toLayoutBox(layoutObject)->containingBlockLogicalWidthForContent()).toFloat();
         } else {
-            value = toLayoutBox(renderer)->marginRight().toFloat();
+            value = toLayoutBox(layoutObject)->marginRight().toFloat();
         }
         return zoomAdjustedPixelValue(value, style);
     }
     case CSSPropertyMarginBottom: {
         Length marginBottom = style.marginBottom();
-        if (marginBottom.isFixed() || !renderer || !renderer->isBox())
+        if (marginBottom.isFixed() || !layoutObject || !layoutObject->isBox())
             return zoomAdjustedPixelValueForLength(marginBottom, style);
-        return zoomAdjustedPixelValue(toLayoutBox(renderer)->marginBottom(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->marginBottom(), style);
     }
     case CSSPropertyMarginLeft: {
         Length marginLeft = style.marginLeft();
-        if (marginLeft.isFixed() || !renderer || !renderer->isBox())
+        if (marginLeft.isFixed() || !layoutObject || !layoutObject->isBox())
             return zoomAdjustedPixelValueForLength(marginLeft, style);
-        return zoomAdjustedPixelValue(toLayoutBox(renderer)->marginLeft(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->marginLeft(), style);
     }
     case CSSPropertyWebkitUserModify:
         return cssValuePool().createValue(style.userModify());
@@ -1787,27 +1787,27 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return cssValuePool().createValue(style.overflowY());
     case CSSPropertyPaddingTop: {
         Length paddingTop = style.paddingTop();
-        if (paddingTop.isFixed() || !renderer || !renderer->isBox())
+        if (paddingTop.isFixed() || !layoutObject || !layoutObject->isBox())
             return zoomAdjustedPixelValueForLength(paddingTop, style);
-        return zoomAdjustedPixelValue(toLayoutBox(renderer)->computedCSSPaddingTop(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->computedCSSPaddingTop(), style);
     }
     case CSSPropertyPaddingRight: {
         Length paddingRight = style.paddingRight();
-        if (paddingRight.isFixed() || !renderer || !renderer->isBox())
+        if (paddingRight.isFixed() || !layoutObject || !layoutObject->isBox())
             return zoomAdjustedPixelValueForLength(paddingRight, style);
-        return zoomAdjustedPixelValue(toLayoutBox(renderer)->computedCSSPaddingRight(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->computedCSSPaddingRight(), style);
     }
     case CSSPropertyPaddingBottom: {
         Length paddingBottom = style.paddingBottom();
-        if (paddingBottom.isFixed() || !renderer || !renderer->isBox())
+        if (paddingBottom.isFixed() || !layoutObject || !layoutObject->isBox())
             return zoomAdjustedPixelValueForLength(paddingBottom, style);
-        return zoomAdjustedPixelValue(toLayoutBox(renderer)->computedCSSPaddingBottom(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->computedCSSPaddingBottom(), style);
     }
     case CSSPropertyPaddingLeft: {
         Length paddingLeft = style.paddingLeft();
-        if (paddingLeft.isFixed() || !renderer || !renderer->isBox())
+        if (paddingLeft.isFixed() || !layoutObject || !layoutObject->isBox())
             return zoomAdjustedPixelValueForLength(paddingLeft, style);
-        return zoomAdjustedPixelValue(toLayoutBox(renderer)->computedCSSPaddingLeft(), style);
+        return zoomAdjustedPixelValue(toLayoutBox(layoutObject)->computedCSSPaddingLeft(), style);
     }
     case CSSPropertyPageBreakAfter:
         return cssValuePool().createValue(style.pageBreakAfter());
@@ -1823,7 +1823,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyPosition:
         return cssValuePool().createValue(style.position());
     case CSSPropertyRight:
-        return valueForPositionOffset(style, CSSPropertyRight, renderer);
+        return valueForPositionOffset(style, CSSPropertyRight, layoutObject);
     case CSSPropertyWebkitRubyPosition:
         return cssValuePool().createValue(style.rubyPosition());
     case CSSPropertyScrollBehavior:
@@ -1838,7 +1838,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return cssValuePool().createValue(style.textAlignLast());
     case CSSPropertyTextDecoration:
         if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-            return valuesForShorthandProperty(textDecorationShorthand(), style, renderer, styledNode, allowVisitedStyle);
+            return valuesForShorthandProperty(textDecorationShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
         // Fall through.
     case CSSPropertyTextDecorationLine:
         return renderTextDecorationFlagsToCSSValue(style.textDecoration());
@@ -1906,7 +1906,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyTextTransform:
         return cssValuePool().createValue(style.textTransform());
     case CSSPropertyTop:
-        return valueForPositionOffset(style, CSSPropertyTop, renderer);
+        return valueForPositionOffset(style, CSSPropertyTop, layoutObject);
     case CSSPropertyTouchAction:
         return touchActionFlagsToCSSValue(style.touchAction());
     case CSSPropertyUnicodeBidi:
@@ -1943,12 +1943,12 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyWidows:
         return cssValuePool().createValue(style.widows(), CSSPrimitiveValue::CSS_NUMBER);
     case CSSPropertyWidth:
-        if (renderer) {
+        if (layoutObject) {
             // According to http://www.w3.org/TR/CSS2/visudet.html#the-width-property,
             // the "width" property does not apply for non-replaced inline elements.
-            if (!renderer->isReplaced() && renderer->isInline())
+            if (!layoutObject->isReplaced() && layoutObject->isInline())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
-            return zoomAdjustedPixelValue(sizingBox(renderer).width(), style);
+            return zoomAdjustedPixelValue(sizingBox(layoutObject).width(), style);
         }
         return zoomAdjustedPixelValueForLength(style.width(), style);
     case CSSPropertyWillChange:
@@ -2135,10 +2135,10 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return zoomAdjustedPixelValue(style.perspective(), style);
     case CSSPropertyPerspectiveOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-        if (renderer) {
+        if (layoutObject) {
             LayoutRect box;
-            if (renderer->isBox())
-                box = toLayoutBox(renderer)->borderBoxRect();
+            if (layoutObject->isBox())
+                box = toLayoutBox(layoutObject)->borderBoxRect();
 
             list->append(zoomAdjustedPixelValue(minimumValueForLength(style.perspectiveOriginX(), box.width()), style));
             list->append(zoomAdjustedPixelValue(minimumValueForLength(style.perspectiveOriginY(), box.height()), style));
@@ -2177,13 +2177,13 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertySpeak:
         return cssValuePool().createValue(style.speak());
     case CSSPropertyTransform:
-        return computedTransform(renderer, style);
+        return computedTransform(layoutObject, style);
     case CSSPropertyTransformOrigin: {
         RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-        if (renderer) {
+        if (layoutObject) {
             LayoutRect box;
-            if (renderer->isBox())
-                box = toLayoutBox(renderer)->borderBoxRect();
+            if (layoutObject->isBox())
+                box = toLayoutBox(layoutObject)->borderBoxRect();
 
             list->append(zoomAdjustedPixelValue(minimumValueForLength(style.transformOriginX(), box.width()), style));
             list->append(zoomAdjustedPixelValue(minimumValueForLength(style.transformOriginY(), box.height()), style));
@@ -2272,50 +2272,50 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return list.release();
     }
     case CSSPropertyBackground:
-        return valuesForBackgroundShorthand(style, renderer, styledNode, allowVisitedStyle);
+        return valuesForBackgroundShorthand(style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyBorder: {
-        RefPtrWillBeRawPtr<CSSValue> value = get(CSSPropertyBorderTop, style, renderer, styledNode, allowVisitedStyle);
+        RefPtrWillBeRawPtr<CSSValue> value = get(CSSPropertyBorderTop, style, layoutObject, styledNode, allowVisitedStyle);
         const CSSPropertyID properties[] = {
             CSSPropertyBorderRight,
             CSSPropertyBorderBottom,
             CSSPropertyBorderLeft
         };
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(properties); ++i) {
-            if (!compareCSSValuePtr<CSSValue>(value, get(properties[i], style, renderer, styledNode, allowVisitedStyle)))
+            if (!compareCSSValuePtr<CSSValue>(value, get(properties[i], style, layoutObject, styledNode, allowVisitedStyle)))
                 return nullptr;
         }
         return value.release();
     }
     case CSSPropertyBorderBottom:
-        return valuesForShorthandProperty(borderBottomShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(borderBottomShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyBorderColor:
-        return valuesForSidesShorthand(borderColorShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForSidesShorthand(borderColorShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyBorderLeft:
-        return valuesForShorthandProperty(borderLeftShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(borderLeftShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyBorderImage:
         return valueForNinePieceImage(style.borderImage(), style);
     case CSSPropertyBorderRadius:
         return valueForBorderRadiusShorthand(style);
     case CSSPropertyBorderRight:
-        return valuesForShorthandProperty(borderRightShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(borderRightShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyBorderStyle:
-        return valuesForSidesShorthand(borderStyleShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForSidesShorthand(borderStyleShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyBorderTop:
-        return valuesForShorthandProperty(borderTopShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(borderTopShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyBorderWidth:
-        return valuesForSidesShorthand(borderWidthShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForSidesShorthand(borderWidthShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyWebkitColumnRule:
-        return valuesForShorthandProperty(webkitColumnRuleShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(webkitColumnRuleShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyWebkitColumns:
-        return valuesForShorthandProperty(webkitColumnsShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(webkitColumnsShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyListStyle:
-        return valuesForShorthandProperty(listStyleShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(listStyleShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyMargin:
-        return valuesForSidesShorthand(marginShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForSidesShorthand(marginShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyOutline:
-        return valuesForShorthandProperty(outlineShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(outlineShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     case CSSPropertyPadding:
-        return valuesForSidesShorthand(paddingShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForSidesShorthand(paddingShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
     // Individual properties not part of the spec.
     case CSSPropertyBackgroundRepeatX:
     case CSSPropertyBackgroundRepeatY:
@@ -2323,7 +2323,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
 
     case CSSPropertyMotion:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
-        return valuesForShorthandProperty(motionShorthand(), style, renderer, styledNode, allowVisitedStyle);
+        return valuesForShorthandProperty(motionShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
 
     case CSSPropertyMotionPath: {
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());

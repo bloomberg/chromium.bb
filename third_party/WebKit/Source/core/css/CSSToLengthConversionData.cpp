@@ -55,7 +55,7 @@ float CSSToLengthConversionData::FontSizes::ex() const
     ASSERT(m_font);
     // FIXME: We have a bug right now where the zoom will be applied twice to EX units.
     // We really need to compute EX using fontMetrics for the original specifiedSize and not use
-    // our actual constructed rendering font.
+    // our actual constructed layoutObject font.
     if (!m_font->fontMetrics().hasXHeight())
         return m_em / 2.0f;
     return m_font->fontMetrics().xHeight();

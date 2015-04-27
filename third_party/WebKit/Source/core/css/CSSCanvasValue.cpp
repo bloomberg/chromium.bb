@@ -70,9 +70,9 @@ void CSSCanvasValue::canvasDestroyed(HTMLCanvasElement* element)
 }
 #endif
 
-IntSize CSSCanvasValue::fixedSize(const LayoutObject* renderer)
+IntSize CSSCanvasValue::fixedSize(const LayoutObject* layoutObject)
 {
-    if (HTMLCanvasElement* elt = element(&renderer->document()))
+    if (HTMLCanvasElement* elt = element(&layoutObject->document()))
         return IntSize(elt->width(), elt->height());
     return IntSize();
 }
@@ -86,13 +86,13 @@ HTMLCanvasElement* CSSCanvasValue::element(Document* document)
     return m_element;
 }
 
-PassRefPtr<Image> CSSCanvasValue::image(LayoutObject* renderer, const IntSize& /*size*/)
+PassRefPtr<Image> CSSCanvasValue::image(LayoutObject* layoutObject, const IntSize& /*size*/)
 {
-    ASSERT(clients().contains(renderer));
-    HTMLCanvasElement* elt = element(&renderer->document());
+    ASSERT(clients().contains(layoutObject));
+    HTMLCanvasElement* elt = element(&layoutObject->document());
     if (!elt)
         return nullptr;
-    UseCounter::count(renderer->document(), UseCounter::WebkitCanvas);
+    UseCounter::count(layoutObject->document(), UseCounter::WebkitCanvas);
     return elt->copiedImage(FrontBuffer);
 }
 

@@ -47,13 +47,13 @@ static bool subimageIsPending(CSSValue* value)
     return false;
 }
 
-static bool subimageKnownToBeOpaque(CSSValue* value, const LayoutObject* renderer)
+static bool subimageKnownToBeOpaque(CSSValue* value, const LayoutObject* layoutObject)
 {
     if (value->isImageValue())
-        return toCSSImageValue(value)->knownToBeOpaque(renderer);
+        return toCSSImageValue(value)->knownToBeOpaque(layoutObject);
 
     if (value->isImageGeneratorValue())
-        return toCSSImageGeneratorValue(value)->knownToBeOpaque(renderer);
+        return toCSSImageGeneratorValue(value)->knownToBeOpaque(layoutObject);
 
     ASSERT_NOT_REACHED();
 
@@ -105,20 +105,20 @@ String CSSCrossfadeValue::customCSSText() const
     return result.toString();
 }
 
-IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* renderer)
+IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* layoutObject)
 {
     float percentage = m_percentageValue->getFloatValue();
     float inversePercentage = 1 - percentage;
 
-    Document* document = &renderer->document();
+    Document* document = &layoutObject->document();
     ImageResource* cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), document);
     ImageResource* cachedToImage = cachedImageForCSSValue(m_toValue.get(), document);
 
     if (!cachedFromImage || !cachedToImage)
         return IntSize();
 
-    IntSize fromImageSize = cachedFromImage->imageForLayoutObject(renderer)->size();
-    IntSize toImageSize = cachedToImage->imageForLayoutObject(renderer)->size();
+    IntSize fromImageSize = cachedFromImage->imageForLayoutObject(layoutObject)->size();
+    IntSize toImageSize = cachedToImage->imageForLayoutObject(layoutObject)->size();
 
     // Rounding issues can cause transitions between images of equal size to return
     // a different fixed size; avoid performing the interpolation if the images are the same size.
@@ -134,9 +134,9 @@ bool CSSCrossfadeValue::isPending() const
     return subimageIsPending(m_fromValue.get()) || subimageIsPending(m_toValue.get());
 }
 
-bool CSSCrossfadeValue::knownToBeOpaque(const LayoutObject* renderer) const
+bool CSSCrossfadeValue::knownToBeOpaque(const LayoutObject* layoutObject) const
 {
-    return subimageKnownToBeOpaque(m_fromValue.get(), renderer) && subimageKnownToBeOpaque(m_toValue.get(), renderer);
+    return subimageKnownToBeOpaque(m_fromValue.get(), layoutObject) && subimageKnownToBeOpaque(m_toValue.get(), layoutObject);
 }
 
 void CSSCrossfadeValue::loadSubimages(Document* document)
@@ -164,25 +164,25 @@ void CSSCrossfadeValue::loadSubimages(Document* document)
     m_crossfadeSubimageObserver.setReady(true);
 }
 
-PassRefPtr<Image> CSSCrossfadeValue::image(LayoutObject* renderer, const IntSize& size)
+PassRefPtr<Image> CSSCrossfadeValue::image(LayoutObject* layoutObject, const IntSize& size)
 {
     if (size.isEmpty())
         return nullptr;
 
-    Document* document = &renderer->document();
+    Document* document = &layoutObject->document();
     ImageResource* cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), document);
     ImageResource* cachedToImage = cachedImageForCSSValue(m_toValue.get(), document);
 
     if (!cachedFromImage || !cachedToImage)
         return Image::nullImage();
 
-    Image* fromImage = cachedFromImage->imageForLayoutObject(renderer);
-    Image* toImage = cachedToImage->imageForLayoutObject(renderer);
+    Image* fromImage = cachedFromImage->imageForLayoutObject(layoutObject);
+    Image* toImage = cachedToImage->imageForLayoutObject(layoutObject);
 
     if (!fromImage || !toImage)
         return Image::nullImage();
 
-    m_generatedImage = CrossfadeGeneratedImage::create(fromImage, toImage, m_percentageValue->getFloatValue(), fixedSize(renderer), size);
+    m_generatedImage = CrossfadeGeneratedImage::create(fromImage, toImage, m_percentageValue->getFloatValue(), fixedSize(layoutObject), size);
 
     return m_generatedImage.release();
 }

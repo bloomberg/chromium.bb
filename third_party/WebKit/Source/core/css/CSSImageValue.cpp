@@ -111,9 +111,9 @@ String CSSImageValue::customCSSText() const
     return "url(" + quoteCSSURLIfNeeded(m_absoluteURL) + ")";
 }
 
-bool CSSImageValue::knownToBeOpaque(const LayoutObject* renderer) const
+bool CSSImageValue::knownToBeOpaque(const LayoutObject* layoutObject) const
 {
-    return m_image ? m_image->knownToBeOpaque(renderer) : false;
+    return m_image ? m_image->knownToBeOpaque(layoutObject) : false;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSImageValue)

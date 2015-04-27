@@ -408,7 +408,7 @@ void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const Comput
         style.setRequiresAcceleratedCompositingForExternalReasons(toHTMLPlugInElement(element).shouldAccelerate());
 
         // Plugins should get the standard replaced width/height instead of 'auto'.
-        // Replaced renderers get this for free, and fallback content doesn't count.
+        // Replaced layoutObjects get this for free, and fallback content doesn't count.
         if (toHTMLPlugInElement(element).usePlaceholderContent()) {
             if (style.width().isAuto())
                 style.setWidth(Length(LayoutReplaced::defaultWidth, Fixed));
