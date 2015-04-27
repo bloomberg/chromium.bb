@@ -130,9 +130,7 @@ bool ChromeClassTester::InBannedDirectory(SourceLocation loc) {
   }
 
 #if defined(LLVM_ON_UNIX)
-  // We need to munge the paths so that they are relative to the repository
-  // srcroot. We first resolve the symlinktastic relative path and then
-  // remove our known srcroot from it if needed.
+  // Resolve the symlinktastic relative path and make it absolute.
   char resolvedPath[MAXPATHLEN];
   if (realpath(filename.c_str(), resolvedPath)) {
     filename = resolvedPath;
@@ -141,6 +139,15 @@ bool ChromeClassTester::InBannedDirectory(SourceLocation loc) {
 
 #if defined(LLVM_ON_WIN32)
   std::replace(filename.begin(), filename.end(), '\\', '/');
+
+  // On Posix, realpath() has made the path absolute.  On Windows, this isn't
+  // necessarily true, so prepend a '/' to the path to make sure the
+  // banned_directories_ loop below works correctly.
+  // This turns e.g. "gen/dir/file.cc" to "/gen/dir/file.cc" which lets the
+  // "/gen/" banned_dir work.
+  // This seems simpler than converting to utf16, calling GetFullPathNameW(),
+  // and converting back to utf8.
+  filename.insert(filename.begin(), '/');
 #endif
 
   for (const std::string& banned_dir : banned_directories_) {
