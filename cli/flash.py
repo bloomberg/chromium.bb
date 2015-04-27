@@ -73,12 +73,13 @@ class FlashError(Exception):
 class USBImager(object):
   """Copy image to the target removable device."""
 
-  def __init__(self, device, board, image, sdk_version=None, debug=False,
-               install=False, yes=False):
+  def __init__(self, device, board, image, workspace_path=None,
+               sdk_version=None, debug=False, install=False, yes=False):
     """Initalizes USBImager."""
     self.device = device
     self.board = board if board else cros_build_lib.GetDefaultBoard()
     self.image = image
+    self.workspace_path = workspace_path
     self.sdk_version = sdk_version
     self.debug = debug
     self.debug_level = logging.DEBUG if debug else logging.INFO
@@ -200,7 +201,8 @@ class USBImager(object):
           self.image, self.board, version=self.sdk_version,
           static_dir=_DEVSERVER_STATIC_DIR)
       image_path = ds_wrapper.TranslatedPathToLocalPath(
-          translated_path, _DEVSERVER_STATIC_DIR)
+          translated_path, _DEVSERVER_STATIC_DIR,
+          workspace_path=self.workspace_path)
 
     logging.info('Using image %s', translated_path or image_path)
     return image_path
@@ -276,9 +278,9 @@ class RemoteDeviceUpdater(object):
 
   def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
-               board=None, src_image_to_delta=None, wipe=True, debug=False,
-               yes=False, force=False, ping=True, disable_verification=False,
-               sdk_version=None):
+               board=None, workspace_path=None, src_image_to_delta=None,
+               wipe=True, debug=False, yes=False, force=False, ping=True,
+               disable_verification=False, sdk_version=None):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       raise ValueError('No update operation to perform; either stateful or'
@@ -288,6 +290,7 @@ class RemoteDeviceUpdater(object):
     self.ssh_port = ssh_port
     self.image = image
     self.board = board
+    self.workspace_path = workspace_path
     self.src_image_to_delta = src_image_to_delta
     self.do_stateful_update = stateful_update
     self.do_rootfs_update = rootfs_update
@@ -349,7 +352,7 @@ class RemoteDeviceUpdater(object):
     """
     # Copy latest stateful_update to device.
     stateful_update_bin = path_util.FromChrootPath(
-        self.STATEFUL_UPDATE_BIN)
+        self.STATEFUL_UPDATE_BIN, workspace_path=self.workspace_path)
     device.CopyToWorkDir(stateful_update_bin)
     msg = 'Updating stateful partition'
     logging.info('Copying stateful payload to device...')
@@ -414,7 +417,8 @@ class RemoteDeviceUpdater(object):
     device.CopyToDevice(payload, payload_dir)
     devserver_bin = os.path.join(src_dir, self.DEVSERVER_FILENAME)
     ds = ds_wrapper.RemoteDevServerWrapper(
-        device, devserver_bin, static_dir=static_dir, log_dir=device.work_dir)
+        device, devserver_bin, workspace_path=self.workspace_path,
+        static_dir=static_dir, log_dir=device.work_dir)
 
     logging.info('Updating rootfs partition')
     try:
@@ -574,7 +578,8 @@ class RemoteDeviceUpdater(object):
             ds_wrapper.GetUpdatePayloadsFromLocalPath(
                 self.image, payload_dir,
                 src_image_to_delta=self.src_image_to_delta,
-                static_dir=_DEVSERVER_STATIC_DIR)
+                static_dir=_DEVSERVER_STATIC_DIR,
+                workspace_path=self.workspace_path)
           else:
               # We should ignore the given/inferred board value and stick to the
               # device's basic designation. We do emit a warning for good
@@ -615,6 +620,7 @@ class RemoteDeviceUpdater(object):
             ds_wrapper.GetUpdatePayloads(
                 image_path, payload_dir, board=self.board,
                 src_image_to_delta=self.src_image_to_delta,
+                workspace_path=self.workspace_path,
                 static_dir=_DEVSERVER_STATIC_DIR)
 
         # Verify that all required payloads are in the payload directory.
@@ -776,6 +782,8 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
   elif brick_name:
     board = brick_lib.Brick(brick_name).FriendlyName()
 
+  workspace_path = workspace_lib.WorkspacePath()
+
   if not device or device.scheme == commandline.DEVICE_SCHEME_SSH:
     if device:
       hostname, port = device.hostname, device.port
@@ -787,6 +795,7 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
         port,
         image,
         board=board,
+        workspace_path=workspace_path,
         src_image_to_delta=src_image_to_delta,
         rootfs_update=rootfs_update,
         stateful_update=stateful_update,
@@ -806,6 +815,7 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
     imager = USBImager(path,
                        board,
                        image,
+                       workspace_path=workspace_path,
                        sdk_version=sdk_version,
                        debug=debug,
                        install=install,

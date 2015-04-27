@@ -25,6 +25,7 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import remote_access
 from chromite.lib import timeout_util
+from chromite.lib import workspace_lib
 
 
 DEFAULT_PORT = 8080
@@ -190,13 +191,15 @@ def GenerateXbuddyRequest(path, req_type):
     raise ValueError('Does not support xbuddy request type %s' % req_type)
 
 
-def TranslatedPathToLocalPath(translated_path, static_dir):
+def TranslatedPathToLocalPath(translated_path, static_dir,
+                              workspace_path=None):
   """Convert the translated path to a local path to the image file.
 
   Args:
     translated_path: the translated xbuddy path
       (e.g., peppy-release/R36-5760.0.0/chromiumos_image).
     static_dir: The static directory used by the devserver.
+    workspace_path: Path to workspace root; None means we don't use one.
 
   Returns:
     A local path to the image file.
@@ -206,12 +209,13 @@ def TranslatedPathToLocalPath(translated_path, static_dir):
   if os.path.exists(real_path):
     return real_path
   else:
-    return path_util.FromChrootPath(real_path)
+    return path_util.FromChrootPath(real_path, workspace_path=workspace_path)
 
 
 def GetUpdatePayloadsFromLocalPath(path, payload_dir,
                                    src_image_to_delta=None,
-                                   static_dir=DEFAULT_STATIC_DIR):
+                                   static_dir=DEFAULT_STATIC_DIR,
+                                   workspace_path=None):
   """Generates update payloads from a local image path.
 
   This function wraps around ConvertLocalPathToXbuddy and GetUpdatePayloads,
@@ -224,11 +228,14 @@ def GetUpdatePayloadsFromLocalPath(path, payload_dir,
                  log will be copied to |payload_dir|.
     src_image_to_delta: Image used as the base to generate the delta payloads.
     static_dir: Devserver static dir to use.
+    workspace_path: Path to workspace root; None means we don't use one.
   """
 
   with cros_build_lib.ContextManagerStack() as stack:
     image_tempdir = stack.Add(
-        osutils.TempDir, base_dir=path_util.FromChrootPath('/tmp'),
+        osutils.TempDir,
+        base_dir=path_util.FromChrootPath('/tmp',
+                                          workspace_path=workspace_path),
         prefix='dev_server_wrapper_local_image', sudo_rm=True)
     static_tempdir = stack.Add(osutils.TempDir,
                                base_dir=static_dir,
@@ -241,7 +248,8 @@ def GetUpdatePayloadsFromLocalPath(path, payload_dir,
 
 
 def ConvertLocalPathToXbuddyPath(path, image_tempdir, static_tempdir,
-                                 static_dir=DEFAULT_STATIC_DIR):
+                                 static_dir=DEFAULT_STATIC_DIR,
+                                 workspace_path=None):
   """Converts |path| to an xbuddy path.
 
   This function copies the image into a temprary directory in chroot
@@ -258,6 +266,7 @@ def ConvertLocalPathToXbuddyPath(path, image_tempdir, static_tempdir,
     static_tempdir: osutils.TempDir instance to be symlinked to by the static
                     directory.
     static_dir: Static directory to create the symlink in.
+    workspace_path: Path to workspace root; None means we don't use one.
 
   Returns:
     The xbuddy path for |path|
@@ -269,7 +278,8 @@ def ConvertLocalPathToXbuddyPath(path, image_tempdir, static_tempdir,
   TEMP_IMAGE_TYPE = 'test'
   shutil.copy(path,
               os.path.join(tempdir_path, IMAGE_TYPE_TO_NAME[TEMP_IMAGE_TYPE]))
-  chroot_path = path_util.ToChrootPath(tempdir_path)
+  chroot_path = path_util.ToChrootPath(tempdir_path,
+                                       workspace_path=workspace_path)
   # Create and link static_dir/local_imagexxxx/link to the image
   # folder, so that xbuddy/devserver can understand the path.
   relative_dir = os.path.join(os.path.basename(static_tempdir.tempdir), 'link')
@@ -281,7 +291,7 @@ def ConvertLocalPathToXbuddyPath(path, image_tempdir, static_tempdir,
 
 def GetUpdatePayloads(path, payload_dir, board=None,
                       src_image_to_delta=None, timeout=60 * 15,
-                      static_dir=DEFAULT_STATIC_DIR):
+                      workspace_path=None, static_dir=DEFAULT_STATIC_DIR):
   """Launch devserver to get the update payloads.
 
   Args:
@@ -291,9 +301,10 @@ def GetUpdatePayloads(path, payload_dir, board=None,
     board: The default board to use when |path| is None.
     src_image_to_delta: Image used as the base to generate the delta payloads.
     timeout: Timeout for launching devserver (seconds).
+    workspace_path: Path to workspace root; None means we don't use one.
     static_dir: Devserver static dir to use.
   """
-  ds = DevServerWrapper(static_dir=static_dir,
+  ds = DevServerWrapper(workspace_path=workspace_path, static_dir=static_dir,
                         src_image=src_image_to_delta, board=board)
   req = GenerateXbuddyRequest(path, 'update')
   logging.info('Starting local devserver to generate/serve payloads...')
@@ -367,7 +378,7 @@ class DevServerWrapper(multiprocessing.Process):
   KILL_TIMEOUT = 10
 
   def __init__(self, static_dir=None, port=None, log_dir=None, src_image=None,
-               board=None):
+               board=None, workspace_path=None):
     """Initialize a DevServerWrapper instance.
 
     Args:
@@ -377,6 +388,7 @@ class DevServerWrapper(multiprocessing.Process):
       src_image: The path to the image to be used as the base to
         generate delta payloads.
       board: Override board to pass to the devserver for xbuddy pathing.
+      workspace_path: Path to workspace root; None means we don't use one.
     """
     super(DevServerWrapper, self).__init__()
     self.devserver_bin = 'start_devserver'
@@ -387,9 +399,11 @@ class DevServerWrapper(multiprocessing.Process):
     self.board = board
     self.tempdir = None
     self.log_dir = log_dir
+    self.workspace_path = workspace_path
     if not self.log_dir:
       self.tempdir = osutils.TempDir(
-          base_dir=path_util.FromChrootPath('/tmp'),
+          base_dir=path_util.FromChrootPath(
+              '/tmp', workspace_path=self.workspace_path),
           prefix='devserver_wrapper',
           sudo_rm=True)
       self.log_dir = self.tempdir.tempdir
@@ -461,17 +475,21 @@ class DevServerWrapper(multiprocessing.Process):
     osutils.RmDir(static_dir, ignore_missing=True, sudo=True)
 
   @classmethod
-  def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
+  def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None,
+                       workspace_path=None):
     """Cleans up devserver cache of payloads.
 
     Args:
       devserver_bin: path to the devserver binary.
       static_dir: path to use as the static directory of the devserver instance.
+      workspace_path: Path to workspace root; None means we don't use one.
     """
     logging.info('Cleaning up previously generated payloads.')
     cmd = [devserver_bin, '--clear_cache', '--exit']
     if static_dir:
-      cmd.append('--static_dir=%s' % path_util.ToChrootPath(static_dir))
+      cmd.append('--static_dir=%s' %
+                 path_util.ToChrootPath(static_dir,
+                                        workspace_path=workspace_path))
 
     cros_build_lib.SudoRunCommand(
         cmd, enter_chroot=True, print_cmd=False, combine_stdout_stderr=True,
@@ -535,27 +553,35 @@ class DevServerWrapper(multiprocessing.Process):
     if os.path.exists(self.log_file):
       osutils.SafeUnlink(self.log_file, sudo=True)
 
+    path_resolver = path_util.ChrootPathResolver(
+        workspace_path=self.workspace_path)
+
     port = self.port if self.port else 0
     cmd = [self.devserver_bin,
-           '--pidfile', path_util.ToChrootPath(self._pid_file),
-           '--logfile', path_util.ToChrootPath(self.log_file),
+           '--pidfile', path_resolver.ToChroot(self._pid_file),
+           '--logfile', path_resolver.ToChroot(self.log_file),
            '--port=%d' % port]
 
     if not self.port:
-      cmd.append('--portfile=%s' % path_util.ToChrootPath(self.port_file))
+      cmd.append('--portfile=%s' % path_resolver.ToChroot(self.port_file))
 
     if self.static_dir:
       cmd.append(
-          '--static_dir=%s' % path_util.ToChrootPath(self.static_dir))
+          '--static_dir=%s' % path_resolver.ToChroot(self.static_dir))
 
     if self.src_image:
-      cmd.append('--src_image=%s' % path_util.ToChrootPath(self.src_image))
+      cmd.append('--src_image=%s' % path_resolver.ToChroot(self.src_image))
 
     if self.board:
       cmd.append('--board=%s' % self.board)
 
+    chroot_args = ['--no-ns-pid']
+    if self.workspace_path:
+      chroot_dir = workspace_lib.ChrootPath(self.workspace_path)
+      chroot_args += ['--workspace=%s' % self.workspace_path,
+                      '--chroot=%s' % chroot_dir]
     result = self._RunCommand(
-        cmd, enter_chroot=True, chroot_args=['--no-ns-pid'],
+        cmd, enter_chroot=True, chroot_args=chroot_args,
         cwd=constants.SOURCE_ROOT, error_code_ok=True,
         redirect_stdout=True, combine_stdout_stderr=True)
     if result.returncode != 0:
@@ -752,7 +778,8 @@ You can fix this with one of the following three options:
                                 sub_dir=sub_dir)
 
   @classmethod
-  def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None):
+  def WipePayloadCache(cls, devserver_bin='start_devserver', static_dir=None,
+                       workspace_path=None):
     """Cleans up devserver cache of payloads."""
     raise NotImplementedError()
 
