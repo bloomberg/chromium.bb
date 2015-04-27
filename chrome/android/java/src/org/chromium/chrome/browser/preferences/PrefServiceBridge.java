@@ -892,6 +892,28 @@ public final class PrefServiceBridge {
             int contentSettingsType, List<ContentSettingException> list);
     public native void nativeSetContentSettingForPattern(
             int contentSettingType, String pattern, int setting);
+
+    /**
+      * @return whether Metrics reporting is enabled.
+      */
+    public boolean isMetricsReportingEnabled() {
+        return nativeGetMetricsReportingEnabled();
+    }
+
+    /**
+     * Sets whether the metrics reporting should be enabled.
+     */
+    public void setMetricsReportingEnabled(boolean enabled) {
+        nativeSetMetricsReportingEnabled(enabled);
+    }
+
+    /**
+     * @return whether the metrics reporting preference has been set by user.
+     */
+    public boolean hasSetMetricsReporting() {
+        return nativeHasSetMetricsReporting();
+    }
+
     private native boolean nativeGetAcceptCookiesEnabled();
     private native boolean nativeGetAcceptCookiesManaged();
     private native boolean nativeGetBlockThirdPartyCookiesEnabled();
@@ -978,4 +1000,7 @@ public final class PrefServiceBridge {
     private native String nativeGetSupervisedUserSecondCustodianName();
     private native String nativeGetSupervisedUserSecondCustodianEmail();
     private native String nativeGetSupervisedUserSecondCustodianProfileImageURL();
+    private native boolean nativeGetMetricsReportingEnabled();
+    private native void nativeSetMetricsReportingEnabled(boolean enabled);
+    private native boolean nativeHasSetMetricsReporting();
 }
