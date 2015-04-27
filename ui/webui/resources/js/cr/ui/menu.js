@@ -88,7 +88,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     findMenuItem_: function(node) {
-      while (node && node.parentNode != this) {
+      while (node && node.parentNode != this && !(node instanceof MenuItem)) {
         node = node.parentNode;
       }
       return node ? assertInstanceof(node, MenuItem) : null;
