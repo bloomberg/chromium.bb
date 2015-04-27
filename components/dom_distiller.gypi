@@ -82,6 +82,8 @@
         'dom_distiller/core/dom_distiller_model.cc',
         'dom_distiller/core/dom_distiller_model.h',
         'dom_distiller/core/dom_distiller_observer.h',
+        'dom_distiller/core/dom_distiller_request_view_base.cc',
+        'dom_distiller/core/dom_distiller_request_view_base.h',
         'dom_distiller/core/dom_distiller_service.cc',
         'dom_distiller/core/dom_distiller_service.h',
         'dom_distiller/core/dom_distiller_service_android.cc',
