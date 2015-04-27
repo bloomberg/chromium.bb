@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SyncManager_h
-#define SyncManager_h
+#ifndef PeriodicSyncManager_h
+#define PeriodicSyncManager_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -11,23 +11,23 @@
 
 namespace blink {
 
-class SyncRegistrationOptions;
+class PeriodicSyncRegistrationOptions;
 class ScriptPromise;
 class ScriptState;
 class ServiceWorkerRegistration;
 
-class SyncManager final : public GarbageCollected<SyncManager> , public ScriptWrappable {
+class PeriodicSyncManager final : public GarbageCollected<PeriodicSyncManager> , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static SyncManager* create(ServiceWorkerRegistration* registration)
+    static PeriodicSyncManager* create(ServiceWorkerRegistration* registration)
     {
-        return new SyncManager(registration);
+        return new PeriodicSyncManager(registration);
     }
 
-    unsigned long minAllowablePeriod();
+    unsigned long minPossiblePeriod();
 
     ScriptPromise registerFunction(ScriptState*);
-    ScriptPromise registerFunction(ScriptState*, const SyncRegistrationOptions&);
+    ScriptPromise registerFunction(ScriptState*, const PeriodicSyncRegistrationOptions&);
     ScriptPromise getRegistration(blink::ScriptState*, const String&);
     ScriptPromise getRegistrations(ScriptState*);
     ScriptPromise permissionState(ScriptState*);
@@ -35,11 +35,11 @@ public:
     DECLARE_TRACE();
 
 private:
-    explicit SyncManager(ServiceWorkerRegistration*);
+    explicit PeriodicSyncManager(ServiceWorkerRegistration*);
 
     Member<ServiceWorkerRegistration> m_registration;
 };
 
 } // namespace blink
 
-#endif // SyncManager_h
+#endif // PeriodicSyncManager_h

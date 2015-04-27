@@ -7,6 +7,8 @@
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/background_sync/SyncCallbacks.h"
 #include "modules/background_sync/SyncError.h"
 #include "modules/background_sync/SyncRegistrationOptions.h"
@@ -22,27 +24,8 @@ SyncRegistration* SyncRegistration::take(ScriptPromiseResolver*, WebSyncRegistra
 {
     OwnPtr<WebSyncRegistration> registration = adoptPtr(syncRegistration);
     SyncRegistrationOptions options = SyncRegistrationOptions();
-    options.setAllowOnBattery(syncRegistration->allowOnBattery);
-    options.setId(syncRegistration->id);
-    options.setIdleRequired(syncRegistration->idleRequired);
-    options.setMaxDelay(syncRegistration->maxDelayMs);
-    options.setMinDelay(syncRegistration->minDelayMs);
-    options.setMinPeriod(syncRegistration->minPeriodMs);
-    switch (syncRegistration->minRequiredNetwork) {
-    case WebSyncRegistration::NetworkType::NetworkTypeAny:
-        options.setMinRequiredNetwork("network-any");
-        break;
-    case WebSyncRegistration::NetworkType::NetworkTypeOffline:
-        options.setMinRequiredNetwork("network-offline");
-        break;
-    case WebSyncRegistration::NetworkType::NetworkTypeOnline:
-        options.setMinRequiredNetwork("network-online");
-        break;
-    case WebSyncRegistration::NetworkType::NetworkTypeNonMobile:
-        options.setMinRequiredNetwork("network-non-mobile");
-        break;
-    }
-    return new SyncRegistration(options, serviceWorkerRegistration);
+    options.setTag(syncRegistration->tag);
+    return new SyncRegistration(syncRegistration->id, options, serviceWorkerRegistration);
 }
 
 void SyncRegistration::dispose(WebSyncRegistration* syncRegistration)
@@ -51,14 +34,9 @@ void SyncRegistration::dispose(WebSyncRegistration* syncRegistration)
         delete syncRegistration;
 }
 
-SyncRegistration::SyncRegistration(const SyncRegistrationOptions& options, ServiceWorkerRegistration* serviceWorkerRegistration)
-    : m_allowOnBattery(options.allowOnBattery())
-    , m_id(options.id())
-    , m_idleRequired(options.idleRequired())
-    , m_maxDelay(options.maxDelay())
-    , m_minDelay(options.minDelay())
-    , m_minPeriod(options.minPeriod())
-    , m_minRequiredNetwork(options.minRequiredNetwork())
+SyncRegistration::SyncRegistration(int64_t id, const SyncRegistrationOptions& options, ServiceWorkerRegistration* serviceWorkerRegistration)
+    : m_id(id)
+    , m_tag(options.tag())
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
 }
@@ -69,21 +47,22 @@ SyncRegistration::~SyncRegistration()
 
 ScriptPromise SyncRegistration::unregister(ScriptState* scriptState)
 {
+    if (m_id == WebSyncRegistration::UNREGISTERED_SYNC_ID)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - not a valid registration object"));
+
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebSyncProvider* webSyncProvider = Platform::current()->backgroundSyncProvider();
     ASSERT(webSyncProvider);
 
-    webSyncProvider->unregisterBackgroundSync(m_id, m_serviceWorkerRegistration->webRegistration(), new SyncUnregistrationCallbacks(resolver, m_serviceWorkerRegistration));
+    webSyncProvider->unregisterBackgroundSync(WebSyncRegistration::PeriodicityOneShot, m_id, m_tag, m_serviceWorkerRegistration->webRegistration(), new SyncUnregistrationCallbacks(resolver, m_serviceWorkerRegistration));
 
     return promise;
 }
 
 DEFINE_TRACE(SyncRegistration)
 {
-    visitor->trace(m_allowOnBattery);
-    visitor->trace(m_idleRequired);
     visitor->trace(m_serviceWorkerRegistration);
 }
 

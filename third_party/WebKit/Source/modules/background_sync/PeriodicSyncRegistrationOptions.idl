@@ -4,7 +4,9 @@
 
 [
     RuntimeEnabled=BackgroundSync,
-] partial interface ServiceWorkerGlobalScope {
-    attribute EventHandler onsync;
-    attribute EventHandler onperiodicsync;
+] dictionary PeriodicSyncRegistrationOptions {
+    DOMString tag;
+    unsigned long minPeriod = 0;
+    SyncNetworkState networkState = "network-online";
+    SyncPowerState powerState = "auto";
 };

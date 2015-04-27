@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 [
+    Constructor(DOMString type, PeriodicSyncEventInit init),
+    Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundSync,
-] partial interface ServiceWorkerGlobalScope {
-    attribute EventHandler onsync;
-    attribute EventHandler onperiodicsync;
+] interface PeriodicSyncEvent : ExtendableEvent {
+    readonly attribute PeriodicSyncRegistration registration;
 };

@@ -6,5 +6,6 @@
     Exposed=(Window, ServiceWorker),
     RuntimeEnabled=BackgroundSync,
 ] partial interface ServiceWorkerRegistration {
-    [MeasureAs=BackgroundSync] readonly attribute SyncManager syncManager;
+    [MeasureAs=BackgroundSync] readonly attribute SyncManager sync;
+    [MeasureAs=BackgroundSync] readonly attribute PeriodicSyncManager periodicSync;
 };

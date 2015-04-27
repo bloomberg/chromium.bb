@@ -6,6 +6,7 @@
 #include "modules/background_sync/SyncCallbacks.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "modules/background_sync/PeriodicSyncRegistration.h"
 #include "modules/background_sync/SyncError.h"
 #include "modules/background_sync/SyncRegistration.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -35,7 +36,14 @@ void SyncRegistrationCallbacks::onSuccess(WebSyncRegistration* webSyncRegistrati
         m_resolver->resolve(v8::Null(m_resolver->scriptState()->isolate()));
         return;
     }
-    m_resolver->resolve(SyncRegistration::take(m_resolver.get(), webSyncRegistration, m_serviceWorkerRegistration));
+    switch (webSyncRegistration->periodicity) {
+    case WebSyncRegistration::PeriodicityPeriodic:
+        m_resolver->resolve(PeriodicSyncRegistration::take(m_resolver.get(), webSyncRegistration, m_serviceWorkerRegistration));
+        break;
+    case WebSyncRegistration::PeriodicityOneShot:
+        m_resolver->resolve(SyncRegistration::take(m_resolver.get(), webSyncRegistration, m_serviceWorkerRegistration));
+        break;
+    }
 }
 
 void SyncRegistrationCallbacks::onError(WebSyncError* error)
@@ -105,14 +113,25 @@ void SyncGetRegistrationsCallbacks::onSuccess(WebVector<WebSyncRegistration*>* w
         return;
     }
 
-    Vector<SyncRegistration*> syncRegistrations;
-    for (size_t i = 0; i < webSyncRegistrations->size(); ++i) {
-        WebSyncRegistration* webSyncRegistration = (*webSyncRegistrations)[i];
-        SyncRegistration* reg = SyncRegistration::take(m_resolver.get(), webSyncRegistration, m_serviceWorkerRegistration);
-        syncRegistrations.append(reg);
+    if (webSyncRegistrations->size() && (*webSyncRegistrations)[0]->periodicity == blink::WebSyncRegistration::PeriodicityOneShot) {
+        Vector<SyncRegistration*> syncRegistrations;
+        for (size_t i = 0; i < webSyncRegistrations->size(); ++i) {
+            WebSyncRegistration* webSyncRegistration = (*webSyncRegistrations)[i];
+            SyncRegistration* reg = SyncRegistration::take(m_resolver.get(), webSyncRegistration, m_serviceWorkerRegistration);
+            syncRegistrations.append(reg);
+        }
+        delete(webSyncRegistrations);
+        m_resolver->resolve(syncRegistrations);
+    } else {
+        Vector<PeriodicSyncRegistration*> syncRegistrations;
+        for (size_t i = 0; i < webSyncRegistrations->size(); ++i) {
+            WebSyncRegistration* webSyncRegistration = (*webSyncRegistrations)[i];
+            PeriodicSyncRegistration* reg = PeriodicSyncRegistration::take(m_resolver.get(), webSyncRegistration, m_serviceWorkerRegistration);
+            syncRegistrations.append(reg);
+        }
+        delete(webSyncRegistrations);
+        m_resolver->resolve(syncRegistrations);
     }
-    delete(webSyncRegistrations);
-    m_resolver->resolve(syncRegistrations);
 }
 
 void SyncGetRegistrationsCallbacks::onError(WebSyncError* error)

@@ -9,12 +9,12 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/background_sync/WebSyncRegistration.h"
 
 namespace blink {
 
 class WebServiceWorkerRegistration;
 struct WebSyncError;
-struct WebSyncRegistration;
 
 using WebSyncRegistrationCallbacks = WebCallbacks<WebSyncRegistration, WebSyncError>;
 using WebSyncUnregistrationCallbacks = WebCallbacks<bool, WebSyncError>;
@@ -30,15 +30,15 @@ public:
 
     // Takes ownership of the WebSyncUnregistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void unregisterBackgroundSync(const WebString&, WebServiceWorkerRegistration*, WebSyncUnregistrationCallbacks*) = 0;
+    virtual void unregisterBackgroundSync(blink::WebSyncRegistration::Periodicity, int64_t, const WebString&, WebServiceWorkerRegistration*, WebSyncUnregistrationCallbacks*) = 0;
 
     // Takes ownership of the WebSyncRegistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getRegistration(const WebString&, WebServiceWorkerRegistration*, WebSyncRegistrationCallbacks*) = 0;
+    virtual void getRegistration(blink::WebSyncRegistration::Periodicity, const WebString&, WebServiceWorkerRegistration*, WebSyncRegistrationCallbacks*) = 0;
 
     // Takes ownership of the WebSyncGetRegistrationsCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void getRegistrations(WebServiceWorkerRegistration*, WebSyncGetRegistrationsCallbacks*) = 0;
+    virtual void getRegistrations(blink::WebSyncRegistration::Periodicity, WebServiceWorkerRegistration*, WebSyncGetRegistrationsCallbacks*) = 0;
 };
 
 } // namespace blink

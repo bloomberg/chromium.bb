@@ -15,6 +15,9 @@
     'modules_idl_files': [
       '<@(extra_blink_module_idl_files)',
       'app_banner/BeforeInstallPromptEvent.idl',
+      'background_sync/PeriodicSyncEvent.idl',
+      'background_sync/PeriodicSyncManager.idl',
+      'background_sync/PeriodicSyncRegistration.idl',
       'background_sync/SyncEvent.idl',
       'background_sync/SyncManager.idl',
       'background_sync/SyncRegistration.idl',
@@ -304,6 +307,7 @@
     # interfaces that inherit from Event
     'modules_event_idl_files': [
       'app_banner/BeforeInstallPromptEvent.idl',
+      'background_sync/PeriodicSyncEvent.idl',
       'background_sync/SyncEvent.idl',
       'device_light/DeviceLightEvent.idl',
       'device_orientation/DeviceMotionEvent.idl',
@@ -337,6 +341,8 @@
     ],
     'modules_dictionary_idl_files': [
       'app_banner/BeforeInstallPromptEventInit.idl',
+      'background_sync/PeriodicSyncEventInit.idl',
+      'background_sync/PeriodicSyncRegistrationOptions.idl',
       'background_sync/SyncEventInit.idl',
       'background_sync/SyncRegistrationOptions.idl',
       'cachestorage/CacheQueryOptions.idl',
@@ -394,6 +400,10 @@
     'generated_modules_dictionary_files': [
       '<(blink_modules_output_dir)/app_banner/BeforeInstallPromptEventInit.cpp',
       '<(blink_modules_output_dir)/app_banner/BeforeInstallPromptEventInit.h',
+      '<(blink_modules_output_dir)/background_sync/PeriodicSyncEventInit.cpp',
+      '<(blink_modules_output_dir)/background_sync/PeriodicSyncEventInit.h',
+      '<(blink_modules_output_dir)/background_sync/PeriodicSyncRegistrationOptions.cpp',
+      '<(blink_modules_output_dir)/background_sync/PeriodicSyncRegistrationOptions.h',
       '<(blink_modules_output_dir)/background_sync/SyncEventInit.cpp',
       '<(blink_modules_output_dir)/background_sync/SyncEventInit.h',
       '<(blink_modules_output_dir)/background_sync/SyncRegistrationOptions.cpp',
@@ -547,6 +557,12 @@
       'app_banner/AppBannerController.h',
       'app_banner/BeforeInstallPromptEvent.cpp',
       'app_banner/BeforeInstallPromptEvent.h',
+      'background_sync/PeriodicSyncEvent.cpp',
+      'background_sync/PeriodicSyncEvent.h',
+      'background_sync/PeriodicSyncManager.cpp',
+      'background_sync/PeriodicSyncManager.h',
+      'background_sync/PeriodicSyncRegistration.cpp',
+      'background_sync/PeriodicSyncRegistration.h',
       'background_sync/ServiceWorkerGlobalScopeSync.h',
       'background_sync/ServiceWorkerRegistrationSync.cpp',
       'background_sync/ServiceWorkerRegistrationSync.h',

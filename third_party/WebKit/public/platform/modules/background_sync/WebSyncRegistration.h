@@ -11,59 +11,67 @@
 namespace blink {
 
 struct WebSyncRegistration {
-    enum NetworkType {
-        NetworkTypeAny = 0,
-        NetworkTypeOffline,
-        NetworkTypeOnline,
-        NetworkTypeNonMobile,
-        NetworkTypeLast = NetworkTypeNonMobile
+    enum NetworkState {
+        NetworkStateAny = 0,
+        NetworkStateAvoidCellular,
+        NetworkStateOnline,
+        NetworkStateLast = NetworkStateOnline
+    };
+
+    enum PowerState {
+        PowerStateAuto = 0,
+        PowerStateAvoidDraining,
+        PowerStateLast = PowerStateAvoidDraining
+    };
+
+    enum { UNREGISTERED_SYNC_ID = -1};
+
+    enum Periodicity {
+        PeriodicityPeriodic = 0,
+        PeriodicityOneShot,
+        PeriodicityLast = PeriodicityOneShot
     };
 
     WebSyncRegistration()
-        : id("")
-        , minDelayMs(0)
-        , maxDelayMs(0)
+        : id(UNREGISTERED_SYNC_ID)
+        , periodicity(PeriodicityOneShot)
+        , tag("")
         , minPeriodMs(0)
-        , minRequiredNetwork(NetworkType::NetworkTypeAny)
-        , allowOnBattery(true)
-        , idleRequired(false)
+        , networkState(NetworkState::NetworkStateOnline)
+        , powerState(PowerState::PowerStateAuto)
     {
     }
 
-    WebSyncRegistration(const WebString& registrationId, unsigned long minDelayMs,
-        unsigned long maxDelayMs, unsigned long minPeriodMs, NetworkType minRequiredNetwork,
-        bool allowOnBattery, bool idleRequired)
-        : id(registrationId)
-        , minDelayMs(minDelayMs)
-        , maxDelayMs(maxDelayMs)
+    WebSyncRegistration(int64_t id, Periodicity periodicity,
+        const WebString& registrationTag, unsigned long minPeriodMs,
+        NetworkState networkState, PowerState powerState)
+        : id(id)
+        , periodicity(periodicity)
+        , tag(registrationTag)
         , minPeriodMs(minPeriodMs)
-        , minRequiredNetwork(minRequiredNetwork)
-        , allowOnBattery(allowOnBattery)
-        , idleRequired(idleRequired)
+        , networkState(networkState)
+        , powerState(powerState)
     {
     }
 
-    WebString id;
+    /* Internal identity; not exposed to JS API. */
+    int64_t id;
 
-    /* Minimum delay before sync event (or first sync event, if periodic,) in
-     * milliseconds. */
-    unsigned long minDelayMs;
-
-    /* Maximum delay before sync event (or first sync event, if periodic,) in
-     * milliseconds. 0 means no maximum delay. If this value is greater than 0,
-     * then it should not be less than minDelayMs for the registration to be
-     * meaningful.
+    /* Internal flag; not directly exposed to JS API.
+     * Instead, this determines whether this object is represented in JS as a
+     * SyncRegistration or a PeriodicSyncRegistration.
      */
-    unsigned long maxDelayMs;
+    Periodicity periodicity;
+
+    WebString tag;
 
     /* Minimum time between periodic sync events, in milliseconds. A 0 value
      * here means that the event is a one-shot (not periodic.)
      */
     unsigned long minPeriodMs;
 
-    NetworkType minRequiredNetwork;
-    bool allowOnBattery;
-    bool idleRequired;
+    NetworkState networkState;
+    PowerState powerState;
 };
 
 } // namespace blink

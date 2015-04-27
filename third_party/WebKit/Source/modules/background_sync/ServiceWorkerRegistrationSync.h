@@ -11,6 +11,7 @@
 namespace blink {
 
 class SyncManager;
+class PeriodicSyncManager;
 class ServiceWorkerRegistration;
 
 class ServiceWorkerRegistrationSync final : public GarbageCollectedFinalized<ServiceWorkerRegistrationSync>, public HeapSupplement<ServiceWorkerRegistration> {
@@ -20,8 +21,10 @@ public:
     virtual ~ServiceWorkerRegistrationSync();
     static ServiceWorkerRegistrationSync& from(ServiceWorkerRegistration&);
 
-    static SyncManager* syncManager(ServiceWorkerRegistration&);
-    SyncManager* syncManager();
+    static SyncManager* sync(ServiceWorkerRegistration&);
+    static PeriodicSyncManager* periodicSync(ServiceWorkerRegistration&);
+    SyncManager* sync();
+    PeriodicSyncManager* periodicSync();
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -31,6 +34,7 @@ private:
 
     Member<ServiceWorkerRegistration> m_registration;
     Member<SyncManager> m_syncManager;
+    Member<PeriodicSyncManager> m_periodicSyncManager;
 };
 
 } // namespace blink

@@ -7,12 +7,6 @@
     GarbageCollected,
     RuntimeEnabled=BackgroundSync,
 ] interface SyncRegistration {
-    readonly attribute DOMString id;
-    readonly attribute unsigned long minDelay;
-    readonly attribute unsigned long maxDelay;
-    readonly attribute unsigned long minPeriod;
-    readonly attribute SyncNetworkType minRequiredNetwork;
-    readonly attribute boolean allowOnBattery;
-    readonly attribute boolean idleRequired;
+    [RuntimeEnabled=BackgroundSyncV2] readonly attribute DOMString tag;
     [CallWith=ScriptState] Promise<boolean> unregister();
 };
