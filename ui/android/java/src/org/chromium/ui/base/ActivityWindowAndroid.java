@@ -10,9 +10,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
-
 import java.lang.ref.WeakReference;
 
 /**
@@ -20,8 +17,7 @@ import java.lang.ref.WeakReference;
  * Activity Instance.
  * Only instantiate this class when you need the implemented features.
  */
-public class ActivityWindowAndroid
-        extends WindowAndroid implements ApplicationStatus.ActivityStateListener {
+public class ActivityWindowAndroid extends WindowAndroid {
     // Constants used for intent request code bounding.
     private static final int REQUEST_CODE_PREFIX = 1000;
     private static final int REQUEST_CODE_RANGE_SIZE = 100;
@@ -30,27 +26,9 @@ public class ActivityWindowAndroid
     private final WeakReference<Activity> mActivityRef;
     private int mNextRequestCode = 0;
 
-    /**
-     * Creates an Activity-specific WindowAndroid with associated intent functionality.
-     * TODO(jdduke): Remove this overload when all callsites have been updated to
-     * indicate their activity state listening preference.
-     * @param activity The activity associated with the WindowAndroid.
-     */
     public ActivityWindowAndroid(Activity activity) {
-        this(activity, true);
-    }
-
-    /**
-     * Creates an Activity-specific WindowAndroid with associated intent functionality.
-     * @param activity The activity associated with the WindowAndroid.
-     * @param listenToActivityState Whether to listen to activity state changes.
-     */
-    public ActivityWindowAndroid(Activity activity, boolean listenToActivityState) {
         super(activity.getApplicationContext());
         mActivityRef = new WeakReference<Activity>(activity);
-        if (listenToActivityState) {
-            ApplicationStatus.registerStateListenerForActivity(this, activity);
-        }
     }
 
     @Override
@@ -119,15 +97,6 @@ public class ActivityWindowAndroid
     public WeakReference<Activity> getActivity() {
         // Return a new WeakReference to prevent clients from releasing our internal WeakReference.
         return new WeakReference<Activity>(mActivityRef.get());
-    }
-
-    @Override
-    public void onActivityStateChange(Activity activity, int newState) {
-        if (newState == ActivityState.PAUSED) {
-            onActivityPaused();
-        } else if (newState == ActivityState.RESUMED) {
-            onActivityResumed();
-        }
     }
 
     private int generateNextRequestCode() {

@@ -71,8 +71,7 @@ public class ContentShellActivity extends Activity {
 
         setContentView(R.layout.content_shell_activity);
         mShellManager = (ShellManager) findViewById(R.id.shell_container);
-        final boolean listenToActivityState = true;
-        mWindowAndroid = new ActivityWindowAndroid(this, listenToActivityState);
+        mWindowAndroid = new ActivityWindowAndroid(this);
         mWindowAndroid.restoreInstanceState(savedInstanceState);
         mShellManager.setWindow(mWindowAndroid);
         // Set up the animation placeholder to be the SurfaceView. This disables the
@@ -181,6 +180,14 @@ public class ContentShellActivity extends Activity {
                 activeView.loadUrl(url);
             }
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        ContentViewCore contentViewCore = getActiveContentViewCore();
+        if (contentViewCore != null) contentViewCore.onHide();
     }
 
     @Override

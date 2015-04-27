@@ -871,11 +871,9 @@ public class AwContents implements SmartClipProvider,
 
         WebContents webContents = nativeGetWebContents(mNativeAwContents);
 
-        // WebView does not currently initialize ApplicationStatus, crbug.com/470582.
-        final boolean listenToActivityState = false;
         Activity activity = ContentViewCore.activityFromContext(mContext);
         mWindowAndroid = activity != null
-                ? new ActivityWindowAndroid(activity, listenToActivityState)
+                ? new ActivityWindowAndroid(activity)
                 : new WindowAndroid(mContext.getApplicationContext());
         mContentViewCore = createAndInitializeContentViewCore(
                 mContainerView, mContext, mInternalAccessAdapter, webContents,
