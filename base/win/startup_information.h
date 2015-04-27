@@ -24,6 +24,8 @@ class BASE_EXPORT StartupInformation {
   bool InitializeProcThreadAttributeList(DWORD attribute_count);
 
   // Sets one entry in the initialized attribute list.
+  // |value| needs to live at least as long as the StartupInformation object
+  // this is called on.
   bool UpdateProcThreadAttribute(DWORD_PTR attribute,
                                  void* value,
                                  size_t size);
