@@ -35,6 +35,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
 
