@@ -118,7 +118,8 @@ def _UpdateWorkspaceSdk(bootstrap_path, workspace_path, version):
       'latest'.
   """
   if project_sdk.FindRepoRoot(bootstrap_path):
-    cros_build_lib.Die('brillo sdk must run from a git clone. brbug.com/580')
+    cros_build_lib.Die('You are bootstrapping chromite from a repo checkout.\n'
+                       'You must use a git clone. (brbug.com/580: link docs)')
 
   # We fetch versioned manifests from GS.
   gs_ctx = gs.GSContext()
