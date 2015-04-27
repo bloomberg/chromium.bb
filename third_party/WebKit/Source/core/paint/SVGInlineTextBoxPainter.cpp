@@ -329,7 +329,6 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
         additionalPaintServerTransform = &paintServerTransform;
     }
 
-    // FIXME: Non-scaling stroke is not applied here.
     SkPaint paint;
     if (!SVGPaintContext::paintForLayoutObject(paintInfo, style, m_svgInlineTextBox.parent()->layoutObject(), resourceMode, paint, additionalPaintServerTransform))
         return;
@@ -344,7 +343,8 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
     if (resourceMode == ApplyToStrokeMode) {
         StrokeData strokeData;
         SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, style, m_svgInlineTextBox.parent()->layoutObject());
-        strokeData.setThickness(strokeData.thickness() * scalingFactor);
+        if (style.svgStyle().vectorEffect() != VE_NON_SCALING_STROKE)
+            strokeData.setThickness(strokeData.thickness() * scalingFactor);
         strokeData.setupPaint(&paint);
     }
 
