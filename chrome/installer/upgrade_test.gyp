@@ -4,6 +4,7 @@
 
 {
   'variables': {
+    'branding_dir': '../app/theme/<(branding_path_component)',
     'version_py': '<(DEPTH)/build/util/version.py',
     'version_path': '../../chrome/VERSION',
     'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
@@ -86,15 +87,6 @@
           'msvs_disabled_warnings': [ 4267, ],
         },
       ],
-    }],
-    [ 'branding == "Chrome"', {
-      'variables': {
-         'branding_dir': '../app/theme/google_chrome',
-      },
-    }, { # else branding!="Chrome"
-      'variables': {
-         'branding_dir': '../app/theme/chromium',
-      },
     }],
   ],
 }

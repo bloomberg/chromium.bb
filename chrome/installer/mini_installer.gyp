@@ -3,7 +3,7 @@
     'version_py': '<(DEPTH)/build/util/version.py',
     'version_path': '../../chrome/VERSION',
     'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
-    # 'branding_dir' is set in the 'conditions' section at the bottom.
+    'branding_dir': '../app/theme/<(branding_path_component)',
     'msvs_use_common_release': 0,
     'msvs_use_common_linker_extras': 0,
     'mini_installer_internal_deps%': 0,
@@ -298,24 +298,6 @@
               'message': 'Create installer archive',
             },
           ],
-          # TODO(mark):  <(branding_dir) should be defined by the
-          # global condition block at the bottom of the file, but
-          # this doesn't work due to the following issue:
-          #
-          #   http://code.google.com/p/gyp/issues/detail?id=22
-          #
-          # Remove this block once the above issue is fixed.
-          'conditions': [
-            [ 'branding == "Chrome"', {
-              'variables': {
-                 'branding_dir': '../app/theme/google_chrome',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                 'branding_dir': '../app/theme/chromium',
-              },
-            }],
-          ],
         },
       ],
       'conditions': [
@@ -337,15 +319,6 @@
           ],
         }],
       ],
-    }],
-    [ 'branding == "Chrome"', {
-      'variables': {
-         'branding_dir': '../app/theme/google_chrome',
-      },
-    }, { # else branding!="Chrome"
-      'variables': {
-         'branding_dir': '../app/theme/chromium',
-      },
     }],
   ],
 }
