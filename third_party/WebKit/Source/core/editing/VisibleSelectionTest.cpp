@@ -9,7 +9,6 @@
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/html/HTMLElement.h"
-#include "core/testing/CoreTestHelpers.h"
 #include "core/testing/DummyPageHolder.h"
 #include <gtest/gtest.h>
 
