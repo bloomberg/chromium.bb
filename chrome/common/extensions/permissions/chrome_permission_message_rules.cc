@@ -320,10 +320,6 @@ ChromePermissionMessageRule::GetAllRules() {
         APIPermission::kAccessibilityFeaturesRead},
        {}},
 
-      {IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE,
-       {APIPermission::kAudioCapture, APIPermission::kVideoCapture},
-       {}},
-
       // TODO(sashab): Add the missing combinations of media galleries
       // permissions so a valid permission is generated for all combinations.
       {IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE_DELETE,
@@ -542,6 +538,10 @@ ChromePermissionMessageRule::GetAllRules() {
        {}},
       {IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE,
        {APIPermission::kStartupPages},
+       {}},
+
+      {IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE,
+       {APIPermission::kAudioCapture, APIPermission::kVideoCapture},
        {}},
 
       // Individual message rules taken from

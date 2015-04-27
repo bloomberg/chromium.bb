@@ -20,7 +20,7 @@ bool IsNewPermissionMessageSystemEnabled() {
     return g_force_permission_system_for_testing == ForceForTesting::FORCE_NEW;
   const std::string group_name =
       base::FieldTrialList::FindFullName("PermissionMessageSystem");
-  return group_name == "NewSystem";
+  return group_name != "OldSystem";
 }
 
 }  // namespace

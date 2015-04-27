@@ -1139,46 +1139,42 @@ TEST(PermissionsTest, GetWarningMessages_Plugins) {
 }
 
 TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
+  const std::string kAudio("Use your microphone");
+  const std::string kVideo("Use your camera");
+  const std::string kBoth("Use your microphone and camera");
+
   // Both audio and video present.
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "audio-video.json");
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
   PermissionSet* set = const_cast<PermissionSet*>(
       extension->permissions_data()->active_permissions().get());
-  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(),
-                                          "Use your microphone"));
-  EXPECT_FALSE(
-      VerifyHasPermissionMessage(set, extension->GetType(), "Use your camera"));
-  EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(),
-                                         "Use your microphone and camera"));
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kAudio));
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kVideo));
+  EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(), kBoth));
   PermissionMessageStrings warnings =
       provider->GetPermissionMessageStrings(set, extension->GetType());
-  size_t combined_index = IndexOf(warnings, "Use your microphone and camera");
+  size_t combined_index = IndexOf(warnings, kBoth);
   size_t combined_size = warnings.size();
 
   // Just audio present.
   set->apis_.erase(APIPermission::kVideoCapture);
-  EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(),
-                                         "Use your microphone"));
-  EXPECT_FALSE(
-      VerifyHasPermissionMessage(set, extension->GetType(), "Use your camera"));
-  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(),
-                                          "Use your microphone and camera"));
+  EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(), kAudio));
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kVideo));
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kBoth));
   warnings = provider->GetPermissionMessageStrings(set, extension->GetType());
   EXPECT_EQ(combined_size, warnings.size());
-  EXPECT_EQ(combined_index, IndexOf(warnings, "Use your microphone"));
+  EXPECT_EQ(combined_index, IndexOf(warnings, kAudio));
 
   // Just video present.
   set->apis_.erase(APIPermission::kAudioCapture);
   set->apis_.insert(APIPermission::kVideoCapture);
-  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(),
-                                          "Use your microphone"));
-  EXPECT_TRUE(
-      VerifyHasPermissionMessage(set, extension->GetType(), "Use your camera"));
-  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(),
-                                          "Use your microphone and camera"));
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kAudio));
+  EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(), kVideo));
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(), kBoth));
   warnings = provider->GetPermissionMessageStrings(set, extension->GetType());
   EXPECT_EQ(combined_size, warnings.size());
+  EXPECT_EQ(combined_index, IndexOf(warnings, kVideo));
 }
 
 TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
