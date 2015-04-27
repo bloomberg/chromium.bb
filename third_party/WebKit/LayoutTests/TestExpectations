@@ -1003,7 +1003,10 @@ crbug.com/474162 [ Debug Win7 ] fast/history/form-submit-in-frame-via-onclick.ht
 
 crbug.com/474168 [ Mac ] fast/images/12-55.html [ Crash Pass ]
 crbug.com/474168 [ Mac ] fast/images/182.html [ Crash Pass ]
-crbug.com/474168 [ Mac ] fast/images/2-dht.html [ Crash Pass ]
+# TODO(noel): recover the Mac line once bug 398235 is complete and new image baselines
+# have been created for bug 398235.
+# crbug.com/474168 [ Mac ] fast/images/2-dht.html [ Crash Pass ]
+crbug.com/398235 fast/images/2-dht.html [ ImageOnlyFailure ]
 crbug.com/474168 [ Mac ] fast/images/23-55.html [ Crash Pass ]
 crbug.com/474168 [ Mac ] fast/images/55.html [ Crash Pass ]
 
