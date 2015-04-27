@@ -19,7 +19,7 @@ group("services") {
 
   if (!is_component_build) {
     deps += [
-      "//components/clipboard",
+      "//components/core_services",
       "//components/html_viewer",
       "//components/kiosk_wm:window_manager",
       "//components/native_viewport",

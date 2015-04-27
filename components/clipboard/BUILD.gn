@@ -4,16 +4,25 @@
 
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
-mojo_native_application("clipboard") {
+source_set("lib") {
   sources = [
     "clipboard_standalone_impl.cc",
     "clipboard_standalone_impl.h",
+  ]
+
+  deps = [
+    "//components/clipboard/public/interfaces",
+  ]
+}
+
+mojo_native_application("clipboard") {
+  sources = [
     "main.cc",
   ]
 
   deps = [
+    ":lib",
     "//base",
-    "//components/clipboard/public/interfaces",
     "//mojo/application",
     "//mojo/common",
     "//mojo/environment:chromium",

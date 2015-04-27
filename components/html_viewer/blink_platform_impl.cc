@@ -25,6 +25,7 @@
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
+#include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 namespace html_viewer {
@@ -72,8 +73,10 @@ BlinkPlatformImpl::BlinkPlatformImpl(mojo::ApplicationImpl* app)
     network_service_->GetCookieStore(GetProxy(&cookie_store));
     cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
 
+    mojo::ServiceProviderPtr service_provider;
+    app->ConnectToService("mojo:core_services", &service_provider);
     mojo::ClipboardPtr clipboard;
-    app->ConnectToService("mojo:clipboard", &clipboard);
+    mojo::ConnectToService(service_provider.get(), &clipboard);
     clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
   }
 }
