@@ -43,14 +43,8 @@ TEST(FontFamilyCacheTest, Caching) {
   std::string pref_name2(map_name + '.' + "adsf");
 
   // Registers 2 preferences, and sets the first one.
-  prefs->registry()->RegisterStringPref(
-      pref_name.c_str(),
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->registry()->RegisterStringPref(
-      pref_name2.c_str(),
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->registry()->RegisterStringPref(pref_name.c_str(), std::string());
+  prefs->registry()->RegisterStringPref(pref_name2.c_str(), std::string());
   prefs->SetString(pref_name.c_str(), font1.c_str());
 
   // Check that the right preference is returned.

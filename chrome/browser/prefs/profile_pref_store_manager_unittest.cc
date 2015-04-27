@@ -102,19 +102,12 @@ class ProfilePrefStoreManagerTest : public testing::Test {
          it != kConfiguration + arraysize(kConfiguration);
          ++it) {
       if (it->strategy == PrefHashFilter::TRACKING_STRATEGY_ATOMIC) {
-        profile_pref_registry_->RegisterStringPref(
-            it->name,
-            std::string(),
-            user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+        profile_pref_registry_->RegisterStringPref(it->name, std::string());
       } else {
-        profile_pref_registry_->RegisterDictionaryPref(
-            it->name, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+        profile_pref_registry_->RegisterDictionaryPref(it->name);
       }
     }
-    profile_pref_registry_->RegisterStringPref(
-        kUnprotectedPref,
-        std::string(),
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+    profile_pref_registry_->RegisterStringPref(kUnprotectedPref, std::string());
 
     // As in chrome_pref_service_factory.cc, kPreferencesResetTime needs to be
     // declared as protected in order to be read from the proper store by the

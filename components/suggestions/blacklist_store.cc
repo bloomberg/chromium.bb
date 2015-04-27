@@ -212,9 +212,7 @@ void BlacklistStore::FilterSuggestions(SuggestionsProfile* profile) {
 // static
 void BlacklistStore::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      prefs::kSuggestionsBlacklist, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kSuggestionsBlacklist, std::string());
 }
 
 

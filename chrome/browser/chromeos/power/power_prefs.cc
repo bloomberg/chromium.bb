@@ -50,14 +50,10 @@ void PowerPrefs::RegisterUserProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   RegisterProfilePrefs(registry);
 
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryIdleAction,
-      PowerPolicyController::ACTION_SUSPEND,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerLidClosedAction,
-      PowerPolicyController::ACTION_SUSPEND,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleAction,
+                                PowerPolicyController::ACTION_SUSPEND);
+  registry->RegisterIntegerPref(prefs::kPowerLidClosedAction,
+                                PowerPolicyController::ACTION_SUSPEND);
 }
 
 // static
@@ -65,14 +61,10 @@ void PowerPrefs::RegisterLoginProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   RegisterProfilePrefs(registry);
 
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryIdleAction,
-      PowerPolicyController::ACTION_SHUT_DOWN,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerLidClosedAction,
-      PowerPolicyController::ACTION_SHUT_DOWN,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleAction,
+                                PowerPolicyController::ACTION_SHUT_DOWN);
+  registry->RegisterIntegerPref(prefs::kPowerLidClosedAction,
+                                PowerPolicyController::ACTION_SHUT_DOWN);
 }
 
 void PowerPrefs::Observe(int type,
@@ -170,90 +162,34 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
 // static
 void PowerPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcScreenDimDelayMs,
-      420000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcScreenOffDelayMs,
-      480000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcScreenLockDelayMs,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcIdleWarningDelayMs,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcIdleDelayMs,
-      1800000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryScreenDimDelayMs,
-      300000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryScreenOffDelayMs,
-      360000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryScreenLockDelayMs,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryIdleWarningDelayMs,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryIdleDelayMs,
-      600000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerLockScreenDimDelayMs,
-      30000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerLockScreenOffDelayMs,
-      40000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcIdleAction,
-      PowerPolicyController::ACTION_SUSPEND,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kPowerUseAudioActivity,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kPowerUseVideoActivity,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kPowerAllowScreenWakeLocks,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kPowerAcScreenDimDelayMs, 420000);
+  registry->RegisterIntegerPref(prefs::kPowerAcScreenOffDelayMs, 480000);
+  registry->RegisterIntegerPref(prefs::kPowerAcScreenLockDelayMs, 0);
+  registry->RegisterIntegerPref(prefs::kPowerAcIdleWarningDelayMs, 0);
+  registry->RegisterIntegerPref(prefs::kPowerAcIdleDelayMs, 1800000);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenDimDelayMs, 300000);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenOffDelayMs, 360000);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenLockDelayMs, 0);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleWarningDelayMs, 0);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleDelayMs, 600000);
+  registry->RegisterIntegerPref(prefs::kPowerLockScreenDimDelayMs, 30000);
+  registry->RegisterIntegerPref(prefs::kPowerLockScreenOffDelayMs, 40000);
+  registry->RegisterIntegerPref(prefs::kPowerAcIdleAction,
+                                PowerPolicyController::ACTION_SUSPEND);
+  registry->RegisterBooleanPref(prefs::kPowerUseAudioActivity, true);
+  registry->RegisterBooleanPref(prefs::kPowerUseVideoActivity, true);
+  registry->RegisterBooleanPref(prefs::kPowerAllowScreenWakeLocks, true);
   registry->RegisterBooleanPref(
       prefs::kEnableAutoScreenLock,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kPowerPresentationScreenDimDelayFactor,
-      2.0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kPowerUserActivityScreenDimDelayFactor,
-      2.0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(prefs::kPowerPresentationScreenDimDelayFactor,
+                               2.0);
+  registry->RegisterDoublePref(prefs::kPowerUserActivityScreenDimDelayFactor,
+                               2.0);
+  registry->RegisterBooleanPref(prefs::kPowerWaitForInitialUserActivity, false);
   registry->RegisterBooleanPref(
-      prefs::kPowerWaitForInitialUserActivity,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kPowerForceNonzeroBrightnessForUserActivity,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      prefs::kPowerForceNonzeroBrightnessForUserActivity, true);
 }
 
 void PowerPrefs::SetProfile(Profile* profile) {

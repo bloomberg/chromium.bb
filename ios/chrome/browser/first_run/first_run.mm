@@ -73,7 +73,5 @@ const char* FirstRun::GetPingDelayPrefName() {
 // static
 void FirstRun::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      GetPingDelayPrefName(), 0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(GetPingDelayPrefName(), 0);
 }

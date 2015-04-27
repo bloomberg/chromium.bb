@@ -112,15 +112,12 @@ void PrefProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kContentSettingsVersion,
-      ContentSettingsPattern::kContentSettingsPatternVersion,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      ContentSettingsPattern::kContentSettingsPatternVersion);
   registry->RegisterDictionaryPref(
       prefs::kContentSettingsPatternPairs,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kMigratedContentSettingsPatternPairs,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kMigratedContentSettingsPatternPairs,
+                                false);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     registry->RegisterDictionaryPref(

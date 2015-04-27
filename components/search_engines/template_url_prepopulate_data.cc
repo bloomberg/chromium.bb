@@ -1184,16 +1184,9 @@ bool SameDomain(const GURL& given_url, const GURL& prepopulated_url) {
 // Global functions -----------------------------------------------------------
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kCountryIDAtInstall,
-      kCountryIDUnknown,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kSearchProviderOverrides,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kSearchProviderOverridesVersion,
-      -1,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kCountryIDAtInstall, kCountryIDUnknown);
+  registry->RegisterListPref(prefs::kSearchProviderOverrides);
+  registry->RegisterIntegerPref(prefs::kSearchProviderOverridesVersion, -1);
 }
 
 int GetDataVersion(PrefService* prefs) {

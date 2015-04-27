@@ -75,9 +75,7 @@ void SetCurrentAppShortcutsVersion(PrefService* prefs) {
 void AppShortcutManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // Indicates whether app shortcuts have been created.
-  registry->RegisterIntegerPref(
-      prefs::kAppShortcutsVersion, 0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kAppShortcutsVersion, 0);
 }
 
 AppShortcutManager::AppShortcutManager(Profile* profile)

@@ -109,14 +109,10 @@ ExtensionControlledPrefsTest::~ExtensionControlledPrefsTest() {
 
 void ExtensionControlledPrefsTest::RegisterPreferences(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      kPref1, kDefaultPref1, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      kPref2, kDefaultPref2, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      kPref3, kDefaultPref3, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      kPref4, kDefaultPref4, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(kPref1, kDefaultPref1);
+  registry->RegisterStringPref(kPref2, kDefaultPref2);
+  registry->RegisterStringPref(kPref3, kDefaultPref3);
+  registry->RegisterStringPref(kPref4, kDefaultPref4);
 }
 
 void ExtensionControlledPrefsTest::InstallExtensionControlledPref(

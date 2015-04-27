@@ -166,10 +166,8 @@ void AutofillManager::RegisterProfilePrefs(
       prefs::kAutofillEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kAutofillWalletSyncExperimentEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAutofillWalletSyncExperimentEnabled,
+                                false);
   // TODO(estade): Should this be syncable?
   registry->RegisterBooleanPref(
       prefs::kAutofillWalletImportEnabled,
@@ -177,44 +175,27 @@ void AutofillManager::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // This choice is made on a per-device basis, so it's not syncable.
   registry->RegisterBooleanPref(
-      prefs::kAutofillWalletImportStorageCheckboxState,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      prefs::kAutofillWalletImportStorageCheckboxState, true);
 #if defined(OS_MACOSX)
   registry->RegisterBooleanPref(
       prefs::kAutofillAuxiliaryProfilesEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #else  // defined(OS_MACOSX)
-  registry->RegisterBooleanPref(
-      prefs::kAutofillAuxiliaryProfilesEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAutofillAuxiliaryProfilesEnabled,
+                                false);
 #endif  // defined(OS_MACOSX)
 #if defined(OS_MACOSX)
-  registry->RegisterBooleanPref(
-      prefs::kAutofillMacAddressBookQueried,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAutofillMacAddressBookQueried, false);
 #endif  // defined(OS_MACOSX)
-  registry->RegisterDoublePref(
-      prefs::kAutofillPositiveUploadRate,
-      kAutofillPositiveUploadRateDefaultValue,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kAutofillNegativeUploadRate,
-      kAutofillNegativeUploadRateDefaultValue,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(prefs::kAutofillPositiveUploadRate,
+                               kAutofillPositiveUploadRateDefaultValue);
+  registry->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
+                               kAutofillNegativeUploadRateDefaultValue);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  registry->RegisterBooleanPref(
-      prefs::kAutofillUseMacAddressBook,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kAutofillMacAddressBookShowedCount,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAutofillUseMacAddressBook, false);
+  registry->RegisterIntegerPref(prefs::kAutofillMacAddressBookShowedCount, 0);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 

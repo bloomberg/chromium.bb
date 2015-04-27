@@ -172,10 +172,7 @@ void NewTabPageHandler::HandleLogTimeToClick(const base::ListValue* args) {
 void NewTabPageHandler::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // TODO(estade): should be syncable.
-  registry->RegisterIntegerPref(
-      prefs::kNtpShownPage,
-      APPS_PAGE_ID,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kNtpShownPage, APPS_PAGE_ID);
 }
 
 // static

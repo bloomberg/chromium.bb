@@ -68,18 +68,11 @@ void GCMChannelStatusSyncer::RegisterPrefs(PrefRegistrySimple* registry) {
 // static
 void GCMChannelStatusSyncer::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kGCMChannelStatus,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kGCMChannelStatus, true);
   registry->RegisterIntegerPref(
       prefs::kGCMChannelPollIntervalSeconds,
-      GCMChannelStatusRequest::default_poll_interval_seconds(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(
-      prefs::kGCMChannelLastCheckTime,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      GCMChannelStatusRequest::default_poll_interval_seconds());
+  registry->RegisterInt64Pref(prefs::kGCMChannelLastCheckTime, 0);
 }
 
 // static

@@ -29,10 +29,8 @@ class WindowSizeAutosaverTest : public CocoaProfileTest {
                                         defer:NO];
     // TODO(joi): Do all registration up front.
     static_cast<user_prefs::PrefRegistrySyncable*>(
-        profile()->GetPrefs()->DeprecatedGetPrefRegistry())->
-            RegisterDictionaryPref(
-                path_,
-                user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+        profile()->GetPrefs()->DeprecatedGetPrefRegistry())
+        ->RegisterDictionaryPref(path_);
   }
 
   void TearDown() override {

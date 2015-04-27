@@ -61,10 +61,7 @@ GeolocationPermissionContextFactory::BuildServiceInstanceFor(
 void GeolocationPermissionContextFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_ANDROID)
-  registry->RegisterBooleanPref(
-      prefs::kGeolocationEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kGeolocationEnabled, true);
 #endif
 }
 

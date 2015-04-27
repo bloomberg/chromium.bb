@@ -13,10 +13,7 @@
 // static
 void ChromeVersionService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      prefs::kProfileCreatedByVersion,
-      "1.0.0.0",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kProfileCreatedByVersion, "1.0.0.0");
 }
 
 // static

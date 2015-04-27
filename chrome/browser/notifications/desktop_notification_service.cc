@@ -45,12 +45,8 @@ using message_center::NotifierId;
 // static
 void DesktopNotificationService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(
-      prefs::kMessageCenterDisabledExtensionIds,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(
-      prefs::kMessageCenterDisabledSystemComponentIds,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kMessageCenterDisabledExtensionIds);
+  registry->RegisterListPref(prefs::kMessageCenterDisabledSystemComponentIds);
 }
 
 DesktopNotificationService::DesktopNotificationService(Profile* profile)

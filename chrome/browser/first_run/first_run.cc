@@ -620,10 +620,7 @@ std::string GetPingDelayPrefName() {
 }
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      GetPingDelayPrefName().c_str(),
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(GetPingDelayPrefName().c_str(), 0);
 }
 
 bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {

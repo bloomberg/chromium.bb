@@ -187,9 +187,7 @@ ExtensionWebUI::bookmark_manager_private_drag_event_router() {
 // static
 void ExtensionWebUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      kExtensionURLOverrides,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(kExtensionURLOverrides);
 }
 
 // static

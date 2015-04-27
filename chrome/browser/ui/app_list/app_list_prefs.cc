@@ -73,8 +73,7 @@ AppListPrefs::~AppListPrefs() {
 // static
 void AppListPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      kPrefModel, user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(kPrefModel);
 }
 
 // static

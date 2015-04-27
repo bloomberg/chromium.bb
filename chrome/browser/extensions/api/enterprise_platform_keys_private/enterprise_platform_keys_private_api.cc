@@ -408,12 +408,8 @@ EPKPChallengeUserKey::~EPKPChallengeUserKey() {
 
 void EPKPChallengeUserKey::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kAttestationEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kAttestationExtensionWhitelist,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAttestationEnabled, false);
+  registry->RegisterListPref(prefs::kAttestationExtensionWhitelist);
 }
 
 bool EPKPChallengeUserKey::RunAsync() {

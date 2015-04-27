@@ -99,9 +99,7 @@ void SuggestionsStore::ClearSuggestions() {
 // static
 void SuggestionsStore::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      prefs::kSuggestionsData, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kSuggestionsData, std::string());
 }
 
 }  // namespace suggestions

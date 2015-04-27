@@ -95,10 +95,7 @@ bool ChildAccountService::IsChildAccountDetectionEnabled() {
 
 void ChildAccountService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kChildAccountStatusKnown,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kChildAccountStatusKnown, false);
 }
 
 void ChildAccountService::SetIsChildAccount(bool is_child_account) {

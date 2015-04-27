@@ -57,21 +57,14 @@ namespace invalidation {
 // static
 void InvalidatorStorage::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kInvalidatorSavedInvalidations,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kInvalidatorInvalidationState,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kInvalidatorClientId,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kInvalidatorSavedInvalidations);
+  registry->RegisterStringPref(prefs::kInvalidatorInvalidationState,
+                               std::string());
+  registry->RegisterStringPref(prefs::kInvalidatorClientId, std::string());
 
   // This pref is obsolete.  We register it so we can clear it.
   // At some point in the future, it will be safe to remove this.
-  registry->RegisterListPref(kInvalidatorMaxInvalidationVersions,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(kInvalidatorMaxInvalidationVersions);
 }
 
 // static

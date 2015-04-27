@@ -107,10 +107,7 @@ void Preferences::RegisterProfilePrefs(
     hardware_keyboard_id = "xkb:us::eng";  // only for testing.
   }
 
-  registry->RegisterBooleanPref(
-      prefs::kPerformanceTracingEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPerformanceTracingEnabled, false);
 
   registry->RegisterBooleanPref(
       prefs::kTapToClickEnabled,
@@ -120,10 +117,7 @@ void Preferences::RegisterProfilePrefs(
       prefs::kTapDraggingEnabled,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kEnableTouchpadThreeFingerClick,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kEnableTouchpadThreeFingerClick, false);
   registry->RegisterBooleanPref(
       prefs::kNaturalScroll, base::CommandLine::ForCurrentProcess()->HasSwitch(
                                  switches::kNaturalScrollDefault),
@@ -132,14 +126,8 @@ void Preferences::RegisterProfilePrefs(
       prefs::kPrimaryMouseButtonRight,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kLabsMediaplayerEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kLabsAdvancedFilesystemEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
+  registry->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityStickyKeysEnabled,
       false,
@@ -148,10 +136,8 @@ void Preferences::RegisterProfilePrefs(
       prefs::kAccessibilityLargeCursorEnabled,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kAccessibilitySpokenFeedbackEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAccessibilitySpokenFeedbackEnabled,
+                                false);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityHighContrastEnabled,
       false,
@@ -164,10 +150,8 @@ void Preferences::RegisterProfilePrefs(
       prefs::kAccessibilityScreenMagnifierType,
       ui::kDefaultMagnifierType,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kAccessibilityScreenMagnifierScale,
-      std::numeric_limits<double>::min(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(prefs::kAccessibilityScreenMagnifierScale,
+                               std::numeric_limits<double>::min());
   registry->RegisterBooleanPref(
       prefs::kAccessibilityAutoclickEnabled,
       false,
@@ -210,26 +194,13 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod
   // because they're just used to track the logout state of the device.
-  registry->RegisterStringPref(
-      prefs::kLanguageCurrentInputMethod,
-      "",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kLanguagePreviousInputMethod,
-      "",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kLanguagePreferredLanguages,
-      kFallbackInputMethodLocale,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kLanguagePreloadEngines,
-      hardware_keyboard_id,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kLanguageEnabledExtensionImes,
-      "",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
+  registry->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
+  registry->RegisterStringPref(prefs::kLanguagePreferredLanguages,
+                               kFallbackInputMethodLocale);
+  registry->RegisterStringPref(prefs::kLanguagePreloadEngines,
+                               hardware_keyboard_id);
+  registry->RegisterStringPref(prefs::kLanguageEnabledExtensionImes, "");
 
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapSearchKeyTo,
@@ -246,10 +217,8 @@ void Preferences::RegisterProfilePrefs(
   // We don't sync the CapsLock remapping pref, since the UI hides this pref
   // on certain devices, so syncing a non-default value to a device that
   // doesn't allow changing the pref would be odd. http://crbug.com/167237
-  registry->RegisterIntegerPref(
-      prefs::kLanguageRemapCapsLockKeyTo,
-      input_method::kCapsLockKey,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kLanguageRemapCapsLockKeyTo,
+                                input_method::kCapsLockKey);
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapDiamondKeyTo,
       input_method::kControlKey,
@@ -257,10 +226,7 @@ void Preferences::RegisterProfilePrefs(
   // The following pref isn't synced since the user may desire a different value
   // depending on whether an external keyboard is attached to a particular
   // device.
-  registry->RegisterBooleanPref(
-      prefs::kLanguageSendFunctionKeys,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kLanguageSendFunctionKeys, false);
   registry->RegisterBooleanPref(
       prefs::kLanguageXkbAutoRepeatEnabled,
       true,
@@ -275,10 +241,7 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // We don't sync wake-on-wifi related prefs because they are device specific.
-  registry->RegisterBooleanPref(
-      prefs::kWakeOnWifiSsid,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kWakeOnWifiSsid, true);
 
   // Mobile plan notifications default to on.
   registry->RegisterBooleanPref(
@@ -287,16 +250,10 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // 3G first-time usage promo will be shown at least once.
-  registry->RegisterBooleanPref(
-      prefs::kShow3gPromoNotification,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kShow3gPromoNotification, true);
 
   // Number of times Data Saver prompt has been shown on 3G data network.
-  registry->RegisterIntegerPref(
-      prefs::kDataSaverPromptsShown,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kDataSaverPromptsShown, 0);
 
   // Initially all existing users would see "What's new" for current version
   // after update.
@@ -304,25 +261,13 @@ void Preferences::RegisterProfilePrefs(
                                "0.0.0.0",
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
-  registry->RegisterBooleanPref(
-      prefs::kExternalStorageDisabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kExternalStorageDisabled, false);
 
-  registry->RegisterStringPref(
-      prefs::kTermsOfServiceURL,
-      "",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kTermsOfServiceURL, "");
 
-  registry->RegisterBooleanPref(
-      prefs::kTouchHudProjectionEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kTouchHudProjectionEnabled, false);
 
-  registry->RegisterBooleanPref(
-      prefs::kTouchVirtualKeyboardEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kTouchVirtualKeyboardEnabled, false);
 
   input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
 
@@ -330,13 +275,10 @@ void Preferences::RegisterProfilePrefs(
       prefs::kResolveTimezoneByGeolocation, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
-  registry->RegisterBooleanPref(
-      prefs::kCaptivePortalAuthenticationIgnoresProxy, true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kCaptivePortalAuthenticationIgnoresProxy,
+                                true);
 
-  registry->RegisterBooleanPref(
-      prefs::kForceMaximizeOnFirstRun, false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kForceMaximizeOnFirstRun, false);
 }
 
 void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {

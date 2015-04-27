@@ -140,10 +140,7 @@ void InputMethodSyncer::RegisterProfilePrefs(
       prefs::kLanguageEnabledExtensionImesSyncable,
       "",
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kLanguageShouldMergeInputMethods,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kLanguageShouldMergeInputMethods, false);
 }
 
 void InputMethodSyncer::Initialize() {

@@ -43,9 +43,7 @@ SupervisedUserWhitelistService::~SupervisedUserWhitelistService() {
 // static
 void SupervisedUserWhitelistService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kSupervisedUserWhitelists,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kSupervisedUserWhitelists);
 }
 
 void SupervisedUserWhitelistService::Init() {

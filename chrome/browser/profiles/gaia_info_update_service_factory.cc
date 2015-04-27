@@ -42,12 +42,8 @@ KeyedService* GAIAInfoUpdateServiceFactory::BuildServiceInstanceFor(
 
 void GAIAInfoUpdateServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
-  prefs->RegisterInt64Pref(prefs::kProfileGAIAInfoUpdateTime,
-                           0,
-                           user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kProfileGAIAInfoPictureURL,
-                            std::string(),
-                            user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterInt64Pref(prefs::kProfileGAIAInfoUpdateTime, 0);
+  prefs->RegisterStringPref(prefs::kProfileGAIAInfoPictureURL, std::string());
 }
 
 bool GAIAInfoUpdateServiceFactory::ServiceIsNULLWhileTesting() const {

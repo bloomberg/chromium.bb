@@ -71,16 +71,9 @@ void SessionStartupPref::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kURLsToRestoreOnStartup,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kURLsToRestoreOnStartupOld,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kRestoreOnStartupMigrated,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(
-      prefs::kRestoreStartupURLsMigrationTime,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kURLsToRestoreOnStartupOld);
+  registry->RegisterBooleanPref(prefs::kRestoreOnStartupMigrated, false);
+  registry->RegisterInt64Pref(prefs::kRestoreStartupURLsMigrationTime, false);
 }
 
 // static

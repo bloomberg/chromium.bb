@@ -289,21 +289,13 @@ void SupervisedUserService::OnCustodianInfoChanged() {
 // static
 void SupervisedUserService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kSupervisedUserManualHosts,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kSupervisedUserManualURLs,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kDefaultSupervisedUserFilteringBehavior,
-      SupervisedUserURLFilter::ALLOW,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kSupervisedUserCreationAllowed, true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kSupervisedUserManualHosts);
+  registry->RegisterDictionaryPref(prefs::kSupervisedUserManualURLs);
+  registry->RegisterIntegerPref(prefs::kDefaultSupervisedUserFilteringBehavior,
+                                SupervisedUserURLFilter::ALLOW);
+  registry->RegisterBooleanPref(prefs::kSupervisedUserCreationAllowed, true);
   for (const char* pref : kCustodianInfoPrefs) {
-    registry->RegisterStringPref(pref, std::string(),
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+    registry->RegisterStringPref(pref, std::string());
   }
 }
 

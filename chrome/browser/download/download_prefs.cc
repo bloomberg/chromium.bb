@@ -183,34 +183,19 @@ void DownloadPrefs::RegisterProfilePrefs(
       prefs::kPromptForDownload,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kDownloadExtensionsToOpen,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kDownloadDirUpgraded,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kSaveFileType,
-      content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kDownloadExtensionsToOpen, std::string());
+  registry->RegisterBooleanPref(prefs::kDownloadDirUpgraded, false);
+  registry->RegisterIntegerPref(prefs::kSaveFileType,
+                                content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
 
   const base::FilePath& default_download_path = GetDefaultDownloadDirectory();
-  registry->RegisterFilePathPref(
-      prefs::kDownloadDefaultDirectory,
-      default_download_path,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterFilePathPref(
-      prefs::kSaveFileDefaultDirectory,
-      default_download_path,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
+                                 default_download_path);
+  registry->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
+                                 default_download_path);
 #if defined(OS_WIN) || defined(OS_LINUX) || \
     (defined(OS_MACOSX) && !defined(OS_IOS))
-  registry->RegisterBooleanPref(
-      prefs::kOpenPdfDownloadInSystemReader,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kOpenPdfDownloadInSystemReader, false);
 #endif
 }
 

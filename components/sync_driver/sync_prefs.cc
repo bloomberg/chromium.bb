@@ -35,30 +35,15 @@ SyncPrefs::~SyncPrefs() { DCHECK(CalledOnValidThread()); }
 // static
 void SyncPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kSyncHasSetupCompleted,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kSyncSuppressStart,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(
-      prefs::kSyncLastSyncedTime,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(
-      prefs::kSyncFirstSyncTime,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
+  registry->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
+  registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
+  registry->RegisterInt64Pref(prefs::kSyncFirstSyncTime, 0);
 
   // All datatypes are on by default, but this gets set explicitly
   // when you configure sync (when turning it on), in
   // ProfileSyncService::OnUserChoseDatatypes.
-  registry->RegisterBooleanPref(
-      prefs::kSyncKeepEverythingSynced,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced, true);
 
   syncer::ModelTypeSet user_types = syncer::UserTypes();
 
@@ -81,38 +66,20 @@ void SyncPrefs::RegisterProfilePrefs(
     RegisterDataTypePreferredPref(registry, it.Get(), false);
   }
 
-  registry->RegisterBooleanPref(
-      prefs::kSyncManaged,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSyncEncryptionBootstrapToken,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSyncKeystoreEncryptionBootstrapToken,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSyncManaged, false);
+  registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
+                               std::string());
+  registry->RegisterStringPref(prefs::kSyncKeystoreEncryptionBootstrapToken,
+                               std::string());
 #if defined(OS_CHROMEOS)
-  registry->RegisterStringPref(
-      prefs::kSyncSpareBootstrapToken,
-      "",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kSyncSpareBootstrapToken, "");
 #endif
 
-  registry->RegisterBooleanPref(
-      prefs::kSyncHasAuthError,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSyncHasAuthError, false);
 
-  registry->RegisterStringPref(
-      prefs::kSyncSessionsGUID,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kSyncSessionsGUID, std::string());
 
-  registry->RegisterIntegerPref(
-      prefs::kSyncRemainingRollbackTries, 0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kSyncRemainingRollbackTries, 0);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -394,10 +361,7 @@ void SyncPrefs::RegisterDataTypePreferredPref(
     NOTREACHED();
     return;
   }
-  registry->RegisterBooleanPref(
-      pref_name,
-      is_preferred,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(pref_name, is_preferred);
 }
 
 bool SyncPrefs::GetDataTypePreferred(syncer::ModelType type) const {

@@ -75,31 +75,17 @@ void ThemeServiceFactory::RegisterProfilePrefs(
     default_uses_system_theme = linux_ui->GetDefaultUsesSystemTheme();
 #endif
 
-  registry->RegisterBooleanPref(
-      prefs::kUsesSystemTheme,
-      default_uses_system_theme,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kUsesSystemTheme,
+                                default_uses_system_theme);
 #endif
-  registry->RegisterFilePathPref(
-      prefs::kCurrentThemePackFilename,
-      base::FilePath(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kCurrentThemeID,
-      ThemeService::kDefaultThemeID,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kCurrentThemeImages,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kCurrentThemeColors,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kCurrentThemeTints,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kCurrentThemeDisplayProperties,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(prefs::kCurrentThemePackFilename,
+                                 base::FilePath());
+  registry->RegisterStringPref(prefs::kCurrentThemeID,
+                               ThemeService::kDefaultThemeID);
+  registry->RegisterDictionaryPref(prefs::kCurrentThemeImages);
+  registry->RegisterDictionaryPref(prefs::kCurrentThemeColors);
+  registry->RegisterDictionaryPref(prefs::kCurrentThemeTints);
+  registry->RegisterDictionaryPref(prefs::kCurrentThemeDisplayProperties);
 }
 
 content::BrowserContext* ThemeServiceFactory::GetBrowserContextToUse(

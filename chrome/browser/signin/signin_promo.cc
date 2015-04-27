@@ -252,22 +252,10 @@ void ForceWebBasedSigninFlowForTesting(bool force) {
 
 void RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kSignInPromoStartupCount,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kSignInPromoUserSkipped,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kSignInPromoShowOnFirstRunAllowed,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kSignInPromoShowNTPBubble,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kSignInPromoStartupCount, 0);
+  registry->RegisterBooleanPref(prefs::kSignInPromoUserSkipped, false);
+  registry->RegisterBooleanPref(prefs::kSignInPromoShowOnFirstRunAllowed, true);
+  registry->RegisterBooleanPref(prefs::kSignInPromoShowNTPBubble, false);
 }
 
 }  // namespace signin

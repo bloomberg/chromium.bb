@@ -58,10 +58,7 @@ void AboutSigninInternalsFactory::RegisterProfilePrefs(
   for (int i = UNTIMED_FIELDS_BEGIN; i < UNTIMED_FIELDS_END; ++i) {
     const std::string pref_path = SigninStatusFieldToString(
         static_cast<UntimedSigninStatusField>(i));
-    user_prefs->RegisterStringPref(
-        pref_path.c_str(),
-        std::string(),
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs->RegisterStringPref(pref_path.c_str(), std::string());
   }
 
   for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
@@ -69,14 +66,8 @@ void AboutSigninInternalsFactory::RegisterProfilePrefs(
         static_cast<TimedSigninStatusField>(i)) + ".value";
     const std::string time = SigninStatusFieldToString(
         static_cast<TimedSigninStatusField>(i)) + ".time";
-    user_prefs->RegisterStringPref(
-        value.c_str(),
-        std::string(),
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-    user_prefs->RegisterStringPref(
-        time.c_str(),
-        std::string(),
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs->RegisterStringPref(value.c_str(), std::string());
+    user_prefs->RegisterStringPref(time.c_str(), std::string());
   }
 }
 

@@ -140,10 +140,7 @@ void PolicyCertServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // TODO(joaodasilva): this is used for backwards compatibility.
   // Remove once it's not necessary anymore.
-  registry->RegisterBooleanPref(
-      prefs::kUsedPolicyCertificatesOnce,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kUsedPolicyCertificatesOnce, false);
 }
 
 bool PolicyCertServiceFactory::ServiceIsNULLWhileTesting() const {

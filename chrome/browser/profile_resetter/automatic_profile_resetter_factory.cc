@@ -56,10 +56,8 @@ KeyedService* AutomaticProfileResetterFactory::BuildServiceInstanceFor(
 
 void AutomaticProfileResetterFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      prefs::kProfileResetPromptMementoInProfilePrefs,
-      "",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kProfileResetPromptMementoInProfilePrefs,
+                               "");
 }
 
 bool AutomaticProfileResetterFactory::

@@ -40,19 +40,14 @@ scoped_ptr<PrefService> PrefServiceForTesting() {
 
   // PDM depends on this pref, which is normally registered in
   // SigninManagerFactory.
-  registry->RegisterStringPref(
-      ::prefs::kGoogleServicesAccountId, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(::prefs::kGoogleServicesAccountId,
+                               std::string());
 
   // PDM depends on these prefs, which are normally registered in
   // AccountTrackerServiceFactory.
-  registry->RegisterListPref(
-      AccountTrackerService::kAccountInfoPref,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      ::prefs::kAccountIdMigrationState,
-      AccountTrackerService::MIGRATION_NOT_STARTED,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(AccountTrackerService::kAccountInfoPref);
+  registry->RegisterIntegerPref(::prefs::kAccountIdMigrationState,
+                                AccountTrackerService::MIGRATION_NOT_STARTED);
 
   base::PrefServiceFactory factory;
   factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore()));

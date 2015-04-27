@@ -46,10 +46,8 @@ void RegisterBrowserViewProfilePrefs(
   custom_frame_default = ui::GetCustomFramePrefDefault();
 #endif
 
-  registry->RegisterBooleanPref(
-      prefs::kUseCustomChromeFrame,
-      custom_frame_default,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
+                                custom_frame_default);
 }
 
 void MigrateBrowserTabStripPrefs(PrefService* prefs) {

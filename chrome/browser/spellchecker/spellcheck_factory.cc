@@ -71,12 +71,8 @@ void SpellcheckServiceFactory::RegisterProfilePrefs(
   // TODO(estade): IDS_SPELLCHECK_DICTIONARY should be an ASCII string.
   user_prefs->RegisterStringPref(
       prefs::kSpellCheckDictionary,
-      l10n_util::GetStringUTF8(IDS_SPELLCHECK_DICTIONARY),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(
-      prefs::kSpellCheckUseSpellingService,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      l10n_util::GetStringUTF8(IDS_SPELLCHECK_DICTIONARY));
+  user_prefs->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService, false);
   user_prefs->RegisterBooleanPref(
       prefs::kEnableContinuousSpellcheck,
       true,

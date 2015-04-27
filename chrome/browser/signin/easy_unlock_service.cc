@@ -261,18 +261,10 @@ EasyUnlockService::~EasyUnlockService() {
 // static
 void EasyUnlockService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kEasyUnlockAllowed,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kEasyUnlockEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kEasyUnlockPairing,
-      new base::DictionaryValue(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kEasyUnlockAllowed, true);
+  registry->RegisterBooleanPref(prefs::kEasyUnlockEnabled, false);
+  registry->RegisterDictionaryPref(prefs::kEasyUnlockPairing,
+                                   new base::DictionaryValue());
   registry->RegisterBooleanPref(
       prefs::kEasyUnlockProximityRequired,
       false,

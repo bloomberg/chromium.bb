@@ -419,10 +419,8 @@ void VariationsService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // This preference will only be written by the policy service, which will fill
   // it according to a value stored in the User Policy.
-  registry->RegisterStringPref(
-      prefs::kVariationsRestrictParameter,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kVariationsRestrictParameter,
+                               std::string());
 }
 
 // static

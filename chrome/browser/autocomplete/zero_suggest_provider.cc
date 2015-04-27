@@ -85,10 +85,7 @@ ZeroSuggestProvider* ZeroSuggestProvider::Create(
 // static
 void ZeroSuggestProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      prefs::kZeroSuggestCachedResults,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kZeroSuggestCachedResults, std::string());
 }
 
 void ZeroSuggestProvider::Start(const AutocompleteInput& input,

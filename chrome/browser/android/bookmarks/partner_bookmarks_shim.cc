@@ -69,9 +69,7 @@ PartnerBookmarksShim* PartnerBookmarksShim::BuildForBrowserContext(
 // static
 void PartnerBookmarksShim::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(
-      prefs::kPartnerBookmarkMappings,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kPartnerBookmarkMappings);
 }
 
 // static

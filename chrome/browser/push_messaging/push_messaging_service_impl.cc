@@ -96,10 +96,7 @@ void UnregisterCallbackToClosure(
 // static
 void PushMessagingServiceImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kPushMessagingRegistrationCount,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kPushMessagingRegistrationCount, 0);
   PushMessagingApplicationId::RegisterProfilePrefs(registry);
 }
 

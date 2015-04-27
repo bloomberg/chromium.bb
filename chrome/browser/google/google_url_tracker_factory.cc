@@ -54,14 +54,9 @@ KeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
 
 void GoogleURLTrackerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterStringPref(
-      prefs::kLastKnownGoogleURL,
-      GoogleURLTracker::kDefaultGoogleHomepage,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterStringPref(
-      kLastPromptedGoogleURL,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  user_prefs->RegisterStringPref(prefs::kLastKnownGoogleURL,
+                                 GoogleURLTracker::kDefaultGoogleHomepage);
+  user_prefs->RegisterStringPref(kLastPromptedGoogleURL, std::string());
 }
 
 content::BrowserContext* GoogleURLTrackerFactory::GetBrowserContextToUse(

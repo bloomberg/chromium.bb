@@ -474,17 +474,11 @@ void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {
 
 void RegisterProfilePrefsForSwReporter(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kSwReporterPromptReason, -1,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kSwReporterPromptReason, -1);
 
-  registry->RegisterStringPref(
-      prefs::kSwReporterPromptVersion, "",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kSwReporterPromptVersion, "");
 
-  registry->RegisterStringPref(
-      prefs::kSwReporterPromptSeed, "",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kSwReporterPromptSeed, "");
 }
 
 }  // namespace component_updater

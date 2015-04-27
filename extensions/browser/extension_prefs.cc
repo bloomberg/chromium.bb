@@ -1895,27 +1895,18 @@ bool ExtensionPrefs::NeedsStorageGarbageCollection() {
 // static
 void ExtensionPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      pref_names::kExtensions,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(pref_names::kExtensions);
   registry->RegisterListPref(pref_names::kToolbar,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       pref_names::kToolbarSize,
       -1,  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      kExtensionsBlacklistUpdate,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(pref_names::kInstallAllowList,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(pref_names::kInstallDenyList,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      pref_names::kInstallForceList,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(pref_names::kAllowedTypes,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
+  registry->RegisterListPref(pref_names::kInstallAllowList);
+  registry->RegisterListPref(pref_names::kInstallDenyList);
+  registry->RegisterDictionaryPref(pref_names::kInstallForceList);
+  registry->RegisterListPref(pref_names::kAllowedTypes);
   registry->RegisterBooleanPref(
       pref_names::kStorageGarbageCollect,
       false,  // default value
@@ -1928,20 +1919,15 @@ void ExtensionPrefs::RegisterProfilePrefs(
       pref_names::kNextUpdateCheck,
       0,  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(pref_names::kAllowedInstallSites,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(pref_names::kAllowedInstallSites);
   registry->RegisterStringPref(
       pref_names::kLastChromeVersion,
       std::string(),  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      kInstallSignature,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(kInstallSignature);
 
-  registry->RegisterListPref(pref_names::kNativeMessagingBlacklist,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(pref_names::kNativeMessagingWhitelist,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(pref_names::kNativeMessagingBlacklist);
+  registry->RegisterListPref(pref_names::kNativeMessagingWhitelist);
   registry->RegisterBooleanPref(
       pref_names::kNativeMessagingUserLevelHosts,
       true,  // default value
@@ -1952,9 +1938,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
 #if !defined(OS_MACOSX)
-  registry->RegisterBooleanPref(
-      pref_names::kAppFullscreenAllowed, true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(pref_names::kAppFullscreenAllowed, true);
 #endif
 }
 

@@ -290,7 +290,5 @@ std::string MostVisitedHandler::GetDictionaryKeyForUrl(const std::string& url) {
 // static
 void MostVisitedHandler::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kNtpMostVisitedURLsBlacklist,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kNtpMostVisitedURLsBlacklist);
 }

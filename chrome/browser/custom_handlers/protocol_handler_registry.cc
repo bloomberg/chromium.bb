@@ -727,18 +727,11 @@ void ProtocolHandlerRegistry::Shutdown() {
 // static
 void ProtocolHandlerRegistry::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kRegisteredProtocolHandlers,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kIgnoredProtocolHandlers,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kPolicyRegisteredProtocolHandlers,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kPolicyIgnoredProtocolHandlers,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kCustomHandlersEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kRegisteredProtocolHandlers);
+  registry->RegisterListPref(prefs::kIgnoredProtocolHandlers);
+  registry->RegisterListPref(prefs::kPolicyRegisteredProtocolHandlers);
+  registry->RegisterListPref(prefs::kPolicyIgnoredProtocolHandlers);
+  registry->RegisterBooleanPref(prefs::kCustomHandlersEnabled, true);
 }
 
 ProtocolHandlerRegistry::~ProtocolHandlerRegistry() {

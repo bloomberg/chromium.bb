@@ -124,10 +124,7 @@ ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_STANDARD)
     if (fonts_with_defaults.find(pref_name) == fonts_with_defaults.end()) {
       // We haven't already set a default value for this font preference, so set
       // an empty string as the default.
-      registry->RegisterStringPref(
-          pref_name,
-          std::string(),
-          user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      registry->RegisterStringPref(pref_name, std::string());
     }
   }
 }
@@ -327,13 +324,12 @@ void OverrideFontFamily(WebPreferences* prefs,
 
 void RegisterLocalizedFontPref(user_prefs::PrefRegistrySyncable* registry,
                                const char* path,
-                               int default_message_id,
-                               uint32 flags) {
+                               int default_message_id) {
   int val = 0;
   bool success = base::StringToInt(l10n_util::GetStringUTF8(
       default_message_id), &val);
   DCHECK(success);
-  registry->RegisterIntegerPref(path, val, flags);
+  registry->RegisterIntegerPref(path, val);
 }
 
 }  // namespace
@@ -523,71 +519,37 @@ void PrefsTabHelper::InitIncognitoUserPrefStore(
 void PrefsTabHelper::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   WebPreferences pref_defaults;
+  registry->RegisterBooleanPref(prefs::kWebKitJavascriptEnabled,
+                                pref_defaults.javascript_enabled);
+  registry->RegisterBooleanPref(prefs::kWebKitWebSecurityEnabled,
+                                pref_defaults.web_security_enabled);
   registry->RegisterBooleanPref(
-      prefs::kWebKitJavascriptEnabled,
-      pref_defaults.javascript_enabled,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitWebSecurityEnabled,
-      pref_defaults.web_security_enabled,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitLoadsImagesAutomatically,
-      pref_defaults.loads_images_automatically,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitPluginsEnabled,
-      pref_defaults.plugins_enabled,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitDomPasteEnabled,
-      pref_defaults.dom_paste_enabled,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitShrinksStandaloneImagesToFit,
-      pref_defaults.shrinks_standalone_images_to_fit,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitTextAreasAreResizable,
-      pref_defaults.text_areas_are_resizable,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitJavaEnabled,
-      pref_defaults.java_enabled,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebkitTabsToLinks,
-      pref_defaults.tabs_to_links,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitAllowRunningInsecureContent,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitAllowDisplayingInsecureContent,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kEnableReferrers,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      prefs::kWebKitJavascriptCanOpenWindowsAutomatically, true);
+  registry->RegisterBooleanPref(prefs::kWebKitLoadsImagesAutomatically,
+                                pref_defaults.loads_images_automatically);
+  registry->RegisterBooleanPref(prefs::kWebKitPluginsEnabled,
+                                pref_defaults.plugins_enabled);
+  registry->RegisterBooleanPref(prefs::kWebKitDomPasteEnabled,
+                                pref_defaults.dom_paste_enabled);
+  registry->RegisterBooleanPref(prefs::kWebKitShrinksStandaloneImagesToFit,
+                                pref_defaults.shrinks_standalone_images_to_fit);
+  registry->RegisterBooleanPref(prefs::kWebKitTextAreasAreResizable,
+                                pref_defaults.text_areas_are_resizable);
+  registry->RegisterBooleanPref(prefs::kWebKitJavaEnabled,
+                                pref_defaults.java_enabled);
+  registry->RegisterBooleanPref(prefs::kWebkitTabsToLinks,
+                                pref_defaults.tabs_to_links);
+  registry->RegisterBooleanPref(prefs::kWebKitAllowRunningInsecureContent,
+                                false);
+  registry->RegisterBooleanPref(prefs::kWebKitAllowDisplayingInsecureContent,
+                                true);
+  registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
 #if defined(OS_ANDROID)
-  registry->RegisterDoublePref(
-      prefs::kWebKitFontScaleFactor,
-      1.0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitForceEnableZoom,
-      pref_defaults.force_enable_zoom,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kWebKitPasswordEchoEnabled,
-      pref_defaults.password_echo_enabled,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(prefs::kWebKitFontScaleFactor, 1.0);
+  registry->RegisterBooleanPref(prefs::kWebKitForceEnableZoom,
+                                pref_defaults.force_enable_zoom);
+  registry->RegisterBooleanPref(prefs::kWebKitPasswordEchoEnabled,
+                                pref_defaults.password_echo_enabled);
 #endif
   registry->RegisterStringPref(
       prefs::kAcceptLanguages,
@@ -627,10 +589,8 @@ void PrefsTabHelper::RegisterProfilePrefs(
     // prefs (e.g., via the extensions workflow), or the problem turns out to
     // not be really critical after all.
     if (browser_script != pref_script) {
-      registry->RegisterStringPref(
-          pref.pref_name,
-          l10n_util::GetStringUTF8(pref.resource_id),
-          user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      registry->RegisterStringPref(pref.pref_name,
+                                   l10n_util::GetStringUTF8(pref.resource_id));
       fonts_with_defaults.insert(pref.pref_name);
     }
   }
@@ -640,38 +600,22 @@ void PrefsTabHelper::RegisterProfilePrefs(
   RegisterFontFamilyPrefs(registry, fonts_with_defaults);
 #endif
 
-  RegisterLocalizedFontPref(
-      registry,
-      prefs::kWebKitDefaultFontSize,
-      IDS_DEFAULT_FONT_SIZE,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  RegisterLocalizedFontPref(
-      registry,
-      prefs::kWebKitDefaultFixedFontSize,
-      IDS_DEFAULT_FIXED_FONT_SIZE,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  RegisterLocalizedFontPref(
-      registry,
-      prefs::kWebKitMinimumFontSize,
-      IDS_MINIMUM_FONT_SIZE,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  RegisterLocalizedFontPref(
-      registry,
-      prefs::kWebKitMinimumLogicalFontSize,
-      IDS_MINIMUM_LOGICAL_FONT_SIZE,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  RegisterLocalizedFontPref(registry, prefs::kWebKitDefaultFontSize,
+                            IDS_DEFAULT_FONT_SIZE);
+  RegisterLocalizedFontPref(registry, prefs::kWebKitDefaultFixedFontSize,
+                            IDS_DEFAULT_FIXED_FONT_SIZE);
+  RegisterLocalizedFontPref(registry, prefs::kWebKitMinimumFontSize,
+                            IDS_MINIMUM_FONT_SIZE);
+  RegisterLocalizedFontPref(registry, prefs::kWebKitMinimumLogicalFontSize,
+                            IDS_MINIMUM_LOGICAL_FONT_SIZE);
   registry->RegisterBooleanPref(
       prefs::kWebKitUsesUniversalDetector,
       l10n_util::GetStringUTF8(IDS_USES_UNIVERSAL_DETECTOR) == "true",
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(
       prefs::kStaticEncodings,
-      l10n_util::GetStringUTF8(IDS_STATIC_ENCODING_LIST),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kRecentlySelectedEncoding,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      l10n_util::GetStringUTF8(IDS_STATIC_ENCODING_LIST));
+  registry->RegisterStringPref(prefs::kRecentlySelectedEncoding, std::string());
 }
 
 // static

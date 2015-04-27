@@ -175,10 +175,8 @@ std::string LocalAuth::TruncateStringByBits(const std::string& str,
 
 void LocalAuth::RegisterLocalAuthPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      prefs::kGoogleServicesPasswordHash,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kGoogleServicesPasswordHash,
+                               std::string());
 }
 
 void LocalAuth::SetLocalAuthCredentialsWithEncoding(size_t info_index,

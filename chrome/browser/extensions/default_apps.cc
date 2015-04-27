@@ -49,10 +49,7 @@ bool IsLocaleSupported() {
 namespace default_apps {
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kDefaultAppsInstallState,
-      kUnknown,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kDefaultAppsInstallState, kUnknown);
 }
 
 bool Provider::ShouldInstallInProfile() {

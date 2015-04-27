@@ -48,10 +48,7 @@ void
 ProtectedMediaIdentifierPermissionContextFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_ANDROID)
-  registry->RegisterBooleanPref(
-      prefs::kProtectedMediaIdentifierEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kProtectedMediaIdentifierEnabled, true);
 #endif
 }
 

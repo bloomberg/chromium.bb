@@ -103,8 +103,7 @@ static bool DecodeTab(const base::DictionaryValue& value, StartupTab* tab) {
 // static
 void PinnedTabCodec::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kPinnedTabs,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kPinnedTabs);
 }
 
 // static

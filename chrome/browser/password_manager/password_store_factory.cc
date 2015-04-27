@@ -356,10 +356,8 @@ void PasswordStoreFactory::RegisterProfilePrefs(
 #if !defined(OS_CHROMEOS) && defined(USE_X11)
   // Notice that the preprocessor conditions above are exactly those that will
   // result in using PasswordStoreX in BuildServiceInstanceFor().
-  registry->RegisterIntegerPref(
-      password_manager::prefs::kLocalProfileId,
-      kInvalidLocalProfileId,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(password_manager::prefs::kLocalProfileId,
+                                kInvalidLocalProfileId);
 #endif
 }
 

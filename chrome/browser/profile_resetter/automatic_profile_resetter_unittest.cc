@@ -509,9 +509,7 @@ class AutomaticProfileResetterTestBase : public testing::Test {
     user_prefs::PrefRegistrySyncable* user_prefs_registry =
         profile_->GetTestingPrefService()->registry();
     DCHECK(user_prefs_registry);
-    user_prefs_registry->RegisterStringPref(
-        kTestPreferencePath, std::string(),
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+    user_prefs_registry->RegisterStringPref(kTestPreferencePath, std::string());
   }
 
   void SetUp() override {

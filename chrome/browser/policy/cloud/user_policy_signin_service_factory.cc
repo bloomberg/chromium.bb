@@ -98,10 +98,7 @@ UserPolicySigninServiceFactory::ServiceIsCreatedWithBrowserContext() const {
 void UserPolicySigninServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  user_prefs->RegisterInt64Pref(
-      prefs::kLastPolicyCheckTime,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  user_prefs->RegisterInt64Pref(prefs::kLastPolicyCheckTime, 0);
 #endif
 }
 

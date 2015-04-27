@@ -510,10 +510,8 @@ bool URLBlacklistManager::IsRequestBlocked(
 // static
 void URLBlacklistManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(policy_prefs::kUrlBlacklist,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(policy_prefs::kUrlWhitelist,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(policy_prefs::kUrlBlacklist);
+  registry->RegisterListPref(policy_prefs::kUrlWhitelist);
 }
 
 }  // namespace policy

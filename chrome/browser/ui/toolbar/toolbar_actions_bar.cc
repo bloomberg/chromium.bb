@@ -154,10 +154,8 @@ void ToolbarActionsBar::RegisterProfilePrefs(
       prefs::kToolbarIconSurfacingBubbleAcknowledged,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterInt64Pref(
-      prefs::kToolbarIconSurfacingBubbleLastShowTime,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterInt64Pref(prefs::kToolbarIconSurfacingBubbleLastShowTime,
+                              0);
 }
 
 gfx::Size ToolbarActionsBar::GetPreferredSize() const {

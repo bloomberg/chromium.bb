@@ -1315,16 +1315,11 @@ bool MediaGalleriesPreferences::APIHasBeenUsed(Profile* profile) {
 // static
 void MediaGalleriesPreferences::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kMediaGalleriesRememberedGalleries,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterUint64Pref(
-      prefs::kMediaGalleriesUniqueId,
-      kInvalidMediaGalleryPrefId + 1,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(
-      prefs::kMediaGalleriesLastScanTime,
-      base::Time().ToInternalValue(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kMediaGalleriesRememberedGalleries);
+  registry->RegisterUint64Pref(prefs::kMediaGalleriesUniqueId,
+                               kInvalidMediaGalleryPrefId + 1);
+  registry->RegisterInt64Pref(prefs::kMediaGalleriesLastScanTime,
+                              base::Time().ToInternalValue());
 }
 
 bool MediaGalleriesPreferences::SetGalleryPermissionInPrefs(

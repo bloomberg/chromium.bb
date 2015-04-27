@@ -99,8 +99,7 @@ void PrefHashFilter::RegisterProfilePrefs(
   // See GetResetTime for why this is a StringPref and not Int64Pref.
   registry->RegisterStringPref(
       prefs::kPreferenceResetTime,
-      base::Int64ToString(base::Time().ToInternalValue()),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      base::Int64ToString(base::Time().ToInternalValue()));
 }
 
 // static

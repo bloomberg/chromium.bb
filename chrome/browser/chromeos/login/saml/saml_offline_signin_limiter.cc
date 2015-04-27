@@ -31,14 +31,9 @@ const int kDefaultSAMLOfflineSigninTimeLimit = 14 * 24 * 60 * 60;  // 14 days.
 // static
 void SAMLOfflineSigninLimiter::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kSAMLOfflineSigninTimeLimit,
-      kDefaultSAMLOfflineSigninTimeLimit,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(
-      prefs::kSAMLLastGAIASignInTime,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kSAMLOfflineSigninTimeLimit,
+                                kDefaultSAMLOfflineSigninTimeLimit);
+  registry->RegisterInt64Pref(prefs::kSAMLLastGAIASignInTime, 0);
 }
 
 void SAMLOfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {

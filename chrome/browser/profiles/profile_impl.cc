@@ -309,30 +309,12 @@ const char* const ProfileImpl::kPrefExitTypeNormal = "Normal";
 // static
 void ProfileImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kSavingBrowserHistoryDisabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kAllowDeletingBrowserHistory,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kSigninAllowed,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kForceGoogleSafeSearch,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kForceYouTubeSafetyMode,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kRecordHistory,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
+  registry->RegisterBooleanPref(prefs::kAllowDeletingBrowserHistory, true);
+  registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
+  registry->RegisterBooleanPref(prefs::kForceGoogleSafeSearch, false);
+  registry->RegisterBooleanPref(prefs::kForceYouTubeSafetyMode, false);
+  registry->RegisterBooleanPref(prefs::kRecordHistory, false);
   registry->RegisterIntegerPref(
       prefs::kProfileAvatarIndex,
       -1,
@@ -352,10 +334,7 @@ void ProfileImpl::RegisterProfilePrefs(
       prefs::kProfileUsingDefaultName,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSupervisedUserId,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kSupervisedUserId, std::string());
   registry->RegisterStringPref(prefs::kProfileName,
                                std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -363,33 +342,15 @@ void ProfileImpl::RegisterProfilePrefs(
                                std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(ENABLE_PRINTING)
-  registry->RegisterBooleanPref(
-      prefs::kPrintingEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 #endif
-  registry->RegisterBooleanPref(
-      prefs::kPrintPreviewDisabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kForceEphemeralProfiles,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);
+  registry->RegisterBooleanPref(prefs::kForceEphemeralProfiles, false);
 
   // Initialize the cache prefs.
-  registry->RegisterFilePathPref(
-      prefs::kDiskCacheDir,
-      base::FilePath(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kDiskCacheSize,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kMediaCacheSize,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(prefs::kDiskCacheDir, base::FilePath());
+  registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
+  registry->RegisterIntegerPref(prefs::kMediaCacheSize, 0);
 
   // Deprecated. Kept around for migration.
   registry->RegisterBooleanPref(

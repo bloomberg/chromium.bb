@@ -84,91 +84,44 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       std::string(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
-  registry->RegisterBooleanPref(
-      prefs::kSessionExitedCleanly,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kSessionExitType,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSessionExitedCleanly, true);
+  registry->RegisterStringPref(prefs::kSessionExitType, std::string());
   registry->RegisterBooleanPref(
       prefs::kSafeBrowsingEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSafeBrowsingExtendedReportingEnabled,
+                                false);
+  registry->RegisterBooleanPref(prefs::kSafeBrowsingProceedAnywayDisabled,
+                                false);
+  registry->RegisterBooleanPref(prefs::kSSLErrorOverrideAllowed, true);
+  registry->RegisterDictionaryPref(prefs::kSafeBrowsingIncidentsSent);
   registry->RegisterBooleanPref(
-      prefs::kSafeBrowsingExtendedReportingEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kSafeBrowsingProceedAnywayDisabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kSSLErrorOverrideAllowed,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kSafeBrowsingIncidentsSent,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kSafeBrowsingExtendedReportingOptInAllowed, true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
 #if defined(ENABLE_GOOGLE_NOW)
-  registry->RegisterBooleanPref(
-      prefs::kGoogleGeolocationAccessEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kGoogleGeolocationAccessEnabled, false);
 #endif
   // This pref is intentionally outside the above #if. That flag corresponds
   // to the Notifier extension and does not gate the launcher page.
   // TODO(skare): Remove or rename ENABLE_GOOGLE_NOW: http://crbug.com/459827.
-  registry->RegisterBooleanPref(
-      prefs::kGoogleNowLauncherEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kDisableExtensions,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kGoogleNowLauncherEnabled, true);
+  registry->RegisterBooleanPref(prefs::kDisableExtensions, false);
 #if defined(ENABLE_EXTENSIONS)
-  registry->RegisterBooleanPref(
-      extensions::pref_names::kAlertsInitialized,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(extensions::pref_names::kAlertsInitialized,
+                                false);
 #endif
-  registry->RegisterStringPref(
-      prefs::kSelectFileLastDirectory,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kSelectFileLastDirectory, std::string());
   // TODO(wjmaclean): remove the following two prefs once migration to per-
   // partition zoom is complete.
-  registry->RegisterDoublePref(
-      prefs::kDefaultZoomLevelDeprecated,
-      0.0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kPerHostZoomLevelsDeprecated,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(prefs::kDefaultZoomLevelDeprecated, 0.0);
+  registry->RegisterDictionaryPref(prefs::kPerHostZoomLevelsDeprecated);
 
-  registry->RegisterDictionaryPref(
-      prefs::kPartitionDefaultZoomLevel,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kPartitionPerHostZoomLevels,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kDefaultApps,
-      "install",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kSpeechRecognitionFilterProfanities,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kProfileIconVersion,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kPartitionDefaultZoomLevel);
+  registry->RegisterDictionaryPref(prefs::kPartitionPerHostZoomLevels);
+  registry->RegisterStringPref(prefs::kDefaultApps, "install");
+  registry->RegisterBooleanPref(prefs::kSpeechRecognitionFilterProfanities,
+                                true);
+  registry->RegisterIntegerPref(prefs::kProfileIconVersion, 0);
 #if defined(OS_CHROMEOS)
   // TODO(dilmah): For OS_CHROMEOS we maintain kApplicationLocale in both
   // local state and user's profile.  For other platforms we maintain
@@ -179,35 +132,21 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kApplicationLocale,
       std::string(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  registry->RegisterStringPref(
-      prefs::kApplicationLocaleBackup,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kApplicationLocaleAccepted,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kCurrentWallpaperAppName,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kApplicationLocaleBackup, std::string());
+  registry->RegisterStringPref(prefs::kApplicationLocaleAccepted,
+                               std::string());
+  registry->RegisterStringPref(prefs::kCurrentWallpaperAppName, std::string());
 #endif
 
 #if defined(OS_ANDROID)
-  registry->RegisterBooleanPref(
-      prefs::kDevToolsRemoteEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDevToolsRemoteEnabled, false);
 #endif
 
   data_reduction_proxy::RegisterSyncableProfilePrefs(registry);
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_IOS)
   // Preferences related to the avatar bubble and user manager tutorials.
-  registry->RegisterIntegerPref(
-      prefs::kProfileAvatarTutorialShown,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kProfileAvatarTutorialShown, 0);
 #endif
 }
 

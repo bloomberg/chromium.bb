@@ -73,10 +73,8 @@ void MultiProfileUserController::RegisterPrefs(
 // static
 void MultiProfileUserController::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      prefs::kMultiProfileUserBehavior,
-      kBehaviorUnrestricted,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kMultiProfileUserBehavior,
+                               kBehaviorUnrestricted);
   registry->RegisterBooleanPref(
       prefs::kMultiProfileNeverShowIntro,
       false,

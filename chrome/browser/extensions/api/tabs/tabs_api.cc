@@ -1633,10 +1633,7 @@ void TabsCaptureVisibleTabFunction::OnCaptureFailure(FailureReason reason) {
 
 void TabsCaptureVisibleTabFunction::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kDisableScreenshots,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDisableScreenshots, false);
 }
 
 bool TabsDetectLanguageFunction::RunAsync() {

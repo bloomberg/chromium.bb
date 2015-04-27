@@ -26,10 +26,7 @@ const char kExperimentName[] = "PasswordBubbleAlgorithm";
 const char kParamNopeThreshold[] = "consecutive_nope_threshold";
 
 void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kPasswordBubbleNopesCount,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kPasswordBubbleNopesCount, 0);
 }
 
 bool ShouldShowNeverForThisSiteDefault(PrefService* prefs) {

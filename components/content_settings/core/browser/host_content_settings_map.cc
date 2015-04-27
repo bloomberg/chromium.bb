@@ -106,10 +106,7 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
 // static
 void HostContentSettingsMap::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kContentSettingsWindowLastTabIndex,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
 
   // Register the prefs for the content settings providers.
   content_settings::DefaultProvider::RegisterProfilePrefs(registry);

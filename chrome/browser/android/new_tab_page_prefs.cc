@@ -108,28 +108,12 @@ void NewTabPagePrefs::SetForeignSessionCollapsed(JNIEnv* env,
 // static
 void NewTabPagePrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kNtpCollapsedCurrentlyOpenTabs,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kNtpCollapsedSnapshotDocument,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kNtpCollapsedRecentlyClosedTabs,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kNtpCollapsedSyncPromo,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kNtpCollapsedForeignSessions,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kNtpMostVisitedURLsBlacklist,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kNtpCollapsedCurrentlyOpenTabs, false);
+  registry->RegisterBooleanPref(prefs::kNtpCollapsedSnapshotDocument, false);
+  registry->RegisterBooleanPref(prefs::kNtpCollapsedRecentlyClosedTabs, false);
+  registry->RegisterBooleanPref(prefs::kNtpCollapsedSyncPromo, false);
+  registry->RegisterDictionaryPref(prefs::kNtpCollapsedForeignSessions);
+  registry->RegisterDictionaryPref(prefs::kNtpMostVisitedURLsBlacklist);
 }
 
 // static

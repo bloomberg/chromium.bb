@@ -176,10 +176,8 @@ Predictor* Predictor::CreatePredictor(bool preconnect_enabled,
 
 void Predictor::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kDnsPrefetchingStartupList,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kDnsPrefetchingHostReferralList,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kDnsPrefetchingStartupList);
+  registry->RegisterListPref(prefs::kDnsPrefetchingHostReferralList);
 }
 
 // --------------------- Start UI methods. ------------------------------------

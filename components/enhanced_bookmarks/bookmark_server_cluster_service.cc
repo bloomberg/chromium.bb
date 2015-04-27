@@ -112,9 +112,7 @@ const std::vector<std::string> BookmarkServerClusterService::GetClusters()
 // static
 void BookmarkServerClusterService::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kBookmarkClusters,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kBookmarkClusters);
 }
 
 scoped_ptr<net::URLFetcher> BookmarkServerClusterService::CreateFetcher() {

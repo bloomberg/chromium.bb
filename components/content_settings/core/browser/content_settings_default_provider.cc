@@ -139,10 +139,8 @@ void DefaultProvider::RegisterProfilePrefs(
 
   // Whether the deprecated mediastream default setting has already been
   // migrated into microphone and camera default settings.
-  registry->RegisterBooleanPref(
-      prefs::kMigratedDefaultMediaStreamSetting,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kMigratedDefaultMediaStreamSetting,
+                                false);
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)

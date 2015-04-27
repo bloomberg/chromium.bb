@@ -205,8 +205,7 @@ void GesturePrefsObserverFactoryAura::RegisterOverscrollPrefs(
   for (size_t i = 0; i < overscroll_prefs.size(); ++i) {
     registry->RegisterDoublePref(
         overscroll_prefs[i].pref_name,
-        content::GetOverscrollConfig(overscroll_prefs[i].config),
-        user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+        content::GetOverscrollConfig(overscroll_prefs[i].config));
   }
 }
 
@@ -215,24 +214,17 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
   GestureConfiguration* gesture_config = GestureConfiguration::GetInstance();
   registry->RegisterIntegerPref(
       prefs::kFlingMaxCancelToDownTimeInMs,
-      gesture_config->fling_max_cancel_to_down_time_in_ms(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kFlingMaxTapGapTimeInMs,
-      gesture_config->fling_max_tap_gap_time_in_ms(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      gesture_config->fling_max_cancel_to_down_time_in_ms());
+  registry->RegisterIntegerPref(prefs::kFlingMaxTapGapTimeInMs,
+                                gesture_config->fling_max_tap_gap_time_in_ms());
   registry->RegisterIntegerPref(
       prefs::kTabScrubActivationDelayInMs,
-      gesture_config->tab_scrub_activation_delay_in_ms(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kSemiLongPressTimeInMs,
-      gesture_config->semi_long_press_time_in_ms(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      gesture_config->tab_scrub_activation_delay_in_ms());
+  registry->RegisterIntegerPref(prefs::kSemiLongPressTimeInMs,
+                                gesture_config->semi_long_press_time_in_ms());
   registry->RegisterDoublePref(
       prefs::kMaxSeparationForGestureTouchesInPixels,
-      gesture_config->max_separation_for_gesture_touches_in_pixels(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      gesture_config->max_separation_for_gesture_touches_in_pixels());
   RegisterOverscrollPrefs(registry);
 }
 

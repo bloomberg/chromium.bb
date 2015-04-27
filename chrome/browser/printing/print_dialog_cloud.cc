@@ -681,14 +681,8 @@ void CreateDialogForFileImpl(content::BrowserContext* browser_context,
 namespace print_dialog_cloud {
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(
-      prefs::kCloudPrintDialogWidth,
-      kDefaultWidth,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kCloudPrintDialogHeight,
-      kDefaultHeight,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(prefs::kCloudPrintDialogWidth, kDefaultWidth);
+  registry->RegisterIntegerPref(prefs::kCloudPrintDialogHeight, kDefaultHeight);
 }
 
 // Called on the FILE or UI thread.  This is the main entry point into creating

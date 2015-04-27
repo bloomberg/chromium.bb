@@ -24,9 +24,7 @@ HttpServerPropertiesManagerFactory::CreateManager(PrefService* pref_service) {
 /* static */
 void HttpServerPropertiesManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kHttpServerProperties,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kHttpServerProperties);
 }
 
 }  // namespace chrome_browser_net

@@ -84,15 +84,9 @@ void HotwordServiceFactory::RegisterProfilePrefs(
                             std::string(),
                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // Per-device settings (do not sync).
-  prefs->RegisterBooleanPref(prefs::kHotwordSearchEnabled,
-                             false,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kHotwordAlwaysOnSearchEnabled,
-                             false,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kHotwordAlwaysOnNotificationSeen,
-                             false,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kHotwordSearchEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kHotwordAlwaysOnSearchEnabled, false);
+  prefs->RegisterBooleanPref(prefs::kHotwordAlwaysOnNotificationSeen, false);
 }
 
 KeyedService* HotwordServiceFactory::BuildServiceInstanceFor(

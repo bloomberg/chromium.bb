@@ -493,9 +493,7 @@ content::BrowserContext* ExtensionManagementFactory::GetBrowserContextToUse(
 
 void ExtensionManagementFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterDictionaryPref(
-      pref_names::kExtensionManagement,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  user_prefs->RegisterDictionaryPref(pref_names::kExtensionManagement);
 }
 
 }  // namespace extensions

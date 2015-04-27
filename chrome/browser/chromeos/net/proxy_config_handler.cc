@@ -130,13 +130,9 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kUseSharedProxies,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kUseSharedProxies, false);
 
-  registry->RegisterListPref(prefs::kOpenNetworkConfiguration,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kOpenNetworkConfiguration);
 }
 
 }  // namespace proxy_config

@@ -440,9 +440,7 @@ void ServicesCustomizationDocument::RegisterPrefs(
 // static
 void ServicesCustomizationDocument::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      kServicesCustomizationKey,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(kServicesCustomizationKey);
 }
 
 // static

@@ -58,10 +58,7 @@ std::string MediaDeviceIDSalt::GetSalt() const {
 
 void MediaDeviceIDSalt::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      prefs::kMediaDeviceIdSalt,
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kMediaDeviceIdSalt, std::string());
 }
 
 void MediaDeviceIDSalt::Reset(PrefService* pref_service) {

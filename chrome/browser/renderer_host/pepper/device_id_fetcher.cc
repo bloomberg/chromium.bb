@@ -80,11 +80,8 @@ bool DeviceIDFetcher::Start(const IDCallback& callback) {
 // static
 void DeviceIDFetcher::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kEnableDRM,
-                             true,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(
-      prefs::kDRMSalt, "", user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableDRM, true);
+  prefs->RegisterStringPref(prefs::kDRMSalt, "");
 }
 
 // static

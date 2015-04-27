@@ -304,34 +304,17 @@ DevToolsWindow::~DevToolsWindow() {
 // static
 void DevToolsWindow::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kDevToolsEditedFiles,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kDevToolsFileSystemPaths,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kDevToolsAdbKey, std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kDevToolsEditedFiles);
+  registry->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths);
+  registry->RegisterStringPref(prefs::kDevToolsAdbKey, std::string());
 
-  registry->RegisterBooleanPref(
-      prefs::kDevToolsDiscoverUsbDevicesEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kDevToolsPortForwardingEnabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kDevToolsPortForwardingDefaultSet,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kDevToolsPortForwardingConfig,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kDevToolsPreferences,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDevToolsDiscoverUsbDevicesEnabled,
+                                true);
+  registry->RegisterBooleanPref(prefs::kDevToolsPortForwardingEnabled, false);
+  registry->RegisterBooleanPref(prefs::kDevToolsPortForwardingDefaultSet,
+                                false);
+  registry->RegisterDictionaryPref(prefs::kDevToolsPortForwardingConfig);
+  registry->RegisterDictionaryPref(prefs::kDevToolsPreferences);
 }
 
 // static

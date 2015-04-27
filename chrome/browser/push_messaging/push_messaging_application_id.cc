@@ -25,9 +25,7 @@ const char kPushMessagingApplicationIdPrefix[] = "wp:";
 // static
 void PushMessagingApplicationId::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kPushMessagingApplicationIdMap,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kPushMessagingApplicationIdMap);
 }
 
 // static

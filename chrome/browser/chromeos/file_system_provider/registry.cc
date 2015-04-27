@@ -36,9 +36,7 @@ const char kPrefKeyWatcherPersistentOrigins[] = "persistent-origins";
 const char kPrefKeyOpenedFilesLimit[] = "opened-files-limit";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kFileSystemProviderMounted,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kFileSystemProviderMounted);
 }
 
 std::string SourceToString(Source source) {

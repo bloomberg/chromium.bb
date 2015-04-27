@@ -55,30 +55,16 @@ void PluginPrefsFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   base::FilePath internal_dir;
   PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &internal_dir);
-  registry->RegisterFilePathPref(
-      prefs::kPluginsLastInternalDirectory,
-      internal_dir,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
+                                 internal_dir);
+  registry->RegisterBooleanPref(prefs::kPluginsMigratedToPepperFlash, false);
   registry->RegisterBooleanPref(
-      prefs::kPluginsMigratedToPepperFlash,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kPluginsRemovedOldComponentPepperFlashSettings,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kPluginsPluginsList,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kPluginsDisabledPlugins,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kPluginsEnabledPlugins,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kEnableNpapi,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      prefs::kPluginsRemovedOldComponentPepperFlashSettings, false);
+  registry->RegisterListPref(prefs::kPluginsPluginsList);
+  registry->RegisterListPref(prefs::kPluginsDisabledPlugins);
+  registry->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions);
+  registry->RegisterListPref(prefs::kPluginsEnabledPlugins);
+  registry->RegisterBooleanPref(prefs::kEnableNpapi, false);
 }
 
 content::BrowserContext* PluginPrefsFactory::GetBrowserContextToUse(

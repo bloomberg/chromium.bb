@@ -641,17 +641,9 @@ ChromeContentBrowserClient::~ChromeContentBrowserClient() {
 // static
 void ChromeContentBrowserClient::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kDisable3DAPIs,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kEnableHyperlinkAuditing,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(
-      prefs::kEnableDeprecatedWebPlatformFeatures,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDisable3DAPIs, false);
+  registry->RegisterBooleanPref(prefs::kEnableHyperlinkAuditing, true);
+  registry->RegisterListPref(prefs::kEnableDeprecatedWebPlatformFeatures);
 }
 
 // static

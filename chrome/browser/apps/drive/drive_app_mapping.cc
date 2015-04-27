@@ -43,12 +43,8 @@ DriveAppMapping::~DriveAppMapping() {
 // static
 void DriveAppMapping::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kAppLauncherDriveAppMapping,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(
-      prefs::kAppLauncherUninstalledDriveApps,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kAppLauncherDriveAppMapping);
+  registry->RegisterListPref(prefs::kAppLauncherUninstalledDriveApps);
 }
 
 void DriveAppMapping::Add(const std::string& drive_app_id,

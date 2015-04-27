@@ -218,15 +218,10 @@ void ExtensionWelcomeNotification::RegisterProfilePrefs(
   prefs->RegisterBooleanPref(prefs::kWelcomeNotificationDismissed,
                              false,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWelcomeNotificationDismissedLocal,
-                             false,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWelcomeNotificationDismissedLocal, false);
   prefs->RegisterBooleanPref(prefs::kWelcomeNotificationPreviouslyPoppedUp,
-                             false,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  prefs->RegisterInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp,
-                           0,
-                           user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             false);
+  prefs->RegisterInt64Pref(prefs::kWelcomeNotificationExpirationTimestamp, 0);
 }
 
 message_center::MessageCenter*

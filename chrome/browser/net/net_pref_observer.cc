@@ -43,8 +43,5 @@ void NetPrefObserver::RegisterProfilePrefs(
       prefs::kNetworkPredictionEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kDisableSpdy,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDisableSpdy, false);
 }

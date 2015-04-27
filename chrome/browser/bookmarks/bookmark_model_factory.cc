@@ -88,14 +88,9 @@ void BookmarkModelFactory::RegisterProfilePrefs(
   // want to sync the expanded state of folders, it should be part of
   // bookmark sync itself (i.e., a property of the sync folder nodes).
   registry->RegisterListPref(bookmarks::prefs::kBookmarkEditorExpandedNodes,
-                             new base::ListValue,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(
-      bookmarks::prefs::kManagedBookmarks,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(
-      bookmarks::prefs::kSupervisedBookmarks,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+                             new base::ListValue);
+  registry->RegisterListPref(bookmarks::prefs::kManagedBookmarks);
+  registry->RegisterListPref(bookmarks::prefs::kSupervisedBookmarks);
 }
 
 content::BrowserContext* BookmarkModelFactory::GetBrowserContextToUse(
