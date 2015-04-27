@@ -7,10 +7,6 @@
 #include "base/metrics/histogram.h"
 #include "base/timer/elapsed_timer.h"
 
-#if defined(OS_POSIX)
-#include "base/files/file_posix_hooks_internal.h"
-#endif
-
 namespace base {
 
 File::Info::Info()
@@ -44,8 +40,6 @@ File::File(PlatformFile platform_file)
       async_(false) {
 #if defined(OS_POSIX)
   DCHECK_GE(platform_file, -1);
-  if (IsValid())
-    ProtectFileDescriptor(platform_file);
 #endif
 }
 
@@ -60,10 +54,6 @@ File::File(RValue other)
       error_details_(other.object->error_details()),
       created_(other.object->created()),
       async_(other.object->async_) {
-#if defined(OS_POSIX)
-   if (IsValid())
-     ProtectFileDescriptor(GetPlatformFile());
-#endif
 }
 
 File::~File() {

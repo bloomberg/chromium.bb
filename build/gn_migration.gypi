@@ -39,7 +39,6 @@
         '../base/base.gyp:base_unittests',
         '../base/base.gyp:build_utf8_validator_tables#host',
         '../base/base.gyp:check_example',
-        '../base/base.gyp:protect_file_posix',
         '../cc/cc_tests.gyp:cc_perftests',
         '../cc/cc_tests.gyp:cc_unittests',
         '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests',

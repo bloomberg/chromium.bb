@@ -321,7 +321,6 @@ group("gn_all") {
       "//base:base_perftests",
       "//base:base_i18n_perftests",
       "//base:check_example",
-      "//base:protect_file_posix",
       "//base:build_utf8_validator_tables",
       "//cc:cc_perftests",
       "//cc/blink:cc_blink_unittests",

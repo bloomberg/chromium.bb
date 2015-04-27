@@ -1041,17 +1041,6 @@ source_set("message_loop_tests") {
   ]
 }
 
-# TODO(pasko): Remove this target when crbug.com/424562 is fixed.
-source_set("protect_file_posix") {
-  sources = [
-    "files/protect_file_posix.cc",
-  ]
-
-  deps = [
-    "//base",
-  ]
-}
-
 if (is_win) {
   # Target to manually rebuild pe_image_test.dll which is checked into
   # base/test/data/pe_image.

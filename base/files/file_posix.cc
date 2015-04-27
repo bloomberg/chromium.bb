@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 #include "base/files/file_path.h"
-#include "base/files/file_posix_hooks_internal.h"
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/posix/eintr_wrapper.h"
@@ -158,14 +157,6 @@ void File::Info::FromStat(const stat_wrapper_t& stat_info) {
                                   Time::kNanosecondsPerMicrosecond);
 }
 
-// Default implementations of Protect/Unprotect hooks defined as weak symbols
-// where possible.
-void ProtectFileDescriptor(int fd) {
-}
-
-void UnprotectFileDescriptor(int fd) {
-}
-
 bool File::IsValid() const {
   return file_.is_valid();
 }
@@ -175,8 +166,6 @@ PlatformFile File::GetPlatformFile() const {
 }
 
 PlatformFile File::TakePlatformFile() {
-  if (IsValid())
-    UnprotectFileDescriptor(GetPlatformFile());
   return file_.release();
 }
 
@@ -185,7 +174,6 @@ void File::Close() {
     return;
 
   ThreadRestrictions::AssertIOAllowed();
-  UnprotectFileDescriptor(GetPlatformFile());
   file_.reset();
 }
 
@@ -537,7 +525,6 @@ void File::DoInitialize(const FilePath& name, uint32 flags) {
   async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
   error_details_ = FILE_OK;
   file_.reset(descriptor);
-  ProtectFileDescriptor(descriptor);
 }
 #endif  // !defined(OS_NACL)
 
@@ -555,10 +542,8 @@ bool File::DoFlush() {
 }
 
 void File::SetPlatformFile(PlatformFile file) {
-  CHECK(!file_.is_valid());
+  DCHECK(!file_.is_valid());
   file_.reset(file);
-  if (file_.is_valid())
-    ProtectFileDescriptor(GetPlatformFile());
 }
 
 }  // namespace base
