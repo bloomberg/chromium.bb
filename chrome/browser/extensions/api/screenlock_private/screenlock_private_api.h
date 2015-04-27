@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace extensions {
@@ -50,14 +50,16 @@ class ScreenlockPrivateAcceptAuthAttemptFunction
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateAcceptAuthAttemptFunction);
 };
 
-class ScreenlockPrivateEventRouter : public extensions::BrowserContextKeyedAPI,
-                                     public ScreenlockBridge::Observer {
+class ScreenlockPrivateEventRouter
+    : public extensions::BrowserContextKeyedAPI,
+      public proximity_auth::ScreenlockBridge::Observer {
  public:
   explicit ScreenlockPrivateEventRouter(content::BrowserContext* context);
   ~ScreenlockPrivateEventRouter() override;
 
-  bool OnAuthAttempted(ScreenlockBridge::LockHandler::AuthType auth_type,
-                       const std::string& value);
+  bool OnAuthAttempted(
+      proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
+      const std::string& value);
 
   // BrowserContextKeyedAPI
   static extensions::BrowserContextKeyedAPIFactory<
@@ -65,11 +67,12 @@ class ScreenlockPrivateEventRouter : public extensions::BrowserContextKeyedAPI,
       GetFactoryInstance();
   void Shutdown() override;
 
-  // ScreenlockBridge::Observer
-  void OnScreenDidLock(
-      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  // proximity_auth::ScreenlockBridge::Observer
+  void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
+                           screen_type) override;
   void OnScreenDidUnlock(
-      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+      proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type)
+      override;
   void OnFocusedUserChanged(const std::string& user_id) override;
 
  private:

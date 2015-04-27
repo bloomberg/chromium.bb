@@ -8,10 +8,10 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -199,10 +199,10 @@ void AppLaunchSigninScreen::HandleGetUsers() {
   for (user_manager::UserList::const_iterator it = users.begin();
        it != users.end();
        ++it) {
-    ScreenlockBridge::LockHandler::AuthType initial_auth_type =
+    proximity_auth::ScreenlockBridge::LockHandler::AuthType initial_auth_type =
         UserSelectionScreen::ShouldForceOnlineSignIn(*it)
-            ? ScreenlockBridge::LockHandler::ONLINE_SIGN_IN
-            : ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
+            ? proximity_auth::ScreenlockBridge::LockHandler::ONLINE_SIGN_IN
+            : proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
     base::DictionaryValue* user_dict = new base::DictionaryValue();
     UserSelectionScreen::FillUserDictionary(
         *it,

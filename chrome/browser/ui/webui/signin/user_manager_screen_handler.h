@@ -14,8 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -29,10 +29,11 @@ class FilePath;
 class ListValue;
 }
 
-class UserManagerScreenHandler : public content::WebUIMessageHandler,
-                                 public ScreenlockBridge::LockHandler,
-                                 public GaiaAuthConsumer,
-                                 public content::NotificationObserver {
+class UserManagerScreenHandler
+    : public content::WebUIMessageHandler,
+      public proximity_auth::ScreenlockBridge::LockHandler,
+      public GaiaAuthConsumer,
+      public content::NotificationObserver {
  public:
   UserManagerScreenHandler();
   ~UserManagerScreenHandler() override;
@@ -47,16 +48,18 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // ScreenlockBridge::LockHandler implementation.
+  // proximity_auth::ScreenlockBridge::LockHandler implementation.
   void ShowBannerMessage(const base::string16& message) override;
   void ShowUserPodCustomIcon(
       const std::string& user_email,
-      const ScreenlockBridge::UserPodCustomIconOptions& icon_options) override;
+      const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
+          icon_options) override;
   void HideUserPodCustomIcon(const std::string& user_email) override;
   void EnableInput() override;
-  void SetAuthType(const std::string& user_email,
-                   ScreenlockBridge::LockHandler::AuthType auth_type,
-                   const base::string16& auth_value) override;
+  void SetAuthType(
+      const std::string& user_email,
+      proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
+      const base::string16& auth_value) override;
   AuthType GetAuthType(const std::string& user_email) const override;
   ScreenType GetScreenType() const override;
   void Unlock(const std::string& user_email) override;
@@ -115,7 +118,8 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   // URL hash, used to key post-profile actions if present.
   std::string url_hash_;
 
-  typedef std::map<std::string, ScreenlockBridge::LockHandler::AuthType>
+  typedef std::map<std::string,
+                   proximity_auth::ScreenlockBridge::LockHandler::AuthType>
       UserAuthTypeMap;
   UserAuthTypeMap user_auth_type_map_;
 

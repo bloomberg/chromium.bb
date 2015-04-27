@@ -14,7 +14,7 @@
 
 namespace {
 
-ScreenlockBridge::UserPodCustomIcon GetIconForState(
+proximity_auth::ScreenlockBridge::UserPodCustomIcon GetIconForState(
     EasyUnlockScreenlockStateHandler::State state) {
   switch (state) {
     case EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH:
@@ -24,20 +24,21 @@ ScreenlockBridge::UserPodCustomIcon GetIconForState(
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
     case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
-      return ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED;
+      return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED;
     case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
     case EasyUnlockScreenlockStateHandler::
              STATE_PHONE_LOCKED_AND_TX_POWER_TOO_HIGH:
       // TODO(isherman): This icon is currently identical to the regular locked
       // icon.  Once the reduced proximity range flag is removed, consider
       // deleting the redundant icon.
-      return ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED_WITH_PROXIMITY_HINT;
+      return proximity_auth::ScreenlockBridge::
+          USER_POD_CUSTOM_ICON_LOCKED_WITH_PROXIMITY_HINT;
     case EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING:
-      return ScreenlockBridge::USER_POD_CUSTOM_ICON_SPINNER;
+      return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_SPINNER;
     case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
-      return ScreenlockBridge::USER_POD_CUSTOM_ICON_UNLOCKED;
+      return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_UNLOCKED;
     default:
-      return ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE;
+      return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE;
   }
 }
 
@@ -93,11 +94,10 @@ bool IsLockedState(EasyUnlockScreenlockStateHandler::State state) {
 
 }  // namespace
 
-
 EasyUnlockScreenlockStateHandler::EasyUnlockScreenlockStateHandler(
     const std::string& user_email,
     HardlockState initial_hardlock_state,
-    ScreenlockBridge* screenlock_bridge)
+    proximity_auth::ScreenlockBridge* screenlock_bridge)
     : state_(STATE_INACTIVE),
       user_email_(user_email),
       screenlock_bridge_(screenlock_bridge),
@@ -140,7 +140,7 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
 
   // Do nothing when auth type is online.
   if (screenlock_bridge_->lock_handler()->GetAuthType(user_email_) ==
-      ScreenlockBridge::LockHandler::ONLINE_SIGN_IN) {
+      proximity_auth::ScreenlockBridge::LockHandler::ONLINE_SIGN_IN) {
     return;
   }
 
@@ -155,14 +155,15 @@ void EasyUnlockScreenlockStateHandler::ChangeState(State new_state) {
 
   UpdateScreenlockAuthType();
 
-  ScreenlockBridge::UserPodCustomIcon icon = GetIconForState(state_);
+  proximity_auth::ScreenlockBridge::UserPodCustomIcon icon =
+      GetIconForState(state_);
 
-  if (icon == ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE) {
+  if (icon == proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE) {
     screenlock_bridge_->lock_handler()->HideUserPodCustomIcon(user_email_);
     return;
   }
 
-  ScreenlockBridge::UserPodCustomIconOptions icon_options;
+  proximity_auth::ScreenlockBridge::UserPodCustomIconOptions icon_options;
   icon_options.SetIcon(icon);
 
   // Don't hardlock on trial run.
@@ -222,13 +223,13 @@ void EasyUnlockScreenlockStateHandler::RecordClickOnLockIcon() {
 }
 
 void EasyUnlockScreenlockStateHandler::OnScreenDidLock(
-    ScreenlockBridge::LockHandler::ScreenType screen_type) {
+    proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
   did_see_locked_phone_ = IsLockedState(state_);
   RefreshScreenlockState();
 }
 
 void EasyUnlockScreenlockStateHandler::OnScreenDidUnlock(
-    ScreenlockBridge::LockHandler::ScreenType screen_type) {
+    proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
   if (hardlock_state_ == LOGIN_FAILED)
     hardlock_state_ = NO_HARDLOCK;
   hardlock_ui_shown_ = false;
@@ -259,15 +260,18 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
     return;
 
   // Do not override online signin.
-  const ScreenlockBridge::LockHandler::AuthType existing_auth_type =
-      screenlock_bridge_->lock_handler()->GetAuthType(user_email_);
-  if (existing_auth_type == ScreenlockBridge::LockHandler::ONLINE_SIGN_IN)
+  const proximity_auth::ScreenlockBridge::LockHandler::AuthType
+      existing_auth_type =
+          screenlock_bridge_->lock_handler()->GetAuthType(user_email_);
+  if (existing_auth_type ==
+      proximity_auth::ScreenlockBridge::LockHandler::ONLINE_SIGN_IN)
     return;
 
-  if (existing_auth_type != ScreenlockBridge::LockHandler::OFFLINE_PASSWORD) {
+  if (existing_auth_type !=
+      proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD) {
     screenlock_bridge_->lock_handler()->SetAuthType(
         user_email_,
-        ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+        proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
         base::string16());
   }
 
@@ -280,15 +284,17 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
   if (hardlock_ui_shown_)
     return;
 
-  ScreenlockBridge::UserPodCustomIconOptions icon_options;
+  proximity_auth::ScreenlockBridge::UserPodCustomIconOptions icon_options;
   if (hardlock_state_ == LOGIN_FAILED) {
-    icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED);
+    icon_options.SetIcon(
+        proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED);
   } else if (hardlock_state_ == PAIRING_CHANGED ||
              hardlock_state_ == PAIRING_ADDED) {
-    icon_options.SetIcon(
-        ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED_TO_BE_ACTIVATED);
+    icon_options.SetIcon(proximity_auth::ScreenlockBridge::
+                             USER_POD_CUSTOM_ICON_LOCKED_TO_BE_ACTIVATED);
   } else {
-    icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED);
+    icon_options.SetIcon(
+        proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED);
   }
 
   base::string16 device_name = GetDeviceName();
@@ -317,7 +323,7 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
 }
 
 void EasyUnlockScreenlockStateHandler::UpdateTooltipOptions(
-    ScreenlockBridge::UserPodCustomIconOptions* icon_options) {
+    proximity_auth::ScreenlockBridge::UserPodCustomIconOptions* icon_options) {
   size_t resource_id = 0;
   base::string16 device_name;
   if (is_trial_run_ && state_ == STATE_AUTHENTICATED) {
@@ -360,23 +366,26 @@ void EasyUnlockScreenlockStateHandler::UpdateScreenlockAuthType() {
     return;
 
   // Do not override online signin.
-  const ScreenlockBridge::LockHandler::AuthType existing_auth_type =
-      screenlock_bridge_->lock_handler()->GetAuthType(user_email_);
-  DCHECK_NE(ScreenlockBridge::LockHandler::ONLINE_SIGN_IN, existing_auth_type);
+  const proximity_auth::ScreenlockBridge::LockHandler::AuthType
+      existing_auth_type =
+          screenlock_bridge_->lock_handler()->GetAuthType(user_email_);
+  DCHECK_NE(proximity_auth::ScreenlockBridge::LockHandler::ONLINE_SIGN_IN,
+            existing_auth_type);
 
   if (state_ == STATE_AUTHENTICATED) {
-    if (existing_auth_type != ScreenlockBridge::LockHandler::USER_CLICK) {
+    if (existing_auth_type !=
+        proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK) {
       screenlock_bridge_->lock_handler()->SetAuthType(
           user_email_,
-          ScreenlockBridge::LockHandler::USER_CLICK,
+          proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK,
           l10n_util::GetStringUTF16(
               IDS_EASY_UNLOCK_SCREENLOCK_USER_POD_AUTH_VALUE));
     }
   } else if (existing_auth_type !=
-             ScreenlockBridge::LockHandler::OFFLINE_PASSWORD) {
+             proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD) {
     screenlock_bridge_->lock_handler()->SetAuthType(
         user_email_,
-        ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
+        proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD,
         base::string16());
   }
 }

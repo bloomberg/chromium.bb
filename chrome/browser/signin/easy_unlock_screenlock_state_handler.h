@@ -8,13 +8,14 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 
 class PrefService;
 
 // Profile specific class responsible for updating screenlock UI for the user
 // associated with the profile when their Easy Unlock state changes.
-class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
+class EasyUnlockScreenlockStateHandler
+    : public proximity_auth::ScreenlockBridge::Observer {
  public:
   // Available Easy Unlock states.
   enum State {
@@ -71,9 +72,10 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   // |initial_hardlock_state|: The initial hardlock state.
   // |screenlock_bridge|: The screenlock bridge used to update the screen lock
   //     state.
-  EasyUnlockScreenlockStateHandler(const std::string& user_email,
-                                   HardlockState initial_hardlock_state,
-                                   ScreenlockBridge* screenlock_bridge);
+  EasyUnlockScreenlockStateHandler(
+      const std::string& user_email,
+      HardlockState initial_hardlock_state,
+      proximity_auth::ScreenlockBridge* screenlock_bridge);
   ~EasyUnlockScreenlockStateHandler() override;
 
   // Returns true if handler is not in INACTIVE state.
@@ -104,11 +106,12 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
   State state() const { return state_; }
 
  private:
-  // ScreenlockBridge::Observer:
-  void OnScreenDidLock(
-      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  // proximity_auth::ScreenlockBridge::Observer:
+  void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
+                           screen_type) override;
   void OnScreenDidUnlock(
-      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+      proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type)
+      override;
   void OnFocusedUserChanged(const std::string& user_id) override;
 
   // Forces refresh of the Easy Unlock screenlock UI.
@@ -118,7 +121,7 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
 
   // Updates icon's tooltip options.
   void UpdateTooltipOptions(
-      ScreenlockBridge::UserPodCustomIconOptions* icon_options);
+      proximity_auth::ScreenlockBridge::UserPodCustomIconOptions* icon_options);
 
   // Gets the name to be used for the device. The name depends on the device
   // type (example values: Chromebook and Chromebox).
@@ -129,7 +132,7 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
 
   State state_;
   std::string user_email_;
-  ScreenlockBridge* screenlock_bridge_;
+  proximity_auth::ScreenlockBridge* screenlock_bridge_;
 
   // State of hardlock.
   HardlockState hardlock_state_;

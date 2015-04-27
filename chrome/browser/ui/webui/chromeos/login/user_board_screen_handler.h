@@ -47,9 +47,10 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
   void ShowUserPodCustomIcon(const std::string& user_id,
                              const base::DictionaryValue& icon) override;
   void HideUserPodCustomIcon(const std::string& user_id) override;
-  void SetAuthType(const std::string& user_id,
-                   ScreenlockBridge::LockHandler::AuthType auth_type,
-                   const base::string16& initial_value) override;
+  void SetAuthType(
+      const std::string& user_id,
+      proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
+      const base::string16& initial_value) override;
 
   void Bind(UserBoardModel& model) override;
   void Unbind() override;

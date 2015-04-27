@@ -13,7 +13,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 
 namespace chromeos {
 

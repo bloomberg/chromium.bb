@@ -51,6 +51,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
@@ -294,8 +295,8 @@ SigninScreenHandler::~SigninScreenHandler() {
     max_mode_delegate_->RemoveObserver(this);
     max_mode_delegate_.reset(NULL);
   }
-  ScreenlockBridge::Get()->SetLockHandler(NULL);
-  ScreenlockBridge::Get()->SetFocusedUser("");
+  GetScreenlockBridgeInstance()->SetLockHandler(NULL);
+  GetScreenlockBridgeInstance()->SetFocusedUser("");
 }
 
 // static
@@ -1256,7 +1257,7 @@ void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
 void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
   SetUserInputMethod(user_id, ime_state_.get());
   WallpaperManager::Get()->SetUserWallpaperDelayed(user_id);
-  ScreenlockBridge::Get()->SetFocusedUser(user_id);
+  GetScreenlockBridgeInstance()->SetFocusedUser(user_id);
   if (delegate_)
     delegate_->CheckUserStatus(user_id);
   if (!test_focus_pod_callback_.is_null())

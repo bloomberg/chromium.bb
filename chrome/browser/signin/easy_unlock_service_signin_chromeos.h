@@ -15,13 +15,14 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
 #include "chromeos/login/login_state.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 
 // EasyUnlockService instance that should be used for signin profile.
-class EasyUnlockServiceSignin : public EasyUnlockService,
-                                public ScreenlockBridge::Observer,
-                                public chromeos::LoginState::Observer {
+class EasyUnlockServiceSignin
+    : public EasyUnlockService,
+      public proximity_auth::ScreenlockBridge::Observer,
+      public chromeos::LoginState::Observer {
  public:
   explicit EasyUnlockServiceSignin(Profile* profile);
   ~EasyUnlockServiceSignin() override;
@@ -85,11 +86,12 @@ class EasyUnlockServiceSignin : public EasyUnlockService,
   void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDone() override;
 
-  // ScreenlockBridge::Observer implementation:
-  void OnScreenDidLock(
-      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  // proximity_auth::ScreenlockBridge::Observer implementation:
+  void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
+                           screen_type) override;
   void OnScreenDidUnlock(
-      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+      proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type)
+      override;
   void OnFocusedUserChanged(const std::string& user_id) override;
 
   // chromeos::LoginState::Observer implementation:

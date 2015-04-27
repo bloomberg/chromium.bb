@@ -2,21 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_SCREENLOCK_BRIDGE_H_
-#define CHROME_BROWSER_SIGNIN_SCREENLOCK_BRIDGE_H_
+#ifndef COMPONENTS_PROXIMITY_AUTH_SCREENLOCK_BRIDGE_H_
+#define COMPONENTS_PROXIMITY_AUTH_SCREENLOCK_BRIDGE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 
+namespace content {
+class BrowserContext;
+}  // namespace content
 
-class Profile;
+namespace proximity_auth {
+
+class ProximityAuthClient;
 
 // ScreenlockBridge brings together the screenLockPrivate API and underlying
 // support. On ChromeOS, it delegates calls to the ScreenLocker. On other
@@ -25,6 +29,10 @@ class Profile;
 // used solely for the lock screen anymore.
 class ScreenlockBridge {
  public:
+  // |client| is not owned and must outlive this object.
+  explicit ScreenlockBridge(ProximityAuthClient* client);
+  ~ScreenlockBridge();
+
   // User pod icons supported by lock screen / signin screen UI.
   enum UserPodCustomIcon {
     USER_POD_CUSTOM_ICON_NONE,
@@ -99,11 +107,7 @@ class ScreenlockBridge {
       FORCE_OFFLINE_PASSWORD = 5
     };
 
-    enum ScreenType {
-      SIGNIN_SCREEN = 0,
-      LOCK_SCREEN = 1,
-      OTHER_SCREEN = 2
-    };
+    enum ScreenType { SIGNIN_SCREEN = 0, LOCK_SCREEN = 1, OTHER_SCREEN = 2 };
 
     // Displays |message| in a banner on the lock screen.
     virtual void ShowBannerMessage(const base::string16& message) = 0;
@@ -130,7 +134,7 @@ class ScreenlockBridge {
     // Returns the type of the screen -- a signin or a lock screen.
     virtual ScreenType GetScreenType() const = 0;
 
-    // Unlock from easy unlock app for a user.
+    // Unlocks from easy unlock app for a user.
     virtual void Unlock(const std::string& user_email) = 0;
 
     // Attempts to login the user using an easy unlock key.
@@ -157,15 +161,12 @@ class ScreenlockBridge {
     virtual ~Observer() {}
   };
 
-  static ScreenlockBridge* Get();
-  static std::string GetAuthenticatedUserEmail(const Profile* profile);
-
   void SetLockHandler(LockHandler* lock_handler);
   void SetFocusedUser(const std::string& user_id);
 
   bool IsLocked() const;
-  void Lock(Profile* profile);
-  void Unlock(Profile* profile);
+  void Lock(content::BrowserContext* browser_context);
+  void Unlock(content::BrowserContext* browser_context);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -175,13 +176,8 @@ class ScreenlockBridge {
   std::string focused_user_id() const { return focused_user_id_; }
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<ScreenlockBridge>;
-  friend struct base::DefaultDeleter<ScreenlockBridge>;
-
-  ScreenlockBridge();
-  ~ScreenlockBridge();
-
-  LockHandler* lock_handler_;  // Not owned
+  ProximityAuthClient* client_;  // Not owned. Must outlive this object.
+  LockHandler* lock_handler_;    // Not owned
   // The last focused user's id.
   std::string focused_user_id_;
   ObserverList<Observer, true> observers_;
@@ -189,4 +185,6 @@ class ScreenlockBridge {
   DISALLOW_COPY_AND_ASSIGN(ScreenlockBridge);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_SCREENLOCK_BRIDGE_H_
+}  // namespace proximity_auth
+
+#endif  // COMPONENTS_PROXIMITY_AUTH_SCREENLOCK_BRIDGE_H_

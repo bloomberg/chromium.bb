@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/local_auth.h"
+#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -297,7 +298,7 @@ UserManagerScreenHandler::UserManagerScreenHandler()
 }
 
 UserManagerScreenHandler::~UserManagerScreenHandler() {
-  ScreenlockBridge::Get()->SetLockHandler(NULL);
+  GetScreenlockBridgeInstance()->SetLockHandler(NULL);
 }
 
 void UserManagerScreenHandler::ShowBannerMessage(
@@ -309,7 +310,8 @@ void UserManagerScreenHandler::ShowBannerMessage(
 
 void UserManagerScreenHandler::ShowUserPodCustomIcon(
     const std::string& user_email,
-    const ScreenlockBridge::UserPodCustomIconOptions& icon_options) {
+    const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
+        icon_options) {
   scoped_ptr<base::DictionaryValue> icon = icon_options.ToDictionaryValue();
   if (!icon || icon->empty())
     return;
@@ -332,10 +334,10 @@ void UserManagerScreenHandler::EnableInput() {
 
 void UserManagerScreenHandler::SetAuthType(
     const std::string& user_email,
-    ScreenlockBridge::LockHandler::AuthType auth_type,
+    proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
     const base::string16& auth_value) {
   if (GetAuthType(user_email) ==
-          ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD)
+      proximity_auth::ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD)
     return;
 
   user_auth_type_map_[user_email] = auth_type;
@@ -346,17 +348,17 @@ void UserManagerScreenHandler::SetAuthType(
       base::StringValue(auth_value));
 }
 
-ScreenlockBridge::LockHandler::AuthType UserManagerScreenHandler::GetAuthType(
-      const std::string& user_email) const {
+proximity_auth::ScreenlockBridge::LockHandler::AuthType
+UserManagerScreenHandler::GetAuthType(const std::string& user_email) const {
   UserAuthTypeMap::const_iterator it = user_auth_type_map_.find(user_email);
   if (it == user_auth_type_map_.end())
-    return ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
+    return proximity_auth::ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
   return it->second;
 }
 
-ScreenlockBridge::LockHandler::ScreenType
+proximity_auth::ScreenlockBridge::LockHandler::ScreenType
 UserManagerScreenHandler::GetScreenType() const {
-  return ScreenlockBridge::LockHandler::LOCK_SCREEN;
+  return proximity_auth::ScreenlockBridge::LockHandler::LOCK_SCREEN;
 }
 
 void UserManagerScreenHandler::Unlock(const std::string& user_email) {
@@ -388,7 +390,7 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
       web_ui()->GetWebContents()->GetNativeView());
 
-  ScreenlockBridge::Get()->SetLockHandler(this);
+  GetScreenlockBridgeInstance()->SetLockHandler(this);
 }
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
@@ -546,9 +548,10 @@ void UserManagerScreenHandler::HandleHardlockUserPod(
     const base::ListValue* args) {
   std::string email;
   CHECK(args->GetString(0, &email));
-  SetAuthType(email,
-              ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD,
-              base::string16());
+  SetAuthType(
+      email,
+      proximity_auth::ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD,
+      base::string16());
   HideUserPodCustomIcon(email);
 }
 

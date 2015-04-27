@@ -18,9 +18,10 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
+#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 #include "components/user_manager/user_id.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -118,14 +119,14 @@ UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
 }
 
 UserSelectionScreen::~UserSelectionScreen() {
-  ScreenlockBridge::Get()->SetLockHandler(nullptr);
+  GetScreenlockBridgeInstance()->SetLockHandler(nullptr);
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
   if (activity_detector->HasObserver(this))
     activity_detector->RemoveObserver(this);
 }
 
 void UserSelectionScreen::InitEasyUnlock() {
-  ScreenlockBridge::Get()->SetLockHandler(this);
+  GetScreenlockBridgeInstance()->SetLockHandler(this);
 }
 
 void UserSelectionScreen::SetLoginDisplayDelegate(
@@ -445,15 +446,15 @@ void UserSelectionScreen::SetAuthType(const std::string& user_id,
   view_->SetAuthType(user_id, auth_type, initial_value);
 }
 
-ScreenlockBridge::LockHandler::AuthType UserSelectionScreen::GetAuthType(
-    const std::string& username) const {
+proximity_auth::ScreenlockBridge::LockHandler::AuthType
+UserSelectionScreen::GetAuthType(const std::string& username) const {
   if (user_auth_type_map_.find(username) == user_auth_type_map_.end())
     return OFFLINE_PASSWORD;
   return user_auth_type_map_.find(username)->second;
 }
 
-ScreenlockBridge::LockHandler::ScreenType UserSelectionScreen::GetScreenType()
-    const {
+proximity_auth::ScreenlockBridge::LockHandler::ScreenType
+UserSelectionScreen::GetScreenType() const {
   if (display_type_ == OobeUI::kLockDisplay)
     return LOCK_SCREEN;
 
@@ -469,7 +470,8 @@ void UserSelectionScreen::ShowBannerMessage(const base::string16& message) {
 
 void UserSelectionScreen::ShowUserPodCustomIcon(
     const std::string& user_id,
-    const ScreenlockBridge::UserPodCustomIconOptions& icon_options) {
+    const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
+        icon_options) {
   scoped_ptr<base::DictionaryValue> icon = icon_options.ToDictionaryValue();
   if (!icon || icon->empty())
     return;

@@ -22,12 +22,13 @@
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_observer.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
+#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proximity_auth/ble/proximity_auth_ble_system.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
 #include "components/user_manager/user.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -446,9 +447,7 @@ EasyUnlockScreenlockStateHandler*
     return NULL;
   if (!screenlock_state_handler_) {
     screenlock_state_handler_.reset(new EasyUnlockScreenlockStateHandler(
-        GetUserEmail(),
-        GetHardlockState(),
-        ScreenlockBridge::Get()));
+        GetUserEmail(), GetHardlockState(), GetScreenlockBridgeInstance()));
   }
   return screenlock_state_handler_.get();
 }

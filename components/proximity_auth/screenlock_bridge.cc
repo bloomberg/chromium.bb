@@ -2,23 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/screenlock_bridge.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/profiles/profile_window.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/proximity_auth/proximity_auth_client.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #endif
 
+namespace proximity_auth {
 namespace {
-
-base::LazyInstance<ScreenlockBridge> g_screenlock_bridge_bridge_instance =
-    LAZY_INSTANCE_INITIALIZER;
 
 // Ids for the icons that are supported by lock screen and signin screen
 // account picker as user pod custom icons.
@@ -53,9 +49,12 @@ std::string GetIdForIcon(ScreenlockBridge::UserPodCustomIcon icon) {
 
 }  // namespace
 
-// static
-ScreenlockBridge* ScreenlockBridge::Get() {
-  return g_screenlock_bridge_bridge_instance.Pointer();
+ScreenlockBridge::ScreenlockBridge(ProximityAuthClient* client)
+    : client_(client), lock_handler_(nullptr) {
+  DCHECK(client_);
+}
+
+ScreenlockBridge::~ScreenlockBridge() {
 }
 
 ScreenlockBridge::UserPodCustomIconOptions::UserPodCustomIconOptions()
@@ -64,7 +63,8 @@ ScreenlockBridge::UserPodCustomIconOptions::UserPodCustomIconOptions()
       is_trial_run_(false) {
 }
 
-ScreenlockBridge::UserPodCustomIconOptions::~UserPodCustomIconOptions() {}
+ScreenlockBridge::UserPodCustomIconOptions::~UserPodCustomIconOptions() {
+}
 
 scoped_ptr<base::DictionaryValue>
 ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
@@ -116,24 +116,8 @@ void ScreenlockBridge::UserPodCustomIconOptions::SetTrialRun() {
   is_trial_run_ = true;
 }
 
-// static
-std::string ScreenlockBridge::GetAuthenticatedUserEmail(
-    const Profile* profile) {
-  // |profile| has to be a signed-in profile with SigninManager already
-  // created. Otherwise, just crash to collect stack.
-  const SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(profile);
-  return signin_manager->GetAuthenticatedUsername();
-}
-
-ScreenlockBridge::ScreenlockBridge() : lock_handler_(NULL) {
-}
-
-ScreenlockBridge::~ScreenlockBridge() {
-}
-
 void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
-  DCHECK(lock_handler_ == NULL || lock_handler == NULL);
+  DCHECK(lock_handler_ == nullptr || lock_handler == nullptr);
 
   // Don't notify observers if there is no change -- i.e. if the screen was
   // already unlocked, and is remaining unlocked.
@@ -163,22 +147,22 @@ void ScreenlockBridge::SetFocusedUser(const std::string& user_id) {
 }
 
 bool ScreenlockBridge::IsLocked() const {
-  return lock_handler_ != NULL;
+  return lock_handler_ != nullptr;
 }
 
-void ScreenlockBridge::Lock(Profile* profile) {
+void ScreenlockBridge::Lock(content::BrowserContext* browser_context) {
 #if defined(OS_CHROMEOS)
   chromeos::SessionManagerClient* session_manager =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager->RequestLockScreen();
 #else
-  profiles::LockProfile(profile);
+  client_->Lock(browser_context);
 #endif
 }
 
-void ScreenlockBridge::Unlock(Profile* profile) {
+void ScreenlockBridge::Unlock(content::BrowserContext* browser_context) {
   if (lock_handler_)
-    lock_handler_->Unlock(GetAuthenticatedUserEmail(profile));
+    lock_handler_->Unlock(client_->GetAuthenticatedUsername(browser_context));
 }
 
 void ScreenlockBridge::AddObserver(Observer* observer) {
@@ -188,3 +172,5 @@ void ScreenlockBridge::AddObserver(Observer* observer) {
 void ScreenlockBridge::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
+
+}  // namespace proximity_auth

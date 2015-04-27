@@ -87,7 +87,7 @@ void UserBoardScreenHandler::HideUserPodCustomIcon(const std::string& user_id) {
 
 void UserBoardScreenHandler::SetAuthType(
     const std::string& user_id,
-    ScreenlockBridge::LockHandler::AuthType auth_type,
+    proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
     const base::string16& initial_value) {
   CallJS("login.AccountPickerScreen.setAuthType", user_id,
          static_cast<int>(auth_type), base::StringValue(initial_value));

@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 
 namespace chromeos {
 
@@ -35,9 +35,10 @@ class UserBoardView {
   virtual void ShowUserPodCustomIcon(const std::string& user_id,
                                      const base::DictionaryValue& icon) = 0;
   virtual void HideUserPodCustomIcon(const std::string& user_id) = 0;
-  virtual void SetAuthType(const std::string& user_id,
-                           ScreenlockBridge::LockHandler::AuthType auth_type,
-                           const base::string16& initial_value) = 0;
+  virtual void SetAuthType(
+      const std::string& user_id,
+      proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type,
+      const base::string16& initial_value) = 0;
 };
 
 }  // namespace chromeos

@@ -7,12 +7,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_reauth.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
+#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -74,8 +75,9 @@ class ReauthHandler : public content::NotificationObserver,
     screen_locker->SetLoginStatusConsumer(this);
 
     // Show tooltip explaining reauth.
-    ScreenlockBridge::UserPodCustomIconOptions icon_options;
-    icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE);
+    proximity_auth::ScreenlockBridge::UserPodCustomIconOptions icon_options;
+    icon_options.SetIcon(
+        proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE);
     icon_options.SetTooltip(
         l10n_util::GetStringUTF16(
             IDS_SMART_LOCK_SCREENLOCK_TOOLTIP_HARDLOCK_REAUTH_USER),
@@ -83,7 +85,7 @@ class ReauthHandler : public content::NotificationObserver,
 
     const user_manager::UserList& lock_users = screen_locker->users();
     DCHECK(lock_users.size() == 1);
-    ScreenlockBridge::Get()->lock_handler()->ShowUserPodCustomIcon(
+    GetScreenlockBridgeInstance()->lock_handler()->ShowUserPodCustomIcon(
         lock_users[0]->email(), icon_options);
   }
 

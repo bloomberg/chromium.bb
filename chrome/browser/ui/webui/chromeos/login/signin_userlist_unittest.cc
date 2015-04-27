@@ -8,9 +8,9 @@
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 #include "components/user_manager/user.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,8 +68,8 @@ class SigninPrepareUserListTest
   FakeChromeUserManager* fake_user_manager_;
   ScopedUserManagerEnabler user_manager_enabler_;
   scoped_ptr<TestingProfileManager> profile_manager_;
-  std::map<std::string,
-           ScreenlockBridge::LockHandler::AuthType> user_auth_type_map;
+  std::map<std::string, proximity_auth::ScreenlockBridge::LockHandler::AuthType>
+      user_auth_type_map;
   scoped_ptr<MultiProfileUserController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninPrepareUserListTest);

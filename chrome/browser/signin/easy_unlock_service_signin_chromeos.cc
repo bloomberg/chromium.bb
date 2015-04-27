@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_metrics.h"
+#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 
@@ -222,7 +223,8 @@ void EasyUnlockServiceSignin::InitializeInternal() {
   service_active_ = true;
 
   chromeos::LoginState::Get()->AddObserver(this);
-  ScreenlockBridge* screenlock_bridge = ScreenlockBridge::Get();
+  proximity_auth::ScreenlockBridge* screenlock_bridge =
+      GetScreenlockBridgeInstance();
   screenlock_bridge->AddObserver(this);
   if (!screenlock_bridge->focused_user_id().empty())
     OnFocusedUserChanged(screenlock_bridge->focused_user_id());
@@ -234,7 +236,7 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
   service_active_ = false;
 
   weak_ptr_factory_.InvalidateWeakPtrs();
-  ScreenlockBridge::Get()->RemoveObserver(this);
+  GetScreenlockBridgeInstance()->RemoveObserver(this);
   chromeos::LoginState::Get()->RemoveObserver(this);
   STLDeleteContainerPairSecondPointers(user_data_.begin(), user_data_.end());
   user_data_.clear();
@@ -257,10 +259,11 @@ void EasyUnlockServiceSignin::OnSuspendDone() {
 }
 
 void EasyUnlockServiceSignin::OnScreenDidLock(
-    ScreenlockBridge::LockHandler::ScreenType screen_type) {
+    proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
   // In production code, the screen type should always be the signin screen; but
   // in tests, the screen type might be different.
-  if (screen_type != ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
+  if (screen_type !=
+          proximity_auth::ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
     return;
 
   // Update initial UI is when the account picker on login screen is ready.
@@ -269,10 +272,11 @@ void EasyUnlockServiceSignin::OnScreenDidLock(
 }
 
 void EasyUnlockServiceSignin::OnScreenDidUnlock(
-    ScreenlockBridge::LockHandler::ScreenType screen_type) {
+    proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
   // In production code, the screen type should always be the signin screen; but
   // in tests, the screen type might be different.
-  if (screen_type != ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
+  if (screen_type !=
+          proximity_auth::ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
     return;
 
   DisableAppWithoutResettingScreenlockState();
