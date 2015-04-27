@@ -692,7 +692,6 @@ public:
     void scheduleRelayout();
 
     void updateImage(StyleImage*, StyleImage*);
-    void updateShapeImage(const ShapeValue*, const ShapeValue*);
 
     // paintOffset is the offset from the origin of the GraphicsContext at which to paint the current object.
     virtual void paint(const PaintInfo&, const LayoutPoint& paintOffset);
@@ -1198,6 +1197,7 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    void updateShapeImage(const ShapeValue*, const ShapeValue*);
     void updateFillImages(const FillLayer* oldLayers, const FillLayer& newLayers);
 
     void setNeedsOverflowRecalcAfterStyleChange();
