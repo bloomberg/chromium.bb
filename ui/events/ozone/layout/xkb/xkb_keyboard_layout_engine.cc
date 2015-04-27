@@ -775,12 +775,10 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
       if (*key_code == VKEY_UNKNOWN)
         *key_code = DomCodeToUsLayoutKeyboardCode(dom_code);
     }
-
-    if ((flags & EF_CONTROL_DOWN) == EF_CONTROL_DOWN) {
-      // Use GetCharacterFromKeyCode() to set |character| to 0x0 for keys that
-      // are not part of the accepted set of Control+Key combinations.
-      *character = GetCharacterFromKeyCode(*key_code, flags);
-    }
+    // If the Control key is down, only allow ASCII control characters to be
+    // returned, regardless of the key layout. crbug.com/450849
+    if ((flags & EF_CONTROL_DOWN) && (*character >= 0x20))
+      *character = 0;
   } else if (*dom_key == DomKey::DEAD) {
     *character = DeadXkbKeySymToCombiningCharacter(xkb_keysym);
     *key_code = DomCodeToUsLayoutKeyboardCode(dom_code);
