@@ -77,6 +77,7 @@ LinkHighlight::LinkHighlight(Node* node, WebViewImpl* owningWebViewImpl)
     ASSERT(owningWebViewImpl);
     WebCompositorSupport* compositorSupport = Platform::current()->compositorSupport();
     m_contentLayer = adoptPtr(compositorSupport->createContentLayer(this));
+    owningWebViewImpl->registerForAnimations(m_contentLayer->layer());
     m_clipLayer = adoptPtr(compositorSupport->createLayer());
     m_clipLayer->setTransformOrigin(WebFloatPoint3D());
     m_clipLayer->addChild(m_contentLayer->layer());
