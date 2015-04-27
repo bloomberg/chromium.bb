@@ -255,6 +255,10 @@
     if (attributeName === 'class')
       attributeName = 'className';
 
+    // The attribute 'in' is exposed in IDL as 'in1'
+    if (attributeName === 'in')
+      attributeName = 'in1';
+
     // The attribute 'orient' is exposed in IDL as 'orientType' and 'orientAngle'
     if (attributeName === 'orient') {
       if (element['orientType'] && element['orientType'].animVal === SVGMarkerElement.SVG_MARKER_ORIENT_AUTO)
@@ -273,6 +277,8 @@
         return null;
       if (attributeName === 'pathLength')
         return '0';
+      if (attributeName === 'preserveAlpha')
+        return 'false';
 
       console.log('Unknown attribute, cannot get ' + element.className.baseVal + ' ' + attributeName);
       return null;
@@ -301,6 +307,7 @@
   function setAttributeValue(element, attributeName, expectation) {
     if (!element[attributeName]
         && attributeName !== 'class'
+        && (attributeName !== 'in' || !element['in1'])
         && (attributeName !== 'orient' || !element['orientType'])
         && (animatedNumberOptionalNumberAttributes.indexOf(attributeName) === -1 || !element[attributeName + 'X'])) {
       console.log('Unknown attribute, cannot set ' + element.className.baseVal + ' ' + attributeName);

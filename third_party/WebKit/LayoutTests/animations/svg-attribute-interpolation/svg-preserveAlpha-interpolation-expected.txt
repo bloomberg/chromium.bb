@@ -1,0 +1,15 @@
+
+SVG SMIL:
+PASS: preserveAlpha from [false] to [true] was [false] at 0
+PASS: preserveAlpha from [false] to [true] was [false] at 0.2
+PASS: preserveAlpha from [false] to [true] was [true] at 0.6
+PASS: preserveAlpha from [false] to [true] was [true] at 1
+
+Web Animations API:
+PASS: preserveAlpha from [false] to [true] was [false] at -2.4
+PASS: preserveAlpha from [false] to [true] was [false] at 0
+PASS: preserveAlpha from [false] to [true] was [false] at 0.2
+PASS: preserveAlpha from [false] to [true] was [true] at 0.6
+PASS: preserveAlpha from [false] to [true] was [true] at 1
+PASS: preserveAlpha from [false] to [true] was [true] at 3.4
+
