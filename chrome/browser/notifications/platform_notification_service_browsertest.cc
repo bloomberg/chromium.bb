@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar_responder.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -19,68 +20,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/infobars/core/infobar.h"
-#include "components/infobars/core/infobar_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-
-// -----------------------------------------------------------------------------
-
-// Accept or rejects the first shown confirm infobar. The infobar will be
-// responsed to asynchronously, to imitate the behavior of a user.
-// TODO(peter): Generalize this class, as it's commonly useful.
-class InfoBarResponder : public infobars::InfoBarManager::Observer {
- public:
-  InfoBarResponder(Browser* browser, bool accept);
-  ~InfoBarResponder() override;
-
-  // infobars::InfoBarManager::Observer overrides.
-  void OnInfoBarAdded(infobars::InfoBar* infobar) override;
-
- private:
-  void Respond(ConfirmInfoBarDelegate* delegate);
-
-  InfoBarService* infobar_service_;
-  bool accept_;
-  bool has_observed_;
-};
-
-InfoBarResponder::InfoBarResponder(Browser* browser, bool accept)
-    : infobar_service_(InfoBarService::FromWebContents(
-            browser->tab_strip_model()->GetActiveWebContents())),
-      accept_(accept),
-      has_observed_(false) {
-  infobar_service_->AddObserver(this);
-}
-
-InfoBarResponder::~InfoBarResponder() {
-  infobar_service_->RemoveObserver(this);
-}
-
-void InfoBarResponder::OnInfoBarAdded(infobars::InfoBar* infobar) {
-  if (has_observed_)
-    return;
-
-  has_observed_ = true;
-  ConfirmInfoBarDelegate* delegate =
-      infobar->delegate()->AsConfirmInfoBarDelegate();
-  DCHECK(delegate);
-
-  // Respond to the infobar asynchronously, like a person.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &InfoBarResponder::Respond, base::Unretained(this), delegate));
-}
-
-void InfoBarResponder::Respond(ConfirmInfoBarDelegate* delegate) {
-  if (accept_)
-    delegate->Accept();
-  else
-    delegate->Cancel();
-}
 
 // -----------------------------------------------------------------------------
 
@@ -122,6 +64,7 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
 
   net::HostPortPair ServerHostPort() const;
   GURL TestPageUrl() const;
+  InfoBarService* GetInfoBarService();
 
  private:
   const base::FilePath server_root_;
@@ -198,6 +141,11 @@ GURL PlatformNotificationServiceBrowserTest::TestPageUrl() const {
   return https_server_->GetURL(test_page_url_);
 }
 
+InfoBarService* PlatformNotificationServiceBrowserTest::GetInfoBarService() {
+  return InfoBarService::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+}
+
 // -----------------------------------------------------------------------------
 
 // TODO(peter): Move PlatformNotificationService-related tests over from
@@ -207,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        DisplayPersistentNotificationWithoutPermission) {
   std::string script_result;
 
-  InfoBarResponder accepting_responder(browser(), false);
+  InfoBarResponder cancelling_responder(GetInfoBarService(), false);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("denied", script_result);
 
@@ -223,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        DisplayPersistentNotificationWithPermission) {
   std::string script_result;
 
-  InfoBarResponder accepting_responder(browser(), true);
+  InfoBarResponder accepting_responder(GetInfoBarService(), true);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("granted", script_result);
 
@@ -248,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   // TODO(peter): It doesn't add much value if we use the InfoBarResponder for
   // each test. Rather, we should just toggle the content setting.
-  InfoBarResponder accepting_responder(browser(), true);
+  InfoBarResponder accepting_responder(GetInfoBarService(), true);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("granted", script_result);
 
@@ -274,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        CloseDisplayedPersistentNotification) {
   std::string script_result;
 
-  InfoBarResponder accepting_responder(browser(), true);
+  InfoBarResponder accepting_responder(GetInfoBarService(), true);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("granted", script_result);
 
@@ -298,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   std::string script_result;
 
   // Creates a simple notification.
-  InfoBarResponder accepting_responder(browser(), true);
+  InfoBarResponder accepting_responder(GetInfoBarService(), true);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   ASSERT_EQ("granted", script_result);
   ASSERT_TRUE(RunScript("DisplayPersistentNotification()", &script_result));
@@ -320,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   // See crbug.com/402191.
   std::string script_result;
 
-  InfoBarResponder accepting_responder_web(browser(), true);
+  InfoBarResponder accepting_responder_web(GetInfoBarService(), true);
 
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(browser()->profile());
@@ -342,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   message_center::NotifierId file_notifier(file_url);
   EXPECT_FALSE(notification_service->IsNotifierEnabled(file_notifier));
 
-  InfoBarResponder accepting_responder_file(browser(), true);
+  InfoBarResponder accepting_responder_file(GetInfoBarService(), true);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("granted", script_result);
 
