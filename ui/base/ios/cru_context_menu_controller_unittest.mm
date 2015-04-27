@@ -41,13 +41,6 @@ TEST_F(ContextMenuControllerTest, OneEntry) {
   [_menuController showWithHolder:holder atPoint:CGPointZero inView:_window];
 
   EXPECT_TRUE([_menuController isVisible]);
-
-  UIActionSheet* sheet = _menuController.get().sheet;
-  [sheet dismissWithClickedButtonIndex:0 animated:NO];
-  [_menuController actionSheet:sheet didDismissWithButtonIndex:0];
-
-  EXPECT_TRUE(clicked);
-  EXPECT_FALSE([_menuController isVisible]);
 }
 
 TEST_F(ContextMenuControllerTest, ShouldDismissImmediately) {
