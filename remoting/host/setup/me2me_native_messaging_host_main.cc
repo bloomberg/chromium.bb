@@ -19,6 +19,7 @@
 #include "remoting/host/logging.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/pairing_registry_delegate.h"
+#include "remoting/host/setup/gaia_oauth_client.h"
 #include "remoting/host/setup/me2me_native_messaging_host.h"
 #include "remoting/host/usage_stats_consent.h"
 
@@ -197,7 +198,7 @@ int StartMe2MeNativeMessagingHost() {
       new URLRequestContextGetter(io_thread.task_runner(),
                                   file_thread.task_runner()));
   scoped_ptr<OAuthClient> oauth_client(
-      new OAuthClient(url_request_context_getter));
+      new GaiaOAuthClient(url_request_context_getter));
 
   net::URLFetcher::SetIgnoreCertificateRequests(true);
 

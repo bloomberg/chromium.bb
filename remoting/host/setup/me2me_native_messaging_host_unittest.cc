@@ -19,6 +19,7 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/pin_hash.h"
+#include "remoting/host/setup/mock_oauth_client.h"
 #include "remoting/host/setup/test_util.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -132,6 +133,18 @@ void VerifyStartDaemonResponse(scoped_ptr<base::DictionaryValue> response) {
   EXPECT_EQ("startDaemonResponse", value);
   EXPECT_TRUE(response->GetString("result", &value));
   EXPECT_EQ("OK", value);
+}
+
+void VerifyGetCredentialsFromAuthCodeResponse(
+    scoped_ptr<base::DictionaryValue> response) {
+  ASSERT_TRUE(response);
+  std::string value;
+  EXPECT_TRUE(response->GetString("type", &value));
+  EXPECT_EQ("getCredentialsFromAuthCodeResponse", value);
+  EXPECT_TRUE(response->GetString("userEmail", &value));
+  EXPECT_EQ("fake_user_email", value);
+  EXPECT_TRUE(response->GetString("refreshToken", &value));
+  EXPECT_EQ("fake_refresh_token", value);
 }
 
 }  // namespace
@@ -313,8 +326,12 @@ void Me2MeNativeMessagingHostTest::StartHost() {
       new PipeMessagingChannel(input_read_file.Pass(),
                                output_write_file.Pass()));
 
-  host_.reset(new Me2MeNativeMessagingHost(
-      false, 0, channel.Pass(), daemon_controller, pairing_registry, nullptr));
+  scoped_ptr<OAuthClient> oauth_client(
+      new MockOAuthClient("fake_user_email", "fake_refresh_token"));
+
+  host_.reset(new Me2MeNativeMessagingHost(false, 0, channel.Pass(),
+                                           daemon_controller, pairing_registry,
+                                           oauth_client.Pass()));
   host_->Start(base::Bind(&Me2MeNativeMessagingHostTest::StopHost,
                           base::Unretained(this)));
 
@@ -474,17 +491,23 @@ TEST_F(Me2MeNativeMessagingHostTest, All) {
   message.SetString("type", "startDaemon");
   WriteMessageToInputPipe(message);
 
+  message.SetInteger("id", next_id++);
+  message.SetString("type", "getCredentialsFromAuthCode");
+  message.SetString("authorizationCode", "fake_auth_code");
+  WriteMessageToInputPipe(message);
+
   void (*verify_routines[])(scoped_ptr<base::DictionaryValue>) = {
-    &VerifyHelloResponse,
-    &VerifyGetHostNameResponse,
-    &VerifyGetPinHashResponse,
-    &VerifyGenerateKeyPairResponse,
-    &VerifyGetDaemonConfigResponse,
-    &VerifyGetUsageStatsConsentResponse,
-    &VerifyStopDaemonResponse,
-    &VerifyGetDaemonStateResponse,
-    &VerifyUpdateDaemonConfigResponse,
-    &VerifyStartDaemonResponse,
+      &VerifyHelloResponse,
+      &VerifyGetHostNameResponse,
+      &VerifyGetPinHashResponse,
+      &VerifyGenerateKeyPairResponse,
+      &VerifyGetDaemonConfigResponse,
+      &VerifyGetUsageStatsConsentResponse,
+      &VerifyStopDaemonResponse,
+      &VerifyGetDaemonStateResponse,
+      &VerifyUpdateDaemonConfigResponse,
+      &VerifyStartDaemonResponse,
+      &VerifyGetCredentialsFromAuthCodeResponse,
   };
   ASSERT_EQ(arraysize(verify_routines), static_cast<size_t>(next_id));
 
@@ -582,6 +605,13 @@ TEST_F(Me2MeNativeMessagingHostTest, StartDaemonNoConsent) {
   base::DictionaryValue message;
   message.SetString("type", "startDaemon");
   message.Set("config", base::DictionaryValue().DeepCopy());
+  TestBadRequest(message);
+}
+
+// Verify rejection if getCredentialsFromAuthCode has no auth code.
+TEST_F(Me2MeNativeMessagingHostTest, GetCredentialsFromAuthCodeNoAuthCode) {
+  base::DictionaryValue message;
+  message.SetString("type", "getCredentialsFromAuthCode");
   TestBadRequest(message);
 }
 

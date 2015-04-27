@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/setup/oauth_client.h"
+#include "remoting/host/setup/gaia_oauth_client.h"
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -13,20 +13,19 @@ const int kMaxGaiaRetries = 3;
 
 namespace remoting {
 
-OAuthClient::OAuthClient(
+GaiaOAuthClient::GaiaOAuthClient(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
     : gaia_oauth_client_(url_request_context_getter.get()) {
 }
 
-OAuthClient::~OAuthClient() {
+GaiaOAuthClient::~GaiaOAuthClient() {
 }
 
-void OAuthClient::GetCredentialsFromAuthCode(
+void GaiaOAuthClient::GetCredentialsFromAuthCode(
     const gaia::OAuthClientInfo& oauth_client_info,
     const std::string& auth_code,
     bool need_user_email,
     CompletionCallback on_done) {
-
   if (!on_done_.is_null()) {
     pending_requests_.push(
         Request(oauth_client_info, auth_code, need_user_email, on_done));
@@ -40,10 +39,9 @@ void OAuthClient::GetCredentialsFromAuthCode(
                                            kMaxGaiaRetries, this);
 }
 
-void OAuthClient::OnGetTokensResponse(
-    const std::string& refresh_token,
-    const std::string& access_token,
-    int expires_in_seconds) {
+void GaiaOAuthClient::OnGetTokensResponse(const std::string& refresh_token,
+                                          const std::string& access_token,
+                                          int expires_in_seconds) {
   refresh_token_ = refresh_token;
   if (need_user_email_) {
     // Get the email corresponding to the access token.
@@ -53,15 +51,14 @@ void OAuthClient::OnGetTokensResponse(
   }
 }
 
-void OAuthClient::OnRefreshTokenResponse(
-    const std::string& access_token,
-    int expires_in_seconds) {
+void GaiaOAuthClient::OnRefreshTokenResponse(const std::string& access_token,
+                                             int expires_in_seconds) {
   // We never request a refresh token, so this call is not expected.
   NOTREACHED();
 }
 
-void OAuthClient::SendResponse(const std::string& user_email,
-                               const std::string& refresh_token) {
+void GaiaOAuthClient::SendResponse(const std::string& user_email,
+                                   const std::string& refresh_token) {
   base::ResetAndReturn(&on_done_).Run(user_email, refresh_token);
 
   // Process the next request in the queue.
@@ -69,27 +66,24 @@ void OAuthClient::SendResponse(const std::string& user_email,
     Request request = pending_requests_.front();
     pending_requests_.pop();
     // GetCredentialsFromAuthCode is asynchronous, so it's safe to call it here.
-    GetCredentialsFromAuthCode(
-        request.oauth_client_info,
-        request.auth_code,
-        request.need_user_email,
-        request.on_done);
+    GetCredentialsFromAuthCode(request.oauth_client_info, request.auth_code,
+                               request.need_user_email, request.on_done);
   }
 }
 
-void OAuthClient::OnGetUserEmailResponse(const std::string& user_email) {
+void GaiaOAuthClient::OnGetUserEmailResponse(const std::string& user_email) {
   SendResponse(user_email, refresh_token_);
 }
 
-void OAuthClient::OnOAuthError() {
+void GaiaOAuthClient::OnOAuthError() {
   SendResponse("", "");
 }
 
-void OAuthClient::OnNetworkError(int response_code) {
+void GaiaOAuthClient::OnNetworkError(int response_code) {
   SendResponse("", "");
 }
 
-OAuthClient::Request::Request(
+GaiaOAuthClient::Request::Request(
     const gaia::OAuthClientInfo& oauth_client_info,
     const std::string& auth_code,
     bool need_user_email,
@@ -100,7 +94,7 @@ OAuthClient::Request::Request(
   this->on_done = on_done;
 }
 
-OAuthClient::Request::~Request() {
+GaiaOAuthClient::Request::~Request() {
 }
 
 }  // namespace remoting
