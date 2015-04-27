@@ -31,7 +31,6 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
 #include "core/paint/EmbeddedObjectPainter.h"
 #include "core/plugins/PluginView.h"

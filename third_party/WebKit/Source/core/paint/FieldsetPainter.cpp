@@ -6,10 +6,10 @@
 #include "core/paint/FieldsetPainter.h"
 
 #include "core/layout/LayoutFieldset.h"
-#include "core/layout/PaintInfo.h"
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 
 namespace blink {
 

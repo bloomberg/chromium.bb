@@ -31,7 +31,6 @@
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/layout/LayoutFrame.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/PaintInfo.h"
 #include "core/page/EventHandler.h"
 #include "core/paint/FrameSetPainter.h"
 #include "platform/Cursor.h"

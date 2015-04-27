@@ -50,7 +50,6 @@
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/style/ShadowList.h"
 #include "core/page/AutoscrollController.h"
@@ -63,6 +62,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include <algorithm>
 #include <math.h>

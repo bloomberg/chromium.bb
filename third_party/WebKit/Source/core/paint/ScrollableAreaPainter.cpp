@@ -6,7 +6,6 @@
 #include "core/paint/ScrollableAreaPainter.h"
 
 #include "core/layout/LayoutView.h"
-#include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/DeprecatedPaintLayerScrollableArea.h"

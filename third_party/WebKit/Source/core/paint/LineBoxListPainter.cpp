@@ -6,11 +6,11 @@
 #include "core/paint/LineBoxListPainter.h"
 
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/LineBoxList.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/InlinePainter.h"
+#include "core/paint/PaintInfo.h"
 
 namespace blink {
 

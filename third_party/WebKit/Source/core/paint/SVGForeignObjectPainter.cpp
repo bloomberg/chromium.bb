@@ -5,11 +5,11 @@
 #include "config.h"
 #include "core/paint/SVGForeignObjectPainter.h"
 
-#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/LayoutSVGForeignObject.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/FloatClipRecorder.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 

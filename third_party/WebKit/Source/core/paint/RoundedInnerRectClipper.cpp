@@ -6,7 +6,7 @@
 #include "core/paint/RoundedInnerRectClipper.h"
 
 #include "core/layout/LayoutBox.h"
-#include "core/layout/PaintInfo.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 

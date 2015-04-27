@@ -6,11 +6,11 @@
 #include "core/paint/SVGClipPainter.h"
 
 #include "core/dom/ElementTraversal.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/CompositingRecorder.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"

@@ -29,7 +29,6 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"

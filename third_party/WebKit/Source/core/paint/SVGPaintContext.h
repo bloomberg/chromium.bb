@@ -25,11 +25,11 @@
 #ifndef SVGPaintContext_h
 #define SVGPaintContext_h
 
-#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourcePaintServer.h"
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/SVGClipPainter.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/transforms/AffineTransform.h"

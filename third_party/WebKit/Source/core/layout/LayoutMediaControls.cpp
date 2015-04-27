@@ -31,7 +31,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
-#include "core/layout/PaintInfo.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/GraphicsContext.h"
 

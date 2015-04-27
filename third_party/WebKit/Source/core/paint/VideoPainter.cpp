@@ -9,9 +9,9 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/layout/LayoutVideo.h"
-#include "core/layout/PaintInfo.h"
 #include "core/paint/ImagePainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {

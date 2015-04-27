@@ -16,6 +16,7 @@
 #include "core/page/Page.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/DeprecatedPaintLayerPainter.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/fonts/FontCache.h"

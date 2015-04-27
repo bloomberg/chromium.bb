@@ -23,7 +23,6 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
 
-#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/SVGContainerPainter.h"
 #include "core/svg/SVGSVGElement.h"

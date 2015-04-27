@@ -30,6 +30,7 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/ReplacedPainter.h"
 #include "platform/LengthFunctions.h"
 

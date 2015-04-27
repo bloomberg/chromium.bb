@@ -34,7 +34,7 @@
 
 #include "core/dom/DOMNodeIds.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/PaintInfo.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "wtf/text/StringBuilder.h"
 

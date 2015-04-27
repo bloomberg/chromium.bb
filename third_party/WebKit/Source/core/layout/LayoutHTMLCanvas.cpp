@@ -31,7 +31,6 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
 #include "core/paint/HTMLCanvasPainter.h"
 

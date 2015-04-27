@@ -27,7 +27,6 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/layout/LayoutGeometryMap.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"

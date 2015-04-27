@@ -7,6 +7,7 @@
 
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/paint/SVGPaintContext.h"
 

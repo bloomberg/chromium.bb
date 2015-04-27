@@ -26,7 +26,7 @@
 #ifndef PaintInfo_h
 #define PaintInfo_h
 
-#include "core/layout/PaintPhase.h"
+#include "core/paint/PaintPhase.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"

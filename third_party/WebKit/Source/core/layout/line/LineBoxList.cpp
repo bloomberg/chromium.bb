@@ -32,10 +32,10 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/InlinePainter.h"
+#include "core/paint/PaintInfo.h"
 
 namespace blink {
 

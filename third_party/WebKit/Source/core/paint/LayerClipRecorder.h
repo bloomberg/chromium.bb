@@ -6,8 +6,8 @@
 #define LayerClipRecorder_h
 
 #include "core/CoreExport.h"
-#include "core/layout/PaintPhase.h"
 #include "core/paint/DeprecatedPaintLayerPaintingInfo.h"
+#include "core/paint/PaintPhase.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/Vector.h"

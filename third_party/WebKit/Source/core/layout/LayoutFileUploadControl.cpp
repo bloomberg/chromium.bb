@@ -30,7 +30,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/layout/LayoutButton.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/paint/FileUploadControlPainter.h"
 #include "platform/fonts/Font.h"

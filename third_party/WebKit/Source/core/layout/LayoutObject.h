@@ -38,7 +38,6 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/LayoutObjectChildList.h"
 #include "core/layout/PaintInvalidationState.h"
-#include "core/layout/PaintPhase.h"
 #include "core/layout/ScrollAlignment.h"
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/layout/compositing/CompositingState.h"

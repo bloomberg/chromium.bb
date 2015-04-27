@@ -34,6 +34,7 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/fonts/SimpleFontData.h"
 

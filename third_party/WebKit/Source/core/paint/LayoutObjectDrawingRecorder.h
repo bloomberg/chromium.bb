@@ -5,7 +5,7 @@
 #ifndef LayoutObjectDrawingRecorder_h
 #define LayoutObjectDrawingRecorder_h
 
-#include "core/layout/PaintPhase.h"
+#include "core/paint/PaintPhase.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 

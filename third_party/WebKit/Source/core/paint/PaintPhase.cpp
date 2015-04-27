@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/layout/PaintPhase.h"
+#include "core/paint/PaintPhase.h"
 
 #include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/Assertions.h"

@@ -6,11 +6,11 @@
 #include "core/paint/ReplicaPainter.h"
 
 #include "core/layout/LayoutReplica.h"
-#include "core/layout/PaintInfo.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 
 namespace blink {
 

@@ -28,7 +28,7 @@
 #include "core/CoreExport.h"
 #include "core/frame/FrameViewAutoSizeInfo.h"
 #include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/PaintPhase.h"
+#include "core/paint/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Widget.h"
 #include "platform/geometry/IntRect.h"

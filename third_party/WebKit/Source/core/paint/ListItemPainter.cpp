@@ -6,7 +6,6 @@
 #include "core/paint/ListItemPainter.h"
 
 #include "core/layout/LayoutListItem.h"
-#include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
 #include "platform/geometry/LayoutPoint.h"
 

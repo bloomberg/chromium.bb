@@ -6,10 +6,10 @@
 #include "core/paint/TableCellPainter.h"
 
 #include "core/layout/LayoutTableCell.h"
-#include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 
 namespace blink {
 

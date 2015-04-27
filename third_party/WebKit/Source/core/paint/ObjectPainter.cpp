@@ -7,9 +7,9 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 

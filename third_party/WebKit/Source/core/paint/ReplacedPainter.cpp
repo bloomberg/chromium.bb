@@ -6,12 +6,12 @@
 #include "core/paint/ReplacedPainter.h"
 
 #include "core/layout/LayoutReplaced.h"
-#include "core/layout/PaintInfo.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 
 namespace blink {

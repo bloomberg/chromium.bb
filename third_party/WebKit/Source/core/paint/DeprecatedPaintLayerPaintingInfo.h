@@ -45,12 +45,13 @@
 #ifndef DeprecatedPaintLayerPaintingInfo_h
 #define DeprecatedPaintLayerPaintingInfo_h
 
-#include "core/layout/PaintInfo.h"
+#include "core/paint/PaintPhase.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
 
 class DeprecatedPaintLayer;
+class LayoutObject;
 
 enum PaintLayerFlag {
     PaintLayerHaveTransparency = 1,

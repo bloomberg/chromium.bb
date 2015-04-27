@@ -7,12 +7,12 @@
 
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutImageResource.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGImageElement.h"

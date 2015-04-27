@@ -7,8 +7,8 @@
 
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarPart.h"
-#include "core/layout/PaintInfo.h"
 #include "core/paint/BlockPainter.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/graphics/GraphicsContext.h"
 namespace blink {
 

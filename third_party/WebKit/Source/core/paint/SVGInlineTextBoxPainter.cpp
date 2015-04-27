@@ -11,8 +11,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/PaintInfo.h"
-#include "core/style/ShadowList.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
@@ -20,7 +18,9 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/InlineTextBoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
+#include "core/style/ShadowList.h"
 
 namespace blink {
 

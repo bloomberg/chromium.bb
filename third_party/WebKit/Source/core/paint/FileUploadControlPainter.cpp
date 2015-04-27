@@ -7,9 +7,9 @@
 
 #include "core/layout/LayoutButton.h"
 #include "core/layout/LayoutFileUploadControl.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {

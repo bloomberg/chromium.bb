@@ -13,6 +13,7 @@ namespace blink {
 
 class ClipRect;
 class DeprecatedPaintLayer;
+class GraphicsContext;
 class LayoutPoint;
 
 class CORE_EXPORT DeprecatedPaintLayerPainter {

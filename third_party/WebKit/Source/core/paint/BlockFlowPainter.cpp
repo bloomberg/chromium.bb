@@ -7,10 +7,10 @@
 
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/PaintInfo.h"
 #include "core/paint/ClipScope.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 
 namespace blink {
 

@@ -8,13 +8,13 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/LineBoxListPainter.h"
 #include "core/paint/ObjectPainter.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
 #include <limits>
 

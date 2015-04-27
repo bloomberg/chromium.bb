@@ -7,11 +7,11 @@
 
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/GraphicsContextAnnotator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/unicode/CharacterNames.h"

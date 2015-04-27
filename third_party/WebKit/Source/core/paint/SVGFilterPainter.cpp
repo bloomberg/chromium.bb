@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/paint/SVGFilterPainter.h"
 
-#include "core/layout/PaintInfo.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/paint/CompositingRecorder.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"

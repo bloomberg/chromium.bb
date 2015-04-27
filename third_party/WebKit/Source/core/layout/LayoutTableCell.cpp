@@ -31,7 +31,6 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/style/CollapsedBorderValue.h"
 #include "core/paint/TableCellPainter.h"

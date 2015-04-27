@@ -49,7 +49,6 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"

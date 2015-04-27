@@ -30,7 +30,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutProgress.h"
 #include "core/layout/LayoutThemeFontProvider.h"
-#include "core/layout/PaintInfo.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/graphics/Color.h"

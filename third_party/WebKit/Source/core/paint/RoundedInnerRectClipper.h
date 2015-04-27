@@ -5,7 +5,6 @@
 #ifndef RoundedInnerRectClipper_h
 #define RoundedInnerRectClipper_h
 
-#include "core/layout/PaintPhase.h"
 #include "platform/graphics/paint/DisplayItem.h"
 
 namespace blink {

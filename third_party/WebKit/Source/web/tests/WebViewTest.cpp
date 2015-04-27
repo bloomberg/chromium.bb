@@ -54,6 +54,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"

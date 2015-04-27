@@ -27,7 +27,6 @@
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/html/HTMLLegendElement.h"
-#include "core/layout/PaintInfo.h"
 #include "core/paint/FieldsetPainter.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 

@@ -51,6 +51,7 @@
 #include "core/paint/ClipScope.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/PaintInfo.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/text/BidiTextRun.h"
 
