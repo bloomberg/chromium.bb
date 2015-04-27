@@ -38,6 +38,7 @@ bool pixelsForKeyword(CSSPropertyID property, CSSValueID valueID, double& result
         }
         return false;
     case CSSPropertyLetterSpacing:
+    case CSSPropertyWordSpacing:
         if (valueID == CSSValueNormal) {
             result = 0;
             return true;
