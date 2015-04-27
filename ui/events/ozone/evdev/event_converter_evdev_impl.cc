@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <linux/input.h>
 
+#include "base/trace_event/trace_event.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
@@ -53,6 +54,9 @@ EventConverterEvdevImpl::~EventConverterEvdevImpl() {
 }
 
 void EventConverterEvdevImpl::OnFileCanReadWithoutBlocking(int fd) {
+  TRACE_EVENT1("evdev", "EventConverterEvdevImpl::OnFileCanReadWithoutBlocking",
+               "fd", fd);
+
   input_event inputs[4];
   ssize_t read_size = read(fd, inputs, sizeof(inputs));
   if (read_size < 0) {

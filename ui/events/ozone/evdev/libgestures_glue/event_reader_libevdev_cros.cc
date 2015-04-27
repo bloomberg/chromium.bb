@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 
 namespace ui {
 
@@ -70,6 +71,9 @@ EventReaderLibevdevCros::~EventReaderLibevdevCros() {
 EventReaderLibevdevCros::Delegate::~Delegate() {}
 
 void EventReaderLibevdevCros::OnFileCanReadWithoutBlocking(int fd) {
+  TRACE_EVENT1("evdev", "EventReaderLibevdevCros::OnFileCanReadWithoutBlocking",
+               "fd", fd);
+
   if (EvdevRead(&evdev_)) {
     if (errno == EINTR || errno == EAGAIN)
       return;

@@ -8,6 +8,7 @@
 #include <linux/input.h>
 
 #include "base/message_loop/message_loop.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 
@@ -44,6 +45,10 @@ TabletEventConverterEvdev::~TabletEventConverterEvdev() {
 }
 
 void TabletEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
+  TRACE_EVENT1("evdev",
+               "TabletEventConverterEvdev::OnFileCanReadWithoutBlocking", "fd",
+               fd);
+
   input_event inputs[4];
   ssize_t read_size = read(fd, inputs, sizeof(inputs));
   if (read_size < 0) {
