@@ -74,16 +74,31 @@ void MemoryAllocatorDump::AsValueInto(TracedValue* value) const {
   static const char kHexFmt[] = "%" PRIx64;
 
   value->BeginDictionary(GetAbsoluteName().c_str());
+  value->BeginDictionary("attrs");
 
-  value->SetString("physical_size_in_bytes",
-                   StringPrintf(kHexFmt, physical_size_in_bytes_));
-  value->SetString("allocated_objects_count",
-                   StringPrintf(kHexFmt, allocated_objects_count_));
-  value->SetString("allocated_objects_size_in_bytes",
+  // TODO(primiano): these hard-coded types are temporary to transition to the
+  // new generalized attribute format. This code will be refactored by the end
+  // of May 2015.
+  value->BeginDictionary("outer_size");
+  value->SetString("type", "scalar");
+  value->SetString("units", "bytes");
+  value->SetString("value", StringPrintf(kHexFmt, physical_size_in_bytes_));
+  value->EndDictionary();
+
+  value->BeginDictionary("inner_size");
+  value->SetString("type", "scalar");
+  value->SetString("units", "bytes");
+  value->SetString("value",
                    StringPrintf(kHexFmt, allocated_objects_size_in_bytes_));
+  value->EndDictionary();
+
+  value->BeginDictionary("objects_count");
+  value->SetString("type", "scalar");
+  value->SetString("units", "objects");
+  value->SetString("value", StringPrintf(kHexFmt, allocated_objects_count_));
+  value->EndDictionary();
 
   // Copy all the extra attributes.
-  value->BeginDictionary("args");
   for (DictionaryValue::Iterator it(attributes_values_); !it.IsAtEnd();
        it.Advance()) {
     const std::string& attr_name = it.key();
@@ -91,17 +106,16 @@ void MemoryAllocatorDump::AsValueInto(TracedValue* value) const {
     value->BeginDictionary(attr_name.c_str());
     value->SetValue("value", attr_value.DeepCopy());
 
-    // TODO(primiano): the "type" should be dumped just once, not repeated on
-    // on every event. The ability of doing so depends on crbug.com/466121.
     const std::string& attr_type =
         GetAttributesTypeInfo().Get(allocator_name_, attr_name);
     DCHECK(!attr_type.empty());
-    value->SetString("type", attr_type);
+    value->SetString("type", "scalar");
+    value->SetString("units", attr_type);
 
     value->EndDictionary();  // "arg_name": { "type": "...", "value": "..." }
   }
-  value->EndDictionary();  // "args": { ... }
 
+  value->EndDictionary();  // "attrs": { ... }
   value->EndDictionary();  // "allocator_name/heap_subheap": { ... }
 }
 
