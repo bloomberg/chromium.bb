@@ -794,7 +794,8 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
       return false;
 #endif
     case IDC_UPGRADE_DIALOG:
-      return UpgradeDetector::GetInstance()->notify_upgrade();
+      return browser_defaults::kShowUpgradeMenuItem &&
+          UpgradeDetector::GetInstance()->notify_upgrade();
 #if !defined(OS_LINUX) || defined(USE_AURA)
     case IDC_BOOKMARK_PAGE:
       return !chrome::ShouldRemoveBookmarkThisPageUI(browser_->profile());
@@ -877,7 +878,7 @@ void WrenchMenuModel::Build() {
           ui::ResourceBundle::GetSharedInstance().
               GetNativeImageNamed(IDR_INPUT_ALERT_MENU));
 
-  if (IsCommandIdVisible(browser_defaults::kShowUpgradeMenuItem))
+  if (IsCommandIdVisible(IDC_UPGRADE_DIALOG))
     AddItem(IDC_UPGRADE_DIALOG, GetUpgradeDialogMenuItemName());
 
   if (AddGlobalErrorMenuItems() ||

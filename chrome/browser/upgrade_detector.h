@@ -132,6 +132,8 @@ class UpgradeDetector {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WrenchMenuModelTest, Basics);
+
   // Initiates an Idle check. See IdleCallback below.
   void CheckIdle();
 

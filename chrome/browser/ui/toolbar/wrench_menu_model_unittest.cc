@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/menu_model_test.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -124,6 +126,12 @@ TEST_F(WrenchMenuModelTest, Basics) {
   // Verify it has items. The number varies by platform, so we don't check
   // the exact number.
   EXPECT_GT(itemCount, 10);
+
+  UpgradeDetector* detector = UpgradeDetector::GetInstance();
+  detector->NotifyUpgradeRecommended();
+  EXPECT_TRUE(detector->notify_upgrade());
+  EXPECT_EQ(browser_defaults::kShowUpgradeMenuItem,
+            model.IsCommandIdVisible(IDC_UPGRADE_DIALOG));
 
   // Execute a couple of the items and make sure it gets back to our delegate.
   // We can't use CountEnabledExecutable() here because the encoding menu's
