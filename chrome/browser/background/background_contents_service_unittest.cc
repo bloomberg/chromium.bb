@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/run_loop.h"
@@ -25,6 +24,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -44,6 +44,11 @@ class BackgroundContentsServiceTest : public testing::Test {
   ~BackgroundContentsServiceTest() override {}
   void SetUp() override {
     command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
+    BackgroundContentsService::DisableCloseBalloonForTesting(true);
+  }
+
+  void TearDown() override {
+    BackgroundContentsService::DisableCloseBalloonForTesting(false);
   }
 
   const base::DictionaryValue* GetPrefs(Profile* profile) {
@@ -62,6 +67,7 @@ class BackgroundContentsServiceTest : public testing::Test {
     return url;
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<base::CommandLine> command_line_;
 };
 

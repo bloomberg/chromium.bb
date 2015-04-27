@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -20,7 +21,9 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::Referrer;
 
-typedef testing::Test BrowserAboutHandlerTest;
+class BrowserAboutHandlerTest : public testing::Test {
+  content::TestBrowserThreadBundle thread_bundle_;
+};
 
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
   std::string chrome_prefix(content::kChromeUIScheme);
@@ -70,8 +73,6 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
         GURL(chrome_prefix + "host/path?query#ref"),
       }
   };
-  base::MessageLoopForUI message_loop;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   TestingProfile profile;
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {

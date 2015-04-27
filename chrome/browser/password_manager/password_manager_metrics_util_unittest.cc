@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PasswordManagerMetricsUtilTest : public testing::Test {
@@ -25,6 +26,7 @@ class PasswordManagerMetricsUtilTest : public testing::Test {
     return group_id > 0;
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 };
 

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,6 +24,7 @@
 using testing::Mock;
 using testing::ReturnRef;
 using testing::Sequence;
+using testing::_;
 
 namespace chromeos {
 
@@ -68,6 +70,9 @@ SAMLOfflineSigninLimiterTest::~SAMLOfflineSigninLimiterTest() {
   DestroyLimiter();
   Mock::VerifyAndClearExpectations(user_manager_);
   EXPECT_CALL(*user_manager_, Shutdown()).Times(1);
+  EXPECT_CALL(*user_manager_, RemoveSessionStateObserver(_)).Times(1);
+  profile_.reset();
+  TestingBrowserProcess::DeleteInstance();
 }
 
 void SAMLOfflineSigninLimiterTest::DestroyLimiter() {

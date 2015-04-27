@@ -103,6 +103,13 @@ class ExtensionServiceTestBase : public testing::Test {
   const base::FilePath& data_dir() const { return data_dir_; }
   const base::ScopedTempDir& temp_dir() const { return temp_dir_; }
 
+ private:
+  // Destroying at_exit_manager_ will delete all LazyInstances, so it must come
+  // after thread_bundle_ in the destruction order.
+  base::ShadowingAtExitManager at_exit_manager_;
+  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+
+ protected:
   // It's unfortunate that these are exposed to subclasses (rather than used
   // through the accessor methods above), but too many tests already use them
   // directly.
@@ -121,11 +128,6 @@ class ExtensionServiceTestBase : public testing::Test {
   // Destroy temp_dir_ after thread_bundle_ so clean-up tasks can still use the
   // directory.
   base::ScopedTempDir temp_dir_;
-
-  // Destroying at_exit_manager_ will delete all LazyInstances, so it must come
-  // after thread_bundle_ in the destruction order.
-  base::ShadowingAtExitManager at_exit_manager_;
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 
   // Whether or not the thread bundle was reset in the test.
   bool did_reset_thread_bundle_;

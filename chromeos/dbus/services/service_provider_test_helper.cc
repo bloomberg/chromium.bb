@@ -20,6 +20,8 @@ namespace chromeos {
 
 ServiceProviderTestHelper::ServiceProviderTestHelper()
     : response_received_(false) {
+  if (!base::MessageLoop::current())
+    message_loop_.reset(new base::MessageLoop());
 }
 
 ServiceProviderTestHelper::~ServiceProviderTestHelper() {
@@ -129,7 +131,7 @@ dbus::Response* ServiceProviderTestHelper::MockCallMethodAndBlock(
                                   base::Unretained(this)));
   // Check for a response.
   if (!response_received_)
-    message_loop_.Run();
+    base::MessageLoop::current()->Run();
   // Return response.
   return response_.release();
 }
@@ -155,8 +157,8 @@ void ServiceProviderTestHelper::OnResponse(
     scoped_ptr<dbus::Response> response) {
   response_ = response.Pass();
   response_received_ = true;
-  if (message_loop_.is_running())
-    message_loop_.Quit();
+  if (base::MessageLoop::current()->is_running())
+    base::MessageLoop::current()->Quit();
 }
 
 }  // namespace chromeos

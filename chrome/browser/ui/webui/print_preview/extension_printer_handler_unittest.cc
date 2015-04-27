@@ -18,6 +18,7 @@
 #include "chrome/browser/local_discovery/pwg_raster_converter.h"
 #include "chrome/browser/ui/webui/print_preview/extension_printer_handler.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
@@ -370,7 +371,7 @@ class ExtensionPrinterHandlerTest : public testing::Test {
     profile_ = profile_builder.Build();
 
     extension_printer_handler_.reset(new ExtensionPrinterHandler(
-        profile_.get(), message_loop_.task_runner()));
+        profile_.get(), base::MessageLoop::current()->task_runner()));
 
     pwg_raster_converter_ = new FakePWGRasterConverter();
     extension_printer_handler_->SetPwgRasterConverterForTesting(
@@ -389,7 +390,7 @@ class ExtensionPrinterHandlerTest : public testing::Test {
   FakePWGRasterConverter* pwg_raster_converter_;
 
  private:
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<TestingProfile> profile_;
 

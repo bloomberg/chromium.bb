@@ -20,6 +20,7 @@
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -29,7 +30,11 @@ namespace content_settings {
 
 typedef std::vector<Rule> Rules;
 
-TEST(PolicyProviderTest, DefaultGeolocationContentSetting) {
+class PolicyProviderTest : public testing::Test {
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+
+TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
@@ -63,7 +68,7 @@ TEST(PolicyProviderTest, DefaultGeolocationContentSetting) {
   provider.ShutdownOnUIThread();
 }
 
-TEST(PolicyProviderTest, ManagedDefaultContentSettings) {
+TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
@@ -90,7 +95,7 @@ TEST(PolicyProviderTest, ManagedDefaultContentSettings) {
 // When a default-content-setting is set to a managed setting a
 // CONTENT_SETTINGS_CHANGED notification should be fired. The same should happen
 // if the managed setting is removed.
-TEST(PolicyProviderTest, ObserveManagedSettingsChange) {
+TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   PolicyProvider provider(prefs);
@@ -117,7 +122,7 @@ TEST(PolicyProviderTest, ObserveManagedSettingsChange) {
   provider.ShutdownOnUIThread();
 }
 
-TEST(PolicyProviderTest, GettingManagedContentSettings) {
+TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
@@ -189,7 +194,7 @@ TEST(PolicyProviderTest, GettingManagedContentSettings) {
   provider.ShutdownOnUIThread();
 }
 
-TEST(PolicyProviderTest, ResourceIdentifier) {
+TEST_F(PolicyProviderTest, ResourceIdentifier) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
@@ -226,7 +231,7 @@ TEST(PolicyProviderTest, ResourceIdentifier) {
   provider.ShutdownOnUIThread();
 }
 
-TEST(PolicyProviderTest, AutoSelectCertificateList) {
+TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 

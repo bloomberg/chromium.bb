@@ -82,6 +82,7 @@ bool AreAllBrowsersCloseable() {
 #endif  // !defined(OS_ANDROID)
 
 int g_keep_alive_count = 0;
+bool g_disable_shutdown_for_testing = false;
 
 #if defined(OS_CHROMEOS)
 // Whether chrome should send stop request to a session manager.
@@ -319,11 +320,20 @@ void IncrementKeepAliveCount() {
   ++g_keep_alive_count;
 }
 
+void CloseAllBrowsersIfNeeded() {
+  // If there are no browsers open and we aren't already shutting down,
+  // initiate a shutdown. Also skips shutdown if this is a unit test.
+  // (MessageLoop::current() == null or explicitly disabled).
+  if (chrome::GetTotalBrowserCount() == 0 &&
+      !browser_shutdown::IsTryingToQuit() && base::MessageLoop::current() &&
+      !g_disable_shutdown_for_testing) {
+    CloseAllBrowsers();
+  }
+}
+
 void DecrementKeepAliveCount() {
   DCHECK_GT(g_keep_alive_count, 0);
   --g_keep_alive_count;
-
-  DCHECK(g_browser_process);
   // Although we should have a browser process, if there is none,
   // there is nothing to do.
   if (!g_browser_process) return;
@@ -331,14 +341,7 @@ void DecrementKeepAliveCount() {
   // Allow the app to shutdown again.
   if (!WillKeepAlive()) {
     g_browser_process->ReleaseModule();
-    // If there are no browsers open and we aren't already shutting down,
-    // initiate a shutdown. Also skips shutdown if this is a unit test
-    // (MessageLoop::current() == null).
-    if (chrome::GetTotalBrowserCount() == 0 &&
-        !browser_shutdown::IsTryingToQuit() &&
-        base::MessageLoop::current()) {
-      CloseAllBrowsers();
-    }
+    CloseAllBrowsersIfNeeded();
   }
 }
 
@@ -420,6 +423,12 @@ bool ShouldStartShutdown(Browser* browser) {
     return BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE)->empty();
 #endif
   return true;
+}
+
+void DisableShutdownForTesting(bool disable_shutdown_for_testing) {
+  g_disable_shutdown_for_testing = disable_shutdown_for_testing;
+  if (!g_disable_shutdown_for_testing && !WillKeepAlive())
+    CloseAllBrowsersIfNeeded();
 }
 
 }  // namespace chrome

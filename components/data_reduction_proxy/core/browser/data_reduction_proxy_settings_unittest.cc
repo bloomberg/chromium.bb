@@ -143,6 +143,7 @@ TEST_F(DataReductionProxySettingsTest, TestContentLengths) {
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
+  base::MessageLoopForIO message_loop;
   struct TestCase {
     const char* response_headers;
     const char* response_body;
@@ -215,6 +216,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
+  base::MessageLoopForIO message_loop;
   scoped_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithParamsFlags(DataReductionProxyParams::kAllowed |

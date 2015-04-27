@@ -131,6 +131,7 @@ class DataReductionProxyInterceptorTest : public testing::Test {
     default_context_->Init();
   }
 
+  base::MessageLoopForIO message_loop_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   net::TestNetworkDelegate default_network_delegate_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
@@ -235,6 +236,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO message_loop_;
   net::TestNetLog net_log_;
   net::TestNetworkDelegate network_delegate_;
   net::TestURLRequestContext context_;
@@ -329,6 +331,7 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO message_loop_;
   net::TestDelegate delegate_;
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;

@@ -38,6 +38,7 @@ class DataReductionProxyMessageFilterTest : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO message_loop_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_refptr<DataReductionProxyMessageFilter> message_filter_;
 };

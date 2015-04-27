@@ -10,6 +10,7 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
@@ -130,6 +131,7 @@ class SupervisedUserSharedSettingsServiceTest : public ::testing::Test {
             su_id, key, *value, true));
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   SupervisedUserSharedSettingsService settings_service_;
   SyncDataList changed_settings_;

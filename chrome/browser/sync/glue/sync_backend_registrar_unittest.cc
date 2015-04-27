@@ -60,10 +60,10 @@ class SyncBackendRegistrarTest : public testing::Test {
 
  protected:
   SyncBackendRegistrarTest()
-      : sync_thread_(NULL),
-        thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
                        content::TestBrowserThreadBundle::REAL_FILE_THREAD |
-                       content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+                       content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        sync_thread_(NULL) {}
 
   ~SyncBackendRegistrarTest() override {}
 
@@ -101,12 +101,12 @@ class SyncBackendRegistrarTest : public testing::Test {
     }
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   syncer::TestUserShare test_user_share_;
   TestingProfile profile_;
   scoped_ptr<SyncBackendRegistrar> registrar_;
 
   base::Thread* sync_thread_;
-  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {

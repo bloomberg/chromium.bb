@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -10,6 +9,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
@@ -172,6 +172,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     }
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<ExtensionSpecialStoragePolicy> policy_;
 };
 
@@ -309,9 +310,6 @@ TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
-  base::MessageLoop message_loop;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
-
   TestingProfile profile;
   CookieSettings* cookie_settings =
       CookieSettings::Factory::GetForProfile(&profile).get();
@@ -344,10 +342,6 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
 }
 
 TEST_F(ExtensionSpecialStoragePolicyTest, NotificationTest) {
-  base::MessageLoop message_loop;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
-  content::TestBrowserThread io_thread(BrowserThread::IO, &message_loop);
-
   PolicyChangeObserver observer;
   policy_->AddObserver(&observer);
 
@@ -368,14 +362,14 @@ TEST_F(ExtensionSpecialStoragePolicyTest, NotificationTest) {
     SCOPED_TRACE(testing::Message() << "i: " << i);
     observer.ExpectGrant(apps[i]->id(), change_flags[i]);
     policy_->GrantRightsForExtension(apps[i].get(), NULL);
-    message_loop.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(observer.IsCompleted());
   }
 
   for (size_t i = 0; i < arraysize(apps); ++i) {
     SCOPED_TRACE(testing::Message() << "i: " << i);
     policy_->GrantRightsForExtension(apps[i].get(), NULL);
-    message_loop.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(observer.IsCompleted());
   }
 
@@ -383,20 +377,20 @@ TEST_F(ExtensionSpecialStoragePolicyTest, NotificationTest) {
     SCOPED_TRACE(testing::Message() << "i: " << i);
     observer.ExpectRevoke(apps[i]->id(), change_flags[i]);
     policy_->RevokeRightsForExtension(apps[i].get());
-    message_loop.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(observer.IsCompleted());
   }
 
   for (size_t i = 0; i < arraysize(apps); ++i) {
     SCOPED_TRACE(testing::Message() << "i: " << i);
     policy_->RevokeRightsForExtension(apps[i].get());
-    message_loop.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     EXPECT_TRUE(observer.IsCompleted());
   }
 
   observer.ExpectClear();
   policy_->RevokeRightsForAllExtensions();
-  message_loop.RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(observer.IsCompleted());
 
   policy_->RemoveObserver(&observer);

@@ -31,6 +31,9 @@ class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
  protected:
   void SetUp() override;
 
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+
  protected:
   net::TestURLRequestContext context;
 
@@ -39,9 +42,6 @@ class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
   // This extension has Web Request permissions, and *.com a host permission.
   scoped_refptr<Extension> com_extension_;
   scoped_refptr<extensions::InfoMap> extension_info_map_;
-
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {

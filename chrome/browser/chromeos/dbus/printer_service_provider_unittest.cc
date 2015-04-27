@@ -15,6 +15,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "components/user_manager/fake_user_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "dbus/message.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
@@ -130,6 +131,7 @@ class PrinterServiceProviderAppSearchEnabledTest : public testing::Test {
         .Build();
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   StubNotificationUIManager notification_ui_manager_;
   TestingProfile profile_;
   user_manager::FakeUserManager* user_manager_;

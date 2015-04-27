@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "content/browser/compositor/buffer_queue.h"
@@ -156,6 +157,7 @@ class VideoCaptureBufferPoolTest
         new Buffer(pool_, buffer_handle.Pass(), buffer_id));
   }
 
+  base::MessageLoop loop_;
   int expected_dropped_id_;
   scoped_refptr<VideoCaptureBufferPool> pool_;
 

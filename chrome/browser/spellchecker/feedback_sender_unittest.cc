@@ -141,8 +141,8 @@ class FeedbackSenderTest : public testing::Test {
   scoped_ptr<spellcheck::FeedbackSender> feedback_;
 
  private:
-  TestingProfile profile_;
   base::MessageLoop loop_;
+  TestingProfile profile_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<base::FieldTrial> field_trial_;

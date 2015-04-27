@@ -52,9 +52,9 @@ class AutocompleteActionPredictorTableTest : public testing::Test {
   AutocompleteActionPredictorTable::Rows test_db_;
 
  private:
+  base::MessageLoop loop_;
   TestingProfile profile_;
   scoped_ptr<PredictorDatabase> db_;
-  base::MessageLoop loop_;
   content::TestBrowserThread db_thread_;
 };
 

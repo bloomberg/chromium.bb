@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui_component.h"
@@ -34,6 +35,7 @@ class CountryComboboxModelTest : public testing::Test {
 
  private:
   // NB: order is important here - |profile_| must go down after |manager_|.
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   TestPersonalDataManager manager_;
   scoped_ptr<CountryComboboxModel> model_;

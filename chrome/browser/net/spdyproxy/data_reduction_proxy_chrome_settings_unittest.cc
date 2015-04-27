@@ -48,6 +48,7 @@ class DataReductionProxyChromeSettingsTest : public testing::Test {
     registry->RegisterDictionaryPref(prefs::kProxy);
   }
 
+  base::MessageLoopForIO message_loop_;
   scoped_ptr<DataReductionProxyChromeSettings> drp_chrome_settings_;
   scoped_ptr<base::DictionaryValue> dict_;
   scoped_ptr<data_reduction_proxy::DataReductionProxyTestContext> test_context_;

@@ -4,7 +4,6 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
@@ -293,7 +292,6 @@ scoped_ptr<DataReductionProxyTestContext>
 DataReductionProxyTestContext::Builder::Build() {
   // Check for invalid builder combinations.
   DCHECK(!(use_mock_config_ && use_config_client_));
-  scoped_ptr<base::MessageLoopForIO> loop(new base::MessageLoopForIO());
 
   unsigned int test_context_flags = 0;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -394,7 +392,7 @@ DataReductionProxyTestContext::Builder::Build() {
 
   scoped_ptr<DataReductionProxyTestContext> test_context(
       new DataReductionProxyTestContext(
-          loop.Pass(), task_runner, pref_service.Pass(), net_log.Pass(),
+          task_runner, pref_service.Pass(), net_log.Pass(),
           request_context_getter, mock_socket_factory_, io_data.Pass(),
           settings.Pass(), storage_delegate.Pass(), raw_params,
           test_context_flags));
@@ -406,7 +404,6 @@ DataReductionProxyTestContext::Builder::Build() {
 }
 
 DataReductionProxyTestContext::DataReductionProxyTestContext(
-    scoped_ptr<base::MessageLoop> loop,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_ptr<TestingPrefServiceSimple> simple_pref_service,
     scoped_ptr<net::TestNetLog> net_log,
@@ -418,7 +415,6 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
     TestDataReductionProxyParams* params,
     unsigned int test_context_flags)
     : test_context_flags_(test_context_flags),
-      loop_(loop.Pass()),
       task_runner_(task_runner),
       simple_pref_service_(simple_pref_service.Pass()),
       net_log_(net_log.Pass()),

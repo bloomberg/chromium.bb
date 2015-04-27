@@ -193,6 +193,7 @@ class PreferencesTest : public testing::Test {
     prefs_->SetInputMethodListForTesting();
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfileManager> profile_manager_;
   scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
   scoped_ptr<Preferences> prefs_;
@@ -352,7 +353,6 @@ class InputMethodPreferencesTest : public PreferencesTest {
   StringPrefMember preload_engines_syncable_;
   StringPrefMember enabled_extension_imes_;
   StringPrefMember enabled_extension_imes_syncable_;
-  content::TestBrowserThreadBundle thread_bundle_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodPreferencesTest);

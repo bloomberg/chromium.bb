@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/omnibox/autocomplete_provider.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class OmniboxControllerTest : public testing::Test {
@@ -23,6 +24,7 @@ class OmniboxControllerTest : public testing::Test {
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   scoped_ptr<OmniboxController> omnibox_controller_;
 

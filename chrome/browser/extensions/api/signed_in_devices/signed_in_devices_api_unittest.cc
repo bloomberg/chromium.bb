@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/guid.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "components/sync_driver/device_info.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,11 +73,10 @@ class MockDeviceInfoTracker : public DeviceInfoTracker {
 };
 
 TEST(SignedInDevicesAPITest, GetSignedInDevices) {
+  content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
   MockDeviceInfoTracker device_tracker;
-  base::MessageLoop message_loop_;
-  TestExtensionPrefs extension_prefs(
-      message_loop_.message_loop_proxy().get());
+  TestExtensionPrefs extension_prefs(base::ThreadTaskRunnerHandle::Get().get());
 
   // Add a couple of devices and make sure we get back public ids for them.
   std::string extension_name = "test";

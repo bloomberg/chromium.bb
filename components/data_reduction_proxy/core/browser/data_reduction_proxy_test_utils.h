@@ -386,7 +386,6 @@ class DataReductionProxyTestContext {
   };
 
   DataReductionProxyTestContext(
-      scoped_ptr<base::MessageLoop> loop,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_ptr<TestingPrefServiceSimple> simple_pref_service,
       scoped_ptr<net::TestNetLog> net_log,
@@ -404,8 +403,6 @@ class DataReductionProxyTestContext {
       CreateDataReductionProxyServiceInternal();
 
   unsigned int test_context_flags_;
-
-  scoped_ptr<base::MessageLoop> loop_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_ptr<TestingPrefServiceSimple> simple_pref_service_;

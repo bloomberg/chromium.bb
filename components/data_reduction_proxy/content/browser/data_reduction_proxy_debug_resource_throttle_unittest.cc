@@ -105,6 +105,7 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
   }
 
  private:
+  base::MessageLoop message_loop_;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
   // |test_job_interceptor_| is owned by |test_job_factory_|.

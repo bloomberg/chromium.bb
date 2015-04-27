@@ -174,6 +174,7 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     EXPECT_EQ(expected_header, header_value);
   }
 
+  base::MessageLoopForIO message_loop_;
   scoped_ptr<TestDataReductionProxyRequestOptions> request_options_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
 };

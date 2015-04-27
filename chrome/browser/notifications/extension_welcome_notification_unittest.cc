@@ -14,6 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -142,6 +143,7 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
     delegate_ = NULL;
     welcome_notification_.reset();
     profile_.reset();
+    TestingBrowserProcess::DeleteInstance();
     thread_task_runner_handle_.reset();
     task_runner_ = NULL;
   }

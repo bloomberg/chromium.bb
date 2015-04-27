@@ -252,6 +252,7 @@ class ProcessSingletonPosixTest : public testing::Test {
     kill_callbacks_++;
   }
 
+  base::MessageLoop message_loop_;
   content::TestBrowserThread io_thread_;
   base::ScopedTempDir temp_dir_;
   base::WaitableEvent wait_event_;

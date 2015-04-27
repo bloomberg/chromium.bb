@@ -312,6 +312,7 @@ class ThreadWatcherTest : public ::testing::Test {
   }
 
  private:
+  base::MessageLoop message_loop_;
   base::Lock lock_;
   base::ConditionVariable setup_complete_;
   bool initialized_;

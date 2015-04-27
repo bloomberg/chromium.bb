@@ -11,9 +11,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/top_sites_impl.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test ThumbnailServiceTest;
+class ThumbnailServiceTest : public testing::Test {
+  content::TestBrowserThreadBundle thread_bundle_;
+};
 
 namespace {
 

@@ -18,6 +18,7 @@
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/web_resource/resource_request_allowed_notifier_test_util.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -221,6 +222,7 @@ class VariationsServiceTest : public ::testing::Test {
   VariationsServiceTest() {}
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
 #if defined(OS_CHROMEOS)
   // Not used directly. Initializes CrosSettings for testing.
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
@@ -266,9 +268,6 @@ TEST_F(VariationsServiceTest, VariationsURLHasOSNameParam) {
 }
 
 TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
-  base::MessageLoopForUI message_loop;
-  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
-                                       &message_loop);
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
@@ -288,9 +287,6 @@ TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
 }
 
 TEST_F(VariationsServiceTest, RequestsInitiallyAllowed) {
-  base::MessageLoopForUI message_loop;
-  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
-                                       &message_loop);
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
@@ -306,9 +302,6 @@ TEST_F(VariationsServiceTest, RequestsInitiallyAllowed) {
 }
 
 TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
-  base::MessageLoop message_loop;
-  content::TestBrowserThread io_thread(content::BrowserThread::IO,
-                                       &message_loop);
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
@@ -339,9 +332,6 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
     net::HTTP_SERVICE_UNAVAILABLE,
   };
 
-  base::MessageLoop message_loop;
-  content::TestBrowserThread io_thread(content::BrowserThread::IO,
-                                       &message_loop);
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
@@ -363,9 +353,6 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
 }
 
 TEST_F(VariationsServiceTest, SeedDateUpdatedOn304Status) {
-  base::MessageLoop message_loop;
-  content::TestBrowserThread io_thread(content::BrowserThread::IO,
-                                       &message_loop);
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 

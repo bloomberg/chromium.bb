@@ -75,6 +75,10 @@ class BackgroundContentsService : private content::NotificationObserver,
   static void ShowBalloonForTesting(const extensions::Extension* extension,
                                     Profile* profile);
 
+  // Disable closing the crash notification balloon for tests.
+  static void DisableCloseBalloonForTesting(
+      bool disable_close_balloon_for_testing);
+
   // Returns the BackgroundContents associated with the passed application id,
   // or NULL if none.
   BackgroundContents* GetAppBackgroundContents(const base::string16& appid);

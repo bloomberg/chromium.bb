@@ -147,6 +147,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
       data_reduction_proxy_network_delegate_;
 
  private:
+  base::MessageLoopForIO message_loop_;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
   // |test_job_interceptor_| is owned by |test_job_factory_|.

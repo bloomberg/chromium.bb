@@ -73,9 +73,9 @@ ExtensionServiceTestBase::ExtensionServiceInitParams::
 }
 
 ExtensionServiceTestBase::ExtensionServiceTestBase()
-    : service_(NULL),
+    : thread_bundle_(new content::TestBrowserThreadBundle(kThreadOptions)),
+      service_(NULL),
       testing_local_state_(TestingBrowserProcess::GetGlobal()),
-      thread_bundle_(new content::TestBrowserThreadBundle(kThreadOptions)),
       did_reset_thread_bundle_(false),
       registry_(NULL) {
   base::FilePath test_data_dir;

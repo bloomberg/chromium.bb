@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/omnibox/autocomplete_match_type.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sql/statement.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,6 +88,7 @@ class ShortcutsDatabaseTest : public testing::Test {
 
   void AddAll();
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<ShortcutsDatabase> db_;
 };

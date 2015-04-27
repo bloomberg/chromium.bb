@@ -91,6 +91,10 @@ class WebRequestActionWithThreadsTest : public testing::Test {
   // executable for http://clients1.google.com.
   void CheckActionNeedsAllUrls(const char* action, RequestStage stage);
 
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+
+ protected:
   net::TestURLRequestContext context_;
 
   // An extension with *.com host permissions and the DWR permission.
@@ -98,9 +102,6 @@ class WebRequestActionWithThreadsTest : public testing::Test {
   // An extension with host permissions for all URLs and the DWR permission.
   scoped_refptr<Extension> extension_all_urls_;
   scoped_refptr<InfoMap> extension_info_map_;
-
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 void WebRequestActionWithThreadsTest::SetUp() {

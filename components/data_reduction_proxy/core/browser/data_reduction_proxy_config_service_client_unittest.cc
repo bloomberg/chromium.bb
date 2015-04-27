@@ -146,6 +146,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO message_loop_;
   net::TestURLRequestContext context_;
   net::MockClientSocketFactory mock_socket_factory_;
 

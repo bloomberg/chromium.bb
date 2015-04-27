@@ -66,6 +66,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    profile_.reset(new TestingProfile());
     InfoBarService::CreateForWebContents(web_contents());
 
     PermissionBubbleManager::CreateForWebContents(web_contents());
@@ -80,7 +81,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
         &DownloadRequestLimiterTest::FakeCreate, base::Unretained(this));
     DownloadRequestInfoBarDelegate::SetCallbackForTesting(
         &fake_create_callback_);
-    content_settings_ = new HostContentSettingsMap(profile_.GetPrefs(), false);
+    content_settings_ = new HostContentSettingsMap(profile_->GetPrefs(), false);
     DownloadRequestLimiter::SetContentSettingsForTesting(
         content_settings_.get());
   }
@@ -198,7 +199,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 
  private:
   DownloadRequestInfoBarDelegate::FakeCreateCallback fake_create_callback_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<FakePermissionBubbleView> view_;
 };
 

@@ -179,6 +179,7 @@ class DataReductionProxyConfigTest : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO message_loop_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<TestDataReductionProxyParams> expected_params_;
 };

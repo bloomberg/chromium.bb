@@ -12,6 +12,7 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kFakeSupervisedUserId[] = "fakeID";
@@ -38,6 +39,7 @@ class SupervisedUserPrefMappingServiceTest : public ::testing::Test {
     shared_settings_service_->Shutdown();
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   SupervisedUserSharedSettingsService* shared_settings_service_;
   SupervisedUserPrefMappingService* mapping_service_;

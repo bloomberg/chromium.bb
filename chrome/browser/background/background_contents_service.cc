@@ -67,6 +67,7 @@ using extensions::UnloadedExtensionInfo;
 namespace {
 
 const char kNotificationPrefix[] = "app.background.crashed.";
+bool g_disable_close_balloon_for_testing = false;
 
 void CloseBalloon(const std::string& balloon_id, ProfileID profile_id) {
   NotificationUIManager* notification_ui_manager =
@@ -84,7 +85,7 @@ void CloseBalloon(const std::string& balloon_id, ProfileID profile_id) {
 
 // Closes the crash notification balloon for the app/extension with this id.
 void ScheduleCloseBalloon(const std::string& extension_id, Profile* profile) {
-  if (!base::MessageLoop::current())  // For unit_tests
+  if (g_disable_close_balloon_for_testing)
     return;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -291,6 +292,12 @@ void BackgroundContentsService::ShowBalloonForTesting(
     const extensions::Extension* extension,
     Profile* profile) {
   ShowBalloon(extension, profile);
+}
+
+// static
+void BackgroundContentsService::DisableCloseBalloonForTesting(
+      bool disable_close_balloon_for_testing) {
+  g_disable_close_balloon_for_testing = disable_close_balloon_for_testing;
 }
 
 std::vector<BackgroundContents*>

@@ -8,6 +8,7 @@
 #include "base/prefs/testing_pref_store.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
@@ -133,6 +134,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
 
   void TearDown() override { settings_service_.Shutdown(); }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   base::DictionaryValue split_items_;
   scoped_ptr<base::Value> atomic_setting_value_;
   SupervisedUserSettingsService settings_service_;

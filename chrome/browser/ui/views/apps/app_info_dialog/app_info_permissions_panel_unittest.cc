@@ -51,10 +51,9 @@ class AppInfoPermissionsPanelTest : public testing::Test {
         .Build();
   }
 
-  TestingProfile profile_;
-
   // We need the UI thread in order to construct UI elements in the view.
   content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
 };
 
 // Tests that an app with no permissions is treated correctly.

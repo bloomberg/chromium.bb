@@ -52,7 +52,7 @@ TEST(DriveApiUtilTest, TranslateQuery) {
   EXPECT_EQ("fullText contains 'dog'", TranslateQuery("\"\" dog \"\""));
 }
 
-TEST(FileSystemUtilTest, CanonicalizeResourceId) {
+TEST(DriveAPIUtilTest, CanonicalizeResourceId) {
   std::string resource_id("1YsCnrMxxgp7LDdtlFDt-WdtEIth89vA9inrILtvK-Ug");
 
   // New style ID is unchanged.

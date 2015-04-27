@@ -2015,13 +2015,13 @@ class DownloadTargetDeterminerTestWithPlugin
       : old_plugin_service_filter_(NULL) {}
 
   void SetUp() override {
+    DownloadTargetDeterminerTest::SetUp();
     content::PluginService* plugin_service =
         content::PluginService::GetInstance();
     plugin_service->Init();
     plugin_service->DisablePluginsDiscoveryForTesting();
     old_plugin_service_filter_ = plugin_service->GetFilter();
     plugin_service->SetFilter(&mock_plugin_filter_);
-    DownloadTargetDeterminerTest::SetUp();
   }
 
   void TearDown() override {

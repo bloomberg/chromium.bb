@@ -21,6 +21,7 @@
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_provider.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using bookmarks::BookmarkMatch;
@@ -74,6 +75,7 @@ class BookmarkProviderTest : public testing::Test {
  protected:
   void SetUp() override;
 
+  content::TestBrowserThreadBundle thread_bundle_;
   bookmarks::TestBookmarkClient client_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<BookmarkModel> model_;

@@ -136,6 +136,7 @@ class DeviceDisablingManagerOOBETest : public DeviceDisablingManagerTestBase {
 
   TestingPrefServiceSimple local_state_;
 
+  content::TestBrowserThreadBundle thread_bundle_;
   base::RunLoop run_loop_;
   bool device_disabled_;
 

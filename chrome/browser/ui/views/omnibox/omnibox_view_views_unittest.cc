@@ -8,6 +8,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -106,6 +107,7 @@ class OmniboxViewViewsTest : public testing::Test {
 #endif
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   CommandUpdater command_updater_;
   TestingOmniboxEditController omnibox_edit_controller_;

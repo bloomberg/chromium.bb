@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -55,6 +56,7 @@ class ExtensionActionManagerTest : public testing::Test {
   ExtensionActionManager* manager() { return manager_; }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   ExtensionRegistry* registry_;
   int curr_id_;
   ExtensionActionManager* manager_;

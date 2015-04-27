@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -204,6 +205,7 @@ class SuggestionsCombinerTest : public testing::Test {
   }
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
   Profile* profile_;
   SuggestionsHandler* suggestions_handler_;
   SuggestionsCombiner* combiner_;

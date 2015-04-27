@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -77,7 +76,11 @@ TEST_F(ProfileRelatedFileSystemUtilTest, ExtractProfileFromPath) {
       base::FilePath::FromUTF8Unsafe("/special/non-drive-path")));
 }
 
-TEST(FileSystemUtilTest, IsUnderDriveMountPoint) {
+class FileSystemUtilTest : public testing::Test {
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+
+TEST_F(FileSystemUtilTest, IsUnderDriveMountPoint) {
   EXPECT_FALSE(IsUnderDriveMountPoint(
       base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
   EXPECT_FALSE(IsUnderDriveMountPoint(
@@ -95,7 +98,7 @@ TEST(FileSystemUtilTest, IsUnderDriveMountPoint) {
       base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
 }
 
-TEST(FileSystemUtilTest, ExtractDrivePath) {
+TEST_F(FileSystemUtilTest, ExtractDrivePath) {
   EXPECT_EQ(base::FilePath(),
             ExtractDrivePath(
                 base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
@@ -117,14 +120,13 @@ TEST(FileSystemUtilTest, ExtractDrivePath) {
                 base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
 }
 
-TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
+TEST_F(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   TestingProfile profile;
 
   // Set up file system context for testing.
   base::ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-  base::MessageLoop message_loop;
   scoped_refptr<storage::ExternalMountPoints> mount_points =
       storage::ExternalMountPoints::CreateRefCounted();
   scoped_refptr<storage::FileSystemContext> context(
@@ -188,7 +190,7 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
           isolated_id + "/" + isolated_name))));
 }
 
-TEST(FileSystemUtilTest, EscapeUnescapeCacheFileName) {
+TEST_F(FileSystemUtilTest, EscapeUnescapeCacheFileName) {
   const std::string kUnescapedFileName(
       "tmp:`~!@#$%^&*()-_=+[{|]}\\\\;\',<.>/?");
   const std::string kEscapedFileName(
@@ -197,7 +199,7 @@ TEST(FileSystemUtilTest, EscapeUnescapeCacheFileName) {
   EXPECT_EQ(kUnescapedFileName, UnescapeCacheFileName(kEscapedFileName));
 }
 
-TEST(FileSystemUtilTest, NormalizeFileName) {
+TEST_F(FileSystemUtilTest, NormalizeFileName) {
   EXPECT_EQ("", NormalizeFileName(""));
   EXPECT_EQ("foo", NormalizeFileName("foo"));
   // Slash
@@ -213,14 +215,14 @@ TEST(FileSystemUtilTest, NormalizeFileName) {
   EXPECT_EQ("._", NormalizeFileName("./"));
 }
 
-TEST(FileSystemUtilTest, GetCacheRootPath) {
+TEST_F(FileSystemUtilTest, GetCacheRootPath) {
   TestingProfile profile;
   base::FilePath profile_path = profile.GetPath();
   EXPECT_EQ(profile_path.AppendASCII("GCache/v1"),
             util::GetCacheRootPath(&profile));
 }
 
-TEST(FileSystemUtilTest, GDocFile) {
+TEST_F(FileSystemUtilTest, GDocFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 

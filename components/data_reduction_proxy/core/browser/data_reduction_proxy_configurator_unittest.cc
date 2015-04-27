@@ -50,6 +50,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
     }
   }
 
+  base::MessageLoop message_loop_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<DataReductionProxyConfigurator> config_;
 };

@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -31,6 +32,7 @@ class TestingFontFamilyCache : public FontFamilyCache {
 
 // Tests that the cache is correctly set and cleared.
 TEST(FontFamilyCacheTest, Caching) {
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile;
   TestingFontFamilyCache cache(&profile);
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();

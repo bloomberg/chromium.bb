@@ -19,6 +19,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -108,7 +109,7 @@ class ProxyPolicyTest : public testing::Test {
     return prefs.Pass();
   }
 
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   base::CommandLine command_line_;
   MockConfigurationPolicyProvider provider_;
   scoped_ptr<PolicyServiceImpl> policy_service_;

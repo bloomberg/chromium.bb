@@ -4,7 +4,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +17,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_util.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory.h"
@@ -237,7 +237,7 @@ class TemplateURLServiceSyncTest : public testing::Test {
                                const std::string& guid);
 
  protected:
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   // We keep two TemplateURLServices to test syncing between them.
   scoped_ptr<TemplateURLServiceTestUtil> test_util_a_;
   scoped_ptr<TemplateURLServiceTestUtil> test_util_b_;

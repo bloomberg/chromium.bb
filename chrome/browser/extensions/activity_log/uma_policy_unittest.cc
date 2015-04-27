@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/uma_policy.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/dom_action_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,6 +19,7 @@ class UmaPolicyTest : public testing::Test {
   }
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
 };
 

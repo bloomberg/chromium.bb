@@ -21,6 +21,7 @@
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -44,6 +45,7 @@ class DefaultSearchPrefMigrationTest : public testing::Test {
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<DefaultSearchManager> default_search_manager_;

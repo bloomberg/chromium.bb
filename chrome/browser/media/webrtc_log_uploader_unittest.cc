@@ -13,6 +13,8 @@
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc_log_uploader.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kTestTime[] = "time";
@@ -157,6 +159,7 @@ class WebRtcLogUploaderTest : public testing::Test {
     EXPECT_EQ(dump_content, lines[i + 3]);
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   base::FilePath test_list_path_;
 };
 
@@ -247,8 +250,13 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   WebRtcLogUploadDoneData upload_done_data;
   upload_done_data.log_path = temp_dir.path().AppendASCII("log");
 
+  scoped_ptr<Profile> profile(new TestingProfile());
+  scoped_refptr<WebRtcLoggingHandlerHost> host(
+      new WebRtcLoggingHandlerHost(profile.get()));
+
   upload_done_data.incoming_rtp_dump = incoming_dump;
   upload_done_data.outgoing_rtp_dump = outgoing_dump;
+  upload_done_data.host = host.get();
 
   scoped_ptr<WebRtcLogBuffer> log(new WebRtcLogBuffer());
   log->SetComplete();

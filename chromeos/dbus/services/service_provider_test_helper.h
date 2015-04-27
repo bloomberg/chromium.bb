@@ -88,7 +88,7 @@ class ServiceProviderTestHelper {
   scoped_refptr<dbus::MockObjectProxy> mock_object_proxy_;
   dbus::ExportedObject::MethodCallCallback method_callback_;
   dbus::ObjectProxy::SignalCallback on_signal_callback_;
-  base::MessageLoop message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
   bool response_received_;
   scoped_ptr<dbus::Response> response_;
 };

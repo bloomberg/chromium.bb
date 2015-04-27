@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -60,6 +61,7 @@ class PowerPrefsTest : public testing::Test {
   bool GetExpectedAllowScreenWakeLocksForProfile(Profile* profile) const;
   bool GetCurrentAllowScreenWakeLocks() const;
 
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager profile_manager_;
   PowerPolicyController* power_policy_controller_;     // Not owned.
   scoped_ptr<FakePowerManagerClient> fake_power_manager_client_;

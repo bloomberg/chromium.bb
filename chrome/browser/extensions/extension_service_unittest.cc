@@ -84,6 +84,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -5598,7 +5599,11 @@ class ExtensionsReadyRecorder : public content::NotificationObserver {
 //
 // Also tests that we always fire EXTENSIONS_READY, no matter whether we are
 // enabled or not.
-TEST(ExtensionServiceTestSimple, Enabledness) {
+class ExtensionServiceTestSimple : public testing::Test {
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+
+TEST_F(ExtensionServiceTestSimple, Enabledness) {
   // Make sure the PluginService singleton is destroyed at the end of the test.
   base::ShadowingAtExitManager at_exit_manager;
 #if defined(ENABLE_PLUGINS)
@@ -5609,7 +5614,6 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   ExtensionErrorReporter::Init(false);  // no noisy errors
   ExtensionsReadyRecorder recorder;
   scoped_ptr<TestingProfile> profile(new TestingProfile());
-  content::TestBrowserThreadBundle thread_bundle_;
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService device_settings_service;
   chromeos::ScopedTestCrosSettings cros_settings;

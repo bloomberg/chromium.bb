@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,6 +67,7 @@ class PasswordManagerPresenterTest : public testing::Test {
   MockPasswordUIView* GetUIController() { return mock_controller_.get(); }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   scoped_ptr<MockPasswordUIView> mock_controller_;
 

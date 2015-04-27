@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static std::ostream& operator<<(std::ostream& os,
@@ -234,7 +234,7 @@ class AutocompleteProviderTest : public testing::Test,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  base::MessageLoopForUI message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   content::NotificationRegistrar registrar_;
   TestingProfile profile_;
   scoped_ptr<AutocompleteController> controller_;

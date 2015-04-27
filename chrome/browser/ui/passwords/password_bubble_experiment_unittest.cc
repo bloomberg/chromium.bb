@@ -12,6 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -51,6 +52,7 @@ class PasswordBubbleExperimentTest : public testing::Test {
   PrefService* prefs() { return profile_->GetPrefs(); }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<base::FieldTrialList> field_trial_list_;

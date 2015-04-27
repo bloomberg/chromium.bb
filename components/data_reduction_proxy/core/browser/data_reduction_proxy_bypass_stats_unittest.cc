@@ -130,6 +130,7 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO message_loop_;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
   scoped_ptr<net::URLRequest> mock_url_request_;
@@ -704,6 +705,7 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
   }
 
  private:
+  base::MessageLoopForIO message_loop_;
   net::TestDelegate delegate_;
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;

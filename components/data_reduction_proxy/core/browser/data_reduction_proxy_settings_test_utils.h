@@ -83,6 +83,7 @@ class DataReductionProxySettingsTestBase : public testing::Test {
     return true;
   }
 
+  base::MessageLoopForIO message_loop_;
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<DataReductionProxySettings> settings_;
   base::Time last_update_time_;

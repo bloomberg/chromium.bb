@@ -8,10 +8,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test TabModelTest;
+class TabModelTest : public testing::Test {
+  content::TestBrowserThreadBundle thread_bundle_;
+};
 
 namespace {
 class TabModelAndroidProfileMock : public TestingProfile {

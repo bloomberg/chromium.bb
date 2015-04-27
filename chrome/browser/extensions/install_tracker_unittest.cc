@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/active_install_data.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -64,6 +65,7 @@ class InstallTrackerTest : public testing::Test {
     EXPECT_EQ(original.percent_downloaded, retrieved.percent_downloaded);
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<InstallTracker> tracker_;
 };

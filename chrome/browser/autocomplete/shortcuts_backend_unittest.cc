@@ -54,14 +54,16 @@ class ShortcutsBackendTest : public testing::Test,
   bool DeleteShortcutsWithIDs(
       const ShortcutsDatabase::ShortcutIDs& deleted_ids);
 
+ private:
+  base::MessageLoopForUI ui_message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
+
  protected:
   TestingProfile profile_;
 
  private:
   scoped_refptr<ShortcutsBackend> backend_;
-  base::MessageLoopForUI ui_message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
 
   bool load_notified_;
   bool changed_notified_;

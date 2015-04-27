@@ -12,10 +12,15 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/os_crypt/os_crypt.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(LocalAuthTest, SetAndCheckCredentials) {
+class LocalAuthTest : public testing::Test {
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+
+TEST_F(LocalAuthTest, SetAndCheckCredentials) {
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(testing_profile_manager.SetUp());
@@ -55,8 +60,7 @@ TEST(LocalAuthTest, SetAndCheckCredentials) {
   EXPECT_NE(passhash, cache.GetLocalAuthCredentialsOfProfileAtIndex(0));
 }
 
-
-TEST(LocalAuthTest, SetUpgradeAndCheckCredentials) {
+TEST_F(LocalAuthTest, SetUpgradeAndCheckCredentials) {
   TestingProfileManager testing_profile_manager(
       TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(testing_profile_manager.SetUp());
@@ -92,7 +96,7 @@ TEST(LocalAuthTest, SetUpgradeAndCheckCredentials) {
 }
 
 // Test truncation where each byte is left whole.
-TEST(LocalAuthTest, TruncateStringEvenly) {
+TEST_F(LocalAuthTest, TruncateStringEvenly) {
   std::string two_chars = "A6";
   std::string three_chars = "A6C";
   EXPECT_EQ(two_chars, LocalAuth::TruncateStringByBits(two_chars, 16));
@@ -103,7 +107,7 @@ TEST(LocalAuthTest, TruncateStringEvenly) {
 }
 
 // Test truncation that affects the results within a byte.
-TEST(LocalAuthTest, TruncateStringUnevenly) {
+TEST_F(LocalAuthTest, TruncateStringUnevenly) {
   std::string two_chars = "Az";
   std::string three_chars = "AzC";
   // 'z' = 0x7A, ':' = 0x3A.

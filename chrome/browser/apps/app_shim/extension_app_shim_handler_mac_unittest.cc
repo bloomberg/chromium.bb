@@ -11,6 +11,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -200,6 +201,7 @@ class ExtensionAppShimHandlerTest : public testing::Test {
                            std::vector<base::FilePath>());
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   MockDelegate* delegate_;
   scoped_ptr<TestingExtensionAppShimHandler> handler_;
   base::FilePath profile_path_a_;

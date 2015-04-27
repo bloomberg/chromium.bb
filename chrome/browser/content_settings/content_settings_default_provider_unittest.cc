@@ -13,6 +13,7 @@
 #include "components/content_settings/core/browser/content_settings_default_provider.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -26,6 +27,7 @@ class DefaultProviderTest : public testing::Test {
   ~DefaultProviderTest() override { provider_.ShutdownOnUIThread(); }
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   content_settings::DefaultProvider provider_;
 };

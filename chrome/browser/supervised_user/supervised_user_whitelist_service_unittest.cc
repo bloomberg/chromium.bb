@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/sync.pb.h"
@@ -152,7 +153,7 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
       site_lists_changed_callback_.Run();
   }
 
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 
   scoped_ptr<MockSupervisedUserWhitelistInstaller> installer_;

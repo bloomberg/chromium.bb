@@ -31,6 +31,7 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -90,7 +91,11 @@ class DeadlockCheckerObserver {
   DISALLOW_COPY_AND_ASSIGN(DeadlockCheckerObserver);
 };
 
-TEST(PrefProviderTest, Observer) {
+class PrefProviderTest : public testing::Test {
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+
+TEST_F(PrefProviderTest, Observer) {
   TestingProfile profile;
   PrefProvider pref_content_settings_provider(profile.GetPrefs(), false);
 
@@ -117,7 +122,7 @@ TEST(PrefProviderTest, Observer) {
 
 // Test for regression in which the PrefProvider modified the user pref store
 // of the OTR unintentionally: http://crbug.com/74466.
-TEST(PrefProviderTest, Incognito) {
+TEST_F(PrefProviderTest, Incognito) {
   PersistentPrefStore* user_prefs = new TestingPrefStore();
   OverlayUserPrefStore* otr_user_prefs =
       new OverlayUserPrefStore(user_prefs);
@@ -184,7 +189,7 @@ TEST(PrefProviderTest, Incognito) {
   pref_content_settings_provider_incognito.ShutdownOnUIThread();
 }
 
-TEST(PrefProviderTest, GetContentSettingsValue) {
+TEST_F(PrefProviderTest, GetContentSettingsValue) {
   TestingProfile testing_profile;
   PrefProvider provider(testing_profile.GetPrefs(), false);
 
@@ -246,7 +251,7 @@ TEST(PrefProviderTest, GetContentSettingsValue) {
   provider.ShutdownOnUIThread();
 }
 
-TEST(PrefProviderTest, Patterns) {
+TEST_F(PrefProviderTest, Patterns) {
   TestingProfile testing_profile;
   PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
                                               false);
@@ -335,7 +340,7 @@ TEST(PrefProviderTest, Patterns) {
   pref_content_settings_provider.ShutdownOnUIThread();
 }
 
-TEST(PrefProviderTest, ResourceIdentifier) {
+TEST_F(PrefProviderTest, ResourceIdentifier) {
   TestingProfile testing_profile;
   PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
                                               false);
@@ -371,7 +376,7 @@ TEST(PrefProviderTest, ResourceIdentifier) {
   pref_content_settings_provider.ShutdownOnUIThread();
 }
 
-TEST(PrefProviderTest, AutoSubmitCertificateContentSetting) {
+TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   GURL primary_url("https://www.example.com");
@@ -405,7 +410,7 @@ TEST(PrefProviderTest, AutoSubmitCertificateContentSetting) {
 }
 
 // http://crosbug.com/17760
-TEST(PrefProviderTest, Deadlock) {
+TEST_F(PrefProviderTest, Deadlock) {
   TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
@@ -428,7 +433,7 @@ TEST(PrefProviderTest, Deadlock) {
   provider.ShutdownOnUIThread();
 }
 
-TEST(PrefProviderTest, LastUsage) {
+TEST_F(PrefProviderTest, LastUsage) {
   TestingProfile testing_profile;
   PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
                                               false);
@@ -468,7 +473,7 @@ TEST(PrefProviderTest, LastUsage) {
 // aggregate dictionary preferences for all content settings types and the new
 // dictionary preferences for individual types. Remove this when the migration
 // period is over.
-TEST(PrefProviderTest, SyncingOldToNew) {
+TEST_F(PrefProviderTest, SyncingOldToNew) {
   TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
   PrefProvider provider(&prefs, false);
@@ -554,7 +559,7 @@ TEST(PrefProviderTest, SyncingOldToNew) {
   provider.ShutdownOnUIThread();
 }
 
-TEST(PrefProviderTest, SyncingNewToOld) {
+TEST_F(PrefProviderTest, SyncingNewToOld) {
   TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
   PrefProvider provider(&prefs, false);
@@ -643,7 +648,7 @@ TEST(PrefProviderTest, SyncingNewToOld) {
 }
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-TEST(PrefProviderTest, PMIMigrateOnlyAllow) {
+TEST_F(PrefProviderTest, PMIMigrateOnlyAllow) {
   TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
@@ -684,7 +689,7 @@ TEST(PrefProviderTest, PMIMigrateOnlyAllow) {
 }
 #endif
 
-TEST(PrefProviderTest, PrefsMigrateVerbatim) {
+TEST_F(PrefProviderTest, PrefsMigrateVerbatim) {
   TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
@@ -735,7 +740,7 @@ TEST(PrefProviderTest, PrefsMigrateVerbatim) {
   provider.ShutdownOnUIThread();
 }
 
-TEST(PrefProviderTest, IncognitoInheritsValueMap) {
+TEST_F(PrefProviderTest, IncognitoInheritsValueMap) {
   TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 
@@ -802,7 +807,7 @@ TEST(PrefProviderTest, IncognitoInheritsValueMap) {
   normal_provider.ShutdownOnUIThread();
 }
 
-TEST(PrefProviderTest, ClearAllContentSettingsRules) {
+TEST_F(PrefProviderTest, ClearAllContentSettingsRules) {
   TestingPrefServiceSyncable prefs;
   PrefProvider::RegisterProfilePrefs(prefs.registry());
 

@@ -17,6 +17,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
@@ -67,6 +68,7 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager manager_;
 
   // Weak; releases self.

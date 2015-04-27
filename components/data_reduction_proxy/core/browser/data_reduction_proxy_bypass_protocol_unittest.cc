@@ -311,6 +311,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
   }
 
  protected:
+  base::MessageLoopForIO message_loop_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   scoped_ptr<net::URLRequestInterceptor> simple_interceptor_;

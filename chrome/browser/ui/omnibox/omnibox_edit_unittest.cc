@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_model.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -128,6 +129,7 @@ class AutocompleteEditTest : public ::testing::Test {
   TestToolbarModel* toolbar_model() { return &toolbar_model_; }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestToolbarModel toolbar_model_;
 };
 

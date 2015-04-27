@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -94,7 +95,7 @@ class StartupControllerTest : public testing::Test {
 
  private:
   bool started_;
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<StartupController> controller_;
   scoped_ptr<FakeSupervisedUserSigninManagerWrapper> signin_;
   scoped_ptr<FakeProfileOAuth2TokenService> token_service_;

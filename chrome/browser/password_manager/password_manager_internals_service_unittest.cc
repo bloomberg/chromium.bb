@@ -8,6 +8,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/core/browser/log_receiver.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,9 +47,13 @@ scoped_ptr<TestingProfile> CreateProfile(ProfileType type) {
 
 }  // namespace
 
+class PasswordManagerInternalsServiceTest : public testing::Test {
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+
 // When the profile is not incognito, it should be possible to activate the
 // service.
-TEST(PasswordManagerInternalsServiceTest, ServiceActiveNonIncognito) {
+TEST_F(PasswordManagerInternalsServiceTest, ServiceActiveNonIncognito) {
   scoped_ptr<TestingProfile> profile(CreateProfile(NORMAL_PROFILE));
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(
@@ -68,7 +73,7 @@ TEST(PasswordManagerInternalsServiceTest, ServiceActiveNonIncognito) {
 
 // When the browser profile is incognito, it should not be possible to activate
 // the service.
-TEST(PasswordManagerInternalsServiceTest, ServiceNotActiveIncognito) {
+TEST_F(PasswordManagerInternalsServiceTest, ServiceNotActiveIncognito) {
   scoped_ptr<TestingProfile> profile(CreateProfile(INCOGNITO_PROFILE));
   ASSERT_TRUE(profile);
 

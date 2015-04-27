@@ -16,6 +16,7 @@
 #include "chromeos/login/auth/online_attempt.h"
 #include "chromeos/login/auth/test_attempt_state.h"
 #include "chromeos/login/auth/user_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -84,9 +85,9 @@ class OnlineAttemptTest : public testing::Test {
                                        auth->weak_factory_.GetWeakPtr()));
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
-  base::MessageLoop loop_;
   TestAttemptState state_;
   MockAuthAttemptStateResolver resolver_;
   scoped_ptr<OnlineAttempt> attempt_;

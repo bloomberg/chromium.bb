@@ -735,7 +735,9 @@ void SimpleBackendImpl::DoomEntriesComplete(
 
 // static
 void SimpleBackendImpl::FlushWorkerPoolForTesting() {
-  g_sequenced_worker_pool.Get().FlushForTesting();
+  // We only need to do this if we there is an active task runner.
+  if (base::ThreadTaskRunnerHandle::IsSet())
+    g_sequenced_worker_pool.Get().FlushForTesting();
 }
 
 }  // namespace disk_cache

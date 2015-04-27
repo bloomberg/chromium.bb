@@ -74,10 +74,10 @@ class DnsProbeServiceTest : public testing::Test {
     callback_result_ = result;
   }
 
+  TestBrowserThreadBundle bundle_;
   DnsProbeService service_;
   bool callback_called_;
   DnsProbeStatus callback_result_;
-  TestBrowserThreadBundle bundle_;
 };
 
 TEST_F(DnsProbeServiceTest, Probe_OK_OK) {

@@ -116,6 +116,9 @@ void HandleAppExitingForPlatform();
 // last browser window is being closed.
 bool ShouldStartShutdown(Browser* browser);
 
+// Disable browser shutdown for unit tests.
+void DisableShutdownForTesting(bool disable_shutdown_for_testing);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_LIFETIME_APPLICATION_LIFETIME_H_

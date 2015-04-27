@@ -26,6 +26,7 @@ namespace data_reduction_proxy {
 
 TEST(ChromeNetworkDailyDataSavingMetricsTest,
      GetDataReductionProxyRequestType) {
+  base::MessageLoopForIO message_loop;
   scoped_ptr<DataReductionProxyTestContext> test_context =
       DataReductionProxyTestContext::Builder()
           .WithParamsFlags(DataReductionProxyParams::kAllowed)

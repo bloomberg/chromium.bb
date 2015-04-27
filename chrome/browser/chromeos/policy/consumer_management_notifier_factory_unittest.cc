@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/policy/fake_consumer_management_service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -52,6 +53,7 @@ class ConsumerManagementNotifierFactoryTest : public testing::Test {
     ASSERT_TRUE(testing_profile_manager_->SetUp());
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   FakeConsumerManagementService* fake_service_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler scoped_user_manager_enabler_;

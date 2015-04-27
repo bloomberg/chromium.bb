@@ -328,7 +328,6 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   ProfileSyncServiceBookmarkTest()
       : model_(NULL),
-        thread_bundle_(content::TestBrowserThreadBundle::DEFAULT),
         local_merge_result_(syncer::BOOKMARKS),
         syncer_merge_result_(syncer::BOOKMARKS) {}
 
@@ -753,6 +752,9 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         model_->bookmark_bar_node()->id());
   }
 
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+
  protected:
   TestingProfile profile_;
   BookmarkModel* model_;
@@ -762,7 +764,6 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   scoped_ptr<BookmarkModelAssociator> model_associator_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   syncer::SyncMergeResult local_merge_result_;
   syncer::SyncMergeResult syncer_merge_result_;
 };

@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -106,6 +107,7 @@ class ProfileListChromeOSTest : public testing::Test {
   int change_count() const { return mock_observer_->change_count(); }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager manager_;
   scoped_ptr<MockObserver> mock_observer_;
   scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;

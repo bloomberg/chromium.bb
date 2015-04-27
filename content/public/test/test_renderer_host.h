@@ -231,6 +231,9 @@ class RenderViewHostTestHarness : public testing::Test {
   void SetRenderProcessHostFactory(RenderProcessHostFactory* factory);
 
  private:
+  int thread_bundle_options_;
+  scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
+
   scoped_ptr<ContentBrowserSanityChecker> sanity_checker_;
 
   scoped_ptr<BrowserContext> browser_context_;
@@ -243,9 +246,6 @@ class RenderViewHostTestHarness : public testing::Test {
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
   RenderViewHostTestEnabler rvh_test_enabler_;
-
-  int thread_bundle_options_;
-  scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
 };

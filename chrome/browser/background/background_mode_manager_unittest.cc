@@ -7,6 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -43,6 +45,13 @@ using testing::Mock;
 using testing::StrictMock;
 
 namespace {
+
+scoped_ptr<TestingProfileManager> CreateTestingProfileManager() {
+  scoped_ptr<TestingProfileManager> profile_manager(
+      new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+  EXPECT_TRUE(profile_manager->SetUp());
+  return profile_manager.Pass();
+}
 
 // Helper class that tracks state transitions in BackgroundModeManager and
 // exposes them via getters (or gmock for EnableLaunchOnStartup).
@@ -153,28 +162,19 @@ class BackgroundModeManagerTest : public testing::Test {
     command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
     profile_manager_ = CreateTestingProfileManager();
     profile_ = profile_manager_->CreateTestingProfile("p1");
+    chrome::DisableShutdownForTesting(true);
+  }
+
+  void TearDown() override {
+    // Don't allow the browser to be closed because the shutdown procedure will
+    // attempt to access objects that we haven't created (e.g., MessageCenter).
+    browser_shutdown::SetTryingToQuit(true);
+    chrome::DisableShutdownForTesting(false);
+    browser_shutdown::SetTryingToQuit(false);
   }
 
  protected:
-  scoped_refptr<extensions::Extension> CreateExtension(
-      extensions::Manifest::Location location,
-      const std::string& data,
-      const std::string& id) {
-    scoped_ptr<base::DictionaryValue> parsed_manifest(
-        extensions::api_test_utils::ParseDictionary(data));
-    return extensions::api_test_utils::CreateExtension(
-        location, parsed_manifest.get(), id);
-  }
-
-  // From views::MenuModelAdapter::IsCommandEnabled with modification.
-  bool IsCommandEnabled(ui::MenuModel* model, int id) const {
-    int index = 0;
-    if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index))
-      return model->IsEnabledAt(index);
-
-    return false;
-  }
-
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<base::CommandLine> command_line_;
 
   scoped_ptr<TestingProfileManager> profile_manager_;
@@ -182,24 +182,18 @@ class BackgroundModeManagerTest : public testing::Test {
   TestingProfile* profile_;
 
  private:
-  scoped_ptr<TestingProfileManager> CreateTestingProfileManager() {
-    scoped_ptr<TestingProfileManager> profile_manager
-        (new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-    EXPECT_TRUE(profile_manager->SetUp());
-    return profile_manager.Pass();
-  }
-
   DISALLOW_COPY_AND_ASSIGN(BackgroundModeManagerTest);
 };
 
-class BackgroundModeManagerWithExtensionsTest
-    : public BackgroundModeManagerTest {
+class BackgroundModeManagerWithExtensionsTest : public testing::Test {
  public:
   BackgroundModeManagerWithExtensionsTest() {}
   ~BackgroundModeManagerWithExtensionsTest() override {}
 
   void SetUp() override {
-    BackgroundModeManagerTest::SetUp();
+    command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
+    profile_manager_ = CreateTestingProfileManager();
+    profile_ = profile_manager_->CreateTestingProfile("p1");
 
     // Aura clears notifications from the message center at shutdown.
     message_center::MessageCenter::Initialize();
@@ -266,6 +260,25 @@ class BackgroundModeManagerWithExtensionsTest
   }
 
  protected:
+  scoped_refptr<extensions::Extension> CreateExtension(
+      extensions::Manifest::Location location,
+      const std::string& data,
+      const std::string& id) {
+    scoped_ptr<base::DictionaryValue> parsed_manifest(
+        extensions::api_test_utils::ParseDictionary(data));
+    return extensions::api_test_utils::CreateExtension(
+        location, parsed_manifest.get(), id);
+  }
+
+  // From views::MenuModelAdapter::IsCommandEnabled with modification.
+  bool IsCommandEnabled(ui::MenuModel* model, int id) const {
+    int index = 0;
+    if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index))
+      return model->IsEnabledAt(index);
+
+    return false;
+  }
+
   void AddEphemeralApp(const extensions::Extension* extension,
                        ExtensionService* service) {
     extensions::ExtensionPrefs* prefs =
@@ -281,6 +294,12 @@ class BackgroundModeManagerWithExtensionsTest
   }
 
   scoped_ptr<TestBackgroundModeManager> manager_;
+
+  scoped_ptr<base::CommandLine> command_line_;
+
+  scoped_ptr<TestingProfileManager> profile_manager_;
+  // Test profile used by all tests - this is owned by profile_manager_.
+  TestingProfile* profile_;
 
  private:
   // Required for extension service.
