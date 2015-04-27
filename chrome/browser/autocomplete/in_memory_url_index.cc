@@ -16,7 +16,7 @@
 using in_memory_url_index::InMemoryURLIndexCacheItem;
 
 // Called by DoSaveToCacheFile to delete any old cache file at |path| when
-// there is no private data to save. Runs on the FILE thread.
+// there is no private data to save. Runs on the blocking pool.
 void DeleteCacheFile(const base::FilePath& path) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::DeleteFile(path, false);
@@ -90,6 +90,9 @@ InMemoryURLIndex::InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
       private_data_(new URLIndexPrivateData),
       restore_cache_observer_(NULL),
       save_cache_observer_(NULL),
+      task_runner_(
+          content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+              content::BrowserThread::GetBlockingPool()->GetSequenceToken())),
       shutdown_(false),
       restored_(false),
       needs_to_be_cached_(false),
@@ -191,10 +194,8 @@ void InMemoryURLIndex::OnURLsDeleted(history::HistoryService* history_service,
   // in it (URLs visited after user deleted some URLs from history), which
   // would be odd and confusing.  It's better to force a rebuild.
   base::FilePath path;
-  if (needs_to_be_cached_ && GetCacheFilePath(&path)) {
-    content::BrowserThread::PostBlockingPoolTask(
-        FROM_HERE, base::Bind(DeleteCacheFile, path));
-  }
+  if (needs_to_be_cached_ && GetCacheFilePath(&path))
+    task_runner_->PostTask(FROM_HERE, base::Bind(DeleteCacheFile, path));
 }
 
 void InMemoryURLIndex::OnHistoryServiceLoaded(
@@ -218,9 +219,9 @@ void InMemoryURLIndex::PostRestoreFromCacheFileTask() {
     return;
   }
 
-  content::BrowserThread::PostTaskAndReplyWithResult
-      <scoped_refptr<URLIndexPrivateData> >(
-      content::BrowserThread::FILE, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(),
+      FROM_HERE,
       base::Bind(&URLIndexPrivateData::RestoreFromFile, path, languages_),
       base::Bind(&InMemoryURLIndex::OnCacheLoadDone, AsWeakPtr()));
 }
@@ -240,8 +241,7 @@ void InMemoryURLIndex::OnCacheLoadDone(
     base::FilePath path;
     if (!GetCacheFilePath(&path) || shutdown_)
       return;
-    content::BrowserThread::PostBlockingPoolTask(
-        FROM_HERE, base::Bind(DeleteCacheFile, path));
+    task_runner_->PostTask(FROM_HERE, base::Bind(DeleteCacheFile, path));
     if (history_service_->backend_loaded()) {
       ScheduleRebuildFromHistory();
     } else {
@@ -263,7 +263,12 @@ void InMemoryURLIndex::Shutdown() {
   if (!GetCacheFilePath(&path))
     return;
   private_data_tracker_.TryCancelAll();
-  URLIndexPrivateData::WritePrivateDataToCacheFileTask(private_data_, path);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(
+              &URLIndexPrivateData::WritePrivateDataToCacheFileTask),
+          private_data_, path));
   needs_to_be_cached_ = false;
 }
 
@@ -317,16 +322,15 @@ void InMemoryURLIndex::PostSaveToCacheFileTask() {
     // completion closure below.
     scoped_refptr<URLIndexPrivateData> private_data_copy =
         private_data_->Duplicate();
-    content::BrowserThread::PostTaskAndReplyWithResult<bool>(
-        content::BrowserThread::FILE, FROM_HERE,
+    base::PostTaskAndReplyWithResult(
+        task_runner_.get(),
+        FROM_HERE,
         base::Bind(&URLIndexPrivateData::WritePrivateDataToCacheFileTask,
                    private_data_copy, path),
         base::Bind(&InMemoryURLIndex::OnCacheSaveDone, AsWeakPtr()));
   } else {
     // If there is no data in our index then delete any existing cache file.
-    content::BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
-        base::Bind(DeleteCacheFile, path));
+    task_runner_->PostTask(FROM_HERE, base::Bind(DeleteCacheFile, path));
   }
 }
 
