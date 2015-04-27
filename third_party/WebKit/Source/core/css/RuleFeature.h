@@ -176,7 +176,8 @@ private:
     StyleInvalidator m_styleInvalidator;
 };
 
-
 } // namespace blink
+
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleFeature);
 
 #endif // RuleFeature_h

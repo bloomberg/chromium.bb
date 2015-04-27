@@ -90,8 +90,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     struct VectorUnusedSlotClearer<true, T> {
         static void clear(T* begin, T* end)
         {
-            // We clear out unused slots so that the visitor and the finalizer
-            // do not visit them (or at least it does not matter if they do).
             memset(begin, 0, sizeof(T) * (end - begin));
         }
 
@@ -344,6 +342,10 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void clearUnusedSlots(T* from, T* to)
         {
+            // If the vector backing is garbage-collected and needs tracing
+            // or finalizing, we clear out the unused slots so that the visitor
+            // or the finalizer does not cause a problem when visiting the
+            // unused slots.
             VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || ShouldBeTraced<VectorTraits<T>>::value), T>::clear(from, to);
         }
 
@@ -635,12 +637,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         Vector()
         {
-            // Unused slots are initialized to zero so that the visitor and the
-            // finalizer can visit them safely. canInitializeWithMemset tells us
-            // that the class does not expect matching constructor and
-            // destructor calls as long as the memory is zeroed.
-            static_assert(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, "class has problems with finalizers called on cleared memory");
-            static_assert(!WTF::IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "cannot initialize with memset if there is a vtable");
+            static_assert(!WTF::IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "Cannot initialize with memset if there is a vtable");
             ANNOTATE_NEW_BUFFER(begin(), capacity(), 0);
             m_size = 0;
         }
@@ -648,11 +645,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         explicit Vector(size_t size)
             : Base(size)
         {
-            // Unused slots are initialized to zero so that the visitor and the
-            // finalizer can visit them safely. canInitializeWithMemset tells us
-            // that the class does not expect matching constructor and
-            // destructor calls as long as the memory is zeroed.
-            static_assert(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, "class has problems with finalizers called on cleared memory");
+            static_assert(!WTF::IsPolymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "Cannot initialize with memset if there is a vtable");
             ANNOTATE_NEW_BUFFER(begin(), capacity(), size);
             m_size = size;
             TypeOperations::initialize(begin(), end());

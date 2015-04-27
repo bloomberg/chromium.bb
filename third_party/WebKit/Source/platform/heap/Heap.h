@@ -1893,22 +1893,22 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
     template<typename VisitorDispatcher>
     static bool trace(VisitorDispatcher visitor, void* self)
     {
-        // The allocator can oversize the allocation a little, according to
-        // the allocation granularity.  The extra size is included in the
-        // payloadSize call below, since there is nowhere to store the
-        // originally allocated memory.  This assert ensures that visiting the
-        // last bit of memory can't cause trouble.
-        static_assert(!ShouldBeTraced<Traits>::value || sizeof(T) > blink::allocationGranularity || Traits::canInitializeWithMemset, "heap overallocation can cause spurious visits");
+        // HeapVectorBacking does not know the exact size of the vector
+        // and thus cannot avoid tracing all slots in the backing.
+        // This works correctly as long as unused slots are cleared out
+        // (this is done by VectorUnusedSlotClearer) and T can be initialized
+        // with memset (if T can be initialized with memset, it is safe to
+        // treat a zeroed object as a valid object).
+        static_assert(!ShouldBeTraced<Traits>::value || Traits::canInitializeWithMemset, "HeapVectorBacking doesn't support objects that cannot be initialized with memset.");
 
         T* array = reinterpret_cast<T*>(self);
         blink::HeapObjectHeader* header = blink::HeapObjectHeader::fromPayload(self);
         // Use the payload size as recorded by the heap to determine how many
-        // elements to mark.
+        // elements to trace.
         size_t length = header->payloadSize() / sizeof(T);
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-        // Have no option but to mark the whole container as accessible, but
-        // this trace() is only used for backing stores that are identified
-        // as roots independent from a vector.
+        // As commented above, HeapVectorBacking can trace unused slots
+        // (which are already zeroed out).
         ANNOTATE_CHANGE_SIZE(array, length, 0, length);
 #endif
         for (size_t i = 0; i < length; ++i)
@@ -2189,6 +2189,15 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
 template<typename T, typename Traits>
 void HeapVectorBacking<T, Traits>::finalize(void* pointer)
 {
+    static_assert(Traits::needsDestruction, "Only vector buffers with items requiring destruction should be finalized");
+    // HeapVectorBacking does not know the exact size of the vector
+    // and thus cannot avoid calling finalizers for all slots in the backing.
+    // This works correctly as long as unused slots are cleared out
+    // (this is done by VectorUnusedSlotClearer) and T can be initialized
+    // with memset (if T can be initialized with memset, it is safe to
+    // treat a zeroed object as a valid object).
+    static_assert(Traits::canInitializeWithMemset, "HeapVectorBacking doesn't support objects that cannot be initialized with memset.");
+
     ASSERT(!WTF::IsTriviallyDestructible<T>::value);
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(pointer);
     // Use the payload size as recorded by the heap to determine how many
@@ -2196,8 +2205,8 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer)
     size_t length = header->payloadSize() / sizeof(T);
     T* buffer = reinterpret_cast<T*>(pointer);
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-    // Like for trace(), have no option but to mark the whole container
-    // as accessible.
+    // As commented above, HeapVectorBacking calls finalizers for unused slots
+    // (which are already zeroed out).
     ANNOTATE_CHANGE_SIZE(buffer, length, 0, length);
 #endif
     for (unsigned i = 0; i < length; ++i)
