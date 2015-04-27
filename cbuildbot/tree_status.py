@@ -16,7 +16,6 @@ import urllib2
 
 from chromite.cbuildbot import constants
 from chromite.lib import alerts
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import timeout_util
@@ -378,14 +377,10 @@ def SendHealthAlert(builder_run, subject, body, extra_fields=None):
                   to be added to the message. Custom field names should begin
                   with the prefix 'X-'.
   """
-  in_golo = cros_build_lib.HostIsCIBuilder(golo_only=True)
   if builder_run.InProduction():
-    if in_golo:
-      # TODO(fdeng): Once google api is installed on golo bots,
-      # change it to use gmail.
-      server = alerts.SmtpServer(constants.GOLO_SMTP_SERVER)
-    else:
-      server = alerts.GmailServer()
+    server = alerts.GmailServer(
+        token_cache_file=constants.GMAIL_TOKEN_CACHE_FILE,
+        token_json_file=constants.GMAIL_TOKEN_JSON_FILE)
     alerts.SendEmail(subject,
                      GetHealthAlertRecipients(builder_run),
                      server=server,

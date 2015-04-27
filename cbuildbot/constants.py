@@ -859,3 +859,7 @@ STATSD_DEBUG_PREFIX = 'chromite_debug'
 BRILLO_RELEASE_MANIFESTS_URL = 'gs://brillo-releases/sdk-releases'
 BRILLO_LATEST_RELEASE_URL = os.path.join(BRILLO_RELEASE_MANIFESTS_URL,
                                          'LATEST')
+
+# Gmail Credentials.
+GMAIL_TOKEN_CACHE_FILE = os.path.expanduser('~/.gmail_credentials')
+GMAIL_TOKEN_JSON_FILE = '/creds/refresh_tokens/chromeos_gmail_alerts'

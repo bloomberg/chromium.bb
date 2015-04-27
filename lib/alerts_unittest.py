@@ -6,13 +6,14 @@
 
 from __future__ import print_function
 
-import mock
+import json
 import os
 import smtplib
 import socket
 
 from chromite.lib import alerts
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 
 
 class SmtpServerTest(cros_test_lib.MockTestCase):
@@ -41,43 +42,94 @@ class SmtpServerTest(cros_test_lib.MockTestCase):
     self.assertEqual(self.smtp_mock.call_count, 4)
 
 
-class GmailServerTest(cros_test_lib.MockTestCase):
+class GmailServerTest(cros_test_lib.MockTempDirTestCase):
   """Tests for Gmail server."""
 
-  def testBasic(self):
-    """Test send email normally."""
-    self.PatchObject(os.path, 'isfile', return_value=True)
+  FAKE_TOKEN_JSON = {
+      'client_id': 'fake_client_id',
+      'client_secret': 'fake_client_secret',
+      'email': 'fake_email@fake.com',
+      'refresh_token': 'fake_token',
+      'scope': 'https://fake_scope/auth/fake.modify'
+  }
+  FAKE_CACHE = {
+      '_module': 'oauth2client.client',
+      'token_expiry': '2014-04-28T19:30:42Z',
+      'access_token': 'fake_access_token',
+      'token_uri': 'https://accounts.google.com/o/oauth2/token',
+      'invalid': False,
+      'token_response': {
+          'access_token': 'fake_access_token_2',
+          'token_type': 'Bearer',
+          'expires_in': 3600
+      },
+      'client_id': 'fake_client_id',
+      'id_token': None,
+      'client_secret': 'fake_client_secret',
+      'revoke_uri': None,
+      '_class': 'OAuth2Credentials',
+      'refresh_token': 'fake_refresh_token',
+      'user_agent': None,
+  }
+
+  def setUp(self):
     self.PatchObject(alerts, 'apiclient_build')
-    fake_creds = mock.MagicMock()
-    fake_creds.invalid = False
-    fake_storage = mock.MagicMock()
-    fake_storage.get = mock.MagicMock(return_value=fake_creds)
-    self.PatchObject(alerts, 'oauth_client_fileio')
-    self.PatchObject(alerts.oauth_client_fileio, 'Storage',
-                     return_value=fake_storage)
+    self.token_cache_file = os.path.join(self.tempdir, 'fake_cache')
+    self.token_json_file = os.path.join(self.tempdir, 'fake_json')
+
+  def testValidCache(self):
+    """Test valid cache."""
+    osutils.WriteFile(self.token_cache_file, json.dumps(self.FAKE_CACHE))
     msg = alerts.CreateEmail('fake subject', 'fake@localhost', 'fake msg')
-    server = alerts.GmailServer()
+    server = alerts.GmailServer(token_cache_file=self.token_cache_file)
     ret = server.Send(msg)
     self.assertTrue(ret)
 
-  def testCredsFileNotExist(self):
-    """Test credentials do not exists."""
-    self.PatchObject(os.path, 'isfile', return_value=False)
+  def testCacheNotExistsTokenExists(self):
+    """Test cache not exists, token exists"""
+    osutils.WriteFile(self.token_json_file, json.dumps(self.FAKE_TOKEN_JSON))
     msg = alerts.CreateEmail('fake subject', 'fake@localhost', 'fake msg')
-    server = alerts.GmailServer()
+    server = alerts.GmailServer(token_cache_file=self.token_cache_file,
+                                token_json_file=self.token_json_file)
+    ret = server.Send(msg)
+    self.assertTrue(ret)
+    # Cache file should be auto-generated.
+    self.assertExists(self.token_cache_file)
+
+  def testCacheNotExistsTokenNotExists(self):
+    """Test cache not exists, token not exists."""
+    msg = alerts.CreateEmail('fake subject', 'fake@localhost', 'fake msg')
+    server = alerts.GmailServer(token_cache_file=self.token_cache_file,
+                                token_json_file=self.token_json_file)
     ret = server.Send(msg)
     self.assertFalse(ret)
 
-  def testCredsInvalid(self):
-    """Test invalid credentials."""
-    self.PatchObject(os.path, 'isfile', return_value=True)
-    self.PatchObject(alerts, 'apiclient_build')
-    self.PatchObject(alerts, 'oauth_client_fileio')
-    self.PatchObject(alerts.oauth_client_fileio, 'Storage')
+  def testCacheInvalidTokenExists(self):
+    """Test cache exists but invalid, token exists."""
+    invalid_cache = self.FAKE_CACHE.copy()
+    invalid_cache['invalid'] = True
+    osutils.WriteFile(self.token_cache_file, json.dumps(invalid_cache))
+    osutils.WriteFile(self.token_json_file, json.dumps(self.FAKE_TOKEN_JSON))
     msg = alerts.CreateEmail('fake subject', 'fake@localhost', 'fake msg')
-    server = alerts.GmailServer()
+    server = alerts.GmailServer(token_cache_file=self.token_cache_file,
+                                token_json_file=self.token_json_file)
+    ret = server.Send(msg)
+    self.assertTrue(ret)
+    valid_cache = json.loads(osutils.ReadFile(self.token_cache_file))
+    self.assertFalse(valid_cache['invalid'])
+
+  def testCacheInvalidTokenNotExists(self):
+    """Test cache exists but invalid, token not exists."""
+    invalid_cache = self.FAKE_CACHE.copy()
+    invalid_cache['invalid'] = True
+    osutils.WriteFile(self.token_cache_file, json.dumps(invalid_cache))
+    msg = alerts.CreateEmail('fake subject', 'fake@localhost', 'fake msg')
+    server = alerts.GmailServer(token_cache_file=self.token_cache_file,
+                                token_json_file=self.token_json_file)
     ret = server.Send(msg)
     self.assertFalse(ret)
+    invalid_cache = json.loads(osutils.ReadFile(self.token_cache_file))
+    self.assertTrue(invalid_cache['invalid'])
 
 
 class SendEmailTest(cros_test_lib.MockTestCase):
@@ -92,7 +144,8 @@ class SendEmailTest(cros_test_lib.MockTestCase):
   def testGmail(self):
     """Gmail sanity check."""
     send_mock = self.PatchObject(alerts.GmailServer, 'Send')
-    alerts.SendEmail('mail', 'root@localhost', server=alerts.GmailServer())
+    alerts.SendEmail('mail', 'root@localhost',
+                     server=alerts.GmailServer(token_cache_file='fakefile'))
     self.assertEqual(send_mock.call_count, 1)
 
 
@@ -108,7 +161,8 @@ class SendEmailLogTest(cros_test_lib.MockTestCase):
   def testGmail(self):
     """Gmail sanity check."""
     send_mock = self.PatchObject(alerts.GmailServer, 'Send')
-    alerts.SendEmailLog('mail', 'root@localhost', server=alerts.GmailServer())
+    alerts.SendEmailLog('mail', 'root@localhost',
+                        server=alerts.GmailServer(token_cache_file='fakefile'))
     self.assertEqual(send_mock.call_count, 1)
 
 

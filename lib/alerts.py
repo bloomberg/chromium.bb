@@ -7,8 +7,10 @@
 from __future__ import print_function
 
 import base64
+import collections
 import cStringIO
 import gzip
+import json
 import os
 import smtplib
 import socket
@@ -22,11 +24,13 @@ from email.mime.text import MIMEText
 from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
 
+# TODO(fdeng): Cleanup the try-catch once crbug.com/482063 is fixed.
 try:
   import httplib2
   from apiclient.discovery import build as apiclient_build
   from apiclient import errors as apiclient_errors
   from oauth2client import file as oauth_client_fileio
+  from oauth2client import client
 except ImportError as e:
   apiclient_build = None
   oauth_client_fileio = None
@@ -49,18 +53,100 @@ class MailServer(object):
     raise NotImplementedError('Should be implemented by sub-classes.')
 
 
+class AuthenticationError(Exception):
+  """Error raised when authenticating via oauth2."""
+
+
+# Represent token in oauth2 token file.
+RefreshToken = collections.namedtuple('RefreshToken', (
+    'client_id',
+    'client_secret',
+    'refresh_token',
+))
+
+
+def ReadRefreshTokenJson(path):
+  """Returns RefreshToken by reading it from the JSON file.
+
+  Args:
+    path: Path to the json file that contains the credential tokens.
+
+  Returns:
+    A RefreshToken object.
+
+  Raises:
+    AuthenticationError if failed to read from json file.
+  """
+  try:
+    with open(path, 'r') as f:
+      data = json.load(f)
+      return RefreshToken(
+          client_id=str(data['client_id']),
+          client_secret=str(data['client_secret']),
+          refresh_token=str(data['refresh_token']))
+  except (IOError, ValueError) as e:
+    raise AuthenticationError(
+        'Failed to read refresh token from %s: %s' % (path, e))
+  except KeyError as e:
+    raise AuthenticationError(
+        'Failed to read refresh token from %s: missing key %s' % (path, e))
+
+
 class GmailServer(MailServer):
   """Gmail server."""
 
-  DEFAULT_CREDENTIALS = os.path.expanduser('~/.gmail_credentials')
+  TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
 
-  def __init__(self, credentials=None):
+
+  def __init__(self, token_cache_file, token_json_file=None):
     """Initialize GmailServer.
 
+    If token_cache_file contains valid credentials, it will be used.
+    If not or the file doesn't exist, will try to load tokens
+    from token_json_file. The loaded credentials will be stored to the
+    cache file.
+
     Args:
-      credentials: Absolute path to gmail credential file.
+      token_cache_file: Absolute path to gmail credentials cache file.
+      token_json_file: Absolute path to a json file that contains
+                       refresh token for gmail.
     """
-    self._creds_file = credentials or self.DEFAULT_CREDENTIALS
+    self._token_cache_file = token_cache_file
+    self._token_json_file = token_json_file
+
+  def _GetCachedCredentials(self):
+    """Get credentials from cached file or json file.
+
+    Returns:
+      OAuth2Credentials object.
+
+    Raises:
+      AuthenticationError on failure to read json file.
+    """
+    storage = oauth_client_fileio.Storage(self._token_cache_file)
+    # Try loading credentials from existing token cache file.
+    if os.path.isfile(self._token_cache_file):
+      credentials = storage.get()
+      if credentials and not credentials.invalid:
+        return credentials
+
+    if self._token_json_file is None:
+      raise AuthenticationError('Gmail token file path is not provided.')
+
+    # Create new credentials if cache file doesn't exist or not valid.
+    refresh_token_json = ReadRefreshTokenJson(self._token_json_file)
+    credentials = client.OAuth2Credentials(
+        access_token=None,
+        client_id=refresh_token_json.client_id,
+        client_secret=refresh_token_json.client_secret,
+        refresh_token=refresh_token_json.refresh_token,
+        token_expiry=None,
+        token_uri=self.TOKEN_URI,
+        user_agent=None,
+        revoke_uri=None)
+    credentials.set_store(storage)
+    storage.put(credentials)
+    return credentials
 
   def Send(self, message):
     """Send an e-mail via Gmail API.
@@ -75,14 +161,10 @@ class GmailServer(MailServer):
       logging.warning('Could not send email: Google API client not installed.')
       return False
 
-    if not os.path.isfile(self._creds_file):
-      logging.warning('Could not send email: %s not exist.', self._creds_file)
-      return False
-
-    storage = oauth_client_fileio.Storage(self._creds_file)
-    credentials = storage.get()
-    if not credentials or credentials.invalid:
-      logging.warning('Could not send email: Invalid credentials.')
+    try:
+      credentials = self._GetCachedCredentials()
+    except AuthenticationError as e:
+      logging.warning('Could not get gmail credentials: %s', e)
       return False
 
     http = credentials.authorize(httplib2.Http())
