@@ -103,9 +103,9 @@ function subscribePush() {
   }).catch(sendErrorToTest);
 }
 
-function hasPermission() {
+function permissionState() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    return swRegistration.pushManager.hasPermission()
+    return swRegistration.pushManager.permissionState()
         .then(function(permission) {
           sendResultToTest('permission status - ' + permission);
         });
