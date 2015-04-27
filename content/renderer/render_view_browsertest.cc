@@ -716,7 +716,6 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   request_params_A.current_history_list_offset = 1;
   request_params_A.pending_history_list_offset = 0;
   request_params_A.page_id = 1;
-  request_params_A.nav_entry_id = 1;
   request_params_A.page_state = state_A;
   NavigateMainFrame(common_params_A, StartNavigationParams(), request_params_A);
   EXPECT_EQ(1, view()->historyBackListCount());
@@ -746,7 +745,6 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   request_params.current_history_list_offset = 0;
   request_params.pending_history_list_offset = 0;
   request_params.page_id = 1;
-  request_params.nav_entry_id = 1;
   request_params.page_state = state_A;
   NavigateMainFrame(common_params, StartNavigationParams(), request_params);
   ProcessPendingMessages();
@@ -917,12 +915,12 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
 // ignored.  See http://crbug.com/86758.
 TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   // Load page A.
-  LoadHTML("<div id=pagename>Page A</div>");
+  LoadHTML("<div>Page A</div>");
   EXPECT_EQ(1, view()->history_list_length_);
   EXPECT_EQ(0, view()->history_list_offset_);
 
   // Load page B, which will trigger an UpdateState message for page A.
-  LoadHTML("<div id=pagename>Page B</div>");
+  LoadHTML("<div>Page B</div>");
   EXPECT_EQ(2, view()->history_list_length_);
   EXPECT_EQ(1, view()->history_list_offset_);
 
@@ -938,7 +936,7 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
 
-  // Back to page A (nav_entry_id 1) and commit.
+  // Back to page A (page_id 1) and commit.
   CommonNavigationParams common_params_A;
   RequestNavigationParams request_params_A;
   common_params_A.navigation_type = FrameMsg_Navigate_Type::NORMAL;
@@ -947,21 +945,15 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   request_params_A.current_history_list_offset = 1;
   request_params_A.pending_history_list_offset = 0;
   request_params_A.page_id = 1;
-  request_params_A.nav_entry_id = 1;
   request_params_A.page_state = state_A;
   NavigateMainFrame(common_params_A, StartNavigationParams(), request_params_A);
   ProcessPendingMessages();
 
   // A new navigation commits, clearing the forward history.
-  LoadHTML("<div id=pagename>Page C</div>");
+  LoadHTML("<div>Page C</div>");
   EXPECT_EQ(2, view()->history_list_length_);
   EXPECT_EQ(1, view()->history_list_offset_);
   EXPECT_EQ(3, view()->page_id_); // page C is now page id 3
-  int was_page_c = -1;
-  base::string16 check_page_c = base::ASCIIToUTF16(
-      "Number(document.getElementById('pagename').innerHTML == 'Page C')");
-  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
-  EXPECT_EQ(1, was_page_c);
 
   // The browser then sends a stale navigation to B, which should be ignored.
   CommonNavigationParams common_params_B;
@@ -972,7 +964,6 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   request_params_B.current_history_list_offset = 0;
   request_params_B.pending_history_list_offset = 1;
   request_params_B.page_id = 2;
-  request_params_B.nav_entry_id = 2;
   request_params_B.page_state =
       state_A;  // Doesn't matter, just has to be present.
   NavigateMainFrame(common_params_B, StartNavigationParams(), request_params_B);
@@ -981,9 +972,6 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   EXPECT_EQ(2, view()->history_list_length_);
   EXPECT_EQ(1, view()->history_list_offset_);
   EXPECT_EQ(3, view()->page_id_); // page C, not page B
-  was_page_c = -1;
-  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
-  EXPECT_EQ(1, was_page_c);
 
   // Check for a valid DidDropNavigation message.
   ProcessPendingMessages();
