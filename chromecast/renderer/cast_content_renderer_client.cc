@@ -147,6 +147,13 @@ void CastContentRendererClient::RenderViewCreated(
     webview->settings()->setShrinksViewportContentToFit(false);
     webview->settings()->setMediaControlsOverlayPlayButtonEnabled(false);
 
+    // Scale 1 ensures window.innerHeight/Width match application resolution.
+    // PageScaleOverride is the 'user agent' value which overrides page
+    // settings (from meta viewport tag) - thus preventing inconsistency
+    // between Android and non-Android cast_shell.
+    webview->setDefaultPageScaleLimits(1.f, 1.f);
+    webview->setInitialPageScaleOverride(1.f);
+
     // Disable application cache as Chromecast doesn't support off-line
     // application running.
     webview->settings()->setOfflineWebApplicationCacheEnabled(false);
