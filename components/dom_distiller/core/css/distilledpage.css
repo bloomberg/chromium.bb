@@ -167,7 +167,7 @@ h6 {
 
 body {
   max-width: 800px;
-  margin: 0px;
+  margin: 0px auto 0px auto;
 }
 
 #mainContent {
