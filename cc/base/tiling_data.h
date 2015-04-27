@@ -132,7 +132,6 @@ class CC_EXPORT TilingData {
   // with |consider| but which also do not intersect with |ignore|.
   class CC_EXPORT DifferenceIterator : public BaseDifferenceIterator {
    public:
-    DifferenceIterator();
     DifferenceIterator(const TilingData* tiling_data,
                        const gfx::Rect& consider_rect,
                        const gfx::Rect& ignore_rect);

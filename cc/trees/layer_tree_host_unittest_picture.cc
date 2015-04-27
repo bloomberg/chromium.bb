@@ -242,8 +242,8 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
         EXPECT_TRUE(tiling->TileAt(0, 0));
         EXPECT_FALSE(tiling->TileAt(0, num_tiles_y));
 
-        // The recycled tiling has no tiles.
-        EXPECT_FALSE(recycled_tiling->TileAt(0, 0));
+        // The recycled tiling matches it.
+        EXPECT_TRUE(recycled_tiling->TileAt(0, 0));
         EXPECT_FALSE(recycled_tiling->TileAt(0, num_tiles_y));
 
         // The live tiles rect matches on the recycled tree.
@@ -266,6 +266,10 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
         // either.
         EXPECT_FALSE(recycled_tiling->TileAt(0, 0));
 
+        // The live tiles rect matches on the recycled tree.
+        EXPECT_EQ(tiling->live_tiles_rect(),
+                  recycled_tiling->live_tiles_rect());
+
         // Make the top of the layer visible again.
         picture_impl->SetPosition(gfx::PointF());
         impl->SetNeedsRedraw();
@@ -280,8 +284,8 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
         EXPECT_TRUE(tiling->TileAt(0, 0));
         EXPECT_FALSE(tiling->TileAt(0, num_tiles_y));
 
-        // The recycled tiling should have no tiles.
-        EXPECT_FALSE(recycled_tiling->TileAt(0, 0));
+        // The recycled tiling should also have tiles at the top.
+        EXPECT_TRUE(recycled_tiling->TileAt(0, 0));
         EXPECT_FALSE(recycled_tiling->TileAt(0, num_tiles_y));
 
         // The live tiles rect matches on the recycled tree.
@@ -304,15 +308,9 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
     PictureLayerTiling* tiling = picture_impl->HighResTiling();
     int num_tiles_y = tiling->TilingDataForTesting().num_tiles_y();
 
-    if (!impl->active_tree()->root_layer()) {
-      // If active tree doesn't have the layer, then pending tree should have
-      // all needed tiles.
-      EXPECT_TRUE(tiling->TileAt(0, 0));
-    } else {
-      // Since there was no invalidation, the pending tree shouldn't have any
-      // tiles.
-      EXPECT_FALSE(tiling->TileAt(0, 0));
-    }
+    // The pending layer should always have tiles at the top of it each commit.
+    // The tile is part of the required for activation set so it should exist.
+    EXPECT_TRUE(tiling->TileAt(0, 0));
     EXPECT_FALSE(tiling->TileAt(0, num_tiles_y));
 
     if (did_post_commit_)

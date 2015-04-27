@@ -55,8 +55,7 @@ PictureLayerTilingSet::~PictureLayerTilingSet() {
 
 void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
     const PictureLayerTilingSet* pending_twin_set,
-    const scoped_refptr<RasterSource>& raster_source,
-    const Region& layer_invalidation) {
+    const scoped_refptr<RasterSource>& raster_source) {
   if (pending_twin_set->tilings_.empty()) {
     // If the twin (pending) tiling set is empty, it was not updated for the
     // current frame. So we drop tilings from our set as well, instead of
@@ -78,8 +77,7 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
       this_tiling = tilings_.back();
       tiling_sort_required = true;
     }
-    this_tiling->TakeTilesAndPropertiesFrom(pending_twin_tiling,
-                                            layer_invalidation);
+    this_tiling->CloneTilesAndPropertiesFrom(*pending_twin_tiling);
   }
 
   if (tiling_sort_required)
@@ -97,8 +95,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
 
   // Copy over tilings that are shared with the |pending_twin_set| tiling set.
   // Also, copy all of the properties from twin tilings.
-  CopyTilingsAndPropertiesFromPendingTwin(pending_twin_set, raster_source,
-                                          layer_invalidation);
+  CopyTilingsAndPropertiesFromPendingTwin(pending_twin_set, raster_source);
 
   // If the tiling is not shared (FindTilingWithScale returns nullptr), then
   // invalidate tiles and update them to the new raster source.
@@ -149,9 +146,6 @@ void PictureLayerTilingSet::UpdateRasterSourceDueToLCDChange(
   for (PictureLayerTiling* tiling : tilings_) {
     tiling->SetRasterSourceAndResize(raster_source);
     tiling->Invalidate(layer_invalidation);
-    // Since the invalidation changed, we need to create any missing tiles in
-    // the live tiles rect again.
-    tiling->CreateMissingTilesInLiveTilesRect();
     tiling->VerifyAllTilesHaveCurrentRasterSource();
   }
 }

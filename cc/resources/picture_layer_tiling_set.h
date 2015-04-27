@@ -179,8 +179,7 @@ class CC_EXPORT PictureLayerTilingSet {
 
   void CopyTilingsAndPropertiesFromPendingTwin(
       const PictureLayerTilingSet* pending_twin_set,
-      const scoped_refptr<RasterSource>& raster_source,
-      const Region& layer_invalidation);
+      const scoped_refptr<RasterSource>& raster_source);
 
   // Remove one tiling.
   void Remove(PictureLayerTiling* tiling);

@@ -5,7 +5,6 @@
 #ifndef CC_RESOURCES_TILING_SET_RASTER_QUEUE_ALL_H_
 #define CC_RESOURCES_TILING_SET_RASTER_QUEUE_ALL_H_
 
-#include "base/containers/stack_container.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/picture_layer_tiling_set.h"
 #include "cc/resources/tile.h"
@@ -65,18 +64,6 @@ class CC_EXPORT TilingSetRasterQueueAll {
     TilingData::Iterator iterator_;
   };
 
-  class PendingVisibleTilingIterator : public OnePriorityRectIterator {
-   public:
-    PendingVisibleTilingIterator() = default;
-    PendingVisibleTilingIterator(PictureLayerTiling* tiling,
-                                 TilingData* tiling_data);
-
-    PendingVisibleTilingIterator& operator++();
-
-   private:
-    TilingData::DifferenceIterator iterator_;
-  };
-
   // Iterates over skewport only, spiral around the visible rect.
   class SkewportTilingIterator : public OnePriorityRectIterator {
    public:
@@ -87,7 +74,6 @@ class CC_EXPORT TilingSetRasterQueueAll {
 
    private:
     TilingData::SpiralDifferenceIterator iterator_;
-    gfx::Rect pending_visible_rect_;
   };
 
   // Iterates over soon border only, spiral around the visible rect.
@@ -101,7 +87,6 @@ class CC_EXPORT TilingSetRasterQueueAll {
 
    private:
     TilingData::SpiralDifferenceIterator iterator_;
-    gfx::Rect pending_visible_rect_;
   };
 
   // Iterates over eventually rect only, spiral around the soon rect.
@@ -115,7 +100,6 @@ class CC_EXPORT TilingSetRasterQueueAll {
 
    private:
     TilingData::SpiralDifferenceIterator iterator_;
-    gfx::Rect pending_visible_rect_;
   };
 
   // Iterates over all of the above phases in the following order: visible,
@@ -125,7 +109,7 @@ class CC_EXPORT TilingSetRasterQueueAll {
     TilingIterator();
     explicit TilingIterator(PictureLayerTiling* tiling,
                             TilingData* tiling_data);
-    ~TilingIterator();
+    ~TilingIterator() = default;
 
     bool done() const { return current_tile_ == nullptr; }
     const Tile* operator*() const { return current_tile_; }
@@ -134,7 +118,6 @@ class CC_EXPORT TilingSetRasterQueueAll {
       switch (phase_) {
         case VISIBLE_RECT:
           return TilePriority::NOW;
-        case PENDING_VISIBLE_RECT:
         case SKEWPORT_RECT:
         case SOON_BORDER_RECT:
           return TilePriority::SOON;
@@ -148,14 +131,8 @@ class CC_EXPORT TilingSetRasterQueueAll {
     TilingIterator& operator++();
 
    private:
-    // PENDING VISIBLE RECT refers to the visible rect that will become current
-    // upon activation (ie, the pending tree's visible rect). Tiles in this
-    // region that are not part of the current visible rect are all handled
-    // here. Note that when processing a pending tree, this rect is the same as
-    // the visible rect so no tiles are processed in this case.
     enum Phase {
       VISIBLE_RECT,
-      PENDING_VISIBLE_RECT,
       SKEWPORT_RECT,
       SOON_BORDER_RECT,
       EVENTUALLY_RECT
@@ -170,34 +147,26 @@ class CC_EXPORT TilingSetRasterQueueAll {
 
     Tile* current_tile_;
     VisibleTilingIterator visible_iterator_;
-    PendingVisibleTilingIterator pending_visible_iterator_;
     SkewportTilingIterator skewport_iterator_;
     SoonBorderTilingIterator soon_border_iterator_;
     EventuallyTilingIterator eventually_iterator_;
   };
 
-  enum IteratorType {
-    LOW_RES,
-    HIGH_RES,
-    ACTIVE_NON_IDEAL_PENDING_HIGH_RES,
-    NUM_ITERATORS
-  };
+  enum IteratorType { LOW_RES, HIGH_RES, NUM_ITERATORS };
 
   void AdvanceToNextStage();
 
   PictureLayerTilingSet* tiling_set_;
 
   struct IterationStage {
-    IterationStage(IteratorType type, TilePriority::PriorityBin bin);
     IteratorType iterator_type;
     TilePriority::PriorityBin tile_type;
   };
 
   size_t current_stage_;
 
-  // The max number of stages is 6: 1 low res, 3 high res, and 2 active non
-  // ideal pending high res.
-  base::StackVector<IterationStage, 6> stages_;
+  // One low res stage, and three high res stages.
+  IterationStage stages_[4];
   TilingIterator iterators_[NUM_ITERATORS];
 };
 

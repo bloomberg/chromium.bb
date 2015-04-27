@@ -23,10 +23,6 @@ namespace cc {
 // EVENTUALLY_RECT - Tiles in the eventually region of the tiling.
 // SOON_BORDER_RECT - Tiles in the prepainting skirt of the tiling.
 // SKEWPORT_RECT - Tiles in the skewport of the tiling.
-// PENDING_VISIBLE_RECT - Tiles that will be visible upon activation, not
-//     required for activation.
-// PENDING_VISIBLE_RECT_REQUIRED_FOR_ACTIVATION - Tiles that will be visible
-//     upon activation, required for activation.
 // VISIBLE_RECT_OCCLUDED - Occluded, not required for activation, visible tiles.
 // VISIBLE_RECT_UNOCCLUDED - Unoccluded, not required for activation, visible
 //     tiles.
@@ -78,8 +74,6 @@ class CC_EXPORT TilingSetEvictionQueue {
     EVENTUALLY_RECT,
     SOON_BORDER_RECT,
     SKEWPORT_RECT,
-    PENDING_VISIBLE_RECT,
-    PENDING_VISIBLE_RECT_REQUIRED_FOR_ACTIVATION,
     VISIBLE_RECT_OCCLUDED,
     VISIBLE_RECT_UNOCCLUDED,
     VISIBLE_RECT_REQUIRED_FOR_ACTIVATION_OCCLUDED,
@@ -94,8 +88,7 @@ class CC_EXPORT TilingSetEvictionQueue {
     EvictionRectIterator();
     EvictionRectIterator(std::vector<PictureLayerTiling*>* tilings,
                          WhichTree tree,
-                         bool skip_shared_out_of_order_tiles,
-                         bool skip_pending_visible_rect);
+                         bool skip_shared_out_of_order_tiles);
 
     bool done() const { return !tile_; }
     Tile* operator*() const { return tile_; }
@@ -112,25 +105,7 @@ class CC_EXPORT TilingSetEvictionQueue {
     std::vector<PictureLayerTiling*>* tilings_;
     WhichTree tree_;
     bool skip_shared_out_of_order_tiles_;
-    bool skip_pending_visible_rect_;
     size_t tiling_index_;
-  };
-
-  class PendingVisibleTilingIterator : public EvictionRectIterator {
-   public:
-    PendingVisibleTilingIterator() = default;
-    PendingVisibleTilingIterator(std::vector<PictureLayerTiling*>* tilings,
-                                 WhichTree tree,
-                                 bool skip_shared_out_of_order_tiles,
-                                 bool return_required_for_activation_tiles);
-
-    PendingVisibleTilingIterator& operator++();
-
-   private:
-    bool TileMatchesRequiredFlags(const Tile* tile) const;
-
-    TilingData::DifferenceIterator iterator_;
-    bool return_required_for_activation_tiles_;
   };
 
   class VisibleTilingIterator : public EvictionRectIterator {
@@ -202,7 +177,6 @@ class CC_EXPORT TilingSetEvictionQueue {
   EventuallyTilingIterator eventually_iterator_;
   SoonBorderTilingIterator soon_iterator_;
   SkewportTilingIterator skewport_iterator_;
-  PendingVisibleTilingIterator pending_visible_iterator_;
   VisibleTilingIterator visible_iterator_;
 };
 

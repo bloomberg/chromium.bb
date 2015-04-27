@@ -35,9 +35,27 @@ class RasterOrderComparator {
     const Tile* a_tile = a_queue->Top();
     const Tile* b_tile = b_queue->Top();
 
-    const TilePriority& a_priority = a_tile->priority();
-    const TilePriority& b_priority = b_tile->priority();
+    const TilePriority& a_priority =
+        a_tile->priority_for_tree_priority(tree_priority_);
+    const TilePriority& b_priority =
+        b_tile->priority_for_tree_priority(tree_priority_);
     bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
+
+    // In smoothness mode, we should return pending NOW tiles before active
+    // EVENTUALLY tiles. So if both priorities here are eventually, we need to
+    // check the pending priority.
+    if (prioritize_low_res &&
+        a_priority.priority_bin == TilePriority::EVENTUALLY &&
+        b_priority.priority_bin == TilePriority::EVENTUALLY) {
+      bool a_is_pending_now =
+          a_tile->priority(PENDING_TREE).priority_bin == TilePriority::NOW;
+      bool b_is_pending_now =
+          b_tile->priority(PENDING_TREE).priority_bin == TilePriority::NOW;
+      if (a_is_pending_now || b_is_pending_now)
+        return a_is_pending_now < b_is_pending_now;
+
+      // In case neither one is pending now, fall through.
+    }
 
     // If the bin is the same but the resolution is not, then the order will be
     // determined by whether we prioritize low res or not.
@@ -66,15 +84,27 @@ class RasterOrderComparator {
 
 WhichTree HigherPriorityTree(TreePriority tree_priority,
                              const TilingSetRasterQueueAll* active_queue,
-                             const TilingSetRasterQueueAll* pending_queue) {
-  const Tile* active_tile = active_queue->Top();
-  const Tile* pending_tile = pending_queue->Top();
-
-  const TilePriority& active_priority = active_tile->priority();
-  const TilePriority& pending_priority = pending_tile->priority();
+                             const TilingSetRasterQueueAll* pending_queue,
+                             const Tile* shared_tile) {
+  // In cases when we're given an active tile with a non ideal active resolution
+  // (or pending tile with non ideal pending resolution), we should return the
+  // other tree. The reason for this is that tiling set iterators will not
+  // return non ideal tiles and the only way we get here is if we're skipping
+  // twin tiles, but since it's non-ideal on the twin, we shouldn't skip it.
+  // TODO(vmpstr): Remove when tiles aren't shared.
+  const Tile* active_tile = shared_tile ? shared_tile : active_queue->Top();
+  const Tile* pending_tile = shared_tile ? shared_tile : pending_queue->Top();
+  if (active_tile->priority(ACTIVE_TREE).resolution == NON_IDEAL_RESOLUTION)
+    return PENDING_TREE;
+  if (pending_tile->priority(PENDING_TREE).resolution == NON_IDEAL_RESOLUTION)
+    return ACTIVE_TREE;
 
   switch (tree_priority) {
     case SMOOTHNESS_TAKES_PRIORITY: {
+      const TilePriority& active_priority = active_tile->priority(ACTIVE_TREE);
+      const TilePriority& pending_priority =
+          pending_tile->priority(PENDING_TREE);
+
       // If we're down to eventually bin tiles on the active tree, process the
       // pending tree to allow tiles required for activation to be initialized
       // when memory policy only allows prepaint.
@@ -84,18 +114,13 @@ WhichTree HigherPriorityTree(TreePriority tree_priority,
       }
       return ACTIVE_TREE;
     }
-    case NEW_CONTENT_TAKES_PRIORITY: {
-      // If we're down to soon bin tiles on the pending tree, process the
-      // active tree to allow tiles required for activation to be initialized
-      // when memory policy only allows prepaint. Note that active required for
-      // activation tiles might come from either now or soon bins.
-      if (pending_priority.priority_bin >= TilePriority::SOON &&
-          active_priority.priority_bin <= TilePriority::SOON) {
-        return ACTIVE_TREE;
-      }
+    case NEW_CONTENT_TAKES_PRIORITY:
       return PENDING_TREE;
-    }
     case SAME_PRIORITY_FOR_BOTH_TREES: {
+      const TilePriority& active_priority = active_tile->priority(ACTIVE_TREE);
+      const TilePriority& pending_priority =
+          pending_tile->priority(PENDING_TREE);
+
       if (active_priority.IsHigherPriorityThan(pending_priority))
         return ACTIVE_TREE;
       return PENDING_TREE;
@@ -165,7 +190,10 @@ RasterTilePriorityQueueAll::PairedTilingSetQueue::PairedTilingSetQueue(
     : active_queue_(
           CreateTilingSetRasterQueue(layer_pair.active, tree_priority)),
       pending_queue_(
-          CreateTilingSetRasterQueue(layer_pair.pending, tree_priority)) {
+          CreateTilingSetRasterQueue(layer_pair.pending, tree_priority)),
+      has_both_layers_(layer_pair.active && layer_pair.pending) {
+  SkipTilesReturnedByTwin(tree_priority);
+
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                        "PairedTilingSetQueue::PairedTilingSetQueue",
                        TRACE_EVENT_SCOPE_THREAD, "state", StateAsValue());
@@ -207,8 +235,38 @@ void RasterTilePriorityQueueAll::PairedTilingSetQueue::Pop(
   DCHECK(returned_tiles_for_debug_.insert(next_queue->Top()).second);
   next_queue->Pop();
 
+  SkipTilesReturnedByTwin(tree_priority);
+
   // If no empty, use Top to do DCHECK the next iterator.
   DCHECK(IsEmpty() || Top(tree_priority));
+}
+
+void RasterTilePriorityQueueAll::PairedTilingSetQueue::SkipTilesReturnedByTwin(
+    TreePriority tree_priority) {
+  if (!has_both_layers_)
+    return;
+
+  // We have both layers (active and pending) thus we can encounter shared
+  // tiles twice (from the active iterator and from the pending iterator).
+  while (!IsEmpty()) {
+    WhichTree next_tree = NextTileIteratorTree(tree_priority);
+    TilingSetRasterQueueAll* next_queue =
+        next_tree == ACTIVE_TREE ? active_queue_.get() : pending_queue_.get();
+    DCHECK(next_queue && !next_queue->IsEmpty());
+
+    // Accept all non-shared tiles.
+    const Tile* tile = next_queue->Top();
+    if (!tile->is_shared())
+      break;
+
+    // Accept a shared tile if the next tree is the higher priority one
+    // corresponding the iterator (active or pending) which usually (but due
+    // to spiral iterators not always) returns the shared tile first.
+    if (next_tree == HigherPriorityTree(tree_priority, nullptr, nullptr, tile))
+      break;
+
+    next_queue->Pop();
+  }
 }
 
 WhichTree
@@ -224,7 +282,7 @@ RasterTilePriorityQueueAll::PairedTilingSetQueue::NextTileIteratorTree(
 
   // Now both iterators have tiles, so we have to decide based on tree priority.
   return HigherPriorityTree(tree_priority, active_queue_.get(),
-                            pending_queue_.get());
+                            pending_queue_.get(), nullptr);
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
@@ -236,8 +294,10 @@ RasterTilePriorityQueueAll::PairedTilingSetQueue::StateAsValue() const {
   TilePriority::PriorityBin active_priority_bin = TilePriority::EVENTUALLY;
   TilePriority::PriorityBin pending_priority_bin = TilePriority::EVENTUALLY;
   if (active_queue_has_tile) {
-    active_priority_bin = active_queue_->Top()->priority().priority_bin;
-    pending_priority_bin = active_queue_->Top()->priority().priority_bin;
+    active_priority_bin =
+        active_queue_->Top()->priority(ACTIVE_TREE).priority_bin;
+    pending_priority_bin =
+        active_queue_->Top()->priority(PENDING_TREE).priority_bin;
   }
 
   state->BeginDictionary("active_queue");
@@ -250,8 +310,10 @@ RasterTilePriorityQueueAll::PairedTilingSetQueue::StateAsValue() const {
   active_priority_bin = TilePriority::EVENTUALLY;
   pending_priority_bin = TilePriority::EVENTUALLY;
   if (pending_queue_has_tile) {
-    active_priority_bin = pending_queue_->Top()->priority().priority_bin;
-    pending_priority_bin = pending_queue_->Top()->priority().priority_bin;
+    active_priority_bin =
+        pending_queue_->Top()->priority(ACTIVE_TREE).priority_bin;
+    pending_priority_bin =
+        pending_queue_->Top()->priority(PENDING_TREE).priority_bin;
   }
 
   state->BeginDictionary("pending_queue");

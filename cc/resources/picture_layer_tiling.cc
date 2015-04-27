@@ -79,6 +79,8 @@ PictureLayerTiling::PictureLayerTiling(
 }
 
 PictureLayerTiling::~PictureLayerTiling() {
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    it->second->set_shared(false);
 }
 
 // static
@@ -92,7 +94,13 @@ float PictureLayerTiling::CalculateSoonBorderDistance(
       max_dimension * kSoonBorderDistanceViewportPercentage);
 }
 
-Tile* PictureLayerTiling::CreateTile(int i, int j) {
+Tile* PictureLayerTiling::CreateTile(int i,
+                                     int j,
+                                     const PictureLayerTiling* twin_tiling,
+                                     PictureLayerTiling* recycled_twin) {
+  // Can't have both a (pending or active) twin and a recycled twin tiling.
+  DCHECK_IMPLIES(twin_tiling, !recycled_twin);
+  DCHECK_IMPLIES(recycled_twin, !twin_tiling);
   TileMapKey key(i, j);
   DCHECK(tiles_.find(key) == tiles_.end());
 
@@ -100,65 +108,116 @@ Tile* PictureLayerTiling::CreateTile(int i, int j) {
   gfx::Rect tile_rect = paint_rect;
   tile_rect.set_size(tiling_data_.max_texture_size());
 
+  // Check our twin for a valid tile.
+  if (twin_tiling &&
+      tiling_data_.max_texture_size() ==
+      twin_tiling->tiling_data_.max_texture_size()) {
+    if (Tile* candidate_tile = twin_tiling->TileAt(i, j)) {
+      gfx::Rect rect =
+          gfx::ScaleToEnclosingRect(paint_rect, 1.0f / contents_scale_);
+      const Region* invalidation = client_->GetPendingInvalidation();
+      if (!invalidation || !invalidation->Intersects(rect)) {
+        DCHECK(!candidate_tile->is_shared());
+        DCHECK_EQ(i, candidate_tile->tiling_i_index());
+        DCHECK_EQ(j, candidate_tile->tiling_j_index());
+        candidate_tile->set_shared(true);
+        tiles_[key] = candidate_tile;
+        return candidate_tile;
+      }
+    }
+  }
+
   if (!raster_source_->CoversRect(tile_rect, contents_scale_))
     return nullptr;
 
+  // Create a new tile because our twin didn't have a valid one.
   scoped_refptr<Tile> tile = client_->CreateTile(contents_scale_, tile_rect);
+  DCHECK(!tile->is_shared());
   tile->set_tiling_index(i, j);
   tiles_[key] = tile;
+
+  if (recycled_twin) {
+    DCHECK(recycled_twin->tiles_.find(key) == recycled_twin->tiles_.end());
+    // Do what recycled_twin->CreateTile() would do.
+    tile->set_shared(true);
+    recycled_twin->tiles_[key] = tile;
+  }
   return tile.get();
 }
 
 void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
+  // There is no recycled twin during commit from the main thread which is when
+  // this occurs.
+  PictureLayerTiling* null_recycled_twin = nullptr;
+  DCHECK_EQ(null_recycled_twin, client_->GetRecycledTwinTiling(this));
   bool include_borders = false;
-  for (TilingData::Iterator iter(&tiling_data_, live_tiles_rect_,
-                                 include_borders);
-       iter; ++iter) {
+  for (TilingData::Iterator iter(
+           &tiling_data_, live_tiles_rect_, include_borders);
+       iter;
+       ++iter) {
     TileMapKey key = iter.index();
     TileMap::iterator find = tiles_.find(key);
     if (find != tiles_.end())
       continue;
-
-    if (ShouldCreateTileAt(key.first, key.second))
-      CreateTile(key.first, key.second);
+    CreateTile(key.first, key.second, twin_tiling, null_recycled_twin);
   }
+
   VerifyLiveTilesRect(false);
 }
 
-void PictureLayerTiling::TakeTilesAndPropertiesFrom(
-    PictureLayerTiling* pending_twin,
-    const Region& layer_invalidation) {
-  TRACE_EVENT0("cc", "TakeTilesAndPropertiesFrom");
-  SetRasterSourceAndResize(pending_twin->raster_source_);
+void PictureLayerTiling::CloneTilesAndPropertiesFrom(
+    const PictureLayerTiling& twin_tiling) {
+  DCHECK_EQ(&twin_tiling, client_->GetPendingOrActiveTwinTiling(this));
 
-  RemoveTilesInRegion(layer_invalidation, false /* recreate tiles */);
+  SetRasterSourceAndResize(twin_tiling.raster_source_);
+  DCHECK_EQ(twin_tiling.contents_scale_, contents_scale_);
+  DCHECK_EQ(twin_tiling.raster_source_, raster_source_);
+  DCHECK_EQ(twin_tiling.tile_size().ToString(), tile_size().ToString());
 
-  for (TileMap::value_type& tile_pair : tiles_)
-    tile_pair.second->set_raster_source(raster_source_.get());
+  resolution_ = twin_tiling.resolution_;
 
-  resolution_ = pending_twin->resolution_;
-  if (live_tiles_rect_.IsEmpty())
-    live_tiles_rect_ = pending_twin->live_tiles_rect();
-  else
-    SetLiveTilesRect(pending_twin->live_tiles_rect());
+  SetLiveTilesRect(twin_tiling.live_tiles_rect());
 
-  if (tiles_.size() < pending_twin->tiles_.size()) {
-    tiles_.swap(pending_twin->tiles_);
-    tiles_.insert(pending_twin->tiles_.begin(), pending_twin->tiles_.end());
-  } else {
-    for (TileMap::value_type& tile_pair : pending_twin->tiles_)
-      tiles_[tile_pair.first].swap(tile_pair.second);
+  // Recreate unshared tiles.
+  std::vector<TileMapKey> to_remove;
+  for (const auto& tile_map_pair : tiles_) {
+    TileMapKey key = tile_map_pair.first;
+    Tile* tile = tile_map_pair.second.get();
+    if (!tile->is_shared())
+      to_remove.push_back(key);
   }
-  pending_twin->tiles_.clear();
+  // The recycled twin does not exist since there is a pending twin (which is
+  // |twin_tiling|).
+  PictureLayerTiling* null_recycled_twin = nullptr;
+  DCHECK_EQ(null_recycled_twin, client_->GetRecycledTwinTiling(this));
+  for (const auto& key : to_remove) {
+    RemoveTileAt(key.first, key.second, null_recycled_twin);
+    CreateTile(key.first, key.second, &twin_tiling, null_recycled_twin);
+  }
 
+  // Create any missing tiles from the |twin_tiling|.
+  for (const auto& tile_map_pair : twin_tiling.tiles_) {
+    TileMapKey key = tile_map_pair.first;
+    Tile* tile = tile_map_pair.second.get();
+    if (!tile->is_shared())
+      CreateTile(key.first, key.second, &twin_tiling, null_recycled_twin);
+  }
+
+  DCHECK_EQ(twin_tiling.tiles_.size(), tiles_.size());
+#if DCHECK_IS_ON()
+  for (const auto& tile_map_pair : tiles_)
+    DCHECK(tile_map_pair.second->is_shared());
   VerifyLiveTilesRect(false);
+#endif
 
-  SetTilePriorityRects(pending_twin->current_content_to_screen_scale_,
-                       pending_twin->current_visible_rect_,
-                       pending_twin->current_skewport_rect_,
-                       pending_twin->current_soon_border_rect_,
-                       pending_twin->current_eventually_rect_,
-                       pending_twin->current_occlusion_in_layer_space_);
+  UpdateTilePriorityRects(twin_tiling.current_content_to_screen_scale_,
+                          twin_tiling.current_visible_rect_,
+                          twin_tiling.current_skewport_rect_,
+                          twin_tiling.current_soon_border_rect_,
+                          twin_tiling.current_eventually_rect_,
+                          twin_tiling.current_occlusion_in_layer_space_);
 }
 
 void PictureLayerTiling::SetRasterSourceAndResize(
@@ -211,46 +270,36 @@ void PictureLayerTiling::SetRasterSourceAndResize(
 
   // There is no recycled twin since this is run on the pending tiling
   // during commit, and on the active tree during activate.
+  PictureLayerTiling* null_recycled_twin = nullptr;
+  DCHECK_EQ(null_recycled_twin, client_->GetRecycledTwinTiling(this));
+
   // Drop tiles outside the new layer bounds if the layer shrank.
   for (int i = after_right + 1; i <= before_right; ++i) {
     for (int j = before_top; j <= before_bottom; ++j)
-      RemoveTileAt(i, j);
+      RemoveTileAt(i, j, null_recycled_twin);
   }
   for (int i = before_left; i <= after_right; ++i) {
     for (int j = after_bottom + 1; j <= before_bottom; ++j)
-      RemoveTileAt(i, j);
+      RemoveTileAt(i, j, null_recycled_twin);
   }
 
+  // If the layer grew, the live_tiles_rect_ is not changed, but a new row
+  // and/or column of tiles may now exist inside the same live_tiles_rect_.
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
   if (after_right > before_right) {
     DCHECK_EQ(after_right, before_right + 1);
-    for (int j = before_top; j <= after_bottom; ++j) {
-      if (ShouldCreateTileAt(after_right, j))
-        CreateTile(after_right, j);
-    }
+    for (int j = before_top; j <= after_bottom; ++j)
+      CreateTile(after_right, j, twin_tiling, null_recycled_twin);
   }
   if (after_bottom > before_bottom) {
     DCHECK_EQ(after_bottom, before_bottom + 1);
-    for (int i = before_left; i <= before_right; ++i) {
-      if (ShouldCreateTileAt(i, after_bottom))
-        CreateTile(i, after_bottom);
-    }
+    for (int i = before_left; i <= before_right; ++i)
+      CreateTile(i, after_bottom, twin_tiling, null_recycled_twin);
   }
 }
 
 void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
-  // We don't need to invalidate the pending tiling, since
-  // CreateMissingTilesInLiveTilesRect will populate all the tiles that we need.
-  if (client_->GetTree() == PENDING_TREE)
-    return;
-
-  DCHECK(!client_->GetPendingOrActiveTwinTiling(this));
-  RemoveTilesInRegion(layer_invalidation, true /* recreate tiles */);
-}
-
-void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_invalidation,
-                                             bool recreate_tiles) {
-  // We only invalidate the active tiling when it's orphaned: it has no pending
-  // twin, so it's slated for removal in the future.
   if (live_tiles_rect_.IsEmpty())
     return;
   std::vector<TileMapKey> new_tile_keys;
@@ -274,82 +323,41 @@ void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_invalidation,
     // Since the content_rect includes border pixels already, don't include
     // borders when iterating to avoid double counting them.
     bool include_borders = false;
-    for (
-        TilingData::Iterator iter(&tiling_data_, content_rect, include_borders);
-        iter; ++iter) {
-      if (RemoveTileAt(iter.index_x(), iter.index_y())) {
-        if (recreate_tiles)
-          new_tile_keys.push_back(iter.index());
-      }
+    for (TilingData::Iterator iter(
+             &tiling_data_, content_rect, include_borders);
+         iter;
+         ++iter) {
+      // There is no recycled twin for the pending tree during commit, or for
+      // the active tree during activation.
+      PictureLayerTiling* null_recycled_twin = nullptr;
+      DCHECK_EQ(null_recycled_twin, client_->GetRecycledTwinTiling(this));
+      if (RemoveTileAt(iter.index_x(), iter.index_y(), null_recycled_twin))
+        new_tile_keys.push_back(iter.index());
     }
   }
 
-  for (const auto& key : new_tile_keys)
-    CreateTile(key.first, key.second);
+  if (!new_tile_keys.empty()) {
+    // During commit from the main thread, invalidations can never be shared
+    // with the active tree since the active tree has different content there.
+    // And when invalidating an active-tree tiling, it means there was no
+    // pending tiling to clone from.
+    const PictureLayerTiling* null_twin_tiling = nullptr;
+    PictureLayerTiling* null_recycled_twin = nullptr;
+    DCHECK_EQ(null_recycled_twin, client_->GetRecycledTwinTiling(this));
+    for (size_t i = 0; i < new_tile_keys.size(); ++i) {
+      CreateTile(new_tile_keys[i].first, new_tile_keys[i].second,
+                 null_twin_tiling, null_recycled_twin);
+    }
+  }
 }
 
 void PictureLayerTiling::SetRasterSourceOnTiles() {
-  if (client_->GetTree() == PENDING_TREE)
-    return;
-
-  for (TileMap::value_type& tile_pair : tiles_)
-    tile_pair.second->set_raster_source(raster_source_.get());
-}
-
-bool PictureLayerTiling::ShouldCreateTileAt(int i, int j) const {
-  // Active tree should always create a tile. The reason for this is that active
-  // tree represents content that we draw on screen, which means that whenever
-  // we check whether a tile should exist somewhere, the answer is yes. This
-  // doesn't mean it will actually be created (if raster source doesn't cover
-  // the tile for instance). Pending tree, on the other hand, should only be
-  // creating tiles that are different from the current active tree, which is
-  // represented by the logic in the rest of the function.
-  if (client_->GetTree() == ACTIVE_TREE)
-    return true;
-
-  // If the pending tree has no active twin, then it needs to create all tiles.
-  const PictureLayerTiling* active_twin =
-      client_->GetPendingOrActiveTwinTiling(this);
-  if (!active_twin)
-    return true;
-
-  // Pending tree will override the entire active tree if indices don't match.
-  if (!TilingMatchesTileIndices(active_twin))
-    return true;
-
-  gfx::Rect paint_rect = tiling_data_.TileBoundsWithBorder(i, j);
-  gfx::Rect tile_rect = paint_rect;
-  tile_rect.set_size(tiling_data_.max_texture_size());
-
-  // If the active tree can't create a tile, because of its raster source, then
-  // the pending tree should create one.
-  if (!active_twin->raster_source()->CoversRect(tile_rect, contents_scale()))
-    return true;
-
-  const Region* layer_invalidation = client_->GetPendingInvalidation();
-  gfx::Rect layer_rect =
-      gfx::ScaleToEnclosingRect(tile_rect, 1.f / contents_scale());
-
-  // If this tile is invalidated, then the pending tree should create one.
-  if (layer_invalidation && layer_invalidation->Intersects(layer_rect))
-    return true;
-
-  // If the active tree doesn't have a tile here, but it's in the pending tree's
-  // visible rect, then the pending tree should create a tile. This can happen
-  // if the pending visible rect is outside of the active tree's live tiles
-  // rect. In those situations, we need to block activation until we're ready to
-  // display content, which will have to come from the pending tree.
-  if (!active_twin->TileAt(i, j) && current_visible_rect_.Intersects(tile_rect))
-    return true;
-
-  // In all other cases, the pending tree doesn't need to create a tile.
-  return false;
-}
-
-bool PictureLayerTiling::TilingMatchesTileIndices(
-    const PictureLayerTiling* twin) const {
-  return tiling_data_.max_texture_size() ==
-         twin->tiling_data_.max_texture_size();
+  // Shared (ie. non-invalidated) tiles on the pending tree are updated to use
+  // the new raster source. When this raster source is activated, the raster
+  // source will remain valid for shared tiles in the active tree.
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    it->second->set_raster_source(raster_source_);
+  VerifyLiveTilesRect(false);
 }
 
 PictureLayerTiling::CoverageIterator::CoverageIterator()
@@ -491,16 +499,29 @@ gfx::RectF PictureLayerTiling::CoverageIterator::texture_rect() const {
   return texture_rect;
 }
 
-bool PictureLayerTiling::RemoveTileAt(int i, int j) {
+bool PictureLayerTiling::RemoveTileAt(int i,
+                                      int j,
+                                      PictureLayerTiling* recycled_twin) {
   TileMap::iterator found = tiles_.find(TileMapKey(i, j));
   if (found == tiles_.end())
     return false;
+  found->second->set_shared(false);
   tiles_.erase(found);
+  if (recycled_twin) {
+    // Recycled twin does not also have a recycled twin, so pass null.
+    recycled_twin->RemoveTileAt(i, j, nullptr);
+  }
   return true;
 }
 
 void PictureLayerTiling::Reset() {
   live_tiles_rect_ = gfx::Rect();
+  PictureLayerTiling* recycled_twin = client_->GetRecycledTwinTiling(this);
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    it->second->set_shared(false);
+    if (recycled_twin)
+      recycled_twin->RemoveTileAt(it->first.first, it->first.second, nullptr);
+  }
   tiles_.clear();
 }
 
@@ -610,14 +631,14 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
                            visible_rect_in_content_space);
   last_viewport_in_layer_space_ = viewport_in_layer_space;
 
-  SetTilePriorityRects(content_to_screen_scale, visible_rect_in_content_space,
-                       skewport, soon_border_rect, eventually_rect,
-                       occlusion_in_layer_space);
   SetLiveTilesRect(eventually_rect);
+  UpdateTilePriorityRects(
+      content_to_screen_scale, visible_rect_in_content_space, skewport,
+      soon_border_rect, eventually_rect, occlusion_in_layer_space);
   return true;
 }
 
-void PictureLayerTiling::SetTilePriorityRects(
+void PictureLayerTiling::UpdateTilePriorityRects(
     float content_to_screen_scale,
     const gfx::Rect& visible_rect_in_content_space,
     const gfx::Rect& skewport,
@@ -648,24 +669,36 @@ void PictureLayerTiling::SetLiveTilesRect(
   if (live_tiles_rect_ == new_live_tiles_rect)
     return;
 
+  PictureLayerTiling* recycled_twin = client_->GetRecycledTwinTiling(this);
+
   // Iterate to delete all tiles outside of our new live_tiles rect.
-  for (TilingData::DifferenceIterator iter(&tiling_data_, live_tiles_rect_,
+  for (TilingData::DifferenceIterator iter(&tiling_data_,
+                                           live_tiles_rect_,
                                            new_live_tiles_rect);
-       iter; ++iter) {
-    RemoveTileAt(iter.index_x(), iter.index_y());
+       iter;
+       ++iter) {
+    RemoveTileAt(iter.index_x(), iter.index_y(), recycled_twin);
   }
 
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
+
   // Iterate to allocate new tiles for all regions with newly exposed area.
-  for (TilingData::DifferenceIterator iter(&tiling_data_, new_live_tiles_rect,
+  for (TilingData::DifferenceIterator iter(&tiling_data_,
+                                           new_live_tiles_rect,
                                            live_tiles_rect_);
-       iter; ++iter) {
+       iter;
+       ++iter) {
     TileMapKey key(iter.index());
-    if (ShouldCreateTileAt(key.first, key.second))
-      CreateTile(key.first, key.second);
+    CreateTile(key.first, key.second, twin_tiling, recycled_twin);
   }
 
   live_tiles_rect_ = new_live_tiles_rect;
   VerifyLiveTilesRect(false);
+  if (recycled_twin) {
+    recycled_twin->live_tiles_rect_ = live_tiles_rect_;
+    recycled_twin->VerifyLiveTilesRect(true);
+  }
 }
 
 void PictureLayerTiling::VerifyLiveTilesRect(bool is_on_recycle_tree) const {
@@ -687,126 +720,136 @@ void PictureLayerTiling::VerifyLiveTilesRect(bool is_on_recycle_tree) const {
         << " tile bounds "
         << tiling_data_.TileBounds(it->first.first, it->first.second).ToString()
         << " live_tiles_rect " << live_tiles_rect_.ToString();
+    DCHECK_IMPLIES(is_on_recycle_tree, it->second->is_shared());
   }
 #endif
 }
 
 bool PictureLayerTiling::IsTileOccluded(const Tile* tile) const {
-  // If this tile is not occluded on this tree, then it is not occluded.
-  if (!IsTileOccludedOnCurrentTree(tile))
-    return false;
+  DCHECK(tile);
 
-  // Otherwise, if this is the pending tree, we're done and the tile is
-  // occluded.
-  if (client_->GetTree() == PENDING_TREE)
-    return true;
-
-  // On the active tree however, we need to check if this tile will be
-  // unoccluded upon activation, in which case it has to be considered
-  // unoccluded.
-  const PictureLayerTiling* pending_twin =
-      client_->GetPendingOrActiveTwinTiling(this);
-  if (pending_twin) {
-    // If there's a pending tile in the same position. Or if the pending twin
-    // would have to be creating all tiles, then we don't need to worry about
-    // occlusion on the twin.
-    if (!TilingMatchesTileIndices(pending_twin) ||
-        pending_twin->TileAt(tile->tiling_i_index(), tile->tiling_j_index())) {
-      return true;
-    }
-    return pending_twin->IsTileOccludedOnCurrentTree(tile);
-  }
-  return true;
-}
-
-bool PictureLayerTiling::IsTileOccludedOnCurrentTree(const Tile* tile) const {
   if (!current_occlusion_in_layer_space_.HasOcclusion())
     return false;
+
   gfx::Rect tile_query_rect =
       gfx::IntersectRects(tile->content_rect(), current_visible_rect_);
+
   // Explicitly check if the tile is outside the viewport. If so, we need to
   // return false, since occlusion for this tile is unknown.
+  // TODO(vmpstr): Since the current visible rect is really a viewport in
+  // layer space, we should probably clip tile query rect to tiling bounds
+  // or live tiles rect.
   if (tile_query_rect.IsEmpty())
     return false;
 
   if (contents_scale_ != 1.f) {
     tile_query_rect =
-        gfx::ScaleToEnclosingRect(tile_query_rect, 1.f / contents_scale_);
+        gfx::ScaleToEnclosingRect(tile_query_rect, 1.0f / contents_scale_);
   }
+
   return current_occlusion_in_layer_space_.IsOccluded(tile_query_rect);
 }
 
-bool PictureLayerTiling::IsTileRequiredForActivation(const Tile* tile) const {
-  if (client_->GetTree() == PENDING_TREE) {
-    if (!can_require_tiles_for_activation_)
-      return false;
+bool PictureLayerTiling::IsTileRequiredForActivationIfVisible(
+    const Tile* tile) const {
+  DCHECK_EQ(PENDING_TREE, client_->GetTree());
 
-    if (resolution_ != HIGH_RESOLUTION)
-      return false;
+  // This function assumes that the tile is visible (i.e. in the viewport).  The
+  // caller needs to make sure that this condition is met to ensure we don't
+  // block activation on tiles outside of the viewport.
 
-    if (IsTileOccluded(tile))
-      return false;
-
-    bool tile_is_visible =
-        tile->content_rect().Intersects(current_visible_rect_);
-    if (!tile_is_visible)
-      return false;
-
-    if (client_->RequiresHighResToDraw())
-      return true;
-
-    const PictureLayerTiling* active_twin =
-        client_->GetPendingOrActiveTwinTiling(this);
-    if (!active_twin || !TilingMatchesTileIndices(active_twin))
-      return true;
-
-    if (active_twin->raster_source()->GetSize() != raster_source()->GetSize())
-      return true;
-
-    if (active_twin->current_visible_rect_ != current_visible_rect_)
-      return true;
-
-    Tile* twin_tile =
-        active_twin->TileAt(tile->tiling_i_index(), tile->tiling_j_index());
-    if (!twin_tile)
-      return false;
-    return true;
-  }
-
-  DCHECK(client_->GetTree() == ACTIVE_TREE);
-  const PictureLayerTiling* pending_twin =
-      client_->GetPendingOrActiveTwinTiling(this);
-  // If we don't have a pending tree, or the pending tree will overwrite the
-  // given tile, then it is not required for activation.
-  if (!pending_twin || !TilingMatchesTileIndices(pending_twin) ||
-      pending_twin->TileAt(tile->tiling_i_index(), tile->tiling_j_index())) {
-    return false;
-  }
-  // Otherwise, ask the pending twin if this tile is required for activation.
-  return pending_twin->IsTileRequiredForActivation(tile);
-}
-
-bool PictureLayerTiling::IsTileRequiredForDraw(const Tile* tile) const {
-  if (client_->GetTree() == PENDING_TREE)
+  // If we are not allowed to mark tiles as required for activation, then don't
+  // do it.
+  if (!can_require_tiles_for_activation_)
     return false;
 
   if (resolution_ != HIGH_RESOLUTION)
     return false;
 
-  bool tile_is_visible = current_visible_rect_.Intersects(tile->content_rect());
-  if (!tile_is_visible)
+  if (IsTileOccluded(tile))
     return false;
 
-  if (IsTileOccludedOnCurrentTree(tile))
+  if (client_->RequiresHighResToDraw())
+    return true;
+
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
+  if (!twin_tiling)
+    return true;
+
+  if (twin_tiling->raster_source()->GetSize() != raster_source()->GetSize())
+    return true;
+
+  if (twin_tiling->current_visible_rect_ != current_visible_rect_)
+    return true;
+
+  Tile* twin_tile =
+      twin_tiling->TileAt(tile->tiling_i_index(), tile->tiling_j_index());
+  // If twin tile is missing, it might not have a recording, so we don't need
+  // this tile to be required for activation.
+  if (!twin_tile)
     return false;
+
+  return true;
+}
+
+bool PictureLayerTiling::IsTileRequiredForDrawIfVisible(
+    const Tile* tile) const {
+  DCHECK_EQ(ACTIVE_TREE, client_->GetTree());
+
+  // This function assumes that the tile is visible (i.e. in the viewport).
+
+  if (resolution_ != HIGH_RESOLUTION)
+    return false;
+
+  if (IsTileOccluded(tile))
+    return false;
+
   return true;
 }
 
 void PictureLayerTiling::UpdateTileAndTwinPriority(Tile* tile) const {
-  tile->set_priority(ComputePriorityForTile(tile));
-  tile->set_is_occluded(IsTileOccluded(tile));
-  tile->set_required_for_activation(IsTileRequiredForActivation(tile));
-  tile->set_required_for_draw(IsTileRequiredForDraw(tile));
+  WhichTree tree = client_->GetTree();
+  WhichTree twin_tree = tree == ACTIVE_TREE ? PENDING_TREE : ACTIVE_TREE;
+
+  tile->SetPriority(tree, ComputePriorityForTile(tile));
+  UpdateRequiredStateForTile(tile, tree);
+
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
+  if (!tile->is_shared() || !twin_tiling) {
+    tile->SetPriority(twin_tree, TilePriority());
+    tile->set_is_occluded(twin_tree, false);
+    if (twin_tree == PENDING_TREE)
+      tile->set_required_for_activation(false);
+    else
+      tile->set_required_for_draw(false);
+    return;
+  }
+
+  tile->SetPriority(twin_tree, twin_tiling->ComputePriorityForTile(tile));
+  twin_tiling->UpdateRequiredStateForTile(tile, twin_tree);
+}
+
+void PictureLayerTiling::UpdateRequiredStateForTile(Tile* tile,
+                                                    WhichTree tree) const {
+  if (tile->priority(tree).priority_bin == TilePriority::NOW) {
+    if (tree == PENDING_TREE) {
+      tile->set_required_for_activation(
+          IsTileRequiredForActivationIfVisible(tile));
+    } else {
+      tile->set_required_for_draw(IsTileRequiredForDrawIfVisible(tile));
+    }
+    tile->set_is_occluded(tree, IsTileOccluded(tile));
+    return;
+  }
+
+  // Non-NOW bin tiles are not required or occluded.
+  if (tree == PENDING_TREE)
+    tile->set_required_for_activation(false);
+  else
+    tile->set_required_for_draw(false);
+  tile->set_is_occluded(tree, false);
 }
 
 void PictureLayerTiling::VerifyAllTilesHaveCurrentRasterSource() const {
@@ -831,11 +874,6 @@ TilePriority PictureLayerTiling::ComputePriorityForTile(
     return TilePriority(resolution_, TilePriority::NOW, 0);
   }
 
-  if (max_tile_priority_bin <= TilePriority::SOON &&
-      pending_visible_rect().Intersects(tile_bounds)) {
-    return TilePriority(resolution_, TilePriority::SOON, 0);
-  }
-
   DCHECK_GT(current_content_to_screen_scale_, 0.f);
   float distance_to_visible =
       current_visible_rect_.ManhattanInternalDistance(tile_bounds) *
@@ -853,11 +891,20 @@ TilePriority PictureLayerTiling::ComputePriorityForTile(
 
 void PictureLayerTiling::GetAllTilesAndPrioritiesForTracing(
     std::map<const Tile*, TilePriority>* tile_map) const {
+  const PictureLayerTiling* twin_tiling =
+      client_->GetPendingOrActiveTwinTiling(this);
   for (const auto& tile_pair : tiles_) {
     const Tile* tile = tile_pair.second.get();
     const TilePriority& priority = ComputePriorityForTile(tile);
+    // If the tile is shared, it means the twin also has the same tile.
+    // Otherwise, use the default priority.
+    const TilePriority& twin_priority =
+        (twin_tiling && tile->is_shared())
+            ? twin_tiling->ComputePriorityForTile(tile)
+            : TilePriority();
+
     // Store combined priority.
-    (*tile_map)[tile] = priority;
+    (*tile_map)[tile] = TilePriority(priority, twin_priority);
   }
 }
 

@@ -34,8 +34,7 @@ class CC_EXPORT TilingSetRasterQueueRequired {
    public:
     TilingIterator();
     explicit TilingIterator(PictureLayerTiling* tiling,
-                            TilingData* tiling_data,
-                            const gfx::Rect& rect);
+                            TilingData* tiling_data);
     ~TilingIterator();
 
     bool done() const { return current_tile_ == nullptr; }

@@ -19,39 +19,19 @@ TilingSetRasterQueueRequired::TilingSetRasterQueueRequired(
   DCHECK_NE(static_cast<int>(type),
             static_cast<int>(RasterTilePriorityQueue::Type::ALL));
 
-  // Required tiles should only come from HIGH_RESOLUTION tilings. However, if
-  // we want required for activation tiles on the active tree, then it will come
-  // from tilings whose pending twin is high resolution.
-  PictureLayerTiling* tiling = nullptr;
-  if (type == RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION &&
-      tiling_set->client()->GetTree() == ACTIVE_TREE) {
-    for (size_t i = 0; i < tiling_set->num_tilings(); ++i) {
-      PictureLayerTiling* active_tiling = tiling_set->tiling_at(i);
-      const PictureLayerTiling* pending_twin =
-          tiling_set->client()->GetPendingOrActiveTwinTiling(active_tiling);
-      if (pending_twin && pending_twin->resolution() == HIGH_RESOLUTION) {
-        tiling = active_tiling;
-        break;
-      }
-    }
-  } else {
-    tiling = tiling_set->FindTilingWithResolution(HIGH_RESOLUTION);
-  }
-
-  // If we don't have a tiling, then this queue will yield no tiles. See
-  // PictureLayerImpl::CanHaveTilings for examples of when a HIGH_RESOLUTION
+  // Any type of required tile would only come from a high resolution tiling.
+  // The functions that determine this value is
+  // PictureLayerTiling::IsTileRequiredFor*, which all return false if the
+  // resolution is not HIGH_RESOLUTION.
+  PictureLayerTiling* tiling =
+      tiling_set->FindTilingWithResolution(HIGH_RESOLUTION);
+  // If we don't have a high res tiling, then this queue will yield no tiles.
+  // See PictureLayerImpl::CanHaveTilings for examples of when a HIGH_RESOLUTION
   // tiling would not be generated.
   if (!tiling)
     return;
 
-  if (type == RasterTilePriorityQueue::Type::REQUIRED_FOR_ACTIVATION) {
-    iterator_ = TilingIterator(tiling, &tiling->tiling_data_,
-                               tiling->pending_visible_rect());
-  } else {
-    iterator_ = TilingIterator(tiling, &tiling->tiling_data_,
-                               tiling->current_visible_rect());
-  }
-
+  iterator_ = TilingIterator(tiling, &tiling->tiling_data_);
   while (!iterator_.done() && !IsTileRequired(*iterator_))
     ++iterator_;
 }
@@ -93,11 +73,19 @@ TilingSetRasterQueueRequired::TilingIterator::TilingIterator()
 
 TilingSetRasterQueueRequired::TilingIterator::TilingIterator(
     PictureLayerTiling* tiling,
-    TilingData* tiling_data,
-    const gfx::Rect& rect)
+    TilingData* tiling_data)
     : tiling_(tiling), tiling_data_(tiling_data), current_tile_(nullptr) {
+  if (!tiling_->has_visible_rect_tiles()) {
+    // Verify that if we would create the iterator, then it would be empty (ie
+    // it would return false when evaluated as a bool).
+    DCHECK(!TilingData::Iterator(tiling_data_, tiling->current_visible_rect(),
+                                 false));
+    return;
+  }
+
   visible_iterator_ =
-      TilingData::Iterator(tiling_data_, rect, false /* include_borders */);
+      TilingData::Iterator(tiling_data_, tiling_->current_visible_rect(),
+                           false /* include_borders */);
   if (!visible_iterator_)
     return;
 
