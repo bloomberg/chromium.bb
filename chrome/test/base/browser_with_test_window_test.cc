@@ -165,12 +165,16 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   if (controller->GetPendingEntryIndex() >= 0) {
     test_rfh_tester->SendNavigateWithTransition(
         controller->GetPendingEntry()->GetPageID(),
+        controller->GetPendingEntry()->GetUniqueID(),
+        false,
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   } else {
     test_rfh_tester->SendNavigateWithTransition(
         controller->GetWebContents()->GetMaxPageIDForSiteInstance(
             test_rfh->GetSiteInstance()) + 1,
+        controller->GetPendingEntry()->GetUniqueID(),
+        true,
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   }

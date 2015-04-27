@@ -15,6 +15,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -76,9 +78,19 @@ class GeneratedCreditCardBubbleControllerTest : public testing::Test {
                                                   BackingCard());
   }
 
-  void NavigateWithTransition(ui::PageTransition trans) {
-    content::WebContentsTester::For(test_web_contents_.get())->TestDidNavigate(
-        test_web_contents_->GetMainFrame(), 1, GURL("about:blank"), trans);
+  void NavigateWithTransition(ui::PageTransition transition) {
+    content::LoadCommittedDetails details;
+    content::FrameNavigateParams params;
+
+    // The transition is in two places; fill in both.
+    scoped_ptr<content::NavigationEntry> navigation_entry(
+        content::NavigationEntry::Create());
+    navigation_entry->SetTransitionType(transition);
+    params.transition = transition;
+    details.entry = navigation_entry.get();
+
+    ASSERT_NE(nullptr, controller());
+    controller()->DidNavigateMainFrame(details, params);
   }
 
  private:
