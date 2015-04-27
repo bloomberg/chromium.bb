@@ -158,11 +158,6 @@ void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
   // using SetAutomaticGainControl().
   StartAgc();
 
-  if (!MarshalComPointers()) {
-    HandleError(S_FALSE);
-    return;
-  }
-
   // Create and start the thread that will drive the capturing by waiting for
   // capture events.
   capture_thread_ =
@@ -177,8 +172,6 @@ void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
     hr = audio_render_client_for_loopback_->Start();
 
   started_ = SUCCEEDED(hr);
-  if (!started_)
-    HandleError(hr);
 }
 
 void WASAPIAudioInputStream::Stop() {
@@ -357,7 +350,7 @@ HRESULT WASAPIAudioInputStream::GetMixFormat(const std::string& device_id,
 }
 
 void WASAPIAudioInputStream::Run() {
-  ScopedCOMInitializer com_init;
+  ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
 
   // Increase the thread priority.
   capture_thread_->SetThreadPriority(base::ThreadPriority::REALTIME_AUDIO);
@@ -376,10 +369,6 @@ void WASAPIAudioInputStream::Run() {
     LOG(WARNING) << "Failed to enable MMCSS (error code=" << err << ").";
   }
 
-  // Retrieve COM pointers from the main thread.
-  ScopedComPtr<IAudioCaptureClient> audio_capture_client;
-  UnmarshalComPointers(&audio_capture_client);
-
   // Allocate a buffer with a size that enables us to take care of cases like:
   // 1) The recorded buffer size is smaller, or does not match exactly with,
   //    the selected packet size used in each callback.
@@ -394,7 +383,7 @@ void WASAPIAudioInputStream::Run() {
   LARGE_INTEGER now_count;
   bool recording = true;
   bool error = false;
-  double volume = 0;
+  double volume = GetVolume();
   HANDLE wait_array[2] =
       { stop_capture_event_.Get(), audio_samples_ready_event_.Get() };
 
@@ -423,9 +412,11 @@ void WASAPIAudioInputStream::Run() {
           // Retrieve the amount of data in the capture endpoint buffer,
           // replace it with silence if required, create callbacks for each
           // packet and store non-delivered data for the next event.
-          hr = audio_capture_client->GetBuffer(
-              &data_ptr, &num_frames_to_read, &flags, &device_position,
-              &first_audio_frame_timestamp);
+          hr = audio_capture_client_->GetBuffer(&data_ptr,
+                                                &num_frames_to_read,
+                                                &flags,
+                                                &device_position,
+                                                &first_audio_frame_timestamp);
           if (FAILED(hr)) {
             DLOG(ERROR) << "Failed to get data from the capture buffer";
             continue;
@@ -447,7 +438,7 @@ void WASAPIAudioInputStream::Run() {
             buffer_frame_index += num_frames_to_read;
           }
 
-          hr = audio_capture_client->ReleaseBuffer(num_frames_to_read);
+          hr = audio_capture_client_->ReleaseBuffer(num_frames_to_read);
           DLOG_IF(ERROR, FAILED(hr)) << "Failed to release capture buffer";
 
           // Derive a delay estimate for the captured audio packet.
@@ -685,11 +676,8 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
       &format_,
       (effects_ & AudioParameters::DUCKING) ? &kCommunicationsSessionId : NULL);
 
-  if (FAILED(hr)) {
-    PLOG(ERROR) << "Failed to initalize IAudioClient: " << std::hex << hr
-                << " : ";
+  if (FAILED(hr))
     return hr;
-  }
 
   // Retrieve the length of the endpoint buffer shared between the client
   // and the audio engine. The buffer length determines the maximum amount
@@ -778,28 +766,6 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   hr = audio_client_->GetService(__uuidof(ISimpleAudioVolume),
                                  simple_audio_volume_.ReceiveVoid());
   return hr;
-}
-
-bool WASAPIAudioInputStream::MarshalComPointers() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!com_stream_);
-  HRESULT hr = CoMarshalInterThreadInterfaceInStream(
-      __uuidof(IAudioCaptureClient), audio_capture_client_.get(),
-      com_stream_.Receive());
-  if (FAILED(hr))
-    DLOG(ERROR) << "Marshal failed for IAudioCaptureClient: " << std::hex << hr;
-  DCHECK_EQ(SUCCEEDED(hr), !!com_stream_);
-  return SUCCEEDED(hr);
-}
-
-void WASAPIAudioInputStream::UnmarshalComPointers(
-    ScopedComPtr<IAudioCaptureClient>* audio_capture_client) {
-  DCHECK_EQ(capture_thread_->tid(), base::PlatformThread::CurrentId());
-  DCHECK(com_stream_);
-  HRESULT hr = CoGetInterfaceAndReleaseStream(
-      com_stream_.Detach(), __uuidof(IAudioCaptureClient),
-      audio_capture_client->ReceiveVoid());
-  CHECK(SUCCEEDED(hr));
 }
 
 }  // namespace media

@@ -38,7 +38,13 @@ double GetVolumeAfterSetVolumeOnLinux(AudioInputStream* ais,
 
 class AudioInputVolumeTest : public ::testing::Test {
  protected:
-  AudioInputVolumeTest() : audio_manager_(AudioManager::CreateForTesting()) {}
+  AudioInputVolumeTest()
+      : audio_manager_(AudioManager::CreateForTesting())
+#if defined(OS_WIN)
+       , com_init_(base::win::ScopedCOMInitializer::kMTA)
+#endif
+  {
+  }
 
   bool HasCoreAudioAndInputDevices() {
 #if defined(OS_WIN)
@@ -64,27 +70,27 @@ class AudioInputVolumeTest : public ::testing::Test {
         params, device_id);
     EXPECT_TRUE(NULL != ais);
 
-#if defined(OS_MACOSX)
-    EXPECT_TRUE(ais->Open());
-#else
-    // Some linux devices do not support our settings and some Windows devices
-    // may be "currently unavailable", we may fail to open those devices.
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+    // Some linux devices do not support our settings, we may fail to open
+    // those devices.
     if (!ais->Open()) {
       // Default device should always be able to be opened.
       EXPECT_TRUE(AudioManagerBase::kDefaultDeviceId != device_id);
       ais->Close();
       ais = NULL;
     }
+#elif defined(OS_WIN) || defined(OS_MACOSX)
+    EXPECT_TRUE(ais->Open());
 #endif
 
     return ais;
   }
 
+  scoped_ptr<AudioManager> audio_manager_;
+
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer com_init_;
 #endif
-
-  scoped_ptr<AudioManager> audio_manager_;
 };
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

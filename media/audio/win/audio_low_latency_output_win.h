@@ -157,10 +157,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // Checks available amount of space in the endpoint buffer and reads
   // data from the client to fill up the buffer without causing audio
   // glitches.
-  bool RenderAudioFromSource(UINT64 device_frequency,
-                             IAudioClient* thread_audio_client,
-                             IAudioRenderClient* thread_audio_render_client,
-                             IAudioClock* thread_audio_clock);
+  bool RenderAudioFromSource(UINT64 device_frequency);
 
   // Called when the device will be opened in exclusive mode and use the
   // application specified format.
@@ -174,15 +171,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // the thread has stopped.  |stop_render_event_| is reset after the call.
   // |source_| is set to NULL.
   void StopThread();
-
-  // Handles sharing of COM pointers between the audio and render threads.  The
-  // marshal method must be called on the audio manager thread, while unmarshal
-  // must be called on |render_thread_|.
-  bool MarshalComPointers();
-  void UnmarshalComPointers(
-      base::win::ScopedComPtr<IAudioClient>* audio_client,
-      base::win::ScopedComPtr<IAudioRenderClient>* audio_render_client,
-      base::win::ScopedComPtr<IAudioClock>* audio_clock);
 
   // Contains the thread ID of the creating thread.
   base::PlatformThreadId creating_thread_id_;
@@ -233,18 +221,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // Pointer to the client that will deliver audio samples to be played out.
   AudioSourceCallback* source_;
 
-  // ------------------------------------------------------
-  // Warning: COM pointers must be marshaled from the audio thread to be used
-  // on any other thread. Do not use any of these interfaces on a thread other
-  // than the audio thread.  See MarshalComPointers() and UnmarshalComPointers()
-  // for marshaling pointers to the render thread.
-
-  // Stream into which the COM pointers below are marshaled so that they can
-  // be used on another thread.
-  base::win::ScopedComPtr<IStream> com_stream_;
-
-  // Windows Audio Session API (WASAPI) interfaces.
-
   // An IAudioClient interface which enables a client to create and initialize
   // an audio stream between an audio application and the audio engine.
   base::win::ScopedComPtr<IAudioClient> audio_client_;
@@ -252,9 +228,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // The IAudioRenderClient interface enables a client to write output
   // data to a rendering endpoint buffer.
   base::win::ScopedComPtr<IAudioRenderClient> audio_render_client_;
-
-  base::win::ScopedComPtr<IAudioClock> audio_clock_;
-  // ------------------------------------------------------
 
   // The audio engine will signal this event each time a buffer becomes
   // ready to be filled by the client.
@@ -265,6 +238,8 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
 
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
   scoped_ptr<AudioBus> audio_bus_;
+
+  base::win::ScopedComPtr<IAudioClock> audio_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(WASAPIAudioOutputStream);
 };

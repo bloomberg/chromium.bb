@@ -17,7 +17,7 @@ namespace media {
 // Example record in the output list:
 // - device_name: "Microphone (Realtek High Definition Audio)".
 // - unique_id: "{0.0.1.00000000}.{8db6020f-18e3-4f25-b6f5-7726c9122574}"
-// This method must be called from a COM thread using STA.
+// This method must be called from a COM thread using MTA.
 bool GetInputDeviceNamesWin(media::AudioDeviceNames* device_names);
 bool GetOutputDeviceNamesWin(media::AudioDeviceNames* device_names);
 

@@ -427,7 +427,7 @@ TEST(WinAudioTest, PCMWaveStreamPlay200HzToneLowLatency) {
   ABORT_AUDIO_TEST_IF_NOT(audio_man->HasAudioOutputDevices());
 
   // The WASAPI API requires a correct COM environment.
-  ScopedCOMInitializer com_init;
+  ScopedCOMInitializer com_init(ScopedCOMInitializer::kMTA);
 
   // Use 10 ms buffer size for WASAPI and 50 ms buffer size for Wave.
   // Take the existing native sample rate into account.
