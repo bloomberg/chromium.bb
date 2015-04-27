@@ -295,9 +295,6 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/430533
 "race:TileTaskGraphRunner::Run\n"
 
-// https://crbug.com/437044
-"race:SkEventTracer\n"
-
 // https://crbug.com/448203
 "race:blink::RemoteFrame::detach\n"
 
