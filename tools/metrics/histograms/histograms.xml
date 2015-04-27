@@ -12075,6 +12075,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="HttpCache.OfflineStatus" enum="OfflineStatus">
+  <obsolete>
+    Deprecated 4/2015.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Result of a main page HttpCacheTransaction if offline mode had been enabled.
@@ -57558,6 +57561,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="OfflineStatus" type="int">
+  <obsolete>
+    Deprecated 4/2015.
+  </obsolete>
   <int value="0" label="Fresh data load from Cache"/>
   <int value="1" label="Successful network request (validation or fetch)."/>
   <int value="2" label="Failed network request (non-offline error)."/>
