@@ -615,7 +615,8 @@ void SupervisedUserService::OnSiteListUpdated() {
 void SupervisedUserService::LoadBlacklist(const base::FilePath& path,
                                           const GURL& url) {
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
       FROM_HERE,
       base::Bind(&base::PathExists, path),
       base::Bind(&SupervisedUserService::OnBlacklistFileChecked,

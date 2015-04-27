@@ -287,9 +287,11 @@ void SupervisedUserAuthentication::LoadPasswordUpdateData(
   base::FilePath profile_path =
       ProfileHelper::GetProfilePathByUserIdHash(user->username_hash());
   PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&LoadPasswordData, profile_path),
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
+          .get(),
+      FROM_HERE, base::Bind(&LoadPasswordData, profile_path),
       base::Bind(&OnPasswordDataLoaded, success_callback, failure_callback));
 }
 

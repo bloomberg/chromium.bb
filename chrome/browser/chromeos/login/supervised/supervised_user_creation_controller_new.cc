@@ -347,10 +347,12 @@ void SupervisedUserCreationControllerNew::RegistrationCallback(
     creation_context_->token = token;
 
     PostTaskAndReplyWithResult(
-        content::BrowserThread::GetBlockingPool(),
+        content::BrowserThread::GetBlockingPool()
+            ->GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
+            .get(),
         FROM_HERE,
-        base::Bind(&StoreSupervisedUserFiles,
-                   creation_context_->token,
+        base::Bind(&StoreSupervisedUserFiles, creation_context_->token,
                    ProfileHelper::GetProfilePathByUserIdHash(
                        creation_context_->mount_hash)),
         base::Bind(

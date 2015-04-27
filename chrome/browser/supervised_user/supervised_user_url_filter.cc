@@ -165,7 +165,10 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
     : default_behavior_(ALLOW),
       contents_(new Contents()),
       blacklist_(nullptr),
-      blocking_task_runner_(BrowserThread::GetBlockingPool()) {
+      blocking_task_runner_(
+          BrowserThread::GetBlockingPool()
+              ->GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get()) {
   // Detach from the current thread so we can be constructed on a different
   // thread than the one where we're used.
   DetachFromThread();

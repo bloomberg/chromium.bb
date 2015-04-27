@@ -306,7 +306,9 @@ void SupervisedUserRegistrationUtilityImpl::Register(
   }
 
   syncer::GetSessionName(
-      content::BrowserThread::GetBlockingPool(),
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
       base::Bind(&SupervisedUserRegistrationUtilityImpl::FetchToken,
                  weak_ptr_factory_.GetWeakPtr()));
 }

@@ -512,10 +512,11 @@ void SupervisedUserManagerImpl::LoadSupervisedUserToken(
   base::FilePath profile_dir = ProfileHelper::GetProfilePathByUserIdHash(
       ProfileHelper::Get()->GetUserByProfile(profile)->username_hash());
   PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
-      FROM_HERE,
-      base::Bind(&LoadSyncToken, profile_dir),
-      callback);
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+                base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
+          .get(),
+      FROM_HERE, base::Bind(&LoadSyncToken, profile_dir), callback);
 }
 
 void SupervisedUserManagerImpl::ConfigureSyncWithToken(

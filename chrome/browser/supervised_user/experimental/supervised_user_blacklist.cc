@@ -75,7 +75,8 @@ size_t SupervisedUserBlacklist::GetEntryCount() const {
 void SupervisedUserBlacklist::ReadFromFile(const base::FilePath& path,
                                            const base::Closure& done_callback) {
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
       FROM_HERE,
       base::Bind(&ReadFromBinaryFileOnFileThread, path),
       base::Bind(&SupervisedUserBlacklist::OnReadFromFileCompleted,

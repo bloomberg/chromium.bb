@@ -106,7 +106,9 @@ SupervisedUserSiteList::Site::~Site() {
 void SupervisedUserSiteList::Load(const base::FilePath& path,
                                   const LoadedCallback& callback) {
   base::PostTaskAndReplyWithResult(
-      content::BrowserThread::GetBlockingPool(),
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
       FROM_HERE,
       base::Bind(&ReadFileOnBlockingThread, path),
       base::Bind(&SupervisedUserSiteList::ParseJson, path, callback));

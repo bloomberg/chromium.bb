@@ -35,7 +35,8 @@ SupervisedUserBlacklistDownloader::SupervisedUserBlacklistDownloader(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
+      BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get(),
       FROM_HERE,
       base::Bind(&base::PathExists, path),
       base::Bind(&SupervisedUserBlacklistDownloader::OnFileExistsCheckDone,
