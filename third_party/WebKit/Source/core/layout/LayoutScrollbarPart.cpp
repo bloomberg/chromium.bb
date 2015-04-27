@@ -76,10 +76,10 @@ static void recordScrollbarPartStats(Document& document, ScrollbarPart part)
 
 LayoutScrollbarPart* LayoutScrollbarPart::createAnonymous(Document* document, LayoutScrollbar* scrollbar, ScrollbarPart part)
 {
-    LayoutScrollbarPart* renderer = new LayoutScrollbarPart(scrollbar, part);
+    LayoutScrollbarPart* layoutObject = new LayoutScrollbarPart(scrollbar, part);
     recordScrollbarPartStats(*document, part);
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
+    layoutObject->setDocumentForAnonymous(document);
+    return layoutObject;
 }
 
 void LayoutScrollbarPart::layout()
@@ -124,11 +124,11 @@ static int calcScrollbarThicknessUsing(SizeType sizeType, const Length& length, 
 
 void LayoutScrollbarPart::computeScrollbarWidth()
 {
-    if (!m_scrollbar->owningRenderer())
+    if (!m_scrollbar->owningLayoutObject())
         return;
     // FIXME: We are querying layout information but nothing guarantees that it's up-to-date, especially since we are called at style change.
     // FIXME: Querying the style's border information doesn't work on table cells with collapsing borders.
-    int visibleSize = m_scrollbar->owningRenderer()->size().width() - m_scrollbar->owningRenderer()->style()->borderLeftWidth() - m_scrollbar->owningRenderer()->style()->borderRightWidth();
+    int visibleSize = m_scrollbar->owningLayoutObject()->size().width() - m_scrollbar->owningLayoutObject()->style()->borderLeftWidth() - m_scrollbar->owningLayoutObject()->style()->borderRightWidth();
     int w = calcScrollbarThicknessUsing(MainOrPreferredSize, style()->width(), visibleSize);
     int minWidth = calcScrollbarThicknessUsing(MinSize, style()->minWidth(), visibleSize);
     int maxWidth = style()->maxWidth().isMaxSizeNone() ? w : calcScrollbarThicknessUsing(MaxSize, style()->maxWidth(), visibleSize);
@@ -141,11 +141,11 @@ void LayoutScrollbarPart::computeScrollbarWidth()
 
 void LayoutScrollbarPart::computeScrollbarHeight()
 {
-    if (!m_scrollbar->owningRenderer())
+    if (!m_scrollbar->owningLayoutObject())
         return;
     // FIXME: We are querying layout information but nothing guarantees that it's up-to-date, especially since we are called at style change.
     // FIXME: Querying the style's border information doesn't work on table cells with collapsing borders.
-    int visibleSize = m_scrollbar->owningRenderer()->size().height() -  m_scrollbar->owningRenderer()->style()->borderTopWidth() - m_scrollbar->owningRenderer()->style()->borderBottomWidth();
+    int visibleSize = m_scrollbar->owningLayoutObject()->size().height() -  m_scrollbar->owningLayoutObject()->style()->borderTopWidth() - m_scrollbar->owningLayoutObject()->style()->borderBottomWidth();
     int h = calcScrollbarThicknessUsing(MainOrPreferredSize, style()->height(), visibleSize);
     int minHeight = calcScrollbarThicknessUsing(MinSize, style()->minHeight(), visibleSize);
     int maxHeight = style()->maxHeight().isMaxSizeNone() ? h : calcScrollbarThicknessUsing(MaxSize, style()->maxHeight(), visibleSize);
@@ -199,11 +199,11 @@ void LayoutScrollbarPart::imageChanged(WrappedImagePtr image, const IntRect* rec
     }
 }
 
-LayoutObject* LayoutScrollbarPart::rendererOwningScrollbar() const
+LayoutObject* LayoutScrollbarPart::layoutObjectOwningScrollbar() const
 {
     if (!m_scrollbar)
         return 0;
-    return m_scrollbar->owningRenderer();
+    return m_scrollbar->owningLayoutObject();
 }
 
 }

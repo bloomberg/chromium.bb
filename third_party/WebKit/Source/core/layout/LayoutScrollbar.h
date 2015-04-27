@@ -44,7 +44,7 @@ public:
     static PassRefPtrWillBeRawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = 0);
     virtual ~LayoutScrollbar();
 
-    LayoutBox* owningRenderer() const;
+    LayoutBox* owningLayoutObject() const;
 
     IntRect buttonRect(ScrollbarPart);
     IntRect trackRect(int startLength, int endLength);

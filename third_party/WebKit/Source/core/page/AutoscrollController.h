@@ -62,7 +62,7 @@ public:
     void startAutoscrollForSelection(LayoutObject*);
     void stopAutoscroll();
     void stopAutoscrollIfNeeded(LayoutObject*);
-    void updateAutoscrollRenderer();
+    void updateAutoscrollLayoutObject();
     void updateDragAndDrop(Node* targetNode, const IntPoint& eventPosition, double eventTime);
 #if OS(WIN)
     void handleMouseReleaseForPanScrolling(LocalFrame*, const PlatformMouseEvent&);
@@ -79,7 +79,7 @@ private:
 #endif
 
     Page& m_page;
-    LayoutBox* m_autoscrollRenderer;
+    LayoutBox* m_autoscrollLayoutObject;
     AutoscrollType m_autoscrollType;
     IntPoint m_dragAndDropAutoscrollReferencePosition;
     double m_dragAndDropAutoscrollStartTime;

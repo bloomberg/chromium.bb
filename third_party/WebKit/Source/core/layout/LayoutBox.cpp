@@ -906,7 +906,7 @@ void LayoutBox::scrollByRecursively(const DoubleSize& delta, ScrollOffsetClampin
 
             LocalFrame* frame = this->frame();
             if (frame && frame->page())
-                frame->page()->autoscrollController().updateAutoscrollRenderer();
+                frame->page()->autoscrollController().updateAutoscrollLayoutObject();
         }
     } else if (view()->frameView()) {
         // If we are here, we were called on a renderer that can be programmatically scrolled, but doesn't

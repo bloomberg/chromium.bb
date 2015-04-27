@@ -55,7 +55,7 @@ public:
 
     void buttonSizesAlongTrackAxis(ScrollbarThemeClient*, int& beforeSize, int& afterSize);
 
-    static LayoutScrollbarTheme* renderScrollbarTheme();
+    static LayoutScrollbarTheme* layoutScrollbarTheme();
 
 protected:
     virtual bool hasButtons(ScrollbarThemeClient*) override;

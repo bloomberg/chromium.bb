@@ -73,7 +73,7 @@ public:
     }
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutScrollbarPart || LayoutBlock::isOfType(type); }
-    LayoutObject* rendererOwningScrollbar() const;
+    LayoutObject* layoutObjectOwningScrollbar() const;
 
 protected:
     virtual void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;

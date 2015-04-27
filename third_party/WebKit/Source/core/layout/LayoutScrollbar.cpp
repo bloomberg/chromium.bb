@@ -42,7 +42,7 @@ PassRefPtrWillBeRawPtr<Scrollbar> LayoutScrollbar::createCustomScrollbar(Scrolla
 }
 
 LayoutScrollbar::LayoutScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, Node* ownerNode, LocalFrame* owningFrame)
-    : Scrollbar(scrollableArea, orientation, RegularScrollbar, LayoutScrollbarTheme::renderScrollbarTheme())
+    : Scrollbar(scrollableArea, orientation, RegularScrollbar, LayoutScrollbarTheme::layoutScrollbarTheme())
     , m_owner(ownerNode)
     , m_owningFrame(owningFrame)
 {
@@ -89,7 +89,7 @@ DEFINE_TRACE(LayoutScrollbar)
     Scrollbar::trace(visitor);
 }
 
-LayoutBox* LayoutScrollbar::owningRenderer() const
+LayoutBox* LayoutScrollbar::owningLayoutObject() const
 {
     if (m_owningFrame)
         return m_owningFrame->ownerLayoutObject();
@@ -147,10 +147,10 @@ void LayoutScrollbar::setPressedPart(ScrollbarPart part)
 
 PassRefPtr<ComputedStyle> LayoutScrollbar::getScrollbarPseudoStyle(ScrollbarPart partType, PseudoId pseudoId)
 {
-    if (!owningRenderer())
+    if (!owningLayoutObject())
         return nullptr;
 
-    RefPtr<ComputedStyle> result = owningRenderer()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId, this, partType), owningRenderer()->style());
+    RefPtr<ComputedStyle> result = owningLayoutObject()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId, this, partType), owningLayoutObject()->style());
     // Scrollbars for root frames should always have background color
     // unless explicitly specified as transparent. So we force it.
     // This is because WebKit assumes scrollbar to be always painted and missing background
@@ -188,7 +188,7 @@ void LayoutScrollbar::updateScrollbarParts(bool destroy)
 
     if (newThickness != oldThickness) {
         setFrameRect(IntRect(location(), IntSize(isHorizontal ? width() : newThickness, isHorizontal ? newThickness : height())));
-        if (LayoutBox* box = owningRenderer()) {
+        if (LayoutBox* box = owningLayoutObject()) {
             if (box->isLayoutBlock())
                 toLayoutBlock(box)->notifyScrollbarThicknessChanged();
             box->setChildNeedsLayout();
@@ -228,24 +228,24 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
 
     RefPtr<ComputedStyle> partStyle = !destroy ? getScrollbarPseudoStyle(partType,  pseudoForScrollbarPart(partType)) : PassRefPtr<ComputedStyle>(nullptr);
 
-    bool needRenderer = !destroy && partStyle && partStyle->display() != NONE;
+    bool needLayoutObject = !destroy && partStyle && partStyle->display() != NONE;
 
-    if (needRenderer && partStyle->display() != BLOCK) {
+    if (needLayoutObject && partStyle->display() != BLOCK) {
         // See if we are a button that should not be visible according to OS settings.
         ScrollbarButtonsPlacement buttonsPlacement = theme()->buttonsPlacement();
         switch (partType) {
         case BackButtonStartPart:
-            needRenderer = (buttonsPlacement == ScrollbarButtonsSingle || buttonsPlacement == ScrollbarButtonsDoubleStart
+            needLayoutObject = (buttonsPlacement == ScrollbarButtonsSingle || buttonsPlacement == ScrollbarButtonsDoubleStart
                 || buttonsPlacement == ScrollbarButtonsDoubleBoth);
             break;
         case ForwardButtonStartPart:
-            needRenderer = (buttonsPlacement == ScrollbarButtonsDoubleStart || buttonsPlacement == ScrollbarButtonsDoubleBoth);
+            needLayoutObject = (buttonsPlacement == ScrollbarButtonsDoubleStart || buttonsPlacement == ScrollbarButtonsDoubleBoth);
             break;
         case BackButtonEndPart:
-            needRenderer = (buttonsPlacement == ScrollbarButtonsDoubleEnd || buttonsPlacement == ScrollbarButtonsDoubleBoth);
+            needLayoutObject = (buttonsPlacement == ScrollbarButtonsDoubleEnd || buttonsPlacement == ScrollbarButtonsDoubleBoth);
             break;
         case ForwardButtonEndPart:
-            needRenderer = (buttonsPlacement == ScrollbarButtonsSingle || buttonsPlacement == ScrollbarButtonsDoubleEnd
+            needLayoutObject = (buttonsPlacement == ScrollbarButtonsSingle || buttonsPlacement == ScrollbarButtonsDoubleEnd
                 || buttonsPlacement == ScrollbarButtonsDoubleBoth);
             break;
         default:
@@ -253,51 +253,51 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType, bool destroy)
         }
     }
 
-    LayoutScrollbarPart* partRenderer = m_parts.get(partType);
-    if (!partRenderer && needRenderer) {
-        partRenderer = LayoutScrollbarPart::createAnonymous(&owningRenderer()->document(), this, partType);
-        m_parts.set(partType, partRenderer);
-    } else if (partRenderer && !needRenderer) {
+    LayoutScrollbarPart* partLayoutObject = m_parts.get(partType);
+    if (!partLayoutObject && needLayoutObject) {
+        partLayoutObject = LayoutScrollbarPart::createAnonymous(&owningLayoutObject()->document(), this, partType);
+        m_parts.set(partType, partLayoutObject);
+    } else if (partLayoutObject && !needLayoutObject) {
         m_parts.remove(partType);
-        partRenderer->destroy();
-        partRenderer = 0;
+        partLayoutObject->destroy();
+        partLayoutObject = 0;
     }
 
-    if (partRenderer)
-        partRenderer->setStyle(partStyle.release());
+    if (partLayoutObject)
+        partLayoutObject->setStyle(partStyle.release());
 }
 
 IntRect LayoutScrollbar::buttonRect(ScrollbarPart partType)
 {
-    LayoutScrollbarPart* partRenderer = m_parts.get(partType);
-    if (!partRenderer)
+    LayoutScrollbarPart* partLayoutObject = m_parts.get(partType);
+    if (!partLayoutObject)
         return IntRect();
 
-    partRenderer->layout();
+    partLayoutObject->layout();
 
     bool isHorizontal = orientation() == HorizontalScrollbar;
     if (partType == BackButtonStartPart)
-        return IntRect(location(), IntSize(isHorizontal ? partRenderer->pixelSnappedWidth() : width(), isHorizontal ? height() : partRenderer->pixelSnappedHeight()));
+        return IntRect(location(), IntSize(isHorizontal ? partLayoutObject->pixelSnappedWidth() : width(), isHorizontal ? height() : partLayoutObject->pixelSnappedHeight()));
     if (partType == ForwardButtonEndPart) {
-        return IntRect(isHorizontal ? x() + width() - partRenderer->pixelSnappedWidth() : x(),
-            isHorizontal ? y() : y() + height() - partRenderer->pixelSnappedHeight(),
-            isHorizontal ? partRenderer->pixelSnappedWidth() : width(),
-            isHorizontal ? height() : partRenderer->pixelSnappedHeight());
+        return IntRect(isHorizontal ? x() + width() - partLayoutObject->pixelSnappedWidth() : x(),
+            isHorizontal ? y() : y() + height() - partLayoutObject->pixelSnappedHeight(),
+            isHorizontal ? partLayoutObject->pixelSnappedWidth() : width(),
+            isHorizontal ? height() : partLayoutObject->pixelSnappedHeight());
     }
 
     if (partType == ForwardButtonStartPart) {
         IntRect previousButton = buttonRect(BackButtonStartPart);
         return IntRect(isHorizontal ? x() + previousButton.width() : x(),
             isHorizontal ? y() : y() + previousButton.height(),
-            isHorizontal ? partRenderer->pixelSnappedWidth() : width(),
-            isHorizontal ? height() : partRenderer->pixelSnappedHeight());
+            isHorizontal ? partLayoutObject->pixelSnappedWidth() : width(),
+            isHorizontal ? height() : partLayoutObject->pixelSnappedHeight());
     }
 
     IntRect followingButton = buttonRect(ForwardButtonEndPart);
-    return IntRect(isHorizontal ? x() + width() - followingButton.width() - partRenderer->pixelSnappedWidth() : x(),
-        isHorizontal ? y() : y() + height() - followingButton.height() - partRenderer->pixelSnappedHeight(),
-        isHorizontal ? partRenderer->pixelSnappedWidth() : width(),
-        isHorizontal ? height() : partRenderer->pixelSnappedHeight());
+    return IntRect(isHorizontal ? x() + width() - followingButton.width() - partLayoutObject->pixelSnappedWidth() : x(),
+        isHorizontal ? y() : y() + height() - followingButton.height() - partLayoutObject->pixelSnappedHeight(),
+        isHorizontal ? partLayoutObject->pixelSnappedWidth() : width(),
+        isHorizontal ? height() : partLayoutObject->pixelSnappedHeight());
 }
 
 IntRect LayoutScrollbar::trackRect(int startLength, int endLength)
@@ -326,30 +326,30 @@ IntRect LayoutScrollbar::trackRect(int startLength, int endLength)
 
 IntRect LayoutScrollbar::trackPieceRectWithMargins(ScrollbarPart partType, const IntRect& oldRect)
 {
-    LayoutScrollbarPart* partRenderer = m_parts.get(partType);
-    if (!partRenderer)
+    LayoutScrollbarPart* partLayoutObject = m_parts.get(partType);
+    if (!partLayoutObject)
         return oldRect;
 
-    partRenderer->layout();
+    partLayoutObject->layout();
 
     IntRect rect = oldRect;
     if (orientation() == HorizontalScrollbar) {
-        rect.setX(rect.x() + partRenderer->marginLeft());
-        rect.setWidth(rect.width() - partRenderer->marginWidth());
+        rect.setX(rect.x() + partLayoutObject->marginLeft());
+        rect.setWidth(rect.width() - partLayoutObject->marginWidth());
     } else {
-        rect.setY(rect.y() + partRenderer->marginTop());
-        rect.setHeight(rect.height() - partRenderer->marginHeight());
+        rect.setY(rect.y() + partLayoutObject->marginTop());
+        rect.setHeight(rect.height() - partLayoutObject->marginHeight());
     }
     return rect;
 }
 
 int LayoutScrollbar::minimumThumbLength()
 {
-    LayoutScrollbarPart* partRenderer = m_parts.get(ThumbPart);
-    if (!partRenderer)
+    LayoutScrollbarPart* partLayoutObject = m_parts.get(ThumbPart);
+    if (!partLayoutObject)
         return 0;
-    partRenderer->layout();
-    return orientation() == HorizontalScrollbar ? partRenderer->size().width() : partRenderer->size().height();
+    partLayoutObject->layout();
+    return orientation() == HorizontalScrollbar ? partLayoutObject->size().width() : partLayoutObject->size().height();
 }
 
 }

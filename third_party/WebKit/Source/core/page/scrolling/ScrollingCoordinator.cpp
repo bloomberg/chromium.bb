@@ -808,8 +808,8 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
             EventTarget* target = eventTarget.key;
             Node* node = target->toNode();
             if (target->toDOMWindow() || node == document || node == document->documentElement() || node == document->body()) {
-                if (LayoutView* rendererView = document->layoutView()) {
-                    rendererView->computeLayerHitTestRects(rects);
+                if (LayoutView* layoutView = document->layoutView()) {
+                    layoutView->computeLayerHitTestRects(rects);
                 }
                 return;
             }
@@ -829,7 +829,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
 
         if (node->isDocumentNode() && node != document) {
             accumulateDocumentTouchEventTargetRects(rects, toDocument(node));
-        } else if (LayoutObject* renderer = node->layoutObject()) {
+        } else if (LayoutObject* layoutObject = node->layoutObject()) {
             // If the set also contains one of our ancestor nodes then processing
             // this node would be redundant.
             bool hasTouchEventTargetAncestor = false;
@@ -840,7 +840,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
             if (!hasTouchEventTargetAncestor) {
                 // Walk up the tree to the outermost non-composited scrollable layer.
                 DeprecatedPaintLayer* enclosingNonCompositedScrollLayer = nullptr;
-                for (DeprecatedPaintLayer* parent = renderer->enclosingLayer(); parent && parent->compositingState() == NotComposited; parent = parent->parent()) {
+                for (DeprecatedPaintLayer* parent = layoutObject->enclosingLayer(); parent && parent->compositingState() == NotComposited; parent = parent->parent()) {
                     if (parent->scrollsOverflow())
                         enclosingNonCompositedScrollLayer = parent;
                 }
@@ -853,7 +853,7 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects, co
                 if (enclosingNonCompositedScrollLayer)
                     enclosingNonCompositedScrollLayer->computeSelfHitTestRects(rects);
 
-                renderer->computeLayerHitTestRects(rects);
+                layoutObject->computeLayerHitTestRects(rects);
             }
         }
     }
@@ -956,10 +956,10 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
     if (!viewportConstrainedObjects)
         return false;
 
-    for (const LayoutObject* renderer : *viewportConstrainedObjects) {
-        ASSERT(renderer->isBoxModelObject() && renderer->hasLayer());
-        ASSERT(renderer->style()->position() == FixedPosition);
-        DeprecatedPaintLayer* layer = toLayoutBoxModelObject(renderer)->layer();
+    for (const LayoutObject* layoutObject : *viewportConstrainedObjects) {
+        ASSERT(layoutObject->isBoxModelObject() && layoutObject->hasLayer());
+        ASSERT(layoutObject->style()->position() == FixedPosition);
+        DeprecatedPaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
 
         // Whether the Layer scrolls with the viewport is a tree-depenent
         // property and our viewportConstrainedObjects collection is maintained

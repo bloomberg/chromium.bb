@@ -14,7 +14,7 @@ class DeprecatedPaintLayerScrollableArea;
 
 class ScrollableAreaPainter {
 public:
-    ScrollableAreaPainter(DeprecatedPaintLayerScrollableArea& renderLayerScrollableArea) : m_scrollableArea(renderLayerScrollableArea) { }
+    ScrollableAreaPainter(DeprecatedPaintLayerScrollableArea& paintLayerScrollableArea) : m_scrollableArea(paintLayerScrollableArea) { }
 
     void paintResizer(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect);
     void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls);

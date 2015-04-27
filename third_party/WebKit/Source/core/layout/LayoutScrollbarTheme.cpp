@@ -35,7 +35,7 @@
 
 namespace blink {
 
-LayoutScrollbarTheme* LayoutScrollbarTheme::renderScrollbarTheme()
+LayoutScrollbarTheme* LayoutScrollbarTheme::layoutScrollbarTheme()
 {
     DEFINE_STATIC_LOCAL(LayoutScrollbarTheme, theme, ());
     return &theme;

@@ -807,7 +807,7 @@ LayoutBlock* LayoutObject::containingBlock() const
 {
     LayoutObject* o = parent();
     if (!o && isLayoutScrollbarPart())
-        o = toLayoutScrollbarPart(this)->rendererOwningScrollbar();
+        o = toLayoutScrollbarPart(this)->layoutObjectOwningScrollbar();
     if (!isTextOrSVGChild() && m_style->position() == FixedPosition)
         return containerForFixedPosition();
     if (!isTextOrSVGChild() && m_style->position() == AbsolutePosition) {
