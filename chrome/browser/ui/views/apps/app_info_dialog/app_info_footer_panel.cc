@@ -148,8 +148,9 @@ void AppInfoFooterPanel::CreateShortcuts() {
 }
 
 bool AppInfoFooterPanel::CanCreateShortcuts() const {
-  // Ash platforms can't create shortcuts, and extensions can't have shortcuts.
-  return !app_->is_extension() &&
+  // Ash platforms can't create shortcuts. Extensions and the Chrome
+  // component app can't have shortcuts.
+  return app_->id() != extension_misc::kChromeAppId && !app_->is_extension() &&
          (chrome::GetHostDesktopTypeForNativeWindow(parent_window_) !=
           chrome::HOST_DESKTOP_TYPE_ASH);
 }
