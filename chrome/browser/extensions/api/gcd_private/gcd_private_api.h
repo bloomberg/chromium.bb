@@ -123,26 +123,6 @@ class GcdPrivateGetPrefetchedWifiNameListFunction
   bool RunSync() override;
 };
 
-class GcdPrivateEstablishSessionFunction : public ChromeAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("gcdPrivate.establishSession",
-                             GCDPRIVATE_ESTABLISHSESSION)
-
-  GcdPrivateEstablishSessionFunction();
-
- protected:
-  ~GcdPrivateEstablishSessionFunction() override;
-
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
-
- private:
-  void OnSessionInitialized(
-      int session_id,
-      api::gcd_private::Status status,
-      const std::vector<api::gcd_private::PairingType>& pairing_types);
-};
-
 class GcdPrivateCreateSessionFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("gcdPrivate.createSession",

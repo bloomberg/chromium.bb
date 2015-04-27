@@ -29,7 +29,8 @@ onload = function() {
         chrome.test.notifyPass();
       }
 
-      chrome.gcdPrivate.establishSession("1.2.3.4", 9090, onSessionEstablished);
+      chrome.gcdPrivate.createSession("myService._privet._tcp.local",
+                                      onSessionEstablished);
     }
   ]);
 };

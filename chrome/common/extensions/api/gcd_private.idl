@@ -91,9 +91,9 @@ namespace gcdPrivate {
   // |sessionId| : The session ID (identifies the session for future calls).
   // |status| : The status of operation (success or type of error).
   // |pairingTypes| is the list of supported pairing types.
-  callback EstablishSessionCallback = void(long sessionId,
-                                           Status status,
-                                           PairingType[] pairingTypes);
+  callback CreateSessionCallback = void(long sessionId,
+                                        Status status,
+                                        PairingType[] pairingTypes);
 
   // Called when the response to the message sent is available or on error.
   // |status| : The status of operation (success or type of error).
@@ -129,19 +129,10 @@ namespace gcdPrivate {
     // Get the list of SSIDs with prefetched callbacks.
     static void getPrefetchedWifiNameList(SSIDListCallback callback);
 
-    // Deprecated. Establish the session.
-    // TODO(vitalybuka): Remove after uptate of apps using this.
-    // http://crbug.com/461504
-    // |ipAddress| : The IPv4 or IPv6 address of the device.
-    // |port| : The port with Privet HTTP server.
-    static void establishSession(DOMString ipAddress,
-                                 long port,
-                                 EstablishSessionCallback callback);
-
     // Create new pairing.
     // |serviceName| : The mDns service name of the device.
     static void createSession(DOMString serviceName,
-                              EstablishSessionCallback callback);
+                              CreateSessionCallback callback);
 
     // Start pairing with selected method. Should be called after
     // |establishSession|.

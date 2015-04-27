@@ -636,37 +636,6 @@ void GcdPrivatePrefetchWifiPasswordFunction::OnResponse(bool response) {
   SendResponse(true);
 }
 
-GcdPrivateEstablishSessionFunction::GcdPrivateEstablishSessionFunction() {
-}
-
-GcdPrivateEstablishSessionFunction::~GcdPrivateEstablishSessionFunction() {
-}
-
-bool GcdPrivateEstablishSessionFunction::RunAsync() {
-  scoped_ptr<gcd_private::EstablishSession::Params> params =
-      gcd_private::EstablishSession::Params::Create(*args_);
-
-  if (!params)
-    return false;
-
-  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
-
-  GcdPrivateAPIImpl::EstablishSessionCallback callback = base::Bind(
-      &GcdPrivateEstablishSessionFunction::OnSessionInitialized, this);
-  gcd_api->EstablishSession(params->ip_address, params->port, callback);
-
-  return true;
-}
-
-void GcdPrivateEstablishSessionFunction::OnSessionInitialized(
-    int session_id,
-    api::gcd_private::Status status,
-    const std::vector<api::gcd_private::PairingType>& pairing_types) {
-  results_ = gcd_private::EstablishSession::Results::Create(session_id, status,
-                                                            pairing_types);
-  SendResponse(true);
-}
-
 GcdPrivateCreateSessionFunction::GcdPrivateCreateSessionFunction() {
 }
 
@@ -693,8 +662,8 @@ void GcdPrivateCreateSessionFunction::OnSessionInitialized(
     int session_id,
     api::gcd_private::Status status,
     const std::vector<api::gcd_private::PairingType>& pairing_types) {
-  results_ = gcd_private::EstablishSession::Results::Create(session_id, status,
-                                                            pairing_types);
+  results_ = gcd_private::CreateSession::Results::Create(session_id, status,
+                                                         pairing_types);
   SendResponse(true);
 }
 
