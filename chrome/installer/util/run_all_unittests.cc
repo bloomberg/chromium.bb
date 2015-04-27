@@ -9,7 +9,7 @@
 #include "chrome/common/chrome_paths.h"
 
 int main(int argc, char** argv) {
-  TestSuite test_suite(argc, argv);
+  base::TestSuite test_suite(argc, argv);
 
   // Register Chrome Path provider so that we can get test data dir.
   chrome::RegisterPathProvider();

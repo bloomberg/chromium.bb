@@ -90,8 +90,4 @@ class TestSuite {
 
 }  // namespace base
 
-// TODO(brettw) remove this. This is a temporary hack to allow WebKit to compile
-// until we can update it to use "base::" (preventing a two-sided patch).
-using base::TestSuite;
-
 #endif  // BASE_TEST_TEST_SUITE_H_

@@ -120,7 +120,7 @@ void PrintAuthCodeInfo() {
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
-  TestSuite test_suite(argc, argv);
+  base::TestSuite test_suite(argc, argv);
 
   // The pointer returned here refers to a singleton, since we don't own the
   // lifetime of the object, don't wrap in a scoped_ptr construct or release it.

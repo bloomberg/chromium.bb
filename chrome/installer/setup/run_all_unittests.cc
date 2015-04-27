@@ -8,7 +8,7 @@
 #include "chrome/installer/setup/setup_util_unittest.h"
 
 int main(int argc, char** argv) {
-  TestSuite test_suite(argc, argv);
+  base::TestSuite test_suite(argc, argv);
 
   // Handle the --adjust-process-priority switch, which is used to test the
   // installer::AdjustProcessPriority() function in a subprocess.

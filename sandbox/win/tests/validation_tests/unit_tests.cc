@@ -14,7 +14,7 @@ int wmain(int argc, wchar_t **argv) {
       return sandbox::DispatchCall(argc, argv);
   }
 
-  TestSuite test_suite(argc, argv);
+  base::TestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(
       argc,
       argv,

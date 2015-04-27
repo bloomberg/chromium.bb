@@ -51,6 +51,8 @@
 #include "base/test/test_support_ios.h"
 #endif
 
+namespace base {
+
 namespace {
 
 class MaybeTestDisabler : public testing::EmptyTestEventListener {
@@ -66,34 +68,30 @@ class MaybeTestDisabler : public testing::EmptyTestEventListener {
 class TestClientInitializer : public testing::EmptyTestEventListener {
  public:
   TestClientInitializer()
-      : old_command_line_(base::CommandLine::NO_PROGRAM) {
+      : old_command_line_(CommandLine::NO_PROGRAM) {
   }
 
   void OnTestStart(const testing::TestInfo& test_info) override {
-    old_command_line_ = *base::CommandLine::ForCurrentProcess();
+    old_command_line_ = *CommandLine::ForCurrentProcess();
   }
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
-    *base::CommandLine::ForCurrentProcess() = old_command_line_;
+    *CommandLine::ForCurrentProcess() = old_command_line_;
   }
 
  private:
-  base::CommandLine old_command_line_;
+  CommandLine old_command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientInitializer);
 };
 
 }  // namespace
 
-namespace base {
-
 int RunUnitTestsUsingBaseTestSuite(int argc, char **argv) {
   TestSuite test_suite(argc, argv);
-  return base::LaunchUnitTests(
-      argc, argv, Bind(&TestSuite::Run, Unretained(&test_suite)));
+  return LaunchUnitTests(argc, argv,
+                         Bind(&TestSuite::Run, Unretained(&test_suite)));
 }
-
-}  // namespace base
 
 TestSuite::TestSuite(int argc, char** argv) : initialized_command_line_(false) {
   PreInitialize(true);
@@ -116,11 +114,11 @@ TestSuite::TestSuite(int argc, char** argv, bool create_at_exit_manager)
 
 TestSuite::~TestSuite() {
   if (initialized_command_line_)
-    base::CommandLine::Reset();
+    CommandLine::Reset();
 }
 
 void TestSuite::InitializeFromCommandLine(int argc, char** argv) {
-  initialized_command_line_ = base::CommandLine::Init(argc, argv);
+  initialized_command_line_ = CommandLine::Init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   testing::InitGoogleMock(&argc, argv);
 
@@ -132,7 +130,7 @@ void TestSuite::InitializeFromCommandLine(int argc, char** argv) {
 #if defined(OS_WIN)
 void TestSuite::InitializeFromCommandLine(int argc, wchar_t** argv) {
   // Windows CommandLine::Init ignores argv anyway.
-  initialized_command_line_ = base::CommandLine::Init(argc, NULL);
+  initialized_command_line_ = CommandLine::Init(argc, NULL);
   testing::InitGoogleTest(&argc, argv);
   testing::InitGoogleMock(&argc, argv);
 }
@@ -142,7 +140,7 @@ void TestSuite::PreInitialize(bool create_at_exit_manager) {
 #if defined(OS_WIN)
   testing::GTEST_FLAG(catch_exceptions) = false;
 #endif
-  base::EnableTerminationOnHeapCorruption();
+  EnableTerminationOnHeapCorruption();
 #if defined(OS_LINUX) && defined(USE_AURA)
   // When calling native char conversion functions (e.g wrctomb) we need to
   // have the locale set. In the absence of such a call the "C" locale is the
@@ -154,7 +152,7 @@ void TestSuite::PreInitialize(bool create_at_exit_manager) {
   // testing/android/native_test_wrapper.cc before main() is called.
 #if !defined(OS_ANDROID)
   if (create_at_exit_manager)
-    at_exit_manager_.reset(new base::AtExitManager);
+    at_exit_manager_.reset(new AtExitManager);
 #endif
 
   // Don't add additional code to this function.  Instead add it to
@@ -181,13 +179,13 @@ void TestSuite::ResetCommandLine() {
 
 void TestSuite::AddTestLauncherResultPrinter() {
   // Only add the custom printer if requested.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestLauncherOutput)) {
     return;
   }
 
-  FilePath output_path(base::CommandLine::ForCurrentProcess()->
-                           GetSwitchValuePath(switches::kTestLauncherOutput));
+  FilePath output_path(CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      switches::kTestLauncherOutput));
 
   // Do not add the result printer if output path already exists. It's an
   // indicator there is a process printing to that file, and we're likely
@@ -213,19 +211,19 @@ int TestSuite::Run() {
 #endif
 
 #if defined(OS_MACOSX)
-  base::mac::ScopedNSAutoreleasePool scoped_pool;
+  mac::ScopedNSAutoreleasePool scoped_pool;
 #endif
 
   Initialize();
   std::string client_func =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kTestChildProcess);
 
   // Check to see if we are being run as a client process.
   if (!client_func.empty())
     return multi_process_function_list::InvokeChildProcessTest(client_func);
 #if defined(OS_IOS)
-  base::test_listener_ios::RegisterTestEndListener();
+  test_listener_ios::RegisterTestEndListener();
 #endif
   int result = RUN_ALL_TESTS();
 
@@ -285,9 +283,8 @@ void TestSuite::SuppressErrorDialogs() {
 
 void TestSuite::Initialize() {
 #if !defined(OS_IOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWaitForDebugger)) {
-    base::debug::WaitForDebugger(60, true);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWaitForDebugger)) {
+    debug::WaitForDebugger(60, true);
   }
 #endif
 
@@ -299,9 +296,9 @@ void TestSuite::Initialize() {
   InitAndroidTest();
 #else
   // Initialize logging.
-  base::FilePath exe;
-  PathService::Get(base::FILE_EXE, &exe);
-  base::FilePath log_filename = exe.ReplaceExtension(FILE_PATH_LITERAL("log"));
+  FilePath exe;
+  PathService::Get(FILE_EXE, &exe);
+  FilePath log_filename = exe.ReplaceExtension(FILE_PATH_LITERAL("log"));
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_ALL;
   settings.log_file = log_filename.value().c_str();
@@ -312,23 +309,22 @@ void TestSuite::Initialize() {
   logging::SetLogItems(true, true, true, true);
 #endif  // else defined(OS_ANDROID)
 
-  CHECK(base::debug::EnableInProcessStackDumping());
+  CHECK(debug::EnableInProcessStackDumping());
 #if defined(OS_WIN)
   // Make sure we run with high resolution timer to minimize differences
   // between production code and test code.
-  base::Time::EnableHighResolutionTimer(true);
+  Time::EnableHighResolutionTimer(true);
 #endif  // defined(OS_WIN)
 
   // In some cases, we do not want to see standard error dialogs.
-  if (!base::debug::BeingDebugged() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          "show-error-dialogs")) {
+  if (!debug::BeingDebugged() &&
+      !CommandLine::ForCurrentProcess()->HasSwitch("show-error-dialogs")) {
     SuppressErrorDialogs();
-    base::debug::SetSuppressDebugUI(true);
+    debug::SetSuppressDebugUI(true);
     logging::SetLogAssertHandler(UnitTestAssertHandler);
   }
 
-  base::i18n::InitializeICU();
+  i18n::InitializeICU();
   // On the Mac OS X command line, the default locale is *_POSIX. In Chromium,
   // the locale is set via an OS X locale API and is never *_POSIX.
   // Some tests (such as those involving word break iterator) will behave
@@ -338,11 +334,11 @@ void TestSuite::Initialize() {
   // TODO(jshin): Should we set the locale via an OS X locale API here?
 #if !defined(OS_WIN)
 #if defined(OS_IOS)
-  base::i18n::SetICUDefaultLocale("en_US");
+  i18n::SetICUDefaultLocale("en_US");
 #else
   std::string default_locale(uloc_getDefault());
   if (EndsWith(default_locale, "POSIX", false))
-    base::i18n::SetICUDefaultLocale("en_US");
+    i18n::SetICUDefaultLocale("en_US");
 #endif
 #endif
 
@@ -357,3 +353,5 @@ void TestSuite::Initialize() {
 
 void TestSuite::Shutdown() {
 }
+
+}  // namespace base
