@@ -360,7 +360,7 @@ inline v8::Handle<v8::String> v8String(v8::Isolate* isolate, const String& strin
 {
     if (string.isNull())
         return v8::String::Empty(isolate);
-    return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(string.impl(), isolate);
+    return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(isolate, string.impl());
 }
 
 inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, int length = -1)

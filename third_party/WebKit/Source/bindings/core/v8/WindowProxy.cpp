@@ -77,7 +77,7 @@ static void checkDocumentWrapper(v8::Local<v8::Object> wrapper, Document* docume
     ASSERT(!document->isHTMLDocument() || (V8Document::toImpl(v8::Local<v8::Object>::Cast(wrapper->GetPrototype())) == document));
 }
 
-PassOwnPtrWillBeRawPtr<WindowProxy> WindowProxy::create(Frame* frame, DOMWrapperWorld& world, v8::Isolate* isolate)
+PassOwnPtrWillBeRawPtr<WindowProxy> WindowProxy::create(v8::Isolate* isolate, Frame* frame, DOMWrapperWorld& world)
 {
     return adoptPtrWillBeNoop(new WindowProxy(frame, &world, isolate));
 }

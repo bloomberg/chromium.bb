@@ -67,7 +67,7 @@ public:
     StringCache(v8::Isolate* isolate) : m_stringCache(isolate) { }
     ~StringCache();
 
-    v8::Local<v8::String> v8ExternalString(StringImpl* stringImpl, v8::Isolate* isolate)
+    v8::Local<v8::String> v8ExternalString(v8::Isolate* isolate, StringImpl* stringImpl)
     {
         ASSERT(stringImpl);
         if (m_lastStringImpl.get() == stringImpl)

@@ -48,7 +48,7 @@ public:
     {
     }
 
-    v8::Handle<v8::Object> newLocal(KeyType* key, v8::Isolate* isolate)
+    v8::Handle<v8::Object> newLocal(v8::Isolate* isolate, KeyType* key)
     {
         return m_map.Get(key);
     }
@@ -58,7 +58,7 @@ public:
         return m_map.SetReturnValue(key, returnValue);
     }
 
-    void setReference(const v8::Persistent<v8::Object>& parent, KeyType* key, v8::Isolate* isolate)
+    void setReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& parent, KeyType* key)
     {
         m_map.SetReference(key, parent);
     }

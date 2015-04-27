@@ -145,7 +145,7 @@ public:
     {
         if (m_isMainWorld)
             return object->newLocalWrapper(isolate);
-        return m_wrapperMap->newLocal(object, isolate);
+        return m_wrapperMap->newLocal(isolate, object);
     }
 
     void setReference(const v8::Persistent<v8::Object>& parent, ScriptWrappable* child, v8::Isolate* isolate)
@@ -154,7 +154,7 @@ public:
             child->setReference(parent, isolate);
             return;
         }
-        m_wrapperMap->setReference(parent, child, isolate);
+        m_wrapperMap->setReference(isolate, parent, child);
     }
 
     bool setReturnValueFrom(v8::ReturnValue<v8::Value> returnValue, ScriptWrappable* object)

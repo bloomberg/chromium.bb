@@ -39,7 +39,7 @@ WindowProxy* WindowProxyManager::windowProxy(DOMWrapperWorld& world)
         if (iter != m_isolatedWorlds.end()) {
             windowProxy = iter->value.get();
         } else {
-            OwnPtrWillBeRawPtr<WindowProxy> isolatedWorldWindowProxy = WindowProxy::create(m_frame, world, m_isolate);
+            OwnPtrWillBeRawPtr<WindowProxy> isolatedWorldWindowProxy = WindowProxy::create(m_isolate, m_frame, world);
             windowProxy = isolatedWorldWindowProxy.get();
             m_isolatedWorlds.set(world.worldId(), isolatedWorldWindowProxy.release());
         }
@@ -93,7 +93,7 @@ void WindowProxyManager::takeGlobalFrom(WindowProxyManager* other)
 WindowProxyManager::WindowProxyManager(Frame& frame)
     : m_frame(&frame)
     , m_isolate(v8::Isolate::GetCurrent())
-    , m_windowProxy(WindowProxy::create(&frame, DOMWrapperWorld::mainWorld(), m_isolate))
+    , m_windowProxy(WindowProxy::create(m_isolate, &frame, DOMWrapperWorld::mainWorld()))
 {
 }
 

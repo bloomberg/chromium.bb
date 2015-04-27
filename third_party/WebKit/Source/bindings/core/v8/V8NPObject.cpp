@@ -456,7 +456,7 @@ v8::Local<v8::Object> createV8ObjectForNPObject(v8::Isolate* isolate, NPObject* 
         return v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
 
     // If we've already wrapped this object, just return it.
-    v8::Local<v8::Object> wrapper = staticNPObjectMap().newLocal(object, isolate);
+    v8::Local<v8::Object> wrapper = staticNPObjectMap().newLocal(isolate, object);
     if (!wrapper.IsEmpty())
         return wrapper;
 
@@ -498,7 +498,7 @@ void forgetV8ObjectForNPObject(NPObject* object)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
-    v8::Local<v8::Object> wrapper = staticNPObjectMap().newLocal(object, isolate);
+    v8::Local<v8::Object> wrapper = staticNPObjectMap().newLocal(isolate, object);
     if (!wrapper.IsEmpty()) {
         V8DOMWrapper::clearNativeInfo(wrapper, npObjectTypeInfo());
         staticNPObjectMap().removeAndDispose(object);
