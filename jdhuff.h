@@ -209,7 +209,7 @@ slowlabel: \
   } \
 }
 
-#define HUFF_DECODE_FAST(s,nb,htbl) \
+#define HUFF_DECODE_FAST(s,nb,htbl,slowlabel) \
   FILL_BIT_BUFFER_FAST; \
   s = PEEK_BITS(HUFF_LOOKAHEAD); \
   s = htbl->lookup[s]; \
@@ -226,7 +226,9 @@ slowlabel: \
       s |= GET_BITS(1); \
       nb++; \
     } \
-    s = htbl->pub->huffval[ (int) (s + htbl->valoffset[nb]) & 0xFF ]; \
+    if (nb > 16) \
+      goto slowlabel; \
+    s = htbl->pub->huffval[ (int) (s + htbl->valoffset[nb]) ]; \
   }
 
 /* Out-of-line case for Huffman code fetching */
