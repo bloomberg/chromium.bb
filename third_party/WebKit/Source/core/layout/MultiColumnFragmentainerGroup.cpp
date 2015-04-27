@@ -135,9 +135,9 @@ LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(LayoutUn
     unsigned columnIndex = columnIndexAtOffset(offsetInFlowThread);
     LayoutRect portionRect(flowThreadPortionRectAt(columnIndex));
     m_columnSet.flipForWritingMode(portionRect);
-    LayoutRect columnRect(columnRectAt(columnIndex));
-    m_columnSet.flipForWritingMode(columnRect);
-    return columnRect.location() - portionRect.location();
+    LayoutSize translation(translationAtColumn(columnIndex));
+    // TODO(mstensho): need a rectangle (not a point) to flip for writing mode here, once we get support for multiple rows.
+    return toLayoutPoint(translation) - portionRect.location();
 }
 
 LayoutUnit MultiColumnFragmentainerGroup::columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const
@@ -436,6 +436,23 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateColumnHeight(BalancedColumnHe
         return m_columnHeight; // So bail out rather than looping infinitely.
 
     return m_columnHeight + m_minSpaceShortage;
+}
+
+LayoutSize MultiColumnFragmentainerGroup::translationAtColumn(unsigned columnIndex) const
+{
+    LayoutUnit logicalTopOffset;
+    LayoutUnit logicalLeftOffset;
+    LayoutUnit columnGap = m_columnSet.columnGap();
+    if (m_columnSet.multiColumnFlowThread()->progressionIsInline()) {
+        logicalLeftOffset = columnIndex * (m_columnSet.pageLogicalWidth() + columnGap);
+        if (!m_columnSet.style()->isLeftToRightDirection())
+            logicalLeftOffset = -logicalLeftOffset;
+    } else {
+        logicalTopOffset = columnIndex * (m_columnHeight + columnGap);
+    }
+
+    LayoutSize offset(logicalLeftOffset, logicalTopOffset);
+    return m_columnSet.isHorizontalWritingMode() ? offset : offset.transposedSize();
 }
 
 LayoutRect MultiColumnFragmentainerGroup::columnRectAt(unsigned columnIndex) const
