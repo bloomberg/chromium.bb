@@ -103,7 +103,6 @@ public:
     void dispatchOnInspectorBackend(const WebString& message) override;
     void inspectElementAt(const WebPoint&) override;
     void evaluateInWebInspector(long callId, const WebString& script) override;
-    void setLayerTreeId(int) override;
 
 private:
     WebDevToolsAgentImpl(WebLocalFrameImpl*, WebDevToolsAgentClient*, InspectorOverlay*);

@@ -671,11 +671,6 @@ void WebDevToolsAgentImpl::resumeStartup()
     m_client->resumeStartup();
 }
 
-void WebDevToolsAgentImpl::setLayerTreeId(int layerTreeId)
-{
-    m_tracingAgent->setLayerTreeId(layerTreeId);
-}
-
 void WebDevToolsAgentImpl::evaluateInWebInspector(long callId, const WebString& script)
 {
     m_inspectorAgent->evaluateForTestInFrontend(callId, script);
