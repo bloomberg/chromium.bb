@@ -115,7 +115,7 @@ namespace keyboard {
 // KeyboardController.
 class CallbackAnimationObserver : public ui::LayerAnimationObserver {
  public:
-  CallbackAnimationObserver(ui::LayerAnimator* animator,
+  CallbackAnimationObserver(const scoped_refptr<ui::LayerAnimator>& animator,
                             base::Callback<void(void)> callback);
   ~CallbackAnimationObserver() override;
 
@@ -125,14 +125,15 @@ class CallbackAnimationObserver : public ui::LayerAnimationObserver {
   void OnLayerAnimationAborted(ui::LayerAnimationSequence* seq) override;
   void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq) override {}
 
-  ui::LayerAnimator* animator_;
+  scoped_refptr<ui::LayerAnimator> animator_;
   base::Callback<void(void)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackAnimationObserver);
 };
 
 CallbackAnimationObserver::CallbackAnimationObserver(
-    ui::LayerAnimator* animator, base::Callback<void(void)> callback)
+    const scoped_refptr<ui::LayerAnimator>& animator,
+    base::Callback<void(void)> callback)
     : animator_(animator), callback_(callback) {
 }
 
