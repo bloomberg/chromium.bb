@@ -31,11 +31,12 @@ class ImageCommand(command.CliCommand):
     super(ImageCommand, cls).AddParser(parser)
     parser.set_defaults(usage='Create an image')
     target = parser.add_mutually_exclusive_group()
-    target.add_argument('--blueprint', help="The blueprint that defines an "
-                        "image specification to build.")
+    target.add_argument('--blueprint', type='blueprint_path',
+                        help="The blueprint that defines an image "
+                        "specification to build.")
     target.add_argument('--board', help="The board to build an image for.")
-    target.add_argument('--brick', help='The brick to build an image for.')
-
+    target.add_argument('--brick', type='brick_path',
+                        help='The brick to build an image for.')
     parser.add_argument('--adjust_part', help="Adjustments to apply to "
                         "partition table (LABEL:[+-=]SIZE) e.g. ROOT-A:+1G.")
     parser.add_argument('--boot_args', help="Additional boot arguments to pass "

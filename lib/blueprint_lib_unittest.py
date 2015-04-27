@@ -13,35 +13,6 @@ from chromite.lib import osutils
 from chromite.lib import workspace_lib
 
 
-class ExpandBlueprintPathTest(cros_test_lib.TestCase):
-  """Tests ExpandBlueprintPath()."""
-
-  def testBasicName(self):
-    """Tests a basic name."""
-    self.assertEqual('//blueprints/foo.json',
-                     blueprint_lib.ExpandBlueprintPath('foo'))
-
-  def testLocator(self):
-    """Tests a locator name."""
-    self.assertEqual('//foo/bar.json',
-                     blueprint_lib.ExpandBlueprintPath('//foo/bar'))
-
-  def testCurrentDirectory(self):
-    """Tests a path to the current directory."""
-    self.assertEqual('./foo.json',
-                     blueprint_lib.ExpandBlueprintPath('./foo'))
-
-  def testJson(self):
-    """Tests that .json isn't added twice."""
-    self.assertEqual('//blueprints/foo.json',
-                     blueprint_lib.ExpandBlueprintPath('foo.json'))
-
-  def testTxt(self):
-    """Tests that .txt extension still gets .json appended."""
-    self.assertEqual('//blueprints/foo.txt.json',
-                     blueprint_lib.ExpandBlueprintPath('foo.txt'))
-
-
 class BlueprintLibTest(cros_test_lib.WorkspaceTestCase):
   """Unittest for blueprint_lib.py"""
 
@@ -64,6 +35,14 @@ class BlueprintLibTest(cros_test_lib.WorkspaceTestCase):
     blueprint = self.CreateBlueprint(bsp='//bsp2')
     self.assertEqual(blueprint.GetBricks(), [])
     self.assertEqual(blueprint.GetBSP(), '//bsp2')
+
+  def testEmptyBlueprintFile(self):
+    """Tests that empty blueprints create the basic file structure."""
+    blueprint = self.CreateBlueprint()
+    file_contents = workspace_lib.ReadConfigFile(blueprint.path)
+
+    self.assertIn(blueprint_lib.BRICKS_FIELD, file_contents)
+    self.assertIn(blueprint_lib.BSP_FIELD, file_contents)
 
   def testGetUsedBricks(self):
     """Tests that we can list all the bricks used."""

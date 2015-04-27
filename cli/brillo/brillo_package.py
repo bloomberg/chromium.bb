@@ -81,7 +81,7 @@ To enable building a package from latest or stable ebuilds:
                         'latest ebuild; %s applies to packages that have only '
                         'a latest ebuild.' %
                         (cls._GROUP_HAS_LATEST, cls._GROUP_ONLY_LATEST))
-    parser.add_argument('--brick',
+    parser.add_argument('--brick', type='brick_path',
                         help='The brick to use. Auto-detected by default.')
     parser.add_argument('--create-source', metavar='src_path',
                         help='Create package from code in specified path. Path '

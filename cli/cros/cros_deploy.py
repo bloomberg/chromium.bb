@@ -57,7 +57,7 @@ For more information of cros build usage:
         help='The board to use. By default it is automatically detected. You '
         'can override the detected board with this option.')
     target.add_argument(
-        '--brick',
+        '--brick', type='brick_path',
         help='The brick to use. Will be detected from CWD if possible and take '
         'precedence over the detected board.')
     parser.add_argument(

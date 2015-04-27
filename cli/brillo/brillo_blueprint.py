@@ -36,25 +36,24 @@ Multiple bricks can be specified by repeating -b/--brick:
     super(cls, BlueprintCommand).AddParser(parser)
     subparser = parser.add_subparsers()
     create_parser = subparser.add_parser('create', epilog=cls.EPILOG)
-    create_parser.add_argument('blueprint', help='Blueprint path/locator.')
-    create_parser.add_argument('--brick', '-b', action='append', dest='bricks',
-                               help='Add an existing brick to the blueprint.',
-                               default=[], metavar='BRICK')
-    create_parser.add_argument('--bsp', help='Set the blueprint BSP.',
-                               default='')
+    create_parser.add_argument(
+        'blueprint', type='blueprint_path', help='Blueprint path/locator.')
+    create_parser.add_argument(
+        '--brick', '-b', type='brick_path', action='append', dest='bricks',
+        help='Add an existing brick to the blueprint.', metavar='BRICK')
+    create_parser.add_argument(
+        '--bsp', type='bsp_path', help='Set the blueprint BSP.')
     create_parser.set_defaults(handler_func='Create')
 
   def Create(self):
     """Create a new blueprint."""
-    path = blueprint_lib.ExpandBlueprintPath(self.options.blueprint)
-
     if not self.options.bsp:
       logging.warning('No BSP was specified; blueprint will not build until a '
-                      'valid BSP is set in %s.', path)
+                      'valid BSP is set in %s.', self.options.blueprint)
 
     config = {blueprint_lib.BSP_FIELD: self.options.bsp,
               blueprint_lib.BRICKS_FIELD: self.options.bricks}
-    blueprint_lib.Blueprint(path, initial_config=config)
+    blueprint_lib.Blueprint(self.options.blueprint, initial_config=config)
 
   def Run(self):
     """Dispatch the call to the right handler."""

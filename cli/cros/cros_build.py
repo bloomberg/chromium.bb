@@ -83,8 +83,9 @@ To just build a single package:
     super(cls, BuildCommand).AddParser(parser)
     target = parser.add_mutually_exclusive_group()
     target.add_argument('--board', help='The board to build packages for.')
-    target.add_argument('--brick', help='The brick to build packages for.')
-    target.add_argument('--blueprint',
+    target.add_argument('--brick', type='brick_path',
+                        help='The brick to build packages for.')
+    target.add_argument('--blueprint', type='blueprint_path',
                         help='The blueprint to build packages for.')
     target.add_argument('--host', help='Build packages for the chroot itself.',
                         default=False, action='store_true')

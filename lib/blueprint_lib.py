@@ -25,29 +25,6 @@ class BlueprintCreationError(Exception):
   """Blueprint creation failed."""
 
 
-# TODO(dpursell): Enable this shorthand blueprint specifications for all CLI
-# tools. http://brbug.com/931.
-def ExpandBlueprintPath(path):
-  """Expand a blueprint path using some common assumptions.
-
-  Makes the following changes to |path|:
-    1. Put non-paths in //blueprints (e.g. foo -> //blueprints/foo).
-    2. Add .json if no extension was given.
-
-  Args:
-    path: blueprint path.
-
-  Returns:
-    Modified blueprint path.
-  """
-  # Non-path arguments should be put in //blueprints by default.
-  if '/' not in path:
-    path = os.path.join('//blueprints', path)
-  if os.path.splitext(path)[1] != '.json':
-    path += '.json'
-  return path
-
-
 class Blueprint(object):
   """Encapsulates the interaction with a blueprint."""
 
@@ -79,6 +56,14 @@ class Blueprint(object):
     except IOError:
       raise BlueprintNotFoundError('Blueprint %s not found.' % self._path)
 
+  @property
+  def path(self):
+    return self._path
+
+  @property
+  def locator(self):
+    return self._locator
+
   def _CreateBlueprintConfig(self, config):
     """Create an initial blueprint config file.
 
@@ -99,12 +84,18 @@ class Blueprint(object):
       raise BlueprintCreationError('File already exists at %s.' % self._path)
 
     try:
-      # Turn brick specifications into locators.
+      # Turn brick specifications into locators. If bricks or BSPs are
+      # unspecified, assign default values so the config file has the proper
+      # structure for easy manual editing.
       if config.get(BRICKS_FIELD):
         config[BRICKS_FIELD] = [brick_lib.Brick(b).brick_locator
                                 for b in config[BRICKS_FIELD]]
+      else:
+        config[BRICKS_FIELD] = []
       if config.get(BSP_FIELD):
         config[BSP_FIELD] = brick_lib.Brick(config[BSP_FIELD]).brick_locator
+      else:
+        config[BSP_FIELD] = None
 
       # Create the config file.
       workspace_lib.WriteConfigFile(self._path, config)

@@ -24,7 +24,7 @@ class BlueprintCommandTest(cros_test_lib.OutputTestCase,
 
   FOO_BRICK = '//bricks/foo'
   BAR_BRICK = '//bricks/bar'
-  BSP_BRICK = '//bsp/my_bsp'
+  BSP_BRICK = '//bsps/my_bsp'
 
   def setUp(self):
     """Patches objects."""
@@ -47,7 +47,7 @@ class BlueprintCommandTest(cros_test_lib.OutputTestCase,
   def testCreateBlueprint(self):
     """Tests basic blueprint creation."""
     with self.OutputCapturer():
-      self.RunCommandMock(['create', 'foo'])
+      self.RunCommandMock(['create', '//blueprints/foo.json'])
     self.AssertBlueprintExists('//blueprints/foo.json')
     # Also make sure we get a warning for the missing BSP.
     self.AssertOutputContainsWarning('No BSP was specified', check_stderr=True)
@@ -71,7 +71,13 @@ class BlueprintCommandTest(cros_test_lib.OutputTestCase,
     self.AssertBlueprintExists('//blueprints/foo.json', bsp=self.BSP_BRICK,
                                bricks=[self.FOO_BRICK])
 
-  def testBlueprintInvalidCommand(self):
+  def testCreateBlueprintPathNormalization(self):
+    """Tests path normalization."""
+    self.RunCommandMock(['create', 'foo', '--bsp', 'my_bsp', '--brick', 'foo'])
+    self.AssertBlueprintExists('//blueprints/foo.json', bsp='//bsps/my_bsp',
+                               bricks=['//bricks/foo'])
+
+  def testInvalidCommand(self):
     """Tests that `brillo blueprint` without `create` prints usage."""
     with self.OutputCapturer():
       with self.assertRaises(SystemExit):

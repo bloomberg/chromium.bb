@@ -49,8 +49,6 @@ class PackageCommandTest(cros_test_lib.OutputTestCase,
       self.cwd_brick_ebuild_file = os.path.join(
           self.cwd_brick.OverlayDir(), self._PACKAGE_CATEGORY,
           self._PACKAGE_NAME, '%s-9999.ebuild' % self._PACKAGE_NAME)
-      # Also create a brick source directory, required for package creation.
-      osutils.SafeMakedirs(self.cwd_brick.SourceDir())
     self.cmd_mock = MockPackageCommand(cmd_args)
     self.StartPatcher(self.cmd_mock)
 
@@ -88,8 +86,15 @@ class PackageCommandTest(cros_test_lib.OutputTestCase,
     brick_locator = '//bricks/mybrick'
     self.CreateBrick(brick_locator)
     self.RunCommandMock(['--brick', brick_locator, self._PACKAGE])
-    self.assertEqual(brick_locator,
-                     self.cmd_mock.inst.brick.brick_locator)
+    self.assertEqual(brick_locator, self.cmd_mock.inst.brick.brick_locator)
+
+  def testBrickPathNormalization(self):
+    """Tests brick path normalization."""
+    brick_locator = '//bricks/mybrick'
+    short_path = 'mybrick'
+    self.CreateBrick(brick_locator)
+    self.RunCommandMock(['--brick', short_path, self._PACKAGE])
+    self.assertEqual(brick_locator, self.cmd_mock.inst.brick.brick_locator)
 
   def testNoBrick(self):
     """Tests that execution fails without a brick."""

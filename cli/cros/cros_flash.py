@@ -82,7 +82,7 @@ Examples:
         '--board', help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
         'this option')
-    update.add_argument('--brick', help='The brick to use.')
+    update.add_argument('--brick', type='brick_path', help='The brick to use.')
     update.add_argument(
         '--yes', default=False, action='store_true',
         help='Answer yes to any prompt. Use with caution.')

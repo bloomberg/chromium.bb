@@ -114,6 +114,13 @@ class CrosFlashTest(cros_test_lib.MockTempDirTestCase,
     self.cmd_mock.inst.Run()
     self.VerifyFlashParameters(self.DEVICE, self.IMAGE, brick_name='//foo')
 
+  def testBrickPathNormalization(self):
+    """Tests --brick path normalization."""
+    self.SetupCommandMock([self.DEVICE, self.IMAGE, '--brick', 'foo'])
+    self.cmd_mock.inst.Run()
+    self.VerifyFlashParameters(self.DEVICE, self.IMAGE,
+                               brick_name='//bricks/foo')
+
   def testFlashError(self):
     """Tests that FlashErrors are caught and logged."""
     with self.OutputCapturer():

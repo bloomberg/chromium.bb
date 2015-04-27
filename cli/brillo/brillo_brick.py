@@ -47,12 +47,13 @@ highest:
   def AddParser(cls, parser):
     super(cls, BrickCommand).AddParser(parser)
     subparser = parser.add_subparsers()
-    create_parser = subparser.add_parser('create')
-    create_parser.add_argument('brick', help='The current brick locator.')
-    create_parser.add_argument('-d', '--dependency', action='append',
-                               dest='dependencies',
-                               help='Add a dependency to this brick. This must '
-                               'be a brick locator.')
+    create_parser = subparser.add_parser('create', epilog=cls.EPILOG)
+    create_parser.add_argument(
+        'brick', type='brick_path', help='The current brick locator.')
+    create_parser.add_argument(
+        '-d', '--dependency', action='append', dest='dependencies',
+        type='brick_path', metavar='BRICK',
+        help='Add a brick dependency to the new brick.')
     create_parser.set_defaults(handler_func='Create', dependencies=[])
 
   def Create(self):

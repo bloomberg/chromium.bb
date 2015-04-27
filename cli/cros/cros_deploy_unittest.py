@@ -118,6 +118,12 @@ class CrosDeployTest(cros_test_lib.MockTempDirTestCase,
     self.cmd_mock.inst.Run()
     self.VerifyDeployParameters(self.DEVICE, [], brick_name='//foo')
 
+  def testBrickPathNormalization(self):
+    """Tests --brick path normalization."""
+    self.SetupCommandMock([self.DEVICE, '--brick', 'foo'])
+    self.cmd_mock.inst.Run()
+    self.VerifyDeployParameters(self.DEVICE, [], brick_name='//bricks/foo')
+
   def testDeployError(self):
     """Tests that DeployErrors are caught and logged."""
     with self.OutputCapturer():

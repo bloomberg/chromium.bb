@@ -60,6 +60,13 @@ class BrickCommandTest(cros_test_lib.OutputTestCase,
     self._VerifyBrickCreation('//bricks/foo',
                               dependencies=['//bricks/dep1', '//bricks/dep2'])
 
+  def testCreateBrickPathNormalization(self):
+    """Tests path normalization for bricks."""
+    self.SetupCommandMock(['create', 'foo', '-ddep1', '-ddep2'])
+    self.cmd_mock.inst.Run()
+    self._VerifyBrickCreation('//bricks/foo',
+                              dependencies=['//bricks/dep1', '//bricks/dep2'])
+
   def testCreateBrickFailure(self):
     """Tests that on failure the error message is printed."""
     self.SetupCommandMock(['create', '//bricks/foo'])

@@ -367,13 +367,93 @@ class DeviceParser(object):
       raise ValueError('Unknown device scheme "%s" in "%s"' % (scheme, value))
 
 
-def OptparseWrapCheck(desc, check_f, _option, opt, value):
-  """Optparse adapter for type checking functionality."""
-  try:
-    return check_f(value)
-  except ValueError:
-    raise optparse.OptionValueError(
-        'Invalid %s given: --%s=%s' % (desc, opt, value))
+def NormalizeWorkspacePath(path, default_dir=None, extension=None):
+  """Normalize a workspace path.
+
+  Converts |path| into a locator and applies |default_dir| and/or
+  |extension| if specified.
+
+  Args:
+    path: Relative, absolute, or locator path in the CWD workspace.
+    default_dir: If |path| does not contain '/', prepend this
+      directory to the result.
+    extension: If |path| doesn't end in this extension, append this
+      extension to the result.
+
+  Returns:
+    Workspace locator corresponding to the modified |path|.
+
+  Raises:
+    ValueError: |path| isn't in the workspace.
+  """
+  if default_dir and '/' not in path:
+    path = os.path.join(default_dir, path)
+
+  if extension:
+    extension = '.' + extension
+    if os.path.splitext(path)[1] != extension:
+      path += extension
+
+  if workspace_lib.IsLocator(path):
+    return path
+
+  locator = workspace_lib.PathToLocator(path)
+  if not locator:
+    # argparse ignores exception messages; log it as well so the user sees it.
+    error_message = '%s is not in the current workspace.' % path
+    logging.error(error_message)
+    raise ValueError(error_message)
+  return locator
+
+
+def NormalizeBrickPath(path):
+  """Normalize a brick path using some common assumptions.
+
+  Makes the following changes to |path|:
+    1. Put non-paths in //bricks (e.g. foo -> //bricks/foo).
+    2. Convert to a workspace locator.
+
+  Args:
+    path: brick path.
+
+  Returns:
+    Locator to the brick.
+  """
+  return NormalizeWorkspacePath(path, default_dir='//bricks')
+
+
+def NormalizeBspPath(path):
+  """Normalize a BSP path using some common assumptions.
+
+  Makes the following changes to |path|:
+    1. Put non-paths in //bsps (e.g. foo -> //bsps/foo).
+    2. Convert to a workspace locator.
+
+  Args:
+    path: BSP path.
+
+  Returns:
+    Locator to the BSP.
+  """
+  return NormalizeWorkspacePath(path, default_dir='//bsps')
+
+
+def NormalizeBlueprintPath(path):
+  """Normalize a blueprint path using some common assumptions.
+
+  Makes the following changes to |path|:
+    1. Put non-paths in //blueprints (e.g. foo -> //blueprints/foo).
+    2. Add .json if not already present.
+    3. Convert to a workspace locator.
+
+  Args:
+    path: blueprint path.
+
+  Returns:
+    Locator to the blueprint.
+  """
+  return NormalizeWorkspacePath(path, default_dir='//blueprints',
+                                extension='json')
 
 
 VALID_TYPES = {
@@ -383,7 +463,20 @@ VALID_TYPES = {
     'gs_path': NormalizeGSPath,
     'local_or_gs_path': NormalizeLocalOrGSPath,
     'path_or_uri': NormalizeUri,
+    'blueprint_path': NormalizeBlueprintPath,
+    'brick_path': NormalizeBrickPath,
+    'bsp_path': NormalizeBspPath,
+    'workspace_path': NormalizeWorkspacePath,
 }
+
+
+def OptparseWrapCheck(desc, check_f, _option, opt, value):
+  """Optparse adapter for type checking functionality."""
+  try:
+    return check_f(value)
+  except ValueError:
+    raise optparse.OptionValueError(
+        'Invalid %s given: --%s=%s' % (desc, opt, value))
 
 
 class Option(optparse.Option):
