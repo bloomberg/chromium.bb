@@ -15,6 +15,7 @@
     'errorMsg'   - error message which should be displayed when input is
                  incorrect.
     'buttonText' - text on the button.
+    'emailDomain' - autocomplete domain for the inputType="email".
 
   Events:
     'buttonclick' - fired on button click.
@@ -27,14 +28,17 @@
                       setValid at the end.
 -->
 <polymer-element name="gaia-input-form" vertical start-justified layout
-                 attributes="inputType errorMsg inputLabel buttonText">
+    attributes="inputType errorMsg inputLabel buttonText emailDomain">
   <template>
     <link rel="stylesheet" href="gaia_input_form.css">
     <paper-input-decorator id="paperInputDecorator" error="{{errorMsg}}"
                            label="{{inputLabel}}" on-tap="{{onTap}}"
                            floatingLabel autoValidate>
-      <input id="inputForm" is="core-input" on-keydown="{{onKeyDown}}"
-             value="{{inputValue}}" required type="{{inputType}}">
+      <div id="inputContainer" horizontal layout>
+        <input id="inputForm" is="core-input" on-keydown="{{onKeyDown}}"
+            value="{{inputValue}}" required type="{{inputType}}" flex>
+        <span id="emailDomain" hidden?="{{!emailDomain}}">{{emailDomain}}</span>
+      </div>
     </paper-input-decorator>
     <div horizontal justified layout center reverse>
       <gaia-raised-on-focus-button id="button" class="blue-button"

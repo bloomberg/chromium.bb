@@ -3,35 +3,59 @@
  * found in the LICENSE file.
  */
 
-Polymer('gaia-input-form', {
-  inputValue: '',
+Polymer('gaia-input-form', (function() {
+  var INPUT_EMAIL_PATTERN = "^[a-zA-Z0-9.!#$%&'*+=?^_`{|}~-]+(@[^\\s@]+)?$";
 
-  onButtonClicked: function() {
-    this.fire('buttonClick');
-  },
+  return {
 
-  onKeyDown: function(e) {
-    this.setValid(true);
-    if (e.keyCode == 13 && !this.$.button.disabled)
-      this.$.button.fire('tap');
-  },
+    inputValue: '',
 
-  onTap: function() {
-    this.setValid(true);
-  },
+    onButtonClicked: function() {
+      this.fire('buttonClick');
+    },
 
-  focus: function() {
-    this.$.inputForm.focus();
-  },
+    onKeyDown: function(e) {
+      this.setValid(true);
+      this.setDomainVisibility();
+      if (e.keyCode == 13 && !this.$.button.disabled)
+        this.$.button.fire('tap');
+    },
 
-  checkValidity: function() {
-    var input = this.$.inputForm;
-    var isValid = input.validity.valid;
-    this.setValid(isValid);
-    return isValid;
-  },
+    onKeyUp: function(e) {
+      this.setDomainVisibility();
+    },
 
-  setValid: function(isValid) {
-    this.$.paperInputDecorator.isInvalid = !isValid;
-  }
-});
+    setDomainVisibility: function() {
+      this.$.emailDomain.hidden = !(this.inputValue.indexOf('@') === -1);
+    },
+
+    ready: function() {
+      if (this.inputType == 'email') {
+        this.$.inputForm.type = 'text';
+        this.$.inputForm.pattern = INPUT_EMAIL_PATTERN;
+        this.$.inputForm.addEventListener('keyup', this.onKeyUp.bind(this));
+      } else {
+        this.$.inputForm.type = this.inputType;
+      }
+    },
+
+    onTap: function() {
+      this.setValid(true);
+    },
+
+    focus: function() {
+      this.$.inputForm.focus();
+    },
+
+    checkValidity: function() {
+      var input = this.$.inputForm;
+      var isValid = input.validity.valid;
+      this.setValid(isValid);
+      return isValid;
+    },
+
+    setValid: function(isValid) {
+      this.$.paperInputDecorator.isInvalid = !isValid;
+    }
+  };
+})());

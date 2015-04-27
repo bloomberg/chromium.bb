@@ -933,7 +933,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     loadOffline: function(params) {
       var offlineLogin = $('offline-gaia');
       var strings = params.localizedStrings;
-      offlineLogin.enterpriseInfo = strings['stringEnterpriseInfo'];
+      if ('stringEnterpriseInfo' in strings)
+        offlineLogin.enterpriseInfo = strings['stringEnterpriseInfo'];
+      if ('emailDomain' in params)
+        offlineLogin.emailDomain = '@' + params['emailDomain'];
       offlineLogin.setEmail(params.email);
     },
 

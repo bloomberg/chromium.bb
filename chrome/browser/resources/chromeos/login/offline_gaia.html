@@ -16,13 +16,16 @@
 
   Attributes:
     'enterpriseInfo' - Information about device management.
+    'emailDomain' - autocomplete domain for the email input.
 
   Events:
-    'flowfinished' - fired when user enters login and password. Fires with an
-                     argument |credentials| which contains.
-                     |credentials| = { 'useOffline': true,
-                                       'email': <typed email>,
-                                       'password': <typed password> }
+    'authCompleted' - fired when user enters login and password. Fires with an
+                      argument |credentials| which contains.
+                      |credentials| = { 'useOffline': true,
+                                        'email': <email>,
+                                        'password': <typed password> }
+                      If user did not type domain |email| will be added by
+                      "@gmail.com" or by 'emailDomain' if it is set.
   Methods:
     'focus' - focuses current screen (email input or password input);
     'setEmail' - accepts an argument |email|. If |email| is empty it sets
@@ -30,7 +33,8 @@
                  screen to password input and shows error that previously
                  entered password is incorrect.
 -->
-<polymer-element name="offline-gaia" vertical layout attributes="enterpriseInfo">
+<polymer-element name="offline-gaia" vertical layout
+    attributes="enterpriseInfo emailDomain">
   <template>
     <link rel="stylesheet" href="offline_gaia.css">
     <gaia-core-icon-button id="backButton" icon="arrow-back"
@@ -48,6 +52,7 @@
           </div>
           <div class="footer" flex vertical layout justified>
             <gaia-input-form id="emailInput" inputType="email"
+                emailDomain="{{emailDomain}}"
                 i18n-values="errorMsg:offlineLoginInvalidEmail;
                              inputLabel:offlineLoginEmail;
                              buttonText:offlineLoginNextBtn">

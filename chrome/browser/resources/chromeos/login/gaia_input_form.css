@@ -7,10 +7,6 @@
   font-size: 16px;
 }
 
-paper-input-decorator {
-  margin-bottom: 50px;
-}
-
 #paperInputDecorator /deep/ .unfocused-underline {
   background-color: rgb(212, 212, 212);
 }
@@ -21,11 +17,25 @@ paper-input-decorator {
 
 #paperInputDecorator /deep/ ::-webkit-input-placeholder,
 #paperInputDecorator /deep/ .label-text {
-    color: rgba(0, 0, 0, 0.54);
+  color: rgba(0, 0, 0, 0.54);
 }
 
 #paperInputDecorator {
   font-size: 15px;
   margin-bottom: 28px;
   padding: 0;
+}
+
+#paperInputDecorator /deep/ #inputForm {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+:host-context(html[dir=rtl]) #paperInputDecorator /deep/ #inputContainer {
+  flex-direction: row-reverse;
+}
+
+#paperInputDecorator /deep/ #emailDomain {
+  color: rgba(0, 0, 0, 0.54);
+  direction: ltr;
+  width: auto;
 }

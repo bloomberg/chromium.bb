@@ -1009,7 +1009,7 @@ void SigninScreenHandler::HandleAuthenticateUser(const std::string& username,
                                                  const std::string& password) {
   if (!delegate_)
     return;
-  UserContext user_context(username);
+  UserContext user_context(gaia::SanitizeEmail(username));
   user_context.SetKey(Key(password));
   delegate_->Login(user_context, SigninSpecifics());
 }

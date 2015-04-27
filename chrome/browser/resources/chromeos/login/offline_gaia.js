@@ -4,6 +4,8 @@
  */
 
 Polymer('offline-gaia', (function() {
+  var DEFAULT_EMAIL_DOMAIN = '@gmail.com';
+
   return {
     onTransitionEnd: function() {
       this.focus();
@@ -48,7 +50,7 @@ Polymer('offline-gaia', (function() {
         if (this.$.passwordInput.checkValidity()) {
           var msg = {
             'useOffline': true,
-            'email': this.$.emailInput.inputValue,
+            'email': this.$.passwordHeader.email,
             'password': this.$.passwordInput.inputValue
           };
           this.$.passwordInput.inputValue = '';
@@ -60,6 +62,8 @@ Polymer('offline-gaia', (function() {
 
     setEmail: function(email) {
       if (email) {
+        if (this.emailDomain)
+          email = email.replace(this.emailDomain, '');
         this.switchToPasswordCard(email);
         this.$.passwordInput.setValid(false);
       } else {
@@ -82,6 +86,12 @@ Polymer('offline-gaia', (function() {
 
     switchToPasswordCard(email) {
       this.$.emailInput.inputValue = email;
+      if (email.indexOf('@') === -1) {
+        if (this.emailDomain)
+          email = email + this.emailDomain;
+        else
+          email = email + DEFAULT_EMAIL_DOMAIN;
+      }
       this.$.passwordHeader.email = email;
       this.$.backButton.hidden = false;
       this.$.animatedPages.selected = 1;
