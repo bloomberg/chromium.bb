@@ -201,7 +201,7 @@ PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const 
     if (image && imageBuffer) {
         GraphicsContext* graphicsContext = imageBuffer->context();
         // FIXME: This is not totally correct but it is needed to prevent shapes
-        // that loads SVG Images during paint invalidations to mark renderers for
+        // that loads SVG Images during paint invalidations to mark layoutObjects for
         // layout, which is not allowed. See https://crbug.com/429346
         ImageObserverDisabler disabler(image);
         graphicsContext->drawImage(image, IntRect(IntPoint(), imageRect.size()));

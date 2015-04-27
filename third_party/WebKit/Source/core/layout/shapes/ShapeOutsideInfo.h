@@ -92,7 +92,7 @@ public:
     LayoutUnit shapeLogicalWidth() const { return computedShape().shapeMarginLogicalBoundingBox().width(); }
     LayoutUnit shapeLogicalHeight() const { return computedShape().shapeMarginLogicalBoundingBox().height(); }
 
-    static PassOwnPtr<ShapeOutsideInfo> createInfo(const LayoutBox& renderer) { return adoptPtr(new ShapeOutsideInfo(renderer)); }
+    static PassOwnPtr<ShapeOutsideInfo> createInfo(const LayoutBox& layoutBox) { return adoptPtr(new ShapeOutsideInfo(layoutBox)); }
     static bool isEnabledFor(const LayoutBox&);
 
     ShapeOutsideDeltas computeDeltasForContainingBlockLine(const LayoutBlockFlow&, const FloatingObject&, LayoutUnit lineTop, LayoutUnit lineHeight);
@@ -114,13 +114,13 @@ public:
     bool isComputingShape() const { return m_isComputingShape; }
 
     LayoutRect computedShapePhysicalBoundingBox() const;
-    FloatPoint shapeToRendererPoint(FloatPoint) const;
-    FloatSize shapeToRendererSize(FloatSize) const;
+    FloatPoint shapeToLayoutObjectPoint(FloatPoint) const;
+    FloatSize shapeToLayoutObjectSize(FloatSize) const;
     const Shape& computedShape() const;
 
 protected:
-    ShapeOutsideInfo(const LayoutBox& renderer)
-        : m_renderer(renderer)
+    ShapeOutsideInfo(const LayoutBox& layoutBox)
+        : m_layoutBox(layoutBox)
         , m_isComputingShape(false)
     { }
 
@@ -137,7 +137,7 @@ private:
         return staticInfoMap;
     }
 
-    const LayoutBox& m_renderer;
+    const LayoutBox& m_layoutBox;
     mutable OwnPtr<Shape> m_shape;
     LayoutSize m_referenceBoxLogicalSize;
     ShapeOutsideDeltas m_shapeOutsideDeltas;

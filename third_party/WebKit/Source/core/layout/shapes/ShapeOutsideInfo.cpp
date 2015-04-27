@@ -49,27 +49,27 @@ CSSBoxType referenceBox(const ShapeValue& shapeValue)
 
 void ShapeOutsideInfo::setReferenceBoxLogicalSize(LayoutSize newReferenceBoxLogicalSize)
 {
-    bool isHorizontalWritingMode = m_renderer.containingBlock()->style()->isHorizontalWritingMode();
-    switch (referenceBox(*m_renderer.style()->shapeOutside())) {
+    bool isHorizontalWritingMode = m_layoutBox.containingBlock()->style()->isHorizontalWritingMode();
+    switch (referenceBox(*m_layoutBox.style()->shapeOutside())) {
     case MarginBox:
         if (isHorizontalWritingMode)
-            newReferenceBoxLogicalSize.expand(m_renderer.marginWidth(), m_renderer.marginHeight());
+            newReferenceBoxLogicalSize.expand(m_layoutBox.marginWidth(), m_layoutBox.marginHeight());
         else
-            newReferenceBoxLogicalSize.expand(m_renderer.marginHeight(), m_renderer.marginWidth());
+            newReferenceBoxLogicalSize.expand(m_layoutBox.marginHeight(), m_layoutBox.marginWidth());
         break;
     case BorderBox:
         break;
     case PaddingBox:
         if (isHorizontalWritingMode)
-            newReferenceBoxLogicalSize.shrink(m_renderer.borderWidth(), m_renderer.borderHeight());
+            newReferenceBoxLogicalSize.shrink(m_layoutBox.borderWidth(), m_layoutBox.borderHeight());
         else
-            newReferenceBoxLogicalSize.shrink(m_renderer.borderHeight(), m_renderer.borderWidth());
+            newReferenceBoxLogicalSize.shrink(m_layoutBox.borderHeight(), m_layoutBox.borderWidth());
         break;
     case ContentBox:
         if (isHorizontalWritingMode)
-            newReferenceBoxLogicalSize.shrink(m_renderer.borderAndPaddingWidth(), m_renderer.borderAndPaddingHeight());
+            newReferenceBoxLogicalSize.shrink(m_layoutBox.borderAndPaddingWidth(), m_layoutBox.borderAndPaddingHeight());
         else
-            newReferenceBoxLogicalSize.shrink(m_renderer.borderAndPaddingHeight(), m_renderer.borderAndPaddingWidth());
+            newReferenceBoxLogicalSize.shrink(m_layoutBox.borderAndPaddingHeight(), m_layoutBox.borderAndPaddingWidth());
         break;
     case BoxMissing:
         ASSERT_NOT_REACHED();
@@ -122,21 +122,21 @@ static bool isValidRasterShapeRect(const LayoutRect& rect)
 
 PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, float shapeImageThreshold, WritingMode writingMode, float margin) const
 {
-    const IntSize& imageSize = m_renderer.calculateImageIntrinsicDimensions(styleImage, roundedIntSize(m_referenceBoxLogicalSize), LayoutImage::ScaleByEffectiveZoom);
-    styleImage->setContainerSizeForLayoutObject(&m_renderer, imageSize, m_renderer.style()->effectiveZoom());
+    const IntSize& imageSize = m_layoutBox.calculateImageIntrinsicDimensions(styleImage, roundedIntSize(m_referenceBoxLogicalSize), LayoutImage::ScaleByEffectiveZoom);
+    styleImage->setContainerSizeForLayoutObject(&m_layoutBox, imageSize, m_layoutBox.style()->effectiveZoom());
 
-    const LayoutRect& marginRect = getShapeImageMarginRect(m_renderer, m_referenceBoxLogicalSize);
-    const LayoutRect& imageRect = (m_renderer.isLayoutImage())
-        ? toLayoutImage(m_renderer).replacedContentRect()
+    const LayoutRect& marginRect = getShapeImageMarginRect(m_layoutBox, m_referenceBoxLogicalSize);
+    const LayoutRect& imageRect = (m_layoutBox.isLayoutImage())
+        ? toLayoutImage(m_layoutBox).replacedContentRect()
         : LayoutRect(LayoutPoint(), LayoutSize(imageSize));
 
     if (!isValidRasterShapeRect(marginRect) || !isValidRasterShapeRect(imageRect)) {
-        m_renderer.document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "The shape-outside image is too large."));
+        m_layoutBox.document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel, "The shape-outside image is too large."));
         return Shape::createEmptyRasterShape(writingMode, margin);
     }
 
     ASSERT(!styleImage->isPendingImage());
-    RefPtr<Image> image = styleImage->image(const_cast<LayoutBox*>(&m_renderer), imageSize);
+    RefPtr<Image> image = styleImage->image(const_cast<LayoutBox*>(&m_layoutBox), imageSize);
 
     return Shape::createRasterShape(image.get(), shapeImageThreshold, imageRect, marginRect, writingMode, margin);
 }
@@ -148,13 +148,13 @@ const Shape& ShapeOutsideInfo::computedShape() const
 
     TemporaryChange<bool> isInComputingShape(m_isComputingShape, true);
 
-    const ComputedStyle& style = *m_renderer.style();
-    ASSERT(m_renderer.containingBlock());
-    const ComputedStyle& containingBlockStyle = *m_renderer.containingBlock()->style();
+    const ComputedStyle& style = *m_layoutBox.style();
+    ASSERT(m_layoutBox.containingBlock());
+    const ComputedStyle& containingBlockStyle = *m_layoutBox.containingBlock()->style();
 
     WritingMode writingMode = containingBlockStyle.writingMode();
-    LayoutUnit maximumValue = m_renderer.containingBlock() ? m_renderer.containingBlock()->contentWidth() : LayoutUnit();
-    float margin = floatValueForLength(m_renderer.style()->shapeMargin(), maximumValue.toFloat());
+    LayoutUnit maximumValue = m_layoutBox.containingBlock() ? m_layoutBox.containingBlock()->contentWidth() : LayoutUnit();
+    float margin = floatValueForLength(m_layoutBox.style()->shapeMargin(), maximumValue.toFloat());
 
     float shapeImageThreshold = style.shapeImageThreshold();
     ASSERT(style.shapeOutside());
@@ -170,7 +170,7 @@ const Shape& ShapeOutsideInfo::computedShape() const
         m_shape = createShapeForImage(shapeValue.image(), shapeImageThreshold, writingMode, margin);
         break;
     case ShapeValue::Box: {
-        const FloatRoundedRect& shapeRect = style.getRoundedBorderFor(LayoutRect(LayoutPoint(), m_referenceBoxLogicalSize), m_renderer.view());
+        const FloatRoundedRect& shapeRect = style.getRoundedBorderFor(LayoutRect(LayoutPoint(), m_referenceBoxLogicalSize), m_layoutBox.view());
         m_shape = Shape::createLayoutBoxShape(shapeRect, writingMode, margin);
         break;
     }
@@ -180,39 +180,39 @@ const Shape& ShapeOutsideInfo::computedShape() const
     return *m_shape;
 }
 
-inline LayoutUnit borderBeforeInWritingMode(const LayoutBox& renderer, WritingMode writingMode)
+inline LayoutUnit borderBeforeInWritingMode(const LayoutBox& layoutBox, WritingMode writingMode)
 {
     switch (writingMode) {
-    case TopToBottomWritingMode: return renderer.borderTop();
-    case BottomToTopWritingMode: return renderer.borderBottom();
-    case LeftToRightWritingMode: return renderer.borderLeft();
-    case RightToLeftWritingMode: return renderer.borderRight();
+    case TopToBottomWritingMode: return layoutBox.borderTop();
+    case BottomToTopWritingMode: return layoutBox.borderBottom();
+    case LeftToRightWritingMode: return layoutBox.borderLeft();
+    case RightToLeftWritingMode: return layoutBox.borderRight();
     }
 
     ASSERT_NOT_REACHED();
-    return renderer.borderBefore();
+    return layoutBox.borderBefore();
 }
 
-inline LayoutUnit borderAndPaddingBeforeInWritingMode(const LayoutBox& renderer, WritingMode writingMode)
+inline LayoutUnit borderAndPaddingBeforeInWritingMode(const LayoutBox& layoutBox, WritingMode writingMode)
 {
     switch (writingMode) {
-    case TopToBottomWritingMode: return renderer.borderTop() + renderer.paddingTop();
-    case BottomToTopWritingMode: return renderer.borderBottom() + renderer.paddingBottom();
-    case LeftToRightWritingMode: return renderer.borderLeft() + renderer.paddingLeft();
-    case RightToLeftWritingMode: return renderer.borderRight() + renderer.paddingRight();
+    case TopToBottomWritingMode: return layoutBox.borderTop() + layoutBox.paddingTop();
+    case BottomToTopWritingMode: return layoutBox.borderBottom() + layoutBox.paddingBottom();
+    case LeftToRightWritingMode: return layoutBox.borderLeft() + layoutBox.paddingLeft();
+    case RightToLeftWritingMode: return layoutBox.borderRight() + layoutBox.paddingRight();
     }
 
     ASSERT_NOT_REACHED();
-    return renderer.borderAndPaddingBefore();
+    return layoutBox.borderAndPaddingBefore();
 }
 
 LayoutUnit ShapeOutsideInfo::logicalTopOffset() const
 {
-    switch (referenceBox(*m_renderer.style()->shapeOutside())) {
-    case MarginBox: return -m_renderer.marginBefore(m_renderer.containingBlock()->style());
+    switch (referenceBox(*m_layoutBox.style()->shapeOutside())) {
+    case MarginBox: return -m_layoutBox.marginBefore(m_layoutBox.containingBlock()->style());
     case BorderBox: return LayoutUnit();
-    case PaddingBox: return borderBeforeInWritingMode(m_renderer, m_renderer.containingBlock()->style()->writingMode());
-    case ContentBox: return borderAndPaddingBeforeInWritingMode(m_renderer, m_renderer.containingBlock()->style()->writingMode());
+    case PaddingBox: return borderBeforeInWritingMode(m_layoutBox, m_layoutBox.containingBlock()->style()->writingMode());
+    case ContentBox: return borderAndPaddingBeforeInWritingMode(m_layoutBox, m_layoutBox.containingBlock()->style()->writingMode());
     case BoxMissing: break;
     }
 
@@ -220,41 +220,41 @@ LayoutUnit ShapeOutsideInfo::logicalTopOffset() const
     return LayoutUnit();
 }
 
-inline LayoutUnit borderStartWithStyleForWritingMode(const LayoutBox& renderer, const ComputedStyle* style)
+inline LayoutUnit borderStartWithStyleForWritingMode(const LayoutBox& layoutBox, const ComputedStyle* style)
 {
     if (style->isHorizontalWritingMode()) {
         if (style->isLeftToRightDirection())
-            return renderer.borderLeft();
+            return layoutBox.borderLeft();
 
-        return renderer.borderRight();
+        return layoutBox.borderRight();
     }
     if (style->isLeftToRightDirection())
-        return renderer.borderTop();
+        return layoutBox.borderTop();
 
-    return renderer.borderBottom();
+    return layoutBox.borderBottom();
 }
 
-inline LayoutUnit borderAndPaddingStartWithStyleForWritingMode(const LayoutBox& renderer, const ComputedStyle* style)
+inline LayoutUnit borderAndPaddingStartWithStyleForWritingMode(const LayoutBox& layoutBox, const ComputedStyle* style)
 {
     if (style->isHorizontalWritingMode()) {
         if (style->isLeftToRightDirection())
-            return renderer.borderLeft() + renderer.paddingLeft();
+            return layoutBox.borderLeft() + layoutBox.paddingLeft();
 
-        return renderer.borderRight() + renderer.paddingRight();
+        return layoutBox.borderRight() + layoutBox.paddingRight();
     }
     if (style->isLeftToRightDirection())
-        return renderer.borderTop() + renderer.paddingTop();
+        return layoutBox.borderTop() + layoutBox.paddingTop();
 
-    return renderer.borderBottom() + renderer.paddingBottom();
+    return layoutBox.borderBottom() + layoutBox.paddingBottom();
 }
 
 LayoutUnit ShapeOutsideInfo::logicalLeftOffset() const
 {
-    switch (referenceBox(*m_renderer.style()->shapeOutside())) {
-    case MarginBox: return -m_renderer.marginStart(m_renderer.containingBlock()->style());
+    switch (referenceBox(*m_layoutBox.style()->shapeOutside())) {
+    case MarginBox: return -m_layoutBox.marginStart(m_layoutBox.containingBlock()->style());
     case BorderBox: return LayoutUnit();
-    case PaddingBox: return borderStartWithStyleForWritingMode(m_renderer, m_renderer.containingBlock()->style());
-    case ContentBox: return borderAndPaddingStartWithStyleForWritingMode(m_renderer, m_renderer.containingBlock()->style());
+    case PaddingBox: return borderStartWithStyleForWritingMode(m_layoutBox, m_layoutBox.containingBlock()->style());
+    case ContentBox: return borderAndPaddingStartWithStyleForWritingMode(m_layoutBox, m_layoutBox.containingBlock()->style());
     case BoxMissing: break;
     }
 
@@ -284,7 +284,7 @@ ShapeOutsideDeltas ShapeOutsideInfo::computeDeltasForContainingBlockLine(const L
 {
     ASSERT(lineHeight >= 0);
 
-    LayoutUnit borderBoxTop = containingBlock.logicalTopForFloat(&floatingObject) + containingBlock.marginBeforeForChild(m_renderer);
+    LayoutUnit borderBoxTop = containingBlock.logicalTopForFloat(&floatingObject) + containingBlock.marginBeforeForChild(m_layoutBox);
     LayoutUnit borderBoxLineTop = lineTop - borderBoxTop;
 
     if (isShapeDirty() || !m_shapeOutsideDeltas.isForLine(borderBoxLineTop, lineHeight)) {
@@ -294,12 +294,12 @@ ShapeOutsideDeltas ShapeOutsideInfo::computeDeltasForContainingBlockLine(const L
         if (computedShape().lineOverlapsShapeMarginBounds(referenceBoxLineTop, lineHeight)) {
             LineSegment segment = computedShape().getExcludedInterval((borderBoxLineTop - logicalTopOffset()), std::min(lineHeight, shapeLogicalBottom() - borderBoxLineTop));
             if (segment.isValid) {
-                LayoutUnit logicalLeftMargin = containingBlock.style()->isLeftToRightDirection() ? containingBlock.marginStartForChild(m_renderer) : containingBlock.marginEndForChild(m_renderer);
+                LayoutUnit logicalLeftMargin = containingBlock.style()->isLeftToRightDirection() ? containingBlock.marginStartForChild(m_layoutBox) : containingBlock.marginEndForChild(m_layoutBox);
                 LayoutUnit rawLeftMarginBoxDelta = segment.logicalLeft + logicalLeftOffset() + logicalLeftMargin;
                 LayoutUnit leftMarginBoxDelta = clampTo<LayoutUnit>(rawLeftMarginBoxDelta, LayoutUnit(), floatMarginBoxWidth);
 
-                LayoutUnit logicalRightMargin = containingBlock.style()->isLeftToRightDirection() ? containingBlock.marginEndForChild(m_renderer) : containingBlock.marginStartForChild(m_renderer);
-                LayoutUnit rawRightMarginBoxDelta = segment.logicalRight + logicalLeftOffset() - containingBlock.logicalWidthForChild(m_renderer) - logicalRightMargin;
+                LayoutUnit logicalRightMargin = containingBlock.style()->isLeftToRightDirection() ? containingBlock.marginEndForChild(m_layoutBox) : containingBlock.marginStartForChild(m_layoutBox);
+                LayoutUnit rawRightMarginBoxDelta = segment.logicalRight + logicalLeftOffset() - containingBlock.logicalWidthForChild(m_layoutBox) - logicalRightMargin;
                 LayoutUnit rightMarginBoxDelta = clampTo<LayoutUnit>(rawRightMarginBoxDelta, -floatMarginBoxWidth, LayoutUnit());
 
                 m_shapeOutsideDeltas = ShapeOutsideDeltas(leftMarginBoxDelta, rightMarginBoxDelta, true, borderBoxLineTop, lineHeight);
@@ -321,12 +321,12 @@ LayoutRect ShapeOutsideInfo::computedShapePhysicalBoundingBox() const
     LayoutRect physicalBoundingBox = computedShape().shapeMarginLogicalBoundingBox();
     physicalBoundingBox.setX(physicalBoundingBox.x() + logicalLeftOffset());
 
-    if (m_renderer.style()->isFlippedBlocksWritingMode())
-        physicalBoundingBox.setY(m_renderer.logicalHeight() - physicalBoundingBox.maxY());
+    if (m_layoutBox.style()->isFlippedBlocksWritingMode())
+        physicalBoundingBox.setY(m_layoutBox.logicalHeight() - physicalBoundingBox.maxY());
     else
         physicalBoundingBox.setY(physicalBoundingBox.y() + logicalTopOffset());
 
-    if (!m_renderer.style()->isHorizontalWritingMode())
+    if (!m_layoutBox.style()->isHorizontalWritingMode())
         physicalBoundingBox = physicalBoundingBox.transposedRect();
     else
         physicalBoundingBox.setY(physicalBoundingBox.y() + logicalTopOffset());
@@ -334,19 +334,19 @@ LayoutRect ShapeOutsideInfo::computedShapePhysicalBoundingBox() const
     return physicalBoundingBox;
 }
 
-FloatPoint ShapeOutsideInfo::shapeToRendererPoint(FloatPoint point) const
+FloatPoint ShapeOutsideInfo::shapeToLayoutObjectPoint(FloatPoint point) const
 {
     FloatPoint result = FloatPoint(point.x() + logicalLeftOffset(), point.y() + logicalTopOffset());
-    if (m_renderer.style()->isFlippedBlocksWritingMode())
-        result.setY(m_renderer.logicalHeight() - result.y());
-    if (!m_renderer.style()->isHorizontalWritingMode())
+    if (m_layoutBox.style()->isFlippedBlocksWritingMode())
+        result.setY(m_layoutBox.logicalHeight() - result.y());
+    if (!m_layoutBox.style()->isHorizontalWritingMode())
         result = result.transposedPoint();
     return result;
 }
 
-FloatSize ShapeOutsideInfo::shapeToRendererSize(FloatSize size) const
+FloatSize ShapeOutsideInfo::shapeToLayoutObjectSize(FloatSize size) const
 {
-    if (!m_renderer.style()->isHorizontalWritingMode())
+    if (!m_layoutBox.style()->isHorizontalWritingMode())
         return size.transposedSize();
     return size;
 }

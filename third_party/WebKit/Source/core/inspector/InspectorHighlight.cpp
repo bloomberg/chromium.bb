@@ -99,8 +99,8 @@ public:
 protected:
     virtual FloatPoint translatePoint(const FloatPoint& point)
     {
-        FloatPoint rendererPoint = m_shapeOutsideInfo.shapeToRendererPoint(point);
-        return m_view.contentsToViewport(roundedIntPoint(m_renderer.localToAbsolute(rendererPoint)));
+        FloatPoint layoutObjectPoint = m_shapeOutsideInfo.shapeToLayoutObjectPoint(point);
+        return m_view.contentsToViewport(roundedIntPoint(m_renderer.localToAbsolute(layoutObjectPoint)));
     }
 
 private:
