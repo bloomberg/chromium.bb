@@ -64,9 +64,8 @@ crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer
 
 crbug.com/464039 [ Mac ] fast/block/float/float-mark-descendants-for-layout-crash.html [ Pass Crash ]
 
-# These are manual or other http tests that don't have to run with run-webkit-tests
+# This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
-Bug(http) http/tests/images/multiple-jpeg-decodes.html [ Skip ]
 
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
 
