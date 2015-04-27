@@ -1845,7 +1845,7 @@ void Document::updateStyle(StyleRecalcChange change)
     ASSERT(!childNeedsStyleRecalc());
     ASSERT(inStyleRecalc());
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
-    TRACE_EVENT_END1("blink", "Document::updateStyle", "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount);
+    TRACE_EVENT_END1("blink,blink_style", "Document::updateStyle", "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount);
 }
 
 void Document::updateRenderTreeForNodeIfNeeded(Node* node)
