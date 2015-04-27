@@ -6,6 +6,7 @@
 #define DBUS_FILE_DESCRIPTOR_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "dbus/dbus_export.h"
 
 namespace dbus {
@@ -33,6 +34,12 @@ namespace dbus {
 // with i/o restrictions.
 class CHROME_DBUS_EXPORT FileDescriptor {
  public:
+  // This provides a simple way to pass around file descriptors since they must
+  // be closed on a thread that is allowed to perform I/O.
+  struct Deleter {
+    void CHROME_DBUS_EXPORT operator()(FileDescriptor* fd);
+  };
+
   // Permits initialization without a value for passing to
   // dbus::MessageReader::PopFileDescriptor to fill in and from int values.
   FileDescriptor() : value_(-1), owner_(false), valid_(false) {}
@@ -69,6 +76,9 @@ class CHROME_DBUS_EXPORT FileDescriptor {
 
   DISALLOW_COPY_AND_ASSIGN(FileDescriptor);
 };
+
+using ScopedFileDescriptor =
+    scoped_ptr<FileDescriptor, FileDescriptor::Deleter>;
 
 }  // namespace dbus
 

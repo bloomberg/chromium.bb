@@ -50,7 +50,7 @@ const char* PortTypeToString(FirewallHole::PortType type) {
 void PortReleased(FirewallHole::PortType type,
                   uint16_t port,
                   const std::string& interface,
-                  FirewallHole::ScopedFileDescriptor lifeline_fd,
+                  dbus::ScopedFileDescriptor lifeline_fd,
                   bool success) {
   if (!success) {
     LOG(WARNING) << "Failed to release firewall hole for "
@@ -61,20 +61,13 @@ void PortReleased(FirewallHole::PortType type,
 
 }  // namespace
 
-void CHROMEOS_EXPORT FirewallHole::FileDescriptorDeleter::operator()(
-    dbus::FileDescriptor* fd) {
-  base::WorkerPool::PostTask(
-      FROM_HERE, base::Bind(&base::DeletePointer<dbus::FileDescriptor>, fd),
-      false);
-}
-
 // static
 void FirewallHole::Open(PortType type,
                         uint16_t port,
                         const std::string& interface,
                         const OpenCallback& callback) {
-  ScopedFileDescriptor lifeline_local(new dbus::FileDescriptor());
-  ScopedFileDescriptor lifeline_remote(new dbus::FileDescriptor());
+  dbus::ScopedFileDescriptor lifeline_local(new dbus::FileDescriptor());
+  dbus::ScopedFileDescriptor lifeline_remote(new dbus::FileDescriptor());
 
   // This closure shares pointers with the one below. PostTaskAndReply
   // guarantees that it will always be deleted first.
@@ -109,8 +102,8 @@ FirewallHole::~FirewallHole() {
 void FirewallHole::RequestPortAccess(PortType type,
                                      uint16_t port,
                                      const std::string& interface,
-                                     ScopedFileDescriptor lifeline_local,
-                                     ScopedFileDescriptor lifeline_remote,
+                                     dbus::ScopedFileDescriptor lifeline_local,
+                                     dbus::ScopedFileDescriptor lifeline_remote,
                                      const OpenCallback& callback) {
   if (!lifeline_local->is_valid() || !lifeline_remote->is_valid()) {
     callback.Run(nullptr);
@@ -140,7 +133,7 @@ void FirewallHole::RequestPortAccess(PortType type,
 void FirewallHole::PortAccessGranted(PortType type,
                                      uint16_t port,
                                      const std::string& interface,
-                                     ScopedFileDescriptor lifeline_fd,
+                                     dbus::ScopedFileDescriptor lifeline_fd,
                                      const FirewallHole::OpenCallback& callback,
                                      bool success) {
   if (success) {
@@ -154,7 +147,7 @@ void FirewallHole::PortAccessGranted(PortType type,
 FirewallHole::FirewallHole(PortType type,
                            uint16_t port,
                            const std::string& interface,
-                           ScopedFileDescriptor lifeline_fd)
+                           dbus::ScopedFileDescriptor lifeline_fd)
     : type_(type),
       port_(port),
       interface_(interface),
