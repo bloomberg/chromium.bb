@@ -42,19 +42,22 @@ remoting.LoadingWindow.show = function() {
   // Timeout is currently 15min to handle when we need to spin up a new VM.
   var kConnectionTimeout = 15 * 60 * 1000;
 
+  var options = /** @type {remoting.MessageWindowOptions} */ ({
+    title: remoting.app.getApplicationName(),
+    message: chrome.i18n.getMessage(/*i18n-content*/'FOOTER_CONNECTING'),
+    buttonLabel: chrome.i18n.getMessage(/*i18n-content*/'CANCEL'),
+    onResult: remoting.MessageWindow.quitApp,
+    duration: kConnectionTimeout,
+    onTimeout: remoting.LoadingWindow.onTimeout_,
+    htmlFile: 'loading_window.html',
+    frame: 'none'
+  });
   var transparencyWarning = '';
   if (remoting.platformIsMac()) {
-    transparencyWarning =
+    options.infoBox =
         chrome.i18n.getMessage(/*i18n-content*/'NO_TRANSPARENCY_WARNING');
   }
-  remoting.loadingWindow_ = remoting.MessageWindow.showTimedMessageWindow(
-      remoting.app.getApplicationName(),
-      chrome.i18n.getMessage(/*i18n-content*/'FOOTER_CONNECTING'),
-      transparencyWarning,
-      chrome.i18n.getMessage(/*i18n-content*/'CANCEL'),
-      remoting.MessageWindow.quitApp,
-      kConnectionTimeout,
-      remoting.LoadingWindow.onTimeout_);
+  remoting.loadingWindow_ = new remoting.MessageWindow(options);
 };
 
 /**

@@ -144,7 +144,7 @@ MessageWindowImpl.prototype.onMessage_ = function(event) {
       var messageDiv = document.getElementById('message');
       messageDiv.innerText = message;
 
-      base.resizeWindowToContent();
+      base.resizeWindowToContent(true);
       break;
 
     default:

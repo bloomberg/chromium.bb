@@ -8,6 +8,7 @@
       'webapp/app_remoting/html/ar_dialog.css',
       'webapp/app_remoting/html/ar_main.css',
       'webapp/app_remoting/html/feedback_consent.css',
+      'webapp/app_remoting/html/loading_window.css',
       'webapp/app_remoting/html/context_menu.css',
       'resources/drag.webp',
       '<@(remoting_webapp_resource_files)',
@@ -34,6 +35,11 @@
       'webapp/crd/js/l10n.js',
       'webapp/crd/js/xhr.js',
     ],
+
+    # Variables for loading_window.html. Note that the JS files are the same as
+    # for message_window.html, and are not duplicated here.
+    'ar_loading_window_template':
+      '<(DEPTH)/remoting/webapp/app_remoting/html/template_loading_window.html',
 
     # Variables for main.html.
     # These template files are used to construct the webapp html files.
@@ -95,6 +101,7 @@
       '<(ar_main_template)',
       '<@(ar_main_template_files)',
       '<(ar_feedback_consent_template)',
+      '<(ar_loading_window_template)',
       '<(remoting_webapp_template_message_window)',
       '<(remoting_webapp_template_wcs_sandbox)',
       '<@(ar_all_js_files)',

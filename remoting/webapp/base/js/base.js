@@ -783,14 +783,27 @@ base.timestamp = function() {
 };
 
 /**
- * Size the current window to fit its content vertically.
+ * Size the current window to fit its content.
+ * @param {boolean=} opt_centerWindow If true, position the window in the
+ *     center of the screen after resizing it.
  */
-base.resizeWindowToContent = function() {
+base.resizeWindowToContent = function(opt_centerWindow) {
   var appWindow = chrome.app.window.current();
   var outerBounds = appWindow.outerBounds;
+  var borderX = outerBounds.width - appWindow.innerBounds.width;
   var borderY = outerBounds.height - appWindow.innerBounds.height;
-  appWindow.resizeTo(outerBounds.width, document.body.clientHeight + borderY);
+  var newWidth = document.documentElement.scrollWidth + borderX;
+  var newHeight = document.documentElement.scrollHeight + borderY;
+  appWindow.resizeTo(newWidth, newHeight);
+  var left = outerBounds.left;
+  var top = outerBounds.top;
+  if (opt_centerWindow) {
+    var screenWidth = screen.availWidth;
+    var screenHeight = screen.availHeight;
+    left = (screenWidth - newWidth) / 2;
+    top = (screenHeight - newHeight) / 2;
+  }
   // Sometimes, resizing the window causes its position to be reset to (0, 0),
-  // so restore it explicitly.
-  appWindow.moveTo(outerBounds.left, outerBounds.top);
+  // so restore it explicitly, even if it doesn't need to be centered.
+  appWindow.moveTo(left, top);
 };

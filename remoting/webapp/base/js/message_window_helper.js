@@ -32,6 +32,12 @@ remoting.MessageWindowOptions = function() {
 
   /** @type {?function():void} */
   this.onTimeout = function() {};
+
+  /** @type {string} */
+  this.htmlFile = '';
+
+  /** @type {string} */
+  this.frame = '';
 };
 
 /**
@@ -93,7 +99,8 @@ remoting.MessageWindow = function(options) {
       width: 400,
       height: 100
     },
-    resizable: false
+    resizable: false,
+    frame: options.frame || 'chrome'
   };
 
   /** @type {remoting.MessageWindow} */
@@ -108,7 +115,8 @@ remoting.MessageWindow = function(options) {
     appWindow.contentWindow.addEventListener('load', onLoad, false);
   };
 
-  chrome.app.window.create('message_window.html', windowAttributes, onCreate);
+  var htmlFile = options.htmlFile || 'message_window.html';
+  chrome.app.window.create(htmlFile, windowAttributes, onCreate);
 
   if (duration != 0) {
     this.timer_ = window.setTimeout(this.onTimeoutHandler_.bind(this),
@@ -253,34 +261,6 @@ remoting.MessageWindow.showErrorMessage = function(title, message) {
     message: message,
     buttonLabel: chrome.i18n.getMessage(/*i18n-content*/'OK'),
     onResult: remoting.MessageWindow.quitApp
-  });
-  return new remoting.MessageWindow(options);
-};
-
-/**
- * Static method to create and show a timed message box.
- *
- * @param {string} title The title of the message box.
- * @param {string} message The message.
- * @param {string} infobox Additional information to be displayed in an infobox,
- *     or the empty string if there is no additional information.
- * @param {string} buttonLabel The text for the primary button.
- * @param {function(number):void} onResult The callback to invoke when the
- *     user closes the message window.
- * @param {number} duration Time for wait before calling onTime
- * @param {?function():void} onTimeout Callback function.
- * @return {remoting.MessageWindow}
- */
-remoting.MessageWindow.showTimedMessageWindow = function(
-    title, message, infobox, buttonLabel, onResult, duration, onTimeout) {
-  var options = /** @type {remoting.MessageWindowOptions} */ ({
-    title: title,
-    message: message,
-    infobox: infobox,
-    buttonLabel: buttonLabel,
-    onResult: onResult,
-    duration: duration,
-    onTimeout: onTimeout
   });
   return new remoting.MessageWindow(options);
 };

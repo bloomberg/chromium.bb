@@ -37,8 +37,10 @@
         '>(ar_app_path)/icon16.png',
         '>(ar_app_path)/icon48.png',
         '>(ar_app_path)/icon128.png',
+        '>(ar_app_path)/loading_splash.png',
       ],
       'ar_generated_html_files': [
+        '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/loading_window.html',
         '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/main.html',
         '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/message_window.html',
         '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/wcs_sandbox.html',
@@ -174,6 +176,24 @@
           '<(remoting_webapp_template_wcs_sandbox)',
           '--js',
           '<@(remoting_webapp_wcs_sandbox_html_all_js_files)',
+        ],
+      },
+      {
+        'action_name': 'Build ">(ar_app_name)" loading_window.html',
+        'inputs': [
+          '<(DEPTH)/remoting/webapp/build-html.py',
+          '<(ar_loading_window_template)',
+        ],
+        'outputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/loading_window.html',
+        ],
+        'action': [
+          'python', '<(DEPTH)/remoting/webapp/build-html.py',
+          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/loading_window.html',
+          '<(ar_loading_window_template)',
+          # The loading window is just a reskin of the message window--all
+          # JS code is shared.
+          '--js', '<@(remoting_webapp_message_window_html_all_js_files)',
         ],
       },
       {

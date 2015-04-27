@@ -1,0 +1,40 @@
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  /*
+   * Ensure that the scrollWidth of the <html> element takes into account
+   * content outside the window borders. Without this, resizeWindowToContent
+   * cannot set the required window width.
+   */
+  overflow: visible;
+
+  /* Eliminate the gap between the background image and the message. */
+  line-height: 0;
+}
+
+.message-container {
+  padding: 20px;
+  line-height: 16px;
+}
+
+body .message-container {
+  padding: 12px;
+}
+
+body .button-row {
+  margin-top: 0;
+}
+
+#splash-image {
+  -webkit-app-region: drag;
+}
+
+#infobox {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  position: fixed;
+  top: 0;
+}
