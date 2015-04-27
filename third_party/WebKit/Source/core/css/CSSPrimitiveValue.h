@@ -98,7 +98,6 @@ public:
         CSS_COUNTER = 23,
         CSS_RECT = 24,
         CSS_RGBCOLOR = 25,
-        // From CSS Values and Units. Viewport-percentage Lengths (vw/vh/vmin/vmax).
         CSS_VW = 26,
         CSS_VH = 27,
         CSS_VMIN = 28,
@@ -107,29 +106,18 @@ public:
         CSS_DPI = 31,
         CSS_DPCM = 32,
         CSS_FR = 33,
-        CSS_PAIR = 100, // We envision this being exposed as a means of getting computed style values for pairs (border-spacing/radius, background-position, etc.)
+        CSS_PAIR = 100,
         CSS_UNICODE_RANGE = 102,
-
-        // These are from CSS3 Values and Units, but that isn't a finished standard yet
         CSS_TURN = 107,
         CSS_REMS = 108,
         CSS_CHS = 109,
-
-        // This is used internally for counter names (as opposed to counter values)
         CSS_COUNTER_NAME = 110,
-
-        // This is used by the CSS Shapes draft
         CSS_SHAPE = 111,
-
-        // Used by border images.
         CSS_QUAD = 112,
-
         CSS_CALC = 113,
         CSS_CALC_PERCENTAGE_WITH_NUMBER = 114,
         CSS_CALC_PERCENTAGE_WITH_LENGTH = 115,
-
         CSS_STRING = 116,
-
         CSS_PROPERTY_ID = 117,
         CSS_VALUE_ID = 118
     };
@@ -270,15 +258,7 @@ public:
     double computeDegrees() const;
     double computeSeconds();
 
-    /*
-     * Computes a length in pixels out of the given CSSValue
-     *
-     * The metrics have to be a bit different for screen and printer output.
-     * For screen output we assume 1 inch == 72 px, for printer we assume 300 dpi
-     *
-     * this is screen/printer dependent, so we probably need a config option for this,
-     * and some tool to calibrate.
-     */
+    // Computes a length in pixels, resolving relative lengths
     template<typename T> T computeLength(const CSSToLengthConversionData&);
 
     // Converts to a Length (Fixed, Percent or Calculated)

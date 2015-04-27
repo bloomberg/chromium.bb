@@ -171,8 +171,6 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::fromName(const String& unit)
 
 CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::unitCategory(UnitType type)
 {
-    // Here we violate the spec (http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSPrimitiveValue) and allow conversions
-    // between CSS_PX and relative lengths (see cssPixelsPerInch comment in core/css/CSSHelper.h for the topic treatment).
     switch (type) {
     case CSS_NUMBER:
         return CSSPrimitiveValue::UNumber;
