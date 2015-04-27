@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/metrics/profiler/tracking_synchronizer.h"
+#include "components/metrics/proto/profiler_event.pb.h"
 
 scoped_ptr<FirstWebContentsProfiler>
 FirstWebContentsProfiler::CreateProfilerForFirstWebContents(
@@ -50,6 +52,9 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
     UMA_HISTOGRAM_LONG_TIMES_100("Startup.FirstWebContents.NonEmptyPaint",
                                  elapsed);
   }
+
+  metrics::TrackingSynchronizer::OnProfilingPhaseCompleted(
+      metrics::ProfilerEventProto::EVENT_FIRST_NONEMPTY_PAINT);
 
   if (IsFinishedCollectingMetrics())
     FinishedCollectingMetrics();

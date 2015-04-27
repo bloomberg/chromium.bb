@@ -44,13 +44,20 @@ class ProfilerControllerImpl : public ProfilerController {
   // ProfilerController implementation:
   void Register(ProfilerSubscriber* subscriber) override;
   void Unregister(const ProfilerSubscriber* subscriber) override;
-  void GetProfilerData(int sequence_number) override;
+  void GetProfilerData(int sequence_number,
+                       int current_profiling_phase) override;
+  void OnProfilingPhaseCompleted(int profiling_phase) override;
 
  private:
   friend struct DefaultSingletonTraits<ProfilerControllerImpl>;
 
   // Contact child processes and get their profiler data.
-  void GetProfilerDataFromChildProcesses(int sequence_number);
+  void GetProfilerDataFromChildProcesses(int sequence_number,
+                                         int current_profiling_phase);
+
+  // Contact child processes and notify them of a profiling phase completion.
+  static void NotifyChildProcessesOfProfilingPhaseCompletion(
+      int profiling_phase);
 
   ProfilerSubscriber* subscriber_;
 

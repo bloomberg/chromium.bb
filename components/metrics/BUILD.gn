@@ -120,6 +120,7 @@ source_set("profiler") {
     "profiler/profiler_metrics_provider.h",
     "profiler/tracking_synchronizer.cc",
     "profiler/tracking_synchronizer.h",
+    "profiler/tracking_synchronizer_observer.cc",
     "profiler/tracking_synchronizer_observer.h",
   ]
 

@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "content/public/browser/profiler_subscriber.h"
@@ -43,9 +44,9 @@ class TrackingSynchronizer
   // Construction also sets up the global singleton instance. This instance is
   // used to communicate between the IO and UI thread, and is destroyed only as
   // the main thread (browser_main) terminates, which means the IO thread has
-  // already completed, and will not need this instance any further. |now| is
-  // the current time, but can be something else in tests.
-  explicit TrackingSynchronizer(base::TimeTicks now);
+  // already completed, and will not need this instance any further.
+  // |clock| is a clock used for durations of profiling phases.
+  explicit TrackingSynchronizer(scoped_ptr<base::TickClock> clock);
 
   // Contact all processes, and get them to upload to the browser any/all
   // changes to profiler data. It calls |callback_object|'s SetData method with
@@ -53,6 +54,11 @@ class TrackingSynchronizer
   // This method is accessible on UI thread.
   static void FetchProfilerDataAsynchronously(
       const base::WeakPtr<TrackingSynchronizerObserver>& callback_object);
+
+  // Called when a profiling phase completes. |profiling_event| is the event
+  // that triggered the completion of the current phase, and begins a new phase.
+  static void OnProfilingPhaseCompleted(
+      ProfilerEventProto::ProfilerEvent profiling_event);
 
   // ------------------------------------------------------
   // ProfilerSubscriber methods for browser child processes
@@ -64,14 +70,23 @@ class TrackingSynchronizer
                           int pending_processes,
                           bool end) override;
 
+ protected:
+  ~TrackingSynchronizer() override;
+
+  // Update the sequence of completed phases with a new phase completion info.
+  void RegisterPhaseCompletion(
+      ProfilerEventProto::ProfilerEvent profiling_event);
+
+  // Notify |observer| about |profiler_data| received from process of type
+  // |process_type|.
+  void SendData(const tracked_objects::ProcessDataSnapshot& profiler_data,
+                content::ProcessType process_type,
+                TrackingSynchronizerObserver* observer) const;
+
  private:
   friend class base::RefCountedThreadSafe<TrackingSynchronizer>;
-  // TODO(vadimt): Remove friending TrackingSynchronizerTest_ProfilerData_Test.
-  friend class TrackingSynchronizerTest_ProfilerData_Test;
 
   class RequestContext;
-
-  ~TrackingSynchronizer() override;
 
   // Send profiler_data back to callback_object_ by calling
   // DecrementPendingProcessesAndSendData which records that we are waiting
@@ -89,13 +104,10 @@ class TrackingSynchronizer
   int RegisterAndNotifyAllProcesses(
       const base::WeakPtr<TrackingSynchronizerObserver>& callback_object);
 
-  // Notify |observer| about |profiler_data| received from process of type
-  // |process_type|. |now| is the current time, but can be something else in
-  // tests.
-  void SendData(const tracked_objects::ProcessDataSnapshot& profiler_data,
-                content::ProcessType process_type,
-                base::TimeTicks now,
-                TrackingSynchronizerObserver* observer) const;
+  // Notifies all processes of a completion of a profiling phase.
+  // |profiling_event| is the event associated with the phase change.
+  void NotifyAllProcessesOfProfilingPhaseCompletion(
+      ProfilerEventProto::ProfilerEvent profiling_event);
 
   // It finds the RequestContext for the given |sequence_number| and notifies
   // the RequestContext's |callback_object_| about the |value|. This is called
@@ -127,10 +139,8 @@ class TrackingSynchronizer
   std::vector<ProfilerEventProto::ProfilerEvent>
       phase_completion_events_sequence_;
 
-  // TODO(vadimt): consider moving 2 fields below to metrics service.
-  // Time of the profiling start. Used to calculate times of phase change
-  // moments relative to this value.
-  const base::TimeTicks start_time_;
+  // Clock for profiling phase durations.
+  const scoped_ptr<base::TickClock> clock_;
 
   // Times of starts of all profiling phases, including the current phase. The
   // index in the vector is the phase number.

@@ -72,7 +72,8 @@ void ProfilerControllerImpl::Unregister(const ProfilerSubscriber* subscriber) {
 }
 
 void ProfilerControllerImpl::GetProfilerDataFromChildProcesses(
-    int sequence_number) {
+    int sequence_number,
+    int current_profiling_phase) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   int pending_processes = 0;
@@ -85,8 +86,10 @@ void ProfilerControllerImpl::GetProfilerDataFromChildProcesses(
       continue;
 
     ++pending_processes;
-    if (!iter.Send(new ChildProcessMsg_GetChildProfilerData(sequence_number)))
+    if (!iter.Send(new ChildProcessMsg_GetChildProfilerData(
+            sequence_number, current_profiling_phase))) {
       --pending_processes;
+    }
   }
 
   BrowserThread::PostTask(
@@ -100,26 +103,66 @@ void ProfilerControllerImpl::GetProfilerDataFromChildProcesses(
           true));
 }
 
-void ProfilerControllerImpl::GetProfilerData(int sequence_number) {
+// static
+void ProfilerControllerImpl::NotifyChildProcessesOfProfilingPhaseCompletion(
+    int profiling_phase) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
+    // In some cases, there may be no child process of the given type (for
+    // example, the GPU process may not exist and there may instead just be a
+    // GPU thread in the browser process). If that's the case, then the process
+    // handle will be base::kNullProcessHandle and we shouldn't send it a
+    // message.
+    if (iter.GetData().handle == base::kNullProcessHandle)
+      continue;
+
+    iter.Send(new ChildProcessMsg_ProfilingPhaseCompleted(profiling_phase));
+  }
+}
+
+void ProfilerControllerImpl::GetProfilerData(int sequence_number,
+                                             int current_profiling_phase) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Iterates through renderers in UI thread, and through other child processes
+  // in IO thread, and send them GetChildProfilerData message. Renderers have to
+  // be contacted from UI thread, and other processes - from IO thread.
   int pending_processes = 0;
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
     ++pending_processes;
-    if (!it.GetCurrentValue()->Send(
-            new ChildProcessMsg_GetChildProfilerData(sequence_number))) {
+    if (!it.GetCurrentValue()->Send(new ChildProcessMsg_GetChildProfilerData(
+            sequence_number, current_profiling_phase))) {
       --pending_processes;
     }
   }
   OnPendingProcesses(sequence_number, pending_processes, false);
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&ProfilerControllerImpl::GetProfilerDataFromChildProcesses,
-                 base::Unretained(this),
-                 sequence_number));
+                 base::Unretained(this), sequence_number,
+                 current_profiling_phase));
+}
+
+void ProfilerControllerImpl::OnProfilingPhaseCompleted(int profiling_phase) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Iterates through renderers in UI thread, and through other child processes
+  // in IO thread, and send them OnProfilingPhase message. Renderers have to be
+  // contacted from UI thread, and other processes - from IO thread.
+  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Send(
+        new ChildProcessMsg_ProfilingPhaseCompleted(profiling_phase));
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ProfilerControllerImpl::
+                     NotifyChildProcessesOfProfilingPhaseCompletion,
+                 profiling_phase));
 }
 
 }  // namespace content

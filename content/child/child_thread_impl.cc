@@ -567,6 +567,8 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetProfilerStatus)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetChildProfilerData,
                         OnGetChildProfilerData)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_ProfilingPhaseCompleted,
+                        OnProfilingPhaseCompleted)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_DumpHandles, OnDumpHandles)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetProcessBackgrounded,
                         OnProcessBackgrounded)
@@ -606,12 +608,17 @@ void ChildThreadImpl::OnSetProfilerStatus(ThreadData::Status status) {
   ThreadData::InitializeAndSetTrackingStatus(status);
 }
 
-void ChildThreadImpl::OnGetChildProfilerData(int sequence_number) {
+void ChildThreadImpl::OnGetChildProfilerData(int sequence_number,
+                                             int current_profiling_phase) {
   tracked_objects::ProcessDataSnapshot process_data;
-  ThreadData::Snapshot(&process_data);
+  ThreadData::Snapshot(current_profiling_phase, &process_data);
 
   Send(
       new ChildProcessHostMsg_ChildProfilerData(sequence_number, process_data));
+}
+
+void ChildThreadImpl::OnProfilingPhaseCompleted(int profiling_phase) {
+  ThreadData::OnProfilingPhaseCompleted(profiling_phase);
 }
 
 void ChildThreadImpl::OnDumpHandles() {

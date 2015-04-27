@@ -97,12 +97,8 @@ class ChromeMetricsServiceClient
 
   // TrackingSynchronizerObserver:
   void ReceivedProfilerData(
+      const metrics::ProfilerDataAttributes& attributes,
       const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
-      base::ProcessId process_id,
-      content::ProcessType process_type,
-      int profiling_phase,
-      base::TimeDelta phase_start,
-      base::TimeDelta phase_finish,
       const metrics::ProfilerEvents& past_profiler_events) override;
   void FinishedReceivingProfilerData() override;
 
@@ -184,6 +180,9 @@ class ChromeMetricsServiceClient
   // Callback to determine whether or not a cellular network is currently being
   // used.
   base::Callback<void(bool*)> cellular_callback_;
+
+  // Time of this object's creation.
+  const base::TimeTicks start_time_;
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_;
 

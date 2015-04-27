@@ -117,6 +117,7 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
       google_update_metrics_provider_(nullptr),
 #endif
       drive_metrics_provider_(nullptr),
+      start_time_(base::TimeTicks::Now()),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
   RecordCommandLineMetrics();
@@ -395,19 +396,14 @@ void ChromeMetricsServiceClient::OnInitTaskGotGoogleUpdateData() {
       weak_ptr_factory_.GetWeakPtr());
 }
 
-// TODO(vadimt): Consider wrapping params in a struct after the list of params
-// to ReceivedProfilerData settles. crbug/456354.
 void ChromeMetricsServiceClient::ReceivedProfilerData(
+    const metrics::ProfilerDataAttributes& attributes,
     const tracked_objects::ProcessDataPhaseSnapshot& process_data_phase,
-    base::ProcessId process_id,
-    content::ProcessType process_type,
-    int profiling_phase,
-    base::TimeDelta phase_start,
-    base::TimeDelta phase_finish,
     const metrics::ProfilerEvents& past_events) {
   profiler_metrics_provider_->RecordProfilerData(
-      process_data_phase, process_id, process_type, profiling_phase,
-      phase_start, phase_finish, past_events);
+      process_data_phase, attributes.process_id, attributes.process_type,
+      attributes.profiling_phase, attributes.phase_start - start_time_,
+      attributes.phase_finish - start_time_, past_events);
 }
 
 void ChromeMetricsServiceClient::FinishedReceivingProfilerData() {

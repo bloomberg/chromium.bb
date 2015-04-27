@@ -58,7 +58,7 @@ IPC_STRUCT_TRAITS_BEGIN(tracked_objects::ProcessDataPhaseSnapshot)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(tracked_objects::ProcessDataSnapshot)
-  IPC_STRUCT_TRAITS_MEMBER(phased_process_data_snapshots)
+  IPC_STRUCT_TRAITS_MEMBER(phased_snapshots)
   IPC_STRUCT_TRAITS_MEMBER(process_id)
 IPC_STRUCT_TRAITS_END()
 
@@ -103,8 +103,14 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProfilerStatus,
 
 // Send to all the child processes to send back profiler data (ThreadData in
 // tracked_objects).
-IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildProfilerData,
-                     int /* sequence_number */)
+IPC_MESSAGE_CONTROL2(ChildProcessMsg_GetChildProfilerData,
+                     int /* sequence_number */,
+                     int /* current_profiling_phase */)
+
+// Send to all the child processes to mark the current profiling phase as
+// finished and start a new phase.
+IPC_MESSAGE_CONTROL1(ChildProcessMsg_ProfilingPhaseCompleted,
+                     int /* profiling_phase */)
 
 // Send to all the child processes to send back histogram data.
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildHistogramData,

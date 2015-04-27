@@ -180,11 +180,12 @@ base::LazyInstance
 
 // TrackingSynchronizer methods and members.
 
-TrackingSynchronizer::TrackingSynchronizer(base::TimeTicks now)
-    : last_used_sequence_number_(kNeverUsableSequenceNumber), start_time_(now) {
+TrackingSynchronizer::TrackingSynchronizer(scoped_ptr<base::TickClock> clock)
+    : last_used_sequence_number_(kNeverUsableSequenceNumber),
+      clock_(clock.Pass()) {
   DCHECK(!g_tracking_synchronizer);
   g_tracking_synchronizer = this;
-  phase_start_times_.push_back(now);
+  phase_start_times_.push_back(clock_->NowTicks());
 
 #if !defined(OS_IOS)
   // TODO: This ifdef and other ifdefs for OS_IOS in this file are only
@@ -227,6 +228,20 @@ void TrackingSynchronizer::FetchProfilerDataAsynchronously(
       base::TimeDelta::FromMinutes(1));
 }
 
+// static
+void TrackingSynchronizer::OnProfilingPhaseCompleted(
+    ProfilerEventProto::ProfilerEvent profiling_event) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!g_tracking_synchronizer) {
+    // System teardown is happening.
+    return;
+  }
+
+  g_tracking_synchronizer->NotifyAllProcessesOfProfilingPhaseCompletion(
+      profiling_event);
+}
+
 void TrackingSynchronizer::OnPendingProcesses(int sequence_number,
                                               int pending_processes,
                                               bool end) {
@@ -261,24 +276,63 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
   // Increment pending process count for sending browser's profiler data.
   request->IncrementProcessesPending();
 
+  const int current_profiling_phase = phase_completion_events_sequence_.size();
+
 #if !defined(OS_IOS)
   // Get profiler data from renderer and browser child processes.
-  content::ProfilerController::GetInstance()->GetProfilerData(sequence_number);
+  content::ProfilerController::GetInstance()->GetProfilerData(
+      sequence_number, current_profiling_phase);
 #endif
 
   // Send process data snapshot from browser process.
   tracked_objects::ProcessDataSnapshot process_data_snapshot;
-  tracked_objects::ThreadData::Snapshot(&process_data_snapshot);
+  tracked_objects::ThreadData::Snapshot(current_profiling_phase,
+                                        &process_data_snapshot);
+
   DecrementPendingProcessesAndSendData(sequence_number, process_data_snapshot,
                                        content::PROCESS_TYPE_BROWSER);
 
   return sequence_number;
 }
 
+void TrackingSynchronizer::RegisterPhaseCompletion(
+    ProfilerEventProto::ProfilerEvent profiling_event) {
+  phase_completion_events_sequence_.push_back(profiling_event);
+  phase_start_times_.push_back(clock_->NowTicks());
+}
+
+void TrackingSynchronizer::NotifyAllProcessesOfProfilingPhaseCompletion(
+    ProfilerEventProto::ProfilerEvent profiling_event) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (variations::GetVariationParamValue("UMALogPhasedProfiling",
+                                         "send_split_profiles") == "false") {
+    return;
+  }
+
+  int profiling_phase = phase_completion_events_sequence_.size();
+
+  // If you hit this check, stop and think. You just added a new profiling
+  // phase. Each profiling phase takes additional memory in DeathData's list of
+  // snapshots. We cannot grow it indefinitely. Consider collapsing older phases
+  // after they were sent to UMA server, or other ways to save memory.
+  DCHECK_LT(profiling_phase, 1);
+
+  RegisterPhaseCompletion(profiling_event);
+
+#if !defined(OS_IOS)
+  // Notify renderer and browser child processes.
+  content::ProfilerController::GetInstance()->OnProfilingPhaseCompleted(
+      profiling_phase);
+#endif
+
+  // Notify browser process.
+  tracked_objects::ThreadData::OnProfilingPhaseCompleted(profiling_phase);
+}
+
 void TrackingSynchronizer::SendData(
     const tracked_objects::ProcessDataSnapshot& profiler_data,
     content::ProcessType process_type,
-    base::TimeTicks now,
     TrackingSynchronizerObserver* observer) const {
   // We are going to loop though past profiling phases and notify the request
   // about each phase that is contained in profiler_data. past_events
@@ -290,20 +344,19 @@ void TrackingSynchronizer::SendData(
   // comparison.
   for (size_t phase = 0; phase <= phase_completion_events_sequence_.size();
        ++phase) {
-    auto it = profiler_data.phased_process_data_snapshots.find(phase);
+    auto it = profiler_data.phased_snapshots.find(phase);
 
-    if (it != profiler_data.phased_process_data_snapshots.end()) {
+    if (it != profiler_data.phased_snapshots.end()) {
       // If the phase is contained in the received snapshot, notify the
       // request.
-      const base::TimeDelta phase_start =
-          phase_start_times_[phase] - start_time_;
-      const base::TimeDelta phase_finish =
-          (phase + 1 < phase_start_times_.size() ? phase_start_times_[phase + 1]
-                                                 : now) -
-          start_time_;
-      observer->ReceivedProfilerData(it->second, profiler_data.process_id,
-                                     process_type, phase, phase_start,
-                                     phase_finish, past_events);
+      const base::TimeTicks phase_start = phase_start_times_[phase];
+      const base::TimeTicks phase_finish = phase + 1 < phase_start_times_.size()
+                                               ? phase_start_times_[phase + 1]
+                                               : clock_->NowTicks();
+      observer->ReceivedProfilerData(
+          ProfilerDataAttributes(phase, profiler_data.process_id, process_type,
+                                 phase_start, phase_finish),
+          it->second, past_events);
     }
 
     if (phase < phase_completion_events_sequence_.size()) {
@@ -324,7 +377,7 @@ void TrackingSynchronizer::DecrementPendingProcessesAndSendData(
 
   TrackingSynchronizerObserver* observer = request->callback_object_.get();
   if (observer)
-    SendData(profiler_data, process_type, base::TimeTicks::Now(), observer);
+    SendData(profiler_data, process_type, observer);
 
   // Delete request if we have heard back from all child processes.
   request->DecrementProcessesPending();

@@ -148,6 +148,7 @@
         'metrics/profiler/profiler_metrics_provider.h',
         'metrics/profiler/tracking_synchronizer.cc',
         'metrics/profiler/tracking_synchronizer.h',
+        'metrics/profiler/tracking_synchronizer_observer.cc',
         'metrics/profiler/tracking_synchronizer_observer.h',
       ],
     },

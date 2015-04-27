@@ -34,6 +34,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -993,8 +994,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_MACOSX)
 
   // Initialize tracking synchronizer system.
-  tracking_synchronizer_ =
-      new metrics::TrackingSynchronizer(base::TimeTicks::Now());
+  tracking_synchronizer_ = new metrics::TrackingSynchronizer(
+      make_scoped_ptr(new base::DefaultTickClock()));
 
 #if defined(OS_MACOSX)
   // Get the Keychain API to register for distributed notifications on the main
