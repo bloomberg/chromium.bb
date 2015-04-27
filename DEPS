@@ -414,7 +414,7 @@ deps_os = {
 
     # Note that this is different from Android's freetype repo.
     'src/third_party/freetype2/src':
-     Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + '495a23fce9cd125f715dc20643d14fed226d76ac',
+     Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + '1dd5f5f4a909866f15c92a45c9702bce290a0151',
 
     # Build tools for Chrome OS.
     'src/third_party/chromite':

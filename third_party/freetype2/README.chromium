@@ -1,6 +1,6 @@
 Name: freetype2
 URL: git://git.sv.nongnu.org/freetype/freetype2.git
-Version: 2.4.8-1ubuntu2.1
+Version: 2.4.8-1ubuntu2.2
 Security Critical: no
 License: BSD
 License File: NOT_SHIPPED
@@ -10,10 +10,22 @@ Description:
 This mirrors the version of Freetype2 that was distributed with Ubuntu Precise
 (Version 2.4.8, git hash 9d7f0957fbd10fdbabf9815e37857a910ad4f4ac, plus
 applicable debian/patches-freetype as seen in
-https://launchpad.net/ubuntu/lucid/+source/freetype ). On Ubuntu Precise
-this code should be the same as the result of
+https://launchpad.net/ubuntu/lucid/+source/freetype ).
 
-apt-get source freetype && cd freetype-2.4.8/ && ./debian/rules patch
+To get the code and patches:
+
+sudo apt-add-repository -s "deb http://archive.ubuntu.com/ubuntu precise-security main"
+sudo apt-key update
+sudo apt-get update
+apt-get source -t precise freetype=2.4.8-1ubuntu2.2
+
+and then to apply the patches (quilt):
+
+cd freetype-2.4.8/
+./debian/rules patch
+
+The tree produced by this should match the tree in this repo on the
+chromium/ubuntu/precise branch.
 
 The build files should approximate the output of
 
