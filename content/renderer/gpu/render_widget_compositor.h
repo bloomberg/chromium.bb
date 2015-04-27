@@ -66,7 +66,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   // Calling QueueSwapPromise() to directly queue a SwapPromise into
   // LayerTreeHost.
   void QueueSwapPromise(scoped_ptr<cc::SwapPromise> swap_promise);
-  int GetLayerTreeId() const;
   int GetSourceFrameNumber() const;
   void SetNeedsUpdateLayers();
   void SetNeedsCommit();

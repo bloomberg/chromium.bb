@@ -528,10 +528,6 @@ void RenderWidgetCompositor::QueueSwapPromise(
   layer_tree_host_->QueueSwapPromise(swap_promise.Pass());
 }
 
-int RenderWidgetCompositor::GetLayerTreeId() const {
-  return layer_tree_host_->id();
-}
-
 int RenderWidgetCompositor::GetSourceFrameNumber() const {
   return layer_tree_host_->source_frame_number();
 }

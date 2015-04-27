@@ -134,7 +134,6 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDateTimeChooserCompletion.h"
 #include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
-#include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFileChooserParams.h"
@@ -400,12 +399,6 @@ static void ConvertToFaviconSizes(
   sizes->reserve(web_sizes.size());
   for (size_t i = 0; i < web_sizes.size(); ++i)
     sizes->push_back(gfx::Size(web_sizes[i]));
-}
-
-static blink::WebDevToolsAgent* GetWebDevToolsAgent(WebView* webview) {
-  if (!webview || !webview->mainFrame()->isWebLocalFrame())
-    return nullptr;
-  return webview->mainFrame()->toWebLocalFrame()->devToolsAgent();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -802,12 +795,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 #if defined(OS_MACOSX)
   new TextInputClientObserver(this);
 #endif  // defined(OS_MACOSX)
-
-  // TODO(dgozman): do this not for main frame, but for local frame roots.
-  if (blink::WebDevToolsAgent* devToolsAgent = GetWebDevToolsAgent(webview())) {
-    if (RenderWidgetCompositor* rwc = compositor())
-      devToolsAgent->setLayerTreeId(rwc->GetLayerTreeId());
-  }
 
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.
@@ -2048,9 +2035,6 @@ void RenderViewImpl::initializeLayerTreeView() {
   RenderWidgetCompositor* rwc = compositor();
   if (!rwc)
     return;
-  // TODO(dgozman): do this not for main frame, but for local frame roots.
-  if (blink::WebDevToolsAgent* devToolsAgent = GetWebDevToolsAgent(webview()))
-    devToolsAgent->setLayerTreeId(rwc->GetLayerTreeId());
 
   bool use_threaded_event_handling = true;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
