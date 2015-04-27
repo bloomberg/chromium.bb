@@ -71,9 +71,9 @@
       'webapp/base/js/base_inherits_unittest.js',
       'webapp/base/js/ipc_unittest.js',
       'webapp/base/js/protocol_extension_manager_unittest.js',
+      'webapp/base/js/viewport_unittest.js',
       'webapp/crd/js/apps_v2_migration_unittest.js',
       'webapp/crd/js/client_session_unittest.js',
-      'webapp/crd/js/desktop_viewport_unittest.js',
       'webapp/crd/js/client_session_factory_unittest.js',
       'webapp/crd/js/dns_blackhole_checker_unittest.js',
       'webapp/crd/js/error_unittest.js',
@@ -241,6 +241,7 @@
     ],
     # UI JavaScript files.
     'remoting_webapp_js_ui_files': [
+      'webapp/base/js/viewport.js',
       'webapp/base/js/window_shape.js',
       'webapp/crd/js/bump_scroller.js',
       'webapp/crd/js/butter_bar.js',

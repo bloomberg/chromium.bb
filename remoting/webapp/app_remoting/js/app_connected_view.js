@@ -122,7 +122,7 @@ remoting.AppConnectedView.prototype.onDesktopSizeChanged_ =
   var hostSize = { width: hostDesktop.width, height: hostDesktop.height };
   var hostDpi = { x: hostDesktop.xDpi, y: hostDesktop.yDpi };
   var clientArea = { width: window.innerWidth, height: window.innerHeight };
-  var newSize = remoting.DesktopViewport.choosePluginSize(
+  var newSize = remoting.Viewport.choosePluginSize(
       clientArea, window.devicePixelRatio,
       hostSize, hostDpi, this.host_.options.desktopScale,
       true /* fullscreen */ , true /* shrinkToFit */ );
