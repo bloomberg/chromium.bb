@@ -197,7 +197,7 @@ public:
 
     // Returns whether this style set was changed.
     bool addParsedProperties(const WillBeHeapVector<CSSProperty, 256>&);
-    bool addParsedProperty(const CSSProperty&);
+    bool addRespectingCascade(const CSSProperty&);
 
     // These expand shorthand properties into multiple properties.
     bool setProperty(CSSPropertyID unresolvedProperty, const String& value, bool important = false, StyleSheetContents* contextStyleSheet = 0);

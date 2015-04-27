@@ -97,9 +97,9 @@ void ViewportStyleResolver::addViewportRule(StyleRuleViewport* viewportRule, Ori
     }
 
     // We cannot use mergeAndOverrideOnConflict() here because it doesn't
-    // respect the !important declaration (but addParsedProperty() does).
+    // respect the !important declaration (but addRespectingCascade() does).
     for (unsigned i = 0; i < propertyCount; ++i)
-        m_propertySet->addParsedProperty(propertySet.propertyAt(i).toCSSProperty());
+        m_propertySet->addRespectingCascade(propertySet.propertyAt(i).toCSSProperty());
 }
 
 void ViewportStyleResolver::resolve()

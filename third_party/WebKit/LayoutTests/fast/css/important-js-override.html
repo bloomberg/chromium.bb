@@ -1,8 +1,78 @@
-<div id="a" style="background-color: green !important">The background of this element should be green. It is </div>
+<!DOCTYPE html>
+<div id="element"></div>
+
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-    if (window.testRunner)
-        testRunner.dumpAsText();
-    var a = document.getElementById("a");
-    a.style.backgroundColor = "red";
-    a.innerHTML += a.style.backgroundColor;
+test(function () {
+  element.style.cssText = '';
+
+  element.style.setProperty('color', 'red');
+  assert_equals(element.style.getPropertyValue('color'), 'red');
+  assert_equals(element.style.getPropertyPriority('color'), '');
+
+  element.style.setProperty('color', 'green');
+  assert_equals(element.style.getPropertyValue('color'), 'green');
+  assert_equals(element.style.getPropertyPriority('color'), '');
+}, "Check that a non-important inline style can be replaced by a non-important one with setProperty()");
+
+test(function () {
+  element.style.cssText = '';
+
+  element.style.color = 'red';
+  assert_equals(element.style.getPropertyValue('color'), 'red');
+  assert_equals(element.style.getPropertyPriority('color'), '');
+
+  element.style.color = 'green';
+  assert_equals(element.style.getPropertyValue('color'), 'green');
+  assert_equals(element.style.getPropertyPriority('color'), '');
+}, "Check that a non-important inline style can be replaced by a non-important one without setProperty()");
+
+test(function () {
+  element.style.cssText = '';
+
+  element.style.setProperty('color', 'red');
+  assert_equals(element.style.getPropertyValue('color'), 'red');
+  assert_equals(element.style.getPropertyPriority('color'), '');
+
+  element.style.setProperty('color', 'green', 'important');
+  assert_equals(element.style.getPropertyValue('color'), 'green');
+  assert_equals(element.style.getPropertyPriority('color'), 'important');
+}, "Check that a non-important inline style can be replaced by an important one with setProperty()");
+
+test(function () {
+  element.style.cssText = '';
+
+  element.style.setProperty('color', 'red', 'important');
+  assert_equals(element.style.getPropertyValue('color'), 'red');
+  assert_equals(element.style.getPropertyPriority('color'), 'important');
+
+  element.style.setProperty('color', 'green');
+  assert_equals(element.style.getPropertyValue('color'), 'green');
+  assert_equals(element.style.getPropertyPriority('color'), '');
+}, "Check that a important inline style can be replaced by a non-important one with setProperty()");
+
+test(function () {
+  element.style.cssText = '';
+
+  element.style.setProperty('color', 'red', 'important');
+  assert_equals(element.style.getPropertyValue('color'), 'red');
+  assert_equals(element.style.getPropertyPriority('color'), 'important');
+
+  element.style.color = 'green';
+  assert_equals(element.style.getPropertyValue('color'), 'green');
+  assert_equals(element.style.getPropertyPriority('color'), '');
+}, "Check that a important inline style can be replaced by a non-important one without setProperty()");
+
+test(function () {
+  element.style.cssText = '';
+
+  element.style.setProperty('color', 'red', 'important');
+  assert_equals(element.style.getPropertyValue('color'), 'red');
+  assert_equals(element.style.getPropertyPriority('color'), 'important');
+
+  element.style.setProperty('color', 'green', 'important');
+  assert_equals(element.style.getPropertyValue('color'), 'green');
+  assert_equals(element.style.getPropertyPriority('color'), 'important');
+}, "Check that an important inline style can be replaced by an important one with setProperty()");
 </script>

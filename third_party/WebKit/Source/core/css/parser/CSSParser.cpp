@@ -64,7 +64,7 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID u
     CSSPropertyID resolvedProperty = resolveCSSPropertyID(unresolvedProperty);
     RefPtrWillBeRawPtr<CSSValue> value = CSSParserFastPaths::maybeParseValue(resolvedProperty, string, parserMode);
     if (value)
-        return declaration->addParsedProperty(CSSProperty(resolvedProperty, value.release(), important));
+        return declaration->setProperty(CSSProperty(resolvedProperty, value.release(), important));
     CSSParserContext context(parserMode, 0);
     if (styleSheet) {
         context = styleSheet->parserContext();

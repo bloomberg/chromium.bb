@@ -308,11 +308,11 @@ bool MutableStylePropertySet::addParsedProperties(const WillBeHeapVector<CSSProp
     bool changed = false;
     m_propertyVector.reserveCapacity(m_propertyVector.size() + properties.size());
     for (unsigned i = 0; i < properties.size(); ++i)
-        changed |= addParsedProperty(properties[i]);
+        changed |= setProperty(properties[i]);
     return changed;
 }
 
-bool MutableStylePropertySet::addParsedProperty(const CSSProperty& property)
+bool MutableStylePropertySet::addRespectingCascade(const CSSProperty& property)
 {
     // Only add properties that have no !important counterpart present
     if (!propertyIsImportant(property.id()) || property.isImportant())
