@@ -33,18 +33,10 @@ class CacheStorageListener {
 
  private:
   // The message receiver functions for the CacheStorage API:
-  void OnCacheStorageGet(int thread_id,
-                         int request_id,
-                         const GURL& origin,
-                         const base::string16& cache_name);
   void OnCacheStorageHas(int thread_id,
                          int request_id,
                          const GURL& origin,
                          const base::string16& cache_name);
-  void OnCacheStorageCreate(int thread_id,
-                            int request_id,
-                            const GURL& origin,
-                            const base::string16& cache_name);
   void OnCacheStorageOpen(int thread_id,
                           int request_id,
                           const GURL& origin,
@@ -92,19 +84,10 @@ class CacheStorageListener {
   void Send(IPC::Message* message);
 
   // CacheStorageManager callbacks
-  void OnCacheStorageGetCallback(int thread_id,
-                                 int request_id,
-                                 const scoped_refptr<CacheStorageCache>& cache,
-                                 CacheStorage::CacheStorageError error);
   void OnCacheStorageHasCallback(int thread_id,
                                  int request_id,
                                  bool has_cache,
                                  CacheStorage::CacheStorageError error);
-  void OnCacheStorageCreateCallback(
-      int thread_id,
-      int request_id,
-      const scoped_refptr<CacheStorageCache>& cache,
-      CacheStorage::CacheStorageError error);
   void OnCacheStorageOpenCallback(int thread_id,
                                   int request_id,
                                   const scoped_refptr<CacheStorageCache>& cache,
