@@ -39,6 +39,8 @@ class DisplayLayoutStore;
 class MouseWarpController;
 class ScreenAsh;
 
+typedef std::vector<DisplayInfo> DisplayInfoList;
+
 namespace test {
 class AshTestBase;
 class DisplayManagerTestApi;
@@ -59,9 +61,9 @@ class ASH_EXPORT DisplayManager
    public:
     virtual ~Delegate() {}
 
-    // Create or updates the mirroring window with |display_info|.
+    // Create or updates the mirroring window with |display_info_list|.
     virtual void CreateOrUpdateMirroringDisplay(
-        const DisplayInfo& display_info) = 0;
+        const DisplayInfoList& display_info_list) = 0;
 
     // Closes the mirror window if exists.
     virtual void CloseMirroringDisplay() = 0;
@@ -79,10 +81,15 @@ class ASH_EXPORT DisplayManager
   // 1) EXTENDED mode extends the desktop to the second dislpay.
   // 2) MIRRORING mode copies the content of the primary display to
   //    the 2nd display. (Software Mirroring).
-  enum SecondDisplayMode {
+  // 3) UNIFIED mode creates single desktop across multiple displays.
+  enum MultiDisplayMode {
     EXTENDED,
-    MIRRORING
+    MIRRORING,
+    UNIFIED,
   };
+
+  // The display ID for a virtual display assigned to a unified desktop.
+  static int64 kUnifiedDisplayId;
 
   DisplayManager();
 #if defined(OS_CHROMEOS)
@@ -247,10 +254,11 @@ class ASH_EXPORT DisplayManager
   bool IsInMirrorMode() const;
   int64 mirroring_display_id() const { return mirroring_display_id_; }
 
-  // Returns the display used for software mirrroring.
-  const gfx::Display& software_mirroring_display() const {
-    return software_mirroring_display_;
-  }
+  bool IsInUnifiedMode() const;
+
+  // Returns the display used for software mirrroring. Returns invalid
+  // display if not found.
+  const gfx::Display GetMirroringDisplayById(int64 id) const;
 
   // Retuns the display info associated with |display_id|.
   const DisplayInfo& GetDisplayInfo(int64 display_id) const;
@@ -278,13 +286,17 @@ class ASH_EXPORT DisplayManager
   bool SoftwareMirroringEnabled() const override;
 #endif
   bool software_mirroring_enabled() const {
-    return second_display_mode_ == MIRRORING;
+    return multi_display_mode_ == MIRRORING;
   };
 
-  // Sets/gets second display mode.
-  void SetSecondDisplayMode(SecondDisplayMode mode);
-  SecondDisplayMode second_display_mode() const {
-    return second_display_mode_;
+  // Sets/gets multi display mode.
+  void SetMultiDisplayMode(MultiDisplayMode mode);
+  MultiDisplayMode multi_display_mode() const { return multi_display_mode_; }
+
+  // Sets/gets default multi display mode.
+  void SetDefaultMultiDisplayMode(MultiDisplayMode mode);
+  MultiDisplayMode default_multi_display_mode() const {
+    return default_multi_display_mode_;
   }
 
   // Update the bounds of the display given by |display_id|.
@@ -397,9 +409,11 @@ private:
   // on device as well as during the unit tests.
   bool change_display_upon_host_resize_;
 
-  SecondDisplayMode second_display_mode_;
+  MultiDisplayMode multi_display_mode_;
+  MultiDisplayMode default_multi_display_mode_;
+
   int64 mirroring_display_id_;
-  gfx::Display software_mirroring_display_;
+  DisplayList software_mirroring_display_list_;
 
   // User preference for rotation lock of the internal display.
   bool registered_internal_display_rotation_lock_;

@@ -485,9 +485,11 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
 
 #if defined(OS_CHROMEOS)
 bool Shell::ShouldSaveDisplaySettings() {
+  // TODO(oshima): Allow saving the settings even in unified desktop mode.
   return !(screen_orientation_controller_
                ->ignore_display_configuration_updates() ||
-           resolution_notification_controller_->DoesNotificationTimeout());
+           resolution_notification_controller_->DoesNotificationTimeout()) &&
+         !switches::UnifiedDesktopEnabled();
 }
 #endif
 

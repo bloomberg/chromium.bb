@@ -13,6 +13,7 @@ class Window;
 
 namespace gfx {
 class Display;
+class Rect;
 class Transform;
 }
 
@@ -31,6 +32,13 @@ ASH_EXPORT RootWindowTransformer* CreateRootWindowTransformerForDisplay(
 ASH_EXPORT RootWindowTransformer* CreateRootWindowTransformerForMirroredDisplay(
     const DisplayInfo& source_display_info,
     const DisplayInfo& mirror_display_info);
+
+// Creates a RootWindowTransformers for unified desktop mode.
+// |screen_bounds| specifies the unified desktop's bounds and
+// |display| specifies the display used to mirror the unified desktop.
+ASH_EXPORT RootWindowTransformer* CreateRootWindowTransformerForUnifiedDesktop(
+    const gfx::Rect& screen_bounds,
+    const gfx::Display& display);
 
 }  // namespace ash
 

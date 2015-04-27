@@ -22,6 +22,8 @@ struct ASH_EXPORT AshWindowTreeHostInitParams {
 
   gfx::Rect initial_bounds;
 
+  bool offscreen;
+
 #if defined(OS_WIN)
   HWND remote_hwnd;
 #endif

@@ -6,11 +6,13 @@
 
 namespace ash {
 
+AshWindowTreeHostInitParams::AshWindowTreeHostInitParams()
+    : offscreen(false)
 #if defined(OS_WIN)
-AshWindowTreeHostInitParams::AshWindowTreeHostInitParams() : remote_hwnd(NULL) {
-#else
-AshWindowTreeHostInitParams::AshWindowTreeHostInitParams() {
+      ,
+      remote_hwnd(NULL)
 #endif
+{
 }
 
 AshWindowTreeHostInitParams::~AshWindowTreeHostInitParams() {

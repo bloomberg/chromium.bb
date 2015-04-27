@@ -106,6 +106,10 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // Returns the root window for |display_id|.
   aura::Window* GetRootWindowForDisplayId(int64 id);
 
+  // Returns AshWTH for given display |id|. Call results in CHECK failure
+  // if the WTH does not exist.
+  AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64 id);
+
   // Toggle mirror mode.
   void ToggleMirrorMode();
 
@@ -153,7 +157,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   void OnHostResized(const aura::WindowTreeHost* host) override;
 
   // aura::DisplayManager::Delegate overrides:
-  void CreateOrUpdateMirroringDisplay(const DisplayInfo& info) override;
+  void CreateOrUpdateMirroringDisplay(
+      const DisplayInfoList& info_list) override;
   void CloseMirroringDisplay() override;
   void PreDisplayConfigurationChange(bool clear_focus) override;
   void PostDisplayConfigurationChange() override;
@@ -173,6 +178,10 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   void OnFadeOutForSwapDisplayFinished();
 
   void SetMirrorModeAfterAnimation(bool mirror);
+
+  // Delete the AsWindowTreeHost. This does not remove the entry from
+  // |window_tree_hosts_|. Caller has to explicitly remove it.
+  void DeleteHost(AshWindowTreeHost* host_to_delete);
 
   class DisplayChangeLimiter {
    public:

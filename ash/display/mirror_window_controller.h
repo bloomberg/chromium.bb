@@ -5,6 +5,9 @@
 #ifndef ASH_DISPLAY_MIRROR_WINDOW_CONTROLLER_H_
 #define ASH_DISPLAY_MIRROR_WINDOW_CONTROLLER_H_
 
+#include <map>
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -40,7 +43,7 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
 
   // Updates the root window's bounds using |display_info|.
   // Creates the new root window if one doesn't exist.
-  void UpdateWindow(const DisplayInfo& display_info);
+  void UpdateWindow(const std::vector<DisplayInfo>& display_info);
 
   // Same as above, but using existing display info
   // for the mirrored display.
@@ -59,12 +62,23 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
  private:
   friend class test::MirrorWindowTestApi;
 
+  struct MirroringHostInfo {
+    MirroringHostInfo();
+    ~MirroringHostInfo();
+    scoped_ptr<AshWindowTreeHost> ash_host;
+    gfx::Size mirror_window_host_size;
+    aura::Window* mirror_window = nullptr;
+  };
+
+  void CloseAndDeleteHost(MirroringHostInfo* host_info);
+
   // Creates a RootWindowTransformer for current display
   // configuration.
   scoped_ptr<RootWindowTransformer> CreateRootWindowTransformer() const;
 
-  scoped_ptr<AshWindowTreeHost> ash_host_;
-  gfx::Size mirror_window_host_size_;
+  typedef std::map<int64_t, MirroringHostInfo*> MirroringHostInfoMap;
+  MirroringHostInfoMap mirroring_host_info_map_;
+
   scoped_ptr<ui::Reflector> reflector_;
 
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowController);

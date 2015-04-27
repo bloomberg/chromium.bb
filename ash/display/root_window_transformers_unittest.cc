@@ -393,7 +393,7 @@ TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
     return;
   test::MirrorWindowTestApi test_api;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
+  display_manager->SetMultiDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x200,500x500");
   scoped_ptr<RootWindowTransformer> transformer(
       test_api.CreateCurrentRootWindowTransformer());

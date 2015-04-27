@@ -5,6 +5,7 @@
 #include "ash/host/ash_window_tree_host.h"
 
 #include "ash/host/ash_window_tree_host_init_params.h"
+#include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
 #include "base/command_line.h"
@@ -144,6 +145,8 @@ void AshWindowTreeHostOzone::SetTapToClickPaused(bool state) {
 
 AshWindowTreeHost* AshWindowTreeHost::Create(
     const AshWindowTreeHostInitParams& init_params) {
+  if (init_params.offscreen)
+    return new AshWindowTreeHostUnified(init_params.initial_bounds);
   return new AshWindowTreeHostOzone(init_params.initial_bounds);
 }
 

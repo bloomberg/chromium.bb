@@ -275,6 +275,37 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
   DISALLOW_COPY_AND_ASSIGN(MirrorRootWindowTransformer);
 };
 
+class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
+ public:
+  PartialBoundsRootWindowTransformer(const gfx::Rect& screen_bounds,
+                                     const gfx::Display& display) {
+    gfx::SizeF root_size(display.bounds().size());
+    root_size.Scale(display.device_scale_factor());
+    root_bounds_ = gfx::Rect(gfx::ToFlooredSize(root_size));
+
+    transform_.Translate(-SkIntToMScalar(display.bounds().x()),
+                         -SkIntToMScalar(display.bounds().y()));
+  }
+
+  // RootWindowTransformer:
+  gfx::Transform GetTransform() const override { return transform_; }
+  gfx::Transform GetInverseTransform() const override {
+    gfx::Transform invert;
+    CHECK(transform_.GetInverse(&invert));
+    return invert;
+  }
+  gfx::Rect GetRootWindowBounds(const gfx::Size& host_size) const override {
+    return root_bounds_;
+  }
+  gfx::Insets GetHostInsets() const override { return gfx::Insets(); }
+
+ private:
+  gfx::Transform transform_;
+  gfx::Rect root_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(PartialBoundsRootWindowTransformer);
+};
+
 }  // namespace
 
 RootWindowTransformer* CreateRootWindowTransformerForDisplay(
@@ -288,6 +319,12 @@ RootWindowTransformer* CreateRootWindowTransformerForMirroredDisplay(
     const DisplayInfo& mirror_display_info) {
   return new MirrorRootWindowTransformer(source_display_info,
                                          mirror_display_info);
+}
+
+RootWindowTransformer* CreateRootWindowTransformerForUnifiedDesktop(
+    const gfx::Rect& screen_bounds,
+    const gfx::Display& display) {
+  return new PartialBoundsRootWindowTransformer(screen_bounds, display);
 }
 
 }  // namespace ash

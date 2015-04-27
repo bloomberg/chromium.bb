@@ -142,7 +142,8 @@ void TouchTransformerController::UpdateTouchTransformer() const {
   DisplayManager* display_manager = GetDisplayManager();
   if (display_manager->num_connected_displays() == 0) {
     return;
-  } else if (display_manager->num_connected_displays() == 1) {
+  } else if (display_manager->num_connected_displays() == 1 ||
+             display_manager->multi_display_mode() == DisplayManager::UNIFIED) {
     single_display_id = display_manager->first_display_id();
     DCHECK(single_display_id != gfx::Display::kInvalidDisplayID);
     single_display = display_manager->GetDisplayInfo(single_display_id);

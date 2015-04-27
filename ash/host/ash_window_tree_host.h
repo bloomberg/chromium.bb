@@ -55,6 +55,8 @@ class ASH_EXPORT AshWindowTreeHost {
   // Stop listening for events in preparation for shutdown.
   virtual void PrepareForShutdown() {}
 
+  virtual void RegisterMirroringHost(AshWindowTreeHost* mirroring_ash_host) {}
+
  protected:
   // Translates the native mouse location into screen coordinates.
   void TranslateLocatedEvent(ui::LocatedEvent* event);

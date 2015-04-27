@@ -225,14 +225,16 @@ void StoreDisplayLayoutPref(const ash::DisplayIdPair& pair,
 }
 
 void StoreCurrentDisplayLayoutPrefs() {
+  ash::DisplayManager* display_manager = GetDisplayManager();
   if (!UserCanSaveDisplayPreference() ||
-      GetDisplayManager()->num_connected_displays() < 2) {
+      display_manager->num_connected_displays() < 2 ||
+      display_manager->IsInUnifiedMode()) {
     return;
   }
 
-  ash::DisplayIdPair pair = GetDisplayManager()->GetCurrentDisplayIdPair();
+  ash::DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
   ash::DisplayLayout display_layout =
-      GetDisplayManager()->layout_store()->GetRegisteredDisplayLayout(pair);
+      display_manager->layout_store()->GetRegisteredDisplayLayout(pair);
   StoreDisplayLayoutPref(pair, display_layout);
 }
 

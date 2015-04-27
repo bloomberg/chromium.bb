@@ -148,6 +148,8 @@
       'host/ash_window_tree_host_init_params.cc',
       'host/ash_window_tree_host_init_params.h',
       'host/ash_window_tree_host_ozone.cc',
+      'host/ash_window_tree_host_unified.cc',
+      'host/ash_window_tree_host_unified.h',
       'host/ash_window_tree_host_win.cc',
       'host/ash_window_tree_host_x11.cc',
       'host/ash_window_tree_host_x11.h',

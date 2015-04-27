@@ -5,6 +5,7 @@
 #include "ash/ash_switches.h"
 
 #include "base/command_line.h"
+#include "base/sys_info.h"
 
 namespace ash {
 namespace switches {
@@ -16,9 +17,6 @@ namespace switches {
 // same time as the white/grayscale login screen animation).
 const char kAshAnimateFromBootSplashScreen[] =
     "ash-animate-from-boot-splash-screen";
-
-// Constrains the pointer movement within a root window on desktop.
-const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
 
 // Copies the host window's content to the system background layer at startup.
 // Can make boot slightly slower, but also hides an even-longer awkward period
@@ -56,6 +54,7 @@ const char kAshEnableFullscreenAppList[] = "ash-enable-fullscreen-app-list";
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";
+
 #endif
 
 // Enables mirrored screen.
@@ -119,6 +118,25 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 // Force Ash to open its root window on the desktop, even on Windows 8 where
 // it would normally end up in metro.
 const char kForceAshToDesktop[] = "ash-force-desktop";
+
+#endif
+
+#if defined(OS_CHROMEOS)
+// Constrains the pointer movement within a root window on desktop.
+bool ConstrainPointerToRoot() {
+  const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
+
+  return base::SysInfo::IsRunningOnChromeOS() ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             kAshConstrainPointerToRoot);
+}
+
+// Enables unified desktop mode.
+bool UnifiedDesktopEnabled() {
+  const char kAshEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kAshEnableUnifiedDesktop);
+}
 
 #endif
 

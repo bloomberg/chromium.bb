@@ -18,7 +18,6 @@ namespace switches {
 
 // Please keep alphabetized.
 ASH_EXPORT extern const char kAshAnimateFromBootSplashScreen[];
-ASH_EXPORT extern const char kAshConstrainPointerToRoot[];
 ASH_EXPORT extern const char kAshCopyHostBackgroundAtBoot[];
 ASH_EXPORT extern const char kAshDebugShortcuts[];
 ASH_EXPORT extern const char kAshDisableLockLayoutManager[];
@@ -45,6 +44,13 @@ ASH_EXPORT extern const char kAshUseFirstDisplayAsInternal[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 #if defined(OS_WIN)
 ASH_EXPORT extern const char kForceAshToDesktop[];
+#endif
+
+#if defined(OS_CHROMEOS)
+// True if the pointer (cursor) position should be kept inside root windows.
+ASH_EXPORT bool ConstrainPointerToRoot();
+
+ASH_EXPORT bool UnifiedDesktopEnabled();
 #endif
 
 }  // namespace switches

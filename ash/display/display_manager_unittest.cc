@@ -121,8 +121,12 @@ class DisplayManagerTest : public test::AshTestBase,
 
   // aura::WindowObserver overrides:
   void OnWindowDestroying(aura::Window* window) override {
-    ASSERT_EQ(Shell::GetPrimaryRootWindow(), window);
-    root_window_destroyed_ = true;
+    // TODO(oshima): When moving between unified desktop, the
+    // primary root window can be deleted.
+    if (!display_manager()->IsInUnifiedMode()) {
+      ASSERT_EQ(Shell::GetPrimaryRootWindow(), window);
+      root_window_destroyed_ = true;
+    }
   }
 
  private:
@@ -1207,7 +1211,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   Shell::GetScreen()->AddObserver(&display_observer);
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
+  display_manager->SetMultiDisplayMode(DisplayManager::MIRRORING);
   display_manager->UpdateDisplays();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(display_observer.changed_and_reset());
@@ -1265,7 +1269,7 @@ TEST_F(DisplayManagerTest, SingleDisplayToSoftwareMirroring) {
   UpdateDisplay("600x400");
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
+  display_manager->SetMultiDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("600x400,600x400");
 
   EXPECT_TRUE(display_manager->IsInMirrorMode());
@@ -1457,6 +1461,34 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
   EXPECT_EQ("300,500", host1->GetBounds().origin().ToString());
   EXPECT_EQ("200x300", host1->GetBounds().size().ToString());
 }
+
+#if !defined(OS_WIN) && defined(USE_X11)
+
+TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
+  display_manager()->SetDefaultMultiDisplayMode(DisplayManager::UNIFIED);
+  display_manager()->SetMultiDisplayMode(DisplayManager::UNIFIED);
+  UpdateDisplay("300x200,400x500");
+
+  gfx::Screen* screen =
+      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
+  EXPECT_EQ("700x500", screen->GetPrimaryDisplay().size().ToString());
+
+  display_manager()->SetMirrorMode(true);
+  EXPECT_EQ("300x200", screen->GetPrimaryDisplay().size().ToString());
+
+  display_manager()->SetMirrorMode(false);
+  EXPECT_EQ("700x500", screen->GetPrimaryDisplay().size().ToString());
+
+  // Swithc to single desktop.
+  UpdateDisplay("500x300");
+  EXPECT_EQ("500x300", screen->GetPrimaryDisplay().size().ToString());
+
+  // Swithc to unified desktop.
+  UpdateDisplay("500x300,400x500");
+  EXPECT_EQ("900x500", screen->GetPrimaryDisplay().size().ToString());
+}
+
+#endif
 
 class ScreenShutdownTest : public test::AshTestBase {
  public:
