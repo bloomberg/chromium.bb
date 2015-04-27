@@ -1,0 +1,42 @@
+{
+  "name": "paper-checkbox",
+  "version": "0.8.2",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "main": "index.html",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-checkbox"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/PolymerElements/paper-checkbox",
+  "ignore": [],
+  "devDependencies": {
+    "webcomponentsjs": "webcomponents/webcomponentsjs#~0.6.1",
+    "web-component-tester": "Polymer/web-component-tester#^2.2.3",
+    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.0",
+    "test-fixture": "PolymerElements/test-fixture#^0.8.0",
+    "iron-test-helpers": "PolymerElements/iron-test-helpers#^0.8.0"
+  },
+  "dependencies": {
+    "polymer": "polymer/polymer#v0.8.0-rc.7",
+    "paper-ripple": "PolymerElements/paper-ripple#^0.8.0",
+    "paper-styles": "PolymerElements/paper-styles#^0.8.0"
+  },
+  "_release": "0.8.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.8.2",
+    "commit": "5e3c7d3b68bd13f711b1a6470ca1bda09f2dc9ae"
+  },
+  "_source": "git://github.com/PolymerElements/paper-checkbox.git",
+  "_target": "^0.8.0",
+  "_originalSource": "PolymerElements/paper-checkbox"
+}

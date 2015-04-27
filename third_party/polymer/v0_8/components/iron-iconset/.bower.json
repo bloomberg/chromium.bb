@@ -1,0 +1,25 @@
+{
+  "name": "iron-iconset",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#v0.8.0-rc.7",
+    "iron-meta": "PolymerElements/iron-meta#^0.8.0"
+  },
+  "devDependencies": {
+    "iron-doc-viewer": "polymerelements/iron-doc-viewer#^0.8.0",
+    "test-fixture": "PolymerElements/test-fixture#^0.8.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
+    "web-component-tester": "~2.2.6"
+  },
+  "homepage": "https://github.com/PolymerElements/iron-iconset",
+  "version": "0.8.2",
+  "_release": "0.8.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.8.2",
+    "commit": "a496891222b88e06995558b6f678cbf41d01d9b4"
+  },
+  "_source": "git://github.com/PolymerElements/iron-iconset.git",
+  "_target": "^0.8.0",
+  "_originalSource": "PolymerElements/iron-iconset"
+}

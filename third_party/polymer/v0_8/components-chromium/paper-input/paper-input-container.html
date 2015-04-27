@@ -1,0 +1,192 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+
+<style is="x-style">
+
+  * {
+
+    --paper-input-container-font: var(--paper-font-subhead);
+    --paper-input-container-floating-label-font: var(--paper-font-caption);
+    --paper-input-container-add-on-font: var(--paper-font-caption);
+
+    --paper-input-container-focus-color: var(--default-primary-color);
+    --paper-input-container-color: var(--secondary-text-color);
+    --paper-input-container-invalid-color: var(--google-red-500);
+    --paper-input-container-input-color: var(--primary-text-color);
+
+  }
+
+</style>
+
+<!--
+`<paper-input-container>` wraps an `<input>` and `<label>` element, decorating
+them following the [Material Design spec](http://www.google.com/design/spec/components/text-fields.html#text-fields-single-line-text-field)
+
+For example:
+
+    <paper-input-container>
+      <label>email address</label>
+      <input type="email">
+    </paper-input-container>
+
+-->
+</head><body><dom-module id="paper-input-container">
+
+  <style>
+
+    :host {
+      display: block;
+      padding: 8px 0;
+
+      --mixin(--paper-input-container);
+    }
+
+    .floated-label-placeholder {
+      mixin(--paper-input-container-label-font);
+    }
+
+    .focused-line {
+      height: 2px;
+
+      -webkit-transform-origin: center center;
+      transform-origin: center center;
+      -webkit-transform: scale3d(0,1,1);
+      transform: scale3d(0,1,1);
+
+      background: var(--paper-input-container-focus-color);
+    }
+
+    .is-highlighted .focused-line {
+      -webkit-transform: none;
+      transform: none;
+      -webkit-transition: -webkit-transform 0.25s;
+      transition: transform 0.25s;
+
+      mixin(--paper-transition-easing);
+    }
+
+    .is-invalid .focused-line {
+      background: var(--paper-input-container-invalid-color);
+
+      -webkit-transform: none;
+      transform: none;
+      -webkit-transition: -webkit-transform 0.25s;
+      transition: transform 0.25s;
+
+      mixin(--paper-transition-easing);
+    }
+
+    .unfocused-line {
+      height: 1px;
+      background: var(--paper-input-container-color);
+    }
+
+    .input-content ::content label,
+    .input-content ::content .paper-input-label {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      font: inherit;
+      color: var(--paper-input-container-color);
+
+      mixin(--paper-input-container-font);
+
+      mixin(--paper-input-container-label);
+    }
+
+    .input-content.label-is-floating ::content label,
+    .input-content.label-is-floating ::content .paper-input-label {
+      -webkit-transform: translate3d(0, -75%, 0) scale(0.75);
+      transform: translate3d(0, -75%, 0) scale(0.75);
+      -webkit-transform-origin: left top;
+      transform-origin: left top;
+      -webkit-transition: -webkit-transform 0.25s;
+      transition: transform 0.25s;
+
+      mixin(--paper-transition-easing);
+    }
+
+    .input-content.label-is-highlighted ::content label,
+    .input-content.label-is-highlighted ::content .paper-input-label {
+      color: var(--paper-input-container-focus-color);
+    }
+
+    .input-content.is-invalid ::content label,
+    .input-content.is-invalid ::content .paper-input-label {
+      color: var(--paper-input-container-invalid-color);
+    }
+
+    .input-content.label-is-hidden ::content label,
+    .input-content.label-is-hidden ::content .paper-input-label {
+      visibility: hidden;
+    }
+
+    .input-content ::content input,
+    .input-content ::content textarea,
+    .input-content ::content .paper-input-input {
+      position: relative; /* to make a stacking context */
+      outline: none;
+      color: var(--paper-input-container-input-color);
+
+      mixin(--paper-input-container-floating-label-font);
+    }
+
+    .input-content ::content input,
+    .input-content ::content textarea {
+      padding: 0;
+      width: 100%;
+      background: transparent;
+      border: none;
+
+      mixin(--paper-input-container-font);
+
+      mixin(--paper-input-container-input);
+    }
+
+    .input-content ::content textarea {
+      resize: none;
+    }
+
+    .add-on-content.is-invalid ::content * {
+      color: var(--paper-input-container-invalid-color);
+    }
+
+    .add-on-content.is-highlighted ::content * {
+      color: var(--paper-input-container-focus-color);
+    }
+
+  </style>
+
+  <template>
+
+    <template is="x-if" if="[[!noLabelFloat]]">
+      <div class="floated-label-placeholder">&nbsp;</div>
+    </template>
+
+    <div class$="[[_computeInputContentClass(noLabelFloat,focused,_inputHasContent,_inputIsInvalid)]]">
+      <content select=":not([add-on])"></content>
+    </div>
+
+    <div class$="[[_computeUnderlineClass(focused,_inputIsInvalid)]]">
+      <div class="unfocused-line fit"></div>
+      <div class="focused-line fit"></div>
+    </div>
+
+    <div class$="[[_computeAddOnContentClass(focused,_inputIsInvalid)]]">
+      <content id="addOnContent" select="[add-on]"></content>
+    </div>
+
+  </template>
+
+</dom-module>
+
+<script src="paper-input-container-extracted.js"></script></body></html>

@@ -1,0 +1,27 @@
+{
+  "name": "paper-card",
+  "version": "0.8.2",
+  "private": true,
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "dependencies": {
+    "polymer": "polymer/polymer#v0.8.0-rc.7",
+    "paper-styles": "polymerelements/paper-styles#^0.8.0"
+  },
+  "devDependencies": {
+    "test-fixture": "polymerelements/test-fixture#^0.8.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
+    "web-component-tester": "~2.2.6"
+  },
+  "homepage": "https://github.com/PolymerElements/paper-card",
+  "_release": "0.8.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.8.2",
+    "commit": "ec06cea50b93ee58f0473cd2749e768aa63ff406"
+  },
+  "_source": "git://github.com/PolymerElements/paper-card.git",
+  "_target": "^0.8.0",
+  "_originalSource": "PolymerElements/paper-card"
+}

@@ -1,0 +1,44 @@
+{
+  "name": "paper-input",
+  "version": "0.8.1",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "main": [
+    "paper-input.html"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-input.git"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/PolymerElements/paper-input",
+  "ignore": [],
+  "dependencies": {
+    "polymer": "Polymer/polymer#v0.8.0-rc.7",
+    "iron-input": "PolymerElements/iron-input#^0.8.0",
+    "paper-styles": "PolymerElements/paper-styles#^0.8.0"
+  },
+  "devDependencies": {
+    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^0.8.6",
+    "iron-test-helpers": "PolymerElements/iron-test-helpers#^0.8.2",
+    "test-fixture": "PolymerElements/test-fixture#^0.8.0",
+    "web-component-tester": "Polymer/web-component-tester#^2.2.3",
+    "webcomponentsjs": "Polymer/webcomponentsjs#^0.6.0"
+  },
+  "_release": "0.8.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.8.1",
+    "commit": "a761e0a4f9abac125d7c150e71633fd6bdc07616"
+  },
+  "_source": "git://github.com/PolymerElements/paper-input.git",
+  "_target": "^0.8.0",
+  "_originalSource": "PolymerElements/paper-input"
+}

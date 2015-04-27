@@ -1,0 +1,33 @@
+{
+  "name": "paper-styles",
+  "version": "0.8.6",
+  "authors": [
+    "Ian MacLeod <imac@google.com>",
+    "The Polymer Authors"
+  ],
+  "description": "Common (global) styles for Material Design elements.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer"
+  ],
+  "main": "paper-styles.html",
+  "license": "MIT",
+  "homepage": "https://github.com/PolymerLabs/paper-styles/",
+  "ignore": [
+    "/.*",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#v0.8.0-rc.7"
+  },
+  "_release": "0.8.6",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.8.6",
+    "commit": "d0cdb1ad31d9b97855db3020a55c0b731a742334"
+  },
+  "_source": "git://github.com/PolymerElements/paper-styles.git",
+  "_target": "^0.8.0",
+  "_originalSource": "PolymerElements/paper-styles"
+}

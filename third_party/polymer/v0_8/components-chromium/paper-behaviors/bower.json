@@ -1,0 +1,14 @@
+{
+  "name": "paper-behaviors",
+  "private": true,
+  "dependencies": {
+    "polymer": "polymer/polymer#v0.8.0-rc.7",
+    "iron-behaviors": "polymerelements/iron-behaviors#^0.8.0"
+  },
+  "devDependencies": {
+    "paper-card": "polymerelements/paper-card#v0.8.0",
+    "iron-test-helpers": "polymerelements/iron-test-helpers#^0.8.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0",
+    "web-component-tester": "*"
+  }
+}

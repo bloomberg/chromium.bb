@@ -1,0 +1,83 @@
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><!--
+
+The `iron-icon` element displays an icon. By default an icon renders as a 24px square.
+
+Example using src:
+
+    <iron-icon src="star.png"></iron-icon>
+
+Example setting size to 32px x 32px:
+
+    <iron-icon class="big" src="big_star.png"></iron-icon>
+
+    <style>
+      .big {
+        height: 32px;
+        width: 32px;
+      }
+    </style>
+
+The iron elements include several sets of icons.
+To use the default set of icons, import  `iron-icons.html` and use the `icon` attribute to specify an icon:
+
+    &lt;!-- import default iconset and iron-icon --&gt;
+    <link rel="import" href="/components/iron-icons/iron-icons.html">
+
+    <iron-icon icon="menu"></iron-icon>
+
+To use a different built-in set of icons, import  `iron-icons/<iconset>-icons.html`, and
+specify the icon as `<iconset>:<icon>`. For example:
+
+    &lt;!-- import communication iconset and iron-icon --&gt;
+    <link rel="import" href="/components/iron-icons/communication-icons.html">
+
+    <iron-icon icon="communication:email"></iron-icon>
+
+You can also create custom icon sets of bitmap or SVG icons.
+
+Example of using an icon named `cherry` from a custom iconset with the ID `fruit`:
+
+    <iron-icon icon="fruit:cherry"></iron-icon>
+
+See [iron-iconset](#iron-iconset) and [iron-iconset-svg](#iron-iconset-svg) for more information about
+how to create a custom iconset.
+
+See [iron-icons](http://www.polymer-project.org/components/iron-icons/demo.html) for the default set of icons.
+
+@group Polymer Core Elements
+@element iron-icon
+@homepage polymer.github.io
+--><html><head><link rel="import" href="../iron-meta/iron-meta.html">
+
+</head><body><dom-module id="iron-icon">
+
+  <style>
+    :host {
+      display: inline-flex;
+      position: relative;
+
+      vertical-align: middle;
+      align-items: center;
+      justify-content: center;
+
+      fill: currentcolor;
+
+      width: 24px;
+      height: 24px;
+    }
+  </style>
+
+  <template>
+    <iron-meta id="meta" type="iconset"></iron-meta>
+  </template>
+
+</dom-module>
+
+<script src="iron-icon-extracted.js"></script></body></html>

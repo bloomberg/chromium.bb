@@ -1,0 +1,53 @@
+Name: Polymer
+Short Name: polymer
+URL: http://www.polymer-project.org
+Version: 0.8
+Revision: (See components/<component>/.bower.json)
+License: BSD
+License File: ../LICENSE.polymer
+Security Critical: no
+
+Description:
+This directory contains a copy of the following components which are a part of
+the Polymer project:
+-polymer
+-Used Iron elements and their dependencies 
+-Used Paper elements and their dependencies
+See bower.json for a full list of components.
+
+The version can be found in header of polymer/polymer.js. The license can
+be found in polymer/LICENSE.
+
+The source git repositories can be found at:
+Core Library - https://github.com/Polymer/polymer/tree/0.8-preview
+Elements - https://github.com/PolymerElements/<element name>
+
+Polymer is comprised of two efforts:
+1. A set of core platform features (Shadow DOM, Custom Elements, MDV).
+Initially, these core features will be enabled with a set of polyfills. As
+browsers begin to implement these new primitives, the polyfill platform layer
+becomes smaller and better over time.
+2. A next-generation web application framework built upon these core
+technologies called the Polymer.
+
+Local Modifications:
+- Removed executable bit from the files in 'components/iron-selector'.
+- Created a copy 'components-chromium' of the 'components' directory with the
+only difference that all inline JavaScript blocks are extracted from Polymer
+HTML elements to external JS files. This version of the Polymer is used in a web
+UI, where CSP forbids an execution of inline scripts. The extraction was made
+with the help of the Vulcanize tool (https://github.com/Polymer/vulcanize).
+- Replaced CRLF line endings with LF line endings in text files.
+
+To restore a content of the 'components', 'components-chromium' directorires
+from scratch, run ./reproduce.sh (requires bower and vulcanize >= 1.2).
+
+Note on Bower:
+The directory can be updated by running "bower update". A new component can be
+installed by running "bower install -S Polymer/<component>#version". Be sure to
+add the .bower.json file to the repository as it includes the revision
+information of the polymer component.
+Also be sure that you listed all the added packages and **all their
+dependencies** in bower.json, and specified **exact** versions of every package
+explicitly. That is needed because Bower can't handle recursive dependencies
+correctly (see http://stackoverflow.com/q/25899532).

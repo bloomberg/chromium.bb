@@ -1,0 +1,21 @@
+{
+  "name": "iron-selector",
+  "version": "0.8.2",
+  "private": true,
+  "main": [
+    "iron-selector.html"
+  ],
+  "authors": "The Polymer Authors",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-selector.git"
+  },
+  "dependencies": {
+    "polymer": "Polymer/polymer#v0.8.0-rc.7"
+  },
+  "devDependencies": {
+    "test-fixture": "PolymerElements/test-fixture#^0.8.0",
+    "web-component-tester": "Polymer/web-component-tester#^2.2.3",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0"
+  }
+}
