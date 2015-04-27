@@ -6,9 +6,9 @@
 #define COMPONENTS_KIOSK_WM_NAVIGATOR_HOST_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
+#include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/mojo_services/src/navigation/public/interfaces/navigation.mojom.h"
 
 namespace kiosk_wm {
 class KioskWM;

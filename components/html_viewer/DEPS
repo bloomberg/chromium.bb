@@ -9,6 +9,7 @@ include_rules = [
   "+components/view_manager",
   "+components/webcrypto",
   "+gin",
+  "+mandoline/services",
   "+media",
   "+mojo/application",
   "+mojo/cc",

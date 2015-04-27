@@ -12,11 +12,11 @@
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "components/window_manager/window_manager_app.h"
 #include "components/window_manager/window_manager_delegate.h"
+#include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_delegate.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/application_impl.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/connect.h"
 #include "third_party/mojo/src/mojo/public/cpp/application/service_provider_impl.h"
-#include "third_party/mojo_services/src/navigation/public/interfaces/navigation.mojom.h"
 #include "ui/mojo/events/input_events.mojom.h"
 
 namespace kiosk_wm {

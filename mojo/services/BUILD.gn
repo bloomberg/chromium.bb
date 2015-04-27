@@ -11,8 +11,8 @@ group("services") {
     "//components/native_viewport/public/interfaces",
     "//components/surfaces/public/interfaces",
     "//components/view_manager/public/interfaces",
+    "//mandoline/services/navigation/public/interfaces",
     "//third_party/mojo_services/src/content_handler/public/interfaces",
-    "//third_party/mojo_services/src/navigation/public/interfaces",
     "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",
   ]

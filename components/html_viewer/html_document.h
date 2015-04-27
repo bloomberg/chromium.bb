@@ -14,6 +14,7 @@
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
@@ -24,7 +25,6 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_impl.h"
 #include "third_party/mojo/src/mojo/public/interfaces/application/application.mojom.h"
 #include "third_party/mojo_services/src/content_handler/public/interfaces/content_handler.mojom.h"
-#include "third_party/mojo_services/src/navigation/public/interfaces/navigation.mojom.h"
 
 namespace base {
 class MessageLoopProxy;
