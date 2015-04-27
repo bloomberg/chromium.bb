@@ -201,6 +201,14 @@ GpuCommandBufferStub::GpuCommandBufferStub(
 
   use_virtualized_gl_context_ |=
       context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
+
+  bool is_offscreen = surface_id_ == 0;
+  if (is_offscreen && initial_size_.IsEmpty()) {
+    // If we're an offscreen surface with zero width and/or height, set to a
+    // non-zero size so that we have a complete framebuffer for operations like
+    // glClear.
+    initial_size_ = gfx::Size(1, 1);
+  }
 }
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {

@@ -2464,6 +2464,7 @@ bool GLES2DecoderImpl::Initialize(
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::Initialize");
   DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());
+  DCHECK(!offscreen || !offscreen_size.IsEmpty());
 
   ContextCreationAttribHelper attrib_parser;
   if (!attrib_parser.Parse(attribs))
