@@ -240,7 +240,7 @@ class FileManagerPrivateGetDownloadUrlFunction
                       const std::string& access_token);
 
  private:
-  std::string download_url_;
+  GURL download_url_;
   scoped_ptr<google_apis::AuthService> auth_service_;
 };
 

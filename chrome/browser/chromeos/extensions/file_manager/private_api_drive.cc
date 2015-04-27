@@ -1034,9 +1034,10 @@ void FileManagerPrivateGetDownloadUrlFunction::OnGetResourceEntry(
     return;
   }
 
-  download_url_ =
-      google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction +
-      entry->resource_id();
+  DriveApiUrlGenerator url_generator(
+      (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
+      (GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction)));
+  download_url_ = url_generator.GenerateDownloadFileUrl(entry->resource_id());
 
   ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
@@ -1065,7 +1066,8 @@ void FileManagerPrivateGetDownloadUrlFunction::OnTokenFetched(
     return;
   }
 
-  const std::string url = download_url_ + "?access_token=" + access_token;
+  const std::string url =
+      download_url_.Resolve("?access_token=" + access_token).spec();
   SetResult(new base::StringValue(url));
 
   SendResponse(true);
