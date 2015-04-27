@@ -29,7 +29,7 @@ static GraphicsContext* beginRecordingContent(GraphicsContext* context, FilterDa
         filterData->m_context = adoptPtr(new GraphicsContext(filterData->m_displayItemList.get()));
         context = filterData->m_context.get();
     } else {
-        context->beginRecording(filterData->boundaries);
+        context->beginRecording(filterData->filter->filterRegion());
     }
 
     filterData->m_state = FilterData::RecordingContent;
@@ -50,7 +50,7 @@ static void endRecordingContent(GraphicsContext* context, FilterData* filterData
         ASSERT(filterData->m_displayItemList);
         ASSERT(filterData->m_context);
         context = filterData->m_context.get();
-        context->beginRecording(filterData->boundaries);
+        context->beginRecording(filterData->filter->filterRegion());
         filterData->m_displayItemList->commitNewDisplayItemsAndReplay(*context);
     }
 
@@ -74,7 +74,7 @@ static void paintFilteredContent(GraphicsContext* context, FilterData* filterDat
 
     SkiaImageFilterBuilder builder(context);
     RefPtr<SkImageFilter> imageFilter = builder.build(filterData->builder->lastEffect(), ColorSpaceDeviceRGB);
-    FloatRect boundaries = filterData->boundaries;
+    FloatRect boundaries = filterData->filter->filterRegion();
     context->save();
 
     // Clip drawing of filtered image to the minimum required paint rect.
@@ -143,15 +143,15 @@ GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, GraphicsC
     FloatRect targetBoundingBox = object.objectBoundingBox();
 
     SVGFilterElement* filterElement = toSVGFilterElement(m_filter.element());
-    filterData->boundaries = SVGLengthContext::resolveRectangle<SVGFilterElement>(filterElement, filterElement->filterUnits()->currentValue()->enumValue(), targetBoundingBox);
-    if (filterData->boundaries.isEmpty())
+    FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(filterElement, filterElement->filterUnits()->currentValue()->enumValue(), targetBoundingBox);
+    if (filterRegion.isEmpty())
         return nullptr;
 
     // Create the SVGFilter object.
     FloatRect drawingRegion = object.strokeBoundingBox();
-    drawingRegion.intersect(filterData->boundaries);
+    drawingRegion.intersect(filterRegion);
     bool primitiveBoundingBoxMode = filterElement->primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
-    filterData->filter = SVGFilter::create(enclosingIntRect(drawingRegion), targetBoundingBox, filterData->boundaries, primitiveBoundingBoxMode);
+    filterData->filter = SVGFilter::create(enclosingIntRect(drawingRegion), targetBoundingBox, filterRegion, primitiveBoundingBoxMode);
 
     // Create all relevant filter primitives.
     filterData->builder = m_filter.buildPrimitives(filterData->filter.get());

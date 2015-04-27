@@ -65,7 +65,6 @@ public:
     RefPtrWillBeMember<SVGFilterBuilder> builder;
     OwnPtr<DisplayItemList> m_displayItemList;
     OwnPtr<GraphicsContext> m_context;
-    FloatRect boundaries;
     FilterDataState m_state;
 
 private:
