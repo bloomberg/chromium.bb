@@ -9,8 +9,8 @@
 #include "base/version.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/ping_manager.h"
-#include "components/update_client/test/test_configurator.h"
-#include "components/update_client/test/url_request_post_interceptor.h"
+#include "components/update_client/test_configurator.h"
+#include "components/update_client/url_request_post_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

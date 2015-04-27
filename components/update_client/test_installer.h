@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UPDATE_CLIENT_TEST_TEST_INSTALLER_H_
-#define COMPONENTS_UPDATE_CLIENT_TEST_TEST_INSTALLER_H_
+#ifndef COMPONENTS_UPDATE_CLIENT_TEST_INSTALLER_H_
+#define COMPONENTS_UPDATE_CLIENT_TEST_INSTALLER_H_
 
 #include <string>
 
@@ -34,13 +34,9 @@ class TestInstaller : public CrxInstaller {
 
   bool Uninstall() override;
 
-  int error() const {
-    return error_;
-  }
+  int error() const { return error_; }
 
-  int install_count() const {
-    return install_count_;
-  }
+  int install_count() const { return install_count_; }
 
  protected:
   ~TestInstaller() override;
@@ -85,4 +81,4 @@ class VersionedTestInstaller : public TestInstaller {
 
 }  // namespace update_client
 
-#endif  // COMPONENTS_UPDATE_CLIENT_TEST_TEST_INSTALLER_H_
+#endif  // COMPONENTS_UPDATE_CLIENT_TEST_INSTALLER_H_

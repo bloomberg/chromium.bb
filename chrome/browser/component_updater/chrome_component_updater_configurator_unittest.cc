@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"

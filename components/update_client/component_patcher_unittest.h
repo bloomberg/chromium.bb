@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UPDATE_CLIENT_TEST_COMPONENT_PATCHER_UNITTEST_H_
-#define COMPONENTS_UPDATE_CLIENT_TEST_COMPONENT_PATCHER_UNITTEST_H_
+#ifndef COMPONENTS_UPDATE_CLIENT_COMPONENT_PATCHER_UNITTEST_H_
+#define COMPONENTS_UPDATE_CLIENT_COMPONENT_PATCHER_UNITTEST_H_
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -39,4 +39,4 @@ class ComponentPatcherOperationTest : public testing::Test {
 
 }  // namespace update_client
 
-#endif  // COMPONENTS_UPDATE_CLIENT_TEST_COMPONENT_PATCHER_UNITTEST_H_
+#endif  // COMPONENTS_UPDATE_CLIENT_COMPONENT_PATCHER_UNITTEST_H_

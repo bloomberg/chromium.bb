@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UPDATE_CLIENT_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
-#define COMPONENTS_UPDATE_CLIENT_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
+#ifndef COMPONENTS_UPDATE_CLIENT_URL_REQUEST_POST_INTERCEPTOR_H_
+#define COMPONENTS_UPDATE_CLIENT_URL_REQUEST_POST_INTERCEPTOR_H_
 
 #include <stdint.h>
 #include <map>
@@ -162,4 +162,4 @@ class PartialMatch : public URLRequestPostInterceptor::RequestMatcher {
 
 }  // namespace update_client
 
-#endif  // COMPONENTS_UPDATE_CLIENT_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
+#endif  // COMPONENTS_UPDATE_CLIENT_URL_REQUEST_POST_INTERCEPTOR_H_

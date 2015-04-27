@@ -8,5 +8,13 @@ include_rules = [
   "+ui/base/win",
   "+third_party/libxml",
   "+third_party/zlib",
-  "+testing",
 ]
+
+# Tests can use things in content.
+# TODO(sorin): refactor to eliminate the dependency on content by using
+# message loops directly.
+specific_include_rules = {
+  ".*unittest\.cc": [
+    "+content",
+  ]
+}

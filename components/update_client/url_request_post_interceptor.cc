@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/update_client/test/url_request_post_interceptor.h"
+#include "components/update_client/url_request_post_interceptor.h"
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
-#include "components/update_client/test/test_configurator.h"
+#include "components/update_client/test_configurator.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"

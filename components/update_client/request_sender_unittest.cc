@@ -9,8 +9,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/update_client/request_sender.h"
-#include "components/update_client/test/test_configurator.h"
-#include "components/update_client/test/url_request_post_interceptor.h"
+#include "components/update_client/test_configurator.h"
+#include "components/update_client/url_request_post_interceptor.h"
 #include "net/url_request/url_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

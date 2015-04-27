@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/test/component_updater_service_unittest.h"
+#include "chrome/browser/component_updater/component_updater_service_unittest.h"
 
 #include <vector>
 
@@ -16,9 +16,9 @@
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_resource_throttle.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/update_client/test/test_configurator.h"
-#include "components/update_client/test/test_installer.h"
-#include "components/update_client/test/url_request_post_interceptor.h"
+#include "components/update_client/test_configurator.h"
+#include "components/update_client/test_installer.h"
+#include "components/update_client/url_request_post_interceptor.h"
 #include "components/update_client/utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
@@ -362,12 +362,10 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
           "<updatecheck /></app>"))
       << post_interceptor_->GetRequestsAsString();
 
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[1].find(
-          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
-          "version=\"0.9\" nextversion=\"1.0\">"
-          "<event eventtype=\"3\" eventresult=\"1\"/>"))
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
+                              "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
+                              "version=\"0.9\" nextversion=\"1.0\">"
+                              "<event eventtype=\"3\" eventresult=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
 
   EXPECT_NE(
@@ -384,10 +382,8 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 
   // Test the protocol version is correct and the extra request attributes
   // are included in the request.
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[0].find(
-          "request protocol=\"3.0\" extra=\"foo\""))
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[0].find(
+                              "request protocol=\"3.0\" extra=\"foo\""))
       << post_interceptor_->GetRequestsAsString();
 
   // Tokenize the request string to look for specific attributes, which
@@ -548,11 +544,9 @@ TEST_F(ComponentUpdaterTest, MAYBE_OnDemandUpdate) {
 
   // Expect the update check to contain an "ondemand" request for the
   // second component (com2) and a normal request for the other component.
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[0].find(
-          "<app appid=\"abagagagagagagagagagagagagagagag\" "
-          "version=\"2.2\"><updatecheck /></app>"))
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[0].find(
+                              "<app appid=\"abagagagagagagagagagagagagagagag\" "
+                              "version=\"2.2\"><updatecheck /></app>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(
       string::npos,
@@ -560,12 +554,10 @@ TEST_F(ComponentUpdaterTest, MAYBE_OnDemandUpdate) {
           "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
           "version=\"0.9\" installsource=\"ondemand\"><updatecheck /></app>"))
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[1].find(
-          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
-          "version=\"0.9\" nextversion=\"1.0\">"
-          "<event eventtype=\"3\" eventresult=\"1\"/>"))
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
+                              "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
+                              "version=\"0.9\" nextversion=\"1.0\">"
+                              "<event eventtype=\"3\" eventresult=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
 
   // Also check what happens if previous check too soon. It works, since this
@@ -710,12 +702,10 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
           "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
           "<updatecheck /></app>"))
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[1].find(
-          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
-          "version=\"0.9\" nextversion=\"1.0\">"
-          "<event eventtype=\"3\" eventresult=\"1\"/>"))
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
+                              "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
+                              "version=\"0.9\" nextversion=\"1.0\">"
+                              "<event eventtype=\"3\" eventresult=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(
       string::npos,
@@ -802,8 +792,9 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
       GURL("http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_1.crx"),
       test_file("ihfokbkgjpifnbbojhneepfflplebdkc_1.crx"));
   get_interceptor_->SetResponse(
-      GURL("http://localhost/download/"
-           "ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"),
+      GURL(
+          "http://localhost/download/"
+          "ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"),
       test_file("ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"));
 
   scoped_refptr<TestInstaller> installer(new VersionedTestInstaller);
@@ -829,12 +820,11 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
           "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"0.0\">"
           "<updatecheck /></app>"))
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[1].find(
-          "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
-          "version=\"0.0\" nextversion=\"1.0\">"
-          "<event eventtype=\"3\" eventresult=\"1\" nextfp=\"1\"/>"))
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[1].find(
+                "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
+                "version=\"0.0\" nextversion=\"1.0\">"
+                "<event eventtype=\"3\" eventresult=\"1\" nextfp=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(
       string::npos,
@@ -842,13 +832,12 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
           "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
           "<updatecheck /><packages><package fp=\"1\"/></packages></app>"))
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[3].find(
-          "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
-          "version=\"1.0\" nextversion=\"2.0\">"
-          "<event eventtype=\"3\" eventresult=\"1\" diffresult=\"1\" "
-          "previousfp=\"1\" nextfp=\"22\"/>"))
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[3].find(
+                "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
+                "version=\"1.0\" nextversion=\"2.0\">"
+                "<event eventtype=\"3\" eventresult=\"1\" diffresult=\"1\" "
+                "previousfp=\"1\" nextfp=\"22\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(
       string::npos,
@@ -888,7 +877,8 @@ TEST_F(ComponentUpdaterTest, MAYBE_DifferentialUpdateFails) {
       GURL("http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_1.crx"),
       test_file("ihfokbkgjpifnbbojhneepfflplebdkc_1.crx"));
   get_interceptor_->SetResponse(
-      GURL("http://localhost/download/"
+      GURL(
+          "http://localhost/download/"
           "ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"),
       test_file("ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"));
   get_interceptor_->SetResponse(
@@ -919,13 +909,12 @@ TEST_F(ComponentUpdaterTest, MAYBE_DifferentialUpdateFails) {
           "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
           "<updatecheck /></app>"))
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[1].find(
-          "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
-          "version=\"1.0\" nextversion=\"2.0\">"
-          "<event eventtype=\"3\" eventresult=\"1\" diffresult=\"0\" "
-          "differrorcat=\"2\" differrorcode=\"16\" nextfp=\"22\"/>"))
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[1].find(
+                "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
+                "version=\"1.0\" nextversion=\"2.0\">"
+                "<event eventtype=\"3\" eventresult=\"1\" diffresult=\"0\" "
+                "differrorcat=\"2\" differrorcode=\"16\" nextfp=\"22\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(
       string::npos,
@@ -953,6 +942,7 @@ TEST_F(ComponentUpdaterTest, MAYBE_CheckFailedInstallPing) {
       base::DeleteFile(unpack_path, true);
       return false;
     }
+
    private:
     ~FailingTestInstaller() override {}
   };
@@ -988,13 +978,11 @@ TEST_F(ComponentUpdaterTest, MAYBE_CheckFailedInstallPing) {
           "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
           "<updatecheck /></app>"))
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[1].find(
-          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
-          "version=\"0.9\" nextversion=\"1.0\">"
-          "<event eventtype=\"3\" eventresult=\"0\" "
-          "errorcat=\"3\" errorcode=\"9\"/>"))
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[1].find(
+                              "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
+                              "version=\"0.9\" nextversion=\"1.0\">"
+                              "<event eventtype=\"3\" eventresult=\"0\" "
+                              "errorcat=\"3\" errorcode=\"9\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(
       string::npos,
@@ -1002,13 +990,11 @@ TEST_F(ComponentUpdaterTest, MAYBE_CheckFailedInstallPing) {
           "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
           "<updatecheck /></app>"))
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[3].find(
-          "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
-          "version=\"0.9\" nextversion=\"1.0\">"
-          "<event eventtype=\"3\" eventresult=\"0\" "
-          "errorcat=\"3\" errorcode=\"9\"/>"))
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[3].find(
+                              "<app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" "
+                              "version=\"0.9\" nextversion=\"1.0\">"
+                              "<event eventtype=\"3\" eventresult=\"0\" "
+                              "errorcat=\"3\" errorcode=\"9\"/>"))
       << post_interceptor_->GetRequestsAsString();
 
   // Loop once more, but expect no ping because a noupdate response is issued.
@@ -1065,8 +1051,9 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
   // actually dowloaded contains a patching error, an therefore, an error
   // is injected at the time of patching.
   get_interceptor_->SetResponse(
-      GURL("http://localhost/download/"
-           "ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"),
+      GURL(
+          "http://localhost/download/"
+          "ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"),
       test_file("ihfokbkgjpifnbbojhneepfflplebdkc_1to2_bad.crx"));
   get_interceptor_->SetResponse(
       GURL("http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_2.crx"),
@@ -1096,12 +1083,11 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
           "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"0.0\">"
           "<updatecheck /></app>"))
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[1].find(
-          "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
-          "version=\"0.0\" nextversion=\"1.0\">"
-          "<event eventtype=\"3\" eventresult=\"1\" nextfp=\"1\"/>"))
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[1].find(
+                "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
+                "version=\"0.0\" nextversion=\"1.0\">"
+                "<event eventtype=\"3\" eventresult=\"1\" nextfp=\"1\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(
       string::npos,
@@ -1109,15 +1095,13 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
           "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
           "<updatecheck /><packages><package fp=\"1\"/></packages></app>"))
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(
-      string::npos,
-      post_interceptor_->GetRequests()[3].find(
-          "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
-          "version=\"1.0\" nextversion=\"2.0\">"
-          "<event eventtype=\"3\" eventresult=\"1\" "
-          "diffresult=\"0\" differrorcat=\"2\" "
-          "differrorcode=\"14\" diffextracode1=\"305\" "
-          "previousfp=\"1\" nextfp=\"22\"/>"))
+  EXPECT_NE(string::npos, post_interceptor_->GetRequests()[3].find(
+                              "<app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" "
+                              "version=\"1.0\" nextversion=\"2.0\">"
+                              "<event eventtype=\"3\" eventresult=\"1\" "
+                              "diffresult=\"0\" differrorcat=\"2\" "
+                              "differrorcode=\"14\" diffextracode1=\"305\" "
+                              "previousfp=\"1\" nextfp=\"22\"/>"))
       << post_interceptor_->GetRequestsAsString();
   EXPECT_NE(
       string::npos,
@@ -1138,9 +1122,7 @@ content::ResourceThrottle* RequestTestResourceThrottle(
     const char* crx_id) {
   net::TestURLRequestContext context;
   scoped_ptr<net::URLRequest> url_request(context.CreateRequest(
-      GURL("http://foo.example.com/thing.bin"),
-      net::DEFAULT_PRIORITY,
-      NULL));
+      GURL("http://foo.example.com/thing.bin"), net::DEFAULT_PRIORITY, NULL));
 
   content::ResourceThrottle* rt = GetOnDemandResourceThrottle(cus, crx_id);
   rt->set_controller_for_testing(controller);
@@ -1196,11 +1178,10 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleDeletedNoUpdate) {
 
   EXPECT_EQ(0, post_interceptor_->GetHitCount());
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&RequestAndDeleteResourceThrottle,
-                                     component_updater(),
-                                     "abagagagagagagagagagagagagagagag"));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&RequestAndDeleteResourceThrottle, component_updater(),
+                 "abagagagagagagagagagagagagagagag"));
 
   RunThreads();
 
@@ -1224,8 +1205,7 @@ class CancelResourceController : public TestResourceController {
   void CancelAndIgnore() override { CHECK(false); }
   void CancelWithError(int error_code) override { CHECK(false); }
   void Resume() override {
-    BrowserThread::PostTask(BrowserThread::IO,
-                            FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(&CancelResourceController::ResumeCalled,
                                        base::Unretained(this)));
   }
@@ -1291,11 +1271,9 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
     CancelResourceController controller;
 
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
+        BrowserThread::IO, FROM_HERE,
         base::Bind(base::IgnoreResult(&RequestTestResourceThrottle),
-                   component_updater(),
-                   &controller,
+                   component_updater(), &controller,
                    "abagagagagagagagagagagagagagagag"));
 
     RunThreads();
@@ -1317,11 +1295,9 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
     CancelResourceController controller;
 
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
+        BrowserThread::IO, FROM_HERE,
         base::Bind(base::IgnoreResult(&RequestTestResourceThrottle),
-                   component_updater(),
-                   &controller,
+                   component_updater(), &controller,
                    "abagagagagagagagagagagagagagagag"));
 
     RunThreads();
@@ -1341,11 +1317,9 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
     CancelResourceController controller;
 
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
+        BrowserThread::IO, FROM_HERE,
         base::Bind(base::IgnoreResult(&RequestTestResourceThrottle),
-                   component_updater(),
-                   &controller,
+                   component_updater(), &controller,
                    "abagagagagagagagagagagagagagagag"));
     RunThreadsUntilIdle();
   }

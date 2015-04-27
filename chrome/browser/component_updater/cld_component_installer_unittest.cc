@@ -23,6 +23,7 @@
 using component_updater::CldComponentInstallerTraits;
 
 namespace {
+
 // This has to match what's in cld_component_installer.cc.
 const base::FilePath::CharType kTestCldDataFileName[] =
     FILE_PATH_LITERAL("cld2_data.bin");
@@ -57,6 +58,7 @@ class CldComponentInstallerTest : public PlatformTest {
     // Restore sanity checks.
     translate::CldDataSource::EnableSanityChecksForTest();
   }
+
  protected:
   base::ScopedTempDir temp_dir_;
   CldComponentInstallerTraits traits_;
@@ -68,8 +70,7 @@ class CldComponentInstallerTest : public PlatformTest {
 TEST_F(CldComponentInstallerTest, SetLatestCldDataFile) {
   const base::FilePath expected(FILE_PATH_LITERAL("test/foo.test"));
   CldComponentInstallerTraits::SetLatestCldDataFile(expected);
-  base::FilePath result =
-      CldComponentInstallerTraits::GetLatestCldDataFile();
+  base::FilePath result = CldComponentInstallerTraits::GetLatestCldDataFile();
   ASSERT_EQ(expected, result);
 }
 
@@ -79,8 +80,9 @@ TEST_F(CldComponentInstallerTest, VerifyInstallation) {
   const base::DictionaryValue manifest;
   ASSERT_FALSE(traits_.VerifyInstallation(manifest, temp_dir_.path()));
   const base::FilePath data_file_dir =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("_platform_specific")).Append(
-          FILE_PATH_LITERAL("all"));
+      temp_dir_.path()
+          .Append(FILE_PATH_LITERAL("_platform_specific"))
+          .Append(FILE_PATH_LITERAL("all"));
   ASSERT_TRUE(base::CreateDirectory(data_file_dir));
   const base::FilePath data_file = data_file_dir.Append(kTestCldDataFileName);
   const std::string test_data("fake cld2 data file content here :)");
@@ -123,11 +125,9 @@ TEST_F(CldComponentInstallerTest, ComponentReady) {
   const base::FilePath install_dir(FILE_PATH_LITERAL("/foo"));
   const base::Version version("1.2.3.4");
   traits_.ComponentReady(version, install_dir, manifest.Pass());
-  base::FilePath result =
-      CldComponentInstallerTraits::GetLatestCldDataFile();
-  ASSERT_TRUE(StartsWith(result.AsUTF16Unsafe(),
-                         install_dir.AsUTF16Unsafe(),
-                         true));
+  base::FilePath result = CldComponentInstallerTraits::GetLatestCldDataFile();
+  ASSERT_TRUE(
+      StartsWith(result.AsUTF16Unsafe(), install_dir.AsUTF16Unsafe(), true));
   ASSERT_TRUE(EndsWith(result.value(), kTestCldDataFileName, true));
 }
 

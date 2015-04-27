@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UPDATE_CLIENT_TEST_TEST_CONFIGURATOR_H_
-#define COMPONENTS_UPDATE_CLIENT_TEST_TEST_CONFIGURATOR_H_
+#ifndef COMPONENTS_UPDATE_CLIENT_TEST_CONFIGURATOR_H_
+#define COMPONENTS_UPDATE_CLIENT_TEST_CONFIGURATOR_H_
 
 #include <string>
 #include <utility>
@@ -108,4 +108,4 @@ class TestConfigurator : public Configurator {
 
 }  // namespace update_client
 
-#endif  // COMPONENTS_UPDATE_CLIENT_TEST_TEST_CONFIGURATOR_H_
+#endif  // COMPONENTS_UPDATE_CLIENT_TEST_CONFIGURATOR_H_
