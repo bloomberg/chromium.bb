@@ -691,7 +691,6 @@ public:
 
     void scheduleRelayout();
 
-    void updateFillImages(const FillLayer* oldLayers, const FillLayer& newLayers);
     void updateImage(StyleImage*, StyleImage*);
     void updateShapeImage(const ShapeValue*, const ShapeValue*);
 
@@ -1199,6 +1198,8 @@ protected:
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const;
 
 private:
+    void updateFillImages(const FillLayer* oldLayers, const FillLayer& newLayers);
+
     void setNeedsOverflowRecalcAfterStyleChange();
 
     inline bool mustInvalidateFillLayersPaintOnWidthChange(const FillLayer&) const;
