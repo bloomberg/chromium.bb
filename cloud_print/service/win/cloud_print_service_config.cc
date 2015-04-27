@@ -34,10 +34,10 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
   class Dispatcher : public base::MessagePumpDispatcher {
    public:
     explicit Dispatcher(SetupDialog* dialog) : dialog_(dialog) {}
-    virtual ~Dispatcher() {};
+    ~Dispatcher() override {}
 
     // MessagePumpDispatcher:
-    virtual uint32_t Dispatch(const MSG& msg) override {
+    uint32_t Dispatch(const MSG& msg) override {
       MSG msg2 = msg;
       uint32_t action = POST_DISPATCH_NONE;
       if (!dialog_->IsDialogMessage(&msg2))

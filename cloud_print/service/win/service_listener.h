@@ -23,10 +23,10 @@ class Channel;
 class ServiceListener : public IPC::Listener {
  public:
   explicit ServiceListener(const base::FilePath& user_data_dir);
-  virtual ~ServiceListener();
+  ~ServiceListener() override;
 
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnChannelConnected(int32 peer_pid) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnChannelConnected(int32 peer_pid) override;
 
  private:
   void Disconnect();

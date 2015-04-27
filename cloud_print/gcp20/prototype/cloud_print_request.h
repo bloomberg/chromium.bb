@@ -38,7 +38,7 @@ class CloudPrintRequest : public net::URLFetcherDelegate,
     virtual void OnFetchTimeoutReached() = 0;
   };
 
-  virtual ~CloudPrintRequest();
+  ~CloudPrintRequest() override;
 
   // Creates GET request.
   static scoped_ptr<CloudPrintRequest> CreateGet(const GURL& url,
@@ -63,7 +63,7 @@ class CloudPrintRequest : public net::URLFetcherDelegate,
                     Delegate* delegate);
 
   // net::URLFetcherDelegate methods:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Method for handling timeout.
   void OnRequestTimeout();

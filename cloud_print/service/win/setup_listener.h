@@ -36,10 +36,10 @@ class SetupListener : public IPC::Listener {
   static const wchar_t kSetupPipeName[];
 
   explicit SetupListener(const base::string16& user);
-  virtual ~SetupListener();
+  ~SetupListener() override;
 
-  virtual bool OnMessageReceived(const IPC::Message& msg) override;
-  virtual void OnChannelError() override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
+  void OnChannelError() override;
 
   bool WaitResponce(const base::TimeDelta& delta);
 

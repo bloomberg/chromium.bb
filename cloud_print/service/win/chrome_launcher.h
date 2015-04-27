@@ -17,12 +17,13 @@ class ChromeLauncher : public base::DelegateSimpleThread::Delegate {
  public:
   explicit ChromeLauncher(const base::FilePath& user_data);
 
-  virtual ~ChromeLauncher();
+  ~ChromeLauncher() override;
 
   bool Start();
   void Stop();
 
-  virtual void Run() override;
+  // base::DelegateSimpleThread::Delegate:
+  void Run() override;
 
   static std::string CreateServiceStateFile(
       const std::string& proxy_id,
