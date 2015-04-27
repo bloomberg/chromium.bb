@@ -293,7 +293,6 @@ void LayoutSVGText::subtreeTextDidChange(LayoutSVGInlineText* text)
     // subtree. If this changes, clear the cache. It's going to be rebuilt below.
     m_layoutAttributesBuilder.clearTextPositioningElements();
 
-    checkLayoutAttributesConsistency(this, m_layoutAttributes);
     for (LayoutObject* descendant = text; descendant; descendant = descendant->nextInPreOrder(text)) {
         if (descendant->isSVGInlineText())
             m_layoutAttributesBuilder.buildLayoutAttributesForText(toLayoutSVGInlineText(descendant));
