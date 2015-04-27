@@ -8,8 +8,7 @@
     <textarea name="area1" id="area1" rows="5" cols="40">
 line 1
 line 2
-line 3
-    </textarea>
+line 3</textarea>
 
     <script>
         description("This tests that the line number of a character offset is computed correctly for textarea elements.");
@@ -20,11 +19,15 @@ line 3
             area1.focus();
             var axArea1 = accessibilityController.focusedElement;
 
-            for (var character = 0; character < 3; ++character) {
-                for (var line = 0; line < 7; ++line) {
-                    shouldBeEqualToNumber("axArea1.lineForIndex(character)", line);
+            for (var line = 0; line < 3; ++line) {
+                for (var character = 0; character < 7; ++character) {
+                    var index = line * 7 + character;
+                    shouldBeEqualToNumber("axArea1.lineForIndex(index)", line);
                 }
             }
+
+            // Placing the caret after the last character should not change the line.
+            shouldBeEqualToNumber("axArea1.lineForIndex(area1.textLength)", 2);
 
         }
     </script>

@@ -1,0 +1,34 @@
+This tests that the line number of a character offset is computed correctly for content editable elements.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS axEditable.lineForIndex(index) is 0
+PASS axEditable.lineForIndex(index) is 0
+PASS axEditable.lineForIndex(index) is 0
+PASS axEditable.lineForIndex(index) is 0
+PASS axEditable.lineForIndex(index) is 0
+PASS axEditable.lineForIndex(index) is 0
+PASS axEditable.lineForIndex(index) is 0
+PASS axEditable.lineForIndex(index) is 1
+PASS axEditable.lineForIndex(index) is 1
+PASS axEditable.lineForIndex(index) is 1
+PASS axEditable.lineForIndex(index) is 1
+PASS axEditable.lineForIndex(index) is 1
+PASS axEditable.lineForIndex(index) is 1
+PASS axEditable.lineForIndex(index) is 1
+PASS axEditable.lineForIndex(index) is 2
+PASS axEditable.lineForIndex(index) is 2
+PASS axEditable.lineForIndex(index) is 2
+PASS axEditable.lineForIndex(index) is 2
+PASS axEditable.lineForIndex(index) is 2
+PASS axEditable.lineForIndex(index) is 2
+PASS axEditable.lineForIndex(index) is 2
+PASS textLength is 20
+PASS axEditable.lineForIndex(textLength) is 2
+PASS successfullyParsed is true
+
+TEST COMPLETE
+line 1
+line 2
+line 3
