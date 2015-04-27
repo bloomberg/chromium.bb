@@ -9,6 +9,7 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/property_tree_builder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -157,48 +158,25 @@ static bool TransformToScreenIsKnown(LayerType* layer,
 }
 
 template <typename LayerType>
-static bool IsLayerBackFaceExposed(LayerType* layer,
-                                   const TransformTree& tree) {
-  if (!TransformToScreenIsKnown(layer, tree))
-    return false;
-  if (LayerIsInExisting3DRenderingContext(layer))
-    return DrawTransformFromPropertyTrees(layer, tree).IsBackFaceVisible();
-  return layer->transform().IsBackFaceVisible();
-}
-
-template <typename LayerType>
-static bool IsSurfaceBackFaceExposed(LayerType* layer,
-                                     const TransformTree& tree) {
-  if (!TransformToScreenIsKnown(layer, tree))
-    return false;
-  if (LayerIsInExisting3DRenderingContext(layer))
-    return DrawTransformFromPropertyTrees(layer, tree).IsBackFaceVisible();
-
-  if (IsRootLayerOfNewRenderingContext(layer))
-    return layer->transform().IsBackFaceVisible();
-
-  // If the render_surface is not part of a new or existing rendering context,
-  // then the layers that contribute to this surface will decide back-face
-  // visibility for themselves.
-  return false;
-}
-
-template <typename LayerType>
 static bool HasSingularTransform(LayerType* layer, const TransformTree& tree) {
   const TransformNode* node = tree.Node(layer->transform_tree_index());
   return !node->data.is_invertible || !node->data.ancestors_are_invertible;
 }
 
 template <typename LayerType>
-static bool IsBackFaceInvisible(LayerType* layer, const TransformTree& tree) {
-  LayerType* backface_test_layer = layer;
-  if (layer->use_parent_backface_visibility()) {
-    DCHECK(layer->parent());
-    DCHECK(!layer->parent()->use_parent_backface_visibility());
-    backface_test_layer = layer->parent();
-  }
-  return !backface_test_layer->double_sided() &&
-         IsLayerBackFaceExposed(backface_test_layer, tree);
+static bool IsLayerBackFaceVisible(LayerType* layer,
+                                   const TransformTree& tree) {
+  // The current W3C spec on CSS transforms says that backface visibility should
+  // be determined differently depending on whether the layer is in a "3d
+  // rendering context" or not. For Chromium code, we can determine whether we
+  // are in a 3d rendering context by checking if the parent preserves 3d.
+
+  if (LayerIsInExisting3DRenderingContext(layer))
+    return DrawTransformFromPropertyTrees(layer, tree).IsBackFaceVisible();
+
+  // In this case, either the layer establishes a new 3d rendering context, or
+  // is not in a 3d rendering context at all.
+  return layer->transform().IsBackFaceVisible();
 }
 
 template <typename LayerType>
@@ -208,21 +186,126 @@ static bool IsAnimatingTransformToScreen(LayerType* layer,
   return node->data.to_screen_is_animated;
 }
 
-template <typename LayerType>
-static bool IsInvisibleDueToTransform(LayerType* layer,
-                                      const TransformTree& tree) {
-  if (IsAnimatingTransformToScreen(layer, tree))
-    return false;
-  return HasSingularTransform(layer, tree) || IsBackFaceInvisible(layer, tree);
+static inline bool TransformToScreenIsKnown(Layer* layer,
+                                            const TransformTree& tree) {
+  return !IsAnimatingTransformToScreen(layer, tree);
 }
 
-bool LayerIsInvisible(const Layer* layer) {
+static inline bool TransformToScreenIsKnown(LayerImpl* layer,
+                                            const TransformTree& tree) {
+  return true;
+}
+
+template <typename LayerType>
+static bool HasInvertibleOrAnimatedTransform(LayerType* layer) {
+  return layer->transform_is_invertible() || layer->TransformIsAnimating();
+}
+
+static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
+                                          bool layer_is_drawn) {
+  // If the layer transform is not invertible, it should not be drawn.
+  // TODO(ajuma): Correctly process subtrees with singular transform for the
+  // case where we may animate to a non-singular transform and wish to
+  // pre-raster.
+  if (!HasInvertibleOrAnimatedTransform(layer))
+    return true;
+
+  // When we need to do a readback/copy of a layer's output, we can not skip
+  // it or any of its ancestors.
+  if (layer->draw_properties().layer_or_descendant_has_copy_request)
+    return false;
+
+  // We cannot skip the the subtree if a descendant has a wheel or touch handler
+  // or the hit testing code will break (it requires fresh transforms, etc).
+  if (layer->draw_properties().layer_or_descendant_has_input_handler)
+    return false;
+
+  // If the layer is not drawn, then skip it and its subtree.
+  if (!layer_is_drawn)
+    return true;
+
+  // If layer is on the pending tree and opacity is being animated then
+  // this subtree can't be skipped as we need to create, prioritize and
+  // include tiles for this layer when deciding if tree can be activated.
+  if (layer->layer_tree_impl()->IsPendingTree() && layer->OpacityIsAnimating())
+    return false;
+
+  // The opacity of a layer always applies to its children (either implicitly
+  // via a render surface or explicitly if the parent preserves 3D), so the
+  // entire subtree can be skipped if this layer is fully transparent.
+  return !layer->opacity();
+}
+
+static inline bool SubtreeShouldBeSkipped(Layer* layer, bool layer_is_drawn) {
+  // If the layer transform is not invertible, it should not be drawn.
+  if (!layer->transform_is_invertible() && !layer->TransformIsAnimating())
+    return true;
+
+  // When we need to do a readback/copy of a layer's output, we can not skip
+  // it or any of its ancestors.
+  if (layer->draw_properties().layer_or_descendant_has_copy_request)
+    return false;
+
+  // We cannot skip the the subtree if a descendant has a wheel or touch handler
+  // or the hit testing code will break (it requires fresh transforms, etc).
+  if (layer->draw_properties().layer_or_descendant_has_input_handler)
+    return false;
+
+  // If the layer is not drawn, then skip it and its subtree.
+  if (!layer_is_drawn)
+    return true;
+
+  // If the opacity is being animated then the opacity on the main thread is
+  // unreliable (since the impl thread may be using a different opacity), so it
+  // should not be trusted.
+  // In particular, it should not cause the subtree to be skipped.
+  // Similarly, for layers that might animate opacity using an impl-only
+  // animation, their subtree should also not be skipped.
   return !layer->opacity() && !layer->OpacityIsAnimating() &&
          !layer->OpacityCanAnimateOnImplThread();
 }
 
-bool LayerIsInvisible(const LayerImpl* layer) {
-  return !layer->opacity() && !layer->OpacityIsAnimating();
+template <typename LayerType>
+static bool LayerShouldBeSkipped(LayerType* layer,
+                                 bool layer_is_drawn,
+                                 const TransformTree& tree) {
+  // Layers can be skipped if any of these conditions are met.
+  //   - is not drawn due to it or one of its ancestors being hidden (or having
+  //     no copy requests).
+  //   - does not draw content.
+  //   - is transparent.
+  //   - has empty bounds
+  //   - the layer is not double-sided, but its back face is visible.
+  //
+  // Some additional conditions need to be computed at a later point after the
+  // recursion is finished.
+  //   - the intersection of render_surface content and layer clip_rect is empty
+  //   - the visible_content_rect is empty
+  //
+  // Note, if the layer should not have been drawn due to being fully
+  // transparent, we would have skipped the entire subtree and never made it
+  // into this function, so it is safe to omit this check here.
+  if (!layer_is_drawn)
+    return true;
+
+  if (!layer->DrawsContent() || layer->bounds().IsEmpty())
+    return true;
+
+  LayerType* backface_test_layer = layer;
+  if (layer->use_parent_backface_visibility()) {
+    DCHECK(layer->parent());
+    DCHECK(!layer->parent()->use_parent_backface_visibility());
+    backface_test_layer = layer->parent();
+  }
+
+  // The layer should not be drawn if (1) it is not double-sided and (2) the
+  // back of the layer is known to be facing the screen.
+  if (!backface_test_layer->double_sided() &&
+      TransformToScreenIsKnown(backface_test_layer, tree) &&
+      IsLayerBackFaceVisible(backface_test_layer, tree))
+    return true;
+
+  return false;
 }
 
 template <typename LayerType>
@@ -230,24 +313,15 @@ void FindLayersThatNeedVisibleRects(LayerType* layer,
                                     const TransformTree& tree,
                                     bool subtree_is_visible_from_ancestor,
                                     std::vector<LayerType*>* layers_to_update) {
-  const bool layer_is_invisible = LayerIsInvisible(layer);
-  const bool layer_is_backfacing =
-      (layer->has_render_surface() && !layer->double_sided() &&
-       IsSurfaceBackFaceExposed(layer, tree));
-
-  const bool subtree_is_invisble = layer_is_invisible || layer_is_backfacing;
-  if (subtree_is_invisble)
-    return;
-
   bool layer_is_drawn =
       layer->HasCopyRequest() ||
       (subtree_is_visible_from_ancestor && !layer->hide_layer_and_subtree());
 
-  if (layer_is_drawn && layer->DrawsContent()) {
-    const bool visible = !IsInvisibleDueToTransform(layer, tree);
-    if (visible)
-      layers_to_update->push_back(layer);
-  }
+  if (layer->parent() && SubtreeShouldBeSkipped(layer, layer_is_drawn))
+    return;
+
+  if (!LayerShouldBeSkipped(layer, layer_is_drawn, tree))
+    layers_to_update->push_back(layer);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     FindLayersThatNeedVisibleRects(layer->child_at(i), tree, layer_is_drawn,

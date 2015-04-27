@@ -21,6 +21,9 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/fake_content_layer.h"
+#include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_content_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -9256,6 +9259,214 @@ TEST_F(LayerTreeHostCommonTest, UpdateScrollChildPosition) {
   ExecuteCalculateDrawProperties(root.get());
   EXPECT_EQ(gfx::Rect(0, 5, 25, 25),
             scroll_child->visible_rect_from_property_trees());
+}
+
+static void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+}
+
+TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
+  gfx::Transform identity;
+  FakeContentLayerClient client;
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  scoped_refptr<LayerWithForcedDrawsContent> grandchild =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  scoped_refptr<FakeContentLayer> greatgrandchild(
+      FakeContentLayer::Create(&client));
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+  SetLayerPropertiesForTesting(grandchild.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+  SetLayerPropertiesForTesting(greatgrandchild.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+
+  root->AddChild(child);
+  child->AddChild(grandchild);
+  grandchild->AddChild(greatgrandchild);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  // Check the non-skipped case.
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
+
+  // Now we will reset the visible rect from property trees for the grandchild,
+  // and we will configure |child| in several ways that should force the subtree
+  // to be skipped. The visible content rect for |grandchild| should, therefore,
+  // remain empty.
+  grandchild->set_visible_rect_from_property_trees(gfx::Rect());
+  gfx::Transform singular;
+  singular.matrix().set(0, 0, 0);
+
+  child->SetTransform(singular);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_rect_from_property_trees());
+  child->SetTransform(identity);
+
+  child->SetHideLayerAndSubtree(true);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_rect_from_property_trees());
+  child->SetHideLayerAndSubtree(false);
+
+  child->SetOpacity(0.f);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_rect_from_property_trees());
+
+  // Now, even though child has zero opacity, we will configure |grandchild| and
+  // |greatgrandchild| in several ways that should force the subtree to be
+  // processed anyhow.
+  grandchild->SetTouchEventHandlerRegion(Region(gfx::Rect(0, 0, 10, 10)));
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
+  grandchild->set_visible_rect_from_property_trees(gfx::Rect());
+  grandchild->SetTouchEventHandlerRegion(Region());
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_rect_from_property_trees());
+  grandchild->set_visible_rect_from_property_trees(gfx::Rect());
+
+  greatgrandchild->RequestCopyOfOutput(
+      CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
+}
+
+TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
+  FakeImplProxy proxy;
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager, nullptr);
+
+  gfx::Transform identity;
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
+  scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.active_tree(), 2);
+  scoped_ptr<LayerImpl> grandchild =
+      LayerImpl::Create(host_impl.active_tree(), 3);
+
+  scoped_ptr<FakeContentLayerImpl> greatgrandchild(
+      FakeContentLayerImpl::Create(host_impl.active_tree(), 4));
+
+  child->SetDrawsContent(true);
+  grandchild->SetDrawsContent(true);
+  greatgrandchild->SetDrawsContent(true);
+
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+  SetLayerPropertiesForTesting(grandchild.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+  SetLayerPropertiesForTesting(greatgrandchild.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               true);
+
+  LayerImpl* child_ptr = child.get();
+  LayerImpl* grandchild_ptr = grandchild.get();
+  LayerImpl* greatgrandchild_ptr = greatgrandchild.get();
+
+  grandchild->AddChild(greatgrandchild.Pass());
+  child->AddChild(grandchild.Pass());
+  root->AddChild(child.Pass());
+
+  // Check the non-skipped case.
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(10, 10),
+            grandchild_ptr->visible_rect_from_property_trees());
+
+  // Now we will reset the visible rect from property trees for the grandchild,
+  // and we will configure |child| in several ways that should force the subtree
+  // to be skipped. The visible content rect for |grandchild| should, therefore,
+  // remain empty.
+  grandchild_ptr->set_visible_rect_from_property_trees(gfx::Rect());
+  gfx::Transform singular;
+  singular.matrix().set(0, 0, 0);
+
+  child_ptr->SetTransform(singular);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0),
+            grandchild_ptr->visible_rect_from_property_trees());
+  child_ptr->SetTransform(identity);
+
+  child_ptr->SetHideLayerAndSubtree(true);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0),
+            grandchild_ptr->visible_rect_from_property_trees());
+  child_ptr->SetHideLayerAndSubtree(false);
+
+  child_ptr->SetOpacity(0.f);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0),
+            grandchild_ptr->visible_rect_from_property_trees());
+
+  // Now, even though child has zero opacity, we will configure |grandchild| and
+  // |greatgrandchild| in several ways that should force the subtree to be
+  // processed anyhow.
+  grandchild_ptr->SetTouchEventHandlerRegion(Region(gfx::Rect(0, 0, 10, 10)));
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(10, 10),
+            grandchild_ptr->visible_rect_from_property_trees());
+  grandchild_ptr->set_visible_rect_from_property_trees(gfx::Rect());
+  grandchild_ptr->SetTouchEventHandlerRegion(Region());
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0),
+            grandchild_ptr->visible_rect_from_property_trees());
+  grandchild_ptr->set_visible_rect_from_property_trees(gfx::Rect());
+
+  ScopedPtrVector<CopyOutputRequest> requests;
+  requests.push_back(CopyOutputRequest::CreateEmptyRequest());
+
+  greatgrandchild_ptr->PassCopyRequests(&requests);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(10, 10),
+            grandchild_ptr->visible_rect_from_property_trees());
+}
+
+TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
+  gfx::Transform identity;
+  FakeContentLayerClient client;
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+  root->AddChild(child);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(10, 10), child->visible_rect_from_property_trees());
+  child->set_visible_rect_from_property_trees(gfx::Rect());
+
+  child->SetHideLayerAndSubtree(true);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0), child->visible_rect_from_property_trees());
+  child->SetHideLayerAndSubtree(false);
+
+  child->SetBounds(gfx::Size());
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0), child->visible_rect_from_property_trees());
+  child->SetBounds(gfx::Size(10, 10));
+
+  gfx::Transform rotate;
+  child->SetDoubleSided(false);
+  rotate.RotateAboutXAxis(180.f);
+  child->SetTransform(rotate);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0), child->visible_rect_from_property_trees());
+  child->SetDoubleSided(true);
+  child->SetTransform(identity);
+
+  child->SetOpacity(0.f);
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_EQ(gfx::Rect(0, 0), child->visible_rect_from_property_trees());
 }
 
 }  // namespace
