@@ -6,11 +6,11 @@ webapp_locale_dir = "$root_gen_dir/remoting/webapp/_locales"
 
 # See also remoting_locales_with_underscores below.
 remoting_locales = [
-  #"am",
+  "am",
   "ar",
   "bg",
 
-  #"bn",
+  "bn",
   "ca",
   "cs",
   "da",
@@ -22,13 +22,13 @@ remoting_locales = [
   "es-419",
   "et",
 
-  #"fa",
-  #"fake-bidi",
+  "fa",
+  "fake-bidi",
   "fi",
   "fil",
   "fr",
 
-  #"gu",
+  "gu",
   "he",
   "hi",
   "hr",
@@ -37,14 +37,14 @@ remoting_locales = [
   "it",
   "ja",
 
-  #"kn",
+  "kn",
   "ko",
   "lt",
   "lv",
 
-  #"ml",
-  #"mr",
-  #"ms",
+  "ml",
+  "mr",
+  "ms",
   "nb",
   "nl",
   "pl",
@@ -57,9 +57,9 @@ remoting_locales = [
   "sr",
   "sv",
 
-  #"sw",
-  #"ta",
-  #"te",
+  "sw",
+  "ta",
+  "te",
   "th",
   "tr",
   "uk",
@@ -75,7 +75,7 @@ remoting_locales_with_underscores -= [
   "en-GB",
   "es-419",
 
-  #"fake-bidi",
+  "fake-bidi",
   "pt-BR",
   "pt-PT",
   "zh-CN",
@@ -85,7 +85,7 @@ remoting_locales_with_underscores += [
   "en_GB",
   "es_419",
 
-  #"fake_bidi",
+  "fake_bidi",
   "pt_BR",
   "pt_PT",
   "zh_CN",
