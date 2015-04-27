@@ -108,7 +108,6 @@ class MockDrmDevice : public ui::DrmDevice {
   bool CommitProperties(drmModePropertySet* properties,
                         uint32_t flags,
                         const PageFlipCallback& callback) override;
-  bool SetCapability(uint64_t capability, uint64_t value) override;
 
  private:
   ~MockDrmDevice() override;
