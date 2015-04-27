@@ -100,6 +100,24 @@ class RasterizeAndRecordMicroKeySilkCases(_RasterizeAndRecordMicro):
     return page_sets.KeySilkCasesPageSet(run_no_page_interactions=True)
 
 
+@benchmark.Disabled('mac', 'win', 'android')
+@benchmark.Disabled('reference')
+class RasterizeAndRecordMicroKeySilkWithSlimmingPaint(_RasterizeAndRecordMicro):
+  """Measures rasterize and record on the silk sites with slimming paint.
+
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--enable-slimming-paint'])
+
+  @classmethod
+  def Name(cls):
+    return 'rasterize_and_record_micro.key_silk_cases_with_slimming_paint'
+
+  def CreatePageSet(self, options):
+    return page_sets.KeySilkCasesPageSet(run_no_page_interactions=True)
+
+
 @benchmark.Enabled('android')
 class RasterizeAndRecordMicroPolymer(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the Polymer cases.
