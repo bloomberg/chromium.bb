@@ -68,7 +68,7 @@ layer at (0,0) size 785x710
             text run at (0,1) width 254: "How does your browser fare on this test? "
           LayoutMenuList {SELECT} at (254,1) size 250x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
             LayoutBlockFlow (anonymous) at (1,1) size 248x18
-              LayoutText at (4,1) size 152x16
+              LayoutText (anonymous) at (4,1) size 152x16
                 text run at (4,1) width 152: "The test renders correctly."
           LayoutText {#text} at (504,1) size 4x19
             text run at (504,1) width 4: " "

@@ -2210,7 +2210,7 @@ layer at (0,0) size 785x8148
                 text run at (2,2) width 85: "Row 5, Cell 3"
 layer at (393,24) size 392x150
   LayoutBlockFlow (positioned) {TABLE} at (392.50,24) size 392.50x150
-    LayoutTable at (0,0) size 360x162
+    LayoutTable (anonymous) at (0,0) size 360x162
       LayoutBlockFlow {CAPTION} at (0,0) size 360x20
         LayoutText {#text} at (55,0) size 245x19
           text run at (55,0) width 245: "Local links to specific testcase tables"

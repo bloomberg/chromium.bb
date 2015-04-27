@@ -68,7 +68,7 @@ layer at (0,0) size 785x659 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,0) width 267: "How does your browser fare on this test? "
           LayoutMenuList {SELECT} at (266.59,1) size 246x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 246x18
-              LayoutText at (8,2) size 141x13
+              LayoutText (anonymous) at (8,2) size 141x13
                 text run at (8,2) width 141: "The test renders correctly."
           LayoutText {#text} at (512,0) size 5x18
             text run at (512,0) width 5: " "

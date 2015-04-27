@@ -24,8 +24,7 @@ crbug.com/452967 virtual/slimmingpaint/svg/text/modify-text-node-in-tspan.html [
 crbug.com/452967 virtual/slimmingpaint/fast/css/ZeroOpacityLayers.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/452967 virtual/slimmingpaint/fast/css/ZeroOpacityLayers2.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
-# Re-enable after crbug.com/463967 rebaselines.
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/pop-up-button-text-alignment-and-direction.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/pop-up-button-text-alignment-and-direction.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/008.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/009.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/012.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
@@ -596,19 +595,6 @@ crbug.com/463050 inspector/extensions/extensions-audits.html [ Failure Pass ]
 
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
 
-crbug.com/463967 virtual/slimmingpaint/fast/block/float/035.html [ NeedsManualRebaseline ]
-crbug.com/463967 [ Linux Win ] virtual/slimmingpaint/fast/table/overflowHidden.html [ NeedsManualRebaseline ]
-
-crbug.com/463967 tables/mozilla/bugs/bug18359.html [ NeedsManualRebaseline ]
-crbug.com/463967 tables/mozilla/bugs/bug2479-2.html [ NeedsManualRebaseline ]
-crbug.com/463967 tables/mozilla/bugs/bug2479-3.html [ NeedsManualRebaseline ]
-crbug.com/463967 tables/mozilla/bugs/bug4382.html [ NeedsManualRebaseline ]
-crbug.com/463967 tables/mozilla/bugs/bug96334.html [ NeedsManualRebaseline ]
-crbug.com/463967 virtual/slimmingpaint/fast/table/frame-and-rules.html [ NeedsManualRebaseline ]
-crbug.com/463967 virtual/slimmingpaint/fast/table/prepend-in-anonymous-table.html [ NeedsManualRebaseline ]
-crbug.com/463967 virtual/slimmingpaint/fast/table/table-display-types-vertical.html [ NeedsManualRebaseline ]
-crbug.com/463967 virtual/slimmingpaint/fast/text/international/bidi-menulist.html [ NeedsManualRebaseline ]
-
 crbug.com/268111 [ Win Release ] http/tests/inspector/appcache/appcache-swap.html [ Pass Timeout ]
 crbug.com/268111 [ Win ] http/tests/appcache/online-whitelist.html [ Failure Pass Timeout ]
 crbug.com/31623  [ Linux Debug ] http/tests/appcache/remove-cache.html [ Pass Failure ]
@@ -1092,8 +1078,7 @@ crbug.com/356991 [ Linux Debug ] fast/canvas/canvas-createImageBitmap-drawImage-
 crbug.com/356997 http/tests/security/isolatedWorld/events.html [ Failure Pass ]
 crbug.com/357002 [ Linux ] http/tests/misc/cache-hit-resource-timing-buffer-full-crash.html [ Failure Pass ]
 crbug.com/357068 css3/images/cross-fade-invalidation.html [ ImageOnlyFailure Pass ]
-# Re-enable after crbug.com/463967 rebaselines.
-#crbug.com/392626 [ XP ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Timeout ]
+crbug.com/392626 [ XP ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Timeout ]
 crbug.com/357075 [ Win Release ] http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.html [ Failure Pass ]
 crbug.com/357082 [ Win Debug ] virtual/threaded/animations/animation-hit-test.html [ Failure Pass ]
 crbug.com/357084 [ Linux Win Debug ] virtual/threaded/animations/keyframe-timing-functions2.html [ Pass Timeout ]
@@ -1725,8 +1710,7 @@ crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/008.html
 #crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/028.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/032.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/033.html [ Failure ImageOnlyFailure ]
-# Re-enable after crbug.com/463967 rebaselines
-#crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/035.html [ Failure ImageOnlyFailure ]
+crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/035.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/br-with-clear-2.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/nested-clearance.html [ Failure ImageOnlyFailure ]
 crbug.com/432822 [ SnowLeopard ] virtual/slimmingpaint/fast/block/float/shrink-to-avoid-float-complexity.html [ Failure ImageOnlyFailure ]
@@ -1747,13 +1731,11 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/027.html [ Pass Failur
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/040-vertical.html [ NeedsManualRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/border-collapsing/004.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/empty-cells.html [ Pass Failure ImageOnlyFailure ]
-# Re-enable after crbug.com/463967 rebaselines.
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/frame-and-rules.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/frame-and-rules.html [ Pass Failure ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/height-percent-test.html [ Pass Failure ImageOnlyFailure ]
-# Re-enable after crbug.com/463967 rebaselines.
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/overflowHidden.html [ Pass Failure ImageOnlyFailure ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/prepend-in-anonymous-table.html [ Pass Failure ImageOnlyFailure ]
-#crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/table-display-types-vertical.html [ NeedsManualRebaseline ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/overflowHidden.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/prepend-in-anonymous-table.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/table/table-display-types-vertical.html [ NeedsManualRebaseline ]
 crbug.com/438281 [ Debug Snowleopard ] virtual/slimmingpaint/fast/text/atsui-bidi-control.html [ Crash ]
 crbug.com/438281 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/international/bidi-neutral-run.html [ Failure Crash ]
 
@@ -2014,23 +1996,19 @@ crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure
 crbug.com/460335 editing/undo/orphaned-selection-crash-bug32823-2.html [ Pass Crash ]
 
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug28928.html [ Pass ImageOnlyFailure ]
-# Re-enable after crbug.com/463967 rebaselines.
-#crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug96334.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug96334.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/45621.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-2.html [ Pass ImageOnlyFailure ]
 # Reinstate after crbug.com/17217 rebaselines.
 #crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug1188.html [ Pass ImageOnlyFailure ]
-# Re-enable after crbug.com/463967 rebaselines.
-#crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug4382.html [ Pass ImageOnlyFailure ]
-#crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug2479-3.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug4382.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug2479-3.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug59354.html [ Pass ImageOnlyFailure ]
-# Re-enable after crbug.com/463967 rebaselines.
-#crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug2479-2.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug2479-2.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug24200.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug55545.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug51037.html [ Pass ImageOnlyFailure ]
-# Re-enable after crbug.com/463967 rebaselines.
-#crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug18359.html [ Pass ImageOnlyFailure ]
+crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug18359.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug7342.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-1.html [ Pass ImageOnlyFailure ]
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailure ]

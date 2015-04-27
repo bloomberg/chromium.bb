@@ -32,7 +32,7 @@ layer at (0,0) size 800x600
                             LayoutTableCell {TD} at (2,2) size 179x22 [border: (1px solid #C0C0C0)] [r=0 c=0 rs=1 cs=1]
                               LayoutMenuList {SELECT} at (2,2) size 175x18 [bgcolor=#F8F8F8]
                                 LayoutBlockFlow (anonymous) at (0,0) size 175x18
-                                  LayoutText at (8,2) size 144x13
+                                  LayoutText (anonymous) at (8,2) size 144x13
                                     text run at (8,2) width 144: "USE THIS JAVASCRIPT HERE"
                               LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (207,2) size 758x40 [border: (1px solid #C0C0C0)] [r=0 c=1 rs=1 cs=1]

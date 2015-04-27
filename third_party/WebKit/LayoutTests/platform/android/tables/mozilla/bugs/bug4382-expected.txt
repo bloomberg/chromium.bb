@@ -18,7 +18,7 @@ layer at (0,0) size 800x600
           text run at (191,1) width 4: " "
         LayoutMenuList {SELECT} at (195,1) size 73x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 71x18
-            LayoutText at (4,1) size 37x16
+            LayoutText (anonymous) at (4,1) size 37x16
               text run at (4,1) width 37: "Excite"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,58) size 784x40
@@ -29,7 +29,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {FORM} at (0,98) size 784x20
         LayoutMenuList {SELECT} at (0,0) size 253x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           LayoutBlockFlow (anonymous) at (1,1) size 251x18
-            LayoutText at (4,1) size 62x16
+            LayoutText (anonymous) at (4,1) size 62x16
               text run at (4,1) width 62: "Quick Link"
 layer at (60,31) size 137x16
   LayoutBlockFlow {DIV} at (2,3) size 137x16
