@@ -390,7 +390,13 @@ cr.define('options', function() {
 
   PrefSelect.prototype = {
     // Set up the prototype chain
-    __proto__: PrefInputElement.prototype,
+    __proto__: HTMLSelectElement.prototype,
+
+    /** @override */
+    decorate: PrefInputElement.prototype.decorate,
+
+    /** @override */
+    handleChange: PrefInputElement.prototype.handleChange,
 
     /**
      * Update the associated pref when when the user selects an item.
@@ -449,7 +455,46 @@ cr.define('options', function() {
       if (this.onchange)
         this.onchange(event);
     },
+
+    /** @override */
+    setDisabled: PrefInputElement.prototype.setDisabled,
+
+    /** @override */
+    customChangeHandler: PrefInputElement.prototype.customChangeHandler,
+
+    /** @override */
+    customPrefChangeHandler: PrefInputElement.prototype.customPrefChangeHandler,
   };
+
+  /**
+   * The name of the associated preference.
+   */
+  cr.defineProperty(PrefSelect, 'pref', cr.PropertyKind.ATTR);
+
+  /**
+   * The data type of the associated preference, only relevant for derived
+   * classes that support different data types.
+   */
+  cr.defineProperty(PrefSelect, 'dataType', cr.PropertyKind.ATTR);
+
+  /**
+   * Whether this input element is part of a dialog. If so, changes take effect
+   * in the settings UI immediately but are only actually committed when the
+   * user confirms the dialog. If the user cancels the dialog instead, the
+   * changes are rolled back in the settings UI and never committed.
+   */
+  cr.defineProperty(PrefSelect, 'dialogPref', cr.PropertyKind.BOOL_ATTR);
+
+  /**
+   * Whether the associated preference is controlled by a source other than the
+   * user's setting (can be 'policy', 'extension', 'recommended' or unset).
+   */
+  cr.defineProperty(PrefSelect, 'controlledBy', cr.PropertyKind.ATTR);
+
+  /**
+   * The user metric string.
+   */
+  cr.defineProperty(PrefSelect, 'metric', cr.PropertyKind.ATTR);
 
   /////////////////////////////////////////////////////////////////////////////
   // PrefTextField class:
