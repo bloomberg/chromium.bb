@@ -160,10 +160,10 @@ Setup::Setup()
       check_for_bad_items_(true),
       check_for_unused_overrides_(true),
       check_public_headers_(false),
-      empty_settings_(&empty_build_settings_, std::string()),
-      dotfile_scope_(&empty_settings_),
+      dotfile_settings_(&build_settings_, std::string()),
+      dotfile_scope_(&dotfile_settings_),
       fill_arguments_(true) {
-  empty_settings_.set_toolchain_label(Label());
+  dotfile_settings_.set_toolchain_label(Label());
   build_settings_.set_item_defined_callback(
       base::Bind(&ItemDefinedCallback, scheduler_.main_loop(), builder_));
 
@@ -340,7 +340,7 @@ bool Setup::FillArgsFromArgsInputFile() {
     return false;
   }
 
-  Scope arg_scope(&empty_settings_);
+  Scope arg_scope(&dotfile_settings_);
   args_root_->Execute(&arg_scope, &err);
   if (err.has_error()) {
     err.PrintToStdout();

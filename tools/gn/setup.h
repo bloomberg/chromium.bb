@@ -151,10 +151,9 @@ class Setup {
 
   Scheduler scheduler_;
 
-  // These empty settings and toolchain are used to interpret the command line
-  // and dot file.
-  BuildSettings empty_build_settings_;
-  Settings empty_settings_;
+  // These settings and toolchain are used to interpret the command line and
+  // dot file.
+  Settings dotfile_settings_;
   Scope dotfile_scope_;
 
   // State for invoking the dotfile.
