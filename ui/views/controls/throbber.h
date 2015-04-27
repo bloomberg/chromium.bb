@@ -41,18 +41,14 @@ class VIEWS_EXPORT Throbber : public View {
   void OnPaint(gfx::Canvas* canvas) override;
 
  protected:
-  bool running() const { return running_; }
-  base::Time start_time() const { return start_time_; }
-
   // Specifies whether the throbber is currently animating or not
+  bool IsRunning() const;
+  base::TimeTicks start_time() const { return start_time_; }
 
  private:
-  void Run();
-
-  bool running_;
   bool paint_while_stopped_;
   int frame_count_;  // How many frames we have.
-  base::Time start_time_;  // Time when Start was called.
+  base::TimeTicks start_time_;  // Time when Start was called.
   const gfx::ImageSkia* frames_;  // Frames images.
   base::TimeDelta frame_time_;  // How long one frame is displayed.
   base::RepeatingTimer<Throbber> timer_;  // Used to schedule Run calls.

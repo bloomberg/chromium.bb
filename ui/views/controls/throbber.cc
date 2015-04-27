@@ -4,24 +4,18 @@
 
 #include "ui/views/controls/throbber.h"
 
-#include "base/time/time.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"
 
-using base::Time;
-using base::TimeDelta;
-
 namespace views {
 
-Throbber::Throbber(int frame_time_ms,
-                   bool paint_while_stopped)
-    : running_(false),
-      paint_while_stopped_(paint_while_stopped),
+Throbber::Throbber(int frame_time_ms, bool paint_while_stopped)
+    : paint_while_stopped_(paint_while_stopped),
       frames_(NULL),
-      frame_time_(TimeDelta::FromMilliseconds(frame_time_ms)) {
+      frame_time_(base::TimeDelta::FromMilliseconds(frame_time_ms)) {
   SetFrames(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_THROBBER).ToImageSkia());
 }
@@ -31,26 +25,20 @@ Throbber::~Throbber() {
 }
 
 void Throbber::Start() {
-  if (running_)
+  if (IsRunning())
     return;
 
-  start_time_ = Time::Now();
-
-  timer_.Start(FROM_HERE, frame_time_ - TimeDelta::FromMilliseconds(10),
-               this, &Throbber::Run);
-
-  running_ = true;
-
+  start_time_ = base::TimeTicks::Now();
+  timer_.Start(FROM_HERE, frame_time_ - base::TimeDelta::FromMilliseconds(10),
+               this, &Throbber::SchedulePaint);
   SchedulePaint();  // paint right away
 }
 
 void Throbber::Stop() {
-  if (!running_)
+  if (!IsRunning())
     return;
 
   timer_.Stop();
-
-  running_ = false;
   SchedulePaint();  // Important if we're not painting while stopped
 }
 
@@ -62,21 +50,15 @@ void Throbber::SetFrames(const gfx::ImageSkia* frames) {
   PreferredSizeChanged();
 }
 
-void Throbber::Run() {
-  DCHECK(running_);
-
-  SchedulePaint();
-}
-
 gfx::Size Throbber::GetPreferredSize() const {
   return gfx::Size(frames_->height(), frames_->height());
 }
 
 void Throbber::OnPaint(gfx::Canvas* canvas) {
-  if (!running_ && !paint_while_stopped_)
+  if (!IsRunning() && !paint_while_stopped_)
     return;
 
-  const TimeDelta elapsed_time = Time::Now() - start_time_;
+  const base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time_;
   const int current_frame =
       static_cast<int>(elapsed_time / frame_time_) % frame_count_;
 
@@ -88,17 +70,17 @@ void Throbber::OnPaint(gfx::Canvas* canvas) {
                        false);
 }
 
-
+bool Throbber::IsRunning() const {
+  return timer_.IsRunning();
+}
 
 // Smoothed throbber ---------------------------------------------------------
-
 
 // Delay after work starts before starting throbber, in milliseconds.
 static const int kStartDelay = 200;
 
 // Delay after work stops before stopping, in milliseconds.
 static const int kStopDelay = 50;
-
 
 SmoothedThrobber::SmoothedThrobber(int frame_time_ms)
     : Throbber(frame_time_ms, /* paint_while_stopped= */ false),
@@ -111,9 +93,10 @@ SmoothedThrobber::~SmoothedThrobber() {}
 void SmoothedThrobber::Start() {
   stop_timer_.Stop();
 
-  if (!running() && !start_timer_.IsRunning()) {
-    start_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(start_delay_ms_),
-                       this, &SmoothedThrobber::StartDelayOver);
+  if (!IsRunning() && !start_timer_.IsRunning()) {
+    start_timer_.Start(FROM_HERE,
+                       base::TimeDelta::FromMilliseconds(start_delay_ms_), this,
+                       &SmoothedThrobber::StartDelayOver);
   }
 }
 
@@ -122,12 +105,13 @@ void SmoothedThrobber::StartDelayOver() {
 }
 
 void SmoothedThrobber::Stop() {
-  if (!running())
+  if (!IsRunning())
     start_timer_.Stop();
 
   stop_timer_.Stop();
-  stop_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(stop_delay_ms_),
-                    this, &SmoothedThrobber::StopDelayOver);
+  stop_timer_.Start(FROM_HERE,
+                    base::TimeDelta::FromMilliseconds(stop_delay_ms_), this,
+                    &SmoothedThrobber::StopDelayOver);
 }
 
 void SmoothedThrobber::StopDelayOver() {
@@ -170,7 +154,7 @@ int MaterialThrobber::GetHeightForWidth(int w) const {
 }
 
 void MaterialThrobber::OnPaint(gfx::Canvas* canvas) {
-  if (!running()) {
+  if (!IsRunning()) {
     if (checked_) {
       if (!checkmark_) {
         checkmark_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -197,7 +181,7 @@ void MaterialThrobber::OnPaint(gfx::Canvas* canvas) {
   // (90 degrees) and rotates steadily. The start angle trails 180 degrees
   // behind, except for the first half revolution, when it stays at 12 o'clock.
   base::TimeDelta revolution_time = base::TimeDelta::FromMilliseconds(1320);
-  base::TimeDelta elapsed_time = base::Time::Now() - start_time();
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time();
   int64_t twelve_oclock = 90;
   int64_t finish_angle = twelve_oclock + 360 * elapsed_time / revolution_time;
   int64_t start_angle = std::max(finish_angle - 180, twelve_oclock);
