@@ -290,8 +290,8 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // Written by the |channel_id_service_|.
   std::string channel_id_private_key_;
   std::string channel_id_cert_;
-  // True if channel ID extension was negotiated.
-  bool channel_id_xtn_negotiated_;
+  // True if a channel ID was sent.
+  bool channel_id_sent_;
   // True if the initial handshake has completed.
   bool handshake_completed_;
   // True if the initial handshake's certificate has been verified.

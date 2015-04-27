@@ -19,7 +19,6 @@ namespace net {
 
 SSLClientSocket::SSLClientSocket()
     : protocol_negotiated_(kProtoUnknown),
-      channel_id_sent_(false),
       signed_cert_timestamps_received_(false),
       stapled_ocsp_response_received_(false),
       negotiation_extension_(kExtensionUnknown) {
@@ -110,14 +109,6 @@ bool SSLClientSocket::IgnoreCertError(int error, int load_flags) {
 void SSLClientSocket::set_negotiation_extension(
     SSLNegotiationExtension negotiation_extension) {
   negotiation_extension_ = negotiation_extension;
-}
-
-bool SSLClientSocket::WasChannelIDSent() const {
-  return channel_id_sent_;
-}
-
-void SSLClientSocket::set_channel_id_sent(bool channel_id_sent) {
-  channel_id_sent_ = channel_id_sent;
 }
 
 void SSLClientSocket::set_signed_cert_timestamps_received(

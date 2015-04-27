@@ -131,17 +131,7 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // channel ids are not supported.
   virtual ChannelIDService* GetChannelIDService() const = 0;
 
-  // Returns true if a channel ID was sent on this connection.
-  // This may be useful for protocols, like SPDY, which allow the same
-  // connection to be shared between multiple domains, each of which need
-  // a channel ID.
-  //
-  // Public for ssl_client_socket_openssl_unittest.cc.
-  virtual bool WasChannelIDSent() const;
-
  protected:
-  virtual void set_channel_id_sent(bool channel_id_sent);
-
   virtual void set_signed_cert_timestamps_received(
       bool signed_cert_timestamps_received);
 
@@ -204,8 +194,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
 
   // Protocol that we negotiated with the server.
   NextProto protocol_negotiated_;
-  // True if a channel ID was sent.
-  bool channel_id_sent_;
   // True if SCTs were received via a TLS extension.
   bool signed_cert_timestamps_received_;
   // True if a stapled OCSP response was received.

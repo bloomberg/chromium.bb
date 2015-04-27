@@ -2437,7 +2437,7 @@ bool SSLClientSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
       server_cert_verify_result_.is_issued_by_known_root;
   ssl_info->client_cert_sent =
       ssl_config_.send_client_cert && ssl_config_.client_cert.get();
-  ssl_info->channel_id_sent = WasChannelIDSent();
+  ssl_info->channel_id_sent = core_->state().channel_id_sent;
   ssl_info->pinning_failure_log = pinning_failure_log_;
 
   PRUint16 cipher_suite = SSLConnectionStatusToCipherSuite(
@@ -2990,7 +2990,6 @@ int SSLClientSocketNSS::DoHandshakeComplete(int result) {
     GotoState(STATE_VERIFY_CERT);
     // Done!
   }
-  set_channel_id_sent(core_->state().channel_id_sent);
   set_signed_cert_timestamps_received(
       !core_->state().sct_list_from_tls_extension.empty());
   set_stapled_ocsp_response_received(

@@ -1049,8 +1049,6 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   void OnWriteComplete(int rv) override;
   void OnConnectComplete(const MockConnect& data) override;
 
-  bool WasChannelIDSent() const override;
-  void set_channel_id_sent(bool channel_id_sent) override;
   ChannelIDService* GetChannelIDService() const override;
 
  private:

@@ -3392,7 +3392,9 @@ TEST_F(SSLClientSocketChannelIDTest, SendChannelID) {
 
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(sock_->IsConnected());
-  EXPECT_TRUE(sock_->WasChannelIDSent());
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_TRUE(ssl_info.channel_id_sent);
 
   sock_->Disconnect();
   EXPECT_FALSE(sock_->IsConnected());

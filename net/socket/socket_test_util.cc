@@ -1660,14 +1660,6 @@ SSLClientSocket::NextProtoStatus MockSSLClientSocket::GetNextProto(
   return data_->next_proto_status;
 }
 
-bool MockSSLClientSocket::WasChannelIDSent() const {
-  return data_->channel_id_sent;
-}
-
-void MockSSLClientSocket::set_channel_id_sent(bool channel_id_sent) {
-  data_->channel_id_sent = channel_id_sent;
-}
-
 ChannelIDService* MockSSLClientSocket::GetChannelIDService() const {
   return data_->channel_id_service;
 }

@@ -369,7 +369,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       ssl_session_cache_shard_(context.ssl_session_cache_shard),
       next_handshake_state_(STATE_NONE),
       npn_status_(kNextProtoUnsupported),
-      channel_id_xtn_negotiated_(false),
+      channel_id_sent_(false),
       handshake_completed_(false),
       certificate_verified_(false),
       transport_security_state_(context.transport_security_state),
@@ -505,7 +505,7 @@ void SSLClientSocketOpenSSL::Disconnect() {
   npn_status_ = kNextProtoUnsupported;
   npn_proto_.clear();
 
-  channel_id_xtn_negotiated_ = false;
+  channel_id_sent_ = false;
   channel_id_request_handle_.Cancel();
 }
 
@@ -594,7 +594,7 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
     server_cert_verify_result_.public_key_hashes;
   ssl_info->client_cert_sent =
       ssl_config_.send_client_cert && ssl_config_.client_cert.get();
-  ssl_info->channel_id_sent = WasChannelIDSent();
+  ssl_info->channel_id_sent = channel_id_sent_;
   ssl_info->pinning_failure_log = pinning_failure_log_;
 
   AddSCTInfoToSSLInfo(ssl_info);
@@ -928,8 +928,7 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     }
 
     RecordNegotiationExtension();
-    RecordChannelIDSupport(channel_id_service_,
-                           channel_id_xtn_negotiated_,
+    RecordChannelIDSupport(channel_id_service_, channel_id_sent_,
                            ssl_config_.channel_id_enabled,
                            crypto::ECPrivateKey::IsSupported());
 
@@ -961,7 +960,6 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     if (ssl_error == SSL_ERROR_WANT_CHANNEL_ID_LOOKUP) {
       // The server supports channel ID. Stop to look one up before returning to
       // the handshake.
-      channel_id_xtn_negotiated_ = true;
       GotoState(STATE_CHANNEL_ID_LOOKUP);
       return OK;
     }
@@ -1031,7 +1029,7 @@ int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {
   }
 
   // Return to the handshake.
-  set_channel_id_sent(true);
+  channel_id_sent_ = true;
   net_log_.AddEvent(NetLog::TYPE_SSL_CHANNEL_ID_PROVIDED);
   GotoState(STATE_HANDSHAKE);
   return OK;
