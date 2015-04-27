@@ -1451,6 +1451,10 @@
       'browser/ui/webui/media_router/media_cast_mode.h',
       'browser/ui/webui/media_router/media_sink_with_cast_modes.cc',
       'browser/ui/webui/media_router/media_sink_with_cast_modes.h',
+      'browser/ui/webui/media_router/media_router_localized_strings_provider.cc',
+      'browser/ui/webui/media_router/media_router_localized_strings_provider.h',
+      'browser/ui/webui/media_router/media_router_resources_provider.cc',
+      'browser/ui/webui/media_router/media_router_resources_provider.h',
     ],
     'chrome_browser_ui_non_mac_sources': [
       'browser/ui/web_contents_sizer.cc',

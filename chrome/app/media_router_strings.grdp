@@ -31,4 +31,15 @@
   <message name="IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE_TITLE" desc="Title for tab mirror cast mode.">
     Cast this tab to...
   </message>
+
+  <!-- Route Details -->
+  <message name="IDS_MEDIA_ROUTER_BACK_TO_SINK_PICKER" desc="Label of back to sink picker button.">
+    Back to device list
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS" desc="Label of activity status.">
+    Casting to <ph name="sinkName">$1<ex>Living Room TV</ex></ph>
+  </message>
+  <message name="IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON" desc="Text of Stop casting button.">
+    Stop casting
+  </message>
 </grit-part>
