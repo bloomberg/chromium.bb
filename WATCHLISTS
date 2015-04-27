@@ -886,7 +886,7 @@
     'browser_resources': ['arv+watch@chromium.org'],
     'browsing_data': ['markusheintz@chromium.org'],
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
-    'cache_storage': ['jkarlin+watch@chromium.org'],
+    'cache_storage': ['jkarlin+watch@chromium.org', 'nhiroki@chromium.org'],
     'cast': ['avayvod+watch@chromium.org',
              'hclam+watch@chromium.org',
              'hguihot+watch@chromium.org',
