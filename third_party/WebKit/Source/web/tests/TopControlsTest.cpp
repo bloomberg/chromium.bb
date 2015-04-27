@@ -156,19 +156,19 @@ TEST_F(TopControlsTest, MAYBE(HideOnScrollDown))
     EXPECT_FLOAT_EQ(50.f, webView->topControls().contentOffset());
 
     // Top controls should be scrolled partially and page should not scroll.
-    webView->handleInputEvent(generateEvent(WebInputEvent::GestureScrollUpdate, 0, -20.f));
-    EXPECT_FLOAT_EQ(30.f, webView->topControls().contentOffset());
+    webView->handleInputEvent(generateEvent(WebInputEvent::GestureScrollUpdate, 0, -25.f));
+    EXPECT_FLOAT_EQ(25.f, webView->topControls().contentOffset());
     EXPECT_POINT_EQ(IntPoint(0, 0), frame()->view()->scrollPosition());
 
     // Top controls should consume 30px and become hidden. Excess scroll should be consumed by the page.
     webView->handleInputEvent(generateEvent(WebInputEvent::GestureScrollUpdate, 0, -40.f));
     EXPECT_FLOAT_EQ(0.f, webView->topControls().contentOffset());
-    EXPECT_POINT_EQ(IntPoint(0, 10), frame()->view()->scrollPosition());
+    EXPECT_POINT_EQ(IntPoint(0, 15), frame()->view()->scrollPosition());
 
     // Only page should consume scroll
     webView->handleInputEvent(generateEvent(WebInputEvent::GestureScrollUpdate, 0, -20.f));
     EXPECT_FLOAT_EQ(0.f, webView->topControls().contentOffset());
-    EXPECT_POINT_EQ(IntPoint(0, 30), frame()->view()->scrollPosition());
+    EXPECT_POINT_EQ(IntPoint(0, 35), frame()->view()->scrollPosition());
 }
 
 // Scrolling up should show top controls.
@@ -321,6 +321,29 @@ TEST_F(TopControlsTest, MAYBE(PageScaleHasNoImpact))
     EXPECT_POINT_EQ(IntPoint(0, 0), pinchViewport().visibleRectInDocument().location());
 }
 
+// Some scroll deltas result in a shownRatio that can't be realized in a
+// floating-point number. Make sure that if the top controls aren't fully
+// scrolled, scrollBy doesn't return any excess delta. i.e. There should be no
+// slippage between the content and top controls.
+TEST_F(TopControlsTest, MAYBE(FloatingPointSlippage))
+{
+    WebViewImpl* webView = initialize();
+    webViewImpl()->setDefaultPageScaleLimits(0.25f, 5);
+    webView->setPageScaleFactor(2.0);
+
+    // Initialize top controls to be shown.
+    webView->setTopControlsHeight(50.f, true);
+    webView->topControls().setShownRatio(1);
+
+    webView->topControls().scrollBegin();
+    EXPECT_FLOAT_EQ(50.f, webView->topControls().contentOffset());
+
+    // This will result in a 20px scroll to the top controls so the show ratio
+    // will be 30/50 == 0.6 which is not representible in a float. Make sure
+    // that scroll still consumes the whole delta.
+    FloatSize remainingDelta = webView->topControls().scrollBy(FloatSize(0, -10));
+    EXPECT_EQ(0, remainingDelta.height());
+}
 
 // Scrollable subregions should scroll before top controls
 TEST_F(TopControlsTest, MAYBE(ScrollableSubregionScrollFirst))

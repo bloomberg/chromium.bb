@@ -496,7 +496,7 @@ ScrollResult PinchViewport::wheelEvent(const PlatformWheelEvent& event)
 bool PinchViewport::shouldUseIntegerScrollOffset() const
 {
     LocalFrame* frame = mainFrame();
-    if (frame && frame->settings() && frame->settings()->preferCompositingToLCDTextEnabled())
+    if (frame && frame->settings() && !frame->settings()->preferCompositingToLCDTextEnabled())
         return true;
     return false;
 }
@@ -600,7 +600,12 @@ void PinchViewport::invalidateScrollbarRect(Scrollbar*, const IntRect&)
 
 void PinchViewport::setScrollOffset(const IntPoint& offset)
 {
-    setLocation(offset);
+    setScrollOffset(DoublePoint(offset));
+}
+
+void PinchViewport::setScrollOffset(const DoublePoint& offset)
+{
+    setLocation(toFloatPoint(offset));
 }
 
 GraphicsLayer* PinchViewport::layerForContainer() const

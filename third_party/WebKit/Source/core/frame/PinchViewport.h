@@ -174,10 +174,6 @@ public:
     IntPoint viewportToRootFrame(const IntPoint&) const;
     IntPoint rootFrameToViewport(const IntPoint&) const;
 
-    virtual DoublePoint maximumScrollPositionDouble() const override;
-private:
-    explicit PinchViewport(FrameHost&);
-
     // ScrollableArea implementation
     virtual bool shouldUseIntegerScrollOffset() const override;
     virtual bool isActive() const override { return false; }
@@ -188,6 +184,7 @@ private:
     virtual DoublePoint scrollPositionDouble() const override { return m_offset; }
     virtual IntPoint minimumScrollPosition() const override;
     virtual IntPoint maximumScrollPosition() const override;
+    virtual DoublePoint maximumScrollPositionDouble() const override;
     virtual int visibleHeight() const override { return visibleRect().height(); };
     virtual int visibleWidth() const override { return visibleRect().width(); };
     virtual IntSize contentsSize() const override;
@@ -198,10 +195,14 @@ private:
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) override;
     virtual void invalidateScrollCornerRect(const IntRect&) override { }
     virtual void setScrollOffset(const IntPoint&) override;
+    virtual void setScrollOffset(const DoublePoint&) override;
     virtual GraphicsLayer* layerForContainer() const override;
     virtual GraphicsLayer* layerForScrolling() const override;
     virtual GraphicsLayer* layerForHorizontalScrollbar() const override;
     virtual GraphicsLayer* layerForVerticalScrollbar() const override;
+
+private:
+    explicit PinchViewport(FrameHost&);
 
     // GraphicsLayerClient implementation.
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override;

@@ -52,13 +52,21 @@ FloatSize TopControls::scrollBy(FloatSize pendingDelta)
     // Update accumulated vertical scroll and apply it to top controls
     // Compute scroll delta in viewport space by applying page scale
     m_accumulatedScrollDelta += pendingDelta.height() * pageScale;
-    setShownRatio((m_baselineContentOffset + m_accumulatedScrollDelta) / m_height);
+
+    float newContentOffset = m_baselineContentOffset + m_accumulatedScrollDelta;
+
+    setShownRatio(newContentOffset / m_height);
 
     // Reset baseline when controls are fully visible
     if (m_shownRatio == 1)
         resetBaseline();
 
-    FloatSize appliedDelta(0, (contentOffset() - oldOffset) / pageScale);
+    // Clamp and use the expected content offset so that we don't return
+    // spurrious remaining scrolls due to the imprecision of the shownRatio.
+    newContentOffset = std::min(newContentOffset, m_height);
+    newContentOffset = std::max(newContentOffset, 0.f);
+
+    FloatSize appliedDelta(0, (newContentOffset - oldOffset) / pageScale);
     return pendingDelta - appliedDelta;
 }
 
