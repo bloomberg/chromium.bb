@@ -113,8 +113,8 @@ function PDFViewer(browserApi) {
   window.addEventListener('message', this.handleScriptingMessage.bind(this),
                           false);
 
-  document.title =
-      getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl);
+  document.title = decodeURIComponent(
+      getFilenameFromURL(this.browserApi_.getStreamInfo().originalUrl));
   this.plugin_.setAttribute('src',
                             this.browserApi_.getStreamInfo().originalUrl);
   this.plugin_.setAttribute('stream-url',

@@ -14,6 +14,24 @@
   width: 100%;
 }
 
+#title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#pageselector-container {
+  text-align: center;
+  /* The container resizes according to the width of the toolbar. On small
+   * screens with large numbers of pages, overflow page numbers without
+   * wrapping. */
+  white-space: nowrap;
+}
+
+#buttons {
+  text-align: right;
+}
+
 paper-progress {
   height: 56px;
   position: absolute;

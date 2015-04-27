@@ -14,14 +14,18 @@
     <paper-shadow fit></paper-shadow>
     <paper-progress value="{{loadProgress}}"></paper-progress>
     <core-toolbar class="core-narrow">
-      <div id="aligner" horizontal justified layout center>
-        <span id="title" class="invisible ">{{docTitle}}</span>
+      <div id="aligner" horizontal layout center>
+        <span id="title" class="invisible" title="{{docTitle}}" flex five>
+          {{docTitle}}
+        </span>
 
-        <viewer-page-selector id="pageselector" class="invisible"
-            index="{{pageIndex}}" docLength="{{docLength}}">
-        </viewer-page-selector>
+        <div flex one id="pageselector-container">
+          <viewer-page-selector id="pageselector" class="invisible"
+              index="{{pageIndex}}" docLength="{{docLength}}">
+          </viewer-page-selector>
+        </div>
 
-        <div id="buttons" class="invisible">
+        <div id="buttons" class="invisible" flex five>
           <paper-icon-button icon="image:rotate-right"
               on-click="{{rotateRight}}"></paper-icon-button>
           <template if="{{hasBookmarks}}">
