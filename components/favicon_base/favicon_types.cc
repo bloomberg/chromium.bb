@@ -27,7 +27,11 @@ FaviconRawBitmapResult::~FaviconRawBitmapResult() {}
 // --------------------------------------------------------
 // LargeIconResult
 
-LargeIconResult::LargeIconResult() {}
+LargeIconResult::LargeIconResult(const FaviconRawBitmapResult& bitmap_in)
+    : bitmap(bitmap_in) {}
+
+LargeIconResult::LargeIconResult(FallbackIconStyle* fallback_icon_style_in)
+    : fallback_icon_style(fallback_icon_style_in) {}
 
 LargeIconResult::~LargeIconResult() {}
 

@@ -79,7 +79,11 @@ typedef FaviconRawBitmapResult FaviconRawBitmapData;
 // either the bitmap data if the favicon database has a sufficiently large
 // favicon bitmap and the style of the fallback icon otherwise.
 struct LargeIconResult {
-  LargeIconResult();
+  explicit LargeIconResult(const FaviconRawBitmapResult& bitmap_in);
+
+  // Takes ownership of |fallback_icon_style_in|.
+  explicit LargeIconResult(FallbackIconStyle* fallback_icon_style_in);
+
   ~LargeIconResult();
 
   // The bitmap from the favicon database if the database has a sufficiently

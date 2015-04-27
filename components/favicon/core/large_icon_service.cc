@@ -45,9 +45,9 @@ void LargeIconService::RunLargeIconCallback(
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   // If there are no bitmaps, return a result with an empty |bitmap| and a
   // default |fallback_icon_style|.
-  favicon_base::LargeIconResult result;
   if (!bitmap_result.is_valid()) {
-    callback.Run(result);
+    callback.Run(
+        favicon_base::LargeIconResult(new favicon_base::FallbackIconStyle()));
     return;
   }
 
@@ -59,7 +59,7 @@ void LargeIconService::RunLargeIconCallback(
       bitmap_result.pixel_size.width() != bitmap_result.pixel_size.height()) {
     // TODO(beaudoin): Resize the icon if it's large enough. Alternatively,
     // return it and let the HTML resize it.
-    result.fallback_icon_style.reset(new favicon_base::FallbackIconStyle());
+    favicon_base::LargeIconResult result(new favicon_base::FallbackIconStyle());
     favicon_base::SetDominantColorAsBackground(
         bitmap_result.bitmap_data, result.fallback_icon_style.get());
     callback.Run(result);
@@ -70,8 +70,7 @@ void LargeIconService::RunLargeIconCallback(
   // it.
   // TODO(beaudoin): Resize the icon if it's too large. Alternatively, return
   // it and let the HTML resize it.
-  result.bitmap = bitmap_result;
-  callback.Run(result);
+  callback.Run(favicon_base::LargeIconResult(bitmap_result));
 }
 
 }  // namespace favicon
