@@ -222,6 +222,7 @@ def write_ninja(path, options):
       'base/threading/thread_id_name_manager.cc',
       'base/threading/thread_local_storage.cc',
       'base/threading/thread_restrictions.cc',
+      'base/threading/worker_pool.cc',
       'base/time/time.cc',
       'base/timer/elapsed_timer.cc',
       'base/timer/timer.cc',
@@ -254,9 +255,11 @@ def write_ninja(path, options):
         'base/synchronization/lock_impl_posix.cc',
         'base/synchronization/waitable_event_posix.cc',
         'base/sys_info_posix.cc',
+        'base/threading/platform_thread_internal_posix.cc',
         'base/threading/platform_thread_posix.cc',
         'base/threading/thread_local_posix.cc',
         'base/threading/thread_local_storage_posix.cc',
+        'base/threading/worker_pool_posix.cc',
         'base/time/time_posix.cc',
     ])
     static_libraries['libevent'] = {
