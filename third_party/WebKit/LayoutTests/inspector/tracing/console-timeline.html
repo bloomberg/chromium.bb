@@ -196,11 +196,17 @@ function test()
 
         function testRacyStart(next)
         {
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
             panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
             panel._toggleTimelineButtonClicked();
-            InspectorTest.evaluateInPage("startTimeline()", timelineStarted);
 
-            function timelineStarted()
+            function recordingStarted()
+            {
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
+                InspectorTest.evaluateInPage("startTimeline()", didEvaluate);
+            }
+
+            function didEvaluate()
             {
                 panel._toggleTimelineButtonClicked();
             }
@@ -215,12 +221,18 @@ function test()
 
         function testRacyStart2(next)
         {
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
             panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, finish);
 
             panel._toggleTimelineButtonClicked();
-            InspectorTest.evaluateInPage("startTimeline()", timelineStarted);
 
-            function timelineStarted()
+            function recordingStarted()
+            {
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
+                InspectorTest.evaluateInPage("startTimeline()", didEvaluate);
+            }
+
+            function didEvaluate()
             {
                 // Fool listener order execution.
                 setTimeout(panel._toggleTimelineButtonClicked.bind(panel));
