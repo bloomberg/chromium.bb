@@ -4,6 +4,8 @@
 
 source_set("ble") {
   sources = [
+    "bluetooth_low_energy_connection_finder.cc",
+    "bluetooth_low_energy_connection_finder.h",
     "proximity_auth_ble_system.cc",
     "proximity_auth_ble_system.h",
   ]

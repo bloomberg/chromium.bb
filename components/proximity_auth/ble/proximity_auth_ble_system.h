@@ -6,6 +6,9 @@
 #define COMPONENTS_PROXIMITY_AUTH_BLE_PROXIMITY_AUTH_BLE_SYSTEM_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+
+#include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
 
 namespace proximity_auth {
 
@@ -19,6 +22,8 @@ class ProximityAuthBleSystem {
   ~ProximityAuthBleSystem();
 
  private:
+  scoped_ptr<BluetoothLowEnergyConnectionFinder> connection_finder_;
+
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthBleSystem);
 };
 
