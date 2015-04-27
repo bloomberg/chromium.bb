@@ -5,9 +5,11 @@
 #import "chrome/browser/ui/cocoa/media_picker/desktop_media_picker_controller.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #import "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/media_picker/desktop_media_picker_item.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -283,6 +285,15 @@ const int kExcessButtonPadding = 6;
                                             imageTitle:imageTitle]);
   [items_ insertObject:item atIndex:index];
   [sourceBrowser_ reloadData];
+
+  NSString* autoselectSource = base::SysUTF8ToNSString(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAutoSelectDesktopCaptureSource));
+
+  if ([autoselectSource isEqualToString:imageTitle]) {
+    [self reportResult:[item sourceID]];
+    [self close];
+  }
 }
 
 - (void)sourceRemovedAtIndex:(int)index {
