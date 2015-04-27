@@ -18,8 +18,7 @@
 namespace net {
 
 SSLClientSocket::SSLClientSocket()
-    : protocol_negotiated_(kProtoUnknown),
-      signed_cert_timestamps_received_(false),
+    : signed_cert_timestamps_received_(false),
       stapled_ocsp_response_received_(false),
       negotiation_extension_(kExtensionUnknown) {
 }
@@ -104,21 +103,6 @@ bool SSLClientSocket::IgnoreCertError(int error, int load_flags) {
     return true;
   return (load_flags & LOAD_IGNORE_ALL_CERT_ERRORS) &&
          IsCertificateError(error);
-}
-
-void SSLClientSocket::set_negotiation_extension(
-    SSLNegotiationExtension negotiation_extension) {
-  negotiation_extension_ = negotiation_extension;
-}
-
-void SSLClientSocket::set_signed_cert_timestamps_received(
-    bool signed_cert_timestamps_received) {
-  signed_cert_timestamps_received_ = signed_cert_timestamps_received;
-}
-
-void SSLClientSocket::set_stapled_ocsp_response_received(
-    bool stapled_ocsp_response_received) {
-  stapled_ocsp_response_received_ = stapled_ocsp_response_received;
 }
 
 void SSLClientSocket::RecordNegotiationExtension() {

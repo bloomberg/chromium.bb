@@ -125,18 +125,24 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // cryptographic implementation.
   static uint16 GetMaxSupportedSSLVersion();
 
-  void set_negotiation_extension(SSLNegotiationExtension negotiation_extension);
-
   // Returns the ChannelIDService used by this socket, or NULL if
   // channel ids are not supported.
   virtual ChannelIDService* GetChannelIDService() const = 0;
 
  protected:
-  virtual void set_signed_cert_timestamps_received(
-      bool signed_cert_timestamps_received);
+  void set_negotiation_extension(
+      SSLNegotiationExtension negotiation_extension) {
+    negotiation_extension_ = negotiation_extension;
+  }
 
-  virtual void set_stapled_ocsp_response_received(
-      bool stapled_ocsp_response_received);
+  void set_signed_cert_timestamps_received(
+      bool signed_cert_timestamps_received) {
+    signed_cert_timestamps_received_ = signed_cert_timestamps_received;
+  }
+
+  void set_stapled_ocsp_response_received(bool stapled_ocsp_response_received) {
+    stapled_ocsp_response_received_ = stapled_ocsp_response_received;
+  }
 
   // Record which TLS extension was used to negotiate protocol and protocol
   // chosen in a UMA histogram.
@@ -192,8 +198,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
                            VerifyServerChainProperlyOrdered);
 
-  // Protocol that we negotiated with the server.
-  NextProto protocol_negotiated_;
   // True if SCTs were received via a TLS extension.
   bool signed_cert_timestamps_received_;
   // True if a stapled OCSP response was received.
