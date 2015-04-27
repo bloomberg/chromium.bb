@@ -32,6 +32,7 @@
 #define Visitor_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/GarbageCollected.h"
 #include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/ThreadState.h"
 #include "wtf/Assertions.h"
@@ -49,22 +50,12 @@
 namespace blink {
 
 template<typename T> class GarbageCollected;
-template<typename T> class GarbageCollectedFinalized;
-class GarbageCollectedMixin;
 class HeapObjectHeader;
 class InlinedGlobalMarkingVisitor;
 template<typename T> class Member;
-template<ThreadAffinity affinity> class ThreadLocalPersistents;
-template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity>> class Persistent;
 template<typename T> class CrossThreadPersistent;
 class Visitor;
 template<typename T> class WeakMember;
-
-template <typename T> struct IsGarbageCollectedType;
-#define STATIC_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
-    static_assert(IsGarbageCollectedType<T>::value, ErrorMessage)
-#define STATIC_ASSERT_IS_NOT_GARBAGE_COLLECTED(T, ErrorMessage) \
-    static_assert(!IsGarbageCollectedType<T>::value, ErrorMessage)
 
 // The TraceMethodDelegate is used to convert a trace method for type T to a TraceCallback.
 // This allows us to pass a type's trace method as a parameter to the PersistentNode
@@ -74,23 +65,6 @@ template <typename T> struct IsGarbageCollectedType;
 template<typename T, void (T::*method)(Visitor*)>
 struct TraceMethodDelegate {
     static void trampoline(Visitor* visitor, void* self) { (reinterpret_cast<T*>(self)->*method)(visitor); }
-};
-
-// Template to determine if a class is a GarbageCollectedMixin by checking if it
-// has IsGarbageCollectedMixinMarker
-template<typename T>
-struct IsGarbageCollectedMixin {
-private:
-    typedef char YesType;
-    struct NoType {
-        char padding[8];
-    };
-
-    template <typename U> static YesType checkMarker(typename U::IsGarbageCollectedMixinMarker*);
-    template <typename U> static NoType checkMarker(...);
-
-public:
-    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
 };
 
 template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> class NeedsAdjustAndMark;
@@ -740,146 +714,6 @@ public:
 #if ENABLE(ASSERT)
     static void checkGCInfo(const T*) { }
 #endif
-};
-
-// The GarbageCollectedMixin interface and helper macro
-// USING_GARBAGE_COLLECTED_MIXIN can be used to automatically define
-// TraceTrait/ObjectAliveTrait on non-leftmost deriving classes
-// which need to be garbage collected.
-//
-// Consider the following case:
-// class B {};
-// class A : public GarbageCollected, public B {};
-//
-// We can't correctly handle "Member<B> p = &a" as we can't compute addr of
-// object header statically. This can be solved by using GarbageCollectedMixin:
-// class B : public GarbageCollectedMixin {};
-// class A : public GarbageCollected, public B {
-//   USING_GARBAGE_COLLECTED_MIXIN(A)
-// };
-//
-// With the helper, as long as we are using Member<B>, TypeTrait<B> will
-// dispatch adjustAndMark dynamically to find collect addr of the object header.
-// Note that this is only enabled for Member<B>. For Member<A> which we can
-// compute the object header addr statically, this dynamic dispatch is not used.
-
-class PLATFORM_EXPORT GarbageCollectedMixin {
-public:
-    typedef int IsGarbageCollectedMixinMarker;
-    virtual void adjustAndMark(Visitor*) const = 0;
-    virtual bool isHeapObjectAlive(Visitor*) const = 0;
-    virtual void trace(Visitor*) { }
-    virtual void adjustAndMark(InlinedGlobalMarkingVisitor) const = 0;
-    virtual bool isHeapObjectAlive(InlinedGlobalMarkingVisitor) const = 0;
-    virtual void trace(InlinedGlobalMarkingVisitor);
-};
-
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(VISITOR, TYPE)                                                                           \
-public:                                                                                                                                 \
-    virtual void adjustAndMark(VISITOR visitor) const override                                                                          \
-    {                                                                                                                                   \
-        typedef WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<TYPE>::Type, blink::GarbageCollected> IsSubclassOfGarbageCollected; \
-        static_assert(IsSubclassOfGarbageCollected::value, "only garbage collected objects can have garbage collected mixins");         \
-        if (TraceEagerlyTrait<TYPE>::value) {                                                                                           \
-            if (visitor->ensureMarked(static_cast<const TYPE*>(this)))                                                                  \
-                TraceTrait<TYPE>::trace(visitor, const_cast<TYPE*>(this));                                                              \
-            return;                                                                                                                     \
-        }                                                                                                                               \
-        visitor->mark(static_cast<const TYPE*>(this), &blink::TraceTrait<TYPE>::trace);                                                 \
-    }                                                                                                                                   \
-    virtual bool isHeapObjectAlive(VISITOR visitor) const override                                                                      \
-    {                                                                                                                                   \
-        return visitor->isHeapObjectAlive(this);                                                                                                  \
-    }                                                                                                                                   \
-private:
-
-// A C++ object's vptr will be initialized to its leftmost base's vtable after
-// the constructors of all its subclasses have run, so if a subclass constructor
-// tries to access any of the vtbl entries of its leftmost base prematurely,
-// it'll find an as-yet incorrect vptr and fail. Which is exactly what a
-// garbage collector will try to do if it tries to access the leftmost base
-// while one of the subclass constructors of a GC mixin object triggers a GC.
-// It is consequently not safe to allow any GCs while these objects are under
-// (sub constructor) construction.
-//
-// To prevent GCs in that restricted window of a mixin object's construction:
-//
-//  - The initial allocation of the mixin object will enter a no GC scope.
-//    This is done by overriding 'operator new' for mixin instances.
-//  - When the constructor for the mixin is invoked, after all the
-//    derived constructors have run, it will invoke the constructor
-//    for a field whose only purpose is to leave the GC scope.
-//    GarbageCollectedMixinConstructorMarker's constructor takes care of
-//    this and the field is declared by way of USING_GARBAGE_COLLECTED_MIXIN().
-
-// TODO(inferno): Remove forbidGCDuringConstruction() function once UBSan VPTR supports
-// function attribute level blacklisting. See crbug.com/476073.
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)                         \
-public:                                                                                 \
-    ALWAYS_INLINE static void forbidGCDuringConstruction(void* object)                  \
-    {                                                                                   \
-        ThreadState* state = ThreadStateFor<ThreadingTrait<TYPE>::Affinity>::state();   \
-        state->enterGCForbiddenScopeIfNeeded(&(reinterpret_cast<TYPE*>(object)->m_mixinConstructorMarker)); \
-    }                                                                                   \
-    GC_PLUGIN_IGNORE("crbug.com/456823")                                                \
-    void* operator new(size_t size)                                                     \
-    {                                                                                   \
-        void* object = TYPE::allocateObject(size);                                      \
-        forbidGCDuringConstruction(object);                                             \
-        return object;                                                                  \
-    }                                                                                   \
-    GarbageCollectedMixinConstructorMarker m_mixinConstructorMarker;                    \
-private:
-
-// Mixins that wrap/nest others requires extra handling:
-//
-//  class A : public GarbageCollected<A>, public GarbageCollectedMixin {
-//  USING_GARBAGE_COLLECTED_MIXIN(A);
-//  ...
-//  }'
-//  public B final : public A, public SomeOtherMixinInterface {
-//  USING_GARBAGE_COLLECTED_MIXIN(B);
-//  ...
-//  };
-//
-// The "operator new" for B will enter the forbidden GC scope, but
-// upon construction, two GarbageCollectedMixinConstructorMarker constructors
-// will run -- one for A (first) and another for B (secondly). Only
-// the second one should leave the forbidden GC scope. This is realized by
-// recording the address of B's GarbageCollectedMixinConstructorMarker
-// when the "operator new" for B runs, and leaving the forbidden GC scope
-// when the constructor of the recorded GarbageCollectedMixinConstructorMarker
-// runs.
-#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)                       \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE) \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::InlinedGlobalMarkingVisitor, TYPE) \
-    DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)
-
-#if ENABLE(OILPAN)
-#define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE) USING_GARBAGE_COLLECTED_MIXIN(TYPE)
-#else
-#define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE)
-#endif
-
-// An empty class with a constructor that's arranged invoked when all derived constructors
-// of a mixin instance have completed and it is safe to allow GCs again. See
-// AllocateObjectTrait<> comment for more.
-//
-// USING_GARBAGE_COLLECTED_MIXIN() declares a GarbageCollectedMixinConstructorMarker<> private
-// field. By following Blink convention of using the macro at the top of a class declaration,
-// its constructor will run first.
-class GarbageCollectedMixinConstructorMarker {
-public:
-    GarbageCollectedMixinConstructorMarker()
-    {
-        // FIXME: if prompt conservative GCs are needed, forced GCs that
-        // were denied while within this scope, could now be performed.
-        // For now, assume the next out-of-line allocation request will
-        // happen soon enough and take care of it. Mixin objects aren't
-        // overly common.
-        ThreadState* state = ThreadState::current();
-        state->leaveGCForbiddenScopeIfNeeded(this);
-    }
 };
 
 #if ENABLE(GC_PROFILING)

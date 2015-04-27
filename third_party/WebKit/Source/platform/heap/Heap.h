@@ -1070,39 +1070,7 @@ private:
     friend class ThreadState;
 };
 
-// We use sized heaps for normal pages to improve memory locality.
-// It seems that the same type of objects are likely to be accessed together,
-// which means that we want to group objects by type. That's why we provide
-// dedicated heaps for popular types (e.g., Node, CSSValue), but it's not
-// practical to prepare dedicated heaps for all types. Thus we group objects
-// by their sizes, hoping that it will approximately group objects
-// by their types.
-static int heapIndexForNormalHeap(size_t size)
-{
-    if (size < 64) {
-        if (size < 32)
-            return NormalPage1HeapIndex;
-        return NormalPage2HeapIndex;
-    }
-    if (size < 128)
-        return NormalPage3HeapIndex;
-    return NormalPage4HeapIndex;
-}
-
-// Base class for objects allocated in the Blink garbage-collected heap.
-//
-// Defines a 'new' operator that allocates the memory in the heap.  'delete'
-// should not be called on objects that inherit from GarbageCollected.
-//
-// Instances of GarbageCollected will *NOT* get finalized.  Their destructor
-// will not be called.  Therefore, only classes that have trivial destructors
-// with no semantic meaning (including all their subclasses) should inherit from
-// GarbageCollected.  If there are non-trival destructors in a given class or
-// any of its subclasses, GarbageCollectedFinalized should be used which
-// guarantees that the destructor is called on an instance when the garbage
-// collector determines that it is no longer reachable.
-template<typename T>
-class GarbageCollected {
+template<typename T> class GarbageCollected {
     WTF_MAKE_NONCOPYABLE(GarbageCollected);
 
     // For now direct allocation of arrays on the heap is not allowed.
@@ -1145,173 +1113,24 @@ protected:
     }
 };
 
-// Base class for objects allocated in the Blink garbage-collected heap.
-//
-// Defines a 'new' operator that allocates the memory in the heap.  'delete'
-// should not be called on objects that inherit from GarbageCollected.
-//
-// Instances of GarbageCollectedFinalized will have their destructor called when
-// the garbage collector determines that the object is no longer reachable.
-template<typename T>
-class GarbageCollectedFinalized : public GarbageCollected<T> {
-    WTF_MAKE_NONCOPYABLE(GarbageCollectedFinalized);
-
-protected:
-    // finalizeGarbageCollectedObject is called when the object is freed from
-    // the heap.  By default finalization means calling the destructor on the
-    // object.  finalizeGarbageCollectedObject can be overridden to support
-    // calling the destructor of a subclass.  This is useful for objects without
-    // vtables that require explicit dispatching.  The name is intentionally a
-    // bit long to make name conflicts less likely.
-    void finalizeGarbageCollectedObject()
-    {
-        static_cast<T*>(this)->~T();
+// We use sized heaps for normal pages to improve memory locality.
+// It seems that the same type of objects are likely to be accessed together,
+// which means that we want to group objects by type. That's why we provide
+// dedicated heaps for popular types (e.g., Node, CSSValue), but it's not
+// practical to prepare dedicated heaps for all types. Thus we group objects
+// by their sizes, hoping that it will approximately group objects
+// by their types.
+static int heapIndexForNormalHeap(size_t size)
+{
+    if (size < 64) {
+        if (size < 32)
+            return NormalPage1HeapIndex;
+        return NormalPage2HeapIndex;
     }
-
-    GarbageCollectedFinalized() { }
-    ~GarbageCollectedFinalized() { }
-
-    template<typename U> friend struct HasFinalizer;
-    template<typename U, bool> friend struct FinalizerTraitImpl;
-};
-
-// Base class for objects that are in the Blink garbage-collected heap
-// and are still reference counted.
-//
-// This class should be used sparingly and only to gradually move
-// objects from being reference counted to being managed by the blink
-// garbage collector.
-//
-// While the current reference counting keeps one of these objects
-// alive it will have a Persistent handle to itself allocated so we
-// will not reclaim the memory.  When the reference count reaches 0 the
-// persistent handle will be deleted.  When the garbage collector
-// determines that there are no other references to the object it will
-// be reclaimed and the destructor of the reclaimed object will be
-// called at that time.
-template<typename T>
-class RefCountedGarbageCollected : public GarbageCollectedFinalized<T> {
-    WTF_MAKE_NONCOPYABLE(RefCountedGarbageCollected);
-
-public:
-    RefCountedGarbageCollected()
-        : m_refCount(0)
-    {
-    }
-
-    // Implement method to increase reference count for use with RefPtrs.
-    //
-    // In contrast to the normal WTF::RefCounted, the reference count can reach
-    // 0 and increase again.  This happens in the following scenario:
-    //
-    // (1) The reference count becomes 0, but members, persistents, or
-    //     on-stack pointers keep references to the object.
-    //
-    // (2) The pointer is assigned to a RefPtr again and the reference
-    //     count becomes 1.
-    //
-    // In this case, we have to resurrect m_keepAlive.
-    void ref()
-    {
-        if (UNLIKELY(!m_refCount)) {
-            ASSERT(ThreadState::current()->findPageFromAddress(reinterpret_cast<Address>(this)));
-            makeKeepAlive();
-        }
-        ++m_refCount;
-    }
-
-    // Implement method to decrease reference count for use with RefPtrs.
-    //
-    // In contrast to the normal WTF::RefCounted implementation, the
-    // object itself is not deleted when the reference count reaches
-    // 0.  Instead, the keep-alive persistent handle is deallocated so
-    // that the object can be reclaimed when the garbage collector
-    // determines that there are no other references to the object.
-    void deref()
-    {
-        ASSERT(m_refCount > 0);
-        if (!--m_refCount) {
-            delete m_keepAlive;
-            m_keepAlive = 0;
-        }
-    }
-
-    bool hasOneRef()
-    {
-        return m_refCount == 1;
-    }
-
-protected:
-    ~RefCountedGarbageCollected() { }
-
-private:
-    void makeKeepAlive()
-    {
-        ASSERT(!m_keepAlive);
-        m_keepAlive = new Persistent<T>(static_cast<T*>(this));
-    }
-
-    int m_refCount;
-    Persistent<T>* m_keepAlive;
-};
-
-// Classes that contain heap references but aren't themselves heap allocated,
-// have some extra macros available which allows their use to be restricted to
-// cases where the garbage collector is able to discover their heap references.
-//
-// STACK_ALLOCATED(): Use if the object is only stack allocated.  Heap objects
-// should be in Members but you do not need the trace method as they are on the
-// stack.  (Down the line these might turn in to raw pointers, but for now
-// Members indicates that we have thought about them and explicitly taken care
-// of them.)
-//
-// DISALLOW_ALLOCATION(): Cannot be allocated with new operators but can be a
-// part object.  If it has Members you need a trace method and the containing
-// object needs to call that trace method.
-//
-// ALLOW_ONLY_INLINE_ALLOCATION(): Allows only placement new operator.  This
-// disallows general allocation of this object but allows to put the object as a
-// value object in collections.  If these have Members you need to have a trace
-// method. That trace method will be called automatically by the Heap
-// collections.
-//
-#define DISALLOW_ALLOCATION()                                   \
-    private:                                                    \
-        void* operator new(size_t) = delete;                    \
-        void* operator new(size_t, NotNullTag, void*) = delete; \
-        void* operator new(size_t, void*) = delete;
-
-#define ALLOW_ONLY_INLINE_ALLOCATION()                                              \
-    public:                                                                         \
-        void* operator new(size_t, NotNullTag, void* location) { return location; } \
-        void* operator new(size_t, void* location) { return location; }             \
-    private:                                                                        \
-        void* operator new(size_t) = delete;
-
-#define STATIC_ONLY(Type) \
-    private:              \
-        Type() = delete;
-
-// These macros insert annotations that the Blink GC plugin for clang uses for
-// verification.  STACK_ALLOCATED is used to declare that objects of this type
-// are always stack allocated.  GC_PLUGIN_IGNORE is used to make the plugin
-// ignore a particular class or field when checking for proper usage.  When
-// using GC_PLUGIN_IGNORE a bug-number should be provided as an argument where
-// the bug describes what needs to happen to remove the GC_PLUGIN_IGNORE again.
-#if COMPILER(CLANG)
-#define STACK_ALLOCATED()                                       \
-    private:                                                    \
-        __attribute__((annotate("blink_stack_allocated")))      \
-        void* operator new(size_t) = delete;                    \
-        void* operator new(size_t, NotNullTag, void*) = delete; \
-        void* operator new(size_t, void*) = delete;
-
-#define GC_PLUGIN_IGNORE(bug)                           \
-    __attribute__((annotate("blink_gc_plugin_ignore")))
-#else
-#define STACK_ALLOCATED() DISALLOW_ALLOCATION()
-#define GC_PLUGIN_IGNORE(bug)
-#endif
+    if (size < 128)
+        return NormalPage3HeapIndex;
+    return NormalPage4HeapIndex;
+}
 
 NO_SANITIZE_ADDRESS inline
 size_t HeapObjectHeader::size() const

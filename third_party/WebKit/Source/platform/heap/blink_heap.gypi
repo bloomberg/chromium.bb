@@ -36,6 +36,7 @@
       'CallbackStack.h',
       'GCInfo.cpp',
       'GCInfo.h',
+      'GarbageCollected.h',
       'Handle.h',
       'Heap.cpp',
       'Heap.h',
