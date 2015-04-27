@@ -2693,7 +2693,7 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateDom)
     m_webViewHelper.reset(); // Remove dependency on locally scoped client.
 }
 
-TEST_F(WebViewTest, DISABLED_ShowUnhandledTapUIIfNeededWithMutateStyle)
+TEST_F(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateStyle)
 {
     std::string testFile = "show_unhandled_tap.html";
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
