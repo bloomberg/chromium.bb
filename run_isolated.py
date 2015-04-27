@@ -83,7 +83,7 @@ def make_temp_dir(prefix, root_dir):
   base_temp_dir = None
   if (root_dir and
       not file_path.is_same_filesystem(root_dir, tempfile.gettempdir())):
-    base_temp_dir = os.path.dirname(root_dir)
+    base_temp_dir = root_dir
   return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
 
 
