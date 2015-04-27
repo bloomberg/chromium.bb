@@ -31,7 +31,7 @@
 // http://bugs.webkit.org/show_bug.cgi?id=5446
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     Constructor,
     ConstructorCallWith=Document,
     RuntimeEnabled=XSLT,

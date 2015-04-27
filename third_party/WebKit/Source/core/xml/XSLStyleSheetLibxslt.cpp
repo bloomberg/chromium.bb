@@ -228,10 +228,9 @@ void XSLStyleSheet::loadChildSheets()
 
 void XSLStyleSheet::loadChildSheet(const String& href)
 {
-    OwnPtrWillBeRawPtr<XSLImportRule> childRule = XSLImportRule::create(this, href);
-    XSLImportRule* c = childRule.get();
-    m_children.append(childRule.release());
-    c->loadSheet();
+    XSLImportRule* childRule = XSLImportRule::create(this, href);
+    m_children.append(childRule);
+    childRule->loadSheet();
 }
 
 xsltStylesheetPtr XSLStyleSheet::compileStyleSheet()

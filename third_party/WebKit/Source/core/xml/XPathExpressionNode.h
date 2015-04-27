@@ -50,14 +50,14 @@ public:
     bool hadTypeConversionError;
 };
 
-class ParseNode : public NoBaseWillBeGarbageCollectedFinalized<ParseNode> {
+class ParseNode : public GarbageCollectedFinalized<ParseNode> {
 public:
     virtual ~ParseNode() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 class Expression : public ParseNode {
-    WTF_MAKE_NONCOPYABLE(Expression); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Expression);
+    WTF_MAKE_NONCOPYABLE(Expression);
 public:
     Expression();
     virtual ~Expression();
@@ -65,7 +65,7 @@ public:
 
     virtual Value evaluate(EvaluationContext&) const = 0;
 
-    void addSubExpression(PassOwnPtrWillBeRawPtr<Expression> expr)
+    void addSubExpression(Expression* expr)
     {
         m_isContextNodeSensitive |= expr->m_isContextNodeSensitive;
         m_isContextPositionSensitive |= expr->m_isContextPositionSensitive;
@@ -88,7 +88,7 @@ protected:
     const Expression* subExpr(unsigned i) const { return m_subExpressions[i].get(); }
 
 private:
-    WillBeHeapVector<OwnPtrWillBeMember<Expression>> m_subExpressions;
+    HeapVector<Member<Expression>> m_subExpressions;
 
     // Evaluation details that can be used for optimization.
     bool m_isContextNodeSensitive;
@@ -96,8 +96,8 @@ private:
     bool m_isContextSizeSensitive;
 };
 
-}
+} // namespace XPath
 
-}
+} // namespace blink
 
 #endif // XPathExpressionNode_h

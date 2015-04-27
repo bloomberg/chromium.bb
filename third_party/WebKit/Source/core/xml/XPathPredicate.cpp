@@ -75,7 +75,7 @@ Value Negative::evaluate(EvaluationContext& context) const
     return -p.toNumber();
 }
 
-NumericOp::NumericOp(Opcode opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs)
+NumericOp::NumericOp(Opcode opcode, Expression* lhs, Expression* rhs)
     : m_opcode(opcode)
 {
     addSubExpression(lhs);
@@ -106,7 +106,7 @@ Value NumericOp::evaluate(EvaluationContext& context) const
     return 0.0;
 }
 
-EqTestOp::EqTestOp(Opcode opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs)
+EqTestOp::EqTestOp(Opcode opcode, Expression* lhs, Expression* rhs)
     : m_opcode(opcode)
 {
     addSubExpression(lhs);
@@ -224,7 +224,7 @@ Value EqTestOp::evaluate(EvaluationContext& context) const
     return compare(context, lhs, rhs);
 }
 
-LogicalOp::LogicalOp(Opcode opcode, PassOwnPtrWillBeRawPtr<Expression> lhs, PassOwnPtrWillBeRawPtr<Expression> rhs)
+LogicalOp::LogicalOp(Opcode opcode, Expression* lhs, Expression* rhs)
     : m_opcode(opcode)
 {
     addSubExpression(lhs);
@@ -274,12 +274,10 @@ Value Union::evaluate(EvaluationContext& context) const
     return lhsResult;
 }
 
-Predicate::Predicate(PassOwnPtrWillBeRawPtr<Expression> expr)
+Predicate::Predicate(Expression* expr)
     : m_expr(expr)
 {
 }
-
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Predicate);
 
 DEFINE_TRACE(Predicate)
 {
@@ -294,10 +292,11 @@ bool Predicate::evaluate(EvaluationContext& context) const
 
     // foo[3] means foo[position()=3]
     if (result.isNumber())
-        return EqTestOp(EqTestOp::OpcodeEqual, adoptPtrWillBeNoop(createFunction("position")), adoptPtrWillBeNoop(new Number(result.toNumber()))).evaluate(context).toBoolean();
+        return EqTestOp(EqTestOp::OpcodeEqual, createFunction("position"), new Number(result.toNumber())).evaluate(context).toBoolean();
 
     return result.toBoolean();
 }
 
-}
-}
+} // namespace XPath
+
+} // namespace blink

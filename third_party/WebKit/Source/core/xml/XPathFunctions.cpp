@@ -291,7 +291,7 @@ inline bool Interval::contains(int value) const
     return value >= m_min && value <= m_max;
 }
 
-void Function::setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression>>& args)
+void Function::setArguments(HeapVector<Member<Expression>>& args)
 {
     ASSERT(!subExprCount());
 
@@ -299,9 +299,8 @@ void Function::setArguments(WillBeHeapVector<OwnPtrWillBeMember<Expression>>& ar
     if (m_name != "lang" && !args.isEmpty())
         setIsContextNodeSensitive(false);
 
-    WillBeHeapVector<OwnPtrWillBeMember<Expression>>::iterator end = args.end();
-    for (WillBeHeapVector<OwnPtrWillBeMember<Expression>>::iterator it = args.begin(); it != end; ++it)
-        addSubExpression(it->release());
+    for (Expression* arg : args)
+        addSubExpression(arg);
 }
 
 Value FunLast::evaluate(EvaluationContext& context) const
@@ -332,7 +331,7 @@ Value FunId::evaluate(EvaluationContext& context) const
     }
 
     TreeScope& contextScope = context.node->treeScope();
-    OwnPtrWillBeRawPtr<NodeSet> result(NodeSet::create());
+    NodeSet* result(NodeSet::create());
     WillBeHeapHashSet<RawPtrWillBeMember<Node>> resultSet;
 
     unsigned startPos = 0;
@@ -359,7 +358,7 @@ Value FunId::evaluate(EvaluationContext& context) const
 
     result->markSorted(false);
 
-    return Value(result.release(), Value::adopt);
+    return Value(result, Value::adopt);
 }
 
 static inline String expandedNameLocalPart(Node* node)
@@ -727,11 +726,11 @@ static void createFunctionMap()
 
 Function* createFunction(const String& name)
 {
-    WillBeHeapVector<OwnPtrWillBeMember<Expression>> args;
+    HeapVector<Member<Expression>> args;
     return createFunction(name, args);
 }
 
-Function* createFunction(const String& name, WillBeHeapVector<OwnPtrWillBeMember<Expression>>& args)
+Function* createFunction(const String& name, HeapVector<Member<Expression>>& args)
 {
     if (!functionMap)
         createFunctionMap();

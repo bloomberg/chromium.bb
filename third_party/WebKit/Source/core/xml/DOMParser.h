@@ -22,19 +22,17 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
 class Document;
 
-class DOMParser final : public RefCountedWillBeGarbageCollected<DOMParser>, public ScriptWrappable {
+class DOMParser final : public GarbageCollectedFinalized<DOMParser>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<DOMParser> create(Document& document)
+    static DOMParser* create(Document& document)
     {
-        return adoptRefWillBeNoop(new DOMParser(document));
+        return new DOMParser(document);
     }
 
     PassRefPtrWillBeRawPtr<Document> parseFromString(const String&, const String& type);
@@ -42,7 +40,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    DOMParser(Document&);
+    explicit DOMParser(Document&);
 
     WeakPtrWillBeWeakMember<Document> m_contextDocument;
 };

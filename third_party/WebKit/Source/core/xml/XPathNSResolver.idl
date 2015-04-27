@@ -19,7 +19,7 @@
  */
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     NoInterfaceObject
 ] interface XPathNSResolver {
     DOMString? lookupNamespaceURI([Default=Undefined] optional DOMString prefix);

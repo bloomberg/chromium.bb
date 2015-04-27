@@ -22,20 +22,17 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
 class Node;
 
-class XMLSerializer final : public RefCountedWillBeGarbageCollected<XMLSerializer>, public ScriptWrappable {
+class XMLSerializer final : public GarbageCollected<XMLSerializer>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<XMLSerializer> create()
+    static XMLSerializer* create()
     {
-        return adoptRefWillBeNoop(new XMLSerializer);
+        return new XMLSerializer;
     }
 
     String serializeToString(Node*);

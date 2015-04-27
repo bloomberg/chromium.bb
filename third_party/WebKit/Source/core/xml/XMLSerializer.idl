@@ -20,8 +20,8 @@
 
 [
     Constructor,
+    GarbageCollected,
     TypeChecking=Interface,
-    WillBeGarbageCollected,
 ] interface XMLSerializer {
     DOMString serializeToString(Node root);
 };

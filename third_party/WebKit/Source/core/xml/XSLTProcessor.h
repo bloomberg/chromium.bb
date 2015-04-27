@@ -39,13 +39,13 @@ class LocalFrame;
 class Document;
 class DocumentFragment;
 
-class XSLTProcessor : public RefCountedWillBeGarbageCollectedFinalized<XSLTProcessor>, public ScriptWrappable {
+class XSLTProcessor : public GarbageCollectedFinalized<XSLTProcessor>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<XSLTProcessor> create(Document& document)
+    static XSLTProcessor* create(Document& document)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeNoop(new XSLTProcessor(document));
+        return new XSLTProcessor(document);
     }
     ~XSLTProcessor();
 

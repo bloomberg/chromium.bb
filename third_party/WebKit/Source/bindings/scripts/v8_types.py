@@ -112,7 +112,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'Promise': 'ScriptPromise',
     'ScriptValue': 'ScriptValue',
     # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529
-    'XPathNSResolver': 'RefPtrWillBeRawPtr<XPathNSResolver>',
+    'XPathNSResolver': 'RawPtr<XPathNSResolver>',
     'boolean': 'bool',
     'unrestricted double': 'double',
     'unrestricted float': 'float',

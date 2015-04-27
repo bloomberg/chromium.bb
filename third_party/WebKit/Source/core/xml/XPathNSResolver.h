@@ -30,12 +30,10 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class XPathNSResolver : public RefCountedWillBeGarbageCollectedFinalized<XPathNSResolver>, public ScriptWrappable {
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(XPathNSResolver);
+class XPathNSResolver : public GarbageCollectedFinalized<XPathNSResolver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual AtomicString lookupNamespaceURI(const String& prefix) = 0;

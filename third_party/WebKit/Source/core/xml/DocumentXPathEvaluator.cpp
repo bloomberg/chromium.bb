@@ -46,8 +46,7 @@ DocumentXPathEvaluator& DocumentXPathEvaluator::from(WillBeHeapSupplementable<Do
     return *cache;
 }
 
-PassRefPtrWillBeRawPtr<XPathExpression> DocumentXPathEvaluator::createExpression(WillBeHeapSupplementable<Document>& document,
-    const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
+XPathExpression* DocumentXPathEvaluator::createExpression(WillBeHeapSupplementable<Document>& document, const String& expression, XPathNSResolver* resolver, ExceptionState& exceptionState)
 {
     DocumentXPathEvaluator& suplement = from(document);
     if (!suplement.m_xpathEvaluator)
@@ -55,7 +54,7 @@ PassRefPtrWillBeRawPtr<XPathExpression> DocumentXPathEvaluator::createExpression
     return suplement.m_xpathEvaluator->createExpression(expression, resolver, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(WillBeHeapSupplementable<Document>& document, Node* nodeResolver)
+XPathNSResolver* DocumentXPathEvaluator::createNSResolver(WillBeHeapSupplementable<Document>& document, Node* nodeResolver)
 {
     DocumentXPathEvaluator& suplement = from(document);
     if (!suplement.m_xpathEvaluator)
@@ -63,8 +62,8 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver
     return suplement.m_xpathEvaluator->createNSResolver(nodeResolver);
 }
 
-PassRefPtrWillBeRawPtr<XPathResult> DocumentXPathEvaluator::evaluate(WillBeHeapSupplementable<Document>& document, const String& expression,
-    Node* contextNode, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, unsigned short type,
+XPathResult* DocumentXPathEvaluator::evaluate(WillBeHeapSupplementable<Document>& document, const String& expression,
+    Node* contextNode, XPathNSResolver* resolver, unsigned short type,
     const ScriptValue&, ExceptionState& exceptionState)
 {
     DocumentXPathEvaluator& suplement = from(document);

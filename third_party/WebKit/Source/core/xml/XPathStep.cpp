@@ -41,13 +41,13 @@ namespace XPath {
 
 Step::Step(Axis axis, const NodeTest& nodeTest)
     : m_axis(axis)
-    , m_nodeTest(adoptPtrWillBeNoop(new NodeTest(nodeTest)))
+    , m_nodeTest(new NodeTest(nodeTest))
 {
 }
 
-Step::Step(Axis axis, const NodeTest& nodeTest, WillBeHeapVector<OwnPtrWillBeMember<Predicate>>& predicates)
+Step::Step(Axis axis, const NodeTest& nodeTest, HeapVector<Member<Predicate>>& predicates)
     : m_axis(axis)
-    , m_nodeTest(adoptPtrWillBeNoop(new NodeTest(nodeTest)))
+    , m_nodeTest(new NodeTest(nodeTest))
 {
     m_predicates.swap(predicates);
 }
@@ -72,22 +72,20 @@ void Step::optimize()
     // This optimization can be applied to predicates that are not context node
     // list sensitive, or to first predicate that is only context position
     // sensitive, e.g. foo[position() mod 2 = 0].
-    WillBeHeapVector<OwnPtrWillBeMember<Predicate>> remainingPredicates;
+    HeapVector<Member<Predicate>> remainingPredicates;
     for (size_t i = 0; i < m_predicates.size(); ++i) {
-        OwnPtrWillBeRawPtr<Predicate> predicate(m_predicates[i].release());
+        Predicate* predicate = m_predicates[i];
         if ((!predicate->isContextPositionSensitive() || nodeTest().mergedPredicates().isEmpty()) && !predicate->isContextSizeSensitive() && remainingPredicates.isEmpty()) {
-            nodeTest().mergedPredicates().append(predicate.release());
+            nodeTest().mergedPredicates().append(predicate);
         } else {
-            remainingPredicates.append(predicate.release());
+            remainingPredicates.append(predicate);
         }
     }
     swap(remainingPredicates, m_predicates);
 }
 
-void optimizeStepPair(Step* first, Step* second, bool& dropSecondStep)
+bool optimizeStepPair(Step* first, Step* second)
 {
-    dropSecondStep = false;
-
     if (first->m_axis == Step::DescendantOrSelfAxis
         && first->nodeTest().kind() == Step::NodeTest::AnyNodeTest
         && !first->m_predicates.size()
@@ -104,9 +102,10 @@ void optimizeStepPair(Step* first, Step* second, bool& dropSecondStep)
             swap(second->nodeTest().mergedPredicates(), first->nodeTest().mergedPredicates());
             swap(second->m_predicates, first->m_predicates);
             first->optimize();
-            dropSecondStep = true;
+            return true;
         }
     }
+    return false;
 }
 
 bool Step::predicatesAreContextListInsensitive() const
@@ -136,7 +135,7 @@ void Step::evaluate(EvaluationContext& evaluationContext, Node* context, NodeSet
     for (unsigned i = 0; i < m_predicates.size(); i++) {
         Predicate* predicate = m_predicates[i].get();
 
-        OwnPtrWillBeRawPtr<NodeSet> newNodes(NodeSet::create());
+        NodeSet* newNodes = NodeSet::create();
         if (!nodes.isSorted())
             newNodes->markSorted(false);
 
@@ -239,7 +238,7 @@ static inline bool nodeMatches(EvaluationContext& evaluationContext, Node* node,
     // Only the first merged predicate may depend on position.
     ++evaluationContext.position;
 
-    const WillBeHeapVector<OwnPtrWillBeMember<Predicate>>& mergedPredicates = nodeTest.mergedPredicates();
+    const HeapVector<Member<Predicate>>& mergedPredicates = nodeTest.mergedPredicates();
     for (unsigned i = 0; i < mergedPredicates.size(); i++) {
         Predicate* predicate = mergedPredicates[i].get();
 

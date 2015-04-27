@@ -67,29 +67,17 @@ public:
     XPathNSResolver* resolver() const { return m_resolver.get(); }
     bool expandQName(const String& qName, AtomicString& localName, AtomicString& namespaceURI);
 
-    PassOwnPtrWillBeRawPtr<Expression> parseStatement(const String& statement, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
+    Expression* parseStatement(const String& statement, XPathNSResolver*, ExceptionState&);
 
     static Parser* current() { return currentParser; }
 
     int lex(void* yylval);
 
-    RawPtrWillBeMember<Expression> m_topExpr;
+    Member<Expression> m_topExpr;
     bool m_gotNamespaceError;
-
-    void registerParseNode(ParseNode*);
-    void unregisterParseNode(ParseNode*);
-
-    void registerPredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate>>*);
-    void deletePredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate>>*);
-
-    void registerExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression>>*);
-    void deleteExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression>>*);
 
     void registerString(String*);
     void deleteString(String*);
-
-    void registerNodeTest(Step::NodeTest*);
-    void deleteNodeTest(Step::NodeTest*);
 
 private:
     bool isBinaryOperatorContext() const;
@@ -116,14 +104,8 @@ private:
     unsigned m_nextPos;
     String m_data;
     int m_lastTokenType;
-    RefPtrWillBeMember<XPathNSResolver> m_resolver;
+    Member<XPathNSResolver> m_resolver;
 
-#if !ENABLE(OILPAN)
-    HashSet<ParseNode*> m_parseNodes;
-    HashSet<Vector<OwnPtr<Predicate>>*> m_predicateVectors;
-    HashSet<Vector<OwnPtr<Expression>>*> m_expressionVectors;
-    HashSet<OwnPtr<Step::NodeTest>> m_nodeTests;
-#endif
     HashSet<OwnPtr<String>> m_strings;
 };
 

@@ -465,7 +465,7 @@ bool Parser::expandQName(const String& qName, AtomicString& localName, AtomicStr
     return true;
 }
 
-PassOwnPtrWillBeRawPtr<Expression> Parser::parseStatement(const String& statement, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
+Expression* Parser::parseStatement(const String& statement, XPathNSResolver* resolver, ExceptionState& exceptionState)
 {
     reset(statement);
 
@@ -477,21 +477,6 @@ PassOwnPtrWillBeRawPtr<Expression> Parser::parseStatement(const String& statemen
     currentParser = oldParser;
 
     if (parseError) {
-#if !ENABLE(OILPAN)
-        while (!m_parseNodes.isEmpty())
-            delete m_parseNodes.takeAny();
-
-        for (auto& predicate : m_predicateVectors)
-            delete predicate;
-        m_predicateVectors.clear();
-
-        for (auto& expression : m_expressionVectors)
-            delete expression;
-        m_expressionVectors.clear();
-
-        m_nodeTests.clear();
-#endif
-
         m_strings.clear();
 
         m_topExpr = nullptr;
@@ -503,94 +488,10 @@ PassOwnPtrWillBeRawPtr<Expression> Parser::parseStatement(const String& statemen
         return nullptr;
     }
     ASSERT(m_strings.size() == 0);
-#if !ENABLE(OILPAN)
-    ASSERT(m_parseNodes.size() == 1);
-    ASSERT(*m_parseNodes.begin() == m_topExpr);
-    ASSERT(m_expressionVectors.size() == 0);
-    ASSERT(m_predicateVectors.size() == 0);
-    ASSERT(m_nodeTests.size() == 0);
-    m_parseNodes.clear();
-#endif
-
     Expression* result = m_topExpr;
     m_topExpr = nullptr;
 
-    return adoptPtrWillBeNoop(result);
-}
-
-void Parser::registerParseNode(ParseNode* node)
-{
-#if !ENABLE(OILPAN)
-    if (node == 0)
-        return;
-
-    ASSERT(!m_parseNodes.contains(node));
-
-    m_parseNodes.add(node);
-#endif
-}
-
-void Parser::unregisterParseNode(ParseNode* node)
-{
-#if !ENABLE(OILPAN)
-    if (node == 0)
-        return;
-
-    ASSERT(m_parseNodes.contains(node));
-
-    m_parseNodes.remove(node);
-#endif
-}
-
-void Parser::registerPredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate>>* vector)
-{
-#if !ENABLE(OILPAN)
-    if (vector == 0)
-        return;
-
-    ASSERT(!m_predicateVectors.contains(vector));
-
-    m_predicateVectors.add(vector);
-#endif
-}
-
-void Parser::deletePredicateVector(WillBeHeapVector<OwnPtrWillBeMember<Predicate>>* vector)
-{
-#if !ENABLE(OILPAN)
-    if (vector == 0)
-        return;
-
-    ASSERT(m_predicateVectors.contains(vector));
-
-    m_predicateVectors.remove(vector);
-    delete vector;
-#endif
-}
-
-
-void Parser::registerExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression>>* vector)
-{
-#if !ENABLE(OILPAN)
-    if (vector == 0)
-        return;
-
-    ASSERT(!m_expressionVectors.contains(vector));
-
-    m_expressionVectors.add(vector);
-#endif
-}
-
-void Parser::deleteExpressionVector(WillBeHeapVector<OwnPtrWillBeMember<Expression>>* vector)
-{
-#if !ENABLE(OILPAN)
-    if (vector == 0)
-        return;
-
-    ASSERT(m_expressionVectors.contains(vector));
-
-    m_expressionVectors.remove(vector);
-    delete vector;
-#endif
+    return result;
 }
 
 void Parser::registerString(String* s)
@@ -612,28 +513,3 @@ void Parser::deleteString(String* s)
 
     m_strings.remove(s);
 }
-
-void Parser::registerNodeTest(Step::NodeTest* t)
-{
-#if !ENABLE(OILPAN)
-    if (t == 0)
-        return;
-
-    ASSERT(!m_nodeTests.contains(t));
-
-    m_nodeTests.add(adoptPtr(t));
-#endif
-}
-
-void Parser::deleteNodeTest(Step::NodeTest* t)
-{
-#if !ENABLE(OILPAN)
-    if (t == 0)
-        return;
-
-    ASSERT(m_nodeTests.contains(t));
-
-    m_nodeTests.remove(t);
-#endif
-}
-

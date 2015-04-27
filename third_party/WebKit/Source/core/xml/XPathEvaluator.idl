@@ -18,8 +18,8 @@
  */
 
 [
-    WillBeGarbageCollected,
     Constructor,
+    GarbageCollected,
     TypeChecking=Interface,
 ] interface XPathEvaluator {
     [RaisesException] XPathExpression createExpression(DOMString expression, optional XPathNSResolver? resolver = null);

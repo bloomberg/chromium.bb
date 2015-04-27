@@ -34,11 +34,11 @@ namespace blink {
 
 namespace XPath {
 
-class NodeSet : public NoBaseWillBeGarbageCollected<NodeSet> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(NodeSet);
+// TODO(Oilpan): drop Finalized once Node is on the heap.
+class NodeSet final : public GarbageCollectedFinalized<NodeSet> {
 public:
-    static PassOwnPtrWillBeRawPtr<NodeSet> create() { return adoptPtrWillBeNoop(new NodeSet); }
-    static PassOwnPtrWillBeRawPtr<NodeSet> create(const NodeSet&);
+    static NodeSet* create() { return new NodeSet; }
+    static NodeSet* create(const NodeSet&);
     DEFINE_INLINE_TRACE() { visitor->trace(m_nodes); }
 
     size_t size() const { return m_nodes.size(); }

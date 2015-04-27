@@ -2060,7 +2060,6 @@
             'xml/XPathExpressionNode.h',
             'xml/XPathFunctions.cpp',
             'xml/XPathFunctions.h',
-            'xml/XPathNSResolver.cpp',
             'xml/XPathNSResolver.h',
             'xml/XPathNodeSet.cpp',
             'xml/XPathNodeSet.h',

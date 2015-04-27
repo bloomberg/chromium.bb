@@ -41,13 +41,13 @@ const unsigned traversalSortCutoff = 10000;
 
 typedef WillBeHeapVector<RawPtrWillBeMember<Node>> NodeSetVector;
 
-PassOwnPtrWillBeRawPtr<NodeSet> NodeSet::create(const NodeSet& other)
+NodeSet* NodeSet::create(const NodeSet& other)
 {
-    OwnPtrWillBeRawPtr<NodeSet> nodeSet = NodeSet::create();
+    NodeSet* nodeSet = NodeSet::create();
     nodeSet->m_isSorted = other.m_isSorted;
     nodeSet->m_subtreesAreDisjoint = other.m_subtreesAreDisjoint;
     nodeSet->m_nodes.appendVector(other.m_nodes);
-    return nodeSet.release();
+    return nodeSet;
 }
 
 static inline Node* parentWithDepth(unsigned depth, const NodeSetVector& parents)

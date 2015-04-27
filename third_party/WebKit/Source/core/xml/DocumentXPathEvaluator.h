@@ -41,11 +41,11 @@ class DocumentXPathEvaluator final : public NoBaseWillBeGarbageCollected<Documen
 public:
     static DocumentXPathEvaluator& from(WillBeHeapSupplementable<Document>&);
 
-    static PassRefPtrWillBeRawPtr<XPathExpression> createExpression(WillBeHeapSupplementable<Document>&,
-        const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver>, ExceptionState&);
-    static PassRefPtrWillBeRawPtr<XPathNSResolver> createNSResolver(WillBeHeapSupplementable<Document>&, Node* nodeResolver);
-    static PassRefPtrWillBeRawPtr<XPathResult> evaluate(WillBeHeapSupplementable<Document>&,
-        const String& expression, Node* contextNode, PassRefPtrWillBeRawPtr<XPathNSResolver>,
+    static XPathExpression* createExpression(WillBeHeapSupplementable<Document>&,
+        const String& expression, XPathNSResolver*, ExceptionState&);
+    static XPathNSResolver* createNSResolver(WillBeHeapSupplementable<Document>&, Node* nodeResolver);
+    static XPathResult* evaluate(WillBeHeapSupplementable<Document>&,
+        const String& expression, Node* contextNode, XPathNSResolver*,
         unsigned short type, const ScriptValue&, ExceptionState&);
 
     DECLARE_VIRTUAL_TRACE();
@@ -55,7 +55,7 @@ private:
 
     static const char* supplementName() { return "DocumentXPathEvaluator"; }
 
-    RefPtrWillBeMember<XPathEvaluator> m_xpathEvaluator;
+    PersistentWillBeMember<XPathEvaluator> m_xpathEvaluator;
 };
 
 } // namespace blink

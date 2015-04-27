@@ -31,7 +31,6 @@
 #include "core/xml/XPathValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -43,7 +42,8 @@ namespace XPath {
 struct EvaluationContext;
 }
 
-class XPathResult final : public RefCountedWillBeGarbageCollected<XPathResult>, public ScriptWrappable {
+// TODO(Oilpan): remove Finalized when transition type for m_document is.
+class XPathResult final : public GarbageCollectedFinalized<XPathResult>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathResult);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -60,9 +60,9 @@ public:
         FIRST_ORDERED_NODE_TYPE = 9
     };
 
-    static PassRefPtrWillBeRawPtr<XPathResult> create(XPath::EvaluationContext& context, const XPath::Value& value)
+    static XPathResult* create(XPath::EvaluationContext& context, const XPath::Value& value)
     {
-        return adoptRefWillBeNoop(new XPathResult(context, value));
+        return new XPathResult(context, value);
     }
 
     void convertTo(unsigned short type, ExceptionState&);
@@ -89,7 +89,7 @@ private:
 
     XPath::Value m_value;
     unsigned m_nodeSetPosition;
-    OwnPtrWillBeMember<XPath::NodeSet> m_nodeSet; // FIXME: why duplicate the node set stored in m_value?
+    Member<XPath::NodeSet> m_nodeSet; // FIXME: why duplicate the node set stored in m_value?
     unsigned short m_resultType;
     RefPtrWillBeMember<Document> m_document;
     uint64_t m_domTreeVersion;

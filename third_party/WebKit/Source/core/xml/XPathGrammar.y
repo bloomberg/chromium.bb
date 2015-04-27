@@ -6,13 +6,13 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -62,8 +62,8 @@ using namespace XPath;
     blink::XPath::EqTestOp::Opcode eqop;
     String* str;
     blink::XPath::Expression* expr;
-    WillBeHeapVector<OwnPtrWillBeMember<blink::XPath::Predicate>>* predList;
-    WillBeHeapVector<OwnPtrWillBeMember<blink::XPath::Expression>>* argList;
+    blink::HeapVector<blink::Member<blink::XPath::Predicate>>* predList;
+    blink::HeapVector<blink::Member<blink::XPath::Expression>>* argList;
     blink::XPath::Step* step;
     blink::XPath::LocationPath* locationPath;
 }
@@ -72,7 +72,7 @@ using namespace XPath;
 
 static int xpathyylex(YYSTYPE* yylval) { return Parser::current()->lex(yylval); }
 static void xpathyyerror(void*, const char*) { }
-    
+
 %}
 
 %left <numop> MULOP
@@ -138,7 +138,6 @@ AbsoluteLocationPath:
     '/'
     {
         $$ = new LocationPath;
-        parser->registerParseNode($$);
     }
     |
     '/' RelativeLocationPath
@@ -150,7 +149,6 @@ AbsoluteLocationPath:
     {
         $$ = $2;
         $$->insertFirstStep($1);
-        parser->unregisterParseNode($1);
     }
     ;
 
@@ -159,35 +157,27 @@ RelativeLocationPath:
     {
         $$ = new LocationPath;
         $$->appendStep($1);
-        parser->unregisterParseNode($1);
-        parser->registerParseNode($$);
     }
     |
     RelativeLocationPath '/' Step
     {
         $$->appendStep($3);
-        parser->unregisterParseNode($3);
     }
     |
     RelativeLocationPath DescendantOrSelf Step
     {
         $$->appendStep($2);
         $$->appendStep($3);
-        parser->unregisterParseNode($2);
-        parser->unregisterParseNode($3);
     }
     ;
 
 Step:
     NodeTest OptionalPredicateList
     {
-        if ($2) {
+        if ($2)
             $$ = new Step(Step::ChildAxis, *$1, *$2);
-            parser->deletePredicateVector($2);
-        } else
+        else
             $$ = new Step(Step::ChildAxis, *$1);
-        parser->deleteNodeTest($1);
-        parser->registerParseNode($$);
     }
     |
     NAMETEST OptionalPredicateList
@@ -198,25 +188,20 @@ Step:
             parser->m_gotNamespaceError = true;
             YYABORT;
         }
-        
-        if ($2) {
+
+        if ($2)
             $$ = new Step(Step::ChildAxis, Step::NodeTest(Step::NodeTest::NameTest, localName, namespaceURI), *$2);
-            parser->deletePredicateVector($2);
-        } else
+        else
             $$ = new Step(Step::ChildAxis, Step::NodeTest(Step::NodeTest::NameTest, localName, namespaceURI));
         parser->deleteString($1);
-        parser->registerParseNode($$);
     }
     |
     AxisSpecifier NodeTest OptionalPredicateList
     {
-        if ($3) {
+        if ($3)
             $$ = new Step($1, *$2, *$3);
-            parser->deletePredicateVector($3);
-        } else
+        else
             $$ = new Step($1, *$2);
-        parser->deleteNodeTest($2);
-        parser->registerParseNode($$);
     }
     |
     AxisSpecifier NAMETEST OptionalPredicateList
@@ -228,13 +213,11 @@ Step:
             YYABORT;
         }
 
-        if ($3) {
+        if ($3)
             $$ = new Step($1, Step::NodeTest(Step::NodeTest::NameTest, localName, namespaceURI), *$3);
-            parser->deletePredicateVector($3);
-        } else
+        else
             $$ = new Step($1, Step::NodeTest(Step::NodeTest::NameTest, localName, namespaceURI));
         parser->deleteString($2);
-        parser->registerParseNode($$);
     }
     |
     AbbreviatedStep
@@ -260,14 +243,12 @@ NodeTest:
             $$ = new Step::NodeTest(Step::NodeTest::CommentNodeTest);
 
         parser->deleteString($1);
-        parser->registerNodeTest($$);
     }
     |
     PI '(' ')'
     {
         $$ = new Step::NodeTest(Step::NodeTest::ProcessingInstructionNodeTest);
         parser->deleteString($1);
-        parser->registerNodeTest($$);
     }
     |
     PI '(' LITERAL ')'
@@ -275,7 +256,6 @@ NodeTest:
         $$ = new Step::NodeTest(Step::NodeTest::ProcessingInstructionNodeTest, $3->stripWhiteSpace());
         parser->deleteString($1);
         parser->deleteString($3);
-        parser->registerNodeTest($$);
     }
     ;
 
@@ -291,16 +271,13 @@ OptionalPredicateList:
 PredicateList:
     Predicate
     {
-        $$ = new WillBeHeapVector<OwnPtrWillBeMember<Predicate>>;
-        $$->append(adoptPtrWillBeNoop(new Predicate(adoptPtrWillBeNoop($1))));
-        parser->unregisterParseNode($1);
-        parser->registerPredicateVector($$);
+        $$ = new blink::HeapVector<blink::Member<Predicate>>;
+        $$->append(new Predicate($1));
     }
     |
     PredicateList Predicate
     {
-        $$->append(adoptPtrWillBeNoop(new Predicate(adoptPtrWillBeNoop($2))));
-        parser->unregisterParseNode($2);
+        $$->append(new Predicate($2));
     }
     ;
 
@@ -315,7 +292,6 @@ DescendantOrSelf:
     SLASHSLASH
     {
         $$ = new Step(Step::DescendantOrSelfAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
-        parser->registerParseNode($$);
     }
     ;
 
@@ -323,13 +299,11 @@ AbbreviatedStep:
     '.'
     {
         $$ = new Step(Step::SelfAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
-        parser->registerParseNode($$);
     }
     |
     DOTDOT
     {
         $$ = new Step(Step::ParentAxis, Step::NodeTest(Step::NodeTest::AnyNodeTest));
-        parser->registerParseNode($$);
     }
     ;
 
@@ -338,7 +312,6 @@ PrimaryExpr:
     {
         $$ = new VariableReference(*$1);
         parser->deleteString($1);
-        parser->registerParseNode($$);
     }
     |
     '(' Expr ')'
@@ -350,14 +323,12 @@ PrimaryExpr:
     {
         $$ = new StringExpression(*$1);
         parser->deleteString($1);
-        parser->registerParseNode($$);
     }
     |
     NUMBER
     {
         $$ = new Number($1->toDouble());
         parser->deleteString($1);
-        parser->registerParseNode($$);
     }
     |
     FunctionCall
@@ -370,7 +341,6 @@ FunctionCall:
         if (!$$)
             YYABORT;
         parser->deleteString($1);
-        parser->registerParseNode($$);
     }
     |
     FUNCTIONNAME '(' ArgumentList ')'
@@ -379,24 +349,19 @@ FunctionCall:
         if (!$$)
             YYABORT;
         parser->deleteString($1);
-        parser->deleteExpressionVector($3);
-        parser->registerParseNode($$);
     }
     ;
 
 ArgumentList:
     Argument
     {
-        $$ = new WillBeHeapVector<OwnPtrWillBeMember<Expression>>;
-        $$->append(adoptPtrWillBeNoop($1));
-        parser->unregisterParseNode($1);
-        parser->registerExpressionVector($$);
+        $$ = new blink::HeapVector<blink::Member<Expression>>;
+        $$->append($1);
     }
     |
     ArgumentList ',' Argument
     {
-        $$->append(adoptPtrWillBeNoop($3));
-        parser->unregisterParseNode($3);
+        $$->append($3);
     }
     ;
 
@@ -410,11 +375,8 @@ UnionExpr:
     UnionExpr '|' PathExpr
     {
         $$ = new Union;
-        $$->addSubExpression(adoptPtrWillBeNoop($1));
-        $$->addSubExpression(adoptPtrWillBeNoop($3));
-        parser->unregisterParseNode($1);
-        parser->unregisterParseNode($3);
-        parser->registerParseNode($$);
+        $$->addSubExpression($1);
+        $$->addSubExpression($3);
     }
     ;
 
@@ -430,9 +392,6 @@ PathExpr:
     {
         $3->setAbsolute(true);
         $$ = new Path($1, $3);
-        parser->unregisterParseNode($1);
-        parser->unregisterParseNode($3);
-        parser->registerParseNode($$);
     }
     |
     FilterExpr DescendantOrSelf RelativeLocationPath
@@ -440,10 +399,6 @@ PathExpr:
         $3->insertFirstStep($2);
         $3->setAbsolute(true);
         $$ = new Path($1, $3);
-        parser->unregisterParseNode($1);
-        parser->unregisterParseNode($2);
-        parser->unregisterParseNode($3);
-        parser->registerParseNode($$);
     }
     ;
 
@@ -452,10 +407,7 @@ FilterExpr:
     |
     PrimaryExpr PredicateList
     {
-        $$ = new Filter(adoptPtrWillBeNoop($1), *$2);
-        parser->unregisterParseNode($1);
-        parser->deletePredicateVector($2);
-        parser->registerParseNode($$);
+        $$ = new Filter($1, *$2);
     }
     ;
 
@@ -464,10 +416,7 @@ OrExpr:
     |
     OrExpr OR AndExpr
     {
-        $$ = new LogicalOp(LogicalOp::OP_Or, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
-        parser->unregisterParseNode($1);
-        parser->unregisterParseNode($3);
-        parser->registerParseNode($$);
+        $$ = new LogicalOp(LogicalOp::OP_Or, $1, $3);
     }
     ;
 
@@ -476,10 +425,7 @@ AndExpr:
     |
     AndExpr AND EqualityExpr
     {
-        $$ = new LogicalOp(LogicalOp::OP_And, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
-        parser->unregisterParseNode($1);
-        parser->unregisterParseNode($3);
-        parser->registerParseNode($$);
+        $$ = new LogicalOp(LogicalOp::OP_And, $1, $3);
     }
     ;
 
@@ -488,10 +434,7 @@ EqualityExpr:
     |
     EqualityExpr EQOP RelationalExpr
     {
-        $$ = new EqTestOp($2, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
-        parser->unregisterParseNode($1);
-        parser->unregisterParseNode($3);
-        parser->registerParseNode($$);
+        $$ = new EqTestOp($2, $1, $3);
     }
     ;
 
@@ -500,10 +443,7 @@ RelationalExpr:
     |
     RelationalExpr RELOP AdditiveExpr
     {
-        $$ = new EqTestOp($2, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
-        parser->unregisterParseNode($1);
-        parser->unregisterParseNode($3);
-        parser->registerParseNode($$);
+        $$ = new EqTestOp($2, $1, $3);
     }
     ;
 
@@ -512,18 +452,12 @@ AdditiveExpr:
     |
     AdditiveExpr PLUS MultiplicativeExpr
     {
-        $$ = new NumericOp(NumericOp::OP_Add, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
-        parser->unregisterParseNode($1);
-        parser->unregisterParseNode($3);
-        parser->registerParseNode($$);
+        $$ = new NumericOp(NumericOp::OP_Add, $1, $3);
     }
     |
     AdditiveExpr MINUS MultiplicativeExpr
     {
-        $$ = new NumericOp(NumericOp::OP_Sub, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
-        parser->unregisterParseNode($1);
-        parser->unregisterParseNode($3);
-        parser->registerParseNode($$);
+        $$ = new NumericOp(NumericOp::OP_Sub, $1, $3);
     }
     ;
 
@@ -532,10 +466,7 @@ MultiplicativeExpr:
     |
     MultiplicativeExpr MULOP UnaryExpr
     {
-        $$ = new NumericOp($2, adoptPtrWillBeNoop($1), adoptPtrWillBeNoop($3));
-        parser->unregisterParseNode($1);
-        parser->unregisterParseNode($3);
-        parser->registerParseNode($$);
+        $$ = new NumericOp($2, $1, $3);
     }
     ;
 
@@ -545,9 +476,7 @@ UnaryExpr:
     MINUS UnaryExpr
     {
         $$ = new Negative;
-        $$->addSubExpression(adoptPtrWillBeNoop($2));
-        parser->unregisterParseNode($2);
-        parser->registerParseNode($$);
+        $$->addSubExpression($2);
     }
     ;
 

@@ -19,8 +19,7 @@
  */
 
 [
-    WillBeGarbageCollected,
-    TypeChecking=Interface,
+    GarbageCollected
 ] interface XPathExpression {
      [RaisesException] XPathResult evaluate(Node contextNode, optional unsigned short type = 0, optional object? inResult = null);
 };

@@ -39,7 +39,7 @@ class Step;
 
 class Filter final : public Expression {
 public:
-    Filter(PassOwnPtrWillBeRawPtr<Expression>, WillBeHeapVector<OwnPtrWillBeMember<Predicate>>&);
+    Filter(Expression*, HeapVector<Member<Predicate>>&);
     virtual ~Filter();
     DECLARE_VIRTUAL_TRACE();
 
@@ -48,8 +48,8 @@ public:
 private:
     virtual Value::Type resultType() const override { return Value::NodeSetValue; }
 
-    OwnPtrWillBeMember<Expression> m_expr;
-    WillBeHeapVector<OwnPtrWillBeMember<Predicate>> m_predicates;
+    Member<Expression> m_expr;
+    HeapVector<Member<Predicate>> m_predicates;
 };
 
 class LocationPath final : public Expression {
@@ -67,7 +67,7 @@ public:
 private:
     virtual Value::Type resultType() const override { return Value::NodeSetValue; }
 
-    WillBeHeapVector<RawPtrWillBeMember<Step>> m_steps;
+    HeapVector<Member<Step>> m_steps;
     bool m_absolute;
 };
 
@@ -82,8 +82,8 @@ public:
 private:
     virtual Value::Type resultType() const override { return Value::NodeSetValue; }
 
-    OwnPtrWillBeMember<Expression> m_filter;
-    OwnPtrWillBeMember<LocationPath> m_path;
+    Member<Expression> m_filter;
+    Member<LocationPath> m_path;
 };
 
 }

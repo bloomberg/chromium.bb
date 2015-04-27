@@ -43,9 +43,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<V8CustomXPathNSResolver> V8CustomXPathNSResolver::create(ScriptState* scriptState, v8::Local<v8::Object> resolver)
+V8CustomXPathNSResolver* V8CustomXPathNSResolver::create(ScriptState* scriptState, v8::Local<v8::Object> resolver)
 {
-    return adoptRefWillBeNoop(new V8CustomXPathNSResolver(scriptState, resolver));
+    return new V8CustomXPathNSResolver(scriptState, resolver);
 }
 
 V8CustomXPathNSResolver::V8CustomXPathNSResolver(ScriptState* scriptState, v8::Local<v8::Object> resolver)

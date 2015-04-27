@@ -28,9 +28,9 @@ enum SupportedType {
 };
 
 [
-    WillBeGarbageCollected,
     Constructor,
     ConstructorCallWith=Document,
+    GarbageCollected,
 ] interface DOMParser {
     Document parseFromString(DOMString str, SupportedType type);
 };

@@ -37,7 +37,7 @@
 namespace blink {
 namespace XPath {
 
-Filter::Filter(PassOwnPtrWillBeRawPtr<Expression> expr, WillBeHeapVector<OwnPtrWillBeMember<Predicate>>& predicates)
+Filter::Filter(Expression* expr, HeapVector<Member<Predicate>>& predicates)
     : m_expr(expr)
 {
     m_predicates.swap(predicates);
@@ -65,7 +65,7 @@ Value Filter::evaluate(EvaluationContext& evaluationContext) const
     nodes.sort();
 
     for (unsigned i = 0; i < m_predicates.size(); i++) {
-        OwnPtrWillBeRawPtr<NodeSet> newNodes(NodeSet::create());
+        NodeSet* newNodes = NodeSet::create();
         evaluationContext.size = nodes.size();
         evaluationContext.position = 0;
 
@@ -92,16 +92,11 @@ LocationPath::LocationPath()
 
 LocationPath::~LocationPath()
 {
-#if !ENABLE(OILPAN)
-    deleteAllValues(m_steps);
-#endif
 }
 
 DEFINE_TRACE(LocationPath)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_steps);
-#endif
     Expression::trace(visitor);
 }
 
@@ -124,11 +119,11 @@ Value LocationPath::evaluate(EvaluationContext& evaluationContext) const
             context = &NodeTraversal::highestAncestorOrSelf(*context);
     }
 
-    OwnPtrWillBeRawPtr<NodeSet> nodes(NodeSet::create());
+    NodeSet* nodes = NodeSet::create();
     nodes->append(context);
     evaluate(clonedContext, *nodes);
 
-    return Value(nodes.release(), Value::adopt);
+    return Value(nodes, Value::adopt);
 }
 
 void LocationPath::evaluate(EvaluationContext& context, NodeSet& nodes) const
@@ -137,7 +132,7 @@ void LocationPath::evaluate(EvaluationContext& context, NodeSet& nodes) const
 
     for (unsigned i = 0; i < m_steps.size(); i++) {
         Step* step = m_steps[i];
-        OwnPtrWillBeRawPtr<NodeSet> newNodes(NodeSet::create());
+        NodeSet* newNodes = NodeSet::create();
         WillBeHeapHashSet<RawPtrWillBeMember<Node>> newNodesSet;
 
         bool needToCheckForDuplicateNodes = !nodes.subtreesAreDisjoint() || (step->axis() != Step::ChildAxis && step->axis() != Step::SelfAxis
@@ -151,7 +146,7 @@ void LocationPath::evaluate(EvaluationContext& context, NodeSet& nodes) const
             newNodes->markSubtreesDisjoint(true);
 
         for (unsigned j = 0; j < nodes.size(); j++) {
-            OwnPtrWillBeRawPtr<NodeSet> matches(NodeSet::create());
+            NodeSet* matches = NodeSet::create();
             step->evaluate(context, nodes[j], *matches);
 
             if (!matches->isSorted())
@@ -173,40 +168,25 @@ void LocationPath::evaluate(EvaluationContext& context, NodeSet& nodes) const
 void LocationPath::appendStep(Step* step)
 {
     unsigned stepCount = m_steps.size();
-    if (stepCount) {
-        bool dropSecondStep;
-        optimizeStepPair(m_steps[stepCount - 1], step, dropSecondStep);
-        if (dropSecondStep) {
-#if !ENABLE(OILPAN)
-            delete step;
-#endif
-            return;
-        }
-    }
+    if (stepCount && optimizeStepPair(m_steps[stepCount - 1], step))
+        return;
     step->optimize();
     m_steps.append(step);
 }
 
 void LocationPath::insertFirstStep(Step* step)
 {
-    if (m_steps.size()) {
-        bool dropSecondStep;
-        optimizeStepPair(step, m_steps[0], dropSecondStep);
-        if (dropSecondStep) {
-#if !ENABLE(OILPAN)
-            delete m_steps[0];
-#endif
-            m_steps[0] = step;
-            return;
-        }
+    if (m_steps.size() && optimizeStepPair(step, m_steps[0])) {
+        m_steps[0] = step;
+        return;
     }
     step->optimize();
     m_steps.insert(0, step);
 }
 
 Path::Path(Expression* filter, LocationPath* path)
-    : m_filter(adoptPtrWillBeNoop(filter))
-    , m_path(adoptPtrWillBeNoop(path))
+    : m_filter(filter)
+    , m_path(path)
 {
     setIsContextNodeSensitive(filter->isContextNodeSensitive());
     setIsContextPositionSensitive(filter->isContextPositionSensitive());
@@ -234,5 +214,6 @@ Value Path::evaluate(EvaluationContext& context) const
     return v;
 }
 
-}
-}
+} // namespace XPath
+
+} // namespace blink
