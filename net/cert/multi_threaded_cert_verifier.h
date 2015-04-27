@@ -56,6 +56,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
   // CertVerifier implementation
   int Verify(X509Certificate* cert,
              const std::string& hostname,
+             const std::string& ocsp_response,
              int flags,
              CRLSet* crl_set,
              CertVerifyResult* verify_result,
@@ -64,6 +65,8 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
              const BoundNetLog& net_log) override;
 
   void CancelRequest(CertVerifier::RequestHandle req) override;
+
+  bool SupportsOCSPStapling() override;
 
  private:
   friend class CertVerifierWorker;  // Calls HandleResult.
@@ -84,6 +87,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
     RequestParams(const SHA1HashValue& cert_fingerprint_arg,
                   const SHA1HashValue& ca_fingerprint_arg,
                   const std::string& hostname_arg,
+                  const std::string& ocsp_response_arg,
                   int flags_arg,
                   const CertificateList& additional_trust_anchors);
     ~RequestParams();
@@ -131,6 +135,7 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
 
   void HandleResult(X509Certificate* cert,
                     const std::string& hostname,
+                    const std::string& ocsp_response,
                     int flags,
                     const CertificateList& additional_trust_anchors,
                     int error,

@@ -38,6 +38,7 @@ MockCertVerifier::~MockCertVerifier() {}
 
 int MockCertVerifier::Verify(X509Certificate* cert,
                              const std::string& hostname,
+                             const std::string& ocsp_response,
                              int flags,
                              CRLSet* crl_set,
                              CertVerifyResult* verify_result,

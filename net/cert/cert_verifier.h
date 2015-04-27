@@ -81,6 +81,8 @@ class NET_EXPORT CertVerifier {
   // |verify_result->cert_status|, and the error code for the most serious
   // error is returned.
   //
+  // |ocsp_response|, if non-empty, is a stapled OCSP response to use.
+  //
   // |flags| is bitwise OR'd of VerifyFlags.
   // If VERIFY_REV_CHECKING_ENABLED is set in |flags|, certificate revocation
   // checking is performed.
@@ -103,6 +105,7 @@ class NET_EXPORT CertVerifier {
   // TODO(rsleevi): Move CRLSet* out of the CertVerifier signature.
   virtual int Verify(X509Certificate* cert,
                      const std::string& hostname,
+                     const std::string& ocsp_response,
                      int flags,
                      CRLSet* crl_set,
                      CertVerifyResult* verify_result,
@@ -113,6 +116,9 @@ class NET_EXPORT CertVerifier {
   // Cancels the specified request. |req| is the handle returned by Verify().
   // After a request is canceled, its completion callback will not be called.
   virtual void CancelRequest(RequestHandle req) = 0;
+
+  // Returns true if this CertVerifier supports stapled OCSP responses.
+  virtual bool SupportsOCSPStapling();
 
   // Creates a CertVerifier implementation that verifies certificates using
   // the preferred underlying cryptographic libraries.

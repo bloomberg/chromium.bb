@@ -34,6 +34,7 @@ class CertVerifyProcChromeOS : public net::CertVerifyProcNSS {
   // net::CertVerifyProcNSS implementation:
   int VerifyInternal(net::X509Certificate* cert,
                      const std::string& hostname,
+                     const std::string& ocsp_response,
                      int flags,
                      net::CRLSet* crl_set,
                      const net::CertificateList& additional_trust_anchors,

@@ -16,6 +16,7 @@ class CertVerifyProcWin : public CertVerifyProc {
   CertVerifyProcWin();
 
   bool SupportsAdditionalTrustAnchors() const override;
+  bool SupportsOCSPStapling() const override;
 
  protected:
   ~CertVerifyProcWin() override;
@@ -23,6 +24,7 @@ class CertVerifyProcWin : public CertVerifyProc {
  private:
   int VerifyInternal(X509Certificate* cert,
                      const std::string& hostname,
+                     const std::string& ocsp_response,
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,

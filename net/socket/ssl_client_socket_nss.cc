@@ -69,7 +69,6 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -158,57 +157,6 @@ const int kSendBufferSize = 17 * 1024;
 // This constant can be any non-negative/non-zero value (eg: it does not
 // overlap with any value of the net::Error range, including net::OK).
 const int kNoPendingReadResult = 1;
-
-#if defined(USE_NSS_CERTS)
-typedef SECStatus
-(*CacheOCSPResponseFromSideChannelFunction)(
-    CERTCertDBHandle *handle, CERTCertificate *cert, PRTime time,
-    SECItem *encodedResponse, void *pwArg);
-
-// On Linux, we dynamically link against the system version of libnss3.so. In
-// order to continue working on systems without up-to-date versions of NSS we
-// lookup CERT_CacheOCSPResponseFromSideChannel with dlsym.
-
-// RuntimeLibNSSFunctionPointers is a singleton which caches the results of any
-// runtime symbol resolution that we need.
-class RuntimeLibNSSFunctionPointers {
- public:
-  CacheOCSPResponseFromSideChannelFunction
-  GetCacheOCSPResponseFromSideChannelFunction() {
-    return cache_ocsp_response_from_side_channel_;
-  }
-
-  static RuntimeLibNSSFunctionPointers* GetInstance() {
-    return Singleton<RuntimeLibNSSFunctionPointers>::get();
-  }
-
- private:
-  friend struct DefaultSingletonTraits<RuntimeLibNSSFunctionPointers>;
-
-  RuntimeLibNSSFunctionPointers() {
-    cache_ocsp_response_from_side_channel_ =
-        (CacheOCSPResponseFromSideChannelFunction)
-        dlsym(RTLD_DEFAULT, "CERT_CacheOCSPResponseFromSideChannel");
-  }
-
-  CacheOCSPResponseFromSideChannelFunction
-      cache_ocsp_response_from_side_channel_;
-};
-
-CacheOCSPResponseFromSideChannelFunction
-GetCacheOCSPResponseFromSideChannelFunction() {
-  return RuntimeLibNSSFunctionPointers::GetInstance()
-    ->GetCacheOCSPResponseFromSideChannelFunction();
-}
-
-bool IsOCSPStaplingSupported() {
-  return GetCacheOCSPResponseFromSideChannelFunction() != NULL;
-}
-#else
-bool IsOCSPStaplingSupported() {
-  return false;
-}
-#endif
 
 // Helper functions to make it possible to log events from within the
 // SSLClientSocketNSS::Core.
@@ -2069,18 +2017,6 @@ void SSLClientSocketNSS::Core::UpdateStapledOCSPResponse() {
   nss_handshake_state_.stapled_ocsp_response = std::string(
       reinterpret_cast<char*>(ocsp_responses->items[0].data),
       ocsp_responses->items[0].len);
-
-  if (IsOCSPStaplingSupported()) {
-#if defined(USE_NSS_CERTS)
-    CacheOCSPResponseFromSideChannelFunction cache_ocsp_response =
-        GetCacheOCSPResponseFromSideChannelFunction();
-
-    cache_ocsp_response(
-        CERT_GetDefaultCertDB(),
-        nss_handshake_state_.server_cert_chain[0], PR_Now(),
-        &ocsp_responses->items[0], NULL);
-#endif
-  }
 }
 
 void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
@@ -2877,8 +2813,8 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
   // Request OCSP stapling even on platforms that don't support it, in
   // order to extract Certificate Transparency information.
   rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_OCSP_STAPLING,
-                     (IsOCSPStaplingSupported() ||
-                      ssl_config_.signed_cert_timestamps_enabled));
+                     cert_verifier_->SupportsOCSPStapling() ||
+                         ssl_config_.signed_cert_timestamps_enabled);
   if (rv != SECSuccess) {
     LogFailedNSSFunction(net_log_, "SSL_OptionSet",
                          "SSL_ENABLE_OCSP_STAPLING");
@@ -3108,11 +3044,9 @@ int SSLClientSocketNSS::DoVerifyCert(int result) {
     flags |= CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
   verifier_.reset(new SingleRequestCertVerifier(cert_verifier_));
   return verifier_->Verify(
-      core_->state().server_cert.get(),
-      host_and_port_.host(),
-      flags,
-      SSLConfigService::GetCRLSet().get(),
-      &server_cert_verify_result_,
+      core_->state().server_cert.get(), host_and_port_.host(),
+      core_->state().stapled_ocsp_response, flags,
+      SSLConfigService::GetCRLSet().get(), &server_cert_verify_result_,
       base::Bind(&SSLClientSocketNSS::OnHandshakeIOComplete,
                  base::Unretained(this)),
       net_log_);

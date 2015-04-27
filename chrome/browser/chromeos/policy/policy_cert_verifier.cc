@@ -71,6 +71,7 @@ void PolicyCertVerifier::SetTrustAnchors(
 int PolicyCertVerifier::Verify(
     net::X509Certificate* cert,
     const std::string& hostname,
+    const std::string& ocsp_response,
     int flags,
     net::CRLSet* crl_set,
     net::CertVerifyResult* verify_result,
@@ -84,8 +85,9 @@ int PolicyCertVerifier::Verify(
                  anchor_used_callback_,
                  completion_callback,
                  verify_result);
-  int error = delegate_->Verify(cert, hostname, flags, crl_set, verify_result,
-                                wrapped_callback, out_req, net_log);
+  int error =
+      delegate_->Verify(cert, hostname, ocsp_response, flags, crl_set,
+                        verify_result, wrapped_callback, out_req, net_log);
   MaybeSignalAnchorUse(error, anchor_used_callback_, *verify_result);
   return error;
 }
@@ -93,6 +95,11 @@ int PolicyCertVerifier::Verify(
 void PolicyCertVerifier::CancelRequest(RequestHandle req) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   delegate_->CancelRequest(req);
+}
+
+bool PolicyCertVerifier::SupportsOCSPStapling() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  return delegate_->SupportsOCSPStapling();
 }
 
 const net::CertificateList& PolicyCertVerifier::GetAdditionalTrustAnchors() {

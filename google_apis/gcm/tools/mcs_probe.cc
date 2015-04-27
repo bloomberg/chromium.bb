@@ -171,6 +171,7 @@ class MyTestCertVerifier : public net::CertVerifier {
 
   int Verify(net::X509Certificate* cert,
              const std::string& hostname,
+             const std::string& ocsp_response,
              int flags,
              net::CRLSet* crl_set,
              net::CertVerifyResult* verify_result,

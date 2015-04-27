@@ -190,9 +190,14 @@ bool CertVerifyProcOpenSSL::SupportsAdditionalTrustAnchors() const {
   return false;
 }
 
+bool CertVerifyProcOpenSSL::SupportsOCSPStapling() const {
+  return false;
+}
+
 int CertVerifyProcOpenSSL::VerifyInternal(
     X509Certificate* cert,
     const std::string& hostname,
+    const std::string& ocsp_response,
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,

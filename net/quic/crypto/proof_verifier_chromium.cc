@@ -223,15 +223,12 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
   next_state_ = STATE_VERIFY_CERT_COMPLETE;
 
   int flags = 0;
-  return verifier_->Verify(
-      cert_.get(),
-      hostname_,
-      flags,
-      SSLConfigService::GetCRLSet().get(),
-      &verify_details_->cert_verify_result,
-      base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
-                 base::Unretained(this)),
-      net_log_);
+  return verifier_->Verify(cert_.get(), hostname_, std::string(), flags,
+                           SSLConfigService::GetCRLSet().get(),
+                           &verify_details_->cert_verify_result,
+                           base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
+                                      base::Unretained(this)),
+                           net_log_);
 }
 
 int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {

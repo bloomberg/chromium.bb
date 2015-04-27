@@ -27,6 +27,7 @@ SingleRequestCertVerifier::~SingleRequestCertVerifier() {
 
 int SingleRequestCertVerifier::Verify(X509Certificate* cert,
                                       const std::string& hostname,
+                                      const std::string& ocsp_response,
                                       int flags,
                                       CRLSet* crl_set,
                                       CertVerifyResult* verify_result,
@@ -40,7 +41,7 @@ int SingleRequestCertVerifier::Verify(X509Certificate* cert,
   // We need to be notified of completion before |callback| is called, so that
   // we can clear out |cur_request_*|.
   int rv = cert_verifier_->Verify(
-      cert, hostname, flags, crl_set, verify_result,
+      cert, hostname, ocsp_response, flags, crl_set, verify_result,
       base::Bind(&SingleRequestCertVerifier::OnVerifyCompletion,
                  base::Unretained(this)),
       &request, net_log);

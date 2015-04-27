@@ -145,19 +145,6 @@ int LogErrorCallback(const char* str, size_t len, void* context) {
   return 1;
 }
 
-bool IsOCSPStaplingSupported() {
-#if defined(OS_WIN)
-  // CERT_OCSP_RESPONSE_PROP_ID is only implemented on Vista+, but it can be
-  // set on Windows XP without error. There is some overhead from the server
-  // sending the OCSP response if it supports the extension, for the subset of
-  // XP clients who will request it but be unable to use it, but this is an
-  // acceptable trade-off for simplicity of implementation.
-  return true;
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
 class SSLClientSocketOpenSSL::SSLContext {
@@ -847,7 +834,7 @@ int SSLClientSocketOpenSSL::Init() {
     SSL_enable_ocsp_stapling(ssl_);
   }
 
-  if (IsOCSPStaplingSupported())
+  if (cert_verifier_->SupportsOCSPStapling())
     SSL_enable_ocsp_stapling(ssl_);
 
   // Enable fastradio padding.
@@ -948,7 +935,7 @@ int SSLClientSocketOpenSSL::DoHandshake() {
 
     // Only record OCSP histograms if OCSP was requested.
     if (ssl_config_.signed_cert_timestamps_enabled ||
-        IsOCSPStaplingSupported()) {
+        cert_verifier_->SupportsOCSPStapling()) {
       const uint8_t* ocsp_response;
       size_t ocsp_response_len;
       SSL_get0_ocsp_response(ssl_, &ocsp_response, &ocsp_response_len);
@@ -1081,6 +1068,15 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
     return ERR_CERT_INVALID;
   }
 
+  std::string ocsp_response;
+  if (cert_verifier_->SupportsOCSPStapling()) {
+    const uint8_t* ocsp_response_raw;
+    size_t ocsp_response_len;
+    SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
+    ocsp_response.assign(reinterpret_cast<const char*>(ocsp_response_raw),
+                         ocsp_response_len);
+  }
+
   start_cert_verification_time_ = base::TimeTicks::Now();
 
   int flags = 0;
@@ -1094,13 +1090,10 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
     flags |= CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
   verifier_.reset(new SingleRequestCertVerifier(cert_verifier_));
   return verifier_->Verify(
-      server_cert_.get(),
-      host_and_port_.host(),
-      flags,
+      server_cert_.get(), host_and_port_.host(), ocsp_response, flags,
       // TODO(davidben): Route the CRLSet through SSLConfig so
       // SSLClientSocket doesn't depend on SSLConfigService.
-      SSLConfigService::GetCRLSet().get(),
-      &server_cert_verify_result_,
+      SSLConfigService::GetCRLSet().get(), &server_cert_verify_result_,
       base::Bind(&SSLClientSocketOpenSSL::OnHandshakeIOComplete,
                  base::Unretained(this)),
       net_log_);
@@ -1176,33 +1169,6 @@ void SSLClientSocketOpenSSL::UpdateServerCert() {
         NetLog::TYPE_SSL_CERTIFICATES_RECEIVED,
         base::Bind(&NetLogX509CertificateCallback,
                    base::Unretained(server_cert_.get())));
-
-    // TODO(rsleevi): Plumb an OCSP response into the Mac system library and
-    // update IsOCSPStaplingSupported for Mac. https://crbug.com/430714
-    if (IsOCSPStaplingSupported()) {
-#if defined(OS_WIN)
-      const uint8_t* ocsp_response_raw;
-      size_t ocsp_response_len;
-      SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
-
-      CRYPT_DATA_BLOB ocsp_response_blob;
-      ocsp_response_blob.cbData = ocsp_response_len;
-      ocsp_response_blob.pbData = const_cast<BYTE*>(ocsp_response_raw);
-      BOOL ok = CertSetCertificateContextProperty(
-          server_cert_->os_cert_handle(),
-          CERT_OCSP_RESPONSE_PROP_ID,
-          CERT_SET_PROPERTY_IGNORE_PERSIST_ERROR_FLAG,
-          &ocsp_response_blob);
-      if (!ok) {
-        VLOG(1) << "Failed to set OCSP response property: "
-                << GetLastError();
-      }
-#else
-      // TODO(davidben): Support OCSP stapling when NSS is the system
-      // certificate verifier. https://crbug.com/479034.
-      NOTREACHED();
-#endif
-    }
   }
 }
 

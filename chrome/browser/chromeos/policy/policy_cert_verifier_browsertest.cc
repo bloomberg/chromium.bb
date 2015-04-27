@@ -67,13 +67,9 @@ class PolicyCertVerifierTest : public testing::Test {
   int VerifyTestServerCert(const net::TestCompletionCallback& test_callback,
                            net::CertVerifyResult* verify_result,
                            net::CertVerifier::RequestHandle* request_handle) {
-    return cert_verifier_->Verify(test_server_cert_.get(),
-                                  "127.0.0.1",
-                                  0,
-                                  NULL,
-                                  verify_result,
-                                  test_callback.callback(),
-                                  request_handle,
+    return cert_verifier_->Verify(test_server_cert_.get(), "127.0.0.1",
+                                  std::string(), 0, NULL, verify_result,
+                                  test_callback.callback(), request_handle,
                                   net::BoundNetLog());
   }
 

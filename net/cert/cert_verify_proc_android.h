@@ -16,6 +16,7 @@ class CertVerifyProcAndroid : public CertVerifyProc {
   CertVerifyProcAndroid();
 
   bool SupportsAdditionalTrustAnchors() const override;
+  bool SupportsOCSPStapling() const override;
 
  protected:
   ~CertVerifyProcAndroid() override;
@@ -23,6 +24,7 @@ class CertVerifyProcAndroid : public CertVerifyProc {
  private:
   int VerifyInternal(X509Certificate* cert,
                      const std::string& hostname,
+                     const std::string& ocsp_response,
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,

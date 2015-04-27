@@ -40,6 +40,7 @@ CertVerifyProcChromeOS::~CertVerifyProcChromeOS() {}
 int CertVerifyProcChromeOS::VerifyInternal(
     net::X509Certificate* cert,
     const std::string& hostname,
+    const std::string& ocsp_response,
     int flags,
     net::CRLSet* crl_set,
     const net::CertificateList& additional_trust_anchors,
@@ -52,12 +53,8 @@ int CertVerifyProcChromeOS::VerifyInternal(
   chain_verify_callback.isChainValidArg =
       static_cast<void*>(&chain_verify_args);
 
-  return VerifyInternalImpl(cert,
-                            hostname,
-                            flags,
-                            crl_set,
-                            additional_trust_anchors,
-                            &chain_verify_callback,
+  return VerifyInternalImpl(cert, hostname, ocsp_response, flags, crl_set,
+                            additional_trust_anchors, &chain_verify_callback,
                             verify_result);
 }
 

@@ -38,6 +38,8 @@ class NET_EXPORT CertVerifyProc
   // |verify_result->cert_status|, and the error code for the most serious
   // error is returned.
   //
+  // |ocsp_response|, if non-empty, is a stapled OCSP response to use.
+  //
   // |flags| is bitwise OR'd of VerifyFlags:
   //
   // If VERIFY_REV_CHECKING_ENABLED is set in |flags|, online certificate
@@ -56,6 +58,7 @@ class NET_EXPORT CertVerifyProc
   // implementation.
   int Verify(X509Certificate* cert,
              const std::string& hostname,
+             const std::string& ocsp_response,
              int flags,
              CRLSet* crl_set,
              const CertificateList& additional_trust_anchors,
@@ -65,6 +68,11 @@ class NET_EXPORT CertVerifyProc
   // anchors to the Verify() call. The |additional_trust_anchors| parameter
   // passed to Verify() is ignored when this returns false.
   virtual bool SupportsAdditionalTrustAnchors() const = 0;
+
+  // Returns true if the implementation supports passing a stapled OCSP response
+  // to the Verify() call. The |ocsp_response| parameter passed to Verify() is
+  // ignored when this returns false.
+  virtual bool SupportsOCSPStapling() const = 0;
 
  protected:
   CertVerifyProc();
@@ -81,6 +89,7 @@ class NET_EXPORT CertVerifyProc
   // value must be left untouched.
   virtual int VerifyInternal(X509Certificate* cert,
                              const std::string& hostname,
+                             const std::string& ocsp_response,
                              int flags,
                              CRLSet* crl_set,
                              const CertificateList& additional_trust_anchors,

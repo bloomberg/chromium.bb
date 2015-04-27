@@ -57,6 +57,7 @@ class WellKnownCaCertVerifyProc : public CertVerifyProc {
 
   // CertVerifyProc implementation:
   bool SupportsAdditionalTrustAnchors() const override { return false; }
+  bool SupportsOCSPStapling() const override { return false; }
 
  protected:
   ~WellKnownCaCertVerifyProc() override {}
@@ -64,6 +65,7 @@ class WellKnownCaCertVerifyProc : public CertVerifyProc {
  private:
   int VerifyInternal(X509Certificate* cert,
                      const std::string& hostname,
+                     const std::string& ocsp_response,
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,
@@ -77,6 +79,7 @@ class WellKnownCaCertVerifyProc : public CertVerifyProc {
 int WellKnownCaCertVerifyProc::VerifyInternal(
     X509Certificate* cert,
     const std::string& hostname,
+    const std::string& ocsp_response,
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
@@ -125,7 +128,7 @@ class CertVerifyProcTest : public testing::Test {
              CRLSet* crl_set,
              const CertificateList& additional_trust_anchors,
              CertVerifyResult* verify_result) {
-    return verify_proc_->Verify(cert, hostname, flags, crl_set,
+    return verify_proc_->Verify(cert, hostname, std::string(), flags, crl_set,
                                 additional_trust_anchors, verify_result);
   }
 

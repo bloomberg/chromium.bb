@@ -141,14 +141,9 @@ TEST_F(NssHttpTest, TestAia) {
   CertVerifier::RequestHandle request_handle;
 
   int flags = CertVerifier::VERIFY_CERT_IO_ENABLED;
-  int error = verifier()->Verify(test_cert.get(),
-                                 "aia-host.invalid",
-                                 flags,
-                                 NULL,
-                                 &verify_result,
-                                 test_callback.callback(),
-                                 &request_handle,
-                                 BoundNetLog());
+  int error = verifier()->Verify(
+      test_cert.get(), "aia-host.invalid", std::string(), flags, NULL,
+      &verify_result, test_callback.callback(), &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
 
   error = test_callback.WaitForResult();

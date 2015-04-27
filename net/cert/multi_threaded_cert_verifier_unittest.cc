@@ -41,9 +41,11 @@ class MockCertVerifyProc : public CertVerifyProc {
 
   // CertVerifyProc implementation
   bool SupportsAdditionalTrustAnchors() const override { return false; }
+  bool SupportsOCSPStapling() const override { return false; }
 
   int VerifyInternal(X509Certificate* cert,
                      const std::string& hostname,
+                     const std::string& ocsp_response,
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,
@@ -85,14 +87,9 @@ TEST_F(MultiThreadedCertVerifierTest, CacheHit) {
   TestCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier_.Verify(test_cert.get(),
-                           "www.example.com",
-                           0,
-                           NULL,
-                           &verify_result,
-                           callback.callback(),
-                           &request_handle,
-                           BoundNetLog());
+  error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
+                           NULL, &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle);
   error = callback.WaitForResult();
@@ -102,14 +99,9 @@ TEST_F(MultiThreadedCertVerifierTest, CacheHit) {
   ASSERT_EQ(0u, verifier_.inflight_joins());
   ASSERT_EQ(1u, verifier_.GetCacheSize());
 
-  error = verifier_.Verify(test_cert.get(),
-                           "www.example.com",
-                           0,
-                           NULL,
-                           &verify_result,
-                           callback.callback(),
-                           &request_handle,
-                           BoundNetLog());
+  error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
+                           NULL, &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
   // Synchronous completion.
   ASSERT_NE(ERR_IO_PENDING, error);
   ASSERT_TRUE(IsCertificateError(error));
@@ -155,14 +147,9 @@ TEST_F(MultiThreadedCertVerifierTest, DifferentCACerts) {
   TestCompletionCallback callback;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier_.Verify(cert_chain1.get(),
-                           "www.example.com",
-                           0,
-                           NULL,
-                           &verify_result,
-                           callback.callback(),
-                           &request_handle,
-                           BoundNetLog());
+  error = verifier_.Verify(cert_chain1.get(), "www.example.com", std::string(),
+                           0, NULL, &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle);
   error = callback.WaitForResult();
@@ -172,14 +159,9 @@ TEST_F(MultiThreadedCertVerifierTest, DifferentCACerts) {
   ASSERT_EQ(0u, verifier_.inflight_joins());
   ASSERT_EQ(1u, verifier_.GetCacheSize());
 
-  error = verifier_.Verify(cert_chain2.get(),
-                           "www.example.com",
-                           0,
-                           NULL,
-                           &verify_result,
-                           callback.callback(),
-                           &request_handle,
-                           BoundNetLog());
+  error = verifier_.Verify(cert_chain2.get(), "www.example.com", std::string(),
+                           0, NULL, &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle);
   error = callback.WaitForResult();
@@ -205,24 +187,14 @@ TEST_F(MultiThreadedCertVerifierTest, InflightJoin) {
   TestCompletionCallback callback2;
   CertVerifier::RequestHandle request_handle2;
 
-  error = verifier_.Verify(test_cert.get(),
-                           "www.example.com",
-                           0,
-                           NULL,
-                           &verify_result,
-                           callback.callback(),
-                           &request_handle,
-                           BoundNetLog());
+  error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
+                           NULL, &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle);
-  error = verifier_.Verify(test_cert.get(),
-                           "www.example.com",
-                           0,
-                           NULL,
-                           &verify_result2,
-                           callback2.callback(),
-                           &request_handle2,
-                           BoundNetLog());
+  error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
+                           NULL, &verify_result2, callback2.callback(),
+                           &request_handle2, BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle2 != NULL);
   error = callback.WaitForResult();
@@ -245,14 +217,9 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequest) {
   CertVerifyResult verify_result;
   CertVerifier::RequestHandle request_handle;
 
-  error = verifier_.Verify(test_cert.get(),
-                           "www.example.com",
-                           0,
-                           NULL,
-                           &verify_result,
-                           base::Bind(&FailTest),
-                           &request_handle,
-                           BoundNetLog());
+  error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
+                           NULL, &verify_result, base::Bind(&FailTest),
+                           &request_handle, BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle != NULL);
   verifier_.CancelRequest(request_handle);
@@ -262,14 +229,9 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequest) {
   // worker thread) is likely to complete by the end of this test.
   TestCompletionCallback callback;
   for (int i = 0; i < 5; ++i) {
-    error = verifier_.Verify(test_cert.get(),
-                             "www2.example.com",
-                             0,
-                             NULL,
-                             &verify_result,
-                             callback.callback(),
-                             &request_handle,
-                             BoundNetLog());
+    error = verifier_.Verify(test_cert.get(), "www2.example.com", std::string(),
+                             0, NULL, &verify_result, callback.callback(),
+                             &request_handle, BoundNetLog());
     ASSERT_EQ(ERR_IO_PENDING, error);
     EXPECT_TRUE(request_handle);
     error = callback.WaitForResult();
@@ -294,8 +256,8 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequestThenQuit) {
     // CertVerifyWorker may be leaked if the main thread shuts down before the
     // worker thread.
     ANNOTATE_SCOPED_MEMORY_LEAK;
-    error = verifier_.Verify(test_cert.get(), "www.example.com", 0, NULL,
-                             &verify_result, callback.callback(),
+    error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(),
+                             0, NULL, &verify_result, callback.callback(),
                              &request_handle, BoundNetLog());
   }
   ASSERT_EQ(ERR_IO_PENDING, error);
@@ -327,55 +289,67 @@ TEST_F(MultiThreadedCertVerifierTest, RequestParamsComparators) {
     //  1 means key1 is greater than key2
     int expected_result;
   } tests[] = {
-    {  // Test for basic equivalence.
-      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0, test_list),
-      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0, test_list),
-      0,
-    },
-    {  // Test that different certificates but with the same CA and for
+      {
+       // Test for basic equivalence.
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www.example.test", std::string(), 0, test_list),
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www.example.test", std::string(), 0, test_list),
+       0,
+      },
+      {
+       // Test that different certificates but with the same CA and for
        // the same host are different validation keys.
-      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0, test_list),
-      MultiThreadedCertVerifier::RequestParams(z_key, a_key, "www.example.test",
-                                               0, test_list),
-      -1,
-    },
-    {  // Test that the same EE certificate for the same host, but with
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www.example.test", std::string(), 0, test_list),
+       MultiThreadedCertVerifier::RequestParams(
+           z_key, a_key, "www.example.test", std::string(), 0, test_list),
+       -1,
+      },
+      {
+       // Test that the same EE certificate for the same host, but with
        // different chains are different validation keys.
-      MultiThreadedCertVerifier::RequestParams(a_key, z_key, "www.example.test",
-                                               0, test_list),
-      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0, test_list),
-      1,
-    },
-    {  // The same certificate, with the same chain, but for different
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, z_key, "www.example.test", std::string(), 0, test_list),
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www.example.test", std::string(), 0, test_list),
+       1,
+      },
+      {
+       // The same certificate, with the same chain, but for different
        // hosts are different validation keys.
-      MultiThreadedCertVerifier::RequestParams(a_key, a_key,
-                                               "www1.example.test", 0,
-                                               test_list),
-      MultiThreadedCertVerifier::RequestParams(a_key, a_key,
-                                               "www2.example.test", 0,
-                                               test_list),
-      -1,
-    },
-    {  // The same certificate, chain, and host, but with different flags
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www1.example.test", std::string(), 0, test_list),
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www2.example.test", std::string(), 0, test_list),
+       -1,
+      },
+      {
+       // The same certificate, chain, and host, but with different flags
        // are different validation keys.
-      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               CertVerifier::VERIFY_EV_CERT,
-                                               test_list),
-      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0, test_list),
-      1,
-    },
-    {  // Different additional_trust_anchors.
-      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0, empty_list),
-      MultiThreadedCertVerifier::RequestParams(a_key, a_key, "www.example.test",
-                                               0, test_list),
-      -1,
-    },
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www.example.test", std::string(),
+           CertVerifier::VERIFY_EV_CERT, test_list),
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www.example.test", std::string(), 0, test_list),
+       1,
+      },
+      {
+       // Different additional_trust_anchors.
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www.example.test", std::string(), 0, empty_list),
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www.example.test", std::string(), 0, test_list),
+       -1,
+      },
+      {
+       // Different OCSP responses.
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www.example.test", "ocsp response", 0, test_list),
+       MultiThreadedCertVerifier::RequestParams(
+           a_key, a_key, "www.example.test", std::string(), 0, test_list),
+       -1,
+      },
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]", i));
@@ -422,14 +396,9 @@ TEST_F(MultiThreadedCertVerifierTest, CertTrustAnchorProvider) {
   CertVerifier::RequestHandle request_handle;
   EXPECT_CALL(trust_provider, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(empty_cert_list));
-  error = verifier_.Verify(test_cert.get(),
-                           "www.example.com",
-                           0,
-                           NULL,
-                           &verify_result,
-                           callback.callback(),
-                           &request_handle,
-                           BoundNetLog());
+  error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
+                           NULL, &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider);
   ASSERT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle);
@@ -441,14 +410,9 @@ TEST_F(MultiThreadedCertVerifierTest, CertTrustAnchorProvider) {
   // The next Verify() uses the cached result.
   EXPECT_CALL(trust_provider, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(empty_cert_list));
-  error = verifier_.Verify(test_cert.get(),
-                           "www.example.com",
-                           0,
-                           NULL,
-                           &verify_result,
-                           callback.callback(),
-                           &request_handle,
-                           BoundNetLog());
+  error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
+                           NULL, &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider);
   EXPECT_EQ(ERR_CERT_COMMON_NAME_INVALID, error);
   EXPECT_FALSE(request_handle);
@@ -459,14 +423,9 @@ TEST_F(MultiThreadedCertVerifierTest, CertTrustAnchorProvider) {
   // trust anchors will not reuse the cache.
   EXPECT_CALL(trust_provider, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(cert_list));
-  error = verifier_.Verify(test_cert.get(),
-                           "www.example.com",
-                           0,
-                           NULL,
-                           &verify_result,
-                           callback.callback(),
-                           &request_handle,
-                           BoundNetLog());
+  error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(), 0,
+                           NULL, &verify_result, callback.callback(),
+                           &request_handle, BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider);
   ASSERT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle);
