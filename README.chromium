@@ -34,3 +34,9 @@ following changes which are not merged to upstream:
 
 The 'google.patch' file represents our changes from the original
 libjpeg-turbo-1.2.
+
+Refer to working-with-nested-repos [1] for details of how to setup your git
+svn client to update the code (for making local changes, cherry picking from
+upstream, etc).
+
+[1] https://www.chromium.org/developers/how-tos/get-the-code/working-with-nested-repos
