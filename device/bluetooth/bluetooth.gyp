@@ -174,6 +174,7 @@
       ],
     },
     {
+      # GN version: //device/bluetooth/uribeacon
       'target_name': 'uribeacon',
       'type': 'static_library',
       'dependencies': [
