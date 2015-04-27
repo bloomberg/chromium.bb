@@ -19,7 +19,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
 #include "chrome/common/pref_names.h"
@@ -138,10 +137,10 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest {
       size_t visible_count) WARN_UNUSED_RESULT;
 
   ToolbarActionsBar* toolbar_actions_bar() {
-    return main_bar_helper_->GetToolbarActionsBar();
+    return browser_action_test_util_->GetToolbarActionsBar();
   }
   ToolbarActionsBar* overflow_bar() {
-    return overflow_bar_helper_->GetToolbarActionsBar();
+    return overflow_browser_action_test_util_->GetToolbarActionsBar();
   }
   extensions::ExtensionToolbarModel* toolbar_model() {
     return toolbar_model_;
@@ -154,14 +153,6 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  // The test helper that owns the ToolbarActionsBar and the platform-specific
-  // view for it.
-  scoped_ptr<TestToolbarActionsBarHelper> main_bar_helper_;
-
-  // The test helper for the overflow bar; only non-null if |use_redesign| is
-  // true.
-  scoped_ptr<TestToolbarActionsBarHelper> overflow_bar_helper_;
-
   // The associated ExtensionToolbarModel (owned by the keyed service setup).
   extensions::ExtensionToolbarModel* toolbar_model_;
 
@@ -201,28 +192,21 @@ void ToolbarActionsBarUnitTest::SetUp() {
       extensions::extension_action_test_util::CreateToolbarModelForProfile(
           profile());
 
-  main_bar_helper_ = TestToolbarActionsBarHelper::Create(browser(), nullptr);
-
   ToolbarActionsBar::disable_animations_for_testing_ = true;
   ToolbarActionsBar::set_send_overflowed_action_changes_for_testing(false);
-  browser_action_test_util_.reset(
-      new BrowserActionTestUtil(browser(),
-                                toolbar_actions_bar()->delegate_for_test()));
+  browser_action_test_util_.reset(new BrowserActionTestUtil(browser(), false));
 
   if (use_redesign_) {
-    overflow_bar_helper_ =
-        TestToolbarActionsBarHelper::Create(browser(), main_bar_helper_.get());
-    overflow_browser_action_test_util_.reset(
-        new BrowserActionTestUtil(browser(),
-                                  overflow_bar()->delegate_for_test()));
+    overflow_browser_action_test_util_ =
+        browser_action_test_util_->CreateOverflowBar();
   }
 }
 
 void ToolbarActionsBarUnitTest::TearDown() {
   // Since the profile gets destroyed in BrowserWithTestWindowTest::TearDown(),
   // we need to delete this now.
-  overflow_bar_helper_.reset();
-  main_bar_helper_.reset();
+  browser_action_test_util_.reset();
+  overflow_browser_action_test_util_.reset();
   ToolbarActionsBar::disable_animations_for_testing_ = false;
   redesign_switch_.reset();
   BrowserWithTestWindowTest::TearDown();

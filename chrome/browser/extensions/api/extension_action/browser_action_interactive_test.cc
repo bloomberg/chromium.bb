@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopup) {
   if (!ShouldRunPopupTest())
     return;
 
-  BrowserActionTestUtil browserActionBar = BrowserActionTestUtil(browser());
+  BrowserActionTestUtil browserActionBar(browser());
   // Setup extension message listener to wait for javascript to finish running.
   ExtensionTestMessageListener listener("ready", true);
   {

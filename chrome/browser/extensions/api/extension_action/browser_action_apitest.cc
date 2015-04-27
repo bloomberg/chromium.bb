@@ -73,8 +73,10 @@ class BrowserActionApiTest : public ExtensionApiTest {
   ~BrowserActionApiTest() override {}
 
  protected:
-  BrowserActionTestUtil GetBrowserActionsBar() {
-    return BrowserActionTestUtil(browser());
+  BrowserActionTestUtil* GetBrowserActionsBar() {
+    if (!browser_action_test_util_)
+      browser_action_test_util_.reset(new BrowserActionTestUtil(browser()));
+    return browser_action_test_util_.get();
   }
 
   bool OpenPopup(int index) {
@@ -82,16 +84,21 @@ class BrowserActionApiTest : public ExtensionApiTest {
     content::WindowedNotificationObserver popup_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
-    GetBrowserActionsBar().Press(index);
+    GetBrowserActionsBar()->Press(index);
     popup_observer.Wait();
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-    return GetBrowserActionsBar().HasPopup();
+    return GetBrowserActionsBar()->HasPopup();
   }
 
   ExtensionAction* GetBrowserAction(const Extension& extension) {
     return ExtensionActionManager::Get(browser()->profile())->
         GetBrowserAction(extension);
   }
+
+ private:
+  scoped_ptr<BrowserActionTestUtil> browser_action_test_util_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
@@ -101,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar.
-  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
+  ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
 
   // Tell the extension to update the browser action state.
   ResultCatcher catcher;
@@ -148,8 +155,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
       GetBrowserAction(*extension),
       NULL);
   // Test that there is a browser action in the toolbar.
-  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
-  EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
+  ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
+  EXPECT_TRUE(GetBrowserActionsBar()->HasIcon(0));
 
   gfx::Image action_icon = icon_factory.GetIcon(0);
   uint32_t action_icon_last_id = action_icon.ToSkBitmap()->getGenerationID();
@@ -163,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   ResultCatcher catcher;
 
   // Tell the extension to update the icon using ImageData object.
-  GetBrowserActionsBar().Press(0);
+  GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
   action_icon = icon_factory.GetIcon(0);
@@ -176,11 +183,11 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   EXPECT_TRUE(
       ImagesAreEqualAtScale(AddBackgroundForViews(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
                             1.0f));
 
   // Tell the extension to update the icon using path.
-  GetBrowserActionsBar().Press(0);
+  GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
   action_icon = icon_factory.GetIcon(0);
@@ -194,12 +201,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   EXPECT_TRUE(
       ImagesAreEqualAtScale(AddBackgroundForViews(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
                             1.0f));
 
   // Tell the extension to update the icon using dictionary of ImageData
   // objects.
-  GetBrowserActionsBar().Press(0);
+  GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
   action_icon = icon_factory.GetIcon(0);
@@ -212,11 +219,11 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   EXPECT_TRUE(
       ImagesAreEqualAtScale(AddBackgroundForViews(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
                             1.0f));
 
   // Tell the extension to update the icon using dictionary of paths.
-  GetBrowserActionsBar().Press(0);
+  GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
   action_icon = icon_factory.GetIcon(0);
@@ -229,12 +236,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   EXPECT_TRUE(
       ImagesAreEqualAtScale(AddBackgroundForViews(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
                             1.0f));
 
   // Tell the extension to update the icon using dictionary of ImageData
   // objects, but setting only size 19.
-  GetBrowserActionsBar().Press(0);
+  GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
   action_icon = icon_factory.GetIcon(0);
@@ -247,12 +254,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   EXPECT_TRUE(
       ImagesAreEqualAtScale(AddBackgroundForViews(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
                             1.0f));
 
   // Tell the extension to update the icon using dictionary of paths, but
   // setting only size 19.
-  GetBrowserActionsBar().Press(0);
+  GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
   action_icon = icon_factory.GetIcon(0);
@@ -265,12 +272,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   EXPECT_TRUE(
       ImagesAreEqualAtScale(AddBackgroundForViews(*action_icon.ToImageSkia()),
-                            *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
                             1.0f));
 
   // Tell the extension to update the icon using dictionary of ImageData
   // objects, but setting only size 38.
-  GetBrowserActionsBar().Press(0);
+  GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
   action_icon = icon_factory.GetIcon(0);
@@ -290,16 +297,16 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   EXPECT_TRUE(
       ImagesAreEqualAtScale(AddBackgroundForViews(*action_icon_skia),
-                            *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+                            *GetBrowserActionsBar()->GetIcon(0).ToImageSkia(),
                             2.0f));
 
   // Try setting icon with empty dictionary of ImageData objects.
-  GetBrowserActionsBar().Press(0);
+  GetBrowserActionsBar()->Press(0);
   ASSERT_FALSE(catcher.GetNextResult());
   EXPECT_EQ(kEmptyImageDataError, catcher.message());
 
   // Try setting icon with empty dictionary of path objects.
-  GetBrowserActionsBar().Press(0);
+  GetBrowserActionsBar()->Press(0);
   ASSERT_FALSE(catcher.GetNextResult());
   EXPECT_EQ(kEmptyPathError, catcher.message());
 }
@@ -311,26 +318,26 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar and that it has an icon.
-  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
-  EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
+  ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
+  EXPECT_TRUE(GetBrowserActionsBar()->HasIcon(0));
 
   // Execute the action, its title should change.
   ResultCatcher catcher;
-  GetBrowserActionsBar().Press(0);
+  GetBrowserActionsBar()->Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
-  EXPECT_EQ("Showing icon 2", GetBrowserActionsBar().GetTooltip(0));
+  EXPECT_EQ("Showing icon 2", GetBrowserActionsBar()->GetTooltip(0));
 
   // Open a new tab, the title should go back.
   chrome::NewTab(browser());
-  EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
+  EXPECT_EQ("hi!", GetBrowserActionsBar()->GetTooltip(0));
 
   // Go back to first tab, changed title should reappear.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
-  EXPECT_EQ("Showing icon 2", GetBrowserActionsBar().GetTooltip(0));
+  EXPECT_EQ("Showing icon 2", GetBrowserActionsBar()->GetTooltip(0));
 
   // Reload that tab, default title should come back.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  EXPECT_EQ("hi!", GetBrowserActionsBar().GetTooltip(0));
+  EXPECT_EQ("hi!", GetBrowserActionsBar()->GetTooltip(0));
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=70829
@@ -338,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_BrowserActionPopup) {
   ASSERT_TRUE(
       LoadExtension(test_data_dir_.AppendASCII("browser_action/popup")));
-  BrowserActionTestUtil actions_bar = GetBrowserActionsBar();
+  BrowserActionTestUtil* actions_bar = GetBrowserActionsBar();
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
@@ -355,17 +362,17 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_BrowserActionPopup) {
   // Simulate a click on the browser action and verify the size of the resulting
   // popup.  The first one tries to be 0x0, so it should be the min values.
   ASSERT_TRUE(OpenPopup(0));
-  EXPECT_EQ(minSize, actions_bar.GetPopupSize());
-  EXPECT_TRUE(actions_bar.HidePopup());
+  EXPECT_EQ(minSize, actions_bar->GetPopupSize());
+  EXPECT_TRUE(actions_bar->HidePopup());
 
   ASSERT_TRUE(OpenPopup(0));
-  EXPECT_EQ(middleSize, actions_bar.GetPopupSize());
-  EXPECT_TRUE(actions_bar.HidePopup());
+  EXPECT_EQ(middleSize, actions_bar->GetPopupSize());
+  EXPECT_TRUE(actions_bar->HidePopup());
 
   // One more time, but this time it should be constrained by the max values.
   ASSERT_TRUE(OpenPopup(0));
-  EXPECT_EQ(maxSize, actions_bar.GetPopupSize());
-  EXPECT_TRUE(actions_bar.HidePopup());
+  EXPECT_EQ(maxSize, actions_bar->GetPopupSize());
+  EXPECT_TRUE(actions_bar->HidePopup());
 }
 
 // Test that calling chrome.browserAction.setPopup() can enable and change
@@ -389,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionAddPopup) {
   // will add a popup.
   {
     ResultCatcher catcher;
-    GetBrowserActionsBar().Press(0);
+    GetBrowserActionsBar()->Press(0);
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
@@ -467,7 +474,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar.
-  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
+  ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
 
   // Open an incognito window and test that the browser action isn't there by
   // default.
@@ -568,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {
   ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar.
-  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
+  ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
 
   // Test that CSS values (#FF0000) set color correctly.
   ExtensionAction* action = GetBrowserAction(*extension);
@@ -600,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Getters) {
   ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar.
-  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
+  ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
 
   // Test the getters for defaults.
   ResultCatcher catcher;
@@ -623,7 +630,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TestTriggerBrowserAction) {
   ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar.
-  ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
+  ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
 
   ui_test_utils::NavigateToURL(
      browser(),
@@ -635,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TestTriggerBrowserAction) {
   // Simulate a click on the browser action icon.
   {
     ResultCatcher catcher;
-    GetBrowserActionsBar().Press(0);
+    GetBrowserActionsBar()->Press(0);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 

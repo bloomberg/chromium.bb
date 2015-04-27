@@ -945,9 +945,4 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   return toolbarActionsBar_.get();
 }
 
-+ (BrowserActionsController*)fromToolbarActionsBarDelegate:
-    (ToolbarActionsBarDelegate*)delegate {
-  return static_cast<ToolbarActionsBarBridge*>(delegate)->controller_for_test();
-}
-
 @end

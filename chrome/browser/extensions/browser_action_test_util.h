@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
@@ -19,18 +20,25 @@ class Rect;
 class Size;
 }  // namespace gfx
 
+// A class that creates and owns the platform-specific views for the browser
+// actions container. Specific implementations are in the .cc/.mm files.
+class TestToolbarActionsBarHelper {
+ public:
+  virtual ~TestToolbarActionsBarHelper() {}
+};
+
 class BrowserActionTestUtil {
  public:
   // Constructs a BrowserActionTestUtil that uses the |browser|'s default
   // browser action container.
-  explicit BrowserActionTestUtil(Browser* browser)
-      : browser_(browser), bar_delegate_(nullptr) {}
+  explicit BrowserActionTestUtil(Browser* browser);
 
-  // Constructs a BrowserActionTestUtil that will use the |bar_delegate| as the
-  // browser action container to test.
-  BrowserActionTestUtil(Browser* browser,
-                        ToolbarActionsBarDelegate* bar_delegate)
-      : browser_(browser), bar_delegate_(bar_delegate) {}
+  // Constructs a BrowserActionTestUtil which, if |is_real_window| is false,
+  // will create its own browser actions container. This is useful in unit
+  // tests, when the |browser|'s window doesn't create platform-specific views.
+  BrowserActionTestUtil(Browser* browser, bool is_real_window);
+
+  ~BrowserActionTestUtil();
 
   // Returns the number of browser action buttons in the window toolbar.
   int NumberOfBrowserActions();
@@ -85,6 +93,10 @@ class BrowserActionTestUtil {
   // Returns the ToolbarActionsBar.
   ToolbarActionsBar* GetToolbarActionsBar();
 
+  // Creates and returns a BrowserActionTestUtil with an "overflow" container,
+  // with this object's container as the main bar.
+  scoped_ptr<BrowserActionTestUtil> CreateOverflowBar();
+
   // Returns the minimum allowed size of an extension popup.
   static gfx::Size GetMinPopupSize();
 
@@ -92,11 +104,16 @@ class BrowserActionTestUtil {
   static gfx::Size GetMaxPopupSize();
 
  private:
+  // A private constructor to create an overflow version.
+  BrowserActionTestUtil(Browser* browser, BrowserActionTestUtil* main_bar);
+
   Browser* browser_;  // weak
 
-  // If non-null, this is a set view to test with, rather than using the
-  // |browser|'s default container.
-  ToolbarActionsBarDelegate* bar_delegate_;  // weak
+  // Our test helper, which constructs and owns the views if we don't have a
+  // real browser window, or if this is an overflow version.
+  scoped_ptr<TestToolbarActionsBarHelper> test_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionTestUtil);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_BROWSER_ACTION_TEST_UTIL_H_

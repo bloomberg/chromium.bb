@@ -133,10 +133,6 @@ class CommandsApiTest : public ExtensionApiTest {
   ~CommandsApiTest() override {}
 
  protected:
-  BrowserActionTestUtil GetBrowserActionsBar() {
-    return BrowserActionTestUtil(browser());
-  }
-
   bool IsGrantedForTab(const Extension* extension,
                        const content::WebContents* web_contents) {
     return extension->permissions_data()->HasAPIPermissionForTab(
@@ -187,8 +183,9 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   // immaterial to this test).
   ASSERT_TRUE(RunExtensionTest("keybinding/conflicting")) << message_;
 
+  BrowserActionTestUtil browser_actions_bar(browser());
   // Test that there are two browser actions in the toolbar.
-  ASSERT_EQ(2, GetBrowserActionsBar().NumberOfBrowserActions());
+  ASSERT_EQ(2, browser_actions_bar.NumberOfBrowserActions());
 
   ui_test_utils::NavigateToURL(
       browser(), test_server()->GetURL("files/extensions/test_file.txt"));
