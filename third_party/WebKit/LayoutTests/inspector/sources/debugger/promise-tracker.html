@@ -27,6 +27,32 @@ var test = function ()
 {
     InspectorTest.startDebuggerTest(step1);
 
+    var minPromiseId;
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.PromiseUpdated, onPromiseUpdated, this);
+    function onPromiseUpdated(event)
+    {
+        var target = /** @type {!WebInspector.Target} */ (event.target.target());
+        var eventType = /** @type {string} */ (event.data.eventType);
+        var promise = /** @type {!DebuggerAgent.PromiseDetails} */ (event.data.promise);
+
+        if (typeof minPromiseId === "undefined")
+            minPromiseId = promise.id;
+
+        InspectorTest.assertTrue(promise.creationTime > 0, "FAIL: invalid Promise creation time.");
+        InspectorTest.assertTrue(!promise.settlementTime || (promise.settlementTime >= promise.creationTime), "FAIL: invalid Promise creation or settlement time.");
+        var parentId = promise.parentId ? promise.parentId - minPromiseId : undefined;
+        var promiseInfo = "Promise (" + eventType + "):" +
+                          "\n    id: " + (promise.id - minPromiseId) +
+                          "\n    status: " + promise.status +
+                          "\n    parent id: " + parentId;
+        var callFrame = promise.callFrame;
+        if (callFrame) {
+            var url = WebInspector.displayNameForURL(callFrame.url);
+            promiseInfo += "\n    " + callFrame.functionName + " " + url + ":" + callFrame.lineNumber;
+        }
+        InspectorTest.addResult(promiseInfo);
+    }
+
     function step1()
     {
         InspectorTest.DebuggerAgent.enablePromiseTracker();
@@ -35,64 +61,19 @@ var test = function ()
 
     function step2()
     {
-        InspectorTest.DebuggerAgent.getPromises(didGetPromises);
-    }
-
-    function didGetPromises(error, response)
-    {
-        InspectorTest.assertTrue(!error, "FAIL: " + error);
-
-        function comparePromiseData(x, y)
-        {
-            var t1 = x.creationTime || 0;
-            var t2 = y.creationTime || 0;
-            return t1 - t2 || x.id - y.id;
-        }
-
-        InspectorTest.assertEquals(3, response.length, "FAIL: Invalid number of Promises.");
-        var minPromiseId = response[0].id;
-        for (var i = 0; i < response.length; i++)
-            minPromiseId = Math.min(minPromiseId, response[i].id);
-        response.sort(comparePromiseData);
-
-        var output = [];
-        for (var i = 0; i < response.length; i++) {
-            var promise = response[i];
-            InspectorTest.assertTrue(promise.creationTime > 0, "FAIL: invalid Promise creation time.");
-            InspectorTest.assertTrue(!promise.settlementTime || (promise.settlementTime >= promise.creationTime), "FAIL: invalid Promise creation or settlement time.");
-            var parentId = promise.parentId ? promise.parentId - minPromiseId : undefined;
-            var promiseInfo = "Promise:" +
-                              "\n    id: " + (promise.id - minPromiseId) +
-                              "\n    status: " + promise.status +
-                              "\n    parent id: " + parentId;
-            var callFrame = promise.callFrame;
-            if (callFrame) {
-                var url = WebInspector.displayNameForURL(callFrame.url);
-                promiseInfo += "\n    " + callFrame.functionName + " " + url + ":" + callFrame.lineNumber;
-            }
-            output.push(promiseInfo);
-        }
-
-        InspectorTest.assertGreaterOrEqual(response[1].settlementTime, response[0].settlementTime, "FAIL: invalid Promise settlement time.");
-        InspectorTest.assertTrue(!response[2].settlementTime, "FAIL: a pending Promise should not have settlement time.");
-
-        InspectorTest.addResults(output);
-
-        InspectorTest.DebuggerAgent.getPromiseById(response[0].id, "console", didGetPromiseById);
+        InspectorTest.DebuggerAgent.getPromiseById(minPromiseId, "console", didGetPromiseById);
     }
 
     function didGetPromiseById(error, response)
     {
-        InspectorTest.assertTrue(!error, "FAIL: " + error);
-        InspectorTest.assertTrue(response && response.type === "object" && response.className === "Promise", "FAIL: returned by ID object is not a Promise.");
-
+        InspectorTest.addResult("Got promise by id: " + !error);
+        InspectorTest.addResult("Resolved object class: " + response.className);
         InspectorTest.RuntimeAgent.getProperties(response.objectId, didGetProperties);
     }
 
     function didGetProperties(error, properties, internalProperties)
     {
-        InspectorTest.assertTrue(!error, "FAIL: " + error);
-        InspectorTest.assertTrue(internalProperties && internalProperties.length > 0, "FAIL: no internal properties.");
+        InspectorTest.assertTrue("Received internal properties of the first promise: " + (internalProperties && internalProperties.length > 0));
 
         var status, value;
         for (var i = 0; i < internalProperties.length; i++) {
@@ -106,13 +87,6 @@ var test = function ()
         InspectorTest.addResult("Promise:\n    status: " + status + "\n    value: " + value);
 
         InspectorTest.DebuggerAgent.disablePromiseTracker();
-        InspectorTest.DebuggerAgent.getPromises(didGetPromises2);
-    }
-
-    function didGetPromises2(error, response)
-    {
-        var hasData = !error && response && response.length > 0;
-        InspectorTest.assertTrue(!hasData, "FAIL: expected error or no data after disabling promise tracker.");
         InspectorTest.completeDebuggerTest();
     }
 }

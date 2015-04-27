@@ -136,7 +136,6 @@ public:
     void setAsyncCallStackDepth(ErrorString*, int depth) final;
     void enablePromiseTracker(ErrorString*, const bool* captureStacks) final;
     void disablePromiseTracker(ErrorString*) final;
-    void getPromises(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::PromiseDetails> >& promises) final;
     void getPromiseById(ErrorString*, int promiseId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& promise) final;
     void flushAsyncOperationEvents(ErrorString*) final;
     void setAsyncOperationBreakpoint(ErrorString*, int operationId) final;
