@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/prefs/pref_registry.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "components/pref_registry/pref_registry_export.h"
 
 namespace base {
@@ -31,7 +31,12 @@ namespace user_prefs {
 // appropriate time before the PrefService for these preferences is
 // constructed. See e.g. chrome/browser/prefs/browser_prefs.cc which
 // does this for Chrome.
-class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
+//
+// TODO(raymes): This class only exists to support SyncableRegistrationCallback
+// logic which is only required to support pref registration after the
+// PrefService has been created which is only used by tests. We can remove this
+// entire class and those tests with some work.
+class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistrySimple {
  public:
   // Enum of flags used when registering preferences to determine if it should
   // be synced or not. These flags are mutually exclusive, only one of them
@@ -52,7 +57,7 @@ class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
     SYNCABLE_PRIORITY_PREF = 1 << 2,
   };
 
-  typedef base::Callback<void(const char* path, uint32 flags)>
+  typedef base::Callback<void(const std::string& path, uint32 flags)>
       SyncableRegistrationCallback;
 
   PrefRegistrySyncable();
@@ -66,33 +71,6 @@ class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
   // instead.
   void SetSyncableRegistrationCallback(const SyncableRegistrationCallback& cb);
 
-  // |flags| is a bitmask of PrefRegistrationFlags.
-  void RegisterBooleanPref(const char* path,
-                           bool default_value,
-                           uint32 flags);
-  void RegisterIntegerPref(const char* path, int default_value, uint32 flags);
-  void RegisterDoublePref(const char* path,
-                          double default_value,
-                          uint32 flags);
-  void RegisterStringPref(const char* path,
-                          const std::string& default_value,
-                          uint32 flags);
-  void RegisterFilePathPref(const char* path,
-                            const base::FilePath& default_value,
-                            uint32 flags);
-  void RegisterListPref(const char* path, uint32 flags);
-  void RegisterDictionaryPref(const char* path, uint32 flags);
-  void RegisterListPref(const char* path,
-                        base::ListValue* default_value,
-                        uint32 flags);
-  void RegisterDictionaryPref(const char* path,
-                              base::DictionaryValue* default_value,
-                              uint32 flags);
-  void RegisterInt64Pref(const char* path, int64 default_value, uint32 flags);
-  void RegisterUint64Pref(const char* path,
-                          uint64 default_value,
-                          uint32 flags);
-
   // Returns a new PrefRegistrySyncable that uses the same defaults
   // store.
   scoped_refptr<PrefRegistrySyncable> ForkForIncognito();
@@ -100,10 +78,10 @@ class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
  private:
   ~PrefRegistrySyncable() override;
 
-  // |flags| is a bitmask of PrefRegistrationFlags.
-  void RegisterSyncablePreference(const char* path,
-                                  base::Value* default_value,
-                                  uint32 flags);
+  // PrefRegistrySimple overrides.
+  void OnPrefRegistered(const std::string& path,
+                        base::Value* default_value,
+                        uint32 flags) override;
 
   SyncableRegistrationCallback callback_;
 

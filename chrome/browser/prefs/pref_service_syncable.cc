@@ -58,8 +58,8 @@ PrefServiceSyncable::PrefServiceSyncable(
   for (PrefRegistry::const_iterator it = pref_registry->begin();
        it != pref_registry->end(); ++it) {
     const std::string& path = it->first;
-    AddRegisteredSyncablePreference(
-        path.c_str(), pref_registry_->GetRegistrationFlags(path));
+    AddRegisteredSyncablePreference(path,
+                                    pref_registry_->GetRegistrationFlags(path));
   }
 
   // Watch for syncable preferences registered after this point.
@@ -160,14 +160,15 @@ void PrefServiceSyncable::RemoveSyncedPrefObserver(
   priority_pref_sync_associator_.RemoveSyncedPrefObserver(name, observer);
 }
 
-void PrefServiceSyncable::AddRegisteredSyncablePreference(const char* path,
-                                                          uint32 flags) {
+void PrefServiceSyncable::AddRegisteredSyncablePreference(
+    const std::string& path,
+    uint32 flags) {
   DCHECK(FindPreference(path));
   if (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PREF) {
-    pref_sync_associator_.RegisterPref(path);
+    pref_sync_associator_.RegisterPref(path.c_str());
   } else if (flags &
              user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF) {
-    priority_pref_sync_associator_.RegisterPref(path);
+    priority_pref_sync_associator_.RegisterPref(path.c_str());
   }
 }
 
