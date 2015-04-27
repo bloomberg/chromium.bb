@@ -444,6 +444,8 @@ static_library("test_support_sync_core") {
     "sessions/test_util.cc",
     "sessions/test_util.h",
     "test/callback_counter.h",
+    "test/directory_backing_store_corruption_testing.cc",
+    "test/directory_backing_store_corruption_testing.h",
     "test/engine/fake_model_worker.cc",
     "test/engine/fake_model_worker.h",
     "test/engine/fake_sync_scheduler.cc",
@@ -488,6 +490,8 @@ static_library("test_support_sync_core") {
     "test/test_transaction_observer.h",
     "test/trackable_mock_invalidation.cc",
     "test/trackable_mock_invalidation.h",
+    "util/mock_unrecoverable_error_handler.cc",
+    "util/mock_unrecoverable_error_handler.h",
     "util/test_unrecoverable_error_handler.cc",
     "util/test_unrecoverable_error_handler.h",
   ]

@@ -26,9 +26,8 @@ enum HistogramResultEnum {
 OnDiskDirectoryBackingStore::OnDiskDirectoryBackingStore(
     const std::string& dir_name,
     const base::FilePath& backing_file_path)
-    : DirectoryBackingStore(dir_name),
-      allow_failure_for_test_(false),
-      backing_file_path_(backing_file_path) {
+    : DirectoryBackingStore(dir_name), backing_file_path_(backing_file_path) {
+  DCHECK(backing_file_path_.IsAbsolute());
 }
 
 OnDiskDirectoryBackingStore::~OnDiskDirectoryBackingStore() {

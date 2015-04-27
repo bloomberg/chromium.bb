@@ -12,6 +12,7 @@
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/test/engine/test_syncable_utils.h"
 #include "sync/test/test_directory_backing_store.h"
+#include "sync/util/mock_unrecoverable_error_handler.h"
 
 using base::ExpectDictBooleanValue;
 using base::ExpectDictStringValue;
@@ -2028,6 +2029,25 @@ TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
   snapshot.delete_journals_to_purge.insert(1);
   EXPECT_TRUE(snapshot.HasUnsavedMetahandleChanges());
   snapshot.delete_journals_to_purge.clear();
+}
+
+// Verify that Directory triggers an unrecoverable error when a catastrophic
+// DirectoryBackingStore error is detected.
+TEST_F(SyncableDirectoryTest, CatastrophicError) {
+  MockUnrecoverableErrorHandler unrecoverable_error_handler;
+  Directory dir(new InMemoryDirectoryBackingStore("catastrophic_error"),
+                &unrecoverable_error_handler, nullptr, nullptr, nullptr);
+  ASSERT_EQ(OPENED, dir.Open(kDirectoryName, directory_change_delegate(),
+                             NullTransactionObserver()));
+  ASSERT_EQ(0, unrecoverable_error_handler.invocation_count());
+
+  // Fire off two catastrophic errors. Call it twice to ensure Directory is
+  // tolerant of multiple invocations since that may happen in the real world.
+  dir.OnCatastrophicError();
+  dir.OnCatastrophicError();
+
+  // See that the unrecoverable error handler has been invoked twice.
+  ASSERT_EQ(2, unrecoverable_error_handler.invocation_count());
 }
 
 }  // namespace syncable
