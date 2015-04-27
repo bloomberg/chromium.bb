@@ -17,11 +17,4 @@
       android:layout_height="wrap_content"
       android:visibility="gone"
       android:contentDescription="@null" />
-
-  <ImageView android:id="@+id/voice_and_video_capture_icon"
-      android:layout_width="32dp"
-      android:layout_height="32dp"
-      android:visibility="gone"
-      android:contentDescription="@null"
-      android:src="@drawable/website_voice_and_video_capture" />
 </LinearLayout>

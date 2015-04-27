@@ -202,9 +202,8 @@ public class WebsitePreferences extends PreferenceFragment
     private boolean isOnBlockList(WebsitePreference website) {
         if (mFilter.showCookiesSites(mCategoryFilter)) {
             return website.site().getCookiePermission() == ContentSetting.BLOCK;
-        } else if (mFilter.showCameraMicSites(mCategoryFilter)) {
-            return website.site().getVoiceCapturePermission() == ContentSetting.BLOCK
-                    || website.site().getVideoCapturePermission() == ContentSetting.BLOCK;
+        } else if (mFilter.showCameraSites(mCategoryFilter)) {
+            return website.site().getCameraPermission() == ContentSetting.BLOCK;
         } else if (mFilter.showFullscreenSites(mCategoryFilter)) {
             return website.site().getFullscreenPermission() == ContentSetting.ASK;
         } else if (mFilter.showGeolocationSites(mCategoryFilter)) {
@@ -213,6 +212,8 @@ public class WebsitePreferences extends PreferenceFragment
             return website.site().getImagesPermission() == ContentSetting.BLOCK;
         } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
             return website.site().getJavaScriptPermission() == ContentSetting.BLOCK;
+        } else if (mFilter.showMicrophoneSites(mCategoryFilter)) {
+            return website.site().getMicrophonePermission() == ContentSetting.BLOCK;
         } else if (mFilter.showPopupSites(mCategoryFilter)) {
             return website.site().getPopupPermission() == ContentSetting.BLOCK;
         } else if (mFilter.showPushNotificationsSites(mCategoryFilter)) {
@@ -355,14 +356,16 @@ public class WebsitePreferences extends PreferenceFragment
             } else if (mFilter.showCookiesSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setAllowCookiesEnabled((boolean) newValue);
                 updateThirdPartyCookiesCheckBox();
-            } else if (mFilter.showCameraMicSites(mCategoryFilter)) {
-                PrefServiceBridge.getInstance().setCameraMicEnabled((boolean) newValue);
+            } else if (mFilter.showCameraSites(mCategoryFilter)) {
+                PrefServiceBridge.getInstance().setCameraEnabled((boolean) newValue);
             } else if (mFilter.showFullscreenSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setFullscreenAllowed((boolean) newValue);
             } else if (mFilter.showImagesSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setImagesEnabled((boolean) newValue);
             } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setJavaScriptEnabled((boolean) newValue);
+            } else if (mFilter.showMicrophoneSites(mCategoryFilter)) {
+                PrefServiceBridge.getInstance().setMicEnabled((boolean) newValue);
             } else if (mFilter.showPopupSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setAllowPopupsEnabled((boolean) newValue);
             } else if (mFilter.showPushNotificationsSites(mCategoryFilter)) {
@@ -446,7 +449,7 @@ public class WebsitePreferences extends PreferenceFragment
      */
     private boolean isCategoryManaged() {
         PrefServiceBridge prefs = PrefServiceBridge.getInstance();
-        if (mFilter.showCameraMicSites(mCategoryFilter)) return !prefs.isCameraMicUserModifiable();
+        if (mFilter.showCameraSites(mCategoryFilter)) return !prefs.isCameraUserModifiable();
         if (mFilter.showCookiesSites(mCategoryFilter)) return prefs.isAcceptCookiesManaged();
         if (mFilter.showFullscreenSites(mCategoryFilter)) return prefs.isFullscreenManaged();
         if (mFilter.showGeolocationSites(mCategoryFilter)) {
@@ -454,6 +457,7 @@ public class WebsitePreferences extends PreferenceFragment
         }
         if (mFilter.showImagesSites(mCategoryFilter)) return prefs.imagesManaged();
         if (mFilter.showJavaScriptSites(mCategoryFilter)) return prefs.javaScriptManaged();
+        if (mFilter.showMicrophoneSites(mCategoryFilter)) return !prefs.isMicUserModifiable();
         if (mFilter.showPopupSites(mCategoryFilter)) return prefs.isPopupsManaged();
         return false;
     }
@@ -467,8 +471,11 @@ public class WebsitePreferences extends PreferenceFragment
         if (mFilter.showGeolocationSites(mCategoryFilter)) {
             return prefs.isAllowLocationManagedByCustodian();
         }
-        if (mFilter.showCameraMicSites(mCategoryFilter)) {
-            return prefs.isCameraMicManagedByCustodian();
+        if (mFilter.showCameraSites(mCategoryFilter)) {
+            return prefs.isCameraManagedByCustodian();
+        }
+        if (mFilter.showMicrophoneSites(mCategoryFilter)) {
+            return prefs.isMicManagedByCustodian();
         }
         return false;
     }
@@ -570,11 +577,11 @@ public class WebsitePreferences extends PreferenceFragment
                 if (isCategoryManaged() && !isCategoryManagedByCustodian()) {
                     globalToggle.setIcon(R.drawable.controlled_setting_mandatory);
                 }
-                if (mFilter.showGeolocationSites(mCategoryFilter)) {
+                if (mFilter.showCameraSites(mCategoryFilter)) {
+                    globalToggle.setChecked(PrefServiceBridge.getInstance().isCameraEnabled());
+                } else if (mFilter.showGeolocationSites(mCategoryFilter)) {
                     globalToggle.setChecked(
                             LocationSettings.getInstance().isChromeLocationSettingEnabled());
-                } else if (mFilter.showCameraMicSites(mCategoryFilter)) {
-                    globalToggle.setChecked(PrefServiceBridge.getInstance().isCameraMicEnabled());
                 } else if (mFilter.showCookiesSites(mCategoryFilter)) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isAcceptCookiesEnabled());
@@ -586,6 +593,8 @@ public class WebsitePreferences extends PreferenceFragment
                             PrefServiceBridge.getInstance().imagesEnabled());
                 } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
                     globalToggle.setChecked(PrefServiceBridge.getInstance().javaScriptEnabled());
+                } else if (mFilter.showMicrophoneSites(mCategoryFilter)) {
+                    globalToggle.setChecked(PrefServiceBridge.getInstance().isMicEnabled());
                 } else if (mFilter.showPopupSites(mCategoryFilter)) {
                     globalToggle.setChecked(PrefServiceBridge.getInstance().popupsEnabled());
                 } else if (mFilter.showPushNotificationsSites(mCategoryFilter)) {

@@ -78,8 +78,10 @@ public class WebsitePermissionsFetcher {
         queue.add(new ProtectedMediaIdentifierInfoFetcher());
         // Push notification permission is per-origin and per-embedder.
         queue.add(new PushNotificationInfoFetcher());
-        // Voice and Video capture permission is per-origin and per-embedder.
-        queue.add(new VoiceAndVideoCaptureInfoFetcher());
+        // Camera capture permission is per-origin and per-embedder.
+        queue.add(new CameraCaptureInfoFetcher());
+        // Micropohone capture permission is per-origin and per-embedder.
+        queue.add(new MicrophoneCaptureInfoFetcher());
         queue.add(new PermissionsAvailableCallbackRunner());
         queue.next();
     }
@@ -112,9 +114,12 @@ public class WebsitePermissionsFetcher {
         } else if (filterHelper.showFullscreenSites(filter)) {
             // Local storage info is per-origin.
             queue.add(new FullscreenInfoFetcher());
-        } else if (filterHelper.showCameraMicSites(filter)) {
-            // Voice and Video capture permission is per-origin and per-embedder.
-            queue.add(new VoiceAndVideoCaptureInfoFetcher());
+        } else if (filterHelper.showCameraSites(filter)) {
+            // Camera capture permission is per-origin and per-embedder.
+            queue.add(new CameraCaptureInfoFetcher());
+        } else if (filterHelper.showMicrophoneSites(filter)) {
+            // Micropohone capture permission is per-origin and per-embedder.
+            queue.add(new MicrophoneCaptureInfoFetcher());
         } else if (filterHelper.showPopupSites(filter)) {
             // Popup exceptions are host-based patterns (unless we start
             // synchronizing popup exceptions with desktop Chrome.)
@@ -364,14 +369,25 @@ public class WebsitePermissionsFetcher {
         }
     }
 
-    private class VoiceAndVideoCaptureInfoFetcher implements Task {
+    private class CameraCaptureInfoFetcher implements Task {
         @Override
         public void run(TaskQueue queue) {
-            for (VoiceAndVideoCaptureInfo info :
-                    WebsitePreferenceBridge.getVoiceAndVideoCaptureInfo()) {
+            for (CameraInfo info : WebsitePreferenceBridge.getCameraInfo()) {
                 WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
                 if (address == null) continue;
-                createSiteByOriginAndHost(address).setVoiceAndVideoCaptureInfo(info);
+                createSiteByOriginAndHost(address).setCameraInfo(info);
+            }
+            queue.next();
+        }
+    }
+
+    private class MicrophoneCaptureInfoFetcher implements Task {
+        @Override
+        public void run(TaskQueue queue) {
+            for (MicrophoneInfo info : WebsitePreferenceBridge.getMicrophoneInfo()) {
+                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
+                if (address == null) continue;
+                createSiteByOriginAndHost(address).setMicrophoneInfo(info);
             }
             queue.next();
         }

@@ -24,15 +24,16 @@ public class Website implements Serializable {
     private final WebsiteAddress mAddress;
     private final String mTitle;
     private String mSummary;
+    private CameraInfo mCameraInfo;
     private CookieInfo mCookieInfo;
     private GeolocationInfo mGeolocationInfo;
+    private MicrophoneInfo mMicrophoneInfo;
     private MidiInfo mMidiInfo;
     private ContentSettingException mImagesException;
     private ContentSettingException mJavaScriptException;
     private ContentSettingException mPopupException;
     private ProtectedMediaIdentifierInfo mProtectedMediaIdentifierInfo;
     private PushNotificationInfo mPushNotificationInfo;
-    private VoiceAndVideoCaptureInfo mVoiceAndVideoCaptureInfo;
     private LocalStorageInfo mLocalStorageInfo;
     private final List<StorageInfo> mStorageInfo = new ArrayList<StorageInfo>();
     private int mStorageInfoCallbacksLeft;
@@ -296,85 +297,61 @@ public class Website implements Serializable {
     }
 
     /**
-     * Sets voice and video capture info class.
+     * Sets camera capture info class.
      */
-    public void setVoiceAndVideoCaptureInfo(VoiceAndVideoCaptureInfo info) {
-        mVoiceAndVideoCaptureInfo = info;
+    public void setCameraInfo(CameraInfo info) {
+        mCameraInfo = info;
         WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
         if (embedder != null) {
             mSummary = embedder.getTitle();
         }
     }
 
-    public VoiceAndVideoCaptureInfo getVoiceAndVideoCaptureInfo() {
-        return mVoiceAndVideoCaptureInfo;
+    public CameraInfo getCameraInfo() {
+        return mCameraInfo;
     }
 
     /**
-     * Returns what setting governs voice capture access.
+     * Sets microphone capture info class.
      */
-    public ContentSetting getVoiceCapturePermission() {
-        return mVoiceAndVideoCaptureInfo != null
-                ? mVoiceAndVideoCaptureInfo.getVoiceCapturePermission() : null;
-    }
-
-    /**
-     * Returns what setting governs video capture access.
-     */
-    public ContentSetting getVideoCapturePermission() {
-        return mVoiceAndVideoCaptureInfo != null
-                ? mVoiceAndVideoCaptureInfo.getVideoCapturePermission() : null;
-    }
-
-    /**
-     * Configure voice capture setting for this site.
-     */
-    public void setVoiceCapturePermission(ContentSetting value) {
-        if (mVoiceAndVideoCaptureInfo != null) {
-            mVoiceAndVideoCaptureInfo.setVoiceCapturePermission(value);
+    public void setMicrophoneInfo(MicrophoneInfo info) {
+        mMicrophoneInfo = info;
+        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
+        if (embedder != null) {
+            mSummary = embedder.getTitle();
         }
     }
 
-    /**
-     * Configure video capture setting for this site.
-     */
-    public void setVideoCapturePermission(ContentSetting value) {
-        if (mVoiceAndVideoCaptureInfo != null) {
-            mVoiceAndVideoCaptureInfo.setVideoCapturePermission(value);
-        }
+    public MicrophoneInfo getMicrophoneInfo() {
+        return mMicrophoneInfo;
     }
 
     /**
-     * Returns the type of media that is being captured (audio/video/both).
+     * Returns what setting governs microphone capture access.
      */
-    public int getMediaAccessType() {
-        ContentSetting voice = getVoiceCapturePermission();
-        ContentSetting video = getVideoCapturePermission();
-        if (video != null) {
-            if (voice == null) {
-                if (video == ContentSetting.ALLOW) {
-                    return CAMERA_ACCESS_ALLOWED;
-                } else {
-                    return CAMERA_ACCESS_DENIED;
-                }
-            } else {
-                if (video != voice) {
-                    return INVALID_CAMERA_OR_MICROPHONE_ACCESS;
-                }
-                if (video == ContentSetting.ALLOW && voice == ContentSetting.ALLOW) {
-                    return MICROPHONE_AND_CAMERA_ACCESS_ALLOWED;
-                } else {
-                    return MICROPHONE_AND_CAMERA_ACCESS_DENIED;
-                }
-            }
-        } else {
-            if (voice == null) return INVALID_CAMERA_OR_MICROPHONE_ACCESS;
-            if (voice == ContentSetting.ALLOW) {
-                return MICROPHONE_ACCESS_ALLOWED;
-            } else {
-                return MICROPHONE_ACCESS_DENIED;
-            }
-        }
+    public ContentSetting getMicrophonePermission() {
+        return mMicrophoneInfo != null ? mMicrophoneInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Returns what setting governs camera capture access.
+     */
+    public ContentSetting getCameraPermission() {
+        return mCameraInfo != null ? mCameraInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure microphone capture setting for this site.
+     */
+    public void setMicrophonePermission(ContentSetting value) {
+        if (mMicrophoneInfo != null) mMicrophoneInfo.setContentSetting(value);
+    }
+
+    /**
+     * Configure camera capture setting for this site.
+     */
+    public void setCameraPermission(ContentSetting value) {
+        if (mCameraInfo != null) mCameraInfo.setContentSetting(value);
     }
 
     public void setLocalStorageInfo(LocalStorageInfo info) {

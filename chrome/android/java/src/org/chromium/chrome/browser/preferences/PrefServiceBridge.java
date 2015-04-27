@@ -721,32 +721,61 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return Whether the camera/microphone permission is enabled.
+     * @return Whether the camera permission is enabled.
      */
-    public boolean isCameraMicEnabled() {
-        return nativeGetCameraMicEnabled();
+    public boolean isCameraEnabled() {
+        return nativeGetCameraEnabled();
     }
 
     /**
-     * Sets the preferences on whether to enable/disable camera and microphone
+     * Sets the preferences on whether to enable/disable camera.
      */
-    public void setCameraMicEnabled(boolean enabled) {
-        nativeSetCameraMicEnabled(enabled);
+    public void setCameraEnabled(boolean enabled) {
+        nativeSetCameraEnabled(enabled);
     }
 
     /**
      * @return Whether the camera/microphone permission is managed
      * by the custodian of the supervised account.
      */
-    public boolean isCameraMicManagedByCustodian() {
-        return nativeGetCameraMicManagedByCustodian();
+    public boolean isCameraManagedByCustodian() {
+        return nativeGetCameraManagedByCustodian();
     }
 
     /**
-     * @return Whether the camera/microphone permission is editable by the user.
+     * @return Whether the camera permission is editable by the user.
      */
-    public boolean isCameraMicUserModifiable() {
-        return nativeGetCameraMicUserModifiable();
+    public boolean isCameraUserModifiable() {
+        return nativeGetCameraUserModifiable();
+    }
+
+    /**
+     * @return Whether the microphone permission is enabled.
+     */
+    public boolean isMicEnabled() {
+        return nativeGetMicEnabled();
+    }
+
+    /**
+     * Sets the preferences on whether to enable/disable microphone.
+     */
+    public void setMicEnabled(boolean enabled) {
+        nativeSetMicEnabled(enabled);
+    }
+
+    /**
+     * @return Whether the microphone permission is managed by the custodian of
+     * the supervised account.
+     */
+    public boolean isMicManagedByCustodian() {
+        return nativeGetMicManagedByCustodian();
+    }
+
+    /**
+     * @return Whether the microphone permission is editable by the user.
+     */
+    public boolean isMicUserModifiable() {
+        return nativeGetMicUserModifiable();
     }
 
     /**
@@ -877,8 +906,14 @@ public final class PrefServiceBridge {
     private native boolean nativeGetDoNotTrackEnabled();
     private native boolean nativeGetPasswordEchoEnabled();
     private native boolean nativeGetFirstRunEulaAccepted();
-    private native boolean nativeGetCameraMicUserModifiable();
-    private native boolean nativeGetCameraMicManagedByCustodian();
+    private native boolean nativeGetCameraEnabled();
+    private native void nativeSetCameraEnabled(boolean allow);
+    private native boolean nativeGetCameraUserModifiable();
+    private native boolean nativeGetCameraManagedByCustodian();
+    private native boolean nativeGetMicEnabled();
+    private native void nativeSetMicEnabled(boolean allow);
+    private native boolean nativeGetMicUserModifiable();
+    private native boolean nativeGetMicManagedByCustodian();
     private native boolean nativeGetFullscreenAllowed();
     private native boolean nativeGetFullscreenManaged();
     private native boolean nativeGetTranslateEnabled();
@@ -911,11 +946,9 @@ public final class PrefServiceBridge {
     private native boolean nativeGetAllowLocationEnabled();
     private native boolean nativeGetPushNotificationsEnabled();
     private native void nativeSetAllowLocationEnabled(boolean allow);
-    private native void nativeSetCameraMicEnabled(boolean allow);
     private native void nativeSetPushNotificationsEnabled(boolean allow);
     private native void nativeSetPasswordEchoEnabled(boolean enabled);
     private native void nativeSetPopupException(String pattern, int setting);
-    private native boolean nativeGetCameraMicEnabled();
     private native boolean nativeGetAutologinEnabled();
     private native void nativeSetAutologinEnabled(boolean autologinEnabled);
     private native void nativeSetCrashReporting(boolean reporting);

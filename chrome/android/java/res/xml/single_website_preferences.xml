@@ -25,7 +25,9 @@
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="cookies_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
-        android:key="voice_and_video_capture_permission_list" />
+        android:key="camera_permission_list" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+        android:key="microphone_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="popup_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference

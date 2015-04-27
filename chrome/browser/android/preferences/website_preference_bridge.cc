@@ -91,8 +91,11 @@ static void GetOrigins(JNIEnv* env,
       jembedder = ConvertUTF8ToJavaString(env, embedder);
     switch (content_type) {
       case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+        Java_WebsitePreferenceBridge_insertMicrophoneInfoIntoList(
+            env, list, jorigin.obj(), jembedder.obj());
+        break;
       case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-        Java_WebsitePreferenceBridge_insertVoiceAndVideoCaptureInfoIntoList(
+        Java_WebsitePreferenceBridge_insertCameraInfoIntoList(
             env, list, jorigin.obj(), jembedder.obj());
         break;
       case CONTENT_SETTINGS_TYPE_GEOLOCATION:
@@ -277,33 +280,39 @@ static void SetPushNotificationSettingForOrigin(JNIEnv* env, jclass clazz,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
 }
 
-static void GetVoiceAndVideoCaptureOrigins(JNIEnv* env,
-                                           jclass clazz,
-                                           jobject list,
-                                           jboolean managedOnly) {
-  GetOrigins(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, list, managedOnly);
+static void GetCameraOrigins(JNIEnv* env,
+                             jclass clazz,
+                             jobject list,
+                             jboolean managedOnly) {
   GetOrigins(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, list, managedOnly);
 }
 
-static jint GetVoiceCaptureSettingForOrigin(JNIEnv* env, jclass clazz,
+static void GetMicrophoneOrigins(JNIEnv* env,
+                                 jclass clazz,
+                                 jobject list,
+                                 jboolean managedOnly) {
+  GetOrigins(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, list, managedOnly);
+}
+
+static jint GetMicrophoneSettingForOrigin(JNIEnv* env, jclass clazz,
     jstring origin, jstring embedder) {
   return GetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
       origin, embedder);
 }
 
-static jint GetVideoCaptureSettingForOrigin(JNIEnv* env, jclass clazz,
+static jint GetCameraSettingForOrigin(JNIEnv* env, jclass clazz,
     jstring origin, jstring embedder) {
   return GetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
       origin, embedder);
 }
 
-static void SetVoiceCaptureSettingForOrigin(JNIEnv* env, jclass clazz,
+static void SetMicrophoneSettingForOrigin(JNIEnv* env, jclass clazz,
     jstring origin, jstring embedder, jint value) {
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
       origin, ContentSettingsPattern::Wildcard(), value);
 }
 
-static void SetVideoCaptureSettingForOrigin(JNIEnv* env, jclass clazz,
+static void SetCameraSettingForOrigin(JNIEnv* env, jclass clazz,
     jstring origin, jstring embedder, jint value) {
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
       origin, ContentSettingsPattern::Wildcard(), value);

@@ -505,8 +505,11 @@ For example, some websites may respond to this request by showing you ads that a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_ACCESSING" desc="Summary text explaining that permission will be requested before accessing something, like location.">
         Ask before accessing (recommended)
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_ACCESSING_CAMERA_MIC" desc="Summary text explaining that permission will be requested before accessing the camera and microphone.">
-        Ask before accessing camera and microphone (recommended)
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_ACCESSING_CAMERA" desc="Summary text explaining that permission will be requested before accessing the camera.">
+        Ask before accessing camera (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_ACCESSING_MIC" desc="Summary text explaining that permission will be requested before accessing the microphone.">
+        Ask before accessing microphone (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOWED" desc="Summary text explaining that sites are allowed to use cookies and that it is the recommended setting.">
         Allow sites to save and read cookie data (recommended)
@@ -559,13 +562,16 @@ For example, some websites may respond to this request by showing you ads that a
       </message>
 
       <!-- Camera and microphone preferences -->
-      <message name="IDS_WEBSITE_SETTINGS_USE_CAMERA_OR_MIC" desc="The category filter 'Camera/Mic' for content settings.">
-        Camera or microphone
+      <message name="IDS_WEBSITE_SETTINGS_USE_CAMERA" desc="The category filter 'Camera' for content settings.">
+        Camera
       </message>
-      <message name="IDS_VIDEO_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied video access for the website [CHAR-LIMIT=32]">
+      <message name="IDS_WEBSITE_SETTINGS_USE_MIC" desc="The category filter 'Mic' for content settings.">
+        Microphone
+      </message>
+      <message name="IDS_CAMERA_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied video access for the website [CHAR-LIMIT=32]">
         Access your camera
       </message>
-      <message name="IDS_VOICE_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied voice access for the website [CHAR-LIMIT=32]">
+      <message name="IDS_MIC_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied voice access for the website [CHAR-LIMIT=32]">
         Access your microphone
       </message>
       <message name="IDS_VOICE_AND_VIDEO_PERMISSION_TITLE" desc="Title text to be shown when the user has allowed/denied voice and video access for the website [CHAR-LIMIT=32]">

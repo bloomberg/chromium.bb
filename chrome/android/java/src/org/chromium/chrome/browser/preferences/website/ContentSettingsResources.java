@@ -27,8 +27,10 @@ public class ContentSettingsResources {
                 return R.drawable.permission_images;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
                 return R.drawable.permission_javascript;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-                return R.drawable.permission_media;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                return R.drawable.permission_camera;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                return R.drawable.permission_mic;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
                 return R.drawable.permission_midi;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
@@ -58,8 +60,10 @@ public class ContentSettingsResources {
                 return R.string.images_permission_title;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
                 return R.string.javascript_permission_title;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-                return R.string.website_settings_use_camera_or_mic;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                return R.string.website_settings_use_camera;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                return R.string.website_settings_use_mic;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
                 return R.string.push_notifications_permission_title;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
@@ -87,6 +91,10 @@ public class ContentSettingsResources {
                 return R.string.images_permission_title;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
                 return R.string.javascript_permission_title;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                return R.string.camera_permission_title;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                return R.string.mic_permission_title;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
                 return R.string.midi_sysex_permission_title;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
@@ -112,7 +120,8 @@ public class ContentSettingsResources {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
                 return ContentSetting.ALLOW;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
                 return ContentSetting.ASK;
@@ -134,7 +143,8 @@ public class ContentSettingsResources {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
@@ -195,8 +205,10 @@ public class ContentSettingsResources {
                 return R.string.website_settings_category_cookie_allowed;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
                 return R.string.website_settings_category_ask_before_accessing;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-                return R.string.website_settings_category_ask_before_accessing_camera_mic;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+                return R.string.website_settings_category_ask_before_accessing_camera;
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+                return R.string.website_settings_category_ask_before_accessing_mic;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
                 return R.string.website_settings_category_ask_before_sending;
             default:

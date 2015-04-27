@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.preference.Preference;
 import android.text.format.Formatter;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -147,17 +146,6 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
             }
         }
 
-        ImageView mediaCaptureIcon = (ImageView) view.findViewById(
-                R.id.voice_and_video_capture_icon);
-        mediaCaptureIcon.setVisibility(View.GONE);
-        if (mFilter.showCameraMicSites(mCategoryFilter)) {
-            int level = determineMediaIconToDisplay(mSite.getMediaAccessType());
-            if (level > 0) {
-                mediaCaptureIcon.setImageLevel(level);
-                mediaCaptureIcon.setVisibility(View.VISIBLE);
-            }
-        }
-
         float density = getContext().getResources().getDisplayMetrics().density;
         if (!mFaviconFetched) {
             // Start the favicon fetching. Will respond in onFaviconAvailable.
@@ -176,31 +164,5 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
         int iconPadding = Math.round(FAVICON_PADDING_DP * density);
         View iconView = view.findViewById(android.R.id.icon);
         iconView.setPadding(iconPadding, iconPadding, iconPadding, iconPadding);
-    }
-
-    /**
-     * Converts type of media captured into level 0..4 to display the appropriate media icon.
-     * This level is used in the drawable website_voice_and_video_capture.xml to display the icon.
-     * 0 - Invalid
-     * 1 - Voice and video/only video allowed - display camera allowed icon
-     * 2 - Voice and video/only video denied - display camera denied icon
-     * 3 - Only voice allowed - display mic allowed icon
-     * 4 - Only voice denied - display mic denied icon
-     */
-    private static int determineMediaIconToDisplay(int mediaAccessType) {
-        switch (mediaAccessType) {
-            case Website.CAMERA_ACCESS_ALLOWED:
-            case Website.MICROPHONE_AND_CAMERA_ACCESS_ALLOWED:
-                return 1;
-            case Website.CAMERA_ACCESS_DENIED:
-            case Website.MICROPHONE_AND_CAMERA_ACCESS_DENIED:
-                return 2;
-            case Website.MICROPHONE_ACCESS_ALLOWED:
-                return 3;
-            case Website.MICROPHONE_ACCESS_DENIED:
-                return 4;
-            default:
-                return 0;
-        }
     }
 }

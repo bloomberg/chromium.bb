@@ -200,9 +200,9 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
         preferenceActivity.finish();
     }
 
-    private void setEnableCameraMic(final boolean enabled) {
+    private void setEnableCamera(final boolean enabled) {
         final Preferences preferenceActivity =
-                startContentSettingsCategory(ContentPreferences.CAMERA_AND_MIC_KEY);
+                startContentSettingsCategory(ContentPreferences.CAMERA_KEY);
 
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -212,13 +212,31 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
                 ChromeSwitchPreference toggle = (ChromeSwitchPreference)
                         websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
                 websitePreferences.onPreferenceChange(toggle, enabled);
-                assertEquals("Camera/Mic should be " + (enabled ? "allowed" : "blocked"),
-                        enabled, PrefServiceBridge.getInstance().isCameraMicEnabled());
+                assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"),
+                        enabled, PrefServiceBridge.getInstance().isCameraEnabled());
             }
         });
         preferenceActivity.finish();
     }
 
+    private void setEnableMic(final boolean enabled) {
+        final Preferences preferenceActivity =
+                startContentSettingsCategory(ContentPreferences.MICROPHONE_KEY);
+
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                WebsitePreferences websitePreferences =
+                        (WebsitePreferences) preferenceActivity.getFragmentForTest();
+                ChromeSwitchPreference toggle = (ChromeSwitchPreference)
+                        websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
+                websitePreferences.onPreferenceChange(toggle, enabled);
+                assertEquals("Mic should be " + (enabled ? "allowed" : "blocked"),
+                        enabled, PrefServiceBridge.getInstance().isMicEnabled());
+            }
+        });
+        preferenceActivity.finish();
+    }
     /**
      * Tests that disabling cookies turns off the third-party cookie toggle.
      * @throws Exception
@@ -344,37 +362,76 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
     }
 
     /**
-     * Sets Allow Camera/Mic Enabled to be false and make sure it is set correctly.
+     * Sets Allow Camera Enabled to be false and make sure it is set correctly.
      * @throws Exception
      */
     @SmallTest
     @Feature({"Preferences"})
-    public void testCameraMicBlocked() throws Exception {
-        setEnableCameraMic(false);
+    @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    public void testCameraBlocked() throws Exception {
+        setEnableCamera(false);
 
         // Test that the camera permission doesn't get requested.
         loadUrl(TestHttpServerClient.getUrl("content/test/data/media/getusermedia.html"));
-        runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: true, audio: true});");
+        runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: true, audio: false});");
 
         // No infobars are expected.
         assertTrue(getInfoBars().isEmpty());
     }
 
     /**
-     * Sets Allow Camera/Mic Enabled to be true and make sure it is set correctly.
+     * Sets Allow Mic Enabled to be false and make sure it is set correctly.
      * @throws Exception
      */
     @SmallTest
     @Feature({"Preferences"})
     @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
-    public void testCameraMicNotBlocked() throws Exception {
-        setEnableCameraMic(true);
+    public void testMicBlocked() throws Exception {
+        setEnableMic(false);
+
+        // Test that the microphone permission doesn't get requested.
+        loadUrl(TestHttpServerClient.getUrl("content/test/data/media/getusermedia.html"));
+        runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: false, audio: true});");
+
+        // No infobars are expected.
+        assertTrue(getInfoBars().isEmpty());
+    }
+
+    /**
+     * Sets Allow Camera Enabled to be true and make sure it is set correctly.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    public void testCameraNotBlocked() throws Exception {
+        setEnableCamera(true);
 
         InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
 
-        // Launch a page that use geolocation and make sure an infobar shows up.
+        // Launch a page that uses camera and make sure an infobar shows up.
         loadUrl(TestHttpServerClient.getUrl("content/test/data/media/getusermedia.html"));
-        runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: true, audio: true});");
+        runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: true, audio: false});");
+
+        assertTrue("InfoBar not added.", listener.addInfoBarAnimationFinished());
+        assertEquals("Wrong infobar count", 1, getInfoBars().size());
+    }
+
+    /**
+     * Sets Allow Mic Enabled to be true and make sure it is set correctly.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    @CommandLineFlags.Add(ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM)
+    public void testMicNotBlocked() throws Exception {
+        setEnableCamera(true);
+
+        InfoBarTestAnimationListener listener = setInfoBarAnimationListener();
+
+        // Launch a page that uses the microphone and make sure an infobar shows up.
+        loadUrl(TestHttpServerClient.getUrl("content/test/data/media/getusermedia.html"));
+        runJavaScriptCodeInCurrentTab("getUserMediaAndStop({video: false, audio: true});");
 
         assertTrue("InfoBar not added.", listener.addInfoBarAnimationFinished());
         assertEquals("Wrong infobar count", 1, getInfoBars().size());

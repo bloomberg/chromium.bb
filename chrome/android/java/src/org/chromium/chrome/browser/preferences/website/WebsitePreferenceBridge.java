@@ -137,30 +137,53 @@ public abstract class WebsitePreferenceBridge {
     }
 
     /**
-     * @return List of all the origin/embedder combinations of voice and video capture
-     *         permissions.
+     * @return List of all the origin/embedder combinations of camera permissions.
      */
     @SuppressWarnings("unchecked")
-    public static List<VoiceAndVideoCaptureInfo> getVoiceAndVideoCaptureInfo() {
-        ArrayList<VoiceAndVideoCaptureInfo> list =
-                new ArrayList<VoiceAndVideoCaptureInfo>();
-        // Camera and Microphone can be managed by the custodian of a supervised account or
-        // by enterprise policy.
-        boolean managedOnly = !PrefServiceBridge.getInstance().isCameraMicUserModifiable();
-        nativeGetVoiceAndVideoCaptureOrigins(list, managedOnly);
+    public static List<CameraInfo> getCameraInfo() {
+        ArrayList<CameraInfo> list = new ArrayList<CameraInfo>();
+        // Camera can be managed by the custodian of a supervised account or by enterprise policy.
+        boolean managedOnly = !PrefServiceBridge.getInstance().isCameraUserModifiable();
+        nativeGetCameraOrigins(list, managedOnly);
         return list;
     }
 
     @CalledByNative
-    private static void insertVoiceAndVideoCaptureInfoIntoList(
-            ArrayList<VoiceAndVideoCaptureInfo> list, String origin, String embedder) {
+    private static void insertCameraInfoIntoList(
+            ArrayList<CameraInfo> list, String origin, String embedder) {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getOrigin().equals(origin)
                         && list.get(i).getEmbedder().equals(embedder)) {
                 return;
             }
         }
-        list.add(new VoiceAndVideoCaptureInfo(origin, embedder));
+        list.add(new CameraInfo(origin, embedder));
+    }
+
+    /**
+     * @return List of all the origin/embedder combinations of microphone permissions.
+     */
+    @SuppressWarnings("unchecked")
+    public static List<MicrophoneInfo> getMicrophoneInfo() {
+        ArrayList<MicrophoneInfo> list =
+                new ArrayList<MicrophoneInfo>();
+        // Microphone can be managed by the custodian of a supervised account or by enterprise
+        // policy.
+        boolean managedOnly = !PrefServiceBridge.getInstance().isMicUserModifiable();
+        nativeGetMicrophoneOrigins(list, managedOnly);
+        return list;
+    }
+
+    @CalledByNative
+    private static void insertMicrophoneInfoIntoList(
+            ArrayList<MicrophoneInfo> list, String origin, String embedder) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getOrigin().equals(origin)
+                        && list.get(i).getEmbedder().equals(embedder)) {
+                return;
+            }
+        }
+        list.add(new MicrophoneInfo(origin, embedder));
     }
 
     public static List<ContentSettingException> getContentSettingsExceptions(
@@ -226,13 +249,13 @@ public abstract class WebsitePreferenceBridge {
             String embedder);
     static native void nativeSetProtectedMediaIdentifierSettingForOrigin(String origin,
             String embedder, int value);
-    private static native void nativeGetVoiceAndVideoCaptureOrigins(
-            Object list, boolean managedOnly);
-    static native int nativeGetVoiceCaptureSettingForOrigin(String origin, String embedder);
-    static native int nativeGetVideoCaptureSettingForOrigin(String origin, String embedder);
-    static native void nativeSetVoiceCaptureSettingForOrigin(String origin, String embedder,
+    private static native void nativeGetCameraOrigins(Object list, boolean managedOnly);
+    private static native void nativeGetMicrophoneOrigins(Object list, boolean managedOnly);
+    static native int nativeGetMicrophoneSettingForOrigin(String origin, String embedder);
+    static native int nativeGetCameraSettingForOrigin(String origin, String embedder);
+    static native void nativeSetMicrophoneSettingForOrigin(String origin, String embedder,
             int value);
-    static native void nativeSetVideoCaptureSettingForOrigin(String origin, String embedder,
+    static native void nativeSetCameraSettingForOrigin(String origin, String embedder,
             int value);
     private static native void nativeGetCookieOrigins(Object list, boolean managedOnly);
     static native int nativeGetCookieSettingForOrigin(String origin, String embedder);
