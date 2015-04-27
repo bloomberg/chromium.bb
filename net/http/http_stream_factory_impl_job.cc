@@ -948,9 +948,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   if (ssl_started && (result == OK || IsCertificateError(result))) {
     if (using_quic_ && result == OK) {
       was_npn_negotiated_ = true;
-      NextProto protocol_negotiated =
+      protocol_negotiated_ =
           SSLClientSocket::NextProtoFromString("quic/1+spdy/3");
-      protocol_negotiated_ = protocol_negotiated;
     } else {
       SSLClientSocket* ssl_socket =
           static_cast<SSLClientSocket*>(connection_->socket());
@@ -959,14 +958,12 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
         std::string proto;
         SSLClientSocket::NextProtoStatus status =
             ssl_socket->GetNextProto(&proto);
-        NextProto protocol_negotiated =
-            SSLClientSocket::NextProtoFromString(proto);
-        protocol_negotiated_ = protocol_negotiated;
+        protocol_negotiated_ = SSLClientSocket::NextProtoFromString(proto);
         net_log_.AddEvent(
             NetLog::TYPE_HTTP_STREAM_REQUEST_PROTO,
             base::Bind(&NetLogHttpStreamProtoCallback,
                        status, &proto));
-        if (ssl_socket->was_spdy_negotiated())
+        if (NextProtoIsSPDY(protocol_negotiated_))
           SwitchToSpdyMode();
       }
     }

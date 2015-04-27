@@ -18,9 +18,7 @@
 namespace net {
 
 SSLClientSocket::SSLClientSocket()
-    : was_npn_negotiated_(false),
-      was_spdy_negotiated_(false),
-      protocol_negotiated_(kProtoUnknown),
+    : protocol_negotiated_(kProtoUnknown),
       channel_id_sent_(false),
       signed_cert_timestamps_received_(false),
       stapled_ocsp_response_received_(false),
@@ -91,11 +89,15 @@ const char* SSLClientSocket::NextProtoStatusToString(
 }
 
 bool SSLClientSocket::WasNpnNegotiated() const {
-  return was_npn_negotiated_;
+  std::string unused_proto;
+  return GetNextProto(&unused_proto) == kNextProtoNegotiated;
 }
 
 NextProto SSLClientSocket::GetNegotiatedProtocol() const {
-  return protocol_negotiated_;
+  std::string proto;
+  if (GetNextProto(&proto) != kNextProtoNegotiated)
+    return kProtoUnknown;
+  return NextProtoFromString(proto);
 }
 
 bool SSLClientSocket::IgnoreCertError(int error, int load_flags) {
@@ -103,22 +105,6 @@ bool SSLClientSocket::IgnoreCertError(int error, int load_flags) {
     return true;
   return (load_flags & LOAD_IGNORE_ALL_CERT_ERRORS) &&
          IsCertificateError(error);
-}
-
-bool SSLClientSocket::set_was_npn_negotiated(bool negotiated) {
-  return was_npn_negotiated_ = negotiated;
-}
-
-bool SSLClientSocket::was_spdy_negotiated() const {
-  return was_spdy_negotiated_;
-}
-
-bool SSLClientSocket::set_was_spdy_negotiated(bool negotiated) {
-  return was_spdy_negotiated_ = negotiated;
-}
-
-void SSLClientSocket::set_protocol_negotiated(NextProto protocol_negotiated) {
-  protocol_negotiated_ = protocol_negotiated;
 }
 
 void SSLClientSocket::set_negotiation_extension(
@@ -142,6 +128,32 @@ void SSLClientSocket::set_signed_cert_timestamps_received(
 void SSLClientSocket::set_stapled_ocsp_response_received(
     bool stapled_ocsp_response_received) {
   stapled_ocsp_response_received_ = stapled_ocsp_response_received;
+}
+
+void SSLClientSocket::RecordNegotiationExtension() {
+  if (negotiation_extension_ == kExtensionUnknown)
+    return;
+  std::string proto;
+  SSLClientSocket::NextProtoStatus status = GetNextProto(&proto);
+  if (status == kNextProtoUnsupported)
+    return;
+  // Convert protocol into numerical value for histogram.
+  NextProto protocol_negotiated = SSLClientSocket::NextProtoFromString(proto);
+  base::HistogramBase::Sample sample =
+      static_cast<base::HistogramBase::Sample>(protocol_negotiated);
+  // In addition to the protocol negotiated, we want to record which TLS
+  // extension was used, and in case of NPN, whether there was overlap between
+  // server and client list of supported protocols.
+  if (negotiation_extension_ == kExtensionNPN) {
+    if (status == kNextProtoNoOverlap) {
+      sample += 1000;
+    } else {
+      sample += 500;
+    }
+  } else {
+    DCHECK_EQ(kExtensionALPN, negotiation_extension_);
+  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLProtocolNegotiation", sample);
 }
 
 // static
@@ -240,32 +252,6 @@ std::vector<uint8_t> SSLClientSocket::SerializeNextProtos(
   }
 
   return wire_protos;
-}
-
-void SSLClientSocket::RecordNegotiationExtension() {
-  if (negotiation_extension_ == kExtensionUnknown)
-    return;
-  std::string proto;
-  SSLClientSocket::NextProtoStatus status = GetNextProto(&proto);
-  if (status == kNextProtoUnsupported)
-    return;
-  // Convert protocol into numerical value for histogram.
-  NextProto protocol_negotiated = SSLClientSocket::NextProtoFromString(proto);
-  base::HistogramBase::Sample sample =
-      static_cast<base::HistogramBase::Sample>(protocol_negotiated);
-  // In addition to the protocol negotiated, we want to record which TLS
-  // extension was used, and in case of NPN, whether there was overlap between
-  // server and client list of supported protocols.
-  if (negotiation_extension_ == kExtensionNPN) {
-    if (status == kNextProtoNoOverlap) {
-      sample += 1000;
-    } else {
-      sample += 500;
-    }
-  } else {
-    DCHECK_EQ(kExtensionALPN, negotiation_extension_);
-  }
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SSLProtocolNegotiation", sample);
 }
 
 }  // namespace net

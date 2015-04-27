@@ -61,8 +61,8 @@ class MockSSLClientSocket : public net::SSLClientSocket {
                    unsigned int));
   MOCK_METHOD1(GetTLSUniqueChannelBinding, int(std::string*));
   MOCK_METHOD1(GetSSLCertRequestInfo, void(net::SSLCertRequestInfo*));
-  MOCK_METHOD1(GetNextProto,
-               net::SSLClientSocket::NextProtoStatus(std::string*));
+  MOCK_CONST_METHOD1(GetNextProto,
+                     net::SSLClientSocket::NextProtoStatus(std::string*));
   MOCK_CONST_METHOD0(GetUnverifiedServerCertificateChain,
                      scoped_refptr<net::X509Certificate>());
   MOCK_CONST_METHOD0(GetChannelIDService, net::ChannelIDService*());

@@ -57,6 +57,9 @@ NET_EXPORT NextProtoVector NextProtosSpdy31();
 NET_EXPORT NextProtoVector NextProtosWithSpdyAndQuic(bool spdy_enabled,
                                                      bool quic_enabled);
 
+// Returns true if |next_proto| is a version of SPDY or HTTP/2.
+bool NextProtoIsSPDY(NextProto next_proto);
+
 }  // namespace net
 
 #endif  // NET_SOCKET_NEXT_PROTO_H_

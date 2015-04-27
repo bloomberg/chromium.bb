@@ -2569,8 +2569,8 @@ int SSLClientSocketNSS::GetTLSUniqueChannelBinding(std::string* out) {
   return OK;
 }
 
-SSLClientSocket::NextProtoStatus
-SSLClientSocketNSS::GetNextProto(std::string* proto) {
+SSLClientSocket::NextProtoStatus SSLClientSocketNSS::GetNextProto(
+    std::string* proto) const {
   *proto = core_->state().next_proto;
   return core_->state().next_proto_status;
 }
@@ -3047,6 +3047,8 @@ int SSLClientSocketNSS::DoHandshakeComplete(int result) {
         ssl_config_.version_max < ssl_config_.version_fallback_min) {
       return ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION;
     }
+
+    RecordNegotiationExtension();
 
     // SSL handshake is completed. Let's verify the certificate.
     GotoState(STATE_VERIFY_CERT);

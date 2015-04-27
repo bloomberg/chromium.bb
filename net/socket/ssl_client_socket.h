@@ -105,7 +105,7 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   //   kNextProtoNegotiated:  *proto is set to the negotiated protocol.
   //   kNextProtoNoOverlap:   *proto is set to the first protocol in the
   //                          supported list.
-  virtual NextProtoStatus GetNextProto(std::string* proto) = 0;
+  virtual NextProtoStatus GetNextProto(std::string* proto) const = 0;
 
   static NextProto NextProtoFromString(const std::string& proto_string);
 
@@ -125,14 +125,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // cryptographic implementation.
   static uint16 GetMaxSupportedSSLVersion();
 
-  virtual bool set_was_npn_negotiated(bool negotiated);
-
-  virtual bool was_spdy_negotiated() const;
-
-  virtual bool set_was_spdy_negotiated(bool negotiated);
-
-  virtual void set_protocol_negotiated(NextProto protocol_negotiated);
-
   void set_negotiation_extension(SSLNegotiationExtension negotiation_extension);
 
   // Returns the ChannelIDService used by this socket, or NULL if
@@ -147,10 +139,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // Public for ssl_client_socket_openssl_unittest.cc.
   virtual bool WasChannelIDSent() const;
 
-  // Record which TLS extension was used to negotiate protocol and protocol
-  // chosen in a UMA histogram.
-  void RecordNegotiationExtension();
-
  protected:
   virtual void set_channel_id_sent(bool channel_id_sent);
 
@@ -159,6 +147,10 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
 
   virtual void set_stapled_ocsp_response_received(
       bool stapled_ocsp_response_received);
+
+  // Record which TLS extension was used to negotiate protocol and protocol
+  // chosen in a UMA histogram.
+  void RecordNegotiationExtension();
 
   // Records histograms for channel id support during full handshakes - resumed
   // handshakes are ignored.
@@ -210,10 +202,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
                            VerifyServerChainProperlyOrdered);
 
-  // True if NPN was responded to, independent of selecting SPDY or HTTP.
-  bool was_npn_negotiated_;
-  // True if NPN successfully negotiated SPDY.
-  bool was_spdy_negotiated_;
   // Protocol that we negotiated with the server.
   NextProto protocol_negotiated_;
   // True if a channel ID was sent.

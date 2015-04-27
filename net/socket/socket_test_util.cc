@@ -284,8 +284,6 @@ void DynamicSocketDataProvider::SimulateRead(const char* data,
 SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
     : connect(mode, result),
       next_proto_status(SSLClientSocket::kNextProtoUnsupported),
-      was_npn_negotiated(false),
-      protocol_negotiated(kProtoUnknown),
       client_cert_sent(false),
       cert_request_info(NULL),
       channel_id_sent(false),
@@ -300,9 +298,7 @@ SSLSocketDataProvider::~SSLSocketDataProvider() {
 }
 
 void SSLSocketDataProvider::SetNextProto(NextProto proto) {
-  was_npn_negotiated = true;
   next_proto_status = SSLClientSocket::kNextProtoNegotiated;
-  protocol_negotiated = proto;
   next_proto = SSLClientSocket::NextProtoToString(proto);
 }
 
@@ -1024,8 +1020,8 @@ ChannelIDService* MockClientSocket::GetChannelIDService() const {
   return NULL;
 }
 
-SSLClientSocket::NextProtoStatus
-MockClientSocket::GetNextProto(std::string* proto) {
+SSLClientSocket::NextProtoStatus MockClientSocket::GetNextProto(
+    std::string* proto) const {
   proto->clear();
   return SSLClientSocket::kNextProtoUnsupported;
 }
@@ -1581,11 +1577,7 @@ MockSSLClientSocket::MockSSLClientSocket(
           // tests.
           transport_socket->socket()->NetLog()),
       transport_(transport_socket.Pass()),
-      data_(data),
-      is_npn_state_set_(false),
-      new_npn_value_(false),
-      is_protocol_negotiated_set_(false),
-      protocol_negotiated_(kProtoUnknown) {
+      data_(data) {
   DCHECK(data_);
   peer_addr_ = data->connect.peer_addr;
 }
@@ -1663,32 +1655,9 @@ void MockSSLClientSocket::GetSSLCertRequestInfo(
 }
 
 SSLClientSocket::NextProtoStatus MockSSLClientSocket::GetNextProto(
-    std::string* proto) {
+    std::string* proto) const {
   *proto = data_->next_proto;
   return data_->next_proto_status;
-}
-
-bool MockSSLClientSocket::set_was_npn_negotiated(bool negotiated) {
-  is_npn_state_set_ = true;
-  return new_npn_value_ = negotiated;
-}
-
-bool MockSSLClientSocket::WasNpnNegotiated() const {
-  if (is_npn_state_set_)
-    return new_npn_value_;
-  return data_->was_npn_negotiated;
-}
-
-NextProto MockSSLClientSocket::GetNegotiatedProtocol() const {
-  if (is_protocol_negotiated_set_)
-    return protocol_negotiated_;
-  return data_->protocol_negotiated;
-}
-
-void MockSSLClientSocket::set_protocol_negotiated(
-    NextProto protocol_negotiated) {
-  is_protocol_negotiated_set_ = true;
-  protocol_negotiated_ = protocol_negotiated;
 }
 
 bool MockSSLClientSocket::WasChannelIDSent() const {

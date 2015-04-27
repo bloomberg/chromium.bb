@@ -61,7 +61,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
 
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
-  NextProtoStatus GetNextProto(std::string* proto) override;
+  NextProtoStatus GetNextProto(std::string* proto) const override;
   ChannelIDService* GetChannelIDService() const override;
 
   // SSLSocket implementation.

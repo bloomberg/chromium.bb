@@ -361,8 +361,6 @@ struct SSLSocketDataProvider {
   MockConnect connect;
   SSLClientSocket::NextProtoStatus next_proto_status;
   std::string next_proto;
-  bool was_npn_negotiated;
-  NextProto protocol_negotiated;
   NextProtoVector next_protos_expected_in_ssl_config;
   bool client_cert_sent;
   SSLCertRequestInfo* cert_request_info;
@@ -790,7 +788,7 @@ class MockClientSocket : public SSLClientSocket {
                            unsigned char* out,
                            unsigned int outlen) override;
   int GetTLSUniqueChannelBinding(std::string* out) override;
-  NextProtoStatus GetNextProto(std::string* proto) override;
+  NextProtoStatus GetNextProto(std::string* proto) const override;
   ChannelIDService* GetChannelIDService() const override;
 
  protected:
@@ -1040,15 +1038,11 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   bool WasEverUsed() const override;
   bool UsingTCPFastOpen() const override;
   int GetPeerAddress(IPEndPoint* address) const override;
-  bool WasNpnNegotiated() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
 
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
-  NextProtoStatus GetNextProto(std::string* proto) override;
-  bool set_was_npn_negotiated(bool negotiated) override;
-  void set_protocol_negotiated(NextProto protocol_negotiated) override;
-  NextProto GetNegotiatedProtocol() const override;
+  NextProtoStatus GetNextProto(std::string* proto) const override;
 
   // This MockSocket does not implement the manual async IO feature.
   void OnReadComplete(const MockRead& data) override;
@@ -1066,10 +1060,6 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
 
   scoped_ptr<ClientSocketHandle> transport_;
   SSLSocketDataProvider* data_;
-  bool is_npn_state_set_;
-  bool new_npn_value_;
-  bool is_protocol_negotiated_set_;
-  NextProto protocol_negotiated_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSSLClientSocket);
 };

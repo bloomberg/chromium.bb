@@ -3632,8 +3632,6 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectHttps) {
   ssl.SetNextProto(GetParam());
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  ssl2.was_npn_negotiated = false;
-  ssl2.protocol_negotiated = kProtoUnknown;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
 
   TestCompletionCallback callback1;
@@ -3722,7 +3720,6 @@ TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyConnectSpdy) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
   ssl2.SetNextProto(GetParam());
-  ssl2.protocol_negotiated = GetParam();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
 
   TestCompletionCallback callback1;
@@ -3901,12 +3898,8 @@ TEST_P(HttpNetworkTransactionTest,
   ssl.SetNextProto(GetParam());
   session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  ssl2.was_npn_negotiated = false;
-  ssl2.protocol_negotiated = kProtoUnknown;
   session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl2);
   SSLSocketDataProvider ssl3(ASYNC, OK);
-  ssl3.was_npn_negotiated = false;
-  ssl3.protocol_negotiated = kProtoUnknown;
   session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl3);
 
   TestCompletionCallback callback;
@@ -4039,8 +4032,6 @@ TEST_P(HttpNetworkTransactionTest,
   ssl.SetNextProto(GetParam());
   session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  ssl2.was_npn_negotiated = false;
-  ssl2.protocol_negotiated = kProtoUnknown;
   session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl2);
 
   TestCompletionCallback callback;
@@ -10439,9 +10430,7 @@ TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
   };
 
   SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.next_proto_status = SSLClientSocket::kNextProtoNegotiated;
-  ssl.next_proto = "http/1.1";
-  ssl.protocol_negotiated = kProtoHTTP11;
+  ssl.SetNextProto(kProtoHTTP11);
 
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 

@@ -404,7 +404,7 @@ void SSLClientSocketOpenSSL::GetSSLCertRequestInfo(
 }
 
 SSLClientSocket::NextProtoStatus SSLClientSocketOpenSSL::GetNextProto(
-    std::string* proto) {
+    std::string* proto) const {
   *proto = npn_proto_;
   return npn_status_;
 }
@@ -940,6 +940,7 @@ int SSLClientSocketOpenSSL::DoHandshake() {
       }
     }
 
+    RecordNegotiationExtension();
     RecordChannelIDSupport(channel_id_service_,
                            channel_id_xtn_negotiated_,
                            ssl_config_.channel_id_enabled,

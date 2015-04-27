@@ -37,4 +37,9 @@ NextProtoVector NextProtosSpdy31() {
   return next_protos;
 }
 
+bool NextProtoIsSPDY(NextProto next_proto) {
+  return next_proto >= kProtoSPDYMinimumVersion &&
+         next_proto <= kProtoSPDYMaximumVersion;
+}
+
 }  // namespace net

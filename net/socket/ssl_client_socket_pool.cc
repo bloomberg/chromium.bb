@@ -329,33 +329,11 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
 
   connect_timing_.ssl_end = base::TimeTicks::Now();
 
-  SSLClientSocket::NextProtoStatus status =
-      SSLClientSocket::kNextProtoUnsupported;
-  std::string proto;
-  // GetNextProto will fail and and trigger a NOTREACHED if we pass in a socket
-  // that hasn't had SSL_ImportFD called on it. If we get a certificate error
-  // here, then we know that we called SSL_ImportFD.
-  if (result == OK || IsCertificateError(result)) {
-    status = ssl_socket_->GetNextProto(&proto);
-    ssl_socket_->RecordNegotiationExtension();
-  }
-
-  // If we want spdy over npn, make sure it succeeded.
-  if (status == SSLClientSocket::kNextProtoNegotiated) {
-    ssl_socket_->set_was_npn_negotiated(true);
-    NextProto protocol_negotiated =
-        SSLClientSocket::NextProtoFromString(proto);
-    ssl_socket_->set_protocol_negotiated(protocol_negotiated);
-    // If we negotiated a SPDY version, it must have been present in
-    // SSLConfig::next_protos.
-    // TODO(mbelshe): Verify this.
-    if (protocol_negotiated >= kProtoSPDYMinimumVersion &&
-        protocol_negotiated <= kProtoSPDYMaximumVersion) {
-      ssl_socket_->set_was_spdy_negotiated(true);
-    }
-  }
-  if (params_->want_spdy_over_npn() && !ssl_socket_->was_spdy_negotiated())
+  // If we want SPDY over ALPN/NPN, make sure it succeeded.
+  if (params_->want_spdy_over_npn() &&
+      !NextProtoIsSPDY(ssl_socket_->GetNegotiatedProtocol())) {
     return ERR_NPN_NEGOTIATION_FAILED;
+  }
 
   if (result == OK ||
       ssl_socket_->IgnoreCertError(result, params_->load_flags())) {
