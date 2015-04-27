@@ -349,7 +349,7 @@ static int drmOpenDevice(dev_t dev, int minor, int type)
     }
 
     if (drm_server_info) {
-	group = (serv_group >= 0) ? serv_group : DRM_DEV_GID;
+	group = ((int)serv_group >= 0) ? serv_group : DRM_DEV_GID;
 	chown_check_return(buf, user, group);
 	chmod(buf, devmode);
     }
