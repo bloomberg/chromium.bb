@@ -1448,6 +1448,7 @@ if (is_android) {
   android_library("base_java_test_support") {
     deps = [
       ":base_java",
+      "//testing/android/reporter:reporter_java",
     ]
     DEPRECATED_java_in_dir = "test/android/javatests/src"
   }

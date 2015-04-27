@@ -153,9 +153,11 @@ android_apk("content_shell_test_apk") {
     "//content/public/android:content_javatests",
     "//base:base_javatests",
     "//net/android:net_javatests",
+    "//testing/android/broker:broker_java",
   ]
   datadeps = [
     ":content_shell_apk",
+    "//testing/android/driver:driver_apk",
   ]
   apk_under_test = ":content_shell_apk"
   apk_name = "ContentShellTest"

@@ -7,7 +7,7 @@
     <!-- TODO(boliu): Change minSdkVersion to 19 when bots no longer try
          to install webview apks on < K devices. crbug.com/474374 -->
     <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="21" />
-    <instrumentation android:name="android.test.InstrumentationTestRunner"
+    <instrumentation android:name="org.chromium.base.test.BaseInstrumentationTestRunner"
         android:targetPackage="org.chromium.android_webview.shell"
         android:label="Tests for org.chromium.android_webview"/>
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
@@ -19,5 +19,7 @@
          needed when building test cases. -->
     <application android:hardwareAccelerated="false">
         <uses-library android:name="android.test.runner" />
+        <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
+            android:exported="true"/>
     </application>
 </manifest>

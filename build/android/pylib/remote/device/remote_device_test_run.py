@@ -201,7 +201,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
     return self._results['status']
 
   def _AmInstrumentTestSetup(self, app_path, test_path, runner_package,
-                             environment_variables):
+                             environment_variables, extra_apks=None):
     config = {'runner': runner_package}
     if environment_variables:
       config['environment_vars'] = ','.join(
@@ -213,6 +213,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
     if data_deps:
       with tempfile.NamedTemporaryFile(suffix='.zip') as test_with_deps:
         sdcard_files = []
+        additional_apks = []
         host_test = os.path.basename(test_path)
         with zipfile.ZipFile(test_with_deps.name, 'w') as zip_file:
           zip_file.write(test_path, host_test, zipfile.ZIP_DEFLATED)
@@ -223,8 +224,14 @@ class RemoteDeviceTestRun(test_run.TestRun):
             else:
               zip_utils.WriteToZipFile(zip_file, h, os.path.basename(h))
               sdcard_files.append(os.path.basename(h))
+          for a in extra_apks or ():
+            zip_utils.WriteToZipFile(zip_file, a, os.path.basename(a));
+            additional_apks.append(os.path.basename(a))
+
         config['sdcard_files'] = ','.join(sdcard_files)
         config['host_test'] = host_test
+        if additional_apks:
+          config['additional_apks'] = ','.join(additional_apks)
         self._test_id = self._UploadTestToDevice(
             'robotium', test_with_deps.name, app_id=self._app_id)
     else:
@@ -238,7 +245,8 @@ class RemoteDeviceTestRun(test_run.TestRun):
 
   def _UploadAppToDevice(self, app_path):
     """Upload app to device."""
-    logging.info('Uploading %s to remote service.', app_path)
+    logging.info('Uploading %s to remote service as %s.', app_path,
+                 self._test_instance.suite)
     with open(app_path, 'rb') as apk_src:
       with appurify_sanitized.SanitizeLogging(self._env.verbose_count,
                                               logging.WARNING):

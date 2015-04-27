@@ -130,22 +130,41 @@ class LocalDeviceInstrumentationTestRun(
 
   #override
   def _RunTest(self, device, test):
-    test_name = self._GetTestName(test)
-    logging.info('preparing to run %s: %s' % (test_name, test))
+    extras = self._test_instance.GetHttpServerEnvironmentVars()
 
-    extras = {
-      'class': test_name,
-      'org.chromium.chrome.test.ChromeInstrumentationTestRunner'
-          '.EnableTestHttpServer': '',
-    }
-    timeout = self._GetTimeoutFromAnnotations(test['annotations'], test_name)
+    if isinstance(test, list):
+      if not self._test_instance.driver_apk:
+        raise Exception('driver_apk does not exist. '
+                        'Please build it and try again.')
+
+      def name_and_timeout(t):
+        n = self._GetTestName(t)
+        i = self._GetTimeoutFromAnnotations(t['annotations'], n)
+        return (n, i)
+
+      test_names, timeouts = zip(*(name_and_timeout(t) for t in test))
+
+      test_name = ','.join(test_names)
+      target = '%s/%s' % (
+          self._test_instance.driver_package,
+          self._test_instance.driver_name)
+      extras.update(
+          self._test_instance.GetDriverEnvironmentVars(
+              test_list=test_names))
+      timeout = sum(timeouts)
+    else:
+      test_name = self._GetTestName(test)
+      target = '%s/%s' % (
+          self._test_instance.test_package, self._test_instance.test_runner)
+      extras['class'] = test_name
+      timeout = self._GetTimeoutFromAnnotations(test['annotations'], test_name)
+
+    logging.info('preparing to run %s: %s' % (test_name, test))
 
     time_ms = lambda: int(time.time() * 1e3)
     start_ms = time_ms()
     output = device.StartInstrumentation(
-        '%s/%s' % (self._test_instance.test_package,
-                   self._test_instance.test_runner),
-        raw=True, extras=extras, timeout=timeout, retries=0)
+        target, raw=True, extras=extras, timeout=timeout, retries=0)
     duration_ms = time_ms() - start_ms
 
     # TODO(jbudorick): Make instrumentation tests output a JSON so this
