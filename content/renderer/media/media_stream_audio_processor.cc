@@ -537,10 +537,10 @@ void MediaStreamAudioProcessor::ConfigureBeamforming(webrtc::Config* config) {
   std::vector<webrtc::Point> geometry(1, webrtc::Point(0.f, 0.f, 0.f));
 #if defined(OS_CHROMEOS)
   const std::string board = base::SysInfo::GetLsbReleaseBoard();
-  if (board == "peach_pi") {
+  if (board.find("peach_pi") != std::string::npos) {
     enabled = true;
     geometry.push_back(webrtc::Point(0.050f, 0.f, 0.f));
-  } else if (board == "swanky") {
+  } else if (board.find("swanky") != std::string::npos) {
     enabled = true;
     geometry.push_back(webrtc::Point(0.052f, 0.f, 0.f));
   }
