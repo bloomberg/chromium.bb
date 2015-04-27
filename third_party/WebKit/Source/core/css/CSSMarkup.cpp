@@ -159,7 +159,7 @@ static inline String quoteCSSStringInternal(const CharacterType* characters, uns
 }
 
 // We use single quotes for now because markup.cpp uses double quotes.
-String quoteCSSString(const String& string)
+static String quoteCSSString(const String& string)
 {
     // This function expands each character to at most 3 characters ('\u0010' -> '\' '1' '0') as well as adds
     // 2 quote characters (before and after). Make sure the resulting size (3 * length + 2) will not overflow unsigned.
@@ -246,6 +246,13 @@ void serializeString(const String& string, StringBuilder& appendTo)
     }
 
     appendTo.append('\"');
+}
+
+String serializeString(const String& string)
+{
+    StringBuilder builder;
+    serializeString(string, builder);
+    return builder.toString();
 }
 
 } // namespace blink

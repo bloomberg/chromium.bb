@@ -145,7 +145,7 @@ void HTMLElement::mapLanguageAttributeToLocale(const AtomicString& value, Mutabl
 {
     if (!value.isEmpty()) {
         // Have to quote so the locale id is treated as a string instead of as a CSS keyword.
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale, quoteCSSString(value));
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale, serializeString(value));
 
         // FIXME: Remove the following UseCounter code when we collect enough
         // data.

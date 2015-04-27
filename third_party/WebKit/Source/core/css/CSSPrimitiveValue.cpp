@@ -977,9 +977,7 @@ String CSSPrimitiveValue::customCSSText() const
             text = quoteCSSStringIfNeeded(m_value.string);
             break;
         case CSS_STRING: {
-            StringBuilder result;
-            serializeString(m_value.string, result);
-            text = result.toString();
+            text = serializeString(m_value.string);
             break;
         }
         case CSS_URI:
