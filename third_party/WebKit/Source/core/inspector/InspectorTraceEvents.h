@@ -222,6 +222,7 @@ public:
 class InspectorParseHtmlEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(Document*, unsigned startLine);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(unsigned endLine);
 };
 
 class InspectorParseAuthorStyleSheetEvent {

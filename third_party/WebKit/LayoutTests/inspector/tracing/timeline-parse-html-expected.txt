@@ -8,8 +8,11 @@ ParseHTML Properties:
             frame : <string>
             stackTrace : <object>
             startLine : 0
+            url : .../inspector/tracing/timeline-parse-html.html
         }
-        endLine : 0
+        endData : {
+            endLine : -1
+        }
     }
     endTime : <number>
     stackTrace : <object>
@@ -24,8 +27,11 @@ ParseHTML Properties:
             frame : <string>
             stackTrace : <object>
             startLine : 0
+            url : .../inspector/tracing/timeline-parse-html.html
         }
-        endLine : 0
+        endData : {
+            endLine : -1
+        }
     }
     endTime : <number>
     stackTrace : <object>

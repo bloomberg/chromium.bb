@@ -513,7 +513,15 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorParseHtmlEvent::beginD
     RefPtr<TracedValue> value = TracedValue::create();
     value->setInteger("startLine", startLine);
     value->setString("frame", toHexString(document->frame()));
+    value->setString("url", document->url().string());
     setCallStack(value.get());
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorParseHtmlEvent::endData(unsigned endLine)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setInteger("endLine", endLine);
     return value.release();
 }
 

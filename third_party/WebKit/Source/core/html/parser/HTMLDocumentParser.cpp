@@ -573,7 +573,7 @@ void HTMLDocumentParser::pumpPendingSpeculations()
             break;
     }
 
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "endLine", lineNumber().zeroBasedInt());
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "endData", InspectorParseHtmlEvent::endData(lineNumber().zeroBasedInt() - 1));
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
 
@@ -677,7 +677,7 @@ void HTMLDocumentParser::pumpTokenizer()
         }
     }
 
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "endLine", m_input.current().currentLine().zeroBasedInt());
+    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "endData", InspectorParseHtmlEvent::endData(m_input.current().currentLine().zeroBasedInt() - 1));
 }
 
 void HTMLDocumentParser::constructTreeFromHTMLToken()
