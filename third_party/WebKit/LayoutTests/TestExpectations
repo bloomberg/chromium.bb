@@ -2121,5 +2121,3 @@ crbug.com/479181 inspector-protocol/animation/animation-multiple-frames.html [ P
 
 crbug.com/479202 fast/forms/select/select-typeahead-with-spacekey.html [ Pass Failure ]
 crbug.com/479202 virtual/slimmingpaint/fast/forms/select/select-typeahead-with-spacekey.html [ Pass Failure ]
-
-crbug.com/475203 svg/repaint/repaint-non-scaling-stroke-text.html [ NeedsRebaseline ]
