@@ -4,9 +4,11 @@
 
 #include "chrome/browser/history/top_sites_factory.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history/top_sites_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -95,7 +97,8 @@ scoped_refptr<history::TopSites> TopSitesFactory::BuildTopSites(
   scoped_refptr<history::TopSitesImpl> top_sites(new history::TopSitesImpl(
       profile->GetPrefs(), HistoryServiceFactory::GetForProfile(
                                profile, ServiceAccessType::EXPLICIT_ACCESS),
-      prefs::kNtpMostVisitedURLsBlacklist, prepopulated_page_list));
+      prefs::kNtpMostVisitedURLsBlacklist, prepopulated_page_list,
+      base::Bind(CanAddURLToHistory)));
   top_sites->Init(context->GetPath().Append(chrome::kTopSitesFilename),
                   content::BrowserThread::GetMessageLoopProxyForThread(
                       content::BrowserThread::DB));

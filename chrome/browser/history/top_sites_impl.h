@@ -53,10 +53,15 @@ class TopSitesImplTest;
 // db using TopSitesBackend.
 class TopSitesImpl : public TopSites, public HistoryServiceObserver {
  public:
+  // Called to check whether an URL can be added to the history. Must be
+  // callable multiple time and during the whole lifetime of TopSitesImpl.
+  using CanAddURLToHistoryFn = base::Callback<bool(const GURL&)>;
+
   TopSitesImpl(PrefService* pref_service,
                HistoryService* history_service,
                const char* blacklist_pref_name,
-               const PrepopulatedPageList& prepopulated_pages);
+               const PrepopulatedPageList& prepopulated_pages,
+               const CanAddURLToHistoryFn& can_add_url_to_history);
 
   // Initializes TopSitesImpl.
   void Init(const base::FilePath& db_name,
@@ -293,6 +298,9 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // HistoryService that TopSitesImpl can query. May be null, but if defined it
   // must outlive TopSitesImpl.
   HistoryService* history_service_;
+
+  // Can URL be added to the history?
+  CanAddURLToHistoryFn can_add_url_to_history_;
 
   // Are we loaded?
   bool loaded_;

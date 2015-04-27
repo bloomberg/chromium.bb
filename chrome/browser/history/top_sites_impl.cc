@@ -21,7 +21,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/values.h"
-#include "chrome/browser/history/history_utils.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/page_usage_data.h"
@@ -89,7 +88,8 @@ bool TopSitesImpl::histogram_recorded_ = false;
 TopSitesImpl::TopSitesImpl(PrefService* pref_service,
                            HistoryService* history_service,
                            const char* blacklist_pref_name,
-                           const PrepopulatedPageList& prepopulated_pages)
+                           const PrepopulatedPageList& prepopulated_pages,
+                           const CanAddURLToHistoryFn& can_add_url_to_history)
     : backend_(nullptr),
       cache_(new TopSitesCache()),
       thread_safe_cache_(new TopSitesCache()),
@@ -98,10 +98,12 @@ TopSitesImpl::TopSitesImpl(PrefService* pref_service,
       pref_service_(pref_service),
       blacklist_pref_name_(blacklist_pref_name),
       history_service_(history_service),
+      can_add_url_to_history_(can_add_url_to_history),
       loaded_(false),
       history_service_observer_(this) {
   DCHECK(pref_service_);
   DCHECK(blacklist_pref_name_);
+  DCHECK(!can_add_url_to_history_.is_null());
 }
 
 void TopSitesImpl::Init(
@@ -137,7 +139,7 @@ bool TopSitesImpl::SetPageThumbnail(const GURL& url,
     }
   }
 
-  if (!CanAddURLToHistory(url))
+  if (!can_add_url_to_history_.Run(url))
     return false;  // It's not a real webpage.
 
   scoped_refptr<base::RefCountedBytes> thumbnail_data;
@@ -176,7 +178,7 @@ bool TopSitesImpl::SetPageThumbnailToJPEGBytes(
     }
   }
 
-  if (!CanAddURLToHistory(url))
+  if (!can_add_url_to_history_.Run(url))
     return false;  // It's not a real webpage.
 
   if (add_temp_thumbnail) {
@@ -611,7 +613,7 @@ void TopSitesImpl::OnNavigationCommitted(const GURL& url) {
   if (!loaded_ || IsNonForcedFull())
     return;
 
-  if (!cache_->IsKnownURL(url) && CanAddURLToHistory(url)) {
+  if (!cache_->IsKnownURL(url) && can_add_url_to_history_.Run(url)) {
     // To avoid slamming history we throttle requests when the url updates. To
     // do otherwise negatively impacts perf tests.
     RestartQueryForTopSitesTimer(GetUpdateDelay());

@@ -4,7 +4,9 @@
 
 #include "chrome/browser/thumbnails/thumbnail_service_impl.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/history/top_sites_impl.h"
 #include "chrome/common/pref_names.h"
@@ -23,7 +25,8 @@ class MockTopSites : public history::TopSitesImpl {
       : history::TopSitesImpl(profile->GetPrefs(),
                               nullptr,
                               prefs::kNtpMostVisitedURLsBlacklist,
-                              history::PrepopulatedPageList()),
+                              history::PrepopulatedPageList(),
+                              base::Bind(CanAddURLToHistory)),
         capacity_(1) {}
 
   // history::TopSitesImpl overrides.
