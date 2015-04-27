@@ -35,20 +35,18 @@
 #include "core/CoreExport.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT PerformanceNavigation final : public RefCountedWillBeGarbageCollected<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
+class CORE_EXPORT PerformanceNavigation final : public GarbageCollectedFinalized<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PerformanceNavigation);
 public:
-    static PassRefPtrWillBeRawPtr<PerformanceNavigation> create(LocalFrame* frame)
+    static PerformanceNavigation* create(LocalFrame* frame)
     {
-        return adoptRefWillBeNoop(new PerformanceNavigation(frame));
+        return new PerformanceNavigation(frame);
     }
 
     enum PerformanceNavigationType {

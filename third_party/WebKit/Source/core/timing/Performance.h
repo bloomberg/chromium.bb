@@ -97,8 +97,8 @@ private:
     bool isResourceTimingBufferFull();
     void addResourceTimingBuffer(PerformanceEntry*);
 
-    mutable RefPtrWillBeMember<PerformanceNavigation> m_navigation;
-    mutable RefPtrWillBeMember<PerformanceTiming> m_timing;
+    mutable Member<PerformanceNavigation> m_navigation;
+    mutable Member<PerformanceTiming> m_timing;
 
     PerformanceEntryVector m_resourceTimingBuffer;
     unsigned m_resourceTimingBufferSize;
