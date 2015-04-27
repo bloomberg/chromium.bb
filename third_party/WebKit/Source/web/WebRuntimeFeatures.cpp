@@ -143,11 +143,6 @@ void WebRuntimeFeatures::enableImageColorProfiles(bool enable)
     RuntimeEnabledFeatures::setImageColorProfilesEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableLocalStorage(bool enable)
-{
-    RuntimeEnabledFeatures::setLocalStorageEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableMediaPlayer(bool enable)
 {
     RuntimeEnabledFeatures::setMediaEnabled(enable);
