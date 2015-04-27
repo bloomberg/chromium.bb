@@ -155,16 +155,9 @@ int GpuMain(const MainFunctionParams& parameters) {
   bool dead_on_arrival = false;
 
 #if defined(OS_WIN)
-  base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_IO;
-  // Unless we're running on desktop GL, we don't need a UI message
-  // loop, so avoid its use to work around apparent problems with some
-  // third-party software.
-  if (command_line.HasSwitch(switches::kUseGL) &&
-      command_line.GetSwitchValueASCII(switches::kUseGL) ==
-          gfx::kGLImplementationDesktopName) {
-    message_loop_type = base::MessageLoop::TYPE_UI;
-  }
-  base::MessageLoop main_message_loop(message_loop_type);
+  // Use a UI message loop because ANGLE and the desktop GL platform can
+  // create child windows to render to.
+  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
 #elif defined(OS_LINUX) && defined(USE_X11)
   // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
   // and https://crbug.com/326995.
