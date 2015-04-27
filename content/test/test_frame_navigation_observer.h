@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
 
@@ -20,6 +19,7 @@ namespace content {
 class FrameTreeNode;
 class RenderFrameHostImpl;
 class WebContents;
+struct LoadCommittedDetails;
 
 // For content_browsertests, which run on the UI thread, run a second
 // MessageLoop and quit when the navigation in a specific frame completes
@@ -37,11 +37,6 @@ class TestFrameNavigationObserver : public WebContentsObserver {
   // Runs a nested message loop and blocks until the expected number of
   // navigations are complete.
   void Wait();
-
-  // Returns the LoadCommittedDetails for the last navigation to commit.
-  const LoadCommittedDetails& load_committed_details() const {
-    return load_committed_details_;
-  }
 
  private:
   // WebContentsObserver
@@ -64,8 +59,6 @@ class TestFrameNavigationObserver : public WebContentsObserver {
 
   // The number of navigations to wait for.
   int number_of_navigations_;
-
-  LoadCommittedDetails load_committed_details_;
 
   // The MessageLoopRunner used to spin the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner_;

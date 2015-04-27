@@ -1091,19 +1091,6 @@ void RenderFrameImpl::OnNavigate(
 
   GetContentClient()->SetActiveURL(common_params.url);
 
-  // If this frame isn't in the same process as its parent, it will naively
-  // assume that this is the first navigation in the iframe, but this may not
-  // actually be the case. The PageTransition differentiates between the first
-  // navigation in a subframe and subsequent navigations, so if this is a
-  // subsequent navigation, force the frame's state machine forward.
-  if (ui::PageTransitionCoreTypeIs(common_params.transition,
-                                   ui::PAGE_TRANSITION_MANUAL_SUBFRAME)) {
-    CHECK(frame_->parent());
-    if (frame_->parent()->isWebRemoteFrame()) {
-      frame_->setCommittedFirstRealLoad();
-    }
-  }
-
   if (is_reload && !render_view_->history_controller()->GetCurrentEntry()) {
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.
@@ -2558,8 +2545,6 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
   document_state->set_start_load_time(Time::Now());
 
   bool is_top_most = !frame->parent();
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
   if (is_top_most) {
     render_view_->set_navigation_gesture(
         WebUserGestureIndicator::isProcessingUserGesture() ?
@@ -2568,17 +2553,8 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
     // Subframe navigations that don't add session history items must be
     // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
     // handle loading of error pages.
-    navigation_state->set_transition_type(ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-  } else if (ui::PageTransitionCoreTypeIs(navigation_state->GetTransitionType(),
-                                          ui::PAGE_TRANSITION_LINK)) {
-    // Subframe navigations that are creating a new history item should be
-    // marked MANUAL_SUBFRAME, unless it has already been marked as a
-    // FORM_SUBMIT. This state will be attached to a main resource request
-    // in the process that began the request. If the request is transferred
-    // to a different process, this state will be used in
-    // RenderFrameImpl::OnNavigate() in the new process (as well as in the
-    // browser process).
-    navigation_state->set_transition_type(ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+    static_cast<NavigationStateImpl*>(document_state->navigation_state())
+        ->set_transition_type(ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   }
 
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
@@ -3162,9 +3138,16 @@ void RenderFrameImpl::willSendRequest(
     }
   }
 
-  WebDataSource* provisional_data_source = frame->provisionalDataSource();
+  WebFrame* top_frame = frame->top();
+  // TODO(nasko): Hack around asking about top-frame data source. This means
+  // for out-of-process iframes we are treating the current frame as the
+  // top-level frame, which is wrong.
+  if (!top_frame || top_frame->isWebRemoteFrame())
+    top_frame = frame;
+  WebDataSource* provisional_data_source = top_frame->provisionalDataSource();
+  WebDataSource* top_data_source = top_frame->dataSource();
   WebDataSource* data_source =
-      provisional_data_source ? provisional_data_source : frame->dataSource();
+      provisional_data_source ? provisional_data_source : top_data_source;
 
   DocumentState* document_state = DocumentState::FromDataSource(data_source);
   DCHECK(document_state);
@@ -3303,14 +3286,8 @@ void RenderFrameImpl::willSendRequest(
   extra_data->set_stream_override(stream_override.Pass());
   request.setExtraData(extra_data);
 
-  WebFrame* top_frame = frame->top();
-  // TODO(nasko): Hack around asking about top-frame data source. This means
-  // for out-of-process iframes we are treating the current frame as the
-  // top-level frame, which is wrong.
-  if (!top_frame || top_frame->isWebRemoteFrame())
-    top_frame = frame;
   DocumentState* top_document_state =
-      DocumentState::FromDataSource(top_frame->dataSource());
+      DocumentState::FromDataSource(top_data_source);
   if (top_document_state) {
     // TODO(gavinp): separate out prefetching and prerender field trials
     // if the rel=prerender rel type is sticking around.

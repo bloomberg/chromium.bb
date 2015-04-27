@@ -67,7 +67,6 @@ void TestFrameNavigationObserver::DidNavigateAnyFrame(
 
   ++navigations_completed_;
   if (navigations_completed_ == number_of_navigations_) {
-    load_committed_details_ = details;
     navigation_started_ = false;
     message_loop_runner_->Quit();
   }

@@ -101,7 +101,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
                               const GURL& url,
                               SiteInstance* source_site_instance,
                               const Referrer& referrer,
-                              ui::PageTransition page_transition,
                               WindowOpenDisposition disposition,
                               bool should_replace_current_entry,
                               bool user_gesture) {}
