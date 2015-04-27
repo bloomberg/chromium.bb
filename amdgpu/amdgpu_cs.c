@@ -635,6 +635,12 @@ static int amdgpu_cs_create_bo_list(amdgpu_device_handle dev,
 	int r;
 
 	num_resources = request->number_of_resources;
+
+	if (!num_resources) {
+		*handle = 0;
+		return 0;
+	}
+
 	if (fence_ib)
 		++num_resources;
 
@@ -670,6 +676,9 @@ static int amdgpu_cs_free_bo_list(amdgpu_device_handle dev, uint32_t handle)
 {
 	union drm_amdgpu_bo_list args;
 	int r;
+
+	if (!handle)
+		return 0;
 
 	memset(&args, 0, sizeof(args));
 	args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
