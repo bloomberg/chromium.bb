@@ -93,7 +93,7 @@ cr.define('cr.ui', function() {
       this.hideTimestamp_ = cr.isWindows ? Date.now() : 0;
 
       var ev = new Event('hide');
-      ev.element = menu.contextElement;
+      ev.element = originalContextElement;
       ev.menu = menu;
       this.dispatchEvent(ev);
     },
