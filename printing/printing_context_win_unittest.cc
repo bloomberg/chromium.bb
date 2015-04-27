@@ -24,8 +24,8 @@ class PrintingContextTest : public PrintingTest<testing::Test>,
   }
 
   // PrintingContext::Delegate methods.
-  virtual gfx::NativeView GetParentView() override { return NULL; }
-  virtual std::string GetAppLocale() override { return std::string(); }
+  gfx::NativeView GetParentView() override { return NULL; }
+  std::string GetAppLocale() override { return std::string(); }
 
  protected:
   PrintingContext::Result result() const { return result_; }

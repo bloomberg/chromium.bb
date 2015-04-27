@@ -19,10 +19,10 @@ class PRINTING_EXPORT PrintingContextSytemDialogWin
     : public PrintingContextWin {
  public:
   explicit PrintingContextSytemDialogWin(Delegate* delegate);
-  virtual ~PrintingContextSytemDialogWin();
+  ~PrintingContextSytemDialogWin() override;
 
   // PrintingContext implementation.
-  virtual void AskUserForSettings(
+  void AskUserForSettings(
       int max_pages,
       bool has_selection,
       bool is_scripted,

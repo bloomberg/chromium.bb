@@ -53,9 +53,9 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   gfx::NativeDrawingContext context() const override;
 
 #if defined(OS_WIN)
-  virtual bool Playback(gfx::NativeDrawingContext hdc,
-                        const RECT* rect) const override;
-  virtual bool SafePlayback(gfx::NativeDrawingContext hdc) const override;
+  bool Playback(gfx::NativeDrawingContext hdc,
+                const RECT* rect) const override;
+  bool SafePlayback(gfx::NativeDrawingContext hdc) const override;
 #elif defined(OS_MACOSX)
   bool RenderPage(unsigned int page_number,
                   gfx::NativeDrawingContext context,

@@ -157,20 +157,20 @@ class PrintBackendWin : public PrintBackend {
   PrintBackendWin() {}
 
   // PrintBackend implementation.
-  virtual bool EnumeratePrinters(PrinterList* printer_list) override;
-  virtual std::string GetDefaultPrinterName() override;
-  virtual bool GetPrinterSemanticCapsAndDefaults(
+  bool EnumeratePrinters(PrinterList* printer_list) override;
+  std::string GetDefaultPrinterName() override;
+  bool GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       PrinterSemanticCapsAndDefaults* printer_info) override;
-  virtual bool GetPrinterCapsAndDefaults(
+  bool GetPrinterCapsAndDefaults(
       const std::string& printer_name,
       PrinterCapsAndDefaults* printer_info) override;
-  virtual std::string GetPrinterDriverInfo(
+  std::string GetPrinterDriverInfo(
       const std::string& printer_name) override;
-  virtual bool IsValidPrinter(const std::string& printer_name) override;
+  bool IsValidPrinter(const std::string& printer_name) override;
 
  protected:
-  virtual ~PrintBackendWin() {}
+  ~PrintBackendWin() override {}
 };
 
 bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
