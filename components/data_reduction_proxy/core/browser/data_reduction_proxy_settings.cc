@@ -13,6 +13,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 
@@ -20,13 +21,6 @@ namespace {
 // Key of the UMA DataReductionProxy.StartupState histogram.
 const char kUMAProxyStartupStateHistogram[] =
     "DataReductionProxy.StartupState";
-
-bool IsEnabledOnCommandLine() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxy);
-}
 
 bool IsLoFiEnabledOnCommandLine() {
   const base::CommandLine& command_line =
@@ -116,7 +110,8 @@ void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
-  return spdy_proxy_auth_enabled_.GetValue() || IsEnabledOnCommandLine();
+  return spdy_proxy_auth_enabled_.GetValue() ||
+         DataReductionProxyParams::ShouldForceEnableDataReductionProxy();
 }
 
 bool DataReductionProxySettings::CanUseDataReductionProxy(

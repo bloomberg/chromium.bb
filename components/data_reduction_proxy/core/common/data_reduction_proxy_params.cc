@@ -102,7 +102,6 @@ bool DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
 bool DataReductionProxyParams::IsLoFiEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
-
 }
 
 //static
@@ -134,6 +133,12 @@ std::string DataReductionProxyParams::GetQuicFieldTrialName() {
 bool DataReductionProxyParams::IsConfigClientEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxyConfigClient);
+}
+
+// static
+bool DataReductionProxyParams::ShouldForceEnableDataReductionProxy() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxy);
 }
 
 void DataReductionProxyParams::EnableQuic(bool enable) {

@@ -162,6 +162,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
           url_request_context_getter_->GetNetLog(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          false /* enable */,
           false /* enable_quic */,
           GetUserAgent()));
   data_reduction_proxy_settings_.reset(

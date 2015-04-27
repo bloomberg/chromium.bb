@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
+#include "base/single_thread_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
@@ -42,23 +42,21 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
  public:
   // Constructs a DataReductionProxyIOData object. |param_flags| is used to
   // set information about the DNS names used by the proxy, and allowable
-  // configurations.
+  // configurations. |enabled| sets the initial state of the Data Reduction
+  // Proxy.
   DataReductionProxyIOData(
       const Client& client,
       int param_flags,
       net::NetLog* net_log,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      bool enabled,
       bool enable_quic,
       const std::string& user_agent);
 
   virtual ~DataReductionProxyIOData();
 
-  // Initializes preferences, including a preference to track whether the
-  // Data Reduction Proxy is enabled.
-  void InitOnUIThread(PrefService* pref_service);
-
-  // Destroys the statistics preferences.
+  // Performs UI thread specific shutdown logic.
   void ShutdownOnUIThread();
 
   // Sets the Data Reduction Proxy service after it has been created.
@@ -205,12 +203,9 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  // Used
-  bool shutdown_on_ui_;
-
-  // Preference that determines if the Data Reduction Proxy has been enabled
-  // by the user. In practice, this can be overridden by the command line.
-  BooleanPrefMember enabled_;
+  // Whether the Data Reduction Proxy has been enabled or not by the user. In
+  // practice, this can be overridden by the command line.
+  bool enabled_;
 
   // The net::URLRequestContextGetter used for making URL requests.
   net::URLRequestContextGetter* url_request_context_getter_;

@@ -6,7 +6,6 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_BYPASS_STATS_H_
 
 #include "base/callback.h"
-#include "base/prefs/pref_member.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/network_change_notifier.h"
@@ -68,7 +67,7 @@ class DataReductionProxyBypassStats
   // completed URLRequest |request|.
   void RecordBytesHistograms(
       const net::URLRequest& request,
-      const BooleanPrefMember& data_reduction_proxy_enabled,
+      bool data_reduction_proxy_enabled,
       const net::ProxyConfig& data_reduction_proxy_config);
 
   // Called by |ChromeNetworkDelegate| when a proxy is put into the bad proxy
@@ -104,7 +103,7 @@ class DataReductionProxyBypassStats
   // tells us the state of the kDataReductionProxyEnabled preference.
   void RecordBypassedBytesHistograms(
       const net::URLRequest& request,
-      const BooleanPrefMember& data_reduction_proxy_enabled,
+      bool data_reduction_proxy_enabled,
       const net::ProxyConfig& data_reduction_proxy_config);
 
   // Records UMA of the number of response bytes of responses that are expected

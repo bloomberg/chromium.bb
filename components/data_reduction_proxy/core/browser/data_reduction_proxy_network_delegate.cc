@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
@@ -81,7 +80,6 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     : LayeredNetworkDelegate(network_delegate.Pass()),
       received_content_length_(0),
       original_content_length_(0),
-      data_reduction_proxy_enabled_(nullptr),
       data_reduction_proxy_config_(config),
       data_reduction_proxy_bypass_stats_(nullptr),
       data_reduction_proxy_request_options_(request_options),
@@ -96,12 +94,9 @@ DataReductionProxyNetworkDelegate::~DataReductionProxyNetworkDelegate() {
 
 void DataReductionProxyNetworkDelegate::InitIODataAndUMA(
     DataReductionProxyIOData* io_data,
-    BooleanPrefMember* data_reduction_proxy_enabled,
     DataReductionProxyBypassStats* bypass_stats) {
-  DCHECK(data_reduction_proxy_enabled);
   DCHECK(bypass_stats);
   data_reduction_proxy_io_data_ = io_data;
-  data_reduction_proxy_enabled_ = data_reduction_proxy_enabled;
   data_reduction_proxy_bypass_stats_ = bypass_stats;
 }
 
@@ -191,10 +186,9 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
                                   original_content_length,
                                   freshness_lifetime);
 
-    if (data_reduction_proxy_enabled_ &&
-        data_reduction_proxy_bypass_stats_) {
+    if (data_reduction_proxy_io_data_ && data_reduction_proxy_bypass_stats_) {
       data_reduction_proxy_bypass_stats_->RecordBytesHistograms(
-          *request, *data_reduction_proxy_enabled_,
+          *request, data_reduction_proxy_io_data_->IsEnabled(),
           configurator_->GetProxyConfig());
     }
     DVLOG(2) << __FUNCTION__
@@ -210,10 +204,10 @@ void DataReductionProxyNetworkDelegate::AccumulateContentLength(
     DataReductionProxyRequestType request_type) {
   DCHECK_GE(received_content_length, 0);
   DCHECK_GE(original_content_length, 0);
-  if (data_reduction_proxy_enabled_) {
+  if (data_reduction_proxy_io_data_) {
     data_reduction_proxy_io_data_->UpdateContentLengths(
         received_content_length, original_content_length,
-        data_reduction_proxy_enabled_->GetValue(), request_type);
+        data_reduction_proxy_io_data_->IsEnabled(), request_type);
   }
   received_content_length_ += received_content_length;
   original_content_length_ += original_content_length;

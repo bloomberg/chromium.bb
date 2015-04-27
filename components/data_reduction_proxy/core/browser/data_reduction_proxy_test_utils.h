@@ -167,7 +167,8 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
       scoped_ptr<DataReductionProxyEventCreator> event_creator,
       scoped_ptr<DataReductionProxyRequestOptions> request_options,
       scoped_ptr<DataReductionProxyConfigurator> configurator,
-      scoped_ptr<DataReductionProxyConfigServiceClient> config_client);
+      scoped_ptr<DataReductionProxyConfigServiceClient> config_client,
+      bool enabled);
   ~TestDataReductionProxyIOData() override;
 
   DataReductionProxyConfigurator* configurator() const {

@@ -94,8 +94,8 @@ class DataReductionProxyIODataTest : public testing::Test {
 TEST_F(DataReductionProxyIODataTest, TestConstruction) {
   scoped_ptr<DataReductionProxyIOData> io_data(new DataReductionProxyIOData(
       Client::UNKNOWN, DataReductionProxyParams::kAllowed, net_log(),
-      message_loop_proxy(), message_loop_proxy(), false /* enable_quic */,
-      std::string() /* user_agent */));
+      message_loop_proxy(), message_loop_proxy(), false /* enabled */,
+      false /* enable_quic */, std::string() /* user_agent */));
 
   // Check that the SimpleURLRequestContextGetter uses vanilla HTTP.
   net::URLRequestContext* request_context =
@@ -141,9 +141,6 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
                                  true);
   EXPECT_NE(nullptr, io_data->bypass_stats());
 
-  // The Data Reduction Proxy isn't actually enabled here.
-  io_data->InitOnUIThread(prefs());
-  EXPECT_FALSE(io_data->IsEnabled());
   io_data->ShutdownOnUIThread();
 }
 

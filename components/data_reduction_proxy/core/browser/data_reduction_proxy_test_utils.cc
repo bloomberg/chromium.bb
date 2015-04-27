@@ -177,7 +177,8 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
     scoped_ptr<DataReductionProxyEventCreator> event_creator,
     scoped_ptr<DataReductionProxyRequestOptions> request_options,
     scoped_ptr<DataReductionProxyConfigurator> configurator,
-    scoped_ptr<DataReductionProxyConfigServiceClient> config_client)
+    scoped_ptr<DataReductionProxyConfigServiceClient> config_client,
+    bool enabled)
     : DataReductionProxyIOData() {
   io_task_runner_ = task_runner;
   ui_task_runner_ = task_runner;
@@ -191,10 +192,10 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
                                 base::Unretained(this))));
   io_task_runner_ = task_runner;
   ui_task_runner_ = task_runner;
+  enabled_ = enabled;
 }
 
 TestDataReductionProxyIOData::~TestDataReductionProxyIOData() {
-  shutdown_on_ui_ = true;
 }
 
 DataReductionProxyTestContext::Builder::Builder()
@@ -386,8 +387,8 @@ DataReductionProxyTestContext::Builder::Build() {
   scoped_ptr<TestDataReductionProxyIOData> io_data(
       new TestDataReductionProxyIOData(
           task_runner, config.Pass(), event_creator.Pass(),
-          request_options.Pass(), configurator.Pass(), config_client.Pass()));
-  io_data->InitOnUIThread(pref_service.get());
+          request_options.Pass(), configurator.Pass(), config_client.Pass(),
+          true /* enabled */));
   io_data->SetSimpleURLRequestContextGetter(request_context_getter);
 
   scoped_ptr<DataReductionProxyTestContext> test_context(

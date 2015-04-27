@@ -5,11 +5,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
-#include "base/single_thread_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -93,13 +90,14 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     net::NetLog* net_log,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    bool enabled,
     bool enable_quic,
     const std::string& user_agent)
     : client_(client),
       net_log_(net_log),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
-      shutdown_on_ui_(false),
+      enabled_(enabled),
       url_request_context_getter_(nullptr),
       basic_url_request_context_getter_(
           new BasicHTTPURLRequestContextGetter(user_agent, io_task_runner)),
@@ -148,26 +146,14 @@ DataReductionProxyIOData::DataReductionProxyIOData(
  }
 
  DataReductionProxyIOData::DataReductionProxyIOData()
-     : shutdown_on_ui_(false),
-       url_request_context_getter_(nullptr),
-       weak_factory_(this) {
+     : url_request_context_getter_(nullptr), weak_factory_(this) {
 }
 
 DataReductionProxyIOData::~DataReductionProxyIOData() {
-  DCHECK(shutdown_on_ui_);
-}
-
-void DataReductionProxyIOData::InitOnUIThread(PrefService* pref_service) {
-  DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  enabled_.Init(prefs::kDataReductionProxyEnabled, pref_service);
-  enabled_.MoveToThread(io_task_runner_);
 }
 
 void DataReductionProxyIOData::ShutdownOnUIThread() {
-  DCHECK(!shutdown_on_ui_);
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  enabled_.Destroy();
-  shutdown_on_ui_ = true;
 }
 
 void DataReductionProxyIOData::SetDataReductionProxyService(
@@ -197,9 +183,7 @@ void DataReductionProxyIOData::InitializeOnIOThread() {
 
 bool DataReductionProxyIOData::IsEnabled() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  return enabled_.GetValue() ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableDataReductionProxy);
+  return enabled_;
 }
 
 void DataReductionProxyIOData::RetrieveConfig() {
@@ -225,7 +209,7 @@ DataReductionProxyIOData::CreateNetworkDelegate(
           wrapped_network_delegate.Pass(), config_.get(),
           request_options_.get(), configurator_.get()));
   if (track_proxy_bypass_statistics)
-    network_delegate->InitIODataAndUMA(this, &enabled_, bypass_stats_.get());
+    network_delegate->InitIODataAndUMA(this, bypass_stats_.get());
   return network_delegate.Pass();
 }
 
@@ -233,6 +217,7 @@ void DataReductionProxyIOData::SetProxyPrefs(bool enabled,
                                              bool alternative_enabled,
                                              bool at_startup) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+  enabled_ = enabled;
   config_->SetProxyConfig(enabled, alternative_enabled, at_startup);
 }
 

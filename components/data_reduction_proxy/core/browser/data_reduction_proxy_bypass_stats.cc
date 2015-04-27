@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/prefs/pref_member.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -170,7 +169,7 @@ DataReductionProxyBypassStats::GetBypassType() const {
 
 void DataReductionProxyBypassStats::RecordBytesHistograms(
     const net::URLRequest& request,
-    const BooleanPrefMember& data_reduction_proxy_enabled,
+    bool data_reduction_proxy_enabled,
     const net::ProxyConfig& data_reduction_proxy_config) {
   RecordBypassedBytesHistograms(request, data_reduction_proxy_enabled,
                                 data_reduction_proxy_config);
@@ -226,12 +225,12 @@ void DataReductionProxyBypassStats::OnConnectComplete(
 
 void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
     const net::URLRequest& request,
-    const BooleanPrefMember& data_reduction_proxy_enabled,
+    bool data_reduction_proxy_enabled,
     const net::ProxyConfig& data_reduction_proxy_config) {
   int64 content_length = request.received_response_content_length();
 
   // Only record histograms when the data reduction proxy is enabled.
-  if (!data_reduction_proxy_enabled.GetValue())
+  if (!data_reduction_proxy_enabled)
     return;
 
   // TODO(bengr): Add histogram(s) for byte counts of unsupported schemes, e.g.,

@@ -13,12 +13,7 @@
 #include "net/base/layered_network_delegate.h"
 #include "net/proxy/proxy_retry_info.h"
 
-template<class T> class PrefMember;
-
-typedef PrefMember<bool> BooleanPrefMember;
-
 class GURL;
-class PrefService;
 
 namespace net {
 class HttpResponseHeaders;
@@ -64,7 +59,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // report UMA.
   void InitIODataAndUMA(
       DataReductionProxyIOData* io_data,
-      BooleanPrefMember* data_reduction_proxy_enabled,
       DataReductionProxyBypassStats* bypass_stats);
 
   // Creates a |Value| summary of the state of the network session. The caller
@@ -116,9 +110,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
 
   // Total original size of all content before it was transferred.
   int64 original_content_length_;
-
-  // Weak, owned by our owner.
-  BooleanPrefMember* data_reduction_proxy_enabled_;
 
   // All raw Data Reduction Proxy pointers must outlive |this|.
   DataReductionProxyConfig* data_reduction_proxy_config_;
