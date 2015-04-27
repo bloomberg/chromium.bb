@@ -6152,6 +6152,7 @@ interface webkitSpeechRecognition
     getter onspeechend
     getter onspeechstart
     getter onstart
+    getter serviceURI
     method abort
     method constructor
     method start
@@ -6172,6 +6173,7 @@ interface webkitSpeechRecognition
     setter onspeechend
     setter onspeechstart
     setter onstart
+    setter serviceURI
 interface webkitSpeechRecognitionError
     getter error
     getter message

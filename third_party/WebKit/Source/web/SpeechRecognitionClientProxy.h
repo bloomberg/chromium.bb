@@ -47,7 +47,7 @@ public:
     static PassOwnPtr<SpeechRecognitionClientProxy> create(WebSpeechRecognizer*);
 
     // SpeechRecognitionClient:
-    virtual void start(SpeechRecognition*, const SpeechGrammarList*, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack*) override;
+    virtual void start(SpeechRecognition*, const SpeechGrammarList*, const String& lang, const String& serviceURI, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack*) override;
     virtual void stop(SpeechRecognition*) override;
     virtual void abort(SpeechRecognition*) override;
 

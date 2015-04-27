@@ -39,9 +39,9 @@ class SpeechRecognitionController final : public NoBaseWillBeGarbageCollectedFin
 public:
     virtual ~SpeechRecognitionController();
 
-    void start(SpeechRecognition* recognition, const SpeechGrammarList* grammars, const String& lang, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack* audioTrack)
+    void start(SpeechRecognition* recognition, const SpeechGrammarList* grammars, const String& lang, const String& serviceURI, bool continuous, bool interimResults, unsigned long maxAlternatives, MediaStreamTrack* audioTrack)
     {
-        m_client->start(recognition, grammars, lang, continuous, interimResults, maxAlternatives, audioTrack);
+        m_client->start(recognition, grammars, lang, serviceURI, continuous, interimResults, maxAlternatives, audioTrack);
     }
 
     void stop(SpeechRecognition* recognition) { m_client->stop(recognition); }
