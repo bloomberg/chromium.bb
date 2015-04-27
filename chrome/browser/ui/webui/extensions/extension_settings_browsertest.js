@@ -88,6 +88,7 @@ ExtensionSettingsWebUITest.prototype = {
 
   /** @protected */
   verifyDeveloperModeWorks: function() {
+    this.ignoreDevModeA11yFailures();
     var extensionSettings = getRequiredElement('extension-settings');
     assertFalse(extensionSettings.classList.contains('dev-mode'));
     $('toggle-dev-on').click();
@@ -114,7 +115,25 @@ ExtensionSettingsWebUITest.prototype = {
                   this.verifyDeveloperModeWorks,
                   testDone];
     this.nextStep();
-  }
+  },
+
+  /**
+   * TODO(hcarmona): Remove this as part of fixing crbug.com/463245.
+   * Will ignore accessibility failures caused by the transition when developer
+   * mode is enabled.
+   * @protected
+   */
+  ignoreDevModeA11yFailures: function() {
+    this.accessibilityAuditConfig.ignoreSelectors(
+          'focusableElementNotVisibleAndNotAriaHidden',
+          '#load-unpacked');
+    this.accessibilityAuditConfig.ignoreSelectors(
+          'focusableElementNotVisibleAndNotAriaHidden',
+          '#pack-extension');
+    this.accessibilityAuditConfig.ignoreSelectors(
+          'focusableElementNotVisibleAndNotAriaHidden',
+          '#update-extensions-now');
+  },
 };
 
 // Verify that developer mode doesn't change behavior when the number of
