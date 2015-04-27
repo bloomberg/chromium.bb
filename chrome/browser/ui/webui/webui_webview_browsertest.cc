@@ -4,6 +4,8 @@
 
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -131,3 +133,19 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScriptWithCode) {
       "testAddContentScriptWithCode",
       new base::StringValue(GetTestUrl("empty.html").spec())));
 }
+
+#if defined(OS_CHROMEOS)
+// Right now we only have incognito WebUI on CrOS, but this should
+// theoretically work for all platforms.
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScriptIncognito) {
+  Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(), GetWebViewEnabledWebUIURL());
+
+  SetWebUIInstance(
+      incognito_browser->tab_strip_model()->GetActiveWebContents()->GetWebUI());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testAddContentScript",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}
+#endif

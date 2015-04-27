@@ -46,6 +46,7 @@ class WebUIUserScriptLoader : public extensions::UserScriptLoader {
 
   // Creates WebUiURLFetchers for the given |script_files|.
   void CreateWebUIURLFetchers(extensions::UserScript::FileList* script_files,
+                              content::BrowserContext* browser_context,
                               int render_process_id,
                               int render_view_id);
 

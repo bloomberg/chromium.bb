@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/guest_view/web_view/web_ui/web_ui_url_fetcher.h"
 
 namespace {
@@ -80,10 +81,14 @@ void WebUIUserScriptLoader::LoadScripts(
     int render_process_id = iter->second.render_process_id;
     int render_view_id = iter->second.render_view_id;
 
-    CreateWebUIURLFetchers(&script.js_scripts(), render_process_id,
-                           render_view_id);
-    CreateWebUIURLFetchers(&script.css_scripts(), render_process_id,
-                           render_view_id);
+    content::BrowserContext* browser_context =
+        content::RenderProcessHost::FromID(render_process_id)
+            ->GetBrowserContext();
+
+    CreateWebUIURLFetchers(&script.js_scripts(), browser_context,
+                           render_process_id, render_view_id);
+    CreateWebUIURLFetchers(&script.css_scripts(), browser_context,
+                           render_process_id, render_view_id);
 
     script_render_info_map_.erase(script.id());
   }
@@ -99,6 +104,7 @@ void WebUIUserScriptLoader::LoadScripts(
 
 void WebUIUserScriptLoader::CreateWebUIURLFetchers(
     extensions::UserScript::FileList* script_files,
+    content::BrowserContext* browser_context,
     int render_process_id,
     int render_view_id) {
   for (extensions::UserScript::File& file : *script_files) {
@@ -107,7 +113,7 @@ void WebUIUserScriptLoader::CreateWebUIURLFetchers(
       // loader is destroyed, all the fetchers will be destroyed. Therefore,
       // we are sure it is safe to use base::Unretained(this) here.
       scoped_ptr<WebUIURLFetcher> fetcher(new WebUIURLFetcher(
-          browser_context(), render_process_id, render_view_id, file.url(),
+          browser_context, render_process_id, render_view_id, file.url(),
           base::Bind(&WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete,
                      base::Unretained(this), &file)));
       fetchers_.push_back(fetcher.release());
