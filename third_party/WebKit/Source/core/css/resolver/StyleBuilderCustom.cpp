@@ -291,63 +291,30 @@ void StyleBuilderFunctions::applyValueCSSPropertyResize(StyleResolverState& stat
     state.style()->setResize(r);
 }
 
-static Length mmLength(double mm) { return Length(mm * cssPixelsPerMillimeter, Fixed); }
-static Length inchLength(double inch) { return Length(inch * cssPixelsPerInch, Fixed); }
-static void getPageSizeFromName(CSSPrimitiveValue* pageSizeName, Length& width, Length& height)
+static float mmToPx(float mm) { return mm * cssPixelsPerMillimeter; }
+static float inchToPx(float inch) { return inch * cssPixelsPerInch; }
+static FloatSize getPageSizeFromName(CSSPrimitiveValue* pageSizeName)
 {
-    DEFINE_STATIC_LOCAL(Length, a5Width, (mmLength(148)));
-    DEFINE_STATIC_LOCAL(Length, a5Height, (mmLength(210)));
-    DEFINE_STATIC_LOCAL(Length, a4Width, (mmLength(210)));
-    DEFINE_STATIC_LOCAL(Length, a4Height, (mmLength(297)));
-    DEFINE_STATIC_LOCAL(Length, a3Width, (mmLength(297)));
-    DEFINE_STATIC_LOCAL(Length, a3Height, (mmLength(420)));
-    DEFINE_STATIC_LOCAL(Length, b5Width, (mmLength(176)));
-    DEFINE_STATIC_LOCAL(Length, b5Height, (mmLength(250)));
-    DEFINE_STATIC_LOCAL(Length, b4Width, (mmLength(250)));
-    DEFINE_STATIC_LOCAL(Length, b4Height, (mmLength(353)));
-    DEFINE_STATIC_LOCAL(Length, letterWidth, (inchLength(8.5)));
-    DEFINE_STATIC_LOCAL(Length, letterHeight, (inchLength(11)));
-    DEFINE_STATIC_LOCAL(Length, legalWidth, (inchLength(8.5)));
-    DEFINE_STATIC_LOCAL(Length, legalHeight, (inchLength(14)));
-    DEFINE_STATIC_LOCAL(Length, ledgerWidth, (inchLength(11)));
-    DEFINE_STATIC_LOCAL(Length, ledgerHeight, (inchLength(17)));
-
     switch (pageSizeName->getValueID()) {
     case CSSValueA5:
-        width = a5Width;
-        height = a5Height;
-        break;
+        return FloatSize(mmToPx(148), mmToPx(210));
     case CSSValueA4:
-        width = a4Width;
-        height = a4Height;
-        break;
+        return FloatSize(mmToPx(210), mmToPx(297));
     case CSSValueA3:
-        width = a3Width;
-        height = a3Height;
-        break;
+        return FloatSize(mmToPx(297), mmToPx(420));
     case CSSValueB5:
-        width = b5Width;
-        height = b5Height;
-        break;
+        return FloatSize(mmToPx(176), mmToPx(250));
     case CSSValueB4:
-        width = b4Width;
-        height = b4Height;
-        break;
+        return FloatSize(mmToPx(250), mmToPx(353));
     case CSSValueLetter:
-        width = letterWidth;
-        height = letterHeight;
-        break;
+        return FloatSize(inchToPx(8.5), inchToPx(11));
     case CSSValueLegal:
-        width = legalWidth;
-        height = legalHeight;
-        break;
+        return FloatSize(inchToPx(8.5), inchToPx(14));
     case CSSValueLedger:
-        width = ledgerWidth;
-        height = ledgerHeight;
-        break;
+        return FloatSize(inchToPx(11), inchToPx(17));
     default:
         ASSERT_NOT_REACHED();
-        break;
+        return FloatSize(0, 0);
     }
 }
 
@@ -356,8 +323,7 @@ void StyleBuilderFunctions::applyInheritCSSPropertySize(StyleResolverState&) { }
 void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state, CSSValue* value)
 {
     state.style()->resetPageSizeType();
-    Length width;
-    Length height;
+    FloatSize size;
     PageSizeType pageSizeType = PAGE_SIZE_AUTO;
     CSSValueList* list = toCSSValueList(value);
     if (list->length() == 2) {
@@ -366,15 +332,15 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
         CSSPrimitiveValue* second = toCSSPrimitiveValue(list->item(1));
         if (first->isLength()) {
             // <length>{2}
-            width = first->computeLength<Length>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0));
-            height = second->computeLength<Length>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0));
+            size = FloatSize(first->computeLength<float>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0)),
+                second->computeLength<float>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0)));
         } else {
             // <page-size> <orientation>
-            getPageSizeFromName(first, width, height);
+            size = getPageSizeFromName(first);
 
             ASSERT(second->getValueID() == CSSValueLandscape || second->getValueID() == CSSValuePortrait);
             if (second->getValueID() == CSSValueLandscape)
-                std::swap(width, height);
+                size = size.transposedSize();
         }
         pageSizeType = PAGE_SIZE_RESOLVED;
     } else {
@@ -384,7 +350,8 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
         if (primitiveValue->isLength()) {
             // <length>
             pageSizeType = PAGE_SIZE_RESOLVED;
-            width = height = primitiveValue->computeLength<Length>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0));
+            float width = primitiveValue->computeLength<float>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0));
+            size = FloatSize(width, width);
         } else {
             switch (primitiveValue->getValueID()) {
             case CSSValueAuto:
@@ -399,12 +366,12 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
             default:
                 // <page-size>
                 pageSizeType = PAGE_SIZE_RESOLVED;
-                getPageSizeFromName(primitiveValue, width, height);
+                size = getPageSizeFromName(primitiveValue);
             }
         }
     }
     state.style()->setPageSizeType(pageSizeType);
-    state.style()->setPageSize(LengthSize(width, height));
+    state.style()->setPageSize(size);
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(StyleResolverState& state, CSSValue* value)

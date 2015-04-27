@@ -316,7 +316,7 @@ String PrintContext::pageProperty(LocalFrame* frame, const char* propertyName, i
     if (!strcmp(propertyName, "font-family"))
         return style->fontDescription().family().family().string();
     if (!strcmp(propertyName, "size"))
-        return String::number(style->pageSize().width().value()) + ' ' + String::number(style->pageSize().height().value());
+        return String::number(style->pageSize().width()) + ' ' + String::number(style->pageSize().height());
 
     return String("pageProperty() unimplemented for: ") + propertyName;
 }

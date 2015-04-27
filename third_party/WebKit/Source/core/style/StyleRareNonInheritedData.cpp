@@ -47,7 +47,7 @@ public:
 
     FillLayer fillLayers;
     NinePieceImage ninePieces;
-    LengthSize lengthSizes;
+    FloatSize floatSize;
     Length lengths;
 
     StyleColor styleColors[8];

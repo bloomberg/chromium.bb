@@ -900,7 +900,7 @@ public:
     const LengthPoint& perspectiveOrigin() const { return rareNonInheritedData->m_perspectiveOrigin; }
     const Length& perspectiveOriginX() const { return perspectiveOrigin().x(); }
     const Length& perspectiveOriginY() const { return perspectiveOrigin().y(); }
-    const LengthSize& pageSize() const { return rareNonInheritedData->m_pageSize; }
+    const FloatSize& pageSize() const { return rareNonInheritedData->m_pageSize; }
     PageSizeType pageSizeType() const { return static_cast<PageSizeType>(rareNonInheritedData->m_pageSizeType); }
 
     bool hasCurrentOpacityAnimation() const { return rareNonInheritedData->m_hasCurrentOpacityAnimation; }
@@ -1353,7 +1353,7 @@ public:
     void setPerspectiveOriginX(const Length& v) { setPerspectiveOrigin(LengthPoint(v, perspectiveOriginY())); }
     void setPerspectiveOriginY(const Length& v) { setPerspectiveOrigin(LengthPoint(perspectiveOriginX(), v)); }
     void setPerspectiveOrigin(const LengthPoint& p) { SET_VAR(rareNonInheritedData, m_perspectiveOrigin, p); }
-    void setPageSize(const LengthSize& s) { SET_VAR(rareNonInheritedData, m_pageSize, s); }
+    void setPageSize(const FloatSize& s) { SET_VAR(rareNonInheritedData, m_pageSize, s); }
     void setPageSizeType(PageSizeType t) { SET_VAR(rareNonInheritedData, m_pageSizeType, t); }
     void resetPageSizeType() { SET_VAR(rareNonInheritedData, m_pageSizeType, PAGE_SIZE_AUTO); }
 

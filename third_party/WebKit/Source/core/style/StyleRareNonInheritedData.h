@@ -133,7 +133,7 @@ public:
     FillLayer m_mask;
     NinePieceImage m_maskBoxImage;
 
-    LengthSize m_pageSize;
+    FloatSize m_pageSize;
     Length m_shapeMargin;
 
     StyleColor m_textDecorationColor;

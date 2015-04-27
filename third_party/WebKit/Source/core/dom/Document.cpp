@@ -1987,11 +1987,9 @@ void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int&
             std::swap(width, height);
         break;
     case PAGE_SIZE_RESOLVED: {
-        LengthSize size = style->pageSize();
-        ASSERT(size.width().isFixed());
-        ASSERT(size.height().isFixed());
-        width = valueForLength(size.width(), 0);
-        height = valueForLength(size.height(), 0);
+        FloatSize size = style->pageSize();
+        width = size.width();
+        height = size.height();
         break;
     }
     default:
