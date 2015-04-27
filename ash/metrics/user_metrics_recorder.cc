@@ -4,11 +4,13 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
@@ -62,6 +64,31 @@ ActiveWindowStateType GetActiveWindowState() {
     }
   }
   return active_window_state_type;
+}
+
+// Returns true if kiosk mode is active.
+bool IsKioskModeActive() {
+  return Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus() ==
+         user::LOGGED_IN_KIOSK_APP;
+}
+
+// Returns true if there is an active user and their session isn't currently
+// locked.
+bool IsUserActive() {
+  switch (Shell::GetInstance()->system_tray_delegate()->GetUserLoginStatus()) {
+    case user::LOGGED_IN_NONE:
+    case user::LOGGED_IN_LOCKED:
+      return false;
+    case user::LOGGED_IN_USER:
+    case user::LOGGED_IN_OWNER:
+    case user::LOGGED_IN_GUEST:
+    case user::LOGGED_IN_PUBLIC:
+    case user::LOGGED_IN_SUPERVISED:
+    case user::LOGGED_IN_KIOSK_APP:
+      return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 // Array of window container ids that contain visible windows to be counted for
@@ -124,10 +151,12 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
 }  // namespace
 
 UserMetricsRecorder::UserMetricsRecorder() {
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(kAshPeriodicMetricsTimeInSeconds),
-               this,
-               &UserMetricsRecorder::RecordPeriodicMetrics);
+  StartTimer();
+}
+
+UserMetricsRecorder::UserMetricsRecorder(bool record_periodic_metrics) {
+  if (record_periodic_metrics)
+    StartTimer();
 }
 
 UserMetricsRecorder::~UserMetricsRecorder() {
@@ -525,7 +554,10 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
 void UserMetricsRecorder::RecordPeriodicMetrics() {
   ShelfLayoutManager* manager =
       ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow());
+  // TODO(bruthig): Investigating whether the check for |manager| is necessary
+  // and add tests if it is.
   if (manager) {
+    // TODO(bruthig): Consider tracking the time spent in each alignment.
     UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentOverTime",
                               manager->SelectValueForShelfAlignment(
                                   SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
@@ -535,12 +567,28 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
                               SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
   }
 
-  UMA_HISTOGRAM_COUNTS_100("Ash.NumberOfVisibleWindowsInPrimaryDisplay",
-                           GetNumVisibleWindowsInPrimaryDisplay());
+  if (IsUserInActiveDesktopEnvironment()) {
+    UMA_HISTOGRAM_COUNTS_100("Ash.NumberOfVisibleWindowsInPrimaryDisplay",
+                             GetNumVisibleWindowsInPrimaryDisplay());
+  }
 
+  // TODO(bruthig): Find out if this should only be logged when the user is
+  // active.
+  // TODO(bruthig): Consider tracking how long a particular type of window is
+  // active at a time.
   UMA_HISTOGRAM_ENUMERATION("Ash.ActiveWindowShowTypeOverTime",
                             GetActiveWindowState(),
                             ACTIVE_WINDOW_STATE_TYPE_COUNT);
+}
+
+bool UserMetricsRecorder::IsUserInActiveDesktopEnvironment() const {
+  return IsUserActive() && !IsKioskModeActive();
+}
+
+void UserMetricsRecorder::StartTimer() {
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromSeconds(kAshPeriodicMetricsTimeInSeconds),
+               this, &UserMetricsRecorder::RecordPeriodicMetrics);
 }
 
 }  // namespace ash

@@ -1,0 +1,26 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/test/user_metrics_recorder_test_api.h"
+
+namespace ash {
+namespace test {
+
+UserMetricsRecorderTestAPI::UserMetricsRecorderTestAPI()
+    : user_metrics_recorder_(false) {
+}
+
+UserMetricsRecorderTestAPI::~UserMetricsRecorderTestAPI() {
+}
+
+void UserMetricsRecorderTestAPI::RecordPeriodicMetrics() {
+  user_metrics_recorder_.RecordPeriodicMetrics();
+}
+
+bool UserMetricsRecorderTestAPI::IsUserInActiveDesktopEnvironment() const {
+  return user_metrics_recorder_.IsUserInActiveDesktopEnvironment();
+}
+
+}  // namespace test
+}  // namespace ash

@@ -10,6 +10,10 @@
 
 namespace ash {
 
+namespace test {
+class UserMetricsRecorderTestAPI;
+}
+
 enum UserMetricsAction {
   UMA_ACCEL_EXIT_FIRST_Q,
   UMA_ACCEL_EXIT_SECOND_Q,
@@ -129,14 +133,40 @@ enum UserMetricsAction {
 // (RecordUserMetricsAction) are passed through the UserMetricsRecorder.
 class ASH_EXPORT UserMetricsRecorder {
  public:
+  // Creates a UserMetricsRecorder that records metrics periodically. Equivalent
+  // to calling UserMetricsRecorder(true).
   UserMetricsRecorder();
-  ~UserMetricsRecorder();
 
+  virtual ~UserMetricsRecorder();
+
+  // Records an Ash owned user action.
   void RecordUserMetricsAction(ash::UserMetricsAction action);
+
  private:
+  friend class test::UserMetricsRecorderTestAPI;
+
+  // Creates a UserMetricsRecorder and will only record periodic metrics if
+  // |record_periodic_metrics| is true. This is used by tests that do not want
+  // the timer to be started.
+  // TODO(bruthig): Add a constructor that accepts a base::RepeatingTimer so
+  // that tests can inject a test double that can be controlled by the test. The
+  // missing piece is a suitable base::RepeatingTimer test double.
+  explicit UserMetricsRecorder(bool record_periodic_metrics);
+
+  // Records UMA metrics. Invoked periodically by the |timer_|.
   void RecordPeriodicMetrics();
 
+  // Returns true if the user's session is active and they are in a desktop
+  // environment.
+  bool IsUserInActiveDesktopEnvironment() const;
+
+  // Starts the |timer_| and binds it to |RecordPeriodicMetrics|.
+  void StartTimer();
+
+  // The periodic timer that triggers metrics to be recorded.
   base::RepeatingTimer<UserMetricsRecorder> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserMetricsRecorder);
 };
 
 }  // namespace ash
