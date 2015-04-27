@@ -2,11 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/files/file.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/threading/worker_pool.h"
 #include "dbus/file_descriptor.h"
 
 namespace dbus {
+
+void CHROME_DBUS_EXPORT FileDescriptor::Deleter::operator()(
+    FileDescriptor* fd) {
+  base::WorkerPool::PostTask(
+      FROM_HERE, base::Bind(&base::DeletePointer<FileDescriptor>, fd), false);
+}
 
 FileDescriptor::~FileDescriptor() {
   if (owner_)
