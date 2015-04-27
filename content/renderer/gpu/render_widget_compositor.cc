@@ -221,8 +221,6 @@ void RenderWidgetCompositor::Initialize() {
 
   settings.throttle_frame_production =
       !cmd->HasSwitch(switches::kDisableGpuVsync);
-  settings.use_external_begin_frame_source =
-      cmd->HasSwitch(switches::kEnableBeginFrameScheduling);
   settings.main_frame_before_activation_enabled =
       cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation) &&
       !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);
@@ -234,6 +232,12 @@ void RenderWidgetCompositor::Initialize() {
   if (cmd->HasSwitch(switches::kEnableCompositorAnimationTimelines)) {
     settings.use_compositor_animation_timelines = true;
     blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(true);
+  }
+  if (cmd->HasSwitch(switches::kEnableBeginFrameScheduling) &&
+      !widget_->for_oopif()) {
+    // TODO(simonhong): Apply BeginFrame scheduling for OOPIF.
+    // See crbug.com/471411.
+    settings.use_external_begin_frame_source = true;
   }
 
   settings.default_tile_size = CalculateDefaultTileSize(widget_);

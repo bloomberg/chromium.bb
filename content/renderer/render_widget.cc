@@ -496,6 +496,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       closing_(false),
       host_closing_(false),
       is_swapped_out_(swapped_out),
+      for_oopif_(false),
       input_method_is_active_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
@@ -560,6 +561,7 @@ RenderWidget* RenderWidget::CreateForFrame(
   widget->routing_id_ = routing_id;
   widget->surface_id_ = surface_id;
   widget->compositor_deps_ = compositor_deps;
+  widget->for_oopif_ = true;
   // DoInit increments the reference count on |widget|, keeping it alive after
   // this function returns.
   if (widget->DoInit(MSG_ROUTING_NONE, compositor_deps,

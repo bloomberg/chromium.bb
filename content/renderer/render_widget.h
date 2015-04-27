@@ -131,6 +131,7 @@ class CONTENT_EXPORT RenderWidget
   // Temporary for debugging purposes...
   bool closing() const { return closing_; }
   bool is_swapped_out() { return is_swapped_out_; }
+  bool for_oopif() { return for_oopif_; }
   ui::MenuSourceType context_menu_source_type() {
     return context_menu_source_type_;
   }
@@ -690,6 +691,11 @@ class CONTENT_EXPORT RenderWidget
   // being rendered by another process.  If all RenderWidgets in a process are
   // swapped out, the process can exit.
   bool is_swapped_out_;
+
+  // TODO(simonhong): Remove this when we enable BeginFrame scheduling for
+  // OOPIF(crbug.com/471411).
+  // Whether this RenderWidget is for an out-of-process iframe or not.
+  bool for_oopif_;
 
   // Indicates if an input method is active in the browser process.
   bool input_method_is_active_;
