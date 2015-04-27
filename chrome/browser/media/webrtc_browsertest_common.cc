@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
@@ -37,6 +38,10 @@ static const char kAdviseOnGclientSolution[] =
     "}";
 
 const int kDefaultPollIntervalMsec = 250;
+
+bool IsErrorResult(const std::string& result) {
+  return StartsWithASCII(result, "failed-", false);
+}
 
 base::FilePath GetReferenceFilesDir() {
   base::FilePath test_data_dir;
@@ -133,8 +138,12 @@ bool PollingWaitUntil(const std::string& javascript,
       return false;
     }
 
-    if (evaluates_to == result)
+    if (evaluates_to == result) {
       return true;
+    } else if (IsErrorResult(result)) {
+      LOG(ERROR) << "|" << javascript << "| returned an error: " << result;
+      return false;
+    }
 
     // Sleep a bit here to keep this loop from spinlocking too badly.
     if (!SleepInJavascript(tab_contents, poll_interval_msec)) {

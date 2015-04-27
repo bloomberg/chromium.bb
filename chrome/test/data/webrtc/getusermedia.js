@@ -54,7 +54,8 @@ function doGetUserMedia(constraints) {
     returnToTest('Browser does not support WebRTC.');
     return;
   }
-  debug('Requesting doGetUserMedia: constraints: ' + constraints);
+  debug('Requesting doGetUserMedia: constraints: ' +
+        JSON.stringify(constraints, null, 0).replace(/[\r\n]/g, ''));
   getUserMedia(constraints,
                function(stream) {
                  ensureGotAllExpectedStreams_(stream, constraints);
@@ -73,7 +74,10 @@ function doGetUserMedia(constraints) {
  */
 function obtainGetUserMediaResult() {
   returnToTest(gRequestWebcamAndMicrophoneResult);
-  return gRequestWebcamAndMicrophoneResult;
+  var ret = gRequestWebcamAndMicrophoneResult;
+  // Reset for the next call.
+  gRequestWebcamAndMicrophoneResult = 'not-called-yet';
+  return ret;
 }
 
 /**

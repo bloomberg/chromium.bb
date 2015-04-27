@@ -42,9 +42,11 @@ class WebRtcTestBase : public InProcessBrowserTest {
   ~WebRtcTestBase() override;
 
   // These all require that the loaded page fulfills the public interface in
-  // chrome/test/data/webrtc/message_handling.js.
-  void GetUserMediaAndAccept(content::WebContents* tab_contents) const;
-  void GetUserMediaWithSpecificConstraintsAndAccept(
+  // chrome/test/data/webrtc/getusermedia.js.
+  // If an error is reported back from the getUserMedia call, these functions
+  // will return false.
+  bool GetUserMediaAndAccept(content::WebContents* tab_contents) const;
+  bool GetUserMediaWithSpecificConstraintsAndAccept(
       content::WebContents* tab_contents,
       const std::string& constraints) const;
   void GetUserMediaAndDeny(content::WebContents* tab_contents);
@@ -106,7 +108,7 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // make that work). Looks at a 320x240 area of the target video tag.
   void StartDetectingVideo(content::WebContents* tab_contents,
                            const std::string& video_element) const;
-  void WaitForVideoToPlay(content::WebContents* tab_contents) const;
+  bool WaitForVideoToPlay(content::WebContents* tab_contents) const;
 
   // Returns the stream size as a string on the format <width>x<height>.
   std::string GetStreamSize(content::WebContents* tab_contents,

@@ -100,13 +100,13 @@ WebRtcTestBase::~WebRtcTestBase() {
   }
 }
 
-void WebRtcTestBase::GetUserMediaAndAccept(
+bool WebRtcTestBase::GetUserMediaAndAccept(
     content::WebContents* tab_contents) const {
-  GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
-                                               kAudioVideoCallConstraints);
+  return GetUserMediaWithSpecificConstraintsAndAccept(
+      tab_contents, kAudioVideoCallConstraints);
 }
 
-void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
+bool WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
   infobars::InfoBar* infobar =
@@ -116,8 +116,8 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
 
   // Wait for WebRTC to call the success callback.
   const char kOkGotStream[] = "ok-got-stream";
-  EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()", kOkGotStream,
-                                     tab_contents));
+  return test::PollingWaitUntil("obtainGetUserMediaResult()", kOkGotStream,
+                                tab_contents);
 }
 
 void WebRtcTestBase::GetUserMediaAndDeny(content::WebContents* tab_contents) {
@@ -193,7 +193,8 @@ WebRtcTestBase::OpenPageAndGetUserMediaInNewTabWithConstraints(
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* new_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GetUserMediaWithSpecificConstraintsAndAccept(new_tab, constraints);
+  EXPECT_TRUE(GetUserMediaWithSpecificConstraintsAndAccept(
+      new_tab, constraints));
   return new_tab;
 }
 
@@ -337,10 +338,12 @@ void WebRtcTestBase::StartDetectingVideo(
   EXPECT_EQ("ok-started", ExecuteJavascript(javascript, tab_contents));
 }
 
-void WebRtcTestBase::WaitForVideoToPlay(
+bool WebRtcTestBase::WaitForVideoToPlay(
     content::WebContents* tab_contents) const {
-  EXPECT_TRUE(test::PollingWaitUntil("isVideoPlaying()", "video-playing",
-                                     tab_contents));
+  bool is_video_playing = test::PollingWaitUntil(
+      "isVideoPlaying()", "video-playing", tab_contents);
+  EXPECT_TRUE(is_video_playing);
+  return is_video_playing;
 }
 
 std::string WebRtcTestBase::GetStreamSize(

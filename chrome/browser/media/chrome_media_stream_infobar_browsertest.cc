@@ -106,7 +106,7 @@ class MediaStreamInfoBarTest : public WebRtcTestBase {
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAllowingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
-  GetUserMediaAndAccept(tab_contents);
+  EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDenyingUserMedia) {
@@ -135,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
 
   content::WebContents* tab_contents = LoadTestPageInTab();
 
-  GetUserMediaAndAccept(tab_contents);
+  EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
   GetUserMediaAndDeny(tab_contents);
 
   // Should fail with permission denied right away with no infobar popping up.
@@ -153,8 +153,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestAcceptIsNotSticky) {
 
   // If accept were sticky the second call would hang because it hangs if an
   // infobar does not pop up.
-  GetUserMediaAndAccept(tab_contents);
-  GetUserMediaAndAccept(tab_contents);
+  EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
+  EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest, TestDismissIsNotSticky) {
@@ -198,8 +198,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
   // If mic blocking also blocked cameras, the second call here would hang.
   GetUserMediaWithSpecificConstraintsAndDeny(tab_contents,
                                              kAudioOnlyCallConstraints);
-  GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
-                                               kVideoOnlyCallConstraints);
+  EXPECT_TRUE(GetUserMediaWithSpecificConstraintsAndAccept(
+      tab_contents, kVideoOnlyCallConstraints));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
@@ -209,6 +209,6 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
   // If camera blocking also blocked mics, the second call here would hang.
   GetUserMediaWithSpecificConstraintsAndDeny(tab_contents,
                                              kVideoOnlyCallConstraints);
-  GetUserMediaWithSpecificConstraintsAndAccept(tab_contents,
-                                               kAudioOnlyCallConstraints);
+  EXPECT_TRUE(GetUserMediaWithSpecificConstraintsAndAccept(
+      tab_contents, kAudioOnlyCallConstraints));
 }

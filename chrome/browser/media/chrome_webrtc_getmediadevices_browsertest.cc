@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  GetUserMediaAndAccept(tab);
+  EXPECT_TRUE(GetUserMediaAndAccept(tab));
 
   std::vector<MediaDeviceInfo> devices;
   GetMediaDevices(tab, &devices);
@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  GetUserMediaAndAccept(tab);
+  EXPECT_TRUE(GetUserMediaAndAccept(tab));
 
   std::vector<MediaDeviceInfo> devices;
   GetMediaDevices(tab, &devices);
