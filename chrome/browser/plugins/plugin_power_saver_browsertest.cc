@@ -127,21 +127,37 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargeCrossOrigin) {
   EXPECT_FALSE(IsPluginPeripheral("plugin"));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePluginsUsePosters) {
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
+                       LargePluginsPeripheralWhenPosterSpecified) {
   LoadHTML(
-      "<object id='plugin' type='application/x-ppapi-tests' "
+      "<object id='plugin_src' type='application/x-ppapi-tests' "
+      "    width='400' height='500'"
+      "    poster='snapshot1x.png' />"
+      "<object id='plugin_srcset' type='application/x-ppapi-tests' "
+      "    width='400' height='500'"
+      "    poster='snapshot1x.png 1x, snapshot2x.png 2x' />"
+      "<object id='plugin_legacy_syntax' type='application/x-ppapi-tests' "
       "    width='400' height='500'>"
       "  <param name='poster' value='snapshot1x.png 1x, snapshot2x.png 2x' />"
-      "</object>");
-  EXPECT_TRUE(IsPluginPeripheral("plugin"));
+      "</object>"
+      "<embed id='plugin_embed_src' type='application/x-ppapi-tests' "
+      "    width='400' height='500' poster='snapshot1x.png' />"
+      "<embed id='plugin_embed_srcset' type='application/x-ppapi-tests' "
+      "    width='400' height='500'"
+      "    poster='snapshot1x.png 1x, snapshot2x.png 2x' />");
+
+  EXPECT_TRUE(IsPluginPeripheral("plugin_src"));
+  EXPECT_TRUE(IsPluginPeripheral("plugin_srcset"));
+  EXPECT_TRUE(IsPluginPeripheral("plugin_legacy_syntax"));
+  EXPECT_TRUE(IsPluginPeripheral("plugin_embed_src"));
+  EXPECT_TRUE(IsPluginPeripheral("plugin_embed_srcset"));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallPluginWithPoster) {
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
+                       PluginMarkedEssentialAfterPosterClicked) {
   LoadHTML(
       "<object id='plugin' type='application/x-ppapi-tests' "
-      "    width='400' height='100'>"
-      "  <param name='poster' value='snapshot1x.png 1x, snapshot2x.png 2x' />"
-      "</object>");
+      "    width='400' height='100' poster='snapshot1x.png' />");
   EXPECT_TRUE(IsPluginPeripheral("plugin"));
 
   SimulateClickAndAwaitMarkedEssential("plugin", gfx::Point(50, 50));
