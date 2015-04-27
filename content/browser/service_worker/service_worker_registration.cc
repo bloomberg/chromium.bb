@@ -302,6 +302,45 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
                  this, activating_version));
 }
 
+void ServiceWorkerRegistration::DeleteVersion(
+    const scoped_refptr<ServiceWorkerVersion>& version) {
+  DCHECK_EQ(id(), version->registration_id());
+
+  // "Set registration's active worker to null." (The spec's step order may
+  // differ. It's OK because the other steps queue a task.)
+  UnsetVersion(version.get());
+
+  // "Run the Update State algorithm passing registration's active worker and
+  // 'redundant' as the arguments."
+  version->SetStatus(ServiceWorkerVersion::REDUNDANT);
+
+  // "For each service worker client client whose active worker is
+  // registration's active worker..." set the active worker to null.
+  for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+           context_->GetProviderHostIterator();
+       !it->IsAtEnd(); it->Advance()) {
+    ServiceWorkerProviderHost* host = it->GetProviderHost();
+    if (host->controlling_version() == version)
+      host->NotifyControllerActivationFailed();
+  }
+
+  version->Doom();
+
+  if (!active_version() && !waiting_version()) {
+    // Delete the records from the db.
+    context_->storage()->DeleteRegistration(
+        id(), pattern().GetOrigin(),
+        base::Bind(&ServiceWorkerRegistration::OnDeleteFinished, this));
+    // But not from memory if there is a version in the pipeline.
+    if (installing_version()) {
+      is_deleted_ = false;
+    } else {
+      is_uninstalled_ = true;
+      FOR_EACH_OBSERVER(Listener, listeners_, OnRegistrationFailed(this));
+    }
+  }
+}
+
 void ServiceWorkerRegistration::OnActivateEventFinished(
     ServiceWorkerVersion* activating_version,
     ServiceWorkerStatusCode status) {
@@ -311,38 +350,7 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
 
   // "If activateFailed is true, then:..."
   if (status != SERVICE_WORKER_OK) {
-    // "Set registration's active worker to null." (The spec's step order may
-    // differ. It's OK because the other steps queue a task.)
-    UnsetVersion(activating_version);
-
-    // "Run the Update State algorithm passing registration's active worker and
-    // 'redundant' as the arguments."
-    activating_version->SetStatus(ServiceWorkerVersion::REDUNDANT);
-
-    // "For each service worker client client whose active worker is
-    // registration's active worker..." set the active worker to null.
-    for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-             context_->GetProviderHostIterator();
-         !it->IsAtEnd(); it->Advance()) {
-      ServiceWorkerProviderHost* host = it->GetProviderHost();
-      if (host->controlling_version() == activating_version)
-        host->NotifyControllerActivationFailed();
-    }
-
-    activating_version->Doom();
-    if (!waiting_version()) {
-      // Delete the records from the db.
-      context_->storage()->DeleteRegistration(
-          id(), pattern().GetOrigin(),
-          base::Bind(&ServiceWorkerRegistration::OnDeleteFinished, this));
-      // But not from memory if there is a version in the pipeline.
-      if (installing_version()) {
-        is_deleted_ = false;
-      } else {
-        is_uninstalled_ = true;
-        FOR_EACH_OBSERVER(Listener, listeners_, OnRegistrationFailed(this));
-      }
-    }
+    DeleteVersion(make_scoped_refptr(activating_version));
     return;
   }
 

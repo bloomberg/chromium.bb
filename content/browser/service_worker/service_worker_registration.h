@@ -137,6 +137,10 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void ClearUserData(const std::string& key,
                      const StatusCallback& callback);
 
+  // Unsets the version and deletes its resources. Also deletes this
+  // registration from storage if there is no longer a stored version.
+  void DeleteVersion(const scoped_refptr<ServiceWorkerVersion>& version);
+
  private:
   friend class base::RefCounted<ServiceWorkerRegistration>;
 
