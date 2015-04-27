@@ -658,12 +658,12 @@ void LayoutInline::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accu
     AbsoluteRectsGeneratorContext context(rects, accumulatedOffset);
     generateLineBoxRects(context);
 
-    if (continuation()) {
-        if (continuation()->isBox()) {
-            LayoutBox* box = toLayoutBox(continuation());
-            continuation()->absoluteRects(rects, toLayoutPoint(accumulatedOffset - containingBlock()->location() + box->locationOffset()));
+    if (const LayoutBoxModelObject* continuation = this->continuation()) {
+        if (continuation->isBox()) {
+            const LayoutBox* box = toLayoutBox(continuation);
+            continuation->absoluteRects(rects, toLayoutPoint(accumulatedOffset - containingBlock()->location() + box->locationOffset()));
         } else {
-            continuation()->absoluteRects(rects, toLayoutPoint(accumulatedOffset - containingBlock()->location()));
+            continuation->absoluteRects(rects, toLayoutPoint(accumulatedOffset - containingBlock()->location()));
         }
     }
 }
@@ -696,8 +696,8 @@ void LayoutInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
     AbsoluteQuadsGeneratorContext context(this, quads);
     generateLineBoxRects(context);
 
-    if (continuation())
-        continuation()->absoluteQuads(quads, wasFixed);
+    if (const LayoutBoxModelObject* continuation = this->continuation())
+        continuation->absoluteQuads(quads, wasFixed);
 }
 
 LayoutUnit LayoutInline::offsetLeft() const
@@ -1027,8 +1027,8 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const
     LinesBoundingBoxGeneratorContext context(floatResult);
 
     LayoutInline* endContinuation = inlineElementContinuation();
-    while (endContinuation->inlineElementContinuation())
-        endContinuation = endContinuation->inlineElementContinuation();
+    while (LayoutInline* nextContinuation = endContinuation->inlineElementContinuation())
+        endContinuation = nextContinuation;
 
     for (LayoutBlock* currBlock = containingBlock(); currBlock && currBlock->isAnonymousBlock(); currBlock = toLayoutBlock(currBlock->nextSibling())) {
         for (LayoutObject* curr = currBlock->firstChild(); curr; curr = curr->nextSibling()) {
@@ -1051,7 +1051,8 @@ LayoutRect LayoutInline::clippedOverflowRectForPaintInvalidation(const LayoutBox
 
 LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
-    if ((!firstLineBoxIncludingCulling() && !continuation()) || style()->visibility() != VISIBLE)
+    const LayoutBoxModelObject* continuation = this->continuation();
+    if ((!firstLineBoxIncludingCulling() && !continuation) || style()->visibility() != VISIBLE)
         return LayoutRect();
 
     LayoutRect overflowRect(linesVisualOverflowBoundingBox());
@@ -1067,8 +1068,8 @@ LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintIn
                 overflowRect.unite(curr->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
         }
 
-        if (continuation() && !continuation()->isInline() && continuation()->parent())
-            overflowRect.unite(continuation()->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
+        if (continuation && !continuation->isInline() && continuation->parent())
+            overflowRect.unite(continuation->rectWithOutlineForPaintInvalidation(paintInvalidationContainer, outlineSize));
     }
 
     return overflowRect;
@@ -1216,8 +1217,8 @@ void LayoutInline::mapLocalToContainer(const LayoutBoxModelObject* paintInvalida
 void LayoutInline::updateDragState(bool dragOn)
 {
     LayoutBoxModelObject::updateDragState(dragOn);
-    if (continuation())
-        continuation()->updateDragState(dragOn);
+    if (LayoutBoxModelObject* continuation = this->continuation())
+        continuation->updateDragState(dragOn);
 }
 
 void LayoutInline::childBecameNonInline(LayoutObject* child)

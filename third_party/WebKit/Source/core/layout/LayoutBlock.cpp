@@ -3470,8 +3470,8 @@ LayoutObject* LayoutBlock::hoverAncestor() const
 void LayoutBlock::updateDragState(bool dragOn)
 {
     LayoutBox::updateDragState(dragOn);
-    if (continuation())
-        continuation()->updateDragState(dragOn);
+    if (LayoutBoxModelObject* continuation = this->continuation())
+        continuation->updateDragState(dragOn);
 }
 
 void LayoutBlock::childBecameNonInline(LayoutObject*)
@@ -3519,13 +3519,14 @@ void LayoutBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint
     // For blocks inside inlines, we go ahead and include margins so that we run right up to the
     // inline boxes above and below us (thus getting merged with them to form a single irregular
     // shape).
-    if (inlineElementContinuation()) {
+    const LayoutInline* inlineElementContinuation = this->inlineElementContinuation();
+    if (inlineElementContinuation) {
         // FIXME: This check really isn't accurate.
-        bool nextInlineHasLineBox = inlineElementContinuation()->firstLineBox();
+        bool nextInlineHasLineBox = inlineElementContinuation->firstLineBox();
         // FIXME: This is wrong. The principal layoutObject may not be the continuation preceding this block.
         // FIXME: This is wrong for vertical writing-modes.
         // https://bugs.webkit.org/show_bug.cgi?id=46781
-        bool prevInlineHasLineBox = toLayoutInline(inlineElementContinuation()->node()->layoutObject())->firstLineBox();
+        bool prevInlineHasLineBox = toLayoutInline(inlineElementContinuation->node()->layoutObject())->firstLineBox();
         LayoutUnit topMargin = prevInlineHasLineBox ? collapsedMarginBefore() : LayoutUnit();
         LayoutUnit bottomMargin = nextInlineHasLineBox ? collapsedMarginAfter() : LayoutUnit();
         LayoutRect rect(additionalOffset, size());
@@ -3549,8 +3550,8 @@ void LayoutBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint
         addChildFocusRingRects(rects, additionalOffset);
     }
 
-    if (inlineElementContinuation())
-        inlineElementContinuation()->addFocusRingRects(rects, additionalOffset + (inlineElementContinuation()->containingBlock()->location() - location()));
+    if (inlineElementContinuation)
+        inlineElementContinuation->addFocusRingRects(rects, additionalOffset + (inlineElementContinuation->containingBlock()->location() - location()));
 }
 
 void LayoutBlock::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const
