@@ -40,6 +40,8 @@ class HandleTable {
   // Used by the iterator to provide simple caching accessors to handle data.
   class HandleEntry {
    public:
+    ~HandleEntry();
+
     bool operator==(const HandleEntry& rhs) const {
       return handle_entry_ == rhs.handle_entry_;
     }
@@ -126,6 +128,7 @@ class HandleTable {
   };
 
   HandleTable();
+  ~HandleTable();
 
   Iterator begin() const {
     return Iterator(*this, handle_info()->Information,

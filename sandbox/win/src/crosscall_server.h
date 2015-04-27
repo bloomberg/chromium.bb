@@ -207,7 +207,8 @@ class Dispatcher {
   // with the given service (IPC).
   virtual bool SetupService(InterceptionManager* manager, int service) = 0;
 
-  virtual ~Dispatcher() {}
+  Dispatcher();
+  virtual ~Dispatcher();
 
  protected:
   // Structure that defines an IPC Call with all the parameters and the handler.

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/win/src/crosscall_server.h"
+
 #include <string>
 #include <vector>
 
-#include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/crosscall_params.h"
 #include "sandbox/win/src/crosscall_client.h"
 #include "base/logging.h"
@@ -295,6 +296,12 @@ Dispatcher* Dispatcher::OnMessageReady(IPCParams* ipc,
     }
   }
   return NULL;
+}
+
+Dispatcher::Dispatcher() {
+}
+
+Dispatcher::~Dispatcher() {
 }
 
 }  // namespace sandbox

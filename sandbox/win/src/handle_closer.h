@@ -42,6 +42,7 @@ SANDBOX_INTERCEPT HandleCloserInfo* g_handle_closer_info;
 class HandleCloser {
  public:
   HandleCloser();
+  ~HandleCloser();
 
   // Adds a handle that will be closed in the target process after lockdown.
   // A NULL value for handle_name indicates all handles of the specified type.

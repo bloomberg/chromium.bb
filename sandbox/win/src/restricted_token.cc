@@ -10,8 +10,18 @@
 #include "sandbox/win/src/acl.h"
 #include "sandbox/win/src/win_utils.h"
 
-
 namespace sandbox {
+
+RestrictedToken::RestrictedToken()
+    : init_(false),
+      effective_token_(NULL),
+      integrity_level_(INTEGRITY_LEVEL_LAST) {
+}
+
+RestrictedToken::~RestrictedToken() {
+  if (effective_token_)
+    CloseHandle(effective_token_);
+}
 
 unsigned RestrictedToken::Init(const HANDLE effective_token) {
   if (init_)

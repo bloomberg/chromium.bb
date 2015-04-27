@@ -45,14 +45,8 @@ namespace sandbox {
 class RestrictedToken {
  public:
   // Init() has to be called before calling any other method in the class.
-  RestrictedToken()
-      : init_(false), effective_token_(NULL),
-        integrity_level_(INTEGRITY_LEVEL_LAST) { }
-
-  ~RestrictedToken() {
-    if (effective_token_)
-      CloseHandle(effective_token_);
-  }
+  RestrictedToken();
+  ~RestrictedToken();
 
   // Initializes the RestrictedToken object with effective_token.
   // If effective_token is NULL, it initializes the RestrictedToken object with

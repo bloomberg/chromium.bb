@@ -82,9 +82,7 @@ class LowLevelPolicy {
  public:
   // policy_store: must contain allocated memory and the internal
   // size fields set to correct values.
-  explicit LowLevelPolicy(PolicyGlobal* policy_store)
-      : policy_store_(policy_store) {
-  }
+  explicit LowLevelPolicy(PolicyGlobal* policy_store);
 
   // Destroys all the policy rules.
   ~LowLevelPolicy();

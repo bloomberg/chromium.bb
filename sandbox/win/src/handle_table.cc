@@ -64,6 +64,9 @@ HandleTable::HandleTable() {
       handle_info_internal()->NumberOfHandles, CompareHandleEntries);
 }
 
+HandleTable::~HandleTable() {
+}
+
 HandleTable::Iterator HandleTable::HandlesForProcess(ULONG process_id) const {
   SYSTEM_HANDLE_INFORMATION key;
   key.ProcessId = static_cast<USHORT>(process_id);
@@ -82,6 +85,9 @@ HandleTable::Iterator HandleTable::HandlesForProcess(ULONG process_id) const {
 HandleTable::HandleEntry::HandleEntry(
     const SYSTEM_HANDLE_INFORMATION* handle_info_entry)
     : handle_entry_(handle_info_entry), last_entry_(0) {
+}
+
+HandleTable::HandleEntry::~HandleEntry() {
 }
 
 void HandleTable::HandleEntry::UpdateInfo(UpdateType flag) {

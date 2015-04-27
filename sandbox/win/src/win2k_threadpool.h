@@ -24,9 +24,7 @@ namespace sandbox {
 // This implementation simply thunks to the nice thread pool API of win2k.
 class Win2kThreadPool : public ThreadProvider {
  public:
-  Win2kThreadPool() {
-    ::InitializeCriticalSection(&lock_);
-  }
+  Win2kThreadPool();
   virtual ~Win2kThreadPool();
 
   virtual bool RegisterWait(const void* cookie, HANDLE waitable_object,
@@ -50,6 +48,7 @@ class Win2kThreadPool : public ThreadProvider {
   PoolObjects pool_objects_;
   // This lock protects the list of pool wait objects.
   CRITICAL_SECTION lock_;
+
   DISALLOW_COPY_AND_ASSIGN(Win2kThreadPool);
 };
 
