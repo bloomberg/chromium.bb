@@ -103,7 +103,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void ClearAlternativeService(const HostPortPair& origin) override;
   const AlternativeServiceMap& alternative_service_map() const override;
   base::Value* GetAlternativeServiceInfoAsValue() const override;
-  void SetAlternateProtocolProbabilityThreshold(double threshold) override;
+  void SetAlternativeServiceProbabilityThreshold(double threshold) override;
   const SettingsMap& GetSpdySettings(
       const HostPortPair& host_port_pair) override;
   bool SetSpdySetting(const HostPortPair& host_port_pair,

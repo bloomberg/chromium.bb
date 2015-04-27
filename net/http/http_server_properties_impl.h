@@ -103,7 +103,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   void ClearAlternativeService(const HostPortPair& origin) override;
   const AlternativeServiceMap& alternative_service_map() const override;
   base::Value* GetAlternativeServiceInfoAsValue() const override;
-  void SetAlternateProtocolProbabilityThreshold(double threshold) override;
+  void SetAlternativeServiceProbabilityThreshold(double threshold) override;
   const SettingsMap& GetSpdySettings(
       const HostPortPair& host_port_pair) override;
   bool SetSpdySetting(const HostPortPair& host_port_pair,
@@ -170,7 +170,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   // ".googlevideo.com", ".googleusercontent.com") of canonical hostnames.
   CanonicalSufficList canonical_suffixes_;
 
-  double alternate_protocol_probability_threshold_;
+  double alternative_service_probability_threshold_;
 
   base::WeakPtrFactory<HttpServerPropertiesImpl> weak_ptr_factory_;
 

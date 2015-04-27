@@ -175,7 +175,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<std::string> trusted_spdy_proxy;
     std::set<net::HostPortPair> forced_spdy_exclusions;
     Optional<bool> use_alternate_protocols;
-    Optional<double> alternate_protocol_probability_threshold;
+    Optional<double> alternative_service_probability_threshold;
 
     Optional<bool> enable_quic;
     Optional<bool> enable_quic_for_proxies;
@@ -411,9 +411,9 @@ class IOThread : public content::BrowserThreadDelegate {
       const base::CommandLine& command_line,
       const VariationParameters& quic_trial_params);
 
-  // Returns the alternate protocol probability threshold specified by
+  // Returns the alternative service probability threshold specified by
   // any flags in |command_line| or |quic_trial_params|.
-  static double GetAlternateProtocolProbabilityThreshold(
+  static double GetAlternativeProtocolProbabilityThreshold(
       const base::CommandLine& command_line,
       const VariationParameters& quic_trial_params);
 

@@ -663,7 +663,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolProbabilityForQuic) {
   // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
 
-  params_.alternate_protocol_probability_threshold = .25;
+  params_.alternative_service_probability_threshold = .25;
   CreateSessionWithNextProtos();
 
   SendRequestAndExpectHttpResponse("hello world");
@@ -684,7 +684,7 @@ TEST_P(QuicNetworkTransactionTest, DontUseAlternateProtocolProbabilityForQuic) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSocketDataProvider(&http_data);
 
-  params_.alternate_protocol_probability_threshold = .75;
+  params_.alternative_service_probability_threshold = .75;
   CreateSessionWithNextProtos();
 
   SendRequestAndExpectHttpResponse("hello world");
@@ -706,7 +706,7 @@ TEST_P(QuicNetworkTransactionTest,
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSocketDataProvider(&http_data);
 
-  params_.alternate_protocol_probability_threshold = .75;
+  params_.alternative_service_probability_threshold = .75;
   CreateSessionWithNextProtos();
 
   SendRequestAndExpectHttpResponse("hello world");

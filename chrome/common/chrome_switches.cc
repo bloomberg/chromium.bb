@@ -64,11 +64,11 @@ const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 // URLs. This provides an override to get the old insecure behavior.
 const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
 
-// Specifies the threshold to be used when determining of an Alternate-Protocol
-// advertisement will be honored. If the advertised probability is larger
-// than the threshold, then it will be honored.
-const char kAlternateProtocolProbabilityThreshold[] =
-    "alternate-protocol-probability-threshold";
+// Specifies the probability threshold for alternative services: an advertised
+// alternative service will only be honored if the advertised probability is
+// greater than or equal to this threshold.
+const char kAlternativeServiceProbabilityThreshold[] =
+    "alternative-service-probability-threshold";
 
 // Prevents Chrome from requiring authorization to run certain widely installed
 // but less commonly used plugins.

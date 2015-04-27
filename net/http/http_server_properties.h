@@ -279,8 +279,7 @@ class NET_EXPORT HttpServerProperties {
   // to |threshold| will be honored. |threshold| must be between 0.0 and 1.0
   // inclusive. Hence, a threshold of 0.0 implies that all advertisements will
   // be honored.
-  virtual void SetAlternateProtocolProbabilityThreshold(
-      double threshold) = 0;
+  virtual void SetAlternativeServiceProbabilityThreshold(double threshold) = 0;
 
   // Gets a reference to the SettingsMap stored for a host.
   // If no settings are stored, returns an empty SettingsMap.

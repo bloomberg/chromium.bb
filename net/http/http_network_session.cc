@@ -83,7 +83,7 @@ HttpNetworkSession::Params::Params()
       spdy_max_concurrent_streams_limit(0),
       time_func(&base::TimeTicks::Now),
       use_alternate_protocols(false),
-      alternate_protocol_probability_threshold(1),
+      alternative_service_probability_threshold(1),
       enable_quic(false),
       enable_quic_for_proxies(false),
       enable_quic_port_selection(true),
@@ -196,8 +196,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
     }
   }
 
-  http_server_properties_->SetAlternateProtocolProbabilityThreshold(
-      params.alternate_protocol_probability_threshold);
+  http_server_properties_->SetAlternativeServiceProbabilityThreshold(
+      params.alternative_service_probability_threshold);
 }
 
 HttpNetworkSession::~HttpNetworkSession() {
@@ -271,8 +271,8 @@ base::Value* HttpNetworkSession::QuicInfoToValue() const {
   dict->Set("connection_options", connection_options);
   dict->SetString("origin_to_force_quic_on",
                   params_.origin_to_force_quic_on.ToString());
-  dict->SetDouble("alternate_protocol_probability_threshold",
-                  params_.alternate_protocol_probability_threshold);
+  dict->SetDouble("alternative_service_probability_threshold",
+                  params_.alternative_service_probability_threshold);
   return dict;
 }
 

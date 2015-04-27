@@ -164,7 +164,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   // Currently (circa M39) enabling QUIC requires setting probability threshold.
   if (config->enable_quic) {
     context_->http_server_properties()
-        ->SetAlternateProtocolProbabilityThreshold(0.0f);
+        ->SetAlternativeServiceProbabilityThreshold(0.0f);
     for (auto hint = config->quic_hints.begin();
          hint != config->quic_hints.end(); ++hint) {
       const URLRequestContextConfig::QuicHint& quic_hint = **hint;

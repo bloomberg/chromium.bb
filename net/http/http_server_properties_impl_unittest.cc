@@ -265,7 +265,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, DefaultProbabilityExcluded) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, Probability) {
-  impl_.SetAlternateProtocolProbabilityThreshold(0.25);
+  impl_.SetAlternativeServiceProbabilityThreshold(0.25);
 
   HostPortPair test_host_port_pair("foo", 80);
   const AlternativeService alternative_service(NPN_SPDY_4, "foo", 443);
@@ -281,7 +281,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Probability) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ProbabilityExcluded) {
-  impl_.SetAlternateProtocolProbabilityThreshold(0.75);
+  impl_.SetAlternativeServiceProbabilityThreshold(0.75);
 
   HostPortPair test_host_port_pair("foo", 80);
   const AlternativeService alternative_service(NPN_SPDY_4, "foo", 443);
@@ -433,7 +433,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, CanonicalDefaultHost) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBelowThreshold) {
-  impl_.SetAlternateProtocolProbabilityThreshold(0.02);
+  impl_.SetAlternativeServiceProbabilityThreshold(0.02);
 
   HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
   HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
@@ -445,7 +445,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBelowThreshold) {
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, CanonicalAboveThreshold) {
-  impl_.SetAlternateProtocolProbabilityThreshold(0.02);
+  impl_.SetAlternativeServiceProbabilityThreshold(0.02);
 
   HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
   HostPortPair canonical_port_pair("bar.c.youtube.com", 80);

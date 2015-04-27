@@ -254,10 +254,10 @@ base::Value* HttpServerPropertiesManager::GetAlternativeServiceInfoAsValue()
   return http_server_properties_impl_->GetAlternativeServiceInfoAsValue();
 }
 
-void HttpServerPropertiesManager::SetAlternateProtocolProbabilityThreshold(
+void HttpServerPropertiesManager::SetAlternativeServiceProbabilityThreshold(
     double threshold) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  http_server_properties_impl_->SetAlternateProtocolProbabilityThreshold(
+  http_server_properties_impl_->SetAlternativeServiceProbabilityThreshold(
       threshold);
 }
 

@@ -327,8 +327,6 @@ bool IsCertificateTransparencyRequiredForEV(
 //   "exclude=<host>"           : Disables SPDY support for the host <host>.
 //   "no-compress"              : Disables SPDY header compression.
 //   "no-alt-protocols          : Disables alternate protocol support.
-//   "force-alt-protocols       : Forces an alternate protocol of SPDY/3
-//                                on port 443.
 //   "init-max-streams=<limit>" : Specifies the maximum number of concurrent
 //                                streams for a SPDY session, unless the
 //                                specifies a different value via SETTINGS.
@@ -1184,8 +1182,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
   params->forced_spdy_exclusions = globals.forced_spdy_exclusions;
   globals.use_alternate_protocols.CopyToIfSet(
       &params->use_alternate_protocols);
-  globals.alternate_protocol_probability_threshold.CopyToIfSet(
-      &params->alternate_protocol_probability_threshold);
+  globals.alternative_service_probability_threshold.CopyToIfSet(
+      &params->alternative_service_probability_threshold);
 
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
   globals.enable_quic_for_proxies.CopyToIfSet(&params->enable_quic_for_proxies);
@@ -1380,11 +1378,11 @@ void IOThread::ConfigureQuicGlobals(
     globals->quic_supported_versions.set(supported_versions);
   }
 
-  double threshold =
-      GetAlternateProtocolProbabilityThreshold(command_line, quic_trial_params);
+  double threshold = GetAlternativeProtocolProbabilityThreshold(
+      command_line, quic_trial_params);
   if (threshold >=0 && threshold <= 1) {
-    globals->alternate_protocol_probability_threshold.set(threshold);
-    globals->http_server_properties->SetAlternateProtocolProbabilityThreshold(
+    globals->alternative_service_probability_threshold.set(threshold);
+    globals->http_server_properties->SetAlternativeServiceProbabilityThreshold(
         threshold);
   }
 
@@ -1472,15 +1470,15 @@ net::QuicTagVector IOThread::GetQuicConnectionOptions(
 }
 
 // static
-double IOThread::GetAlternateProtocolProbabilityThreshold(
+double IOThread::GetAlternativeProtocolProbabilityThreshold(
     const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
   double value;
   if (command_line.HasSwitch(
-          switches::kAlternateProtocolProbabilityThreshold)) {
+          switches::kAlternativeServiceProbabilityThreshold)) {
     if (base::StringToDouble(
             command_line.GetSwitchValueASCII(
-                switches::kAlternateProtocolProbabilityThreshold),
+                switches::kAlternativeServiceProbabilityThreshold),
             &value)) {
       return value;
     }
@@ -1488,9 +1486,17 @@ double IOThread::GetAlternateProtocolProbabilityThreshold(
   if (command_line.HasSwitch(switches::kEnableQuic)) {
     return 0;
   }
+  // TODO(bnc): Remove when new parameter name rolls out and server
+  // configuration is changed.
   if (base::StringToDouble(
           GetVariationParam(quic_trial_params,
                             "alternate_protocol_probability_threshold"),
+          &value)) {
+    return value;
+  }
+  if (base::StringToDouble(
+          GetVariationParam(quic_trial_params,
+                            "alternative_service_probability_threshold"),
           &value)) {
     return value;
   }
