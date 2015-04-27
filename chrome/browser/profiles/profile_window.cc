@@ -109,7 +109,7 @@ void OpenBrowserWindowForProfile(
     chrome::HostDesktopType desktop_type,
     Profile* profile,
     Profile::CreateStatus status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;

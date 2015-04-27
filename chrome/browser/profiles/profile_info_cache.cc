@@ -89,7 +89,7 @@ typedef std::vector<unsigned char> ImageData;
 void SaveBitmap(scoped_ptr<ImageData> data,
                 const base::FilePath& image_path,
                 const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Make sure the destination directory exists.
   base::FilePath dir = image_path.DirName();
@@ -112,7 +112,7 @@ void SaveBitmap(scoped_ptr<ImageData> data,
 // will be NULL.
 void ReadBitmap(const base::FilePath& image_path,
                 gfx::Image** out_image) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   *out_image = NULL;
 
   // If the path doesn't exist, don't even try reading it.
@@ -137,13 +137,13 @@ void ReadBitmap(const base::FilePath& image_path,
 
 void RunCallbackIfFileMissing(const base::FilePath& file_path,
                               const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!base::PathExists(file_path))
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
 void DeleteBitmap(const base::FilePath& image_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::DeleteFile(image_path, false);
 }
 
@@ -1093,7 +1093,7 @@ const gfx::Image* ProfileInfoCache::LoadAvatarPictureFromPath(
 void ProfileInfoCache::OnAvatarPictureLoaded(const base::FilePath& profile_path,
                                              const std::string& key,
                                              gfx::Image** image) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile1(
@@ -1134,7 +1134,7 @@ void ProfileInfoCache::OnAvatarPictureLoaded(const base::FilePath& profile_path,
 void ProfileInfoCache::OnAvatarPictureSaved(
       const std::string& file_name,
       const base::FilePath& profile_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
       observer_list_,

@@ -127,7 +127,7 @@ int64 ComputeFilesSize(const base::FilePath& directory,
 
 // Simple task to log the size of the current profile.
 void ProfileSizeTask(const base::FilePath& path, int enabled_app_count) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   const int64 kBytesInOneMB = 1024 * 1024;
 
   int64 size = ComputeFilesSize(path, FILE_PATH_LITERAL("*"));
@@ -397,7 +397,7 @@ void ProfileManager::CreateProfileAsync(
     const base::string16& name,
     const base::string16& icon_url,
     const std::string& supervised_user_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT1("browser,startup",
                "ProfileManager::CreateProfileAsync",
                "profile_path",
@@ -576,7 +576,7 @@ base::FilePath ProfileManager::CreateMultiProfileAsync(
     const base::string16& icon_url,
     const CreateCallback& callback,
     const std::string& supervised_user_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
@@ -592,7 +592,7 @@ base::FilePath ProfileManager::CreateMultiProfileAsync(
 
 // static
 base::FilePath ProfileManager::GetGuestProfilePath() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
@@ -602,7 +602,7 @@ base::FilePath ProfileManager::GetGuestProfilePath() {
 
 // static
 base::FilePath ProfileManager::GetSystemProfilePath() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
@@ -730,7 +730,7 @@ void ProfileManager::ScheduleProfileForDeletion(
 // static
 void ProfileManager::CleanUpStaleProfiles(
     const std::vector<base::FilePath>& profile_paths) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   for (std::vector<base::FilePath>::const_iterator it = profile_paths.begin();
        it != profile_paths.end(); ++it) {
@@ -947,7 +947,7 @@ void ProfileManager::Observe(
 void ProfileManager::OnProfileCreated(Profile* profile,
                                       bool success,
                                       bool is_new_profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ProfilesInfoMap::iterator iter = profiles_info_.find(profile->GetPath());
   DCHECK(iter != profiles_info_.end());

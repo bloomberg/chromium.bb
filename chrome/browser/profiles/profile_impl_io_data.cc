@@ -111,12 +111,12 @@ ProfileImplIOData::Handle::Handle(Profile* profile)
     : io_data_(new ProfileImplIOData),
       profile_(profile),
       initialized_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile);
 }
 
 ProfileImplIOData::Handle::~Handle() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (io_data_->predictor_ != NULL) {
     // io_data_->predictor_ might be NULL if Init() was never called
     // (i.e. we shut down before ProfileImpl::DoFinalInit() got called).
@@ -154,7 +154,7 @@ void ProfileImplIOData::Handle::Init(
     storage::SpecialStoragePolicy* special_storage_policy,
     scoped_ptr<domain_reliability::DomainReliabilityMonitor>
         domain_reliability_monitor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!io_data_->lazy_params_);
   DCHECK(predictor);
 
@@ -207,14 +207,14 @@ void ProfileImplIOData::Handle::Init(
 
 content::ResourceContext*
     ProfileImplIOData::Handle::GetResourceContext() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LazyInitialize();
   return GetResourceContextNoInit();
 }
 
 content::ResourceContext*
 ProfileImplIOData::Handle::GetResourceContextNoInit() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Don't call LazyInitialize here, since the resource context is created at
   // the beginning of initalization and is used by some members while they're
   // being initialized (i.e. AppCacheService).
@@ -227,7 +227,7 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
     content::URLRequestInterceptorScopedVector request_interceptors,
     PrefService* local_state,
     IOThread* io_thread) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LazyInitialize();
   DCHECK(!main_request_context_getter_.get());
   main_request_context_getter_ = ChromeURLRequestContextGetter::Create(
@@ -249,7 +249,7 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
 
 scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::GetMediaRequestContextGetter() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LazyInitialize();
   if (!media_request_context_getter_.get()) {
     media_request_context_getter_ =
@@ -260,7 +260,7 @@ ProfileImplIOData::Handle::GetMediaRequestContextGetter() const {
 
 scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::GetExtensionsRequestContextGetter() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LazyInitialize();
   if (!extensions_request_context_getter_.get()) {
     extensions_request_context_getter_ =
@@ -275,7 +275,7 @@ ProfileImplIOData::Handle::CreateIsolatedAppRequestContextGetter(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Check that the partition_path is not the same as the base profile path. We
   // expect isolated partition, which will never go to the default profile path.
   CHECK(partition_path != profile_->GetPath());
@@ -309,7 +309,7 @@ scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
     const base::FilePath& partition_path,
     bool in_memory) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // We must have a non-default path, or this will act like the default media
   // context.
   CHECK(partition_path != profile_->GetPath());
@@ -338,14 +338,14 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
 
 DevToolsNetworkController*
 ProfileImplIOData::Handle::GetDevToolsNetworkController() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return io_data_->network_controller();
 }
 
 void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
     base::Time time,
     const base::Closure& completion) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LazyInitialize();
 
   BrowserThread::PostTask(
@@ -358,7 +358,7 @@ void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
 }
 
 void ProfileImplIOData::Handle::LazyInitialize() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (initialized_)
     return;
 
@@ -807,7 +807,7 @@ ProfileImplIOData::AcquireIsolatedMediaRequestContext(
 void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
     base::Time time,
     const base::Closure& completion) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(initialized());
 
   DCHECK(transport_security_state());

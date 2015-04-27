@@ -48,25 +48,25 @@ OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
     : io_data_(new OffTheRecordProfileIOData(profile->GetProfileType())),
       profile_(profile),
       initialized_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile);
 }
 
 OffTheRecordProfileIOData::Handle::~Handle() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   io_data_->ShutdownOnUIThread(GetAllContextGetters().Pass());
 }
 
 content::ResourceContext*
 OffTheRecordProfileIOData::Handle::GetResourceContext() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LazyInitialize();
   return GetResourceContextNoInit();
 }
 
 content::ResourceContext*
 OffTheRecordProfileIOData::Handle::GetResourceContextNoInit() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Don't call LazyInitialize here, since the resource context is created at
   // the beginning of initalization and is used by some members while they're
   // being initialized (i.e. AppCacheService).
@@ -80,7 +80,7 @@ OffTheRecordProfileIOData::Handle::CreateMainRequestContextGetter(
   // TODO(oshima): Re-enable when ChromeOS only accesses the profile on the UI
   // thread.
 #if !defined(OS_CHROMEOS)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #endif  // defined(OS_CHROMEOS)
   LazyInitialize();
   DCHECK(!main_request_context_getter_.get());
@@ -91,7 +91,7 @@ OffTheRecordProfileIOData::Handle::CreateMainRequestContextGetter(
 
 scoped_refptr<ChromeURLRequestContextGetter>
 OffTheRecordProfileIOData::Handle::GetExtensionsRequestContextGetter() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LazyInitialize();
   if (!extensions_request_context_getter_.get()) {
     extensions_request_context_getter_ =
@@ -104,7 +104,7 @@ scoped_refptr<ChromeURLRequestContextGetter>
 OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
     const base::FilePath& partition_path,
     bool in_memory) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!partition_path.empty());
   LazyInitialize();
 
@@ -122,7 +122,7 @@ OffTheRecordProfileIOData::Handle::CreateIsolatedAppRequestContextGetter(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!partition_path.empty());
   LazyInitialize();
 
@@ -149,7 +149,7 @@ OffTheRecordProfileIOData::Handle::CreateIsolatedAppRequestContextGetter(
 
 DevToolsNetworkController*
 OffTheRecordProfileIOData::Handle::GetDevToolsNetworkController() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return io_data_->network_controller();
 }
 

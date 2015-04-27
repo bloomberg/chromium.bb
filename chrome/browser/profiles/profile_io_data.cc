@@ -263,7 +263,7 @@ void DidGetTPMInfoForUserOnUIThread(
     scoped_ptr<chromeos::TPMTokenInfoGetter> getter,
     const std::string& username_hash,
     const chromeos::TPMTokenInfo& info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (info.tpm_is_enabled && info.token_slot_id != -1) {
     DVLOG(1) << "Got TPM slot for " << username_hash << ": "
              << info.token_slot_id;
@@ -279,7 +279,7 @@ void DidGetTPMInfoForUserOnUIThread(
 
 void GetTPMInfoForUserOnUIThread(const std::string& username,
                                  const std::string& username_hash) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "Getting TPM info from cryptohome for "
            << " " << username << " " << username_hash;
   scoped_ptr<chromeos::TPMTokenInfoGetter> scoped_token_info_getter =
@@ -302,7 +302,7 @@ void GetTPMInfoForUserOnUIThread(const std::string& username,
 
 void StartTPMSlotInitializationOnIOThread(const std::string& username,
                                           const std::string& username_hash) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -313,7 +313,7 @@ void StartTPMSlotInitializationOnIOThread(const std::string& username,
 void StartNSSInitOnIOThread(const std::string& username,
                             const std::string& username_hash,
                             const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "Starting NSS init for " << username
            << "  hash:" << username_hash;
 
@@ -354,7 +354,7 @@ void InitializeAndPassKeygenHandler(
 
 void InvalidateContextGettersOnIO(
     scoped_ptr<ProfileIOData::ChromeURLRequestContextGetterVector> getters) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData::ChromeURLRequestContextGetterVector::iterator iter;
   for (iter = getters->begin(); iter != getters->end(); ++iter)
     (*iter)->Invalidate();
@@ -363,7 +363,7 @@ void InvalidateContextGettersOnIO(
 }  // namespace
 
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrefService* pref_service = profile->GetPrefs();
   PrefService* local_state_pref_service = g_browser_process->local_state();
 
@@ -595,12 +595,12 @@ ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
       resource_context_(new ResourceContext(this)),
       initialized_on_UI_thread_(false),
       profile_type_(profile_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 ProfileIOData::~ProfileIOData() {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO))
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Pull the contents of the request context maps onto the stack for sanity
   // checking of values in a minidump. http://crbug.com/260425
@@ -832,7 +832,7 @@ bool ProfileIOData::IsOffTheRecord() const {
 }
 
 void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_CHROMEOS)
   // Just fetch the value from ChromeOS' settings while we're on the UI thread.
   // TODO(stevet): For now, this value is only set on profile initialization.
@@ -859,7 +859,7 @@ void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
 }
 
 bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 #if defined(OS_CHROMEOS)
   return enable_metrics_;
 #else
@@ -897,13 +897,13 @@ ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
 ProfileIOData::ResourceContext::~ResourceContext() {}
 
 net::HostResolver* ProfileIOData::ResourceContext::GetHostResolver()  {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(io_data_->initialized_);
   return host_resolver_;
 }
 
 net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(io_data_->initialized_);
   return request_context_;
 }
@@ -969,7 +969,7 @@ ProfileIOData::ResourceContext::GetMediaDeviceIDSalt() {
 
 // static
 std::string ProfileIOData::GetSSLSessionCacheShard() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // The SSL session cache is partitioned by setting a string. This returns a
   // unique string to partition the SSL session cache. Each time we create a
   // new profile, we'll get a fresh SSL session cache which is separate from
@@ -984,7 +984,7 @@ void ProfileIOData::Init(
   // The basic logic is implemented here. The specific initialization
   // is done in InitializeInternal(), implemented by subtypes. Static helper
   // functions have been provided to assist in common operations.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!initialized_);
 
   startup_metric_utils::ScopedSlowStartupUMA
@@ -1200,7 +1200,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
 
 void ProfileIOData::ShutdownOnUIThread(
     scoped_ptr<ChromeURLRequestContextGetterVector> context_getters) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (signin_names_)
     signin_names_->ReleaseResourcesOnUIThread();
