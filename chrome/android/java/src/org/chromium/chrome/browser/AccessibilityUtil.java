@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.view.accessibility.AccessibilityManager;
 
 import org.chromium.base.CalledByNative;
@@ -78,7 +77,6 @@ public class AccessibilityUtil {
         if (!isTalkbackRunning) return false;
 
         if (PackageUtils.getPackageVersion(context, TALKBACK_PACKAGE_NAME) < MIN_TALKBACK_VERSION
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
                 && !sOldTalkBackVersionAlertShown) {
             showOldTalkbackVersionAlertOnce(context);
             return true;
