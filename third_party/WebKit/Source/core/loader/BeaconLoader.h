@@ -32,7 +32,7 @@ public:
     static bool sendBeacon(LocalFrame*, int, const KURL&, const String&, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtr<DOMArrayBufferView>, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, Blob*, int&);
-    static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtrWillBeRawPtr<DOMFormData>, int&);
+    static bool sendBeacon(LocalFrame*, int, const KURL&, DOMFormData*, int&);
 
 private:
     class Sender;

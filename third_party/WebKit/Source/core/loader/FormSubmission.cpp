@@ -209,7 +209,7 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
         }
     }
     WTF::TextEncoding dataEncoding = isMailtoForm ? UTF8Encoding() : FormDataBuilder::encodingFromAcceptCharset(copiedAttributes.acceptCharset(), document.charset(), document.defaultCharset());
-    RefPtrWillBeRawPtr<DOMFormData> domFormData = DOMFormData::create(dataEncoding.encodingForFormSubmission());
+    DOMFormData* domFormData = DOMFormData::create(dataEncoding.encodingForFormSubmission());
 
     bool containsPasswordData = false;
     for (unsigned i = 0; i < form->associatedElements().size(); ++i) {

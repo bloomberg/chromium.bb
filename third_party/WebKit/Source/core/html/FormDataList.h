@@ -32,8 +32,7 @@
 
 namespace blink {
 
-class CORE_EXPORT FormDataList : public RefCountedWillBeGarbageCollected<FormDataList> {
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(FormDataList);
+class CORE_EXPORT FormDataList : public GarbageCollected<FormDataList> {
 public:
     class Entry final {
         ALLOW_ONLY_INLINE_ALLOCATION();
@@ -80,12 +79,12 @@ public:
         String m_filename;
     };
 
-    static PassRefPtrWillBeRawPtr<FormDataList> create(const WTF::TextEncoding& encoding)
+    static FormDataList* create(const WTF::TextEncoding& encoding)
     {
-        return adoptRefWillBeNoop(new FormDataList(encoding));
+        return new FormDataList(encoding);
     }
 
-    typedef PersistentHeapVectorWillBeHeapVector<FormDataList::Item> FormDataListItems;
+    using FormDataListItems = HeapVector<FormDataList::Item>;
 
     void appendData(const String& key, const String& value)
     {
@@ -111,7 +110,7 @@ public:
     void deleteEntry(const String& key);
     Entry getEntry(const String& key) const;
     Entry getEntry(size_t index) const;
-    WillBeHeapVector<Entry> getAll(const String& key) const;
+    HeapVector<Entry> getAll(const String& key) const;
     bool hasEntry(const String& key) const;
     void setBlob(const String& key, Blob*, const String& filename);
     void setData(const String& key, const String& value);

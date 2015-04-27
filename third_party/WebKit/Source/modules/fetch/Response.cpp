@@ -115,7 +115,7 @@ Response* Response::create(ExecutionContext* context, const BodyInit& body, cons
         return create(context, blob, ResponseInit(responseInit, exceptionState), exceptionState);
     }
     if (body.isFormData()) {
-        RefPtrWillBeRawPtr<DOMFormData> domFormData = body.getAsFormData();
+        DOMFormData* domFormData = body.getAsFormData();
         OwnPtr<BlobData> blobData = BlobData::create();
         // FIXME: the same code exist in RequestInit::RequestInit().
         RefPtr<FormData> httpBody = domFormData->createMultiPartFormData();

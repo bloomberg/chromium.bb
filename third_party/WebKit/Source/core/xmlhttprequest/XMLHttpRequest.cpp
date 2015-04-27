@@ -848,7 +848,7 @@ void XMLHttpRequest::send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrSt
     }
 
     if (data.isFormData()) {
-        send(data.getAsFormData().get(), exceptionState);
+        send(data.getAsFormData(), exceptionState);
         return;
     }
 

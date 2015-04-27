@@ -210,7 +210,7 @@ bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString,
         if (control->isDisabledFormControl() || control->name().isNull())
             continue;
 
-        RefPtrWillBeRawPtr<FormDataList> dataList = FormDataList::create(*encoding);
+        FormDataList* dataList = FormDataList::create(*encoding);
         if (!control->appendFormData(*dataList, false))
             continue;
 

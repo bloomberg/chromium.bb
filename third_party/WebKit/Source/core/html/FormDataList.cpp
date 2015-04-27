@@ -28,8 +28,6 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(FormDataList);
-
 FormDataList::FormDataList(const WTF::TextEncoding& c)
     : m_encoding(c)
 {
@@ -94,9 +92,9 @@ FormDataList::Entry FormDataList::getEntry(size_t index) const
     return itemsToEntry(key, value);
 }
 
-WillBeHeapVector<FormDataList::Entry> FormDataList::getAll(const String& key) const
+HeapVector<FormDataList::Entry> FormDataList::getAll(const String& key) const
 {
-    WillBeHeapVector<FormDataList::Entry> matches;
+    HeapVector<FormDataList::Entry> matches;
 
     const CString keyData = encodeAndNormalize(key);
     const FormDataListItems& items = this->items();

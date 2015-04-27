@@ -38,8 +38,6 @@
 #include "core/html/FormDataList.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace WTF{
 class TextEncoding;
@@ -57,14 +55,14 @@ class CORE_EXPORT DOMFormData final : public FormDataList, public ScriptWrappabl
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static PassRefPtrWillBeRawPtr<DOMFormData> create(HTMLFormElement* form = 0)
+    static DOMFormData* create(HTMLFormElement* form = 0)
     {
-        return adoptRefWillBeNoop(new DOMFormData(form));
+        return new DOMFormData(form);
     }
 
-    static PassRefPtrWillBeRawPtr<DOMFormData> create(const WTF::TextEncoding& encoding)
+    static DOMFormData* create(const WTF::TextEncoding& encoding)
     {
-        return adoptRefWillBeNoop(new DOMFormData(encoding));
+        return new DOMFormData(encoding);
     }
 
     // FormData interface.

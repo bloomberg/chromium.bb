@@ -68,7 +68,7 @@ public:
     }
 
 private:
-    const RefPtrWillBeMember<DOMFormData> m_formData;
+    const Member<DOMFormData> m_formData;
     size_t m_current;
 };
 
@@ -116,9 +116,8 @@ void DOMFormData::get(const String& name, FormDataEntryValue& result)
 Vector<FormDataEntryValue> DOMFormData::getAll(const String& name)
 {
     Vector<FormDataEntryValue> results;
-    WillBeHeapVector<FormDataList::Entry> entries = FormDataList::getAll(name);
-    for (size_t i = 0; i < entries.size(); ++i) {
-        const FormDataList::Entry& entry = entries[i];
+    HeapVector<FormDataList::Entry> entries = FormDataList::getAll(name);
+    for (const FormDataList::Entry& entry : entries) {
         ASSERT(entry.name() == name);
         FormDataEntryValue value;
         if (entry.isString())
