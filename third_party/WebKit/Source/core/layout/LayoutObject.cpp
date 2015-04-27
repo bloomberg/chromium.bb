@@ -611,9 +611,19 @@ LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
     while (curr) {
         if (curr->isLayoutFlowThread())
             return toLayoutFlowThread(curr);
-        curr = curr->containingBlock();
+        LayoutObject* containingBlock = curr->containingBlock();
+        curr = curr->parent();
+        while (curr != containingBlock) {
+            if (curr->isLayoutFlowThread()) {
+                // The nearest ancestor flow thread isn't in our containing block chain. Then we
+                // aren't really part of any flow thread, and we should stop looking. This happens
+                // when there are out-of-flow objects or column spanners.
+                return nullptr;
+            }
+            curr = curr->parent();
+        }
     }
-    return 0;
+    return nullptr;
 }
 
 // FIXME: This could be used when changing the size of a layoutObject without children to skip some invalidations.
@@ -2470,7 +2480,7 @@ void LayoutObject::insertedIntoTree()
     if (!isFloating() && parent()->childrenInline())
         parent()->dirtyLinesFromChangedChild(this);
 
-    if (LayoutFlowThread* flowThread = parent()->flowThreadContainingBlock())
+    if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
         flowThread->flowThreadDescendantWasInserted(this);
 }
 

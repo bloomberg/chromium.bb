@@ -52,7 +52,12 @@ LayoutState::LayoutState(LayoutBox& renderer, const LayoutSize& offset, LayoutUn
     , m_next(renderer.view()->layoutState())
     , m_renderer(renderer)
 {
-    m_flowThread = renderer.isLayoutFlowThread() ? toLayoutFlowThread(&renderer) : m_next->flowThread();
+    if (renderer.isLayoutFlowThread())
+        m_flowThread = toLayoutFlowThread(&renderer);
+    else if (!renderer.isOutOfFlowPositioned() && !renderer.isColumnSpanAll())
+        m_flowThread = m_next->flowThread();
+    else
+        m_flowThread = nullptr;
     renderer.view()->pushLayoutState(*this);
     bool fixed = renderer.isOutOfFlowPositioned() && renderer.style()->position() == FixedPosition;
     if (fixed) {
