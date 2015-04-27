@@ -70,6 +70,12 @@ class GURL;
 // is no longer valid.
 - (void)webStateDestroyed:(web::WebState*)webState;
 
+// Invoked by WebStateObserverBridge::DidStopLoading.
+- (void)webStateDidStopLoading:(web::WebState*)webState;
+
+// Invoked by WebStateObserverBridge::DidStartLoading.
+- (void)webStateDidStartLoading:(web::WebState*)webState;
+
 @end
 
 namespace web {
@@ -108,6 +114,8 @@ class WebStateObserverBridge : public web::WebStateObserver {
                              bool user_initiated) override;
   void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) override;
   void WebStateDestroyed() override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
 
  private:
   base::WeakNSProtocol<id<CRWWebStateObserver>> observer_;

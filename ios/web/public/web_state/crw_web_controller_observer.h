@@ -9,7 +9,7 @@
 #include <string>
 
 @class CRWWebController;
-@class CRWWebViewProxy;
+@protocol CRWWebViewProxy;
 class GURL;
 @class UIWebView;
 
@@ -33,38 +33,6 @@ class DictionaryValue;
 // DEPRECATED: Use WebStateObserver instead.
 - (void)pageLoaded:(CRWWebController*)webController;
 
-// Called when a form is being submitted.
-- (void)documentSubmit:(CRWWebController*)webController
-              formName:(const std::string&)formName
-       userInteraction:(BOOL)userInteraction;
-
-// Called when the user is typing on a form field, with |error| indicating if
-// there is any error when parsing the form field information. Currently these
-// events will not be sent if the Disable Autofill experiment is set.
-- (void)formActivity:(CRWWebController*)webController
-            formName:(const std::string&)formName
-           fieldName:(const std::string&)fieldName
-                type:(const std::string&)type
-               value:(const std::string&)value
-               error:(bool)error;
-
-// Identical to |formActivity:formName:fieldName:type:value:error:|, but
-// indicates that the activity was triggered by typing the key specified by
-// |keyCode|.
-- (void)formActivity:(CRWWebController*)webController
-            formName:(const std::string&)formName
-           fieldName:(const std::string&)fieldName
-                type:(const std::string&)type
-               value:(const std::string&)value
-             keyCode:(int)keyCode
-               error:(bool)error;
-
-// The page requested autocomplete.
-- (void)requestAutocomplete:(CRWWebController*)webController
-                  sourceURL:(const GURL&)sourceURL
-                   formName:(const std::string&)formName
-            userInteraction:(BOOL)userInteraction;
-
 // Called when the web controller is about to close.
 - (void)webControllerWillClose:(CRWWebController*)webController;
 
@@ -77,7 +45,7 @@ class DictionaryValue;
             originURL:(const GURL&)originURL;
 
 // Gives CRWWebControllerObservers access to the CRWWebViewProxy.
-- (void)setWebViewProxy:(CRWWebViewProxy*)webView
+- (void)setWebViewProxy:(id<CRWWebViewProxy>)webView
              controller:(CRWWebController*)webController;
 
 @end

@@ -14,6 +14,7 @@ class GURL;
 
 namespace web {
 
+struct Credential;
 struct FaviconURL;
 struct LoadCommittedDetails;
 class WebState;
@@ -41,6 +42,12 @@ class WebStateObserver {
   // navigations).
   virtual void NavigationItemCommitted(
       const LoadCommittedDetails& load_details) {}
+
+  // Called when the current page has started loading.
+  virtual void DidStartLoading() {}
+
+  // Called when the current page has stopped loading.
+  virtual void DidStopLoading() {}
 
   // Called when the current page is loaded.
   virtual void PageLoaded(PageLoadCompletionStatus load_completion_status) {}
@@ -79,6 +86,54 @@ class WebStateObserver {
 
   // Invoked when new favicon URL candidates are received.
   virtual void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) {}
+
+  // Notifies the observer that the credential manager API was invoked from
+  // |source_url| to request a credential from the browser. If |suppress_ui|
+  // is true, the browser MUST NOT show any UI to the user. If this means that
+  // no credential will be returned to the page, so be it. Otherwise, the
+  // browser may show the user any UI that is necessary to get a Credential and
+  // return it to the page. |federations| specifies a list of acceptable
+  // federation providers. |user_interaction| indicates whether the API was
+  // invoked in response to a user interaction. Responses to the page should
+  // provide the specified |request_id|.
+  virtual void CredentialsRequested(int request_id,
+                                    const GURL& source_url,
+                                    bool suppress_ui,
+                                    const std::vector<std::string>& federations,
+                                    bool is_user_initiated) {}
+
+  // Notifies the observer that the credential manager API was invoked from
+  // |source_url| to notify the browser that the user signed in. |credential|
+  // specifies the credential that was used to sign in. Responses to the page
+  // should provide the specified |request_id|.
+  virtual void SignedIn(int request_id,
+                        const GURL& source_url,
+                        const web::Credential& credential) {}
+
+  // Notifies the observer that the credential manager API was invoked from
+  // |source_url| to notify the browser that the user signed in without
+  // specifying the credential that was used. Responses to the page should
+  // provide the specified |request_id|.
+  virtual void SignedIn(int request_id, const GURL& source_url) {}
+
+  // Notifies the observer that the credential manager API was invoked from
+  // |source_url| to notify the browser that the user signed out. Responses
+  // to the page should provide the specified |request_id|.
+  virtual void SignedOut(int request_id, const GURL& source_url) {}
+
+  // Notifies the observer that the credential manager API was invoked from
+  // |source_url| to notify the browser that the user failed to sign in.
+  // |credential| specifies the credential that failed to sign in. Responses
+  // to the page should provide the specified |request_id|.
+  virtual void SignInFailed(int request_id,
+                            const GURL& source_url,
+                            const web::Credential& credential) {}
+
+  // Notifies the observer that the credential manager API was invoked from
+  // |source_url| to notify the browser that the user failed to sign in without
+  // specifying the credential that failed. Responses to the page should provide
+  // the specified |request_id|.
+  virtual void SignInFailed(int request_id, const GURL& source_url) {}
 
   // Invoked when the WebState is being destroyed. Gives subclasses a chance
   // to cleanup.

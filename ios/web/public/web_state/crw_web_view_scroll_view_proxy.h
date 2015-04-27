@@ -44,10 +44,6 @@
 // Used by the CRWWebViewProxy to set the UIScrollView to be managed.
 - (void)setScrollView:(UIScrollView*)scrollView;
 
-// Copies all display properties that can be set on a CRWWebViewScrollViewProxy
-// from the underlying UIScrollView into |scrollView|.
-- (void)copyPropertiesToScrollView:(UIScrollView*)scrollView;
-
 // Adds |observer| to subscribe to change notifications.
 - (void)addObserver:(id<CRWWebViewScrollViewProxyObserver>)observer;
 

@@ -1,4 +1,5 @@
 include_rules = [
+  "+crypto",
   "+ios/public/provider/web",
   "+ios/net",
   "+ios/web",

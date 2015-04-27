@@ -42,8 +42,14 @@ new function() {
    */
   var touchMargin_ = 25;
 
-  __gCrWeb['innerSizeAsString'] = function() {
-    return window.innerWidth + '/' + window.innerHeight;
+  __gCrWeb['getPageWidth'] = function() {
+    var documentElement = document.documentElement;
+    var documentBody = document.body;
+    return Math.max(documentElement.clientWidth,
+                    documentElement.scrollWidth,
+                    documentElement.offsetWidth,
+                    documentBody.scrollWidth,
+                    documentBody.offsetWidth);
   };
 
   // Implementation of document.elementFromPoint that is working for iOS4 and

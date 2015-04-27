@@ -11,6 +11,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#import "ios/web/web_state/js/page_script_util.h"
 
 @implementation CRWJSInjectionManager {
   // JS to inject into the page. This may be nil if it has been purged due to
@@ -111,18 +112,7 @@
 }
 
 - (NSString*)staticInjectionContent {
-  DCHECK(self.scriptPath);
-  NSString* path = [base::mac::FrameworkBundle() pathForResource:self.scriptPath
-                                                          ofType:@"js"];
-  DCHECK(path) << "Script file not found: "
-               << base::SysNSStringToUTF8(self.scriptPath) << ".js";
-  NSError* error = nil;
-  NSString* content = [NSString stringWithContentsOfFile:path
-                                                encoding:NSUTF8StringEncoding
-                                                   error:&error];
-  DCHECK(!error) << "Error fetching script: " << [error.description UTF8String];
-  DCHECK(content);
-  return content;
+  return web::GetPageScript([self scriptPath]);
 }
 
 - (void)injectDependenciesIfMissing {

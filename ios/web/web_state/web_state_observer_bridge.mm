@@ -30,6 +30,20 @@ void WebStateObserverBridge::NavigationItemCommitted(
   }
 }
 
+void WebStateObserverBridge::DidStartLoading() {
+  SEL selector = @selector(webStateDidStartLoading:);
+  if ([observer_ respondsToSelector:selector]) {
+    [observer_ webStateDidStartLoading:web_state()];
+  }
+}
+
+void WebStateObserverBridge::DidStopLoading() {
+  SEL selector = @selector(webStateDidStopLoading:);
+  if ([observer_ respondsToSelector:selector]) {
+    [observer_ webStateDidStopLoading:web_state()];
+  }
+}
+
 void WebStateObserverBridge::PageLoaded(
     web::PageLoadCompletionStatus load_completion_status) {
   SEL selector = @selector(webStateDidLoadPage:);
