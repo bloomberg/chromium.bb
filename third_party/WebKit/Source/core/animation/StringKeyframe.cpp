@@ -493,6 +493,9 @@ PassRefPtrWillBeRawPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fr
     }
     case AnimatedLength:
         return LengthSVGInterpolation::create(fromValue, toValue, attribute);
+    case AnimatedLengthList:
+        interpolation = ListSVGInterpolation<LengthSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
+        break;
     case AnimatedNumber: {
         SVGNumberNegativeValuesMode negativeValuesMode = &attribute->attributeName() == &SVGNames::pathLengthAttr ? ForbidNegativeNumbers : AllowNegativeNumbers;
         return NumberSVGInterpolation::create(fromValue, toValue, attribute, negativeValuesMode);

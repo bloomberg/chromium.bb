@@ -104,7 +104,7 @@ bool TransformSVGInterpolation::canCreateFrom(SVGTransform* start, SVGTransform*
         && start->transformType() != SVG_TRANSFORM_MATRIX;
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> TransformSVGInterpolation::toInterpolableValue(SVGTransform* transform, SVGTransformType* transformTypePtr)
+PassOwnPtrWillBeRawPtr<InterpolableValue> TransformSVGInterpolation::toInterpolableValue(SVGTransform* transform, const SVGAnimatedPropertyBase*, SVGTransformType* transformTypePtr)
 {
     SVGTransformType transformType = static_cast<SVGTransformType>(transform->transformType());
     if (transformTypePtr)
@@ -129,7 +129,7 @@ PassOwnPtrWillBeRawPtr<InterpolableValue> TransformSVGInterpolation::toInterpola
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<SVGTransform> TransformSVGInterpolation::fromInterpolableValue(const InterpolableValue& value, SVGTransformType transformType)
+PassRefPtrWillBeRawPtr<SVGTransform> TransformSVGInterpolation::fromInterpolableValue(const InterpolableValue& value, SVGTransformType transformType, const SVGElement*)
 {
     switch (transformType) {
     case SVG_TRANSFORM_TRANSLATE:

@@ -7,11 +7,19 @@
 
 #include "core/css/CSSHelper.h"
 #include "core/svg/SVGAnimatedLength.h"
+#include "core/svg/SVGAnimatedLengthList.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
+
+PassRefPtrWillBeRawPtr<SVGLengthList> LengthSVGInterpolation::createList(const SVGAnimatedPropertyBase& attribute)
+{
+    ASSERT(attribute.type() == AnimatedLengthList);
+    const SVGAnimatedLengthList& animatedLengthList = static_cast<const SVGAnimatedLengthList&>(attribute);
+    return SVGLengthList::create(animatedLengthList.currentValue()->unitMode());
+}
 
 PassRefPtrWillBeRawPtr<LengthSVGInterpolation> LengthSVGInterpolation::create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute)
 {
@@ -25,10 +33,22 @@ namespace {
 
 void populateModeData(const SVGAnimatedPropertyBase* attribute, LengthSVGInterpolation::NonInterpolableType* ptrModeData)
 {
-    ASSERT(attribute->type() == AnimatedLength);
-    const SVGAnimatedLength& animatedLength = static_cast<const SVGAnimatedLength&>(*attribute);
-    ptrModeData->unitMode = animatedLength.currentValue()->unitMode();
-    ptrModeData->negativeValuesMode = animatedLength.negativeValuesMode();
+    switch (attribute->type()) {
+    case AnimatedLength: {
+        const SVGAnimatedLength& animatedLength = static_cast<const SVGAnimatedLength&>(*attribute);
+        ptrModeData->unitMode = animatedLength.currentValue()->unitMode();
+        ptrModeData->negativeValuesMode = animatedLength.negativeValuesMode();
+        break;
+    }
+    case AnimatedLengthList: {
+        const SVGAnimatedLengthList& animatedLengthList = static_cast<const SVGAnimatedLengthList&>(*attribute);
+        ptrModeData->unitMode = animatedLengthList.currentValue()->unitMode();
+        ptrModeData->negativeValuesMode = AllowNegativeLengths;
+        break;
+    }
+    default:
+        ASSERT_NOT_REACHED();
+    }
 }
 
 enum LengthInterpolatedUnit {

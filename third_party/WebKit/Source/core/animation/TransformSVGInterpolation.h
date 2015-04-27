@@ -17,9 +17,14 @@ public:
 
     static bool canCreateFrom(SVGTransform* start, SVGTransform* end);
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(SVGTransform*, SVGTransformType*);
+    static PassRefPtrWillBeRawPtr<SVGTransformList> createList(const SVGAnimatedPropertyBase&)
+    {
+        return SVGTransformList::create();
+    }
 
-    static PassRefPtrWillBeRawPtr<SVGTransform> fromInterpolableValue(const InterpolableValue&, SVGTransformType);
+    static PassOwnPtrWillBeRawPtr<InterpolableValue> toInterpolableValue(SVGTransform*, const SVGAnimatedPropertyBase*, SVGTransformType*);
+
+    static PassRefPtrWillBeRawPtr<SVGTransform> fromInterpolableValue(const InterpolableValue&, SVGTransformType, const SVGElement*);
 };
 
 }

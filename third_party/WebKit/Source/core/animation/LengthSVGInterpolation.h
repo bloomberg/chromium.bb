@@ -7,15 +7,24 @@
 
 #include "core/animation/SVGInterpolation.h"
 #include "core/svg/SVGLength.h"
+#include "core/svg/SVGLengthList.h"
 
 namespace blink {
 
 class LengthSVGInterpolation : public SVGInterpolation {
 public:
+    typedef SVGLengthList ListType;
     struct NonInterpolableType {
         SVGLengthMode unitMode;
         SVGLengthNegativeValuesMode negativeValuesMode;
     };
+
+    static bool canCreateFrom(SVGLength*, SVGLength*)
+    {
+        return true;
+    }
+
+    static PassRefPtrWillBeRawPtr<SVGLengthList> createList(const SVGAnimatedPropertyBase&);
 
     static PassRefPtrWillBeRawPtr<LengthSVGInterpolation> create(SVGPropertyBase* start, SVGPropertyBase* end, PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute);
 

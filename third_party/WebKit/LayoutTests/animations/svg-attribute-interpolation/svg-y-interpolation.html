@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+  body {
+    font-size: 10px;
+  }
+  </style>
+</head>
+<body>
+<template id="target-template">
+<svg width="200px" height="300px" viewBox="0 0 1500 1000">
+  <text class="target" x="20, 40, 60" />
+</svg>
+</template>
+<script src="resources/interpolation-test.js"></script>
+<script>
+'use strict';
+assertAttributeInterpolation({
+  property: 'y',
+  from: '0, -1, 2',
+  to: '5, -6, 7'
+}, [
+  {at: -0.4, is: '-2, 1, 0'},
+  {at: 0, is: '0, -1, 2'},
+  {at: 0.2, is: '1, -2, 3'},
+  {at: 0.6, is: '3, -4, 5'},
+  {at: 1, is: '5, -6, 7'},
+  {at: 1.4, is: '7, -8, 9'}
+]);
+assertAttributeInterpolation({
+  property: 'y',
+  from: '0em, 1ex, 2rems',
+  to: '5em, 6ex, 7rems'
+}, [
+  {at: -0.4, is: '-2em, -1ex, 0rems'},
+  {at: 0, is: '0em, 1ex, 2rems'},
+  {at: 0.2, is: '1em, 2ex, 3rems'},
+  {at: 0.6, is: '3em, 4ex, 5rems'},
+  {at: 1, is: '5em, 6ex, 7rems'},
+  {at: 1.4, is: '7em, 8ex, 9rems'}
+]);
+assertAttributeInterpolation({
+  property: 'y',
+  from: '55%, 5em, 0',
+  to: '5em, 55%, 0'
+}, [
+  {at: -0.4, is: '750, -150, 0'},
+  {at: 0, is: '550, 50, 0'},
+  {at: 0.2, is: '450, 150, 0'},
+  {at: 0.6, is: '250, 350, 0'},
+  {at: 1, is: '50, 550, 0'},
+  {at: 1.4, is: '-150, 750, 0'}
+]);
+</script>
+</body>
+</html>

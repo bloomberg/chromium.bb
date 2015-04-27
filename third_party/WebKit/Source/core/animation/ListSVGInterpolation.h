@@ -38,8 +38,8 @@ public:
         OwnPtrWillBeRawPtr<InterpolableList> startValue = InterpolableList::create(length);
         OwnPtrWillBeRawPtr<InterpolableList> endValue = InterpolableList::create(length);
         for (size_t i = 0; i < length; i++) {
-            startValue->set(i, InterpolationType::toInterpolableValue(startList->at(i), &nonInterpolableData.at(i)));
-            endValue->set(i, InterpolationType::toInterpolableValue(endList->at(i), nullptr));
+            startValue->set(i, InterpolationType::toInterpolableValue(startList->at(i), attribute.get(), &nonInterpolableData.at(i)));
+            endValue->set(i, InterpolationType::toInterpolableValue(endList->at(i), attribute.get(), nullptr));
         }
 
         return adoptRefWillBeNoop(new ListSVGInterpolationImpl<InterpolationType, NonInterpolableType>(startValue.release(), endValue.release(), attribute, nonInterpolableData));
@@ -52,18 +52,18 @@ private:
         m_nonInterpolableData.swap(nonInterpolableData);
     }
 
-    static PassRefPtrWillBeRawPtr<ListType> fromInterpolableValue(const InterpolableValue& value, const Vector<NonInterpolableType>& m_nonInterpolableData)
+    static PassRefPtrWillBeRawPtr<ListType> fromInterpolableValue(const InterpolableValue& value, const Vector<NonInterpolableType>& m_nonInterpolableData, const SVGElement* element, const SVGAnimatedPropertyBase* attribute)
     {
         const InterpolableList& listValue = toInterpolableList(value);
-        RefPtrWillBeRawPtr<ListType> result = ListType::create();
+        RefPtrWillBeRawPtr<ListType> result = InterpolationType::createList(*attribute);
         for (size_t i = 0; i < listValue.length(); i++)
-            result->append(InterpolationType::fromInterpolableValue(*listValue.get(i), m_nonInterpolableData.at(i)));
+            result->append(InterpolationType::fromInterpolableValue(*listValue.get(i), m_nonInterpolableData.at(i), element));
         return result.release();
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement&) const
+    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> interpolatedValue(SVGElement& element) const
     {
-        return fromInterpolableValue(*m_cachedValue, m_nonInterpolableData);
+        return fromInterpolableValue(*m_cachedValue, m_nonInterpolableData, &element, attribute());
     }
 
     Vector<NonInterpolableType> m_nonInterpolableData;

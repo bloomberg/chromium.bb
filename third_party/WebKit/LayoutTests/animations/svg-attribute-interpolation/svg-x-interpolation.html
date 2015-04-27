@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body>
+<template id="target-template">
+<svg width="90" height="90">
+<!-- In text positioning elements, x is a list.
+     See svg-y-interpolation.html for an example. -->
+<rect class="target" x="10" y="10" width="20" height="20" />
+</svg>
+</template>
+<script src="resources/interpolation-test.js"></script>
+<script>
+'use strict';
+assertAttributeInterpolation({
+  property: 'x',
+  from: '1',
+  to: '6'
+}, [
+  {at: -0.4, is: -1},
+  {at: 0, is: 1},
+  {at: 0.2, is: 2},
+  {at: 0.6, is: 4},
+  {at: 1, is: 6},
+  {at: 1.4, is: 8}
+]);
+</script>
+</body>
+</html>

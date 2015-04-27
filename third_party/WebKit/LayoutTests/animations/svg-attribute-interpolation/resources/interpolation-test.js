@@ -188,6 +188,13 @@
     return value;
   }
 
+  function serializeSVGLengthList(numberList) {
+    var elements = [];
+    for (var index = 0; index < numberList.numberOfItems; ++index)
+      elements.push(numberList.getItem(index).value);
+    return String(elements);
+  }
+
   function serializeSVGNumberList(numberList) {
     var elements = [];
     for (var index = 0; index < numberList.numberOfItems; ++index)
@@ -286,6 +293,8 @@
 
     if (result instanceof SVGAngle || result instanceof SVGLength)
       result = result.value;
+    else if (result instanceof SVGLengthList)
+      result = serializeSVGLengthList(result);
     else if (result instanceof SVGNumberList)
       result = serializeSVGNumberList(result);
     else if (result instanceof SVGPointList)
@@ -332,13 +341,19 @@
 
   // The following collide with CSS properties or the Web Animations API (offset).
   var svgPrefixedAttributes = [
+    'cx',
+    'cy',
     'height',
     'offset',
     'offset',
     'order',
     'r',
+    'rx',
+    'ry',
     'transform',
     'width',
+    'x',
+    'y',
   ];
 
   function makeKeyframes(target, attributeName, params) {
