@@ -24,11 +24,6 @@
     (const web::PageScrollState&)scrollState;
 @end
 
-static NSString* const kHTTPHeaderKey1 = @"key1";
-static NSString* const kHTTPHeaderKey2 = @"key2";
-static NSString* const kHTTPHeaderValue1 = @"value1";
-static NSString* const kHTTPHeaderValue2 = @"value2";
-
 class CRWSessionEntryTest : public PlatformTest {
  public:
   static void expectEqualSessionEntries(CRWSessionEntry* entry1,
@@ -40,15 +35,13 @@ class CRWSessionEntryTest : public PlatformTest {
     GURL url("http://init.test");
     ui::PageTransition transition =
         ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-    sessionEntry_.reset([[CRWSessionEntry alloc] initWithUrl:url
-                                                    referrer:web::Referrer()
-                                                  transition:transition
-                                         useDesktopUserAgent:NO
-                                           rendererInitiated:NO]);
-    [sessionEntry_ navigationItem]->SetTimestamp(base::Time::Now());
-    [sessionEntry_ addHTTPHeaders:@{ kHTTPHeaderKey1 : kHTTPHeaderValue1 }];
-    [sessionEntry_
-        setPOSTData:[@"Test data" dataUsingEncoding:NSUTF8StringEncoding]];
+    scoped_ptr<web::NavigationItemImpl> item(new web::NavigationItemImpl());
+    item->SetURL(url);
+    item->SetTransitionType(transition);
+    item->SetTimestamp(base::Time::Now());
+    item->SetPostData([@"Test data" dataUsingEncoding:NSUTF8StringEncoding]);
+    sessionEntry_.reset(
+        [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass()]);
   }
   void TearDown() override { sessionEntry_.reset(); }
 
@@ -78,38 +71,37 @@ void CRWSessionEntryTest::expectEqualSessionEntries(
     CRWSessionEntry* entry1,
     CRWSessionEntry* entry2,
     ui::PageTransition transition) {
-  EXPECT_EQ(entry1.index, entry2.index);
-  web::NavigationItem* navItem1 = entry1.navigationItem;
-  web::NavigationItem* navItem2 = entry2.navigationItem;
+  web::NavigationItemImpl* navItem1 = entry1.navigationItemImpl;
+  web::NavigationItemImpl* navItem2 = entry2.navigationItemImpl;
   // url is not compared because it could differ after copy or archive.
   EXPECT_EQ(navItem1->GetVirtualURL(), navItem2->GetVirtualURL());
   EXPECT_EQ(navItem1->GetReferrer().url, navItem2->GetReferrer().url);
   EXPECT_EQ(navItem1->GetTimestamp(), navItem2->GetTimestamp());
   EXPECT_EQ(navItem1->GetTitle(), navItem2->GetTitle());
   EXPECT_EQ(navItem1->GetPageScrollState(), navItem2->GetPageScrollState());
-  EXPECT_EQ(entry1.useDesktopUserAgent, entry2.useDesktopUserAgent);
-  EXPECT_EQ(entry1.usedDataReductionProxy, entry2.usedDataReductionProxy);
+  EXPECT_EQ(navItem1->ShouldSkipResubmitDataConfirmation(),
+            navItem2->ShouldSkipResubmitDataConfirmation());
+  EXPECT_EQ(navItem1->IsOverridingUserAgent(),
+            navItem2->IsOverridingUserAgent());
+  EXPECT_TRUE((!navItem1->HasPostData() && !navItem2->HasPostData()) ||
+              [navItem1->GetPostData() isEqualToData:navItem2->GetPostData()]);
   EXPECT_EQ(navItem2->GetTransitionType(), transition);
-  EXPECT_NSEQ(entry1.httpHeaders, entry2.httpHeaders);
-  EXPECT_TRUE((!entry1.POSTData && !entry2.POSTData) ||
-              [entry1.POSTData isEqualToData:entry2.POSTData]);
-  EXPECT_EQ(entry1.skipResubmitDataConfirmation,
-            entry2.skipResubmitDataConfirmation);
+  EXPECT_NSEQ(navItem1->GetHttpRequestHeaders(),
+              navItem2->GetHttpRequestHeaders());
 }
 
 TEST_F(CRWSessionEntryTest, Description) {
   [sessionEntry_ navigationItem]->SetTitle(base::SysNSStringToUTF16(@"Title"));
-  EXPECT_NSEQ([sessionEntry_ description], @"url:http://init.test/ "
-              @"originalurl:http://init.test/ " @"title:Title " @"transition:2 "
-              @"scrollState:{ scrollOffset:(nan, nan), zoomScaleRange:(nan, "
-              @"nan), zoomScale:nan } " @"desktopUA:0 " @"proxy:0");
+  EXPECT_NSEQ([sessionEntry_ description],
+              @"url:http://init.test/ originalurl:http://init.test/ "
+              @"title:Title transition:2 scrollState:{ scrollOffset:(nan, "
+              @"nan), zoomScaleRange:(nan, nan), zoomScale:nan } desktopUA:0");
 }
 
 TEST_F(CRWSessionEntryTest, InitWithCoder) {
   web::NavigationItem* item = [sessionEntry_ navigationItem];
   item->SetVirtualURL(GURL("http://user.friendly"));
   item->SetTitle(base::SysNSStringToUTF16(@"Title"));
-  int index = sessionEntry_.get().index;
   // Old serialized entries have no timestamp.
   item->SetTimestamp(base::Time::FromInternalValue(0));
 
@@ -130,8 +122,6 @@ TEST_F(CRWSessionEntryTest, InitWithCoder) {
 
   [decoder onSelector:@selector(decodeBytesForKey:returnedLength:)
       callBlockExpectation:block];
-  [[[decoder expect] andReturnValue:OCMOCK_VALUE(index)]
-      decodeIntForKey:@"index"];
   [[[decoder expect] andReturn:virtualUrl]
       decodeObjectForKey:@"virtualUrl"];
   [[[decoder expect] andReturn:referrer]
@@ -144,18 +134,19 @@ TEST_F(CRWSessionEntryTest, InitWithCoder) {
       [CRWSessionEntry dictionaryFromScrollState:scrollState];
   [[[decoder expect] andReturn:serializedScrollState]
       decodeObjectForKey:@"state"];
-  BOOL useDesktopUserAgent = sessionEntry_.get().useDesktopUserAgent;
+  BOOL useDesktopUserAgent =
+      [sessionEntry_ navigationItem]->IsOverridingUserAgent();
   [[[decoder expect] andReturnValue:OCMOCK_VALUE(useDesktopUserAgent)]
       decodeBoolForKey:@"useDesktopUserAgent"];
-  BOOL usedDataReductionProxy = sessionEntry_.get().usedDataReductionProxy;
-  [[[decoder expect] andReturnValue:OCMOCK_VALUE(usedDataReductionProxy)]
-      decodeBoolForKey:@"usedDataReductionProxy"];
-  [[[decoder expect] andReturn:sessionEntry_.get().httpHeaders]
+  NSDictionary* requestHeaders =
+      [sessionEntry_ navigationItem]->GetHttpRequestHeaders();
+  [[[decoder expect] andReturn:requestHeaders]
       decodeObjectForKey:@"httpHeaders"];
-  [[[decoder expect] andReturn:sessionEntry_.get().POSTData]
+  [[[decoder expect]
+      andReturn:[sessionEntry_ navigationItemImpl]->GetPostData()]
       decodeObjectForKey:@"POSTData"];
   BOOL skipResubmitDataConfirmation =
-      sessionEntry_.get().skipResubmitDataConfirmation;
+      [sessionEntry_ navigationItemImpl]->ShouldSkipResubmitDataConfirmation();
   [[[decoder expect] andReturnValue:OCMOCK_VALUE(skipResubmitDataConfirmation)]
       decodeBoolForKey:@"skipResubmitDataConfirmation"];
 
@@ -174,7 +165,6 @@ TEST_F(CRWSessionEntryTest, InitWithCoderNewStyle) {
   web::NavigationItem* item = [sessionEntry_ navigationItem];
   item->SetVirtualURL(GURL("http://user.friendly"));
   item->SetTitle(base::SysNSStringToUTF16(@"Title"));
-  int index = sessionEntry_.get().index;
   int64 timestamp = item->GetTimestamp().ToInternalValue();
 
   std::string virtualUrl = item->GetVirtualURL().spec();
@@ -202,8 +192,6 @@ TEST_F(CRWSessionEntryTest, InitWithCoderNewStyle) {
       callBlockExpectation:block];
   [[[decoder stub] andReturnValue:[NSNumber numberWithBool:YES]]
       containsValueForKey:[OCMArg any]];
-  [[[decoder expect] andReturnValue:OCMOCK_VALUE(index)]
-      decodeIntForKey:@"index"];
   web::ReferrerPolicy expectedPolicy = item->GetReferrer().policy;
   [[[decoder expect]
       andReturnValue:OCMOCK_VALUE(expectedPolicy)]
@@ -218,18 +206,18 @@ TEST_F(CRWSessionEntryTest, InitWithCoderNewStyle) {
       [CRWSessionEntry dictionaryFromScrollState:scrollState];
   [[[decoder expect] andReturn:serializedScrollState]
       decodeObjectForKey:@"state"];
-  BOOL useDesktopUserAgent = sessionEntry_.get().useDesktopUserAgent;
+  BOOL useDesktopUserAgent =
+      [sessionEntry_ navigationItem]->IsOverridingUserAgent();
   [[[decoder expect] andReturnValue:OCMOCK_VALUE(useDesktopUserAgent)]
       decodeBoolForKey:@"useDesktopUserAgent"];
-  BOOL usedDataReductionProxy = sessionEntry_.get().usedDataReductionProxy;
-  [[[decoder expect] andReturnValue:OCMOCK_VALUE(usedDataReductionProxy)]
-      decodeBoolForKey:@"usedDataReductionProxy"];
-  [[[decoder expect] andReturn:sessionEntry_.get().httpHeaders]
+  NSDictionary* requestHeaders =
+      [sessionEntry_ navigationItem]->GetHttpRequestHeaders();
+  [[[decoder expect] andReturn:requestHeaders]
       decodeObjectForKey:@"httpHeaders"];
-  [[[decoder expect] andReturn:sessionEntry_.get().POSTData]
-      decodeObjectForKey:@"POSTData"];
+  NSData* POSTData = [sessionEntry_ navigationItemImpl]->GetPostData();
+  [[[decoder expect] andReturn:POSTData] decodeObjectForKey:@"POSTData"];
   BOOL skipResubmitDataConfirmation =
-      sessionEntry_.get().skipResubmitDataConfirmation;
+      [sessionEntry_ navigationItemImpl]->ShouldSkipResubmitDataConfirmation();
   [[[decoder expect] andReturnValue:OCMOCK_VALUE(skipResubmitDataConfirmation)]
       decodeBoolForKey:@"skipResubmitDataConfirmation"];
 
@@ -276,7 +264,6 @@ TEST_F(CRWSessionEntryTest, EncodeWithCoder) {
   };
   [coder onSelector:@selector(encodeBytes:length:forKey:)
       callBlockExpectation:block];
-  [[coder expect] encodeInt:[sessionEntry_ index] forKey:@"index"];
   [[coder expect] encodeInt:item->GetReferrer().policy
                      forKey:@"referrerPolicy"];
   [[coder expect] encodeInt64:item->GetTimestamp().ToInternalValue()
@@ -287,14 +274,18 @@ TEST_F(CRWSessionEntryTest, EncodeWithCoder) {
   NSDictionary* serializedScrollState =
       [CRWSessionEntry dictionaryFromScrollState:scrollState];
   [[coder expect] encodeObject:serializedScrollState forKey:@"state"];
-  [[coder expect] encodeBool:[sessionEntry_ useDesktopUserAgent]
-                      forKey:@"useDesktopUserAgent"];
-  [[coder expect] encodeBool:[sessionEntry_ usedDataReductionProxy]
-                      forKey:@"usedDataReductionProxy"];
-  [[coder expect] encodeObject:[sessionEntry_ httpHeaders]
+  BOOL useDesktopUserAgent =
+      [sessionEntry_ navigationItem]->IsOverridingUserAgent();
+  [[coder expect] encodeBool:useDesktopUserAgent forKey:@"useDesktopUserAgent"];
+  NSDictionary* requestHeaders =
+      [sessionEntry_ navigationItem]->GetHttpRequestHeaders();
+  [[coder expect] encodeObject:requestHeaders
                         forKey:@"httpHeaders"];
-  [[coder expect] encodeObject:[sessionEntry_ POSTData] forKey:@"POSTData"];
-  [[coder expect] encodeBool:[sessionEntry_ skipResubmitDataConfirmation]
+  [[coder expect] encodeObject:[sessionEntry_ navigationItemImpl]->GetPostData()
+                        forKey:@"POSTData"];
+  BOOL skipResubmitDataConfirmation =
+      [sessionEntry_ navigationItemImpl]->ShouldSkipResubmitDataConfirmation();
+  [[coder expect] encodeBool:skipResubmitDataConfirmation
                       forKey:@"skipResubmitDataConfirmation"];
   [sessionEntry_ encodeWithCoder:coder];
   EXPECT_OCMOCK_VERIFY(coder);
@@ -337,64 +328,4 @@ TEST_F(CRWSessionEntryTest, NonEmptyVirtualUrl) {
 
 TEST_F(CRWSessionEntryTest, EmptyDescription) {
   EXPECT_GT([[sessionEntry_ description] length], 0U);
-}
-
-TEST_F(CRWSessionEntryTest, CreateWithNavigationItem) {
-  int index = 5;  // Just pick something non-zero.
-  GURL url("http://www.virtualurl.com");
-  web::Referrer referrer(GURL("http://www.referrer.com"),
-                         web::ReferrerPolicyDefault);
-  base::string16 title = base::SysNSStringToUTF16(@"Title");
-  std::string state;
-  ui::PageTransition transition = ui::PAGE_TRANSITION_GENERATED;
-
-  scoped_ptr<web::NavigationItem> navigation_item(
-      new web::NavigationItemImpl());
-  navigation_item->SetURL(url);
-  navigation_item->SetReferrer(referrer);
-  navigation_item->SetTitle(title);
-  navigation_item->SetTransitionType(transition);
-
-  base::scoped_nsobject<CRWSessionEntry> sessionEntry(
-      [[CRWSessionEntry alloc] initWithNavigationItem:navigation_item.Pass()
-                                                index:index]);
-  web::NavigationItem* item = [sessionEntry navigationItem];
-  // Validate everything was set correctly.
-  EXPECT_EQ(sessionEntry.get().index, index);
-  // Desktop only persists the virtual url, all three fields are initialized
-  // by it.
-  EXPECT_EQ(item->GetURL(), url);
-  EXPECT_EQ(item->GetVirtualURL(), url);
-  EXPECT_EQ(sessionEntry.get().originalUrl, url);
-  EXPECT_EQ(item->GetReferrer().url, referrer.url);
-  EXPECT_EQ(item->GetTitle(), title);
-  EXPECT_EQ(item->GetTransitionType(), transition);
-}
-
-TEST_F(CRWSessionEntryTest, AddHTTPHeaders) {
-  EXPECT_NSEQ(@{ kHTTPHeaderKey1 : kHTTPHeaderValue1 },
-              [sessionEntry_ httpHeaders]);
-
-  [sessionEntry_ addHTTPHeaders:@{ kHTTPHeaderKey1 : kHTTPHeaderValue2 }];
-  EXPECT_NSEQ(@{ kHTTPHeaderKey1 : kHTTPHeaderValue2 },
-              [sessionEntry_ httpHeaders]);
-
-  [sessionEntry_ addHTTPHeaders:@{ kHTTPHeaderKey2 : kHTTPHeaderValue1 }];
-  NSDictionary* expected = @{ kHTTPHeaderKey1 : kHTTPHeaderValue2,
-                              kHTTPHeaderKey2 : kHTTPHeaderValue1 };
-  EXPECT_NSEQ(expected, [sessionEntry_ httpHeaders]);
-}
-
-TEST_F(CRWSessionEntryTest, RemoveHTTPHeaderForKey) {
-  NSDictionary* httpHeaders = @{ kHTTPHeaderKey1 : kHTTPHeaderValue1,
-                                 kHTTPHeaderKey2 : kHTTPHeaderValue2 };
-  [sessionEntry_ addHTTPHeaders:httpHeaders];
-  EXPECT_NSEQ(httpHeaders, [sessionEntry_ httpHeaders]);
-
-  [sessionEntry_ removeHTTPHeaderForKey:kHTTPHeaderKey1];
-  EXPECT_NSEQ(@{ kHTTPHeaderKey2 : kHTTPHeaderValue2 },
-              [sessionEntry_ httpHeaders]);
-
-  [sessionEntry_ removeHTTPHeaderForKey:kHTTPHeaderKey2];
-  EXPECT_TRUE([sessionEntry_ httpHeaders] == nil);
 }

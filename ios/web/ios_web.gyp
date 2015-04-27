@@ -108,6 +108,7 @@
         'public/web_state/web_state_observer_bridge.h',
         'public/web_thread.h',
         'public/web_view_type.h',
+        'public/web_view_util.h',
         'string_util.cc',
         'ui_web_view_util.h',
         'ui_web_view_util.mm',
@@ -150,7 +151,6 @@
         'web_thread.cc',
         'web_thread_impl.cc',
         'web_thread_impl.h',
-        'web_view_util.h',
         'web_view_util.mm',
       ],
       'link_settings': {

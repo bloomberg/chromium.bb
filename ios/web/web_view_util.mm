@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/web_view_util.h"
+#include "ios/web/public/web_view_util.h"
 
 #include <Foundation/Foundation.h>
 #include <sys/sysctl.h>

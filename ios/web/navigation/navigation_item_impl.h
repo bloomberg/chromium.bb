@@ -6,6 +6,7 @@
 #define IOS_WEB_NAVIGATION_NAVIGATION_ITEM_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ios/web/navigation/navigation_item_facade_delegate.h"
@@ -14,7 +15,6 @@
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/ssl_status.h"
 #include "url/gurl.h"
-
 
 namespace web {
 
@@ -64,6 +64,38 @@ class NavigationItemImpl : public web::NavigationItem {
   base::Time GetTimestamp() const override;
   void SetUnsafe(bool is_unsafe) override;
   bool IsUnsafe() const override;
+  void SetIsOverridingUserAgent(bool is_overriding_user_agent) override;
+  bool IsOverridingUserAgent() const override;
+  bool HasPostData() const override;
+  NSDictionary* GetHttpRequestHeaders() const override;
+  void AddHttpRequestHeaders(NSDictionary* additional_headers) override;
+
+  // Serialized representation of the state object that was used in conjunction
+  // with a JavaScript window.history.pushState() or
+  // window.history.replaceState() call that created or modified this
+  // CRWSessionEntry. Intended to be used for JavaScript history operations and
+  // will be nil in most cases.
+  void SetSerializedStateObject(NSString* serialized_state_object);
+  NSString* GetSerializedStateObject() const;
+
+  // Whether or not this item was created by calling history.pushState().
+  void SetIsCreatedFromPushState(bool push_state);
+  bool IsCreatedFromPushState() const;
+
+  // Whether or not to bypass showing the resubmit data confirmation when
+  // loading a POST request. Set to YES for browser-generated POST requests.
+  void SetShouldSkipResubmitDataConfirmation(bool skip);
+  bool ShouldSkipResubmitDataConfirmation() const;
+
+  // Data submitted with a POST request, persisted for resubmits.
+  void SetPostData(NSData* post_data);
+  NSData* GetPostData() const;
+
+  // Removes the header for |key| from |http_request_headers_|.
+  void RemoveHttpRequestHeaderForKey(NSString* key);
+
+  // Removes all http headers from |http_request_headers_|.
+  void ResetHttpRequestHeaders();
 
   // Once a navigation item is committed, we should no longer track
   // non-persisted state, as documented on the members below.
@@ -88,6 +120,13 @@ class NavigationItemImpl : public web::NavigationItem {
   FaviconStatus favicon_;
   SSLStatus ssl_;
   base::Time timestamp_;
+  bool is_overriding_user_agent_;
+  base::scoped_nsobject<NSMutableDictionary> http_request_headers_;
+
+  base::scoped_nsobject<NSString> serialized_state_object_;
+  bool is_created_from_push_state_;
+  bool should_skip_resubmit_data_confirmation_;
+  base::scoped_nsobject<NSData> post_data_;
 
   // Whether the item, while loading, was created for a renderer-initiated
   // navigation.  This dictates whether the URL should be displayed before the

@@ -184,7 +184,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     for (size_t i = 0; i < items.size(); ++i) {
       scoped_ptr<web::NavigationItem> item(items[i]);
       base::scoped_nsobject<CRWSessionEntry> entry(
-          [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass() index:i]);
+          [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass()]);
       [_entries addObject:entry];
     }
     _currentNavigationIndex = currentIndex;
@@ -326,11 +326,9 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   //   (a) new (non-history), browser-initiated navigations, and
   //   (b) pending unsafe navigations (while showing the interstitial)
   // in order to prevent URL spoof attacks.
-  web::NavigationItemImpl* pendingItemImpl =
-      static_cast<web::NavigationItemImpl*>([_pendingEntry navigationItem]);
-  if (_pendingEntry &&
-      (!pendingItemImpl->is_renderer_initiated() ||
-       pendingItemImpl->IsUnsafe())) {
+  web::NavigationItemImpl* pendingItem = [_pendingEntry navigationItemImpl];
+  if (pendingItem &&
+      (!pendingItem->is_renderer_initiated() || pendingItem->IsUnsafe())) {
     return _pendingEntry.get();
   }
   return [self lastCommittedEntry];
@@ -397,8 +395,10 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     }
   }
 
-  BOOL useDesktopUserAgent = _useDesktopUserAgentForNextPendingEntry ||
-      self.currentEntry.useDesktopUserAgent;
+  BOOL useDesktopUserAgent =
+      _useDesktopUserAgentForNextPendingEntry ||
+      (self.currentEntry.navigationItem &&
+       self.currentEntry.navigationItem->IsOverridingUserAgent());
   _useDesktopUserAgentForNextPendingEntry = NO;
   _pendingEntry.reset([[self sessionEntryWithURL:url
                                         referrer:ref
@@ -418,18 +418,17 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   // session history. Don't modify the entry list.
   if (!_pendingEntry)
     return;
-  web::NavigationItem* item = [_pendingEntry navigationItem];
+
+  web::NavigationItemImpl* item = [_pendingEntry navigationItemImpl];
   if (url != item->GetURL()) {
     item->SetURL(url);
     item->SetVirtualURL(url);
     // Since updates are caused by page redirects, they are renderer-initiated.
-    web::NavigationItemImpl* pendingItemImpl =
-        static_cast<web::NavigationItemImpl*>([_pendingEntry navigationItem]);
-    pendingItemImpl->set_is_renderer_initiated(true);
+    item->set_is_renderer_initiated(true);
     // Redirects (3xx response code), or client side navigation must change
     // POST requests to GETs.
-    [_pendingEntry setPOSTData:nil];
-    [_pendingEntry resetHTTPHeaders];
+    item->SetPostData(nil);
+    item->ResetHttpRequestHeaders();
   }
 
   // This should probably not be sent if the URLs matched, but that's what was
@@ -472,9 +471,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     _currentNavigationIndex = [_entries count] - 1;
     // Once an entry is committed it's not renderer-initiated any more. (Matches
     // the implementation in NavigationController.)
-    web::NavigationItemImpl* pendingItemImpl =
-        static_cast<web::NavigationItemImpl*>([_pendingEntry navigationItem]);
-    pendingItemImpl->ResetForCommit();
+    [_pendingEntry navigationItemImpl]->ResetForCommit();
     _pendingEntry.reset();
   }
 
@@ -526,14 +523,17 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   CHECK(
       web::history_state_util::IsHistoryStateChangeValid(item->GetURL(), url));
   web::Referrer referrer(item->GetURL(), web::ReferrerPolicyDefault);
+  bool overrideUserAgent =
+      self.currentEntry.navigationItem->IsOverridingUserAgent();
   base::scoped_nsobject<CRWSessionEntry> pushedEntry(
       [[self sessionEntryWithURL:url
                         referrer:referrer
                       transition:ui::PAGE_TRANSITION_LINK
-             useDesktopUserAgent:self.currentEntry.useDesktopUserAgent
+             useDesktopUserAgent:overrideUserAgent
                rendererInitiated:NO] retain]);
-  pushedEntry.get().serializedStateObject = stateObject;
-  pushedEntry.get().createdFromPushState = YES;
+  web::NavigationItemImpl* pushedItem = [pushedEntry navigationItemImpl];
+  pushedItem->SetSerializedStateObject(stateObject);
+  pushedItem->SetIsCreatedFromPushState(true);
   web::SSLStatus& sslStatus = [self currentEntry].navigationItem->GetSSL();
   pushedEntry.get().navigationItem->GetSSL() = sslStatus;
 
@@ -551,8 +551,10 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
                       stateObject:(NSString*)stateObject {
   DCHECK(!_transientEntry);
   CRWSessionEntry* currentEntry = self.currentEntry;
+  web::NavigationItemImpl* currentItem = self.currentEntry.navigationItemImpl;
+  currentItem->SetURL(url);
+  currentItem->SetSerializedStateObject(stateObject);
   currentEntry.navigationItem->SetURL(url);
-  currentEntry.serializedStateObject = stateObject;
   // If the change is to a committed entry, notify interested parties.
   if (currentEntry != self.pendingEntry && _navigationManager)
     _navigationManager->OnNavigationItemChanged();
@@ -808,15 +810,14 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   NSUInteger endIndex = firstIndex < secondIndex ? secondIndex : firstIndex;
 
   for (NSUInteger i = startIndex + 1; i <= endIndex; i++) {
-    CRWSessionEntry* entry = [_entries objectAtIndex:i];
+    web::NavigationItemImpl* item = [_entries[i] navigationItemImpl];
     // Every entry in the sequence has to be created from a pushState() call.
-    if (!entry.createdFromPushState)
+    if (!item->IsCreatedFromPushState())
       return NO;
     // Every entry in the sequence has to have a URL that could have been
     // created from a pushState() call.
     if (!web::history_state_util::IsHistoryStateChangeValid(
-            firstEntry.navigationItem->GetURL(),
-            entry.navigationItem->GetURL()))
+            firstEntry.navigationItem->GetURL(), item->GetURL()))
       return NO;
   }
   return YES;
@@ -839,7 +840,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
 
 - (void)useDesktopUserAgentForNextPendingEntry {
   if (_pendingEntry)
-    [_pendingEntry setUseDesktopUserAgent:YES];
+    [_pendingEntry navigationItem]->SetIsOverridingUserAgent(true);
   else
     _useDesktopUserAgentForNextPendingEntry = YES;
 }
@@ -864,11 +865,13 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   GURL loaded_url(url);
   web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(&loaded_url,
                                                                 _browserState);
-  return [[[CRWSessionEntry alloc] initWithUrl:loaded_url
-                                      referrer:referrer
-                                    transition:transition
-                           useDesktopUserAgent:useDesktopUserAgent
-                             rendererInitiated:rendererInitiated] autorelease];
+  scoped_ptr<web::NavigationItemImpl> item(new web::NavigationItemImpl());
+  item->SetURL(loaded_url);
+  item->SetReferrer(referrer);
+  item->SetTransitionType(transition);
+  item->SetIsOverridingUserAgent(useDesktopUserAgent);
+  item->set_is_renderer_initiated(rendererInitiated);
+  return [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass()];
 }
 
 @end

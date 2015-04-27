@@ -14,8 +14,4 @@ specific_include_rules = {
   "^.*\.h$": [
     "-content",
   ],
-  # TODO(eugenebut): make web_view_util.h public.
-  "web_test_util": [
-    "+ios/web/web_view_util.h",
-  ],
 }

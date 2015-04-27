@@ -837,11 +837,12 @@ TEST_F(CRWSessionControllerTest, PushNewEntry) {
   NSString* stateObject1 = @"{'foo': 1}";
   [controller pushNewEntryWithURL:pushPageGurl1 stateObject:stateObject1];
   CRWSessionEntry* pushedEntry = [controller currentEntry];
+  web::NavigationItemImpl* pushedItem = pushedEntry.navigationItemImpl;
   NSUInteger expectedCount = 2;
   EXPECT_EQ(expectedCount, controller.get().entries.count);
   EXPECT_EQ(pushPageGurl1, pushedEntry.navigationItem->GetURL());
-  EXPECT_TRUE(pushedEntry.createdFromPushState);
-  EXPECT_NSEQ(stateObject1, pushedEntry.serializedStateObject);
+  EXPECT_TRUE(pushedItem->IsCreatedFromPushState());
+  EXPECT_NSEQ(stateObject1, pushedItem->GetSerializedStateObject());
   EXPECT_EQ(GURL("http://www.firstpage.com/"),
             pushedEntry.navigationItem->GetReferrer().url);
 
@@ -849,11 +850,12 @@ TEST_F(CRWSessionControllerTest, PushNewEntry) {
   GURL pushPageGurl2("http://www.firstpage.com/push2");
   [controller pushNewEntryWithURL:pushPageGurl2 stateObject:nil];
   pushedEntry = [controller currentEntry];
+  pushedItem = pushedEntry.navigationItemImpl;
   expectedCount = 3;
   EXPECT_EQ(expectedCount, controller.get().entries.count);
   EXPECT_EQ(pushPageGurl2, pushedEntry.navigationItem->GetURL());
-  EXPECT_TRUE(pushedEntry.createdFromPushState);
-  EXPECT_EQ(nil, pushedEntry.serializedStateObject);
+  EXPECT_TRUE(pushedItem->IsCreatedFromPushState());
+  EXPECT_EQ(nil, pushedItem->GetSerializedStateObject());
   EXPECT_EQ(pushPageGurl1, pushedEntry.navigationItem->GetReferrer().url);
 }
 
@@ -884,9 +886,9 @@ TEST_F(CRWSessionControllerTest, IsPushStateNavigation) {
   CRWSessionEntry* entry3 = [controller.get().entries objectAtIndex:3];
   CRWSessionEntry* entry4 = [controller.get().entries objectAtIndex:4];
   CRWSessionEntry* entry5 = [controller.get().entries objectAtIndex:5];
-  entry1.createdFromPushState = YES;
-  entry4.createdFromPushState = YES;
-  entry5.createdFromPushState = YES;
+  entry1.navigationItemImpl->SetIsCreatedFromPushState(true);
+  entry4.navigationItemImpl->SetIsCreatedFromPushState(true);
+  entry5.navigationItemImpl->SetIsCreatedFromPushState(true);
 
   EXPECT_TRUE(
       [controller isPushStateNavigationBetweenEntry:entry0 andEntry:entry1]);
@@ -923,11 +925,12 @@ TEST_F(CRWSessionControllerTest, UpdateCurrentEntry) {
   [controller updateCurrentEntryWithURL:replacePageGurl1
                             stateObject:stateObject1];
   CRWSessionEntry* replacedEntry = [controller currentEntry];
+  web::NavigationItemImpl* replacedItem = replacedEntry.navigationItemImpl;
   NSUInteger expectedCount = 3;
   EXPECT_EQ(expectedCount, controller.get().entries.count);
   EXPECT_EQ(replacePageGurl1, replacedEntry.navigationItem->GetURL());
-  EXPECT_FALSE(replacedEntry.createdFromPushState);
-  EXPECT_NSEQ(stateObject1, replacedEntry.serializedStateObject);
+  EXPECT_FALSE(replacedItem->IsCreatedFromPushState());
+  EXPECT_NSEQ(stateObject1, replacedItem->GetSerializedStateObject());
   EXPECT_EQ(GURL("http://www.starturl.com/"),
             replacedEntry.navigationItem->GetReferrer().url);
 
@@ -935,10 +938,11 @@ TEST_F(CRWSessionControllerTest, UpdateCurrentEntry) {
   GURL replacePageGurl2("http://www.firstpage.com/#replace2");
   [controller.get() updateCurrentEntryWithURL:replacePageGurl2 stateObject:nil];
   replacedEntry = [controller currentEntry];
+  replacedItem = replacedEntry.navigationItemImpl;
   EXPECT_EQ(expectedCount, controller.get().entries.count);
   EXPECT_EQ(replacePageGurl2, replacedEntry.navigationItem->GetURL());
-  EXPECT_FALSE(replacedEntry.createdFromPushState);
-  EXPECT_NSEQ(nil, replacedEntry.serializedStateObject);
+  EXPECT_FALSE(replacedItem->IsCreatedFromPushState());
+  EXPECT_NSEQ(nil, replacedItem->GetSerializedStateObject());
   EXPECT_EQ(GURL("http://www.starturl.com/"),
             replacedEntry.navigationItem->GetReferrer().url);
 }

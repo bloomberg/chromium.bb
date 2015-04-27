@@ -15,6 +15,7 @@
 
 namespace web {
 class NavigationItem;
+class NavigationItemImpl;
 struct Referrer;
 }
 
@@ -25,40 +26,22 @@ struct Referrer;
 // TODO(rohitrao): Fold CRWSessionEntry's logic into NavigationItem.
 @interface CRWSessionEntry : NSObject<NSCoding, NSCopying>
 
-@property(nonatomic, assign) NSInteger index;
 @property(nonatomic, readonly) const GURL& originalUrl;
-@property(nonatomic, assign) BOOL useDesktopUserAgent;
-@property(nonatomic, assign) BOOL usedDataReductionProxy;
-@property(nonatomic, retain) NSString* serializedStateObject;
-@property(nonatomic, assign) BOOL createdFromPushState;
-@property(nonatomic, retain) NSData* POSTData;
-@property(nonatomic, readonly) NSDictionary* httpHeaders;
-@property(nonatomic, assign) BOOL skipResubmitDataConfirmation;
 
-// Initialize the session entry with the given url.
-- (id)initWithUrl:(const GURL&)url
-               referrer:(const web::Referrer&)referrer
-             transition:(ui::PageTransition)transition
-    useDesktopUserAgent:(BOOL)useDesktopUserAgent
-      rendererInitiated:(BOOL)rendererInitiated;
+// Pointer to the NavigationItem associated with this CRWSessionEntry.
+// Eventually, this will replace CRWSessionEntry entirely.
+@property(nonatomic, readonly) web::NavigationItem* navigationItem;
+
+// Pointer to the NavigationItemImpl associated with this CRWSessionEntry.
+// TODO(kkhorimoto): This is a convenience property to avoid requiring static
+// casts every time the web layer needs access to members only available in
+// NavigationItemImpl.  Remove once more navigation management moves into
+// NavigationManager and CRWSessionEntry=>web::NavigationItemImpl conversions
+// become less prominent.
+@property(nonatomic, readonly) web::NavigationItemImpl* navigationItemImpl;
 
 // Initialize the session entry with the given NavigationItem.
-- (id)initWithNavigationItem:(scoped_ptr<web::NavigationItem>)item
-                       index:(int)index;
-
-// Returns a pointer to the NavigationItem associated with this CRWSessionEntry.
-// Eventually, this will replace CRWSessionEntry entirely.
-- (web::NavigationItem*)navigationItem;
-
-// Adds headers from |moreHTTPHeaders| to |httpHeaders|; existing headers with
-// the same key will be overridden.
-- (void)addHTTPHeaders:(NSDictionary*)moreHTTPHeaders;
-
-// Removes the header for the given key from |httpHeaders|.
-- (void)removeHTTPHeaderForKey:(NSString*)key;
-
-// Resets |httpHeaders| to nil.
-- (void)resetHTTPHeaders;
+- (instancetype)initWithNavigationItem:(scoped_ptr<web::NavigationItem>)item;
 
 @end
 

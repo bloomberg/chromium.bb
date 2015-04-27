@@ -32,6 +32,9 @@ NavigationItemImpl::NavigationItemImpl()
     : unique_id_(GetUniqueIDInConstructor()),
       page_id_(-1),
       transition_type_(ui::PAGE_TRANSITION_LINK),
+      is_overriding_user_agent_(false),
+      is_created_from_push_state_(false),
+      should_skip_resubmit_data_confirmation_(false),
       is_renderer_initiated_(false),
       is_unsafe_(false),
       facade_delegate_(nullptr) {
@@ -52,6 +55,13 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       favicon_(item.favicon_),
       ssl_(item.ssl_),
       timestamp_(item.timestamp_),
+      is_overriding_user_agent_(item.is_overriding_user_agent_),
+      http_request_headers_([item.http_request_headers_ copy]),
+      serialized_state_object_([item.serialized_state_object_ copy]),
+      is_created_from_push_state_(item.is_created_from_push_state_),
+      should_skip_resubmit_data_confirmation_(
+          item.should_skip_resubmit_data_confirmation_),
+      post_data_([item.post_data_ copy]),
       is_renderer_initiated_(item.is_renderer_initiated_),
       is_unsafe_(item.is_unsafe_),
       cached_display_title_(item.cached_display_title_),
@@ -187,18 +197,90 @@ base::Time NavigationItemImpl::GetTimestamp() const {
   return timestamp_;
 }
 
-void NavigationItemImpl::ResetForCommit() {
-  // Any state that only matters when a navigation item is pending should be
-  // cleared here.
-  set_is_renderer_initiated(false);
-}
-
 void NavigationItemImpl::SetUnsafe(bool is_unsafe) {
   is_unsafe_ = is_unsafe;
 }
 
 bool NavigationItemImpl::IsUnsafe() const {
   return is_unsafe_;
+}
+
+void NavigationItemImpl::SetIsOverridingUserAgent(
+    bool is_overriding_user_agent) {
+  is_overriding_user_agent_ = is_overriding_user_agent;
+}
+
+bool NavigationItemImpl::IsOverridingUserAgent() const {
+  return is_overriding_user_agent_;
+}
+
+bool NavigationItemImpl::HasPostData() const {
+  return post_data_.get() != nil;
+}
+
+NSDictionary* NavigationItemImpl::GetHttpRequestHeaders() const {
+  return [[http_request_headers_ copy] autorelease];
+}
+
+void NavigationItemImpl::AddHttpRequestHeaders(
+    NSDictionary* additional_headers) {
+  if (!additional_headers)
+    return;
+
+  if (http_request_headers_)
+    [http_request_headers_ addEntriesFromDictionary:additional_headers];
+  else
+    http_request_headers_.reset([additional_headers mutableCopy]);
+}
+
+void NavigationItemImpl::SetSerializedStateObject(
+    NSString* serialized_state_object) {
+  serialized_state_object_.reset([serialized_state_object retain]);
+}
+
+NSString* NavigationItemImpl::GetSerializedStateObject() const {
+  return serialized_state_object_.get();
+}
+
+void NavigationItemImpl::SetIsCreatedFromPushState(bool push_state) {
+  is_created_from_push_state_ = push_state;
+}
+
+bool NavigationItemImpl::IsCreatedFromPushState() const {
+  return is_created_from_push_state_;
+}
+
+void NavigationItemImpl::SetShouldSkipResubmitDataConfirmation(bool skip) {
+  should_skip_resubmit_data_confirmation_ = skip;
+}
+
+bool NavigationItemImpl::ShouldSkipResubmitDataConfirmation() const {
+  return should_skip_resubmit_data_confirmation_;
+}
+
+void NavigationItemImpl::SetPostData(NSData* post_data) {
+  post_data_.reset([post_data retain]);
+}
+
+NSData* NavigationItemImpl::GetPostData() const {
+  return post_data_.get();
+}
+
+void NavigationItemImpl::RemoveHttpRequestHeaderForKey(NSString* key) {
+  DCHECK(key);
+  [http_request_headers_ removeObjectForKey:key];
+  if (![http_request_headers_ count])
+    http_request_headers_.reset();
+}
+
+void NavigationItemImpl::ResetHttpRequestHeaders() {
+  http_request_headers_.reset();
+}
+
+void NavigationItemImpl::ResetForCommit() {
+  // Any state that only matters when a navigation item is pending should be
+  // cleared here.
+  set_is_renderer_initiated(false);
 }
 
 }  // namespace web
