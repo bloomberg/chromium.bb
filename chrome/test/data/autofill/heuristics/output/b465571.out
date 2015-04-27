@@ -5,5 +5,5 @@ ADDRESS_HOME_CITY | address.city | * City: |  | address.name_1-default
 ADDRESS_HOME_STATE | address.state | * State: |  | address.name_1-default
 ADDRESS_HOME_ZIP | address.postalCode | * Zip: |  | address.name_1-default
 PHONE_HOME_WHOLE_NUMBER | address.phoneNumber | * Phone Number: |  | address.name_1-default
-UNKNOWN_TYPE | address.rememberedAsBoolean |  | true | address.name_1-default
-UNKNOWN_TYPE | address.primary |  | true | address.name_1-default
+UNKNOWN_TYPE | address.rememberedAsBoolean | Save this shipping address for future orders. | true | address.name_1-default
+UNKNOWN_TYPE | address.primary | Make this my primary shipping address. | true | address.name_1-default

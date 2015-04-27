@@ -15,13 +15,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/address_field.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/credit_card_field.h"
 #include "components/autofill/core/browser/email_field.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/name_field.h"
 #include "components/autofill/core/browser/phone_field.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 
 namespace autofill {
 namespace {
