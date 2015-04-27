@@ -7,6 +7,7 @@
 
 #include <windows.h>
 
+#include "base/base_export.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -29,7 +30,7 @@ enum ShortcutOperation {
 // creation/update, others will be ignored.
 // Callers are encouraged to use the setters provided which take care of
 // setting |options| as desired.
-struct ShortcutProperties {
+struct BASE_EXPORT ShortcutProperties {
   enum IndividualProperties {
     PROPERTIES_TARGET = 1U << 0,
     PROPERTIES_WORKING_DIR = 1U << 1,
@@ -48,7 +49,8 @@ struct ShortcutProperties {
     PROPERTIES_ALL = PROPERTIES_BASIC | PROPERTIES_WIN7
   };
 
-  ShortcutProperties() : icon_index(-1), dual_mode(false), options(0U) {}
+  ShortcutProperties();
+  ~ShortcutProperties();
 
   void set_target(const FilePath& target_in) {
     target = target_in;

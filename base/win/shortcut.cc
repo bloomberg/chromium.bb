@@ -42,6 +42,13 @@ void InitializeShortcutInterfaces(
 
 }  // namespace
 
+ShortcutProperties::ShortcutProperties()
+    : icon_index(-1), dual_mode(false), options(0U) {
+}
+
+ShortcutProperties::~ShortcutProperties() {
+}
+
 bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
                                 const ShortcutProperties& properties,
                                 ShortcutOperation operation) {
