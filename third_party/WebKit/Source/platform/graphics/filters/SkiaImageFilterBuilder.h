@@ -39,13 +39,11 @@ class AffineTransform;
 class FilterEffect;
 class FilterOperations;
 class GraphicsContext;
-class SourceGraphic;
 
 class PLATFORM_EXPORT SkiaImageFilterBuilder {
     STACK_ALLOCATED();
 public:
-    SkiaImageFilterBuilder();
-    explicit SkiaImageFilterBuilder(GraphicsContext*);
+    explicit SkiaImageFilterBuilder(GraphicsContext* = nullptr);
     ~SkiaImageFilterBuilder();
 
     PassRefPtr<SkImageFilter> build(FilterEffect*, ColorSpace, bool requiresPMColorValidation = true);
@@ -58,15 +56,11 @@ public:
     void setCropOffset(const FloatSize& cropOffset) { m_cropOffset = cropOffset; };
     FloatSize cropOffset() { return m_cropOffset; }
 
-    void setSourceGraphic(SourceGraphic* sourceGraphic) { m_sourceGraphic = sourceGraphic; }
-    SourceGraphic* sourceGraphic() { return m_sourceGraphic; }
-
     GraphicsContext* context() { return m_context; }
 
 private:
     FloatSize m_cropOffset;
     GraphicsContext* m_context;
-    RawPtrWillBeMember<SourceGraphic> m_sourceGraphic;
 };
 
 } // namespace blink

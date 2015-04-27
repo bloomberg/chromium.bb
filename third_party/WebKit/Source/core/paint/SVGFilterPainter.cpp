@@ -68,12 +68,11 @@ static void endRecordingContent(GraphicsContext* context, FilterData* filterData
 static void paintFilteredContent(GraphicsContext* context, FilterData* filterData, SVGFilterElement* filterElement)
 {
     ASSERT(filterData->m_state == FilterData::ReadyToPaint);
+    ASSERT(filterData->builder->getEffectById(SourceGraphic::effectName()));
+
     filterData->m_state = FilterData::PaintingFilter;
 
     SkiaImageFilterBuilder builder(context);
-    SourceGraphic* sourceGraphic = static_cast<SourceGraphic*>(filterData->builder->getEffectById(SourceGraphic::effectName()));
-    ASSERT(sourceGraphic);
-    builder.setSourceGraphic(sourceGraphic);
     RefPtr<SkImageFilter> imageFilter = builder.build(filterData->builder->lastEffect(), ColorSpaceDeviceRGB);
     FloatRect boundaries = filterData->boundaries;
     context->save();

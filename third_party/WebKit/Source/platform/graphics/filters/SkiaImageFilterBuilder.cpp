@@ -38,15 +38,8 @@
 
 namespace blink {
 
-SkiaImageFilterBuilder::SkiaImageFilterBuilder()
-    : m_context(nullptr)
-    , m_sourceGraphic(nullptr)
-{
-}
-
 SkiaImageFilterBuilder::SkiaImageFilterBuilder(GraphicsContext* context)
     : m_context(context)
-    , m_sourceGraphic(nullptr)
 {
 }
 
