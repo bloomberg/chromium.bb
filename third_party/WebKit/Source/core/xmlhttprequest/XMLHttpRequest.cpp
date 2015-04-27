@@ -275,11 +275,11 @@ private:
     bool m_hasGotDidFinishLoading;
 };
 
-class XMLHttpRequest::BlobLoader final : public NoBaseWillBeGarbageCollectedFinalized<XMLHttpRequest::BlobLoader>, public FileReaderLoaderClient {
+class XMLHttpRequest::BlobLoader final : public GarbageCollectedFinalized<XMLHttpRequest::BlobLoader>, public FileReaderLoaderClient {
 public:
-    static PassOwnPtrWillBeRawPtr<BlobLoader> create(XMLHttpRequest* xhr, PassRefPtr<BlobDataHandle> handle)
+    static BlobLoader* create(XMLHttpRequest* xhr, PassRefPtr<BlobDataHandle> handle)
     {
-        return adoptPtrWillBeNoop(new BlobLoader(xhr, handle));
+        return new BlobLoader(xhr, handle);
     }
 
     // FileReaderLoaderClient functions.
