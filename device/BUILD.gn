@@ -5,6 +5,10 @@
 import("//build/config/features.gni")
 import("//testing/test.gni")
 
+if (is_mac) {
+  import("//build/config/mac/mac_sdk.gni")
+}
+
 is_linux_without_udev = is_linux && !use_udev
 is_linux_without_dbus = is_linux && !use_dbus
 
@@ -112,5 +116,13 @@ test("device_unittests") {
 
   if (is_mac) {
     libs = [ "IOBluetooth.framework" ]
+
+    # In the OSX 10.10 SDK, CoreBluetooth became a top level framework.
+    # Previously, it was nested in IOBluetooth. In order for Chrome to run on
+    # OSes older than OSX 10.10, the top level CoreBluetooth framework must be
+    # weakly linked.
+    if (mac_sdk_version == "10.10") {
+      ldflags = [ "-weak_framework CoreBluetooth" ]
+    }
   }
 }
