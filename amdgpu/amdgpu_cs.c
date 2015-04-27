@@ -707,6 +707,7 @@ static int amdgpu_cs_submit_one(amdgpu_device_handle dev,
 	uint64_t *chunk_array;
 	struct drm_amdgpu_cs_chunk *chunks;
 	struct drm_amdgpu_cs_chunk_data *chunk_data;
+	uint32_t bo_list_handle;
 
 	if (ibs_request->ip_type >= AMDGPU_HW_IP_NUM)
 		return -EINVAL;
@@ -754,10 +755,11 @@ static int amdgpu_cs_submit_one(amdgpu_device_handle dev,
 	}
 
 	r = amdgpu_cs_create_bo_list(dev, context, ibs_request, NULL,
-				     &cs.in.bo_list_handle);
+				     &bo_list_handle);
 	if (r)
 		goto error_unlock;
 
+	cs.in.bo_list_handle = bo_list_handle;
 	pthread_mutex_lock(&context->sequence_mutex);
 
 	if (ibs_request->ip_type != AMDGPU_HW_IP_UVD &&
@@ -805,7 +807,7 @@ static int amdgpu_cs_submit_one(amdgpu_device_handle dev,
 
 	pthread_mutex_unlock(&context->sequence_mutex);
 
-	r = amdgpu_cs_free_bo_list(dev, cs.in.bo_list_handle);
+	r = amdgpu_cs_free_bo_list(dev, bo_list_handle);
 	if (r)
 		goto error_free;
 
