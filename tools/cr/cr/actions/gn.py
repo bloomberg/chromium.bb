@@ -35,7 +35,7 @@ class GnPrepareOut(cr.PrepareOut):
         gn_args += ' %s=%s' % (key[len(GN_ARG_PREFIX):], value)
 
     gn_args += (' is_debug=%s' %
-        'true' if cr.context['CR_BUILDTYPE'] == 'Debug' else 'false')
+        ('true' if cr.context['CR_BUILDTYPE'] == 'Debug' else 'false'))
 
     # Detect goma.
     goma_binaries = cr.Host.SearchPath('gomacc', [
