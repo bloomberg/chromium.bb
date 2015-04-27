@@ -454,6 +454,7 @@ class GitCheckout(GitBaseTest):
     root = os.path.join(self.root_dir, self.name)
     self._check_base(self._get_co(None), root, None)
 
+  @unittest.skip('flaky')
   def testException(self):
     self._check_exception(
         self._get_co(None),

@@ -1582,6 +1582,7 @@ class BlinkDEPSTransitionSmokeTest(GClientSmokeBase):
     # But not the .git folder
     self.assertFalse(os.path.exists(join(self.blink, '.git')))
 
+  @unittest.skip('flaky')
   def testBlinkDEPSChangeUsingGclient(self):
     """Checks that {src,blink} repos are consistent when syncing going back and
     forth using gclient sync src@revision."""
@@ -1607,6 +1608,7 @@ class BlinkDEPSTransitionSmokeTest(GClientSmokeBase):
       self.CheckStatusPostMergePoint()
 
 
+  @unittest.skip('flaky')
   def testBlinkDEPSChangeUsingGit(self):
     """Like testBlinkDEPSChangeUsingGclient, but move the main project using
     directly git and not gclient sync."""
@@ -1639,6 +1641,7 @@ class BlinkDEPSTransitionSmokeTest(GClientSmokeBase):
       self.CheckStatusPostMergePoint()
 
 
+  @unittest.skip('flaky')
   def testBlinkLocalBranchesArePreserved(self):
     """Checks that the state of local git branches are effectively preserved
     when going back and forth."""
