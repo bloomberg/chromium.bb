@@ -7,11 +7,11 @@
 namespace mojo {
 
 // Instead of using the system GL implementation, use OSMesa.
-const char kUseOSMesa[] = "--use-osmesa";
+const char kUseOSMesa[] = "use-osmesa";
 // Loads an app from the specified directory and launches it.
 // Force gl to be initialized in test mode.
-const char kUseTestConfig[] = "--use-test-config";
+const char kUseTestConfig[] = "use-test-config";
 // Create native viewport in headless mode.
-const char kUseHeadlessConfig[] = "--use-headless-config";
+const char kUseHeadlessConfig[] = "use-headless-config";
 
 }  // namespace mojo

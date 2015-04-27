@@ -44,8 +44,8 @@ tests = [
     "type": "gtest_isolated",
     "shell-args": ["--url-mappings=mojo:window_manager=mojo:test_window_manager"]
   },
-  # TODO(msw): Fix and enable window_manager_apptests: http://crbug.com/480040
-  #{
-  #  "test": "mojo:window_manager_apptests",
-  #},
+  {
+    "test": "mojo:window_manager_apptests",
+    "shell-args": ["--use-test-config", "--use-headless-config"]
+  },
 ]

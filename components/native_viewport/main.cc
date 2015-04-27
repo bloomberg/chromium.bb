@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -38,27 +36,13 @@ class NativeViewportAppDelegate : public mojo::ApplicationDelegate,
   void Initialize(mojo::ApplicationImpl* application) override {
     tracing_.Initialize(application);
 
-#if defined(OS_LINUX)
-    // Apply the switch for kTouchEvents to CommandLine (if set). This allows
-    // redirecting the mouse to a touch device on X for testing.
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    const std::string touch_event_string("--" +
-                                         std::string(switches::kTouchDevices));
-    auto touch_iter = std::find(application->args().begin(),
-                                application->args().end(),
-                                touch_event_string);
-    if (touch_iter != application->args().end() &&
-        ++touch_iter != application->args().end()) {
-      command_line->AppendSwitchASCII(touch_event_string, *touch_iter);
-    }
-#endif
-
-    if (application->HasArg(mojo::kUseTestConfig))
+    if (command_line->HasSwitch(mojo::kUseTestConfig))
       gfx::GLSurface::InitializeOneOffForTests();
     else
       gfx::GLSurface::InitializeOneOff();
 
-    is_headless_ = application->HasArg(mojo::kUseHeadlessConfig);
+    is_headless_ = command_line->HasSwitch(mojo::kUseHeadlessConfig);
   }
 
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
