@@ -17,7 +17,7 @@ executable("mandoline") {
     "//build/config/sanitizers:deps",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/shell:lib",
+    "//mojo/runner:lib",
   ]
 
   if (!is_android) {

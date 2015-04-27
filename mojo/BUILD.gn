@@ -19,7 +19,7 @@ group("mojo") {
   }
 
   if (!is_component_build) {
-    deps += [ "//mojo/shell" ]
+    deps += [ "//mojo/runner" ]
   }
 }
 
