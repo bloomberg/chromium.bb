@@ -46,6 +46,7 @@ class V8GCTimesTestPageHelper(object):
     results.WillRunPage(page)
 
     v8_gc_times_metric = v8_gc_times.V8GCTimes()
+    # pylint: disable=protected-access
     v8_gc_times_metric._renderer_process = self._renderer_process
 
     # Finalize the timeline import.

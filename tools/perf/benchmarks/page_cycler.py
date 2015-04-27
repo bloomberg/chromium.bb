@@ -232,6 +232,7 @@ class PageCyclerOopifTypical25(_PageCycler):
   def CreatePageSet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
+
 @benchmark.Disabled # crbug.com/443730
 class PageCyclerBigJs(_PageCycler):
   page_set = page_sets.BigJsPageSet

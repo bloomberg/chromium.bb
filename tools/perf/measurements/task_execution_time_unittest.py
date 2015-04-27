@@ -25,6 +25,8 @@ class TestTaskExecutionTimePage(page_module.Page):
       action_runner.ScrollPage()
 
 
+# Disable for accessing private API of task_execution_time.
+# pylint: disable=protected-access
 class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
 
   def setUp(self):

@@ -6,6 +6,8 @@ import unittest
 import update_reference_build as update_ref_build
 
 
+# Disable for accessing private API of update_reference_build class.
+# pylint: disable=protected-access
 class UpdateReferenceBuildUnittest(unittest.TestCase):
   def testInit(self):
     @classmethod

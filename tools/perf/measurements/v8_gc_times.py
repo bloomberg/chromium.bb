@@ -169,6 +169,7 @@ def _FindV8EventStatForEvent(v8_event_stats_list, event_name):
 def _ParentIdleTask(event):
   parent = event.parent_slice
   while parent:
+    # pylint: disable=protected-access
     if parent.name == V8GCTimes._IDLE_TASK_PARENT:
       return parent
     parent = parent.parent_slice

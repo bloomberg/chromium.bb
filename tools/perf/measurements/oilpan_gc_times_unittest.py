@@ -63,7 +63,6 @@ class OilpanGCTimesTestData(object):
   def ClearResults(self):
     self._results = page_test_results.PageTestResults()
 
-
 class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   """Smoke test for Oilpan GC pause time measurements.
 
@@ -80,6 +79,8 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
 
+  # Disable for accessing private API of _OilpanGCTimesBase.
+  # pylint: disable=protected-access
   def testForParsingOldFormat(self):
     def getMetric(results, name):
       metrics = results.FindAllPageSpecificValuesNamed(name)
@@ -109,6 +110,8 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(2, len(getMetric(results,
                                        'oilpan_forced_complete_sweep')))
 
+  # Disable for accessing private API of _OilpanGCTimesBase.
+  # pylint: disable=protected-access
   def testForParsing(self):
     def getMetric(results, name):
       metrics = results.FindAllPageSpecificValuesNamed(name)
