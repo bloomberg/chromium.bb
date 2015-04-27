@@ -6,10 +6,8 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_parameters.h"
@@ -121,7 +119,7 @@ AudioInputController::AudioInputController(EventHandler* handler,
                                            SyncWriter* sync_writer,
                                            UserInputMonitor* user_input_monitor,
                                            const bool agc_is_enabled)
-    : creator_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : creator_task_runner_(base::MessageLoopProxy::current()),
       handler_(handler),
       stream_(NULL),
       data_is_active_(false),

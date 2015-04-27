@@ -23,9 +23,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
 #include "media/cast/test/utility/udp_proxy.h"
@@ -83,7 +81,7 @@ class QueueManager : public base::MessageLoopForIO::Watcher {
     } else {
       packet_pipe_ = tmp.Pass();
     }
-    packet_pipe_->InitOnIOThread(base::ThreadTaskRunnerHandle::Get(),
+    packet_pipe_->InitOnIOThread(base::MessageLoopProxy::current(),
                                  &tick_clock_);
   }
 
@@ -211,7 +209,7 @@ void CheckByteCounters() {
 
     last_printout = now;
   }
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::MessageLoopProxy::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CheckByteCounters),
       base::TimeDelta::FromMilliseconds(100));

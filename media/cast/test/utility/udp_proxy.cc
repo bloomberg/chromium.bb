@@ -10,9 +10,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
 #include "net/base/io_buffer.h"
@@ -743,9 +741,9 @@ class UDPProxyImpl : public UDPProxy {
     socket_.reset(new net::UDPServerSocket(net_log, net::NetLog::Source()));
     BuildPipe(&to_dest_pipe_, new PacketSender(this, &destination_));
     BuildPipe(&from_dest_pipe_, new PacketSender(this, &return_address_));
-    to_dest_pipe_->InitOnIOThread(base::ThreadTaskRunnerHandle::Get(),
+    to_dest_pipe_->InitOnIOThread(base::MessageLoopProxy::current(),
                                   &tick_clock_);
-    from_dest_pipe_->InitOnIOThread(base::ThreadTaskRunnerHandle::Get(),
+    from_dest_pipe_->InitOnIOThread(base::MessageLoopProxy::current(),
                                     &tick_clock_);
 
     VLOG(0) << "From:" << local_port_.ToString();

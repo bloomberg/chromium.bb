@@ -13,8 +13,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "media/cast/test/utility/udp_proxy.h"
 
 class ByteCounter {
@@ -117,7 +115,7 @@ void CheckByteCounters() {
 
     g_counter.Get().last_printout = now;
   }
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::MessageLoopProxy::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CheckByteCounters),
       base::TimeDelta::FromMilliseconds(100));
