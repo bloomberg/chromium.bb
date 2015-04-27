@@ -773,7 +773,7 @@ void DevToolsUIBindings::SendMessageToBrowser(const std::string& message) {
 void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
                                                    int sample,
                                                    int boundary_value) {
-  if (!(boundary_value >= 0 && boundary_value < 100 && sample >= 0 &&
+  if (!(boundary_value >= 0 && boundary_value <= 100 && sample >= 0 &&
         sample < boundary_value)) {
     frontend_host_->BadMessageRecieved();
     return;
