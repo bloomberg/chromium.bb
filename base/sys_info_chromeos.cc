@@ -109,7 +109,7 @@ class ChromeOSVersionInfo {
     // Parse and cache lsb_release key pairs. There should only be a handful
     // of entries so the overhead for this will be small, and it can be
     // useful for debugging.
-    std::vector<std::pair<std::string, std::string> > pairs;
+    base::StringPairs pairs;
     SplitStringIntoKeyValuePairs(lsb_release, '=', '\n', &pairs);
     for (size_t i = 0; i < pairs.size(); ++i) {
       std::string key, value;
