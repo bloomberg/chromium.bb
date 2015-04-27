@@ -63,6 +63,7 @@ KeyboardEvdev::KeyboardEvdev(EventModifiersEvdev* modifiers,
       repeat_enabled_(true),
       repeat_key_(KEY_RESERVED),
       repeat_sequence_(0),
+      repeat_device_id_(0),
       weak_ptr_factory_(this) {
   repeat_delay_ = base::TimeDelta::FromMilliseconds(kRepeatDelayMs);
   repeat_interval_ = base::TimeDelta::FromMilliseconds(kRepeatIntervalMs);
@@ -73,7 +74,8 @@ KeyboardEvdev::~KeyboardEvdev() {
 
 void KeyboardEvdev::OnKeyChange(unsigned int key,
                                 bool down,
-                                base::TimeDelta timestamp) {
+                                base::TimeDelta timestamp,
+                                int device_id) {
   if (key > KEY_MAX)
     return;
 
@@ -86,8 +88,8 @@ void KeyboardEvdev::OnKeyChange(unsigned int key,
   else
     key_state_.reset(key);
 
-  UpdateKeyRepeat(key, down);
-  DispatchKey(key, down, false /* repeat */, timestamp);
+  UpdateKeyRepeat(key, down, device_id);
+  DispatchKey(key, down, false /* repeat */, timestamp, device_id);
 }
 
 void KeyboardEvdev::SetCapsLockEnabled(bool enabled) {
@@ -139,17 +141,20 @@ void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
     modifiers_->UpdateModifier(modifier, down);
 }
 
-void KeyboardEvdev::UpdateKeyRepeat(unsigned int key, bool down) {
+void KeyboardEvdev::UpdateKeyRepeat(unsigned int key,
+                                    bool down,
+                                    int device_id) {
   if (!repeat_enabled_)
     StopKeyRepeat();
   else if (key != repeat_key_ && down)
-    StartKeyRepeat(key);
+    StartKeyRepeat(key, device_id);
   else if (key == repeat_key_ && !down)
     StopKeyRepeat();
 }
 
-void KeyboardEvdev::StartKeyRepeat(unsigned int key) {
+void KeyboardEvdev::StartKeyRepeat(unsigned int key, int device_id) {
   repeat_key_ = key;
+  repeat_device_id_ = device_id;
   repeat_sequence_++;
 
   ScheduleKeyRepeat(repeat_delay_);
@@ -172,7 +177,7 @@ void KeyboardEvdev::OnRepeatTimeout(unsigned int sequence) {
     return;
 
   DispatchKey(repeat_key_, true /* down */, true /* repeat */,
-              EventTimeForNow());
+              EventTimeForNow(), repeat_device_id_);
 
   ScheduleKeyRepeat(repeat_interval_);
 }
@@ -180,7 +185,8 @@ void KeyboardEvdev::OnRepeatTimeout(unsigned int sequence) {
 void KeyboardEvdev::DispatchKey(unsigned int key,
                                 bool down,
                                 bool repeat,
-                                base::TimeDelta timestamp) {
+                                base::TimeDelta timestamp,
+                                int device_id) {
   DomCode dom_code =
       KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
   // DomCode constants are not included here because of conflicts with
@@ -201,6 +207,7 @@ void KeyboardEvdev::DispatchKey(unsigned int key,
 
   KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,
                  modifiers_->GetModifierFlags(), dom_key, character, timestamp);
+  event.set_source_device_id(device_id);
   if (platform_keycode)
     event.set_platform_keycode(platform_keycode);
   callback_.Run(&event);

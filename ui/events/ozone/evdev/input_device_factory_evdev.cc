@@ -101,7 +101,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   // Touchscreen: use TouchEventConverterEvdev.
   if (devinfo.HasTouchscreen()) {
     scoped_ptr<TouchEventConverterEvdev> converter(new TouchEventConverterEvdev(
-        fd, params.path, params.id, type, params.dispatcher));
+        fd, params.path, params.id, type, devinfo, params.dispatcher));
     converter->Initialize(devinfo);
     return converter.Pass();
   }
@@ -423,8 +423,7 @@ void InputDeviceFactoryEvdev::NotifyTouchscreensUpdated() {
   std::vector<TouchscreenDevice> touchscreens;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasTouchscreen()) {
-      touchscreens.push_back(TouchscreenDevice(
-          it->second->id(), it->second->type(),
+      touchscreens.push_back(TouchscreenDevice(it->second->input_device(),
           it->second->GetTouchscreenSize(), it->second->GetTouchPoints()));
     }
   }
@@ -436,7 +435,7 @@ void InputDeviceFactoryEvdev::NotifyKeyboardsUpdated() {
   std::vector<KeyboardDevice> keyboards;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasKeyboard()) {
-      keyboards.push_back(KeyboardDevice(it->second->id(), it->second->type()));
+      keyboards.push_back(KeyboardDevice(it->second->input_device()));
     }
   }
 
@@ -446,8 +445,9 @@ void InputDeviceFactoryEvdev::NotifyKeyboardsUpdated() {
 void InputDeviceFactoryEvdev::NotifyMouseDevicesUpdated() {
   std::vector<InputDevice> mice;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
-    if (it->second->HasMouse())
-      mice.push_back(InputDevice(it->second->id(), it->second->type()));
+    if (it->second->HasMouse()) {
+      mice.push_back(it->second->input_device());
+    }
   }
 
   dispatcher_->DispatchMouseDevicesUpdated(mice);
@@ -456,8 +456,9 @@ void InputDeviceFactoryEvdev::NotifyMouseDevicesUpdated() {
 void InputDeviceFactoryEvdev::NotifyTouchpadDevicesUpdated() {
   std::vector<InputDevice> touchpads;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
-    if (it->second->HasTouchpad())
-      touchpads.push_back(InputDevice(it->second->id(), it->second->type()));
+    if (it->second->HasTouchpad()) {
+      touchpads.push_back(it->second->input_device());
+    }
   }
 
   dispatcher_->DispatchTouchpadDevicesUpdated(touchpads);

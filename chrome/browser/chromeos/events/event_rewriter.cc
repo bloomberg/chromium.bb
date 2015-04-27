@@ -23,6 +23,7 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
@@ -30,12 +31,7 @@
 
 #if defined(USE_X11)
 #include <X11/extensions/XInput2.h>
-#include <X11/Xatom.h>
 #include <X11/Xlib.h>
-
-#ifndef XI_PROP_PRODUCT_ID
-#define XI_PROP_PRODUCT_ID "Device Product ID"
-#endif
 
 // Get rid of macros from Xlib.h that conflicts with other parts of the code.
 #undef RootWindow
@@ -936,73 +932,17 @@ EventRewriter::DeviceType EventRewriter::KeyboardDeviceAddedInternal(
 }
 
 EventRewriter::DeviceType EventRewriter::KeyboardDeviceAdded(int device_id) {
-#if defined(USE_X11)
-  DCHECK_NE(XIAllDevices, device_id);
-  DCHECK_NE(XIAllMasterDevices, device_id);
-  if (device_id == XIAllDevices || device_id == XIAllMasterDevices) {
-    LOG(ERROR) << "Unexpected device_id passed: " << device_id;
+  if (!ui::DeviceDataManager::HasInstance())
     return kDeviceUnknown;
-  }
-
-  Atom product_id_atom =
-      XInternAtom(gfx::GetXDisplay(), XI_PROP_PRODUCT_ID, 1);
-
-  int ndevices_return = 0;
-  XIDeviceInfo* device_info =
-      XIQueryDevice(gfx::GetXDisplay(), device_id, &ndevices_return);
-
-  // Since |device_id| is neither XIAllDevices nor XIAllMasterDevices,
-  // the number of devices found should be either 0 (not found) or 1.
-  if (!device_info) {
-    LOG(ERROR) << "XIQueryDevice: Device ID " << device_id << " is unknown.";
-    return kDeviceUnknown;
-  }
-
-  DeviceType dev_type = kDeviceUnknown;
-  DCHECK_EQ(1, ndevices_return);
-  for (int i = 0; i < ndevices_return; ++i) {
-    // Get keyboard product and vendor id.
-    int vendor_id = kUnknownVendorId;
-    int product_id = kUnknownProductId;
-    uint32* product_info = NULL;
-    Atom type;
-    int format_return;
-    unsigned long num_items_return;
-    unsigned long bytes_after_return;
-    if (XIGetProperty(gfx::GetXDisplay(),
-                      device_info[i].deviceid,
-                      product_id_atom,
-                      0,
-                      2,
-                      0,
-                      XA_INTEGER,
-                      &type,
-                      &format_return,
-                      &num_items_return,
-                      &bytes_after_return,
-                      reinterpret_cast<unsigned char **>(&product_info)) == 0 &&
-        product_info) {
-      vendor_id = product_info[0];
-      product_id = product_info[1];
+  const std::vector<ui::KeyboardDevice>& keyboards =
+      ui::DeviceDataManager::GetInstance()->keyboard_devices();
+  for (const auto& keyboard : keyboards) {
+    if (keyboard.id == device_id) {
+      return KeyboardDeviceAddedInternal(
+          keyboard.id, keyboard.name, keyboard.vendor_id, keyboard.product_id);
     }
-
-    DCHECK_EQ(device_id, device_info[i].deviceid);  // see the comment above.
-    DCHECK(device_info[i].name);
-    dev_type = KeyboardDeviceAddedInternal(device_info[i].deviceid,
-                                           device_info[i].name,
-                                           vendor_id,
-                                           product_id);
   }
-  XIFreeDeviceInfo(device_info);
-  return dev_type;
-#else
-  // TODO(spang): Figure out where we can get keyboard vendor/product id from in
-  // Ozone/Freon version.
-  return KeyboardDeviceAddedInternal(device_id,
-                                     "keyboard",
-                                     kUnknownVendorId,
-                                     kUnknownProductId);
-#endif
+  return kDeviceUnknown;
 }
 
 }  // namespace chromeos
