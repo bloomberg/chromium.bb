@@ -24,6 +24,7 @@ class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
   // ui::BaseWindow implementation.
   void Show() override;
   void ShowInactive() override;
+  void FlashFrame(bool flash) override;
 
   // NativeAppWindow implementation.
   // These are used to simulate Mac-style hide/show. Since windows can be hidden

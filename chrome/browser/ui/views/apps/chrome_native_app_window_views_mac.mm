@@ -50,6 +50,12 @@ void ChromeNativeAppWindowViewsMac::ShowInactive() {
   ChromeNativeAppWindowViews::ShowInactive();
 }
 
+void ChromeNativeAppWindowViewsMac::FlashFrame(bool flash) {
+  apps::ExtensionAppShimHandler::RequestUserAttentionForWindow(
+      app_window(), flash ? apps::APP_SHIM_ATTENTION_CRITICAL
+                          : apps::APP_SHIM_ATTENTION_CANCEL);
+}
+
 void ChromeNativeAppWindowViewsMac::ShowWithApp() {
   is_hidden_with_app_ = false;
   if (!app_window()->is_hidden())
