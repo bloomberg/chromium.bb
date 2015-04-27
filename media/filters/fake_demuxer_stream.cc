@@ -8,7 +8,8 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_helpers.h"
@@ -33,7 +34,7 @@ const uint8 kIv[] = {
 FakeDemuxerStream::FakeDemuxerStream(int num_configs,
                                      int num_buffers_in_one_config,
                                      bool is_encrypted)
-    : task_runner_(base::MessageLoopProxy::current()),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       num_configs_(num_configs),
       num_buffers_in_one_config_(num_buffers_in_one_config),
       config_changes_(num_configs > 1),

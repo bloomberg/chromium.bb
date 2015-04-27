@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #import "media/base/mac/avfoundation_glue.h"
 #include "media/base/media_switches.h"
 #include "media/video/capture/mac/video_capture_device_factory_mac.h"
@@ -25,7 +26,7 @@ TEST_F(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
     return;
   }
   VideoCaptureDeviceFactoryMac video_capture_device_factory(
-      base::MessageLoopProxy::current());
+      base::ThreadTaskRunnerHandle::Get());
 
   VideoCaptureDevice::Names names;
   video_capture_device_factory.GetDeviceNames(&names);

@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/base/video_frame.h"
 
 namespace media {
@@ -24,7 +25,7 @@ void ClocklessVideoFrameScheduler::ScheduleVideoFrame(
     base::TimeTicks /* wall_ticks */,
     const DoneCB& done_cb) {
   display_cb_.Run(frame);
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(done_cb, frame, DISPLAYED));
 }
 

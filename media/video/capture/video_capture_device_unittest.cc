@@ -6,9 +6,10 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "media/base/video_capture_types.h"
 #include "media/video/capture/video_capture_device.h"
@@ -80,7 +81,8 @@ class MockClient : public VideoCaptureDevice::Client {
   MOCK_METHOD1(OnError, void(const std::string& reason));
 
   explicit MockClient(base::Callback<void(const VideoCaptureFormat&)> frame_cb)
-      : main_thread_(base::MessageLoopProxy::current()), frame_cb_(frame_cb) {}
+      : main_thread_(base::ThreadTaskRunnerHandle::Get()),
+      frame_cb_(frame_cb) {}
 
   void OnIncomingCapturedData(const uint8* data,
                               int length,
@@ -141,7 +143,7 @@ class VideoCaptureDeviceTest : public testing::Test {
             new MockClient(base::Bind(&VideoCaptureDeviceTest::OnFrameCaptured,
                                       base::Unretained(this)))),
         video_capture_device_factory_(VideoCaptureDeviceFactory::CreateFactory(
-            base::MessageLoopProxy::current())) {
+            base::ThreadTaskRunnerHandle::Get())) {
     device_enumeration_listener_ = new DeviceEnumerationListener();
   }
 

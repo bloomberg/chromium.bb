@@ -13,8 +13,9 @@
 #include "base/logging.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/mac/scoped_ioplugininterface.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #import "media/base/mac/avfoundation_glue.h"
 #import "media/video/capture/mac/platform_video_capturing_mac.h"
@@ -345,7 +346,7 @@ const std::string VideoCaptureDevice::Name::GetModel() const {
 VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
     : device_name_(device_name),
       tried_to_square_pixels_(false),
-      task_runner_(base::MessageLoopProxy::current()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       state_(kNotInitialized),
       capture_device_(nil),
       weak_factory_(this) {

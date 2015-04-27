@@ -15,10 +15,10 @@
 #include "base/callback_helpers.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
@@ -114,7 +114,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       preload_(BufferedDataSource::AUTO),
-      main_task_runner_(base::MessageLoopProxy::current()),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       media_task_runner_(params.media_task_runner()),
       media_log_(params.media_log()),
       pipeline_(media_task_runner_, media_log_.get()),
