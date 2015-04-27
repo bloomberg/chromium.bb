@@ -71,6 +71,11 @@ class TestBluetoothAdapter : public BluetoothAdapter {
       const AcquiredCallback& callback,
       const BluetoothAudioSink::ErrorCallback& error_callback) override {}
 
+  void RegisterAdvertisement(
+      scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+      const CreateAdvertisementCallback& callback,
+      const CreateAdvertisementErrorCallback& error_callback) override {}
+
   void TestErrorCallback() {}
 
   ScopedVector<BluetoothDiscoverySession> discovery_sessions_;

@@ -140,6 +140,14 @@ void BluetoothAdapterMac::RegisterAudioSink(
   error_callback.Run(BluetoothAudioSink::ERROR_UNSUPPORTED_PLATFORM);
 }
 
+void BluetoothAdapterMac::RegisterAdvertisement(
+    scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+    const CreateAdvertisementCallback& callback,
+    const CreateAdvertisementErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+  error_callback.Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
+}
+
 void BluetoothAdapterMac::DeviceFound(IOBluetoothDevice* device) {
   DeviceAdded(device);
 }

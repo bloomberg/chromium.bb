@@ -21,6 +21,7 @@
 #include "chromeos/dbus/bluetooth_input_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_adapter_profile_chromeos.h"
+#include "device/bluetooth/bluetooth_advertisement_chromeos.h"
 #include "device/bluetooth/bluetooth_audio_sink_chromeos.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
@@ -310,6 +311,15 @@ void BluetoothAdapterChromeOS::RegisterAudioSink(
                           weak_ptr_factory_.GetWeakPtr(), callback,
                           error_callback, audio_sink),
       error_callback);
+}
+
+void BluetoothAdapterChromeOS::RegisterAdvertisement(
+    scoped_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
+    const CreateAdvertisementCallback& callback,
+    const CreateAdvertisementErrorCallback& error_callback) {
+  scoped_refptr<BluetoothAdvertisementChromeOS> advertisement(
+      new BluetoothAdvertisementChromeOS(advertisement_data.Pass(), this));
+  advertisement->Register(base::Bind(callback, advertisement), error_callback);
 }
 
 void BluetoothAdapterChromeOS::RemovePairingDelegateInternal(

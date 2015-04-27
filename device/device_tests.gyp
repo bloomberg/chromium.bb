@@ -36,6 +36,7 @@
         'bluetooth/bluetooth_adapter_profile_chromeos_unittest.cc',
         'bluetooth/bluetooth_adapter_unittest.cc',
         'bluetooth/bluetooth_adapter_win_unittest.cc',
+        'bluetooth/bluetooth_advertisement_chromeos_unittest.cc',
         'bluetooth/bluetooth_audio_sink_chromeos_unittest.cc',
         'bluetooth/bluetooth_chromeos_unittest.cc',
         'bluetooth/bluetooth_device_unittest.cc',

@@ -54,9 +54,6 @@ void FakeBluetoothLEAdvertisingManagerClient::RegisterAdvertisement(
   } else if (!currently_registered_.value().empty()) {
     error_callback.Run(bluetooth_advertising_manager::kErrorFailed,
                        "Maximum advertisements reached");
-  } else if (advertisement_object_path != currently_registered_) {
-    error_callback.Run(bluetooth_advertising_manager::kErrorAlreadyExists,
-                       "Already advertising.");
   } else {
     currently_registered_ = advertisement_object_path;
     base::MessageLoop::current()->PostTask(FROM_HERE, callback);

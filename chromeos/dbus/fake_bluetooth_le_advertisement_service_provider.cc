@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "fake_bluetooth_le_advertisement_service_provider.h"
-#include "fake_bluetooth_le_advertising_manager_client.h"
+#include "chromeos/dbus/fake_bluetooth_le_advertisement_service_provider.h"
+#include "chromeos/dbus/fake_bluetooth_le_advertising_manager_client.h"
 
 namespace chromeos {
 
@@ -12,7 +12,8 @@ FakeBluetoothLEAdvertisementServiceProvider::
     FakeBluetoothLEAdvertisementServiceProvider(
         const dbus::ObjectPath& object_path,
         Delegate* delegate)
-    : object_path_(object_path), delegate_(delegate) {
+    : delegate_(delegate) {
+  object_path_ = object_path;
   VLOG(1) << "Creating Bluetooth Advertisement: " << object_path_.value();
 
   FakeBluetoothLEAdvertisingManagerClient*
