@@ -444,3 +444,24 @@ function testContentScriptExistsAsLongAsWebViewTagExists(url) {
   webview.src = url;
   document.body.appendChild(webview);
 }
+
+function testAddContentScriptWithCode(url) {
+  var webview = document.createElement('webview');
+
+  console.log('Step 1: call <webview>.addContentScripts.');
+  webview.addContentScripts(
+      [{'name': 'myrule',
+        'matches': ['http://*/empty*'],
+        'code': 'document.body.style.backgroundColor = \'red\';',
+        'run_at': 'document_end'}]);
+
+  webview.addEventListener('loadstop', function() {
+    console.log('Step 2: call webview.executeScript() to check result.')
+    webview.executeScript({
+      code: 'document.body.style.backgroundColor;'
+    }, onGetBackgroundExecuted);
+  });
+
+  webview.src = url;
+  document.body.appendChild(webview);
+}

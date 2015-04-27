@@ -764,12 +764,12 @@ function testPartitionRemovalAfterNavigationFails() {
 function testAddContentScript() {
   var webview = document.createElement('webview');
 
-  console.log("Step 1: call <webview>.addContentScripts.");
+  console.log('Step 1: call <webview>.addContentScripts.');
   webview.addContentScripts(
       [{"name": 'myrule',
-        "matches": ["http://*/extensions/*"],
-        "js": ["inject_comm_channel.js"],
-        "run_at": "document_start"}]);
+        "matches": ['http://*/extensions/*'],
+        "js": ['inject_comm_channel.js'],
+        "run_at": 'document_start'}]);
 
   webview.addEventListener('loadstop', function() {
     var msg = [request_to_comm_channel_1];
@@ -798,16 +798,16 @@ function testAddContentScript() {
 function testAddMultipleContentScripts() {
   var webview = document.createElement('webview');
 
-  console.log("Step 1: call <webview>.addContentScripts(myrule1 & myrule2)");
+  console.log('Step 1: call <webview>.addContentScripts(myrule1 & myrule2)');
   webview.addContentScripts(
       [{"name": 'myrule1',
-        "matches": ["http://*/extensions/*"],
-        "js": ["inject_comm_channel.js"],
-        "run_at": "document_start"},
+        "matches": ['http://*/extensions/*'],
+        "js": ['inject_comm_channel.js'],
+        "run_at": 'document_start'},
        {"name": 'myrule2',
-        "matches": ["http://*/extensions/*"],
-        "js": ["inject_comm_channel_2.js"],
-        "run_at": "document_start"}]);
+        "matches": ['http://*/extensions/*'],
+        "js": ['inject_comm_channel_2.js'],
+        "run_at": 'document_start'}]);
 
   webview.addEventListener('loadstop', function() {
     var msg1 = [request_to_comm_channel_1];
@@ -851,12 +851,12 @@ function testAddMultipleContentScripts() {
 function testAddContentScriptWithSameNameShouldOverwriteTheExistingOne() {
   var webview = document.createElement('webview');
 
-  console.log("Step 1: call <webview>.addContentScripts(myrule1)");
+  console.log('Step 1: call <webview>.addContentScripts(myrule1)');
   webview.addContentScripts(
       [{"name": 'myrule1',
-        "matches": ["http://*/extensions/*"],
-        "js": ["inject_comm_channel.js"],
-        "run_at": "document_start"}]);
+        "matches": ['http://*/extensions/*'],
+        "js": ['inject_comm_channel.js'],
+        "run_at": 'document_start'}]);
   var connect_script_1 = true;
   var connect_script_2 = false;
 
@@ -883,9 +883,9 @@ function testAddContentScriptWithSameNameShouldOverwriteTheExistingOne() {
             );
         webview.addContentScripts(
             [{"name": 'myrule1',
-              "matches": ["http://*/extensions/*"],
-              "js": ["inject_comm_channel_2.js"],
-              "run_at": "document_start"}]);
+              "matches": ['http://*/extensions/*'],
+              "js": ['inject_comm_channel_2.js'],
+              "run_at": 'document_start'}]);
         connect_script_2 = true;
         should_get_response_from_script_1 = false;
         webview.src = embedder.emptyGuestURL;
@@ -917,15 +917,15 @@ function testAddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView() {
   var webview1 = document.createElement('webview');
   var webview2 = document.createElement('webview');
 
-  console.log("Step 1: call <webview1>.addContentScripts.");
+  console.log('Step 1: call <webview1>.addContentScripts.');
   webview1.addContentScripts(
       [{"name": 'myrule',
-        "matches": ["http://*/extensions/*"],
-        "js": ["inject_comm_channel.js"],
-        "run_at": "document_start"}]);
+        "matches": ['http://*/extensions/*'],
+        "js": ['inject_comm_channel.js'],
+        "run_at": 'document_start'}]);
 
   webview2.addEventListener('loadstop', function() {
-    console.log("Step 2: webview2 requests to build communication channel.");
+    console.log('Step 2: webview2 requests to build communication channel.');
     var msg = [request_to_comm_channel_1];
     webview2.contentWindow.postMessage(JSON.stringify(msg), '*');
     setTimeout(function() {
@@ -958,12 +958,12 @@ function testAddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView() {
 function testAddAndRemoveContentScripts() {
   var webview = document.createElement('webview');
 
-  console.log("Step 1: call <webview>.addContentScripts.");
+  console.log('Step 1: call <webview>.addContentScripts.');
   webview.addContentScripts(
       [{"name": 'myrule',
-        "matches": ["http://*/extensions/*"],
-        "js": ["inject_comm_channel.js"],
-        "run_at": "document_start"}]);
+        "matches": ['http://*/extensions/*'],
+        "js": ['inject_comm_channel.js'],
+        "run_at": 'document_start'}]);
 
   var count = 0;
   webview.addEventListener('loadstop', function() {
@@ -1024,9 +1024,9 @@ function testAddContentScriptsWithNewWindowAPI() {
     console.log('Step 2: call newwebview.addContentScripts.');
     newwebview.addContentScripts(
         [{"name": 'myrule',
-          "matches": ["http://*/extensions/*"],
-          "js": ["inject_comm_channel.js"],
-          "run_at": "document_start"}]);
+          "matches": ['http://*/extensions/*'],
+          "js": ['inject_comm_channel.js'],
+          "run_at": 'document_start'}]);
 
     newwebview.addEventListener('loadstop', function(evt) {
       var msg = [request_to_comm_channel_1];
@@ -1037,7 +1037,7 @@ function testAddContentScriptsWithNewWindowAPI() {
 
     document.body.appendChild(newwebview);
     // attach the new window to the new <webview>.
-    console.log("Step 3: attaches the new webview.");
+    console.log('Step 3: attaches the new webview.');
     e.window.attach(newwebview);
   });
 
@@ -1070,9 +1070,9 @@ function testContentScriptIsInjectedAfterTerminateAndReloadWebView() {
   console.log('Step 1: call <webview>.addContentScripts.');
   webview.addContentScripts(
       [{"name": 'myrule',
-        "matches": ["http://*/extensions/*"],
-        "js": ["inject_comm_channel.js"],
-        "run_at": "document_start"}]);
+        "matches": ['http://*/extensions/*'],
+        "js": ['inject_comm_channel.js'],
+        "run_at": 'document_start'}]);
 
   var count = 0;
   webview.addEventListener('loadstop', function() {
@@ -1118,9 +1118,9 @@ function testContentScriptExistsAsLongAsWebViewTagExists() {
   console.log('Step 1: call <webview>.addContentScripts.');
   webview.addContentScripts(
       [{"name": 'myrule',
-        "matches": ["http://*/extensions/*"],
-        "js": ["simple_script.js"],
-        "run_at": "document_end"}]);
+        "matches": ['http://*/extensions/*'],
+        "js": ['simple_script.js'],
+        "run_at": 'document_end'}]);
 
   var count = 0;
   webview.addEventListener('loadstop', function() {
@@ -1150,6 +1150,31 @@ function testContentScriptExistsAsLongAsWebViewTagExists() {
         embedder.test.succeed();
       });
     }
+  });
+
+  webview.src = embedder.emptyGuestURL;
+  document.body.appendChild(webview);
+}
+
+function testAddContentScriptWithCode() {
+  var webview = document.createElement('webview');
+
+  console.log('Step 1: call <webview>.addContentScripts.');
+  webview.addContentScripts(
+      [{"name": 'myrule',
+        "matches": ['http://*/extensions/*'],
+        "code": 'document.body.style.backgroundColor = \'red\';',
+        "run_at": 'document_end'}]);
+
+  webview.addEventListener('loadstop', function() {
+    console.log('Step 2: call webview.executeScript() to check result.')
+    webview.executeScript({
+      code: 'document.body.style.backgroundColor;'},
+      function(results) {
+        embedder.test.assertEq(1, results.length);
+        embedder.test.assertEq('red', results[0]);
+        embedder.test.succeed();
+    });
   });
 
   webview.src = embedder.emptyGuestURL;
@@ -2659,6 +2684,7 @@ embedder.test.testList = {
       testContentScriptIsInjectedAfterTerminateAndReloadWebView,
   'testContentScriptExistsAsLongAsWebViewTagExists':
       testContentScriptExistsAsLongAsWebViewTagExists,
+  'testAddContentScriptWithCode': testAddContentScriptWithCode,
   'testExecuteScriptFail': testExecuteScriptFail,
   'testExecuteScript': testExecuteScript,
   'testExecuteScriptIsAbortedWhenWebViewSourceIsChanged':

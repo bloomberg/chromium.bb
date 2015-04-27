@@ -1150,6 +1150,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
              NEEDS_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAddContentScriptWithCode) {
+  TestHelper("testAddContentScriptWithCode", "web_view/shim",
+             NEEDS_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/266185

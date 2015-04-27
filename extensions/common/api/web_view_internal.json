@@ -131,6 +131,11 @@
             "optional": true,
             "description": "The list of JavaScript files to be injected into matching pages. These are injected in the order they appear in this array."
           },
+          "code": {
+            "type": "string",
+            "optional": true,
+            "description": "JavaScript code to be injected into matching pages."
+          },
           "run_at": {
             "$ref": "extensionTypes.RunAt",
             "optional": true,

@@ -17,7 +17,7 @@ class WebUIWebViewBrowserTest : public WebUIBrowserTest {
   void SetUpOnMainThread() override {
     WebUIBrowserTest::SetUpOnMainThread();
     AddLibrary(
-        base::FilePath(FILE_PATH_LITERAL("webview_execute_script_test.js")));
+        base::FilePath(FILE_PATH_LITERAL("webview_content_script_test.js")));
 
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
@@ -121,5 +121,13 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
       "testContentScriptExistsAsLongAsWebViewTagExists",
+      new base::StringValue(GetTestUrl("empty.html").spec())));
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScriptWithCode) {
+  ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
+
+  ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
+      "testAddContentScriptWithCode",
       new base::StringValue(GetTestUrl("empty.html").spec())));
 }

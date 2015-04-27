@@ -174,6 +174,14 @@ bool ParseContentScript(const ContentScriptDetails& script_value,
     }
   }
 
+  // code:
+  if (script_value.code) {
+    extensions::UserScript::File file((base::FilePath()), (base::FilePath()),
+                                      GURL());
+    file.set_content(*(script_value.code.get()));
+    script->js_scripts().push_back(file);
+  }
+
   // all_frames:
   if (script_value.all_frames)
     script->set_match_all_frames(*(script_value.all_frames));
