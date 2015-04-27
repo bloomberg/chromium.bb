@@ -24,20 +24,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/webcomponents/spec/shadow/#the-shadowroot-interface
+
 interface ShadowRoot : DocumentFragment {
-    readonly attribute Element activeElement;
-
-    [ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot olderShadowRoot;
-
-    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
-
-    [RaisesException] Node cloneNode([Default=Undefined] optional boolean deep);
-    Selection getSelection();
-
-    Element elementFromPoint(long x, long y);
-
-    Element[] elementsFromPoint(long x, long y);
-
-    readonly attribute StyleSheetList styleSheets;
+    Selection? getSelection();
+    // TODO(philipj): The x and y arguments should be of type double.
+    Element? elementFromPoint(long x, long y);
+    sequence<Element> elementsFromPoint(long x, long y);
+    readonly attribute Element? activeElement;
     readonly attribute Element host;
+    [ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot? olderShadowRoot;
+    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
+    readonly attribute StyleSheetList styleSheets;
+
+    // TODO(philipj): The spec does not override cloneNode() on the ShadowRoot
+    // interface. Here, it's used to implement "Invoking the cloneNode() method
+    // on a ShadowRoot instance must always throw a DATA_CLONE_ERR exception" as
+    // Node.cloneNode() does not have [RaisesException].
+    [RaisesException] Node cloneNode([Default=Undefined] optional boolean deep);
 };
