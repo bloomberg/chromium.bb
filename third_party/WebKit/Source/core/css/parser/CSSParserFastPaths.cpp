@@ -638,9 +638,9 @@ static PassRefPtrWillBeRawPtr<CSSValueList> parseSimpleTransformList(CharType*& 
 
 static PassRefPtrWillBeRawPtr<CSSValue> parseSimpleTransform(CSSPropertyID propertyID, const String& string)
 {
+    ASSERT(!string.isEmpty());
+
     if (propertyID != CSSPropertyTransform)
-        return nullptr;
-    if (string.isEmpty())
         return nullptr;
     if (string.is8Bit()) {
         const LChar* pos = string.characters8();
