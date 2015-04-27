@@ -122,7 +122,6 @@ bool ChildProcessHost::DoLaunch() {
 
   base::LaunchOptions options;
 #if defined(OS_WIN)
-  options.start_hidden = true;
   options.handles_to_inherit = &handle_passing_info;
 #elif defined(OS_POSIX)
   options.fds_to_remap = &handle_passing_info;
