@@ -84,6 +84,12 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     }
 
     if (is_chromeos) {
+      # TODO(GYP): crbug.com/481627. These should only be included
+      # when enable_me2me_host is true.
+      sources -= [
+        "me2me_desktop_environment.cc",
+        "me2me_desktop_environment.h",
+      ]
       deps += [
         "//cc",
         "//ppapi/host",
@@ -146,6 +152,10 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
 
     if (enable_webrtc) {
       deps += [
+        # TODO(GYP): crbug.com/481633. We should probably not have to depend on
+        # libjingle_webrtc; that should be pulled in automatically by
+        # libpeerconnection instead.
+        "//third_party/libjingle:libjingle_webrtc",
         "//third_party/libjingle:libpeerconnection",
         "//third_party/webrtc/modules/desktop_capture",
       ]
