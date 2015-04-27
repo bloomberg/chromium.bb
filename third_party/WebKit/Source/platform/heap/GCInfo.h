@@ -20,6 +20,77 @@
 
 namespace blink {
 
+// The FinalizerTraitImpl specifies how to finalize objects. Object
+// that inherit from GarbageCollectedFinalized are finalized by
+// calling their 'finalize' method which by default will call the
+// destructor on the object.
+template<typename T, bool isGarbageCollectedFinalized>
+struct FinalizerTraitImpl;
+
+template<typename T>
+struct FinalizerTraitImpl<T, true> {
+    static void finalize(void* obj) { static_cast<T*>(obj)->finalizeGarbageCollectedObject(); };
+};
+
+template<typename T>
+struct FinalizerTraitImpl<T, false> {
+    static void finalize(void* obj) { };
+};
+
+// The FinalizerTrait is used to determine if a type requires
+// finalization and what finalization means.
+//
+// By default classes that inherit from GarbageCollectedFinalized need
+// finalization and finalization means calling the 'finalize' method
+// of the object. The FinalizerTrait can be specialized if the default
+// behavior is not desired.
+template<typename T>
+struct FinalizerTrait {
+    static const bool nonTrivialFinalizer = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollectedFinalized>::value;
+    static void finalize(void* obj) { FinalizerTraitImpl<T, nonTrivialFinalizer>::finalize(obj); }
+};
+
+class HeapAllocator;
+template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
+template<typename T, typename Traits> class HeapVectorBacking;
+template<typename Table> class HeapHashTableBacking;
+
+template<typename T, typename U, typename V>
+struct FinalizerTrait<LinkedHashSet<T, U, V, HeapAllocator>> {
+    static const bool nonTrivialFinalizer = true;
+    static void finalize(void* obj) { FinalizerTraitImpl<LinkedHashSet<T, U, V, HeapAllocator>, nonTrivialFinalizer>::finalize(obj); }
+};
+
+template<typename T, typename Allocator>
+struct FinalizerTrait<WTF::ListHashSetNode<T, Allocator>> {
+    static const bool nonTrivialFinalizer = !WTF::IsTriviallyDestructible<T>::value;
+    static void finalize(void* obj) { FinalizerTraitImpl<WTF::ListHashSetNode<T, Allocator>, nonTrivialFinalizer>::finalize(obj); }
+};
+
+template<typename T, size_t inlineCapacity>
+struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator>> {
+    static const bool nonTrivialFinalizer = inlineCapacity && VectorTraits<T>::needsDestruction;
+    static void finalize(void* obj) { FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>, nonTrivialFinalizer>::finalize(obj); }
+};
+
+template<typename T, size_t inlineCapacity>
+struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator>> {
+    static const bool nonTrivialFinalizer = inlineCapacity && VectorTraits<T>::needsDestruction;
+    static void finalize(void* obj) { FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>, nonTrivialFinalizer>::finalize(obj); }
+};
+
+template<typename Table>
+struct FinalizerTrait<HeapHashTableBacking<Table>> {
+    static const bool nonTrivialFinalizer = !WTF::IsTriviallyDestructible<typename Table::ValueType>::value;
+    static void finalize(void* obj) { FinalizerTraitImpl<HeapHashTableBacking<Table>, nonTrivialFinalizer>::finalize(obj); }
+};
+
+template<typename T, typename Traits>
+struct FinalizerTrait<HeapVectorBacking<T, Traits>> {
+    static const bool nonTrivialFinalizer = Traits::needsDestruction;
+    static void finalize(void* obj) { FinalizerTraitImpl<HeapVectorBacking<T, Traits>, nonTrivialFinalizer>::finalize(obj); }
+};
+
 // s_gcInfoTable holds the per-class GCInfo descriptors; each heap
 // object header keeps its index into this table.
 extern PLATFORM_EXPORT GCInfo const** s_gcInfoTable;
@@ -120,47 +191,6 @@ struct GCInfoTrait {
 };
 
 template<typename U> class GCInfoTrait<const U> : public GCInfoTrait<U> { };
-
-class HeapAllocator;
-template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
-template<typename T, typename Traits> class HeapVectorBacking;
-template<typename Table> class HeapHashTableBacking;
-
-template<typename T, typename U, typename V>
-struct FinalizerTrait<LinkedHashSet<T, U, V, HeapAllocator>> {
-    static const bool nonTrivialFinalizer = true;
-    static void finalize(void* obj) { FinalizerTraitImpl<LinkedHashSet<T, U, V, HeapAllocator>, nonTrivialFinalizer>::finalize(obj); }
-};
-
-template<typename T, typename Allocator>
-struct FinalizerTrait<WTF::ListHashSetNode<T, Allocator>> {
-    static const bool nonTrivialFinalizer = !WTF::IsTriviallyDestructible<T>::value;
-    static void finalize(void* obj) { FinalizerTraitImpl<WTF::ListHashSetNode<T, Allocator>, nonTrivialFinalizer>::finalize(obj); }
-};
-
-template<typename T, size_t inlineCapacity>
-struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator>> {
-    static const bool nonTrivialFinalizer = inlineCapacity && VectorTraits<T>::needsDestruction;
-    static void finalize(void* obj) { FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>, nonTrivialFinalizer>::finalize(obj); }
-};
-
-template<typename T, size_t inlineCapacity>
-struct FinalizerTrait<Deque<T, inlineCapacity, HeapAllocator>> {
-    static const bool nonTrivialFinalizer = inlineCapacity && VectorTraits<T>::needsDestruction;
-    static void finalize(void* obj) { FinalizerTraitImpl<Deque<T, inlineCapacity, HeapAllocator>, nonTrivialFinalizer>::finalize(obj); }
-};
-
-template<typename Table>
-struct FinalizerTrait<HeapHashTableBacking<Table>> {
-    static const bool nonTrivialFinalizer = !WTF::IsTriviallyDestructible<typename Table::ValueType>::value;
-    static void finalize(void* obj) { FinalizerTraitImpl<HeapHashTableBacking<Table>, nonTrivialFinalizer>::finalize(obj); }
-};
-
-template<typename T, typename Traits>
-struct FinalizerTrait<HeapVectorBacking<T, Traits>> {
-    static const bool nonTrivialFinalizer = Traits::needsDestruction;
-    static void finalize(void* obj) { FinalizerTraitImpl<HeapVectorBacking<T, Traits>, nonTrivialFinalizer>::finalize(obj); }
-};
 
 template<typename T, typename U, typename V, typename W, typename X> class HeapHashMap;
 template<typename T, typename U, typename V> class HeapHashSet;

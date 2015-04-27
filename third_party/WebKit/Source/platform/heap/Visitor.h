@@ -76,36 +76,6 @@ struct TraceMethodDelegate {
     static void trampoline(Visitor* visitor, void* self) { (reinterpret_cast<T*>(self)->*method)(visitor); }
 };
 
-// The FinalizerTraitImpl specifies how to finalize objects. Object
-// that inherit from GarbageCollectedFinalized are finalized by
-// calling their 'finalize' method which by default will call the
-// destructor on the object.
-template<typename T, bool isGarbageCollectedFinalized>
-struct FinalizerTraitImpl;
-
-template<typename T>
-struct FinalizerTraitImpl<T, true> {
-    static void finalize(void* obj) { static_cast<T*>(obj)->finalizeGarbageCollectedObject(); };
-};
-
-template<typename T>
-struct FinalizerTraitImpl<T, false> {
-    static void finalize(void* obj) { };
-};
-
-// The FinalizerTrait is used to determine if a type requires
-// finalization and what finalization means.
-//
-// By default classes that inherit from GarbageCollectedFinalized need
-// finalization and finalization means calling the 'finalize' method
-// of the object. The FinalizerTrait can be specialized if the default
-// behavior is not desired.
-template<typename T>
-struct FinalizerTrait {
-    static const bool nonTrivialFinalizer = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollectedFinalized>::value;
-    static void finalize(void* obj) { FinalizerTraitImpl<T, nonTrivialFinalizer>::finalize(obj); }
-};
-
 // Template to determine if a class is a GarbageCollectedMixin by checking if it
 // has IsGarbageCollectedMixinMarker
 template<typename T>
