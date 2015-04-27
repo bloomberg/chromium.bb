@@ -112,32 +112,14 @@ ivi_shell_surface_configure(struct weston_surface *surface,
 			    int32_t sx, int32_t sy)
 {
 	struct ivi_shell_surface *ivisurf = get_ivi_shell_surface(surface);
-	struct weston_view *view;
-	float from_x;
-	float from_y;
-	float to_x;
-	float to_y;
 
 	if (surface->width == 0 || surface->height == 0 || ivisurf == NULL)
-		return;
-
-	view = ivi_layout_get_weston_view(ivisurf->layout_surface);
-
-	if (view == NULL)
 		return;
 
 	if (ivisurf->width != surface->width ||
 	    ivisurf->height != surface->height) {
 		ivisurf->width  = surface->width;
 		ivisurf->height = surface->height;
-
-		weston_view_to_global_float(view, 0, 0, &from_x, &from_y);
-		weston_view_to_global_float(view, sx, sy, &to_x, &to_y);
-
-		weston_view_set_position(view,
-					 view->geometry.x + to_x - from_x,
-					 view->geometry.y + to_y - from_y);
-		weston_view_update_transform(view);
 
 		ivi_layout_surface_configure(ivisurf->layout_surface,
 					     surface->width, surface->height);
