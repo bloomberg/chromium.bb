@@ -46,10 +46,4 @@ void MockBluetoothAdapter::StartDiscoverySessionWithFilter(
                                      error_callback);
 }
 
-void MockBluetoothAdapter::RegisterAdvertisement(
-    scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
-    const CreateAdvertisementCallback& callback,
-    const CreateAdvertisementErrorCallback& error_callback) {
-}
-
 }  // namespace device

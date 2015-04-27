@@ -50,13 +50,11 @@ class CHROMEOS_EXPORT BluetoothLEAdvertisementServiceProvider {
 
   virtual ~BluetoothLEAdvertisementServiceProvider();
 
-  const dbus::ObjectPath& object_path() { return object_path_; }
-
   // Creates the instance where |bus| is the D-Bus bus connection to export
   // the object onto, |object_path| is the object path that it should have
   // and |delegate| is the object to which all method calls will be passed
   // and responses generated from.
-  static scoped_ptr<BluetoothLEAdvertisementServiceProvider> Create(
+  static BluetoothLEAdvertisementServiceProvider* Create(
       dbus::Bus* bus,
       const dbus::ObjectPath& object_path,
       Delegate* delegate,
@@ -68,10 +66,6 @@ class CHROMEOS_EXPORT BluetoothLEAdvertisementServiceProvider {
 
  protected:
   BluetoothLEAdvertisementServiceProvider();
-
-  // D-Bus object path of object we are exporting, kept so we can unregister
-  // again in our destructor.
-  dbus::ObjectPath object_path_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BluetoothLEAdvertisementServiceProvider);
