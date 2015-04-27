@@ -1250,8 +1250,7 @@ void LayoutInline::updateHitTestResult(HitTestResult& result, const LayoutPoint&
             localPoint.moveBy(block->location() - firstBlock->locationOffset());
         }
 
-        result.setInnerNode(n);
-        result.setLocalPoint(localPoint);
+        result.setNodeAndPosition(n, localPoint);
     }
 }
 

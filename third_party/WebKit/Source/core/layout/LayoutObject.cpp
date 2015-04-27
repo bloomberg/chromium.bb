@@ -2681,10 +2681,8 @@ void LayoutObject::updateHitTestResult(HitTestResult& result, const LayoutPoint&
             node = layoutObject->node();
     }
 
-    if (node) {
-        result.setInnerNode(node);
-        result.setLocalPoint(point);
-    }
+    if (node)
+        result.setNodeAndPosition(node, point);
 }
 
 bool LayoutObject::nodeAtPoint(HitTestResult&, const HitTestLocation& /*locationInContainer*/, const LayoutPoint& /*accumulatedOffset*/, HitTestAction)

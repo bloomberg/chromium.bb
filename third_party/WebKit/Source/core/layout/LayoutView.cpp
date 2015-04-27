@@ -890,12 +890,9 @@ void LayoutView::updateHitTestResult(HitTestResult& result, const LayoutPoint& p
 
     Node* node = document().documentElement();
     if (node) {
-        result.setInnerNode(node);
-
         LayoutPoint adjustedPoint = point;
         offsetForContents(adjustedPoint);
-
-        result.setLocalPoint(adjustedPoint);
+        result.setNodeAndPosition(node, adjustedPoint);
     }
 }
 

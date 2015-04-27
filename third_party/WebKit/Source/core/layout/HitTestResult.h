@@ -39,6 +39,7 @@ namespace blink {
 
 class Element;
 class LocalFrame;
+class HTMLAreaElement;
 class HTMLMediaElement;
 class Image;
 class KURL;
@@ -91,7 +92,7 @@ public:
 
     // The hit-tested point in the coordinates of the inner node.
     const LayoutPoint& localPoint() const { return m_localPoint; }
-    void setLocalPoint(const LayoutPoint& p) { m_localPoint = p; }
+    void setNodeAndPosition(Node* node, const LayoutPoint& p) { m_localPoint = p; setInnerNode(node); }
 
     PositionWithAffinity position() const;
     LayoutObject* layoutObject() const;
@@ -102,6 +103,7 @@ public:
     const HitTestRequest& hitTestRequest() const { return m_hitTestRequest; }
 
     void setInnerNode(Node*);
+    HTMLAreaElement* imageAreaForImage() const;
     void setURLElement(Element*);
     void setScrollbar(Scrollbar*);
     void setIsOverWidget(bool b) { m_isOverWidget = b; }

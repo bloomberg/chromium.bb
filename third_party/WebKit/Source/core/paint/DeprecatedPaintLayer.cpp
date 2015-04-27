@@ -2060,14 +2060,14 @@ bool DeprecatedPaintLayer::hitTestContents(HitTestResult& result, const LayoutRe
         }
 
         Node* e = enclosingElement();
-        if (!result.innerNode())
-            result.setInnerNode(e);
-
-        // FIXME: missing call to result.setLocalPoint(). What we would really want to do here is to
+        // FIXME: should be a call to result.setNodeAndPosition. What we would really want to do here is to
         // return and look for the nearest non-anonymous ancestor, and ignore aunts and uncles on
         // our way. It's bad to look for it manually like we do here, and give up on setting a local
         // point in the result, because that has bad implications for text selection and
         // caretRangeFromPoint(). See crbug.com/461791
+        if (!result.innerNode())
+            result.setInnerNode(e);
+
     }
     return true;
 }

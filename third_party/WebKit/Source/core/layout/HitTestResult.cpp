@@ -153,12 +153,43 @@ void HitTestResult::setToShadowHostIfInUserAgentShadowRoot()
     }
 }
 
+HTMLAreaElement* HitTestResult::imageAreaForImage() const
+{
+    ASSERT(m_innerNode);
+    HTMLImageElement* imageElement = nullptr;
+    if (isHTMLImageElement(m_innerNode)) {
+        imageElement = toHTMLImageElement(m_innerNode);
+    } else if (m_innerNode->isInShadowTree()) {
+        if (m_innerNode->containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot) {
+            if (isHTMLImageElement(m_innerNode->shadowHost()))
+                imageElement = toHTMLImageElement(m_innerNode->shadowHost());
+        }
+    }
+
+    if (!imageElement)
+        return nullptr;
+
+    HTMLMapElement* map = imageElement->treeScope().getImageMap(imageElement->fastGetAttribute(usemapAttr));
+    if (!map)
+        return nullptr;
+
+    LayoutBox* box = toLayoutBox(layoutObject());
+    LayoutRect contentBox = box->contentBoxRect();
+    float scaleFactor = 1 / box->style()->effectiveZoom();
+    LayoutPoint location = localPoint();
+    location.scale(scaleFactor, scaleFactor);
+
+    return map->areaForPoint(location, contentBox.size());
+}
+
 void HitTestResult::setInnerNode(Node* n)
 {
     m_innerPossiblyPseudoNode = n;
     if (n && n->isPseudoElement())
         n = toPseudoElement(n)->findAssociatedNode();
     m_innerNode = n;
+    if (HTMLAreaElement* area = imageAreaForImage())
+        m_innerNode = area;
 }
 
 void HitTestResult::setURLElement(Element* n)

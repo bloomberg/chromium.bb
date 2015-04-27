@@ -296,20 +296,6 @@ bool LayoutImage::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
     HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
     bool inside = LayoutReplaced::nodeAtPoint(tempResult, locationInContainer, accumulatedOffset, hitTestAction);
 
-    if (tempResult.innerNode() && node()) {
-        if (HTMLMapElement* map = imageMap()) {
-            LayoutRect contentBox = contentBoxRect();
-            float scaleFactor = 1 / style()->effectiveZoom();
-            LayoutPoint location = locationInContainer.point() - toLayoutSize(accumulatedOffset) - locationOffset() - toLayoutSize(contentBox.location());
-            location.scale(scaleFactor, scaleFactor);
-
-            if (HTMLAreaElement* area = map->areaForPoint(location, contentBox.size())) {
-                tempResult.setInnerNode(area);
-                tempResult.setURLElement(area);
-            }
-        }
-    }
-
     if (!inside && result.hitTestRequest().listBased())
         result.append(tempResult);
     if (inside)

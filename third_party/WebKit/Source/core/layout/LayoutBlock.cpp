@@ -3487,10 +3487,8 @@ void LayoutBlock::updateHitTestResult(HitTestResult& result, const LayoutPoint& 
     if (result.innerNode())
         return;
 
-    if (Node* n = nodeForHitTest()) {
-        result.setInnerNode(n);
-        result.setLocalPoint(point);
-    }
+    if (Node* n = nodeForHitTest())
+        result.setNodeAndPosition(n, point);
 }
 
 // An inline-block uses its inlineBox as the inlineBoxWrapper,

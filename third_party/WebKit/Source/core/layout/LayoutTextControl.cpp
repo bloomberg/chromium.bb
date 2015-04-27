@@ -158,8 +158,7 @@ void LayoutTextControl::hitInnerEditorElement(HitTestResult& result, const Layou
     LayoutPoint localPoint = pointInContainer - toLayoutSize(adjustedLocation + innerEditor->layoutBox()->location());
     if (hasOverflowClip())
         localPoint += scrolledContentOffset();
-    result.setInnerNode(innerEditor);
-    result.setLocalPoint(localPoint);
+    result.setNodeAndPosition(innerEditor, localPoint);
 }
 
 static const char* const fontFamiliesWithInvalidCharWidth[] = {
