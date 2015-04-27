@@ -23,8 +23,8 @@ std::string ReferrerHeaderValueForNavigation(
     const GURL& destination,
     const web::Referrer& referrer) {
   std::string referrer_value;
-  bool leaving_secure_scheme =
-      referrer.url.SchemeIsSecure() && !destination.SchemeIsSecure();
+  bool leaving_secure_scheme = referrer.url.SchemeIsCryptographic() &&
+                               !destination.SchemeIsCryptographic();
   if (referrer.policy == ReferrerPolicyAlways ||
       (referrer.policy == ReferrerPolicyDefault && !leaving_secure_scheme)) {
     if (referrer.url.is_valid())

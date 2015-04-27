@@ -19,8 +19,8 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
     return sanitized_referrer;
   }
 
-  bool is_downgrade =
-      sanitized_referrer.url.SchemeIsSecure() && !request.SchemeIsSecure();
+  bool is_downgrade = sanitized_referrer.url.SchemeIsCryptographic() &&
+                      !request.SchemeIsCryptographic();
 
   if (sanitized_referrer.policy < 0 ||
       sanitized_referrer.policy > blink::WebReferrerPolicyLast) {

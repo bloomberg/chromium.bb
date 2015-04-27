@@ -98,8 +98,8 @@ void IOSSerializedNavigationDriver::Sanitize(
       NOTREACHED();
       referrer.policy = web::ReferrerPolicyNever;
     }
-    bool is_downgrade = referrer.url.SchemeIsSecure() &&
-                        !navigation->virtual_url_.SchemeIsSecure();
+    bool is_downgrade = referrer.url.SchemeIsCryptographic() &&
+                        !navigation->virtual_url_.SchemeIsCryptographic();
     switch (referrer.policy) {
       case web::ReferrerPolicyDefault:
         if (is_downgrade)

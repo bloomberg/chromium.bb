@@ -249,7 +249,7 @@ SdchProblemCode SdchManager::CanFetchDictionary(
       referring_url.scheme() != dictionary_url.scheme())
     return SDCH_DICTIONARY_LOAD_ATTEMPT_FROM_DIFFERENT_HOST;
 
-  if (!secure_scheme_supported() && referring_url.SchemeIsSecure())
+  if (!secure_scheme_supported() && referring_url.SchemeIsCryptographic())
     return SDCH_DICTIONARY_SELECTED_FOR_SSL;
 
   // TODO(jar): Remove this failsafe conservative hack which is more restrictive
@@ -298,7 +298,8 @@ SdchManager::GetDictionarySetByHash(
   if (it == dictionaries_.end())
     return result.Pass();
 
-  if (!SdchManager::secure_scheme_supported() && target_url.SchemeIsSecure()) {
+  if (!SdchManager::secure_scheme_supported() &&
+      target_url.SchemeIsSecure()) {
     *problem_code = SDCH_DICTIONARY_FOUND_HAS_WRONG_SCHEME;
     return result.Pass();
   }

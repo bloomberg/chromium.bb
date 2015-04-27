@@ -766,8 +766,8 @@ scoped_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
   if ((request_info.referrer.policy == blink::WebReferrerPolicyDefault ||
        request_info.referrer.policy ==
            blink::WebReferrerPolicyNoReferrerWhenDowngrade) &&
-      request_info.referrer.url.SchemeIsSecure() &&
-      !request_info.url.SchemeIsSecure()) {
+      request_info.referrer.url.SchemeIsCryptographic() &&
+      !request_info.url.SchemeIsCryptographic()) {
     LOG(FATAL) << "Trying to send secure referrer for insecure request "
                << "without an appropriate referrer policy.\n"
                << "URL = " << request_info.url << "\n"

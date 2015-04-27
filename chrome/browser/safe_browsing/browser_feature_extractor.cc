@@ -108,7 +108,7 @@ static void AddNavigationFeatures(
     const std::vector<GURL>& redirect_chain,
     ClientPhishingRequest* request) {
   NavigationEntry* entry = controller.GetEntryAtIndex(index);
-  bool is_secure_referrer = entry->GetReferrer().url.SchemeIsSecure();
+  bool is_secure_referrer = entry->GetReferrer().url.SchemeIsCryptographic();
   if (!is_secure_referrer) {
     AddFeature(base::StringPrintf("%s%s=%s",
                                   feature_prefix.c_str(),
@@ -150,7 +150,7 @@ static void AddNavigationFeatures(
   // We skip the last element since it should just be the current url.
   for (size_t i = 0; i < redirect_chain.size() - 1; i++) {
     std::string printable_redirect = redirect_chain[i].spec();
-    if (redirect_chain[i].SchemeIsSecure()) {
+    if (redirect_chain[i].SchemeIsCryptographic()) {
       printable_redirect = features::kSecureRedirectValue;
     }
     AddFeature(base::StringPrintf("%s%s[%" PRIuS "]=%s",

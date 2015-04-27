@@ -280,8 +280,8 @@ GURL URLRequestJob::ComputeReferrerForRedirect(
     const GURL& redirect_destination) {
   GURL original_referrer(referrer);
   bool secure_referrer_but_insecure_destination =
-      original_referrer.SchemeIsSecure() &&
-      !redirect_destination.SchemeIsSecure();
+      original_referrer.SchemeIsCryptographic() &&
+      !redirect_destination.SchemeIsCryptographic();
   bool same_origin =
       original_referrer.GetOrigin() == redirect_destination.GetOrigin();
   switch (policy) {
