@@ -89,10 +89,8 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
     self._valid_atoms = dict()
     self._mock_srcdir = os.path.join(self.tempdir, 'src')
     workon_dir = workon_helper.GetWorkonPath(source_root=self._mock_srcdir)
-    self._board_sysroot = os.path.join(self.tempdir, 'board_sysroot')
-    self._host_sysroot = os.path.join(self.tempdir, 'host_sysroot')
-    osutils.SafeMakedirs(self._board_sysroot)
-    osutils.SafeMakedirs(self._host_sysroot)
+    self._sysroot = os.path.join(self.tempdir, 'sysroot')
+    osutils.SafeMakedirs(self._sysroot)
     osutils.SafeMakedirs(self._mock_srcdir)
     for system in ('host', BOARD):
       osutils.Touch(os.path.join(workon_dir, system), makedirs=True)
@@ -117,27 +115,30 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
                                              project='workon-project'),
         )
     )
-    host_overlay = os.path.join(self._overlay_root, HOST_OVERLAY_DIR)
-    board_overlay = os.path.join(self._overlay_root, BOARD_OVERLAY_DIR)
+    # We do a lot of work as root. Pretend to be root so that we never have to
+    # call sudo.
+    self.PatchObject(os, 'getuid', return_value=0)
+
+  def CreateHelper(self, host=False):
+    """Creates and returns a WorkonHelper object.
+
+    Args:
+      host: If True, create the WorkonHelper for the host.
+    """
+    if host:
+      overlay = os.path.join(self._overlay_root, HOST_OVERLAY_DIR)
+      name = 'host'
+    else:
+      overlay = os.path.join(self._overlay_root, BOARD_OVERLAY_DIR)
+      name = BOARD
 
     # Setup the sysroots.
-    sysroot_lib.Sysroot(self._board_sysroot).WriteConfig(
-        'ARCH="amd64"\nPORTDIR_OVERLAY="%s"' % board_overlay)
-    sysroot_lib.Sysroot(self._host_sysroot).WriteConfig(
-        'ARCH="amd64"\nPORTDIR_OVERLAY="%s"' % host_overlay)
+    sysroot_lib.Sysroot(self._sysroot).WriteConfig(
+        'ARCH="amd64"\nPORTDIR_OVERLAY="%s"' % overlay)
 
-    # Create helpers for both host and board.
-    self.helper = workon_helper.WorkonHelper(
-        self._board_sysroot, BOARD, src_root=self._mock_srcdir)
-    self.host_helper = workon_helper.WorkonHelper(
-        self._host_sysroot, 'host', src_root=self._mock_srcdir)
-
-  def tearDown(self):
-    """Clean up the test environment."""
-    # sysroots are created with root permissions, remove them with root
-    # permission too.
-    osutils.RmDir(self._host_sysroot, sudo=True)
-    osutils.RmDir(self._board_sysroot, sudo=True)
+    # Create helpers for the host or board.
+    return workon_helper.WorkonHelper(
+        self._sysroot, name, src_root=self._mock_srcdir)
 
   def assertWorkingOn(self, atoms, system=BOARD):
     """Assert that the workon/mask files mention the given atoms.
@@ -164,127 +165,143 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
   def testShouldRegenerateSymlinks(self):
     """Check that the symlinks are regenerated when using a new sysroot."""
     # pylint: disable=protected-access
-    workon_link = self.helper._unmasked_symlink
+    helper = self.CreateHelper()
+    workon_link = helper._unmasked_symlink
 
     # The link exists after starting a package.
-    self.helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
+    helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
     self.assertTrue(os.path.exists(workon_link))
 
     # The link exists after recreating a sysroot.
-    osutils.RmDir(self._board_sysroot, sudo=True)
-    osutils.SafeMakedirs(self._board_sysroot)
-    self.helper = workon_helper.WorkonHelper(
-        self._board_sysroot, BOARD, src_root=self._mock_srcdir)
+    osutils.RmDir(self._sysroot)
+    osutils.SafeMakedirs(self._sysroot)
+    helper = self.CreateHelper()
     self.assertTrue(os.path.exists(workon_link))
 
     # The link exists when no packages are worked on.
-    self.helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
+    helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
     self.assertTrue(os.path.exists(workon_link))
 
   def testCanStartSingleAtom(self):
     """Check that we can mark a single atom as being worked on."""
-    self.helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
+    helper = self.CreateHelper()
+    helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
     self.assertWorkingOn([WORKON_ONLY_ATOM])
 
   def testCanStartMultipleAtoms(self):
     """Check that we can mark a multiple atoms as being worked on."""
+    helper = self.CreateHelper()
     expected_atoms = (WORKON_ONLY_ATOM, VERSIONED_WORKON_ATOM)
-    self.helper.StartWorkingOnPackages(expected_atoms)
+    helper.StartWorkingOnPackages(expected_atoms)
     self.assertWorkingOn(expected_atoms)
 
   def testCanStartAtomsWithAll(self):
     """Check that we can mark all possible workon atoms as started."""
+    helper = self.CreateHelper()
     expected_atoms = (WORKON_ONLY_ATOM, VERSIONED_WORKON_ATOM)
-    self.helper.StartWorkingOnPackages([], use_all=True)
+    helper.StartWorkingOnPackages([], use_all=True)
     self.assertWorkingOn(expected_atoms)
 
   def testCanStartAtomsWithWorkonOnly(self):
     """Check that we can start atoms that have only a cros-workon ebuild."""
+    helper = self.CreateHelper()
     expected_atoms = (WORKON_ONLY_ATOM,)
-    self.helper.StartWorkingOnPackages([], use_workon_only=True)
+    helper.StartWorkingOnPackages([], use_workon_only=True)
     self.assertWorkingOn(expected_atoms)
 
   def testCannotStartAtomTwice(self):
     """Check that starting an atom twice has no effect."""
-    self.helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
-    self.helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
+    helper = self.CreateHelper()
+    helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
+    helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
     self.assertWorkingOn([WORKON_ONLY_ATOM])
 
   def testCanStopSingleAtom(self):
     """Check that we can stop a previously started atom."""
-    self.helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
+    helper = self.CreateHelper()
+    helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
     self.assertWorkingOn([WORKON_ONLY_ATOM])
-    self.helper.StopWorkingOnPackages([WORKON_ONLY_ATOM])
+    helper.StopWorkingOnPackages([WORKON_ONLY_ATOM])
     self.assertWorkingOn([])
 
   def testCanStopMultipleAtoms(self):
     """Check that we can stop multiple previously worked on atoms."""
+    helper = self.CreateHelper()
     expected_atoms = (WORKON_ONLY_ATOM, VERSIONED_WORKON_ATOM)
-    self.helper.StartWorkingOnPackages(expected_atoms)
+    helper.StartWorkingOnPackages(expected_atoms)
     self.assertWorkingOn(expected_atoms)
-    self.helper.StopWorkingOnPackages([WORKON_ONLY_ATOM])
+    helper.StopWorkingOnPackages([WORKON_ONLY_ATOM])
     self.assertWorkingOn([VERSIONED_WORKON_ATOM])
-    self.helper.StopWorkingOnPackages([VERSIONED_WORKON_ATOM])
+    helper.StopWorkingOnPackages([VERSIONED_WORKON_ATOM])
     self.assertWorkingOn([])
     # Now do it all at once.
-    self.helper.StartWorkingOnPackages(expected_atoms)
+    helper.StartWorkingOnPackages(expected_atoms)
     self.assertWorkingOn(expected_atoms)
-    self.helper.StopWorkingOnPackages(expected_atoms)
+    helper.StopWorkingOnPackages(expected_atoms)
     self.assertWorkingOn([])
 
   def testCanStopAtomsWithAll(self):
     """Check that we can stop all worked on atoms."""
+    helper = self.CreateHelper()
     expected_atoms = (WORKON_ONLY_ATOM, VERSIONED_WORKON_ATOM)
-    self.helper.StartWorkingOnPackages(expected_atoms)
-    self.helper.StopWorkingOnPackages([], use_all=True)
+    helper.StartWorkingOnPackages(expected_atoms)
+    helper.StopWorkingOnPackages([], use_all=True)
     self.assertWorkingOn([])
 
   def testCanStopAtomsWithWorkonOnly(self):
     """Check that we can stop all workon only atoms."""
+    helper = self.CreateHelper()
     expected_atoms = (WORKON_ONLY_ATOM, VERSIONED_WORKON_ATOM)
-    self.helper.StartWorkingOnPackages(expected_atoms)
-    self.helper.StopWorkingOnPackages([], use_workon_only=True)
+    helper.StartWorkingOnPackages(expected_atoms)
+    helper.StopWorkingOnPackages([], use_workon_only=True)
     self.assertWorkingOn([VERSIONED_WORKON_ATOM])
 
   def testShouldDetectUnknownAtom(self):
     """Check that we reject requests to work on unknown atoms."""
     with self.assertRaises(workon_helper.WorkonError):
-      self.helper.StopWorkingOnPackages(['sys-apps/not-a-thing'])
+      helper = self.CreateHelper()
+      helper.StopWorkingOnPackages(['sys-apps/not-a-thing'])
 
   def testCanListAllWorkedOnAtoms(self):
     """Check that we can list all worked on atoms across boards."""
+    helper = self.CreateHelper()
     self.assertEqual(dict(),
                      workon_helper.ListAllWorkedOnAtoms(
                          src_root=self._mock_srcdir))
-    self.helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
+    helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
     self.assertEqual({BOARD: [WORKON_ONLY_ATOM]},
                      workon_helper.ListAllWorkedOnAtoms(
                          src_root=self._mock_srcdir))
-    self.host_helper.StartWorkingOnPackages([HOST_ATOM])
+    host_helper = self.CreateHelper(host=True)
+    host_helper.StartWorkingOnPackages([HOST_ATOM])
     self.assertEqual({BOARD: [WORKON_ONLY_ATOM], 'host': [HOST_ATOM]},
                      workon_helper.ListAllWorkedOnAtoms(
                          src_root=self._mock_srcdir))
 
   def testCanListWorkedOnAtoms(self):
     """Check that we can list the atoms we're currently working on."""
-    self.assertEqual(self.helper.ListAtoms(), [])
-    self.helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
-    self.assertEqual(self.helper.ListAtoms(), [WORKON_ONLY_ATOM])
+    helper = self.CreateHelper()
+    self.assertEqual(helper.ListAtoms(), [])
+    helper.StartWorkingOnPackages([WORKON_ONLY_ATOM])
+    self.assertEqual(helper.ListAtoms(), [WORKON_ONLY_ATOM])
 
   def testCanListAtomsWithAll(self):
     """Check that we can list all possible atoms to work on."""
-    self.assertEqual(sorted(self.helper.ListAtoms(use_all=True)),
+    helper = self.CreateHelper()
+    self.assertEqual(sorted(helper.ListAtoms(use_all=True)),
                      sorted([WORKON_ONLY_ATOM, VERSIONED_WORKON_ATOM]))
 
   def testCanListAtomsWithWorkonOnly(self):
     """Check that we can list all workon only atoms."""
-    self.assertEqual(self.helper.ListAtoms(use_workon_only=True),
+    helper = self.CreateHelper()
+    self.assertEqual(helper.ListAtoms(use_workon_only=True),
                      [WORKON_ONLY_ATOM])
 
   def testCanRunCommand(self):
     """Test that we can run a command in package source directories."""
+    helper = self.CreateHelper()
     file_name = 'foo'
     file_path = os.path.join(self._mock_srcdir, file_name)
     self.assertNotExists(file_path)
-    self.helper.RunCommandInPackages([WORKON_ONLY_ATOM], 'touch %s' % file_name)
+    helper.RunCommandInPackages([WORKON_ONLY_ATOM], 'touch %s' % file_name)
     self.assertExists(file_path)
