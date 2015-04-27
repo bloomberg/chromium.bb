@@ -33,7 +33,7 @@
     Exposed=(Window,Worker),
     ImplementedAs=DOMURL,
     RaisesException=Constructor,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface URL {
     // FIXME: should be in separate URLBlob.idl partial interface definition
     // http://dev.w3.org/2006/webapi/FileAPI/#URL-object
