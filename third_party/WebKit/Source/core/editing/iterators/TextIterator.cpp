@@ -1099,7 +1099,7 @@ String plainText(const Position& start, const Position& end, TextIteratorBehavio
     return createPlainText<EditingStrategy>(start, end, behavior);
 }
 
-String plainTextInComposedTree(const PositionInComposedTree& start, const PositionInComposedTree& end, TextIteratorBehaviorFlags behavior)
+String plainText(const PositionInComposedTree& start, const PositionInComposedTree& end, TextIteratorBehaviorFlags behavior)
 {
     return createPlainText<EditingInComposedTreeStrategy>(start, end, behavior);
 }

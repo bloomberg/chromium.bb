@@ -46,7 +46,7 @@ String plainText(const Position& start, const Position& end, TextIteratorBehavio
 CORE_EXPORT PassRefPtrWillBeRawPtr<Range> findPlainText(const Range*, const String&, FindOptions);
 CORE_EXPORT void findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions, Position& resultStart, Position& resultEnd);
 
-String plainTextInComposedTree(const PositionInComposedTree& start, const PositionInComposedTree& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+String plainText(const PositionInComposedTree& start, const PositionInComposedTree& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
 // Iterates through the DOM range, returning all the text, and 0-length boundaries
 // at points where replaced elements break up the text flow.  The text comes back in
