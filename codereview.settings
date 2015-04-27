@@ -10,3 +10,4 @@ GITCL_PREDCOMMIT: http://src.chromium.org/viewvc/trunk/tools/depot_tools/git-cl-
 LINT_IGNORE_REGEX: webkit/api/.*
 PROJECT: chromium
 PENDING_REF_PREFIX: refs/pending/
+RUN_POST_UPLOAD_HOOK: True

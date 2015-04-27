@@ -9,6 +9,7 @@ for more details about the presubmit API built into depot_tools.
 """
 
 import os
+import re
 import sys
 
 
@@ -76,3 +77,49 @@ def CheckChangeOnCommit(input_api, output_api):
   report = []
   report.extend(_CommonChecks(input_api, output_api))
   return report
+
+
+def _IsBenchmarksModified(change):
+  """Checks whether CL contains any modification to Telemetry benchmarks."""
+  for affected_file in change.AffectedFiles():
+    affected_file_path = affected_file.LocalPath()
+    file_path, _ = os.path.splitext(affected_file_path)
+    if (os.path.join('tools', 'perf', 'benchmarks') in file_path or
+        os.path.join('tools', 'perf', 'measurements') in file_path):
+      return True
+  return False
+
+
+def PostUploadHook(cl, change, output_api):
+  """git cl upload will call this hook after the issue is created/modified.
+
+  This hook adds extra try bots list to the CL description in order to run
+  Telemetry benchmarks on Perf trybots in addtion to CQ trybots if the CL
+  contains any changes to Telemetry benchmarks.
+  """
+  benchmarks_modified = _IsBenchmarksModified(change)
+  rietveld_obj = cl.RpcServer()
+  issue = cl.issue
+  original_description = rietveld_obj.get_description(issue)
+  if not benchmarks_modified or re.search(
+     r'^CQ_EXTRA_TRYBOTS=.*', original_description, re.M | re.I):
+    return []
+
+  results = []
+  bots = [
+    'linux_perf_bisect',
+    'mac_perf_bisect',
+    'win_perf_bisect',
+    'android_nexus5_perf_bisect'
+  ]
+  bots = ['tryserver.chromium.perf:%s' % s for s in bots]
+  bots_string = ';'.join(bots)
+  description = original_description
+  description += '\nCQ_EXTRA_TRYBOTS=%s' % bots_string
+  results.append(output_api.PresubmitNotifyResult(
+      'Automatically added Perf trybots to run Telemetry benchmarks on CQ.'))
+
+  if description != original_description:
+   rietveld_obj.update_description(issue, description)
+
+  return results
