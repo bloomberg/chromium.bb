@@ -151,6 +151,32 @@ TEST_F('ExtensionSettingsWebUITest', 'testChromeSendHandled', function() {
   this.nextStep();
 });
 
+/**
+ * @param {chrome.developerPrivate.EventType} eventType
+ * @param {function():void} callback
+ * @constructor
+ */
+function UpdateListener(eventType, callback) {
+  this.callback_ = callback;
+  this.eventType_ = eventType;
+  this.onItemStateChangedListener_ = this.onItemStateChanged_.bind(this);
+  chrome.developerPrivate.onItemStateChanged.addListener(
+      this.onItemStateChangedListener_);
+}
+
+UpdateListener.prototype = {
+  /** @private */
+  onItemStateChanged_: function(data) {
+    if (this.eventType_ == data.event_type) {
+      window.setTimeout(function() {
+        chrome.developerPrivate.onItemStateChanged.removeListener(
+            this.onItemStateChangedListener_);
+        this.callback_();
+      }.bind(this), 0);
+    }
+  }
+};
+
 function BasicExtensionSettingsWebUITest() {}
 
 BasicExtensionSettingsWebUITest.prototype = {
@@ -170,30 +196,38 @@ BasicExtensionSettingsWebUITest.prototype = {
 
   /** @protected */
   verifyDisabledWorks: function() {
-    chrome.management.setEnabled(GOOD_CRX_ID, false, function() {
+    var listener = new UpdateListener(
+        chrome.developerPrivate.EventType.UNLOADED,
+        function() {
       var node = getRequiredElement(GOOD_CRX_ID);
       assertTrue(node.classList.contains('inactive-extension'));
       this.nextStep();
     }.bind(this));
+    chrome.management.setEnabled(GOOD_CRX_ID, false);
   },
 
   /** @protected */
   verifyEnabledWorks: function() {
-    chrome.management.setEnabled(GOOD_CRX_ID, true, function() {
+    var listener = new UpdateListener(
+        chrome.developerPrivate.EventType.LOADED,
+        function() {
       var node = getRequiredElement(GOOD_CRX_ID);
       assertFalse(node.classList.contains('inactive-extension'));
       this.nextStep();
     }.bind(this));
+    chrome.management.setEnabled(GOOD_CRX_ID, true);
   },
 
   /** @protected */
   verifyUninstallWorks: function() {
-    var next = this.nextStep.bind(this);
+    var listener = new UpdateListener(
+        chrome.developerPrivate.EventType.UNINSTALLED,
+        function() {
+      assertEquals(null, $(GOOD_CRX_ID));
+      this.nextStep();
+    }.bind(this));
     chrome.test.runWithUserGesture(function() {
-      chrome.management.uninstall(GOOD_CRX_ID, function() {
-        assertEquals(null, $(GOOD_CRX_ID));
-        next();
-      });
+      chrome.management.uninstall(GOOD_CRX_ID);
     });
   },
 };

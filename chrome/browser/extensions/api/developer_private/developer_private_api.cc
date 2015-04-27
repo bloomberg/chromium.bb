@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -61,12 +60,10 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension_resource.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/grit/extensions_browser_resources.h"
@@ -76,11 +73,10 @@
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {
 
-namespace developer_private = api::developer_private;
+namespace developer = api::developer_private;
 
 namespace {
 
@@ -109,60 +105,6 @@ const char kManifestFile[] = "manifest.json";
 
 ExtensionService* GetExtensionService(content::BrowserContext* context) {
   return ExtensionSystem::Get(context)->extension_service();
-}
-
-GURL GetImageURLFromData(const std::string& contents) {
-  std::string contents_base64;
-  base::Base64Encode(contents, &contents_base64);
-
-  // TODO(dvh): make use of content::kDataScheme. Filed as crbug/297301.
-  const char kDataURLPrefix[] = "data:;base64,";
-  return GURL(kDataURLPrefix + contents_base64);
-}
-
-GURL GetDefaultImageURL(developer_private::ItemType type) {
-  int icon_resource_id;
-  switch (type) {
-    case developer::ITEM_TYPE_LEGACY_PACKAGED_APP:
-    case developer::ITEM_TYPE_HOSTED_APP:
-    case developer::ITEM_TYPE_PACKAGED_APP:
-      icon_resource_id = IDR_APP_DEFAULT_ICON;
-      break;
-    default:
-      icon_resource_id = IDR_EXTENSION_DEFAULT_ICON;
-      break;
-  }
-
-  return GetImageURLFromData(
-      ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
-          icon_resource_id, ui::SCALE_FACTOR_100P).as_string());
-}
-
-// TODO(dvh): This code should be refactored and moved to
-// extensions::ImageLoader. Also a resize should be performed to avoid
-// potential huge URLs: crbug/297298.
-GURL ToDataURL(const base::FilePath& path, developer_private::ItemType type) {
-  std::string contents;
-  if (path.empty() || !base::ReadFileToString(path, &contents))
-    return GetDefaultImageURL(type);
-
-  return GetImageURLFromData(contents);
-}
-
-void BroadcastItemStateChanged(content::BrowserContext* browser_context,
-                               developer::EventType event_type,
-                               const std::string& item_id) {
-  developer::EventData event_data;
-  event_data.event_type = event_type;
-  event_data.item_id = item_id;
-  event_data.extension_info =
-      ExtensionInfoGenerator(browser_context).CreateExtensionInfo(item_id);
-
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(event_data.ToValue().release());
-  scoped_ptr<Event> event(new Event(
-      developer_private::OnItemStateChanged::kEventName, args.Pass()));
-  EventRouter::Get(browser_context)->BroadcastEvent(event.Pass());
 }
 
 std::string ReadFileToString(const base::FilePath& path) {
@@ -246,7 +188,9 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
       process_manager_observer_(this),
       app_window_registry_observer_(this),
       extension_action_api_observer_(this),
-      profile_(profile) {
+      profile_(profile),
+      event_router_(EventRouter::Get(profile_)),
+      weak_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   error_console_observer_.Add(ErrorConsole::Get(profile));
   process_manager_observer_.Add(ProcessManager::Get(profile));
@@ -271,8 +215,7 @@ void DeveloperPrivateEventRouter::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
-  BroadcastItemStateChanged(
-      browser_context, developer::EVENT_TYPE_LOADED, extension->id());
+  BroadcastItemStateChanged(developer::EVENT_TYPE_LOADED, extension->id());
 }
 
 void DeveloperPrivateEventRouter::OnExtensionUnloaded(
@@ -280,8 +223,7 @@ void DeveloperPrivateEventRouter::OnExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
   DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
-  BroadcastItemStateChanged(
-      browser_context, developer::EVENT_TYPE_UNLOADED, extension->id());
+  BroadcastItemStateChanged(developer::EVENT_TYPE_UNLOADED, extension->id());
 }
 
 void DeveloperPrivateEventRouter::OnExtensionWillBeInstalled(
@@ -291,8 +233,7 @@ void DeveloperPrivateEventRouter::OnExtensionWillBeInstalled(
     bool from_ephemeral,
     const std::string& old_name) {
   DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
-  BroadcastItemStateChanged(
-      browser_context, developer::EVENT_TYPE_INSTALLED, extension->id());
+  BroadcastItemStateChanged(developer::EVENT_TYPE_INSTALLED, extension->id());
 }
 
 void DeveloperPrivateEventRouter::OnExtensionUninstalled(
@@ -300,8 +241,7 @@ void DeveloperPrivateEventRouter::OnExtensionUninstalled(
     const Extension* extension,
     extensions::UninstallReason reason) {
   DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
-  BroadcastItemStateChanged(
-      browser_context, developer::EVENT_TYPE_UNINSTALLED, extension->id());
+  BroadcastItemStateChanged(developer::EVENT_TYPE_UNINSTALLED, extension->id());
 }
 
 void DeveloperPrivateEventRouter::OnErrorAdded(const ExtensionError* error) {
@@ -311,40 +251,81 @@ void DeveloperPrivateEventRouter::OnErrorAdded(const ExtensionError* error) {
   if (extension_ids_.find(error->extension_id()) != extension_ids_.end())
     return;
 
-  BroadcastItemStateChanged(
-      profile_, developer::EVENT_TYPE_ERROR_ADDED, error->extension_id());
+  BroadcastItemStateChanged(developer::EVENT_TYPE_ERROR_ADDED,
+                            error->extension_id());
 }
 
 void DeveloperPrivateEventRouter::OnExtensionFrameRegistered(
     const std::string& extension_id,
     content::RenderFrameHost* render_frame_host) {
-  BroadcastItemStateChanged(
-      profile_, developer::EVENT_TYPE_VIEW_REGISTERED, extension_id);
+  BroadcastItemStateChanged(developer::EVENT_TYPE_VIEW_REGISTERED,
+                            extension_id);
 }
 
 void DeveloperPrivateEventRouter::OnExtensionFrameUnregistered(
     const std::string& extension_id,
     content::RenderFrameHost* render_frame_host) {
-  BroadcastItemStateChanged(
-      profile_, developer::EVENT_TYPE_VIEW_UNREGISTERED, extension_id);
+  BroadcastItemStateChanged(developer::EVENT_TYPE_VIEW_UNREGISTERED,
+                            extension_id);
 }
 
 void DeveloperPrivateEventRouter::OnAppWindowAdded(AppWindow* window) {
-  BroadcastItemStateChanged(
-      profile_, developer::EVENT_TYPE_VIEW_REGISTERED, window->extension_id());
+  BroadcastItemStateChanged(developer::EVENT_TYPE_VIEW_REGISTERED,
+                            window->extension_id());
 }
 
 void DeveloperPrivateEventRouter::OnAppWindowRemoved(AppWindow* window) {
-  BroadcastItemStateChanged(profile_,
-                            developer::EVENT_TYPE_VIEW_UNREGISTERED,
+  BroadcastItemStateChanged(developer::EVENT_TYPE_VIEW_UNREGISTERED,
                             window->extension_id());
 }
 
 void DeveloperPrivateEventRouter::OnExtensionActionVisibilityChanged(
     const std::string& extension_id,
     bool is_now_visible) {
-  BroadcastItemStateChanged(
-       profile_, developer::EVENT_TYPE_PREFS_CHANGED, extension_id);
+  BroadcastItemStateChanged(developer::EVENT_TYPE_PREFS_CHANGED, extension_id);
+}
+
+void DeveloperPrivateEventRouter::BroadcastItemStateChanged(
+    developer::EventType event_type,
+    const std::string& extension_id) {
+  scoped_ptr<ExtensionInfoGenerator> info_generator(
+      new ExtensionInfoGenerator(profile_));
+  ExtensionInfoGenerator* info_generator_weak = info_generator.get();
+  info_generator_weak->CreateExtensionInfo(
+      extension_id,
+      base::Bind(&DeveloperPrivateEventRouter::BroadcastItemStateChangedHelper,
+                 weak_factory_.GetWeakPtr(),
+                 event_type,
+                 extension_id,
+                 base::Passed(info_generator.Pass())));
+}
+
+void DeveloperPrivateEventRouter::BroadcastItemStateChangedHelper(
+    developer::EventType event_type,
+    const std::string& extension_id,
+    scoped_ptr<ExtensionInfoGenerator> info_generator,
+    const ExtensionInfoGenerator::ExtensionInfoList& infos) {
+  DCHECK_LE(infos.size(), 1u);
+
+  developer::EventData event_data;
+  event_data.event_type = event_type;
+  event_data.item_id = extension_id;
+  scoped_ptr<base::DictionaryValue> dict = event_data.ToValue();
+
+  if (!infos.empty()) {
+    // Hack: Ideally, we would use event_data.extension_info to set the
+    // extension info, but since it's an optional field, it's implemented as a
+    // scoped ptr, and so ownership between that and the vector of linked ptrs
+    // here is, well, messy. Easier to just set it like this.
+    dict->SetWithoutPathExpansion("extensionInfo",
+                                  infos[0]->ToValue().release());
+  }
+
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(dict.release());
+  scoped_ptr<Event> event(new Event(
+      developer::OnItemStateChanged::kEventName, args.Pass()));
+  event_router_->BroadcastEvent(event.Pass());
 }
 
 void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
@@ -353,7 +334,7 @@ void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
 
 void DeveloperPrivateAPI::RegisterNotifications() {
   EventRouter::Get(profile_)->RegisterObserver(
-      this, developer_private::OnItemStateChanged::kEventName);
+      this, developer::OnItemStateChanged::kEventName);
 }
 
 DeveloperPrivateAPI::~DeveloperPrivateAPI() {}
@@ -373,7 +354,7 @@ void DeveloperPrivateAPI::OnListenerAdded(
 void DeveloperPrivateAPI::OnListenerRemoved(
     const EventListenerInfo& details) {
   if (!EventRouter::Get(profile_)->HasEventListener(
-          developer_private::OnItemStateChanged::kEventName)) {
+          developer::OnItemStateChanged::kEventName)) {
     developer_private_event_router_.reset(NULL);
   } else {
     developer_private_event_router_->RemoveExtensionId(details.extension_id);
@@ -411,6 +392,10 @@ ExtensionFunction::ResponseAction DeveloperPrivateAutoUpdateFunction::Run() {
 }
 
 DeveloperPrivateGetExtensionsInfoFunction::
+DeveloperPrivateGetExtensionsInfoFunction() {
+}
+
+DeveloperPrivateGetExtensionsInfoFunction::
 ~DeveloperPrivateGetExtensionsInfoFunction() {
 }
 
@@ -429,12 +414,23 @@ DeveloperPrivateGetExtensionsInfoFunction::Run() {
       include_terminated = *params->options->include_terminated;
   }
 
-  std::vector<linked_ptr<developer::ExtensionInfo>> list =
-      ExtensionInfoGenerator(browser_context()).
-          CreateExtensionsInfo(include_disabled, include_terminated);
+  info_generator_.reset(new ExtensionInfoGenerator(browser_context()));
+  info_generator_->CreateExtensionsInfo(
+      include_disabled,
+      include_terminated,
+      base::Bind(&DeveloperPrivateGetExtensionsInfoFunction::OnInfosGenerated,
+                 this /* refcounted */));
 
-  return RespondNow(ArgumentList(
-      developer::GetExtensionsInfo::Results::Create(list)));
+  return RespondLater();
+}
+
+void DeveloperPrivateGetExtensionsInfoFunction::OnInfosGenerated(
+    const ExtensionInfoGenerator::ExtensionInfoList& list) {
+  Respond(ArgumentList(developer::GetExtensionsInfo::Results::Create(list)));
+}
+
+DeveloperPrivateGetExtensionInfoFunction::
+DeveloperPrivateGetExtensionInfoFunction() {
 }
 
 DeveloperPrivateGetExtensionInfoFunction::
@@ -447,13 +443,21 @@ DeveloperPrivateGetExtensionInfoFunction::Run() {
       developer::GetExtensionInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  scoped_ptr<developer::ExtensionInfo> info =
-      ExtensionInfoGenerator(browser_context()).CreateExtensionInfo(params->id);
+  info_generator_.reset(new ExtensionInfoGenerator(browser_context()));
+  info_generator_->CreateExtensionInfo(
+      params->id,
+      base::Bind(&DeveloperPrivateGetExtensionInfoFunction::OnInfosGenerated,
+                 this /* refcounted */));
 
-  if (!info)
-    return RespondNow(Error(kNoSuchExtensionError));
+  return RespondLater();
+}
 
-  return RespondNow(OneArgument(info->ToValue().release()));
+void DeveloperPrivateGetExtensionInfoFunction::OnInfosGenerated(
+    const ExtensionInfoGenerator::ExtensionInfoList& list) {
+  DCHECK_EQ(1u, list.size());
+  const linked_ptr<developer::ExtensionInfo>& info = list[0];
+  Respond(info.get() ? OneArgument(info->ToValue()) :
+      Error(kNoSuchExtensionError));
 }
 
 DeveloperPrivateGetItemsInfoFunction::DeveloperPrivateGetItemsInfoFunction() {}
@@ -464,63 +468,23 @@ ExtensionFunction::ResponseAction DeveloperPrivateGetItemsInfoFunction::Run() {
       developer::GetItemsInfo::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ExtensionSet items;
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
-  items.InsertAll(registry->enabled_extensions());
-
-  if (params->include_disabled)
-    items.InsertAll(registry->disabled_extensions());
-  if (params->include_terminated)
-    items.InsertAll(registry->terminated_extensions());
-
-  std::map<std::string, ExtensionResource> resource_map;
-  for (const scoped_refptr<const Extension>& item : items) {
-    // Don't show component extensions and invisible apps.
-    if (ui_util::ShouldDisplayInExtensionSettings(item.get(),
-                                                  browser_context())) {
-      resource_map[item->id()] =
-          IconsInfo::GetIconResource(item.get(),
-                                     extension_misc::EXTENSION_ICON_MEDIUM,
-                                     ExtensionIconSet::MATCH_BIGGER);
-    }
-  }
-
-  std::vector<linked_ptr<developer::ExtensionInfo>> list =
-      ExtensionInfoGenerator(browser_context()).
-          CreateExtensionsInfo(params->include_disabled,
-                               params->include_terminated);
-
-  for (const linked_ptr<developer::ExtensionInfo>& info : list)
-    item_list_.push_back(developer_private_mangle::MangleExtensionInfo(*info));
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&DeveloperPrivateGetItemsInfoFunction::GetIconsOnFileThread,
-                 this,
-                 resource_map));
+  info_generator_.reset(new ExtensionInfoGenerator(browser_context()));
+  info_generator_->CreateExtensionsInfo(
+      params->include_disabled,
+      params->include_terminated,
+      base::Bind(&DeveloperPrivateGetItemsInfoFunction::OnInfosGenerated,
+                 this /* refcounted */));
 
   return RespondLater();
 }
 
-void DeveloperPrivateGetItemsInfoFunction::GetIconsOnFileThread(
-    const std::map<std::string, ExtensionResource> resource_map) {
-  for (const linked_ptr<developer::ItemInfo>& item : item_list_) {
-    auto resource = resource_map.find(item->id);
-    if (resource != resource_map.end()) {
-      item->icon_url = ToDataURL(resource->second.GetFilePath(),
-                                 item->type).spec();
-    }
-  }
+void DeveloperPrivateGetItemsInfoFunction::OnInfosGenerated(
+    const ExtensionInfoGenerator::ExtensionInfoList& list) {
+  std::vector<linked_ptr<developer::ItemInfo>> item_list;
+  for (const linked_ptr<developer::ExtensionInfo>& info : list)
+    item_list.push_back(developer_private_mangle::MangleExtensionInfo(*info));
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&DeveloperPrivateGetItemsInfoFunction::Finish, this));
-}
-
-void DeveloperPrivateGetItemsInfoFunction::Finish() {
-  Respond(ArgumentList(developer::GetItemsInfo::Results::Create(item_list_)));
+  Respond(ArgumentList(developer::GetItemsInfo::Results::Create(item_list)));
 }
 
 DeveloperPrivateGetProfileConfigurationFunction::
@@ -685,8 +649,8 @@ DeveloperPrivateLoadUnpackedFunction::DeveloperPrivateLoadUnpackedFunction()
 }
 
 ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
-  scoped_ptr<developer_private::LoadUnpacked::Params> params(
-      developer_private::LoadUnpacked::Params::Create(*args_));
+  scoped_ptr<developer::LoadUnpacked::Params> params(
+      developer::LoadUnpacked::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (!ShowPicker(
@@ -766,7 +730,7 @@ void DeveloperPrivatePackDirectoryFunction::OnPackSuccess(
   response.message = base::UTF16ToUTF8(
       PackExtensionJob::StandardSuccessMessage(crx_file, pem_file));
   response.status = developer::PACK_STATUS_SUCCESS;
-  Respond(OneArgument(response.ToValue().release()));
+  Respond(OneArgument(response.ToValue()));
   Release();  // Balanced in Run().
 }
 
@@ -783,7 +747,7 @@ void DeveloperPrivatePackDirectoryFunction::OnPackFailure(
   } else {
     response.status = developer::PACK_STATUS_ERROR;
   }
-  Respond(OneArgument(response.ToValue().release()));
+  Respond(OneArgument(response.ToValue()));
   Release();  // Balanced in Run().
 }
 
@@ -811,14 +775,14 @@ ExtensionFunction::ResponseAction DeveloperPrivatePackDirectoryFunction::Run() {
           IDS_EXTENSION_PACK_DIALOG_ERROR_ROOT_INVALID);
 
     response.status = developer::PACK_STATUS_ERROR;
-    return RespondNow(OneArgument(response.ToValue().release()));
+    return RespondNow(OneArgument(response.ToValue()));
   }
 
   if (!key_path_str_.empty() && key_file.empty()) {
     response.message = l10n_util::GetStringUTF8(
         IDS_EXTENSION_PACK_DIALOG_ERROR_KEY_INVALID);
     response.status = developer::PACK_STATUS_ERROR;
-    return RespondNow(OneArgument(response.ToValue().release()));
+    return RespondNow(OneArgument(response.ToValue()));
   }
 
   AddRef();  // Balanced in OnPackSuccess / OnPackFailure.
@@ -1205,7 +1169,7 @@ void DeveloperPrivateRequestFileSourceFunction::Finish(
   response.highlight = highlighter->GetFeature();
   response.after_highlight = highlighter->GetAfterFeature();
 
-  Respond(OneArgument(response.ToValue().release()));
+  Respond(OneArgument(response.ToValue()));
 }
 
 DeveloperPrivateOpenDevToolsFunction::DeveloperPrivateOpenDevToolsFunction() {}

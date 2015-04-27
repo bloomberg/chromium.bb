@@ -5,10 +5,16 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_EXTENSION_INFO_GENERATOR_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DEVELOPER_PRIVATE_EXTENSION_INFO_GENERATOR_H_
 
+#include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/extensions/api/developer_private.h"
 
 namespace content {
 class BrowserContext;
+}
+
+namespace gfx {
+class Image;
 }
 
 namespace extensions {
@@ -17,32 +23,50 @@ class Extension;
 class ExtensionActionAPI;
 class ExtensionPrefs;
 class ExtensionSystem;
+class ImageLoader;
 class WarningService;
 
 // Generates the developerPrivate api's specification for ExtensionInfo.
+// This class is designed to only have one generation running at a time!
 class ExtensionInfoGenerator {
  public:
   using ExtensionInfoList =
       std::vector<linked_ptr<api::developer_private::ExtensionInfo>>;
 
+  using ExtensionInfosCallback = base::Callback<void(const ExtensionInfoList&)>;
+
   explicit ExtensionInfoGenerator(content::BrowserContext* context);
   ~ExtensionInfoGenerator();
 
-  // Returns the ExtensionInfo for a given |extension| and |state|.
-  scoped_ptr<api::developer_private::ExtensionInfo> CreateExtensionInfo(
-      const Extension& extension,
-      api::developer_private::ExtensionState state);
-  // Returns an ExtensionInfo for the given |extension_id|, if the extension
-  // can be found.
-  scoped_ptr<api::developer_private::ExtensionInfo> CreateExtensionInfo(
-      const std::string& id);
+  // Creates and asynchronously returns an ExtensionInfo for the given
+  // |extension_id|, if the extension can be found.
+  // If the extension cannot be found, an empty vector is passed to |callback|.
+  void CreateExtensionInfo(const std::string& id,
+                           const ExtensionInfosCallback& callback);
 
-  // Returns a collection of ExtensionInfos, optionally including disabled and
-  // terminated.
-  ExtensionInfoList CreateExtensionsInfo(bool include_disabled,
-                                         bool include_terminated);
+  // Creates and asynchronously returns a collection of ExtensionInfos,
+  // optionally including disabled and terminated.
+  void CreateExtensionsInfo(bool include_disabled,
+                            bool include_terminated,
+                            const ExtensionInfosCallback& callback);
 
  private:
+  // Creates an ExtensionInfo for the given |extension| and |state|, and
+  // asynchronously adds it to the |list|.
+  void CreateExtensionInfoHelper(const Extension& extension,
+                                 api::developer_private::ExtensionState state);
+
+  // Callback for the asynchronous image loading.
+  void OnImageLoaded(scoped_ptr<api::developer_private::ExtensionInfo> info,
+                     const gfx::Image& image);
+
+  // Returns the icon url for the default icon to use.
+  const std::string& GetDefaultIconUrl(bool is_app, bool is_disabled);
+
+  // Returns an icon url from the given image, optionally applying a greyscale.
+  std::string GetIconUrlFromImage(const gfx::Image& image,
+                                  bool should_greyscale);
+
   // Various systems, cached for convenience.
   content::BrowserContext* browser_context_;
   ExtensionSystem* extension_system_;
@@ -50,6 +74,24 @@ class ExtensionInfoGenerator {
   ExtensionActionAPI* extension_action_api_;
   WarningService* warning_service_;
   ErrorConsole* error_console_;
+  ImageLoader* image_loader_;
+
+  // The number of pending image loads.
+  size_t pending_image_loads_;
+
+  // Default icons, cached and lazily initialized.
+  std::string default_app_icon_url_;
+  std::string default_extension_icon_url_;
+  std::string default_disabled_app_icon_url_;
+  std::string default_disabled_extension_icon_url_;
+
+  // The list of extension infos that have been generated.
+  ExtensionInfoList list_;
+
+  // The callback to run once all infos have been created.
+  ExtensionInfosCallback callback_;
+
+  base::WeakPtrFactory<ExtensionInfoGenerator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfoGenerator);
 };

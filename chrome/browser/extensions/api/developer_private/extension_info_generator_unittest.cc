@@ -55,6 +55,31 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
     InitializeEmptyExtensionService();
   }
 
+  void OnInfosGenerated(linked_ptr<developer::ExtensionInfo>* info_out,
+                        const ExtensionInfoGenerator::ExtensionInfoList& list) {
+    EXPECT_EQ(1u, list.size());
+    if (!list.empty())
+      *info_out = list[0];
+    quit_closure_.Run();
+    quit_closure_.Reset();
+  }
+
+  scoped_ptr<developer::ExtensionInfo> GenerateExtensionInfo(
+      const std::string& extension_id) {
+    linked_ptr<developer::ExtensionInfo> info;
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    scoped_ptr<ExtensionInfoGenerator> generator(
+        new ExtensionInfoGenerator(browser_context()));
+    generator->CreateExtensionInfo(
+        extension_id,
+        base::Bind(&ExtensionInfoGeneratorUnitTest::OnInfosGenerated,
+                   base::Unretained(this),
+                   base::Unretained(&info)));
+    run_loop.Run();
+    return make_scoped_ptr(info.release());
+  }
+
   const scoped_refptr<const Extension> CreateExtension(
       const std::string& name,
       ListBuilder& permissions) {
@@ -90,11 +115,10 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
         extension_path, location, *extension_data, Extension::REQUIRE_KEY,
         &error));
     CHECK(extension.get());
+    service()->AddExtension(extension.get());
     EXPECT_EQ(std::string(), error);
 
-    return ExtensionInfoGenerator(browser_context()).CreateExtensionInfo(
-        *extension,
-        api::developer_private::EXTENSION_STATE_ENABLED);
+    return GenerateExtensionInfo(extension->id());
   }
 
   void CompareExpectedAndActualOutput(
@@ -136,6 +160,11 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
       }
     }
   }
+
+ private:
+  base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInfoGeneratorUnitTest);
 };
 
 // Test some of the basic fields.
@@ -148,7 +177,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
 
   const char kName[] = "extension name";
   const char kVersion[] = "1.0.0.1";
-  std::string id = crx_file::id_util::GenerateId(kName);
+  std::string id = crx_file::id_util::GenerateId("alpha");
   scoped_ptr<base::DictionaryValue> manifest =
       DictionaryBuilder().Set("name", kName)
                          .Set("version", kVersion)
@@ -203,9 +232,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   // a duplication of the logic in the method itself. Instead, test a handful
   // of fields for sanity.
   scoped_ptr<api::developer_private::ExtensionInfo> info =
-      ExtensionInfoGenerator(browser_context()).CreateExtensionInfo(
-          *extension, developer::EXTENSION_STATE_ENABLED);
-  ASSERT_TRUE(info);
+      GenerateExtensionInfo(extension->id());
+  ASSERT_TRUE(info.get());
   EXPECT_EQ(kName, info->name);
   EXPECT_EQ(id, info->id);
   EXPECT_EQ(kVersion, info->version);
@@ -238,12 +266,13 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   // Test an extension that isn't unpacked.
   manifest_copy->SetString("update_url",
                            "https://clients2.google.com/service/update2/crx");
+  id = crx_file::id_util::GenerateId("beta");
   extension = ExtensionBuilder().SetManifest(manifest_copy.Pass())
                                 .SetLocation(Manifest::EXTERNAL_PREF)
                                 .SetID(id)
                                 .Build();
-  info = ExtensionInfoGenerator(browser_context()).CreateExtensionInfo(
-             *extension, developer::EXTENSION_STATE_ENABLED);
+  service()->AddExtension(extension.get());
+  info = GenerateExtensionInfo(extension->id());
   EXPECT_EQ(developer::LOCATION_THIRD_PARTY, info->location);
   EXPECT_FALSE(info->path);
 }
@@ -322,11 +351,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   scoped_refptr<const Extension> no_urls_extension =
       CreateExtension("no urls", ListBuilder().Pass());
 
-  ExtensionInfoGenerator generator(browser_context());
   scoped_ptr<developer::ExtensionInfo> info =
-      generator.CreateExtensionInfo(
-          *all_urls_extension,
-          api::developer_private::EXTENSION_STATE_ENABLED);
+      GenerateExtensionInfo(all_urls_extension->id());
 
   // The extension should want all urls, but not currently have it.
   EXPECT_TRUE(info->run_on_all_urls.is_enabled);
@@ -336,14 +362,12 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   util::SetAllowedScriptingOnAllUrls(all_urls_extension->id(), profile(), true);
 
   // Now the extension should both want and have all urls.
-  info = generator.CreateExtensionInfo(*all_urls_extension,
-                                       developer::EXTENSION_STATE_ENABLED);
+  info = GenerateExtensionInfo(all_urls_extension->id());
   EXPECT_TRUE(info->run_on_all_urls.is_enabled);
   EXPECT_TRUE(info->run_on_all_urls.is_active);
 
   // The other extension should neither want nor have all urls.
-  info = generator.CreateExtensionInfo(*no_urls_extension,
-                                       developer::EXTENSION_STATE_ENABLED);
+  info = GenerateExtensionInfo(no_urls_extension->id());
   EXPECT_FALSE(info->run_on_all_urls.is_enabled);
   EXPECT_FALSE(info->run_on_all_urls.is_active);
 
@@ -357,16 +381,14 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
 
   // Since the extension doesn't have access to all urls (but normally would),
   // the extension should have the "want" flag even with the switch off.
-  info = generator.CreateExtensionInfo(*all_urls_extension,
-                                       developer::EXTENSION_STATE_ENABLED);
+  info = GenerateExtensionInfo(all_urls_extension->id());
   EXPECT_TRUE(info->run_on_all_urls.is_enabled);
   EXPECT_FALSE(info->run_on_all_urls.is_active);
 
   // If we grant the extension all urls, then the checkbox should still be
   // there, since it has an explicitly-set user preference.
   util::SetAllowedScriptingOnAllUrls(all_urls_extension->id(), profile(), true);
-  info = generator.CreateExtensionInfo(*all_urls_extension,
-                                       developer::EXTENSION_STATE_ENABLED);
+  info = GenerateExtensionInfo(all_urls_extension->id());
   EXPECT_TRUE(info->run_on_all_urls.is_enabled);
   EXPECT_TRUE(info->run_on_all_urls.is_active);
 
@@ -376,8 +398,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
 
   // Even though the extension has all_urls permission, the checkbox shouldn't
   // show up without the switch.
-  info = generator.CreateExtensionInfo(*all_urls_extension,
-                                       developer::EXTENSION_STATE_ENABLED);
+  info = GenerateExtensionInfo(all_urls_extension->id());
   EXPECT_FALSE(info->run_on_all_urls.is_enabled);
   EXPECT_TRUE(info->run_on_all_urls.is_active);
 }

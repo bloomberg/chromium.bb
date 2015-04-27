@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
 
+#include "base/base64.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -22,17 +23,25 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/image_loader.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/grit/extensions_browser_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace extensions {
 
@@ -142,15 +151,83 @@ ExtensionInfoGenerator::ExtensionInfoGenerator(
       extension_prefs_(ExtensionPrefs::Get(browser_context)),
       extension_action_api_(ExtensionActionAPI::Get(browser_context)),
       warning_service_(WarningService::Get(browser_context)),
-      error_console_(ErrorConsole::Get(browser_context)) {
+      error_console_(ErrorConsole::Get(browser_context)),
+      image_loader_(ImageLoader::Get(browser_context)),
+      pending_image_loads_(0u),
+      weak_factory_(this) {
 }
 
 ExtensionInfoGenerator::~ExtensionInfoGenerator() {
 }
 
-scoped_ptr<developer::ExtensionInfo>
-ExtensionInfoGenerator::CreateExtensionInfo(const Extension& extension,
-                                            developer::ExtensionState state) {
+void ExtensionInfoGenerator::CreateExtensionInfo(
+    const std::string& id,
+    const ExtensionInfosCallback& callback) {
+  DCHECK(callback_.is_null() && list_.empty()) <<
+      "Only a single generation can be running at a time!";
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+
+  developer::ExtensionState state = developer::EXTENSION_STATE_NONE;
+  const Extension* ext = nullptr;
+  if ((ext = registry->enabled_extensions().GetByID(id)) != nullptr)
+    state = developer::EXTENSION_STATE_ENABLED;
+  else if ((ext = registry->disabled_extensions().GetByID(id)) != nullptr)
+    state = developer::EXTENSION_STATE_DISABLED;
+  else if ((ext = registry->terminated_extensions().GetByID(id)) != nullptr)
+    state = developer::EXTENSION_STATE_TERMINATED;
+
+  if (ext && ui_util::ShouldDisplayInExtensionSettings(ext, browser_context_))
+    CreateExtensionInfoHelper(*ext, state);
+
+  if (pending_image_loads_ == 0) {
+    // Don't call the callback re-entrantly.
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, list_));
+    list_.clear();
+  } else {
+    callback_ = callback;
+  }
+}
+
+void ExtensionInfoGenerator::CreateExtensionsInfo(
+    bool include_disabled,
+    bool include_terminated,
+    const ExtensionInfosCallback& callback) {
+  auto add_to_list = [this](const ExtensionSet& extensions,
+                            developer::ExtensionState state) {
+    for (const scoped_refptr<const Extension>& extension : extensions) {
+      if (ui_util::ShouldDisplayInExtensionSettings(extension.get(),
+                                                    browser_context_)) {
+        CreateExtensionInfoHelper(*extension, state);
+      }
+    }
+  };
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+  add_to_list(registry->enabled_extensions(),
+              developer::EXTENSION_STATE_ENABLED);
+  if (include_disabled) {
+    add_to_list(registry->disabled_extensions(),
+                developer::EXTENSION_STATE_DISABLED);
+  }
+  if (include_terminated) {
+    add_to_list(registry->terminated_extensions(),
+                developer::EXTENSION_STATE_TERMINATED);
+  }
+
+  if (pending_image_loads_ == 0) {
+    // Don't call the callback re-entrantly.
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, list_));
+    list_.clear();
+  } else {
+    callback_ = callback;
+  }
+}
+
+void ExtensionInfoGenerator::CreateExtensionInfoHelper(
+    const Extension& extension,
+    developer::ExtensionState state) {
   scoped_ptr<developer::ExtensionInfo> info(new developer::ExtensionInfo());
 
   // Don't consider the button hidden with the redesign, because "hidden"
@@ -216,17 +293,6 @@ ExtensionInfoGenerator::CreateExtensionInfo(const Extension& extension,
   // Home page.
   info->home_page.url = ManifestURL::GetHomepageURL(&extension).spec();
   info->home_page.specified = ManifestURL::SpecifiedHomepageURL(&extension);
-
-  bool is_enabled = state == developer::EXTENSION_STATE_ENABLED;
-
-  // TODO(devlin): This won't work with apps (CORS). We should convert to data
-  // urls.
-  info->icon_url =
-      ExtensionIconSource::GetIconURL(&extension,
-                                      extension_misc::EXTENSION_ICON_MEDIUM,
-                                      ExtensionIconSet::MATCH_BIGGER,
-                                      !is_enabled,
-                                      nullptr).spec();
 
   info->id = extension.id();
 
@@ -357,68 +423,98 @@ ExtensionInfoGenerator::CreateExtensionInfo(const Extension& extension,
 
   info->version = extension.GetVersionForDisplay();
 
+  bool is_enabled = state == developer::EXTENSION_STATE_ENABLED;
   if (state != developer::EXTENSION_STATE_TERMINATED) {
     info->views = InspectableViewsFinder(profile).
                       GetViewsForExtension(extension, is_enabled);
   }
-  return info.Pass();
+
+  // The icon.
+  ExtensionResource icon =
+      IconsInfo::GetIconResource(&extension,
+                                 extension_misc::EXTENSION_ICON_MEDIUM,
+                                 ExtensionIconSet::MATCH_BIGGER);
+  if (icon.empty()) {
+    info->icon_url = GetDefaultIconUrl(extension.is_app(), !is_enabled);
+    list_.push_back(make_linked_ptr(info.release()));
+  } else {
+    ++pending_image_loads_;
+    // Max size of 128x128 is a random guess at a nice balance between being
+    // overly eager to resize and sending across gigantic data urls. (The icon
+    // used by the url is 48x48).
+    gfx::Size max_size(128, 128);
+    image_loader_->LoadImageAsync(
+        &extension,
+        icon,
+        max_size,
+        base::Bind(&ExtensionInfoGenerator::OnImageLoaded,
+                   weak_factory_.GetWeakPtr(),
+                   base::Passed(info.Pass())));
+  }
 }
 
-scoped_ptr<api::developer_private::ExtensionInfo>
-ExtensionInfoGenerator::CreateExtensionInfo(const std::string& id) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
-
-  const Extension* enabled = registry->enabled_extensions().GetByID(id);
-  if (enabled &&
-      ui_util::ShouldDisplayInExtensionSettings(enabled, browser_context_)) {
-    return CreateExtensionInfo(*enabled, developer::EXTENSION_STATE_ENABLED);
+const std::string& ExtensionInfoGenerator::GetDefaultIconUrl(
+    bool is_app,
+    bool is_greyscale) {
+  std::string* str;
+  if (is_app) {
+    str = is_greyscale ? &default_disabled_app_icon_url_ :
+        &default_app_icon_url_;
+  } else {
+    str = is_greyscale ? &default_disabled_extension_icon_url_ :
+        &default_extension_icon_url_;
   }
 
-  const Extension* disabled = registry->disabled_extensions().GetByID(id);
-  if (disabled &&
-      ui_util::ShouldDisplayInExtensionSettings(disabled, browser_context_)) {
-    return CreateExtensionInfo(*disabled, developer::EXTENSION_STATE_DISABLED);
+  if (str->empty()) {
+    *str = GetIconUrlFromImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            is_app ? IDR_APP_DEFAULT_ICON : IDR_EXTENSION_DEFAULT_ICON),
+        is_greyscale);
   }
 
-  const Extension* terminated = registry->terminated_extensions().GetByID(id);
-  if (terminated &&
-      ui_util::ShouldDisplayInExtensionSettings(terminated, browser_context_)) {
-    return CreateExtensionInfo(*terminated,
-                               developer::EXTENSION_STATE_TERMINATED);
-  }
-
-  return scoped_ptr<api::developer_private::ExtensionInfo>();
+  return *str;
 }
 
-ExtensionInfoGenerator::ExtensionInfoList
-ExtensionInfoGenerator::CreateExtensionsInfo(bool include_disabled,
-                                             bool include_terminated) {
-  std::vector<linked_ptr<developer::ExtensionInfo>> list;
-  auto add_to_list = [this, &list](const ExtensionSet& extensions,
-                                      developer::ExtensionState state) {
-    for (const scoped_refptr<const Extension>& extension : extensions) {
-      if (ui_util::ShouldDisplayInExtensionSettings(extension.get(),
-                                                    browser_context_)) {
-        scoped_ptr<developer::ExtensionInfo> info =
-            CreateExtensionInfo(*extension, state);
-        list.push_back(make_linked_ptr(info.release()));
-      }
-    }
-  };
-
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
-  add_to_list(registry->enabled_extensions(),
-              developer::EXTENSION_STATE_ENABLED);
-  if (include_disabled) {
-    add_to_list(registry->disabled_extensions(),
-                developer::EXTENSION_STATE_DISABLED);
-  }
-  if (include_terminated) {
-    add_to_list(registry->terminated_extensions(),
-                developer::EXTENSION_STATE_TERMINATED);
+std::string ExtensionInfoGenerator::GetIconUrlFromImage(
+    const gfx::Image& image,
+    bool should_greyscale) {
+  scoped_refptr<base::RefCountedMemory> data;
+  if (should_greyscale) {
+    color_utils::HSL shift = {-1, 0, 0.6};
+    SkBitmap bitmap =
+        SkBitmapOperations::CreateHSLShiftedBitmap(*image.ToSkBitmap(), shift);
+    scoped_refptr<base::RefCountedBytes> image_bytes(
+        new base::RefCountedBytes());
+    gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &image_bytes->data());
+    data = image_bytes;
+  } else {
+    data = image.As1xPNGBytes();
   }
 
-  return list;
+  std::string base_64;
+  base::Base64Encode(std::string(data->front_as<char>(), data->size()),
+                     &base_64);
+  const char kDataUrlPrefix[] = "data:image/png;base64,";
+  return GURL(kDataUrlPrefix + base_64).spec();
+}
+
+void ExtensionInfoGenerator::OnImageLoaded(
+    scoped_ptr<developer::ExtensionInfo> info,
+    const gfx::Image& icon) {
+  info->icon_url = GetIconUrlFromImage(
+      icon, info->state != developer::EXTENSION_STATE_ENABLED);
+  list_.push_back(make_linked_ptr(info.release()));
+
+  --pending_image_loads_;
+
+  if (pending_image_loads_ == 0) {  // All done!
+    // We assign to a temporary and Reset() so that at the end of the method,
+    // any stored refs are destroyed.
+    ExtensionInfosCallback callback = callback_;
+    callback_.Reset();
+    callback.Run(list_);
+    list_.clear();
+  }
 }
 
 }  // namespace extensions

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/files/file.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
+#include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -30,7 +32,9 @@ class Profile;
 
 namespace extensions {
 
+class EventRouter;
 class ExtensionError;
+class ExtensionInfoGenerator;
 class ExtensionRegistry;
 class ExtensionSystem;
 class ManagementPolicy;
@@ -42,26 +46,7 @@ namespace api {
 class EntryPicker;
 class EntryPickerClient;
 
-namespace developer_private {
-
-struct ItemInfo;
-struct ItemInspectView;
-struct ProjectInfo;
-
-namespace RequestFileSource {
-struct Params;
-}
-
-}  // namespace developer_private
-
 }  // namespace api
-
-namespace developer = api::developer_private;
-
-typedef std::vector<linked_ptr<developer::ItemInfo> > ItemInfoList;
-typedef std::vector<linked_ptr<developer::ProjectInfo> > ProjectInfoList;
-typedef std::vector<linked_ptr<developer::ItemInspectView> >
-    ItemInspectViewList;
 
 class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
                                     public ErrorConsole::Observer,
@@ -111,6 +96,16 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   void OnExtensionActionVisibilityChanged(const std::string& extension_id,
                                           bool is_now_visible) override;
 
+  // Broadcasts an event to all listeners.
+  void BroadcastItemStateChanged(api::developer_private::EventType event_type,
+                                 const std::string& id);
+  void BroadcastItemStateChangedHelper(
+      api::developer_private::EventType event_type,
+      const std::string& extension_id,
+      scoped_ptr<ExtensionInfoGenerator> info_generator,
+      const std::vector<linked_ptr<api::developer_private::ExtensionInfo>>&
+          infos);
+
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
   ScopedObserver<ErrorConsole, ErrorConsole::Observer> error_console_observer_;
@@ -123,6 +118,8 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
 
   Profile* profile_;
 
+  EventRouter* event_router_;
+
   // The set of IDs of the Extensions that have subscribed to DeveloperPrivate
   // events. Since the only consumer of the DeveloperPrivate API is currently
   // the Apps Developer Tool (which replaces the chrome://extensions page), we
@@ -130,6 +127,8 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   // update. In particular, we want to avoid entering a loop, which could happen
   // when, e.g., the Apps Developer Tool throws an error.
   std::set<std::string> extension_ids_;
+
+  base::WeakPtrFactory<DeveloperPrivateEventRouter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateEventRouter);
 };
@@ -218,33 +217,53 @@ class DeveloperPrivateGetItemsInfoFunction
   ~DeveloperPrivateGetItemsInfoFunction() override;
   ResponseAction Run() override;
 
-  void GetIconsOnFileThread(
-      std::map<std::string, ExtensionResource> resource_map);
-  void Finish();
+  void OnInfosGenerated(
+      const std::vector<linked_ptr<api::developer_private::ExtensionInfo>>&
+          infos);
 
-  ItemInfoList item_list_;
+  scoped_ptr<ExtensionInfoGenerator> info_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateGetItemsInfoFunction);
 };
 
 class DeveloperPrivateGetExtensionsInfoFunction
     : public DeveloperPrivateAPIFunction {
  public:
+  DeveloperPrivateGetExtensionsInfoFunction();
   DECLARE_EXTENSION_FUNCTION("developerPrivate.getExtensionsInfo",
                              DEVELOPERPRIVATE_GETEXTENSIONSINFO);
 
  private:
   ~DeveloperPrivateGetExtensionsInfoFunction() override;
   ResponseAction Run() override;
+
+  void OnInfosGenerated(
+      const std::vector<linked_ptr<api::developer_private::ExtensionInfo>>&
+          infos);
+
+  scoped_ptr<ExtensionInfoGenerator> info_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateGetExtensionsInfoFunction);
 };
 
 class DeveloperPrivateGetExtensionInfoFunction
     : public DeveloperPrivateAPIFunction {
  public:
+  DeveloperPrivateGetExtensionInfoFunction();
   DECLARE_EXTENSION_FUNCTION("developerPrivate.getExtensionInfo",
                              DEVELOPERPRIVATE_GETEXTENSIONINFO);
 
  private:
   ~DeveloperPrivateGetExtensionInfoFunction() override;
   ResponseAction Run() override;
+
+  void OnInfosGenerated(
+      const std::vector<linked_ptr<api::developer_private::ExtensionInfo>>&
+          infos);
+
+  scoped_ptr<ExtensionInfoGenerator> info_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateGetExtensionInfoFunction);
 };
 
 class DeveloperPrivateGetProfileConfigurationFunction

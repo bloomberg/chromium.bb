@@ -159,6 +159,7 @@ html[dir=rtl] #footer-section {
 
 .extension-list-item {
   background-repeat: no-repeat;
+  background-size: 48px 48px;
   display: -webkit-box;
   min-height: 48px;
 }
