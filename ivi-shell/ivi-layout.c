@@ -719,9 +719,14 @@ update_scale(struct ivi_layout_layer *ivilayer,
 		return;
 	}
 
-	if (ivisurf->prop.dest_width == 0 && ivisurf->prop.dest_height == 0) {
-		ivisurf->prop.dest_width  = ivisurf->surface->width_from_buffer;
-		ivisurf->prop.dest_height = ivisurf->surface->height_from_buffer;
+	if (ivisurf->prop.source_width == 0 || ivisurf->prop.source_height == 0) {
+		weston_log("ivi-shell: source rectangle is not yet set by ivi_layout_surface_set_source_rectangle\n");
+		return;
+	}
+
+	if (ivisurf->prop.dest_width == 0 || ivisurf->prop.dest_height == 0) {
+		weston_log("ivi-shell: destination rectangle is not yet set by ivi_layout_surface_set_destination_rectangle\n");
+		return;
 	}
 
 	lw = ((float)ivilayer->prop.dest_width  / (float)ivilayer->prop.source_width );
