@@ -385,6 +385,7 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, const Glyph
     , m_expansionOpportunityCount(0)
     , m_fromIndex(0)
     , m_toIndex(m_run.length())
+    , m_totalWidth(0)
 {
     m_normalizedBuffer = adoptArrayPtr(new UChar[m_run.length() + 1]);
     normalizeCharacters(m_run, m_run.length(), m_normalizedBuffer.get(), &m_normalizedBufferLength);
@@ -541,7 +542,6 @@ bool HarfBuzzShaper::shape(GlyphBuffer* glyphBuffer)
     if (!createHarfBuzzRuns())
         return false;
 
-    m_totalWidth = 0;
     if (!shapeHarfBuzzRuns())
         return false;
 
