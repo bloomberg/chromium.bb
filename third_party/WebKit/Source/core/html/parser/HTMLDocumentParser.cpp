@@ -490,11 +490,11 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
 
         constructTreeFromCompactHTMLToken(*it);
 
-        if (!m_queuedPreloads.isEmpty() && document()->documentElement())
-            m_preloader->takeAndPreload(m_queuedPreloads);
-
         if (isStopped())
             break;
+
+        if (!m_queuedPreloads.isEmpty() && document()->documentElement())
+            m_preloader->takeAndPreload(m_queuedPreloads);
 
         if (isWaitingForScripts()) {
             ASSERT(it + 1 == tokens->end()); // The </script> is assumed to be the last token of this bunch.
