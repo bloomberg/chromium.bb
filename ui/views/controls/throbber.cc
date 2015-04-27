@@ -5,6 +5,7 @@
 #include "ui/views/controls/throbber.h"
 
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -168,14 +169,52 @@ void MaterialThrobber::OnPaint(gfx::Canvas* canvas) {
     return;
   }
 
-  gfx::Rect bounds = GetContentsBounds();
-  // Inset by half the stroke width to make sure the whole arc is inside
-  // the visible rect.
-  SkScalar stroke_width = SkIntToScalar(bounds.width()) / 10.0;
-  gfx::Rect oval = bounds;
-  int inset = SkScalarCeilToInt(stroke_width / 2.0);
-  oval.Inset(inset, inset);
+  PaintSpinning(canvas);
+}
 
+void MaterialThrobber::PaintSpinning(gfx::Canvas* canvas) {
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time();
+
+  // This is a Skia port of the MD spinner SVG. The |start_angle| rotation
+  // here corresponds to the 'rotate' animation.
+  base::TimeDelta rotation_time = base::TimeDelta::FromMilliseconds(1568);
+  int64_t start_angle = 270 + 360 * elapsed_time / rotation_time;
+
+  // The sweep angle ranges from -|arc_size| to |arc_size| over 1333ms. CSS
+  // animation timing functions apply in between key frames, so we have to
+  // break up the |arc_time| into two keyframes (-arc_size to 0, then 0 to
+  // arc_size).
+  int64_t arc_size = 270;
+  base::TimeDelta arc_time = base::TimeDelta::FromMilliseconds(666);
+  double arc_size_progress = static_cast<double>(elapsed_time.InMicroseconds() %
+                                                 arc_time.InMicroseconds()) /
+                             arc_time.InMicroseconds();
+  // This tween is equivalent to cubic-bezier(0.4, 0.0, 0.2, 1).
+  double sweep =
+      arc_size * gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
+                                            arc_size_progress);
+  int64_t sweep_keyframe = (elapsed_time / arc_time) % 2;
+  if (sweep_keyframe == 0)
+    sweep -= arc_size;
+
+  // This part makes sure the sweep is at least 5 degrees long. Roughly
+  // equivalent to the "magic constants" in SVG's fillunfill animation.
+  const double min_sweep_length = 5.0;
+  if (sweep >= 0.0 && sweep < min_sweep_length) {
+    start_angle -= (min_sweep_length - sweep);
+    sweep = min_sweep_length;
+  } else if (sweep <= 0.0 && sweep > -min_sweep_length) {
+    start_angle += (-min_sweep_length - sweep);
+    sweep = -min_sweep_length;
+  }
+
+  // To keep the sweep smooth, we have an additional rotation after each
+  // |arc_time| period has elapsed. See SVG's 'rot' animation.
+  int64_t rot_keyframe = (elapsed_time / (arc_time * 2)) % 4;
+  PaintArc(canvas, start_angle + rot_keyframe * arc_size, sweep);
+}
+
+void MaterialThrobber::PaintWaiting(gfx::Canvas* canvas) {
   // Calculate start and end points. The angles are counter-clockwise because
   // the throbber spins counter-clockwise. The finish angle starts at 12 o'clock
   // (90 degrees) and rotates steadily. The start angle trails 180 degrees
@@ -186,10 +225,23 @@ void MaterialThrobber::OnPaint(gfx::Canvas* canvas) {
   int64_t finish_angle = twelve_oclock + 360 * elapsed_time / revolution_time;
   int64_t start_angle = std::max(finish_angle - 180, twelve_oclock);
 
-  SkPath path;
   // Negate the angles to convert to the clockwise numbers Skia expects.
-  path.arcTo(gfx::RectToSkRect(oval), -start_angle,
-             -(finish_angle - start_angle), true);
+  PaintArc(canvas, -start_angle, -(finish_angle - start_angle));
+}
+
+void MaterialThrobber::PaintArc(gfx::Canvas* canvas,
+                                SkScalar start_angle,
+                                SkScalar sweep) {
+  gfx::Rect bounds = GetContentsBounds();
+  // Inset by half the stroke width to make sure the whole arc is inside
+  // the visible rect.
+  SkScalar stroke_width = SkIntToScalar(bounds.width()) / 10.0;
+  gfx::Rect oval = bounds;
+  int inset = SkScalarCeilToInt(stroke_width / 2.0);
+  oval.Inset(inset, inset);
+
+  SkPath path;
+  path.arcTo(gfx::RectToSkRect(oval), start_angle, sweep, true);
 
   SkPaint paint;
   // TODO(estade): find a place for this color.

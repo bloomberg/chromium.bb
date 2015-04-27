@@ -112,6 +112,16 @@ class VIEWS_EXPORT MaterialThrobber : public Throbber {
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
+  // Paints this throbber in the "waiting" state, for example when waiting for
+  // an initial network response.
+  void PaintWaiting(gfx::Canvas* canvas);
+
+  // Paints this throbber in its normal state. Corresponds to MD throbber.
+  void PaintSpinning(gfx::Canvas* canvas);
+
+  // Common painting code for PaintWaiting and PaintSpinning.
+  void PaintArc(gfx::Canvas* canvas, SkScalar start_angle, SkScalar sweep);
+
   // The preferred width and height for this view. Zero indicates the size is
   // set by the parent class (i.e. matches the size of the pre-material
   // sprites).
