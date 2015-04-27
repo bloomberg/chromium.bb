@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CACHE_H_
 #define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_CACHE_H_
 
-#include <list>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "net/base/completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
 
 namespace net {
@@ -22,14 +21,13 @@ class IOBufferWithSize;
 }
 
 namespace storage {
-class BlobDataBuilder;
 class BlobDataHandle;
 class BlobStorageContext;
 class QuotaManagerProxy;
 }
 
 namespace content {
-class ChromeBlobStorageContext;
+
 class CacheMetadata;
 class CacheStorageScheduler;
 class TestCacheStorageCache;
@@ -51,7 +49,6 @@ class CONTENT_EXPORT CacheStorageCache
     ERROR_TYPE_LAST = ERROR_TYPE_NOT_FOUND
   };
 
-  enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY };
   typedef base::Callback<void(ErrorType)> ErrorCallback;
   typedef base::Callback<void(ErrorType,
                               scoped_ptr<ServiceWorkerResponse>,

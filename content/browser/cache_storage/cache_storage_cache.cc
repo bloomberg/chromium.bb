@@ -15,6 +15,7 @@
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/referrer.h"
+#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
@@ -30,7 +31,6 @@ namespace content {
 
 namespace {
 
-typedef base::Callback<void(bool)> BoolCallback;
 typedef base::Callback<void(disk_cache::ScopedEntryPtr, bool)>
     EntryBoolCallback;
 typedef base::Callback<void(scoped_ptr<CacheMetadata>)> MetadataCallback;
@@ -273,7 +273,7 @@ class CacheStorageCache::BlobReader : public net::URLRequest::Delegate {
 
 // The state needed to pass between CacheStorageCache::Keys callbacks.
 struct CacheStorageCache::KeysContext {
-  KeysContext(const CacheStorageCache::RequestsCallback& callback)
+  explicit KeysContext(const CacheStorageCache::RequestsCallback& callback)
       : original_callback(callback),
         out_keys(new CacheStorageCache::Requests()),
         enumerated_entry(NULL) {}
