@@ -663,6 +663,7 @@ void RenderFrameHostManager::DiscardUnusedFrame(
     // Any currently suspended navigations are no longer needed.
     render_frame_host->CancelSuspendedNavigations();
 
+    CHECK(!GetRenderFrameProxyHost(site_instance));
     RenderFrameProxyHost* proxy =
         new RenderFrameProxyHost(site_instance, frame_tree_node_);
     proxy_hosts_[site_instance->GetId()] = proxy;
