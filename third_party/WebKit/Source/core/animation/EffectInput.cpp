@@ -132,6 +132,7 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
             &SVGNames::specularConstantAttr,
             &SVGNames::specularExponentAttr,
             &SVGNames::spreadMethodAttr,
+            &SVGNames::startOffsetAttr,
             &SVGNames::stdDeviationAttr,
             &SVGNames::stitchTilesAttr,
             &SVGNames::surfaceScaleAttr,
