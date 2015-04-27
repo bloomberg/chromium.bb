@@ -82,7 +82,7 @@ QUnit.module('host_controller', {
     remoting.identity = new remoting.Identity();
     mockHostListApi = new remoting.MockHostListApi;
     mockHostListApi.registerResult = FAKE_AUTH_CODE;
-    remoting.hostListApi = mockHostListApi;
+    remoting.HostListApi.setInstance(mockHostListApi);
     base.debug.assert(remoting.oauth2 === null);
     remoting.oauth2 = new remoting.OAuth2();
     base.debug.assert(remoting.hostList === null);
@@ -173,7 +173,7 @@ QUnit.module('host_controller', {
     remoting.hostList = null;
     remoting.oauth2 = null;
     chromeMocks.restore();
-    remoting.hostListApi = null;
+    remoting.HostListApi.setInstance(null);
     remoting.identity = null;
   }
 });

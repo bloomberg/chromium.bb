@@ -159,7 +159,4 @@ remoting.HostListApiImpl.defaultResponse_ = function(opt_ignoreErrors) {
   return result;
 };
 
-/** @type {remoting.HostListApi} */
-remoting.hostListApi = new remoting.HostListApiImpl();
-
 })();

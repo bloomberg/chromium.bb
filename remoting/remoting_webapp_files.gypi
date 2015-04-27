@@ -216,6 +216,7 @@
     'remoting_webapp_js_host_display_files': [
       'webapp/crd/js/host_list.js',
       'webapp/crd/js/host_list_api.js',
+      'webapp/crd/js/host_list_api_gcd_impl.js',
       'webapp/crd/js/host_list_api_impl.js',
       'webapp/crd/js/host_table_entry.js',
       'webapp/crd/js/local_host_section.js',

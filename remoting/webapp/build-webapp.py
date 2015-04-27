@@ -362,6 +362,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
   # For overriding the client ID/secret via env vars, see google_api_keys.py.
   apiClientId = google_api_keys.GetClientID('REMOTING')
   apiClientSecret = google_api_keys.GetClientSecret('REMOTING')
+  apiKey = google_api_keys.GetAPIKeyRemoting()
 
   if is_app_remoting_webapp and buildtype != 'Dev':
     if not app_client_id:
@@ -373,6 +374,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
 
   replaceString(destination, 'API_CLIENT_ID', apiClientId)
   replaceString(destination, 'API_CLIENT_SECRET', apiClientSecret)
+  replaceString(destination, 'API_KEY', apiKey)
 
   # Write the application capabilities.
   appCapabilities = ','.join(

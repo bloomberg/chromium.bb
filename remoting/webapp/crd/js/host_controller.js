@@ -182,21 +182,21 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
     var hostName = /** @type {string} */ (a[1]);
     var keyPair = /** @type {remoting.KeyPair} */ (a[2]);
 
-    return remoting.hostListApi.register(
+    return remoting.HostListApi.getInstance().register(
         newHostId, hostName, keyPair.publicKey, hostClientId);
-  }).then(function(/** string */ authCode) {
+  }).then(function(/** string */ result) {
     hostRegistered = true;
-    return authCode;
+    return result;
   });
 
   // Get XMPP creditials.
   var xmppCredsPromise = authCodePromise.then(function(authCode) {
     if (authCode) {
-      // Use auth code supplied by registry.
+      // Use auth code supplied by Chromoting registry.
       return that.hostDaemonFacade_.getCredentialsFromAuthCode(authCode);
     } else {
       // No authorization code returned, use regular Chrome
-      // identitial credential flow.
+      // identity credential flow.
       return remoting.identity.getEmail().then(function(/** string */ email) {
         return {
           userEmail: email,

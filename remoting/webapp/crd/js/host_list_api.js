@@ -7,23 +7,30 @@
  * API for host-list management.
  */
 
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
+
+(function() {
+
+'use strict';
 
 /** @interface */
 remoting.HostListApi = function() {
 };
 
 /**
- * @param {string} newHostId
- * @param {string} hostName
- * @param {string} publicKey
- * @param {?string} hostClientId
+ * Registers a new host with the host registry service (either the
+ * Chromoting registry or GCD).
+ *
+ * @param {string} newHostId The ID of the new host to register.
+ * @param {string} hostName The user-visible name of the new host.
+ * @param {string} publicKey The public half of the host's key pair.
+ * @param {string} hostClientId The OAuth2 client ID of the host.
  * @return {!Promise<string>} An OAuth2 auth code or the empty string.
  */
-remoting.HostListApi.prototype.register;
+remoting.HostListApi.prototype.register = function(
+    newHostId, hostName, publicKey, hostClientId) {
+};
 
 /**
  * Fetch the list of hosts for a user.
@@ -53,3 +60,30 @@ remoting.HostListApi.prototype.put =
  */
 remoting.HostListApi.prototype.remove = function(hostId) {
 };
+
+/**
+ * @private {remoting.HostListApi}
+ */
+var instance = null;
+
+/**
+ * @return {!remoting.HostListApi}
+ */
+remoting.HostListApi.getInstance = function() {
+  if (instance == null) {
+    instance = remoting.settings.USE_GCD ?
+        new remoting.HostListApiGcdImpl() :
+        new remoting.HostListApiImpl();
+  }
+  return instance;
+};
+
+/**
+ * For testing.
+ * @param {remoting.HostListApi} newInstance
+ */
+remoting.HostListApi.setInstance = function(newInstance) {
+  instance = newInstance;
+};
+
+})();

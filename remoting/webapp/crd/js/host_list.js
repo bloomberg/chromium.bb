@@ -152,7 +152,7 @@ remoting.HostList.prototype.refresh = function(onDone) {
     that.lastError_ = error;
     onDone(false);
   };
-  remoting.hostListApi.get().then(function(hosts) {
+  remoting.HostListApi.getInstance().get().then(function(hosts) {
     onDone(that.onHostListResponse_(hosts));
   }).catch(
     remoting.Error.handler(onError)
@@ -306,7 +306,7 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
   if (index != -1) {
     this.hostTableEntries_.splice(index, 1);
   }
-  remoting.hostListApi.remove(hostTableEntry.host.hostId).
+  remoting.HostListApi.getInstance().remove(hostTableEntry.host.hostId).
       catch(this.onError_);
 };
 
@@ -324,9 +324,10 @@ remoting.HostList.prototype.renameHost = function(hostTableEntry) {
   }
   this.save_();
 
-  remoting.hostListApi.put(hostTableEntry.host.hostId,
-                           hostTableEntry.host.hostName,
-                           hostTableEntry.host.publicKey).
+  var hostListApi = remoting.HostListApi.getInstance();
+  hostListApi.put(hostTableEntry.host.hostId,
+                  hostTableEntry.host.hostName,
+                  hostTableEntry.host.publicKey).
       catch(this.onError_);
 };
 
@@ -348,7 +349,7 @@ remoting.HostList.prototype.unregisterHostById = function(hostId, opt_onDone) {
     return;
   }
 
-  remoting.hostListApi.remove(hostId).
+  remoting.HostListApi.getInstance().remove(hostId).
       then(function() {
         that.refresh(function() {
           that.display();

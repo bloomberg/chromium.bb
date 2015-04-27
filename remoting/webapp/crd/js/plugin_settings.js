@@ -23,6 +23,8 @@ remoting.Settings = function() {};
 remoting.Settings.prototype.OAUTH2_CLIENT_ID = 'API_CLIENT_ID';
 /** @type {string} API client secret.*/
 remoting.Settings.prototype.OAUTH2_CLIENT_SECRET = 'API_CLIENT_SECRET';
+/** @type {string} Google API Key.*/
+remoting.Settings.prototype.GOOGLE_API_KEY = 'API_KEY';
 
 /** @type {string} Base URL for OAuth2 authentication. */
 remoting.Settings.prototype.OAUTH2_BASE_URL = 'OAUTH2_BASE_URL';

@@ -52,7 +52,9 @@ remoting.MockHostListApi.prototype.register = function(
     newHostId, hostName, publicKey, hostClientId) {
   if (this.registerResult === null) {
     return Promise.reject(
-        new remoting.Error(remoting.Error.Tag.REGISTRATION_FAILED));
+        new remoting.Error(
+            remoting.Error.Tag.REGISTRATION_FAILED,
+            'MockHostListApi.register'));
   } else {
     return Promise.resolve(this.registerResult);
   }
@@ -61,13 +63,18 @@ remoting.MockHostListApi.prototype.register = function(
 /** @override */
 remoting.MockHostListApi.prototype.get = function() {
   var that = this;
-  new Promise(function(resolve, reject) {
+  return new Promise(function(resolve, reject) {
     remoting.mockIdentity.validateTokenAndCall(
         resolve, remoting.Error.handler(reject), [that.hosts]);
   });
 };
 
-/** @override */
+/**
+ * @override
+ * @param {string} hostId
+ * @param {string} hostName
+ * @param {string} hostPublicKey
+ */
 remoting.MockHostListApi.prototype.put =
     function(hostId, hostName, hostPublicKey) {
   /** @type {remoting.MockHostListApi} */
@@ -91,7 +98,10 @@ remoting.MockHostListApi.prototype.put =
   });
 };
 
-/** @override */
+/**
+ * @override
+ * @param {string} hostId
+ */
 remoting.MockHostListApi.prototype.remove = function(hostId) {
   /** @type {remoting.MockHostListApi} */
   var that = this;
@@ -116,6 +126,6 @@ remoting.MockHostListApi.prototype.remove = function(hostId) {
  * @param {boolean} active
  */
 remoting.MockHostListApi.setActive = function(active) {
-  remoting.hostListApi = active ? new remoting.MockHostListApi()
-                                : new remoting.HostListApiImpl();
+  remoting.HostListApi.setInstance(
+      active ? new remoting.MockHostListApi() : null);
 };
