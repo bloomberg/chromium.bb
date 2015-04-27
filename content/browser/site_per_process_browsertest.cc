@@ -163,6 +163,58 @@ void RenderFrameHostCreatedObserver::RenderFrameCreated(
   }
 }
 
+// A WebContentsDelegate that catches messages sent to the console.
+class ConsoleObserverDelegate : public WebContentsDelegate {
+ public:
+  ConsoleObserverDelegate(WebContents* web_contents, const std::string& filter)
+      : web_contents_(web_contents),
+        filter_(filter),
+        message_(""),
+        message_loop_runner_(new MessageLoopRunner) {}
+
+  ~ConsoleObserverDelegate() override {}
+
+  bool AddMessageToConsole(WebContents* source,
+                           int32 level,
+                           const base::string16& message,
+                           int32 line_no,
+                           const base::string16& source_id) override;
+
+  std::string message() { return message_; }
+
+  void Wait();
+
+ private:
+  WebContents* web_contents_;
+  std::string filter_;
+  std::string message_;
+
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConsoleObserverDelegate);
+};
+
+void ConsoleObserverDelegate::Wait() {
+  message_loop_runner_->Run();
+}
+
+bool ConsoleObserverDelegate::AddMessageToConsole(
+    WebContents* source,
+    int32 level,
+    const base::string16& message,
+    int32 line_no,
+    const base::string16& source_id) {
+  DCHECK(source == web_contents_);
+
+  std::string ascii_message = base::UTF16ToASCII(message);
+  if (MatchPattern(ascii_message, filter_)) {
+    message_ = ascii_message;
+    message_loop_runner_->Quit();
+  }
+  return false;
+}
+
 //
 // SitePerProcessBrowserTest
 //
@@ -1784,6 +1836,61 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicWindowName) {
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
   frame_observer.Wait();
   EXPECT_EQ(foo_url, root->child_at(0)->current_url());
+}
+
+// Verify that when a frame is navigated to a new origin, the origin update
+// propagates to the frame's proxies.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  TestNavigationObserver observer(shell()->web_contents());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site A ------- proxies for B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://bar.com/",
+      DepictFrameTree(root));
+
+  // Navigate second subframe to a baz.com.  This should send an origin update
+  // to the frame's proxy in the bar.com (first frame's) process.
+  GURL frame_url = embedded_test_server()->GetURL("baz.com", "/title2.html");
+  NavigateFrameToURL(root->child_at(1), frame_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(frame_url, observer.last_navigation_url());
+
+  // The first frame can't directly observe the second frame's origin with
+  // JavaScript.  Instead, try to navigate the second frame from the first
+  // frame.  This should fail with a console error message, which should
+  // contain the second frame's updated origin (see blink::Frame::canNavigate).
+  scoped_ptr<ConsoleObserverDelegate> console_delegate(
+      new ConsoleObserverDelegate(
+          shell()->web_contents(),
+          "Unsafe JavaScript attempt to initiate navigation*"));
+  shell()->web_contents()->SetDelegate(console_delegate.get());
+
+  // frames[1] can't be used due to a bug where RemoteFrames are created out of
+  // order (https://crbug.com/478792).  Instead, target second frame by name.
+  EXPECT_TRUE(ExecuteScript(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send("
+      "    parent.frames['frame2'].location.href = 'data:text/html,foo');"));
+  console_delegate->Wait();
+
+  std::string frame_origin =
+      root->child_at(1)->current_replication_state().origin.string();
+  EXPECT_EQ(frame_origin + "/", frame_url.GetOrigin().spec());
+  EXPECT_TRUE(
+      MatchPattern(console_delegate->message(), "*" + frame_origin + "*"))
+      << "Error message does not contain the frame's latest origin ("
+      << frame_origin << ")";
 }
 
 // Ensure that navigating subframes in --site-per-process mode properly fires

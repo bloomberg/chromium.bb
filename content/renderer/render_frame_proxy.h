@@ -12,6 +12,7 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
+#include "url/origin.h"
 
 struct FrameMsg_BuffersSwapped_Params;
 struct FrameMsg_CompositorFrameSwapped_Params;
@@ -144,6 +145,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnDidUpdateSandboxFlags(SandboxFlags flags);
   void OnDispatchLoad();
   void OnDidUpdateName(const std::string& name);
+  void OnDidUpdateOrigin(const url::Origin& origin);
 
   // The routing ID by which this RenderFrameProxy is known.
   const int routing_id_;

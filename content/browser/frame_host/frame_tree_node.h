@@ -93,10 +93,10 @@ class CONTENT_EXPORT FrameTreeNode {
     current_url_ = url;
   }
 
-  void set_current_origin(const url::Origin& origin) {
-    replication_state_.origin = origin;
-  }
+  // Set the current origin and notify proxies about the update.
+  void SetCurrentOrigin(const url::Origin& origin);
 
+  // Set the current name and notify proxies about the update.
   void SetFrameName(const std::string& name);
 
   SandboxFlags effective_sandbox_flags() { return effective_sandbox_flags_; }

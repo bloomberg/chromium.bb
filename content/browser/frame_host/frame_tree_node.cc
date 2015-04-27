@@ -135,11 +135,16 @@ void FrameTreeNode::ResetForNewProcess() {
   old_children.clear();  // May notify observers.
 }
 
-void FrameTreeNode::SetFrameName(const std::string& name) {
-  replication_state_.name = name;
+void FrameTreeNode::SetCurrentOrigin(const url::Origin& origin) {
+  if (!origin.IsSameAs(replication_state_.origin))
+    render_manager_.OnDidUpdateOrigin(origin);
+  replication_state_.origin = origin;
+}
 
-  // Notify this frame's proxies about the updated name.
-  render_manager_.OnDidUpdateName(name);
+void FrameTreeNode::SetFrameName(const std::string& name) {
+  if (name != replication_state_.name)
+    render_manager_.OnDidUpdateName(name);
+  replication_state_.name = name;
 }
 
 bool FrameTreeNode::IsDescendantOf(FrameTreeNode* other) const {

@@ -889,6 +889,17 @@ void RenderFrameHostManager::OnDidUpdateName(const std::string& name) {
   }
 }
 
+void RenderFrameHostManager::OnDidUpdateOrigin(const url::Origin& origin) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess))
+    return;
+
+  for (const auto& pair : proxy_hosts_) {
+    pair.second->Send(
+        new FrameMsg_DidUpdateOrigin(pair.second->GetRoutingID(), origin));
+  }
+}
+
 void RenderFrameHostManager::Observe(
     int type,
     const NotificationSource& source,

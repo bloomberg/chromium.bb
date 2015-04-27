@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/referrer.h"
 #include "ui/base/page_transition_types.h"
+#include "url/origin.h"
 
 namespace content {
 class BrowserContext;
@@ -416,6 +417,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Send updated frame name to all frame proxies when the frame changes its
   // window.name property.
   void OnDidUpdateName(const std::string& name);
+
+  // Send updated origin to all frame proxies when the frame navigates to a new
+  // origin.
+  void OnDidUpdateOrigin(const url::Origin& origin);
 
   void EnsureRenderViewInitialized(FrameTreeNode* source,
                                    RenderViewHostImpl* render_view_host,
