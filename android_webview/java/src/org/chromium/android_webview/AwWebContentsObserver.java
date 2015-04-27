@@ -68,14 +68,15 @@ public class AwWebContentsObserver extends WebContentsObserver {
                 public void run() {
                     AwContents awContents = mAwContents.get();
                     if (awContents != null) {
-                        awContents.insertVisualStateCallback(0, new VisualStateCallback() {
-                            @Override
-                            public void onComplete(long requestId) {
-                                AwContentsClient client = mAwContentsClient.get();
-                                if (client == null) return;
-                                client.onPageCommitVisible(url);
-                            }
-                        });
+                        awContents.insertVisualStateCallbackIfNotDestroyed(
+                                0, new VisualStateCallback() {
+                                    @Override
+                                    public void onComplete(long requestId) {
+                                        AwContentsClient client = mAwContentsClient.get();
+                                        if (client == null) return;
+                                        client.onPageCommitVisible(url);
+                                    }
+                                });
                     }
                 }
             });

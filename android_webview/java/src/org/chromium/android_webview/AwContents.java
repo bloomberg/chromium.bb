@@ -2628,6 +2628,13 @@ public class AwContents implements SmartClipProvider,
         });
     }
 
+    protected void insertVisualStateCallbackIfNotDestroyed(
+            long requestId, VisualStateCallback callback) {
+        if (TRACE) Log.d(TAG, "insertVisualStateCallbackIfNotDestroyed");
+        if (isDestroyed()) return;
+        nativeInsertVisualStateCallback(mNativeAwContents, requestId, callback);
+    }
+
     // --------------------------------------------------------------------------------------------
     // This is the AwViewMethods implementation that does real work. The AwViewMethodsImpl is
     // hooked up to the WebView in embedded mode and to the FullScreenView in fullscreen mode,
