@@ -139,9 +139,9 @@ public:
     void setFormControlStateOfHistoryItem(const Vector<String>&, ExceptionState&);
     DOMWindow* pagePopupWindow() const;
 
-    PassRefPtrWillBeRawPtr<ClientRect> absoluteCaretBounds(ExceptionState&);
+    ClientRect* absoluteCaretBounds(ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<ClientRect> boundingBox(Element*);
+    ClientRect* boundingBox(Element*);
 
     unsigned markerCountForNode(Node*, const String&, ExceptionState&);
     unsigned activeMarkerCountForNode(Node*);
@@ -171,7 +171,7 @@ public:
     Node* touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document*, ExceptionState&);
     DOMPoint* touchPositionAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionState&);
     Node* touchNodeAdjustedToBestContextMenuNode(long x, long y, long width, long height, Document*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<ClientRect> bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document*, ExceptionState&);
+    ClientRect* bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document*, ExceptionState&);
 
     int lastSpellCheckRequestSequence(Document*, ExceptionState&);
     int lastSpellCheckProcessedSequence(Document*, ExceptionState&);
@@ -222,7 +222,7 @@ public:
 
     String scrollingStateTreeAsText(Document*) const;
     String mainThreadScrollingReasons(Document*, ExceptionState&) const;
-    PassRefPtrWillBeRawPtr<ClientRectList> nonFastScrollableRects(Document*, ExceptionState&) const;
+    ClientRectList* nonFastScrollableRects(Document*, ExceptionState&) const;
 
     void garbageCollectDocumentResources(Document*) const;
     void evictAllResources() const;
@@ -271,8 +271,8 @@ public:
     void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node*, ExceptionState&);
     void forceFullRepaint(Document*, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<ClientRectList> draggableRegions(Document*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<ClientRectList> nonDraggableRegions(Document*, ExceptionState&);
+    ClientRectList* draggableRegions(Document*, ExceptionState&);
+    ClientRectList* nonDraggableRegions(Document*, ExceptionState&);
 
     PassRefPtr<DOMArrayBuffer> serializeObject(PassRefPtr<SerializedScriptValue>) const;
     PassRefPtr<SerializedScriptValue> deserializeBuffer(PassRefPtr<DOMArrayBuffer>) const;
@@ -290,7 +290,7 @@ public:
     bool selectPopupItemStyleIsRtl(Node*, int);
     int selectPopupItemStyleFontHeight(Node*, int);
 
-    PassRefPtrWillBeRawPtr<ClientRect> selectionBounds(ExceptionState&);
+    ClientRect* selectionBounds(ExceptionState&);
 
     bool loseSharedGraphicsContext3D();
 
@@ -325,10 +325,10 @@ public:
     // Test must call setNetworkStateNotifierTestOnly(true) before calling setNetworkConnectionInfo.
     void setNetworkConnectionInfo(const String&, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<ClientRect> boundsInViewportSpace(Element*);
+    ClientRect* boundsInViewportSpace(Element*);
     String serializeNavigationMarkup();
     Vector<String> getTransitionElementIds();
-    PassRefPtrWillBeRawPtr<ClientRectList> getTransitionElementRects();
+    ClientRectList* getTransitionElementRects();
     void hideAllTransitionElements();
     void showAllTransitionElements();
     void setExitTransitionStylesheetsEnabled(bool);
@@ -360,7 +360,7 @@ private:
     Document* contextDocument() const;
     LocalFrame* frame() const;
     Vector<String> iconURLs(Document*, int iconTypesMask) const;
-    PassRefPtrWillBeRawPtr<ClientRectList> annotatedRegions(Document*, bool draggable, ExceptionState&);
+    ClientRectList* annotatedRegions(Document*, bool draggable, ExceptionState&);
 
     DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionState&);
     Member<InternalRuntimeFlags> m_runtimeFlags;

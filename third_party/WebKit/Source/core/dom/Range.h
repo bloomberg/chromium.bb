@@ -151,8 +151,8 @@ public:
     // for details.
     void expand(const String&, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<ClientRectList> getClientRects() const;
-    PassRefPtrWillBeRawPtr<ClientRect> getBoundingClientRect() const;
+    ClientRectList* getClientRects() const;
+    ClientRect* getBoundingClientRect() const;
 
 #ifndef NDEBUG
     void formatForDebugger(char* buffer, unsigned length) const;

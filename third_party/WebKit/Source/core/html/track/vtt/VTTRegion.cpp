@@ -373,7 +373,7 @@ void VTTRegion::displayLastVTTCueBox()
 
     // Find first cue that is not entirely displayed and scroll it upwards.
     for (Element* child = ElementTraversal::firstChild(*m_cueContainer); child && !m_scrollTimer.isActive(); child = ElementTraversal::nextSibling(*child)) {
-        RefPtrWillBeRawPtr<ClientRect> clientRect = child->getBoundingClientRect();
+        ClientRect* clientRect = child->getBoundingClientRect();
         float childTop = clientRect->top();
         float childBottom = clientRect->bottom();
 

@@ -667,7 +667,7 @@ DOMWindow* Internals::pagePopupWindow() const
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<ClientRect> Internals::absoluteCaretBounds(ExceptionState& exceptionState)
+ClientRect* Internals::absoluteCaretBounds(ExceptionState& exceptionState)
 {
     Document* document = contextDocument();
     if (!document || !document->frame()) {
@@ -678,7 +678,7 @@ PassRefPtrWillBeRawPtr<ClientRect> Internals::absoluteCaretBounds(ExceptionState
     return ClientRect::create(document->frame()->selection().absoluteCaretBounds());
 }
 
-PassRefPtrWillBeRawPtr<ClientRect> Internals::boundingBox(Element* element)
+ClientRect* Internals::boundingBox(Element* element)
 {
     ASSERT(element);
 
@@ -1063,7 +1063,7 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(long x, long y, long wid
     return targetNode;
 }
 
-PassRefPtrWillBeRawPtr<ClientRect> Internals::bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document* document, ExceptionState& exceptionState)
+ClientRect* Internals::bestZoomableAreaForTouchPoint(long x, long y, long width, long height, Document* document, ExceptionState& exceptionState)
 {
     ASSERT(document);
     if (!document->frame()) {
@@ -1584,7 +1584,7 @@ String Internals::mainThreadScrollingReasons(Document* document, ExceptionState&
     return page->mainThreadScrollingReasonsAsText();
 }
 
-PassRefPtrWillBeRawPtr<ClientRectList> Internals::nonFastScrollableRects(Document* document, ExceptionState& exceptionState) const
+ClientRectList* Internals::nonFastScrollableRects(Document* document, ExceptionState& exceptionState) const
 {
     ASSERT(document);
     if (!document->frame()) {
@@ -1828,17 +1828,17 @@ void Internals::forceFullRepaint(Document* document, ExceptionState& exceptionSt
         layoutView->invalidatePaintForViewAndCompositedLayers();
 }
 
-PassRefPtrWillBeRawPtr<ClientRectList> Internals::draggableRegions(Document* document, ExceptionState& exceptionState)
+ClientRectList* Internals::draggableRegions(Document* document, ExceptionState& exceptionState)
 {
     return annotatedRegions(document, true, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<ClientRectList> Internals::nonDraggableRegions(Document* document, ExceptionState& exceptionState)
+ClientRectList* Internals::nonDraggableRegions(Document* document, ExceptionState& exceptionState)
 {
     return annotatedRegions(document, false, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<ClientRectList> Internals::annotatedRegions(Document* document, bool draggable, ExceptionState& exceptionState)
+ClientRectList* Internals::annotatedRegions(Document* document, bool draggable, ExceptionState& exceptionState)
 {
     ASSERT(document);
     if (!document->view()) {
@@ -1963,7 +1963,7 @@ void Internals::forceReload(bool endToEnd)
     frame()->reload(endToEnd ? EndToEndReload : NormalReload, NotClientRedirect);
 }
 
-PassRefPtrWillBeRawPtr<ClientRect> Internals::selectionBounds(ExceptionState& exceptionState)
+ClientRect* Internals::selectionBounds(ExceptionState& exceptionState)
 {
     Document* document = contextDocument();
     if (!document || !document->frame()) {
@@ -2238,7 +2238,7 @@ unsigned Internals::countHitRegions(CanvasRenderingContext2D* context)
     return context->hitRegionsCount();
 }
 
-PassRefPtrWillBeRawPtr<ClientRect> Internals::boundsInViewportSpace(Element* element)
+ClientRect* Internals::boundsInViewportSpace(Element* element)
 {
     ASSERT(element);
     return ClientRect::create(element->boundsInViewportSpace());
@@ -2270,7 +2270,7 @@ Vector<String> Internals::getTransitionElementIds()
     return ids;
 }
 
-PassRefPtrWillBeRawPtr<ClientRectList> Internals::getTransitionElementRects()
+ClientRectList* Internals::getTransitionElementRects()
 {
     Vector<Document::TransitionElementData> elementData;
     frame()->document()->getTransitionElementData(elementData);

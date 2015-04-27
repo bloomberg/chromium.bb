@@ -169,7 +169,7 @@ String Page::mainThreadScrollingReasonsAsText()
     return String();
 }
 
-PassRefPtrWillBeRawPtr<ClientRectList> Page::nonFastScrollableRects(const LocalFrame* frame)
+ClientRectList* Page::nonFastScrollableRects(const LocalFrame* frame)
 {
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
         // Hits in compositing/iframes/iframe-composited-scrolling.html

@@ -261,7 +261,7 @@ PassRefPtr<JSONObject> buildElementInfo(Element* element)
 
     // Render the getBoundingClientRect() data in the tooltip
     // to be consistent with the rulers (see http://crbug.com/262338).
-    RefPtrWillBeRawPtr<ClientRect> boundingBox = element->getBoundingClientRect();
+    ClientRect* boundingBox = element->getBoundingClientRect();
     elementInfo->setString("nodeWidth", String::number(boundingBox->width()));
     elementInfo->setString("nodeHeight", String::number(boundingBox->height()));
 

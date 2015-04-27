@@ -1630,7 +1630,7 @@ void Range::expand(const String& unit, ExceptionState& exceptionState)
     setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<ClientRectList> Range::getClientRects() const
+ClientRectList* Range::getClientRects() const
 {
     m_ownerDocument->updateLayoutIgnorePendingStylesheets();
 
@@ -1640,7 +1640,7 @@ PassRefPtrWillBeRawPtr<ClientRectList> Range::getClientRects() const
     return ClientRectList::create(quads);
 }
 
-PassRefPtrWillBeRawPtr<ClientRect> Range::getBoundingClientRect() const
+ClientRect* Range::getBoundingClientRect() const
 {
     return ClientRect::create(boundingRect());
 }

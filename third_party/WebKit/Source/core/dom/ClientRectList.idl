@@ -40,7 +40,7 @@
 // DOMRectList will be removed from this specification."
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface ClientRectList {
     readonly attribute unsigned long length;
     [MeasureAs=ClientRectListItem] ClientRect item(unsigned long index);

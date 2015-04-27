@@ -46,7 +46,7 @@ class Node;
 class LayerRect final : public GarbageCollectedFinalized<LayerRect>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static LayerRect* create(PassRefPtrWillBeRawPtr<Node> node, const String& layerType, int nodeOffsetX, int nodeOffsetY, PassRefPtrWillBeRawPtr<ClientRect> rect)
+    static LayerRect* create(PassRefPtrWillBeRawPtr<Node> node, const String& layerType, int nodeOffsetX, int nodeOffsetY, ClientRect* rect)
     {
         return new LayerRect(node, layerType, nodeOffsetX, nodeOffsetY, rect);
     }
@@ -64,7 +64,7 @@ public:
     }
 
 private:
-    LayerRect(PassRefPtrWillBeRawPtr<Node> node, const String& layerName, int nodeOffsetX, int nodeOffsetY, PassRefPtrWillBeRawPtr<ClientRect> rect)
+    LayerRect(PassRefPtrWillBeRawPtr<Node> node, const String& layerName, int nodeOffsetX, int nodeOffsetY, ClientRect* rect)
         : m_layerAssociatedNode(node)
         , m_layerType(layerName)
         , m_associatedNodeOffsetX(nodeOffsetX)
@@ -75,7 +75,7 @@ private:
     String m_layerType;
     int m_associatedNodeOffsetX;
     int m_associatedNodeOffsetY;
-    RefPtrWillBeMember<ClientRect> m_rect;
+    Member<ClientRect> m_rect;
 };
 
 } // namespace blink

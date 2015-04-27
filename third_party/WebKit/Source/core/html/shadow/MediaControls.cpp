@@ -356,7 +356,7 @@ void MediaControls::refreshClosedCaptionsButtonVisibility()
 
 static Element* elementFromCenter(Element& element)
 {
-    RefPtrWillBeRawPtr<ClientRect> clientRect = element.getBoundingClientRect();
+    ClientRect* clientRect = element.getBoundingClientRect();
     int centerX = static_cast<int>((clientRect->left() + clientRect->right()) / 2);
     int centerY = static_cast<int>((clientRect->top() + clientRect->bottom()) / 2);
 

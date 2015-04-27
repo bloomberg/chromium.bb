@@ -32,31 +32,27 @@
 #include "core/dom/ClientRect.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
 class ClientRect;
 
-class CORE_EXPORT ClientRectList final : public RefCountedWillBeGarbageCollected<ClientRectList>, public ScriptWrappable {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ClientRectList);
+class CORE_EXPORT ClientRectList final : public GarbageCollected<ClientRectList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ClientRectList> create()
+    static ClientRectList* create()
     {
-        return adoptRefWillBeNoop(new ClientRectList);
+        return new ClientRectList;
     }
-    static PassRefPtrWillBeRawPtr<ClientRectList> create(const Vector<FloatQuad>& quads)
+    static ClientRectList* create(const Vector<FloatQuad>& quads)
     {
-        return adoptRefWillBeNoop(new ClientRectList(quads));
+        return new ClientRectList(quads);
     }
 
     template<typename Rects>
-    static PassRefPtrWillBeRawPtr<ClientRectList> create(const Rects& rects)
+    static ClientRectList* create(const Rects& rects)
     {
-        return adoptRefWillBeNoop(new ClientRectList(rects));
+        return new ClientRectList(rects);
     }
 
     unsigned length() const;
@@ -78,7 +74,7 @@ private:
 
     explicit ClientRectList(const Vector<FloatQuad>&);
 
-    WillBeHeapVector<RefPtrWillBeMember<ClientRect>> m_list;
+    HeapVector<Member<ClientRect>> m_list;
 };
 
 } // namespace blink

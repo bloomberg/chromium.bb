@@ -196,8 +196,8 @@ public:
 
     IntRect boundsInViewportSpace();
 
-    PassRefPtrWillBeRawPtr<ClientRectList> getClientRects();
-    PassRefPtrWillBeRawPtr<ClientRect> getBoundingClientRect();
+    ClientRectList* getClientRects();
+    ClientRect* getBoundingClientRect();
 
     const AtomicString& computedRole();
     String computedName();

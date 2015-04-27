@@ -973,7 +973,7 @@ IntRect Element::boundsInViewportSpace()
     return view->soonToBeRemovedContentsToUnscaledViewport(result);
 }
 
-PassRefPtrWillBeRawPtr<ClientRectList> Element::getClientRects()
+ClientRectList* Element::getClientRects()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -990,7 +990,7 @@ PassRefPtrWillBeRawPtr<ClientRectList> Element::getClientRects()
     return ClientRectList::create(quads);
 }
 
-PassRefPtrWillBeRawPtr<ClientRect> Element::getBoundingClientRect()
+ClientRect* Element::getBoundingClientRect()
 {
     document().updateLayoutIgnorePendingStylesheets();
 

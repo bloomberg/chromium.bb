@@ -219,9 +219,9 @@ void TouchActionTest::runTestOnTree(ContainerNode* root, WebView* webView, Touch
         // Note that we don't want the bounding box because our tests sometimes have elements with
         // multiple border boxes with other elements in between. Use the first border box (which
         // we can easily visualize in a browser for debugging).
-        RefPtrWillBePersistent<ClientRectList> rects = element->getClientRects();
+        Persistent<ClientRectList> rects = element->getClientRects();
         ASSERT_GE(rects->length(), 0u) << failureContext;
-        RefPtrWillBePersistent<ClientRect> r = rects->item(0);
+        Persistent<ClientRect> r = rects->item(0);
         FloatRect clientFloatRect = FloatRect(r->left(), r->top(), r->width(), r->height());
         IntRect clientRect =  enclosedIntRect(clientFloatRect);
         for (int locIdx = 0; locIdx < 3; locIdx++) {
