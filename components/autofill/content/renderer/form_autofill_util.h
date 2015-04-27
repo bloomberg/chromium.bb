@@ -122,7 +122,7 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebElement>& fieldsets,
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,
-    const blink::WebDocument& document,
+    const GURL& origin,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field);

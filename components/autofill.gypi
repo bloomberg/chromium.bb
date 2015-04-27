@@ -27,8 +27,6 @@
         'autofill/core/common/autofill_l10n_util.h',
         'autofill/core/common/autofill_pref_names.cc',
         'autofill/core/common/autofill_pref_names.h',
-        'autofill/core/common/autofill_regexes.cc',
-        'autofill/core/common/autofill_regexes.h',
         'autofill/core/common/autofill_switches.cc',
         'autofill/core/common/autofill_switches.h',
         'autofill/core/common/form_data.cc',
@@ -50,9 +48,6 @@
         'autofill/core/common/web_element_descriptor.cc',
         'autofill/core/common/web_element_descriptor.h',
       ],
-
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [4267, ],
     },
 
     {
@@ -131,6 +126,8 @@
         'autofill/core/browser/autofill_profile.h',
         'autofill/core/browser/autofill_regex_constants.cc',
         'autofill/core/browser/autofill_regex_constants.h',
+        'autofill/core/browser/autofill_regexes.cc',
+        'autofill/core/browser/autofill_regexes.h',
         'autofill/core/browser/autofill_scanner.cc',
         'autofill/core/browser/autofill_scanner.h',
         'autofill/core/browser/autofill_server_field_info.h',
