@@ -123,6 +123,7 @@ source_set("lib") {
     "//mojo/services/network/public/interfaces",
     "//mojo/shell/application_manager",
     "//mojo/services/tracing:bindings",
+    "//ui/gl",
     "//url",
   ]
 

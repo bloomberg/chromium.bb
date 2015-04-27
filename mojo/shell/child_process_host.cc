@@ -22,6 +22,7 @@
 #include "mojo/shell/context.h"
 #include "mojo/shell/switches.h"
 #include "mojo/shell/task_runners.h"
+#include "ui/gl/gl_switches.h"
 
 namespace mojo {
 namespace shell {
@@ -97,7 +98,10 @@ void ChildProcessHost::DidStart(bool success) {
 
 bool ChildProcessHost::DoLaunch() {
   static const char* kForwardSwitches[] = {
-      switches::kTraceToConsole, switches::kV, switches::kVModule,
+      switches::kOverrideUseGLWithOSMesaForTests,
+      switches::kTraceToConsole,
+      switches::kV,
+      switches::kVModule,
   };
 
   const base::CommandLine* parent_command_line =
@@ -115,6 +119,10 @@ bool ChildProcessHost::DoLaunch() {
     if (apps_to_debug.empty() || ContainsValue(apps_to_debug, name_))
       child_command_line.AppendSwitch(switches::kWaitForDebugger);
   }
+
+  auto args = parent_command_line->GetArgs();
+  for (const auto& arg : args)
+    child_command_line.AppendArgNative(arg);
 
   embedder::HandlePassingInformation handle_passing_info;
   platform_channel_pair_.PrepareToPassClientHandleToChildProcess(
