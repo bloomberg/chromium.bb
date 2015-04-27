@@ -35,10 +35,10 @@ import java.util.ArrayList;
 @CommandLineFlags.Add(ChromeSwitches.ENABLE_APP_INSTALL_ALERTS)
 public class AppBannerManagerTest extends ChromeShellTestBase {
     private static final String NATIVE_APP_URL =
-            TestHttpServerClient.getUrl("chrome/test/data/android/banners/native_app_test.html");
+            TestHttpServerClient.getUrl("chrome/test/data/banners/play_app_test_page.html");
 
     private static final String NATIVE_ICON_URL =
-            TestHttpServerClient.getUrl("chrome/test/data/android/banners/native_app_test.png");
+            TestHttpServerClient.getUrl("chrome/test/data/banners/launcher-icon-1x.png");
 
     private static final String NATIVE_APP_TITLE = "Mock app title";
 
