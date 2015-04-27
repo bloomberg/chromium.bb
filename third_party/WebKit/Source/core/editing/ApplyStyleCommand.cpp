@@ -1544,7 +1544,8 @@ float ApplyStyleCommand::computedFontSize(Node* node)
     if (!value)
         return 0;
 
-    return clampTo<float>(value->deprecatedGetDoubleValue());
+    ASSERT(value->primitiveType() == CSSPrimitiveValue::CSS_PX);
+    return value->getFloatValue();
 }
 
 void ApplyStyleCommand::joinChildTextNodes(ContainerNode* node, const Position& start, const Position& end)

@@ -1628,15 +1628,13 @@ CSSValueID getIdentifierValue(CSSStyleDeclaration* style, CSSPropertyID property
     return toCSSPrimitiveValue(value.get())->getValueID();
 }
 
-static bool isCSSValueLength(CSSPrimitiveValue* value)
-{
-    return value->isFontIndependentLength();
-}
-
 int legacyFontSizeFromCSSValue(Document* document, CSSPrimitiveValue* value, bool isMonospaceFont, LegacyFontSizeMode mode)
 {
-    if (isCSSValueLength(value)) {
-        int pixelFontSize = clampTo<int>(value->deprecatedGetDoubleValue());
+    CSSPrimitiveValue::LengthUnitType lengthType;
+    if (CSSPrimitiveValue::unitTypeToLengthUnitType(value->primitiveType(), lengthType)
+        && lengthType == CSSPrimitiveValue::UnitTypePixels) {
+        double conversion = CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(value->primitiveType());
+        int pixelFontSize = clampTo<int>(value->getDoubleValue() * conversion);
         int legacyFontSize = FontSize::legacyFontSize(document, pixelFontSize, isMonospaceFont);
         // Use legacy font size only if pixel value matches exactly to that of legacy font size.
         if (mode == AlwaysUseLegacyFontSize || FontSize::fontSizeForKeyword(document, legacyFontSize, isMonospaceFont) == pixelFontSize)

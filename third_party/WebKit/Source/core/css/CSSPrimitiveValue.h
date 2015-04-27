@@ -170,7 +170,6 @@ public:
     }
     bool isAttr() const { return m_primitiveUnitType == CSS_ATTR; }
     bool isCounter() const { return m_primitiveUnitType == CSS_COUNTER; }
-    bool isFontIndependentLength() const { return m_primitiveUnitType >= CSS_PX && m_primitiveUnitType <= CSS_PC; }
     bool isFontRelativeLength() const
     {
         return m_primitiveUnitType == CSS_EMS
@@ -263,8 +262,6 @@ public:
 
     // Converts to a Length (Fixed, Percent or Calculated)
     Length convertToLength(const CSSToLengthConversionData&);
-
-    double deprecatedGetDoubleValue() const;
 
     double getDoubleValue() const;
     float getFloatValue() const { return getValue<float>(); }

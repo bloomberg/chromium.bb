@@ -52,64 +52,6 @@ namespace {
 const int maxValueForCssLength = INT_MAX / kFixedPointDenominator - 2;
 const int minValueForCssLength = INT_MIN / kFixedPointDenominator + 2;
 
-static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::UnitType unitType)
-{
-    switch (unitType) {
-    case CSSPrimitiveValue::CSS_CALC:
-    case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_NUMBER:
-    case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_LENGTH:
-    case CSSPrimitiveValue::CSS_CM:
-    case CSSPrimitiveValue::CSS_DEG:
-    case CSSPrimitiveValue::CSS_DPPX:
-    case CSSPrimitiveValue::CSS_DPI:
-    case CSSPrimitiveValue::CSS_DPCM:
-    case CSSPrimitiveValue::CSS_EMS:
-    case CSSPrimitiveValue::CSS_EXS:
-    case CSSPrimitiveValue::CSS_GRAD:
-    case CSSPrimitiveValue::CSS_HZ:
-    case CSSPrimitiveValue::CSS_IN:
-    case CSSPrimitiveValue::CSS_KHZ:
-    case CSSPrimitiveValue::CSS_MM:
-    case CSSPrimitiveValue::CSS_MS:
-    case CSSPrimitiveValue::CSS_NUMBER:
-    case CSSPrimitiveValue::CSS_PERCENTAGE:
-    case CSSPrimitiveValue::CSS_PC:
-    case CSSPrimitiveValue::CSS_PT:
-    case CSSPrimitiveValue::CSS_PX:
-    case CSSPrimitiveValue::CSS_RAD:
-    case CSSPrimitiveValue::CSS_REMS:
-    case CSSPrimitiveValue::CSS_CHS:
-    case CSSPrimitiveValue::CSS_S:
-    case CSSPrimitiveValue::CSS_TURN:
-    case CSSPrimitiveValue::CSS_VW:
-    case CSSPrimitiveValue::CSS_VH:
-    case CSSPrimitiveValue::CSS_VMIN:
-    case CSSPrimitiveValue::CSS_VMAX:
-    case CSSPrimitiveValue::CSS_FR:
-        return true;
-    case CSSPrimitiveValue::CSS_ATTR:
-    case CSSPrimitiveValue::CSS_COUNTER:
-    case CSSPrimitiveValue::CSS_COUNTER_NAME:
-    case CSSPrimitiveValue::CSS_IDENT:
-    case CSSPrimitiveValue::CSS_PROPERTY_ID:
-    case CSSPrimitiveValue::CSS_VALUE_ID:
-    case CSSPrimitiveValue::CSS_PAIR:
-    case CSSPrimitiveValue::CSS_RECT:
-    case CSSPrimitiveValue::CSS_QUAD:
-    case CSSPrimitiveValue::CSS_RGBCOLOR:
-    case CSSPrimitiveValue::CSS_SHAPE:
-    case CSSPrimitiveValue::CSS_CUSTOM_IDENT:
-    case CSSPrimitiveValue::CSS_STRING:
-    case CSSPrimitiveValue::CSS_UNICODE_RANGE:
-    case CSSPrimitiveValue::CSS_UNKNOWN:
-    case CSSPrimitiveValue::CSS_URI:
-        return false;
-    }
-
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
 typedef HashMap<String, CSSPrimitiveValue::UnitType> StringToUnitTable;
 
 StringToUnitTable createStringToUnitTable()
@@ -763,26 +705,6 @@ Length CSSPrimitiveValue::convertToLength(const CSSToLengthConversionData& conve
         return Length(getDoubleValue(), Percent);
     ASSERT(isCalculated());
     return Length(cssCalcValue()->toCalcValue(conversionData));
-}
-
-// TODO(timloh): This function doesn't make much sense since we need a
-// CSSToLengthConversionData to convert an arbitrary <length>s to pixels.
-// We should see if this can be removed.
-double CSSPrimitiveValue::deprecatedGetDoubleValue() const
-{
-    // Returns the double value in pixels
-    if (!isValidCSSUnitTypeForDoubleConversion(static_cast<UnitType>(m_primitiveUnitType)))
-        return 0;
-
-    UnitType type = primitiveType();
-    if (type == CSS_NUMBER)
-        type = CSS_PX;
-    UnitCategory category = unitCategory(type);
-    ASSERT(category != UOther);
-
-    if (category != ULength)
-        return 0;
-    return getDoubleValue() * conversionToCanonicalUnitsScaleFactor(type);
 }
 
 double CSSPrimitiveValue::getDoubleValue() const
