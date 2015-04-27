@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_APPS_EPHEMERAL_APP_SERVICE_H_
 #define CHROME_BROWSER_APPS_EPHEMERAL_APP_SERVICE_H_
 
-#include <map>
 #include <set>
 
 #include "apps/app_lifetime_monitor.h"
@@ -13,8 +12,6 @@
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
@@ -26,7 +23,6 @@ class ExtensionRegistry;
 
 // Performs the background garbage collection of ephemeral apps.
 class EphemeralAppService : public KeyedService,
-                            public content::NotificationObserver,
                             public extensions::ExtensionRegistryObserver,
                             public apps::AppLifetimeMonitor::Observer {
  public:
@@ -60,11 +56,6 @@ class EphemeralAppService : public KeyedService,
   // A map used to order the ephemeral apps by their last launch time.
   typedef std::multimap<base::Time, std::string> LaunchTimeAppMap;
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // extensions::ExtensionRegistryObserver.
   void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
                                   const extensions::Extension* extension,
@@ -96,7 +87,6 @@ class EphemeralAppService : public KeyedService,
 
   Profile* profile_;
 
-  content::NotificationRegistrar registrar_;
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;

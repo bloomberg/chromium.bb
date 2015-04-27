@@ -8,22 +8,18 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/apps/ephemeral_app_service_factory.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/one_shot_event.h"
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;
@@ -71,9 +67,9 @@ EphemeralAppService::EphemeralAppService(Profile* profile)
       ephemeral_app_count_(-1),
       disable_idle_app_delay_(kDefaultDisableAppDelay),
       weak_ptr_factory_(this) {
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<Profile>(profile_));
+  ExtensionSystem::Get(profile_)->ready().Post(
+      FROM_HERE,
+      base::Bind(&EphemeralAppService::Init, weak_ptr_factory_.GetWeakPtr()));
 }
 
 EphemeralAppService::~EphemeralAppService() {
@@ -112,20 +108,6 @@ void EphemeralAppService::ClearCachedApps() {
         extensions::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
         base::Bind(&base::DoNothing),
         NULL);
-  }
-}
-
-void EphemeralAppService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED: {
-      Init();
-      break;
-    }
-    default:
-      NOTREACHED();
   }
 }
 
