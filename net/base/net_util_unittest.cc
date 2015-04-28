@@ -829,6 +829,43 @@ TEST(NetUtilTest, IsLocalhostTLD) {
   EXPECT_FALSE(IsLocalhost("foo.localhoste"));
 }
 
+TEST(NetUtilTest, GoogleHost) {
+  struct GoogleHostCase {
+    GURL url;
+    bool expected_output;
+  };
+
+  const GoogleHostCase google_host_cases[] = {
+      {GURL("http://.google.com"), true},
+      {GURL("http://.youtube.com"), true},
+      {GURL("http://.gmail.com"), true},
+      {GURL("http://.doubleclick.net"), true},
+      {GURL("http://.gstatic.com"), true},
+      {GURL("http://.googlevideo.com"), true},
+      {GURL("http://.googleusercontent.com"), true},
+      {GURL("http://.googlesyndication.com"), true},
+      {GURL("http://.google-analytics.com"), true},
+      {GURL("http://.googleadservices.com"), true},
+      {GURL("http://.googleapis.com"), true},
+      {GURL("http://a.google.com"), true},
+      {GURL("http://b.youtube.com"), true},
+      {GURL("http://c.gmail.com"), true},
+      {GURL("http://google.com"), false},
+      {GURL("http://youtube.com"), false},
+      {GURL("http://gmail.com"), false},
+      {GURL("http://google.coma"), false},
+      {GURL("http://agoogle.com"), false},
+      {GURL("http://oogle.com"), false},
+      {GURL("http://google.co"), false},
+      {GURL("http://oggole.com"), false},
+  };
+
+  for (size_t i = 0; i < arraysize(google_host_cases); ++i) {
+    EXPECT_EQ(google_host_cases[i].expected_output,
+              HasGoogleHost(google_host_cases[i].url));
+  }
+}
+
 // Verify GetNetworkList().
 TEST(NetUtilTest, GetNetworkList) {
   NetworkInterfaceList list;

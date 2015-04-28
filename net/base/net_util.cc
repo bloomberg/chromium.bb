@@ -1031,6 +1031,29 @@ bool IsLocalhostTLD(const std::string& host) {
          0;
 }
 
+bool HasGoogleHost(const GURL& url) {
+  static const char* kGoogleHostSuffixes[] = {
+      ".google.com",
+      ".youtube.com",
+      ".gmail.com",
+      ".doubleclick.net",
+      ".gstatic.com",
+      ".googlevideo.com",
+      ".googleusercontent.com",
+      ".googlesyndication.com",
+      ".google-analytics.com",
+      ".googleadservices.com",
+      ".googleapis.com",
+      ".ytimg.com",
+  };
+  const std::string& host = url.host();
+  for (const char* suffix : kGoogleHostSuffixes) {
+    if (EndsWith(host, suffix, false))
+      return true;
+  }
+  return false;
+}
+
 NetworkInterface::NetworkInterface()
     : type(NetworkChangeNotifier::CONNECTION_UNKNOWN), prefix_length(0) {
 }

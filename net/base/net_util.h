@@ -443,6 +443,10 @@ NET_EXPORT_PRIVATE bool IsLocalhost(const std::string& host);
 
 NET_EXPORT_PRIVATE bool IsLocalhostTLD(const std::string& host);
 
+// Returns true if the url's host is a Google server. This should only be used
+// for histograms and shouldn't be used to affect behavior.
+NET_EXPORT_PRIVATE bool HasGoogleHost(const GURL& url);
+
 // A subset of IP address attributes which are actionable by the
 // application layer. Currently unimplemented for all hosts;
 // IP_ADDRESS_ATTRIBUTE_NONE is always returned.

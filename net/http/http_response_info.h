@@ -59,6 +59,11 @@ class NET_EXPORT HttpResponseInfo {
                bool skip_transient_headers,
                bool response_truncated) const;
 
+  // Whether QUIC is used or not.
+  bool DidUseQuic() const {
+    return connection_info == CONNECTION_INFO_QUIC1_SPDY3;
+  }
+
   // The following is only defined if the request_time member is set.
   // If this resource was found in the cache, then this bool is set, and
   // request_time may corresponds to a time "far" in the past.  Note that

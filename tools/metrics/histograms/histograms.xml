@@ -68786,6 +68786,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="ThreadWatcher.UnresponsiveThreads"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="TotalTimeToGoogle" separator=".">
+  <suffix name="Quic"
+      label="Recorded for Google servers only when QUIC is used."/>
+  <suffix name="NotQuic"
+      label="Recorded for Google servers only when QUIC is not used."/>
+  <affected-histogram name="Net.HttpJob.TotalTime"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeCached"/>
+  <affected-histogram name="Net.HttpJob.TotalTimeNotCached"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="Tps65090Fets" separator=".">
   <suffix name="Fet1" label="FET1 on tps65090 (register 0xf)"/>
   <suffix name="Fet2" label="FET2 on tps65090 (register 0x10)"/>
