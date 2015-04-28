@@ -1,0 +1,37 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothuuidsservice
+
+// Implement BluetoothUUIDsService interface: https://crbug.com/476971
+
+[
+    GarbageCollected,
+    NoInterfaceObject,
+    RuntimeEnabled=Bluetooth,
+] interface BluetoothUUIDsService {
+    // readonly    attribute UUID alert_notification;
+    // readonly    attribute UUID battery_service;
+    // readonly    attribute UUID blood_pressure;
+    // readonly    attribute UUID current_time;
+    // readonly    attribute UUID cycling_power;
+    // readonly    attribute UUID cycling_speed_and_cadence;
+    // readonly    attribute UUID device_information;
+    // readonly    attribute UUID generic_access;
+    // readonly    attribute UUID generic_attribute;
+    // readonly    attribute UUID glucose;
+    // readonly    attribute UUID health_thermometer;
+    // readonly    attribute UUID heart_rate;
+    // readonly    attribute UUID human_interface_device;
+    // readonly    attribute UUID immediate_alert;
+    // readonly    attribute UUID link_loss;
+    // readonly    attribute UUID location_and_navigation;
+    // readonly    attribute UUID next_dst_change;
+    // readonly    attribute UUID phone_alert_status;
+    // readonly    attribute UUID reference_time_update;
+    // readonly    attribute UUID running_speed_and_cadence;
+    // readonly    attribute UUID scan_parameters;
+    // readonly    attribute UUID tx_power;
+    // readonly    attribute UUID user_data;
+};
