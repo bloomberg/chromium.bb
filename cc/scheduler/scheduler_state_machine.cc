@@ -305,7 +305,7 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_IDLE)
     return false;
 
-  // We want to clear the pipline of any pending draws and activations
+  // We want to clear the pipeline of any pending draws and activations
   // before starting output surface initialization. This allows us to avoid
   // weird corner cases where we abort draws or force activation while we
   // are initializing the output surface.
@@ -320,7 +320,7 @@ bool SchedulerStateMachine::ShouldBeginOutputSurfaceCreation() const {
 bool SchedulerStateMachine::ShouldDraw() const {
   // If we need to abort draws, we should do so ASAP since the draw could
   // be blocking other important actions (like output surface initialization),
-  // from occuring. If we are waiting for the first draw, then perfom the
+  // from occurring. If we are waiting for the first draw, then perform the
   // aborted draw to keep things moving. If we are not waiting for the first
   // draw however, we don't want to abort for no reason.
   if (PendingDrawsShouldBeAborted())
