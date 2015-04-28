@@ -4,7 +4,10 @@
 
 #include "mojo/runner/url_resolver.h"
 
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "mojo/util/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -142,6 +145,27 @@ TEST_F(URLResolverTest, TestQueryForBaseURL) {
   resolver.SetMojoBaseURL(GURL("file:///base"));
   GURL mapped_url = resolver.ResolveMojoURL(GURL("mojo:foo?a=b"));
   EXPECT_EQ("file:///base/foo.mojo?a=b", mapped_url.spec());
+}
+
+// Verifies that ResolveMojoURL prefers the directory with the name of the host
+// over the raw file.
+TEST_F(URLResolverTest, PreferDirectory) {
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  URLResolver resolver;
+  // With no directory |mojo:foo| maps to path/foo.mojo.
+  resolver.SetMojoBaseURL(util::FilePathToFileURL(tmp_dir.path()));
+  const GURL mapped_url = resolver.ResolveMojoURL(GURL("mojo:foo"));
+  EXPECT_EQ(util::FilePathToFileURL(tmp_dir.path()).spec() + "/foo.mojo",
+            mapped_url.spec());
+
+  // With a directory |mojo:foo| maps to path/foo/foo.mojo.
+  const base::FilePath foo_file_path(
+      tmp_dir.path().Append(FILE_PATH_LITERAL("foo")));
+  ASSERT_TRUE(base::CreateDirectory(foo_file_path));
+  const GURL mapped_url_with_dir = resolver.ResolveMojoURL(GURL("mojo:foo"));
+  EXPECT_EQ(util::FilePathToFileURL(tmp_dir.path()).spec() + "/foo/foo.mojo",
+            mapped_url_with_dir.spec());
 }
 
 }  // namespace

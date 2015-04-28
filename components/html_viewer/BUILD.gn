@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/mojo_application_package.gni")
 import("//testing/test.gni")
 import("//third_party/mojo/src/mojo/public/mojo.gni")
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
@@ -201,13 +202,15 @@ if (is_android) {
     ]
   }
 } else {
-  mojo_native_application("html_viewer") {
+  mojo_application_package("html_viewer") {
     sources = [
       "html_viewer.cc",
     ]
     deps = [
       ":lib",
+      "//ui/resources:ui_test_pak",
     ]
+    resources = [ "$root_out_dir/ui_test.pak" ]
     data_deps = [ "//mojo/services/network:network" ]
   }
 }

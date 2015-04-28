@@ -9,11 +9,11 @@
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/common/url_type_converters.h"
+#include "mojo/util/filename_util.h"
 #include "url/url_util.h"
 
 namespace mojo {
@@ -30,24 +30,11 @@ void IgnoreResult(bool result) {
 LocalFetcher::LocalFetcher(const GURL& url,
                            const GURL& url_without_query,
                            const FetchCallback& loader_callback)
-    : Fetcher(loader_callback), url_(url), path_(UrlToFile(url_without_query)) {
+    : Fetcher(loader_callback),
+      url_(url),
+      path_(util::UrlToFilePath(url_without_query)) {
   TRACE_EVENT1("mojo_shell", "LocalFetcher::LocalFetcher", "url", url.spec());
   loader_callback_.Run(make_scoped_ptr(this));
-}
-
-base::FilePath LocalFetcher::UrlToFile(const GURL& url) {
-  DCHECK(url.SchemeIsFile());
-  url::RawCanonOutputW<1024> output;
-  url::DecodeURLEscapeSequences(url.path().data(),
-                                static_cast<int>(url.path().length()), &output);
-  base::string16 decoded_path = base::string16(output.data(), output.length());
-#if defined(OS_WIN)
-  base::TrimString(decoded_path, L"/", &decoded_path);
-  base::FilePath path(decoded_path);
-#else
-  base::FilePath path(base::UTF16ToUTF8(decoded_path));
-#endif
-  return path;
 }
 
 const GURL& LocalFetcher::GetURL() const {

@@ -43,6 +43,7 @@ source_set("shell") {
     "//url",
     "//third_party/mojo/src/mojo/edk/system",
     "//mojo/environment:chromium",
+    "//mojo/util:filename_util",
     "//third_party/mojo_services/src/content_handler/public/interfaces",
     "//mojo/runner:native_application_support",
   ]

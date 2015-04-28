@@ -6,11 +6,12 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/runner/filename_util.h"
 #include "mojo/runner/switches.h"
 #include "mojo/shell/query_util.h"
+#include "mojo/util/filename_util.h"
 #include "url/url_util.h"
 
 namespace mojo {
@@ -68,7 +69,7 @@ void URLResolver::AddOriginMapping(const GURL& origin, const GURL& base_url) {
     return;
   }
   // Force both origin and base_url to have trailing slashes.
-  origin_map_[origin] = AddTrailingSlashIfNeeded(base_url);
+  origin_map_[origin] = util::AddTrailingSlashIfNeeded(base_url);
 }
 
 GURL URLResolver::ApplyMappings(const GURL& url) const {
@@ -98,20 +99,26 @@ void URLResolver::SetMojoBaseURL(const GURL& mojo_base_url) {
   DCHECK(mojo_base_url.is_valid());
   // Force a trailing slash on the base_url to simplify resolving
   // relative files and URLs below.
-  mojo_base_url_ = AddTrailingSlashIfNeeded(mojo_base_url);
+  mojo_base_url_ = util::AddTrailingSlashIfNeeded(mojo_base_url);
 }
 
 GURL URLResolver::ResolveMojoURL(const GURL& mojo_url) const {
   if (mojo_url.scheme() != "mojo") {
     // The mapping has produced some sort of non-mojo: URL - file:, http:, etc.
     return mojo_url;
-  } else {
-    // It's still a mojo: URL, use the default mapping scheme.
-    std::string query;
-    GURL base_url = GetBaseURLAndQuery(mojo_url, &query);
-    std::string lib = base_url.host() + ".mojo" + query;
-    return mojo_base_url_.Resolve(lib);
   }
+
+  // It's still a mojo: URL, use the default mapping scheme.
+  std::string query;
+  GURL base_url = GetBaseURLAndQuery(mojo_url, &query);
+  if (mojo_base_url_.SchemeIsFile()) {
+    const GURL url_with_directory(
+        mojo_base_url_.Resolve(base_url.host() + "/"));
+    const base::FilePath file_path(util::UrlToFilePath(url_with_directory));
+    if (base::DirectoryExists(file_path))
+      return url_with_directory.Resolve(base_url.host() + ".mojo" + query);
+  }
+  return mojo_base_url_.Resolve(base_url.host() + ".mojo" + query);
 }
 
 }  // namespace shell

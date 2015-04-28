@@ -21,8 +21,6 @@ class LocalFetcher : public Fetcher {
                const FetchCallback& loader_callback);
 
  private:
-  static base::FilePath UrlToFile(const GURL& url);
-
   const GURL& GetURL() const override;
   GURL GetRedirectURL() const override;
 

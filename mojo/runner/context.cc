@@ -26,13 +26,13 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/runner/filename_util.h"
 #include "mojo/runner/in_process_native_runner.h"
 #include "mojo/runner/out_of_process_native_runner.h"
 #include "mojo/runner/switches.h"
 #include "mojo/services/tracing/tracing.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/util/filename_util.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -217,7 +217,8 @@ void Context::EnsureEmbedderIsInitialized() {
 }
 
 void Context::SetShellFileRoot(const base::FilePath& path) {
-  shell_file_root_ = AddTrailingSlashIfNeeded(FilePathToFileURL(path));
+  shell_file_root_ =
+      util::AddTrailingSlashIfNeeded(util::FilePathToFileURL(path));
 }
 
 GURL Context::ResolveShellFileURL(const std::string& path) {
@@ -225,7 +226,8 @@ GURL Context::ResolveShellFileURL(const std::string& path) {
 }
 
 void Context::SetCommandLineCWD(const base::FilePath& path) {
-  command_line_cwd_ = AddTrailingSlashIfNeeded(FilePathToFileURL(path));
+  command_line_cwd_ =
+      util::AddTrailingSlashIfNeeded(util::FilePathToFileURL(path));
 }
 
 GURL Context::ResolveCommandLineURL(const std::string& path) {

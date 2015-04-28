@@ -4,8 +4,8 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "mojo/runner/context.h"
-#include "mojo/runner/filename_util.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/util/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -86,7 +86,7 @@ TEST_F(NativeApplicationLoaderTest, DoesNotExist) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath nonexistent_file(FILE_PATH_LITERAL("nonexistent.txt"));
-  GURL url(FilePathToFileURL(temp_dir.path().Append(nonexistent_file)));
+  GURL url(util::FilePathToFileURL(temp_dir.path().Append(nonexistent_file)));
   InterfaceRequest<ServiceProvider> services;
   ServiceProviderPtr service_provider;
   application_manager_.ConnectToApplication(

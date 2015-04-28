@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "jni/ShellTestBase_jni.h"
-#include "mojo/runner/filename_util.h"
+#include "mojo/util/filename_util.h"
 #include "url/gurl.h"
 
 namespace mojo {

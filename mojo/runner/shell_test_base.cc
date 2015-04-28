@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "mojo/runner/filename_util.h"
+#include "mojo/util/filename_util.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -64,7 +64,8 @@ void ShellTestBase::SetUpTestApplications() {
   // mappings registered on the URL resolver are treated as shared libraries.
   base::FilePath service_dir;
   CHECK(PathService::Get(base::DIR_MODULE, &service_dir));
-  shell_context_.url_resolver()->SetMojoBaseURL(FilePathToFileURL(service_dir));
+  shell_context_.url_resolver()->SetMojoBaseURL(
+      util::FilePathToFileURL(service_dir));
 }
 #endif
 

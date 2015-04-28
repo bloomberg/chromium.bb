@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_RUNNER_FILENAME_UTIL_H_
-#define MOJO_RUNNER_FILENAME_UTIL_H_
+#ifndef MOJO_UTIL_FILENAME_UTIL_H_
+#define MOJO_UTIL_FILENAME_UTIL_H_
 
 class GURL;
 
@@ -12,7 +12,7 @@ class FilePath;
 }
 
 namespace mojo {
-namespace shell {
+namespace util {
 
 // Given the full path to a file name, creates a file: URL. The returned URL
 // may not be valid if the input is malformed.
@@ -22,7 +22,10 @@ GURL FilePathToFileURL(const base::FilePath& path);
 // slash so that GURL.Resolve(...) works correctly.
 GURL AddTrailingSlashIfNeeded(const GURL& url);
 
-}  // namespace shell
+// Converts a file url to a path
+base::FilePath UrlToFilePath(const GURL& url);
+
+}  // namespace util
 }  // namespace mojo
 
-#endif  // MOJO_RUNNER_FILENAME_UTIL_H_
+#endif  // MOJO_UTIL_FILENAME_UTIL_H_

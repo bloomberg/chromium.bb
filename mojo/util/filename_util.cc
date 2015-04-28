@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/runner/filename_util.h"
+#include "mojo/util/filename_util.h"
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "url/gurl.h"
 #include "url/url_canon_internal.h"
 #include "url/url_util.h"
 
 namespace mojo {
-namespace shell {
+namespace util {
 
 // Prefix to prepend to get a file URL.
 static const base::FilePath::CharType kFileURLPrefix[] =
@@ -68,5 +69,20 @@ GURL AddTrailingSlashIfNeeded(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
-}  // namespace shell
+base::FilePath UrlToFilePath(const GURL& url) {
+  DCHECK(url.SchemeIsFile());
+  url::RawCanonOutputW<1024> output;
+  url::DecodeURLEscapeSequences(url.path().data(),
+                                static_cast<int>(url.path().length()), &output);
+  base::string16 decoded_path = base::string16(output.data(), output.length());
+#if defined(OS_WIN)
+  base::TrimString(decoded_path, L"/", &decoded_path);
+  base::FilePath path(decoded_path);
+#else
+  base::FilePath path(base::UTF16ToUTF8(decoded_path));
+#endif
+  return path;
+}
+
+}  // namespace util
 }  // namespace mojo
