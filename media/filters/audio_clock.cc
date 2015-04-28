@@ -81,8 +81,8 @@ void AudioClock::WroteAudio(int frames_written,
 }
 
 base::TimeDelta AudioClock::TimeUntilPlayback(base::TimeDelta timestamp) const {
-  DCHECK(timestamp >= front_timestamp_);
-  DCHECK(timestamp <= back_timestamp_);
+  DCHECK_GE(timestamp, front_timestamp_);
+  DCHECK_LE(timestamp, back_timestamp_);
 
   int64_t frames_until_timestamp = 0;
   double timestamp_us = timestamp.InMicroseconds();
