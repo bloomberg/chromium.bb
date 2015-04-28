@@ -20,7 +20,6 @@ namespace content {
 
 namespace {
 
-const char kOrigin[] = "https://example.com";
 const char kPattern1[] = "https://example.com/a";
 const char kPattern2[] = "https://example.com/b";
 const char kScript1[] = "https://example.com/a/script.js";
@@ -35,6 +34,14 @@ void RegisterServiceWorkerCallback(bool* called,
   EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
   *called = true;
   *store_registration_id = registration_id;
+}
+
+void FindServiceWorkerRegistrationCallback(
+    scoped_refptr<ServiceWorkerRegistration>* out_registration,
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+  *out_registration = registration;
 }
 
 void UnregisterServiceWorkerCallback(bool* called,
@@ -155,7 +162,10 @@ class BackgroundSyncManagerTest : public testing::Test {
     // Wait for storage to finish initializing before registering service
     // workers.
     base::RunLoop().RunUntilIdle();
+    RegisterServiceWorkers();
+  }
 
+  void RegisterServiceWorkers() {
     bool called_1 = false;
     bool called_2 = false;
     helper_->context()->RegisterServiceWorker(
@@ -170,6 +180,19 @@ class BackgroundSyncManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called_1);
     EXPECT_TRUE(called_2);
+
+    // Hang onto the registrations as they need to be "live" when
+    // calling BackgroundSyncMasnager::Register.
+    helper_->context_wrapper()->FindRegistrationForId(
+        sw_registration_id_1_, GURL(kPattern1).GetOrigin(),
+        base::Bind(FindServiceWorkerRegistrationCallback, &sw_registration_1_));
+
+    helper_->context_wrapper()->FindRegistrationForId(
+        sw_registration_id_2_, GURL(kPattern1).GetOrigin(),
+        base::Bind(FindServiceWorkerRegistrationCallback, &sw_registration_2_));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(sw_registration_1_);
+    EXPECT_TRUE(sw_registration_2_);
   }
 
   void StatusAndRegistrationCallback(
@@ -208,7 +231,7 @@ class BackgroundSyncManagerTest : public testing::Test {
           sync_registration) {
     bool was_called = false;
     background_sync_manager_->Register(
-        GURL(kOrigin), sw_registration_id, sync_registration,
+        sw_registration_id, sync_registration,
         base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
@@ -228,7 +251,7 @@ class BackgroundSyncManagerTest : public testing::Test {
           sync_registration) {
     bool was_called = false;
     background_sync_manager_->Unregister(
-        GURL(kOrigin), sw_registration_id, sync_registration.tag,
+        sw_registration_id, sync_registration.tag,
         sync_registration.periodicity, sync_registration.id,
         base::Bind(&BackgroundSyncManagerTest::StatusCallback,
                    base::Unretained(this), &was_called));
@@ -249,7 +272,7 @@ class BackgroundSyncManagerTest : public testing::Test {
           sync_registration) {
     bool was_called = false;
     background_sync_manager_->GetRegistration(
-        GURL(kOrigin), sw_registration_id, sync_registration.tag,
+        sw_registration_id, sync_registration.tag,
         sync_registration.periodicity,
         base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                    base::Unretained(this), &was_called));
@@ -289,6 +312,8 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   int64 sw_registration_id_1_;
   int64 sw_registration_id_2_;
+  scoped_refptr<ServiceWorkerRegistration> sw_registration_1_;
+  scoped_refptr<ServiceWorkerRegistration> sw_registration_2_;
 
   BackgroundSyncManager::BackgroundSyncRegistration sync_reg_1_;
   BackgroundSyncManager::BackgroundSyncRegistration sync_reg_2_;
@@ -309,6 +334,20 @@ TEST_F(BackgroundSyncManagerTest, RegistractionIntact) {
   EXPECT_NE(
       BackgroundSyncManager::BackgroundSyncRegistration::kInvalidRegistrationId,
       callback_registration_.id);
+}
+
+TEST_F(BackgroundSyncManagerTest, RegisterWithoutLiveSWRegistration) {
+  sw_registration_1_ = nullptr;
+  EXPECT_FALSE(Register(sync_reg_1_));
+  EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_NO_SERVICE_WORKER,
+            callback_error_);
+}
+
+TEST_F(BackgroundSyncManagerTest, RegisterWithoutActiveSWRegistration) {
+  sw_registration_1_->UnsetVersion(sw_registration_1_->active_version());
+  EXPECT_FALSE(Register(sync_reg_1_));
+  EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_NO_SERVICE_WORKER,
+            callback_error_);
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterExistingKeepsId) {
@@ -507,16 +546,15 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   bool unregister_called = false;
   bool get_registration_called = false;
   manager->Register(
-      GURL(kOrigin), sw_registration_id_1_, sync_reg_1_,
+      sw_registration_id_1_, sync_reg_1_,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &register_called));
-  manager->Unregister(GURL(kOrigin), sw_registration_id_1_, sync_reg_1_.tag,
+  manager->Unregister(sw_registration_id_1_, sync_reg_1_.tag,
                       sync_reg_1_.periodicity, kExpectedInitialId,
                       base::Bind(&BackgroundSyncManagerTest::StatusCallback,
                                  base::Unretained(this), &unregister_called));
   manager->GetRegistration(
-      GURL(kOrigin), sw_registration_id_1_, sync_reg_1_.tag,
-      sync_reg_1_.periodicity,
+      sw_registration_id_1_, sync_reg_1_.tag, sync_reg_1_.periodicity,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &get_registration_called));
 
@@ -569,7 +607,7 @@ TEST_F(BackgroundSyncManagerTest,
   manager->set_delay_backend(true);
   bool callback_called = false;
   manager->Register(
-      GURL(kOrigin), sw_registration_id_1_, sync_reg_2_,
+      sw_registration_id_1_, sync_reg_2_,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &callback_called));
 
@@ -630,13 +668,7 @@ TEST_F(BackgroundSyncManagerTest, DisabledManagerWorksAfterDeleteAndStartOver) {
   helper_->context()->ScheduleDeleteAndStartOver();
   base::RunLoop().RunUntilIdle();
 
-  bool called = false;
-  helper_->context()->RegisterServiceWorker(
-      GURL(kPattern1), GURL(kScript1), NULL,
-      base::Bind(&RegisterServiceWorkerCallback, &called,
-                 &sw_registration_id_1_));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(called);
+  RegisterServiceWorkers();
 
   EXPECT_TRUE(Register(sync_reg_2_));
   EXPECT_FALSE(GetRegistration(sync_reg_1_));

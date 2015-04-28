@@ -62,7 +62,6 @@ BackgroundSyncManager::RegistrationKey::RegistrationKey(
 }
 
 void BackgroundSyncManager::Register(
-    const GURL& origin,
     int64 sw_registration_id,
     const BackgroundSyncRegistration& sync_registration,
     const StatusAndRegistrationCallback& callback) {
@@ -79,12 +78,11 @@ void BackgroundSyncManager::Register(
 
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::RegisterImpl, weak_ptr_factory_.GetWeakPtr(),
-      origin, sw_registration_id, sync_registration,
+      sw_registration_id, sync_registration,
       MakeStatusAndRegistrationCompletion(callback)));
 }
 
 void BackgroundSyncManager::Unregister(
-    const GURL& origin,
     int64 sw_registration_id,
     const std::string& sync_registration_tag,
     SyncPeriodicity periodicity,
@@ -102,12 +100,11 @@ void BackgroundSyncManager::Unregister(
 
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::UnregisterImpl, weak_ptr_factory_.GetWeakPtr(),
-      origin, sw_registration_id, registration_key, sync_registration_id,
+      sw_registration_id, registration_key, sync_registration_id,
       MakeStatusCompletion(callback)));
 }
 
 void BackgroundSyncManager::GetRegistration(
-    const GURL& origin,
     int64 sw_registration_id,
     const std::string sync_registration_tag,
     SyncPeriodicity periodicity,
@@ -125,8 +122,8 @@ void BackgroundSyncManager::GetRegistration(
 
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::GetRegistrationImpl,
-      weak_ptr_factory_.GetWeakPtr(), origin, sw_registration_id,
-      registration_key, MakeStatusAndRegistrationCompletion(callback)));
+      weak_ptr_factory_.GetWeakPtr(), sw_registration_id, registration_key,
+      MakeStatusAndRegistrationCompletion(callback)));
 }
 
 void BackgroundSyncManager::OnRegistrationDeleted(int64 registration_id,
@@ -248,7 +245,6 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
 }
 
 void BackgroundSyncManager::RegisterImpl(
-    const GURL& origin,
     int64 sw_registration_id,
     const BackgroundSyncRegistration& sync_registration,
     const StatusAndRegistrationCallback& callback) {
@@ -273,7 +269,18 @@ void BackgroundSyncManager::RegisterImpl(
       &sw_to_registrations_map_[sw_registration_id];
   new_registration.id = registrations->next_id++;
 
-  AddRegistrationToMap(sw_registration_id, origin, new_registration);
+  ServiceWorkerRegistration* sw_registration =
+      service_worker_context_->GetLiveRegistration(sw_registration_id);
+  if (!sw_registration || !sw_registration->active_version()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, ERROR_TYPE_NO_SERVICE_WORKER,
+                              BackgroundSyncRegistration()));
+    return;
+  }
+
+  AddRegistrationToMap(sw_registration_id,
+                       sw_registration->pattern().GetOrigin(),
+                       new_registration);
 
   StoreRegistrations(
       sw_registration_id,
@@ -454,7 +461,6 @@ void BackgroundSyncManager::GetDataFromBackend(
 }
 
 void BackgroundSyncManager::UnregisterImpl(
-    const GURL& origin,
     int64 sw_registration_id,
     const RegistrationKey& registration_key,
     BackgroundSyncRegistration::RegistrationId sync_registration_id,
@@ -506,7 +512,6 @@ void BackgroundSyncManager::UnregisterDidStore(
 }
 
 void BackgroundSyncManager::GetRegistrationImpl(
-    const GURL& origin,
     int64 sw_registration_id,
     const RegistrationKey& registration_key,
     const StatusAndRegistrationCallback& callback) {

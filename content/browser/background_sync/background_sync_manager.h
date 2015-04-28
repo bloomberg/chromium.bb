@@ -45,7 +45,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   enum ErrorType {
     ERROR_TYPE_OK = 0,
     ERROR_TYPE_STORAGE,
-    ERROR_TYPE_NOT_FOUND
+    ERROR_TYPE_NOT_FOUND,
+    ERROR_TYPE_NO_SERVICE_WORKER
   };
 
   // TODO(jkarlin): Remove this and use the struct from IPC messages once it
@@ -85,8 +86,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // with ErrorTypeOK and the accepted registration on success. The accepted
   // registration will have a unique id. It may also have altered parameters if
   // the user or UA chose different parameters than those supplied.
-  void Register(const GURL& origin,
-                int64 sw_registration_id,
+  void Register(int64 sw_registration_id,
                 const BackgroundSyncRegistration& sync_registration,
                 const StatusAndRegistrationCallback& callback);
 
@@ -95,7 +95,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   // ErrorTypeNotFound if no match is found. Calls |callback| with ErrorTypeOK
   // on success.
   void Unregister(
-      const GURL& origin,
       int64 sw_registration_id,
       const std::string& sync_registration_tag,
       SyncPeriodicity periodicity,
@@ -106,8 +105,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // |sw_registration_id| with periodicity |periodicity|. Calls
   // |callback| with ErrorTypeNotFound if it doesn't exist. Calls |callback|
   // with ErrorTypeOK on success.
-  void GetRegistration(const GURL& origin,
-                       int64 sw_registration_id,
+  void GetRegistration(int64 sw_registration_id,
                        const std::string sync_registration_tag,
                        SyncPeriodicity periodicity,
                        const StatusAndRegistrationCallback& callback);
@@ -206,8 +204,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       ServiceWorkerStatusCode status);
 
   // Register callbacks
-  void RegisterImpl(const GURL& origin,
-                    int64 sw_registration_id,
+  void RegisterImpl(int64 sw_registration_id,
                     const BackgroundSyncRegistration& sync_registration,
                     const StatusAndRegistrationCallback& callback);
   void RegisterDidStore(int64 sw_registration_id,
@@ -217,7 +214,6 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // Unregister callbacks
   void UnregisterImpl(
-      const GURL& origin,
       int64 sw_registration_id,
       const RegistrationKey& registration_key,
       BackgroundSyncRegistration::RegistrationId sync_registration_id,
@@ -228,8 +224,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       ServiceWorkerStatusCode status);
 
   // GetRegistration callbacks
-  void GetRegistrationImpl(const GURL& origin,
-                           int64 sw_registration_id,
+  void GetRegistrationImpl(int64 sw_registration_id,
                            const RegistrationKey& registration_key,
                            const StatusAndRegistrationCallback& callback);
 
