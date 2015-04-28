@@ -233,7 +233,7 @@ InspectorTest.dumpTimelineModelRecord = function(record, level)
         prefix = "----" + prefix;
     if (level > 0)
         prefix = prefix + "> ";
-    InspectorTest.addResult(prefix + record.type());
+    InspectorTest.addResult(prefix + record.type() + ": " + (WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent(), null) || ""));
 
     var numChildren = record.children() ? record.children().length : 0;
     for (var i = 0; i < numChildren; ++i)
