@@ -40,7 +40,11 @@
         'public/cast_egl_platform_shlib.h',
         'public/cast_sys_info.h',
         'public/chromecast_export.h',
-        'public/graphics_properties_shlib.h'
+        'public/graphics_properties_shlib.h',
+        'public/graphics_types.h',
+        'public/osd_plane.h',
+        'public/osd_plane_shlib.h',
+        'public/osd_surface.h',
       ],
     },
     # TODO(gunsch): Remove this fake target once it's either added or no
@@ -578,11 +582,7 @@
             'media/media.gyp:cast_media',
           ],
           'conditions': [
-            ['chromecast_branding=="Chrome"', {
-              'dependencies': [
-                'internal/chromecast_internal.gyp:cast_gfx_internal',
-              ],
-            }, {
+            ['chromecast_branding!="Chrome"', {
               'dependencies': [
                 '../ui/ozone/ozone.gyp:eglplatform_shim_x11',
               ],
@@ -621,7 +621,8 @@
           ],
           'sources': [
             'graphics/cast_egl_platform_default.cc',
-            'graphics/graphics_properties_default.cc'
+            'graphics/graphics_properties_default.cc',
+            'graphics/osd_plane_default.cc'
           ],
         }
       ]

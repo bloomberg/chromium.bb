@@ -6,14 +6,15 @@
 
 #include "base/callback_helpers.h"
 #include "chromecast/public/cast_egl_platform.h"
+#include "chromecast/public/graphics_types.h"
 #include "ui/ozone/platform/cast/surface_ozone_egl_cast.h"
 
 using chromecast::CastEglPlatform;
 
 namespace ui {
 namespace {
-CastEglPlatform::Size FromGfxSize(const gfx::Size& size) {
-  return CastEglPlatform::Size(size.width(), size.height());
+chromecast::Size FromGfxSize(const gfx::Size& size) {
+  return chromecast::Size(size.width(), size.height());
 }
 
 // Hard lower bound on display resolution
@@ -75,7 +76,7 @@ void SurfaceFactoryCast::CreateDisplayTypeAndWindowIfNeeded() {
   }
   DCHECK_EQ(state_, kInitialized);
   if (!have_display_type_) {
-    CastEglPlatform::Size create_size = FromGfxSize(display_size_);
+    chromecast::Size create_size = FromGfxSize(display_size_);
     display_type_ = egl_platform_->CreateDisplayType(create_size);
     have_display_type_ = true;
     window_ = egl_platform_->CreateWindow(display_type_, create_size);

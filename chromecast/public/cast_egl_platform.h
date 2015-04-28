@@ -7,17 +7,13 @@
 
 namespace chromecast {
 
+struct Size;
+
 // Interface representing all the hardware-specific elements of an Ozone
 // implementation for Cast.  Supply an implementation of this interface
 // to OzonePlatformCast to create a complete Ozone implementation.
 class CastEglPlatform {
  public:
-  struct Size {
-    Size(int w, int h) : width(w), height(h) {}
-    const int width;
-    const int height;
-  };
-
   typedef void* (*GLGetProcAddressProc)(const char* name);
   typedef void* NativeDisplayType;
   typedef void* NativeWindowType;
