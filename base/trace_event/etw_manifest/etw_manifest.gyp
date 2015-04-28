@@ -7,6 +7,7 @@
       # GN version: //base/trace_event/etw_manifest/BUILD.gn
       'target_name': 'etw_manifest',
       'type': 'static_library',
+      'toolsets': ['host', 'target'],
       'conditions': [
         ['OS=="win"', {
           'sources': [
