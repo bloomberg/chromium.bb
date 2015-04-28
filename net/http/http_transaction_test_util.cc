@@ -439,6 +439,11 @@ int MockNetworkTransaction::ResumeNetworkStart() {
   return ERR_FAILED;
 }
 
+void MockNetworkTransaction::GetConnectionAttempts(
+    ConnectionAttempts* out) const {
+  NOTIMPLEMENTED();
+}
+
 void MockNetworkTransaction::CallbackLater(const CompletionCallback& callback,
                                            int result) {
   base::MessageLoop::current()->PostTask(

@@ -14,6 +14,7 @@
 #include "net/http/http_response_info.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -164,6 +165,12 @@ class SSLConnectJob : public ConnectJob {
   scoped_ptr<SSLClientSocket> ssl_socket_;
 
   HttpResponseInfo error_response_info_;
+
+  ConnectionAttempts connection_attempts_;
+  // The address of the server the connect job is connected to. Populated if
+  // and only if the connect job is connected *directly* to the server (not
+  // through an HTTPS CONNECT request or a SOCKS proxy).
+  IPEndPoint server_address_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLConnectJob);
 };

@@ -201,10 +201,15 @@ TransportConnectJob::TransportConnectJob(
     HostResolver* host_resolver,
     Delegate* delegate,
     NetLog* net_log)
-    : ConnectJob(group_name, timeout_duration, priority, delegate,
+    : ConnectJob(group_name,
+                 timeout_duration,
+                 priority,
+                 delegate,
                  BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
       helper_(params, client_socket_factory, host_resolver, &connect_timing_),
-      interval_between_connects_(CONNECT_INTERVAL_GT_20MS) {
+      interval_between_connects_(CONNECT_INTERVAL_GT_20MS),
+      resolve_result_(OK),
+      connect_result_(OK) {
   helper_.SetOnIOComplete(this);
 }
 
@@ -228,6 +233,23 @@ LoadState TransportConnectJob::GetLoadState() const {
   return LOAD_STATE_IDLE;
 }
 
+void TransportConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
+  // If hostname resolution failed, record an empty endpoint and the result.
+  // If the actual socket Connect call failed, record the result and the last
+  // address attempted.
+  // TODO(ttuttle): Plumb into the socket layer and record *all* attempts.
+  ConnectionAttempts attempts;
+  if (resolve_result_ != OK) {
+    DCHECK_EQ(0u, helper_.addresses().size());
+    attempts.push_back(ConnectionAttempt(IPEndPoint(), resolve_result_));
+  } else if (connect_result_ != OK) {
+    DCHECK_LT(0u, helper_.addresses().size());
+    attempts.push_back(
+        ConnectionAttempt(helper_.addresses().back(), connect_result_));
+  }
+  handle->set_connection_attempts(attempts);
+}
+
 // static
 void TransportConnectJob::MakeAddressListStartWithIPv4(AddressList* list) {
   for (AddressList::iterator i = list->begin(); i != list->end(); ++i) {
@@ -248,6 +270,7 @@ int TransportConnectJob::DoResolveHost() {
 }
 
 int TransportConnectJob::DoResolveHostComplete(int result) {
+  resolve_result_ = result;
   return helper_.DoResolveHostComplete(result, net_log());
 }
 
@@ -359,6 +382,8 @@ int TransportConnectJob::DoTransportConnectComplete(int result) {
     fallback_transport_socket_.reset();
     fallback_addresses_.reset();
   }
+
+  connect_result_ = result;
 
   return result;
 }

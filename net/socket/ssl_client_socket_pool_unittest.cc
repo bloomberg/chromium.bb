@@ -227,6 +227,8 @@ TEST_P(SSLClientSocketPoolTest, TCPFail) {
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
+  ASSERT_EQ(1u, handle.connection_attempts().size());
+  EXPECT_EQ(ERR_CONNECTION_FAILED, handle.connection_attempts()[0].result);
 }
 
 TEST_P(SSLClientSocketPoolTest, TCPFailAsync) {
@@ -250,6 +252,8 @@ TEST_P(SSLClientSocketPoolTest, TCPFailAsync) {
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
+  ASSERT_EQ(1u, handle.connection_attempts().size());
+  EXPECT_EQ(ERR_CONNECTION_FAILED, handle.connection_attempts()[0].result);
 }
 
 TEST_P(SSLClientSocketPoolTest, BasicDirect) {
@@ -271,6 +275,7 @@ TEST_P(SSLClientSocketPoolTest, BasicDirect) {
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfo(handle);
+  EXPECT_EQ(0u, handle.connection_attempts().size());
 }
 
 // Make sure that SSLConnectJob passes on its priority to its

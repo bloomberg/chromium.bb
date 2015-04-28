@@ -1942,9 +1942,9 @@ MockTransportClientSocketPool::MockConnectJob::~MockConnectJob() {}
 int MockTransportClientSocketPool::MockConnectJob::Connect() {
   int rv = socket_->Connect(base::Bind(&MockConnectJob::OnConnect,
                                        base::Unretained(this)));
-  if (rv == OK) {
+  if (rv != ERR_IO_PENDING) {
     user_callback_.Reset();
-    OnConnect(OK);
+    OnConnect(rv);
   }
   return rv;
 }
@@ -1976,6 +1976,11 @@ void MockTransportClientSocketPool::MockConnectJob::OnConnect(int rv) {
     handle_->set_connect_timing(connect_timing);
   } else {
     socket_.reset();
+
+    // Needed to test copying of ConnectionAttempts in SSL ConnectJob.
+    ConnectionAttempts attempts;
+    attempts.push_back(ConnectionAttempt(IPEndPoint(), rv));
+    handle_->set_connection_attempts(attempts);
   }
 
   handle_ = NULL;

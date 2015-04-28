@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/http/http_stream_factory_impl.h"
 #include "net/log/net_log.h"
+#include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session_key.h"
 #include "url/gurl.h"
@@ -60,6 +61,10 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
                              const base::WeakPtr<SpdySession>& spdy_session,
                              bool direct);
 
+  // Called by an attached Job to record connection attempts made by the socket
+  // layer for this stream request.
+  void AddConnectionAttempts(const ConnectionAttempts& attempts);
+
   WebSocketHandshakeStreamBase::CreateHelper*
   websocket_handshake_stream_create_helper() {
     return websocket_handshake_stream_create_helper_;
@@ -104,6 +109,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   bool was_npn_negotiated() const override;
   NextProto protocol_negotiated() const override;
   bool using_spdy() const override;
+  const ConnectionAttempts& connection_attempts() const override;
 
  private:
   // Used to orphan all jobs in |jobs_| other than |job| which becomes "bound"
@@ -133,6 +139,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   // Protocol negotiated with the server.
   NextProto protocol_negotiated_;
   bool using_spdy_;
+  ConnectionAttempts connection_attempts_;
 
   DISALLOW_COPY_AND_ASSIGN(Request);
 };

@@ -19,6 +19,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
 #include "net/log/net_log.h"
+#include "net/socket/connection_attempts.h"
 
 namespace net {
 
@@ -144,6 +145,7 @@ class HttpCache::Transaction : public HttpTransaction {
   void SetBeforeProxyHeadersSentCallback(
       const BeforeProxyHeadersSentCallback& callback) override;
   int ResumeNetworkStart() override;
+  void GetConnectionAttempts(ConnectionAttempts* out) const override;
 
  private:
   static const size_t kNumValidationHeaders = 2;
@@ -469,6 +471,8 @@ class HttpCache::Transaction : public HttpTransaction {
   // 304 and 206 response cases, as the network transaction may be destroyed
   // before the caller requests load timing information.
   scoped_ptr<LoadTimingInfo> old_network_trans_load_timing_;
+
+  ConnectionAttempts old_connection_attempts_;
 
   // The helper object to use to create WebSocketHandshakeStreamBase
   // objects. Only relevant when establishing a WebSocket connection.

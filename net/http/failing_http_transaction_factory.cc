@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/upload_progress.h"
+#include "net/socket/connection_attempts.h"
 
 namespace net {
 
@@ -61,6 +62,7 @@ class FailingHttpTransaction : public HttpTransaction {
   void SetBeforeProxyHeadersSentCallback(
       const BeforeProxyHeadersSentCallback& callback) override;
   int ResumeNetworkStart() override;
+  void GetConnectionAttempts(ConnectionAttempts* out) const override;
 
  private:
   Error error_;
@@ -161,6 +163,11 @@ void FailingHttpTransaction::SetBeforeProxyHeadersSentCallback(
 int FailingHttpTransaction::ResumeNetworkStart()  {
   NOTREACHED();
   return ERR_FAILED;
+}
+
+void FailingHttpTransaction::GetConnectionAttempts(
+    ConnectionAttempts* out) const {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace

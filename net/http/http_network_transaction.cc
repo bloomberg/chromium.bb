@@ -571,6 +571,8 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
     HttpStream* stream) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
 
+  CopyConnectionAttemptsFromStreamRequest();
+
   headers_valid_ = true;
   response_ = response_info;
   server_ssl_config_ = used_ssl_config;
@@ -580,6 +582,11 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
   stream_.reset(stream);
   stream_request_.reset();  // we're done with the stream request
   OnIOComplete(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);
+}
+
+void HttpNetworkTransaction::GetConnectionAttempts(
+    ConnectionAttempts* out) const {
+  *out = connection_attempts_;
 }
 
 bool HttpNetworkTransaction::IsSecureRequest() const {
@@ -770,6 +777,13 @@ int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424359 HttpNetworkTransaction::DoCreateStreamComplete"));
+
+  // If |result| is ERR_HTTPS_PROXY_TUNNEL_RESPONSE, then
+  // DoCreateStreamComplete is being called from OnHttpsProxyTunnelResponse,
+  // which resets the stream request first. Therefore, we have to grab the
+  // connection attempts in *that* function instead of here in that case.
+  if (result != ERR_HTTPS_PROXY_TUNNEL_RESPONSE)
+    CopyConnectionAttemptsFromStreamRequest();
 
   if (result == OK) {
     next_state_ = STATE_INIT_STREAM;
@@ -1658,5 +1672,15 @@ std::string HttpNetworkTransaction::DescribeState(State state) {
 }
 
 #undef STATE_CASE
+
+void HttpNetworkTransaction::CopyConnectionAttemptsFromStreamRequest() {
+  DCHECK(stream_request_);
+
+  // Since the transaction can restart with auth credentials, it may create a
+  // stream more than once. Accumulate all of the connection attempts across
+  // those streams by appending them to the vector:
+  for (const auto& attempt : stream_request_->connection_attempts())
+    connection_attempts_.push_back(attempt);
+}
 
 }  // namespace net

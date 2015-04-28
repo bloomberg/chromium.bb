@@ -167,6 +167,7 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
 
   // ConnectJob methods.
   LoadState GetLoadState() const override;
+  void GetAdditionalErrorState(ClientSocketHandle* handle) override;
 
   // Rolls |addrlist| forward until the first IPv4 address, if any.
   // WARNING: this method should only be used to implement the prefer-IPv4 hack.
@@ -206,6 +207,9 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
 
   // Track the interval between this connect and previous connect.
   ConnectInterval interval_between_connects_;
+
+  int resolve_result_;
+  int connect_result_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportConnectJob);
 };

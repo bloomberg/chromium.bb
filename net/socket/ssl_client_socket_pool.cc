@@ -163,6 +163,8 @@ void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
   handle->set_ssl_error_response_info(error_response_info_);
   if (!connect_timing_.ssl_start.is_null())
     handle->set_is_ssl_error(true);
+
+  handle->set_connection_attempts(connection_attempts_);
 }
 
 void SSLConnectJob::OnIOComplete(int result) {
@@ -232,8 +234,11 @@ int SSLConnectJob::DoTransportConnect() {
 }
 
 int SSLConnectJob::DoTransportConnectComplete(int result) {
-  if (result == OK)
+  connection_attempts_ = transport_socket_handle_->connection_attempts();
+  if (result == OK) {
     next_state_ = STATE_SSL_CONNECT;
+    transport_socket_handle_->socket()->GetPeerAddress(&server_address_);
+  }
 
   return result;
 }
@@ -328,6 +333,11 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
           "462784 SSLConnectJob::DoSSLConnectComplete"));
 
   connect_timing_.ssl_end = base::TimeTicks::Now();
+
+  if (result != OK && !server_address_.address().empty()) {
+    connection_attempts_.push_back(ConnectionAttempt(server_address_, result));
+    server_address_ = IPEndPoint();
+  }
 
   // If we want SPDY over ALPN/NPN, make sure it succeeded.
   if (params_->want_spdy_over_npn() &&

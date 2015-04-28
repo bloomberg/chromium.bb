@@ -651,6 +651,17 @@ int HttpCache::Transaction::ResumeNetworkStart() {
   return ERR_UNEXPECTED;
 }
 
+void HttpCache::Transaction::GetConnectionAttempts(
+    ConnectionAttempts* out) const {
+  ConnectionAttempts new_connection_attempts;
+  if (network_trans_)
+    network_trans_->GetConnectionAttempts(&new_connection_attempts);
+
+  out->swap(new_connection_attempts);
+  out->insert(out->begin(), old_connection_attempts_.begin(),
+              old_connection_attempts_.end());
+}
+
 //-----------------------------------------------------------------------------
 
 void HttpCache::Transaction::DoCallback(int rv) {
@@ -2844,6 +2855,10 @@ void HttpCache::Transaction::ResetNetworkTransaction() {
   if (network_trans_->GetLoadTimingInfo(&load_timing))
     old_network_trans_load_timing_.reset(new LoadTimingInfo(load_timing));
   total_received_bytes_ += network_trans_->GetTotalReceivedBytes();
+  ConnectionAttempts attempts;
+  network_trans_->GetConnectionAttempts(&attempts);
+  for (const auto& attempt : attempts)
+    old_connection_attempts_.push_back(attempt);
   network_trans_.reset();
 }
 

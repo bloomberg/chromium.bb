@@ -10,6 +10,7 @@
 #include "net/base/upload_progress.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_request_info.h"
+#include "net/socket/connection_attempts.h"
 
 // Keep in sync with kDevToolsRequestInitiator and
 // kDevToolsEmulateNetworkConditionsClientId defined in
@@ -264,6 +265,12 @@ int DevToolsNetworkTransaction::ResumeNetworkStart() {
   if (failed_)
     return net::ERR_INTERNET_DISCONNECTED;
   return network_transaction_->ResumeNetworkStart();
+}
+
+void
+DevToolsNetworkTransaction::GetConnectionAttempts(net::ConnectionAttempts* out)
+const {
+  network_transaction_->GetConnectionAttempts(out);
 }
 
 void DevToolsNetworkTransaction::FireThrottledCallback() {

@@ -295,6 +295,9 @@ void HttpStreamFactoryImpl::Job::OnStreamReadyCallback() {
   DCHECK(stream_.get());
   DCHECK(!IsPreconnecting());
   DCHECK(!stream_factory_->for_websockets_);
+
+  MaybeCopyConnectionAttemptsFromClientSocketHandleToRequest();
+
   if (IsOrphaned()) {
     stream_factory_->OnOrphanedJobComplete(this);
   } else {
@@ -315,6 +318,9 @@ void HttpStreamFactoryImpl::Job::OnWebSocketHandshakeStreamReadyCallback() {
   // An orphaned WebSocket job will be closed immediately and
   // never be ready.
   DCHECK(!IsOrphaned());
+
+  MaybeCopyConnectionAttemptsFromClientSocketHandleToRequest();
+
   request_->Complete(was_npn_negotiated(),
                      protocol_negotiated(),
                      using_spdy(),
@@ -335,6 +341,8 @@ void HttpStreamFactoryImpl::Job::OnNewSpdySessionReadyCallback() {
   base::WeakPtr<SpdySession> spdy_session = new_spdy_session_;
   new_spdy_session_.reset();
 
+  MaybeCopyConnectionAttemptsFromClientSocketHandleToRequest();
+
   // TODO(jgraettinger): Notify the factory, and let that notify |request_|,
   // rather than notifying |request_| directly.
   if (IsOrphaned()) {
@@ -353,6 +361,9 @@ void HttpStreamFactoryImpl::Job::OnNewSpdySessionReadyCallback() {
 
 void HttpStreamFactoryImpl::Job::OnStreamFailedCallback(int result) {
   DCHECK(!IsPreconnecting());
+
+  MaybeCopyConnectionAttemptsFromClientSocketHandleToRequest();
+
   if (IsOrphaned())
     stream_factory_->OnOrphanedJobComplete(this);
   else
@@ -363,6 +374,9 @@ void HttpStreamFactoryImpl::Job::OnStreamFailedCallback(int result) {
 void HttpStreamFactoryImpl::Job::OnCertificateErrorCallback(
     int result, const SSLInfo& ssl_info) {
   DCHECK(!IsPreconnecting());
+
+  MaybeCopyConnectionAttemptsFromClientSocketHandleToRequest();
+
   if (IsOrphaned())
     stream_factory_->OnOrphanedJobComplete(this);
   else
@@ -1532,6 +1546,14 @@ HttpStreamFactoryImpl::Job::GetSocketGroup() const {
     return ClientSocketPoolManager::FTP_GROUP;
 
   return ClientSocketPoolManager::NORMAL_GROUP;
+}
+
+void HttpStreamFactoryImpl::Job::
+    MaybeCopyConnectionAttemptsFromClientSocketHandleToRequest() {
+  if (IsOrphaned() || !connection_)
+    return;
+
+  request_->AddConnectionAttempts(connection_->connection_attempts());
 }
 
 }  // namespace net

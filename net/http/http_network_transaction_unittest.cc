@@ -62,6 +62,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_pool_manager.h"
+#include "net/socket/connection_attempts.h"
 #include "net/socket/mock_client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
@@ -263,6 +264,7 @@ class HttpNetworkTransactionTest
     std::string response_data;
     int64 totalReceivedBytes;
     LoadTimingInfo load_timing_info;
+    ConnectionAttempts connection_attempts;
   };
 
   void SetUp() override {
@@ -384,6 +386,7 @@ class HttpNetworkTransactionTest
               response_headers);
 
     out.totalReceivedBytes = trans->GetTotalReceivedBytes();
+    trans->GetConnectionAttempts(&out.connection_attempts);
     return out;
   }
 
@@ -668,6 +671,7 @@ TEST_P(HttpNetworkTransactionTest, SimpleGET) {
   EXPECT_EQ("hello world", out.response_data);
   int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
   EXPECT_EQ(reads_size, out.totalReceivedBytes);
+  EXPECT_EQ(0u, out.connection_attempts.size());
 }
 
 // Response with no status line.
@@ -12510,6 +12514,11 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncConnectError) {
   // We don't care whether this succeeds or fails, but it shouldn't crash.
   HttpRequestHeaders request_headers;
   trans->GetFullRequestHeaders(&request_headers);
+
+  ConnectionAttempts attempts;
+  trans->GetConnectionAttempts(&attempts);
+  ASSERT_EQ(1u, attempts.size());
+  EXPECT_EQ(ERR_CONNECTION_REFUSED, attempts[0].result);
 }
 
 TEST_P(HttpNetworkTransactionTest, HttpAsyncConnectError) {
@@ -12540,6 +12549,11 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncConnectError) {
   // We don't care whether this succeeds or fails, but it shouldn't crash.
   HttpRequestHeaders request_headers;
   trans->GetFullRequestHeaders(&request_headers);
+
+  ConnectionAttempts attempts;
+  trans->GetConnectionAttempts(&attempts);
+  ASSERT_EQ(1u, attempts.size());
+  EXPECT_EQ(ERR_CONNECTION_REFUSED, attempts[0].result);
 }
 
 TEST_P(HttpNetworkTransactionTest, HttpSyncWriteError) {
@@ -12884,6 +12898,11 @@ class FakeStreamRequest : public HttpStreamRequest,
   NextProto protocol_negotiated() const override { return kProtoUnknown; }
 
   bool using_spdy() const override { return false; }
+
+  const ConnectionAttempts& connection_attempts() const override {
+    static ConnectionAttempts no_attempts;
+    return no_attempts;
+  }
 
  private:
   RequestPriority priority_;

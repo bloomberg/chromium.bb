@@ -24,6 +24,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log.h"
+#include "net/socket/connection_attempts.h"
 
 namespace net {
 
@@ -217,6 +218,8 @@ class MockNetworkTransaction
       const BeforeProxyHeadersSentCallback& callback) override;
 
   int ResumeNetworkStart() override;
+
+  void GetConnectionAttempts(ConnectionAttempts* out) const override;
 
   CreateHelper* websocket_handshake_stream_create_helper() {
     return websocket_handshake_stream_create_helper_;

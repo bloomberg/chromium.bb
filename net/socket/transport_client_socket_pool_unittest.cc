@@ -185,6 +185,7 @@ TEST_F(TransportClientSocketPoolTest, Basic) {
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
   TestLoadTimingInfoConnectedNotReused(handle);
+  EXPECT_EQ(0u, handle.connection_attempts().size());
 }
 
 // Make sure that TransportConnectJob passes on its priority to its
@@ -213,6 +214,9 @@ TEST_F(TransportClientSocketPoolTest, InitHostResolutionFailure) {
             handle.Init("a", dest, kDefaultPriority, callback.callback(),
                         &pool_, BoundNetLog()));
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, callback.WaitForResult());
+  ASSERT_EQ(1u, handle.connection_attempts().size());
+  EXPECT_TRUE(handle.connection_attempts()[0].endpoint.address().empty());
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, handle.connection_attempts()[0].result);
 }
 
 TEST_F(TransportClientSocketPoolTest, InitConnectionFailure) {
@@ -224,12 +228,20 @@ TEST_F(TransportClientSocketPoolTest, InitConnectionFailure) {
             handle.Init("a", params_, kDefaultPriority, callback.callback(),
                         &pool_, BoundNetLog()));
   EXPECT_EQ(ERR_CONNECTION_FAILED, callback.WaitForResult());
+  ASSERT_EQ(1u, handle.connection_attempts().size());
+  EXPECT_EQ("127.0.0.1:80",
+            handle.connection_attempts()[0].endpoint.ToString());
+  EXPECT_EQ(ERR_CONNECTION_FAILED, handle.connection_attempts()[0].result);
 
   // Make the host resolutions complete synchronously this time.
   host_resolver_->set_synchronous_mode(true);
   EXPECT_EQ(ERR_CONNECTION_FAILED,
             handle.Init("a", params_, kDefaultPriority, callback.callback(),
                         &pool_, BoundNetLog()));
+  ASSERT_EQ(1u, handle.connection_attempts().size());
+  EXPECT_EQ("127.0.0.1:80",
+            handle.connection_attempts()[0].endpoint.ToString());
+  EXPECT_EQ(ERR_CONNECTION_FAILED, handle.connection_attempts()[0].result);
 }
 
 TEST_F(TransportClientSocketPoolTest, PendingRequests) {

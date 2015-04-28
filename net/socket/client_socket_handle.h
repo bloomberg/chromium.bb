@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
@@ -20,6 +21,7 @@
 #include "net/http/http_response_info.h"
 #include "net/log/net_log.h"
 #include "net/socket/client_socket_pool.h"
+#include "net/socket/connection_attempts.h"
 #include "net/socket/stream_socket.h"
 
 namespace net {
@@ -136,6 +138,9 @@ class NET_EXPORT ClientSocketHandle {
   void set_pending_http_proxy_connection(ClientSocketHandle* connection) {
     pending_http_proxy_connection_.reset(connection);
   }
+  void set_connection_attempts(const ConnectionAttempts& attempts) {
+    connection_attempts_ = attempts;
+  }
 
   // Only valid if there is no |socket_|.
   bool is_ssl_error() const {
@@ -150,6 +155,9 @@ class NET_EXPORT ClientSocketHandle {
   }
   ClientSocketHandle* release_pending_http_proxy_connection() {
     return pending_http_proxy_connection_.release();
+  }
+  const ConnectionAttempts& connection_attempts() {
+    return connection_attempts_;
   }
 
   StreamSocket* socket() { return socket_.get(); }
@@ -200,6 +208,7 @@ class NET_EXPORT ClientSocketHandle {
   bool is_ssl_error_;
   HttpResponseInfo ssl_error_response_info_;
   scoped_ptr<ClientSocketHandle> pending_http_proxy_connection_;
+  std::vector<ConnectionAttempt> connection_attempts_;
   base::TimeTicks init_time_;
   base::TimeDelta setup_time_;
 

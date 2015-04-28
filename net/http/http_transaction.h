@@ -10,6 +10,7 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
+#include "net/socket/connection_attempts.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 
 namespace net {
@@ -174,6 +175,8 @@ class NET_EXPORT_PRIVATE HttpTransaction {
 
   // Resumes the transaction after being deferred.
   virtual int ResumeNetworkStart() = 0;
+
+  virtual void GetConnectionAttempts(ConnectionAttempts* out) const = 0;
 };
 
 }  // namespace net

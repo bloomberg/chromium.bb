@@ -234,6 +234,11 @@ bool HttpStreamFactoryImpl::Request::using_spdy() const {
   return using_spdy_;
 }
 
+const ConnectionAttempts& HttpStreamFactoryImpl::Request::connection_attempts()
+    const {
+  return connection_attempts_;
+}
+
 void
 HttpStreamFactoryImpl::Request::RemoveRequestFromSpdySessionRequestMap() {
   if (spdy_session_key_.get()) {
@@ -313,6 +318,12 @@ void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
                                    using_spdy,
                                    net_log);
   }
+}
+
+void HttpStreamFactoryImpl::Request::AddConnectionAttempts(
+    const ConnectionAttempts& attempts) {
+  for (const auto& attempt : attempts)
+    connection_attempts_.push_back(attempt);
 }
 
 void HttpStreamFactoryImpl::Request::OrphanJobsExcept(Job* job) {

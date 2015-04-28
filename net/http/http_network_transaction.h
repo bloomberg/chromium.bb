@@ -20,6 +20,7 @@
 #include "net/http/http_transaction.h"
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_service.h"
+#include "net/socket/connection_attempts.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 
@@ -98,6 +99,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
                                   const SSLConfig& used_ssl_config,
                                   const ProxyInfo& used_proxy_info,
                                   HttpStream* stream) override;
+
+  void GetConnectionAttempts(ConnectionAttempts* out) const override;
 
  private:
   friend class HttpNetworkTransactionSSLTest;
@@ -257,6 +260,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   void SetStream(HttpStream* stream);
 
+  void CopyConnectionAttemptsFromStreamRequest();
+
   scoped_refptr<HttpAuthController>
       auth_controllers_[HttpAuth::AUTH_NUM_TARGETS];
 
@@ -326,6 +331,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   BeforeNetworkStartCallback before_network_start_callback_;
   BeforeProxyHeadersSentCallback before_proxy_headers_sent_callback_;
+
+  ConnectionAttempts connection_attempts_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkTransaction);
 };

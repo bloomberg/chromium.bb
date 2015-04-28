@@ -106,6 +106,7 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
   void SetBeforeProxyHeadersSentCallback(
       const BeforeProxyHeadersSentCallback& callback) override;
   int ResumeNetworkStart() override;
+  void GetConnectionAttempts(net::ConnectionAttempts* out) const override;
 
  protected:
   friend class test::DevToolsNetworkControllerHelper;

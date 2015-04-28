@@ -16,6 +16,7 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_server_properties.h"
+#include "net/socket/connection_attempts.h"
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
 // introduce any link dependency to net/websockets.
@@ -170,6 +171,9 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
 
   // Returns true if this stream is being fetched over SPDY.
   virtual bool using_spdy() const = 0;
+
+  // Returns socket-layer connection attempts made for this stream request.
+  virtual const ConnectionAttempts& connection_attempts() const = 0;
 };
 
 // The HttpStreamFactory defines an interface for creating usable HttpStreams.
