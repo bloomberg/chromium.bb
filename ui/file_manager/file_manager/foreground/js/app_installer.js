@@ -6,10 +6,14 @@
  * Manage the installation of apps.
  *
  * @param {string} itemId Item id to be installed.
+ * @param {!CWSWidgetContainer.PlatformDelegate} delegate Delegate for accessing
+ *     Chrome platform APIs.
  * @constructor
  * @struct
  */
-function AppInstaller(itemId) {
+function AppInstaller(itemId, delegate) {
+  /** @private {!CWSWidgetContainer.PlatformDelegate} */
+  this.delegate_ = delegate;
   this.itemId_ = itemId;
   this.callback_ = null;
 }
@@ -43,12 +47,9 @@ AppInstaller.USER_CANCELLED_ERROR_STR_ = 'User cancelled install';
  */
 AppInstaller.prototype.install = function(callback) {
   this.callback_ = callback;
-  chrome.fileManagerPrivate.installWebstoreItem(
+  this.delegate_.installWebstoreItem(
       this.itemId_,
-      false,  // Shows installation prompt.
-      function() {
-        this.onInstallCompleted_(chrome.runtime.lastError);
-      }.bind(this));
+      this.onInstallCompleted_.bind(this));
 };
 
 /**
@@ -63,8 +64,8 @@ AppInstaller.prototype.cancel = function() {
 /**
  * Called when the installation is completed.
  *
- * @param {!Object|undefined} error Undefined if the installation is success,
- *     otherwise an object which contains error message.
+ * @param {?string} error Null if the installation is success,
+ *     otherwise error message.
  * @private
  */
 AppInstaller.prototype.onInstallCompleted_ = function(error) {
@@ -72,14 +73,12 @@ AppInstaller.prototype.onInstallCompleted_ = function(error) {
     return;
 
   var installerResult = AppInstaller.Result.SUCCESS;
-  var errorMessage = '';
-  if (error) {
+  if (error !== null) {
     installerResult =
-        error.message == AppInstaller.USER_CANCELLED_ERROR_STR_ ?
+        error == AppInstaller.USER_CANCELLED_ERROR_STR_ ?
         AppInstaller.Result.CANCELLED :
         AppInstaller.Result.ERROR;
-    errorMessage = error.message;
   }
-  this.callback_(installerResult, errorMessage);
+  this.callback_(installerResult, error || '');
   this.callback_ = null;
 };

@@ -45,10 +45,19 @@ var CWS_WIDGET_ORIGIN = 'https://clients5.google.com';
  *
  * @param {!HTMLDocument} document The document to contain this container.
  * @param {!HTMLElement} parentNode Node to be parent for this container.
+ * @param {!CWSWidgetContainer.PlatformDelegate} delegate Delegate for accessing
+ *     Chrome platform APIs.
  * @param {!SuggestAppDialogState} state Static state of suggest app dialog.
  * @constructor
  */
-function CWSWidgetContainer(document, parentNode, state) {
+function CWSWidgetContainer(document, parentNode, delegate, state) {
+  /** @private {!CWSWidgetContainer.PlatformDelegate} */
+  this.delegate_ = delegate;
+
+  /** @private {!CWSWidgetContainer.MetricsRecorder} */
+  this.metricsRecorder_ =
+      new CWSWidgetContainer.MetricsRecorder(delegate.metricsImpl);
+
   /**
    * The document that will contain the container.
    * @const {!HTMLDocument}
@@ -117,7 +126,7 @@ function CWSWidgetContainer(document, parentNode, state) {
    */
   var webstoreButtonLabel = this.document_.createElement('span');
   webstoreButtonLabel.classList.add('cws-widget-webstore-button-label');
-  webstoreButtonLabel.textContent = str('SUGGEST_DIALOG_LINK_TO_WEBSTORE');
+  webstoreButtonLabel.textContent = this.delegate_.strings.LINK_TO_WEBSTORE;
   this.webstoreButton_.appendChild(webstoreButtonLabel);
 
   this.webstoreButton_.addEventListener(
@@ -209,6 +218,40 @@ function CWSWidgetContainer(document, parentNode, state) {
 }
 
 /**
+ * Strings required by the widget container.
+ * @typedef {{
+ *   UI_LOCALE: string,
+ *   LINK_TO_WEBSTORE: string,
+ *   INSTALLATION_FAILED_MESSAGE: string
+ * }}
+ */
+CWSWidgetContainer.Strings;
+
+/**
+ * Functions for reporting metrics for the widget.
+ * @typedef {{
+ *   recordEnum: function(string, number, number),
+ *   recordUserAction: function(string),
+ *   startInterval: function(string),
+ *   recordInterval: function(string)
+ * }}
+ */
+CWSWidgetContainer.MetricsImpl;
+
+/**
+ * Type for delegate used by CWSWidgetContainer component to access Chrome
+ * platform APIs.
+ * @typedef {{
+ *   strings: !CWSWidgetContainer.Strings,
+ *   metricsImpl: !CWSWidgetContainer.MetricsImpl,
+ *   installWebstoreItem: function(string, function(?string)),
+ *   getInstalledItems: function(function(?Array<!string>)),
+ *   requestWebstoreAccessToken: function(function(?string))
+ * }}
+ */
+CWSWidgetContainer.PlatformDelegate;
+
+/**
  * @enum {string}
  * @private
  */
@@ -293,15 +336,16 @@ CWSWidgetContainer.prototype.createTokenGetter_ = function() {
     }
 
     // Fetch or update the access token.
-    chrome.fileManagerPrivate.requestWebStoreAccessToken(
+    this.delegate_.requestWebstoreAccessToken(
+        /** @param {?string} accessToken The requested token. Null on error. */
         function(accessToken) {
-          if (chrome.runtime.lastError) {
-            reject('Error retriveing Web Store access token: ' +
-                           chrome.runtime.lastError.message);
+          if (!accessToken) {
+            reject('Error retriveing Web Store access token.');
+            return;
           }
           resolve(accessToken)
         });
-  });
+  }.bind(this));
 };
 
 /**
@@ -323,8 +367,8 @@ CWSWidgetContainer.prototype.ready = function() {
       return;
     }
 
-    CWSWidgetContainer.Metrics.recordShowDialog();
-    CWSWidgetContainer.Metrics.startLoad();
+    this.metricsRecorder_.recordShowDialog();
+    this.metricsRecorder_.startLoad();
 
     this.state_ = CWSWidgetContainer.State.GETTING_ACCESS_TOKEN;
 
@@ -399,7 +443,8 @@ CWSWidgetContainer.prototype.start = function(options,  webStoreUrl) {
         WEBVIEW_HEIGHT,
         this.widgetUrl_,
         this.widgetOrigin_,
-        this.options_);
+        this.options_,
+        this.delegate_);
     this.webviewClient_.addEventListener(CWSContainerClient.Events.LOADED,
                                          this.onWidgetLoaded_.bind(this));
     this.webviewClient_.addEventListener(CWSContainerClient.Events.LOAD_FAILED,
@@ -447,9 +492,9 @@ CWSWidgetContainer.prototype.onWebstoreLinkKeyDown_ = function(e) {
  * @private
  */
 CWSWidgetContainer.prototype.onWidgetLoaded_ = function(event) {
-  CWSWidgetContainer.Metrics.finishLoad();
-  CWSWidgetContainer.Metrics.recordLoad(
-      CWSWidgetContainer.Metrics.LOAD.SUCCEEDED);
+  this.metricsRecorder_.finishLoad();
+  this.metricsRecorder_.recordLoad(
+      CWSWidgetContainer.MetricsRecorder.LOAD.SUCCEEDED);
 
   this.state_ = CWSWidgetContainer.State.INITIALIZED;
 
@@ -463,7 +508,8 @@ CWSWidgetContainer.prototype.onWidgetLoaded_ = function(event) {
  * @private
  */
 CWSWidgetContainer.prototype.onWidgetLoadFailed_ = function(event) {
-  CWSWidgetContainer.Metrics.recordLoad(CWSWidgetContainer.Metrics.LOAD.FAILED);
+  this.metricsRecorder_.recordLoad(
+      CWSWidgetContainer.MetricsRecorder.LOAD.FAILED);
 
   this.spinnerLayerController_.setVisible(false);
   this.state_ = CWSWidgetContainer.State.INITIALIZE_FAILED_CLOSING;
@@ -489,7 +535,7 @@ CWSWidgetContainer.prototype.onInstallRequest_ = function(e) {
   var itemId = e.itemId;
   this.installingItemId_ = itemId;
 
-  this.appInstaller_ = new AppInstaller(itemId);
+  this.appInstaller_ = new AppInstaller(itemId, this.delegate_);
   this.appInstaller_.install(this.onItemInstalled_.bind(this));
 
   this.spinnerLayerController_.setVisible(true);
@@ -531,20 +577,20 @@ CWSWidgetContainer.prototype.onItemInstalled_ = function(result, error) {
 
   switch (result) {
     case AppInstaller.Result.SUCCESS:
-      CWSWidgetContainer.Metrics.recordInstall(
-          CWSWidgetContainer.Metrics.INSTALL.SUCCEEDED);
+      this.metricsRecorder_.recordInstall(
+          CWSWidgetContainer.MetricsRecorder.INSTALL.SUCCEEDED);
       // Wait for the widget webview container to dispatch INSTALL_DONE.
       break;
     case AppInstaller.Result.CANCELLED:
-      CWSWidgetContainer.Metrics.recordInstall(
-          CWSWidgetContainer.Metrics.INSTALL.CANCELLED);
+      this.metricsRecorder_.recordInstall(
+          CWSWidgetContainer.MetricsRecorder.INSTALL.CANCELLED);
       // User cancelled the installation. Do nothing.
       break;
     case AppInstaller.Result.ERROR:
-      CWSWidgetContainer.Metrics.recordInstall(
-          CWSWidgetContainer.Metrics.INSTALL.FAILED);
+      this.metricsRecorder_.recordInstall(
+          CWSWidgetContainer.MetricsRecorder.INSTALL.FAILED);
       this.errorDialog_.show(
-          str('SUGGEST_DIALOG_INSTALLATION_FAILED'),
+          this.delegate_.strings.INSTALLATION_FAILED_MESSAGE,
           null,
           null,
           null);
@@ -585,8 +631,8 @@ CWSWidgetContainer.prototype.finalizeAndGetResult = function() {
     case CWSWidgetContainer.State.GETTING_ACCESS_TOKEN:
     case CWSWidgetContainer.State.ACCESS_TOKEN_READY:
     case CWSWidgetContainer.State.INITIALIZING:
-      CWSWidgetContainer.Metrics.recordLoad(
-          CWSWidgetContainer.Metrics.LOAD.CANCELLED);
+      this.metricsRecorder_.recordLoad(
+          CWSWidgetContainer.MetricsRecorder.LOAD.CANCELLED);
       this.state_ = CWSWidgetContainer.State.CANCELED_CLOSING;
       break;
     case CWSWidgetContainer.State.WAITING_FOR_CONFIRMATION:
@@ -613,26 +659,26 @@ CWSWidgetContainer.prototype.finalizeAndGetResult = function() {
   switch (this.state_) {
     case CWSWidgetContainer.State.INSTALLED_CLOSING:
       result = CWSWidgetContainer.Result.INSTALL_SUCCESSFUL;
-      CWSWidgetContainer.Metrics.recordCloseDialog(
-          CWSWidgetContainer.Metrics.CLOSE_DIALOG.ITEM_INSTALLED);
+      this.metricsRecorder_.recordCloseDialog(
+          CWSWidgetContainer.MetricsRecorder.CLOSE_DIALOG.ITEM_INSTALLED);
       break;
     case CWSWidgetContainer.State.INITIALIZE_FAILED_CLOSING:
       result = CWSWidgetContainer.Result.FAILED;
       break;
     case CWSWidgetContainer.State.CANCELED_CLOSING:
       result = CWSWidgetContainer.Result.USER_CANCEL;
-      CWSWidgetContainer.Metrics.recordCloseDialog(
-          CWSWidgetContainer.Metrics.CLOSE_DIALOG.USER_CANCELLED);
+      this.metricsRecorder_.recordCloseDialog(
+          CWSWidgetContainer.MetricsRecorder.CLOSE_DIALOG.USER_CANCELLED);
       break;
     case CWSWidgetContainer.State.OPENING_WEBSTORE_CLOSING:
       result = CWSWidgetContainer.Result.WEBSTORE_LINK_OPENED;
-      CWSWidgetContainer.Metrics.recordCloseDialog(
-          CWSWidgetContainer.Metrics.CLOSE_DIALOG.WEBSTORE_LINK_OPENED);
+      this.metricsRecorder_.recordCloseDialog(
+          CWSWidgetContainer.MetricsRecorder.CLOSE_DIALOG.WEBSTORE_LINK_OPENED);
       break;
     default:
       result = CWSWidgetContainer.Result.USER_CANCEL;
-      CWSWidgetContainer.Metrics.recordCloseDialog(
-          CWSWidgetContainer.Metrics.CLOSE_DIALOG.UNKNOWN_ERROR);
+      this.metricsRecorder_.recordCloseDialog(
+          CWSWidgetContainer.MetricsRecorder.CLOSE_DIALOG.UNKNOWN_ERROR);
   }
 
   this.state_ = CWSWidgetContainer.State.UNINITIALIZED;
@@ -812,14 +858,19 @@ CWSWidgetContainer.SpinnerLayerController.prototype.setVisible =
 
 /**
  * Utility methods and constants to record histograms.
+ * @param {!CWSWidgetContainer.MetricsImpl} metricsImpl
+ * @constructor
  */
-CWSWidgetContainer.Metrics = {};
+CWSWidgetContainer.MetricsRecorder = function(metricsImpl) {
+  /** @private {!CWSWidgetContainer.MetricsImpl} */
+  this.metricsImpl_ = metricsImpl;
+};
 
 /**
  * @enum {number}
  * @const
  */
-CWSWidgetContainer.Metrics.LOAD = {
+CWSWidgetContainer.MetricsRecorder.LOAD = {
   SUCCEEDED: 0,
   CANCELLED: 1,
   FAILED: 2,
@@ -829,7 +880,7 @@ CWSWidgetContainer.Metrics.LOAD = {
  * @enum {number}
  * @const
  */
-CWSWidgetContainer.Metrics.CLOSE_DIALOG = {
+CWSWidgetContainer.MetricsRecorder.CLOSE_DIALOG = {
   UNKNOWN_ERROR: 0,
   ITEM_INSTALLED: 1,
   USER_CANCELLED: 2,
@@ -840,7 +891,7 @@ CWSWidgetContainer.Metrics.CLOSE_DIALOG = {
  * @enum {number}
  * @const
  */
-CWSWidgetContainer.Metrics.INSTALL = {
+CWSWidgetContainer.MetricsRecorder.INSTALL = {
   SUCCEEDED: 0,
   CANCELLED: 1,
   FAILED: 2,
@@ -848,39 +899,40 @@ CWSWidgetContainer.Metrics.INSTALL = {
 
 /**
  * @param {number} result Result of load, which must be defined in
- *     CWSWidgetContainer.Metrics.LOAD.
+ *     CWSWidgetContainer.MetricsRecorder.LOAD.
  */
-CWSWidgetContainer.Metrics.recordLoad = function(result) {
+CWSWidgetContainer.MetricsRecorder.prototype.recordLoad = function(result) {
   if (0 <= result && result < 3)
-    metrics.recordEnum('SuggestApps.Load', result, 3);
+    this.metricsImpl_.recordEnum('SuggestApps.Load', result, 3);
 };
 
 /**
  * @param {number} reason Reason of closing dialog, which must be defined in
- *     CWSWidgetContainer.Metrics.CLOSE_DIALOG.
+ *     CWSWidgetContainer.MetricsRecorder.CLOSE_DIALOG.
  */
-CWSWidgetContainer.Metrics.recordCloseDialog = function(reason) {
+CWSWidgetContainer.MetricsRecorder.prototype.recordCloseDialog = function(
+    reason) {
   if (0 <= reason && reason < 4)
-    metrics.recordEnum('SuggestApps.CloseDialog', reason, 4);
+    this.metricsImpl_.recordEnum('SuggestApps.CloseDialog', reason, 4);
 };
 
 /**
  * @param {number} result Result of installation, which must be defined in
- *     CWSWidgetContainer.Metrics.INSTALL.
+ *     CWSWidgetContainer.MetricsRecorder.INSTALL.
  */
-CWSWidgetContainer.Metrics.recordInstall = function(result) {
+CWSWidgetContainer.MetricsRecorder.prototype.recordInstall = function(result) {
   if (0 <= result && result < 3)
-    metrics.recordEnum('SuggestApps.Install', result, 3);
+    this.metricsImpl_.recordEnum('SuggestApps.Install', result, 3);
 };
 
-CWSWidgetContainer.Metrics.recordShowDialog = function() {
-  metrics.recordUserAction('SuggestApps.ShowDialog');
+CWSWidgetContainer.MetricsRecorder.prototype.recordShowDialog = function() {
+  this.metricsImpl_.recordUserAction('SuggestApps.ShowDialog');
 };
 
-CWSWidgetContainer.Metrics.startLoad = function() {
-  metrics.startInterval('SuggestApps.LoadTime');
+CWSWidgetContainer.MetricsRecorder.prototype.startLoad = function() {
+  this.metricsImpl_.startInterval('SuggestApps.LoadTime');
 };
 
-CWSWidgetContainer.Metrics.finishLoad = function() {
-  metrics.recordInterval('SuggestApps.LoadTime');
+CWSWidgetContainer.MetricsRecorder.prototype.finishLoad = function() {
+  this.metricsImpl_.recordInterval('SuggestApps.LoadTime');
 };

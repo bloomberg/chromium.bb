@@ -33,7 +33,8 @@ function SuggestAppsDialog(parentNode, state) {
    * @const {!CWSWidgetContainer}
    * @private
    */
-  this.widget_ = new CWSWidgetContainer(this.document_, widgetRoot, state);
+  this.widget_ = new CWSWidgetContainer(
+      this.document_, widgetRoot, this.createWidgetPlatformDelegate_(), state);
 
   this.initialFocusElement_ = this.widget_.getInitiallyFocusedElement();
 
@@ -112,6 +113,71 @@ SuggestAppsDialog.prototype.showProviders = function(onDialogClosed) {
       str('SUGGEST_DIALOG_FOR_PROVIDERS_TITLE'),
       null /* webStoreUrl */,
       onDialogClosed);
+};
+
+/**
+ * Creates platform delegate for CWSWidgetContainer.
+ * @return {!CWSWidgetContainer.PlatformDelegate}
+ * @private
+ */
+SuggestAppsDialog.prototype.createWidgetPlatformDelegate_ = function() {
+  return {
+    strings: {
+      UI_LOCALE: util.getCurrentLocaleOrDefault(),
+      LINK_TO_WEBSTORE: str('SUGGEST_DIALOG_LINK_TO_WEBSTORE'),
+      INSTALLATION_FAILED_MESSAGE: str('SUGGEST_DIALOG_INSTALLATION_FAILED')
+    },
+
+    metricsImpl: metrics,
+
+    /**
+     * @param {string} itemId,
+     * @param {function(?string)} callback Callback argument is set to error
+     *     message (null on success)
+     */
+    installWebstoreItem: function(itemId, callback) {
+      chrome.fileManagerPrivate.installWebstoreItem(
+          itemId,
+          false /* show installation prompt */,
+          function() {
+            callback(chrome.runtime.lastError ?
+                chrome.runtime.lastError.message || 'UNKNOWN ERROR' : null);
+          });
+    },
+
+    /**
+     * @param {function(?Array.<!string>)} callback Callback
+     *     argument is a list of installed item ids (null on error).
+     */
+    getInstalledItems: function(callback) {
+      chrome.fileManagerPrivate.getProvidingExtensions(function(items) {
+        if (chrome.runtime.lastError) {
+          console.error('Failed to get installed items: ' +
+                        chrome.runtime.lastError.message);
+          callback(null);
+          return;
+        }
+        callback(items.map(function(item) {
+          return item.extensionId;
+        }));
+      });
+    },
+
+    /**
+     * @param {function(?string)} callback Callback argument is the requested
+     *     token (null on error).
+     */
+    requestWebstoreAccessToken: function(callback) {
+      chrome.fileManagerPrivate.requestWebStoreAccessToken(function(token) {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError.message);
+          callback(null);
+          return;
+        }
+        callback(token);
+      });
+    }
+  };
 };
 
 /**

@@ -9,10 +9,15 @@
  * @param {string} url Share Url for an entry.
  * @param {string} target Target (scheme + host + port) of the widget.
  * @param {Object<string, *>} options Options to be sent to the dialog host.
+ * @param {!CWSWidgetContainer.PlatformDelegate} delegate Delegate for accessing
+ *     Chrome platform APIs.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function CWSContainerClient(webView, width, height, url, target, options) {
+function CWSContainerClient(webView, width, height, url, target, options,
+                            delegate) {
+  /** @private {!CWSWidgetContainer.PlatformDelegate} */
+  this.delegate_ = delegate;
   this.webView_ = webView;
   this.width_ = width;
   this.height_ = height;
@@ -194,23 +199,26 @@ CWSContainerClient.prototype.postInstallSuccessMessage_ = function(itemId) {
  */
 CWSContainerClient.prototype.postInitializeMessage_ = function() {
   new Promise(function(fulfill, reject) {
-    chrome.fileManagerPrivate.getProvidingExtensions(function(items) {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError.message);
-        return;
-      }
-      fulfill(items.map(function(item) {
-        return item.extensionId;
-      }));
+    this.delegate_.getInstalledItems(
+        /**
+         * @param {?Array.<!string>} items Installed items.
+         *     Null on error.
+         */
+        function(items) {
+          if (!items) {
+            reject('Failed to retrive installed items.');
+            return;
+          }
+          fulfill(items);
     })
-  }).then(
+  }.bind(this)).then(
       /**
        * @param {!Array<string>} preinstalledExtensionIDs
        */
       function(preinstalledExtensionIDs) {
         var message = {
           message: 'initialize',
-          hl: util.getCurrentLocaleOrDefault(),
+          hl: this.delegate_.strings.UI_LOCALE,
           width: this.width_,
           height: this.height_,
           preinstalled_items: preinstalledExtensionIDs,
