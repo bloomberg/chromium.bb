@@ -389,7 +389,7 @@ void InstalledLoader::RecordExtensionsMetrics() {
     // From now on, don't count component extensions, since they are only
     // extensions as an implementation detail. Continue to count unpacked
     // extensions for a few metrics.
-    if (location == Manifest::COMPONENT)
+    if (Manifest::IsComponentLocation(location))
       continue;
 
     // Histogram for non-webstore extensions overriding new tab page should
