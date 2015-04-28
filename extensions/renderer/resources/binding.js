@@ -307,6 +307,10 @@ Binding.prototype = {
                   $String.replace(enumValue, /([a-z])([A-Z])/g, '$1_$2');
               // Replace my_Enum-Foo with my_Enum_Foo:
               propertyName = $String.replace(propertyName, /\W/g, '_');
+              // If the first character is a digit (we know it must be one of
+              // a digit, a letter, or an underscore), precede it with an
+              // underscore.
+              propertyName = $String.replace(propertyName, /^(\d)/g, '_$1');
               // Uppercase (replace my_Enum_Foo with MY_ENUM_FOO):
               propertyName = $String.toUpperCase(propertyName);
               mod[id][propertyName] = enumValue;
