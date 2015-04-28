@@ -9,6 +9,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.JavaScriptCallback;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -40,7 +42,7 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mTestController = new TestController();
-        setUpContentView(mTestController, "testController");
+        injectObjectAndReload(mTestController, "testController");
     }
 
     @SmallTest
@@ -123,5 +125,14 @@ public class JavaBridgeChildFrameTest extends JavaBridgeTestBase {
         });
         resultCallback.waitForResult();
         return result[0];
+    }
+
+    /**
+     * Loads data on the UI thread and blocks until onPageFinished is called.
+     */
+    private void loadDataSync(final NavigationController navigationController, final String data,
+            final String mimeType, final boolean isBase64Encoded) throws Throwable {
+        loadUrl(navigationController, mTestCallbackHelperContainer,
+                LoadUrlParams.createLoadDataParams(data, mimeType, isBase64Encoded));
     }
 }

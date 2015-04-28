@@ -108,7 +108,7 @@ public class JavaBridgeReturnValuesTest extends JavaBridgeTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mTestObject = new TestObject();
-        setUpContentView(mTestObject, "testObject");
+        injectObjectAndReload(mTestObject, "testObject");
     }
 
     // Note that this requires that we can pass a JavaScript string to Java.

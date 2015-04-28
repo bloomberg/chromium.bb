@@ -91,7 +91,7 @@ public class JavaBridgeArrayTest extends JavaBridgeTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mTestObject = new TestObject();
-        setUpContentView(mTestObject, "testObject");
+        injectObjectAndReload(mTestObject, "testObject");
     }
 
     @SmallTest

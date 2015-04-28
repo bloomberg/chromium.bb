@@ -186,9 +186,8 @@ public class JavaBridgeCoercionTest extends JavaBridgeTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mTestObject = new TestObject();
-        setUpContentView(mTestObject, "testObject");
         mTestController = new TestController();
-        setUpContentView(mTestController, "testController");
+        injectObjectsAndReload(mTestObject, "testObject", mTestController, "testController", null);
     }
 
     // Test passing a 32-bit integer JavaScript number to a method of an

@@ -151,7 +151,7 @@ public class JavaBridgeArrayCoercionTest extends JavaBridgeTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mTestObject = new TestObject();
-        setUpContentView(mTestObject, "testObject");
+        injectObjectAndReload(mTestObject, "testObject");
     }
 
     // Note that all tests use a single element array for simplicity. We test

@@ -16,7 +16,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
 
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -96,33 +95,13 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mTestController = new TestController();
-        setUpContentView(mTestController, "testController");
+        injectObjectAndReload(mTestController, "testController");
     }
 
     // Note that this requires that we can pass a JavaScript string to Java.
     protected String executeJavaScriptAndGetStringResult(String script) throws Throwable {
         executeJavaScript("testController.setStringValue(" + script + ");");
         return mTestController.waitForStringValue();
-    }
-
-    protected void injectObjectAndReload(final Object object, final String name) throws Throwable {
-        injectObjectAndReload(object, name, null);
-    }
-
-    protected void injectObjectAndReload(final Object object, final String name,
-            final Class<? extends Annotation> requiredAnnotation) throws Throwable {
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mTestCallbackHelperContainer.getOnPageFinishedHelper();
-        int currentCallCount = onPageFinishedHelper.getCallCount();
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getContentViewCore().addPossiblyUnsafeJavascriptInterface(object,
-                        name, requiredAnnotation);
-                getContentViewCore().getWebContents().getNavigationController().reload(true);
-            }
-        });
-        onPageFinishedHelper.waitForCallback(currentCallCount);
     }
 
     protected void synchronousPageReload() throws Throwable {
@@ -410,20 +389,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             }
         }
         final TestObject testObject = new TestObject();
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mTestCallbackHelperContainer.getOnPageFinishedHelper();
-        int currentCallCount = onPageFinishedHelper.getCallCount();
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
-                        testObject, "testObject1", null);
-                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
-                        testObject, "testObject2", null);
-                getContentViewCore().getWebContents().getNavigationController().reload(true);
-            }
-        });
-        onPageFinishedHelper.waitForCallback(currentCallCount);
+        injectObjectsAndReload(testObject, "testObject1", testObject, "testObject2", null);
         executeJavaScript("testObject1.method()");
         assertEquals(1, mTestController.waitForIntValue());
         executeJavaScript("testObject2.method()");
@@ -462,20 +428,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
                 return innerObject;
             }
         };
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mTestCallbackHelperContainer.getOnPageFinishedHelper();
-        int currentCallCount = onPageFinishedHelper.getCallCount();
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
-                        object, "testObject", null);
-                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
-                        innerObject, "innerObject", null);
-                getContentViewCore().getWebContents().getNavigationController().reload(true);
-            }
-        });
-        onPageFinishedHelper.waitForCallback(currentCallCount);
+        injectObjectsAndReload(object, "testObject", innerObject, "innerObject", null);
         executeJavaScript("testObject.getInnerObject().method()");
         assertEquals(1, mTestController.waitForIntValue());
         executeJavaScript("innerObject.method()");
@@ -1039,16 +992,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         }
         final TestObject testObject1 = new TestObject(1);
         final TestObject testObject2 = new TestObject(2);
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
-                        testObject1, "testObject1", null);
-                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
-                        testObject2, "testObject2", null);
-                getContentViewCore().getWebContents().getNavigationController().reload(true);
-            }
-        });
+        injectObjectsAndReload(testObject1, "testObject1", testObject2, "testObject2", null);
         executeJavaScript("testObject1.method()");
         assertEquals(1, mTestController.waitForIntValue());
         executeJavaScript("testObject2.method()");

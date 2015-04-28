@@ -10,11 +10,12 @@ import android.view.WindowManager;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content_shell_apk.ContentShellTestBase;
 
 /**
  * Test suite for viewport-related properties.
  */
-public class ViewportTest extends ContentViewTestBase {
+public class ViewportTest extends ContentShellTestBase {
 
     protected String evaluateStringValue(String expression) throws Throwable {
         return JavaScriptUtils.executeJavaScriptAndWaitForResult(getWebContents(),
