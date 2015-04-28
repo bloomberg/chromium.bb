@@ -8,10 +8,9 @@ from measurements import smoothness_controller
 
 
 class Smoothness(page_test.PageTest):
-  def __init__(self, enable_auto_issuing_marker=False):
+  def __init__(self):
     super(Smoothness, self).__init__()
     self._smoothness_controller = None
-    self._enable_auto_issuing_marker = enable_auto_issuing_marker
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
@@ -20,12 +19,8 @@ class Smoothness(page_test.PageTest):
     options.AppendExtraBrowserArgs('--running-performance-benchmark')
 
   def WillNavigateToPage(self, page, tab):
-    self._smoothness_controller = smoothness_controller.SmoothnessController(
-        auto_issuing_marker=self._enable_auto_issuing_marker)
-    self._smoothness_controller.SetUp(page, tab)
-
-  def WillRunActions(self, page, tab):
-    self._smoothness_controller.Start(tab)
+    self._smoothness_controller = smoothness_controller.SmoothnessController()
+    self._smoothness_controller.Start(page, tab)
 
   def DidRunActions(self, page, tab):
     self._smoothness_controller.Stop(tab)

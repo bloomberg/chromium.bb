@@ -21,10 +21,8 @@ class Repaint(page_test.PageTest):
 
   def WillRunActions(self, page, tab):
     tab.WaitForDocumentReadyStateToBeComplete()
-    self._smoothness_controller = smoothness_controller.SmoothnessController(
-        auto_issuing_marker=False)
-    self._smoothness_controller.SetUp(page, tab)
-    self._smoothness_controller.Start(tab)
+    self._smoothness_controller = smoothness_controller.SmoothnessController()
+    self._smoothness_controller.Start(page, tab)
 
   def DidRunActions(self, page, tab):
     self._smoothness_controller.Stop(tab)

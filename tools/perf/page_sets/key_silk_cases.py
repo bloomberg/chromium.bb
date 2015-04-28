@@ -319,13 +319,16 @@ class Page17(KeySilkCasesPage):
     self.StressHideyBars(action_runner)
 
   def StressHideyBars(self, action_runner):
-    with action_runner.CreateGestureInteraction('ScrollAction'):
+    with action_runner.CreateGestureInteraction(
+        'ScrollAction', repeatable=True):
       action_runner.ScrollElement(
         selector='#messages', direction='down', speed_in_pixels_per_second=200)
-    with action_runner.CreateGestureInteraction('ScrollAction'):
+    with action_runner.CreateGestureInteraction(
+        'ScrollAction', repeatable=True):
       action_runner.ScrollElement(
           selector='#messages', direction='up', speed_in_pixels_per_second=200)
-    with action_runner.CreateGestureInteraction('ScrollAction'):
+    with action_runner.CreateGestureInteraction(
+        'ScrollAction', repeatable=True):
       action_runner.ScrollElement(
           selector='#messages', direction='down',
           speed_in_pixels_per_second=200)
@@ -343,7 +346,7 @@ class Page18(KeySilkCasesPage):
       self.ToggleDrawer(action_runner)
 
   def ToggleDrawer(self, action_runner):
-    with action_runner.CreateInteraction('Action_TapAction'):
+    with action_runner.CreateInteraction('Action_TapAction', repeatable=True):
       action_runner.TapElement('#menu-button')
       action_runner.Wait(1)
 
@@ -482,12 +485,14 @@ class Page23(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    with action_runner.CreateGestureInteraction('ScrollAction'):
+    with action_runner.CreateGestureInteraction('ScrollAction',
+                                                repeatable=True):
       action_runner.ScrollPage(
           distance_expr='window.innerHeight / 2',
           direction='down',
           use_touch=True)
-    with action_runner.CreateInteraction('Wait'):
+    with action_runner.CreateGestureInteraction('ScrollAction',
+                                                repeatable=True):
       action_runner.Wait(1)
 
 
@@ -530,11 +535,11 @@ class Page25(KeySilkCasesPage):
     action_runner.Wait(1)
 
   def PerformPageInteractions(self, action_runner):
-    with action_runner.CreateGestureInteraction('SwipeAction'):
+    with action_runner.CreateGestureInteraction('SwipeAction', repeatable=True):
       action_runner.SwipeElement(
           direction='left', distance=100,
           element_function='document.getElementById(":f")')
-    with action_runner.CreateInteraction('Wait'):
+    with action_runner.CreateGestureInteraction('SwipeAction', repeatable=True):
       action_runner.Wait(1)
 
 
@@ -577,7 +582,7 @@ class SVGIconRaster(KeySilkCasesPage):
     for i in xrange(9):
       button_func = ('document.getElementById("demo").$.'
                      'buttons.children[%d]') % i
-      with action_runner.CreateInteraction('Action_TapAction'):
+      with action_runner.CreateInteraction('Action_TapAction', repeatable=True):
         action_runner.TapElement(element_function=button_func)
         action_runner.Wait(1)
 

@@ -53,7 +53,7 @@ class PolymerCalculatorPage(PolymerPage):
     self.SlidePanel(action_runner)
 
   def TapButton(self, action_runner):
-    with action_runner.CreateInteraction('Action_TapAction'):
+    with action_runner.CreateInteraction('PolymerAnimation', repeatable=True):
       action_runner.TapElement(element_function='''
           document.querySelector(
               'body /deep/ #outerPanels'
@@ -72,7 +72,7 @@ class PolymerCalculatorPage(PolymerPage):
           return outer.opened || outer.wideMode;
           }());''')
     if not opened:
-      with action_runner.CreateInteraction('Action_SwipeAction'):
+      with action_runner.CreateInteraction('PolymerAnimation', repeatable=True):
         action_runner.SwipeElement(
             left_start_ratio=0.1, top_start_ratio=0.2,
             direction='left', distance=300, speed_in_pixels_per_second=5000,
@@ -155,12 +155,12 @@ class PolymerSampler(PolymerPage):
   def ScrollContentPane(self, action_runner):
     element_function = (self.iframe_js + '.querySelector('
         '"core-scroll-header-panel").$.mainContainer')
-    with action_runner.CreateInteraction('Scroll_Page'):
+    with action_runner.CreateInteraction('Scroll_Page', repeatable=True):
       action_runner.ScrollElement(use_touch=True,
                                   direction='down',
                                   distance='900',
                                   element_function=element_function)
-    with action_runner.CreateInteraction('Scroll_Page'):
+    with action_runner.CreateInteraction('Scroll_Page', repeatable=True):
       action_runner.ScrollElement(use_touch=True,
                                   direction='up',
                                   distance='900',
@@ -201,7 +201,7 @@ class PolymerSampler(PolymerPage):
         action_function(action_runner, element_query)
 
   def TapWidget(self, action_runner, element_function):
-    with action_runner.CreateInteraction('Tap_Widget'):
+    with action_runner.CreateInteraction('Tap_Widget', repeatable=True):
       action_runner.TapElement(element_function=element_function)
       action_runner.Wait(1) # wait for e.g. animations on the widget
 
