@@ -76,63 +76,56 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View v = inflater.inflate(R.layout.sync_enter_passphrase, null);
 
-        boolean isGaia = getArguments().getBoolean(ARG_IS_GAIA);
         TextView promptText = (TextView) v.findViewById(R.id.prompt_text);
         final EditText passphrase = (EditText) v.findViewById(R.id.passphrase);
         final Context context = passphrase.getContext();
         TextView resetText = (TextView) v.findViewById(R.id.reset_text);
         ProfileSyncService profileSyncService = ProfileSyncService.get(context);
         String accountName = profileSyncService.getCurrentSignedInAccountText() + "\n\n";
-        if (isGaia) {
-            promptText.setText(accountName + context.getText(
-                    R.string.sync_enter_google_passphrase));
-            passphrase.setHint(R.string.sync_enter_google_passphrase_hint);
-        } else {
-            if (profileSyncService.hasExplicitPassphraseTime()) {
-                resetText.setText(SpanApplier.applySpans(
-                        context.getString(R.string.sync_passphrase_reset_instructions),
-                        new SpanInfo("<link>", "</link>", new ClickableSpan() {
-                            @Override
-                            public void onClick(View view) {
-                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(
-                                        context.getText(R.string.sync_dashboard_url).toString()));
-                                intent.putExtra(Browser.EXTRA_APPLICATION_ID,
-                                        context.getPackageName());
-                                intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
-                                intent.setPackage(context.getPackageName());
-                                context.startActivity(intent);
-                                Activity activity = getActivity();
-                                if (activity != null) activity.finish();
-                            }
-                        })));
-                resetText.setMovementMethod(LinkMovementMethod.getInstance());
-                resetText.setVisibility(View.VISIBLE);
-                PassphraseType passphraseType = profileSyncService.getPassphraseType();
-                switch (passphraseType) {
-                    case FROZEN_IMPLICIT_PASSPHRASE:
-                        promptText.setText(accountName + profileSyncService
-                                .getSyncEnterGooglePassphraseBodyWithDateText());
-                        break;
-                    case CUSTOM_PASSPHRASE:
-                        promptText.setText(accountName + profileSyncService
-                                .getSyncEnterCustomPassphraseBodyWithDateText());
-                        break;
-                    case IMPLICIT_PASSPHRASE: // Falling through intentionally.
-                    case KEYSTORE_PASSPHRASE: // Falling through intentionally.
-                    default:
-                        Log.w(TAG, "Found incorrect passphrase type "
-                                + passphraseType
-                                + ". Falling back to default string.");
-                        promptText.setText(accountName
-                                + profileSyncService.getSyncEnterCustomPassphraseBodyText());
-                        break;
-                }
-            } else {
-                promptText.setText(accountName
-                        + profileSyncService.getSyncEnterCustomPassphraseBodyText());
+        resetText.setText(SpanApplier.applySpans(
+                context.getString(R.string.sync_passphrase_reset_instructions),
+                new SpanInfo("<link>", "</link>", new ClickableSpan() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(
+                                context.getText(R.string.sync_dashboard_url).toString()));
+                        intent.putExtra(Browser.EXTRA_APPLICATION_ID,
+                                context.getPackageName());
+                        intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+                        intent.setPackage(context.getPackageName());
+                        context.startActivity(intent);
+                        Activity activity = getActivity();
+                        if (activity != null) activity.finish();
+                    }
+                })));
+        resetText.setMovementMethod(LinkMovementMethod.getInstance());
+        resetText.setVisibility(View.VISIBLE);
+        PassphraseType passphraseType = profileSyncService.getPassphraseType();
+        if (profileSyncService.hasExplicitPassphraseTime()) {
+            switch (passphraseType) {
+                case FROZEN_IMPLICIT_PASSPHRASE:
+                    promptText.setText(accountName + profileSyncService
+                            .getSyncEnterGooglePassphraseBodyWithDateText());
+                    break;
+                case CUSTOM_PASSPHRASE:
+                    promptText.setText(accountName + profileSyncService
+                            .getSyncEnterCustomPassphraseBodyWithDateText());
+                    break;
+                case IMPLICIT_PASSPHRASE: // Falling through intentionally.
+                case KEYSTORE_PASSPHRASE: // Falling through intentionally.
+                default:
+                    Log.w(TAG, "Found incorrect passphrase type "
+                            + passphraseType
+                            + ". Falling back to default string.");
+                    promptText.setText(accountName
+                            + profileSyncService.getSyncEnterCustomPassphraseBodyText());
+                    break;
             }
-            passphrase.setHint(R.string.sync_enter_custom_passphrase_hint);
+        } else {
+            promptText.setText(accountName
+                    + profileSyncService.getSyncEnterCustomPassphraseBodyText());
         }
+        passphrase.setHint(R.string.sync_enter_custom_passphrase_hint);
         passphrase.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {

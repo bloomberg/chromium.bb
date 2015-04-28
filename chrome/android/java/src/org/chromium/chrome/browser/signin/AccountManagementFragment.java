@@ -502,15 +502,7 @@ public class AccountManagementFragment extends PreferenceFragment
             }
 
             if (profileSyncService.isPassphraseRequiredForDecryption()) {
-                switch (profileSyncService.getPassphraseType()) {
-                    case IMPLICIT_PASSPHRASE:
-                        return res.getString(R.string.sync_need_password);
-                    case FROZEN_IMPLICIT_PASSPHRASE: // Falling through intentionally.
-                    case CUSTOM_PASSPHRASE:
-                        return res.getString(R.string.sync_need_passphrase);
-                    default:
-                        break;
-                }
+                return res.getString(R.string.sync_need_passphrase);
             }
         }
 

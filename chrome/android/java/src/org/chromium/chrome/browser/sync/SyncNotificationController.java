@@ -72,10 +72,7 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         } else if (mProfileSyncService.isSyncInitialized()
                 && mProfileSyncService.isPassphraseRequiredForDecryption()) {
             switch (mProfileSyncService.getPassphraseType()) {
-                case IMPLICIT_PASSPHRASE:
-                    message = R.string.sync_need_password;
-                    intent = createPasswordIntent();
-                    break;
+                case IMPLICIT_PASSPHRASE: // Falling through intentionally.
                 case FROZEN_IMPLICIT_PASSPHRASE: // Falling through intentionally.
                 case CUSTOM_PASSPHRASE:
                     message = R.string.sync_need_passphrase;

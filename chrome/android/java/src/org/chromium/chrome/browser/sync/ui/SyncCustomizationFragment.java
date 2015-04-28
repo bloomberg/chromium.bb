@@ -292,13 +292,8 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
             return;
         }
         if (mProfileSyncService.isPassphraseRequiredForDecryption() && isAdded()) {
-            if (mProfileSyncService.isUsingSecondaryPassphrase()) {
-                mSyncEncryption.setSummary(
-                        errorSummary(getString(R.string.sync_need_passphrase)));
-            } else {
-                mSyncEncryption.setSummary(
-                        errorSummary(getString(R.string.sync_need_password)));
-            }
+            mSyncEncryption.setSummary(
+                    errorSummary(getString(R.string.sync_need_passphrase)));
         }
     }
 
@@ -434,11 +429,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     @Override
     public void onPassphraseEntered(String passphrase, boolean isGaia, boolean isUpdate) {
         if (isUpdate) {
-            if (isGaia) {
-                handleEncryptWithGaia(passphrase);
-            } else {
-                handleEncryptWithCustomPassphrase(passphrase);
-            }
+            handleEncryptWithCustomPassphrase(passphrase);
         } else {
             handleDecryption(passphrase);
         }
@@ -467,25 +458,13 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     @Override
     public void onPassphraseTypeSelected(PassphraseType type) {
         boolean isAllDataEncrypted = mProfileSyncService.isEncryptEverythingEnabled();
-        boolean isPassphraseGaia = !mProfileSyncService.isUsingSecondaryPassphrase();
+        boolean isUsingSecondaryPassphrase = mProfileSyncService.isUsingSecondaryPassphrase();
 
-        if (type == PassphraseType.IMPLICIT_PASSPHRASE) {
-            // custom passphrase -> gaia is not allowed
-            assert (isPassphraseGaia);
-            boolean isGaia = true;
-            boolean isUpdate = !isAllDataEncrypted;
-            displayPasswordDialog(isGaia, isUpdate);
-        } else if (type == PassphraseType.CUSTOM_PASSPHRASE) {
-            if (isPassphraseGaia) {
-                displayCustomPasswordDialog();
-            } else {
-                // Now using the existing custom passphrase to encrypt
-                // everything.
-                boolean isGaia = false;
-                boolean isUpdate = false;
-                displayPasswordDialog(isGaia, isUpdate);
-            }
-        }
+        // The passphrase type should only ever be selected if the account doesn't have
+        // full encryption enabled. Otherwise both options should be disabled.
+        assert !isAllDataEncrypted;
+        assert !isUsingSecondaryPassphrase;
+        displayCustomPasswordDialog();
     }
 
     /**
@@ -500,7 +479,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         }
         if (preference == mSyncEncryption && mProfileSyncService.isSyncInitialized()) {
             if (mProfileSyncService.isPassphraseRequiredForDecryption()) {
-                displayPasswordDialog(!mProfileSyncService.isUsingSecondaryPassphrase(), false);
+                displayPasswordDialog(false, false);
             } else {
                 displayPasswordTypeDialog();
                 return true;
