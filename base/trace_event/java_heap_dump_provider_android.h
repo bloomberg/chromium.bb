@@ -17,8 +17,7 @@ class JavaHeapDumpProvider : public MemoryDumpProvider {
   static JavaHeapDumpProvider* GetInstance();
 
   // MemoryDumpProvider implementation.
-  bool DumpInto(ProcessMemoryDump* pmd) override;
-  const char* GetFriendlyName() const override;
+  bool OnMemoryDump(ProcessMemoryDump* pmd) override;
 
  private:
   friend struct DefaultSingletonTraits<JavaHeapDumpProvider>;

@@ -12,7 +12,6 @@ namespace trace_event {
 
 namespace {
 
-const char kDumperFriendlyName[] = "JavaHeap";
 const char kDumperName[] = "java_heap";
 
 }  // namespace
@@ -31,7 +30,7 @@ JavaHeapDumpProvider::~JavaHeapDumpProvider() {
 
 // Called at trace dump point time. Creates a snapshot with the memory counters
 // for the current process.
-bool JavaHeapDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
+bool JavaHeapDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
   MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump(kDumperName, MemoryAllocatorDump::kRootHeap);
 
@@ -43,10 +42,6 @@ bool JavaHeapDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
   dump->set_allocated_objects_count(0);
   dump->set_allocated_objects_size_in_bytes(total_heap_size - free_heap_size);
   return true;
-}
-
-const char* JavaHeapDumpProvider::GetFriendlyName() const {
-  return kDumperFriendlyName;
 }
 
 }  // namespace trace_event

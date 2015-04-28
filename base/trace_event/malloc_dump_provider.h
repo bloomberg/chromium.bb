@@ -19,8 +19,7 @@ class BASE_EXPORT MallocDumpProvider : public MemoryDumpProvider {
   static MallocDumpProvider* GetInstance();
 
   // MemoryDumpProvider implementation.
-  bool DumpInto(ProcessMemoryDump* pmd) override;
-  const char* GetFriendlyName() const override;
+  bool OnMemoryDump(ProcessMemoryDump* pmd) override;
 
  private:
   friend struct DefaultSingletonTraits<MallocDumpProvider>;

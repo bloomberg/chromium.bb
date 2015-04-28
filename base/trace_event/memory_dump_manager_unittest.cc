@@ -81,44 +81,35 @@ class MemoryDumpManagerTest : public testing::Test {
 
 class MockDumpProvider : public MemoryDumpProvider {
  public:
-  MockDumpProvider() {}
+  MockDumpProvider() : last_session_state_(nullptr) {}
 
+  // Ctor used by the RespectTaskRunnerAffinity test.
   explicit MockDumpProvider(
       const scoped_refptr<SingleThreadTaskRunner>& task_runner)
-      : MemoryDumpProvider(task_runner) {}
+      : last_session_state_(nullptr), task_runner_(task_runner) {}
 
-  // Ctor for the SharedSessionState test.
-  explicit MockDumpProvider(const std::string& id) {
-    DeclareAllocatorAttribute("allocator" + id, "attr" + id, "type" + id);
-  }
+  virtual ~MockDumpProvider() {}
 
-  MOCK_METHOD1(DumpInto, bool(ProcessMemoryDump* pmd));
+  MOCK_METHOD1(OnMemoryDump, bool(ProcessMemoryDump* pmd));
 
-  // DumpInto() override for the ActiveDumpProviderConsistency test.
-  bool DumpIntoAndCheckDumpProviderCurrentlyActive(ProcessMemoryDump* pmd) {
-    EXPECT_EQ(
-        this,
-        MemoryDumpManager::GetInstance()->dump_provider_currently_active());
+  // OnMemoryDump() override for the RespectTaskRunnerAffinity test.
+  bool OnMemoryDump_CheckTaskRunner(ProcessMemoryDump* pmd) {
+    EXPECT_TRUE(task_runner_->RunsTasksOnCurrentThread());
     return true;
   }
 
-  // DumpInto() override for the RespectTaskRunnerAffinity test.
-  bool DumpIntoAndCheckTaskRunner(ProcessMemoryDump* pmd) {
-    EXPECT_TRUE(task_runner()->RunsTasksOnCurrentThread());
+  // OnMemoryDump() override for the SharedSessionState test.
+  bool OnMemoryDump_CheckSessionState(ProcessMemoryDump* pmd) {
+    MemoryDumpSessionState* cur_session_state = pmd->session_state().get();
+    if (last_session_state_)
+      EXPECT_EQ(last_session_state_, cur_session_state);
+    last_session_state_ = cur_session_state;
     return true;
   }
 
-  // DumpInto() override for the SharedSessionState test.
-  bool DumpIntoAndCheckSessionState(ProcessMemoryDump* pmd) {
-    EXPECT_TRUE(pmd->session_state());
-    const auto& attrs_type_info =
-        pmd->session_state()->allocators_attributes_type_info;
-    EXPECT_TRUE(attrs_type_info.Exists("allocator1", "attr1"));
-    EXPECT_TRUE(attrs_type_info.Exists("allocator2", "attr2"));
-    return true;
-  }
-
-  const char* GetFriendlyName() const override { return "MockDumpProvider"; }
+ private:
+  MemoryDumpSessionState* last_session_state_;
+  scoped_refptr<SingleThreadTaskRunner> task_runner_;
 };
 
 TEST_F(MemoryDumpManagerTest, SingleDumper) {
@@ -127,14 +118,14 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
 
   // Check that the dumper is not called if the memory category is not enabled.
   EnableTracing("foo-and-bar-but-not-memory");
-  EXPECT_CALL(mdp, DumpInto(_)).Times(0);
+  EXPECT_CALL(mdp, OnMemoryDump(_)).Times(0);
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 
   // Now repeat enabling the memory category and check that the dumper is
   // invoked this time.
   EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp, DumpInto(_)).Times(3).WillRepeatedly(Return(true));
+  EXPECT_CALL(mdp, OnMemoryDump(_)).Times(3).WillRepeatedly(Return(true));
   for (int i = 0; i < 3; ++i)
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
@@ -143,22 +134,26 @@ TEST_F(MemoryDumpManagerTest, SingleDumper) {
 
   // Finally check the unregister logic (no calls to the mdp after unregister).
   EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp, DumpInto(_)).Times(0);
+  EXPECT_CALL(mdp, OnMemoryDump(_)).Times(0);
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   TraceLog::GetInstance()->SetDisabled();
 }
 
 TEST_F(MemoryDumpManagerTest, SharedSessionState) {
-  MockDumpProvider mdp1("1");  // Will declare an allocator property "attr1".
-  MockDumpProvider mdp2("2");  // Will declare an allocator property "attr2".
+  MockDumpProvider mdp1;
+  MockDumpProvider mdp2;
   mdm_->RegisterDumpProvider(&mdp1);
   mdm_->RegisterDumpProvider(&mdp2);
 
   EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp1, DumpInto(_)).Times(2).WillRepeatedly(
-      Invoke(&mdp1, &MockDumpProvider::DumpIntoAndCheckSessionState));
-  EXPECT_CALL(mdp2, DumpInto(_)).Times(2).WillRepeatedly(
-      Invoke(&mdp2, &MockDumpProvider::DumpIntoAndCheckSessionState));
+  EXPECT_CALL(mdp1, OnMemoryDump(_))
+      .Times(2)
+      .WillRepeatedly(
+          Invoke(&mdp1, &MockDumpProvider::OnMemoryDump_CheckSessionState));
+  EXPECT_CALL(mdp2, OnMemoryDump(_))
+      .Times(2)
+      .WillRepeatedly(
+          Invoke(&mdp2, &MockDumpProvider::OnMemoryDump_CheckSessionState));
 
   for (int i = 0; i < 2; ++i)
     mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
@@ -173,8 +168,8 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   // Enable only mdp1.
   mdm_->RegisterDumpProvider(&mdp1);
   EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp1, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
-  EXPECT_CALL(mdp2, DumpInto(_)).Times(0);
+  EXPECT_CALL(mdp1, OnMemoryDump(_)).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(mdp2, OnMemoryDump(_)).Times(0);
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 
@@ -182,16 +177,16 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
   mdm_->UnregisterDumpProvider(&mdp1);
   mdm_->RegisterDumpProvider(&mdp2);
   EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp1, DumpInto(_)).Times(0);
-  EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(mdp1, OnMemoryDump(_)).Times(0);
+  EXPECT_CALL(mdp2, OnMemoryDump(_)).Times(1).WillRepeatedly(Return(true));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 
   // Enable both mdp1 and mdp2.
   mdm_->RegisterDumpProvider(&mdp1);
   EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp1, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
-  EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(mdp1, OnMemoryDump(_)).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(mdp2, OnMemoryDump(_)).Times(1).WillRepeatedly(Return(true));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 }
@@ -214,11 +209,11 @@ TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
     threads.back()->Start();
     mdps.push_back(new MockDumpProvider(threads.back()->task_runner()));
     MockDumpProvider* mdp = mdps.back();
-    mdm_->RegisterDumpProvider(mdp);
-    EXPECT_CALL(*mdp, DumpInto(_))
+    mdm_->RegisterDumpProvider(mdp, threads.back()->task_runner());
+    EXPECT_CALL(*mdp, OnMemoryDump(_))
         .Times(i)
         .WillRepeatedly(
-            Invoke(mdp, &MockDumpProvider::DumpIntoAndCheckTaskRunner));
+            Invoke(mdp, &MockDumpProvider::OnMemoryDump_CheckTaskRunner));
   }
 
   EnableTracing(kTraceCategory);
@@ -266,39 +261,14 @@ TEST_F(MemoryDumpManagerTest, DisableFailingDumpers) {
   mdm_->RegisterDumpProvider(&mdp2);
   EnableTracing(kTraceCategory);
 
-  EXPECT_CALL(mdp1, DumpInto(_)).Times(1).WillRepeatedly(Return(false));
-  EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(mdp1, OnMemoryDump(_)).Times(1).WillRepeatedly(Return(false));
+  EXPECT_CALL(mdp2, OnMemoryDump(_)).Times(1).WillRepeatedly(Return(true));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
 
-  EXPECT_CALL(mdp1, DumpInto(_)).Times(0);
-  EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(false));
+  EXPECT_CALL(mdp1, OnMemoryDump(_)).Times(0);
+  EXPECT_CALL(mdp2, OnMemoryDump(_)).Times(1).WillRepeatedly(Return(false));
   mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
 
-  DisableTracing();
-}
-
-// TODO(primiano): remove once crbug.com/466121 gets fixed.
-// Ascertains that calls to MDM::dump_provider_currently_active() actually
-// returns the MemoryDumpProvider currently active during the DumpInto() call.
-TEST_F(MemoryDumpManagerTest, ActiveDumpProviderConsistency) {
-  MockDumpProvider mdp1;
-  MockDumpProvider mdp2;
-
-  mdm_->RegisterDumpProvider(&mdp1);
-  mdm_->RegisterDumpProvider(&mdp2);
-  EnableTracing(kTraceCategory);
-  EXPECT_CALL(mdp1, DumpInto(_))
-      .Times(2)
-      .WillRepeatedly(Invoke(
-          &mdp1,
-          &MockDumpProvider::DumpIntoAndCheckDumpProviderCurrentlyActive));
-  EXPECT_CALL(mdp2, DumpInto(_))
-      .Times(2)
-      .WillRepeatedly(Invoke(
-          &mdp2,
-          &MockDumpProvider::DumpIntoAndCheckDumpProviderCurrentlyActive));
-  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
-  mdm_->RequestGlobalDump(MemoryDumpType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 }
 

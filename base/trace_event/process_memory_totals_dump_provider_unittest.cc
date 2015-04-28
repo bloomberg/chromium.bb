@@ -17,13 +17,13 @@ TEST(ProcessMemoryTotalsDumpProviderTest, DumpRSS) {
   scoped_ptr<ProcessMemoryDump> pmd_after(new ProcessMemoryDump(nullptr));
 
   ProcessMemoryTotalsDumpProvider::rss_bytes_for_testing = 1024;
-  pmtdp->DumpInto(pmd_before.get());
+  pmtdp->OnMemoryDump(pmd_before.get());
 
   // Pretend that the RSS of the process increased of +1M.
   const size_t kAllocSize = 1048576;
   ProcessMemoryTotalsDumpProvider::rss_bytes_for_testing += kAllocSize;
 
-  pmtdp->DumpInto(pmd_after.get());
+  pmtdp->OnMemoryDump(pmd_after.get());
 
   ProcessMemoryTotalsDumpProvider::rss_bytes_for_testing = 0;
 

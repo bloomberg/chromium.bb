@@ -11,12 +11,6 @@
 namespace base {
 namespace trace_event {
 
-namespace {
-
-const char kDumperFriendlyName[] = "Malloc";
-
-}  // namespace
-
 // static
 MallocDumpProvider* MallocDumpProvider::GetInstance() {
   return Singleton<MallocDumpProvider,
@@ -31,7 +25,7 @@ MallocDumpProvider::~MallocDumpProvider() {
 
 // Called at trace dump point time. Creates a snapshot the memory counters for
 // the current process.
-bool MallocDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
+bool MallocDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
   struct mallinfo info = mallinfo();
   DCHECK_GE(info.arena + info.hblkhd, info.uordblks);
 
@@ -54,10 +48,6 @@ bool MallocDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
   dump->set_allocated_objects_size_in_bytes(info.uordblks);
 
   return true;
-}
-
-const char* MallocDumpProvider::GetFriendlyName() const {
-  return kDumperFriendlyName;
 }
 
 }  // namespace trace_event

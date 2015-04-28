@@ -15,10 +15,6 @@
 namespace base {
 namespace trace_event {
 
-namespace {
-const char kDumperFriendlyName[] = "ProcessMemoryMaps";
-}
-
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 // static
 std::istream* ProcessMemoryMapsDumpProvider::proc_smaps_for_testing = nullptr;
@@ -167,7 +163,7 @@ ProcessMemoryMapsDumpProvider::~ProcessMemoryMapsDumpProvider() {
 
 // Called at trace dump point time. Creates a snapshot the memory maps for the
 // current process.
-bool ProcessMemoryMapsDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
+bool ProcessMemoryMapsDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
   uint32 res = 0;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -187,10 +183,6 @@ bool ProcessMemoryMapsDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
   }
 
   return false;
-}
-
-const char* ProcessMemoryMapsDumpProvider::GetFriendlyName() const {
-  return kDumperFriendlyName;
 }
 
 }  // namespace trace_event

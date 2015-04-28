@@ -13,14 +13,14 @@
 namespace base {
 namespace trace_event {
 
-TEST(WinHeapDumpProviderTest, DumpInto) {
+TEST(WinHeapDumpProviderTest, OnMemoryDump) {
   ProcessMemoryDump pmd(make_scoped_refptr(new MemoryDumpSessionState()));
 
   WinHeapDumpProvider* winheap_dump_provider =
       WinHeapDumpProvider::GetInstance();
   ASSERT_NE(static_cast<WinHeapDumpProvider*>(nullptr), winheap_dump_provider);
 
-  ASSERT_TRUE(winheap_dump_provider->DumpInto(&pmd));
+  ASSERT_TRUE(winheap_dump_provider->OnMemoryDump(&pmd));
 }
 
 }  // namespace trace_event

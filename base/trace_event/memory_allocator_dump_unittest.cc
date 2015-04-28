@@ -17,19 +17,12 @@ namespace {
 
 class FakeMemoryAllocatorDumpProvider : public MemoryDumpProvider {
  public:
-  FakeMemoryAllocatorDumpProvider() {
-    DeclareAllocatorAttribute("foobar_allocator", "attr1", "count");
-    DeclareAllocatorAttribute("foobar_allocator", "attr2", "bytes");
-  }
-
-  bool DumpInto(ProcessMemoryDump* pmd) override {
+  bool OnMemoryDump(ProcessMemoryDump* pmd) override {
     MemoryAllocatorDump* root_heap = pmd->CreateAllocatorDump(
         "foobar_allocator", MemoryAllocatorDump::kRootHeap);
     root_heap->set_physical_size_in_bytes(4096);
     root_heap->set_allocated_objects_count(42);
     root_heap->set_allocated_objects_size_in_bytes(1000);
-    root_heap->SetAttribute("attr1", 1234);
-    root_heap->SetAttribute("attr2", 99);
 
     MemoryAllocatorDump* sub_heap =
         pmd->CreateAllocatorDump("foobar_allocator", "sub_heap");
@@ -43,18 +36,14 @@ class FakeMemoryAllocatorDumpProvider : public MemoryDumpProvider {
 
     return true;
   }
-
-  const char* GetFriendlyName() const override { return "FooBar Allocator"; }
 };
 }  // namespace
 
 TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   FakeMemoryAllocatorDumpProvider fmadp;
   ProcessMemoryDump pmd(make_scoped_refptr(new MemoryDumpSessionState()));
-  pmd.session_state()->allocators_attributes_type_info.Update(
-      fmadp.allocator_attributes_type_info());
 
-  fmadp.DumpInto(&pmd);
+  fmadp.OnMemoryDump(&pmd);
 
   ASSERT_EQ(3u, pmd.allocator_dumps().size());
 
@@ -67,10 +56,6 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
   EXPECT_EQ(4096u, root_heap->physical_size_in_bytes());
   EXPECT_EQ(42u, root_heap->allocated_objects_count());
   EXPECT_EQ(1000u, root_heap->allocated_objects_size_in_bytes());
-
-  // Check the extra attributes of |root_heap|.
-  EXPECT_EQ(1234, root_heap->GetIntegerAttribute("attr1"));
-  EXPECT_EQ(99, root_heap->GetIntegerAttribute("attr2"));
 
   const MemoryAllocatorDump* sub_heap =
       pmd.GetAllocatorDump("foobar_allocator", "sub_heap");

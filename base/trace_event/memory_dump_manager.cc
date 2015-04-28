@@ -144,8 +144,7 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
 }
 
 MemoryDumpManager::MemoryDumpManager()
-    : dump_provider_currently_active_(nullptr),
-      delegate_(nullptr),
+    : delegate_(nullptr),
       memory_tracing_enabled_(0),
       skip_core_dumpers_auto_registration_for_testing_(false) {
   g_next_guid.GetNext();  // Make sure that first guid is not zero.
@@ -178,30 +177,41 @@ void MemoryDumpManager::SetDelegate(MemoryDumpManagerDelegate* delegate) {
   delegate_ = delegate;
 }
 
-void MemoryDumpManager::RegisterDumpProvider(MemoryDumpProvider* mdp) {
+void MemoryDumpManager::RegisterDumpProvider(
+    MemoryDumpProvider* mdp,
+    const scoped_refptr<SingleThreadTaskRunner>& task_runner) {
+  MemoryDumpProviderInfo mdp_info(task_runner);
   AutoLock lock(lock_);
-  dump_providers_registered_.insert(mdp);
+  dump_providers_.insert(std::make_pair(mdp, mdp_info));
+}
+
+void MemoryDumpManager::RegisterDumpProvider(MemoryDumpProvider* mdp) {
+  RegisterDumpProvider(mdp, nullptr);
 }
 
 void MemoryDumpManager::UnregisterDumpProvider(MemoryDumpProvider* mdp) {
   AutoLock lock(lock_);
 
+  auto it = dump_providers_.find(mdp);
+  if (it == dump_providers_.end())
+    return;
+
+  const MemoryDumpProviderInfo& mdp_info = it->second;
   // Unregistration of a MemoryDumpProvider while tracing is ongoing is safe
   // only if the MDP has specified a thread affinity (via task_runner()) AND
   // the unregistration happens on the same thread (so the MDP cannot unregister
-  // and DumpInto() at the same time).
+  // and OnMemoryDump() at the same time).
   // Otherwise, it is not possible to guarantee that its unregistration is
   // race-free. If you hit this DCHECK, your MDP has a bug.
   DCHECK_IMPLIES(
       subtle::NoBarrier_Load(&memory_tracing_enabled_),
-      mdp->task_runner() && mdp->task_runner()->BelongsToCurrentThread())
-      << "The MemoryDumpProvider " << mdp->GetFriendlyName() << " attempted to "
-      << "unregister itself in a racy way. Please file a crbug.";
+      mdp_info.task_runner && mdp_info.task_runner->BelongsToCurrentThread())
+      << "The MemoryDumpProvider attempted to unregister itself in a racy way. "
+      << " Please file a crbug.";
 
   // Remove from the enabled providers list. This is to deal with the case that
   // UnregisterDumpProvider is called while the trace is enabled.
-  dump_providers_enabled_.erase(mdp);
-  dump_providers_registered_.erase(mdp);
+  dump_providers_.erase(it);
 }
 
 void MemoryDumpManager::RequestGlobalDump(
@@ -244,25 +254,26 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
   ProcessMemoryDump* pmd = &pmd_holder->process_memory_dump;
   bool did_any_provider_dump = false;
 
-  // Iterate over the active dump providers and invoke DumpInto(pmd).
+  // Iterate over the active dump providers and invoke OnMemoryDump(pmd).
   // The MDM guarantees linearity (at most one MDP is active within one
   // process) and thread-safety (MDM enforces the right locking when entering /
-  // leaving the MDP.DumpInto() call). This is to simplify the clients' design
+  // leaving the MDP.OnMemoryDump() call). This is to simplify the clients'
+  // design
   // and not let the MDPs worry about locking.
   // As regards thread affinity, depending on the MDP configuration (see
-  // memory_dump_provider.h), the DumpInto() invocation can happen:
+  // memory_dump_provider.h), the OnMemoryDump() invocation can happen:
   //  - Synchronousy on the MDM thread, when MDP.task_runner() is not set.
   //  - Posted on MDP.task_runner(), when MDP.task_runner() is set.
   {
     AutoLock lock(lock_);
-    for (auto dump_provider_iter = dump_providers_enabled_.begin();
-         dump_provider_iter != dump_providers_enabled_.end();) {
-      // InvokeDumpProviderLocked will remove the MDP from the set if it fails.
-      MemoryDumpProvider* mdp = *dump_provider_iter;
-      ++dump_provider_iter;
-      if (mdp->task_runner()) {
-        // The DumpInto() call must be posted.
-        bool did_post_async_task = mdp->task_runner()->PostTask(
+    for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it) {
+      MemoryDumpProvider* mdp = it->first;
+      MemoryDumpProviderInfo* mdp_info = &it->second;
+      if (mdp_info->disabled)
+        continue;
+      if (mdp_info->task_runner) {
+        // The OnMemoryDump() call must be posted.
+        bool did_post_async_task = mdp_info->task_runner->PostTask(
             FROM_HERE, Bind(&MemoryDumpManager::ContinueAsyncProcessDump,
                             Unretained(this), Unretained(mdp), pmd_holder));
         // The thread underlying the TaskRunner might have gone away.
@@ -282,27 +293,24 @@ void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
     FinalizeDumpAndAddToTrace(pmd_holder);
 }
 
-// Invokes the MemoryDumpProvider.DumpInto(), taking care of the failsafe logic
-// which disables the dumper when failing (crbug.com/461788).
+// Invokes the MemoryDumpProvider.OnMemoryDump(), taking care of the fail-safe
+// logic which disables the dumper when failing (crbug.com/461788).
 bool MemoryDumpManager::InvokeDumpProviderLocked(MemoryDumpProvider* mdp,
                                                  ProcessMemoryDump* pmd) {
   lock_.AssertAcquired();
-  dump_provider_currently_active_ = mdp;
-  bool dump_successful = mdp->DumpInto(pmd);
-  dump_provider_currently_active_ = nullptr;
+  bool dump_successful = mdp->OnMemoryDump(pmd);
   if (!dump_successful) {
-    LOG(ERROR) << "The memory dumper " << mdp->GetFriendlyName()
-               << " failed, possibly due to sandboxing (crbug.com/461788), "
-                  "disabling it for current process. Try restarting chrome "
-                  "with the --no-sandbox switch.";
-    dump_providers_enabled_.erase(mdp);
+    LOG(ERROR) << "The memory dumper failed, possibly due to sandboxing "
+                  "(crbug.com/461788), disabling it for current process. Try "
+                  "restarting chrome with the --no-sandbox switch.";
+    dump_providers_.find(mdp)->second.disabled = true;
   }
   return dump_successful;
 }
 
 // This is posted to arbitrary threads as a continuation of CreateProcessDump(),
-// when one or more MemoryDumpProvider(s) require the DumpInto() call to happen
-// on a different thread.
+// when one or more MemoryDumpProvider(s) require the OnMemoryDump() call to
+// happen on a different thread.
 void MemoryDumpManager::ContinueAsyncProcessDump(
     MemoryDumpProvider* mdp,
     scoped_refptr<ProcessMemoryDumpHolder> pmd_holder) {
@@ -316,7 +324,7 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
 
     // Check if the MemoryDumpProvider is still there. It might have been
     // destroyed and unregistered while hopping threads.
-    if (dump_providers_enabled_.count(mdp))
+    if (dump_providers_.count(mdp))
       InvokeDumpProviderLocked(mdp, pmd);
 
     // Finalize the dump appending it to the trace if this was the last
@@ -341,18 +349,16 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 
   // There is no point starting the tracing without a delegate.
   if (!enabled || !delegate_) {
-    dump_providers_enabled_.clear();
+    // Disable all the providers.
+    for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it)
+      it->second.disabled = true;
     return;
   }
 
-  // Merge the dictionary of allocator attributes from all dump providers
-  // into the session state.
   session_state_ = new MemoryDumpSessionState();
-  for (const MemoryDumpProvider* mdp : dump_providers_registered_) {
-    session_state_->allocators_attributes_type_info.Update(
-        mdp->allocator_attributes_type_info());
-  }
-  dump_providers_enabled_ = dump_providers_registered_;
+  for (auto it = dump_providers_.begin(); it != dump_providers_.end(); ++it)
+    it->second.disabled = false;
+
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
 
   if (delegate_->IsCoordinatorProcess()) {
@@ -365,9 +371,15 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 void MemoryDumpManager::OnTraceLogDisabled() {
   AutoLock lock(lock_);
   periodic_dump_timer_.Stop();
-  dump_providers_enabled_.clear();
   subtle::NoBarrier_Store(&memory_tracing_enabled_, 0);
   session_state_ = nullptr;
+}
+
+MemoryDumpManager::MemoryDumpProviderInfo::MemoryDumpProviderInfo(
+    const scoped_refptr<SingleThreadTaskRunner>& task_runner)
+    : task_runner(task_runner), disabled(false) {
+}
+MemoryDumpManager::MemoryDumpProviderInfo::~MemoryDumpProviderInfo() {
 }
 
 }  // namespace trace_event

@@ -38,7 +38,7 @@ WinHeapDumpProvider* WinHeapDumpProvider::GetInstance() {
                    LeakySingletonTraits<WinHeapDumpProvider>>::get();
 }
 
-bool WinHeapDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
+bool WinHeapDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
   // Retrieves the number of heaps in the current process.
   DWORD number_of_heaps = ::GetProcessHeaps(0, NULL);
   WinHeapInfo all_heap_info = {0};
@@ -72,10 +72,6 @@ bool WinHeapDumpProvider::DumpInto(ProcessMemoryDump* pmd) {
     return false;
 
   return true;
-}
-
-const char* WinHeapDumpProvider::GetFriendlyName() const {
-  return kDumperFriendlyName;
 }
 
 bool WinHeapDumpProvider::GetHeapInformation(

@@ -17,6 +17,9 @@
 #include "base/trace_event/trace_event.h"
 
 namespace base {
+
+class SingleThreadTaskRunner;
+
 namespace trace_event {
 
 namespace {
@@ -46,6 +49,12 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   // MemoryDumpManager does NOT take memory ownership of |mdp|, which is
   // expected to either be a singleton or unregister itself.
+  // If the optional |task_runner| argument is non-null, all the calls to the
+  // |mdp| will be issues on the given thread. Otherwise, the |mdp| should be
+  // able to handle calls on arbitrary threads.
+  void RegisterDumpProvider(
+      MemoryDumpProvider* mdp,
+      const scoped_refptr<SingleThreadTaskRunner>& task_runner);
   void RegisterDumpProvider(MemoryDumpProvider* mdp);
   void UnregisterDumpProvider(MemoryDumpProvider* mdp);
 
@@ -65,12 +74,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
-  // Returns the MemoryDumpProvider which is currently being dumping into a
-  // ProcessMemoryDump via DumpInto(...) if any, nullptr otherwise.
-  MemoryDumpProvider* dump_provider_currently_active() const {
-    return dump_provider_currently_active_;
-  }
-
   // Returns the MemoryDumpSessionState object, which is shared by all the
   // ProcessMemoryDump and MemoryAllocatorDump instances through all the tracing
   // session lifetime.
@@ -79,6 +82,17 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   }
 
  private:
+  // Descriptor struct used to hold information about registered MDPs. It is
+  // deliberately copyable, in order to allow to be used as hash_map value.
+  struct MemoryDumpProviderInfo {
+    MemoryDumpProviderInfo(
+        const scoped_refptr<SingleThreadTaskRunner>& task_runner);
+    ~MemoryDumpProviderInfo();
+
+    scoped_refptr<SingleThreadTaskRunner> task_runner;  // Optional.
+    bool disabled;  // For fail-safe logic (auto-disable failing MDPs).
+  };
+
   friend struct DefaultDeleter<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
   friend class MemoryDumpManagerDelegate;
@@ -102,11 +116,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
       MemoryDumpProvider* mdp,
       scoped_refptr<ProcessMemoryDumpHolder> pmd_holder);
 
-  hash_set<MemoryDumpProvider*> dump_providers_registered_;  // Not owned.
-  hash_set<MemoryDumpProvider*> dump_providers_enabled_;     // Not owned.
-
-  // TODO(primiano): this is required only until crbug.com/466121 gets fixed.
-  MemoryDumpProvider* dump_provider_currently_active_;  // Not owned.
+  hash_map<MemoryDumpProvider*, MemoryDumpProviderInfo> dump_providers_;
 
   // Shared among all the PMDs to keep state scoped to the tracing session.
   scoped_refptr<MemoryDumpSessionState> session_state_;
