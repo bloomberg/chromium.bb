@@ -109,7 +109,8 @@ void CardUnmaskPromptViews::GotVerificationResult(
     // TODO(estade): it's somewhat jarring when the error comes back too
     // quickly.
     overlay_animation_.Reset();
-    storage_row_->SetAlpha(255);
+    if (storage_row_)
+      storage_row_->SetAlpha(255);
     progress_overlay_->SetVisible(false);
 
     if (allow_retry) {
