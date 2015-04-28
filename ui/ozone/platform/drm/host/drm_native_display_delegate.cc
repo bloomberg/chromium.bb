@@ -27,10 +27,13 @@ namespace {
 typedef base::Callback<void(const base::FilePath&, base::File)>
     OnOpenDeviceReplyCallback;
 
-void OpenDeviceOnWorkerThread(
-    const base::FilePath& path,
-    const scoped_refptr<base::TaskRunner>& reply_runner,
-    const OnOpenDeviceReplyCallback& callback) {
+const char* kDisplayActionString[] = {
+    "ADD",
+    "REMOVE",
+    "CHANGE",
+};
+
+base::File OpenDrmDevice(const base::FilePath& path) {
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
                             base::File::FLAG_WRITE);
 
@@ -40,10 +43,21 @@ void OpenDeviceOnWorkerThread(
   CHECK(!info.is_directory);
   CHECK(path.DirName() == base::FilePath("/dev/dri"));
 
-  if (file.IsValid()) {
-    reply_runner->PostTask(
-        FROM_HERE, base::Bind(callback, path, base::Passed(file.Pass())));
+  if (!file.IsValid()) {
+    LOG(ERROR) << "Failed to open " << path.value() << ": "
+               << base::File::ErrorToString(file.error_details());
   }
+
+  return file.Pass();
+}
+
+void OpenDeviceOnWorkerThread(
+    const base::FilePath& path,
+    const scoped_refptr<base::TaskRunner>& reply_runner,
+    const OnOpenDeviceReplyCallback& callback) {
+  base::File file = OpenDrmDevice(path);
+  reply_runner->PostTask(FROM_HERE,
+                         base::Bind(callback, path, base::Passed(file.Pass())));
 }
 
 class DrmDisplaySnapshotProxy : public DisplaySnapshotProxy {
@@ -76,8 +90,10 @@ DrmNativeDisplayDelegate::DrmNativeDisplayDelegate(
       display_manager_(display_manager),
       primary_graphics_card_path_(primary_graphics_card_path),
       has_dummy_display_(false),
+      task_pending_(false),
       weak_ptr_factory_(this) {
   proxy_->RegisterHandler(this);
+  drm_devices_.insert(primary_graphics_card_path);
 }
 
 DrmNativeDisplayDelegate::~DrmNativeDisplayDelegate() {
@@ -226,57 +242,87 @@ void DrmNativeDisplayDelegate::OnDeviceEvent(const DeviceEvent& event) {
   if (event.device_type() != DeviceEvent::DISPLAY)
     return;
 
-  switch (event.action_type()) {
-    case DeviceEvent::ADD:
-      VLOG(1) << "Got display added event for " << event.path().value();
-      // The default card is a special case since it needs to be opened early on
-      // the GPU process in order to initialize EGL. If it is opened here as
-      // well, it will cause a race with opening it in the GPU process and the
-      // GPU process may fail initialization.
-      // TODO(dnicoara) Remove this when the media stack does not require super
-      // early initialization.
-      if (event.path() == primary_graphics_card_path_)
-        return;
-
-      base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(&OpenDeviceOnWorkerThread, event.path(),
-                     base::ThreadTaskRunnerHandle::Get(),
-                     base::Bind(&DrmNativeDisplayDelegate::OnNewGraphicsDevice,
-                                weak_ptr_factory_.GetWeakPtr())),
-          false /* task_is_slow */);
-      return;
-    case DeviceEvent::CHANGE:
-      VLOG(1) << "Got display changed event for " << event.path().value();
-      break;
-    case DeviceEvent::REMOVE:
-      VLOG(1) << "Got display removed event for " << event.path().value();
-      // It shouldn't be possible to remove this device.
-      DCHECK(primary_graphics_card_path_ != event.path())
-          << "Got event to remove primary graphics card "
-          << event.path().value();
-      proxy_->Send(new OzoneGpuMsg_RemoveGraphicsDevice(event.path()));
-      break;
-  }
-
-  FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
-                    OnConfigurationChanged());
+  event_queue_.push(DisplayEvent(event.action_type(), event.path()));
+  ProcessEvent();
 }
 
-void DrmNativeDisplayDelegate::OnNewGraphicsDevice(const base::FilePath& path,
-                                                   base::File file) {
-  DCHECK(file.IsValid());
-  proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
-      path, base::FileDescriptor(file.Pass())));
+void DrmNativeDisplayDelegate::ProcessEvent() {
+  while (!event_queue_.empty() && !task_pending_) {
+    DisplayEvent event = event_queue_.front();
+    event_queue_.pop();
+    VLOG(1) << "Got display event " << kDisplayActionString[event.action_type]
+            << " for " << event.path.value();
+    switch (event.action_type) {
+      case DeviceEvent::ADD:
+        if (drm_devices_.find(event.path) == drm_devices_.end()) {
+          drm_devices_.insert(event.path);
+          task_pending_ = base::WorkerPool::PostTask(
+              FROM_HERE,
+              base::Bind(
+                  &OpenDeviceOnWorkerThread, event.path,
+                  base::ThreadTaskRunnerHandle::Get(),
+                  base::Bind(&DrmNativeDisplayDelegate::OnAddGraphicsDevice,
+                             weak_ptr_factory_.GetWeakPtr())),
+              false /* task_is_slow */);
+        }
+        break;
+      case DeviceEvent::CHANGE:
+        task_pending_ = base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::Bind(&DrmNativeDisplayDelegate::OnUpdateGraphicsDevice,
+                       weak_ptr_factory_.GetWeakPtr()));
+        break;
+      case DeviceEvent::REMOVE:
+        DCHECK(event.path != primary_graphics_card_path_)
+            << "Removing primary graphics card";
+        auto it = drm_devices_.find(event.path);
+        if (it != drm_devices_.end()) {
+          drm_devices_.erase(it);
+          task_pending_ = base::ThreadTaskRunnerHandle::Get()->PostTask(
+              FROM_HERE,
+              base::Bind(&DrmNativeDisplayDelegate::OnRemoveGraphicsDevice,
+                         weak_ptr_factory_.GetWeakPtr(), event.path));
+        }
+        break;
+    }
+  }
+}
 
+void DrmNativeDisplayDelegate::OnAddGraphicsDevice(const base::FilePath& path,
+                                                   base::File file) {
+  if (file.IsValid()) {
+    proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
+        path, base::FileDescriptor(file.Pass())));
+    FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
+                      OnConfigurationChanged());
+  }
+
+  task_pending_ = false;
+  ProcessEvent();
+}
+
+void DrmNativeDisplayDelegate::OnUpdateGraphicsDevice() {
   FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
                     OnConfigurationChanged());
+  task_pending_ = false;
+  ProcessEvent();
+}
+
+void DrmNativeDisplayDelegate::OnRemoveGraphicsDevice(
+    const base::FilePath& path) {
+  proxy_->Send(new OzoneGpuMsg_RemoveGraphicsDevice(path));
+  FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
+                    OnConfigurationChanged());
+  task_pending_ = false;
+  ProcessEvent();
 }
 
 void DrmNativeDisplayDelegate::OnChannelEstablished(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
     const base::Callback<void(IPC::Message*)>& send_callback) {
+  drm_devices_.clear();
+  drm_devices_.insert(primary_graphics_card_path_);
   device_manager_->ScanDevices(this);
   FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
                     OnConfigurationChanged());
