@@ -621,7 +621,7 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
                  base::Passed(&release_callback),
                  base::Passed(&bitmap),
                  base::Passed(&bitmap_pixels_lock)),
-      GLHelper::SCALER_QUALITY_FAST);
+      GLHelper::SCALER_QUALITY_GOOD);
 }
 
 // static
