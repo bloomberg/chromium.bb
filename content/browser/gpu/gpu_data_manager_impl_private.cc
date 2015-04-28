@@ -29,6 +29,7 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_implementation.h"

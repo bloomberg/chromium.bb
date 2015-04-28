@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_switches.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_implementation.h"
 

@@ -505,6 +505,7 @@
           'dependencies': [
             'command_buffer_common',
             'disk_cache_proto',
+            'gpu_config',
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],

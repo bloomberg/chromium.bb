@@ -36,6 +36,8 @@
     'config/gpu_info_collector_ozone.cc',
     'config/gpu_info_collector_win.cc',
     'config/gpu_info_collector_x11.cc',
+    'config/gpu_switches.cc',
+    'config/gpu_switches.h',
     'config/gpu_test_config.cc',
     'config/gpu_test_config.h',
     'config/gpu_test_expectations_parser.cc',

@@ -35,6 +35,7 @@
 #include "content/public/common/main_function_params.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_implementation.h"

@@ -49,6 +49,8 @@ source_set("config_sources") {
     "gpu_info_collector_ozone.cc",
     "gpu_info_collector_win.cc",
     "gpu_info_collector_x11.cc",
+    "gpu_switches.cc",
+    "gpu_switches.h",
     "gpu_test_config.cc",
     "gpu_test_config.h",
     "gpu_test_expectations_parser.cc",
@@ -66,7 +68,6 @@ source_set("config_sources") {
 
   deps = [
     "//base",
-    "//gpu/command_buffer/service:service_sources",
     "//third_party/re2",
     "//ui/gl",
   ]
