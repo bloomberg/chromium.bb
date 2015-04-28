@@ -25,6 +25,7 @@ include_HEADERS =				\
 	src/wayland-client.h			\
 	src/wayland-client-core.h		\
 	src/wayland-egl.h			\
+	src/wayland-egl-core.h			\
 	src/wayland-version.h
 
 nodist_include_HEADERS =			\
