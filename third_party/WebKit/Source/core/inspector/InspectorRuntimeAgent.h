@@ -111,6 +111,7 @@ protected:
     ScriptStateToId m_scriptStateToId;
 
 private:
+    class InjectedScriptCallScope;
     PassRefPtr<TypeBuilder::Runtime::EventListener> buildObjectForEventListener(const RegisteredEventListener&, const AtomicString& eventType, EventTarget*, const String* objectGroupId);
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;

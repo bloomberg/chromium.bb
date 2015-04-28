@@ -57,9 +57,15 @@ function test()
         }
     }
     
-    var firstStep = { callback: callbackStart5 };
+    var firstStep = { callback: callbackEnableDebugger };
 
     runRequestSeries(firstStep);
+
+    function callbackEnableDebugger()
+    {
+        // FIXME: make Runtime.getInternalProperties not depend on debugger (crbug.com/481845).
+        return { command: "Debugger.enable", callback: callbackStart5 };
+    }
 
     // 'Object5' section -- check properties of '5' wrapped as object  (has an internal property).
 

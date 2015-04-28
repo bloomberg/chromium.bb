@@ -57,6 +57,7 @@ public:
 
     void enable();
     void disable();
+    bool enabled() const;
 
     static void setContextDebugData(v8::Local<v8::Context>, const String& contextDebugData);
     // Each script inherits debug data from v8::Context where it has been compiled.
@@ -130,7 +131,6 @@ protected:
     virtual void quitMessageLoopOnPause() = 0;
 
 private:
-    bool enabled() const;
     void ensureDebuggerScriptCompiled();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
     v8::Local<v8::Object> debuggerScriptLocal() const;
