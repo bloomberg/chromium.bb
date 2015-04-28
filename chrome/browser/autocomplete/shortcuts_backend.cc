@@ -146,6 +146,13 @@ void ShortcutsBackend::AddOrUpdateShortcut(const base::string16& text,
 }
 
 ShortcutsBackend::~ShortcutsBackend() {
+  if (db_) {
+    auto* db = db_.get();
+    db->AddRef();
+    db_ = nullptr;
+    if (!BrowserThread::ReleaseSoon(BrowserThread::DB, FROM_HERE, db))
+      db->Release();
+  }
 }
 
 // static
