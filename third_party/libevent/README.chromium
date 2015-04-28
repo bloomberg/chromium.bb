@@ -24,3 +24,5 @@ static library using GYP.
    nacl_nonsfi/random.c is also added to provide the random() function,
    which is missing in the newlib-based PNaCl toolchain.
 8) Apply https://github.com/libevent/libevent/commit/ea6b1df
+9) Stub out signal.c for nacl_helper_nonsfi. socketpair() will be prohibited
+   by sandbox in nacl_helper_nonsfi.

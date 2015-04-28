@@ -19,11 +19,11 @@
             'evutil.c',
             'log.c',
             'poll.c',
-            'signal.c',
             'strlcpy.c',
             'nacl_nonsfi/config.h',
             'nacl_nonsfi/event-config.h',
             'nacl_nonsfi/random.c',
+            'nacl_nonsfi/signal_stub.c',
           ],
           'defines': [
             'HAVE_CONFIG_H',
