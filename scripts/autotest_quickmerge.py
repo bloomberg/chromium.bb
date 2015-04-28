@@ -340,7 +340,7 @@ def main(argv):
 
   manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
   checkout = manifest.FindCheckout(AUTOTEST_PROJECT_NAME)
-  source_path = os.path.join(checkout.GetPath(absolute=True), '')
+  brillo_autotest_src_path = os.path.join(checkout.GetPath(absolute=True), '')
 
   script_path = os.path.dirname(__file__)
   include_pattern_file = os.path.join(script_path, INCLUDE_PATTERNS_FILENAME)
@@ -353,20 +353,36 @@ def main(argv):
     sysroot_autotest_path = os.path.join(sysroot_path, 'usr/local/autotest',
                                          '')
 
-  rsync_output = RsyncQuickmerge(source_path, sysroot_autotest_path,
-                                 include_pattern_file, args.pretend,
-                                 args.overwrite)
+  # Generate the list of source paths to copy.
+  src_paths = {os.path.abspath(brillo_autotest_src_path)}
+  for quickmerge_file in glob.glob(os.path.join(sysroot_autotest_path,
+                                                'quickmerge', '*', '*')):
+    try:
+      path = osutils.ReadFile(quickmerge_file).strip()
+      if path and os.path.exists(path):
+        src_paths.add(os.path.abspath(path))
+    except IOError:
+      logging.error('Could not quickmerge for project: %s',
+                    os.path.basename(quickmerge_file))
 
-  if args.verbose:
-    logging.info(rsync_output.output)
+  num_new_files = 0
+  num_modified_files = 0
+  for src_path in src_paths:
+    rsync_output = RsyncQuickmerge(src_path +'/', sysroot_autotest_path,
+                                   include_pattern_file, args.pretend,
+                                   args.overwrite)
 
-  change_report = ItemizeChangesFromRsyncOutput(rsync_output.output,
-                                                sysroot_autotest_path)
+    if args.verbose:
+      logging.info(rsync_output.output)
+    change_report = ItemizeChangesFromRsyncOutput(rsync_output.output,
+                                                  sysroot_autotest_path)
+    num_new_files = num_new_files + len(change_report.new_files)
+    num_modified_files = num_modified_files + len(change_report.modified_files)
+    if not args.pretend:
+      logging.info('Updating portage database.')
+      UpdatePackageContents(change_report, AUTOTEST_EBUILD, sysroot_path)
 
   if not args.pretend:
-    logging.info('Updating portage database.')
-    UpdatePackageContents(change_report, AUTOTEST_EBUILD,
-                          sysroot_path)
     for logfile in glob.glob(os.path.join(sysroot_autotest_path, 'packages',
                                           '*.log')):
       try:
@@ -392,7 +408,6 @@ def main(argv):
     logging.info('The following message is pretend only. No filesystem '
                  'changes made.')
   logging.info('Quickmerge complete. Created or modified %s files.',
-               len(change_report.new_files) +
-               len(change_report.modified_files))
+               num_new_files + num_modified_files)
 
   return 0
