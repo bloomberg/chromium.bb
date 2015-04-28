@@ -15,7 +15,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -149,10 +148,8 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   const bool is_affiliated_user = affiliation == USER_AFFILIATION_MANAGED;
   const bool is_browser_restart =
       command_line->HasSwitch(chromeos::switches::kLoginUser);
-  // TODO(xiyuan): Update the code below after http://crbug.com/462036.
   const bool wait_for_initial_policy =
       !is_browser_restart &&
-      chromeos::UserSessionManager::GetInstance()->has_auth_cookies() &&
       (user_manager::UserManager::Get()->IsCurrentUserNew() ||
        is_affiliated_user);
 
@@ -204,14 +201,11 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
           content::BrowserThread::FILE);
 
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager(
-      new UserCloudPolicyManagerChromeOS(store.Pass(),
-                                         external_data_manager.Pass(),
-                                         component_policy_cache_dir,
-                                         wait_for_initial_policy,
-                                         initial_policy_fetch_timeout,
-                                         base::MessageLoopProxy::current(),
-                                         file_task_runner,
-                                         io_task_runner));
+      new UserCloudPolicyManagerChromeOS(
+          store.Pass(), external_data_manager.Pass(),
+          component_policy_cache_dir, wait_for_initial_policy,
+          initial_policy_fetch_timeout, base::MessageLoopProxy::current(),
+          file_task_runner, io_task_runner));
 
   bool wildcard_match = false;
   if (connector->IsEnterpriseManaged() &&

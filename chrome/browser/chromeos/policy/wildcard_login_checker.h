@@ -41,6 +41,10 @@ class WildcardLoginChecker : public UserInfoFetcher::Delegate {
   void Start(scoped_refptr<net::URLRequestContextGetter> signin_context,
              const StatusCallback& callback);
 
+  // Starts checking with a provided refresh token.
+  void StartWithRefreshToken(const std::string& refresh_token,
+                             const StatusCallback& callback);
+
   // Starts checking with a provided access token.
   void StartWithAccessToken(const std::string& access_token,
                             const StatusCallback& callback);

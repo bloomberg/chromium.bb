@@ -157,8 +157,7 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
   switch (auth_mode_) {
     case AUTH_MODE_EXTENSION: {
       RunOnlineWhitelistCheck(
-          email,
-          wildcard_match,
+          email, wildcard_match, user_context.GetRefreshToken(),
           base::Bind(&LoginPerformer::StartLoginCompletion,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&LoginPerformer::NotifyWhitelistCheckFailure,

@@ -53,6 +53,10 @@ class PolicyOAuth2TokenFetcher
   // Starts process of minting device management service OAuth2 access token.
   void Start();
 
+  // Starts minting device management service OAuth2 access token with the given
+  // |oauth2_refresh_token|.
+  void StartWithRefreshToken(const std::string& oauth2_refresh_token);
+
   // Returns true if we have previously attempted to fetch tokens with this
   // class and failed.
   bool failed() const {
@@ -110,10 +114,10 @@ class PolicyOAuth2TokenFetcher
   std::string oauth2_access_token_;
 
   // The retry counter. Increment this only when failure happened.
-  int retry_count_;
+  int retry_count_ = 0;
 
   // True if we have already failed to fetch the policy.
-  bool failed_;
+  bool failed_ = false;
 
   // The callback to invoke when done.
   TokenCallback callback_;

@@ -94,6 +94,7 @@ bool ChromeLoginPerformer::IsUserWhitelisted(const std::string& user_id,
 void ChromeLoginPerformer::RunOnlineWhitelistCheck(
     const std::string& user_id,
     bool wildcard_match,
+    const std::string& refresh_token,
     const base::Closure& success_callback,
     const base::Closure& failure_callback) {
   // On enterprise devices, reconfirm login permission with the server.
@@ -102,12 +103,19 @@ void ChromeLoginPerformer::RunOnlineWhitelistCheck(
   if (connector->IsEnterpriseManaged() && wildcard_match &&
       !connector->IsNonEnterpriseUser(user_id)) {
     wildcard_login_checker_.reset(new policy::WildcardLoginChecker());
-    wildcard_login_checker_->Start(
-        ProfileHelper::GetSigninProfile()->GetRequestContext(),
-        base::Bind(&ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted,
-                   weak_factory_.GetWeakPtr(),
-                   success_callback,
-                   failure_callback));
+    if (refresh_token.empty()) {
+      wildcard_login_checker_->Start(
+          ProfileHelper::GetSigninProfile()->GetRequestContext(),
+          base::Bind(&ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted,
+                     weak_factory_.GetWeakPtr(), success_callback,
+                     failure_callback));
+    } else {
+      wildcard_login_checker_->StartWithRefreshToken(
+          refresh_token,
+          base::Bind(&ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted,
+                     weak_factory_.GetWeakPtr(), success_callback,
+                     failure_callback));
+    }
   } else {
     success_callback.Run();
   }

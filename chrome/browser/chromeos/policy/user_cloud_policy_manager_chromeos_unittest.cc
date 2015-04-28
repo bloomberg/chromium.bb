@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -36,6 +37,7 @@
 #include "components/policy/core/common/schema_registry.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -80,7 +82,9 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         external_data_manager_(NULL),
         task_runner_(new base::TestSimpleTaskRunner()),
         profile_(NULL),
-        signin_profile_(NULL) {}
+        signin_profile_(NULL),
+        user_manager_(new user_manager::FakeUserManager()),
+        user_manager_enabler_(user_manager_) {}
 
   void SetUp() override {
     // The initialization path that blocks on the initial policy fetch requires
@@ -341,6 +345,9 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   scoped_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   TestingProfile* signin_profile_;
+
+  user_manager::FakeUserManager* user_manager_;
+  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOSTest);

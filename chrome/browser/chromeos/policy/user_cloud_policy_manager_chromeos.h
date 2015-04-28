@@ -109,9 +109,10 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   void GetChromePolicy(PolicyMap* policy_map) override;
 
  private:
-  // Fetches a policy token using the authentication context of the signin
-  // context, and calls back to OnOAuth2PolicyTokenFetched when done.
-  void FetchPolicyOAuthTokenUsingSigninContext();
+  // Fetches a policy token using the refresh token if available, or the
+  // authentication context of the signin context, and calls back
+  // OnOAuth2PolicyTokenFetched when done.
+  void FetchPolicyOAuthToken();
 
   // Called once the policy access token is available, and starts the
   // registration with the policy server if the token was successfully fetched.

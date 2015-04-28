@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
@@ -212,7 +213,7 @@ void UserCloudPolicyManagerChromeOS::OnInitializationCompleted(
   // access token is already available.
   if (!client()->is_registered()) {
     if (wait_for_policy_fetch_) {
-      FetchPolicyOAuthTokenUsingSigninContext();
+      FetchPolicyOAuthToken();
     } else if (!access_token_.empty()) {
       OnAccessTokenAvailable(access_token_);
     }
@@ -286,7 +287,19 @@ void UserCloudPolicyManagerChromeOS::GetChromePolicy(PolicyMap* policy_map) {
   SetEnterpriseUsersDefaults(policy_map);
 }
 
-void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthTokenUsingSigninContext() {
+void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
+  const std::string& refresh_token = chromeos::UserSessionManager::GetInstance()
+                                         ->user_context()
+                                         .GetRefreshToken();
+  if (!refresh_token.empty()) {
+    token_fetcher_.reset(new PolicyOAuth2TokenFetcher(
+        std::string(), g_browser_process->system_request_context(),
+        base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
+                   base::Unretained(this))));
+    token_fetcher_->StartWithRefreshToken(refresh_token);
+    return;
+  }
+
   scoped_refptr<net::URLRequestContextGetter> signin_context =
       chromeos::login::GetSigninContext();
   if (!signin_context.get()) {

@@ -230,6 +230,7 @@ class UserSessionManager
   // Removes a profile from the per-user input methods states map.
   void RemoveProfileForTesting(Profile* profile);
 
+  const UserContext& user_context() const { return user_context_; }
   bool has_auth_cookies() const { return has_auth_cookies_; }
 
  private:

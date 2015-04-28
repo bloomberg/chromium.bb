@@ -37,8 +37,6 @@ PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher(
     const TokenCallback& callback)
     : auth_context_getter_(auth_context_getter),
       system_context_getter_(system_context_getter),
-      retry_count_(0),
-      failed_(false),
       callback_(callback) {}
 
 PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher(
@@ -47,8 +45,6 @@ PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher(
     const TokenCallback& callback)
     : auth_code_(auth_code),
       system_context_getter_(system_context_getter),
-      retry_count_(0),
-      failed_(false),
       callback_(callback) {
 }
 
@@ -57,6 +53,13 @@ PolicyOAuth2TokenFetcher::~PolicyOAuth2TokenFetcher() {}
 void PolicyOAuth2TokenFetcher::Start() {
   retry_count_ = 0;
   StartFetchingRefreshToken();
+}
+
+void PolicyOAuth2TokenFetcher::StartWithRefreshToken(
+    const std::string& oauth2_refresh_token) {
+  retry_count_ = 0;
+  oauth2_refresh_token_ = oauth2_refresh_token;
+  StartFetchingAccessToken();
 }
 
 void PolicyOAuth2TokenFetcher::StartFetchingRefreshToken() {

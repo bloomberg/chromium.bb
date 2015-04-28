@@ -140,6 +140,7 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer,
   virtual void RunOnlineWhitelistCheck(
       const std::string& user_id,
       bool wildcard_match,
+      const std::string& refresh_token,
       const base::Closure& success_callback,
       const base::Closure& failure_callback) = 0;
 

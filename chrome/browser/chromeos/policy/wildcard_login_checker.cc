@@ -51,6 +51,22 @@ void WildcardLoginChecker::Start(
   token_fetcher_->Start();
 }
 
+void WildcardLoginChecker::StartWithRefreshToken(
+    const std::string& refresh_token,
+    const StatusCallback& callback) {
+  CHECK(!token_fetcher_);
+  CHECK(!user_info_fetcher_);
+
+  start_timestamp_ = base::Time::Now();
+
+  callback_ = callback;
+  token_fetcher_.reset(new PolicyOAuth2TokenFetcher(
+      std::string(), g_browser_process->system_request_context(),
+      base::Bind(&WildcardLoginChecker::OnPolicyTokenFetched,
+                 base::Unretained(this))));
+  token_fetcher_->StartWithRefreshToken(refresh_token);
+}
+
 void WildcardLoginChecker::StartWithAccessToken(
     const std::string& access_token,
     const StatusCallback& callback) {
