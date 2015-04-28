@@ -1,0 +1,12 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/core-icon/core-icon.html">
+<link rel="import" href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html">
+
+<polymer-element name="cr-expand-button">
+  <template>
+    <paper-icon-button toggle active="{{expanded}}" disabled="{{disabled}}"
+        icon="{{expanded ? 'expand-less' : 'expand-more'}}">
+    </paper-icon-button>
+  </template>
+  <script src="cr_expand_button.js"></script>
+</polymer-element>

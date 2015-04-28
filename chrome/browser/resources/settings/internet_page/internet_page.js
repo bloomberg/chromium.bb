@@ -24,7 +24,7 @@ Polymer('cr-settings-internet-page', {
      * ID of the page.
      *
      * @attribute PAGE_ID
-     * @const string
+     * @const {string}
      */
     PAGE_ID: 'internet',
 
@@ -32,7 +32,7 @@ Polymer('cr-settings-internet-page', {
      * Route for the page.
      *
      * @attribute route
-     * @type string
+     * @type {string}
      * @default ''
      */
     route: '',
@@ -41,7 +41,7 @@ Polymer('cr-settings-internet-page', {
      * Whether the page is a subpage.
      *
      * @attribute subpage
-     * @type boolean
+     * @type {boolean}
      * @default false
      */
     subpage: false,
@@ -50,7 +50,7 @@ Polymer('cr-settings-internet-page', {
      * Title for the page header and navigation menu.
      *
      * @attribute pageTitle
-     * @type string
+     * @type {string}
      */
     pageTitle: loadTimeData.getString('internetPageTitle'),
 
@@ -59,7 +59,7 @@ Polymer('cr-settings-internet-page', {
      * icon for the active internet connection.
      *
      * @attribute icon
-     * @type string
+     * @type {string}
      * @default 'settings-ethernet'
      */
     icon: 'settings-ethernet',

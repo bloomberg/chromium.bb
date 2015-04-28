@@ -14,7 +14,7 @@
  * Performs argument substitution, replacing %1, %2, etc in 'text' with
  * corresponding entries in |args|.
  * @param {string} text The string to perform the substitution on.
- * @param {Array<string>} args The arguments to replace %1, %2, etc with.
+ * @param {?Array<string>} args The arguments to replace %1, %2, etc with.
  */
 function getText(text, args) {
   var res = text;
@@ -52,7 +52,7 @@ Polymer('cr-network-list-item', {
      * The ONC data properties used to display the list item.
      *
      * @attribute networkState
-     * @type CrOncDataElement
+     * @type {?CrOncDataElement}
      * @default null
      */
     networkState: null,
@@ -64,7 +64,7 @@ Polymer('cr-network-list-item', {
      * of the network type plus the network name and connection state.
      *
      * @attribute isListItem
-     * @type boolean
+     * @type {boolean}
      * @default false
      */
     isListItem: false,
@@ -83,12 +83,17 @@ Polymer('cr-network-list-item', {
     if (this.isListItem) {
       this.$.networkName.textContent = getText(network.Name);
       this.$.networkName.classList.toggle('connected', !isDisconnected);
-    } else {
+    } else if (network.Name && network.ConnectionState) {
       this.$.networkName.textContent = getText(network.Type);
       this.$.networkName.classList.toggle('connected', false);
       this.$.networkState.textContent =
           getConnectionStateText(network.ConnectionState, network.Name);
       this.$.networkState.classList.toggle('connected', !isDisconnected);
+    } else {
+      this.$.networkName.textContent = getText(network.Type);
+      this.$.networkName.classList.toggle('connected', false);
+      this.$.networkState.textContent = getText('Disabled');
+      this.$.networkState.classList.toggle('connected', false);
     }
   },
 });

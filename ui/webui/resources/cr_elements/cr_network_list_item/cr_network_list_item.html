@@ -4,9 +4,10 @@
 <polymer-element name="cr-network-list-item">
   <template>
     <link rel="stylesheet" href="cr_network_list_item.css">
-    <div id="divOuter">
+    <div id="divOuter" class="{{ {listItem: isListItem} | tokenList }}">
       <div id="divIcon">
-        <cr-network-icon id="icon" networkState="{{networkState}}">
+        <cr-network-icon id="icon"
+            networkState="{{networkState}}" isListItem="{{isListItem}}">
         </cr-network-icon>
       </div>
       <div id="divText">

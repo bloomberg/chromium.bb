@@ -238,6 +238,15 @@
         <structure name="IDR_SETTINGS_NETWORK_SUMMARY_JS"
                    file="internet_page/network_summary.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_ITEM_STYLE_HTML"
+                   file="internet_page/network_summary_item_style.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_ITEM_HTML"
+                   file="internet_page/network_summary_item.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_ITEM_JS"
+                   file="internet_page/network_summary_item.js"
+                   type="chrome_html" />
       </if>
     </structures>
   </release>

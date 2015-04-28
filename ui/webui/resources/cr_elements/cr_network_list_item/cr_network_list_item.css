@@ -8,10 +8,9 @@
   flex-direction: row;
   margin: 0;
   padding: 4px;
-  width: 100%;
 }
 
-#divOuter:hover {
+#divOuter.listItem:hover {
   background-color: lightgrey;
 }
 
