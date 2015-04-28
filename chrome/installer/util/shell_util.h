@@ -92,9 +92,8 @@ class ShellUtil {
       PROPERTIES_DUAL_MODE = 1 << 6,
     };
 
-    explicit ShortcutProperties(ShellChange level_in)
-        : level(level_in), icon_index(0), dual_mode(false),
-          pin_to_taskbar(false), options(0U) {}
+    explicit ShortcutProperties(ShellChange level_in);
+    ~ShortcutProperties();
 
     // Sets the target executable to launch from this shortcut.
     // This is mandatory when creating a shortcut.

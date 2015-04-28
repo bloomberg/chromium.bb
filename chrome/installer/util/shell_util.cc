@@ -1568,6 +1568,17 @@ const wchar_t* ShellUtil::kRegCommand = L"command";
 const wchar_t* ShellUtil::kRegDelegateExecute = L"DelegateExecute";
 const wchar_t* ShellUtil::kRegOpenWithProgids = L"OpenWithProgids";
 
+ShellUtil::ShortcutProperties::ShortcutProperties(ShellChange level_in)
+    : level(level_in),
+      icon_index(0),
+      dual_mode(false),
+      pin_to_taskbar(false),
+      options(0U) {
+}
+
+ShellUtil::ShortcutProperties::~ShortcutProperties() {
+}
+
 bool ShellUtil::QuickIsChromeRegisteredInHKLM(BrowserDistribution* dist,
                                               const base::FilePath& chrome_exe,
                                               const base::string16& suffix) {

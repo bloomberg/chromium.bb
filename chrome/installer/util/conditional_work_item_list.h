@@ -48,13 +48,13 @@ class ConditionRunIfFileExists : public WorkItem::Condition {
 // This class assumes ownership of original_condition.
 class Not : public WorkItem::Condition {
  public:
-   explicit Not(WorkItem::Condition* original_condition)
-     : original_condition_(original_condition) {}
+  explicit Not(WorkItem::Condition* original_condition);
+  ~Not();
+
   bool ShouldRun() const;
 
  private:
   scoped_ptr<WorkItem::Condition> original_condition_;
 };
-
 
 #endif  // CHROME_INSTALLER_UTIL_CONDITIONAL_WORK_ITEM_LIST_H_

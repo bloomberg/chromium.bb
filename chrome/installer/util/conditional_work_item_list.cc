@@ -35,7 +35,13 @@ bool ConditionRunIfFileExists::ShouldRun() const {
   return base::PathExists(key_path_);
 }
 
+Not::Not(WorkItem::Condition* original_condition)
+    : original_condition_(original_condition) {
+}
+
+Not::~Not() {
+}
+
 bool Not::ShouldRun() const {
   return !original_condition_->ShouldRun();
 }
-
