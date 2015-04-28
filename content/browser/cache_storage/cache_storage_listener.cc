@@ -21,9 +21,33 @@ using blink::WebServiceWorkerCacheError;
 
 namespace {
 
-// TODO(nhiroki): The same function exists in cache_storage_dispatcher_host.cc.
-// This should be removed when this listenr class is merged into the dispatcher.
-// (http://crbug.com/474233)
+WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
+    CacheStorage::CacheStorageError err) {
+  switch (err) {
+    case CacheStorage::CACHE_STORAGE_ERROR_NO_ERROR:
+      NOTREACHED();
+      return blink::WebServiceWorkerCacheErrorNotImplemented;
+    case CacheStorage::CACHE_STORAGE_ERROR_NOT_IMPLEMENTED:
+      return blink::WebServiceWorkerCacheErrorNotImplemented;
+    case CacheStorage::CACHE_STORAGE_ERROR_NOT_FOUND:
+      return blink::WebServiceWorkerCacheErrorNotFound;
+    case CacheStorage::CACHE_STORAGE_ERROR_EXISTS:
+      return blink::WebServiceWorkerCacheErrorExists;
+    case CacheStorage::CACHE_STORAGE_ERROR_STORAGE:
+      // TODO(jkarlin): Change this to CACHE_STORAGE_ERROR_STORAGE once that's
+      // added.
+      return blink::WebServiceWorkerCacheErrorNotFound;
+    case CacheStorage::CACHE_STORAGE_ERROR_CLOSING:
+      // TODO(jkarlin): Update this to CACHE_STORAGE_ERROR_CLOSING once that's
+      // added.
+      return blink::WebServiceWorkerCacheErrorNotFound;
+  }
+  NOTREACHED();
+  return blink::WebServiceWorkerCacheErrorNotImplemented;
+}
+
+// TODO(jkarlin): CacheStorageCache and CacheStorage should share
+// an error enum type.
 WebServiceWorkerCacheError CacheErrorToWebServiceWorkerCacheError(
     CacheStorageCache::ErrorType err) {
   switch (err) {
@@ -57,6 +81,16 @@ CacheStorageListener::~CacheStorageListener() {
 bool CacheStorageListener::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CacheStorageListener, message)
+    IPC_MESSAGE_HANDLER(CacheStorageHostMsg_CacheStorageHas,
+                        OnCacheStorageHas)
+    IPC_MESSAGE_HANDLER(CacheStorageHostMsg_CacheStorageOpen,
+                        OnCacheStorageOpen)
+    IPC_MESSAGE_HANDLER(CacheStorageHostMsg_CacheStorageDelete,
+                        OnCacheStorageDelete)
+    IPC_MESSAGE_HANDLER(CacheStorageHostMsg_CacheStorageKeys,
+                        OnCacheStorageKeys)
+    IPC_MESSAGE_HANDLER(CacheStorageHostMsg_CacheStorageMatch,
+                        OnCacheStorageMatch)
     IPC_MESSAGE_HANDLER(CacheStorageHostMsg_CacheMatch, OnCacheMatch)
     IPC_MESSAGE_HANDLER(CacheStorageHostMsg_CacheMatchAll, OnCacheMatchAll)
     IPC_MESSAGE_HANDLER(CacheStorageHostMsg_CacheKeys, OnCacheKeys)
@@ -68,6 +102,76 @@ bool CacheStorageListener::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+void CacheStorageListener::OnCacheStorageHas(int thread_id,
+                                             int request_id,
+                                             const GURL& origin,
+                                             const base::string16& cache_name) {
+  TRACE_EVENT0("CacheStorage", "CacheStorageListener::OnCacheStorageHas");
+  context_->cache_manager()->HasCache(
+      origin, base::UTF16ToUTF8(cache_name),
+      base::Bind(&CacheStorageListener::OnCacheStorageHasCallback,
+                 weak_factory_.GetWeakPtr(), thread_id, request_id));
+}
+
+void CacheStorageListener::OnCacheStorageOpen(
+    int thread_id,
+    int request_id,
+    const GURL& origin,
+    const base::string16& cache_name) {
+  TRACE_EVENT0("CacheStorage", "CacheStorageListener::OnCacheStorageOpen");
+  context_->cache_manager()->OpenCache(
+      origin, base::UTF16ToUTF8(cache_name),
+      base::Bind(&CacheStorageListener::OnCacheStorageOpenCallback,
+                 weak_factory_.GetWeakPtr(), thread_id, request_id));
+}
+
+void CacheStorageListener::OnCacheStorageDelete(
+    int thread_id,
+    int request_id,
+    const GURL& origin,
+    const base::string16& cache_name) {
+  TRACE_EVENT0("CacheStorage", "CacheStorageListener::OnCacheStorageDelete");
+  context_->cache_manager()->DeleteCache(
+      origin, base::UTF16ToUTF8(cache_name),
+      base::Bind(&CacheStorageListener::OnCacheStorageDeleteCallback,
+                 weak_factory_.GetWeakPtr(), thread_id, request_id));
+}
+
+void CacheStorageListener::OnCacheStorageKeys(int thread_id,
+                                              int request_id,
+                                              const GURL& origin) {
+  TRACE_EVENT0("CacheStorage", "CacheStorageListener::OnCacheStorageKeys");
+  context_->cache_manager()->EnumerateCaches(
+      origin, base::Bind(&CacheStorageListener::OnCacheStorageKeysCallback,
+                         weak_factory_.GetWeakPtr(), thread_id, request_id));
+}
+
+void CacheStorageListener::OnCacheStorageMatch(
+    int thread_id,
+    int request_id,
+    const GURL& origin,
+    const ServiceWorkerFetchRequest& request,
+    const CacheStorageCacheQueryParams& match_params) {
+  TRACE_EVENT0("CacheStorage", "CacheStorageListener::OnCacheStorageMatch");
+
+  scoped_ptr<ServiceWorkerFetchRequest> scoped_request(
+      new ServiceWorkerFetchRequest(request.url, request.method,
+                                    request.headers, request.referrer,
+                                    request.is_reload));
+
+  if (match_params.cache_name.empty()) {
+    context_->cache_manager()->MatchAllCaches(
+        origin, scoped_request.Pass(),
+        base::Bind(&CacheStorageListener::OnCacheStorageMatchCallback,
+                   weak_factory_.GetWeakPtr(), thread_id, request_id));
+    return;
+  }
+  context_->cache_manager()->MatchCache(
+      origin, base::UTF16ToUTF8(match_params.cache_name), scoped_request.Pass(),
+      base::Bind(&CacheStorageListener::OnCacheStorageMatchCallback,
+                 weak_factory_.GetWeakPtr(), thread_id, request_id));
 }
 
 void CacheStorageListener::OnCacheMatch(
@@ -191,6 +295,90 @@ void CacheStorageListener::OnBlobDataHandled(const std::string& uuid) {
 
 void CacheStorageListener::Send(IPC::Message* message) {
   dispatcher_->Send(message);
+}
+
+void CacheStorageListener::OnCacheStorageHasCallback(
+    int thread_id,
+    int request_id,
+    bool has_cache,
+    CacheStorage::CacheStorageError error) {
+  if (error != CacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
+    Send(new CacheStorageMsg_CacheStorageHasError(
+        thread_id, request_id, ToWebServiceWorkerCacheError(error)));
+    return;
+  }
+  if (!has_cache) {
+    Send(new CacheStorageMsg_CacheStorageHasError(
+        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
+    return;
+  }
+  Send(new CacheStorageMsg_CacheStorageHasSuccess(thread_id, request_id));
+}
+
+void CacheStorageListener::OnCacheStorageOpenCallback(
+    int thread_id,
+    int request_id,
+    const scoped_refptr<CacheStorageCache>& cache,
+    CacheStorage::CacheStorageError error) {
+  if (error != CacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
+    Send(new CacheStorageMsg_CacheStorageOpenError(
+        thread_id, request_id, ToWebServiceWorkerCacheError(error)));
+    return;
+  }
+  CacheID cache_id = StoreCacheReference(cache);
+  Send(new CacheStorageMsg_CacheStorageOpenSuccess(thread_id, request_id,
+                                                   cache_id));
+}
+
+void CacheStorageListener::OnCacheStorageDeleteCallback(
+    int thread_id,
+    int request_id,
+    bool deleted,
+    CacheStorage::CacheStorageError error) {
+  if (!deleted || error != CacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
+    Send(new CacheStorageMsg_CacheStorageDeleteError(
+        thread_id, request_id, ToWebServiceWorkerCacheError(error)));
+    return;
+  }
+  Send(new CacheStorageMsg_CacheStorageDeleteSuccess(thread_id, request_id));
+}
+
+void CacheStorageListener::OnCacheStorageKeysCallback(
+    int thread_id,
+    int request_id,
+    const std::vector<std::string>& strings,
+    CacheStorage::CacheStorageError error) {
+  if (error != CacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
+    Send(new CacheStorageMsg_CacheStorageKeysError(
+        thread_id, request_id, ToWebServiceWorkerCacheError(error)));
+    return;
+  }
+
+  std::vector<base::string16> string16s;
+  for (size_t i = 0, max = strings.size(); i < max; ++i) {
+    string16s.push_back(base::UTF8ToUTF16(strings[i]));
+  }
+  Send(new CacheStorageMsg_CacheStorageKeysSuccess(thread_id, request_id,
+                                                   string16s));
+}
+
+void CacheStorageListener::OnCacheStorageMatchCallback(
+    int thread_id,
+    int request_id,
+    CacheStorageCache::ErrorType error,
+    scoped_ptr<ServiceWorkerResponse> response,
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+  if (error != CacheStorageCache::ERROR_TYPE_OK) {
+    Send(new CacheStorageMsg_CacheStorageMatchError(
+        thread_id, request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    return;
+  }
+
+  if (blob_data_handle)
+    StoreBlobDataHandle(blob_data_handle.Pass());
+
+  Send(new CacheStorageMsg_CacheStorageMatchSuccess(thread_id, request_id,
+                                                    *response));
 }
 
 void CacheStorageListener::OnCacheMatchCallback(

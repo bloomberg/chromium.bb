@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_DISPATCHER_HOST_H_
 
-#include "content/browser/cache_storage/cache_storage.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace content {
@@ -41,52 +40,7 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
   // Called by Init() on IO thread.
   void CreateCacheListener(CacheStorageContextImpl* context);
 
-  // The message receiver functions for the CacheStorage API:
-  void OnCacheStorageHas(int thread_id,
-                         int request_id,
-                         const GURL& origin,
-                         const base::string16& cache_name);
-  void OnCacheStorageOpen(int thread_id,
-                          int request_id,
-                          const GURL& origin,
-                          const base::string16& cache_name);
-  void OnCacheStorageDelete(int thread_id,
-                            int request_id,
-                            const GURL& origin,
-                            const base::string16& cache_name);
-  void OnCacheStorageKeys(int thread_id, int request_id, const GURL& origin);
-  void OnCacheStorageMatch(int thread_id,
-                           int request_id,
-                           const GURL& origin,
-                           const ServiceWorkerFetchRequest& request,
-                           const CacheStorageCacheQueryParams& match_params);
-
-  // CacheStorageManager callbacks
-  void OnCacheStorageHasCallback(int thread_id,
-                                 int request_id,
-                                 bool has_cache,
-                                 CacheStorage::CacheStorageError error);
-  void OnCacheStorageOpenCallback(int thread_id,
-                                  int request_id,
-                                  const scoped_refptr<CacheStorageCache>& cache,
-                                  CacheStorage::CacheStorageError error);
-  void OnCacheStorageDeleteCallback(int thread_id,
-                                    int request_id,
-                                    bool deleted,
-                                    CacheStorage::CacheStorageError error);
-  void OnCacheStorageKeysCallback(int thread_id,
-                                  int request_id,
-                                  const std::vector<std::string>& strings,
-                                  CacheStorage::CacheStorageError error);
-  void OnCacheStorageMatchCallback(
-      int thread_id,
-      int request_id,
-      CacheStorageCache::ErrorType error,
-      scoped_ptr<ServiceWorkerResponse> response,
-      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
-
   scoped_ptr<CacheStorageListener> cache_listener_;
-  scoped_refptr<CacheStorageContextImpl> context_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageDispatcherHost);
 };
