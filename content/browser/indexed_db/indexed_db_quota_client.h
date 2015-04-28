@@ -22,8 +22,7 @@ class IndexedDBContextImpl;
 // A QuotaClient implementation to integrate IndexedDB
 // with the quota  management system. This interface is used
 // on the IO thread by the quota manager.
-class IndexedDBQuotaClient : public storage::QuotaClient,
-                             public storage::QuotaTaskObserver {
+class IndexedDBQuotaClient : public storage::QuotaClient {
  public:
   CONTENT_EXPORT explicit IndexedDBQuotaClient(
       IndexedDBContextImpl* indexed_db_context);
