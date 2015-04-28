@@ -12,33 +12,27 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/message_view.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
 namespace gfx {
 class MultiAnimation;
 }  // namespace gfx
 
-namespace views {
-class Button;
-}  // namespace views
-
 namespace message_center {
 
 class MessageCenter;
-class MessageCenterBubble;
-class NotificationCenterButton;
 class MessageCenterButtonBar;
 class MessageCenterTray;
-class MessageCenterView;
 class MessageView;
 class MessageViewContextMenuController;
 class MessageListView;
 class NotificationView;
 class NotifierSettingsView;
 
-// MessageCenterView ///////////////////////////////////////////////////////////
-
+// Container for all the top-level views in the notification center, such as the
+// button bar, settings view, scrol view, and message list view.  Acts as a
+// controller for the message list view, passing data back and forth to message
+// center.
 class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
                                                 public MessageCenterObserver,
                                                 public MessageCenterController,

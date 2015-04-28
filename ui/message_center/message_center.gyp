@@ -87,6 +87,8 @@
         'views/message_center_controller.h',
         'views/message_center_view.cc',
         'views/message_center_view.h',
+        'views/message_list_view.cc',
+        'views/message_list_view.h',
         'views/message_popup_collection.cc',
         'views/message_popup_collection.h',
         'views/message_view.cc',
