@@ -9,12 +9,3 @@ include_rules = [
   "+third_party/libxml",
   "+third_party/zlib",
 ]
-
-# Tests can use things in content.
-# TODO(sorin): refactor to eliminate the dependency on content by using
-# message loops directly.
-specific_include_rules = {
-  ".*unittest\.cc": [
-    "+content",
-  ]
-}

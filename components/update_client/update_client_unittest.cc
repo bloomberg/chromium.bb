@@ -12,7 +12,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/sequenced_worker_pool_owner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/threading/thread.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "components/update_client/crx_update_item.h"
@@ -21,8 +23,6 @@
 #include "components/update_client/test_installer.h"
 #include "components/update_client/update_checker.h"
 #include "components/update_client/update_client_internal.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -104,8 +104,6 @@ using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Return;
 
-using content::BrowserThread;
-
 using std::string;
 
 class UpdateClientTest : public testing::Test {
@@ -113,43 +111,49 @@ class UpdateClientTest : public testing::Test {
   UpdateClientTest();
   ~UpdateClientTest() override;
 
-  void SetUp() override;
-  void TearDown() override;
-
  protected:
   void RunThreads();
 
   // Returns the full path to a test file.
   static base::FilePath TestFilePath(const char* file);
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_refptr<update_client::Configurator> config() { return config_; }
 
+  base::Closure quit_closure() { return quit_closure_; }
+
+ private:
+  static const int kNumWorkerThreads_ = 2;
+
+  base::MessageLoopForUI message_loop_;
   base::RunLoop runloop_;
   base::Closure quit_closure_;
 
-  scoped_refptr<update_client::TestConfigurator> config_;
+  scoped_ptr<base::SequencedWorkerPoolOwner> worker_pool_;
+  scoped_ptr<base::Thread> thread_;
 
- private:
+  scoped_refptr<update_client::Configurator> config_;
+
   DISALLOW_COPY_AND_ASSIGN(UpdateClientTest);
 };
 
 UpdateClientTest::UpdateClientTest()
-    : config_(new TestConfigurator(
-          BrowserThread::GetBlockingPool()
-              ->GetSequencedTaskRunnerWithShutdownBehavior(
-                  BrowserThread::GetBlockingPool()->GetSequenceToken(),
-                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))) {
+    : worker_pool_(
+          new base::SequencedWorkerPoolOwner(kNumWorkerThreads_, "test")),
+      thread_(new base::Thread("test")) {
+  quit_closure_ = runloop_.QuitClosure();
+
+  thread_->Start();
+
+  auto pool = worker_pool_->pool();
+  config_ = new TestConfigurator(
+      pool->GetSequencedTaskRunner(pool->GetSequenceToken()),
+      thread_->task_runner());
 }
 
 UpdateClientTest::~UpdateClientTest() {
-}
-
-void UpdateClientTest::SetUp() {
-  quit_closure_ = runloop_.QuitClosure();
-}
-
-void UpdateClientTest::TearDown() {
+  config_ = nullptr;
+  thread_->Stop();
+  worker_pool_->pool()->Shutdown();
 }
 
 void UpdateClientTest::RunThreads() {
@@ -232,9 +236,9 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
     ~FakePingManager() override { EXPECT_TRUE(items().empty()); }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(*config_));
+  scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
   scoped_ptr<UpdateClient> update_client(new UpdateClientImpl(
-      config_, ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -251,7 +255,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   update_client->Update(
       ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure_));
+      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -398,9 +402,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
     }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(*config_));
+  scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
   scoped_ptr<UpdateClient> update_client(new UpdateClientImpl(
-      config_, ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -433,7 +437,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   update_client->Update(
       ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure_));
+      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -627,9 +631,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config_));
+  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
   scoped_ptr<UpdateClient> update_client(new UpdateClientImpl(
-      config_, ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -670,7 +674,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   update_client->Update(
       ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure_));
+      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -888,9 +892,9 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config_));
+  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
   scoped_ptr<UpdateClient> update_client(new UpdateClientImpl(
-      config_, ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -1101,9 +1105,9 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     }
   };
 
-  scoped_ptr<PingManager> ping_manager(new FakePingManager(*config_));
+  scoped_ptr<PingManager> ping_manager(new FakePingManager(*config()));
   scoped_ptr<UpdateClient> update_client(new UpdateClientImpl(
-      config_, ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
@@ -1128,7 +1132,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   update_client->Update(
       ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure_));
+      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -1362,9 +1366,9 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
     }
   };
 
-  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config_));
+  scoped_ptr<FakePingManager> ping_manager(new FakePingManager(*config()));
   scoped_ptr<UpdateClient> update_client(new UpdateClientImpl(
-      config_, ping_manager.Pass(), &FakeUpdateChecker::Create,
+      config(), ping_manager.Pass(), &FakeUpdateChecker::Create,
       &FakeCrxDownloader::Create));
 
   MockObserver observer;
