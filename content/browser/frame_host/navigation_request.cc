@@ -90,7 +90,9 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       BeginNavigationParams(method, headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type), false),
       entry.ConstructRequestNavigationParams(
-          navigation_start, controller->GetIndexOfEntry(&entry),
+          navigation_start,
+          controller->GetPendingEntryIndex() == -1,
+          controller->GetIndexOfEntry(&entry),
           controller->GetLastCommittedEntryIndex(),
           controller->GetEntryCount()),
       request_body, true, &entry));

@@ -25,6 +25,7 @@
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/test_browser_thread.h"
@@ -132,6 +133,8 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     web_contents()->GetController().LoadURL(
         url, content::Referrer(referrer, blink::WebReferrerPolicyDefault),
         type, std::string());
+    int pending_id =
+        web_contents()->GetController().GetPendingEntry()->GetUniqueID();
 
     static int page_id = 0;
     content::RenderFrameHost* rfh =
@@ -141,7 +144,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     }
     WebContentsTester::For(web_contents())->ProceedWithCrossSiteNavigation();
     WebContentsTester::For(web_contents())->TestDidNavigateWithReferrer(
-        rfh, ++page_id, url,
+        rfh, ++page_id, pending_id, true, url,
         content::Referrer(referrer, blink::WebReferrerPolicyDefault), type);
   }
 

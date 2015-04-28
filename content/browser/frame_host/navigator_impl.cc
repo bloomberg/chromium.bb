@@ -328,7 +328,9 @@ bool NavigatorImpl::NavigateToEntry(
         entry.ConstructCommonNavigationParams(navigation_type),
         entry.ConstructStartNavigationParams(),
         entry.ConstructRequestNavigationParams(
-            navigation_start, controller_->GetIndexOfEntry(&entry),
+            navigation_start,
+            controller_->GetPendingEntryIndex() == -1,
+            controller_->GetIndexOfEntry(&entry),
             controller_->GetLastCommittedEntryIndex(),
             controller_->GetEntryCount()));
   } else {

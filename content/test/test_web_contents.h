@@ -40,10 +40,14 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void ProceedWithCrossSiteNavigation() override;
   void TestDidNavigate(RenderFrameHost* render_frame_host,
                        int page_id,
+                       int nav_entry_id,
+                       bool did_create_new_entry,
                        const GURL& url,
                        ui::PageTransition transition) override;
   void TestDidNavigateWithReferrer(RenderFrameHost* render_frame_host,
                                    int page_id,
+                                   int nav_entry_id,
+                                   bool did_create_new_entry,
                                    const GURL& url,
                                    const Referrer& referrer,
                                    ui::PageTransition transition) override;

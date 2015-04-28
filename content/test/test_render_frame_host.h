@@ -52,35 +52,50 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   // RenderFrameHostTester implementation.
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
-  void SendNavigate(int page_id, const GURL& url) override;
-  void SendFailedNavigate(int page_id, const GURL& url) override;
+  void SendNavigate(int page_id,
+                    int nav_entry_id,
+                    bool did_create_new_entry,
+                    const GURL& url) override;
+  void SendFailedNavigate(int page_id,
+                          int nav_entry_id,
+                          bool did_create_new_entry,
+                          const GURL& url) override;
   void SendNavigateWithTransition(int page_id,
+                                  int nav_entry_id,
+                                  bool did_create_new_entry,
                                   const GURL& url,
                                   ui::PageTransition transition) override;
   void SetContentsMimeType(const std::string& mime_type) override;
   void SendBeforeUnloadACK(bool proceed) override;
   void SimulateSwapOutACK() override;
 
-  void SendNavigateWithTransitionAndResponseCode(
-      int page_id,
-      const GURL& url, ui::PageTransition transition,
-      int response_code);
-  void SendNavigateWithOriginalRequestURL(
-      int page_id,
-      const GURL& url,
-      const GURL& original_request_url);
-  void SendNavigateWithFile(
-      int page_id,
-      const GURL& url,
-      const base::FilePath& file_path);
+  void SendNavigateWithTransitionAndResponseCode(int page_id,
+                                                 int nav_entry_id,
+                                                 bool did_create_new_entry,
+                                                 const GURL& url,
+                                                 ui::PageTransition transition,
+                                                 int response_code);
+  void SendNavigateWithOriginalRequestURL(int page_id,
+                                          int nav_entry_id,
+                                          bool did_create_new_entry,
+                                          const GURL& url,
+                                          const GURL& original_request_url);
+  void SendNavigateWithFile(int page_id,
+                            int nav_entry_id,
+                            bool did_create_new_entry,
+                            const GURL& url,
+                            const base::FilePath& file_path);
   void SendNavigateWithParams(
       FrameHostMsg_DidCommitProvisionalLoad_Params* params);
-  void SendNavigateWithRedirects(
-      int page_id,
-      const GURL& url,
-      const std::vector<GURL>& redirects);
+  void SendNavigateWithRedirects(int page_id,
+                                 int nav_entry_id,
+                                 bool did_create_new_entry,
+                                 const GURL& url,
+                                 const std::vector<GURL>& redirects);
   void SendNavigateWithParameters(
       int page_id,
+      int nav_entry_id,
+      bool did_create_new_entry,
       const GURL& url,
       ui::PageTransition transition,
       const GURL& original_request_url,
@@ -89,7 +104,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       const std::vector<GURL>& redirects);
 
   // Simulate a renderer-initiated navigation up until commit.
-  void NavigateAndCommitRendererInitiated(int page_id, const GURL& url);
+  void NavigateAndCommitRendererInitiated(int page_id,
+                                          bool did_create_new_entry,
+                                          const GURL& url);
 
   // With the current navigation logic this method is a no-op.
   // PlzNavigate: this method simulates receiving a BeginNavigation IPC.
