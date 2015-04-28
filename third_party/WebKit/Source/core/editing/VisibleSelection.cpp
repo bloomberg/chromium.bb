@@ -209,6 +209,29 @@ PassRefPtrWillBeRawPtr<Range> VisibleSelection::toNormalizedRange() const
     return nullptr;
 }
 
+template <typename PositionType>
+void normalizePositionsAlgorithm(const PositionType& start, const PositionType& end, PositionType* outStart, PositionType* outEnd)
+{
+    ASSERT(start.isNotNull());
+    ASSERT(end.isNotNull());
+    ASSERT(start.compareTo(end) <= 0);
+    start.document()->updateLayoutIgnorePendingStylesheets();
+
+    PositionType normalizedStart = start.downstream();
+    PositionType normalizedEnd = end.upstream();
+    // The order of the positions of |start| and |end| can be swapped after
+    // upstream/downstream. e.g. editing/pasteboard/copy-display-none.html
+    if (normalizedStart.compareTo(normalizedEnd) > 0)
+        std::swap(normalizedStart, normalizedEnd);
+    *outStart = normalizedStart.parentAnchoredEquivalent();
+    *outEnd = normalizedEnd.parentAnchoredEquivalent();
+}
+
+void VisibleSelection::normalizePositions(const Position& start, const Position& end, Position* outStart, Position* outEnd)
+{
+    return normalizePositionsAlgorithm<Position>(start, end, outStart, outEnd);
+}
+
 bool VisibleSelection::toNormalizedPositions(Position& start, Position& end) const
 {
     if (isNone())
@@ -243,17 +266,7 @@ bool VisibleSelection::toNormalizedPositions(Position& start, Position& end) con
         //                       ^ selected
         //
         ASSERT(isRange());
-        start = m_start.downstream();
-        end = m_end.upstream();
-        if (comparePositions(start, end) > 0) {
-            // Make sure the start is before the end.
-            // The end can wind up before the start if collapsed whitespace is the only thing selected.
-            Position tmp = start;
-            start = end;
-            end = tmp;
-        }
-        start = start.parentAnchoredEquivalent();
-        end = end.parentAnchoredEquivalent();
+        normalizePositions(m_start, m_end, &start, &end);
     }
 
     if (!start.containerNode() || !end.containerNode())

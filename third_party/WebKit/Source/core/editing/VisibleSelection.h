@@ -106,6 +106,7 @@ public:
     // moves the caret upstream before returning the range/positions.
     PassRefPtrWillBeRawPtr<Range> toNormalizedRange() const;
     bool toNormalizedPositions(Position& start, Position& end) const;
+    static void normalizePositions(const Position& start, const Position& end, Position* normalizedStart, Position* normalizedEnd);
 
     Element* rootEditableElement() const;
     bool isContentEditable() const;
