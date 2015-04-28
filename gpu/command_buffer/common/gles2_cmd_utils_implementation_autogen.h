@@ -5581,6 +5581,19 @@ std::string GLES2Util::GetStringValueBufferTarget(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringVertexAttribIType(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_BYTE, "GL_BYTE"},
+      {GL_UNSIGNED_BYTE, "GL_UNSIGNED_BYTE"},
+      {GL_SHORT, "GL_SHORT"},
+      {GL_UNSIGNED_SHORT, "GL_UNSIGNED_SHORT"},
+      {GL_INT, "GL_INT"},
+      {GL_UNSIGNED_INT, "GL_UNSIGNED_INT"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringVertexAttribType(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_BYTE, "GL_BYTE"},

@@ -7727,17 +7727,86 @@ void GLES2DecoderImpl::DoVertexAttrib4fv(GLuint index, const GLfloat* v) {
 error::Error GLES2DecoderImpl::HandleVertexAttribIPointer(
     uint32 immediate_data_size,
     const void* cmd_data) {
-  // TODO(zmo): Unsafe ES3 API, missing states update.
   if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
   const gles2::cmds::VertexAttribIPointer& c =
       *static_cast<const gles2::cmds::VertexAttribIPointer*>(cmd_data);
+
+  if (!state_.bound_array_buffer.get() ||
+      state_.bound_array_buffer->IsDeleted()) {
+    if (state_.vertex_attrib_manager.get() ==
+        state_.default_vertex_attrib_manager.get()) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE, "glVertexAttribIPointer", "no array buffer bound");
+      return error::kNoError;
+    } else if (c.offset != 0) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_VALUE,
+          "glVertexAttribIPointer", "client side arrays are not allowed");
+      return error::kNoError;
+    }
+  }
+
   GLuint indx = c.indx;
   GLint size = c.size;
   GLenum type = c.type;
   GLsizei stride = c.stride;
   GLsizei offset = c.offset;
   const void* ptr = reinterpret_cast<const void*>(offset);
+  if (!validators_->vertex_attrib_i_type.IsValid(type)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glVertexAttribIPointer", type, "type");
+    return error::kNoError;
+  }
+  if (!validators_->vertex_attrib_size.IsValid(size)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glVertexAttribIPointer", "size GL_INVALID_VALUE");
+    return error::kNoError;
+  }
+  if (indx >= group_->max_vertex_attribs()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glVertexAttribIPointer", "index out of range");
+    return error::kNoError;
+  }
+  if (stride < 0) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glVertexAttribIPointer", "stride < 0");
+    return error::kNoError;
+  }
+  if (stride > 255) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glVertexAttribIPointer", "stride > 255");
+    return error::kNoError;
+  }
+  if (offset < 0) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glVertexAttribIPointer", "offset < 0");
+    return error::kNoError;
+  }
+  GLsizei component_size =
+      GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
+  // component_size must be a power of two to use & as optimized modulo.
+  DCHECK(GLES2Util::IsPOT(component_size));
+  if (offset & (component_size - 1)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glVertexAttribIPointer", "offset not valid for type");
+    return error::kNoError;
+  }
+  if (stride & (component_size - 1)) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glVertexAttribIPointer", "stride not valid for type");
+    return error::kNoError;
+  }
+  state_.vertex_attrib_manager
+      ->SetAttribInfo(indx,
+                      state_.bound_array_buffer.get(),
+                      size,
+                      type,
+                      GL_FALSE,
+                      stride,
+                      stride != 0 ? stride : component_size * size,
+                      offset);
   glVertexAttribIPointer(indx, size, type, stride, ptr);
   return error::kNoError;
 }

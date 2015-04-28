@@ -215,7 +215,7 @@ GL_APICALL void         GL_APIENTRY glVertexAttribI4i (GLuint indx, GLint x, GLi
 GL_APICALL void         GL_APIENTRY glVertexAttribI4iv (GLuint indx, const GLint* values);
 GL_APICALL void         GL_APIENTRY glVertexAttribI4ui (GLuint indx, GLuint x, GLuint y, GLuint z, GLuint w);
 GL_APICALL void         GL_APIENTRY glVertexAttribI4uiv (GLuint indx, const GLuint* values);
-GL_APICALL void         GL_APIENTRY glVertexAttribIPointer (GLuint indx, GLintVertexAttribSize size, GLenumVertexAttribType type, GLsizei stride, const void* ptr);
+GL_APICALL void         GL_APIENTRY glVertexAttribIPointer (GLuint indx, GLintVertexAttribSize size, GLenumVertexAttribIType type, GLsizei stride, const void* ptr);
 GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLintVertexAttribSize size, GLenumVertexAttribType type, GLboolean normalized, GLsizei stride, const void* ptr);
 GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glWaitSync (GLsync sync, GLbitfieldSyncFlushFlags flags, GLuint64 timeout);

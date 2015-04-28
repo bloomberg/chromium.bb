@@ -85,6 +85,7 @@ ValueValidator<GLenum> transform_feedback_primitive_mode;
 ValueValidator<GLenum> uniform_block_parameter;
 ValueValidator<GLenum> uniform_parameter;
 ValueValidator<GLenum> value_buffer_target;
+ValueValidator<GLenum> vertex_attrib_i_type;
 ValueValidator<GLint> vertex_attrib_size;
 ValueValidator<GLenum> vertex_attrib_type;
 ValueValidator<GLenum> vertex_attribute;

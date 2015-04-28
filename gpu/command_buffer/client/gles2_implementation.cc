@@ -1551,13 +1551,27 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
 void GLES2Implementation::VertexAttribIPointer(
     GLuint index, GLint size, GLenum type, GLsizei stride, const void* ptr) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glVertexAttribPointer("
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glVertexAttribIPointer("
       << index << ", "
       << size << ", "
-      << GLES2Util::GetStringVertexAttribType(type) << ", "
+      << GLES2Util::GetStringVertexAttribIType(type) << ", "
       << stride << ", "
       << ptr << ")");
-  helper_->VertexAttribIPointer(index, size, type, stride, ToGLuint(ptr));
+  // Record the info on the client side.
+  if (!vertex_array_object_manager_->SetAttribPointer(
+      bound_array_buffer_id_, index, size, type, GL_FALSE, stride, ptr)) {
+    SetGLError(GL_INVALID_OPERATION, "glVertexAttribIPointer",
+               "client side arrays are not allowed in vertex array objects.");
+    return;
+  }
+  if (!support_client_side_arrays_ || bound_array_buffer_id_ != 0) {
+    // Only report NON client side buffers to the service.
+    if (!ValidateOffset("glVertexAttribIPointer",
+                        reinterpret_cast<GLintptr>(ptr))) {
+      return;
+    }
+    helper_->VertexAttribIPointer(index, size, type, stride, ToGLuint(ptr));
+  }
   CheckGLError();
 }
 

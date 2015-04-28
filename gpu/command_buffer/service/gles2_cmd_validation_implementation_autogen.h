@@ -866,6 +866,15 @@ static const GLenum valid_value_buffer_target_table[] = {
     GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM,
 };
 
+static const GLenum valid_vertex_attrib_i_type_table[] = {
+    GL_BYTE,
+    GL_UNSIGNED_BYTE,
+    GL_SHORT,
+    GL_UNSIGNED_SHORT,
+    GL_INT,
+    GL_UNSIGNED_INT,
+};
+
 static const GLint valid_vertex_attrib_size_table[] = {
     1,
     2,
@@ -1022,6 +1031,8 @@ Validators::Validators()
                         arraysize(valid_uniform_parameter_table)),
       value_buffer_target(valid_value_buffer_target_table,
                           arraysize(valid_value_buffer_target_table)),
+      vertex_attrib_i_type(valid_vertex_attrib_i_type_table,
+                           arraysize(valid_vertex_attrib_i_type_table)),
       vertex_attrib_size(valid_vertex_attrib_size_table,
                          arraysize(valid_vertex_attrib_size_table)),
       vertex_attrib_type(valid_vertex_attrib_type_table,

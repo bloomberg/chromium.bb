@@ -84,6 +84,7 @@ static std::string GetStringTransformFeedbackPrimitiveMode(uint32_t value);
 static std::string GetStringUniformBlockParameter(uint32_t value);
 static std::string GetStringUniformParameter(uint32_t value);
 static std::string GetStringValueBufferTarget(uint32_t value);
+static std::string GetStringVertexAttribIType(uint32_t value);
 static std::string GetStringVertexAttribType(uint32_t value);
 static std::string GetStringVertexAttribute(uint32_t value);
 static std::string GetStringVertexPointer(uint32_t value);

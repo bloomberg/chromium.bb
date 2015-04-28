@@ -1642,6 +1642,21 @@ _NAMED_TYPE_INFO = {
       'GL_DOUBLE',
     ],
   },
+  'VertexAttribIType': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_BYTE',
+      'GL_UNSIGNED_BYTE',
+      'GL_SHORT',
+      'GL_UNSIGNED_SHORT',
+      'GL_INT',
+      'GL_UNSIGNED_INT',
+    ],
+    'invalid': [
+      'GL_FLOAT',
+      'GL_DOUBLE',
+    ],
+  },
   'TextureBorder': {
     'type': 'GLint',
     'is_complete': True,
@@ -3256,7 +3271,7 @@ _FUNCTION_INFO = {
   'VertexAttribIPointer': {
     'type': 'Manual',
     'cmd_args': 'GLuint indx, GLintVertexAttribSize size, '
-                'GLenumVertexAttribType type, GLsizei stride, '
+                'GLenumVertexAttribIType type, GLsizei stride, '
                 'GLuint offset',
     'client_test': False,
     'unsafe': True,
