@@ -736,6 +736,7 @@ struct plane_arg {
 	uint32_t w, h;
 	double scale;
 	unsigned int fb_id;
+	struct bo *bo;
 	char format_str[5]; /* need to leave room for terminating \0 */
 	unsigned int fourcc;
 };
@@ -1018,6 +1019,8 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 	if (plane_bo == NULL)
 		return -1;
 
+	p->bo = plane_bo;
+
 	/* just use single plane format for now.. */
 	if (drmModeAddFB2(dev->fd, p->w, p->h, p->fourcc,
 			handles, pitches, offsets, &p->fb_id, plane_flags)) {
@@ -1049,6 +1052,19 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 
 	return 0;
 }
+
+static void clear_planes(struct device *dev, struct plane_arg *p, unsigned int count)
+{
+	unsigned int i;
+
+	for (i = 0; i < count; i++) {
+		if (p[i].fb_id)
+			drmModeRmFB(dev->fd, p[i].fb_id);
+		if (p[i].bo)
+			bo_destroy(p[i].bo);
+	}
+}
+
 
 static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int count)
 {
@@ -1523,6 +1539,7 @@ int main(int argc, char **argv)
 			if (parse_plane(&plane_args[plane_count], optarg) < 0)
 				usage(argv[0]);
 
+			plane_args[plane_count].fb_id = 0;
 			plane_count++;
 			break;
 		case 'p':
@@ -1654,6 +1671,9 @@ int main(int argc, char **argv)
 
 		if (test_cursor)
 			clear_cursors(&dev);
+
+		if (plane_count)
+			clear_planes(&dev, plane_args, plane_count);
 
 		if (count)
 			clear_mode(&dev);
