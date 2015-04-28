@@ -13,17 +13,17 @@
 #include "base/logging_win.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/template_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
@@ -104,7 +104,7 @@ BrowserMonitor::BrowserMonitor(base::RunLoop* run_loop,
                    base::Unretained(this))),
     background_thread_("BrowserWatcherThread"),
     run_loop_(run_loop),
-    main_thread_(base::MessageLoopProxy::current()) {
+    main_thread_(base::ThreadTaskRunnerHandle::Get()) {
 }
 
 BrowserMonitor::~BrowserMonitor() {
@@ -138,7 +138,7 @@ bool BrowserMonitor::StartWatching(
 }
 
 void BrowserMonitor::OnEndSessionMessage(UINT message, LPARAM lparam) {
-  DCHECK_EQ(main_thread_, base::MessageLoopProxy::current());
+  DCHECK_EQ(main_thread_, base::ThreadTaskRunnerHandle::Get());
 
   if (message == WM_QUERYENDSESSION) {
     exit_funnel_.RecordEvent(L"WatcherQueryEndSession");
@@ -165,7 +165,7 @@ void BrowserMonitor::OnEndSessionMessage(UINT message, LPARAM lparam) {
 
 void BrowserMonitor::Watch(base::win::ScopedHandle on_initialized_event) {
   // This needs to run on an IO thread.
-  DCHECK_NE(main_thread_, base::MessageLoopProxy::current());
+  DCHECK_NE(main_thread_, base::ThreadTaskRunnerHandle::Get());
 
   // Signal our client now that the Kasko reporter is initialized and we have
   // cleared all of the obstacles that might lead to an early exit.
@@ -184,7 +184,7 @@ void BrowserMonitor::Watch(base::win::ScopedHandle on_initialized_event) {
 
 void BrowserMonitor::BrowserExited() {
   // This runs in the main thread.
-  DCHECK_EQ(main_thread_, base::MessageLoopProxy::current());
+  DCHECK_EQ(main_thread_, base::ThreadTaskRunnerHandle::Get());
 
   // Our background thread has served it's purpose.
   background_thread_.Stop();
