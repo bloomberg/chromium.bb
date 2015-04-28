@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
@@ -54,7 +53,8 @@ namespace data_reduction_proxy {
 // Checks if the secure proxy is allowed by the carrier by sending a probe.
 class SecureProxyChecker : public net::URLFetcherDelegate {
  public:
-  SecureProxyChecker(net::URLRequestContextGetter* url_request_context_getter)
+  SecureProxyChecker(const scoped_refptr<net::URLRequestContextGetter>&
+                         url_request_context_getter)
       : url_request_context_getter_(url_request_context_getter) {}
 
   void OnURLFetchComplete(const net::URLFetcher* source) override {
@@ -101,7 +101,6 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
 };
 
 DataReductionProxyConfig::DataReductionProxyConfig(
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     net::NetLog* net_log,
     scoped_ptr<DataReductionProxyConfigValues> config_values,
     DataReductionProxyConfigurator* configurator,
@@ -112,24 +111,23 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       enabled_by_user_(false),
       alternative_enabled_by_user_(false),
       config_values_(config_values.Pass()),
-      io_task_runner_(io_task_runner),
       net_log_(net_log),
       configurator_(configurator),
-      event_creator_(event_creator),
-      url_request_context_getter_(nullptr) {
-  DCHECK(io_task_runner);
+      event_creator_(event_creator) {
   DCHECK(configurator);
   DCHECK(event_creator);
+  // Constructed on the UI thread, but should be checked on the IO thread.
+  thread_checker_.DetachFromThread();
 }
 
 DataReductionProxyConfig::~DataReductionProxyConfig() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
-void DataReductionProxyConfig::InitializeOnIOThread(
-    net::URLRequestContextGetter* url_request_context_getter) {
-  DCHECK(url_request_context_getter);
-  url_request_context_getter_ = url_request_context_getter;
+void DataReductionProxyConfig::InitializeOnIOThread(const scoped_refptr<
+    net::URLRequestContextGetter>& url_request_context_getter) {
+  secure_proxy_checker_.reset(
+      new SecureProxyChecker(url_request_context_getter));
 
   if (!config_values_->allowed())
     return;
@@ -139,7 +137,7 @@ void DataReductionProxyConfig::InitializeOnIOThread(
 }
 
 void DataReductionProxyConfig::ReloadConfig() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
                      restricted_by_carrier_, false /* at_startup */);
 }
@@ -147,6 +145,7 @@ void DataReductionProxyConfig::ReloadConfig() {
 bool DataReductionProxyConfig::WasDataReductionProxyUsed(
     const net::URLRequest* request,
     DataReductionProxyTypeInfo* proxy_info) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(request);
   return IsDataReductionProxy(request->proxy_server(), proxy_info);
 }
@@ -154,12 +153,14 @@ bool DataReductionProxyConfig::WasDataReductionProxyUsed(
 bool DataReductionProxyConfig::IsDataReductionProxy(
     const net::HostPortPair& host_port_pair,
     DataReductionProxyTypeInfo* proxy_info) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return config_values_->IsDataReductionProxy(host_port_pair, proxy_info);
 }
 
 bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
     const net::URLRequest& request,
     const net::ProxyConfig& data_reduction_proxy_config) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(request.context());
   DCHECK(request.context()->proxy_service());
   net::ProxyInfo result;
@@ -176,6 +177,7 @@ bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
     const net::URLRequest& request,
     const net::ProxyConfig& data_reduction_proxy_config,
     base::TimeDelta* min_retry_delay) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (request.context() != NULL &&
       request.context()->proxy_service() != NULL) {
     return AreProxiesBypassed(
@@ -231,6 +233,7 @@ bool DataReductionProxyConfig::IsProxyBypassed(
     const net::ProxyRetryInfoMap& retry_map,
     const net::ProxyServer& proxy_server,
     base::TimeDelta* retry_delay) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   net::ProxyRetryInfoMap::const_iterator found =
       retry_map.find(proxy_server.ToURI());
 
@@ -247,6 +250,7 @@ bool DataReductionProxyConfig::IsProxyBypassed(
 
 bool DataReductionProxyConfig::ContainsDataReductionProxy(
     const net::ProxyConfig::ProxyRules& proxy_rules) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Data Reduction Proxy configurations are always TYPE_PROXY_PER_SCHEME.
   if (proxy_rules.type != net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME)
     return false;
@@ -272,6 +276,7 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
 
 bool DataReductionProxyConfig::UsingHTTPTunnel(
     const net::HostPortPair& proxy_server) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return config_values_->UsingHTTPTunnel(proxy_server);
 }
 
@@ -294,6 +299,7 @@ bool DataReductionProxyConfig::promo_allowed() const {
 
 void DataReductionProxyConfig::SetProxyConfig(
     bool enabled, bool alternative_enabled, bool at_startup) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   enabled_by_user_ = enabled;
   alternative_enabled_by_user_ = alternative_enabled;
   UpdateConfigurator(enabled_by_user_, alternative_enabled_by_user_,
@@ -317,7 +323,6 @@ void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
                                                   bool alternative_enabled,
                                                   bool restricted,
                                                   bool at_startup) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(configurator_);
   LogProxyState(enabled, restricted, at_startup);
   // The alternative is only configured if the standard configuration is
@@ -375,7 +380,6 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     const std::string& response,
     const net::URLRequestStatus& status,
     int http_response_code) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
   bool success_response = ("OK" == response.substr(0, 2));
   if (event_creator_)
     event_creator_->EndSecureProxyCheck(bound_net_log_, status.error(),
@@ -428,7 +432,6 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
 }
 
 void DataReductionProxyConfig::OnIPAddressChanged() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (enabled_by_user_) {
     DCHECK(config_values_->allowed());
     RecordNetworkChangeEvent(IP_CHANGED);
@@ -484,7 +487,6 @@ void DataReductionProxyConfig::RecordSecureProxyCheckFetchResult(
 void DataReductionProxyConfig::SecureProxyCheck(
     const GURL& secure_proxy_check_url,
     FetcherResponseCallback fetcher_callback) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
   bound_net_log_ = net::BoundNetLog::Make(
       net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
   if (event_creator_) {
@@ -492,10 +494,6 @@ void DataReductionProxyConfig::SecureProxyCheck(
         bound_net_log_, config_values_->secure_proxy_check_url());
   }
 
-  if (!secure_proxy_checker_) {
-    secure_proxy_checker_.reset(
-        new SecureProxyChecker(url_request_context_getter_));
-  }
   secure_proxy_checker_->CheckIfSecureProxyIsAllowed(secure_proxy_check_url,
                                                      fetcher_callback);
 }

@@ -18,7 +18,6 @@ namespace data_reduction_proxy {
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     int params_flags,
     unsigned int params_definitions,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     net::NetLog* net_log,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
@@ -26,7 +25,6 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
           make_scoped_ptr(new TestDataReductionProxyParams(params_flags,
                                                            params_definitions))
               .Pass(),
-          task_runner,
           net_log,
           configurator,
           event_creator) {
@@ -34,12 +32,10 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
 
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     scoped_ptr<DataReductionProxyConfigValues> config_values,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     net::NetLog* net_log,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
-    : DataReductionProxyConfig(task_runner,
-                               net_log,
+    : DataReductionProxyConfig(net_log,
                                config_values.Pass(),
                                configurator,
                                event_creator) {
@@ -89,12 +85,10 @@ void TestDataReductionProxyConfig::SetStateForTest(
 
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
     scoped_ptr<DataReductionProxyConfigValues> config_values,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     net::NetLog* net_log,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
     : TestDataReductionProxyConfig(config_values.Pass(),
-                                   task_runner,
                                    net_log,
                                    configurator,
                                    event_creator) {

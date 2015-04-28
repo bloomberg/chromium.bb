@@ -340,17 +340,15 @@ DataReductionProxyTestContext::Builder::Build() {
         DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
     raw_mutable_config = mutable_config.get();
     config.reset(new TestDataReductionProxyConfig(
-        mutable_config.Pass(), task_runner, net_log.get(), configurator.get(),
+        mutable_config.Pass(), net_log.get(), configurator.get(),
         event_creator.get()));
   } else if (use_mock_config_) {
     test_context_flags |= USE_MOCK_CONFIG;
     config.reset(new MockDataReductionProxyConfig(
-        params.Pass(), task_runner, net_log.get(), configurator.get(),
-        event_creator.get()));
+        params.Pass(), net_log.get(), configurator.get(), event_creator.get()));
   } else {
     config.reset(new TestDataReductionProxyConfig(
-        params.Pass(), task_runner, net_log.get(), configurator.get(),
-        event_creator.get()));
+        params.Pass(), net_log.get(), configurator.get(), event_creator.get()));
   }
 
   scoped_ptr<DataReductionProxyRequestOptions> request_options;

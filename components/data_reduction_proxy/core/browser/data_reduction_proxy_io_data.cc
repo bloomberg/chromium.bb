@@ -117,13 +117,12 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     scoped_ptr<DataReductionProxyMutableConfigValues> mutable_config =
         DataReductionProxyMutableConfigValues::CreateFromParams(params.get());
     raw_mutable_config = mutable_config.get();
-    config_.reset(new DataReductionProxyConfig(
-        io_task_runner_, net_log, mutable_config.Pass(), configurator_.get(),
-        event_creator_.get()));
+    config_.reset(new DataReductionProxyConfig(net_log, mutable_config.Pass(),
+                                               configurator_.get(),
+                                               event_creator_.get()));
   } else {
     config_.reset(new DataReductionProxyConfig(
-        io_task_runner_, net_log, params.Pass(), configurator_.get(),
-        event_creator_.get()));
+        net_log, params.Pass(), configurator_.get(), event_creator_.get()));
   }
 
   // It is safe to use base::Unretained here, since it gets executed
@@ -146,7 +145,10 @@ DataReductionProxyIOData::DataReductionProxyIOData(
  }
 
  DataReductionProxyIOData::DataReductionProxyIOData()
-     : url_request_context_getter_(nullptr), weak_factory_(this) {
+     : client_(Client::UNKNOWN),
+       net_log_(nullptr),
+       url_request_context_getter_(nullptr),
+       weak_factory_(this) {
 }
 
 DataReductionProxyIOData::~DataReductionProxyIOData() {

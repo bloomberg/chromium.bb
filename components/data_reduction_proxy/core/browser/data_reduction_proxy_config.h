@@ -23,7 +23,6 @@
 class GURL;
 
 namespace base {
-class SingleThreadTaskRunner;
 class TimeDelta;
 }
 
@@ -90,7 +89,6 @@ class DataReductionProxyConfig
   // |config_values| contains the Data Reduction Proxy configuration values.
   // |configurator| is the target for a configuration update.
   DataReductionProxyConfig(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
       scoped_ptr<DataReductionProxyConfigValues> config_values,
       DataReductionProxyConfigurator* configurator,
@@ -98,8 +96,8 @@ class DataReductionProxyConfig
   ~DataReductionProxyConfig() override;
 
   // Performs initialization on the IO thread.
-  void InitializeOnIOThread(
-      net::URLRequestContextGetter* url_request_context_getter);
+  void InitializeOnIOThread(const scoped_refptr<net::URLRequestContextGetter>&
+                                url_request_context_getter);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
   // the value of |enabled| and |alternative_enabled|. Use the alternative
@@ -270,10 +268,6 @@ class DataReductionProxyConfig
   // Contains the configuration data being used.
   scoped_ptr<DataReductionProxyConfigValues> config_values_;
 
-  // |io_task_runner_| should be the task runner for running operations on the
-  // IO thread.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
   // The caller must ensure that the |net_log_|, if set, outlives this instance.
   // It is used to create new instances of |bound_net_log_| on secure proxy
   // checks. |bound_net_log_| permits the correlation of the begin and end
@@ -287,9 +281,6 @@ class DataReductionProxyConfig
 
   // The caller must ensure that the |event_creator_| outlives this instance.
   DataReductionProxyEventCreator* event_creator_;
-
-  // Used for performing the secure proxy check.
-  net::URLRequestContextGetter* url_request_context_getter_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

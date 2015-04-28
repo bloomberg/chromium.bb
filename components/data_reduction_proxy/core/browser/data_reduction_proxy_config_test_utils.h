@@ -5,15 +5,10 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_TEST_UTILS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_TEST_UTILS_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "net/base/net_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace net {
 class NetLog;
@@ -36,7 +31,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   TestDataReductionProxyConfig(
       int params_flags,
       unsigned int params_definitions,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
@@ -46,7 +40,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // DataReductionProxyParams or DataReductionProxyMutableConfigValues).
   TestDataReductionProxyConfig(
       scoped_ptr<DataReductionProxyConfigValues> config_values,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
@@ -89,7 +82,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
   // Creates a |MockDataReductionProxyConfig|.
   MockDataReductionProxyConfig(
       scoped_ptr<DataReductionProxyConfigValues> config_values,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       net::NetLog* net_log,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
