@@ -491,6 +491,7 @@ if (enable_webrtc) {
     public_configs = [ ":jingle_public_configs" ]
 
     deps = [
+      ":libjingle",
       "//third_party/libsrtp",
       "//third_party/webrtc/modules/media_file",
       "//third_party/webrtc/modules/video_capture",

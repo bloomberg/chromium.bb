@@ -38,7 +38,7 @@ config("content_implementation") {
 # when doing a component build).
 
 content_shared_components = [
-  "//content/gpu",
+  "//content/gpu:gpu_sources",
   "//content/public/browser:browser_sources",
   "//content/public/child:child_sources",
   "//content/public/common:common_sources",
@@ -48,7 +48,7 @@ content_shared_components = [
 ]
 
 if (enable_plugins) {
-  content_shared_components += [ "//content/ppapi_plugin" ]
+  content_shared_components += [ "//content/ppapi_plugin:ppapi_plugin_sources" ]
 }
 
 if (is_component_build) {

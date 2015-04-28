@@ -2,7 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("ppapi_plugin") {
+group("ppapi_plugin") {
+  visibility = [ "//content/*" ]
+
+  if (is_component_build) {
+    public_deps = [
+      "//content",
+    ]
+  } else {
+    public_deps = [
+      ":ppapi_plugin_sources",
+    ]
+  }
+}
+
+source_set("ppapi_plugin_sources") {
   visibility = [ "//content/*" ]
 
   sources = [

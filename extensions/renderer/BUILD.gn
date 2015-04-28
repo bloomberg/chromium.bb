@@ -24,5 +24,6 @@ source_set("renderer") {
     "//skia",
     "//third_party/WebKit/public:blink",
     "//third_party/mojo/src/mojo/edk/js",
+    "//third_party/mojo/src/mojo/public/js",
   ]
 }

@@ -8,7 +8,6 @@ import("//tools/grit/grit_rule.gni")
 group("resources") {
   deps = [
     ":devtools_resources",
-    ":devtools_protocol_handler",
   ]
 }
 
@@ -36,7 +35,7 @@ grit("devtools_resources") {
 }
 
 action("gen_devtools_protocol_handler") {
-  visibility = [ ":devtools_protocol_handler" ]
+  visibility = [ "//content/browser" ]
 
   script = "//content/browser/devtools/protocol/" +
            "devtools_protocol_handler_generator.py"
@@ -55,9 +54,4 @@ action("gen_devtools_protocol_handler") {
 
   args =
       rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
-}
-
-source_set("devtools_protocol_handler") {
-  visibility = [ ":resources" ]
-  sources = get_target_outputs(":gen_devtools_protocol_handler")
 }

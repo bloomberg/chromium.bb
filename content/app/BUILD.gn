@@ -72,7 +72,7 @@ content_app_extra_configs = [
 ]
 
 if (!is_chrome_multiple_dll) {
-  content_app_deps += [ "//content/gpu" ]
+  content_app_deps += [ "//content/gpu:gpu_sources" ]
 }
 
 # This includes the app sources for both the browser and child processes.

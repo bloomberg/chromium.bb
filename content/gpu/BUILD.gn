@@ -5,7 +5,22 @@
 import("//build/config/ui.gni")
 import("//content/content.gni")
 
-source_set("gpu") {
+# See //content/BUILD.gn for how this works.
+group("gpu") {
+  visibility = [ "//content/*" ]
+
+  if (is_component_build) {
+    public_deps = [
+      "//content",
+    ]
+  } else {
+    public_deps = [
+      ":gpu_sources",
+    ]
+  }
+}
+
+source_set("gpu_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
