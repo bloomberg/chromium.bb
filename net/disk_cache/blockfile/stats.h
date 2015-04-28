@@ -6,9 +6,9 @@
 #define NET_DISK_CACHE_BLOCKFILE_STATS_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
+#include "base/strings/string_split.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/addr.h"
 
@@ -18,7 +18,7 @@ class HistogramSamples;
 
 namespace disk_cache {
 
-typedef std::vector<std::pair<std::string, std::string> > StatsItems;
+using StatsItems = base::StringPairs;
 
 // This class stores cache-specific usage information, for tunning purposes.
 class NET_EXPORT_PRIVATE Stats {
