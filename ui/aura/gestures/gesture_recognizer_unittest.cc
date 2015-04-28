@@ -600,9 +600,6 @@ class RemoveOnTouchCancelHandler : public TestEventHandler {
     TestEventHandler::OnTouchEvent(event);
     if (event->type() == ui::ET_TOUCH_CANCELLED) {
       Window* target = static_cast<Window*>(event->target());
-      // This is tiptoeing around crbug.com/310172. If this event handler isn't
-      // removed, we enter an infinite loop.
-      target->RemovePreTargetHandler(this);
       target->parent()->RemoveChild(target);
     }
   }
