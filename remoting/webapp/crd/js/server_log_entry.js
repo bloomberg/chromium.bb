@@ -178,6 +178,9 @@ remoting.ServerLogEntry.VALUE_MODE_APP_REMOTING_ = 'lgapp';
 /** @private */
 remoting.ServerLogEntry.VALUE_MODE_UNKNOWN_ = 'unknown';
 
+/** @private */
+remoting.ServerLogEntry.KEY_APP_ID_ = 'application-id';
+
 /**
  * Sets one field in this log entry.
  *
@@ -495,6 +498,15 @@ remoting.ServerLogEntry.prototype.addModeField = function() {
   this.set_(remoting.ServerLogEntry.KEY_MODE_,
             remoting.ServerLogEntry.getModeField_());
 };
+
+/**
+ * Adds a field specifying the application ID to this log entry.
+ * @return {void} Nothing.
+ */
+remoting.ServerLogEntry.prototype.addApplicationId = function() {
+  this.set_(remoting.ServerLogEntry.KEY_APP_ID_, chrome.runtime.id);
+};
+
 
 /**
  * Gets the value of the mode field to be put in a log entry.

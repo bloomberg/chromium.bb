@@ -180,6 +180,7 @@ remoting.LogToServer.prototype.log_ = function(entry) {
       (new Date().getTime() - this.sessionStartTime_ -
           this.authTotalTime_) / 1000.0;
   entry.addSessionDuration(sessionDurationInSeconds);
+  entry.addApplicationId();
   // The host-version will be blank for logs before a session has been created.
   // For example, the signal-strategy log-entries won't have host version info.
   entry.addHostVersion(this.hostVersion_);
