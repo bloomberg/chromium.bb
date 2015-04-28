@@ -12,3 +12,5 @@
 };
 
 Bluetooth implements BluetoothDiscovery;
+
+Bluetooth implements BluetoothInteraction;
