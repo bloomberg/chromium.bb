@@ -444,13 +444,15 @@ void FaviconHandler::OnDidDownloadFavicon(
     // Remove the first member of image_urls_ and process the remaining.
     image_urls_.erase(image_urls_.begin());
     ProcessCurrentUrl();
-  } else if (best_favicon_candidate_.icon_type != favicon_base::INVALID_ICON) {
-    // No more icons to request, set the favicon from the candidate.
-    SetFavicon(best_favicon_candidate_.url,
-               best_favicon_candidate_.image_url,
-               best_favicon_candidate_.image,
-               best_favicon_candidate_.icon_type);
-    // Reset candidate.
+  } else {
+    // We have either found the ideal candidate or run out of candidates.
+    if (best_favicon_candidate_.icon_type != favicon_base::INVALID_ICON) {
+      // No more icons to request, set the favicon from the candidate.
+      SetFavicon(best_favicon_candidate_.url, best_favicon_candidate_.image_url,
+                 best_favicon_candidate_.image,
+                 best_favicon_candidate_.icon_type);
+    }
+    // Clear download related state.
     image_urls_.clear();
     download_requests_.clear();
     best_favicon_candidate_ = FaviconCandidate();
@@ -680,11 +682,18 @@ void FaviconHandler::ScheduleDownload(const GURL& url,
   // for more details about the max bitmap size.
   const int download_id = DownloadFavicon(image_url,
                                           GetMaximalIconSize(icon_type));
-  if (download_id) {
-    // Download ids should be unique.
-    DCHECK(download_requests_.find(download_id) == download_requests_.end());
-    download_requests_[download_id] =
-        DownloadRequest(url, image_url, icon_type);
+
+  // Download ids should be unique.
+  DCHECK(download_requests_.find(download_id) == download_requests_.end());
+  download_requests_[download_id] = DownloadRequest(url, image_url, icon_type);
+
+  if (download_id == 0) {
+    // If DownloadFavicon() did not start a download, it returns a download id
+    // of 0. We still need to call OnDidDownloadFavicon() because the method is
+    // responsible for initiating the data request for the next candidate.
+    OnDidDownloadFavicon(download_id, image_url, std::vector<SkBitmap>(),
+                         std::vector<gfx::Size>());
+
   }
 }
 
