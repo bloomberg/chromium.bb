@@ -1,7 +1,6 @@
 Test that each agent could be enabled/disabled separately.
 
 CSS.disable finished successfully
-Canvas.disable finished successfully
 Console.disable finished successfully
 DOM.disable finished successfully
 DOMStorage.disable finished successfully
@@ -21,9 +20,6 @@ Worker.disable finished successfully
 
 CSS.enable finished with error DOM agent needs to be enabled first.
 CSS.disable finished successfully
-
-Canvas.enable finished successfully
-Canvas.disable finished successfully
 
 Console.enable finished successfully
 Console.disable finished successfully

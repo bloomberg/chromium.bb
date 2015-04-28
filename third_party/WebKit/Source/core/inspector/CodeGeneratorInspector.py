@@ -48,8 +48,7 @@ TYPE_NAME_FIX_MAP = {
 
 
 TYPES_WITH_RUNTIME_CAST_SET = frozenset(["Runtime.RemoteObject", "Runtime.PropertyDescriptor", "Runtime.InternalPropertyDescriptor",
-                                         "Debugger.FunctionDetails", "Debugger.GeneratorObjectDetails", "Debugger.CollectionEntry", "Debugger.CallFrame", "Debugger.Location",
-                                         "Canvas.TraceLog", "Canvas.ResourceState"])
+                                         "Debugger.FunctionDetails", "Debugger.GeneratorObjectDetails", "Debugger.CollectionEntry", "Debugger.CallFrame", "Debugger.Location"])
 
 TYPES_WITH_OPEN_FIELD_LIST_SET = frozenset([
                                             # InspectorStyleSheet not only creates this property but wants to read it and modify it.
