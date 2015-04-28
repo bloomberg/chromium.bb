@@ -20,6 +20,7 @@ namespace {
 const char kIndentSymbol = '+';
 const int kIndentSymbolCount = 2;
 const char* kSkipString = "@NO_DUMP";
+const char* kSkipChildren = "@NO_CHILDREN_DUMP";
 const char* kChildrenDictAttr = "children";
 }
 
@@ -84,6 +85,9 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
     return;
 
   *contents += line + base::ASCIIToUTF16("\n");
+  if (line.find(base::ASCIIToUTF16(kSkipChildren)) != base::string16::npos)
+    return;
+
   const base::ListValue* children;
   dict.GetList(kChildrenDictAttr, &children);
   const base::DictionaryValue* child_dict;
