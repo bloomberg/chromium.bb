@@ -603,7 +603,6 @@ group("gn_only") {
       "//third_party/pdfium/third_party:freetype",
       "//third_party/libjingle:peerconnnection_server",
       "//third_party/libjpeg_turbo:simd",
-      "//third_party/libjpeg_turbo:simd_asm",
       "//third_party/libsrtp:replay_driver",
       "//third_party/libsrtp:roc_driver",
       "//third_party/libsrtp:rtpw",
@@ -630,6 +629,9 @@ group("gn_only") {
       "//ui/shell_dialogs:shell_dialogs_unittests",
       "//ui/views/examples:views_examples_exe",
     ]
+    if (target_cpu == "x86" || target_cpu == "x64") {
+      deps += [ "//third_party/libjpeg_turbo:simd_asm" ]
+    }
     if (enable_nacl) {
       deps += [ "//native_client/src/trusted/service_runtime:sel_ldr" ]
     }
