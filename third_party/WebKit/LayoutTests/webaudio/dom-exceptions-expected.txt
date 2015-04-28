@@ -61,7 +61,7 @@ PASS node.connect(context.destination, 0, 100) threw exception IndexSizeError: F
 PASS node.connect(node2.gain, 100) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': output index (100) exceeds number of outputs (1)..
 PASS node.disconnect(99) threw exception IndexSizeError: Failed to execute 'disconnect' on 'AudioNode': The output index provided (99) is outside the range [0, 1]..
 PASS node.connect(otherContext.destination) threw exception SyntaxError: Failed to execute 'connect' on 'AudioNode': cannot connect to a destination belonging to a different audio context..
-PASS node.channelCount = 99 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': channel count (99) must be between 1 and 32..
+PASS node.channelCount = 99 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (99) is outside the range [1, 32]..
 PASS node.channelCount is not 99
 PASS node.channelCountMode = 'fancy' did not throw exception.
 PASS Invalid channelCountMode value did not change mode
@@ -75,31 +75,39 @@ PASS new OfflineAudioContext(1, 100, 1e6) threw exception IndexSizeError: Failed
 PASS new OfflineAudioContext(1, -88200000000000, 44100) threw exception NotSupportedError: Failed to construct 'OfflineAudioContext': OfflineAudioContext(1, 1448390656, 44100).
 PASS node.oversample = '9x' did not throw exception.
 PASS Invalid oversample value did not change node.oversample
-PASS node.curve = new Float32Array(1) threw exception InvalidAccessError: Failed to set the 'curve' property on 'WaveShaperNode': curve length cannot be less than 2: 1.
+PASS node.curve = new Float32Array(1) threw exception InvalidAccessError: Failed to set the 'curve' property on 'WaveShaperNode': The curve length provided (1) is less than the minimum bound (2)..
 PASS node.curve is null
 PASS node.curve = new Float32Array(2) did not throw exception.
 PASS node.curve = null did not throw exception.
 PASS source = context.createBufferSource() did not throw exception.
 PASS source.buffer = buffer did not throw exception.
 PASS source.buffer = context.createBuffer(1, 10, context.sampleRate) did not throw exception.
-PASS source.start(-1) threw exception InvalidAccessError: Failed to execute 'start' on 'AudioBufferSourceNode': Start time must be a finite non-negative number: -1.
+PASS source.start(-1) threw exception InvalidAccessError: Failed to execute 'start' on 'AudioBufferSourceNode': The start time provided (-1) is less than the minimum bound (0)..
 PASS source.start(Infinity) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.start(-Infinity) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.start(NaN) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.start(1, Infinity) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.start(1, -Infinity) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.start(1, NaN) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
-PASS source.start(1, -1) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Offset must be a non-negative number: -1.
+PASS source.start(1, -1) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': The offset provided (-1) is less than the minimum bound (0)..
+PASS source.start(1, -Number.MIN_VALUE) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': The offset provided (-4.94066e-324) is less than the minimum bound (0)..
 PASS source.start(1, 1, Infinity) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.start(1, 1, -Infinity) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.start(1, 1, NaN) threw exception TypeError: Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite..
-PASS source.start(1, 1, -1) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': Duration must be a non-negative number: -1.
+PASS source.start(1, 1, -1) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': The duration provided (-1) is less than the minimum bound (0)..
+PASS source.start(1, 1, -Number.MIN_VALUE) threw exception InvalidStateError: Failed to execute 'start' on 'AudioBufferSourceNode': The duration provided (-4.94066e-324) is less than the minimum bound (0)..
 PASS source.start() did not throw exception.
-PASS source.stop(-1) threw exception InvalidAccessError: Failed to execute 'stop' on 'AudioBufferSourceNode': Stop time must be a non-negative number: -1.
+PASS source.stop(-Number.MIN_VALUE) threw exception InvalidAccessError: Failed to execute 'stop' on 'AudioBufferSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0)..
 PASS source.stop(Infinity) threw exception TypeError: Failed to execute 'stop' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.stop(-Infinity) threw exception TypeError: Failed to execute 'stop' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.stop(NaN) threw exception TypeError: Failed to execute 'stop' on 'AudioBufferSourceNode': The provided double value is non-finite..
 PASS source.stop() did not throw exception.
+PASS source = context.createBufferSource() did not throw exception.
+PASS source.buffer = buffer did not throw exception.
+PASS source.start(0, 0) did not throw exception.
+PASS source = context.createBufferSource() did not throw exception.
+PASS source.buffer = buffer did not throw exception.
+PASS source.start(0, -1/Infinity) did not throw exception.
 PASS source = context.createBufferSource() did not throw exception.
 PASS source.start() did not throw exception.
 PASS source = context.createBufferSource() did not throw exception.
@@ -114,12 +122,12 @@ PASS source.buffer = buffer did not throw exception.
 PASS source.start() did not throw exception.
 PASS source.stop() did not throw exception.
 PASS source = context.createOscillator() did not throw exception.
-PASS source.start(-1) threw exception InvalidAccessError: Failed to execute 'start' on 'OscillatorNode': Start time must be a finite non-negative number: -1.
+PASS source.start(-Number.MIN_VALUE) threw exception InvalidAccessError: Failed to execute 'start' on 'OscillatorNode': The start time provided (-4.94066e-324) is less than the minimum bound (0)..
 PASS source.start(Infinity) threw exception TypeError: Failed to execute 'start' on 'OscillatorNode': The provided double value is non-finite..
 PASS source.start(-Infinity) threw exception TypeError: Failed to execute 'start' on 'OscillatorNode': The provided double value is non-finite..
 PASS source.start(NaN) threw exception TypeError: Failed to execute 'start' on 'OscillatorNode': The provided double value is non-finite..
 PASS source.start() did not throw exception.
-PASS source.stop(-1) threw exception InvalidAccessError: Failed to execute 'stop' on 'OscillatorNode': Stop time must be a non-negative number: -1.
+PASS source.stop(-Number.MIN_VALUE) threw exception InvalidAccessError: Failed to execute 'stop' on 'OscillatorNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0)..
 PASS source.stop(Infinity) threw exception TypeError: Failed to execute 'stop' on 'OscillatorNode': The provided double value is non-finite..
 PASS source.stop(-Infinity) threw exception TypeError: Failed to execute 'stop' on 'OscillatorNode': The provided double value is non-finite..
 PASS source.stop(NaN) threw exception TypeError: Failed to execute 'stop' on 'OscillatorNode': The provided double value is non-finite..

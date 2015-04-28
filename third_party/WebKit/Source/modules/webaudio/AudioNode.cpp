@@ -223,7 +223,13 @@ void AudioHandler::setChannelCount(unsigned long channelCount, ExceptionState& e
     } else {
         exceptionState.throwDOMException(
             NotSupportedError,
-            "channel count (" + String::number(channelCount) + ") must be between 1 and " + String::number(AudioContext::maxNumberOfChannels()) + ".");
+            ExceptionMessages::indexOutsideRange<unsigned long>(
+                "channel count",
+                channelCount,
+                1,
+                ExceptionMessages::InclusiveBound,
+                AudioContext::maxNumberOfChannels(),
+                ExceptionMessages::InclusiveBound));
     }
 }
 

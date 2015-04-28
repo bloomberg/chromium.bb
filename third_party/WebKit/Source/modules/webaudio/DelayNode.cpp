@@ -49,9 +49,13 @@ DelayNode* DelayNode::create(AudioContext& context, float sampleRate, double max
     if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
         exceptionState.throwDOMException(
             NotSupportedError,
-            "max delay time (" + String::number(maxDelayTime)
-            + ") must be between 0 and " + String::number(maximumAllowedDelayTime)
-            + ", exclusive.");
+            ExceptionMessages::indexOutsideRange(
+                "max delay time",
+                maxDelayTime,
+                0.0,
+                ExceptionMessages::ExclusiveBound,
+                maximumAllowedDelayTime,
+                ExceptionMessages::ExclusiveBound));
         return nullptr;
     }
     return new DelayNode(context, sampleRate, maxDelayTime);

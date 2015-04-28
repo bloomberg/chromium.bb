@@ -186,16 +186,28 @@ function runTest() {
     shouldThrow("source.start(1, -Infinity)");
     shouldThrow("source.start(1, NaN)");
     shouldThrow("source.start(1, -1)");
+    shouldThrow("source.start(1, -Number.MIN_VALUE)");
     shouldThrow("source.start(1, 1, Infinity)");
     shouldThrow("source.start(1, 1, -Infinity)");
     shouldThrow("source.start(1, 1, NaN)");
     shouldThrow("source.start(1, 1, -1)");
+    shouldThrow("source.start(1, 1, -Number.MIN_VALUE)");
     shouldNotThrow("source.start()");
-    shouldThrow("source.stop(-1)");
+    shouldThrow("source.stop(-Number.MIN_VALUE)");
     shouldThrow("source.stop(Infinity)");
     shouldThrow("source.stop(-Infinity)");
     shouldThrow("source.stop(NaN)");
     shouldNotThrow("source.stop()");
+
+    // Verify that start(0, 0) doesn't signal.
+    shouldNotThrow("source = context.createBufferSource()");
+    shouldNotThrow("source.buffer = buffer");
+    shouldNotThrow("source.start(0, 0)");
+
+    // Verify that start(0, -0.0) doesn't signal.
+    shouldNotThrow("source = context.createBufferSource()");
+    shouldNotThrow("source.buffer = buffer");
+    shouldNotThrow("source.start(0, -1/Infinity)");
 
     // It's not clear from the spec, but I think it's valid to call start(). The spec is silent on
     // what happens if we call stop() afterwards, so don't call it.
@@ -222,12 +234,12 @@ function runTest() {
 
     // Start/stop for OscillatorNodes
     shouldNotThrow("source = context.createOscillator()");
-    shouldThrow("source.start(-1)");
+    shouldThrow("source.start(-Number.MIN_VALUE)");
     shouldThrow("source.start(Infinity)");
     shouldThrow("source.start(-Infinity)");
     shouldThrow("source.start(NaN)");
     shouldNotThrow("source.start()");
-    shouldThrow("source.stop(-1)");
+    shouldThrow("source.stop(-Number.MIN_VALUE)");
     shouldThrow("source.stop(Infinity)");
     shouldThrow("source.stop(-Infinity)");
     shouldThrow("source.stop(NaN)");

@@ -55,7 +55,10 @@ void WaveShaperNode::setCurve(DOMFloat32Array* curve, ExceptionState& exceptionS
     if (curve && curve->length() < 2) {
         exceptionState.throwDOMException(
             InvalidAccessError,
-            "curve length cannot be less than 2: " + String::number(curve->length()));
+            ExceptionMessages::indexExceedsMinimumBound<unsigned>(
+                "curve length",
+                curve->length(),
+                2));
         return;
     }
 

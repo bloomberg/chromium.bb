@@ -144,7 +144,10 @@ void AudioScheduledSourceHandler::start(double when, ExceptionState& exceptionSt
     if (when < 0) {
         exceptionState.throwDOMException(
             InvalidAccessError,
-            "Start time must be a finite non-negative number: " + String::number(when));
+            ExceptionMessages::indexExceedsMinimumBound(
+                "start time",
+                when,
+                0.0));
         return;
     }
 
@@ -174,7 +177,10 @@ void AudioScheduledSourceHandler::stop(double when, ExceptionState& exceptionSta
     if (when < 0) {
         exceptionState.throwDOMException(
             InvalidAccessError,
-            "Stop time must be a non-negative number: " + String::number(when));
+            ExceptionMessages::indexExceedsMinimumBound(
+                "stop time",
+                when,
+                0.0));
         return;
     }
 

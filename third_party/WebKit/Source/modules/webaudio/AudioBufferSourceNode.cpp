@@ -453,21 +453,30 @@ void AudioBufferSourceHandler::startSource(double when, double grainOffset, doub
     if (when < 0) {
         exceptionState.throwDOMException(
             InvalidStateError,
-            "Start time must be a non-negative number: " + String::number(when));
+            ExceptionMessages::indexExceedsMinimumBound(
+                "start time",
+                when,
+                0.0));
         return;
     }
 
     if (grainOffset < 0) {
         exceptionState.throwDOMException(
             InvalidStateError,
-            "Offset must be a non-negative number: " + String::number(grainOffset));
+            ExceptionMessages::indexExceedsMinimumBound(
+                "offset",
+                grainOffset,
+                0.0));
         return;
     }
 
     if (grainDuration < 0) {
         exceptionState.throwDOMException(
             InvalidStateError,
-            "Duration must be a non-negative number: " + String::number(grainDuration));
+            ExceptionMessages::indexExceedsMinimumBound(
+                "duration",
+                grainDuration,
+                0.0));
         return;
     }
 
