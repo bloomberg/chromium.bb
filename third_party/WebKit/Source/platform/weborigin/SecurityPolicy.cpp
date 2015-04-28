@@ -55,7 +55,7 @@ static OriginAccessMap& originAccessMap()
 
 static OriginSet& trustworthyOriginSet()
 {
-    DEFINE_STATIC_LOCAL(OriginSet, trustworthyOriginSet, ());
+    AtomicallyInitializedStaticReference(OriginSet, trustworthyOriginSet, new OriginSet);
     return trustworthyOriginSet;
 }
 
