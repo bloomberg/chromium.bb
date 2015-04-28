@@ -10,6 +10,7 @@ import fnmatch
 import json
 import os
 
+from chromite.cli import flash
 from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -847,7 +848,7 @@ def _CheckDeviceVersion(device):
 def Deploy(device, packages, board=None, brick_name=None, emerge=True,
            update=False, deep=False, deep_rev=False, clean_binpkg=True,
            root='/', strip=True, emerge_args=None, ssh_private_key=None,
-           ping=True, force=False, dry_run=False):
+           ping=True, reflash=False, force=False, dry_run=False):
   """Deploys packages to a device.
 
   Args:
@@ -865,6 +866,7 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
     emerge_args: Extra arguments to pass to emerge.
     ssh_private_key: Path to an SSH private key file; None to use test keys.
     ping: True to ping the device before trying to connect.
+    reflash: Flash the device with current SDK image if necessary.
     force: Ignore sanity checks and prompts.
     dry_run: Print deployment plan but do not deploy anything.
 
@@ -889,16 +891,19 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
   else:
     hostname, username, port = None, None, None
 
-  with remote_access.ChromiumOSDeviceHandler(
-      hostname, port=port, username=username, private_key=ssh_private_key,
-      base_dir=_DEVICE_BASE_DIR, ping=ping) as device_handler:
-    try:
+  do_flash = False
+  lsb_release = None
+  try:
+    with remote_access.ChromiumOSDeviceHandler(
+        hostname, port=port, username=username, private_key=ssh_private_key,
+        base_dir=_DEVICE_BASE_DIR, ping=ping) as device_handler:
+      lsb_release = device_handler.lsb_release
       board = cros_build_lib.GetBoard(device_board=device_handler.board,
                                       override_board=board)
       logging.info('Board is %s', board)
 
+      # The brick or board must be compatible with the device.
       if not force:
-        # If a brick is specified, it must be compatible with the device.
         if brick:
           if not brick.Inherits(device_handler.board):
             raise DeployError('Device (%s) is incompatible with brick' %
@@ -907,8 +912,34 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
           raise DeployError('Device (%s) is incompatible with board' %
                             device_handler.board)
 
-        # Check that the target is compatible with the SDK (if any).
-        _CheckDeviceVersion(device_handler)
+      # Check that the target is compatible with the SDK (if any).
+      if reflash or not force:
+        try:
+          _CheckDeviceVersion(device_handler)
+        except DeployError as e:
+          if not reflash:
+            raise
+          logging.warning('%s, reflashing' % e)
+          do_flash = True
+
+    # Reflash the device with a current Project SDK image.
+    # TODO(garnold) We may want to clobber stateful or wipe temp, or at least
+    # expose them as options.
+    if do_flash:
+      flash.Flash(device, None, project_sdk_image=True, brick_name=brick_name,
+                  ping=ping, force=force)
+      logging.info('Done reflashing Project SDK image')
+
+    with remote_access.ChromiumOSDeviceHandler(
+        hostname, port=port, username=username, private_key=ssh_private_key,
+        base_dir=_DEVICE_BASE_DIR, ping=ping) as device_handler:
+      lsb_release = device_handler.lsb_release
+      # If the device was reflashed check the version again, just to be sure.
+      if do_flash:
+        try:
+          _CheckDeviceVersion(device_handler)
+        except DeployError as e:
+          raise DeployError('%s, reflashing failed' % e)
 
       sysroot = cros_build_lib.GetSysroot(board=board)
 
@@ -956,9 +987,9 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
 
       logging.warning('Please restart any updated services on the device, '
                       'or just reboot it.')
-    except Exception:
-      if device_handler.lsb_release:
-        lsb_entries = sorted(device_handler.lsb_release.items())
-        logging.info('Following are the LSB version details of the device:\n%s',
-                     '\n'.join('%s=%s' % (k, v) for k, v in lsb_entries))
-      raise
+  except Exception:
+    if lsb_release:
+      lsb_entries = sorted(lsb_release.items())
+      logging.info('Following are the LSB version details of the device:\n%s',
+                   '\n'.join('%s=%s' % (k, v) for k, v in lsb_entries))
+    raise
