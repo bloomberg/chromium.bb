@@ -5,9 +5,9 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "mandoline/app/desktop/launcher_process.h"
-#include "mojo/shell/child_process.h"
-#include "mojo/shell/init.h"
-#include "mojo/shell/switches.h"
+#include "mojo/runner/child_process.h"
+#include "mojo/runner/init.h"
+#include "mojo/runner/switches.h"
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;

@@ -10,6 +10,8 @@ mojom("interfaces") {
     "navigation.mojom",
   ]
 
+  import_dirs = [ mojo_network_service_root ]
+
   deps = [
     "//mojo/services/network/public/interfaces",
   ]

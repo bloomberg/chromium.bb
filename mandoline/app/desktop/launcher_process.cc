@@ -16,8 +16,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "mandoline/app/desktop/launcher_process.h"
-#include "mojo/shell/context.h"
-#include "mojo/shell/switches.h"
+#include "mojo/runner/context.h"
+#include "mojo/runner/switches.h"
 
 namespace mandoline {
 namespace {
