@@ -20,6 +20,7 @@ import com.google.android.gms.cast.CastMediaControlIntent;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
@@ -485,13 +486,8 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         }
     }
 
-    protected void updateState(int state) {
-        if (mDebug) {
-            Log.d(TAG, "updateState oldState: " + this.mPlaybackState + " newState: " + state);
-        }
-
-        PlayerState oldState = this.mPlaybackState;
-
+    @VisibleForTesting
+    void setPlayerStateForMediaItemState(int state) {
         PlayerState playerState = PlayerState.STOPPED;
         switch (state) {
             case MediaItemStatus.PLAYBACK_STATE_BUFFERING:
@@ -526,13 +522,22 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
                 break;
         }
 
-        this.mPlaybackState = playerState;
+        mPlaybackState = playerState;
+    }
 
-        for (UiListener listener : mUiListeners) {
-            listener.onPlaybackStateChanged(oldState, playerState);
+    protected void updateState(int state) {
+        if (mDebug) {
+            Log.d(TAG, "updateState oldState: " + mPlaybackState + " newState: " + state);
         }
 
-        if (mMediaStateListener != null) mMediaStateListener.onPlaybackStateChanged(playerState);
+        PlayerState oldState = mPlaybackState;
+        setPlayerStateForMediaItemState(state);
+
+        for (UiListener listener : mUiListeners) {
+            listener.onPlaybackStateChanged(oldState, mPlaybackState);
+        }
+
+        if (mMediaStateListener != null) mMediaStateListener.onPlaybackStateChanged(mPlaybackState);
 
         if (oldState != mPlaybackState) {
             // We need to persist our state in case we get killed.

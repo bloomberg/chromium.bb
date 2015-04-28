@@ -463,6 +463,7 @@ android_apk("chrome_shell_test_apk") {
 junit_binary("chrome_junit_tests") {
   java_files = [
     "junit/src/org/chromium/chrome/browser/omaha/ResponseParserTest.java",
+    "junit/src/org/chromium/chrome/browser/media/remote/AbstractMediaRouteControllerTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/MediaUrlResolverTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/RemoteVideoInfoTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/TransportControlTest.java",
@@ -472,6 +473,7 @@ junit_binary("chrome_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//third_party/junit:hamcrest",
+    "//third_party/android_tools:android_support_v7_mediarouter_java",
   ]
 }
 

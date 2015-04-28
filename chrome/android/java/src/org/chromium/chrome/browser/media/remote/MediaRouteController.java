@@ -290,13 +290,13 @@ public interface MediaRouteController extends TransportControl.Listener {
     public PlayerState getPlayerState();
 
     /**
-     * Add a media state listener
+     * Remove an existing media state listener
      * @param listener
      */
     public void removeMediaStateListener(MediaStateListener listener);
 
     /**
-     * Remove an existing media state listener
+     * Add a media state listener
      * @param listener
      */
     public void addMediaStateListener(MediaStateListener listener);
