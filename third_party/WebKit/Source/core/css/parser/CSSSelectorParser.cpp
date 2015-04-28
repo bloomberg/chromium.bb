@@ -231,6 +231,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeAttribute(CSSParserToken
     bool hasNamespace;
     if (!consumeName(block, attributeName, namespacePrefix, hasNamespace))
         return nullptr;
+    block.consumeWhitespace();
 
     if (m_context.isHTMLDocument())
         attributeName = attributeName.lower();
