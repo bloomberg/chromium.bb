@@ -110,7 +110,11 @@ class TestGitCl(TestCase):
     self.assertTrue(
         self.calls,
         '@%d  Expected: <Missing>   Actual: %r' % (self._calls_done, args))
-    expected_args, result = self.calls.pop(0)
+    top = self.calls.pop(0)
+    if len(top) > 2 and top[2]:
+      raise top[2]
+    expected_args, result = top
+
     # Also logs otherwise it could get caught in a try/finally and be hard to
     # diagnose.
     if expected_args != args:
@@ -854,6 +858,47 @@ class TestGitCl(TestCase):
                      git_cl.GetTargetRef('origin', 'refs/remotes/origin/master',
                                          None, 'prefix/'))
 
+  def test_patch_when_dirty(self):
+    # Patch when local tree is dirty
+    self.mock(git_common, 'is_dirty_git_tree', lambda x: True)
+    self.assertNotEqual(git_cl.main(['patch', '123456']), 0)
+
+  def test_diff_when_dirty(self):
+    # Do 'git cl diff' when local tree is dirty
+    self.mock(git_common, 'is_dirty_git_tree', lambda x: True)
+    self.assertNotEqual(git_cl.main(['diff']), 0)
+
+  def _patch_common(self):
+    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda x: '60001')
+    self.mock(git_cl.Changelist, 'GetPatchSetDiff', lambda *args: None)
+    self.mock(git_cl.Changelist, 'SetIssue', lambda *args: None)
+    self.mock(git_cl.Changelist, 'SetPatchset', lambda *args: None)
+    self.mock(git_cl, 'IsGitVersionAtLeast', lambda *args: True)
+
+    self.calls = [
+      ((['git', 'config', 'rietveld.autoupdate'],), ''),
+      ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
+      ((['git', 'rev-parse', '--show-cdup'],), ''),
+      ((['sed', '-e', 's|^--- a/|--- |; s|^+++ b/|+++ |'],), ''),
+    ]
+
+  def test_patch_successful(self):
+    self._patch_common()
+    self.calls += [
+      ((['git', 'apply', '--index', '-p0', '--3way'],), ''),
+      ((['git', 'commit', '-m',
+         'patch from issue 123456 at patchset 60001 ' +
+         '(http://crrev.com/123456#ps60001)'],), ''),
+    ]
+    self.assertEqual(git_cl.main(['patch', '123456']), 0)
+
+  def test_patch_conflict(self):
+    self._patch_common()
+    self.calls += [
+      ((['git', 'apply', '--index', '-p0', '--3way'],), '',
+       subprocess2.CalledProcessError(1, '', '', '', '')),
+    ]
+    self.assertNotEqual(git_cl.main(['patch', '123456']), 0)
 
 if __name__ == '__main__':
   git_cl.logging.basicConfig(

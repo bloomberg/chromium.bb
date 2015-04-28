@@ -2583,8 +2583,9 @@ def CMDpatch(parser, args):
 
 
 def PatchIssue(issue_arg, reject, nocommit, directory, auth_config):
-  # There's a "reset --hard" when failing to apply the patch. In order
-  # not to destroy users' data, make sure the tree is not dirty here.
+  # PatchIssue should never be called with a dirty tree.  It is up to the
+  # caller to check this, but just in case we assert here since the
+  # consequences of the caller not checking this could be dire.
   assert(not git_common.is_dirty_git_tree('apply'))
 
   if type(issue_arg) is int or issue_arg.isdigit():
@@ -2635,8 +2636,8 @@ def PatchIssue(issue_arg, reject, nocommit, directory, auth_config):
     subprocess2.check_call(cmd, env=GetNoGitPagerEnv(),
                            stdin=patch_data, stdout=subprocess2.VOID)
   except subprocess2.CalledProcessError:
-    RunGit(['reset', '--hard'])
-    DieWithError('Failed to apply the patch')
+    print 'Failed to apply the patch'
+    return 1
 
   # If we had an issue, commit the current state and register the issue.
   if not nocommit:
@@ -2975,6 +2976,7 @@ def CMDdiff(parser, args):
     # Patch in the latest changes from rietveld.
     rtn = PatchIssue(issue, False, False, None, auth_config)
     if rtn != 0:
+      RunGit(['reset', '--hard'])
       return rtn
 
     # Switch back to starting branch and diff against the temporary
