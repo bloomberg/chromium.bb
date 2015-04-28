@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "chrome/common/importer/profile_import_process_messages.h"
 #include "chrome/utility/importer/external_process_importer_bridge.h"
@@ -45,7 +45,7 @@ void ProfileImportHandler::OnImportStart(
   bridge_ = new ExternalProcessImporterBridge(
       localized_strings,
       content::UtilityThread::Get(),
-      base::MessageLoopProxy::current().get());
+      base::ThreadTaskRunnerHandle::Get().get());
   importer_ = importer::CreateImporterByType(source_profile.importer_type);
   if (!importer_.get()) {
     Send(new ProfileImportProcessHostMsg_Import_Finished(

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 
 namespace image_writer {
@@ -57,7 +58,7 @@ class DiskUnmounterMac {
   // A convenience method that triggers the failure continuation.
   void Error();
 
-  scoped_refptr<base::MessageLoopProxy> original_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> original_thread_;
   base::Closure success_continuation_;
   base::Closure failure_continuation_;
 

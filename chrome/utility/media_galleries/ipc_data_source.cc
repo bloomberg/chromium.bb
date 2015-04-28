@@ -4,7 +4,7 @@
 
 #include "chrome/utility/media_galleries/ipc_data_source.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "content/public/utility/utility_thread.h"
 
@@ -12,7 +12,7 @@ namespace metadata {
 
 IPCDataSource::IPCDataSource(int64 total_size)
     : total_size_(total_size),
-      utility_task_runner_(base::MessageLoopProxy::current()),
+      utility_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       next_request_id_(0) {
   data_source_thread_checker_.DetachFromThread();
 }

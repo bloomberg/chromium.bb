@@ -7,9 +7,9 @@
 #include <sys/socket.h>
 #include <IOKit/storage/IOStorageProtocolCharacteristics.h>
 
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/message_loop/message_pump_mac.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/utility/image_writer/error_messages.h"
 #include "chrome/utility/image_writer/image_writer.h"
 
@@ -32,7 +32,7 @@ void DiskUnmounterMac::Unmount(const std::string& device_path,
                                const base::Closure& failure_continuation) {
   // Should only be used once.
   DCHECK(!original_thread_.get());
-  original_thread_ = base::MessageLoopProxy::current();
+  original_thread_ = base::ThreadTaskRunnerHandle::Get();
   success_continuation_ = success_continuation;
   failure_continuation_ = failure_continuation;
 
