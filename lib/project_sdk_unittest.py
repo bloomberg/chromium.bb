@@ -76,7 +76,7 @@ class ProjectSdkTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(self.version, project_sdk.FindVersion(self.nested_dir))
 
 
-class ProjectSdkVerifyFake(cros_test_lib.MockTestCase):
+class ProjectSdkVerifyFake(cros_test_lib.MockTempDirTestCase):
   """Test VerifyEnvironment with mocks."""
 
   def setUp(self):
@@ -89,7 +89,7 @@ class ProjectSdkVerifyFake(cros_test_lib.MockTestCase):
                               output='git version 2.2.0.rc0.207.ga3a616c')
     self.rc_mock.AddCmdResult(['curl', '--version'])
 
-    self.assertTrue(project_sdk.VerifyEnvironment())
+    self.assertTrue(project_sdk.VerifyEnvironment(self.tempdir))
 
   def testUbuntu14(self):
     """Test with mock of 'Ubuntu LTS 14' distribution."""
@@ -98,7 +98,7 @@ class ProjectSdkVerifyFake(cros_test_lib.MockTestCase):
                               output='git version 2.1.0')
     self.rc_mock.AddCmdResult(['curl', '--version'])
 
-    self.assertTrue(project_sdk.VerifyEnvironment())
+    self.assertTrue(project_sdk.VerifyEnvironment(self.tempdir))
 
   def testGitNewEnough(self):
     """Test with mock of git 1.8."""
@@ -107,7 +107,7 @@ class ProjectSdkVerifyFake(cros_test_lib.MockTestCase):
                               output='git version 1.8.3.1')
     self.rc_mock.AddCmdResult(['curl', '--version'])
 
-    self.assertTrue(project_sdk.VerifyEnvironment())
+    self.assertTrue(project_sdk.VerifyEnvironment(self.tempdir))
 
   def testFailNoBash(self):
     """Test with mock of no bash present."""
@@ -116,7 +116,7 @@ class ProjectSdkVerifyFake(cros_test_lib.MockTestCase):
                               output='git version 2.2.0.rc0.207.ga3a616c')
     self.rc_mock.AddCmdResult(['curl', '--version'])
 
-    self.assertFalse(project_sdk.VerifyEnvironment())
+    self.assertFalse(project_sdk.VerifyEnvironment(self.tempdir))
 
   def testFailGitTooOld(self):
     """Test with mock of git too old to use."""
@@ -125,7 +125,7 @@ class ProjectSdkVerifyFake(cros_test_lib.MockTestCase):
                               output='git version 1.7.10.4')
     self.rc_mock.AddCmdResult(['curl', '--version'])
 
-    self.assertFalse(project_sdk.VerifyEnvironment())
+    self.assertFalse(project_sdk.VerifyEnvironment(self.tempdir))
 
   def testFailNoCurl(self):
     """Test with mock of no curl present."""
@@ -134,14 +134,28 @@ class ProjectSdkVerifyFake(cros_test_lib.MockTestCase):
                               output='git version 2.2.0.rc0.207.ga3a616c')
     self.rc_mock.AddCmdResult(['curl', '--version'], returncode=127)
 
-    self.assertFalse(project_sdk.VerifyEnvironment())
+    self.assertFalse(project_sdk.VerifyEnvironment(self.tempdir))
 
-class ProjectSdkVerifyReal(cros_test_lib.TestCase):
+  def testFailSuid(self):
+    """Test with SUID is disabled."""
+    self.rc_mock.AddCmdResult(['/bin/bash', '--version'])
+    self.rc_mock.AddCmdResult(['git', '--version'],
+                              output='git version 2.2.0.rc0.207.ga3a616c')
+    self.rc_mock.AddCmdResult(['curl', '--version'])
+
+    mock_stat = self.PatchObject(os, 'statvfs', autospec=True)
+
+    # The os.ST_NOSUID constant wasn't added until python-3.2.
+    mock_stat.return_value.f_flag = 0x2
+
+    self.assertFalse(project_sdk.VerifyEnvironment(self.tempdir))
+
+class ProjectSdkVerifyReal(cros_test_lib.TempDirTestCase):
   """Test VerifyEnvironment for real."""
 
   def testVerifyEnvironment(self):
     """Test, assuming production environment is valid."""
-    self.assertTrue(project_sdk.VerifyEnvironment())
+    self.assertTrue(project_sdk.VerifyEnvironment(self.tempdir))
 
   def testGetExecutableVersionNonExistent(self):
     """Tests _GetExecutableVersion() when the executable doesn't exist."""

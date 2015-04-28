@@ -8,11 +8,13 @@ from __future__ import print_function
 
 import os
 import re
+import stat
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import workspace_lib
 
 
 def FindRepoRoot(sdk_dir=None):
@@ -88,8 +90,13 @@ def _GetExecutableVersion(cmd, version_arg='--version'):
     return None
 
 
-def VerifyEnvironment():
+def VerifyEnvironment(workspace_path=None):
   """Verify the environment we are installed to.
+
+  Disk permissions are only verified if a workspace path is provided.
+
+  Args:
+    workspace_path: Root directory of the workspace or None.
 
   Returns:
     boolean: True if the environment looks friendly.
@@ -104,27 +111,50 @@ def VerifyEnvironment():
   # Verify executables that just need to exist.
   for cmd in ('/bin/bash', 'curl'):
     if _GetExecutableVersion(cmd) is None:
-      logging.warn('%s is required to use the SDK.', cmd)
+      logging.error('%s is required to use the SDK.', cmd)
       result = False
 
   # Verify Git version.
   git_requirement_message = 'git 1.8 or greater is required to use the SDK.'
   git_version = _GetExecutableVersion('git')
   if git_version is None:
-    logging.warn(git_requirement_message)
+    logging.error(git_requirement_message)
     result = False
 
   # Example version string: 'git version 2.2.0.rc0.207.ga3a616c'.
   m = re.match(r'git version (\d+)\.(\d+)', git_version)
   if not m:
-    logging.warn(git_requirement_message)
-    logging.warn("git version not recognized from: '%s'.", git_version)
+    logging.error(git_requirement_message)
+    logging.error("git version not recognized from: '%s'.", git_version)
     result = False
   else:
     gv_int_list = [int(d) for d in m.groups()] # Something like [2, 3]
     if gv_int_list < [1, 8]:
-      logging.warn(git_requirement_message)
-      logging.warn("Current version: '%s'.", git_version)
+      logging.error(git_requirement_message)
+      logging.error("Current version: '%s'.", git_version)
       result = False
+
+  # If a workspace path is provided, validate chroot requirements.
+  if workspace_path:
+    chroot_dir = workspace_lib.ChrootPath(workspace_path)
+
+    # Create a file with the suid bit set.
+    suid_file = os.path.join(chroot_dir, 'suid_test')
+    try:
+      # Create a file with the SUID set for the owner.
+      osutils.Touch(suid_file, makedirs=True, mode=stat.S_ISUID)
+
+      # See if the SUID bit will be respected, or ignored.
+      st = os.statvfs(suid_file)
+
+      # The os.ST_NOSUID constant wasn't added until python-3.2.
+      if st.f_flag & 0x2:
+        logging.error(
+            'Your current chroot directory (%s) does not support the SUID bit,'
+            ' which is required. You can move the chroot to a new location'
+            ' using "brillo chroot --move <new_dir>"', chroot_dir)
+        result = False
+    finally:
+      osutils.SafeUnlink(suid_file)
 
   return result
