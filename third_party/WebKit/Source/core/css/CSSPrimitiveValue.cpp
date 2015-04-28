@@ -1013,7 +1013,7 @@ String CSSPrimitiveValue::customCSSText() const
             result.append(m_value.counter->identifier());
             if (!separator.isEmpty()) {
                 result.appendLiteral(", ");
-                result.append(quoteCSSStringIfNeeded(separator));
+                result.append(serializeString(separator));
             }
             String listStyle = m_value.counter->listStyle();
             if (!listStyle.isEmpty()) {
