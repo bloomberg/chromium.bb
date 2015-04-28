@@ -254,7 +254,6 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
                                   Return(false)));
       provider->SetAuthError(
           signin->GetAuthenticatedAccountId(),
-          kTestUser,
           GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
       EXPECT_CALL(service, HasUnrecoverableError())
                   .WillRepeatedly(Return(false));

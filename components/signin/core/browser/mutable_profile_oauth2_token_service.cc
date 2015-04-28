@@ -112,13 +112,6 @@ MutableProfileOAuth2TokenService::AccountInfo::GetAccountId() const {
   return account_id_;
 }
 
-std::string
-MutableProfileOAuth2TokenService::AccountInfo::GetUsername() const {
-  // TODO(rogerta): when |account_id| becomes the obfuscated gaia id, this
-  // will need to be changed.
-  return account_id_;
-}
-
 GoogleServiceAuthError
 MutableProfileOAuth2TokenService::AccountInfo::GetAuthStatus() const {
   return last_auth_error_;
@@ -208,7 +201,16 @@ void MutableProfileOAuth2TokenService::LoadCredentials(
 
   CancelAllRequests();
   refresh_tokens().clear();
-  loading_primary_account_id_ = primary_account_id;
+
+  // If the account_id is an email address, then canonicalize it.  This
+  // is to support legacy account_ids, and will not be needed after
+  // switching to gaia-ids.
+  if (primary_account_id.find('@') != std::string::npos) {
+    loading_primary_account_id_ = gaia::CanonicalizeEmail(primary_account_id);
+  } else {
+    loading_primary_account_id_ = primary_account_id;
+  }
+
   scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
   if (token_web_data.get())
     web_data_service_request_ = token_web_data->GetAllTokens(this);

@@ -36,7 +36,6 @@ namespace test {
 namespace {
 
 static const char kTestAccountId[] = "testuser@test.com";
-static const char kTestUsername[] = "testuser@test.com";
 
 // Notification ID corresponding to kProfileSigninNotificationId +
 // kTestAccountId.
@@ -143,7 +142,6 @@ TEST_F(SigninErrorNotifierTest, ErrorAuthStatusProvider) {
       FakeAuthStatusProvider error_provider(error_controller_);
       error_provider.SetAuthError(
           kTestAccountId,
-          kTestUsername,
           GoogleServiceAuthError(
               GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
       ASSERT_TRUE(notification_ui_manager_->FindById(
@@ -174,7 +172,6 @@ TEST_F(SigninErrorNotifierTest, MAYBE_AuthStatusProviderErrorTransition) {
     FakeAuthStatusProvider provider1(error_controller_);
     provider0.SetAuthError(
         kTestAccountId,
-        kTestUsername,
         GoogleServiceAuthError(
             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
     ASSERT_TRUE(notification_ui_manager_->FindById(
@@ -187,12 +184,10 @@ TEST_F(SigninErrorNotifierTest, MAYBE_AuthStatusProviderErrorTransition) {
     // Now set another auth error and clear the original.
     provider1.SetAuthError(
         kTestAccountId,
-        kTestUsername,
         GoogleServiceAuthError(
             GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE));
     provider0.SetAuthError(
         kTestAccountId,
-        kTestUsername,
         GoogleServiceAuthError::AuthErrorNone());
 
     ASSERT_TRUE(notification_ui_manager_->FindById(
@@ -205,7 +200,7 @@ TEST_F(SigninErrorNotifierTest, MAYBE_AuthStatusProviderErrorTransition) {
     ASSERT_NE(new_message, message);
 
     provider1.SetAuthError(
-        kTestAccountId, kTestUsername, GoogleServiceAuthError::AuthErrorNone());
+        kTestAccountId, GoogleServiceAuthError::AuthErrorNone());
     ASSERT_FALSE(notification_ui_manager_->FindById(
         kNotificationId, NotificationUIManager::GetProfileID(profile_.get())));
   }
@@ -242,7 +237,6 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
   for (size_t i = 0; i < arraysize(table); ++i) {
     FakeAuthStatusProvider provider(error_controller_);
     provider.SetAuthError(kTestAccountId,
-                          kTestUsername,
                           GoogleServiceAuthError(table[i].error_state));
     const Notification* notification = notification_ui_manager_->FindById(
         kNotificationId, NotificationUIManager::GetProfileID(profile_.get()));

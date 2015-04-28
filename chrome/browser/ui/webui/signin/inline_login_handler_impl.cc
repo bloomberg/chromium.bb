@@ -642,7 +642,9 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
                                  &validate_email) &&
       validate_email == "1") {
     if (!gaia::AreEmailsSame(email, default_email)) {
-      SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
+      HandleLoginError(
+          l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
+                                    base::UTF8ToUTF16(default_email)));
       return;
     }
   }

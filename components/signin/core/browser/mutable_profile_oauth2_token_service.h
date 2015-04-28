@@ -53,7 +53,6 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
 
     // SigninErrorController::AuthStatusProvider implementation.
     std::string GetAccountId() const override;
-    std::string GetUsername() const override;
     GoogleServiceAuthError GetAuthStatus() const override;
 
    private:

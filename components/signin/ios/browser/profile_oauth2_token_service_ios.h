@@ -114,7 +114,6 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
 
     // SigninErrorController::AuthStatusProvider implementation.
     std::string GetAccountId() const override;
-    std::string GetUsername() const override;
     GoogleServiceAuthError GetAuthStatus() const override;
 
     bool marked_for_removal() const { return marked_for_removal_; }

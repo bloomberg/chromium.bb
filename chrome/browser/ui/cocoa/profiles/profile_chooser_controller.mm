@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -247,8 +248,17 @@ NSView* BuildTitleCard(NSRect frame_rect,
 
 bool HasAuthError(Profile* profile) {
   const SigninErrorController* error_controller =
-      profiles::GetSigninErrorController(profile);
+      SigninErrorControllerFactory::GetForProfile(profile);
   return error_controller && error_controller->HasError();
+}
+
+std::string GetAuthErrorAccountId(Profile* profile) {
+  const SigninErrorController* error_controller =
+      SigninErrorControllerFactory::GetForProfile(profile);
+  if (!error_controller)
+    return std::string();
+
+  return error_controller->error_account_id();
 }
 
 }  // namespace
@@ -1942,10 +1952,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // If there is an account with an authentication error, it needs to be
   // badged with a warning icon.
-  const SigninErrorController* errorController =
-      profiles::GetSigninErrorController(profile);
-  std::string errorAccountId =
-      errorController ? errorController->error_account_id() : std::string();
+  std::string errorAccountId = GetAuthErrorAccountId(profile);
 
   rect.origin.y = 0;
   for (size_t i = 0; i < accounts.size(); ++i) {
@@ -1979,7 +1986,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   GURL url;
   int messageId = -1;
-  SigninErrorController* errorController = NULL;
   switch (viewMode_) {
     case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
       url = signin::GetPromoURL(signin_metrics::SOURCE_AVATAR_BUBBLE_SIGN_IN,
@@ -1996,10 +2002,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       break;
     case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH:
       DCHECK(HasAuthError(browser_->profile()));
-      errorController = profiles::GetSigninErrorController(browser_->profile());
       url = signin::GetReauthURL(
-          browser_->profile(),
-          errorController ? errorController->error_username() : std::string());
+          browser_->profile(), GetAuthErrorAccountId(browser_->profile()));
       messageId = IDS_PROFILES_GAIA_REAUTH_TITLE;
       break;
     default:

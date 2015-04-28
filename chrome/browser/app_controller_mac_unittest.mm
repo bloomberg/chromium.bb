@@ -152,7 +152,7 @@ TEST_F(AppControllerTest, TestSigninMenuItemAuthError) {
       SigninErrorControllerFactory::GetForProfile(profile_));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  provider.SetAuthError("user@gmail.com", "user@gmail.com", error);
+  provider.SetAuthError("user@gmail.com", error);
   [AppController updateSigninItem:syncMenuItem
                        shouldShow:YES
                    currentProfile:profile_];

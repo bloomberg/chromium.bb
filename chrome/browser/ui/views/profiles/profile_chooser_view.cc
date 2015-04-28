@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -115,26 +116,17 @@ gfx::ImageSkia CreateSquarePlaceholderImage(int size) {
 
 bool HasAuthError(Profile* profile) {
   const SigninErrorController* error =
-      profiles::GetSigninErrorController(profile);
+      SigninErrorControllerFactory::GetForProfile(profile);
   return error && error->HasError();
 }
 
 std::string GetAuthErrorAccountId(Profile* profile) {
   const SigninErrorController* error =
-      profiles::GetSigninErrorController(profile);
+      SigninErrorControllerFactory::GetForProfile(profile);
   if (!error)
     return std::string();
 
   return error->error_account_id();
-}
-
-std::string GetAuthErrorUsername(Profile* profile) {
-  const SigninErrorController* error =
-      profiles::GetSigninErrorController(profile);
-  if (!error)
-    return std::string();
-
-  return error->error_username();
 }
 
 // BackgroundColorHoverButton -------------------------------------------------
@@ -1489,7 +1481,7 @@ views::View* ProfileChooserView::CreateGaiaSigninView() {
     case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH: {
       DCHECK(HasAuthError(browser_->profile()));
       url = signin::GetReauthURL(browser_->profile(),
-                                 GetAuthErrorUsername(browser_->profile()));
+                                 GetAuthErrorAccountId(browser_->profile()));
       message_id = IDS_PROFILES_GAIA_REAUTH_TITLE;
       break;
     }

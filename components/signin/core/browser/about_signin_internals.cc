@@ -505,10 +505,14 @@ scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
                         static_cast<UntimedSigninStatusField>(USERNAME)),
                     signin_manager->GetAuthenticatedUsername());
     if (signin_error_controller->HasError()) {
+      const std::string error_account_id =
+          signin_error_controller->error_account_id();
+      const std::string error_username =
+          account_tracker->GetAccountInfo(error_account_id).email;
       AddSectionEntry(basic_info, "Auth Error",
           signin_error_controller->auth_error().ToString());
-      AddSectionEntry(basic_info, "Auth Error Username",
-          signin_error_controller->error_username());
+      AddSectionEntry(basic_info, "Auth Error Account Id", error_account_id);
+      AddSectionEntry(basic_info, "Auth Error Username", error_username);
     } else {
       AddSectionEntry(basic_info, "Auth Error", "None");
     }

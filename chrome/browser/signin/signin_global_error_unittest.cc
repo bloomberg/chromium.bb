@@ -104,7 +104,6 @@ TEST_F(SigninGlobalErrorTest, ErrorAuthStatusProvider) {
   error_provider.reset(new FakeAuthStatusProvider(error_controller()));
   error_provider->SetAuthError(
       kTestAccountId,
-      kTestUsername,
       GoogleServiceAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   ASSERT_TRUE(global_error()->HasMenuItem());
@@ -150,7 +149,6 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
     base::HistogramTester histogram_tester;
     FakeAuthStatusProvider provider(error_controller());
     provider.SetAuthError(kTestAccountId,
-                          kTestUsername,
                           GoogleServiceAuthError(table[i].error_state));
 
     EXPECT_EQ(global_error()->HasMenuItem(), table[i].is_error);
