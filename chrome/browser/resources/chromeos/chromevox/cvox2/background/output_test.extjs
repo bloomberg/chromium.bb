@@ -225,3 +225,123 @@ TEST_F('OutputE2ETest', 'Input', function() {
       });
   });
 });
+
+TEST_F('OutputE2ETest', 'List', function() {
+  this.runWithLoadedTree(
+      '<ul><li>a<li>b<li>c</ul>',
+    function(root) {
+      var el = root.firstChild.firstChild;
+      var range = cursors.Range.fromNode(el);
+      var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+      assertEqualsJSON({string_: 'list|with 3 items|a||List item', spans_: [
+          {value: 'name', start: 18, end: 19},
+          {value: 'value', start:20, end: 20},
+          {value: 'role', start: 21, end: 30},
+          {value: {}, start: 21, end: 30}
+      ]}, o.toSpannableForTest());
+  });
+});
+
+TEST_F('OutputE2ETest', 'Tree', function() {
+  this.runWithLoadedTree(function() {/*!
+    <ul role="tree">
+      <li aria-expanded="true" role="treeitem">a
+      <li role="treeitem">b
+      <li aria-expanded="false" role="treeitem">c
+    </ul>
+  */},
+  function(root) {
+    var el = root.firstChild.children[0].firstChild;
+    var range = cursors.Range.fromNode(el);
+    var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+    assertEqualsJSON(
+        {string_: '|Tree|with 3 items|Tree item|Expanded| 1 of 3 | level 1 |a|',
+        spans_: [
+          // Enter rule.
+
+          // TreeItem.
+          {value: 'role','start': 19, end: 28},
+          {value: 'state', start: 29, end: 37},
+
+          // InLineTextBox.
+          {value: 'value', start: 57, end: 58},
+          {value: 'name', start: 59, end: 59}
+    ]}, o.toSpannableForTest());
+
+    el = root.firstChild.children[1].firstChild;
+    var range = cursors.Range.fromNode(el);
+    var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+    assertEqualsJSON(
+        {string_: '|Tree|with 3 items|Tree item| 2 of 3 | level 1 |b|',
+        spans_: [
+          // Enter rule.
+
+          // TreeItem.
+          {value: 'role','start': 19, end: 28},
+
+          // InLineTextBox.
+          {value: 'value', start: 48, end: 49},
+          {value: 'name', start: 50, end: 50}
+    ]}, o.toSpannableForTest());
+
+    el = root.firstChild.children[2].firstChild;
+    var range = cursors.Range.fromNode(el);
+    var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+    assertEqualsJSON(
+        {string_: '|Tree|with 3 items|Tree item|Collapsed| 3 of 3 | level 1 |c|',
+        spans_: [
+          // Enter rule.
+
+          // TreeItem.
+          {value: 'role','start': 19, end: 28},
+          {value: 'state', start: 29, end: 38},
+
+          // InLineTextBox.
+          {value: 'value', start: 58, end: 59},
+          {value: 'name', start: 60, end: 60}
+    ]}, o.toSpannableForTest());
+  });
+});
+
+TEST_F('OutputE2ETest', 'Menu', function() {
+  this.runWithLoadedTree(function() {/*!
+    <div role="menu">
+      <div role="menuitem">a</div>
+    </div>
+  */},
+  function(root) {
+    var el = root.firstChild.firstChild;
+    var range = cursors.Range.fromNode(el);
+    var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+    assertEqualsJSON({string_:
+            '|Menu|with 1 items|a, menu item| 1 of 1 ', spans_: [
+        {value: 'name', start: 0, end: 0},
+        {value: 'role', start:1, end: 5}
+    ]}, o.toSpannableForTest());
+  });
+});
+
+TEST_F('OutputE2ETest', 'ListBox', function() {
+  this.runWithLoadedTree(function() {/*!
+    <select multiple>
+      <option>1</option>
+      <option>2</option>
+    </select>
+  */},
+  function(root) {
+    var el = root.firstChild.firstChild.firstChild;
+    var range = cursors.Range.fromNode(el);
+    var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+    assertEqualsJSON({string_: '|List box|with 2 items||List item| 1 of 2 ',
+        spans_: [
+          // ListBox.
+          // Earcon.
+          {value: {}, start: 1, end: 9},
+
+          {value: 'name', start: 23, end: 23},
+          {value: 'role', start:24, end: 33},
+          // Earcon.
+          {value: {}, start: 24, end: 33}
+    ]}, o.toSpannableForTest());
+  });
+});

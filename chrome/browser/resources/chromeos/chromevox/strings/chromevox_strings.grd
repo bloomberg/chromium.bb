@@ -1193,6 +1193,12 @@
       <message desc="Braille of element with the ARIA role tooltip." name="IDS_CHROMEVOX_ARIA_ROLE_TOOLTIP_BRL">
         tltip
       </message>
+      <message desc="Describes an element with the ARIA role tree." name="IDS_CHROMEVOX_ARIA_ROLE_TREE">
+        Tree
+      </message>
+      <message desc="Braille of element with the ARIA role tree." name="IDS_CHROMEVOX_ARIA_ROLE_TREE_BRL">
+        tree
+      </message>
       <message desc="Describes an element with the ARIA role treeitem." name="IDS_CHROMEVOX_ARIA_ROLE_TREEITEM">
         Tree item
       </message>
