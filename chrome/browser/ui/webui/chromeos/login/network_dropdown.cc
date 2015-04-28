@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -86,7 +88,10 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
       id = model->GetCommandIdAt(i);
     base::DictionaryValue* item = new base::DictionaryValue();
     item->SetInteger("id", id);
-    item->SetString("label", model->GetLabelAt(i));
+    base::string16 label = model->GetLabelAt(i);
+    ReplaceSubstringsAfterOffset(&label, 0, base::ASCIIToUTF16("&&"),
+                                 base::ASCIIToUTF16("&"));
+    item->SetString("label", label);
     gfx::Image icon;
     if (model->GetIconAt(i, &icon)) {
       SkBitmap icon_bitmap = icon.ToImageSkia()->GetRepresentation(
