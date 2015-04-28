@@ -55,9 +55,8 @@ class GnPrepareOut(cr.PrepareOut):
     if cr.context.verbose >= 1:
       print cr.context.Substitute('Invoking gn with {GN_ARGS}')
 
-    args_file = os.path.join(cr.context['CR_SRC'],
-                             cr.context['CR_OUT_FULL'],
-                             'args.gn')
+    out_path = os.path.join(cr.context['CR_SRC'], cr.context['CR_OUT_FULL'])
+    args_file = os.path.join(out_path, 'args.gn')
     args = {}
     # Split the argument list while preserving quotes,
     # e.g., a="b c" becomes ('a', '"b c"').
@@ -82,8 +81,4 @@ class GnPrepareOut(cr.PrepareOut):
     with open(args_file, 'w') as f:
       f.write('\n'.join(arg_lines) + '\n')
 
-    cr.Host.Execute(
-        'gn',
-        'gen',
-        '{CR_OUT_FULL}',
-    )
+    cr.Host.Execute('gn', 'gen', out_path)
