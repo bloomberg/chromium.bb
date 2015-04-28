@@ -37,4 +37,4 @@ TraceEventTestFixture.TraceContinuousSampling
 MessageLoopTestTypeUI.RecursiveDenial3
 
 # https://crbug.com/481231
-WinHeapDumpProviderTest.DumpInto
+WinHeapDumpProviderTest.OnMemoryDump
