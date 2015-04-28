@@ -141,16 +141,12 @@ void *drmGetHashTable(void)
 
 void *drmMalloc(int size)
 {
-    void *pt;
-    if ((pt = malloc(size)))
-	memset(pt, 0, size);
-    return pt;
+    return calloc(1, size);
 }
 
 void drmFree(void *pt)
 {
-    if (pt)
-	free(pt);
+    free(pt);
 }
 
 /**
