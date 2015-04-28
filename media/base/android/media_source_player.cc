@@ -134,6 +134,8 @@ void MediaSourcePlayer::Pause(bool is_media_related_action) {
   // MediaDecoderCallback() is called.
   playing_ = false;
   start_time_ticks_ = base::TimeTicks();
+
+  SetAudible(false);
 }
 
 bool MediaSourcePlayer::IsPlaying() {
