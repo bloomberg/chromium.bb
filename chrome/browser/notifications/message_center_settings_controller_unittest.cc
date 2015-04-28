@@ -8,11 +8,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -28,7 +30,7 @@
 class MessageCenterSettingsControllerBaseTest : public testing::Test {
  protected:
   MessageCenterSettingsControllerBaseTest()
-      : testing_profile_manager_(TestingBrowserProcess::GetGlobal()){};
+      : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   ~MessageCenterSettingsControllerBaseTest() override{};
 
@@ -256,4 +258,60 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
   EXPECT_EQ(kFooId, notifiers[1]->notifier_id.id);
 
   STLDeleteElements(&notifiers);
+}
+
+TEST_F(MessageCenterSettingsControllerTest, SetWebPageNotifierEnabled) {
+  Profile* profile = CreateProfile("MyProfile");
+  CreateController();
+
+  GURL origin("https://example.com/");
+
+  message_center::NotifierId notifier_id(origin);
+  message_center::Notifier enabled_notifier(
+      notifier_id, base::string16(), true);
+  message_center::Notifier disabled_notifier(
+      notifier_id, base::string16(), false);
+
+  ContentSetting default_setting =
+      profile->GetHostContentSettingsMap()->GetDefaultContentSetting(
+          CONTENT_SETTINGS_TYPE_NOTIFICATIONS, NULL);
+  ASSERT_EQ(CONTENT_SETTING_ASK, default_setting);
+
+  // (1) Enable the permission when the default is to ask (expected to set).
+  controller()->SetNotifierEnabled(disabled_notifier, true);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+
+  // (2) Disable the permission when the default is to ask (expected to clear).
+  controller()->SetNotifierEnabled(enabled_notifier, false);
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+
+  // Change the default content setting vaule for notifications to ALLOW.
+  profile->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
+
+  // (3) Disable the permission when the default is allowed (expected to set).
+  controller()->SetNotifierEnabled(enabled_notifier, false);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+
+  // (4) Enable the permission when the default is allowed (expected to clear).
+  controller()->SetNotifierEnabled(disabled_notifier, true);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+
+  // Now change the default content setting value to BLOCK.
+  profile->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_BLOCK);
+
+  // (5) Enable the permission when the default is blocked (expected to set).
+  controller()->SetNotifierEnabled(disabled_notifier, true);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
+
+  // (6) Disable the permission when the default is blocked (expected to clear).
+  controller()->SetNotifierEnabled(enabled_notifier, false);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            DesktopNotificationProfileUtil::GetContentSetting(profile, origin));
 }

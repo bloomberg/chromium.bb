@@ -314,28 +314,42 @@ void MessageCenterSettingsController::SetNotifierEnabled(
     DCHECK(default_setting == CONTENT_SETTING_ALLOW ||
            default_setting == CONTENT_SETTING_BLOCK ||
            default_setting == CONTENT_SETTING_ASK);
-    if ((enabled && default_setting != CONTENT_SETTING_ALLOW) ||
-        (!enabled && default_setting == CONTENT_SETTING_ALLOW)) {
+
+    // The content setting for notifications needs to clear when it changes to
+    // the default value or get explicitly set when it differs from the default.
+    bool differs_from_default_value =
+        (default_setting != CONTENT_SETTING_ALLOW && enabled) ||
+        (default_setting == CONTENT_SETTING_ALLOW && !enabled);
+
+    if (differs_from_default_value) {
       if (notifier.notifier_id.url.is_valid()) {
-        if (enabled)
+        if (enabled) {
           DesktopNotificationProfileUtil::GrantPermission(
               profile, notifier.notifier_id.url);
-        else
+        } else {
           DesktopNotificationProfileUtil::DenyPermission(
               profile, notifier.notifier_id.url);
+        }
       } else {
         LOG(ERROR) << "Invalid url pattern: "
                    << notifier.notifier_id.url.spec();
       }
     } else {
-      std::map<base::string16, ContentSettingsPattern>::const_iterator iter =
-          patterns_.find(notifier.name);
+      ContentSettingsPattern pattern;
+
+      const auto& iter = patterns_.find(notifier.name);
       if (iter != patterns_.end()) {
-        DesktopNotificationProfileUtil::ClearSetting(profile, iter->second);
+        pattern = iter->second;
+      } else if (notifier.notifier_id.url.is_valid()) {
+        pattern =
+            ContentSettingsPattern::FromURLNoWildcard(notifier.notifier_id.url);
       } else {
         LOG(ERROR) << "Invalid url pattern: "
                    << notifier.notifier_id.url.spec();
       }
+
+      if (pattern.IsValid())
+        DesktopNotificationProfileUtil::ClearSetting(profile, pattern);
     }
   } else {
     notification_service->SetNotifierEnabled(notifier.notifier_id, enabled);
