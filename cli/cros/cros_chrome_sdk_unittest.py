@@ -230,6 +230,9 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       self.cmd_mock.inst.Run()
       self.AssertLogsContain(logs, 'Goma:', inverted=True)
 
+    with self.cache.Lookup(self.VERSION_KEY) as r:
+      self.assertTrue(r.Exists())
+
   def testErrorCodePassthrough(self):
     """Test that error codes are passed through."""
     self.SetupCommandMock()
