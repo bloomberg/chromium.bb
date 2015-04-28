@@ -242,7 +242,7 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnData(
           frame_offset * base::TimeDelta::FromSeconds(1) /
               audio_params_.sample_rate();
       buffer->timestamp =
-          (time_at_offset - first_frame_capture_time_).InMillisecondsF();
+          (time_at_offset - first_frame_capture_time_).InSecondsF();
       buffer->sample_rate =
           static_cast<PP_AudioBuffer_SampleRate>(audio_params_.sample_rate());
       buffer->data_size = output_buffer_size_;
