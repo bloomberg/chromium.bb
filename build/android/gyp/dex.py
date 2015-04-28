@@ -15,7 +15,9 @@ from util import md5_check
 def DoDex(options, paths):
   dx_binary = os.path.join(options.android_sdk_tools, 'dx')
   # See http://crbug.com/272064 for context on --force-jumbo.
-  dex_cmd = [dx_binary, '--dex', '--force-jumbo', '--output', options.dex_path]
+  # --num-threads=10 made final dexing go from 10s -> 5s on a z620.
+  dex_cmd = [dx_binary, '--num-threads=10', '--dex', '--force-jumbo',
+             '--output', options.dex_path]
   if options.no_locals != '0':
     dex_cmd.append('--no-locals')
 
