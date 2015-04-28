@@ -100,9 +100,11 @@ class TestGitCl(TestCase):
     git_cl.settings = None
 
   def tearDown(self):
-    if not self.has_failed():
-      self.assertEquals([], self.calls)
-    super(TestGitCl, self).tearDown()
+    try:
+      if not self.has_failed():
+        self.assertEquals([], self.calls)
+    finally:
+      super(TestGitCl, self).tearDown()
 
   def _mocked_call(self, *args, **_kwargs):
     self.assertTrue(
