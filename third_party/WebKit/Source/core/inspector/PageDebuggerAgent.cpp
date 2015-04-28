@@ -38,22 +38,21 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorOverlay.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(PageScriptDebugServer* pageScriptDebugServer, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
+PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(LocalFrame* inspectedFrame, PageScriptDebugServer* pageScriptDebugServer, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
 {
-    return adoptPtrWillBeNoop(new PageDebuggerAgent(pageScriptDebugServer, pageAgent, injectedScriptManager, overlay, debuggerId));
+    return adoptPtrWillBeNoop(new PageDebuggerAgent(inspectedFrame, pageScriptDebugServer, injectedScriptManager, overlay, debuggerId));
 }
 
-PageDebuggerAgent::PageDebuggerAgent(PageScriptDebugServer* pageScriptDebugServer, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
+PageDebuggerAgent::PageDebuggerAgent(LocalFrame* inspectedFrame, PageScriptDebugServer* pageScriptDebugServer, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
     : InspectorDebuggerAgent(injectedScriptManager)
+    , m_inspectedFrame(inspectedFrame)
     , m_pageScriptDebugServer(pageScriptDebugServer)
-    , m_pageAgent(pageAgent)
     , m_overlay(overlay)
     , m_debuggerId(debuggerId)
 {
@@ -66,8 +65,8 @@ PageDebuggerAgent::~PageDebuggerAgent()
 
 DEFINE_TRACE(PageDebuggerAgent)
 {
+    visitor->trace(m_inspectedFrame);
     visitor->trace(m_pageScriptDebugServer);
-    visitor->trace(m_pageAgent);
     visitor->trace(m_overlay);
     InspectorDebuggerAgent::trace(visitor);
 }
@@ -86,12 +85,12 @@ void PageDebuggerAgent::disable()
 
 void PageDebuggerAgent::startListeningScriptDebugServer()
 {
-    scriptDebugServer().addListener(this, m_pageAgent->inspectedFrame(), m_debuggerId);
+    scriptDebugServer().addListener(this, m_inspectedFrame, m_debuggerId);
 }
 
 void PageDebuggerAgent::stopListeningScriptDebugServer()
 {
-    scriptDebugServer().removeListener(this, m_pageAgent->inspectedFrame());
+    scriptDebugServer().removeListener(this, m_inspectedFrame);
 }
 
 PageScriptDebugServer& PageDebuggerAgent::scriptDebugServer()
@@ -124,7 +123,7 @@ void PageDebuggerAgent::overlaySteppedOver()
 InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
 {
     if (!executionContextId) {
-        ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->inspectedFrame());
+        ScriptState* scriptState = ScriptState::forMainWorld(m_inspectedFrame);
         InjectedScript result = injectedScriptManager()->injectedScriptFor(scriptState);
         if (result.isEmpty())
             *errorString = "Internal error: main world execution context not found.";
@@ -138,7 +137,7 @@ InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString
 
 void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)
 {
-    if (frame == m_pageAgent->inspectedFrame()) {
+    if (frame == m_inspectedFrame) {
         ErrorString error;
         resume(&error);
     }
@@ -147,7 +146,7 @@ void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)
 void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     // FIXME: what about nested objects?
-    if (frame != m_pageAgent->inspectedFrame())
+    if (frame != m_inspectedFrame)
         return;
     reset();
 }

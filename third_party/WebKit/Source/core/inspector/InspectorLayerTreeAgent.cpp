@@ -39,7 +39,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutPart.h"
@@ -146,9 +145,9 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
     return layerObject;
 }
 
-InspectorLayerTreeAgent::InspectorLayerTreeAgent(InspectorPageAgent* pageAgent)
+InspectorLayerTreeAgent::InspectorLayerTreeAgent(LocalFrame* inspectedFrame)
     : InspectorBaseAgent<InspectorLayerTreeAgent, InspectorFrontend::LayerTree>("LayerTree")
-    , m_pageAgent(pageAgent)
+    , m_inspectedFrame(inspectedFrame)
 {
 }
 
@@ -158,7 +157,7 @@ InspectorLayerTreeAgent::~InspectorLayerTreeAgent()
 
 DEFINE_TRACE(InspectorLayerTreeAgent)
 {
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_inspectedFrame);
     InspectorBaseAgent::trace(visitor);
 }
 
@@ -172,11 +171,9 @@ void InspectorLayerTreeAgent::restore()
 void InspectorLayerTreeAgent::enable(ErrorString*)
 {
     m_instrumentingAgents->setInspectorLayerTreeAgent(this);
-    if (LocalFrame* frame = m_pageAgent->inspectedFrame()) {
-        Document* document = frame->document();
-        if (document && document->lifecycle().state() >= DocumentLifecycle::CompositingClean)
-            layerTreeDidChange();
-    }
+    Document* document = m_inspectedFrame->document();
+    if (document && document->lifecycle().state() >= DocumentLifecycle::CompositingClean)
+        layerTreeDidChange();
 }
 
 void InspectorLayerTreeAgent::disable(ErrorString*)
@@ -256,14 +253,14 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
 
 DeprecatedPaintLayerCompositor* InspectorLayerTreeAgent::deprecatedPaintLayerCompositor()
 {
-    LayoutView* layoutView = m_pageAgent->inspectedFrame()->contentRenderer();
+    LayoutView* layoutView = m_inspectedFrame->contentRenderer();
     DeprecatedPaintLayerCompositor* compositor = layoutView ? layoutView->compositor() : nullptr;
     return compositor;
 }
 
 GraphicsLayer* InspectorLayerTreeAgent::rootGraphicsLayer()
 {
-    return m_pageAgent->frameHost()->pinchViewport().rootGraphicsLayer();
+    return m_inspectedFrame->host()->pinchViewport().rootGraphicsLayer();
 }
 
 static GraphicsLayer* findLayerById(GraphicsLayer* root, int layerId)

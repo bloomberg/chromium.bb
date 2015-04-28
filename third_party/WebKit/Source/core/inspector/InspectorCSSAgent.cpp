@@ -54,7 +54,9 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorHistory.h"
+#include "core/inspector/InspectorIdentifiers.h"
 #include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorResolver.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorState.h"
@@ -427,8 +429,9 @@ CSSMediaRule* InspectorCSSAgent::asCSSMediaRule(CSSRule* rule)
     return toCSSMediaRule(rule);
 }
 
-InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
+InspectorCSSAgent::InspectorCSSAgent(LocalFrame* inspectedFrame, InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
     : InspectorBaseAgent<InspectorCSSAgent, InspectorFrontend::CSS>("CSS")
+    , m_inspectedFrame(inspectedFrame)
     , m_domAgent(domAgent)
     , m_pageAgent(pageAgent)
     , m_resourceAgent(resourceAgent)
@@ -525,7 +528,7 @@ void InspectorCSSAgent::disable(ErrorString*)
 
 void InspectorCSSAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    if (frame == m_pageAgent->inspectedFrame()) {
+    if (frame == m_inspectedFrame) {
         reset();
         m_editedStyleSheets.clear();
         m_editedStyleElements.clear();
@@ -1023,7 +1026,7 @@ void InspectorCSSAgent::setMediaText(ErrorString* errorString, const String& sty
 
 void InspectorCSSAgent::createStyleSheet(ErrorString* errorString, const String& frameId, TypeBuilder::CSS::StyleSheetId* outStyleSheetId)
 {
-    LocalFrame* frame = m_pageAgent->frameForId(frameId);
+    LocalFrame* frame = InspectorResolver::resolveFrame(m_inspectedFrame, frameId);
     if (!frame) {
         *errorString = "Frame not found";
         return;
@@ -1565,6 +1568,7 @@ void InspectorCSSAgent::resetPseudoStates()
 
 DEFINE_TRACE(InspectorCSSAgent)
 {
+    visitor->trace(m_inspectedFrame);
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);
     visitor->trace(m_resourceAgent);

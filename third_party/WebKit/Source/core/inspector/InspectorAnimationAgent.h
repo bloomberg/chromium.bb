@@ -13,20 +13,18 @@
 
 namespace blink {
 
-class AnimationNode;
 class AnimationPlayer;
 class AnimationTimeline;
 class Element;
 class InspectorDOMAgent;
-class InspectorPageAgent;
-class TimingFunction;
+class LocalFrame;
 
 class InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>, public InspectorBackendDispatcher::AnimationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(LocalFrame* inspectedFrame, InspectorDOMAgent* domAgent)
     {
-        return adoptPtrWillBeNoop(new InspectorAnimationAgent(pageAgent, domAgent));
+        return adoptPtrWillBeNoop(new InspectorAnimationAgent(inspectedFrame, domAgent));
     }
 
     // Base agent methods.
@@ -55,7 +53,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InspectorAnimationAgent(InspectorPageAgent*, InspectorDOMAgent*);
+    InspectorAnimationAgent(LocalFrame*, InspectorDOMAgent*);
 
     typedef TypeBuilder::Animation::AnimationPlayer::Type::Enum AnimationType;
 
@@ -65,7 +63,7 @@ private:
     double normalizedStartTime(AnimationPlayer&);
     AnimationTimeline& referenceTimeline();
 
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     WillBeHeapHashMap<String, RefPtrWillBeMember<AnimationPlayer>> m_idToAnimationPlayer;
     WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;

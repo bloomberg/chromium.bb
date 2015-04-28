@@ -37,8 +37,7 @@
 
 namespace blink {
 
-class DocumentLoader;
-class InspectorPageAgent;
+class LocalFrame;
 class PageScriptDebugServer;
 
 class PageDebuggerAgent final
@@ -48,7 +47,7 @@ class PageDebuggerAgent final
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PageDebuggerAgent);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PageDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*, int debuggerId);
+    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(LocalFrame* inspectedFrame, PageScriptDebugServer*, InjectedScriptManager*, InspectorOverlay*, int debuggerId);
     ~PageDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -73,9 +72,9 @@ private:
 
     InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
 
-    PageDebuggerAgent(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*, int debuggerId);
+    PageDebuggerAgent(LocalFrame* inspectedFrame, PageScriptDebugServer*, InjectedScriptManager*, InspectorOverlay*, int debuggerId);
+    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     RawPtrWillBeMember<PageScriptDebugServer> m_pageScriptDebugServer;
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
     int m_debuggerId;
 };

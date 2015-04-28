@@ -20,7 +20,6 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "platform/Decimal.h"
@@ -32,9 +31,9 @@ static const char animationAgentEnabled[] = "animationAgentEnabled";
 
 namespace blink {
 
-InspectorAnimationAgent::InspectorAnimationAgent(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent)
+InspectorAnimationAgent::InspectorAnimationAgent(LocalFrame* inspectedFrame, InspectorDOMAgent* domAgent)
     : InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>("Animation")
-    , m_pageAgent(pageAgent)
+    , m_inspectedFrame(inspectedFrame)
     , m_domAgent(domAgent)
 {
 }
@@ -63,7 +62,7 @@ void InspectorAnimationAgent::disable(ErrorString*)
 
 void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    if (frame == m_pageAgent->inspectedFrame()) {
+    if (frame == m_inspectedFrame) {
         m_idToAnimationPlayer.clear();
         m_idToAnimationType.clear();
     }
@@ -244,7 +243,7 @@ void InspectorAnimationAgent::getPlaybackRate(ErrorString*, double* playbackRate
 
 void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
 {
-    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext(m_pageAgent->inspectedFrame())) {
+    for (Frame* frame = m_inspectedFrame; frame; frame = frame->tree().traverseNext(m_inspectedFrame)) {
         if (frame->isLocalFrame())
             toLocalFrame(frame)->document()->timeline().setPlaybackRate(playbackRate);
     }
@@ -253,7 +252,7 @@ void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
 void InspectorAnimationAgent::setCurrentTime(ErrorString*, double currentTime)
 {
     double timeDelta = currentTime - referenceTimeline().currentTime();
-    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext(m_pageAgent->inspectedFrame())) {
+    for (Frame* frame = m_inspectedFrame; frame; frame = frame->tree().traverseNext(m_inspectedFrame)) {
         if (frame->isLocalFrame()) {
             AnimationTimeline& timeline = toLocalFrame(frame)->document()->timeline();
             timeline.setCurrentTime(timeline.currentTime() + timeDelta);
@@ -345,7 +344,7 @@ AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* err
 
 AnimationTimeline& InspectorAnimationAgent::referenceTimeline()
 {
-    return m_pageAgent->inspectedFrame()->document()->timeline();
+    return m_inspectedFrame->document()->timeline();
 }
 
 double InspectorAnimationAgent::normalizedStartTime(AnimationPlayer& player)
@@ -358,7 +357,7 @@ double InspectorAnimationAgent::normalizedStartTime(AnimationPlayer& player)
 DEFINE_TRACE(InspectorAnimationAgent)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_inspectedFrame);
     visitor->trace(m_domAgent);
     visitor->trace(m_idToAnimationPlayer);
     visitor->trace(m_idToAnimationType);

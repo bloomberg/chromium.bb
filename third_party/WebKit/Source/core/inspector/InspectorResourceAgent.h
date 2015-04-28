@@ -50,7 +50,6 @@ class FormData;
 class LocalFrame;
 class HTTPHeaderMap;
 class InspectorFrontend;
-class InspectorPageAgent;
 class JSONObject;
 class KURL;
 class NetworkResourcesData;
@@ -69,9 +68,9 @@ typedef String ErrorString;
 
 class InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, InspectorFrontend::Network>, public InspectorBackendDispatcher::NetworkCommandHandler {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorResourceAgent> create(InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorResourceAgent> create(LocalFrame* inspectedFrame)
     {
-        return adoptPtrWillBeNoop(new InspectorResourceAgent(pageAgent));
+        return adoptPtrWillBeNoop(new InspectorResourceAgent(inspectedFrame));
     }
 
     void disable(ErrorString*) override;
@@ -145,7 +144,7 @@ public:
     bool fetchResourceContent(Document*, const KURL&, String* content, bool* base64Encoded);
 
 private:
-    explicit InspectorResourceAgent(InspectorPageAgent*);
+    explicit InspectorResourceAgent(LocalFrame*);
 
     void enable();
     void delayedRemoveReplayXHR(XMLHttpRequest*);
@@ -153,7 +152,7 @@ private:
 
     bool getResponseBodyBlob(const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>);
 
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     String m_userAgentOverride;
     String m_hostId;
     OwnPtr<NetworkResourcesData> m_resourcesData;

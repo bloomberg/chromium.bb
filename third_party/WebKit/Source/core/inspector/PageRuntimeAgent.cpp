@@ -40,7 +40,6 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorIdentifiers.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/page/Page.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -49,9 +48,9 @@ namespace blink {
 
 static int s_nextDebuggerId = 1;
 
-PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, Client* client, ScriptDebugServer* scriptDebugServer, InspectorPageAgent* pageAgent)
+PageRuntimeAgent::PageRuntimeAgent(LocalFrame* inspectedFrame, InjectedScriptManager* injectedScriptManager, Client* client, ScriptDebugServer* scriptDebugServer)
     : InspectorRuntimeAgent(injectedScriptManager, scriptDebugServer, client)
-    , m_pageAgent(pageAgent)
+    , m_inspectedFrame(inspectedFrame)
     , m_mainWorldContextCreated(false)
     , m_debuggerId(s_nextDebuggerId++)
 {
@@ -66,7 +65,7 @@ PageRuntimeAgent::~PageRuntimeAgent()
 
 DEFINE_TRACE(PageRuntimeAgent)
 {
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_inspectedFrame);
     InspectorRuntimeAgent::trace(visitor);
 }
 
@@ -130,7 +129,7 @@ void PageRuntimeAgent::willReleaseScriptContext(LocalFrame* frame, ScriptState* 
 InjectedScript PageRuntimeAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
 {
     if (!executionContextId) {
-        ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->inspectedFrame());
+        ScriptState* scriptState = ScriptState::forMainWorld(m_inspectedFrame);
         InjectedScript result = injectedScriptManager()->injectedScriptFor(scriptState);
         if (result.isEmpty())
             *errorString = "Internal error: main world execution context not found.";
@@ -155,7 +154,7 @@ void PageRuntimeAgent::unmuteConsole()
 void PageRuntimeAgent::reportExecutionContextCreation()
 {
     Vector<std::pair<ScriptState*, SecurityOrigin*> > isolatedContexts;
-    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext(m_pageAgent->inspectedFrame())) {
+    for (Frame* frame = m_inspectedFrame; frame; frame = frame->tree().traverseNext(m_inspectedFrame)) {
         if (!frame->isLocalFrame())
             continue;
         LocalFrame* localFrame = toLocalFrame(frame);

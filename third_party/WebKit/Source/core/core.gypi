@@ -1646,6 +1646,8 @@
             'inspector/InspectorPageAgent.h',
             'inspector/InspectorProfilerAgent.cpp',
             'inspector/InspectorProfilerAgent.h',
+            'inspector/InspectorResolver.cpp',
+            'inspector/InspectorResolver.h',
             'inspector/InspectorResourceAgent.cpp',
             'inspector/InspectorResourceAgent.h',
             'inspector/InspectorResourceContentLoader.cpp',

@@ -43,7 +43,6 @@ namespace blink {
 
 class GraphicsContext;
 class GraphicsLayer;
-class InspectorPageAgent;
 class LayoutObject;
 class LayoutRect;
 class PictureSnapshot;
@@ -54,9 +53,9 @@ typedef String ErrorString;
 
 class InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, InspectorFrontend::LayerTree>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorLayerTreeAgent> create(InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorLayerTreeAgent> create(LocalFrame* inspectedFrame)
     {
-        return adoptPtrWillBeNoop(new InspectorLayerTreeAgent(pageAgent));
+        return adoptPtrWillBeNoop(new InspectorLayerTreeAgent(inspectedFrame));
     }
     virtual ~InspectorLayerTreeAgent();
     DECLARE_VIRTUAL_TRACE();
@@ -88,7 +87,7 @@ public:
 private:
     static unsigned s_lastSnapshotId;
 
-    explicit InspectorLayerTreeAgent(InspectorPageAgent*);
+    explicit InspectorLayerTreeAgent(LocalFrame*);
 
     GraphicsLayer* rootGraphicsLayer();
 
@@ -101,7 +100,7 @@ private:
     void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     int idForNode(Node*);
 
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     Vector<int, 2> m_pageOverlayLayerIds;
 
     typedef HashMap<String, RefPtr<PictureSnapshot> > SnapshotById;

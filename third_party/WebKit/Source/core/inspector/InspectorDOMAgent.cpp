@@ -72,7 +72,7 @@
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InspectorIdentifiers.h"
 #include "core/inspector/InspectorOverlay.h"
-#include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/InspectorResolver.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/HitTestResult.h"
@@ -292,9 +292,9 @@ bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, TypeBuilder::DOM
     }
 }
 
-InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
+InspectorDOMAgent::InspectorDOMAgent(LocalFrame* inspectedFrame, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
     : InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>("DOM")
-    , m_pageAgent(pageAgent)
+    , m_inspectedFrame(inspectedFrame)
     , m_injectedScriptManager(injectedScriptManager)
     , m_overlay(overlay)
     , m_domListener(nullptr)
@@ -537,7 +537,7 @@ void InspectorDOMAgent::innerEnable()
     m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
     m_history = adoptPtrWillBeNoop(new InspectorHistory());
     m_domEditor = adoptPtrWillBeNoop(new DOMEditor(m_history.get()));
-    m_document = m_pageAgent->inspectedFrame()->document();
+    m_document = m_inspectedFrame->document();
     m_instrumentingAgents->setInspectorDOMAgent(this);
     if (m_listener)
         m_listener->domAgentWasEnabled();
@@ -1312,7 +1312,7 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSO
     if (nodeId) {
         node = assertNode(errorString, *nodeId);
     } else if (backendNodeId) {
-        node = DOMNodeIds::nodeForId(*backendNodeId);
+        node = InspectorResolver::resolveNode(m_inspectedFrame, *backendNodeId);
     } else if (objectId) {
         InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(*objectId);
         node = injectedScript.nodeForObjectId(*objectId);
@@ -1332,20 +1332,26 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSO
 }
 
 void InspectorDOMAgent::highlightFrame(
-    ErrorString*,
+    ErrorString* errorString,
     const String& frameId,
     const RefPtr<JSONObject>* color,
     const RefPtr<JSONObject>* outlineColor)
 {
-    LocalFrame* frame = m_pageAgent->frameForId(frameId);
-    // FIXME: Inspector doesn't currently work cross process.
-    if (frame && frame->deprecatedLocalOwner()) {
-        OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
-        highlightConfig->showInfo = true; // Always show tooltips for frames.
-        highlightConfig->content = parseColor(color);
-        highlightConfig->contentOutline = parseColor(outlineColor);
-        m_overlay->highlightNode(frame->deprecatedLocalOwner(), 0 /* eventTarget */, *highlightConfig, false);
+    LocalFrame* frame = InspectorResolver::resolveFrame(m_inspectedFrame, frameId);
+    if (!frame) {
+        *errorString = "No frame for given id found";
+        return;
     }
+    FrameOwner* owner = frame->owner();
+    // FIXME: Inspector doesn't currently work cross process.
+    if (!owner || !owner->isLocal())
+        return;
+    HTMLFrameOwnerElement* ownerElement = toHTMLFrameOwnerElement(owner);
+    OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
+    highlightConfig->showInfo = true; // Always show tooltips for frames.
+    highlightConfig->content = parseColor(color);
+    highlightConfig->contentOutline = parseColor(outlineColor);
+    m_overlay->highlightNode(ownerElement, 0 /* eventTarget */, *highlightConfig, false);
 }
 
 void InspectorDOMAgent::hideHighlight(ErrorString*)
@@ -1816,7 +1822,7 @@ bool InspectorDOMAgent::isWhitespace(Node* node)
 
 void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
-    if (frame != m_pageAgent->inspectedFrame())
+    if (frame != m_inspectedFrame)
         return;
 
     // Re-push document once it is loaded.
@@ -1848,13 +1854,12 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame)
 
 void InspectorDOMAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
 {
-    LocalFrame* inspectedFrame = m_pageAgent->inspectedFrame();
-    if (loader->frame() != inspectedFrame) {
+    if (loader->frame() != m_inspectedFrame) {
         invalidateFrameOwnerElement(loader->frame());
         return;
     }
 
-    setDocument(inspectedFrame->document());
+    setDocument(m_inspectedFrame->document());
 }
 
 void InspectorDOMAgent::didInsertDOMNode(Node* node)
@@ -2039,7 +2044,7 @@ void InspectorDOMAgent::frameDocumentUpdated(LocalFrame* frame)
     if (!document)
         return;
 
-    if (frame != m_pageAgent->inspectedFrame())
+    if (frame != m_inspectedFrame)
         return;
 
     // Only update the main frame document, nested frame document updates are not required
@@ -2144,8 +2149,7 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
             return;
         }
 
-        Node* node = DOMNodeIds::nodeForId(backendNodeId);
-        if (node && node->document().frame() && node->document().frame()->instrumentingAgents() == m_pageAgent->inspectedFrame()->instrumentingAgents())
+        if (Node* node = InspectorResolver::resolveNode(m_inspectedFrame, backendNodeId))
             result->addItem(pushNodePathToFrontend(node));
         else
             result->addItem(0);
@@ -2223,7 +2227,7 @@ bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorSt
 DEFINE_TRACE(InspectorDOMAgent)
 {
     visitor->trace(m_domListener);
-    visitor->trace(m_pageAgent);
+    visitor->trace(m_inspectedFrame);
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_overlay);
 #if ENABLE(OILPAN)

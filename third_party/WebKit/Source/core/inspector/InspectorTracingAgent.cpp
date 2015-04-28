@@ -9,7 +9,6 @@
 #include "core/inspector/InspectorTracingAgent.h"
 
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InspectorWorkerAgent.h"
@@ -25,19 +24,19 @@ namespace {
 const char devtoolsMetadataEventCategory[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 }
 
-InspectorTracingAgent::InspectorTracingAgent(Client* client, InspectorWorkerAgent* workerAgent, InspectorPageAgent* pageAgent)
+InspectorTracingAgent::InspectorTracingAgent(LocalFrame* inspectedFrame, Client* client, InspectorWorkerAgent* workerAgent)
     : InspectorBaseAgent<InspectorTracingAgent, InspectorFrontend::Tracing>("Tracing")
+    , m_inspectedFrame(inspectedFrame)
     , m_layerTreeId(0)
     , m_client(client)
     , m_workerAgent(workerAgent)
-    , m_pageAgent(pageAgent)
 {
 }
 
 DEFINE_TRACE(InspectorTracingAgent)
 {
+    visitor->trace(m_inspectedFrame);
     visitor->trace(m_workerAgent);
-    visitor->trace(m_pageAgent);
     InspectorBaseAgent::trace(visitor);
 }
 
@@ -69,7 +68,7 @@ String InspectorTracingAgent::sessionId()
 
 void InspectorTracingAgent::emitMetadataEvents()
 {
-    TRACE_EVENT_INSTANT1(devtoolsMetadataEventCategory, "TracingStartedInPage", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTracingStartedInFrame::data(sessionId(), m_pageAgent->inspectedFrame()));
+    TRACE_EVENT_INSTANT1(devtoolsMetadataEventCategory, "TracingStartedInPage", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTracingStartedInFrame::data(sessionId(), m_inspectedFrame));
     if (m_layerTreeId)
         setLayerTreeId(m_layerTreeId);
     m_workerAgent->setTracingSessionId(sessionId());

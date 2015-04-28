@@ -37,14 +37,14 @@
 
 namespace blink {
 
-class InspectorPageAgent;
+class LocalFrame;
 class SecurityOrigin;
 
 class PageRuntimeAgent final : public InspectorRuntimeAgent {
 public:
-    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, InspectorRuntimeAgent::Client* client, ScriptDebugServer* scriptDebugServer, InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(LocalFrame* inspectedFrame, InjectedScriptManager* injectedScriptManager, InspectorRuntimeAgent::Client* client, ScriptDebugServer* scriptDebugServer)
     {
-        return adoptPtrWillBeNoop(new PageRuntimeAgent(injectedScriptManager, client, scriptDebugServer, pageAgent));
+        return adoptPtrWillBeNoop(new PageRuntimeAgent(inspectedFrame, injectedScriptManager, client, scriptDebugServer));
     }
     virtual ~PageRuntimeAgent();
     DECLARE_VIRTUAL_TRACE();
@@ -58,14 +58,14 @@ public:
     int debuggerId() const { return m_debuggerId; }
 
 private:
-    PageRuntimeAgent(InjectedScriptManager*, Client*, ScriptDebugServer*, InspectorPageAgent*);
+    PageRuntimeAgent(LocalFrame*, InjectedScriptManager*, Client*, ScriptDebugServer*);
 
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
     virtual void muteConsole() override;
     virtual void unmuteConsole() override;
     void reportExecutionContextCreation();
 
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
+    RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     bool m_mainWorldContextCreated;
     int m_debuggerId;
 };
