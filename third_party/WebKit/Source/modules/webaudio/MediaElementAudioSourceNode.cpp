@@ -48,7 +48,7 @@ MediaElementAudioSourceHandler::MediaElementAudioSourceHandler(AudioNode& node, 
     , m_sourceSampleRate(0)
     , m_passesCurrentSrcCORSAccessCheck(passesCurrentSrcCORSAccessCheck(mediaElement.currentSrc()))
     , m_maybePrintCORSMessage(!m_passesCurrentSrcCORSAccessCheck)
-    , m_currentSrc(mediaElement.currentSrc())
+    , m_currentSrcString(mediaElement.currentSrc().string())
 {
     ASSERT(isMainThread());
     // Default to stereo. This could change depending on what the media element
@@ -130,7 +130,7 @@ void MediaElementAudioSourceHandler::onCurrentSrcChanged(const KURL& currentSrc)
     // message.  Need to wait until later to print the message in case HTMLMediaElement allows
     // access.
     m_maybePrintCORSMessage = !m_passesCurrentSrcCORSAccessCheck;
-    m_currentSrc = currentSrc;
+    m_currentSrcString = currentSrc.string();
 }
 
 bool MediaElementAudioSourceHandler::passesCurrentSrcCORSAccessCheck(const KURL& currentSrc)
@@ -139,11 +139,11 @@ bool MediaElementAudioSourceHandler::passesCurrentSrcCORSAccessCheck(const KURL&
     return context()->securityOrigin() && context()->securityOrigin()->canRequest(currentSrc);
 }
 
-void MediaElementAudioSourceHandler::printCORSMessage()
+void MediaElementAudioSourceHandler::printCORSMessage(const String& message)
 {
     context()->executionContext()->addConsoleMessage(
         ConsoleMessage::create(SecurityMessageSource, InfoMessageLevel,
-            "MediaElementAudioSource outputs zeroes due to CORS access restrictions for " + m_currentSrc.string()));
+            "MediaElementAudioSource outputs zeroes due to CORS access restrictions for " + message));
 }
 
 void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
@@ -178,7 +178,9 @@ void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
                     // element source.
                     m_maybePrintCORSMessage = false;
                     context()->executionContext()->postTask(FROM_HERE,
-                        createCrossThreadTask(&MediaElementAudioSourceHandler::printCORSMessage, this));
+                        createCrossThreadTask(&MediaElementAudioSourceHandler::printCORSMessage,
+                            this,
+                            m_currentSrcString));
                 }
                 outputBus->zero();
             }

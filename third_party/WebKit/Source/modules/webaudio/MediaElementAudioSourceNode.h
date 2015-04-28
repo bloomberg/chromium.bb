@@ -69,7 +69,7 @@ private:
     bool passesCurrentSrcCORSAccessCheck(const KURL& currentSrc);
 
     // Print warning if CORS restrictions cause MediaElementAudioSource to output zeroes.
-    void printCORSMessage();
+    void printCORSMessage(const String& message);
 
     // This Persistent doesn't make a reference cycle. The reference from
     // HTMLMediaElement to AudioSourceProvideClient, which
@@ -93,9 +93,9 @@ private:
     // access to it. Must be protected by |m_processLock|.
     bool m_maybePrintCORSMessage;
 
-    // The value of mediaElement()->currentSrc() in the ctor and onCurrentSrcChanged().  Protected
-    // by |m_processLock|.
-    KURL m_currentSrc;
+    // The value of mediaElement()->currentSrc().string() in the ctor and onCurrentSrcChanged().
+    // Protected by |m_processLock|.
+    String m_currentSrcString;
 };
 
 class MediaElementAudioSourceNode final : public AudioSourceNode, public AudioSourceProviderClient {
