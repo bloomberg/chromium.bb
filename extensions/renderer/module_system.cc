@@ -31,16 +31,13 @@ const char* kModuleName = "module_name";
 const char* kModuleField = "module_field";
 const char* kModulesField = "modules";
 
-// Logs a fatal error for the calling context, with some added metadata about
-// the context:
+// Logs an error for the calling context in preparation for potentially
+// crashing the renderer, with some added metadata about the context:
 //  - Its type (blessed, unblessed, etc).
 //  - Whether it's valid.
 //  - The extension ID, if one exists.
-//
-// This will only actual be fatal in in dev/canary, since in too many cases
-// we're at the mercy of the extension or web page's environment. They can mess
-// up our JS in unexpected ways. Hopefully dev/canary channel will pick up such
-// problems, but given the wider variety on stable/beta it's impossible to know.
+// Crashing won't happen in stable/beta releases, but is encouraged to happen
+// in the less stable released to catch errors early.
 void Fatal(ScriptContext* context, const std::string& message) {
   // Prepend some context metadata.
   std::string full_message = "(";

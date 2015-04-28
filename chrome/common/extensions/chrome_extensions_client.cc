@@ -299,8 +299,10 @@ void ChromeExtensionsClient::RegisterAPISchemaResources(
 }
 
 bool ChromeExtensionsClient::ShouldSuppressFatalErrors() const {
-  // Suppress fatal on all release branches.
-  return GetCurrentChannel() > chrome::VersionInfo::CHANNEL_CANARY;
+  // Suppress fatal everywhere until the cause of bugs like http://crbug/471599
+  // are fixed. This would typically be:
+  // return GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV;
+  return true;
 }
 
 std::string ChromeExtensionsClient::GetWebstoreBaseURL() const {
