@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -193,9 +194,15 @@ void ServiceWorkerReadFromCacheJob::SetupRangeResponse(int resource_size) {
 }
 
 void ServiceWorkerReadFromCacheJob::Done(const net::URLRequestStatus& status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!status.is_success()) {
     version_->SetStartWorkerStatusCode(SERVICE_WORKER_ERROR_DISK_CACHE);
-    // TODO(falken): Retry and evict the SW if it fails again.
+    // TODO(falken): Retry before evicting.
+    if (context_) {
+      ServiceWorkerRegistration* registration =
+          context_->GetLiveRegistration(version_->registration_id());
+      registration->DeleteVersion(version_);
+    }
   }
   NotifyDone(status);
 }
