@@ -34,6 +34,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
   static bool InitializeOneOff();
   static EGLDisplay GetHardwareDisplay();
+  static EGLDisplay InitializeDisplay();
   static EGLNativeDisplayType GetNativeDisplay();
 
   // These aren't particularly tied to surfaces, but since we already
@@ -48,11 +49,6 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   ~GLSurfaceEGL() override;
 
  private:
-#if defined(OS_WIN)
-  friend struct DriverEGL;
-  static EGLDisplay GetPlatformDisplay(EGLNativeDisplayType native_display);
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGL);
 };
 
