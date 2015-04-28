@@ -55,16 +55,15 @@ const int WM_NCUAHDRAWCAPTION = 0xAE;
 const int WM_NCUAHDRAWFRAME = 0xAF;
 
 // IsMsgHandled() and BEGIN_SAFE_MSG_MAP_EX are a modified version of
-// BEGIN_MSG_MAP_EX. The main difference is it adds a WeakPtrFactory member
-// (|weak_factory_|) that is used in _ProcessWindowMessage() and changing
+// BEGIN_MSG_MAP_EX. The main difference is it uses a WeakPtrFactory member
+// (|weak_factory|) that is used in _ProcessWindowMessage() and changing
 // IsMsgHandled() from a member function to a define that checks if the weak
 // factory is still valid in addition to the member. Together these allow for
 // |this| to be deleted during dispatch.
 #define IsMsgHandled() !ref.get() || msg_handled_
 
-#define BEGIN_SAFE_MSG_MAP_EX(the_class) \
+#define BEGIN_SAFE_MSG_MAP_EX(weak_factory) \
  private: \
-  base::WeakPtrFactory<the_class> weak_factory_; \
   BOOL msg_handled_; \
 \
  public: \
@@ -78,7 +77,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
                             LPARAM l_param, \
                             LRESULT& l_result, \
                             DWORD msg_map_id = 0) { \
-    base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr()); \
+    base::WeakPtr<HWNDMessageHandler> ref(weak_factory.GetWeakPtr()); \
     BOOL old_msg_handled = msg_handled_; \
     BOOL ret = _ProcessWindowMessage(hwnd, msg, w_param, l_param, l_result, \
                                      msg_map_id); \
@@ -92,7 +91,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
                              LPARAM lParam, \
                              LRESULT& lResult, \
                              DWORD dwMsgMapID) { \
-    base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr()); \
+    base::WeakPtr<HWNDMessageHandler> ref(weak_factory.GetWeakPtr()); \
     BOOL bHandled = TRUE; \
     hWnd; \
     uMsg; \
@@ -315,7 +314,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Message Handlers ----------------------------------------------------------
 
-  BEGIN_SAFE_MSG_MAP_EX(HWNDMessageHandler)
+  BEGIN_SAFE_MSG_MAP_EX(weak_factory_)
     // Range handlers must go first!
     CR_MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
     CR_MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE,
@@ -626,6 +625,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // This member variable is set to true if the window is transitioning to
   // glass. Defaults to false.
   bool dwm_transition_desired_;
+
+  base::WeakPtrFactory<HWNDMessageHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
