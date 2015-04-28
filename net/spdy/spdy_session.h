@@ -536,6 +536,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustSendWindowSize);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlInactiveStream);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlPadding);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
+                           SessionFlowControlTooMuchDataTwoDataFrames);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
+                           StreamFlowControlTooMuchDataTwoDataFrames);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoReceiveLeaks);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoSendLeaks);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlEndToEnd);

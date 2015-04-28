@@ -3706,6 +3706,152 @@ TEST_P(SpdySessionTest, StreamFlowControlTooMuchData) {
   EXPECT_EQ(nullptr, spdy_stream.get());
 }
 
+// Regression test for a bug that was caused by including unsent WINDOW_UPDATE
+// deltas in the receiving window size when checking incoming frames for flow
+// control errors at session level.
+TEST_P(SpdySessionTest, SessionFlowControlTooMuchDataTwoDataFrames) {
+  if (GetParam() < kProtoSPDY31)
+    return;
+
+  const int32 session_max_recv_window_size = 500;
+  const int32 first_data_frame_size = 200;
+  const int32 second_data_frame_size = 400;
+
+  // First data frame should not trigger a WINDOW_UPDATE.
+  ASSERT_GT(session_max_recv_window_size / 2, first_data_frame_size);
+  // Second data frame would be fine had there been a WINDOW_UPDATE.
+  ASSERT_GT(session_max_recv_window_size, second_data_frame_size);
+  // But in fact, the two data frames together overflow the receiving window at
+  // session level.
+  ASSERT_LT(session_max_recv_window_size,
+            first_data_frame_size + second_data_frame_size);
+
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  const std::string first_data_frame(first_data_frame_size, 'a');
+  scoped_ptr<SpdyFrame> first(spdy_util_.ConstructSpdyBodyFrame(
+      1, first_data_frame.data(), first_data_frame_size, false));
+  const std::string second_data_frame(second_data_frame_size, 'b');
+  scoped_ptr<SpdyFrame> second(spdy_util_.ConstructSpdyBodyFrame(
+      1, second_data_frame.data(), second_data_frame_size, false));
+  MockRead reads[] = {
+      CreateMockRead(*first, 0),
+      CreateMockRead(*second, 1),
+      MockRead(ASYNC, 0, 2),
+  };
+  DeterministicSocketData data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  CreateDeterministicNetworkSession();
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
+            session->flow_control_state());
+  // Setting session level receiving window size to smaller than initial is not
+  // possible via SpdySessionPoolPeer.
+  session->session_recv_window_size_ = session_max_recv_window_size;
+
+  // First data frame is immediately consumed and does not trigger
+  // WINDOW_UPDATE.
+  data.RunFor(1);
+  EXPECT_EQ(first_data_frame_size, session->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(session_max_recv_window_size, session->session_recv_window_size_);
+  EXPECT_EQ(SpdySession::STATE_AVAILABLE, session->availability_state_);
+
+  // Second data frame overflows receiving window, causes session to close.
+  data.RunFor(1);
+  EXPECT_EQ(SpdySession::STATE_DRAINING, session->availability_state_);
+}
+
+// Regression test for a bug that was caused by including unsent WINDOW_UPDATE
+// deltas in the receiving window size when checking incoming data frames for
+// flow control errors at stream level.
+TEST_P(SpdySessionTest, StreamFlowControlTooMuchDataTwoDataFrames) {
+  if (GetParam() < kProtoSPDY3)
+    return;
+
+  const int32 stream_max_recv_window_size = 500;
+  const int32 first_data_frame_size = 200;
+  const int32 second_data_frame_size = 400;
+
+  // First data frame should not trigger a WINDOW_UPDATE.
+  ASSERT_GT(stream_max_recv_window_size / 2, first_data_frame_size);
+  // Second data frame would be fine had there been a WINDOW_UPDATE.
+  ASSERT_GT(stream_max_recv_window_size, second_data_frame_size);
+  // But in fact, they should overflow the receiving window at stream level.
+  ASSERT_LT(stream_max_recv_window_size,
+            first_data_frame_size + second_data_frame_size);
+
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_FLOW_CONTROL_ERROR));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4),
+  };
+
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  const std::string first_data_frame(first_data_frame_size, 'a');
+  scoped_ptr<SpdyFrame> first(spdy_util_.ConstructSpdyBodyFrame(
+      1, first_data_frame.data(), first_data_frame_size, false));
+  const std::string second_data_frame(second_data_frame_size, 'b');
+  scoped_ptr<SpdyFrame> second(spdy_util_.ConstructSpdyBodyFrame(
+      1, second_data_frame.data(), second_data_frame_size, false));
+  MockRead reads[] = {
+      CreateMockRead(*resp, 1),
+      CreateMockRead(*first, 2),
+      CreateMockRead(*second, 3),
+      MockRead(ASYNC, 0, 5),
+  };
+
+  DeterministicSocketData data(reads, arraysize(reads), writes,
+                               arraysize(writes));
+  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  CreateDeterministicNetworkSession();
+  SpdySessionPoolPeer pool_peer(spdy_session_pool_);
+  pool_peer.SetStreamInitialRecvWindowSize(stream_max_recv_window_size);
+
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+  EXPECT_LE(SpdySession::FLOW_CONTROL_STREAM, session->flow_control_state());
+
+  base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, test_url_, LOWEST, BoundNetLog());
+  test::StreamDelegateDoNothing delegate(spdy_stream);
+  spdy_stream->SetDelegate(&delegate);
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
+  EXPECT_EQ(ERR_IO_PENDING, spdy_stream->SendRequestHeaders(
+                                headers.Pass(), NO_MORE_DATA_TO_SEND));
+
+  // Request and response.
+  data.RunFor(2);
+  EXPECT_TRUE(spdy_stream->IsLocallyClosed());
+  EXPECT_EQ(stream_max_recv_window_size, spdy_stream->recv_window_size());
+
+  // First data frame.
+  data.RunFor(1);
+  EXPECT_TRUE(spdy_stream->IsLocallyClosed());
+  EXPECT_EQ(stream_max_recv_window_size - first_data_frame_size,
+            spdy_stream->recv_window_size());
+
+  // Consume first data frame.  This does not trigger a WINDOW_UPDATE.
+  std::string received_data = delegate.TakeReceivedData();
+  EXPECT_EQ(static_cast<size_t>(first_data_frame_size), received_data.size());
+  EXPECT_EQ(stream_max_recv_window_size, spdy_stream->recv_window_size());
+
+  // Second data frame overflows receiving window, causes the stream to close.
+  data.RunFor(1);
+  EXPECT_FALSE(spdy_stream.get());
+
+  // RST_STREAM
+  data.RunFor(1);
+}
+
 // A delegate that drops any received data.
 class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
  public:

@@ -347,12 +347,12 @@ void SpdyStream::DecreaseRecvWindowSize(int32 delta_window_size) {
   DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
   DCHECK_GE(delta_window_size, 1);
 
-  // Since we never decrease the initial receive window size,
-  // |delta_window_size| should never cause |recv_window_size_| to go
-  // negative. If we do, the receive window isn't being respected.
-  if (delta_window_size > recv_window_size_) {
+  // The receiving window size as the peer knows it is
+  // |recv_window_size_ - unacked_recv_window_bytes_|, if more data are sent by
+  // the peer, that means that the receive window is not being respected.
+  if (delta_window_size > recv_window_size_ - unacked_recv_window_bytes_) {
     session_->ResetStream(
-        stream_id_, RST_STREAM_PROTOCOL_ERROR,
+        stream_id_, RST_STREAM_FLOW_CONTROL_ERROR,
         "delta_window_size is " + base::IntToString(delta_window_size) +
             " in DecreaseRecvWindowSize, which is larger than the receive " +
             "window size of " + base::IntToString(recv_window_size_));
