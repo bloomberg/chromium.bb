@@ -1285,6 +1285,7 @@
       'browser/chromeos/policy/recommendation_restorer_unittest.cc',
       'browser/chromeos/policy/server_backed_state_keys_broker_unittest.cc',
       'browser/chromeos/policy/status_uploader_unittest.cc',
+      'browser/chromeos/policy/upload_job_unittest.cc',
       'browser/chromeos/policy/user_cloud_policy_manager_chromeos_unittest.cc',
       'browser/chromeos/policy/user_cloud_policy_store_chromeos_unittest.cc',
       'browser/chromeos/power/extension_event_observer_unittest.cc',

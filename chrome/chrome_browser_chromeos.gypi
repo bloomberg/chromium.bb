@@ -855,6 +855,8 @@
         'browser/chromeos/policy/status_uploader.h',
         'browser/chromeos/policy/ticl_device_settings_provider.cc',
         'browser/chromeos/policy/ticl_device_settings_provider.h',
+        'browser/chromeos/policy/upload_job.cc',
+        'browser/chromeos/policy/upload_job.h',
         'browser/chromeos/policy/user_cloud_external_data_manager.cc',
         'browser/chromeos/policy/user_cloud_external_data_manager.h',
         'browser/chromeos/policy/user_cloud_policy_manager_chromeos.cc',
