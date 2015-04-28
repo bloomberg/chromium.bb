@@ -10,6 +10,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/compositor.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/null_event_targeter.h"
 #include "ui/gfx/geometry/insets.h"
 
 namespace ash {
@@ -56,6 +57,9 @@ AshWindowTreeHostUnified::~AshWindowTreeHostUnified() {
 }
 
 void AshWindowTreeHostUnified::PrepareForShutdown() {
+  window()->SetEventTargeter(
+      scoped_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
+
   for (auto host : mirroring_hosts_)
     host->PrepareForShutdown();
 }

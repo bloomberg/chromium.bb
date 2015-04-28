@@ -631,7 +631,9 @@ bool DisplayController::UpdateWorkAreaOfDisplayNearestWindow(
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
-  if (GetDisplayManager()->IsInUnifiedMode()) {
+#if defined(OS_CHROMEOS)
+  if (GetDisplayManager()->default_multi_display_mode() ==
+      DisplayManager::UNIFIED) {
     if (primary_display_id == gfx::Display::kInvalidDisplayID)
       primary_display_id = display.id();
     AshWindowTreeHost* ash_host =
@@ -642,13 +644,22 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
       AshWindowTreeHost* to_delete = primary_tree_host_for_replace_;
       primary_tree_host_for_replace_ = nullptr;
       DeleteHost(to_delete);
+#ifndef NDEBUG
+      auto iter = std::find_if(
+          window_tree_hosts_.begin(), window_tree_hosts_.end(),
+          [to_delete](const std::pair<int64, AshWindowTreeHost*>& pair) {
+            return pair.second == to_delete;
+          });
+      DCHECK(iter == window_tree_hosts_.end());
+#endif
       // the host has already been removed from the window_tree_host_.
     }
-  }
-  // TODO(oshima): It should be possible to consolidate logic for
-  // unified and non unified, but I'm keeping them separated to minimize
-  // the risk in M44. I'll consolidate this in M45.
-  else if (primary_tree_host_for_replace_) {
+  } else
+#endif
+      // TODO(oshima): It should be possible to consolidate logic for
+      // unified and non unified, but I'm keeping them separated to minimize
+      // the risk in M44. I'll consolidate this in M45.
+      if (primary_tree_host_for_replace_) {
     DCHECK(window_tree_hosts_.empty());
     primary_display_id = display.id();
     window_tree_hosts_[display.id()] = primary_tree_host_for_replace_;
