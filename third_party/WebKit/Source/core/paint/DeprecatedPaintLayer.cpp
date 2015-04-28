@@ -522,16 +522,21 @@ void DeprecatedPaintLayer::updatePagination()
 
     if (m_stackingNode->isNormalFlowOnly()) {
         if (usesRegionBasedColumns) {
-            // Content inside a transform is not considered to be paginated, since we simply
-            // paint the transform multiple times in each column, so we don't have to use
-            // fragments for the transformed content.
-            m_enclosingPaginationLayer = parent()->enclosingPaginationLayer();
-            if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransformRelatedProperty())
-                m_enclosingPaginationLayer = 0;
+            // We cannot take the fast path for spanners, as they do not have their nearest ancestor
+            // pagination layer (flow thread) in their containing block chain.
+            if (!layoutObject()->isColumnSpanAll()) {
+                // Content inside a transform is not considered to be paginated, since we simply
+                // paint the transform multiple times in each column, so we don't have to use
+                // fragments for the transformed content.
+                m_enclosingPaginationLayer = parent()->enclosingPaginationLayer();
+                if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransformRelatedProperty())
+                    m_enclosingPaginationLayer = 0;
+                return;
+            }
         } else {
             m_isPaginated = parent()->layoutObject()->hasColumns();
+            return;
         }
-        return;
     }
 
     // For the new columns code, we want to walk up our containing block chain looking for an enclosing layer. Once
