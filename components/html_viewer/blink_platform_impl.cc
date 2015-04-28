@@ -18,8 +18,10 @@
 #include "components/html_viewer/web_cookie_jar_impl.h"
 #include "components/html_viewer/web_message_port_channel_impl.h"
 #include "components/html_viewer/web_socket_handle_impl.h"
-#include "components/html_viewer/web_thread_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
+#include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
+#include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "net/base/data_url.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
@@ -59,13 +61,16 @@ class WebWaitableEventImpl : public blink::WebWaitableEvent {
 
 }  // namespace
 
-BlinkPlatformImpl::BlinkPlatformImpl(mojo::ApplicationImpl* app)
-    : shared_timer_func_(NULL),
+BlinkPlatformImpl::BlinkPlatformImpl(
+    mojo::ApplicationImpl* app,
+    scheduler::RendererScheduler* renderer_scheduler)
+    : main_thread_task_runner_(renderer_scheduler->DefaultTaskRunner()),
+      main_thread_(
+          new scheduler::WebThreadImplForRendererScheduler(renderer_scheduler)),
+      shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
-      shared_timer_suspended_(0),
-      current_thread_slot_(&DestroyCurrentThread),
-      scheduler_(base::ThreadTaskRunnerHandle::Get()) {
+      shared_timer_suspended_(0) {
   if (app) {
     app->ConnectToService("mojo:network_service", &network_service_);
 
@@ -79,6 +84,7 @@ BlinkPlatformImpl::BlinkPlatformImpl(mojo::ApplicationImpl* app)
     mojo::ConnectToService(service_provider.get(), &clipboard);
     clipboard_.reset(new WebClipboardImpl(clipboard.Pass()));
   }
+  shared_timer_.SetTaskRunner(main_thread_task_runner_);
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
@@ -98,10 +104,6 @@ blink::WebMimeRegistry* BlinkPlatformImpl::mimeRegistry() {
 
 blink::WebThemeEngine* BlinkPlatformImpl::themeEngine() {
   return &theme_engine_;
-}
-
-blink::WebScheduler* BlinkPlatformImpl::scheduler() {
-  return &scheduler_;
 }
 
 blink::WebString BlinkPlatformImpl::defaultLocale() {
@@ -253,23 +255,18 @@ bool BlinkPlatformImpl::isReservedIPAddress(
 }
 
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
-  return new WebThreadImpl(name);
+  scheduler::WebThreadImplForWorkerScheduler* thread =
+      new scheduler::WebThreadImplForWorkerScheduler(name);
+  thread->TaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS,
+                            base::Unretained(this), thread));
+  return thread;
 }
 
 blink::WebThread* BlinkPlatformImpl::currentThread() {
-  WebThreadImplForMessageLoop* thread =
-      static_cast<WebThreadImplForMessageLoop*>(current_thread_slot_.Get());
-  if (thread)
-    return (thread);
-
-  scoped_refptr<base::MessageLoopProxy> message_loop =
-      base::MessageLoopProxy::current();
-  if (!message_loop.get())
-    return NULL;
-
-  thread = new WebThreadImplForMessageLoop(message_loop.get());
-  current_thread_slot_.Set(thread);
-  return thread;
+  if (main_thread_->isCurrentThread())
+    return main_thread_.get();
+  return static_cast<blink::WebThread*>(current_thread_slot_.Get());
 }
 
 void BlinkPlatformImpl::yieldCurrentThread() {
@@ -311,11 +308,9 @@ BlinkPlatformImpl::notificationManager() {
   return &web_notification_manager_;
 }
 
-// static
-void BlinkPlatformImpl::DestroyCurrentThread(void* thread) {
-  WebThreadImplForMessageLoop* impl =
-      static_cast<WebThreadImplForMessageLoop*>(thread);
-  delete impl;
+void BlinkPlatformImpl::UpdateWebThreadTLS(blink::WebThread* thread) {
+  DCHECK(!current_thread_slot_.Get());
+  current_thread_slot_.Set(thread);
 }
 
 }  // namespace html_viewer

@@ -14,6 +14,7 @@
 #include "components/html_viewer/discardable_memory_allocator.h"
 #include "components/html_viewer/html_document.h"
 #include "components/html_viewer/web_media_player_factory.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "gin/v8_initializer.h"
 #include "mojo/application/application_runner_chromium.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
@@ -172,7 +173,9 @@ class HTMLViewer : public mojo::ApplicationDelegate,
     base::DiscardableMemoryAllocator::SetInstance(
         &discardable_memory_allocator_);
 
-    blink_platform_.reset(new BlinkPlatformImpl(app));
+    renderer_scheduler_ = scheduler::RendererScheduler::Create();
+    blink_platform_.reset(
+        new BlinkPlatformImpl(app, renderer_scheduler_.get()));
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     // Note: this requires file system access.
     gin::V8Initializer::LoadV8Snapshot();
@@ -237,6 +240,7 @@ class HTMLViewer : public mojo::ApplicationDelegate,
   // memory based purging allocator working here.
   DiscardableMemoryAllocator discardable_memory_allocator_;
 
+  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler_;
   scoped_ptr<BlinkPlatformImpl> blink_platform_;
   base::Thread compositor_thread_;
   scoped_ptr<WebMediaPlayerFactory> web_media_player_factory_;

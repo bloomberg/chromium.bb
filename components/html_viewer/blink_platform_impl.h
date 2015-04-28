@@ -13,12 +13,16 @@
 #include "components/html_viewer/mock_web_blob_registry_impl.h"
 #include "components/html_viewer/web_mime_registry_impl.h"
 #include "components/html_viewer/web_notification_manager_impl.h"
-#include "components/html_viewer/web_scheduler_impl.h"
 #include "components/html_viewer/web_theme_engine_impl.h"
 #include "components/webcrypto/webcrypto_impl.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
+
+namespace scheduler {
+class RendererScheduler;
+class WebThreadImplForRendererScheduler;
+}
 
 namespace mojo {
 class ApplicationImpl;
@@ -32,7 +36,8 @@ class WebCookieJarImpl;
 class BlinkPlatformImpl : public blink::Platform {
  public:
   // |app| may be null in tests.
-  explicit BlinkPlatformImpl(mojo::ApplicationImpl* app);
+  BlinkPlatformImpl(mojo::ApplicationImpl* app,
+                    scheduler::RendererScheduler* renderer_scheduler);
   virtual ~BlinkPlatformImpl();
 
   // blink::Platform methods:
@@ -40,7 +45,6 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual blink::WebClipboard* clipboard();
   virtual blink::WebMimeRegistry* mimeRegistry();
   virtual blink::WebThemeEngine* themeEngine();
-  virtual blink::WebScheduler* scheduler();
   virtual blink::WebString defaultLocale();
   virtual blink::WebBlobRegistry* blobRegistry();
   virtual double currentTime();
@@ -82,6 +86,7 @@ class BlinkPlatformImpl : public blink::Platform {
  private:
   void SuspendSharedTimer();
   void ResumeSharedTimer();
+  void UpdateWebThreadTLS(blink::WebThread* thread);
 
   void DoTimeout() {
     if (shared_timer_func_ && !shared_timer_suspended_)
@@ -90,6 +95,8 @@ class BlinkPlatformImpl : public blink::Platform {
 
   static void DestroyCurrentThread(void*);
 
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  scoped_ptr<scheduler::WebThreadImplForRendererScheduler> main_thread_;
   base::OneShotTimer<BlinkPlatformImpl> shared_timer_;
   void (*shared_timer_func_)();
   double shared_timer_fire_time_;
@@ -99,7 +106,6 @@ class BlinkPlatformImpl : public blink::Platform {
   cc_blink::WebCompositorSupportImpl compositor_support_;
   WebThemeEngineImpl theme_engine_;
   WebMimeRegistryImpl mime_registry_;
-  WebSchedulerImpl scheduler_;
   webcrypto::WebCryptoImpl web_crypto_;
   WebNotificationManagerImpl web_notification_manager_;
   blink::WebScrollbarBehavior scrollbar_behavior_;
