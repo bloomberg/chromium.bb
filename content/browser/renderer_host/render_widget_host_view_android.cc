@@ -328,22 +328,6 @@ gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
 
 }  // anonymous namespace
 
-ReadbackRequest::ReadbackRequest(float scale,
-                                 SkColorType color_type,
-                                 gfx::Rect src_subrect,
-                                 ReadbackRequestCallback& result_callback)
-    : scale_(scale),
-      color_type_(color_type),
-      src_subrect_(src_subrect),
-      result_callback_(result_callback) {
-}
-
-ReadbackRequest::ReadbackRequest() {
-}
-
-ReadbackRequest::~ReadbackRequest() {
-}
-
 RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
     uint32 output_id,
     scoped_ptr<cc::CompositorFrame> output_frame)
@@ -387,7 +371,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   SetContentViewCore(NULL);
   DCHECK(ack_callbacks_.empty());
-  DCHECK(readbacks_waiting_for_frame_.empty());
   if (resource_collection_.get())
     resource_collection_->SetClient(NULL);
   DCHECK(!surface_factory_);
@@ -448,32 +431,15 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
   SetSize(rect.size());
 }
 
-void RenderWidgetHostViewAndroid::AbortPendingReadbackRequests() {
-  while (!readbacks_waiting_for_frame_.empty()) {
-    ReadbackRequest& readback_request = readbacks_waiting_for_frame_.front();
-    readback_request.GetResultCallback().Run(SkBitmap(), READBACK_FAILED);
-    readbacks_waiting_for_frame_.pop();
-  }
-}
-
 void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     float scale,
     SkColorType color_type,
     gfx::Rect src_subrect,
     ReadbackRequestCallback& result_callback) {
-  if (!host_ || host_->is_hidden()) {
+  if (!host_ || host_->is_hidden() || !IsSurfaceAvailableForCopy()) {
     result_callback.Run(SkBitmap(), READBACK_NOT_SUPPORTED);
     return;
   }
-  if (!IsSurfaceAvailableForCopy()) {
-    // The view is visible, probably the frame has not yet arrived.
-    // Just add the ReadbackRequest to queue and wait for frame arrival
-    // to get this request processed.
-    readbacks_waiting_for_frame_.push(
-        ReadbackRequest(scale, color_type, src_subrect, result_callback));
-    return;
-  }
-
   gfx::Size bounds = layer_->bounds();
   if (src_subrect.IsEmpty())
     src_subrect = gfx::Rect(bounds);
@@ -614,9 +580,6 @@ void RenderWidgetHostViewAndroid::Hide() {
     overscroll_controller_->Disable();
 
   frame_evictor_->SetVisible(false);
-  // We don't know if we will ever get a frame if we are hiding the renderer, so
-  // we need to cancel all requests
-  AbortPendingReadbackRequests();
 
   RunAckCallbacks(cc::SurfaceDrawStatus::DRAW_SKIPPED);
 
@@ -1087,9 +1050,6 @@ void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
     surface_id_ = cc::SurfaceId();
   }
   layer_ = NULL;
-  // This gets called when ever any eviction, loosing resources, swapping
-  // problems are encountered and so we abort any pending readbacks here.
-  AbortPendingReadbackRequests();
 }
 
 void RenderWidgetHostViewAndroid::CheckOutputSurfaceChanged(
@@ -1245,18 +1205,6 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
   // As the metadata update may trigger view invalidation, always call it after
   // any potential compositor scheduling.
   OnFrameMetadataUpdated(frame->metadata);
-  // Check if we have any pending readbacks, see if we have a frame available
-  // and process them here.
-  if (!readbacks_waiting_for_frame_.empty()) {
-    while (!readbacks_waiting_for_frame_.empty()) {
-      ReadbackRequest& readback_request = readbacks_waiting_for_frame_.front();
-      GetScaledContentBitmap(readback_request.GetScale(),
-                             readback_request.GetColorFormat(),
-                             readback_request.GetCaptureRect(),
-                             readback_request.GetResultCallback());
-      readbacks_waiting_for_frame_.pop();
-    }
-  }
 }
 
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
@@ -1567,9 +1515,6 @@ void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
   if (layer_.get())
     DestroyDelegatedContent();
   frame_evictor_->DiscardedFrame();
-  // We are evicting the delegated frame,
-  // so there should be no pending readback requests
-  DCHECK(readbacks_waiting_for_frame_.empty());
 }
 
 bool RenderWidgetHostViewAndroid::HasAcceleratedSurface(
@@ -1903,8 +1848,6 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
   if (layer_.get())
     DestroyDelegatedContent();
   DCHECK(ack_callbacks_.empty());
-  // We should not loose a frame if we have readback requests pending.
-  DCHECK(readbacks_waiting_for_frame_.empty());
 }
 
 // static

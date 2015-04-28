@@ -60,26 +60,6 @@ class RenderWidgetHostImpl;
 struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
 
-class ReadbackRequest {
- public:
-  explicit ReadbackRequest(float scale,
-                           SkColorType color_type,
-                           gfx::Rect src_subrect,
-                           ReadbackRequestCallback& result_callback);
-  ~ReadbackRequest();
-  float GetScale() { return scale_; }
-  SkColorType GetColorFormat() { return color_type_; }
-  const gfx::Rect GetCaptureRect() { return src_subrect_; }
-  ReadbackRequestCallback& GetResultCallback() { return result_callback_; }
-
- private:
-  ReadbackRequest();
-  float scale_;
-  SkColorType color_type_;
-  gfx::Rect src_subrect_;
-  ReadbackRequestCallback result_callback_;
-};
-
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
@@ -337,9 +317,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendBeginFrame(base::TimeTicks frame_time, base::TimeDelta vsync_period);
   bool Animate(base::TimeTicks frame_time);
 
-  // Handles all unprocessed and pending readback requests.
-  void AbortPendingReadbackRequests();
-
   // The model object.
   RenderWidgetHostImpl* host_;
 
@@ -417,9 +394,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   scoped_ptr<LastFrameInfo> last_frame_info_;
 
   TextSurroundingSelectionCallback text_surrounding_selection_callback_;
-
-  // List of readbackrequests waiting for arrival of a valid frame.
-  std::queue<ReadbackRequest> readbacks_waiting_for_frame_;
 
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
