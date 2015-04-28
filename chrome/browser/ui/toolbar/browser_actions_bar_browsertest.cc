@@ -411,7 +411,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, BrowserActionPopupTest) {
 #define MAYBE_OverflowedBrowserActionPopupTest OverflowedBrowserActionPopupTest
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
-                       OverflowedBrowserActionPopupTest) {
+                       MAYBE_OverflowedBrowserActionPopupTest) {
   scoped_ptr<BrowserActionTestUtil> overflow_bar =
       browser_actions_bar()->CreateOverflowBar();
 
