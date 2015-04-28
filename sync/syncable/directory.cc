@@ -111,12 +111,12 @@ Directory::Directory(
     : kernel_(NULL),
       store_(store),
       unrecoverable_error_handler_(unrecoverable_error_handler),
-      report_unrecoverable_error_function_(report_unrecoverable_error_function),
+      report_unrecoverable_error_function_(
+          report_unrecoverable_error_function),
       unrecoverable_error_set_(false),
       nigori_handler_(nigori_handler),
       cryptographer_(cryptographer),
-      invariant_check_level_(VERIFY_CHANGES),
-      weak_ptr_factory_(this) {
+      invariant_check_level_(VERIFY_CHANGES) {
 }
 
 Directory::~Directory() {
@@ -207,12 +207,6 @@ DirOpenResult Directory::OpenImpl(
   kernel_->metahandles_to_purge.swap(metahandles_to_purge);
   if (!SaveChanges())
     return FAILED_INITIAL_WRITE;
-
-  // Now that we've successfully opened the store, install an error handler to
-  // deal with catastrophic errors that may occur later on. Use a weak pointer
-  // because we cannot guarantee that this Directory will outlive the Closure.
-  store_->SetCatastrophicErrorHandler(base::Bind(
-      &Directory::OnCatastrophicError, weak_ptr_factory_.GetWeakPtr()));
 
   return OPENED;
 }
@@ -1558,12 +1552,6 @@ void Directory::GetAttachmentIdsToUpload(BaseTransaction* trans,
   std::set_difference(not_on_server_id_set.begin(), not_on_server_id_set.end(),
                       on_server_id_set.begin(), on_server_id_set.end(),
                       std::back_inserter(*ids));
-}
-
-void Directory::OnCatastrophicError() {
-  ReadTransaction trans(FROM_HERE, this);
-  OnUnrecoverableError(&trans, FROM_HERE,
-                       "Catastrophic error detected, Sync DB is unrecoverable");
 }
 
 Directory::Kernel* Directory::kernel() {
