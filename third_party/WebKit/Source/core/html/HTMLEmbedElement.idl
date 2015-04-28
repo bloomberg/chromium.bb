@@ -20,7 +20,7 @@
 
 // https://html.spec.whatwg.org/#the-embed-element
 
-// TODO(yukishiino): HTMLObjectElement should not have [OverrideBuiltins].
+// TODO(yukishiino): HTMLEmbedElement should not have [OverrideBuiltins].
 [
     Custom=LegacyCallAsFunction,
     OverrideBuiltins,

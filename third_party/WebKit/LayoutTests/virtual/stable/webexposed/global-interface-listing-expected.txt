@@ -275,11 +275,14 @@ interface CSSKeyframeRule
     method constructor
     setter keyText
 interface CSSKeyframesRule
+    getter cssRules
+    getter name
     method appendRule
     method constructor
     method deleteRule
     method findRule
     method insertRule
+    setter name
 interface CSSMediaRule
     getter cssRules
     getter media
@@ -311,15 +314,20 @@ interface CSSRule
     method constructor
     setter cssText
 interface CSSRuleList
+    getter length
     method constructor
     method item
 interface CSSStyleDeclaration
+    getter cssText
+    getter length
+    getter parentRule
     method constructor
     method getPropertyPriority
     method getPropertyValue
     method item
     method removeProperty
     method setProperty
+    setter cssText
 interface CSSStyleRule
     getter selectorText
     getter style
@@ -469,6 +477,7 @@ interface ClientRect
     getter width
     method constructor
 interface ClientRectList
+    getter length
     method constructor
     method item
 interface ClipboardEvent
@@ -549,14 +558,18 @@ interface DOMParser
     method constructor
     method parseFromString
 interface DOMSettableTokenList
+    getter value
     method constructor
+    setter value
 interface DOMStringList
+    getter length
     method constructor
     method contains
     method item
 interface DOMStringMap
     method constructor
 interface DOMTokenList
+    getter length
     method add
     method constructor
     method contains
@@ -589,6 +602,7 @@ interface DataTransferItem
     method getAsString
     method webkitGetAsEntry
 interface DataTransferItemList
+    getter length
     method add
     method clear
     method constructor
@@ -1173,6 +1187,7 @@ interface FileError
     getter code
     method constructor
 interface FileList
+    getter length
     method constructor
     method item
 interface FileReader
@@ -1281,6 +1296,7 @@ interface GamepadEvent
     getter gamepad
     method constructor
 interface HTMLAllCollection
+    getter length
     method constructor
     method item
     method namedItem
@@ -1469,6 +1485,7 @@ interface HTMLCanvasElement
     setter height
     setter width
 interface HTMLCollection
+    getter length
     method constructor
     method item
     method namedItem
@@ -2172,10 +2189,12 @@ interface HTMLOptionElement
     setter text
     setter value
 interface HTMLOptionsCollection
+    getter selectedIndex
     method add
     method constructor
     method namedItem
     method remove
+    setter selectedIndex
 interface HTMLOutputElement
     getter defaultValue
     getter form
@@ -2248,6 +2267,23 @@ interface HTMLScriptElement
     setter text
     setter type
 interface HTMLSelectElement
+    getter autofocus
+    getter disabled
+    getter form
+    getter labels
+    getter length
+    getter multiple
+    getter name
+    getter options
+    getter required
+    getter selectedIndex
+    getter selectedOptions
+    getter size
+    getter type
+    getter validationMessage
+    getter validity
+    getter value
+    getter willValidate
     method add
     method checkValidity
     method constructor
@@ -2256,6 +2292,15 @@ interface HTMLSelectElement
     method remove
     method reportValidity
     method setCustomValidity
+    setter autofocus
+    setter disabled
+    setter length
+    setter multiple
+    setter name
+    setter required
+    setter selectedIndex
+    setter size
+    setter value
 interface HTMLShadowElement
     method constructor
     method getDistributedNodes
@@ -2859,10 +2904,13 @@ interface MediaKeys
     method createSession
     method setServerCertificate
 interface MediaList
+    getter length
+    getter mediaText
     method appendMedium
     method constructor
     method deleteMedium
     method item
+    setter mediaText
 interface MediaQueryList
     getter matches
     getter media
@@ -2936,6 +2984,7 @@ interface MimeType
     getter type
     method constructor
 interface MimeTypeArray
+    getter length
     method constructor
     method item
     method namedItem
@@ -2993,6 +3042,7 @@ interface MutationRecord
     getter type
     method constructor
 interface NamedNodeMap
+    getter length
     method constructor
     method getNamedItem
     method getNamedItemNS
@@ -3118,6 +3168,7 @@ interface NodeIterator
     method nextNode
     method previousNode
 interface NodeList
+    getter length
     method constructor
     method item
 interface Notification
@@ -3278,10 +3329,15 @@ interface Permissions
     method constructor
     method query
 interface Plugin
+    getter description
+    getter filename
+    getter length
+    getter name
     method constructor
     method item
     method namedItem
 interface PluginArray
+    getter length
     method constructor
     method item
     method namedItem
@@ -3329,7 +3385,9 @@ interface RTCSessionDescription
     setter sdp
     setter type
 interface RadioNodeList
+    getter value
     method constructor
+    setter value
 interface Range
     attribute END_TO_END
     attribute END_TO_START
@@ -4035,6 +4093,8 @@ interface SVGLength
     setter valueAsString
     setter valueInSpecifiedUnits
 interface SVGLengthList
+    getter length
+    getter numberOfItems
     method appendItem
     method clear
     method constructor
@@ -4121,6 +4181,8 @@ interface SVGNumber
     method constructor
     setter value
 interface SVGNumberList
+    getter length
+    getter numberOfItems
     method appendItem
     method clear
     method constructor
@@ -4325,6 +4387,8 @@ interface SVGPathSegLinetoVerticalRel
     method constructor
     setter y
 interface SVGPathSegList
+    getter length
+    getter numberOfItems
     method appendItem
     method clear
     method constructor
@@ -4369,6 +4433,8 @@ interface SVGPoint
     setter x
     setter y
 interface SVGPointList
+    getter length
+    getter numberOfItems
     method appendItem
     method clear
     method constructor
@@ -4496,6 +4562,8 @@ interface SVGStopElement
     getter offset
     method constructor
 interface SVGStringList
+    getter length
+    getter numberOfItems
     method appendItem
     method clear
     method constructor
@@ -4581,6 +4649,8 @@ interface SVGTransform
     method setSkewY
     method setTranslate
 interface SVGTransformList
+    getter length
+    getter numberOfItems
     method appendItem
     method clear
     method consolidate
@@ -4782,6 +4852,7 @@ interface SpeechSynthesisUtterance
     setter voice
     setter volume
 interface Storage
+    getter length
     method clear
     method constructor
     method getItem
@@ -4851,6 +4922,7 @@ interface StyleSheet
     method constructor
     setter disabled
 interface StyleSheetList
+    getter length
     method constructor
     method item
 interface SubtleCrypto
@@ -4928,13 +5000,21 @@ interface TextTrackCue
     setter pauseOnExit
     setter startTime
 interface TextTrackCueList
+    getter length
     method constructor
     method getCueById
     method item
 interface TextTrackList
+    getter length
+    getter onaddtrack
+    getter onchange
+    getter onremovetrack
     method constructor
     method getTrackById
     method item
+    setter onaddtrack
+    setter onchange
+    setter onremovetrack
 interface TimeRanges
     getter length
     method constructor
@@ -4968,6 +5048,7 @@ interface TouchEvent
     method constructor
     method initTouchEvent
 interface TouchList
+    getter length
     method constructor
     method item
 interface TrackEvent
@@ -6131,6 +6212,7 @@ interface webkitSpeechGrammar
     setter src
     setter weight
 interface webkitSpeechGrammarList
+    getter length
     method addFromString
     method addFromUri
     method constructor

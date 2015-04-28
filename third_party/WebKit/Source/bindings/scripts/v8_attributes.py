@@ -527,13 +527,7 @@ def is_expose_js_accessors(interface, attribute):
     # chains.
     if (has_custom_getter(attribute) or
             has_custom_setter(attribute) or
-            interface.name == 'Window' or
-            v8_utilities.indexed_property_getter(interface) or
-            v8_utilities.indexed_property_setter(interface) or
-            v8_utilities.indexed_property_deleter(interface) or
-            v8_utilities.named_property_getter(interface) or
-            v8_utilities.named_property_setter(interface) or
-            v8_utilities.named_property_deleter(interface)):
+            interface.name == 'Window'):
         return False
 
     return is_accessor

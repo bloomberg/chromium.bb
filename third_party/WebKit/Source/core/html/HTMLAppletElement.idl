@@ -20,7 +20,7 @@
 
 // https://html.spec.whatwg.org/#the-applet-element
 
-// TODO(yukishiino): HTMLObjectElement should not have [OverrideBuiltins].
+// TODO(yukishiino): HTMLAppletElement should not have [OverrideBuiltins].
 [
     OverrideBuiltins,
 ] interface HTMLAppletElement : HTMLElement {
