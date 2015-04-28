@@ -4,6 +4,7 @@
 
 from telemetry import benchmark
 
+from benchmarks import silk_flags
 from measurements import power
 import page_sets
 
@@ -27,6 +28,19 @@ class PowerTypical10Mobile(benchmark.Benchmark):
   def Name(cls):
     return 'power.typical_10_mobile'
 
+@benchmark.Enabled('android')
+class PowerGpuRasterizationTypical10Mobile(benchmark.Benchmark):
+  """Measures power on key mobile sites with GPU rasterization."""
+  tag = 'gpu_rasterization'
+  test = power.Power
+  page_set = page_sets.Typical10MobilePageSet
+
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+  @classmethod
+  def Name(cls):
+    return 'power.gpu_rasterization.typical_10_mobile'
 
 @benchmark.Enabled('mac')
 class PowerTop10(benchmark.Benchmark):
