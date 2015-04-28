@@ -122,6 +122,17 @@ void DelegatedRendererLayerImpl::SetFrameData(
 
   bool invalid_frame = false;
   ResourceProvider::ResourceIdSet resources_in_frame;
+  size_t reserve_size = frame_data->resource_list.size();
+#if defined(COMPILER_MSVC)
+  resources_in_frame.reserve(reserve_size);
+#elif defined(COMPILER_GCC)
+  // Pre-standard hash-tables only implement resize, which behaves similarly
+  // to reserve for these keys. Resizing to 0 may also be broken (particularly
+  // on stlport).
+  // TODO(jbauman): Replace with reserve when C++11 is supported everywhere.
+  if (reserve_size)
+    resources_in_frame.resize(reserve_size);
+#endif
   DrawQuad::ResourceIteratorCallback remap_resources_to_parent_callback =
       base::Bind(&ResourceRemapHelper,
                  &invalid_frame,
