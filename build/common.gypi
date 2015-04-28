@@ -1929,9 +1929,14 @@
           },{
             'winsdk_arch%': '<(target_arch)',
           }],
-          ['component=="shared_library"', {
+          ['component=="shared_library" or MSVS_VERSION == "2015"', {
+            # TODO(scottmg): The allocator shimming doesn't work on the 2015 CRT
+            # and we are hoping to be able to remove it if an additional feature
+            # lands in the 2015 CRT API. For now, don't shim and revisit once
+            # VS2015 is RTM: http://crbug.com/481611.
             'win_use_allocator_shim%': 0,
-          },{
+          }],
+          ['component=="static_library"', {
             # Turn on multiple dll by default on Windows when in static_library.
             'chrome_multiple_dll%': 1,
           }],
