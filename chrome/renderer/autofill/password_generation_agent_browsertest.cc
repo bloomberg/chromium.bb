@@ -19,6 +19,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 using blink::WebDocument;
 using blink::WebElement;
@@ -309,29 +310,18 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   EXPECT_EQ(password, second_password_element.value());
 
   // After editing the first field they are still the same.
-  base::string16 edited_password = base::ASCIIToUTF16("edited_password");
-  first_password_element.setValue(edited_password);
-  // Cast to WebAutofillClient where textFieldDidChange() is public.
-  static_cast<blink::WebAutofillClient*>(autofill_agent_)->textFieldDidChange(
-      first_password_element);
-  // textFieldDidChange posts a task, so we need to wait until it's been
-  // processed.
-  base::MessageLoop::current()->RunUntilIdle();
+  std::string edited_password_ascii = "edited_password";
+  SimulateUserInputChangeForElement(&first_password_element,
+                                    edited_password_ascii);
+  base::string16 edited_password = base::ASCIIToUTF16(edited_password_ascii);
   EXPECT_EQ(edited_password, first_password_element.value());
   EXPECT_EQ(edited_password, second_password_element.value());
 
   // Verify that password mirroring works correctly even when the password
   // is deleted.
-  base::string16 empty_password;
-  first_password_element.setValue(empty_password);
-  // Cast to WebAutofillClient where textFieldDidChange() is public.
-  static_cast<blink::WebAutofillClient*>(autofill_agent_)->textFieldDidChange(
-      first_password_element);
-  // textFieldDidChange posts a task, so we need to wait until it's been
-  // processed.
-  base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(empty_password, first_password_element.value());
-  EXPECT_EQ(empty_password, second_password_element.value());
+  SimulateUserInputChangeForElement(&first_password_element, std::string());
+  EXPECT_EQ(base::string16(), first_password_element.value());
+  EXPECT_EQ(base::string16(), second_password_element.value());
 }
 
 TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
@@ -394,15 +384,9 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
   WebInputElement first_password_element = element.to<WebInputElement>();
 
   // Make a password just under maximum offer size.
-  first_password_element.setValue(
-      base::ASCIIToUTF16(
-          std::string(password_generation_->kMaximumOfferSize - 1, 'a')));
-  // Cast to WebAutofillClient where textFieldDidChange() is public.
-  static_cast<blink::WebAutofillClient*>(autofill_agent_)->textFieldDidChange(
-      first_password_element);
-  // textFieldDidChange posts a task, so we need to wait until it's been
-  // processed.
-  base::MessageLoop::current()->RunUntilIdle();
+  SimulateUserInputChangeForElement(
+      &first_password_element,
+      std::string(password_generation_->kMaximumOfferSize - 1, 'a'));
   // There should now be a message to show the UI.
   ASSERT_EQ(1u, password_generation_->messages().size());
   EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
@@ -410,15 +394,8 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
   password_generation_->clear_messages();
 
   // Simulate a user typing a password just over maximum offer size.
-  first_password_element.setValue(
-      base::ASCIIToUTF16(
-          std::string(password_generation_->kMaximumOfferSize + 1, 'a')));
-  // Cast to WebAutofillClient where textFieldDidChange() is public.
-  static_cast<blink::WebAutofillClient*>(autofill_agent_)->textFieldDidChange(
-      first_password_element);
-  // textFieldDidChange posts a task, so we need to wait until it's been
-  // processed.
-  base::MessageLoop::current()->RunUntilIdle();
+  SimulateUserTypingASCIICharacter('a', false);
+  SimulateUserTypingASCIICharacter('a', true);
   // There should now be a message to hide the UI.
   ASSERT_EQ(1u, password_generation_->messages().size());
   EXPECT_EQ(AutofillHostMsg_HidePasswordGenerationPopup::ID,
@@ -427,15 +404,7 @@ TEST_F(PasswordGenerationAgentTest, MaximumOfferSize) {
 
   // Simulate the user deleting characters. The generation popup should be shown
   // again.
-  first_password_element.setValue(
-      base::ASCIIToUTF16(
-          std::string(password_generation_->kMaximumOfferSize, 'a')));
-  // Cast to WebAutofillClient where textFieldDidChange() is public.
-  static_cast<blink::WebAutofillClient*>(autofill_agent_)->textFieldDidChange(
-      first_password_element);
-  // textFieldDidChange posts a task, so we need to wait until it's been
-  // processed.
-  base::MessageLoop::current()->RunUntilIdle();
+  SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
   // There should now be a message to show the UI.
   ASSERT_EQ(1u, password_generation_->messages().size());
   EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,

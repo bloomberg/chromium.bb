@@ -22,6 +22,7 @@
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 using base::ASCIIToUTF16;
 using blink::WebDocument;
@@ -243,6 +244,31 @@ TEST_F(AutofillRendererTest, DynamicallyAddedUnownedFormElements) {
   expected.form_control_type = "text";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[8]);
+}
+
+TEST_F(AutofillRendererTest, IgnoreNonUserGestureTextFieldChanges) {
+  LoadHTML("<form method='post'>"
+           "  <input type='text' id='full_name'/>"
+           "</form>");
+
+  blink::WebInputElement full_name =
+      GetMainFrame()->document().getElementById("full_name")
+          .to<blink::WebInputElement>();
+  while (!full_name.focused())
+    GetMainFrame()->view()->advanceFocus(false);
+
+  // Not a user gesture, so no IPC message to browser.
+  full_name.setValue("Alice", true);
+  GetMainFrame()->toWebLocalFrame()->autofillClient()->textFieldDidChange(
+      full_name);
+  base::MessageLoop::current()->RunUntilIdle();
+  ASSERT_EQ(nullptr, render_thread_->sink().GetFirstMessageMatching(
+                         AutofillHostMsg_TextFieldDidChange::ID));
+
+  // A user gesture will send a message to the browser.
+  SimulateUserInputChangeForElement(&full_name, "Alice");
+  ASSERT_NE(nullptr, render_thread_->sink().GetFirstMessageMatching(
+                         AutofillHostMsg_TextFieldDidChange::ID));
 }
 
 class RequestAutocompleteRendererTest : public AutofillRendererTest {

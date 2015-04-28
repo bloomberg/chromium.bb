@@ -4,6 +4,8 @@
 
 #include "content/public/test/render_view_test.h"
 
+#include <cctype>
+
 #include "base/run_loop.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/common/dom_storage/dom_storage_types.h"
@@ -27,13 +29,16 @@
 #include "content/test/test_content_client.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
+#include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_MACOSX)
@@ -49,12 +54,39 @@ using blink::WebString;
 using blink::WebURLRequest;
 
 namespace {
+
 const int32 kOpenerId = -2;
 const int32 kRouteId = 5;
 const int32 kMainFrameRouteId = 6;
 const int32 kNewWindowRouteId = 7;
 const int32 kNewFrameRouteId = 10;
 const int32 kSurfaceId = 42;
+
+// Converts |ascii_character| into |key_code| and returns true on success.
+// Handles only the characters needed by tests.
+bool GetWindowsKeyCode(char ascii_character, int* key_code) {
+  if (isalnum(ascii_character)) {
+    *key_code = base::ToUpperASCII(ascii_character);
+    return true;
+  }
+
+  switch (ascii_character) {
+    case '@':
+      *key_code = '2';
+      return true;
+    case '_':
+      *key_code = ui::VKEY_OEM_MINUS;
+      return true;
+    case '.':
+      *key_code = ui::VKEY_OEM_PERIOD;
+      return true;
+    case ui::VKEY_BACK:
+      *key_code = ui::VKEY_BACK;
+      return true;
+    default:
+      return false;
+  }
+}
 
 }  // namespace
 
@@ -393,6 +425,55 @@ void RenderViewTest::Resize(gfx::Size new_size,
   params.display_mode = blink::WebDisplayModeBrowser;
   scoped_ptr<IPC::Message> resize_message(new ViewMsg_Resize(0, params));
   OnMessageReceived(*resize_message);
+}
+
+void RenderViewTest::SimulateUserTypingASCIICharacter(char ascii_character,
+                                                      bool flush_message_loop) {
+  blink::WebKeyboardEvent event;
+  event.text[0] = ascii_character;
+  ASSERT_TRUE(GetWindowsKeyCode(ascii_character, &event.windowsKeyCode));
+  if (isupper(ascii_character) || ascii_character == '@' ||
+      ascii_character == '_') {
+    event.modifiers = blink::WebKeyboardEvent::ShiftKey;
+  }
+
+  event.type = blink::WebKeyboardEvent::RawKeyDown;
+  SendWebKeyboardEvent(event);
+
+  event.type = blink::WebKeyboardEvent::Char;
+  SendWebKeyboardEvent(event);
+
+  event.type = blink::WebKeyboardEvent::KeyUp;
+  SendWebKeyboardEvent(event);
+
+  if (flush_message_loop) {
+    // Processing is delayed because of a Blink bug:
+    // https://bugs.webkit.org/show_bug.cgi?id=16976 See
+    // PasswordAutofillAgent::TextDidChangeInTextField() for details.
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+}
+
+void RenderViewTest::SimulateUserInputChangeForElement(
+    blink::WebInputElement* input,
+    const std::string& new_value) {
+  ASSERT_TRUE(base::IsStringASCII(new_value));
+  while (!input->focused())
+    input->document().frame()->view()->advanceFocus(false);
+
+  size_t previous_length = input->value().length();
+  for (size_t i = 0; i < previous_length; ++i)
+    SimulateUserTypingASCIICharacter(ui::VKEY_BACK, false);
+
+  EXPECT_TRUE(input->value().utf8().empty());
+  for (size_t i = 0; i < new_value.size(); ++i)
+    SimulateUserTypingASCIICharacter(new_value[i], false);
+
+  // Compare only beginning, because autocomplete may have filled out the
+  // form.
+  EXPECT_EQ(new_value, input->value().utf8().substr(0, new_value.length()));
+
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {

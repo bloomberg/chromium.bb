@@ -252,9 +252,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // currently editing?  Used to keep track of state for metrics logging.
   bool has_shown_autofill_popup_for_current_edit_;
 
-  // If true we just set the node text so we shouldn't show the popup.
-  bool did_set_node_text_;
-
   // Whether or not to ignore text changes.  Useful for when we're committing
   // a composition when we are defocusing the WebView and we don't want to
   // trigger an autofill popup to show.

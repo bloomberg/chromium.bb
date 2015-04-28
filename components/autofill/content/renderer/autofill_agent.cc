@@ -4,6 +4,7 @@
 
 #include "components/autofill/content/renderer/autofill_agent.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -43,6 +44,7 @@
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebOptionElement.h"
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -62,6 +64,7 @@ using blink::WebNode;
 using blink::WebOptionElement;
 using blink::WebString;
 using blink::WebTextAreaElement;
+using blink::WebUserGestureIndicator;
 using blink::WebVector;
 
 namespace autofill {
@@ -149,7 +152,6 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       autofill_query_id_(0),
       was_query_node_autofilled_(false),
       has_shown_autofill_popup_for_current_edit_(false),
-      did_set_node_text_(false),
       ignore_text_changes_(false),
       is_popup_possibly_visible_(false),
       weak_ptr_factory_(this) {
@@ -378,15 +380,12 @@ void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
 }
 
 void AutofillAgent::textFieldDidChange(const WebFormControlElement& element) {
+  DCHECK(toWebInputElement(&element) || IsTextAreaElement(element));
   if (ignore_text_changes_)
     return;
 
-  DCHECK(toWebInputElement(&element) || IsTextAreaElement(element));
-
-  if (did_set_node_text_) {
-    did_set_node_text_ = false;
+  if (!WebUserGestureIndicator::isProcessingUserGesture())
     return;
-  }
 
   // We post a task for doing the Autofill as the caret position is not set
   // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
@@ -714,7 +713,7 @@ void AutofillAgent::QueryAutofillSuggestions(
 
 void AutofillAgent::FillFieldWithValue(const base::string16& value,
                                        WebInputElement* node) {
-  did_set_node_text_ = true;
+  base::AutoReset<bool> auto_reset(&ignore_text_changes_, true);
   node->setEditingValue(value.substr(0, node->maxLength()));
 }
 
