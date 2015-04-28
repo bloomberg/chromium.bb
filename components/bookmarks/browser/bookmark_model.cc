@@ -886,7 +886,7 @@ void BookmarkModel::RemoveNodeAndGetRemovedUrls(BookmarkNode* node,
   // This method does not explicitly acquires a lock.
   url_lock_.AssertAcquired();
   DCHECK(removed_urls);
-  BookmarkNode* parent = AsMutable(node->parent());
+  BookmarkNode* parent = node->parent();
   DCHECK(parent);
   parent->Remove(node);
   RemoveNode(node, removed_urls);
