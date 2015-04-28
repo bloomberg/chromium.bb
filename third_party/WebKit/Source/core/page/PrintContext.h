@@ -54,7 +54,7 @@ public:
 
     // Deprecated. Page size computation is already in this class, clients shouldn't be copying it.
     // FIXME: Everyone passes |false| for the second paramer. We should remove the second parameter.
-    virtual void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels, bool allowHorizontalTiling);
+    virtual void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels);
 
     // These are only valid after page rects are computed.
     size_t pageCount() const { return m_pageRects.size(); }
@@ -84,7 +84,7 @@ protected:
     Vector<IntRect> m_pageRects;
 
 private:
-    void computePageRectsWithPageSizeInternal(const FloatSize& pageSizeInPixels, bool allowHorizontalTiling);
+    void computePageRectsWithPageSizeInternal(const FloatSize& pageSizeInPixels);
     void collectLinkAndLinkedDestinations(Node*);
 
     // Used to prevent misuses of begin() and end() (e.g., call end without begin).

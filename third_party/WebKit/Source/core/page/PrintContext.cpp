@@ -81,16 +81,16 @@ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeig
         return;
     }
 
-    computePageRectsWithPageSizeInternal(FloatSize(pageWidth / userScaleFactor, pageHeight / userScaleFactor), false);
+    computePageRectsWithPageSizeInternal(FloatSize(pageWidth / userScaleFactor, pageHeight / userScaleFactor));
 }
 
-void PrintContext::computePageRectsWithPageSize(const FloatSize& pageSizeInPixels, bool allowHorizontalTiling)
+void PrintContext::computePageRectsWithPageSize(const FloatSize& pageSizeInPixels)
 {
     m_pageRects.clear();
-    computePageRectsWithPageSizeInternal(pageSizeInPixels, allowHorizontalTiling);
+    computePageRectsWithPageSizeInternal(pageSizeInPixels);
 }
 
-void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSizeInPixels, bool allowInlineDirectionTiling)
+void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSizeInPixels)
 {
     if (!m_frame->document() || !m_frame->view() || !m_frame->document()->layoutView())
         return;
@@ -139,23 +139,13 @@ void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSiz
         int pageLogicalTop = blockDirectionEnd > blockDirectionStart ?
                                 blockDirectionStart + i * pageLogicalHeight :
                                 blockDirectionStart - (i + 1) * pageLogicalHeight;
-        if (allowInlineDirectionTiling) {
-            for (int currentInlinePosition = inlineDirectionStart;
-                 inlineDirectionEnd > inlineDirectionStart ? currentInlinePosition < inlineDirectionEnd : currentInlinePosition > inlineDirectionEnd;
-                 currentInlinePosition += (inlineDirectionEnd > inlineDirectionStart ? pageLogicalWidth : -pageLogicalWidth)) {
-                int pageLogicalLeft = inlineDirectionEnd > inlineDirectionStart ? currentInlinePosition : currentInlinePosition - pageLogicalWidth;
-                IntRect pageRect(pageLogicalLeft, pageLogicalTop, pageLogicalWidth, pageLogicalHeight);
-                if (!isHorizontal)
-                    pageRect = pageRect.transposedRect();
-                m_pageRects.append(pageRect);
-            }
-        } else {
-            int pageLogicalLeft = inlineDirectionEnd > inlineDirectionStart ? inlineDirectionStart : inlineDirectionStart - pageLogicalWidth;
-            IntRect pageRect(pageLogicalLeft, pageLogicalTop, pageLogicalWidth, pageLogicalHeight);
-            if (!isHorizontal)
-                pageRect = pageRect.transposedRect();
-            m_pageRects.append(pageRect);
-        }
+
+        int pageLogicalLeft = inlineDirectionEnd > inlineDirectionStart ? inlineDirectionStart : inlineDirectionStart - pageLogicalWidth;
+        IntRect pageRect(pageLogicalLeft, pageLogicalTop, pageLogicalWidth, pageLogicalHeight);
+        if (!isHorizontal)
+            pageRect = pageRect.transposedRect();
+        m_pageRects.append(pageRect);
+
     }
 }
 
@@ -207,7 +197,7 @@ int PrintContext::pageNumberForElement(Element* element, const FloatSize& pageSi
     printContext.begin(pageRect.width(), pageRect.height());
     FloatSize scaledPageSize = pageSizeInPixels;
     scaledPageSize.scale(frame->view()->contentsSize().width() / pageRect.width());
-    printContext.computePageRectsWithPageSize(scaledPageSize, false);
+    printContext.computePageRectsWithPageSize(scaledPageSize);
 
     int top = box->pixelSnappedOffsetTop();
     int left = box->pixelSnappedOffsetLeft();
@@ -345,7 +335,7 @@ int PrintContext::numberOfPages(LocalFrame* frame, const FloatSize& pageSizeInPi
     // Account for shrink-to-fit.
     FloatSize scaledPageSize = pageSizeInPixels;
     scaledPageSize.scale(frame->view()->contentsSize().width() / pageRect.width());
-    printContext.computePageRectsWithPageSize(scaledPageSize, false);
+    printContext.computePageRectsWithPageSize(scaledPageSize);
     return printContext.pageCount();
 }
 
