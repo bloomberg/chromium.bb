@@ -47,13 +47,19 @@ class MEDIA_EXPORT AudioManager {
 
   // Similar to Create() except also schedules a monitor on the given task
   // runner to ensure the audio thread is not stuck for more than 60 seconds; if
-  // a hang is detected, the process will be crashed.
+  // a hang is detected, the process will be crashed.  See EnableHangMonitor().
   static AudioManager* CreateWithHangTimer(
       AudioLogFactory* audio_log_factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& monitor_task_runner);
 
   // Similar to Create() except uses a FakeAudioLogFactory for testing.
   static AudioManager* CreateForTesting();
+
+  // Enables the hang monitor for the AudioManager once it's created.  Must be
+  // called before the AudioManager is created.  CreateWithHangTimer() requires
+  // either switches::kEnableAudioHangMonitor to be present or this to have been
+  // called previously to start the hang monitor.  Does nothing on OSX.
+  static void EnableHangMonitor();
 
   // Should only be used for testing. Resets a previously-set
   // AudioManagerFactory. The instance of AudioManager is not affected.

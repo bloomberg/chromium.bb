@@ -116,6 +116,7 @@ include_rules = [
   "+grit",  # TODO(thestig) Remove. For generated headers
   "+installer_util_strings",  # For generated headers
   "+jni",
+  "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.

@@ -134,6 +134,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/platform_locale_settings.h"
+#include "media/audio/audio_manager.h"
 #include "net/base/net_module.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_network_layer.h"
@@ -673,8 +674,18 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
 
+  const chrome::VersionInfo::Channel channel =
+      chrome::VersionInfo::GetChannel();
+
+  // TODO(dalecurtis): Remove these checks and enable for all channels once we
+  // track down the root causes of crbug.com/422522 and crbug.com/478932.
+  if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
+      chrome::VersionInfo::CHANNEL_CANARY || chrome::VersionInfo::CHANNEL_DEV) {
+    media::AudioManager::EnableHangMonitor();
+  }
+
   // Enable profiler instrumentation depending on the channel.
-  switch (chrome::VersionInfo::GetChannel()) {
+  switch (channel) {
     case chrome::VersionInfo::CHANNEL_UNKNOWN:
     case chrome::VersionInfo::CHANNEL_CANARY:
       tracked_objects::ScopedTracker::Enable();
