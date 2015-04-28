@@ -23,8 +23,8 @@ class WebBlobInfo;
 // Exposed for unit testing:
 MODULES_EXPORT bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Local<v8::Value> key, v8::Local<v8::Value>, const IDBKeyPath&);
 
-// For use by Source/modules/indexeddb:
-bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
+// For use by Source/modules/indexeddb (and unit testing):
+MODULES_EXPORT bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 ScriptValue deserializeScriptValue(ScriptState*, SerializedScriptValue*, const Vector<blink::WebBlobInfo>*);
 
 #if ENABLE(ASSERT)

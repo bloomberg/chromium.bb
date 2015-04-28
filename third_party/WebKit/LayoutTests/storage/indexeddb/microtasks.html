@@ -2,26 +2,8 @@
 <title>IndexedDB: Verify transaction activation behavior around microtasks</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="resources/testharness-helpers.js"></script>
 <script>
-
-function idb_test(description, onUpgrade, onOpen) {
-    var t = async_test(description);
-    t.step(function() {
-        var dbName = 'db' + location.pathname + '-' + description;
-        var deleteRequest = indexedDB.deleteDatabase(dbName);
-        deleteRequest.onerror = t.unreached_func('deleteDatabase should not fail');
-        deleteRequest.onsuccess = t.step_func(function(e) {
-            var openRequest = indexedDB.open(dbName);
-            openRequest.onerror = t.unreached_func('open should not fail');
-            openRequest.onupgradeneeded = t.step_func(function(e) {
-                onUpgrade(t, openRequest.result);
-            });
-            openRequest.onsuccess = t.step_func(function(e) {
-                onOpen(t, openRequest.result);
-            });
-        });
-    });
-}
 
 function isTransactionActive(tx, storeName) {
     try {
@@ -34,8 +16,7 @@ function isTransactionActive(tx, storeName) {
     }
 }
 
-idb_test(
-    'Transactions created in microtasks are deactivated when control returns to the event loop',
+indexeddb_test(
     function(t, db) {
         db.createObjectStore('store');
     },
@@ -54,11 +35,11 @@ idb_test(
                 }), 0);
             });
         }));
-    }
+    },
+    'Transactions created in microtasks are deactivated when control returns to the event loop'
 );
 
-idb_test(
-    'Transactions created in microtasks resolved by host behavior are deactivated when control returns to the event loop',
+indexeddb_test(
     function(t, db) {
         db.createObjectStore('store');
     },
@@ -78,11 +59,11 @@ idb_test(
                 }), 0);
             });
         }));
-    }
+    },
+    'Transactions created in microtasks resolved by host behavior are deactivated when control returns to the event loop'
 );
 
-idb_test(
-    'Transactions created in microtasks remain active in subsequent microtasks',
+indexeddb_test(
     function(t, db) {
         db.createObjectStore('store');
     },
@@ -101,11 +82,11 @@ idb_test(
                 t.done();
             }), 0);
         }));
-    }
+    },
+    'Transactions created in microtasks remain active in subsequent microtasks'
 );
 
-idb_test(
-    'Within request event dispatch, transactions remain active across microtasks',
+indexeddb_test(
     function(t, db) {
         db.createObjectStore('store');
     },
@@ -126,7 +107,8 @@ idb_test(
                 }), 0);
             }));
         });
-    }
+    },
+    'Within request event dispatch, transactions remain active across microtasks'
 );
 
 </script>

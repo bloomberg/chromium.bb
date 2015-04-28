@@ -30,7 +30,9 @@
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8DOMStringList.h"
+#include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
@@ -81,6 +83,8 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
         return v8Undefined();
     }
 
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
     switch (key->type()) {
     case IDBKey::InvalidType:
     case IDBKey::MinType:
@@ -93,15 +97,16 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
     case IDBKey::BinaryType:
         return toV8(DOMUint8Array::create(reinterpret_cast<const unsigned char*>(key->binary()->data()), key->binary()->size()), creationContext, isolate);
     case IDBKey::DateType:
-        return v8::Date::New(isolate->GetCurrentContext(), key->date()).ToLocalChecked();
+        return v8::Date::New(context, key->date()).ToLocalChecked();
     case IDBKey::ArrayType:
         {
             v8::Local<v8::Array> array = v8::Array::New(isolate, key->array().size());
             for (size_t i = 0; i < key->array().size(); ++i) {
-                v8::Local<v8::Value> value = toV8(key->array()[i].get(), creationContext, isolate);
-                if (value.IsEmpty())
+                v8::Local<v8::Value> value = toV8(key->array()[i].get(), creationContext, isolate);                if (value.IsEmpty())
                     value = v8::Undefined(isolate);
-                array->Set(i, value);
+                // TODO(jsbell): Use DefineOwnProperty when exposed by V8. http://crbug.com/475206
+                if (!v8CallBoolean(array->ForceSet(context, v8::Integer::New(isolate, i), value)))
+                    return v8Undefined();
             }
             return array;
         }
@@ -233,9 +238,25 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Local<v8::Value> 
     return IDBKey::createInvalid();
 }
 
+// Indexed DB key paths should apply to explicitly copied properties (that
+// will be "own" properties when deserialized) as well as the following.
+// http://www.w3.org/TR/IndexedDB/#key-path-construct
+static bool isImplicitProperty(v8::Isolate* isolate, v8::Local<v8::Value> value, const String& name)
+{
+    if (value->IsString() && name == "length")
+        return true;
+    if (value->IsArray() && name == "length")
+        return true;
+    if (V8Blob::hasInstance(value, isolate))
+        return name == "size" || name == "type";
+    if (V8File::hasInstance(value, isolate))
+        return name == "name" || name == "lastModified" || name =="lastModifiedDate";
+    return false;
+}
+
 // Get an object's property ("own" or via prototype chain) of the given name.
-// Includes a special case for a string "length" property, but other
-// non-Objects yield false.
+// Has a special case for String's length property and otherwise fails for
+// non-objects since it casts to object to call Has() and Get().
 static bool get(v8::Isolate* isolate, v8::Local<v8::Value> value, const String& name, v8::Local<v8::Value>& result)
 {
     if (value->IsString() && name == "length") {
@@ -247,60 +268,12 @@ static bool get(v8::Isolate* isolate, v8::Local<v8::Value> value, const String& 
         return false;
     v8::Local<v8::Object> object = value.As<v8::Object>();
     v8::Local<v8::String> key = v8String(isolate, name);
-    if (!v8CallBoolean(object->Has(isolate->GetCurrentContext(), key)))
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    if (!v8CallBoolean(object->Has(context, key)))
         return false;
-    if (!object->Get(isolate->GetCurrentContext(), key).ToLocal(&result))
+    if (!object->Get(context, key).ToLocal(&result))
         return false;
     return true;
-}
-
-static bool set(v8::Isolate* isolate, v8::Local<v8::Value> object, const String& name, v8::Local<v8::Value> v8Value)
-{
-    ASSERT(!v8Value.IsEmpty());
-    // TODO(jsbell): Other "can set?" checks?
-    if (!object->IsObject())
-        return false;
-    return object.As<v8::Object>()->Set(v8String(isolate, name), v8Value);
-}
-
-static bool canInjectNthValueOnKeyPath(v8::Isolate* isolate, v8::Local<v8::Value> rootValue, const Vector<String>& keyPathElements, size_t index)
-{
-    if (!rootValue->IsObject())
-        return false;
-
-    v8::Local<v8::Value> currentValue(rootValue);
-
-    ASSERT(index <= keyPathElements.size());
-    for (size_t i = 0; i < index; ++i) {
-        v8::Local<v8::Value> parentValue(currentValue);
-        const String& keyPathElement = keyPathElements[i];
-        if (!get(isolate, parentValue, keyPathElement, currentValue)) {
-            // TODO(jsbell): Other "can set?" checks?
-            return parentValue->IsObject();
-        }
-    }
-    return true;
-}
-
-// For an object o = {} which should have keypath 'a.b.c' and key k, this
-// populates o to be {a:{b:{}}} so the caller can set o.a.b.c = k.
-static v8::Local<v8::Value> ensureNthValueOnKeyPath(v8::Isolate* isolate, v8::Local<v8::Value> rootValue, const Vector<String>& keyPathElements, size_t index)
-{
-    v8::Local<v8::Value> currentValue(rootValue);
-
-    ASSERT(index <= keyPathElements.size());
-    for (size_t i = 0; i < index; ++i) {
-        v8::Local<v8::Value> parentValue(currentValue);
-        const String& keyPathElement = keyPathElements[i];
-        if (!get(isolate, parentValue, keyPathElement, currentValue)) {
-            v8::Local<v8::Object> object = v8::Object::New(isolate);
-            if (!set(isolate, parentValue, keyPathElement, object))
-                return v8Undefined();
-            currentValue = object;
-        }
-    }
-
-    return currentValue;
 }
 
 // Assumes a valid key path.
@@ -359,6 +332,8 @@ static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate* isolate, const IDBV
     return serializedValue->deserialize(isolate, nullptr, value->blobInfo());
 }
 
+// This is only applied to deserialized values which were validated before
+// serialization, so various assumptions/assertions can be made.
 bool injectV8KeyIntoV8Value(v8::Isolate* isolate, v8::Local<v8::Value> key, v8::Local<v8::Value> value, const IDBKeyPath& keyPath)
 {
     IDB_TRACE("injectIDBV8KeyIntoV8Value");
@@ -367,20 +342,58 @@ bool injectV8KeyIntoV8Value(v8::Isolate* isolate, v8::Local<v8::Value> key, v8::
     ASSERT(keyPath.type() == IDBKeyPath::StringType);
     Vector<String> keyPathElements = parseKeyPath(keyPath.string());
 
-    if (!keyPathElements.size())
+    // The conbination of a key generator and an empty key path is forbidden by spec.
+    if (!keyPathElements.size()) {
+        ASSERT_NOT_REACHED();
         return false;
+    }
 
     v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Value> parent(ensureNthValueOnKeyPath(isolate, value, keyPathElements, keyPathElements.size() - 1));
-    if (parent.IsEmpty())
-        return false;
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-    if (!set(isolate, parent, keyPathElements.last(), key))
+    // For an object o = {} which should have keypath 'a.b.c' and key k, this
+    // populates o to be {a:{b:{}}}. This is only applied to deserialized
+    // values which were validated before serialization, so various
+    // assumptions can be made.
+    for (size_t i = 0; i < keyPathElements.size() - 1; ++i) {
+        const String& keyPathElement = keyPathElements[i];
+        ASSERT(value->IsObject());
+        ASSERT(!isImplicitProperty(isolate, value, keyPathElement));
+        v8::Local<v8::Object> object = value.As<v8::Object>();
+        v8::Local<v8::String> property = v8String(isolate, keyPathElement);
+        bool hasOwnProperty;
+        if (!v8Call(object->HasOwnProperty(context, property), hasOwnProperty))
+            return false;
+        if (hasOwnProperty) {
+            if (!object->Get(context, property).ToLocal(&value))
+                return false;
+        } else {
+            value = v8::Object::New(isolate);
+            // TODO(jsbell): Use DefineOwnProperty when exposed by V8. http://crbug.com/475206
+            if (!v8CallBoolean(object->ForceSet(context, property, value)))
+                return false;
+        }
+    }
+
+    // Implicit properties don't need to be set. The caller is not required to
+    // be aware of this, so this is an expected no-op. The caller can verify
+    // that the value is correct via assertPrimaryKeyValidOrInjectable.
+    if (isImplicitProperty(isolate, value, keyPathElements.last()))
+        return true;
+
+    // If it's not an implicit property of value, value must be an object.
+    v8::Local<v8::Object> object = value.As<v8::Object>();
+    v8::Local<v8::String> property = v8String(isolate, keyPathElements.last());
+    // TODO(jsbell): Use DefineOwnProperty when exposed by V8. http://crbug.com/475206
+    if (!v8CallBoolean(object->ForceSet(context, property, key)))
         return false;
 
     return true;
 }
 
+// Verify that an value can have an generated key inserted at the location
+// specified by the key path (by injectV8KeyIntoV8Value) when the object is
+// later deserialized.
 bool canInjectIDBKeyIntoScriptValue(v8::Isolate* isolate, const ScriptValue& scriptValue, const IDBKeyPath& keyPath)
 {
     IDB_TRACE("canInjectIDBKeyIntoScriptValue");
@@ -390,8 +403,33 @@ bool canInjectIDBKeyIntoScriptValue(v8::Isolate* isolate, const ScriptValue& scr
     if (!keyPathElements.size())
         return false;
 
-    v8::Local<v8::Value> v8Value(scriptValue.v8Value());
-    return canInjectNthValueOnKeyPath(isolate, v8Value, keyPathElements, keyPathElements.size() - 1);
+    v8::Local<v8::Value> current(scriptValue.v8Value());
+    if (!current->IsObject())
+        return false;
+
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    for (size_t i = 0; i < keyPathElements.size(); ++i) {
+        const String& keyPathElement = keyPathElements[i];
+        // Can't overwrite properties like array or string length.
+        if (isImplicitProperty(isolate, current, keyPathElement))
+            return false;
+        // Can't set properties on non-objects.
+        if (!current->IsObject())
+            return false;
+        v8::Local<v8::Object> object = current.As<v8::Object>();
+        v8::Local<v8::String> property = v8String(isolate, keyPathElement);
+        // If the value lacks an "own" property, it can be added - either as
+        // an intermediate object or as the final value.
+        bool hasOwnProperty;
+        if (!v8Call(object->HasOwnProperty(context, property), hasOwnProperty))
+            return false;
+        if (!hasOwnProperty)
+            return true;
+        // Otherwise, get it and keep traversing.
+        if (!object->Get(context, property).ToLocal(&current))
+            return false;
+    }
+    return true;
 }
 
 ScriptValue deserializeScriptValue(ScriptState* scriptState, SerializedScriptValue* serializedValue, const Vector<blink::WebBlobInfo>* blobInfo)
@@ -446,7 +484,8 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, const IDBValue*
     // This assertion is about already persisted data, so allow experimental types.
     const bool allowExperimentalTypes = true;
     IDBKey* expectedKey = createIDBKeyFromValueAndKeyPath(isolate, scriptValue.v8Value(), value->keyPath(), allowExperimentalTypes);
-    ASSERT(!expectedKey || expectedKey->isEqual(value->primaryKey()));
+    if (expectedKey && expectedKey->isEqual(value->primaryKey()))
+        return;
 
     bool injected = injectV8KeyIntoV8Value(isolate, keyValue.v8Value(), scriptValue.v8Value(), value->keyPath());
     ASSERT_UNUSED(injected, injected);

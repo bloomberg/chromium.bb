@@ -68,9 +68,19 @@ void checkInjection(ScriptState* scriptState, IDBKey* key, ScriptValue& value, c
     EXPECT_TRUE(key->isEqual(extractedKey));
 }
 
-void checkInjectionFails(ScriptState* scriptState, IDBKey* key, ScriptValue& value, const String& keyPath)
+void checkInjectionIgnored(ScriptState* scriptState, IDBKey* key, ScriptValue& value, const String& keyPath)
 {
-    EXPECT_FALSE(injectKey(scriptState, key, value, keyPath));
+    bool result = injectKey(scriptState, key, value, keyPath);
+    ASSERT_TRUE(result);
+    IDBKey* extractedKey = checkKeyFromValueAndKeyPathInternal(scriptState->isolate(), value, keyPath);
+    EXPECT_FALSE(key->isEqual(extractedKey));
+}
+
+void checkInjectionDisallowed(ScriptState* scriptState, ScriptValue& value, const String& keyPath)
+{
+    const IDBKeyPath idbKeyPath(keyPath);
+    ASSERT_TRUE(idbKeyPath.isValid());
+    EXPECT_FALSE(canInjectIDBKeyIntoScriptValue(scriptState->isolate(), value, idbKeyPath));
 }
 
 void checkKeyPathStringValue(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath, const String& expected)
@@ -105,8 +115,10 @@ private:
 TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)
 {
     v8::Isolate* isolate = scriptState()->isolate();
+
+    // object = { foo: "zoo" }
     v8::Local<v8::Object> object = v8::Object::New(isolate);
-    EXPECT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"))));
+    ASSERT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"))));
 
     ScriptValue scriptValue(scriptState(), object);
 
@@ -117,8 +129,10 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)
 TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
 {
     v8::Isolate* isolate = scriptState()->isolate();
+
+    // object = { foo: 456 }
     v8::Local<v8::Object> object = v8::Object::New(isolate);
-    EXPECT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), v8::Number::New(isolate, 456))));
+    ASSERT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), v8::Number::New(isolate, 456))));
 
     ScriptValue scriptValue(scriptState(), object);
 
@@ -129,10 +143,12 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
 TEST_F(IDBKeyFromValueAndKeyPathTest, SubProperty)
 {
     v8::Isolate* isolate = scriptState()->isolate();
+
+    // object = { foo: { bar: "zee" } }
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     v8::Local<v8::Object> subProperty = v8::Object::New(isolate);
-    EXPECT_TRUE(v8CallBoolean(subProperty->Set(scriptState()->context(), v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"))));
-    EXPECT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), subProperty)));
+    ASSERT_TRUE(v8CallBoolean(subProperty->Set(scriptState()->context(), v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"))));
+    ASSERT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), subProperty)));
 
     ScriptValue scriptValue(scriptState(), object);
 
@@ -143,26 +159,45 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, SubProperty)
 class InjectIDBKeyTest : public IDBKeyFromValueAndKeyPathTest {
 };
 
+TEST_F(InjectIDBKeyTest, ImplicitValues)
+{
+    v8::Isolate* isolate = scriptState()->isolate();
+    {
+        v8::Local<v8::String> string = v8String(isolate, "string");
+        ScriptValue value = ScriptValue(scriptState(), string);
+        checkInjectionIgnored(scriptState(), IDBKey::createNumber(123), value, "length");
+    }
+    {
+        v8::Local<v8::Array> array = v8::Array::New(isolate);
+        ScriptValue value = ScriptValue(scriptState(), array);
+        checkInjectionIgnored(scriptState(), IDBKey::createNumber(456), value, "length");
+    }
+}
+
 TEST_F(InjectIDBKeyTest, TopLevelPropertyStringValue)
 {
     v8::Isolate* isolate = scriptState()->isolate();
+
+    // object = { foo: "zoo" }
     v8::Local<v8::Object> object = v8::Object::New(isolate);
-    EXPECT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"))));
+    ASSERT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"))));
 
-    ScriptValue foozoo(scriptState(), object);
-    checkInjection(scriptState(), IDBKey::createString("myNewKey"), foozoo, "bar");
-    checkInjection(scriptState(), IDBKey::createNumber(1234), foozoo, "bar");
+    ScriptValue scriptObject(scriptState(), object);
+    checkInjection(scriptState(), IDBKey::createString("myNewKey"), scriptObject, "bar");
+    checkInjection(scriptState(), IDBKey::createNumber(1234), scriptObject, "bar");
 
-    checkInjectionFails(scriptState(), IDBKey::createString("key"), foozoo, "foo.bar");
+    checkInjectionDisallowed(scriptState(), scriptObject, "foo.bar");
 }
 
 TEST_F(InjectIDBKeyTest, SubProperty)
 {
     v8::Isolate* isolate = scriptState()->isolate();
+
+    // object = { foo: { bar: "zee" } }
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     v8::Local<v8::Object> subProperty = v8::Object::New(isolate);
-    EXPECT_TRUE(v8CallBoolean(subProperty->Set(scriptState()->context(), v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"))));
-    EXPECT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), subProperty)));
+    ASSERT_TRUE(v8CallBoolean(subProperty->Set(scriptState()->context(), v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"))));
+    ASSERT_TRUE(v8CallBoolean(object->Set(scriptState()->context(), v8AtomicString(isolate, "foo"), subProperty)));
 
     ScriptValue scriptObject(scriptState(), object);
     checkInjection(scriptState(), IDBKey::createString("myNewKey"), scriptObject, "foo.baz");
@@ -172,7 +207,7 @@ TEST_F(InjectIDBKeyTest, SubProperty)
     checkInjection(scriptState(), IDBKey::createArray(IDBKey::KeyArray()), scriptObject, "foo.baz");
     checkInjection(scriptState(), IDBKey::createArray(IDBKey::KeyArray()), scriptObject, "bar");
 
-    checkInjectionFails(scriptState(), IDBKey::createString("zoo"), scriptObject, "foo.bar.baz");
+    checkInjectionDisallowed(scriptState(), scriptObject, "foo.bar.baz");
     checkInjection(scriptState(), IDBKey::createString("zoo"), scriptObject, "foo.xyz.foo");
 }
 
