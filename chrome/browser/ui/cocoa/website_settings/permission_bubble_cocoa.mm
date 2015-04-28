@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_controller.h"
 #import "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "content/public/browser/web_contents.h"
+#import "ui/base/cocoa/nsview_additions.h"
 
 PermissionBubbleCocoa::PermissionBubbleCocoa(NSWindow* parent_window)
     : parent_window_(parent_window), delegate_(NULL), bubbleController_(nil) {}
@@ -53,9 +54,7 @@ void PermissionBubbleCocoa::SetDelegate(Delegate* delegate) {
 }
 
 bool PermissionBubbleCocoa::CanAcceptRequestUpdate() {
-  // TODO(gbillock): implement. Should return true if the mouse is not over the
-  // dialog.
-  return false;
+  return ![[[bubbleController_ window] contentView] cr_isMouseInView];
 }
 
 void PermissionBubbleCocoa::OnBubbleClosing() {
