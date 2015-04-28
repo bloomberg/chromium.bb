@@ -63,7 +63,7 @@ PassRefPtrWillBeRawPtr<SharedWorker> SharedWorker::create(ExecutionContext* cont
 
     RefPtrWillBeRawPtr<SharedWorker> worker = adoptRefWillBeNoop(new SharedWorker(context));
 
-    RefPtrWillBeRawPtr<MessageChannel> channel = MessageChannel::create(context);
+    MessageChannel* channel = MessageChannel::create(context);
     worker->m_port = channel->port1();
     OwnPtr<blink::WebMessagePortChannel> remotePort = channel->port2()->disentangle();
     ASSERT(remotePort);
