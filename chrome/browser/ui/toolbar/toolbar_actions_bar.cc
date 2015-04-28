@@ -125,6 +125,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       suppress_animation_(true),
       overflowed_action_wants_to_run_(false),
       checked_extension_bubble_(false),
+      popped_out_action_(nullptr),
       weak_ptr_factory_(this) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
@@ -228,9 +229,15 @@ size_t ToolbarActionsBar::GetIconCount() const {
   if (!model_)
     return 0u;
 
+  // We purposefully do not account for any "popped out" actions in overflow
+  // mode. This is because the popup cannot be showing while the overflow menu
+  // is open, so there's no concern there. Also, if the user has a popped out
+  // action, and immediately opens the overflow menu, we *want* the action there
+  // (since it will close the popup, but do so asynchronously, and we don't
+  // want to "slide" the action back in.
   size_t visible_icons = in_overflow_mode() ?
-      toolbar_actions_.size() - main_bar_->GetIconCount() :
-      model_->visible_icon_count();
+      toolbar_actions_.size() - model_->visible_icon_count() :
+      model_->visible_icon_count() + (popped_out_action_ ? 1 : 0);
 
 #if DCHECK_IS_ON()
   // Good time for some sanity checks: We should never try to display more
@@ -257,6 +264,29 @@ size_t ToolbarActionsBar::GetIconCount() const {
 #endif
 
   return visible_icons;
+}
+
+std::vector<ToolbarActionViewController*>
+ToolbarActionsBar::GetActions() const {
+  std::vector<ToolbarActionViewController*> actions = toolbar_actions_.get();
+
+  // If there is an action that should be popped out, and it's not visible by
+  // default, make it the final action in the list.
+  if (popped_out_action_) {
+    size_t index =
+        std::find(actions.begin(), actions.end(), popped_out_action_) -
+        actions.begin();
+    DCHECK_NE(actions.size(), index);
+    size_t visible = GetIconCount();
+    if (index >= visible) {
+      size_t rindex = actions.size() - index - 1;
+      std::rotate(actions.rbegin() + rindex,
+                  actions.rbegin() + rindex + 1,
+                  actions.rend() - visible + 1);
+    }
+  }
+
+  return actions;
 }
 
 void ToolbarActionsBar::CreateActions() {
@@ -392,6 +422,53 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
                             dropped_index);
   if (delta)
     model_->SetVisibleIconCount(model_->visible_icon_count() + delta);
+}
+
+void ToolbarActionsBar::OnAnimationEnded() {
+  // Check if we were waiting for animation to finish to run a popup.
+  if (!popped_out_closure_.is_null()) {
+    popped_out_closure_.Run();
+    popped_out_closure_.Reset();
+  }
+}
+
+bool ToolbarActionsBar::IsActionVisible(
+    const ToolbarActionViewController* action) const {
+  size_t index = std::find(toolbar_actions_.begin(),
+                           toolbar_actions_.end(),
+                           action) - toolbar_actions_.begin();
+  return index < GetIconCount() || action == popped_out_action_;
+}
+
+void ToolbarActionsBar::PopOutAction(ToolbarActionViewController* controller,
+                                     const base::Closure& closure) {
+  DCHECK(!popped_out_action_) << "Only one action can be popped out at a time!";
+  bool needs_redraw = !IsActionVisible(controller);
+  popped_out_action_ = controller;
+  if (needs_redraw) {
+    // We suppress animation for this draw, because we need the action to get
+    // into position immediately, since it's about to show its popup.
+    base::AutoReset<bool> layout_resetter(&suppress_animation_, false);
+    delegate_->Redraw(true);
+  }
+
+  ResizeDelegate(gfx::Tween::LINEAR, false);
+  if (!delegate_->IsAnimating()) {
+    // Don't call the closure re-entrantly.
+    base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+  } else {
+    popped_out_closure_ = closure;
+  }
+}
+
+void ToolbarActionsBar::UndoPopOut() {
+  DCHECK(popped_out_action_);
+  ToolbarActionViewController* controller = popped_out_action_;
+  popped_out_action_ = nullptr;
+  popped_out_closure_.Reset();
+  if (!IsActionVisible(controller))
+    delegate_->Redraw(true);
+  ResizeDelegate(gfx::Tween::LINEAR, false);
 }
 
 void ToolbarActionsBar::SetPopupOwner(

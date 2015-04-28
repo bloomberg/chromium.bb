@@ -42,10 +42,11 @@ class ExtensionActionPlatformDelegateViews
   bool IsMenuRunning() const override;
   void RegisterCommand() override;
   void OnDelegateSet() override;
-  extensions::ExtensionViewHost* ShowPopupWithUrl(
-      ExtensionActionViewController::PopupShowAction show_action,
-      const GURL& popup_url,
-      bool grant_tab_permissions) override;
+  void ShowPopup(
+      scoped_ptr<extensions::ExtensionViewHost> host,
+      bool grant_tab_permissions,
+      ExtensionActionViewController::PopupShowAction show_action) override;
+  void CloseOverflowMenu() override;
 
   // content::NotificationObserver:
   void Observe(int type,

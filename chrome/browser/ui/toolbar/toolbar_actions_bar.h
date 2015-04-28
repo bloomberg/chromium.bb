@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_H_
 #define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -97,6 +98,10 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // Returns the number of icons that should be displayed.
   size_t GetIconCount() const;
 
+  // Returns the actions in the proper order; this may differ from the
+  // underlying order in the case of actions being popped out to show a popup.
+  std::vector<ToolbarActionViewController*> GetActions() const;
+
   // Creates the toolbar actions.
   void CreateActions();
 
@@ -122,6 +127,21 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
                   int dropped_index,
                   DragType drag_type);
 
+  // Notifies the ToolbarActionsBar that the delegate finished animating.
+  void OnAnimationEnded();
+
+  // Returns true if the given |action| is visible.
+  bool IsActionVisible(const ToolbarActionViewController* action) const;
+
+  // Pops out a given |action|, ensuring it is visible.
+  // |closure| will be called once any animation is complete.
+  void PopOutAction(ToolbarActionViewController* action,
+                    const base::Closure& closure);
+
+  // Undoes the current "pop out"; i.e., moves the popped out action back into
+  // overflow.
+  void UndoPopOut();
+
   // Sets the active popup owner to be |popup_owner|.
   void SetPopupOwner(ToolbarActionViewController* popup_owner);
 
@@ -132,7 +152,10 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   ToolbarActionViewController* GetMainControllerForAction(
       ToolbarActionViewController* action);
 
-  const std::vector<ToolbarActionViewController*>& toolbar_actions() const {
+  // Returns the underlying toolbar actions, but does not order them. Primarily
+  // for use in testing.
+  const std::vector<ToolbarActionViewController*>& toolbar_actions_unordered()
+      const {
     return toolbar_actions_.get();
   }
   bool enabled() const { return model_ != nullptr; }
@@ -145,6 +168,9 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
     return platform_settings_;
   }
   ToolbarActionViewController* popup_owner() { return popup_owner_; }
+  ToolbarActionViewController* popped_out_action() {
+    return popped_out_action_;
+  }
   bool in_overflow_mode() const { return main_bar_ != nullptr; }
 
   ToolbarActionsBarDelegate* delegate_for_test() { return delegate_; }
@@ -249,6 +275,14 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // True if we have checked to see if there is an extension bubble that should
   // be displayed, and, if there is, shown that bubble.
   bool checked_extension_bubble_;
+
+  // The action, if any, which is currently "popped out" of the overflow in
+  // order to show a popup.
+  ToolbarActionViewController* popped_out_action_;
+
+  // The task to alert the |popped_out_action_| that animation has finished, and
+  // it is fully popped out.
+  base::Closure popped_out_closure_;
 
   base::WeakPtrFactory<ToolbarActionsBar> weak_ptr_factory_;
 

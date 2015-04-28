@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -111,15 +112,12 @@ void ToolbarActionViewDelegateBridge::ShowContextMenu() {
               toolbarController] wrenchMenuController];
   // If the wrench menu is open, we have to first close it. Part of this happens
   // asynchronously, so we have to use a posted task to open the next menu.
-  if ([wrenchMenuController isMenuOpen]) {
+  if ([wrenchMenuController isMenuOpen])
     [wrenchMenuController cancel];
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ToolbarActionViewDelegateBridge::DoShowContextMenu,
-                   weakFactory_.GetWeakPtr()));
-  } else {
-    DoShowContextMenu();
-  }
+  [controller_ toolbarActionsBar]->PopOutAction(
+      viewController_,
+      base::Bind(&ToolbarActionViewDelegateBridge::DoShowContextMenu,
+                 weakFactory_.GetWeakPtr()));
 }
 
 content::WebContents* ToolbarActionViewDelegateBridge::GetCurrentWebContents()
@@ -143,24 +141,18 @@ void ToolbarActionViewDelegateBridge::OnPopupClosed() {
 }
 
 void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
-  NSButton* wrenchButton =
-      [[[BrowserWindowController browserWindowControllerForWindow:
-          [controller_ browser]->window()->GetNativeWindow()]
-              toolbarController] wrenchButton];
   // The point the menu shows matches that of the normal wrench menu - that is,
   // the right-left most corner of the menu is left-aligned with the wrench
   // button, and the menu is displayed "a little bit" lower. It would be nice to
   // be able to avoid the magic '5' here, but since it's built into Cocoa, it's
   // not too hopeful.
-  NSPoint menuPoint = NSMakePoint(0, NSHeight([wrenchButton bounds]) + 5);
-
-  // We set the wrench to be highlighted so it remains "pressed" when the menu
-  // is running.
-  [[wrenchButton cell] setHighlighted:YES];
+  NSPoint menuPoint = NSMakePoint(0, NSHeight([owner_ bounds]) + 5);
+  [[owner_ cell] setHighlighted:YES];
   [[owner_ menu] popUpMenuPositioningItem:nil
                                atLocation:menuPoint
-                                   inView:wrenchButton];
-  [[wrenchButton cell] setHighlighted:NO];
+                                   inView:owner_];
+  [[owner_ cell] setHighlighted:NO];
+  [controller_ toolbarActionsBar]->UndoPopOut();
 }
 
 @interface BrowserActionCell (Internals)
@@ -352,6 +344,8 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
     BOOL highlighted = viewControllerDelegate_->user_shown_popup_visible() ||
         dragCouldStart_;
     [[self cell] setHighlighted:highlighted];
+  } else {
+    [[self cell] setHighlighted:NO];
   }
 }
 

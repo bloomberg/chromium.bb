@@ -157,11 +157,13 @@ std::string BrowserActionTestUtil::GetTooltip(int index) {
 }
 
 gfx::NativeView BrowserActionTestUtil::GetPopupNativeView() {
-  return [[ExtensionPopupController popup] view];
+  ToolbarActionViewController* popup_owner =
+      GetToolbarActionsBar()->popup_owner();
+  return popup_owner ? popup_owner->GetPopupNativeView() : nil;
 }
 
 bool BrowserActionTestUtil::HasPopup() {
-  return [ExtensionPopupController popup] != nil;
+  return GetPopupNativeView() != nil;
 }
 
 gfx::Size BrowserActionTestUtil::GetPopupSize() {

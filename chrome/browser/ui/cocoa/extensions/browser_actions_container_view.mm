@@ -21,6 +21,8 @@ NSString* const kBrowserActionsContainerWillAnimate =
     @"BrowserActionsContainerWillAnimate";
 NSString* const kBrowserActionsContainerMouseEntered =
     @"BrowserActionsContainerMouseEntered";
+NSString* const kBrowserActionsContainerAnimationEnded =
+    @"BrowserActionsContainerAnimationEnded";
 NSString* const kTranslationWithDelta =
     @"TranslationWithDelta";
 
@@ -61,6 +63,7 @@ const CGFloat kMinimumContainerWidth = 3.0;
     resizeAnimation_.reset([[NSViewAnimation alloc] init]);
     [resizeAnimation_ setDuration:kAnimationDuration];
     [resizeAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
+    [resizeAnimation_ setDelegate:self];
 
     [self setHidden:YES];
   }
@@ -196,6 +199,28 @@ const CGFloat kMinimumContainerWidth = 3.0;
 
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDraggingNotification
+                    object:self];
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  // We notify asynchronously so that the animation fully finishes before any
+  // listeners do work.
+  [self performSelector:@selector(notifyAnimationEnded)
+              withObject:self
+              afterDelay:0];
+}
+
+- (void)animationDidStop:(NSAnimation*)animation {
+  // We notify asynchronously so that the animation fully finishes before any
+  // listeners do work.
+  [self performSelector:@selector(notifyAnimationEnded)
+              withObject:self
+              afterDelay:0];
+}
+
+- (void)notifyAnimationEnded {
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kBrowserActionsContainerAnimationEnded
                     object:self];
 }
 

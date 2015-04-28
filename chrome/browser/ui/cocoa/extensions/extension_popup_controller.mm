@@ -28,6 +28,7 @@
 using content::BrowserContext;
 using content::RenderViewHost;
 using content::WebContents;
+using extensions::ExtensionViewHost;
 
 namespace {
 // The duration for any animations that might be invoked by this controller.
@@ -52,7 +53,7 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
                    devMode:(BOOL)devMode;
 
 // Set the ExtensionViewHost, taking ownership.
-- (void)setExtensionViewHost:(scoped_ptr<extensions::ExtensionViewHost>)host;
+- (void)setExtensionViewHost:(scoped_ptr<ExtensionViewHost>)host;
 
 // Called when the extension's hosted NSView has been resized.
 - (void)extensionViewFrameChanged;
@@ -125,7 +126,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
                const content::NotificationDetails& details) override {
     switch (type) {
       case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD: {
-        if (content::Details<extensions::ExtensionViewHost>(
+        if (content::Details<ExtensionViewHost>(
                 [controller_ extensionViewHost]) == details) {
           [controller_ showDevTools];
         }
@@ -235,7 +236,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   return [static_cast<InfoBubbleWindow*>([self window]) isClosing];
 }
 
-- (extensions::ExtensionViewHost*)extensionViewHost {
+- (ExtensionViewHost*)extensionViewHost {
   return host_.get();
 }
 
@@ -243,26 +244,18 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   beingInspected_ = beingInspected;
 }
 
-+ (ExtensionPopupController*)showURL:(GURL)url
-                           inBrowser:(Browser*)browser
-                          anchoredAt:(NSPoint)anchoredAt
-                       arrowLocation:(info_bubble::BubbleArrowLocation)
-                                         arrowLocation
-                             devMode:(BOOL)devMode {
++ (ExtensionPopupController*)host:(scoped_ptr<ExtensionViewHost>)host
+                        inBrowser:(Browser*)browser
+                       anchoredAt:(NSPoint)anchoredAt
+                    arrowLocation:(info_bubble::BubbleArrowLocation)
+                                      arrowLocation
+                          devMode:(BOOL)devMode {
   DCHECK([NSThread isMainThread]);
   DCHECK(browser);
-  if (!browser)
-    return nil;
+  DCHECK(host);
 
-  // If we click the browser/page action again, we should close the popup.
-  // Make Mac behavior the same with Windows and others.
-  if (gPopup) {
-    std::string extension_id = url.host();
-    std::string old_extension_id = [gPopup extensionViewHost]->extension_id();
+  if (gPopup)
     [gPopup close];  // Starts the animation to fade out the popup.
-    if (extension_id == old_extension_id)
-      return nil;
-  }
 
   // Create the popup first. This establishes an initially hidden NSWindow so
   // that the renderer is able to gather correct screen metrics for the initial
@@ -272,10 +265,6 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
                 anchoredAt:anchoredAt
              arrowLocation:arrowLocation
                    devMode:devMode];
-
-  scoped_ptr<extensions::ExtensionViewHost> host(
-      extensions::ExtensionViewHostFactory::CreatePopupHost(url, browser));
-  DCHECK(host);
   [gPopup setExtensionViewHost:host.Pass()];
   return gPopup;
 }
@@ -284,7 +273,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   return gPopup;
 }
 
-- (void)setExtensionViewHost:(scoped_ptr<extensions::ExtensionViewHost>)host {
+- (void)setExtensionViewHost:(scoped_ptr<ExtensionViewHost>)host {
   DCHECK(!host_);
   DCHECK(host);
   host_.swap(host);

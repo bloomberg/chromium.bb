@@ -349,6 +349,11 @@ void ToolbarView::ShowAppMenu(bool for_drop) {
   wrench_menu_->RunMenu(app_menu_);
 }
 
+void ToolbarView::CloseAppMenu() {
+  if (wrench_menu_)
+    wrench_menu_->CloseMenu();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, AccessiblePaneView overrides:
 

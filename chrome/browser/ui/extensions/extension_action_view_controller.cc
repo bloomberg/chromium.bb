@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/extension_view_host.h"
+#include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,10 +19,12 @@
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -45,7 +48,8 @@ ExtensionActionViewController::ExtensionActionViewController(
       icon_observer_(nullptr),
       extension_registry_(
           extensions::ExtensionRegistry::Get(browser_->profile())),
-      popup_host_observer_(this) {
+      popup_host_observer_(this),
+      weak_factory_(this) {
   DCHECK(extension_action);
   DCHECK(extension_action->action_type() == ActionInfo::TYPE_PAGE ||
          extension_action->action_type() == ActionInfo::TYPE_BROWSER);
@@ -199,7 +203,7 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
     GURL popup_url = extension_action_->GetPopupUrl(
         SessionTabHelper::IdForTab(view_delegate_->GetCurrentWebContents()));
     return GetPreferredPopupViewController()
-        ->ShowPopupWithUrl(show_action, popup_url, grant_tab_permissions);
+        ->TriggerPopupWithUrl(show_action, popup_url, grant_tab_permissions);
   }
   return false;
 }
@@ -254,6 +258,12 @@ void ExtensionActionViewController::HideActivePopup() {
   }
 }
 
+void ExtensionActionViewController::OnMenuClosed() {
+  if (toolbar_actions_bar_->popped_out_action() == this &&
+      !is_showing_popup())
+    toolbar_actions_bar_->UndoPopOut();
+}
+
 bool ExtensionActionViewController::GetExtensionCommand(
     extensions::Command* command) {
   DCHECK(command);
@@ -279,7 +289,7 @@ ExtensionActionViewController::GetPreferredPopupViewController() {
   return this;
 }
 
-bool ExtensionActionViewController::ShowPopupWithUrl(
+bool ExtensionActionViewController::TriggerPopupWithUrl(
     PopupShowAction show_action,
     const GURL& popup_url,
     bool grant_tab_permissions) {
@@ -298,21 +308,56 @@ bool ExtensionActionViewController::ShowPopupWithUrl(
   if (already_showing)
     return false;
 
-  popup_host_ = platform_delegate_->ShowPopupWithUrl(
-      show_action, popup_url, grant_tab_permissions);
-  if (popup_host_) {
-    popup_host_observer_.Add(popup_host_);
-    if (toolbar_actions_bar_)
-      toolbar_actions_bar_->SetPopupOwner(this);
-    view_delegate_->OnPopupShown(grant_tab_permissions);
+  scoped_ptr<extensions::ExtensionViewHost> host(
+      extensions::ExtensionViewHostFactory::CreatePopupHost(popup_url,
+                                                            browser_));
+  if (!host)
+    return false;
+
+  popup_host_ = host.get();
+  popup_host_observer_.Add(popup_host_);
+  if (toolbar_actions_bar_)
+    toolbar_actions_bar_->SetPopupOwner(this);
+
+  if (toolbar_actions_bar_ &&
+      !toolbar_actions_bar_->IsActionVisible(this) &&
+      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+    platform_delegate_->CloseOverflowMenu();
+    toolbar_actions_bar_->PopOutAction(
+        this,
+        base::Bind(&ExtensionActionViewController::ShowPopup,
+                   weak_factory_.GetWeakPtr(),
+                   base::Passed(host.Pass()),
+                   grant_tab_permissions,
+                   show_action));
+  } else {
+    ShowPopup(host.Pass(), grant_tab_permissions, show_action);
   }
-  return is_showing_popup();
+
+  return true;
+}
+
+void ExtensionActionViewController::ShowPopup(
+    scoped_ptr<extensions::ExtensionViewHost> popup_host,
+    bool grant_tab_permissions,
+    PopupShowAction show_action) {
+  // It's possible that the popup should be closed before it finishes opening
+  // (since it can open asynchronously). Check before proceeding.
+  if (!popup_host_)
+    return;
+  platform_delegate_->ShowPopup(
+      popup_host.Pass(), grant_tab_permissions, show_action);
+  view_delegate_->OnPopupShown(grant_tab_permissions);
 }
 
 void ExtensionActionViewController::OnPopupClosed() {
   popup_host_observer_.Remove(popup_host_);
   popup_host_ = nullptr;
-  if (toolbar_actions_bar_)
+  if (toolbar_actions_bar_) {
     toolbar_actions_bar_->SetPopupOwner(nullptr);
+    if (toolbar_actions_bar_->popped_out_action() == this &&
+        !platform_delegate_->IsMenuRunning())
+      toolbar_actions_bar_->UndoPopOut();
+  }
   view_delegate_->OnPopupClosed();
 }

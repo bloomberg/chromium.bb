@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ACTION_VIEW_CONTROLLER_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ACTION_VIEW_CONTROLLER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
@@ -75,6 +76,9 @@ class ExtensionActionViewController
   // Closes the active popup (whether it was this action's popup or not).
   void HideActivePopup();
 
+  // Handles cleanup after a menu closes.
+  void OnMenuClosed();
+
   // Populates |command| with the command associated with |extension|, if one
   // exists. Returns true if |command| was populated.
   bool GetExtensionCommand(extensions::Command* command);
@@ -114,14 +118,21 @@ class ExtensionActionViewController
   // e.g. an API). Returns true if a popup is shown.
   bool ExecuteAction(PopupShowAction show_action, bool grant_tab_permissions);
 
-  // Shows the popup for the extension action, given the associated |popup_url|.
-  // |grant_tab_permissions| is true if active tab permissions should be given
-  // to the extension; this is only true if the popup is opened through a user
-  // action.
-  // Returns true if a popup is successfully shown.
-  bool ShowPopupWithUrl(PopupShowAction show_action,
-                        const GURL& popup_url,
-                        bool grant_tab_permissions);
+  // Begins the process of showing the popup for the extension action, given the
+  // associated |popup_url|. |grant_tab_permissions| is true if active tab
+  // permissions should be given to the extension; this is only true if the
+  // popup is opened through a user action.
+  // The popup may not be shown synchronously if the extension is hidden and
+  // first needs to slide itself out.
+  // Returns true if a popup will be shown.
+  bool TriggerPopupWithUrl(PopupShowAction show_action,
+                           const GURL& popup_url,
+                           bool grant_tab_permissions);
+
+  // Shows the popup with the given |host|.
+  void ShowPopup(scoped_ptr<extensions::ExtensionViewHost> host,
+                 bool grant_tab_permissions,
+                 PopupShowAction show_action);
 
   // Handles cleanup after the popup closes.
   void OnPopupClosed();
@@ -170,6 +181,8 @@ class ExtensionActionViewController
 
   ScopedObserver<extensions::ExtensionHost, extensions::ExtensionHostObserver>
       popup_host_observer_;
+
+  base::WeakPtrFactory<ExtensionActionViewController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionViewController);
 };

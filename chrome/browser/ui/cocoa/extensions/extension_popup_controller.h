@@ -76,12 +76,13 @@ class ExtensionViewHost;
 // Passing YES to |devMode| will launch the webkit inspector for the popup,
 // and prevent the popup from closing when focus is lost.  It will be closed
 // after the inspector is closed, or another popup is opened.
-+ (ExtensionPopupController*)showURL:(GURL)url
-                           inBrowser:(Browser*)browser
-                          anchoredAt:(NSPoint)anchoredAt
-                       arrowLocation:(info_bubble::BubbleArrowLocation)
-                                         arrowLocation
-                             devMode:(BOOL)devMode;
++ (ExtensionPopupController*)host:(scoped_ptr<extensions::ExtensionViewHost>)
+                                      host
+                        inBrowser:(Browser*)browser
+                       anchoredAt:(NSPoint)anchoredAt
+                    arrowLocation:(info_bubble::BubbleArrowLocation)
+                                      arrowLocation
+                          devMode:(BOOL)devMode;
 
 // Returns the controller used to display the popup being shown. If no popup is
 // currently open, then nil is returned. Static because only one extension popup

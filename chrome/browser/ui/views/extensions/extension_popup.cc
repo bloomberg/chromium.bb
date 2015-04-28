@@ -8,7 +8,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_view_host.h"
-#include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -67,9 +66,6 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
   // ExtensionPopup closes itself on very specific de-activation conditions.
   set_close_on_deactivate(false);
 
-  // Wait to show the popup until the contained host finishes loading.
-  registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                 content::Source<content::WebContents>(host->host_contents()));
 
   // Listen for the containing view calling window.close();
   registrar_.Add(
@@ -79,6 +75,18 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
   content::DevToolsAgentHost::AddAgentStateCallback(devtools_callback_);
 
   GetExtensionView(host)->GetBrowser()->tab_strip_model()->AddObserver(this);
+
+  // If the host had somehow finished loading, then we'd miss the notification
+  // and not show.  This seems to happen in single-process mode.
+  if (host_->has_loaded_once()) {
+    ShowBubble();
+  } else {
+    // Wait to show the popup until the contained host finishes loading.
+    registrar_.Add(this,
+                   content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                   content::Source<content::WebContents>(
+                       host_->host_contents()));
+  }
 }
 
 ExtensionPopup::~ExtensionPopup() {
@@ -170,21 +178,13 @@ void ExtensionPopup::OnAnchorWindowActivation() {
 }
 
 // static
-ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
-                                          Browser* browser,
-                                          views::View* anchor_view,
-                                          views::BubbleBorder::Arrow arrow,
-                                          ShowAction show_action) {
-  extensions::ExtensionViewHost* host =
-      extensions::ExtensionViewHostFactory::CreatePopupHost(url, browser);
-  auto popup = ExtensionPopup::Create(host, anchor_view, arrow, show_action);
-
-  // If the host had somehow finished loading, then we'd miss the notification
-  // and not show.  This seems to happen in single-process mode.
-  if (host->has_loaded_once())
-    popup->ShowBubble();
-
-  return popup;
+ExtensionPopup* ExtensionPopup::ShowPopup(
+    scoped_ptr<extensions::ExtensionViewHost> host,
+    views::View* anchor_view,
+    views::BubbleBorder::Arrow arrow,
+    ShowAction show_action) {
+  return ExtensionPopup::Create(
+      host.release(), anchor_view, arrow, show_action);
 }
 
 void ExtensionPopup::ShowBubble() {

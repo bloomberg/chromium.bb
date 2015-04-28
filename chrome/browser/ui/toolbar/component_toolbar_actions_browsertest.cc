@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(ComponentToolbarActionsBrowserTest,
   ASSERT_EQ(1u, action_ids.size());
 
   const std::vector<ToolbarActionViewController*>& actions =
-      browser_actions_bar.GetToolbarActionsBar()->toolbar_actions();
+      browser_actions_bar.GetToolbarActionsBar()->GetActions();
   TestToolbarActionViewController* mock_component_action =
       static_cast<TestToolbarActionViewController* const>(actions[0]);
   ASSERT_TRUE(mock_component_action);

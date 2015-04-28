@@ -110,11 +110,13 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // opposed to the overflow) for the action of the given id.
 - (BrowserActionButton*)mainButtonForId:(const std::string&)id;
 
+// Returns the associated ToolbarActionsBar.
+- (ToolbarActionsBar*)toolbarActionsBar;
+
 @end  // @interface BrowserActionsController
 
 @interface BrowserActionsController(TestingAPI)
 - (BrowserActionButton*)buttonWithIndex:(NSUInteger)index;
-- (ToolbarActionsBar*)toolbarActionsBar;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_BROWSER_ACTIONS_CONTROLLER_H_

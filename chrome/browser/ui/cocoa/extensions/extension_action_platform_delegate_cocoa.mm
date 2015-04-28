@@ -75,11 +75,20 @@ void ExtensionActionPlatformDelegateCocoa::OnDelegateSet() {
       content::Source<Profile>(controller_->browser()->profile()));
 }
 
-extensions::ExtensionViewHost*
-ExtensionActionPlatformDelegateCocoa::ShowPopupWithUrl(
-    ExtensionActionViewController::PopupShowAction show_action,
-    const GURL& popup_url,
-    bool grant_tab_permissions) {
+void ExtensionActionPlatformDelegateCocoa::ShowPopup(
+    scoped_ptr<extensions::ExtensionViewHost> host,
+    bool grant_tab_permissions,
+    ExtensionActionViewController::PopupShowAction show_action) {
+  BOOL devMode =
+      show_action == ExtensionActionViewController::SHOW_POPUP_AND_INSPECT;
+  [ExtensionPopupController host:host.Pass()
+                       inBrowser:controller_->browser()
+                      anchoredAt:GetPopupPoint()
+                   arrowLocation:info_bubble::kTopRight
+                         devMode:devMode];
+}
+
+void ExtensionActionPlatformDelegateCocoa::CloseOverflowMenu() {
   // If this was triggered by an action overflowed to the wrench menu, then
   // the wrench menu will be open. Close it before opening the popup.
   WrenchMenuController* wrenchMenuController =
@@ -89,16 +98,6 @@ ExtensionActionPlatformDelegateCocoa::ShowPopupWithUrl(
           toolbarController] wrenchMenuController];
   if ([wrenchMenuController isMenuOpen])
     [wrenchMenuController cancel];
-
-  BOOL devMode =
-      show_action == ExtensionActionViewController::SHOW_POPUP_AND_INSPECT;
-  ExtensionPopupController* popupController =
-      [ExtensionPopupController showURL:popup_url
-                              inBrowser:controller_->browser()
-                             anchoredAt:GetPopupPoint()
-                          arrowLocation:info_bubble::kTopRight
-                                devMode:devMode];
-  return [popupController extensionViewHost];
 }
 
 NSPoint ExtensionActionPlatformDelegateCocoa::GetPopupPoint() const {

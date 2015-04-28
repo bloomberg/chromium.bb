@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
@@ -91,11 +92,10 @@ void ExtensionActionPlatformDelegateViews::OnDelegateSet() {
   GetDelegateViews()->GetAsView()->set_context_menu_controller(this);
 }
 
-extensions::ExtensionViewHost*
-ExtensionActionPlatformDelegateViews::ShowPopupWithUrl(
-    ExtensionActionViewController::PopupShowAction show_action,
-    const GURL& popup_url,
-    bool grant_tab_permissions) {
+void ExtensionActionPlatformDelegateViews::ShowPopup(
+    scoped_ptr<extensions::ExtensionViewHost> host,
+    bool grant_tab_permissions,
+    ExtensionActionViewController::PopupShowAction show_action) {
   // TOP_RIGHT is correct for both RTL and LTR, because the views platform
   // performs the flipping in RTL cases.
   views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_RIGHT;
@@ -105,12 +105,17 @@ ExtensionActionPlatformDelegateViews::ShowPopupWithUrl(
   ExtensionPopup::ShowAction popup_show_action =
       show_action == ExtensionActionViewController::SHOW_POPUP ?
           ExtensionPopup::SHOW : ExtensionPopup::SHOW_AND_INSPECT;
-  ExtensionPopup* popup = ExtensionPopup::ShowPopup(popup_url,
-                                                    controller_->browser(),
-                                                    reference_view,
-                                                    arrow,
-                                                    popup_show_action);
-  return popup->host();
+  ExtensionPopup::ShowPopup(host.Pass(),
+                            reference_view,
+                            arrow,
+                            popup_show_action);
+}
+
+void ExtensionActionPlatformDelegateViews::CloseOverflowMenu() {
+  ToolbarView* toolbar =
+      BrowserView::GetBrowserViewForBrowser(controller_->browser())->toolbar();
+  if (toolbar->IsWrenchMenuShowing())
+    toolbar->CloseAppMenu();
 }
 
 void ExtensionActionPlatformDelegateViews::Observe(
@@ -197,9 +202,6 @@ void ExtensionActionPlatformDelegateViews::DoShowContextMenu(
   DCHECK(!context_menu_owner);
   context_menu_owner = this;
 
-  // We shouldn't have both a popup and a context menu showing.
-  controller_->HideActivePopup();
-
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(GetDelegateViews()->GetAsView(),
                                     &screen_loc);
@@ -213,6 +215,9 @@ void ExtensionActionPlatformDelegateViews::DoShowContextMenu(
 
   menu_runner_.reset(new views::MenuRunner(context_menu_model, run_types));
 
+  // We shouldn't have both a popup and a context menu showing.
+  controller_->HideActivePopup();
+
   if (menu_runner_->RunMenuAt(
           parent,
           GetDelegateViews()->GetContextMenuButton(),
@@ -224,6 +229,7 @@ void ExtensionActionPlatformDelegateViews::DoShowContextMenu(
 
   context_menu_owner = NULL;
   menu_runner_.reset();
+  controller_->OnMenuClosed();
 
   // If another extension action wants to show its context menu, allow it to.
   if (!followup_context_menu_task_.is_null()) {

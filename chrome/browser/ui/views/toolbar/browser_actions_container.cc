@@ -207,7 +207,6 @@ void BrowserActionsContainer::AddViewForAction(
   if (chevron_)
     chevron_->CloseMenu();
 
-      view_controller->GetActionName();
   ToolbarActionView* view =
       new ToolbarActionView(view_controller, browser_->profile(), this);
   toolbar_action_views_.insert(toolbar_action_views_.begin() + index, view);
@@ -241,7 +240,7 @@ void BrowserActionsContainer::Redraw(bool order_changed) {
   }
 
   std::vector<ToolbarActionViewController*> actions =
-      toolbar_actions_bar_->toolbar_actions();
+      toolbar_actions_bar_->GetActions();
   if (order_changed) {
     // Run through the views and compare them to the desired order. If something
     // is out of place, find the correct spot for it.
@@ -422,7 +421,7 @@ void BrowserActionsContainer::Layout() {
   // The range of visible icons, from start_index (inclusive) to end_index
   // (exclusive).
   size_t start_index = in_overflow_mode() ?
-      main_container_->toolbar_actions_bar_->GetIconCount() : 0u;
+      toolbar_action_views_.size() - toolbar_actions_bar_->GetIconCount() : 0u;
   // For the main container's last visible icon, we calculate how many icons we
   // can display with the given width. We add an extra item_spacing because the
   // last icon doesn't need padding, but we want it to divide easily.
@@ -680,6 +679,8 @@ void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
   FOR_EACH_OBSERVER(BrowserActionsContainerObserver,
                     observers_,
                     OnBrowserActionsContainerAnimationEnded());
+
+  toolbar_actions_bar_->OnAnimationEnded();
 
   if (pending_extension_bubble_controller_)
     ShowExtensionMessageBubble(pending_extension_bubble_controller_.Pass());

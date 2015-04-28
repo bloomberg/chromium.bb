@@ -97,6 +97,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // opened for a drag-and-drop operation.
   void ShowAppMenu(bool for_drop);
 
+  // Closes the App Menu, if it's open.
+  void CloseAppMenu();
+
   // Accessors.
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }

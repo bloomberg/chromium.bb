@@ -40,20 +40,20 @@ class ExtensionPopup : public views::BubbleDelegateView,
 
   ~ExtensionPopup() override;
 
-  // Create and show a popup with |url| positioned adjacent to |anchor_view|.
-  // |browser| is the browser to which the pop-up will be attached.  NULL is a
-  // valid parameter for pop-ups not associated with a browser.
+  // Create and show a popup with the given |host| positioned adjacent to
+  // |anchor_view|.
   // The positioning of the pop-up is determined by |arrow| according to the
-  // following logic:  The popup is anchored so that the corner indicated by the
+  // following logic: The popup is anchored so that the corner indicated by the
   // value of |arrow| remains fixed during popup resizes.  If |arrow| is
   // BOTTOM_*, then the popup 'pops up', otherwise the popup 'drops down'.
   // The actual display of the popup is delayed until the page contents
   // finish loading in order to minimize UI flashing and resizing.
-  static ExtensionPopup* ShowPopup(const GURL& url,
-                                   Browser* browser,
-                                   views::View* anchor_view,
-                                   views::BubbleBorder::Arrow arrow,
-                                   ShowAction show_action);
+  static ExtensionPopup* ShowPopup(
+      scoped_ptr<extensions::ExtensionViewHost> host,
+      views::View* anchor_view,
+      views::BubbleBorder::Arrow arrow,
+      ShowAction show_action);
+
 
   extensions::ExtensionViewHost* host() const { return host_.get(); }
 

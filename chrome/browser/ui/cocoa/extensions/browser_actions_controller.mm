@@ -99,6 +99,10 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Shows the toolbar info bubble, if it should be displayed.
 - (void)containerMouseEntered:(NSNotification*)notification;
 
+// Notifies the controlling ToolbarActionsBar that any running animation has
+// ended.
+- (void)containerAnimationEnded:(NSNotification*)notification;
+
 // Adjusts the position of the surrounding action buttons depending on where the
 // button is within the container.
 - (void)actionButtonDragging:(NSNotification*)notification;
@@ -323,6 +327,11 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
            selector:@selector(containerDragFinished:)
                name:kBrowserActionGrippyDragFinishedNotification
              object:containerView_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(containerAnimationEnded:)
+               name:kBrowserActionsContainerAnimationEnded
+             object:containerView_];
     // Listen for a finished drag from any button to make sure each open window
     // stays in sync.
     [[NSNotificationCenter defaultCenter]
@@ -443,6 +452,10 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   return [mainController buttonForId:id];
 }
 
+- (ToolbarActionsBar*)toolbarActionsBar {
+  return toolbarActionsBar_.get();
+}
+
 #pragma mark -
 #pragma mark NSMenuDelegate
 
@@ -504,7 +517,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   [containerView_ setIsHighlighting:toolbarActionsBar_->is_highlighting()];
 
   std::vector<ToolbarActionViewController*> toolbar_actions =
-      toolbarActionsBar_->toolbar_actions();
+      toolbarActionsBar_->GetActions();
   for (NSUInteger i = 0; i < [buttons_ count]; ++i) {
     auto controller = static_cast<ToolbarActionViewController*>(
         [[buttons_ objectAtIndex:i] viewController]);
@@ -689,6 +702,11 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 
   [self updateGrippyCursors];
   [self resizeContainerToWidth:toolbarActionsBar_->GetPreferredSize().width()];
+}
+
+- (void)containerAnimationEnded:(NSNotification*)notification {
+  if (![containerView_ isAnimating])
+    toolbarActionsBar_->OnAnimationEnded();
 }
 
 - (void)containerMouseEntered:(NSNotification*)notification {
@@ -939,10 +957,6 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 
 - (BrowserActionButton*)buttonWithIndex:(NSUInteger)index {
   return index < [buttons_ count] ? [buttons_ objectAtIndex:index] : nil;
-}
-
-- (ToolbarActionsBar*)toolbarActionsBar {
-  return toolbarActionsBar_.get();
 }
 
 @end

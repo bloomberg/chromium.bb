@@ -26,6 +26,9 @@ extern NSString* const kBrowserActionsContainerWillAnimate;
 // enabled).
 extern NSString* const kBrowserActionsContainerMouseEntered;
 
+// Sent when a running animation has ended.
+extern NSString* const kBrowserActionsContainerAnimationEnded;
+
 // Key which is used to notify the translation with delta.
 extern NSString* const kTranslationWithDelta;
 
@@ -37,7 +40,7 @@ class BrowserActionsContainerViewSizeDelegate {
 
 // The view that encompasses the Browser Action buttons in the toolbar and
 // provides mechanisms for resizing.
-@interface BrowserActionsContainerView : NSView {
+@interface BrowserActionsContainerView : NSView<NSAnimationDelegate> {
  @private
   // The frame encompasing the grippy used for resizing the container.
   NSRect grippyRect_;

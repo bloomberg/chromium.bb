@@ -354,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, BrowserActionPopupTest) {
   ToolbarActionsBar* toolbar_actions_bar =
       browser_actions_bar()->GetToolbarActionsBar();
   const std::vector<ToolbarActionViewController*>& toolbar_actions =
-      toolbar_actions_bar->toolbar_actions();
+      toolbar_actions_bar->GetActions();
   ASSERT_EQ(2u, toolbar_actions.size());
   EXPECT_EQ(first_extension->id(), toolbar_actions[0]->GetId());
   EXPECT_EQ(second_extension->id(), toolbar_actions[1]->GetId());
@@ -402,4 +402,89 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, BrowserActionPopupTest) {
     EXPECT_FALSE(first_controller->is_showing_popup());
     EXPECT_FALSE(second_controller->is_showing_popup());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsBarRedesignBrowserTest,
+                       OverflowedBrowserActionPopupTest) {
+  scoped_ptr<BrowserActionTestUtil> overflow_bar =
+      browser_actions_bar()->CreateOverflowBar();
+
+  // Load up two extensions that have browser action popups.
+  base::FilePath data_dir =
+      test_data_dir_.AppendASCII("api_test").AppendASCII("browser_action");
+  const extensions::Extension* first_extension =
+      LoadExtension(data_dir.AppendASCII("open_popup"));
+  ASSERT_TRUE(first_extension);
+  const extensions::Extension* second_extension =
+      LoadExtension(data_dir.AppendASCII("remove_popup"));
+  ASSERT_TRUE(second_extension);
+
+  // Verify state: two actions, in the order of [first, second].
+  EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(first_extension->id(), browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(second_extension->id(), browser_actions_bar()->GetExtensionId(1));
+
+  // Do a little piping to get at the underlying ExtensionActionViewControllers.
+  ToolbarActionsBar* main_tab = browser_actions_bar()->GetToolbarActionsBar();
+  std::vector<ToolbarActionViewController*> toolbar_actions =
+      main_tab->GetActions();
+  ASSERT_EQ(2u, toolbar_actions.size());
+  EXPECT_EQ(first_extension->id(), toolbar_actions[0]->GetId());
+  EXPECT_EQ(second_extension->id(), toolbar_actions[1]->GetId());
+  ExtensionActionViewController* first_controller_main =
+      static_cast<ExtensionActionViewController*>(toolbar_actions[0]);
+  ExtensionActionViewController* second_controller_main =
+      static_cast<ExtensionActionViewController*>(toolbar_actions[1]);
+
+  ToolbarActionsBar* overflow_tab = overflow_bar->GetToolbarActionsBar();
+  toolbar_actions = overflow_tab->GetActions();
+  ExtensionActionViewController* second_controller_overflow =
+      static_cast<ExtensionActionViewController*>(toolbar_actions[1]);
+
+  toolbar_model()->SetVisibleIconCount(0);
+
+  EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(2, overflow_bar->VisibleBrowserActions());
+
+  // Neither should yet be showing a popup.
+  EXPECT_FALSE(browser_actions_bar()->HasPopup());
+  EXPECT_FALSE(second_controller_main->is_showing_popup());
+  EXPECT_FALSE(second_controller_overflow->is_showing_popup());
+
+  // Click on the first extension's browser action. This should open a popup.
+  overflow_bar->Press(1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(browser_actions_bar()->HasPopup());
+  EXPECT_FALSE(overflow_bar->HasPopup());
+  EXPECT_TRUE(second_controller_main->is_showing_popup());
+  EXPECT_FALSE(second_controller_overflow->is_showing_popup());
+
+  EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(1u, main_tab->GetIconCount());
+  EXPECT_EQ(second_controller_main->GetId(),
+            browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(2, overflow_bar->VisibleBrowserActions());
+  EXPECT_EQ(2u, overflow_tab->GetIconCount());
+  EXPECT_EQ(first_controller_main->GetId(),
+            overflow_bar->GetExtensionId(0));
+
+  {
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+        content::NotificationService::AllSources());
+    second_controller_main->HidePopup();
+    observer.Wait();
+  }
+
+  EXPECT_FALSE(browser_actions_bar()->HasPopup());
+  EXPECT_FALSE(overflow_bar->HasPopup());
+  EXPECT_FALSE(second_controller_main->is_showing_popup());
+  EXPECT_FALSE(second_controller_overflow->is_showing_popup());
+  EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
+  EXPECT_EQ(2, overflow_bar->VisibleBrowserActions());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(first_controller_main->GetId(),
+            browser_actions_bar()->GetExtensionId(0));
+  EXPECT_EQ(second_controller_main->GetId(),
+            browser_actions_bar()->GetExtensionId(1));
 }

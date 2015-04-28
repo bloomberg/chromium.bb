@@ -39,7 +39,7 @@ std::string VerifyToolbarOrderForBar(
     size_t total_size,
     size_t visible_count) {
   const std::vector<ToolbarActionViewController*>& toolbar_actions =
-      actions_bar->toolbar_actions();
+      actions_bar->toolbar_actions_unordered();
   // If the total size is wrong, we risk segfaulting by continuing. Abort now.
   if (total_size != toolbar_actions.size()) {
     return base::StringPrintf("Incorrect action count: expected %d, found %d",
@@ -395,8 +395,10 @@ TEST_F(ToolbarActionsBarUnitTest, ToolbarActionsReorderOnPrefChange) {
   }
 
   extensions::ExtensionIdList new_order;
-  new_order.push_back(toolbar_actions_bar()->toolbar_actions()[1]->GetId());
-  new_order.push_back(toolbar_actions_bar()->toolbar_actions()[2]->GetId());
+  new_order.push_back(toolbar_actions_bar()->toolbar_actions_unordered()[1]->
+      GetId());
+  new_order.push_back(toolbar_actions_bar()->toolbar_actions_unordered()[2]->
+      GetId());
   extensions::ExtensionPrefs::Get(profile())->SetToolbarOrder(new_order);
 
   {
