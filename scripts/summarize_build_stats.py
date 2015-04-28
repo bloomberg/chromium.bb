@@ -219,6 +219,8 @@ class CLStatsEngine(object):
     """
     for change, actions in submitted_changes.iteritems():
       submitted_patch_number = self.GetSubmittedPatchNumber(actions)
+      picked_up_builds = set(x.build_id for x in actions
+                             if x.action == constants.CL_ACTION_PICKED_UP)
       for a in actions:
         if a.action == constants.CL_ACTION_KICKED_OUT:
           # If the patch wasn't picked up in the run, this means that it "failed
@@ -228,8 +230,11 @@ class CLStatsEngine(object):
                        x.action == constants.CL_ACTION_PICKED_UP]
           falsely_rejected = a.patch_number == submitted_patch_number
           if picked_up:
+            patch_actions = [x for x in actions if
+                             a.patch_number == x.patch_number
+                             and x.build_id in picked_up_builds]
             # Check whether the patch was updated after submission.
-            yield change, actions, a, falsely_rejected
+            yield change, patch_actions, a, falsely_rejected
 
   def _PrintCounts(self, reasons, fmt):
     """Print a sorted list of reasons in descending order of frequency.
