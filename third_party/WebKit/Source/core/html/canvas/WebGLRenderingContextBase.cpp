@@ -2892,9 +2892,63 @@ ScriptValue WebGLRenderingContextBase::getUniform(ScriptState* scriptState, WebG
                     length = 1;
                     break;
                 default:
-                    // Can't handle this type
-                    synthesizeGLError(GL_INVALID_VALUE, "getUniform", "unhandled type");
-                    return ScriptValue::createNull(scriptState);
+                    if (!isWebGL2OrHigher()) {
+                        // Can't handle this type
+                        synthesizeGLError(GL_INVALID_VALUE, "getUniform", "unhandled type");
+                        return ScriptValue::createNull(scriptState);
+                    }
+                    // handle GLenums for WebGL 2.0 or higher
+                    switch (info.type) {
+                    case GL_UNSIGNED_INT:
+                        baseType = GL_UNSIGNED_INT;
+                        length = 1;
+                        break;
+                    case GL_UNSIGNED_INT_VEC2:
+                        baseType = GL_UNSIGNED_INT;
+                        length = 2;
+                        break;
+                    case GL_UNSIGNED_INT_VEC3:
+                        baseType = GL_UNSIGNED_INT;
+                        length = 3;
+                        break;
+                    case GL_UNSIGNED_INT_VEC4:
+                        baseType = GL_UNSIGNED_INT;
+                        length = 4;
+                        break;
+                    case GL_FLOAT_MAT2x3:
+                        baseType = GL_FLOAT;
+                        length = 6;
+                        break;
+                    case GL_FLOAT_MAT2x4:
+                        baseType = GL_FLOAT;
+                        length = 8;
+                        break;
+                    case GL_FLOAT_MAT3x2:
+                        baseType = GL_FLOAT;
+                        length = 6;
+                        break;
+                    case GL_FLOAT_MAT3x4:
+                        baseType = GL_FLOAT;
+                        length = 12;
+                        break;
+                    case GL_FLOAT_MAT4x2:
+                        baseType = GL_FLOAT;
+                        length = 8;
+                        break;
+                    case GL_FLOAT_MAT4x3:
+                        baseType = GL_FLOAT;
+                        length = 12;
+                        break;
+                    case GL_SAMPLER_3D:
+                    case GL_SAMPLER_2D_ARRAY:
+                        baseType = GL_INT;
+                        length = 1;
+                        break;
+                    default:
+                        // Can't handle this type
+                        synthesizeGLError(GL_INVALID_VALUE, "getUniform", "unhandled type");
+                        return ScriptValue::createNull(scriptState);
+                    }
                 }
                 switch (baseType) {
                 case GL_FLOAT: {
@@ -2910,6 +2964,13 @@ ScriptValue WebGLRenderingContextBase::getUniform(ScriptState* scriptState, WebG
                     if (length == 1)
                         return WebGLAny(scriptState, value[0]);
                     return WebGLAny(scriptState, DOMInt32Array::create(value, length));
+                }
+                case GL_UNSIGNED_INT: {
+                    GLuint value[4] = {0};
+                    webContext()->getUniformuiv(objectOrZero(program), location, value);
+                    if (length == 1)
+                        return WebGLAny(scriptState, value[0]);
+                    return WebGLAny(scriptState, DOMUint32Array::create(value, length));
                 }
                 case GL_BOOL: {
                     GLint value[4] = {0};
