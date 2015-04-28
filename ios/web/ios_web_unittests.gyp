@@ -49,6 +49,7 @@
             'test_data_files': [
               'test/data/chrome.html',
               'test/data/testbadpass.pkpass',
+              'test/data/testfavicon.png',
               'test/data/testpass.pkpass',
             ],
             'test_data_prefix': 'ios/web',
