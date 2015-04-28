@@ -165,7 +165,6 @@ remoting_webapp_js_client_files = [
   "crd/js/connected_view.js",
   "crd/js/connection_info.js",
   "crd/js/credentials_provider.js",
-  "crd/js/desktop_connected_view.js",
   "crd/js/host_desktop.js",
   "crd/js/smart_reconnector.js",
   "crd/js/video_frame_recorder.js",
@@ -247,18 +246,35 @@ remoting_webapp_js_signaling_files = [
 remoting_webapp_js_ui_files = [
   "base/js/viewport.js",
   "base/js/window_shape.js",
+  "crd/js/connection_stats.js",
+  "crd/js/feedback.js",
+  "crd/js/l10n.js",
+  "crd/js/ui_mode.js",
+]
+
+#
+# DesktopRemoting-specific JS files.
+#
+
+# The CRD-specific JavaScript files required by main.html.
+remoting_webapp_crd_js_ui_files = [
   "crd/js/bump_scroller.js",
   "crd/js/butter_bar.js",
-  "crd/js/connection_stats.js",
+  "crd/js/crd_auth_dialog.js",
+  "crd/js/crd_event_handlers.js",
+  "crd/js/crd_experimental.js",
+  "crd/js/crd_main.js",
+  "crd/js/desktop_connected_view.js",
+  "crd/js/desktop_remoting.js",
+  "crd/js/desktop_remoting_activity.js",
   "crd/js/desktop_viewport.js",
-  "crd/js/feedback.js",
   "crd/js/fullscreen.js",
   "crd/js/fullscreen_v1.js",
   "crd/js/fullscreen_v2.js",
-  "crd/js/l10n.js",
+  "crd/js/it2me_activity.js",
+  "crd/js/me2me_activity.js",
   "crd/js/menu_button.js",
   "crd/js/options_menu.js",
-  "crd/js/ui_mode.js",
   "crd/js/toolbar.js",
   "crd/js/window_frame.js",
 ]
@@ -287,17 +303,7 @@ remoting_webapp_shared_main_html_js_files =
 
 # The CRD-specific JavaScript files required by main.html.
 remoting_webapp_crd_main_html_all_js_files =
-    remoting_webapp_shared_main_html_js_files
-remoting_webapp_crd_main_html_all_js_files += [
-  "crd/js/crd_auth_dialog.js",
-  "crd/js/crd_event_handlers.js",
-  "crd/js/crd_experimental.js",
-  "crd/js/crd_main.js",
-  "crd/js/desktop_remoting.js",
-  "crd/js/desktop_remoting_activity.js",
-  "crd/js/it2me_activity.js",
-  "crd/js/me2me_activity.js",
-]
+    remoting_webapp_shared_main_html_js_files + remoting_webapp_crd_js_ui_files
 
 # These template files are used to construct main.html.
 remoting_webapp_template_files = [

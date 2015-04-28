@@ -347,7 +347,7 @@
       'variables': {
         'output_dir': '<(PRODUCT_DIR)/remoting/unittests',
         'webapp_js_files': [
-          '<@(remoting_webapp_shared_main_html_js_files)',
+          '<@(remoting_webapp_unittest_html_all_js_files)',
           '<@(remoting_webapp_wcs_sandbox_html_js_files)',
           '<@(remoting_webapp_background_html_js_files)',
         ]
