@@ -476,8 +476,6 @@
       'browser/cache_storage/cache_storage_context_impl.h',
       'browser/cache_storage/cache_storage_dispatcher_host.cc',
       'browser/cache_storage/cache_storage_dispatcher_host.h',
-      'browser/cache_storage/cache_storage_listener.cc',
-      'browser/cache_storage/cache_storage_listener.h',
       'browser/cache_storage/cache_storage_manager.cc',
       'browser/cache_storage/cache_storage_manager.h',
       'browser/cache_storage/cache_storage_quota_client.cc',
