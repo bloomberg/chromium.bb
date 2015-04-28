@@ -966,7 +966,7 @@ void crashIfV8IsDead();
 
 inline bool isUndefinedOrNull(v8::Handle<v8::Value> value)
 {
-    return value->IsNull() || value->IsUndefined();
+    return value.IsEmpty() || value->IsNull() || value->IsUndefined();
 }
 v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function>);
 

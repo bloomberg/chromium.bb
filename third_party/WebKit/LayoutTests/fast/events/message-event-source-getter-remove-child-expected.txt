@@ -1,0 +1,2 @@
+CONSOLE ERROR: line 9: Uncaught TypeError: Cannot read property 'removeChild' of null
+Pass when no crash observed.

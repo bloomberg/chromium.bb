@@ -102,6 +102,8 @@ public:
         ConversionContext& m_context;
     };
 
+    // Note that this function returns true when there is no value associated
+    // with a given key.
     bool convert(ConversionContext&, const String&, Dictionary&) const;
 
     bool getOwnPropertiesAsStringHashMap(HashMap<String, String>&) const;
