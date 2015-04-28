@@ -113,7 +113,7 @@ For more information of cros build usage:
           self.options.device,
           self.options.packages,
           board=self.options.board,
-          brick=self.options.brick or self.curr_brick_locator,
+          brick_name=self.options.brick or self.curr_brick_locator,
           emerge=self.options.emerge,
           update=self.options.update,
           deep=self.options.deep,

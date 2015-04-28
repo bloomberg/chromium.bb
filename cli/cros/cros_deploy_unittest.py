@@ -73,7 +73,7 @@ class CrosDeployTest(cros_test_lib.MockTempDirTestCase,
     # `cros deploy` default options. Must match AddParser().
     expected_kwargs = {
         'board': None,
-        'brick': None,
+        'brick_name': None,
         'strip': True,
         'emerge': True,
         'root': '/',
@@ -101,21 +101,21 @@ class CrosDeployTest(cros_test_lib.MockTempDirTestCase,
     """Tests command line --brick."""
     self.SetupCommandMock([self.DEVICE, '--brick', '//foo'])
     self.cmd_mock.inst.Run()
-    self.VerifyDeployParameters(self.DEVICE, [], brick='//foo')
+    self.VerifyDeployParameters(self.DEVICE, [], brick_name='//foo')
 
   def testImplicitBrick(self):
     """Tests an implicit brick based on |curr_brick_locator|."""
     self.SetupCommandMock([self.DEVICE])
     self.cmd_mock.inst.curr_brick_locator = '//bar'
     self.cmd_mock.inst.Run()
-    self.VerifyDeployParameters(self.DEVICE, [], brick='//bar')
+    self.VerifyDeployParameters(self.DEVICE, [], brick_name='//bar')
 
   def testBrickPriority(self):
     """Tests that command line --brick takes precedence."""
     self.SetupCommandMock([self.DEVICE, '--brick', '//foo'])
     self.cmd_mock.inst.curr_brick_locator = '//bar'
     self.cmd_mock.inst.Run()
-    self.VerifyDeployParameters(self.DEVICE, [], brick='//foo')
+    self.VerifyDeployParameters(self.DEVICE, [], brick_name='//foo')
 
   def testDeployError(self):
     """Tests that DeployErrors are caught and logged."""

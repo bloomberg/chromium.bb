@@ -146,7 +146,7 @@ Examples:
           self.options.image,
           project_sdk_image=self.options.project_sdk,
           board=self.options.board,
-          brick=self.options.brick or self.curr_brick_locator,
+          brick_name=self.options.brick or self.curr_brick_locator,
           install=self.options.install,
           src_image_to_delta=self.options.src_image_to_delta,
           rootfs_update=self.options.rootfs_update,

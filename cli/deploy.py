@@ -844,17 +844,17 @@ def _CheckDeviceVersion(device):
                       (device.sdk_version or 'unknown', sdk_version))
 
 
-def Deploy(device, packages, board=None, brick=None, emerge=True, update=False,
-           deep=False, deep_rev=False, clean_binpkg=True, root='/', strip=True,
-           emerge_args=None, ssh_private_key=None, ping=True, force=False,
-           dry_run=False):
+def Deploy(device, packages, board=None, brick_name=None, emerge=True,
+           update=False, deep=False, deep_rev=False, clean_binpkg=True,
+           root='/', strip=True, emerge_args=None, ssh_private_key=None,
+           ping=True, force=False, dry_run=False):
   """Deploys packages to a device.
 
   Args:
     device: commandline.Device object; None to use the default device.
     packages: List of packages (strings) to deploy to device.
     board: Board to use; None to automatically detect.
-    brick: Brick locator to use. Overrides |board| if not None.
+    brick_name: Brick locator to use. Overrides |board| if not None.
     emerge: True to emerge package, False to unmerge.
     update: Check installed version on device.
     deep: Install dependencies also. Implies |update|.
@@ -880,7 +880,7 @@ def Deploy(device, packages, board=None, brick=None, emerge=True, update=False,
   if update and not emerge:
     raise ValueError('Cannot update and unmerge.')
 
-  brick = brick_lib.Brick(brick) if brick else None
+  brick = brick_lib.Brick(brick_name) if brick_name else None
   if brick:
     board = brick.FriendlyName()
 

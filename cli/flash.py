@@ -658,7 +658,7 @@ class RemoteDeviceUpdater(object):
 
 
 # TODO(dpursell): replace |brick| argument with blueprints when they're ready.
-def Flash(device, image, project_sdk_image=False, board=None, brick=None,
+def Flash(device, image, project_sdk_image=False, board=None, brick_name=None,
           install=False, src_image_to_delta=None, rootfs_update=True,
           stateful_update=True, clobber_stateful=False, reboot=True, wipe=True,
           ping=True, disable_rootfs_verification=False, clear_cache=False,
@@ -675,7 +675,7 @@ def Flash(device, image, project_sdk_image=False, board=None, brick=None,
         non-existant local paths are converted to xbuddy.
     project_sdk_image: Use a clean project SDK image. Overrides |image| if True.
     board: Board to use; None to automatically detect.
-    brick: Brick locator to use. Overrides |board| if not None.
+    brick_name: Brick locator to use. Overrides |board| if not None.
     install: Install to USB using base disk layout; USB |device| scheme only.
     src_image_to_delta: Local path to an image to be used as the base to
         generate delta payloads; SSH |device| scheme only.
@@ -723,7 +723,7 @@ def Flash(device, image, project_sdk_image=False, board=None, brick=None,
       raise FlashError('Could not find SDK version')
     image = 'project_sdk'
 
-  brick = brick_lib.Brick(brick) if brick else None
+  brick = brick_lib.Brick(brick_name) if brick_name else None
   if brick:
     board = brick.FriendlyName()
 
