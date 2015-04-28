@@ -12,7 +12,6 @@ import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW;
 import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE;
 import static android.content.ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN;
 
-import android.os.Build;
 import android.os.SystemClock;
 
 import org.chromium.base.metrics.RecordHistogram;
@@ -75,8 +74,6 @@ public class MemoryUma {
 
     private static void memoryNotificationForeground(int notification) {
         assert notification >= 0 && notification < FOREGROUND_MAX;
-        // Before Jelly Bean we have only LowMemory foreground notification.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
         RecordHistogram.recordEnumeratedHistogram("MemoryAndroid.NotificationForeground",
                 notification, FOREGROUND_MAX);
     }

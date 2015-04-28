@@ -4,21 +4,16 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 /**
  * Tests for WebsiteAddress.
- * loadNativeLibraryAndInitBrowserProcess seems to be flaky on ICS.
- * http://crbug.com/431717
  */
-@MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN)
 public class WebsiteAddressTest extends NativeLibraryTestBase {
 
     @Smoke

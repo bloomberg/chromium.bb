@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contextmenu;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.os.Build;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.ContextMenu;
@@ -96,8 +95,6 @@ public class ContextMenuTest extends ChromeShellTestBase {
     // @MediumTest
     @Feature({"Browser"})
     public void testCopyImageToClipboard() throws InterruptedException, TimeoutException {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
-
         Tab tab = getActivity().getActiveTab();
         ContextMenuUtils.selectContextMenuItem(this, tab, "testImage",
                 R.id.contextmenu_copy_image);
