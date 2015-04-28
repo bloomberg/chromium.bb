@@ -9,7 +9,7 @@ namespace blink {
 
 namespace {
 
-void setDomPoint(DOMPoint* point, const blink::WebVRVector3& vec)
+void setDomPoint(DOMPoint* point, const WebVRVector3& vec)
 {
     point->setX(vec.x);
     point->setY(vec.y);
@@ -30,7 +30,7 @@ VREyeParameters::VREyeParameters()
     m_renderRect = DOMRect::create(0, 0, 0, 0);
 }
 
-void VREyeParameters::setFromWebVREyeParameters(const blink::WebVREyeParameters &state)
+void VREyeParameters::setFromWebVREyeParameters(const WebVREyeParameters &state)
 {
     // FIXME: We should expose proper min/max FOV eventually but for now set the
     // min/max equal to the recommended FOV to reduce need for synchronous

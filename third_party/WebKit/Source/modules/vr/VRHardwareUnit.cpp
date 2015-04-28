@@ -64,7 +64,7 @@ VRController* VRHardwareUnit::controller()
 
 VRPositionState* VRHardwareUnit::getSensorState()
 {
-    blink::WebHMDSensorState state;
+    WebHMDSensorState state;
     m_controller->getSensorState(m_index, state);
     m_positionState->setState(state);
     m_frameIndex = state.frameIndex;

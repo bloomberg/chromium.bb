@@ -113,7 +113,7 @@ void SyncGetRegistrationsCallbacks::onSuccess(WebVector<WebSyncRegistration*>* w
         return;
     }
 
-    if (webSyncRegistrations->size() && (*webSyncRegistrations)[0]->periodicity == blink::WebSyncRegistration::PeriodicityOneShot) {
+    if (webSyncRegistrations->size() && (*webSyncRegistrations)[0]->periodicity == WebSyncRegistration::PeriodicityOneShot) {
         Vector<SyncRegistration*> syncRegistrations;
         for (size_t i = 0; i < webSyncRegistrations->size(); ++i) {
             WebSyncRegistration* webSyncRegistration = (*webSyncRegistrations)[i];

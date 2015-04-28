@@ -23,7 +23,7 @@ public:
 
     void getDevices(WebVRGetDevicesCallback*);
 
-    void getSensorState(unsigned index, blink::WebHMDSensorState& into);
+    void getSensorState(unsigned index, WebHMDSensorState& into);
 
     void resetSensor(unsigned index);
 

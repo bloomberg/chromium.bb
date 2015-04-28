@@ -60,7 +60,7 @@ public:
     void setLeftDegrees(double value) { m_leftDegrees = value; }
     void setRightDegrees(double value) { m_rightDegrees = value; }
 
-    void setFromWebVRFieldOfView(const blink::WebVRFieldOfView& fov)
+    void setFromWebVRFieldOfView(const WebVRFieldOfView& fov)
     {
         m_upDegrees = fov.upDegrees;
         m_downDegrees = fov.downDegrees;

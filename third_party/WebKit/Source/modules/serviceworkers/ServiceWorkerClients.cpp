@@ -25,7 +25,7 @@ namespace {
 
 class ClientArray {
 public:
-    typedef blink::WebServiceWorkerClientsInfo WebType;
+    typedef WebServiceWorkerClientsInfo WebType;
     static HeapVector<Member<ServiceWorkerClient>> take(ScriptPromiseResolver*, WebType* webClientsRaw)
     {
         OwnPtr<WebType> webClients = adoptPtr(webClientsRaw);

@@ -21,7 +21,7 @@ public:
     VRGetDevicesCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver>, VRHardwareUnitCollection*);
     ~VRGetDevicesCallback() override;
 
-    void onSuccess(WebVector<blink::WebVRDevice>*) override;
+    void onSuccess(WebVector<WebVRDevice>*) override;
     void onError() override;
 
 private:

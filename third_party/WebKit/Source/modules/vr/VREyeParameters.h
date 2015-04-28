@@ -30,7 +30,7 @@ public:
     VRFieldOfView* currentFieldOfView() const { return m_currentFieldOfView; }
     DOMRect* renderRect() const { return m_renderRect; }
 
-    void setFromWebVREyeParameters(const blink::WebVREyeParameters&);
+    void setFromWebVREyeParameters(const WebVREyeParameters&);
 
     DECLARE_VIRTUAL_TRACE()
 

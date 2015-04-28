@@ -52,7 +52,7 @@ unsigned long PeriodicSyncManager::minPossiblePeriod()
     return kMinPossiblePeriod;
 }
 
-ScriptPromise PeriodicSyncManager::registerFunction(blink::ScriptState* scriptState, const PeriodicSyncRegistrationOptions& options)
+ScriptPromise PeriodicSyncManager::registerFunction(ScriptState* scriptState, const PeriodicSyncRegistrationOptions& options)
 {
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
@@ -89,7 +89,7 @@ ScriptPromise PeriodicSyncManager::registerFunction(blink::ScriptState* scriptSt
     return promise;
 }
 
-ScriptPromise PeriodicSyncManager::getRegistration(blink::ScriptState* scriptState, const String& syncRegistrationTag)
+ScriptPromise PeriodicSyncManager::getRegistration(ScriptState* scriptState, const String& syncRegistrationTag)
 {
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - no active Service Worker"));
@@ -97,12 +97,12 @@ ScriptPromise PeriodicSyncManager::getRegistration(blink::ScriptState* scriptSta
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    backgroundSyncProvider()->getRegistration(blink::WebSyncRegistration::PeriodicityPeriodic, syncRegistrationTag, m_registration->webRegistration(), new SyncRegistrationCallbacks(resolver, m_registration));
+    backgroundSyncProvider()->getRegistration(WebSyncRegistration::PeriodicityPeriodic, syncRegistrationTag, m_registration->webRegistration(), new SyncRegistrationCallbacks(resolver, m_registration));
 
     return promise;
 }
 
-ScriptPromise PeriodicSyncManager::getRegistrations(blink::ScriptState* scriptState)
+ScriptPromise PeriodicSyncManager::getRegistrations(ScriptState* scriptState)
 {
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - no active Service Worker"));
@@ -110,12 +110,12 @@ ScriptPromise PeriodicSyncManager::getRegistrations(blink::ScriptState* scriptSt
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    backgroundSyncProvider()->getRegistrations(blink::WebSyncRegistration::PeriodicityPeriodic, m_registration->webRegistration(), new SyncGetRegistrationsCallbacks(resolver, m_registration));
+    backgroundSyncProvider()->getRegistrations(WebSyncRegistration::PeriodicityPeriodic, m_registration->webRegistration(), new SyncGetRegistrationsCallbacks(resolver, m_registration));
 
     return promise;
 }
 
-ScriptPromise PeriodicSyncManager::permissionState(blink::ScriptState* scriptState)
+ScriptPromise PeriodicSyncManager::permissionState(ScriptState* scriptState)
 {
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Operation failed - no active Service Worker"));

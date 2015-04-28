@@ -20,7 +20,7 @@ VRGetDevicesCallback::~VRGetDevicesCallback()
 {
 }
 
-void VRGetDevicesCallback::onSuccess(WebVector<blink::WebVRDevice>* devices)
+void VRGetDevicesCallback::onSuccess(WebVector<WebVRDevice>* devices)
 {
     m_resolver->resolve(m_hardwareUnits->updateVRHardwareUnits(devices));
 }

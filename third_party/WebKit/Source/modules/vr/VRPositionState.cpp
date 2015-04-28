@@ -9,13 +9,13 @@ namespace blink {
 
 namespace {
 
-DOMPoint* VecToDomPoint(const blink::WebVRVector4& vec, bool valid)
+DOMPoint* VecToDomPoint(const WebVRVector4& vec, bool valid)
 {
     if (valid)
         return DOMPoint::create(vec.x, vec.y, vec.z, vec.w);
     return nullptr;
 }
-DOMPoint* VecToDomPoint(const blink::WebVRVector3& vec, bool valid)
+DOMPoint* VecToDomPoint(const WebVRVector3& vec, bool valid)
 {
     if (valid)
         return DOMPoint::create(vec.x, vec.y, vec.z, 0.0);
@@ -29,7 +29,7 @@ VRPositionState::VRPositionState()
 {
 }
 
-void VRPositionState::setState(const blink::WebHMDSensorState &state)
+void VRPositionState::setState(const WebHMDSensorState &state)
 {
     m_timeStamp = state.timestamp;
     m_orientation = VecToDomPoint(state.orientation, state.flags & WebVRSensorStateOrientation);

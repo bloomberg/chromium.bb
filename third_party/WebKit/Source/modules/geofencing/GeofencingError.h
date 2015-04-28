@@ -17,7 +17,7 @@ class GeofencingError {
     WTF_MAKE_NONCOPYABLE(GeofencingError);
 public:
     // For CallbackPromiseAdapter.
-    typedef blink::WebGeofencingError WebType;
+    typedef WebGeofencingError WebType;
     static DOMException* take(ScriptPromiseResolver*, WebType* webErrorRaw);
     static void dispose(WebType* webErrorRaw);
 

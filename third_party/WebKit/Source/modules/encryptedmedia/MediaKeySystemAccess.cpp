@@ -35,7 +35,7 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
     WTF_MAKE_NONCOPYABLE(NewCdmResultPromise);
 
 public:
-    NewCdmResultPromise(ScriptState* scriptState, const String& keySystem, const blink::WebVector<blink::WebEncryptedMediaSessionType>& supportedSessionTypes)
+    NewCdmResultPromise(ScriptState* scriptState, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes)
         : ContentDecryptionModuleResultPromise(scriptState)
         , m_keySystem(keySystem)
         , m_supportedSessionTypes(supportedSessionTypes)
@@ -59,7 +59,7 @@ public:
 
 private:
     const String m_keySystem;
-    blink::WebVector<blink::WebEncryptedMediaSessionType> m_supportedSessionTypes;
+    WebVector<WebEncryptedMediaSessionType> m_supportedSessionTypes;
 };
 
 // These methods are the inverses of those with the same names in
@@ -89,11 +89,11 @@ static Vector<MediaKeySystemMediaCapability> convertCapabilities(const WebVector
 static String convertMediaKeysRequirement(WebMediaKeySystemConfiguration::Requirement requirement)
 {
     switch (requirement) {
-    case blink::WebMediaKeySystemConfiguration::Requirement::Required:
+    case WebMediaKeySystemConfiguration::Requirement::Required:
         return "required";
-    case blink::WebMediaKeySystemConfiguration::Requirement::Optional:
+    case WebMediaKeySystemConfiguration::Requirement::Optional:
         return "optional";
-    case blink::WebMediaKeySystemConfiguration::Requirement::NotAllowed:
+    case WebMediaKeySystemConfiguration::Requirement::NotAllowed:
         return "not-allowed";
     }
 

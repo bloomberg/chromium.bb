@@ -26,7 +26,7 @@ namespace {
 // For CallbackPromiseAdapter to convert a WebVector of regions to a HeapVector.
 class RegionArray {
 public:
-    typedef blink::WebVector<blink::WebGeofencingRegistration> WebType;
+    typedef WebVector<WebGeofencingRegistration> WebType;
     static HeapVector<Member<GeofencingRegion>> take(ScriptPromiseResolver* resolver, WebType* regionsRaw)
     {
         OwnPtr<WebType> webRegions = adoptPtr(regionsRaw);

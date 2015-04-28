@@ -8,6 +8,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
+#include "public/platform/WebServiceWorkerRequest.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -55,7 +56,7 @@ public:
     };
 
     static FetchRequestData* create();
-    static FetchRequestData* create(const blink::WebServiceWorkerRequest&);
+    static FetchRequestData* create(const WebServiceWorkerRequest&);
     FetchRequestData* clone() const;
     FetchRequestData* pass() const;
     ~FetchRequestData();

@@ -30,7 +30,7 @@ VREye HMDVRDevice::StringToVREye(const String& whichEye)
 void HMDVRDevice::updateFromWebVRDevice(const WebVRDevice& device)
 {
     VRDevice::updateFromWebVRDevice(device);
-    const blink::WebVRHMDInfo &hmdInfo = device.hmdInfo;
+    const WebVRHMDInfo &hmdInfo = device.hmdInfo;
 
     m_eyeParametersLeft->setFromWebVREyeParameters(hmdInfo.leftEye);
     m_eyeParametersRight->setFromWebVREyeParameters(hmdInfo.rightEye);

@@ -27,7 +27,7 @@ VRHardwareUnitCollection::VRHardwareUnitCollection(VRController* controller)
 {
 }
 
-HeapVector<Member<VRDevice>> VRHardwareUnitCollection::updateVRHardwareUnits(const WebVector<blink::WebVRDevice>* devices)
+HeapVector<Member<VRDevice>> VRHardwareUnitCollection::updateVRHardwareUnits(const WebVector<WebVRDevice>* devices)
 {
     VRDeviceVector vrDevices;
 
@@ -35,7 +35,7 @@ HeapVector<Member<VRDevice>> VRHardwareUnitCollection::updateVRHardwareUnits(con
         return vrDevices;
 
     for (size_t i = 0; i < devices->size(); ++i) {
-        const blink::WebVRDevice& device = (*devices)[i];
+        const WebVRDevice& device = (*devices)[i];
 
         VRHardwareUnit* hardwareUnit = getHardwareUnitForIndex(device.index);
         if (!hardwareUnit) {

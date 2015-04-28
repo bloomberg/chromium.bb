@@ -86,7 +86,7 @@ public:
     const String& name() const { return m_name; }
     FileSystemType type() const { return m_type; }
     KURL rootURL() const { return m_filesystemRootURL; }
-    blink::WebFileSystem* fileSystem() const;
+    WebFileSystem* fileSystem() const;
     SecurityOrigin* securityOrigin() const;
 
     // The clonable flag is used in the structured clone algorithm to test

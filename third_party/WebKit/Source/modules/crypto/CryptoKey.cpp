@@ -98,7 +98,7 @@ WebCryptoKeyUsageMask keyUsageStringToMask(const String& usageString)
     return 0;
 }
 
-class DictionaryBuilder : public blink::WebCryptoKeyAlgorithmDictionary {
+class DictionaryBuilder : public WebCryptoKeyAlgorithmDictionary {
 public:
     explicit DictionaryBuilder(V8ObjectBuilder& builder)
         : m_builder(builder)
@@ -115,16 +115,16 @@ public:
         m_builder.addNumber(propertyName, value);
     }
 
-    virtual void setAlgorithm(const char* propertyName, const blink::WebCryptoAlgorithm& algorithm)
+    virtual void setAlgorithm(const char* propertyName, const WebCryptoAlgorithm& algorithm)
     {
-        ASSERT(algorithm.paramsType() == blink::WebCryptoAlgorithmParamsTypeNone);
+        ASSERT(algorithm.paramsType() == WebCryptoAlgorithmParamsTypeNone);
 
         V8ObjectBuilder algorithmValue(m_builder.scriptState());
-        algorithmValue.addString("name", blink::WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id())->name);
+        algorithmValue.addString("name", WebCryptoAlgorithm::lookupAlgorithmInfo(algorithm.id())->name);
         m_builder.add(propertyName, algorithmValue);
     }
 
-    virtual void setUint8Array(const char* propertyName, const blink::WebVector<unsigned char>& vector)
+    virtual void setUint8Array(const char* propertyName, const WebVector<unsigned char>& vector)
     {
         m_builder.add(propertyName, DOMUint8Array::create(vector.data(), vector.size()));
     }

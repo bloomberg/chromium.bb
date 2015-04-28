@@ -32,26 +32,23 @@
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
+
 class WebStorageNamespace;
-}
-
-namespace blink {
-
 class SecurityOrigin;
 class StorageArea;
 
 class MODULES_EXPORT StorageNamespace {
 public:
-    explicit StorageNamespace(PassOwnPtr<blink::WebStorageNamespace>);
+    explicit StorageNamespace(PassOwnPtr<WebStorageNamespace>);
     ~StorageNamespace();
 
     static StorageArea* localStorageArea(SecurityOrigin*);
 
     StorageArea* storageArea(SecurityOrigin*);
-    bool isSameNamespace(const blink::WebStorageNamespace& sessionNamespace) const;
+    bool isSameNamespace(const WebStorageNamespace& sessionNamespace) const;
 
 private:
-    OwnPtr<blink::WebStorageNamespace> m_webStorageNamespace;
+    OwnPtr<WebStorageNamespace> m_webStorageNamespace;
 };
 
 } // namespace blink

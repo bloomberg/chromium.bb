@@ -8,6 +8,7 @@
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebServiceWorkerRequest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
@@ -62,7 +63,7 @@ public:
     // |m_internalResponse|. If the type is Error or Opaque, does nothing.
     void replaceBodyStreamBuffer(BodyStreamBuffer*);
 
-    void populateWebServiceWorkerResponse(blink::WebServiceWorkerResponse&);
+    void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);
 
     DECLARE_TRACE();
 

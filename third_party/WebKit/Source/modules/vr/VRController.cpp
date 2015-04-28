@@ -51,7 +51,7 @@ void VRController::getDevices(WebVRGetDevicesCallback* callback)
     m_client->getDevices(callback);
 }
 
-void VRController::getSensorState(unsigned index, blink::WebHMDSensorState& into)
+void VRController::getSensorState(unsigned index, WebHMDSensorState& into)
 {
     // When detached, the client is no longer valid.
     if (!m_client)

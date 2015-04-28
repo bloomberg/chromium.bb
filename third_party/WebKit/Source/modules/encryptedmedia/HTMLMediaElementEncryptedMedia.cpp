@@ -99,13 +99,13 @@ public:
         (*m_failureCallback)(InvalidStateError, "Unexpected completion.");
     }
 
-    virtual void completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus status) override
+    virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
     {
         ASSERT_NOT_REACHED();
         (*m_failureCallback)(InvalidStateError, "Unexpected completion.");
     }
 
-    virtual void completeWithError(blink::WebContentDecryptionModuleException code, unsigned long systemCode, const blink::WebString& message) override
+    virtual void completeWithError(WebContentDecryptionModuleException code, unsigned long systemCode, const WebString& message) override
     {
         // Non-zero |systemCode| is appended to the |message|. If the |message|
         // is empty, we'll report "Rejected with system code (systemCode)".

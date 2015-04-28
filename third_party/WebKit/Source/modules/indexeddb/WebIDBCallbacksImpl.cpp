@@ -74,7 +74,7 @@ void WebIDBCallbacksImpl::onError(const WebIDBDatabaseError& error)
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
-void WebIDBCallbacksImpl::onSuccess(const WebVector<blink::WebString>& webStringList)
+void WebIDBCallbacksImpl::onSuccess(const WebVector<WebString>& webStringList)
 {
     Vector<String> stringList;
     for (size_t i = 0; i < webStringList.size(); ++i)
@@ -148,10 +148,10 @@ void WebIDBCallbacksImpl::onBlocked(long long oldVersion)
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
-void WebIDBCallbacksImpl::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata, unsigned short dataLoss, blink::WebString dataLossMessage)
+void WebIDBCallbacksImpl::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata, unsigned short dataLoss, WebString dataLossMessage)
 {
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncCallbackStarting(m_request->executionContext(), m_asyncOperationId);
-    m_request->onUpgradeNeeded(oldVersion, adoptPtr(database), IDBDatabaseMetadata(metadata), static_cast<blink::WebIDBDataLoss>(dataLoss), dataLossMessage);
+    m_request->onUpgradeNeeded(oldVersion, adoptPtr(database), IDBDatabaseMetadata(metadata), static_cast<WebIDBDataLoss>(dataLoss), dataLossMessage);
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 

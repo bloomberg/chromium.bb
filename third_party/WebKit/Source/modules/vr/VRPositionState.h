@@ -30,7 +30,7 @@ public:
     DOMPoint* angularAcceleration() const { return m_angularAcceleration; }
     DOMPoint* linearAcceleration() const { return m_linearAcceleration; }
 
-    void setState(const blink::WebHMDSensorState&);
+    void setState(const WebHMDSensorState&);
 
     DECLARE_VIRTUAL_TRACE();
 

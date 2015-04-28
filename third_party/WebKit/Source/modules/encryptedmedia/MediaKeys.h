@@ -31,6 +31,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "platform/Timer.h"
+#include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebEncryptedMediaTypes.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
@@ -51,7 +52,7 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ContextLif
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    MediaKeys(ExecutionContext*, const String& keySystem, const blink::WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
+    MediaKeys(ExecutionContext*, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
     virtual ~MediaKeys();
 
     // FIXME: This should be removed after crbug.com/425186 is fully
@@ -62,7 +63,7 @@ public:
 
     ScriptPromise setServerCertificate(ScriptState*, const DOMArrayPiece& serverCertificate);
 
-    blink::WebContentDecryptionModule* contentDecryptionModule();
+    WebContentDecryptionModule* contentDecryptionModule();
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -76,8 +77,8 @@ private:
     void timerFired(Timer<MediaKeys>*);
 
     const String m_keySystem;
-    const blink::WebVector<WebEncryptedMediaSessionType> m_supportedSessionTypes;
-    OwnPtr<blink::WebContentDecryptionModule> m_cdm;
+    const WebVector<WebEncryptedMediaSessionType> m_supportedSessionTypes;
+    OwnPtr<WebContentDecryptionModule> m_cdm;
 
     HeapDeque<Member<PendingAction>> m_pendingActions;
     Timer<MediaKeys> m_timer;

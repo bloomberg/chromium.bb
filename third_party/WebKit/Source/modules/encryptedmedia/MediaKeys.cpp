@@ -81,7 +81,7 @@ private:
     const RefPtr<DOMArrayBuffer> m_data;
 };
 
-MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, const blink::WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
+MediaKeys::MediaKeys(ExecutionContext* context, const String& keySystem, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule> cdm)
     : ContextLifecycleObserver(context)
     , m_keySystem(keySystem)
     , m_supportedSessionTypes(supportedSessionTypes)

@@ -6,6 +6,7 @@
 #define BluetoothError_h
 
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/bluetooth/WebBluetoothError.h"
 
 namespace blink {
 
@@ -21,7 +22,7 @@ public:
     // Interface required by CallbackPromiseAdapter:
     typedef WebBluetoothError WebType;
     static DOMException* take(ScriptPromiseResolver*, WebBluetoothError*);
-    static void dispose(blink::WebBluetoothError*);
+    static void dispose(WebBluetoothError*);
 
 private:
     BluetoothError() = delete;
