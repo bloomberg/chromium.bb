@@ -12,6 +12,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -351,6 +352,57 @@ static void ParseAndReadTestStreamData(const base::FilePath::StringType& data,
     test_streams->push_back(test_stream);
   }
 }
+
+// Basic test environment shared across multiple test cases. We only need to
+// setup it once for all test cases.
+// It helps
+// - maintain test stream data and other test settings.
+// - clean up temporary aligned files.
+// - output log to file.
+class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
+ public:
+  VideoEncodeAcceleratorTestEnvironment(
+      scoped_ptr<base::FilePath::StringType> data,
+      const base::FilePath& log_path,
+      bool run_at_fps)
+      : run_at_fps_(run_at_fps),
+        test_stream_data_(data.Pass()),
+        log_path_(log_path) {}
+
+  virtual void SetUp() {
+    if (!log_path_.empty()) {
+      log_file_.reset(new base::File(
+          log_path_, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE));
+      CHECK(log_file_->IsValid());
+    }
+    ParseAndReadTestStreamData(*test_stream_data_, &test_streams_);
+  }
+
+  virtual void TearDown() {
+    for (size_t i = 0; i < test_streams_.size(); i++) {
+      base::DeleteFile(test_streams_[i]->aligned_in_file, false);
+    }
+    log_file_.reset();
+  }
+
+  // Log one entry of machine-readable data to file.
+  // The log has one data entry per line in the format of "<key>: <value>".
+  void LogToFile(const std::string& key, const std::string& value) {
+    if (log_file_) {
+      std::string s =
+          base::StringPrintf("%s: %s\n", key.c_str(), value.c_str());
+      log_file_->WriteAtCurrentPos(s.data(), s.length());
+    }
+  }
+
+  ScopedVector<TestStream> test_streams_;
+  bool run_at_fps_;
+
+ private:
+  scoped_ptr<base::FilePath::StringType> test_stream_data_;
+  base::FilePath log_path_;
+  scoped_ptr<base::File> log_file_;
+};
 
 enum ClientState {
   CS_CREATED,
@@ -1133,6 +1185,8 @@ bool VEAClient::HandleEncodedFrame(bool keyframe) {
 void VEAClient::VerifyPerf() {
   double measured_fps = frames_per_second();
   LOG(INFO) << "Measured encoder FPS: " << measured_fps;
+  g_env->LogToFile("Measured encoder FPS",
+                   base::StringPrintf("%.3f", measured_fps));
   if (test_perf_)
     EXPECT_GE(measured_fps, kMinPerfFPS);
 }
@@ -1199,34 +1253,6 @@ void VEAClient::WriteIvfFrameHeader(int frame_index, size_t frame_size) {
       base::FilePath::FromUTF8Unsafe(test_stream_->out_filename),
       reinterpret_cast<char*>(&header), sizeof(header)));
 }
-
-// Setup test stream data and delete temporary aligned files at the beginning
-// and end of unittest. We only need to setup once for all test cases.
-class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
- public:
-  VideoEncodeAcceleratorTestEnvironment(
-      scoped_ptr<base::FilePath::StringType> data,
-      bool run_at_fps) {
-    test_stream_data_ = data.Pass();
-    run_at_fps_ = run_at_fps;
-  }
-
-  virtual void SetUp() {
-    ParseAndReadTestStreamData(*test_stream_data_, &test_streams_);
-  }
-
-  virtual void TearDown() {
-    for (size_t i = 0; i < test_streams_.size(); i++) {
-      base::DeleteFile(test_streams_[i]->aligned_in_file, false);
-    }
-  }
-
-  ScopedVector<TestStream> test_streams_;
-  bool run_at_fps_;
-
- private:
-  scoped_ptr<base::FilePath::StringType> test_stream_data_;
-};
 
 // Test parameters:
 // - Number of concurrent encoders. The value takes effect when there is only
@@ -1378,12 +1404,20 @@ int main(int argc, char** argv) {
   DCHECK(cmd_line);
 
   bool run_at_fps = false;
+  base::FilePath log_path;
+
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end();
        ++it) {
     if (it->first == "test_stream_data") {
       test_stream_data->assign(it->second.c_str());
+      continue;
+    }
+    // Output machine-readable logs with fixed formats to a file.
+    if (it->first == "output_log") {
+      log_path = base::FilePath(
+          base::FilePath::StringType(it->second.begin(), it->second.end()));
       continue;
     }
     if (it->first == "num_frames_to_encode") {
@@ -1410,7 +1444,7 @@ int main(int argc, char** argv) {
       reinterpret_cast<content::VideoEncodeAcceleratorTestEnvironment*>(
           testing::AddGlobalTestEnvironment(
               new content::VideoEncodeAcceleratorTestEnvironment(
-                  test_stream_data.Pass(), run_at_fps)));
+                  test_stream_data.Pass(), log_path, run_at_fps)));
 
   return RUN_ALL_TESTS();
 }
