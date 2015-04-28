@@ -52,7 +52,7 @@ public:
 
     int getMinFilter() const { return m_minFilter; }
 
-    void setLevelInfo(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLenum type);
+    void setLevelInfo(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLenum type);
 
     bool canGenerateMipmaps();
     // Generate all level information.
@@ -62,6 +62,7 @@ public:
     GLenum getType(GLenum target, GLint level) const;
     GLsizei getWidth(GLenum target, GLint level) const;
     GLsizei getHeight(GLenum target, GLint level) const;
+    GLsizei getDepth(GLenum target, GLint level) const;
     bool isValid(GLenum target, GLint level) const;
 
     // Whether width/height is NotPowerOfTwo.
@@ -73,7 +74,7 @@ public:
 
     bool hasEverBeenBound() const { return object() && m_target; }
 
-    static GLint computeLevelCount(GLsizei width, GLsizei height);
+    static GLint computeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
 
 private:
     explicit WebGLTexture(WebGLRenderingContextBase*);
@@ -87,16 +88,18 @@ private:
             , internalFormat(0)
             , width(0)
             , height(0)
+            , depth(0)
             , type(0)
         {
         }
 
-        void setInfo(GLenum internalFmt, GLsizei w, GLsizei h, GLenum tp)
+        void setInfo(GLenum internalFmt, GLsizei w, GLsizei h, GLsizei d, GLenum tp)
         {
             valid = true;
             internalFormat = internalFmt;
             width = w;
             height = h;
+            depth = d;
             type = tp;
         }
 
@@ -104,6 +107,7 @@ private:
         GLenum internalFormat;
         GLsizei width;
         GLsizei height;
+        GLsizei depth;
         GLenum type;
     };
 
@@ -119,6 +123,7 @@ private:
 
     GLenum m_minFilter;
     GLenum m_magFilter;
+    GLenum m_wrapR;
     GLenum m_wrapS;
     GLenum m_wrapT;
 

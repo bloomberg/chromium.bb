@@ -384,6 +384,8 @@ public:
     public:
         RefPtrWillBeMember<WebGLTexture> m_texture2DBinding;
         RefPtrWillBeMember<WebGLTexture> m_textureCubeMapBinding;
+        RefPtrWillBeMember<WebGLTexture> m_texture3DBinding;
+        RefPtrWillBeMember<WebGLTexture> m_texture2DArrayBinding;
 
         DECLARE_TRACE();
     };

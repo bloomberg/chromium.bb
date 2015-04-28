@@ -41,6 +41,7 @@ WebGLTexture::WebGLTexture(WebGLRenderingContextBase* ctx)
     , m_target(0)
     , m_minFilter(GL_NEAREST_MIPMAP_LINEAR)
     , m_magFilter(GL_LINEAR)
+    , m_wrapR(GL_REPEAT)
     , m_wrapS(GL_REPEAT)
     , m_wrapT(GL_REPEAT)
     , m_isNPOT(false)
@@ -74,6 +75,8 @@ void WebGLTexture::setTarget(GLenum target, GLint maxLevel)
         return;
     switch (target) {
     case GL_TEXTURE_2D:
+    case GL_TEXTURE_2D_ARRAY:
+    case GL_TEXTURE_3D:
         m_target = target;
         m_info.resize(1);
         m_info[0].resize(maxLevel);
@@ -112,6 +115,15 @@ void WebGLTexture::setParameteri(GLenum pname, GLint param)
             break;
         }
         break;
+    case GL_TEXTURE_WRAP_R:
+        switch (param) {
+        case GL_CLAMP_TO_EDGE:
+        case GL_MIRRORED_REPEAT:
+        case GL_REPEAT:
+            m_wrapR = param;
+            break;
+        }
+        break;
     case GL_TEXTURE_WRAP_S:
         switch (param) {
         case GL_CLAMP_TO_EDGE:
@@ -144,7 +156,7 @@ void WebGLTexture::setParameterf(GLenum pname, GLfloat param)
     setParameteri(pname, iparam);
 }
 
-void WebGLTexture::setLevelInfo(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLenum type)
+void WebGLTexture::setLevelInfo(GLenum target, GLint level, GLenum internalFormat, GLsizei width, GLsizei height, GLsizei depth, GLenum type)
 {
     if (!object() || !m_target)
         return;
@@ -153,7 +165,7 @@ void WebGLTexture::setLevelInfo(GLenum target, GLint level, GLenum internalForma
     int index = mapTargetToIndex(target);
     if (index < 0)
         return;
-    m_info[index][level].setInfo(internalFormat, width, height, type);
+    m_info[index][level].setInfo(internalFormat, width, height, depth, type);
     update();
 }
 
@@ -168,12 +180,14 @@ void WebGLTexture::generateMipmapLevelInfo()
             const LevelInfo& info0 = m_info[ii][0];
             GLsizei width = info0.width;
             GLsizei height = info0.height;
-            GLint levelCount = computeLevelCount(width, height);
+            GLsizei depth = info0.depth;
+            GLint levelCount = computeLevelCount(width, height, depth);
             for (GLint level = 1; level < levelCount; ++level) {
                 width = std::max(1, width >> 1);
                 height = std::max(1, height >> 1);
+                depth = std::max(1, depth >> 1);
                 LevelInfo& info = m_info[ii][level];
-                info.setInfo(info0.internalFormat, width, height, info0.type);
+                info.setInfo(info0.internalFormat, width, height, depth, info0.type);
             }
         }
         m_isComplete = true;
@@ -211,6 +225,14 @@ GLsizei WebGLTexture::getHeight(GLenum target, GLint level) const
     if (!info)
         return 0;
     return info->height;
+}
+
+GLsizei WebGLTexture::getDepth(GLenum target, GLint level) const
+{
+    const LevelInfo* info = getLevelInfo(target, level);
+    if (!info)
+        return 0;
+    return info->depth;
 }
 
 bool WebGLTexture::isValid(GLenum target, GLint level) const
@@ -277,6 +299,12 @@ int WebGLTexture::mapTargetToIndex(GLenum target) const
         case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
             return 5;
         }
+    } else if (m_target == GL_TEXTURE_3D) {
+        if (target == GL_TEXTURE_3D)
+            return 0;
+    } else if (m_target == GL_TEXTURE_2D_ARRAY) {
+        if (target == GL_TEXTURE_2D_ARRAY)
+            return 0;
     }
     return -1;
 }
@@ -289,7 +317,7 @@ bool WebGLTexture::canGenerateMipmaps()
     for (size_t ii = 0; ii < m_info.size(); ++ii) {
         const LevelInfo& info = m_info[ii][0];
         if (!info.valid
-            || info.width != first.width || info.height != first.height
+            || info.width != first.width || info.height != first.height || info.depth != first.depth
             || info.internalFormat != first.internalFormat || info.type != first.type
             || (m_info.size() > 1 && !m_isCubeComplete))
             return false;
@@ -297,10 +325,10 @@ bool WebGLTexture::canGenerateMipmaps()
     return true;
 }
 
-GLint WebGLTexture::computeLevelCount(GLsizei width, GLsizei height)
+GLint WebGLTexture::computeLevelCount(GLsizei width, GLsizei height, GLsizei depth)
 {
     // return 1 + log2Floor(std::max(width, height));
-    GLsizei n = std::max(width, height);
+    GLsizei n = std::max(std::max(width, height), depth);
     if (n <= 0)
         return 0;
     GLint log = 0;
@@ -329,14 +357,14 @@ void WebGLTexture::update()
     m_isComplete = true;
     m_isCubeComplete = true;
     const LevelInfo& first = m_info[0][0];
-    GLint levelCount = computeLevelCount(first.width, first.height);
+    GLint levelCount = computeLevelCount(first.width, first.height, first.depth);
     if (levelCount < 1)
         m_isComplete = false;
     else {
         for (size_t ii = 0; ii < m_info.size() && m_isComplete; ++ii) {
             const LevelInfo& info0 = m_info[ii][0];
             if (!info0.valid
-                || info0.width != first.width || info0.height != first.height
+                || info0.width != first.width || info0.height != first.height || info0.depth != first.depth
                 || info0.internalFormat != first.internalFormat || info0.type != first.type
                 || (m_info.size() > 1 && info0.width != info0.height)) {
                 if (m_info.size() > 1)
@@ -346,12 +374,14 @@ void WebGLTexture::update()
             }
             GLsizei width = info0.width;
             GLsizei height = info0.height;
+            GLsizei depth = info0.depth;
             for (GLint level = 1; level < levelCount; ++level) {
                 width = std::max(1, width >> 1);
                 height = std::max(1, height >> 1);
+                depth = std::max(1, depth >> 1);
                 const LevelInfo& info = m_info[ii][level];
                 if (!info.valid
-                    || info.width != width || info.height != height
+                    || info.width != width || info.height != height || info.depth != depth
                     || info.internalFormat != info0.internalFormat || info.type != info0.type) {
                     m_isComplete = false;
                     break;
@@ -366,7 +396,7 @@ void WebGLTexture::update()
     m_needToUseBlackTexture = false;
     // NPOT
     if (m_isNPOT && ((m_minFilter != GL_NEAREST && m_minFilter != GL_LINEAR)
-        || m_wrapS != GL_CLAMP_TO_EDGE || m_wrapT != GL_CLAMP_TO_EDGE))
+        || m_wrapS != GL_CLAMP_TO_EDGE || m_wrapT != GL_CLAMP_TO_EDGE || (m_target == GL_TEXTURE_3D && m_wrapR != GL_CLAMP_TO_EDGE)))
         m_needToUseBlackTexture = true;
     // If it is a Cube texture, check Cube Completeness first
     if (m_info.size() > 1 && !m_isCubeComplete)

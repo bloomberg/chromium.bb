@@ -710,10 +710,10 @@ void WebGLRenderingContextBase::initializeNewContext()
 
     m_maxTextureSize = 0;
     webContext()->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_maxTextureSize);
-    m_maxTextureLevel = WebGLTexture::computeLevelCount(m_maxTextureSize, m_maxTextureSize);
+    m_maxTextureLevel = WebGLTexture::computeLevelCount(m_maxTextureSize, m_maxTextureSize, 1);
     m_maxCubeMapTextureSize = 0;
     webContext()->getIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &m_maxCubeMapTextureSize);
-    m_maxCubeMapTextureLevel = WebGLTexture::computeLevelCount(m_maxCubeMapTextureSize, m_maxCubeMapTextureSize);
+    m_maxCubeMapTextureLevel = WebGLTexture::computeLevelCount(m_maxCubeMapTextureSize, m_maxCubeMapTextureSize, 1);
     m_maxRenderbufferSize = 0;
     webContext()->getIntegerv(GL_MAX_RENDERBUFFER_SIZE, &m_maxRenderbufferSize);
 
@@ -802,6 +802,8 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
     for (size_t i = 0; i < m_textureUnits.size(); ++i) {
         m_textureUnits[i].m_texture2DBinding = nullptr;
         m_textureUnits[i].m_textureCubeMapBinding = nullptr;
+        m_textureUnits[i].m_texture3DBinding = nullptr;
+        m_textureUnits[i].m_texture2DArrayBinding = nullptr;
     }
 
     m_blackTexture2D = nullptr;
@@ -1487,7 +1489,7 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
     }
     webContext()->compressedTexImage2D(target, level, internalformat, width, height,
         border, data->byteLength(), data->baseAddress());
-    tex->setLevelInfo(target, level, internalformat, width, height, GL_UNSIGNED_BYTE);
+    tex->setLevelInfo(target, level, internalformat, width, height, 1, GL_UNSIGNED_BYTE);
 }
 
 void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, DOMArrayBufferView* data)
@@ -1556,7 +1558,7 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
     ScopedDrawingBufferBinder binder(drawingBuffer(), m_framebufferBinding.get());
     webContext()->copyTexImage2D(target, level, internalformat, x, y, width, height, border);
     // FIXME: if the framebuffer is not complete, none of the below should be executed.
-    tex->setLevelInfo(target, level, internalformat, width, height, GL_UNSIGNED_BYTE);
+    tex->setLevelInfo(target, level, internalformat, width, height, 1, GL_UNSIGNED_BYTE);
 }
 
 void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
@@ -1763,6 +1765,16 @@ void WebGLRenderingContextBase::deleteTexture(WebGLTexture* texture)
         if (texture == m_textureUnits[i].m_textureCubeMapBinding) {
             m_textureUnits[i].m_textureCubeMapBinding = nullptr;
             maxBoundTextureIndex = i;
+        }
+        if (isWebGL2OrHigher()) {
+            if (texture == m_textureUnits[i].m_texture3DBinding) {
+                m_textureUnits[i].m_texture3DBinding = nullptr;
+                maxBoundTextureIndex = i;
+            }
+            if (texture == m_textureUnits[i].m_texture2DArrayBinding) {
+                m_textureUnits[i].m_texture2DArrayBinding = nullptr;
+                maxBoundTextureIndex = i;
+            }
         }
     }
     if (m_framebufferBinding)
@@ -3598,7 +3610,7 @@ void WebGLRenderingContextBase::texImage2DBase(GLenum target, GLint level, GLenu
     ASSERT(!level || !WebGLTexture::isNPOT(width, height));
     ASSERT(!pixels || validateSettableTexFormat("texImage2D", internalformat));
     webContext()->texImage2D(target, level, convertTexInternalFormat(internalformat, type), width, height, border, format, type, pixels);
-    tex->setLevelInfo(target, level, internalformat, width, height, type);
+    tex->setLevelInfo(target, level, internalformat, width, height, 1, type);
 }
 
 void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLenum internalformat, GLenum format, GLenum type, Image* image, WebGLImageConversion::ImageHtmlDomSource domSource, bool flipY, bool premultiplyAlpha, ExceptionState& exceptionState)
@@ -3847,7 +3859,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     }
 
     texImage2DCanvasByGPU(NotTexSubImage2D, texture, target, level, internalformat, type, 0, 0, canvas);
-    texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
+    texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), 1, type);
 }
 
 PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement* video, BackingStoreCopy backingStoreCopy)
@@ -3876,7 +3888,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     ASSERT(texture);
     if (GL_TEXTURE_2D == target) {
         if (video->copyVideoTextureToPlatformTexture(webContext(), texture->object(), level, internalformat, type, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
-            texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), type);
+            texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, type);
             return;
         }
 
@@ -3894,7 +3906,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
                 // This is a straight GPU-GPU copy, any necessary color space conversion was handled in the paintCurrentFrameInContext() call.
                 if (imageBuffer->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
                     level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
-                    texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), type);
+                    texture->setLevelInfo(target, level, internalformat, video->videoWidth(), video->videoHeight(), 1, type);
                     return;
                 }
             }
@@ -4099,7 +4111,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLCanvasElement, target, level, format, canvas->width(), canvas->height(), 0, format, type, xoffset, yoffset))
         return;
 
-    WebGLTexture* texture = validateTextureBinding("texImage2D", target, true);
+    WebGLTexture* texture = validateTextureBinding("texSubImage2D", target, true);
     ASSERT(texture);
 
     if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated()) {
@@ -6109,6 +6121,8 @@ DEFINE_TRACE(WebGLRenderingContextBase::TextureUnitState)
 {
     visitor->trace(m_texture2DBinding);
     visitor->trace(m_textureCubeMapBinding);
+    visitor->trace(m_texture3DBinding);
+    visitor->trace(m_texture2DArrayBinding);
 }
 
 DEFINE_TRACE(WebGLRenderingContextBase)
