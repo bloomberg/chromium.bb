@@ -123,6 +123,26 @@ class GcdPrivateGetPrefetchedWifiNameListFunction
   bool RunSync() override;
 };
 
+class GcdPrivateGetDeviceInfoFunction : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcdPrivate.getDeviceInfo",
+                             GCDPRIVATE_GETDEVICEINFO)
+
+  GcdPrivateGetDeviceInfoFunction();
+
+ protected:
+  ~GcdPrivateGetDeviceInfoFunction() override;
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+
+ private:
+  void OnSessionInitialized(
+      int session_id,
+      api::gcd_private::Status status,
+      const base::DictionaryValue& info);
+};
+
 class GcdPrivateCreateSessionFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("gcdPrivate.createSession",
@@ -140,7 +160,7 @@ class GcdPrivateCreateSessionFunction : public ChromeAsyncExtensionFunction {
   void OnSessionInitialized(
       int session_id,
       api::gcd_private::Status status,
-      const std::vector<api::gcd_private::PairingType>& pairing_types);
+      const base::DictionaryValue& info);
 };
 
 class GcdPrivateStartPairingFunction : public ChromeAsyncExtensionFunction {

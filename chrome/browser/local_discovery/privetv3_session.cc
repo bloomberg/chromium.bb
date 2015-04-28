@@ -58,58 +58,7 @@ GURL CreatePrivetURL(const std::string& path) {
   return url.ReplaceComponents(replacements);
 }
 
-template <typename T>
-class EnumToStringMap {
- public:
-  static std::string FindNameById(T id) {
-    for (const Element& m : kMap) {
-      if (m.id == id) {
-        DCHECK(m.name);
-        return m.name;
-      }
-    }
-    NOTREACHED();
-    return std::string();
-  }
-
-  static bool FindIdByName(const std::string& name, T* id) {
-    for (const Element& m : kMap) {
-      if (m.name && m.name == name) {
-        *id = m.id;
-        return true;
-      }
-    }
-    return false;
-  }
-
- private:
-  struct Element {
-    const T id;
-    const char* const name;
-  };
-  static const Element kMap[];
-};
-
 using PairingType = PrivetV3Session::PairingType;
-
-template <>
-const EnumToStringMap<PrivetV3Session::PairingType>::Element
-    EnumToStringMap<PrivetV3Session::PairingType>::kMap[] = {
-        {PairingType::PAIRING_TYPE_PINCODE, "pinCode"},
-        {PairingType::PAIRING_TYPE_EMBEDDEDCODE, "embeddedCode"},
-        {PairingType::PAIRING_TYPE_ULTRASOUND32, "ultrasound32"},
-        {PairingType::PAIRING_TYPE_AUDIBLE32, "audible32"},
-};
-
-template <typename T>
-std::string EnumToString(T id) {
-  return EnumToStringMap<T>::FindNameById(id);
-}
-
-template <typename T>
-bool StringToEnum(const std::string& name, T* id) {
-  return EnumToStringMap<T>::FindIdByName(name, id);
-}
 
 bool GetDecodedString(const base::DictionaryValue& response,
                       const std::string& key,
@@ -277,15 +226,14 @@ void PrivetV3Session::Init(const InitCallback& callback) {
 void PrivetV3Session::OnInfoDone(const InitCallback& callback,
                                  Result result,
                                  const base::DictionaryValue& response) {
-  std::vector<PairingType> pairing_types;
   if (result != Result::STATUS_SUCCESS)
-    return callback.Run(result, pairing_types);
+    return callback.Run(result, response);
 
   std::string version;
   if (!response.GetString(kPrivetV3InfoKeyVersion, &version) ||
       version != kPrivetV3InfoVersion) {
     LOG(ERROR) << "Response: " << response;
-    return callback.Run(Result::STATUS_SESSIONERROR, pairing_types);
+    return callback.Run(Result::STATUS_SESSIONERROR, response);
   }
 
   const base::DictionaryValue* authentication = nullptr;
@@ -293,7 +241,7 @@ void PrivetV3Session::OnInfoDone(const InitCallback& callback,
   if (!response.GetDictionary(kPrivetV3InfoKeyAuth, &authentication) ||
       !authentication->GetList(kPrivetV3KeyPairing, &pairing)) {
     LOG(ERROR) << "Response: " << response;
-    return callback.Run(Result::STATUS_SESSIONERROR, pairing_types);
+    return callback.Run(Result::STATUS_SESSIONERROR, response);
   }
 
   // The only supported crypto.
@@ -301,26 +249,17 @@ void PrivetV3Session::OnInfoDone(const InitCallback& callback,
                       kPrivetV3CryptoP224Spake2) ||
       !ContainsString(*authentication, kPrivetV3KeyMode, kPrivetV3KeyPairing)) {
     LOG(ERROR) << "Response: " << response;
-    return callback.Run(Result::STATUS_SESSIONERROR, pairing_types);
+    return callback.Run(Result::STATUS_SESSIONERROR, response);
   }
 
-  for (const base::Value* value : *pairing) {
-    std::string pairing_string;
-    PairingType pairing_type;
-    if (!value->GetAsString(&pairing_string) ||
-        !StringToEnum(pairing_string, &pairing_type)) {
-      continue;  // Skip unknown pairing.
-    }
-    pairing_types.push_back(pairing_type);
-  }
-
-  callback.Run(Result::STATUS_SUCCESS, pairing_types);
+  callback.Run(Result::STATUS_SUCCESS, response);
 }
 
 void PrivetV3Session::StartPairing(PairingType pairing_type,
                                    const ResultCallback& callback) {
   base::DictionaryValue input;
-  input.SetString(kPrivetV3KeyPairing, EnumToString(pairing_type));
+  input.SetString(kPrivetV3KeyPairing,
+                  extensions::api::gcd_private::ToString(pairing_type));
   input.SetString(kPrivetV3KeyCrypto, kPrivetV3CryptoP224Spake2);
 
   StartPostRequest(kPrivetV3PairingStartPath, input,

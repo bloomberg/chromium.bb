@@ -51427,6 +51427,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1021" label="INSTANCEID_GETTOKEN"/>
   <int value="1022" label="INSTANCEID_DELETETOKEN"/>
   <int value="1023" label="INSTANCEID_DELETEID"/>
+  <int value="1024" label="GCDPRIVATE_GETDEVICEINFO"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

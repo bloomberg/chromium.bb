@@ -1082,6 +1082,7 @@ enum HistogramValue {
   INSTANCEID_GETTOKEN,
   INSTANCEID_DELETETOKEN,
   INSTANCEID_DELETEID,
+  GCDPRIVATE_GETDEVICEINFO,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

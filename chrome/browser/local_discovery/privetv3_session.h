@@ -39,7 +39,7 @@ class PrivetV3Session {
   typedef extensions::api::gcd_private::Status Result;
 
   typedef base::Callback<
-      void(Result result, const std::vector<PairingType>& types)> InitCallback;
+      void(Result result, const base::DictionaryValue& response)> InitCallback;
 
   typedef base::Callback<void(Result result)> ResultCallback;
   typedef base::Callback<void(Result result,

@@ -101,8 +101,8 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
 
   typedef base::Callback<void(int session_id,
                               api::gcd_private::Status status,
-                              const std::vector<api::gcd_private::PairingType>&
-                                  pairing_types)> EstablishSessionCallback;
+                              const base::DictionaryValue& info)>
+      CreateSessionCallback;
 
   typedef base::Callback<void(api::gcd_private::Status status)> SessionCallback;
 
@@ -117,12 +117,8 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
 
   bool QueryForDevices();
 
-  void EstablishSession(const std::string& ip_address,
-                        int port,
-                        const EstablishSessionCallback& callback);
-
   void CreateSession(const std::string& service_name,
-                     const EstablishSessionCallback& callback);
+                     const CreateSessionCallback& callback);
 
   void StartPairing(int session_id,
                     api::gcd_private::PairingType pairing_type,
@@ -141,6 +137,7 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
                            const SuccessCallback& callback);
 
   void RemoveSession(int session_id);
+  void RemoveSessionDelayed(int session_id);
 
   scoped_ptr<base::ListValue> GetPrefetchedSSIDList();
 
@@ -169,7 +166,7 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
                            const MessageResponseCallback& callback);
 
   void OnServiceResolved(int session_id,
-                         const EstablishSessionCallback& callback,
+                         const CreateSessionCallback& callback,
                          scoped_ptr<local_discovery::PrivetHTTPClient> client);
 
 #if defined(ENABLE_WIFI_BOOTSTRAPPING)
@@ -200,6 +197,10 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
   scoped_ptr<local_discovery::wifi::WifiManager> wifi_manager_;
 #endif
   PasswordMap wifi_passwords_;
+
+  base::WeakPtrFactory<GcdPrivateAPIImpl> weak_ptr_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(GcdPrivateAPIImpl);
 };
 
 
@@ -309,37 +310,9 @@ bool GcdPrivateAPIImpl::QueryForDevices() {
   return true;
 }
 
-void GcdPrivateAPIImpl::EstablishSession(
-    const std::string& ip_address,
-    int port,
-    const EstablishSessionCallback& callback) {
-  std::string host_string;
-  net::IPAddressNumber address_number;
-
-  if (net::ParseIPLiteralToNumber(ip_address, &address_number) &&
-      address_number.size() == net::kIPv6AddressSize) {
-    host_string = base::StringPrintf("[%s]", ip_address.c_str());
-  } else {
-    host_string = ip_address;
-  }
-
-  scoped_ptr<local_discovery::PrivetHTTPClient> http_client(
-      new local_discovery::PrivetHTTPClientImpl(
-          "", net::HostPortPair(host_string, port),
-          browser_context_->GetRequestContext()));
-
+void GcdPrivateAPIImpl::CreateSession(const std::string& service_name,
+                                      const CreateSessionCallback& callback) {
   int session_id = last_session_id_++;
-  auto& session_data = sessions_[session_id];
-  session_data.session.reset(
-      new local_discovery::PrivetV3Session(http_client.Pass()));
-  session_data.session->Init(base::Bind(callback, session_id));
-}
-
-void GcdPrivateAPIImpl::CreateSession(
-    const std::string& service_name,
-    const EstablishSessionCallback& callback) {
-  int session_id = last_session_id_++;
-
   scoped_ptr<local_discovery::PrivetHTTPAsynchronousFactory> factory(
       local_discovery::PrivetHTTPAsynchronousFactory::CreateInstance(
           browser_context_->GetRequestContext()));
@@ -353,11 +326,11 @@ void GcdPrivateAPIImpl::CreateSession(
 
 void GcdPrivateAPIImpl::OnServiceResolved(
     int session_id,
-    const EstablishSessionCallback& callback,
+    const CreateSessionCallback& callback,
     scoped_ptr<local_discovery::PrivetHTTPClient> client) {
   if (!client) {
     return callback.Run(session_id, gcd_private::STATUS_SERVICERESOLUTIONERROR,
-                        std::vector<gcd_private::PairingType>());
+                        base::DictionaryValue());
   }
   auto& session_data = sessions_[session_id];
   session_data.session.reset(
@@ -471,6 +444,12 @@ void GcdPrivateAPIImpl::StartWifiIfNotStarted() {
 
 void GcdPrivateAPIImpl::RemoveSession(int session_id) {
   sessions_.erase(session_id);
+}
+
+void GcdPrivateAPIImpl::RemoveSessionDelayed(int session_id) {
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+    base::Bind(&GcdPrivateAPIImpl::RemoveSession,
+               weak_ptr_factory_.GetWeakPtr(), session_id));
 }
 
 scoped_ptr<base::ListValue> GcdPrivateAPIImpl::GetPrefetchedSSIDList() {
@@ -636,6 +615,42 @@ void GcdPrivatePrefetchWifiPasswordFunction::OnResponse(bool response) {
   SendResponse(true);
 }
 
+GcdPrivateGetDeviceInfoFunction::GcdPrivateGetDeviceInfoFunction() {
+}
+
+GcdPrivateGetDeviceInfoFunction::~GcdPrivateGetDeviceInfoFunction() {
+}
+
+bool GcdPrivateGetDeviceInfoFunction::RunAsync() {
+  scoped_ptr<gcd_private::CreateSession::Params> params =
+      gcd_private::CreateSession::Params::Create(*args_);
+
+  if (!params)
+    return false;
+
+  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
+
+  GcdPrivateAPIImpl::CreateSessionCallback callback =
+      base::Bind(&GcdPrivateGetDeviceInfoFunction::OnSessionInitialized, this);
+  gcd_api->CreateSession(params->service_name, callback);
+
+  return true;
+}
+
+void GcdPrivateGetDeviceInfoFunction::OnSessionInitialized(
+    int session_id,
+    api::gcd_private::Status status,
+    const base::DictionaryValue& info) {
+  gcd_private::GetDeviceInfo::Results::DeviceInfo device_info;
+  device_info.additional_properties.MergeDictionary(&info);
+
+  results_ = gcd_private::GetDeviceInfo::Results::Create(status, device_info);
+  SendResponse(true);
+
+  GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
+  gcd_api->RemoveSessionDelayed(session_id);
+}
+
 GcdPrivateCreateSessionFunction::GcdPrivateCreateSessionFunction() {
 }
 
@@ -651,7 +666,7 @@ bool GcdPrivateCreateSessionFunction::RunAsync() {
 
   GcdPrivateAPIImpl* gcd_api = GcdPrivateAPIImpl::Get(GetProfile());
 
-  GcdPrivateAPIImpl::EstablishSessionCallback callback =
+  GcdPrivateAPIImpl::CreateSessionCallback callback =
       base::Bind(&GcdPrivateCreateSessionFunction::OnSessionInitialized, this);
   gcd_api->CreateSession(params->service_name, callback);
 
@@ -661,7 +676,27 @@ bool GcdPrivateCreateSessionFunction::RunAsync() {
 void GcdPrivateCreateSessionFunction::OnSessionInitialized(
     int session_id,
     api::gcd_private::Status status,
-    const std::vector<api::gcd_private::PairingType>& pairing_types) {
+    const base::DictionaryValue& info) {
+  std::vector<api::gcd_private::PairingType> pairing_types;
+
+  // TODO(vitalybuka): Remove this parsing and |pairing_types| from callback.
+  if (status == gcd_private::STATUS_SUCCESS) {
+    const base::ListValue* pairing = nullptr;
+    if (info.GetList("authentication.pairing", &pairing)) {
+      for (const base::Value* value : *pairing) {
+        std::string pairing_string;
+        if (value->GetAsString(&pairing_string)) {
+          api::gcd_private::PairingType pairing_type =
+              api::gcd_private::ParsePairingType(pairing_string);
+          if (pairing_type != api::gcd_private::PAIRING_TYPE_NONE)
+            pairing_types.push_back(pairing_type);
+        }
+      }
+    } else {
+      status = gcd_private::STATUS_SESSIONERROR;
+    }
+  }
+
   results_ = gcd_private::CreateSession::Results::Create(session_id, status,
                                                          pairing_types);
   SendResponse(true);
