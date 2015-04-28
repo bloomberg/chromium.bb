@@ -109,7 +109,7 @@ function finishRepaintTest()
             repaintTestDone();
         });
     } else {
-        repaintTestDone();
+        testRunner.displayAsyncThen(repaintTestDone);
     }
 }
 

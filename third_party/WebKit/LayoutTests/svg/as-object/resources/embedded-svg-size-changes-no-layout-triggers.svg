@@ -5,9 +5,7 @@
         function runTest() {
             var svg = document.getElementsByTagName("svg")[0];
             svg.setAttribute("width", "400");
-
-            if (window.testRunner)
-                testRunner.notifyDone();
+            window.parent.finishRepaintTest();
         }
     </script>
 </svg>

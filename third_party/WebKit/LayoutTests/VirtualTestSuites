@@ -140,49 +140,49 @@
   {
     "prefix": "slimmingpaint",
     "base": "fast",
-    "args": ["--enable-slimming-paint", "--enable-region-based-columns"],
+    "args": ["--enable-slimming-paint", "--enable-region-based-columns", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": ["--enable-region-based-columns"]
   },
   {
     "prefix": "slimmingpaint",
     "base": "paint",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg/text",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg/stroke",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg/foreignObject",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg/filters",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg/clip-path",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "svg/masking",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
   {
@@ -199,19 +199,19 @@
   {
     "prefix": "slimmingpaint",
     "base": "css3/filters",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "compositing",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
   {
     "prefix": "slimmingpaint",
     "base": "printing",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
   },
   {

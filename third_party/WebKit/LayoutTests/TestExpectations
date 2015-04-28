@@ -136,6 +136,16 @@ crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-target-style-change.s
 crbug.com/451606 svg/filters/feImage-self-and-other-referencing.html [ Crash Pass ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ ImageOnlyFailure ]
 
+crbug.com/450725 virtual/slimmingpaint/fast/repaint/change-transform.html [ Crash ]
+crbug.com/450725 virtual/slimmingpaint/fast/repaint/create-layer-repaint.html [ Crash ]
+crbug.com/450725 virtual/slimmingpaint/fast/repaint/scroll-stacking-context-backface-visiblity-leaves-traces.html [ Crash ]
+crbug.com/450725 virtual/slimmingpaint/fast/repaint/table-col-background.html [ Crash ]
+crbug.com/450725 virtual/slimmingpaint/fast/repaint/video-unmute-repaint.html [ Crash ]
+crbug.com/450725 virtual/slimmingpaint/fast/repaint/view-background-from-body-2.html [ Crash ]
+crbug.com/450725 svg/as-object/embedded-svg-size-changes-no-layout-triggers.html [ NeedsRebaseline ]
+crbug.com/450725 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ NeedsRebaseline ]
+crbug.com/450725 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ NeedsRebaseline ]
+
 crbug.com/339118 perf/compositor-touch-hit-rects.html [ Failure Pass ]
 crbug.com/339118 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
 crbug.com/339118 virtual/pointerevent/fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]

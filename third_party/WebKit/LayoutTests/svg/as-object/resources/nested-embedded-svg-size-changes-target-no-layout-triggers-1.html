@@ -7,9 +7,7 @@ function changeSize() {
     var svgDoc = myObject.getSVGDocument();
     var svgWindow = svgDoc.defaultView;
     svgWindow.changeSize();
-
-    if (window.testRunner)
-        testRunner.notifyDone();
+    window.parent.finishRepaintTest();
 }
 </script>
 <object onload="changeSize()" data="embedded-svg-size-changes.svg"></object>

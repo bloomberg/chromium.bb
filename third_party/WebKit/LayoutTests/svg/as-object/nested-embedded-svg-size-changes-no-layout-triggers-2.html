@@ -2,9 +2,8 @@
 <head>
 <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script type="text/javascript">
+window.testIsAsync = true; // The sub-document will call finishRepaintTest() of this window.
 function repaintTest() {
-    if (window.testRunner)
-        testRunner.waitUntilDone();
     var object1 = document.getElementsByTagName("object")[0];
     object1.setAttribute("data", "resources/nested-embedded-svg-size-changes-target-no-layout-triggers-2.html");
     object1.setAttribute("style", "border: 1px red solid; width: 400px; height: 200px");

@@ -20,16 +20,9 @@
 <div class="green reflected box" id="box"></div>
 <script src="resources/text-based-repaint.js"></script>
 <script>
-window.testIsAsync = true;
-
 function repaintTest() {
     var box = document.getElementById('box');
     box.classList.toggle('reflected');
-
-    if (window.testRunner) {
-        finishRepaintTest();
-        testRunner.notifyDone();
-    }
 }
 window.onload = runRepaintTest;
 </script>
