@@ -28,12 +28,6 @@ GURL FilePathToFileURL(const base::FilePath& path) {
   // "file://///server/path" for UNC. The URL canonicalizer will fix up the
   // latter case to be the canonical UNC form: "file://server/path"
   base::FilePath::StringType url_string(kFileURLPrefix);
-  if (!path.IsAbsolute()) {
-    base::FilePath current_dir;
-    PathService::Get(base::DIR_CURRENT, &current_dir);
-    url_string.append(current_dir.value());
-    url_string.push_back(base::FilePath::kSeparators[0]);
-  }
   url_string.append(path.value());
 
   // Now do replacement of some characters. Since we assume the input is a

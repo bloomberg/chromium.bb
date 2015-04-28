@@ -5,6 +5,7 @@
 #include "chromecast/browser/service/cast_service_simple.h"
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -26,7 +27,8 @@ GURL GetStartupURL() {
   if (url.is_valid() && url.has_scheme())
     return url;
 
-  return net::FilePathToFileURL(base::FilePath(args[0]));
+  return net::FilePathToFileURL(
+      base::MakeAbsoluteFilePath(base::FilePath(args[0])));
 }
 
 }  // namespace

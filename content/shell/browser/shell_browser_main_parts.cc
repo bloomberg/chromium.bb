@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -64,7 +65,8 @@ GURL GetStartupURL() {
   if (url.is_valid() && url.has_scheme())
     return url;
 
-  return net::FilePathToFileURL(base::FilePath(args[0]));
+  return net::FilePathToFileURL(
+      base::MakeAbsoluteFilePath(base::FilePath(args[0])));
 }
 
 base::StringPiece PlatformResourceProvider(int key) {

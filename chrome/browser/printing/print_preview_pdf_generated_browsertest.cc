@@ -307,7 +307,7 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
                           const PrintPreviewSettings& settings) {
     print_preview_observer_->SetPrintPreviewSettings(settings);
     base::FilePath path(file_name);
-    GURL gurl = net::FilePathToFileURL(path);
+    GURL gurl = net::FilePathToFileURL(base::MakeAbsoluteFilePath(path));
 
     ui_test_utils::NavigateToURL(browser(), gurl);
 
