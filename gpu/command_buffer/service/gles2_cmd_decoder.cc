@@ -7073,6 +7073,9 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
 
 error::Error GLES2DecoderImpl::HandleDrawArrays(uint32 immediate_data_size,
                                                 const void* cmd_data) {
+  // TODO(zmo): crbug.com/481184
+  // On Desktop GL with versions lower than 4.3, we need to emulate
+  // GL_PRIMITIVE_RESTART_FIXED_INDEX using glPrimitiveRestartIndex().
   const cmds::DrawArrays& c = *static_cast<const cmds::DrawArrays*>(cmd_data);
   return DoDrawArrays("glDrawArrays",
                       false,
@@ -7216,6 +7219,9 @@ error::Error GLES2DecoderImpl::DoDrawElements(
 
 error::Error GLES2DecoderImpl::HandleDrawElements(uint32 immediate_data_size,
                                                   const void* cmd_data) {
+  // TODO(zmo): crbug.com/481184
+  // On Desktop GL with versions lower than 4.3, we need to emulate
+  // GL_PRIMITIVE_RESTART_FIXED_INDEX using glPrimitiveRestartIndex().
   const gles2::cmds::DrawElements& c =
       *static_cast<const gles2::cmds::DrawElements*>(cmd_data);
   return DoDrawElements("glDrawElements",

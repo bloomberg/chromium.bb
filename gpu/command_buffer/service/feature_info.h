@@ -78,6 +78,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool blend_equation_advanced_coherent;
     bool ext_texture_rg;
     bool enable_subscribe_uniform;
+    bool emulate_primitive_restart_fixed_index;
   };
 
   struct Workarounds {

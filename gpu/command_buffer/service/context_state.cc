@@ -285,16 +285,8 @@ ErrorState* ContextState::GetErrorState() {
 
 void ContextState::EnableDisable(GLenum pname, bool enable) const {
   if (pname == GL_PRIMITIVE_RESTART_FIXED_INDEX) {
-    // This is only available on Desktop GL 4.3+, but we emulate ES 3.0 on top
-    // of Desktop GL 4.2+.
-    const gfx::GLVersionInfo& gl_version = feature_info_->gl_version_info();
-    if (!gl_version.is_es &&
-        (gl_version.major_version < 4 ||
-         (gl_version.major_version == 4 && gl_version.minor_version < 3))) {
-      // TODO(zmo): Ignoring it may not be the best emulation.
-      NOTIMPLEMENTED();
-      return;
-    }
+    if (feature_info_->feature_flags().emulate_primitive_restart_fixed_index)
+      pname = GL_PRIMITIVE_RESTART;
   }
   if (enable) {
     glEnable(pname);

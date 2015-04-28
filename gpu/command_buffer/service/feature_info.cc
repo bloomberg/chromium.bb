@@ -161,7 +161,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       blend_equation_advanced(false),
       blend_equation_advanced_coherent(false),
       ext_texture_rg(false),
-      enable_subscribe_uniform(false) {
+      enable_subscribe_uniform(false),
+      emulate_primitive_restart_fixed_index(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -1097,6 +1098,13 @@ void FeatureInfo::InitializeFeatures() {
     gfx::GLFenceEGL::SetIgnoreFailures();
   }
 #endif
+
+  if (gl_version_info_->IsLowerThanGL(4, 3)) {
+    // crbug.com/481184.
+    // GL_PRIMITIVE_RESTART_FIXED_INDEX is only available on Desktop GL 4.3+,
+    // but we emulate ES 3.0 on top of Desktop GL 4.2+.
+    feature_flags_.emulate_primitive_restart_fixed_index = true;
+  }
 }
 
 bool FeatureInfo::IsES3Capable() const {
