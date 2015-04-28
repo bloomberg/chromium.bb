@@ -804,12 +804,116 @@ void ThreadState::runScheduledGC(StackState stackState)
     }
 }
 
+void ThreadState::prepareRegionTree()
+{
+    // Add the regions allocated by this thread to the region search tree.
+    for (PageMemoryRegion* region : m_allocatedRegionsSinceLastGC)
+        Heap::addPageMemoryRegion(region);
+    m_allocatedRegionsSinceLastGC.clear();
+}
+
+void ThreadState::flushHeapDoesNotContainCacheIfNeeded()
+{
+    if (m_shouldFlushHeapDoesNotContainCache) {
+        Heap::flushHeapDoesNotContainCache();
+        m_shouldFlushHeapDoesNotContainCache = false;
+    }
+}
+
 void ThreadState::makeConsistentForSweeping()
 {
     ASSERT(isInGC());
     TRACE_EVENT0("blink_gc", "ThreadState::makeConsistentForSweeping");
     for (int i = 0; i < NumberOfHeaps; ++i)
         m_heaps[i]->makeConsistentForSweeping();
+}
+
+void ThreadState::preGC()
+{
+    ASSERT(!isInGC());
+    setGCState(GCRunning);
+    makeConsistentForSweeping();
+    prepareRegionTree();
+    flushHeapDoesNotContainCacheIfNeeded();
+    clearHeapAges();
+}
+
+void ThreadState::postGC(GCType gcType)
+{
+    ASSERT(isInGC());
+
+#if ENABLE(GC_PROFILING)
+    // We snapshot the heap prior to sweeping to get numbers for both resources
+    // that have been allocated since the last GC and for resources that are
+    // going to be freed.
+    bool gcTracingEnabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink_gc", &gcTracingEnabled);
+
+    if (gcTracingEnabled) {
+        bool disabledByDefaultGCTracingEnabled;
+        TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"), &disabledByDefaultGCTracingEnabled);
+
+        snapshot();
+        if (disabledByDefaultGCTracingEnabled)
+            collectAndReportMarkSweepStats();
+        incrementMarkedObjectsAge();
+    }
+#endif
+
+    setGCState(gcType == GCWithSweep ? EagerSweepScheduled : LazySweepScheduled);
+    for (int i = 0; i < NumberOfHeaps; i++)
+        m_heaps[i]->prepareForSweep();
+}
+
+void ThreadState::preSweep()
+{
+    checkThread();
+    if (gcState() != EagerSweepScheduled && gcState() != LazySweepScheduled)
+        return;
+
+    {
+        if (isMainThread())
+            ScriptForbiddenScope::enter();
+
+        SweepForbiddenScope forbiddenScope(this);
+        {
+            // Disallow allocation during weak processing.
+            NoAllocationScope noAllocationScope(this);
+            {
+                TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
+                // Perform thread-specific weak processing.
+                while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
+            }
+            {
+                TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
+                invokePreFinalizers(*Heap::s_markingVisitor);
+            }
+        }
+
+        if (isMainThread())
+            ScriptForbiddenScope::exit();
+    }
+
+#if ENABLE(OILPAN)
+    if (gcState() == EagerSweepScheduled) {
+        // Eager sweeping should happen only in testing.
+        setGCState(Sweeping);
+        completeSweep();
+    } else {
+        // The default behavior is lazy sweeping.
+        setGCState(Sweeping);
+        scheduleIdleLazySweep();
+    }
+#else
+    // FIXME: For now, we disable lazy sweeping in non-oilpan builds
+    // to avoid unacceptable behavior regressions on trunk.
+    setGCState(Sweeping);
+    completeSweep();
+#endif
+
+#if ENABLE(GC_PROFILING)
+    snapshotFreeListIfNecessary();
+#endif
 }
 
 void ThreadState::completeSweep()
@@ -868,59 +972,6 @@ void ThreadState::postSweep()
     default:
         ASSERT_NOT_REACHED();
     }
-}
-
-void ThreadState::prepareRegionTree()
-{
-    // Add the regions allocated by this thread to the region search tree.
-    for (PageMemoryRegion* region : m_allocatedRegionsSinceLastGC)
-        Heap::addPageMemoryRegion(region);
-    m_allocatedRegionsSinceLastGC.clear();
-}
-
-void ThreadState::flushHeapDoesNotContainCacheIfNeeded()
-{
-    if (m_shouldFlushHeapDoesNotContainCache) {
-        Heap::flushHeapDoesNotContainCache();
-        m_shouldFlushHeapDoesNotContainCache = false;
-    }
-}
-
-void ThreadState::preGC()
-{
-    ASSERT(!isInGC());
-    setGCState(GCRunning);
-    makeConsistentForSweeping();
-    prepareRegionTree();
-    flushHeapDoesNotContainCacheIfNeeded();
-    clearHeapAges();
-}
-
-void ThreadState::postGC(GCType gcType)
-{
-    ASSERT(isInGC());
-
-#if ENABLE(GC_PROFILING)
-    // We snapshot the heap prior to sweeping to get numbers for both resources
-    // that have been allocated since the last GC and for resources that are
-    // going to be freed.
-    bool gcTracingEnabled;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink_gc", &gcTracingEnabled);
-
-    if (gcTracingEnabled) {
-        bool disabledByDefaultGCTracingEnabled;
-        TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"), &disabledByDefaultGCTracingEnabled);
-
-        snapshot();
-        if (disabledByDefaultGCTracingEnabled)
-            collectAndReportMarkSweepStats();
-        incrementMarkedObjectsAge();
-    }
-#endif
-
-    setGCState(gcType == GCWithSweep ? EagerSweepScheduled : LazySweepScheduled);
-    for (int i = 0; i < NumberOfHeaps; i++)
-        m_heaps[i]->prepareForSweep();
 }
 
 void ThreadState::prepareHeapForTermination()
@@ -1049,57 +1100,6 @@ void ThreadState::copyStackUntilSafePointScope()
     for (size_t i = 0; i < slotCount; ++i) {
         m_safePointStackCopy[i] = from[i];
     }
-}
-
-void ThreadState::preSweep()
-{
-    checkThread();
-    if (gcState() != EagerSweepScheduled && gcState() != LazySweepScheduled)
-        return;
-
-    {
-        if (isMainThread())
-            ScriptForbiddenScope::enter();
-
-        SweepForbiddenScope forbiddenScope(this);
-        {
-            // Disallow allocation during weak processing.
-            NoAllocationScope noAllocationScope(this);
-            {
-                TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
-                // Perform thread-specific weak processing.
-                while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
-            }
-            {
-                TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
-                invokePreFinalizers(*Heap::s_markingVisitor);
-            }
-        }
-
-        if (isMainThread())
-            ScriptForbiddenScope::exit();
-    }
-
-#if ENABLE(OILPAN)
-    if (gcState() == EagerSweepScheduled) {
-        // Eager sweeping should happen only in testing.
-        setGCState(Sweeping);
-        completeSweep();
-    } else {
-        // The default behavior is lazy sweeping.
-        setGCState(Sweeping);
-        scheduleIdleLazySweep();
-    }
-#else
-    // FIXME: For now, we disable lazy sweeping in non-oilpan builds
-    // to avoid unacceptable behavior regressions on trunk.
-    setGCState(Sweeping);
-    completeSweep();
-#endif
-
-#if ENABLE(GC_PROFILING)
-    snapshotFreeListIfNecessary();
-#endif
 }
 
 void ThreadState::addInterruptor(Interruptor* interruptor)
