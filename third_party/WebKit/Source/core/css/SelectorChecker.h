@@ -104,17 +104,8 @@ public:
     template<typename SiblingTraversalStrategy>
     bool checkOne(const SelectorCheckingContext&, const SiblingTraversalStrategy&, unsigned* specificity = 0) const;
 
-    Mode mode() const { return m_mode; }
-
     static bool tagMatches(const Element&, const QualifiedName&);
-    static bool isCommonPseudoClassSelector(const CSSSelector&);
     static bool matchesFocusPseudoClass(const Element&);
-    static bool matchesSpatialNavigationFocusPseudoClass(const Element&);
-    static bool matchesListBoxPseudoClass(const Element&);
-
-    enum LinkMatchMask { MatchLink = 1, MatchVisited = 2, MatchAll = MatchLink | MatchVisited };
-    static unsigned determineLinkMatchType(const CSSSelector&);
-
     static bool isHostInItsShadowTree(const Element&, const ContainerNode* scope);
 
 private:
@@ -135,21 +126,8 @@ private:
     template<typename SiblingTraversalStrategy>
     bool checkPseudoHost(const SelectorCheckingContext&, const SiblingTraversalStrategy&, unsigned*) const;
 
-    static bool isFrameFocused(const Element&);
-
     Mode m_mode;
 };
-
-inline bool SelectorChecker::isCommonPseudoClassSelector(const CSSSelector& selector)
-{
-    if (selector.match() != CSSSelector::PseudoClass)
-        return false;
-    CSSSelector::PseudoType pseudoType = selector.pseudoType();
-    return pseudoType == CSSSelector::PseudoLink
-        || pseudoType == CSSSelector::PseudoAnyLink
-        || pseudoType == CSSSelector::PseudoVisited
-        || pseudoType == CSSSelector::PseudoFocus;
-}
 
 inline bool SelectorChecker::tagMatches(const Element& element, const QualifiedName& tagQName)
 {

@@ -836,6 +836,59 @@ bool CSSSelector::isCompound() const
     return true;
 }
 
+bool CSSSelector::isCommonPseudoClass() const
+{
+    if (m_match != CSSSelector::PseudoClass)
+        return false;
+    CSSSelector::PseudoType pseudoType = this->pseudoType();
+    return pseudoType == CSSSelector::PseudoLink
+        || pseudoType == CSSSelector::PseudoAnyLink
+        || pseudoType == CSSSelector::PseudoVisited
+        || pseudoType == CSSSelector::PseudoFocus;
+}
+
+unsigned CSSSelector::computeLinkMatchType() const
+{
+    unsigned linkMatchType = MatchAll;
+
+    // Determine if this selector will match a link in visited, unvisited or any state, or never.
+    // :visited never matches other elements than the innermost link element.
+    for (const CSSSelector* current = this; current; current = current->tagHistory()) {
+        switch (current->pseudoType()) {
+        case PseudoNot:
+            {
+                // :not(:visited) is equivalent to :link. Parser enforces that :not can't nest.
+                ASSERT(current->selectorList());
+                for (const CSSSelector* subSelector = current->selectorList()->first(); subSelector; subSelector = subSelector->tagHistory()) {
+                    PseudoType subType = subSelector->pseudoType();
+                    if (subType == PseudoVisited)
+                        linkMatchType &= ~MatchVisited;
+                    else if (subType == PseudoLink)
+                        linkMatchType &= ~MatchLink;
+                }
+            }
+            break;
+        case PseudoLink:
+            linkMatchType &= ~MatchVisited;
+            break;
+        case PseudoVisited:
+            linkMatchType &= ~MatchLink;
+            break;
+        default:
+            // We don't support :link and :visited inside :-webkit-any.
+            break;
+        }
+        Relation relation = current->relation();
+        if (relation == SubSelector)
+            continue;
+        if (relation != Descendant && relation != Child)
+            return linkMatchType;
+        if (linkMatchType != MatchAll)
+            return linkMatchType;
+    }
+    return linkMatchType;
+}
+
 bool CSSSelector::parseNth() const
 {
     if (!m_hasRareData)

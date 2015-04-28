@@ -33,7 +33,6 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
-#include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
@@ -113,7 +112,7 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
     , m_position(position)
     , m_specificity(selector().specificity())
     , m_containsUncommonAttributeSelector(blink::containsUncommonAttributeSelector(selector()))
-    , m_linkMatchType(SelectorChecker::determineLinkMatchType(selector()))
+    , m_linkMatchType(selector().computeLinkMatchType())
     , m_hasDocumentSecurityOrigin(addRuleFlags & RuleHasDocumentSecurityOrigin)
     , m_propertyWhitelistType(determinePropertyWhitelistType(addRuleFlags, selector()))
 {
@@ -190,7 +189,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
         return true;
     }
 
-    if (SelectorChecker::isCommonPseudoClassSelector(component)) {
+    if (component.isCommonPseudoClass()) {
         switch (component.pseudoType()) {
         case CSSSelector::PseudoLink:
         case CSSSelector::PseudoVisited:

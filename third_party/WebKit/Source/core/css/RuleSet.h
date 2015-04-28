@@ -102,7 +102,7 @@ private:
     unsigned m_position : 18;
     unsigned m_specificity : 24;
     unsigned m_containsUncommonAttributeSelector : 1;
-    unsigned m_linkMatchType : 2; //  SelectorChecker::LinkMatchMask
+    unsigned m_linkMatchType : 2; //  CSSSelector::LinkMatchMask
     unsigned m_hasDocumentSecurityOrigin : 1;
     unsigned m_propertyWhitelistType : 2;
     // Use plain array instead of a Vector to minimize memory overhead.

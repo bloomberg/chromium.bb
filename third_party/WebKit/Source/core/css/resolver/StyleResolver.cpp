@@ -1286,8 +1286,8 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
             const MatchedProperties& matchedProperties = matchResult.matchedProperties[i];
             unsigned linkMatchType = matchedProperties.m_types.linkMatchType;
             // FIXME: It would be nicer to pass these as arguments but that requires changes in many places.
-            state.setApplyPropertyToRegularStyle(linkMatchType & SelectorChecker::MatchLink);
-            state.setApplyPropertyToVisitedLinkStyle(linkMatchType & SelectorChecker::MatchVisited);
+            state.setApplyPropertyToRegularStyle(linkMatchType & CSSSelector::MatchLink);
+            state.setApplyPropertyToVisitedLinkStyle(linkMatchType & CSSSelector::MatchVisited);
 
             applyProperties<priority>(state, matchedProperties.properties.get(), isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.m_types.whitelistType));
         }

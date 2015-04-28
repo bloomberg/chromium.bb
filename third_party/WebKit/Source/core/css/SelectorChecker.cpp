@@ -79,6 +79,21 @@ static bool matchesCustomPseudoElement(const Element* element, const CSSSelector
     return true;
 }
 
+static bool isFrameFocused(const Element& element)
+{
+    return element.document().frame() && element.document().frame()->selection().isFocusedAndActive();
+}
+
+static bool matchesSpatialNavigationFocusPseudoClass(const Element& element)
+{
+    return isHTMLOptionElement(element) && toHTMLOptionElement(element).spatialNavigationFocused() && isFrameFocused(element);
+}
+
+static bool matchesListBoxPseudoClass(const Element& element)
+{
+    return isHTMLSelectElement(element) && !toHTMLSelectElement(element).usesMenuList();
+}
+
 static Element* parentElement(const SelectorChecker::SelectorCheckingContext& context)
 {
     // - If context.scope is a shadow root, we should walk up to its shadow host.
@@ -1107,53 +1122,6 @@ bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& c
     }
 }
 
-unsigned SelectorChecker::determineLinkMatchType(const CSSSelector& selector)
-{
-    unsigned linkMatchType = MatchAll;
-
-    // Statically determine if this selector will match a link in visited, unvisited or any state, or never.
-    // :visited never matches other elements than the innermost link element.
-    for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
-        switch (current->pseudoType()) {
-        case CSSSelector::PseudoNot:
-            {
-                // :not(:visited) is equivalent to :link. Parser enforces that :not can't nest.
-                ASSERT(current->selectorList());
-                for (const CSSSelector* subSelector = current->selectorList()->first(); subSelector; subSelector = subSelector->tagHistory()) {
-                    CSSSelector::PseudoType subType = subSelector->pseudoType();
-                    if (subType == CSSSelector::PseudoVisited)
-                        linkMatchType &= ~SelectorChecker::MatchVisited;
-                    else if (subType == CSSSelector::PseudoLink)
-                        linkMatchType &= ~SelectorChecker::MatchLink;
-                }
-            }
-            break;
-        case CSSSelector::PseudoLink:
-            linkMatchType &= ~SelectorChecker::MatchVisited;
-            break;
-        case CSSSelector::PseudoVisited:
-            linkMatchType &= ~SelectorChecker::MatchLink;
-            break;
-        default:
-            // We don't support :link and :visited inside :-webkit-any.
-            break;
-        }
-        CSSSelector::Relation relation = current->relation();
-        if (relation == CSSSelector::SubSelector)
-            continue;
-        if (relation != CSSSelector::Descendant && relation != CSSSelector::Child)
-            return linkMatchType;
-        if (linkMatchType != MatchAll)
-            return linkMatchType;
-    }
-    return linkMatchType;
-}
-
-bool SelectorChecker::isFrameFocused(const Element& element)
-{
-    return element.document().frame() && element.document().frame()->selection().isFocusedAndActive();
-}
-
 bool SelectorChecker::matchesFocusPseudoClass(const Element& element)
 {
     if (InspectorInstrumentation::forcePseudoState(const_cast<Element*>(&element), CSSSelector::PseudoFocus))
@@ -1165,16 +1133,6 @@ bool SelectorChecker::matchesFocusPseudoClass(const Element& element)
     // explicitly, adjustedFocusedElement() will not be called.
     return isFrameFocused(element) && isShadowHost(element) && element.tabIndex() >= 0 && !element.tabStop()
         && &element == element.treeScope().adjustedFocusedElement();
-}
-
-bool SelectorChecker::matchesSpatialNavigationFocusPseudoClass(const Element& element)
-{
-    return isHTMLOptionElement(element) && toHTMLOptionElement(element).spatialNavigationFocused() && isFrameFocused(element);
-}
-
-bool SelectorChecker::matchesListBoxPseudoClass(const Element& element)
-{
-    return isHTMLSelectElement(element) && !toHTMLSelectElement(element).usesMenuList();
 }
 
 template

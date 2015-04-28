@@ -315,6 +315,11 @@ namespace blink {
         // http://dev.w3.org/csswg/selectors4/#compound
         bool isCompound() const;
 
+        bool isCommonPseudoClass() const;
+
+        enum LinkMatchMask { MatchLink = 1, MatchVisited = 2, MatchAll = MatchLink | MatchVisited };
+        unsigned computeLinkMatchType() const;
+
         bool isForPage() const { return m_isForPage; }
         void setForPage() { m_isForPage = true; }
 

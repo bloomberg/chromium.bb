@@ -83,7 +83,7 @@ public:
     MatchRanges ranges;
     bool isCacheable;
 
-    void addMatchedProperties(const StylePropertySet* properties, unsigned linkMatchType = SelectorChecker::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
+    void addMatchedProperties(const StylePropertySet* properties, unsigned linkMatchType = CSSSelector::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
 };
 
 inline bool operator==(const MatchRanges& a, const MatchRanges& b)
