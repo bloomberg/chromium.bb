@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -1161,9 +1162,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   // labels for all form control elements are scraped from the DOM and set in
   // WebFormElementToFormData.
   field->name = element.nameForAutofill();
-  field->form_control_type = base::UTF16ToUTF8(element.formControlType());
-  field->autocomplete_attribute =
-      base::UTF16ToUTF8(element.getAttribute(kAutocomplete));
+  field->form_control_type = element.formControlType().utf8();
+  field->autocomplete_attribute = element.getAttribute(kAutocomplete).utf8();
   if (field->autocomplete_attribute.size() > kMaxDataLength) {
     // Discard overly long attribute values to avoid DOS-ing the browser
     // process.  However, send over a default string to indicate that the
@@ -1286,11 +1286,28 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     const std::vector<blink::WebElement>& fieldsets,
     const std::vector<blink::WebFormControlElement>& control_elements,
     const blink::WebFormControlElement* element,
-    const GURL& origin,
+    const blink::WebDocument& document,
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
-  form->origin = origin;
+  // Only attempt formless Autofill on checkout flows. This avoids the many
+  // false positives found on the non-checkout web. See http://crbug.com/462375
+  // For now this early abort only applies to English-language pages, because
+  // the regex is not translated. Note that an empty "lang" attribute counts as
+  // English. A potential problem is that this only checks document.title(), but
+  // should actually check the main frame's title. Thus it may make bad
+  // decisions for iframes.
+  WebElement html_element = document.documentElement();
+  std::string lang;
+  if (!html_element.isNull())
+    lang = html_element.getAttribute("lang").utf8();
+  if ((lang.empty() || StartsWithASCII(lang, "en", false)) &&
+      !MatchesPattern(document.title(),
+          base::UTF8ToUTF16("payment|checkout|address|delivery|shipping"))) {
+    return false;
+  }
+
+  form->origin = document.url();
   form->user_submitted = false;
   form->is_form_tag = false;
 
@@ -1314,7 +1331,7 @@ bool FindFormAndFieldForFormControlElement(const WebFormControlElement& element,
     std::vector<WebFormControlElement> control_elements =
         GetUnownedAutofillableFormFieldElements(document.all(), &fieldsets);
     return UnownedFormElementsAndFieldSetsToFormData(
-        fieldsets, control_elements, &element, document.url(), extract_mask,
+        fieldsets, control_elements, &element, document, extract_mask,
         form, field);
   }
 

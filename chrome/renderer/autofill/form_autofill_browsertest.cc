@@ -90,6 +90,7 @@ const char kFormHtml[] =
     "</FORM>";
 
 const char kUnownedFormHtml[] =
+    "<HEAD><TITLE>enter shipping info</TITLE></HEAD>"
     "<INPUT type='text' id='firstname'/>"
     "<INPUT type='text' id='lastname'/>"
     "<INPUT type='hidden' id='imhidden'/>"
@@ -1037,6 +1038,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(firstname, &form, &field));
     EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_FALSE(form.origin.is_empty());
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
       EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -1131,6 +1133,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(firstname, &form, &field));
     EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_FALSE(form.origin.is_empty());
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
       EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -1918,6 +1921,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
                                        &field));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(frame->document().url()), form.origin);
+  EXPECT_FALSE(form.origin.is_empty());
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormFieldData>& fields = form.fields;
@@ -2030,6 +2034,7 @@ TEST_F(FormAutofillTest, ExtractMultipleForms) {
   const FormData& form = forms[0];
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+  EXPECT_FALSE(form.origin.is_empty());
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormFieldData>& fields = form.fields;
@@ -2055,6 +2060,7 @@ TEST_F(FormAutofillTest, ExtractMultipleForms) {
   const FormData& form2 = forms[1];
   EXPECT_EQ(ASCIIToUTF16("TestForm2"), form2.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
+  EXPECT_FALSE(form.origin.is_empty());
   EXPECT_EQ(GURL("http://zoo.com"), form2.action);
 
   const std::vector<FormFieldData>& fields2 = form2.fields;
@@ -2277,6 +2283,7 @@ TEST_F(FormAutofillTest, FindFormForInputElement) {
 
 TEST_F(FormAutofillTest, FindFormForInputElementForUnownedForm) {
     TestFindFormForInputElement(
+        "<HEAD><TITLE>delivery recipient</TITLE></HEAD>"
         "<INPUT type='text' id='firstname' value='John'/>"
         "<INPUT type='text' id='lastname' value='Smith'/>"
         "<INPUT type='text' id='email' value='john@example.com'"
@@ -2304,6 +2311,7 @@ TEST_F(FormAutofillTest, FindFormForTextAreaElement) {
 
 TEST_F(FormAutofillTest, FindFormForTextAreaElementForUnownedForm) {
   TestFindFormForTextAreaElement(
+      "<HEAD><TITLE>delivery address</TITLE></HEAD>"
       "<INPUT type='text' id='firstname' value='John'/>"
       "<INPUT type='text' id='lastname' value='Smith'/>"
       "<INPUT type='text' id='email' value='john@example.com'"
@@ -3371,6 +3379,7 @@ TEST_F(FormAutofillTest, FillFormMaxLength) {
 
 TEST_F(FormAutofillTest, FillFormMaxLengthForUnownedForm) {
   TestFillFormMaxLength(
+      "<HEAD><TITLE>delivery recipient info</TITLE></HEAD>"
       "<INPUT type='text' id='firstname' maxlength='5'/>"
       "<INPUT type='text' id='lastname' maxlength='7'/>"
       "<INPUT type='text' id='email' maxlength='9'/>"
@@ -3383,6 +3392,7 @@ TEST_F(FormAutofillTest, FillFormMaxLengthForUnownedForm) {
 // maxlength (defined in WebKit.)
 TEST_F(FormAutofillTest, FillFormNegativeMaxLength) {
   TestFillFormNegativeMaxLength(
+      "<HEAD><TITLE>delivery recipient info</TITLE></HEAD>"
       "<FORM name='TestForm' action='http://buh.com' method='post'>"
       "  <INPUT type='text' id='firstname' maxlength='-1'/>"
       "  <INPUT type='text' id='lastname' maxlength='-10'/>"
@@ -3394,6 +3404,7 @@ TEST_F(FormAutofillTest, FillFormNegativeMaxLength) {
 
 TEST_F(FormAutofillTest, FillFormNegativeMaxLengthForUnownedForm) {
   TestFillFormNegativeMaxLength(
+      "<HEAD><TITLE>delivery recipient info</TITLE></HEAD>"
       "<INPUT type='text' id='firstname' maxlength='-1'/>"
       "<INPUT type='text' id='lastname' maxlength='-10'/>"
       "<INPUT type='text' id='email' maxlength='-13'/>"
@@ -3414,6 +3425,7 @@ TEST_F(FormAutofillTest, FillFormEmptyName) {
 
 TEST_F(FormAutofillTest, FillFormEmptyNameForUnownedForm) {
   TestFillFormEmptyName(
+      "<HEAD><TITLE>delivery recipient info</TITLE></HEAD>"
       "<INPUT type='text' id='firstname'/>"
       "<INPUT type='text' id='lastname'/>"
       "<INPUT type='text' id='email'/>"
@@ -3440,6 +3452,7 @@ TEST_F(FormAutofillTest, FillFormEmptyFormNames) {
 
 TEST_F(FormAutofillTest, FillFormEmptyFormNamesForUnownedForm) {
   TestFillFormEmptyFormNames(
+      "<HEAD><TITLE>enter delivery preferences</TITLE></HEAD>"
       "<INPUT type='text' id='firstname'/>"
       "<INPUT type='text' id='middlename'/>"
       "<INPUT type='text' id='lastname'/>"
@@ -3463,7 +3476,6 @@ TEST_F(FormAutofillTest, ThreePartPhone) {
            "  <input type='submit' name='reply-send' value='Send'>"
            "</FORM>");
 
-
   WebFrame* frame = GetMainFrame();
   ASSERT_NE(nullptr, frame);
 
@@ -3479,6 +3491,7 @@ TEST_F(FormAutofillTest, ThreePartPhone) {
                                        nullptr));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(frame->document().url()), form.origin);
+  EXPECT_FALSE(form.origin.is_empty());
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormFieldData>& fields = form.fields;
@@ -3593,11 +3606,13 @@ TEST_F(FormAutofillTest, FillFormNonEmptyField) {
 }
 
 TEST_F(FormAutofillTest, FillFormNonEmptyFieldForUnownedForm) {
-  TestFillFormNonEmptyField("<INPUT type='text' id='firstname'/>"
-                            "<INPUT type='text' id='lastname'/>"
-                            "<INPUT type='text' id='email'/>"
-                            "<INPUT type='submit' value='Send'/>",
-                            true);
+  TestFillFormNonEmptyField(
+      "<HEAD><TITLE>delivery recipient info</TITLE></HEAD>"
+      "<INPUT type='text' id='firstname'/>"
+      "<INPUT type='text' id='lastname'/>"
+      "<INPUT type='text' id='email'/>"
+      "<INPUT type='submit' value='Send'/>",
+      true);
 }
 
 TEST_F(FormAutofillTest, ClearFormWithNode) {
@@ -3622,6 +3637,7 @@ TEST_F(FormAutofillTest, ClearFormWithNode) {
 
 TEST_F(FormAutofillTest, ClearFormWithNodeForUnownedForm) {
   TestClearFormWithNode(
+      "<HEAD><TITLE>store checkout</TITLE></HEAD>"
       "  <!-- Indented on purpose //-->"
       "  <INPUT type='text' id='firstname' value='Wyatt'/>"
       "  <INPUT type='text' id='lastname' value='Earp'/>"
@@ -3657,6 +3673,7 @@ TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOne) {
 
 TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOneForUnownedForm) {
   TestClearFormWithNodeContainingSelectOne(
+      "<HEAD><TITLE>store checkout</TITLE></HEAD>"
       "<INPUT type='text' id='firstname' value='Wyatt'/>"
       "<INPUT type='text' id='lastname' value='Earp'/>"
       "<SELECT id='state' name='state'>"
@@ -3683,6 +3700,7 @@ TEST_F(FormAutofillTest, ClearPreviewedFormWithElement) {
 
 TEST_F(FormAutofillTest, ClearPreviewedFormWithElementForUnownedForm) {
   TestClearPreviewedFormWithElement(
+      "<HEAD><TITLE>store checkout</TITLE></HEAD>"
       "<INPUT type='text' id='firstname' value='Wyatt'/>"
       "<INPUT type='text' id='lastname'/>"
       "<INPUT type='text' id='email'/>"
@@ -3706,6 +3724,7 @@ TEST_F(FormAutofillTest, ClearPreviewedFormWithNonEmptyInitiatingNode) {
 TEST_F(FormAutofillTest,
        ClearPreviewedFormWithNonEmptyInitiatingNodeForUnownedForm) {
   TestClearPreviewedFormWithNonEmptyInitiatingNode(
+      "<HEAD><TITLE>shipping details</TITLE></HEAD>"
       "<INPUT type='text' id='firstname' value='W'/>"
       "<INPUT type='text' id='lastname'/>"
       "<INPUT type='text' id='email'/>"
@@ -3729,6 +3748,7 @@ TEST_F(FormAutofillTest, ClearPreviewedFormWithAutofilledInitiatingNode) {
 TEST_F(FormAutofillTest,
        ClearPreviewedFormWithAutofilledInitiatingNodeForUnownedForm) {
   TestClearPreviewedFormWithAutofilledInitiatingNode(
+      "<HEAD><TITLE>shipping details</TITLE></HEAD>"
       "<INPUT type='text' id='firstname' value='W'/>"
       "<INPUT type='text' id='lastname'/>"
       "<INPUT type='text' id='email'/>"
@@ -3751,6 +3771,7 @@ TEST_F(FormAutofillTest, ClearOnlyAutofilledFields) {
 
 TEST_F(FormAutofillTest, ClearOnlyAutofilledFieldsForUnownedForm) {
   TestClearOnlyAutofilledFields(
+      "<HEAD><TITLE>shipping details</TITLE></HEAD>"
       "<INPUT type='text' id='firstname' value='Wyatt'/>"
       "<INPUT type='text' id='lastname' value='Earp'/>"
       "<INPUT type='email' id='email' value='wyatt@earp.com'/>"
@@ -3913,9 +3934,9 @@ TEST_F(FormAutofillTest,
 
   const ExtractMask extract_mask =
       static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS);
-  const GURL dummy_origin("http://www.example.com");
 
-  LoadHTML("<DIV>"
+  LoadHTML("<HEAD><TITLE>delivery info</TITLE></HEAD>"
+           "<DIV>"
            "  <FIELDSET>"
            "    <LABEL for='firstname'>First name:</LABEL>"
            "    <LABEL for='lastname'>Last name:</LABEL>"
@@ -3938,11 +3959,11 @@ TEST_F(FormAutofillTest,
 
   FormData form;
   EXPECT_TRUE(UnownedFormElementsAndFieldSetsToFormData(
-      fieldsets, control_elements, nullptr, dummy_origin, extract_mask, &form,
-      nullptr));
+      fieldsets, control_elements, nullptr, frame->document(), extract_mask,
+      &form, nullptr));
 
   EXPECT_TRUE(form.name.empty());
-  EXPECT_EQ(dummy_origin, form.origin);
+  EXPECT_EQ(frame->document().url(), form.origin);
   EXPECT_FALSE(form.action.is_valid());
 
   const std::vector<FormFieldData>& fields = form.fields;
@@ -3975,9 +3996,9 @@ TEST_F(FormAutofillTest,
 
   const ExtractMask extract_mask =
       static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS);
-  const GURL dummy_origin("http://www.example.com");
 
-  LoadHTML("<DIV>"
+  LoadHTML("<HEAD><TITLE>shipping details</TITLE></HEAD>"
+           "<DIV>"
            "  <FIELDSET>"
            "    <LABEL for='firstname'>First name:</LABEL>"
            "    <LABEL for='lastname'>Last name:</LABEL>"
@@ -3998,11 +4019,11 @@ TEST_F(FormAutofillTest,
 
   FormData form;
   EXPECT_TRUE(UnownedFormElementsAndFieldSetsToFormData(
-      fieldsets, control_elements, nullptr, dummy_origin, extract_mask, &form,
-      nullptr));
+      fieldsets, control_elements, nullptr, frame->document(), extract_mask,
+      &form, nullptr));
 
   EXPECT_TRUE(form.name.empty());
-  EXPECT_EQ(dummy_origin, form.origin);
+  EXPECT_EQ(frame->document().url(), form.origin);
   EXPECT_FALSE(form.action.is_valid());
 
   const std::vector<FormFieldData>& fields = form.fields;
@@ -4034,7 +4055,6 @@ TEST_F(FormAutofillTest, UnownedFormElementsAndFieldSetsToFormDataWithForm) {
 
   const ExtractMask extract_mask =
       static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTIONS);
-  const GURL dummy_origin("http://www.example.com");
 
   LoadHTML(kFormHtml);
 
@@ -4048,8 +4068,8 @@ TEST_F(FormAutofillTest, UnownedFormElementsAndFieldSetsToFormDataWithForm) {
 
   FormData form;
   EXPECT_FALSE(UnownedFormElementsAndFieldSetsToFormData(
-      fieldsets, control_elements, nullptr, dummy_origin, extract_mask, &form,
-      nullptr));
+      fieldsets, control_elements, nullptr, frame->document(), extract_mask,
+      &form, nullptr));
 }
 
 }  // namespace autofill

@@ -15,9 +15,9 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
-#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 

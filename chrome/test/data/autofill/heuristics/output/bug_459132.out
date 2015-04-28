@@ -10,3 +10,9 @@ UNKNOWN_TYPE |  | Re-enter email | Χ  | _1-default
 EMAIL_ADDRESS | rEmail_1 | Re-enter email |  | _1-default
 UNKNOWN_TYPE |  | Miles & More number optional | Χ  | _1-default
 UNKNOWN_TYPE | MamNumber_1 | Miles & More number optional |  | _1-default
+UNKNOWN_TYPE |  | Please select a category | Χ  | _1-default
+UNKNOWN_TYPE |  | Please select a category | ▼  | _1-default
+UNKNOWN_TYPE | FlightDate2 | Flight date |  | _1-default
+UNKNOWN_TYPE | FlightDate | Flight date |  | _1-default
+UNKNOWN_TYPE | originName | Origin |  | _1-default
+UNKNOWN_TYPE | destinationName | Destination |  | _1-default
