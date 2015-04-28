@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "components/html_viewer/blink_platform_impl.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "gin/v8_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -45,17 +46,20 @@ class TestWebViewClient : public WebViewClient {
 
 class AxProviderImplTest : public testing::Test {
  public:
-  AxProviderImplTest() {
+  AxProviderImplTest()
+      : renderer_scheduler_(scheduler::RendererScheduler::Create()) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     gin::V8Initializer::LoadV8Snapshot();
 #endif
-    blink::initialize(new html_viewer::BlinkPlatformImpl(nullptr));
+    blink::initialize(
+        new html_viewer::BlinkPlatformImpl(nullptr, renderer_scheduler_.get()));
   }
 
   ~AxProviderImplTest() override { blink::shutdown(); }
 
  private:
   base::MessageLoopForUI message_loop;
+  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler_;
 };
 
 struct NodeCatcher {
