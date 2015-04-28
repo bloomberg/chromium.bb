@@ -636,6 +636,11 @@ NET_ERROR(PROXY_HTTP_1_1_REQUIRED, -366)
 // The PAC script terminated fatally and must be reloaded.
 NET_ERROR(PAC_SCRIPT_TERMINATED, -367)
 
+// The certificate offered by the alternative server is not valid for the
+// origin, a violation of HTTP Alternative Services specification Section 2.1,
+// https://tools.ietf.org/id/draft-ietf-httpbis-alt-svc-06.html#host_auth.
+NET_ERROR(ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN, -368)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

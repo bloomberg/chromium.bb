@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
@@ -11845,6 +11846,162 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttp) {
 
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_FALSE(trans2.GetResponseInfo()->was_fetched_via_spdy);
+}
+
+class AltSvcCertificateVerificationTest : public HttpNetworkTransactionTest {
+ public:
+  void Run(bool pooling, bool valid) {
+    HostPortPair origin(valid ? "mail.example.org" : "invalid.example.org",
+                        443);
+    HostPortPair alternative("www.example.org", 443);
+
+    base::FilePath certs_dir = GetTestCertsDirectory();
+    scoped_refptr<X509Certificate> cert(
+        ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
+    ASSERT_TRUE(cert.get());
+    bool common_name_fallback_used;
+    EXPECT_EQ(valid,
+              cert->VerifyNameMatch(origin.host(), &common_name_fallback_used));
+    EXPECT_TRUE(
+        cert->VerifyNameMatch(alternative.host(), &common_name_fallback_used));
+    SSLSocketDataProvider ssl(ASYNC, OK);
+    ssl.SetNextProto(GetParam());
+    ssl.cert = cert;
+    session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+    // If pooling, then start a request to alternative first to create a
+    // SpdySession.
+    std::string url0 = "https://www.example.org:443";
+    // Second request to origin, which has an alternative service, and could
+    // open a connection to the alternative host or pool to the existing one.
+    std::string url1("https://");
+    url1.append(origin.host());
+    url1.append(":443");
+
+    scoped_ptr<SpdyFrame> req0;
+    scoped_ptr<SpdyFrame> req1;
+    scoped_ptr<SpdyFrame> resp0;
+    scoped_ptr<SpdyFrame> body0;
+    scoped_ptr<SpdyFrame> resp1;
+    scoped_ptr<SpdyFrame> body1;
+    std::vector<MockWrite> writes;
+    std::vector<MockRead> reads;
+
+    if (pooling) {
+      req0.reset(spdy_util_.ConstructSpdyGet(url0.c_str(), false, 1, LOWEST));
+      req1.reset(spdy_util_.ConstructSpdyGet(url1.c_str(), false, 3, LOWEST));
+
+      writes.push_back(CreateMockWrite(*req0, 0));
+      writes.push_back(CreateMockWrite(*req1, 3));
+
+      resp0.reset(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+      body0.reset(spdy_util_.ConstructSpdyBodyFrame(1, true));
+      resp1.reset(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+      body1.reset(spdy_util_.ConstructSpdyBodyFrame(3, true));
+
+      reads.push_back(CreateMockRead(*resp0, 1));
+      reads.push_back(CreateMockRead(*body0, 2));
+      reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, 4));
+      reads.push_back(CreateMockRead(*resp1, 5));
+      reads.push_back(CreateMockRead(*body1, 6));
+      reads.push_back(MockRead(ASYNC, OK, 7));
+    } else {
+      req1.reset(spdy_util_.ConstructSpdyGet(url1.c_str(), false, 1, LOWEST));
+
+      writes.push_back(CreateMockWrite(*req1, 0));
+
+      resp1.reset(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+      body1.reset(spdy_util_.ConstructSpdyBodyFrame(1, true));
+
+      reads.push_back(CreateMockRead(*resp1, 1));
+      reads.push_back(CreateMockRead(*body1, 2));
+      reads.push_back(MockRead(ASYNC, OK, 3));
+    }
+
+    OrderedSocketData data(vector_as_array(&reads), reads.size(),
+                           vector_as_array(&writes), writes.size());
+    session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+    // Connection to the origin fails.
+    MockConnect mock_connect(ASYNC, ERR_CONNECTION_REFUSED);
+    StaticSocketDataProvider data_refused;
+    data_refused.set_connect_data(mock_connect);
+    session_deps_.socket_factory->AddSocketDataProvider(&data_refused);
+
+    session_deps_.use_alternate_protocols = true;
+    scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    base::WeakPtr<HttpServerProperties> http_server_properties =
+        session->http_server_properties();
+    AlternativeService alternative_service(
+        AlternateProtocolFromNextProto(GetParam()), alternative);
+    http_server_properties->SetAlternativeService(origin, alternative_service,
+                                                  1.0);
+
+    // First request to alternative.
+    if (pooling) {
+      scoped_ptr<HttpTransaction> trans0(
+          new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+      HttpRequestInfo request0;
+      request0.method = "GET";
+      request0.url = GURL(url0);
+      request0.load_flags = 0;
+      TestCompletionCallback callback0;
+
+      int rv = trans0->Start(&request0, callback0.callback(), BoundNetLog());
+      EXPECT_EQ(ERR_IO_PENDING, rv);
+      rv = callback0.WaitForResult();
+      EXPECT_EQ(OK, rv);
+    }
+
+    // Second request to origin.
+    scoped_ptr<HttpTransaction> trans1(
+        new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+    HttpRequestInfo request1;
+    request1.method = "GET";
+    request1.url = GURL(url1);
+    request1.load_flags = 0;
+    TestCompletionCallback callback1;
+
+    int rv = trans1->Start(&request1, callback1.callback(), BoundNetLog());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+    rv = callback1.WaitForResult();
+    if (valid) {
+      EXPECT_EQ(OK, rv);
+    } else {
+      if (pooling) {
+        EXPECT_EQ(ERR_CONNECTION_REFUSED, rv);
+      } else {
+        EXPECT_EQ(ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN, rv);
+      }
+    }
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(NextProto,
+                        AltSvcCertificateVerificationTest,
+                        testing::Values(kProtoSPDY31,
+                                        kProtoSPDY4_14,
+                                        kProtoSPDY4));
+
+// The alternative service host must exhibit a certificate that is valid for the
+// origin host.  Test that this is enforced when pooling to an existing
+// connection.
+TEST_P(AltSvcCertificateVerificationTest, PoolingValid) {
+  Run(true, true);
+}
+
+TEST_P(AltSvcCertificateVerificationTest, PoolingInvalid) {
+  Run(true, false);
+}
+
+// The alternative service host must exhibit a certificate that is valid for the
+// origin host.  Test that this is enforced when opening a new connection.
+TEST_P(AltSvcCertificateVerificationTest, NewConnectionValid) {
+  Run(false, true);
+}
+
+TEST_P(AltSvcCertificateVerificationTest, NewConnectionInvalid) {
+  Run(false, false);
 }
 
 TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
