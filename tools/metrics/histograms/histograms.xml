@@ -35009,6 +35009,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sdch3.TimeWeightedMemoryUse" units="bytes">
+  <owner>ellyjones@chromium.org</owner>
+  <summary>
+    Measures the time-weighted memory use of SDCH dictionaries, in bytes. The
+    numerator is bytes of dictionary times seconds that dictionary was in
+    memory, and the denominator is seconds that the Chrome process lives.
+  </summary>
+</histogram>
+
 <histogram name="Sdch3.UnflushedBufferSize" units="bytes">
   <owner>rdsmith@chromium.org</owner>
   <summary>

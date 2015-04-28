@@ -257,18 +257,18 @@ class SdchOwnerTest : public testing::Test {
       : last_jobs_created_(error_jobs_created),
         dictionary_creation_index_(0),
         pref_store_(new TestingPrefStore),
-        sdch_owner_(&sdch_manager_, &url_request_context_) {
+        sdch_owner_(new SdchOwner(&sdch_manager_, &url_request_context_)) {
     // Any jobs created on this context will immediately error,
     // which leaves the test in control of signals to SdchOwner.
     url_request_context_.set_job_factory(&job_factory_);
 
     // Reduce sizes to reduce time for string operations.
-    sdch_owner_.SetMaxTotalDictionarySize(kMaxSizeForTesting);
-    sdch_owner_.SetMinSpaceForDictionaryFetch(kMinFetchSpaceForTesting);
+    sdch_owner_->SetMaxTotalDictionarySize(kMaxSizeForTesting);
+    sdch_owner_->SetMinSpaceForDictionaryFetch(kMinFetchSpaceForTesting);
   }
 
   SdchManager& sdch_manager() { return sdch_manager_; }
-  SdchOwner& sdch_owner() { return sdch_owner_; }
+  SdchOwner& sdch_owner() { return *(sdch_owner_.get()); }
   BoundNetLog& bound_net_log() { return net_log_; }
   TestingPrefStore& pref_store() { return *(pref_store_.get()); }
 
@@ -328,6 +328,10 @@ class SdchOwnerTest : public testing::Test {
     return DictionaryPresentInManager(server_hash);
   }
 
+  void ResetOwner() {
+    sdch_owner_.reset(new SdchOwner(&sdch_manager_, &url_request_context_));
+  }
+
  private:
   int last_jobs_created_;
   BoundNetLog net_log_;
@@ -340,7 +344,7 @@ class SdchOwnerTest : public testing::Test {
   URLRequestContext url_request_context_;
   SdchManager sdch_manager_;
   scoped_refptr<TestingPrefStore> pref_store_;
-  SdchOwner sdch_owner_;
+  scoped_ptr<SdchOwner> sdch_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(SdchOwnerTest);
 };
@@ -404,9 +408,14 @@ TEST_F(SdchOwnerTest, OnDictionaryFetched_Fetching) {
 
 // Confirm auto-eviction happens if space is needed.
 TEST_F(SdchOwnerTest, ConfirmAutoEviction) {
+  base::Time start_time = base::Time::Now();
   std::string server_hash_d1;
   std::string server_hash_d2;
   std::string server_hash_d3;
+
+  base::SimpleTestClock* test_clock = new base::SimpleTestClock();
+  sdch_owner().SetClockForTesting(make_scoped_ptr(test_clock));
+  test_clock->SetNow(base::Time::Now());
 
   // Add two dictionaries, one recent, one more than a day in the past.
   base::Time fresh(base::Time::Now() - base::TimeDelta::FromHours(23));
@@ -420,11 +429,41 @@ TEST_F(SdchOwnerTest, ConfirmAutoEviction) {
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d2));
 
+  base::HistogramTester tester;
+  const base::TimeDelta synthetic_delta = base::TimeDelta::FromSeconds(5);
+
+  test_clock->Advance(synthetic_delta);
+
   EXPECT_TRUE(
       CreateAndAddDictionary(kMaxSizeForTesting / 2, &server_hash_d3, fresh));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d1));
   EXPECT_FALSE(DictionaryPresentInManager(server_hash_d2));
   EXPECT_TRUE(DictionaryPresentInManager(server_hash_d3));
+
+  base::TimeDelta expected_proc_lifetime = synthetic_delta * 3 +
+    base::Time::Now() -  start_time;
+  size_t expected_value_base = ((kMaxSizeForTesting / 2) *
+                                synthetic_delta.InMilliseconds()) /
+                                expected_proc_lifetime.InMilliseconds();
+
+  const char *kHistogram = "Sdch3.TimeWeightedMemoryUse";
+  tester.ExpectTotalCount(kHistogram, 0);
+
+  // Dictionary insertions and deletions:
+  // T = 0: insert d1 and d2
+  // T = 5: insert d3, which evicts d2
+  // T = 15: destroy SdchOwner, which evicts d1 and d3
+  // Therefore, d2's lifetime is synthetic_delta, d1's is synthetic_delta * 3,
+  // and d3's is synthetic_delta * 2. The expected_value_base variable is the
+  // base factor for d2's memory consumption, of which d1's and d3's are
+  // multiples.
+  test_clock->Advance(synthetic_delta * 2);
+  ResetOwner();
+
+  tester.ExpectTotalCount(kHistogram, 3);
+  tester.ExpectBucketCount(kHistogram, expected_value_base, 1);
+  tester.ExpectBucketCount(kHistogram, expected_value_base * 2, 1);
+  tester.ExpectBucketCount(kHistogram, expected_value_base * 3, 1);
 }
 
 // Confirm auto-eviction happens if space is needed, with a more complicated
