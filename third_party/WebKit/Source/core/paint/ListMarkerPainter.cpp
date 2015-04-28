@@ -200,8 +200,8 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
 
         const UChar suffix = m_layoutListMarker.listMarkerSuffix(type, m_layoutListMarker.listItem()->value());
         UChar suffixStr[2] = {
-            m_layoutListMarker.style()->isLeftToRightDirection() ? suffix : ' ',
-            m_layoutListMarker.style()->isLeftToRightDirection() ? ' ' : suffix
+            m_layoutListMarker.style()->isLeftToRightDirection() ? suffix : static_cast<UChar>(' '),
+            m_layoutListMarker.style()->isLeftToRightDirection() ? static_cast<UChar>(' ') : suffix
         };
         TextRun suffixRun = constructTextRun(&m_layoutListMarker, font, suffixStr, 2, m_layoutListMarker.styleRef(), m_layoutListMarker.style()->direction());
         TextRunPaintInfo suffixRunInfo(suffixRun);
