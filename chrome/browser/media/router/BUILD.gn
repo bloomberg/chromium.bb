@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 #
 import("//testing/test.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 source_set("router") {
   deps = [
@@ -63,6 +64,12 @@ source_set("unit_tests") {
     "media_sink_unittest.cc",
     "media_source_unittest.cc",
     "route_id_manager_unittest.cc",
+  ]
+}
+
+mojom("mojo_bindings") {
+  sources = [
+    "media_router.mojom",
   ]
 }
 

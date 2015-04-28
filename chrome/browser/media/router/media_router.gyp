@@ -11,6 +11,7 @@
         '<(DEPTH)',
       ],
       'dependencies': [
+        ':media_router_mojo',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
@@ -36,6 +37,17 @@
         'media_source_helper.h',
         'route_id_manager.cc',
         'route_id_manager.h',
+      ],
+    },
+    {
+      # Mojo compiler for the Media Router internal API.
+      'target_name': 'media_router_mojo',
+      'type': 'none',
+      'sources': [
+        'media_router.mojom',
+      ],
+      'includes': [
+        '../../../../third_party/mojo/mojom_bindings_generator.gypi',
       ],
     },
   ],
