@@ -102,4 +102,15 @@
   <structure name="IDR_CR_ELEMENTS_CR_TOGGLE_BUTTON_JS"
              file="../../webui/resources/cr_elements/cr_toggle_button/cr_toggle_button.js"
              type="chrome_html" />
+
+  <!-- Polymer 0.8 Elements -->
+  <structure name="IDR_CR_ELEMENTS_08_CR_CHECKBOX_CSS"
+             file="../../webui/resources/cr_elements/v0_8/cr_checkbox/cr_checkbox.css"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_08_CR_CHECKBOX_HTML"
+             file="../../webui/resources/cr_elements/v0_8/cr_checkbox/cr_checkbox.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_08_CR_CHECKBOX_JS"
+             file="../../webui/resources/cr_elements/v0_8/cr_checkbox/cr_checkbox.js"
+             type="chrome_html" />
 </grit-part>

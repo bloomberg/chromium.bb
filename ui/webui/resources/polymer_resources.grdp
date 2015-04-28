@@ -438,4 +438,30 @@
   <structure name="IDR_POLYMER_WEB_ANIMATIONS_JS_WEB_ANIMATIONS_NEXT_LITE_MIN_JS_MAP"
              file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js.map"
              type="chrome_html" />
+
+  <!-- Polymer 0.8 Elements, -->
+  <structure name="IDR_POLYMER_08_POLYMER_POLYMER_HTML"
+             file="../../../third_party/polymer/v0_8/components-chromium/polymer/polymer.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_08_POLYMER_POLYMER_JS"
+             file="../../../third_party/polymer/v0_8/components-chromium/polymer/polymer.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_08_PAPER_CHECKBOX_PAPER_CHECKBOX_CSS"
+             file="../../../third_party/polymer/v0_8/components-chromium/paper-checkbox/paper-checkbox.css"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_08_PAPER_CHECKBOX_PAPER_CHECKBOX_EXTRACTED_JS"
+             file="../../../third_party/polymer/v0_8/components-chromium/paper-checkbox/paper-checkbox-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_08_PAPER_CHECKBOX_PAPER_CHECKBOX_HTML"
+             file="../../../third_party/polymer/v0_8/components-chromium/paper-checkbox/paper-checkbox.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_08_PAPER_RIPPLE_PAPER_RIPPLE_EXTRACTED_JS"
+             file="../../../third_party/polymer/v0_8/components-chromium/paper-ripple/paper-ripple-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_08_PAPER_RIPPLE_PAPER_RIPPLE_HTML"
+             file="../../../third_party/polymer/v0_8/components-chromium/paper-ripple/paper-ripple.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_08_PAPER_STYLES_DEFAULT_THEME_HTML"
+             file="../../../third_party/polymer/v0_8/components-chromium/paper-styles/default-theme.html"
+             type="chrome_html" />
 </grit-part>
