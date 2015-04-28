@@ -26,7 +26,7 @@ from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import fake_cidb
-from chromite.lib import gs
+from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
@@ -49,7 +49,8 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
     release_tag = '4815.0.0-rc1'
     self._run.attrs.release_tag = '4815.0.0-rc1'
     fake_versioninfo = manifest_version.VersionInfo(release_tag, '39')
-    self.PatchObject(gs.GSContext, 'Copy')
+    self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
+    self.gs_mock.SetDefaultCmdResult()
     self.PatchObject(cbuildbot_run._BuilderRunBase, 'GetVersionInfo',
                      return_value=fake_versioninfo)
     self.PatchObject(toolchain, 'GetToolchainsForBoard')
