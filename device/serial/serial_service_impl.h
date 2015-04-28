@@ -6,7 +6,8 @@
 #define DEVICE_SERIAL_SERIAL_SERVICE_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "device/serial/data_stream.mojom.h"
 #include "device/serial/serial.mojom.h"
 #include "device/serial/serial_connection_factory.h"
@@ -23,13 +24,13 @@ class SerialServiceImpl : public mojo::InterfaceImpl<serial::SerialService> {
                     scoped_ptr<SerialDeviceEnumerator> device_enumerator);
   ~SerialServiceImpl() override;
 
-  static void Create(scoped_refptr<base::MessageLoopProxy> io_message_loop,
-                     scoped_refptr<base::MessageLoopProxy> ui_message_loop,
+  static void Create(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+                     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
                      mojo::InterfaceRequest<serial::SerialService> request);
   static void CreateOnMessageLoop(
-      scoped_refptr<base::MessageLoopProxy> message_loop,
-      scoped_refptr<base::MessageLoopProxy> io_message_loop,
-      scoped_refptr<base::MessageLoopProxy> ui_message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       mojo::InterfaceRequest<serial::SerialService> request);
 
   // mojo::InterfaceImpl<SerialService> overrides.

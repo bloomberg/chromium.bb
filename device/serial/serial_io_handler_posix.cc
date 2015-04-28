@@ -129,16 +129,16 @@ namespace device {
 
 // static
 scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
-    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
-    scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop) {
-  return new SerialIoHandlerPosix(file_thread_message_loop,
-                                  ui_thread_message_loop);
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
+  return new SerialIoHandlerPosix(file_thread_task_runner,
+                                  ui_thread_task_runner);
 }
 
 void SerialIoHandlerPosix::RequestAccess(
     const std::string& port,
-    scoped_refptr<base::MessageLoopProxy> file_message_loop,
-    scoped_refptr<base::MessageLoopProxy> ui_message_loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
 #if defined(OS_LINUX) && defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS()) {
     chromeos::PermissionBrokerClient* client =
@@ -149,13 +149,11 @@ void SerialIoHandlerPosix::RequestAccess(
       return;
     }
     // PermissionBrokerClient should be called on the UI thread.
-    ui_message_loop->PostTask(
+    ui_task_runner->PostTask(
         FROM_HERE,
         base::Bind(
             &chromeos::PermissionBrokerClient::RequestPathAccess,
-            base::Unretained(client),
-            port,
-            -1,
+            base::Unretained(client), port, -1,
             base::Bind(&SerialIoHandler::OnRequestAccessComplete, this, port)));
   } else {
     OnRequestAccessComplete(port, true /* success */);
@@ -279,9 +277,9 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
 }
 
 SerialIoHandlerPosix::SerialIoHandlerPosix(
-    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
-    scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop)
-    : SerialIoHandler(file_thread_message_loop, ui_thread_message_loop),
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
+    : SerialIoHandler(file_thread_task_runner, ui_thread_task_runner),
       is_watching_reads_(false),
       is_watching_writes_(false) {
 }

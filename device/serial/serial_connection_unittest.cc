@@ -70,7 +70,7 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
             new SerialConnectionFactory(
                 base::Bind(&SerialConnectionTest::CreateIoHandler,
                            base::Unretained(this)),
-                base::MessageLoopProxy::current()),
+                base::ThreadTaskRunnerHandle::Get()),
             scoped_ptr<SerialDeviceEnumerator>(new FakeSerialDeviceEnumerator)),
         &service);
     service.set_error_handler(this);

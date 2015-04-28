@@ -12,10 +12,10 @@
 namespace device {
 
 SerialIoHandler::SerialIoHandler(
-    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
-    scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop)
-    : file_thread_message_loop_(file_thread_message_loop),
-      ui_thread_message_loop_(ui_thread_message_loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
+    : file_thread_task_runner_(file_thread_task_runner),
+      ui_thread_task_runner_(ui_thread_task_runner) {
   options_.bitrate = 9600;
   options_.data_bits = serial::DATA_BITS_EIGHT;
   options_.parity_bit = serial::PARITY_BIT_NO;
@@ -35,16 +35,16 @@ void SerialIoHandler::Open(const std::string& port,
   DCHECK(CalledOnValidThread());
   DCHECK(open_complete_.is_null());
   open_complete_ = callback;
-  DCHECK(file_thread_message_loop_.get());
-  DCHECK(ui_thread_message_loop_.get());
+  DCHECK(file_thread_task_runner_.get());
+  DCHECK(ui_thread_task_runner_.get());
   MergeConnectionOptions(options);
-  RequestAccess(port, file_thread_message_loop_, ui_thread_message_loop_);
+  RequestAccess(port, file_thread_task_runner_, ui_thread_task_runner_);
 }
 
 void SerialIoHandler::RequestAccess(
     const std::string& port,
-    scoped_refptr<base::MessageLoopProxy> file_message_loop,
-    scoped_refptr<base::MessageLoopProxy> ui_message_loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   OnRequestAccessComplete(port, true /* success */);
 }
 
@@ -52,13 +52,10 @@ void SerialIoHandler::OnRequestAccessComplete(const std::string& port,
                                               bool success) {
   DCHECK(CalledOnValidThread());
   if (success) {
-    DCHECK(file_thread_message_loop_.get());
-    file_thread_message_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&SerialIoHandler::StartOpen,
-                   this,
-                   port,
-                   base::MessageLoopProxy::current()));
+    DCHECK(file_thread_task_runner_.get());
+    file_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&SerialIoHandler::StartOpen, this, port,
+                              base::ThreadTaskRunnerHandle::Get()));
     return;
   } else {
     DCHECK(!open_complete_.is_null());
@@ -91,9 +88,9 @@ void SerialIoHandler::MergeConnectionOptions(
 
 void SerialIoHandler::StartOpen(
     const std::string& port,
-    scoped_refptr<base::MessageLoopProxy> io_message_loop) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   DCHECK(!open_complete_.is_null());
-  DCHECK(file_thread_message_loop_->RunsTasksOnCurrentThread());
+  DCHECK(file_thread_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!file_.IsValid());
   // It's the responsibility of the API wrapper around SerialIoHandler to
   // validate the supplied path against the set of valid port names, and
@@ -105,9 +102,8 @@ void SerialIoHandler::StartOpen(
               base::File::FLAG_EXCLUSIVE_WRITE | base::File::FLAG_ASYNC |
               base::File::FLAG_TERMINAL_DEVICE;
   base::File file(path, flags);
-  io_message_loop->PostTask(
-      FROM_HERE,
-      base::Bind(&SerialIoHandler::FinishOpen, this, Passed(file.Pass())));
+  io_task_runner->PostTask(FROM_HERE, base::Bind(&SerialIoHandler::FinishOpen,
+                                                 this, Passed(file.Pass())));
 }
 
 void SerialIoHandler::FinishOpen(base::File file) {
@@ -139,8 +135,8 @@ bool SerialIoHandler::PostOpen() {
 
 void SerialIoHandler::Close() {
   if (file_.IsValid()) {
-    DCHECK(file_thread_message_loop_.get());
-    file_thread_message_loop_->PostTask(
+    DCHECK(file_thread_task_runner_.get());
+    file_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&SerialIoHandler::DoClose, Passed(file_.Pass())));
   }
 }

@@ -61,9 +61,9 @@ class SerialConnectionFactory::ConnectTask
 
 SerialConnectionFactory::SerialConnectionFactory(
     const IoHandlerFactory& io_handler_factory,
-    scoped_refptr<base::MessageLoopProxy> connect_message_loop)
+    scoped_refptr<base::SingleThreadTaskRunner> connect_task_runner)
     : io_handler_factory_(io_handler_factory),
-      connect_message_loop_(connect_message_loop) {
+      connect_task_runner_(connect_task_runner) {
 }
 
 void SerialConnectionFactory::CreateConnection(
@@ -104,7 +104,7 @@ SerialConnectionFactory::ConnectTask::ConnectTask(
 }
 
 void SerialConnectionFactory::ConnectTask::Run() {
-  factory_->connect_message_loop_->PostTask(
+  factory_->connect_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SerialConnectionFactory::ConnectTask::Connect, this));
 }

@@ -9,7 +9,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "device/serial/data_stream.mojom.h"
 #include "device/serial/serial.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
@@ -25,7 +26,7 @@ class SerialConnectionFactory
 
   SerialConnectionFactory(
       const IoHandlerFactory& io_handler_factory,
-      scoped_refptr<base::MessageLoopProxy> connect_message_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> connect_task_runner);
 
   void CreateConnection(
       const std::string& path,
@@ -42,7 +43,7 @@ class SerialConnectionFactory
   virtual ~SerialConnectionFactory();
 
   const IoHandlerFactory io_handler_factory_;
-  scoped_refptr<base::MessageLoopProxy> connect_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> connect_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialConnectionFactory);
 };

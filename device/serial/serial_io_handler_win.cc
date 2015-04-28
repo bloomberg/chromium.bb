@@ -134,10 +134,9 @@ serial::StopBits StopBitsConstantToEnum(int stop_bits) {
 
 // static
 scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
-    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
-    scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop) {
-  return new SerialIoHandlerWin(file_thread_message_loop,
-                                ui_thread_message_loop);
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
+  return new SerialIoHandlerWin(file_thread_task_runner, ui_thread_task_runner);
 }
 
 bool SerialIoHandlerWin::PostOpen() {
@@ -275,9 +274,9 @@ bool SerialIoHandlerWin::ConfigurePortImpl() {
 }
 
 SerialIoHandlerWin::SerialIoHandlerWin(
-    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop,
-    scoped_refptr<base::MessageLoopProxy> ui_thread_message_loop)
-    : SerialIoHandler(file_thread_message_loop, ui_thread_message_loop),
+    scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
+    : SerialIoHandler(file_thread_task_runner, ui_thread_task_runner),
       event_mask_(0),
       is_comm_pending_(false) {
 }
