@@ -27,12 +27,6 @@ struct CONTENT_EXPORT FrameNavigateParams {
   // iframes are loaded automatically.
   int32 page_id;
 
-  // The unique ID of the NavigationEntry for browser-initiated navigations.
-  // This value was given to the render process in the HistoryNavigationParams
-  // and is being returned by the renderer without it having any idea what it
-  // means. If the navigation was renderer-initiated, this value is 0.
-  int nav_entry_id;
-
   // URL of the page being loaded.
   GURL url;
 

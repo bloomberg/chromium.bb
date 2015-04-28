@@ -40,12 +40,10 @@ class SiteInstance;
 class TestRenderFrameHost;
 class TestWebContents;
 
-// Utility function to initialize FrameHostMsg_DidCommitProvisionalLoad_Params
-// with given parameters.
+// Utility function to initialize ViewHostMsg_NavigateParams_Params
+// with given |page_id|, |url| and |transition_type|.
 void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
                         int page_id,
-                        int nav_entry_id,
-                        bool did_create_new_entry,
                         const GURL& url,
                         ui::PageTransition transition_type);
 
