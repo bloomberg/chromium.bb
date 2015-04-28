@@ -355,6 +355,8 @@ public:
     String unscopeableAttribute();
     String unscopeableMethod();
 
+    ClientRectList* focusRingRects(Element*);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

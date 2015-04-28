@@ -313,4 +313,6 @@
 
     [Unscopeable] readonly attribute DOMString unscopeableAttribute;
     [Unscopeable] DOMString unscopeableMethod();
+
+    ClientRectList focusRingRects(Element element);
 };

@@ -1400,16 +1400,21 @@ public:
 
 void LayoutInline::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
-    AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext context(rects, additionalOffset);
-    generateLineBoxRects(context);
+    // Add line boxes only if this object is the first object of addFocusRingRects().
+    // Otherwise the parent (LayoutBlockFlow or LayoutInline) should have added line box rects
+    // covering those of this object.
+    if (rects.isEmpty()) {
+        AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext context(rects, additionalOffset);
+        generateLineBoxRects(context);
+    }
 
     addChildFocusRingRects(rects, additionalOffset);
 
-    if (continuation()) {
-        if (continuation()->isInline())
-            continuation()->addFocusRingRects(rects, additionalOffset + (continuation()->containingBlock()->location() - containingBlock()->location()));
+    if (LayoutBoxModelObject* continuation = this->continuation()) {
+        if (continuation->isInline())
+            continuation->addFocusRingRects(rects, additionalOffset + (continuation->containingBlock()->location() - containingBlock()->location()));
         else
-            continuation()->addFocusRingRects(rects, additionalOffset + (toLayoutBox(continuation())->location() - containingBlock()->location()));
+            continuation->addFocusRingRects(rects, additionalOffset + (toLayoutBox(continuation)->location() - containingBlock()->location()));
     }
 }
 

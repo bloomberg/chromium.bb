@@ -2364,4 +2364,12 @@ String Internals::unscopeableMethod()
     return "unscopeableMethod";
 }
 
+ClientRectList* Internals::focusRingRects(Element* element)
+{
+    Vector<LayoutRect> rects;
+    if (element && element->layoutObject())
+        element->layoutObject()->addFocusRingRects(rects, LayoutPoint());
+    return ClientRectList::create(rects);
+}
+
 } // namespace blink
