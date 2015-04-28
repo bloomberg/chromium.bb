@@ -8,7 +8,6 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/trace_event/memory_allocator_attributes_type_info.h"
 #include "base/values.h"
 
 namespace base {
@@ -81,10 +80,6 @@ class BASE_EXPORT MemoryAllocatorDump {
   ProcessMemoryDump* process_memory_dump() const {
     return process_memory_dump_;
   }
-
-  // Retrieves the map of allocator attributes types, which is shared by all
-  // MemoryAllocatorDump(s) across all ProcessMemoryDump(s) per tracing session.
-  const MemoryAllocatorAttributesTypeInfo& GetAttributesTypeInfo() const;
 
  private:
   const std::string allocator_name_;

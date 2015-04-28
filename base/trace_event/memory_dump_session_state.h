@@ -9,16 +9,16 @@
 
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
-#include "base/trace_event/memory_allocator_attributes_type_info.h"
 
 namespace base {
 namespace trace_event {
 
+// Container for state variables that should be shared across all the memory
+// dumps in a tracing session.
 class BASE_EXPORT MemoryDumpSessionState
     : public RefCountedThreadSafe<MemoryDumpSessionState> {
  public:
   MemoryDumpSessionState();
-  MemoryAllocatorAttributesTypeInfo allocators_attributes_type_info;
 
  private:
   friend class RefCountedThreadSafe<MemoryDumpSessionState>;

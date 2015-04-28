@@ -53,9 +53,6 @@ MemoryAllocatorDump::~MemoryAllocatorDump() {
 }
 
 void MemoryAllocatorDump::SetAttribute(const std::string& name, int value) {
-  DCHECK(GetAttributesTypeInfo().Exists(allocator_name_, name))
-      << "attribute '" << name << "' not declared."
-      << "See MemoryDumpProvider.DeclareAllocatorAttribute()";
   attributes_values_.SetInteger(name, value);
 }
 
@@ -98,30 +95,8 @@ void MemoryAllocatorDump::AsValueInto(TracedValue* value) const {
   value->SetString("value", StringPrintf(kHexFmt, allocated_objects_count_));
   value->EndDictionary();
 
-  // Copy all the extra attributes.
-  for (DictionaryValue::Iterator it(attributes_values_); !it.IsAtEnd();
-       it.Advance()) {
-    const std::string& attr_name = it.key();
-    const Value& attr_value = it.value();
-    value->BeginDictionary(attr_name.c_str());
-    value->SetValue("value", attr_value.DeepCopy());
-
-    const std::string& attr_type =
-        GetAttributesTypeInfo().Get(allocator_name_, attr_name);
-    DCHECK(!attr_type.empty());
-    value->SetString("type", "scalar");
-    value->SetString("units", attr_type);
-
-    value->EndDictionary();  // "arg_name": { "type": "...", "value": "..." }
-  }
-
   value->EndDictionary();  // "attrs": { ... }
   value->EndDictionary();  // "allocator_name/heap_subheap": { ... }
-}
-
-const MemoryAllocatorAttributesTypeInfo&
-MemoryAllocatorDump::GetAttributesTypeInfo() const {
-  return process_memory_dump_->session_state()->allocators_attributes_type_info;
 }
 
 }  // namespace trace_event

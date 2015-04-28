@@ -6,8 +6,6 @@
     'trace_event_sources' : [
       'trace_event/java_heap_dump_provider_android.cc',
       'trace_event/java_heap_dump_provider_android.h',
-      'trace_event/memory_allocator_attributes_type_info.cc',
-      'trace_event/memory_allocator_attributes_type_info.h',
       'trace_event/memory_allocator_dump.cc',
       'trace_event/memory_allocator_dump.h',
       'trace_event/memory_dump_manager.cc',
@@ -55,7 +53,6 @@
       }],
     ],
     'trace_event_test_sources' : [
-      'trace_event/memory_allocator_attributes_type_info_unittest.cc',
       'trace_event/memory_allocator_dump_unittest.cc',
       'trace_event/memory_dump_manager_unittest.cc',
       'trace_event/process_memory_maps_dump_provider_unittest.cc',
