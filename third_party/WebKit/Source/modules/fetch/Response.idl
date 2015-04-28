@@ -19,7 +19,7 @@ typedef (Blob or ArrayBuffer or ArrayBufferView or FormData or USVString) BodyIn
     TypeChecking=Interface,
 ] interface Response {
     [CallWith=ExecutionContext] static Response error();
-    // FIXME: Implement redirect().
+    [CallWith=ExecutionContext, RaisesException] static Response redirect(USVString url, optional unsigned short status = 302);
     readonly attribute ResponseType type;
     readonly attribute USVString url;
     readonly attribute unsigned short status;

@@ -368,7 +368,10 @@ promise_test(function(t) {
         [res.headers,
          res.clone().headers,
          Response.error().headers,
-         Response.error().clone().headers].forEach(function(headers) {
+         Response.error().clone().headers,
+         Response.redirect('https://www.example.com/test.html').headers,
+         Response.redirect('https://www.example.com/test.html').clone().headers
+        ].forEach(function(headers) {
             testInvalidNamesAndValues(headers);
 
             // Test that TypeError is thrown for all header names.

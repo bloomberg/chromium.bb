@@ -243,6 +243,28 @@ Response* Response::error(ExecutionContext* context)
     return r;
 }
 
+Response* Response::redirect(ExecutionContext* context, const String& url, unsigned short status, ExceptionState& exceptionState)
+{
+    KURL parsedURL = context->completeURL(url);
+    if (!parsedURL.isValid()) {
+        exceptionState.throwTypeError("Failed to parse URL from " + url);
+        return nullptr;
+    }
+
+    if (status != 301 && status != 302 && status != 303 && status != 307 && status != 308) {
+        exceptionState.throwRangeError("Invalid status code");
+        return nullptr;
+    }
+
+    Response* r = new Response(context);
+    r->suspendIfNeeded();
+    r->m_headers->setGuard(Headers::ImmutableGuard);
+    r->m_response->setStatus(status);
+    r->m_response->headerList()->set("Location", parsedURL);
+
+    return r;
+}
+
 String Response::type() const
 {
     // "The type attribute's getter must return response's type."

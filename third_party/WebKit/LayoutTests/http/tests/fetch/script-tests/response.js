@@ -117,8 +117,46 @@ test(function() {
                       function() {
                         new Response(new Blob(), {status: status});
                       },
-                      'new Response with status = ' + status + ' should throw');
+                      'new Response with status = ' + status +
+                      'should throw');
       });
+
+    [300, 0, 304, 305, 306, 309, 500].forEach(function(status) {
+        assert_throws({name: 'RangeError'},
+                      function() {
+                        Response.redirect('https://www.example.com/test.html',
+                                          status);
+                      },
+                      'Response.redirect() with invalid status = ' + status +
+                      'should throw');
+      });
+
+    assert_throws(
+      {name: 'TypeError'},
+      function() {
+        Response.redirect('https://', 301);
+      },
+      'Response.redirect() with invalid URL https:// ' +
+      ' and status 301 should throw');
+
+    INVALID_URLS.forEach(function(url) {
+        assert_throws(
+          {name: 'TypeError'},
+          function() {
+            Response.redirect(url);
+          },
+          'Response.redirect() with invalid URL ' + url +
+          ' and default status value should throw');
+      });
+
+    assert_throws(
+      {name: 'TypeError'},
+      function() {
+        Response.redirect('https://', 300);
+      },
+      'Response.redirect() with invalid URL https:// ' +
+      ' and invalid status 300 should throw TypeError');
+
     [200, 300, 400, 500, 599].forEach(function(status) {
         var response = new Response(new Blob(), {status: status});
         assert_equals(response.status, status, 'Response.status should match');
@@ -308,18 +346,10 @@ promise_test(function(t) {
   }, 'MIME type for Blob');
 
 promise_test(function(t) {
-    var res = new Response(new Blob(['hello'], {type: 'Text/Plain'}));
+    var res = new Response(new Blob([''], {type: 'Text/Plain'}));
     return res.blob()
       .then(function(blob) {
           assert_equals(blob.type, 'text/plain');
-          assert_equals(blob.size, 5);
-          assert_equals(res.headers.get('Content-Type'), 'text/plain');
-          return res.blob();
-        }).then(function(blob) {
-          // When we read from a response twice, it returns an empty contents.
-          // But the type should remain.
-          assert_equals(blob.type, 'text/plain');
-          assert_equals(blob.size, 0);
           assert_equals(res.headers.get('Content-Type'), 'text/plain');
         });
   }, 'MIME type for Blob with non-empty type');
@@ -432,5 +462,45 @@ promise_test(function(t) {
         assert_equals(r.value, undefined);
       });
   }, 'Read after text()');
+
+promise_test(function() {
+    var response = Response.redirect('https://www.example.com/test.html');
+    return response.text().then(function(text) {
+        assert_equals(response.status, 302,
+                      'default value of status is always 302');
+        assert_equals(response.headers.get('location'),
+                      'https://www.example.com/test.html',
+                      'Location header should be correct absoulte URL');
+        assert_throws({name: 'TypeError'},
+                      function() {
+                        response.headers.append('Accept-Language', 'test');
+                      },
+                      'response.headers must throw since guard is immutable');
+      });
+  }, 'Response.redirect() with default status value');
+
+promise_test(function() {
+    var response = Response.redirect('https://www.example.com/test.html',
+                                     301);
+    return response.text().then(function(text) {
+        assert_equals(response.status, 301,
+                      'value of status is 301');
+        assert_equals(response.headers.get('location'),
+                      'https://www.example.com/test.html',
+                      'Location header should be correct absoulte URL');
+        assert_equals(size(response.headers), 1,
+                      'Response.redirect().headers must contain ' +
+                      'a Location header only');
+      });
+  }, 'Response.redirect() with 301');
+
+test(function() {
+    ['http://ex\x0aample.com',
+     'http://ex\x0dample.com'].forEach(function(url) {
+        assert_equals(Response.redirect(url).headers.get('Location'),
+                      'http://example.com/',
+                      'Location header value must not contain CR or LF');
+      });
+  }, 'Response.redirect() with URLs with CR or LF');
 
 done();

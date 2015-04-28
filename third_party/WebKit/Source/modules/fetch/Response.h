@@ -42,6 +42,7 @@ public:
     static Response* createClone(const Response&);
 
     static Response* error(ExecutionContext*);
+    static Response* redirect(ExecutionContext*, const String& url, unsigned short status, ExceptionState&);
 
     const FetchResponseData* response() const { return m_response; }
 

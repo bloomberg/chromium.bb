@@ -182,6 +182,15 @@ var VALID_REASON_PHRASE = [
   '', '0123456789', '404 Not Found', 'HTTP/1.1 404 Not Found', 'AZ\u00ffaz',
   'x'.repeat(100000)];
 
+var INVALID_URLS =
+  ['http://',
+   'https://',
+   'http://ex%00ample.com',
+   'http://ex%0dample.com',
+   'http://ex%0aample.com',
+   'http://ex%08ample.com',
+   'http://ex\x00ample.com'];
+
 function size(headers) {
   var count = 0;
   for (var header of headers) {
