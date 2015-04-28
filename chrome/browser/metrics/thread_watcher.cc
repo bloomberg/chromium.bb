@@ -539,6 +539,13 @@ void ThreadWatcherList::InitializeAndStartWatching(
   ThreadWatcherList* thread_watcher_list = new ThreadWatcherList();
   CHECK(thread_watcher_list);
 
+  // Disable ThreadWatcher in Canary channel.
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
+      channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
+    return;
+  }
+
   const base::TimeDelta kSleepTime =
       base::TimeDelta::FromSeconds(kSleepSeconds);
   const base::TimeDelta kUnresponsiveTime =
