@@ -52,24 +52,16 @@ class BASE_EXPORT ProcessMemoryDump {
   // Creates a new MemoryAllocatorDump with the given name and returns the
   // empty object back to the caller.
   // Arguments:
-  //   allocator_name: a name that univocally identifies allocator dumps
-  //     produced by this provider. It acts as a type w.r.t. the allocator
-  //     attributes, in the sense that all the MAD with the same allocator_name
-  //     are expected to have the same attributes.
-  //   heap_name, either:
-  //     - kRootHeap: if the allocator has only one default heap.
-  //     - a string identifing a heap name (e.g., isolate1, isolate2 ...). It is
-  //       possible to specify nesting by using a path-like string (e.g.,
-  //       isolate1/heap_spaceX, isolate1/heap_spaceY, isolate2/heap_spaceX).
-  // The tuple (|allocator_name|, |heap_name|) is unique inside a PMD.
+  //   absolute_name: a name that uniquely identifies allocator dumps produced
+  //       by this provider. It is possible to specify nesting by using a
+  //       path-like string (e.g., v8/isolate1/heap1, v8/isolate1/heap2).
+  //       Leading or trailing slashes are not allowed.
   // ProcessMemoryDump handles the memory ownership of its MemoryAllocatorDumps.
-  MemoryAllocatorDump* CreateAllocatorDump(const std::string& allocator_name,
-                                           const std::string& heap_name);
+  MemoryAllocatorDump* CreateAllocatorDump(const std::string& absolute_name);
 
   // Looks up a MemoryAllocatorDump given its allocator and heap names, or
   // nullptr if not found.
-  MemoryAllocatorDump* GetAllocatorDump(const std::string& allocator_name,
-                                        const std::string& heap_name) const;
+  MemoryAllocatorDump* GetAllocatorDump(const std::string& absolute_name) const;
 
   // Returns the map of the MemoryAllocatorDumps added to this dump.
   const AllocatorDumpsMap& allocator_dumps() const { return allocator_dumps_; }

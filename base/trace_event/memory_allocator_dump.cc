@@ -15,85 +15,101 @@
 namespace base {
 namespace trace_event {
 
-// static
-const char MemoryAllocatorDump::kRootHeap[] = "";
-
-// static
-std::string MemoryAllocatorDump::GetAbsoluteName(
-    const std::string& allocator_name,
-    const std::string& heap_name) {
-  return allocator_name + (heap_name == kRootHeap ? "" : "/" + heap_name);
+namespace {
+// Returns the c-string pointer from a dictionary value without performing extra
+// std::string copies. The ptr will be valid as long as the value exists.
+bool GetDictionaryValueAsCStr(const DictionaryValue* dict_value,
+                              const std::string& key,
+                              const char** out_cstr) {
+  const Value* value = nullptr;
+  const StringValue* str_value = nullptr;
+  if (!dict_value->GetWithoutPathExpansion(key, &value))
+    return false;
+  if (!value->GetAsString(&str_value))
+    return false;
+  *out_cstr = str_value->GetString().c_str();
+  return true;
 }
+}  // namespace
 
-MemoryAllocatorDump::MemoryAllocatorDump(const std::string& allocator_name,
-                                         const std::string& heap_name,
+const char MemoryAllocatorDump::kNameOuterSize[] = "outer_size";
+const char MemoryAllocatorDump::kNameInnerSize[] = "inner_size";
+const char MemoryAllocatorDump::kNameObjectsCount[] = "objects_count";
+const char MemoryAllocatorDump::kTypeScalar[] = "scalar";
+const char MemoryAllocatorDump::kTypeString[] = "string";
+const char MemoryAllocatorDump::kUnitsBytes[] = "bytes";
+const char MemoryAllocatorDump::kUnitsObjects[] = "objects";
+
+MemoryAllocatorDump::MemoryAllocatorDump(const std::string& absolute_name,
                                          ProcessMemoryDump* process_memory_dump)
-    : allocator_name_(allocator_name),
-      heap_name_(heap_name),
-      process_memory_dump_(process_memory_dump),
-      physical_size_in_bytes_(0),
-      allocated_objects_count_(0),
-      allocated_objects_size_in_bytes_(0) {
-  // The allocator name cannot be empty or contain slash separators.
-  DCHECK(!allocator_name.empty());
-  DCHECK_EQ(std::string::npos, allocator_name.find_first_of('/'));
+    : absolute_name_(absolute_name), process_memory_dump_(process_memory_dump) {
+  // The |absolute_name| cannot be empty.
+  DCHECK(!absolute_name.empty());
 
-  // The heap_name can be empty and contain slash separator, but not
-  // leading or trailing ones.
-  DCHECK(heap_name.empty() ||
-         (heap_name[0] != '/' && *heap_name.rbegin() != '/'));
+  // The |absolute_name| can contain slash separator, but not leading or
+  // trailing ones.
+  DCHECK(absolute_name[0] != '/' && *absolute_name.rbegin() != '/');
 
   // Dots are not allowed anywhere as the underlying base::DictionaryValue
   // would treat them magically and split in sub-nodes, which is not intended.
-  DCHECK_EQ(std::string::npos, allocator_name.find_first_of('.'));
-  DCHECK_EQ(std::string::npos, heap_name.find_first_of('.'));
+  DCHECK_EQ(std::string::npos, absolute_name.find_first_of('.'));
 }
 
 MemoryAllocatorDump::~MemoryAllocatorDump() {
 }
 
-void MemoryAllocatorDump::SetAttribute(const std::string& name, int value) {
-  attributes_values_.SetInteger(name, value);
+void MemoryAllocatorDump::Add(const std::string& name,
+                              const char* type,
+                              const char* units,
+                              scoped_ptr<Value> value) {
+  scoped_ptr<DictionaryValue> attribute(new DictionaryValue());
+  DCHECK(!attributes_.HasKey(name));
+  attribute->SetStringWithoutPathExpansion("type", type);
+  attribute->SetStringWithoutPathExpansion("units", units);
+  attribute->SetWithoutPathExpansion("value", value.Pass());
+  attributes_.SetWithoutPathExpansion(name, attribute.Pass());
 }
 
-std::string MemoryAllocatorDump::GetAbsoluteName() const {
-  return GetAbsoluteName(allocator_name_, heap_name_);
+bool MemoryAllocatorDump::Get(const std::string& name,
+                              const char** out_type,
+                              const char** out_units,
+                              const Value** out_value) const {
+  const DictionaryValue* attribute = nullptr;
+  if (!attributes_.GetDictionaryWithoutPathExpansion(name, &attribute))
+    return false;
+
+  if (!GetDictionaryValueAsCStr(attribute, "type", out_type))
+    return false;
+
+  if (!GetDictionaryValueAsCStr(attribute, "units", out_units))
+    return false;
+
+  if (!attribute->GetWithoutPathExpansion("value", out_value))
+    return false;
+
+  return true;
 }
 
-int MemoryAllocatorDump::GetIntegerAttribute(const std::string& name) const {
-  int value = -1;
-  bool res = attributes_values_.GetInteger(name, &value);
-  DCHECK(res) << "Attribute '" << name << "' not found";
-  return value;
+void MemoryAllocatorDump::AddScalar(const std::string& name,
+                                    const char* units,
+                                    uint64 value) {
+  scoped_ptr<Value> hex_value(new StringValue(StringPrintf("%" PRIx64, value)));
+  Add(name, kTypeScalar, units, hex_value.Pass());
+}
+
+void MemoryAllocatorDump::AddString(const std::string& name,
+                                    const char* units,
+                                    const std::string& value) {
+  scoped_ptr<Value> str_value(new StringValue(value));
+  Add(name, kTypeString, units, str_value.Pass());
 }
 
 void MemoryAllocatorDump::AsValueInto(TracedValue* value) const {
-  static const char kHexFmt[] = "%" PRIx64;
-
-  value->BeginDictionary(GetAbsoluteName().c_str());
+  value->BeginDictionary(absolute_name_.c_str());
   value->BeginDictionary("attrs");
 
-  // TODO(primiano): these hard-coded types are temporary to transition to the
-  // new generalized attribute format. This code will be refactored by the end
-  // of May 2015.
-  value->BeginDictionary("outer_size");
-  value->SetString("type", "scalar");
-  value->SetString("units", "bytes");
-  value->SetString("value", StringPrintf(kHexFmt, physical_size_in_bytes_));
-  value->EndDictionary();
-
-  value->BeginDictionary("inner_size");
-  value->SetString("type", "scalar");
-  value->SetString("units", "bytes");
-  value->SetString("value",
-                   StringPrintf(kHexFmt, allocated_objects_size_in_bytes_));
-  value->EndDictionary();
-
-  value->BeginDictionary("objects_count");
-  value->SetString("type", "scalar");
-  value->SetString("units", "objects");
-  value->SetString("value", StringPrintf(kHexFmt, allocated_objects_count_));
-  value->EndDictionary();
+  for (DictionaryValue::Iterator it(attributes_); !it.IsAtEnd(); it.Advance())
+    value->SetValue(it.key().c_str(), it.value().DeepCopy());
 
   value->EndDictionary();  // "attrs": { ... }
   value->EndDictionary();  // "allocator_name/heap_subheap": { ... }

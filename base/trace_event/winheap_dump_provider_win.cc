@@ -13,21 +13,21 @@ namespace trace_event {
 
 namespace {
 
-const char kDumperFriendlyName[] = "winheap";
-
 // Report a heap dump to a process memory dump. The |heap_info| structure
-// contains the information about this heap, and |heap_name| will be used to
-// represent it in the report.
+// contains the information about this heap, and |dump_absolute_name| will be
+// used to represent it in the report.
 bool ReportHeapDump(ProcessMemoryDump* pmd,
                     const WinHeapInfo& heap_info,
-                    const std::string& heap_name) {
-  MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(kDumperFriendlyName, heap_name);
+                    const std::string& dump_absolute_name) {
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_absolute_name);
   if (!dump)
     return false;
-  dump->set_physical_size_in_bytes(heap_info.committed_size);
-  dump->set_allocated_objects_count(heap_info.block_count);
-  dump->set_allocated_objects_size_in_bytes(heap_info.allocated_size);
+  dump->AddScalar(MemoryAllocatorDump::kNameOuterSize,
+                  MemoryAllocatorDump::kUnitsBytes, heap_info.committed_size);
+  dump->AddScalar(MemoryAllocatorDump::kNameInnerSize,
+                  MemoryAllocatorDump::kUnitsBytes, heap_info.allocated_size);
+  dump->AddScalar(MemoryAllocatorDump::kNameObjectsCount,
+                  MemoryAllocatorDump::kUnitsObjects, heap_info.block_count);
   return true;
 }
 
@@ -68,7 +68,7 @@ bool WinHeapDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
     all_heap_info.block_count += heap_info.block_count;
   }
   // Report the heap dump.
-  if (!ReportHeapDump(pmd, all_heap_info, MemoryAllocatorDump::kRootHeap))
+  if (!ReportHeapDump(pmd, all_heap_info, "winheap"))
     return false;
 
   return true;

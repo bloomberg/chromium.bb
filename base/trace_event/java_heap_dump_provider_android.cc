@@ -10,12 +10,6 @@
 namespace base {
 namespace trace_event {
 
-namespace {
-
-const char kDumperName[] = "java_heap";
-
-}  // namespace
-
 // static
 JavaHeapDumpProvider* JavaHeapDumpProvider::GetInstance() {
   return Singleton<JavaHeapDumpProvider,
@@ -31,16 +25,17 @@ JavaHeapDumpProvider::~JavaHeapDumpProvider() {
 // Called at trace dump point time. Creates a snapshot with the memory counters
 // for the current process.
 bool JavaHeapDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
-  MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(kDumperName, MemoryAllocatorDump::kRootHeap);
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump("java_heap");
 
   // These numbers come from java.lang.Runtime stats.
   long total_heap_size = 0;
   long free_heap_size = 0;
   android::JavaRuntime::GetMemoryUsage(&total_heap_size, &free_heap_size);
-  dump->set_physical_size_in_bytes(total_heap_size);
-  dump->set_allocated_objects_count(0);
-  dump->set_allocated_objects_size_in_bytes(total_heap_size - free_heap_size);
+  dump->AddScalar(MemoryAllocatorDump::kNameOuterSize,
+                  MemoryAllocatorDump::kUnitsBytes, total_heap_size);
+  dump->AddScalar(MemoryAllocatorDump::kNameInnerSize,
+                  MemoryAllocatorDump::kUnitsBytes,
+                  total_heap_size - free_heap_size);
   return true;
 }
 
