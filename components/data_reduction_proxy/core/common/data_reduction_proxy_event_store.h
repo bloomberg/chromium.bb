@@ -42,6 +42,9 @@ class DataReductionProxyEventStore
   // The caller is responsible for deleting the returned value.
   base::Value* GetSummaryValue() const;
 
+  // Adds DATA_REDUCTION_PROXY event with no parameters to the event store.
+  void AddEvent(scoped_ptr<base::Value> event) override;
+
   // Override of DataReductionProxyEventStorageDelegate.
   // Put |entry| on the deque of stored events and set |current_configuration_|.
   void AddEnabledEvent(scoped_ptr<base::Value> entry, bool enabled) override;
@@ -72,9 +75,6 @@ class DataReductionProxyEventStore
                            TestBeginSecureProxyCheck);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyEventStoreTest,
                            TestEndSecureProxyCheck);
-
-  // Put |entry| on a deque of events to store
-  void AddEvent(scoped_ptr<base::Value> entry);
 
   // A deque of data reduction proxy related events. It is used as a circular
   // buffer to prevent unbounded memory utilization.

@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/network_change_notifier.h"
+#include "net/log/net_log.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -33,6 +34,7 @@ namespace data_reduction_proxy {
 
 class ClientConfig;
 class DataReductionProxyConfig;
+class DataReductionProxyEventCreator;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyParams;
 class DataReductionProxyRequestOptions;
@@ -55,14 +57,15 @@ class DataReductionProxyConfigServiceClient
 
   // The caller must ensure that all parameters remain alive for the lifetime of
   // the |DataReductionProxyConfigClient|, with the exception of |params|
-  // which this instance will own. The |io_task_runner| is used to enforce that
-  // configurations are applied on the IO thread.
+  // which this instance will own.
   DataReductionProxyConfigServiceClient(
       scoped_ptr<DataReductionProxyParams> params,
       const net::BackoffEntry::Policy& backoff_policy,
       DataReductionProxyRequestOptions* request_options,
       DataReductionProxyMutableConfigValues* config_values,
-      DataReductionProxyConfig* config);
+      DataReductionProxyConfig* config,
+      DataReductionProxyEventCreator* event_creator,
+      net::NetLog* net_log);
 
   ~DataReductionProxyConfigServiceClient() override;
 
@@ -140,6 +143,12 @@ class DataReductionProxyConfigServiceClient
   // The caller must ensure that the |config_| outlives this instance.
   DataReductionProxyConfig* config_;
 
+  // The caller must ensure that the |event_creator_| outlives this instance.
+  DataReductionProxyEventCreator* event_creator_;
+
+  // The caller must ensure that the |net_log_| outlives this instance.
+  net::NetLog* net_log_;
+
   // Used to calculate the backoff time on request failures.
   net::BackoffEntry backoff_entry_;
 
@@ -161,6 +170,9 @@ class DataReductionProxyConfigServiceClient
 
   // A |net::URLFetcher| to retrieve the Data Reduction Proxy configuration.
   scoped_ptr<net::URLFetcher> fetcher_;
+
+  // Used to correlate the start and end of requests.
+  net::BoundNetLog bound_net_log_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

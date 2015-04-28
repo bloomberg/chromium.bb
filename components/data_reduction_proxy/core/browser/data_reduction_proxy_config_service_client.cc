@@ -19,6 +19,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
@@ -111,11 +112,15 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
     const net::BackoffEntry::Policy& backoff_policy,
     DataReductionProxyRequestOptions* request_options,
     DataReductionProxyMutableConfigValues* config_values,
-    DataReductionProxyConfig* config)
+    DataReductionProxyConfig* config,
+    DataReductionProxyEventCreator* event_creator,
+    net::NetLog* net_log)
     : params_(params.Pass()),
       request_options_(request_options),
       config_values_(config_values),
       config_(config),
+      event_creator_(event_creator),
+      net_log_(net_log),
       backoff_entry_(&backoff_policy),
       config_service_url_(
           GetConfigServiceURL(*base::CommandLine::ForCurrentProcess())),
@@ -124,6 +129,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
   DCHECK(request_options);
   DCHECK(config_values);
   DCHECK(config);
+  DCHECK(event_creator);
+  DCHECK(net_log);
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
@@ -142,6 +149,9 @@ void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
 
 void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  bound_net_log_ = net::BoundNetLog::Make(
+      net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
+  event_creator_->BeginConfigRequest(bound_net_log_, config_service_url_);
   if (use_local_config_) {
     ReadAndApplyStaticConfig();
     return;
@@ -251,6 +261,9 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
       CalculateNextConfigRefreshTime(succeeded, expiration_time, Now(),
                                      GetBackoffEntry()->GetTimeUntilRelease());
   SetConfigRefreshTimer(next_config_refresh_time);
+  event_creator_->EndConfigRequest(
+      bound_net_log_, status.error(), response_code,
+      GetBackoffEntry()->failure_count(), next_config_refresh_time);
 }
 
 bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(

@@ -70,24 +70,29 @@ void DataReductionProxyService::UpdateContentLengths(
   }
 }
 
-void DataReductionProxyService::AddEnabledEvent(scoped_ptr<base::Value> entry,
+void DataReductionProxyService::AddEvent(scoped_ptr<base::Value> event) {
+  DCHECK(CalledOnValidThread());
+  event_store_->AddEvent(event.Pass());
+}
+
+void DataReductionProxyService::AddEnabledEvent(scoped_ptr<base::Value> event,
                                                 bool enabled) {
   DCHECK(CalledOnValidThread());
-  event_store_->AddEnabledEvent(entry.Pass(), enabled);
+  event_store_->AddEnabledEvent(event.Pass(), enabled);
 }
 
 void DataReductionProxyService::AddEventAndSecureProxyCheckState(
-    scoped_ptr<base::Value> entry,
+    scoped_ptr<base::Value> event,
     SecureProxyCheckState state) {
   DCHECK(CalledOnValidThread());
-  event_store_->AddEventAndSecureProxyCheckState(entry.Pass(), state);
+  event_store_->AddEventAndSecureProxyCheckState(event.Pass(), state);
 }
 
 void DataReductionProxyService::AddAndSetLastBypassEvent(
-    scoped_ptr<base::Value> entry,
+    scoped_ptr<base::Value> event,
     int64 expiration_ticks) {
   DCHECK(CalledOnValidThread());
-  event_store_->AddAndSetLastBypassEvent(entry.Pass(), expiration_ticks);
+  event_store_->AddAndSetLastBypassEvent(event.Pass(), expiration_ticks);
 }
 
 void DataReductionProxyService::SetUnreachable(bool unreachable) {

@@ -125,6 +125,23 @@ base::Value* EndCanaryRequestCallback(
   return dict;
 }
 
+// A callback that creates a base::Value containing information about
+// completing the Data Reduction Proxy configuration request. Ownership of the
+// base::Value is passed to the caller.
+base::Value* EndConfigRequestCallback(
+    int net_error,
+    int http_response_code,
+    int failure_count,
+    int64 expiration_ticks,
+    net::NetLogCaptureMode /* capture_mode */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("net_error", net_error);
+  dict->SetInteger("http_response_code", http_response_code);
+  dict->SetInteger("failure_count", failure_count);
+  dict->SetString("expiration", base::Int64ToString(expiration_ticks));
+  return dict;
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -224,6 +241,32 @@ void DataReductionProxyEventCreator::EndSecureProxyCheck(
       parameters_callback);
 }
 
+void DataReductionProxyEventCreator::BeginConfigRequest(
+    const net::BoundNetLog& net_log,
+    const GURL& url) {
+  // This callback must be invoked synchronously.
+  const net::NetLog::ParametersCallback& parameters_callback =
+      net::NetLog::StringCallback("url", &url.spec());
+  PostBoundNetLogConfigRequestEvent(
+      net_log, net::NetLog::TYPE_DATA_REDUCTION_PROXY_CONFIG_REQUEST,
+      net::NetLog::PHASE_BEGIN, parameters_callback);
+}
+
+void DataReductionProxyEventCreator::EndConfigRequest(
+    const net::BoundNetLog& net_log,
+    int net_error,
+    int http_response_code,
+    int failure_count,
+    const base::TimeDelta& retry_delay) {
+  int64 expiration_ticks = GetExpirationTicks(retry_delay.InSeconds());
+  const net::NetLog::ParametersCallback& parameters_callback =
+      base::Bind(&EndConfigRequestCallback, net_error, http_response_code,
+                 failure_count, expiration_ticks);
+  PostBoundNetLogConfigRequestEvent(
+      net_log, net::NetLog::TYPE_DATA_REDUCTION_PROXY_CONFIG_REQUEST,
+      net::NetLog::PHASE_END, parameters_callback);
+}
+
 void DataReductionProxyEventCreator::PostEnabledEvent(
     net::NetLog* net_log,
     net::NetLog::EventType type,
@@ -262,6 +305,19 @@ void DataReductionProxyEventCreator::PostBoundNetLogSecureProxyCheckEvent(
   if (event)
     storage_delegate_->AddEventAndSecureProxyCheckState(event.Pass(), state);
   net_log.AddEntry(type, phase, callback);
+}
+
+void DataReductionProxyEventCreator::PostBoundNetLogConfigRequestEvent(
+    const net::BoundNetLog& net_log,
+    net::NetLog::EventType type,
+    net::NetLog::EventPhase phase,
+    const net::NetLog::ParametersCallback& callback) {
+  scoped_ptr<base::Value> event(
+      BuildDataReductionProxyEvent(type, net_log.source(), phase, callback));
+  if (event) {
+    storage_delegate_->AddEvent(event.Pass());
+    net_log.AddEntry(type, phase, callback);
+  }
 }
 
 }  // namespace data_reduction_proxy

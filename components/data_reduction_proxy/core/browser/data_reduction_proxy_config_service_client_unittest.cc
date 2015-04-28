@@ -106,7 +106,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         new DataReductionProxyConfigServiceClient(
             params.Pass(), GetBackoffPolicy(), request_options_.get(),
             test_context_->mutable_config_values(),
-            test_context_->io_data()->config()));
+            test_context_->io_data()->config(), test_context_->event_creator(),
+            test_context_->net_log()));
   }
 
   void ResetBackoffEntryReleaseTime() {

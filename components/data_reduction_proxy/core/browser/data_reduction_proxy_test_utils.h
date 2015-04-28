@@ -99,7 +99,9 @@ class TestDataReductionProxyConfigServiceClient
       scoped_ptr<DataReductionProxyParams> params,
       DataReductionProxyRequestOptions* request_options,
       DataReductionProxyMutableConfigValues* config_values,
-      DataReductionProxyConfig* config);
+      DataReductionProxyConfig* config,
+      DataReductionProxyEventCreator* event_creator,
+      net::NetLog* net_log);
 
   ~TestDataReductionProxyConfigServiceClient() override;
 

@@ -101,43 +101,43 @@ base::Value* DataReductionProxyEventStore::GetSummaryValue() const {
   return data_reduction_proxy_values.release();
 }
 
-void DataReductionProxyEventStore::AddEvent(scoped_ptr<base::Value> entry) {
+void DataReductionProxyEventStore::AddEvent(scoped_ptr<base::Value> event) {
   if (stored_events_.size() == kMaxEventsToStore) {
     base::Value* head = stored_events_.front();
     stored_events_.pop_front();
     delete head;
   }
 
-  stored_events_.push_back(entry.release());
+  stored_events_.push_back(event.release());
 }
 
 void DataReductionProxyEventStore::AddEnabledEvent(
-    scoped_ptr<base::Value> entry,
+    scoped_ptr<base::Value> event,
     bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   enabled_ = enabled;
   if (enabled)
-    current_configuration_.reset(entry->DeepCopy());
+    current_configuration_.reset(event->DeepCopy());
   else
     current_configuration_.reset();
-  AddEvent(entry.Pass());
+  AddEvent(event.Pass());
 }
 
 void DataReductionProxyEventStore::AddEventAndSecureProxyCheckState(
-    scoped_ptr<base::Value> entry,
+    scoped_ptr<base::Value> event,
     SecureProxyCheckState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   secure_proxy_check_state_ = state;
-  AddEvent(entry.Pass());
+  AddEvent(event.Pass());
 }
 
 void DataReductionProxyEventStore::AddAndSetLastBypassEvent(
-    scoped_ptr<base::Value> entry,
+    scoped_ptr<base::Value> event,
     int64 expiration_ticks) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  last_bypass_event_.reset(entry->DeepCopy());
+  last_bypass_event_.reset(event->DeepCopy());
   expiration_ticks_ = expiration_ticks;
-  AddEvent(entry.Pass());
+  AddEvent(event.Pass());
 }
 
 }  // namespace data_reduction_proxy

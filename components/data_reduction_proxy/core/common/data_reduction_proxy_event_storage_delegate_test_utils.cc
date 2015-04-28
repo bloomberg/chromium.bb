@@ -25,6 +25,12 @@ void TestDataReductionProxyEventStorageDelegate::SetStorageDelegate(
   delegate_ = delegate;
 }
 
+void TestDataReductionProxyEventStorageDelegate::AddEvent(
+    scoped_ptr<base::Value> event) {
+  if (delegate_)
+    delegate_->AddEvent(event.Pass());
+}
+
 void TestDataReductionProxyEventStorageDelegate::AddEnabledEvent(
     scoped_ptr<base::Value> event,
     bool enabled) {

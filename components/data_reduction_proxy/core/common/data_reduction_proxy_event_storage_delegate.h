@@ -24,6 +24,9 @@ class DataReductionProxyEventStorageDelegate {
     CHECK_FAILED,
   };
 
+  // Stores a DATA_REDUCTION_PROXY event with no parameters.
+  virtual void AddEvent(scoped_ptr<base::Value> event) = 0;
+
   // Stores a DATA_REDUCTION_PROXY_ENABLED event.
   virtual void AddEnabledEvent(scoped_ptr<base::Value> event, bool enabled) = 0;
 

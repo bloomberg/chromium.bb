@@ -80,6 +80,18 @@ class DataReductionProxyEventCreator {
                            int http_response_code,
                            bool succeeded);
 
+  // Adds a DATA_REDUCTION_PROXY_CONFIG_REQUEST event to the event store
+  // when the config request has started.
+  void BeginConfigRequest(const net::BoundNetLog& net_log, const GURL& url);
+
+  // Adds a DATA_REDUCTION_PROXY_CONFIG_REQUEST event to the event store
+  // when the config request has ended.
+  void EndConfigRequest(const net::BoundNetLog& net_log,
+                        int net_error,
+                        int http_response_code,
+                        int failure_count,
+                        const base::TimeDelta& retry_delay);
+
  private:
   // Prepare and post enabling/disabling proxy events for the event store on the
   // a net::NetLog.
@@ -104,6 +116,14 @@ class DataReductionProxyEventCreator {
       net::NetLog::EventType type,
       net::NetLog::EventPhase phase,
       DataReductionProxyEventStorageDelegate::SecureProxyCheckState state,
+      const net::NetLog::ParametersCallback& callback);
+
+  // Prepare and post a config request event for the event store on a
+  // BoundNetLog.
+  void PostBoundNetLogConfigRequestEvent(
+      const net::BoundNetLog& net_log,
+      net::NetLog::EventType type,
+      net::NetLog::EventPhase phase,
       const net::NetLog::ParametersCallback& callback);
 
   // Must outlive |this|. Used for posting calls to the UI thread.

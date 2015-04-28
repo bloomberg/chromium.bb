@@ -2500,6 +2500,9 @@ EVENT_TYPE(DATA_REDUCTION_PROXY_ENABLED)
 // The END phase contains the following parameters:
 //  {
 //    "net_error": <The net_error of the completion of the canary request>,
+//    "http_response_code": <The HTTP response code of the canary request>,
+//    "check_succeeded": <Whether a secure Data Reduction Proxy can be used or
+//                        not>
 //  }
 EVENT_TYPE(DATA_REDUCTION_PROXY_CANARY_REQUEST)
 
@@ -2530,3 +2533,21 @@ EVENT_TYPE(DATA_REDUCTION_PROXY_BYPASS_REQUESTED)
 //                  can be 0 if the proxy server is explicitly skipped>,
 //  }
 EVENT_TYPE(DATA_REDUCTION_PROXY_FALLBACK)
+
+// The start/end of a config request is sent to the Data Saver Config API
+// service.
+//
+// The BEGIN phase contains the following parameters:
+//  {
+//    "url": <The URL of the service endpoint>,
+//  }
+//
+// The END phase contains the following parameters:
+//  {
+//    "net_error": <The net_error of the completion of the config request>,
+//    "http_response_code": <The HTTP response code of the config request>,
+//    "failure_count": <The number of consecutive config request failures>,
+//    "retry_delay_seconds": <The length of time after which another config
+//                            request will be made>,
+//  }
+EVENT_TYPE(DATA_REDUCTION_PROXY_CONFIG_REQUEST)

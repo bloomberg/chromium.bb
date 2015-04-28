@@ -27,6 +27,7 @@ class TestDataReductionProxyEventStorageDelegate
   void SetStorageDelegate(DataReductionProxyEventStorageDelegate* delegate);
 
   // Overrides of DataReductionProxyEventStorageDelegate:
+  void AddEvent(scoped_ptr<base::Value> event) override;
   void AddEnabledEvent(scoped_ptr<base::Value> event, bool enabled) override;
   void AddAndSetLastBypassEvent(scoped_ptr<base::Value> event,
                                 int64 expiration_ticks) override;

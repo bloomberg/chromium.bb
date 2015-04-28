@@ -137,7 +137,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   if (use_config_client) {
     config_client_.reset(new DataReductionProxyConfigServiceClient(
         params.Pass(), GetBackoffPolicy(), request_options_.get(),
-        raw_mutable_config, config_.get()));
+        raw_mutable_config, config_.get(), event_creator_.get(), net_log_));
   }
 
   proxy_delegate_.reset(
@@ -236,32 +236,39 @@ void DataReductionProxyIOData::UpdateContentLengths(
                  data_reduction_proxy_enabled, request_type));
 }
 
-void DataReductionProxyIOData::AddEnabledEvent(scoped_ptr<base::Value> entry,
+void DataReductionProxyIOData::AddEvent(scoped_ptr<base::Value> event) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DataReductionProxyService::AddEvent, service_,
+                            base::Passed(&event)));
+}
+
+void DataReductionProxyIOData::AddEnabledEvent(scoped_ptr<base::Value> event,
                                                bool enabled) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DataReductionProxyService::AddEnabledEvent,
-                            service_, base::Passed(&entry), enabled));
+                            service_, base::Passed(&event), enabled));
 }
 
 void DataReductionProxyIOData::AddEventAndSecureProxyCheckState(
-    scoped_ptr<base::Value> entry,
+    scoped_ptr<base::Value> event,
     SecureProxyCheckState state) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyService::AddEventAndSecureProxyCheckState,
-                 service_, base::Passed(&entry), state));
+                 service_, base::Passed(&event), state));
 }
 
 void DataReductionProxyIOData::AddAndSetLastBypassEvent(
-    scoped_ptr<base::Value> entry,
+    scoped_ptr<base::Value> event,
     int64 expiration_ticks) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyService::AddAndSetLastBypassEvent, service_,
-                 base::Passed(&entry), expiration_ticks));
+                 base::Passed(&event), expiration_ticks));
 }
 
 void DataReductionProxyIOData::SetUnreachable(bool unreachable) {

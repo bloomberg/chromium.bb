@@ -93,10 +93,11 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
 
   // Overrides of DataReductionProxyEventStorageDelegate. Bridges to the UI
   // thread objects.
-  void AddEnabledEvent(scoped_ptr<base::Value> entry, bool enabled) override;
-  void AddEventAndSecureProxyCheckState(scoped_ptr<base::Value> entry,
+  void AddEvent(scoped_ptr<base::Value> event) override;
+  void AddEnabledEvent(scoped_ptr<base::Value> event, bool enabled) override;
+  void AddEventAndSecureProxyCheckState(scoped_ptr<base::Value> event,
                                         SecureProxyCheckState state) override;
-  void AddAndSetLastBypassEvent(scoped_ptr<base::Value> entry,
+  void AddAndSetLastBypassEvent(scoped_ptr<base::Value> event,
                                 int64 expiration_ticks) override;
 
   // Returns true if the Data Reduction Proxy is enabled and false otherwise.

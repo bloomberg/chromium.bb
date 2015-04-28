@@ -93,12 +93,16 @@ TestDataReductionProxyConfigServiceClient::
         scoped_ptr<DataReductionProxyParams> params,
         DataReductionProxyRequestOptions* request_options,
         DataReductionProxyMutableConfigValues* config_values,
-        DataReductionProxyConfig* config)
+        DataReductionProxyConfig* config,
+        DataReductionProxyEventCreator* event_creator,
+        net::NetLog* net_log)
     : DataReductionProxyConfigServiceClient(params.Pass(),
                                             kTestBackoffPolicy,
                                             request_options,
                                             config_values,
-                                            config),
+                                            config,
+                                            event_creator,
+                                            net_log),
       tick_clock_(base::Time::UnixEpoch()),
       test_backoff_entry_(&kTestBackoffPolicy, &tick_clock_) {
 }
@@ -364,12 +368,12 @@ DataReductionProxyTestContext::Builder::Build() {
   if (use_test_config_client_) {
     test_context_flags |= USE_TEST_CONFIG_CLIENT;
     config_client.reset(new TestDataReductionProxyConfigServiceClient(
-        params.Pass(), request_options.get(), raw_mutable_config,
-        config.get()));
+        params.Pass(), request_options.get(), raw_mutable_config, config.get(),
+        event_creator.get(), net_log.get()));
   } else if (use_config_client_) {
     config_client.reset(new DataReductionProxyConfigServiceClient(
         params.Pass(), GetBackoffPolicy(), request_options.get(),
-        raw_mutable_config, config.get()));
+        raw_mutable_config, config.get(), event_creator.get(), net_log.get()));
   }
 
   scoped_ptr<DataReductionProxySettings> settings(
