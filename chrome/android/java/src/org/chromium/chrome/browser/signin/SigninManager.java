@@ -395,6 +395,11 @@ public class SigninManager {
     }
 
     private void finishSignIn(AccountIdsAndNames accountIdsAndNames) {
+        if (mSignInAccount == null) {
+            Log.w(TAG, "Sign in request was canceled; aborting finishSignIn().");
+            return;
+        }
+
         // Cache the signed-in account name.
         ChromeSigninController.get(mContext).setSignedInAccountName(mSignInAccount.name);
 
