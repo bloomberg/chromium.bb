@@ -1368,8 +1368,6 @@ static int parse_plane(struct plane_arg *plane, const char *p)
 {
 	char *end;
 
-	memset(plane, 0, sizeof *plane);
-
 	plane->crtc_id = strtoul(p, &end, 10);
 	if (*end != ':')
 		return -EINVAL;
@@ -1541,11 +1539,11 @@ int main(int argc, char **argv)
 				fprintf(stderr, "memory allocation failed\n");
 				return 1;
 			}
+			memset(&plane_args[plane_count], 0, sizeof(*plane_args));
 
 			if (parse_plane(&plane_args[plane_count], optarg) < 0)
 				usage(argv[0]);
 
-			plane_args[plane_count].fb_id = 0;
 			plane_count++;
 			break;
 		case 'p':
@@ -1559,6 +1557,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, "memory allocation failed\n");
 				return 1;
 			}
+			memset(&pipe_args[count], 0, sizeof(*pipe_args));
 
 			if (parse_connector(&pipe_args[count], optarg) < 0)
 				usage(argv[0]);
@@ -1578,6 +1577,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, "memory allocation failed\n");
 				return 1;
 			}
+			memset(&prop_args[prop_count], 0, sizeof(*prop_args));
 
 			if (parse_property(&prop_args[prop_count], optarg) < 0)
 				usage(argv[0]);
