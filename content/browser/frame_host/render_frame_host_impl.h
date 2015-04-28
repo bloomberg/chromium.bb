@@ -565,6 +565,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Informs the content client that geolocation permissions were used.
   void DidUseGeolocationPermission();
 
+  void UpdatePermissionsForNavigation(
+      const CommonNavigationParams& common_params,
+      const RequestNavigationParams& request_params);
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring

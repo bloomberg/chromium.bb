@@ -1601,27 +1601,8 @@ void RenderFrameHostImpl::Navigate(
     const StartNavigationParams& start_params,
     const RequestNavigationParams& request_params) {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::Navigate");
-  // Browser plugin guests are not allowed to navigate outside web-safe schemes,
-  // so do not grant them the ability to request additional URLs.
-  if (!GetProcess()->IsIsolatedGuest()) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
-        GetProcess()->GetID(), common_params.url);
-    if (common_params.url.SchemeIs(url::kDataScheme) &&
-        common_params.base_url_for_data_url.SchemeIs(url::kFileScheme)) {
-      // If 'data:' is used, and we have a 'file:' base url, grant access to
-      // local files.
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
-          GetProcess()->GetID(), common_params.base_url_for_data_url);
-    }
-  }
 
-  // We may be returning to an existing NavigationEntry that had been granted
-  // file access.  If this is a different process, we will need to grant the
-  // access again.  The files listed in the page state are validated when they
-  // are received from the renderer to prevent abuse.
-  if (request_params.page_state.IsValid()) {
-    render_view_host_->GrantFileAccessFromPageState(request_params.page_state);
-  }
+  UpdatePermissionsForNavigation(common_params, request_params);
 
   // Only send the message if we aren't suspended at the start of a cross-site
   // request.
@@ -1777,8 +1758,7 @@ void RenderFrameHostImpl::CommitNavigation(
     const RequestNavigationParams& request_params) {
   DCHECK((response && body.get()) ||
           !NavigationRequest::ShouldMakeNetworkRequest(common_params.url));
-  // TODO(clamy): Check if we have to add security checks for the browser plugin
-  // guests.
+  UpdatePermissionsForNavigation(common_params, request_params);
 
   // Get back to a clean state, in case we start a new navigation without
   // completing a RFH swap or unload handler.
@@ -2064,6 +2044,32 @@ void RenderFrameHostImpl::DidUseGeolocationPermission() {
       GetLastCommittedURL().GetOrigin(),
       frame_tree_node()->frame_tree()->GetMainFrame()
           ->GetLastCommittedURL().GetOrigin());
+}
+
+void RenderFrameHostImpl::UpdatePermissionsForNavigation(
+    const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params) {
+  // Browser plugin guests are not allowed to navigate outside web-safe schemes,
+  // so do not grant them the ability to request additional URLs.
+  if (!GetProcess()->IsIsolatedGuest()) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
+        GetProcess()->GetID(), common_params.url);
+    if (common_params.url.SchemeIs(url::kDataScheme) &&
+        common_params.base_url_for_data_url.SchemeIs(url::kFileScheme)) {
+      // If 'data:' is used, and we have a 'file:' base url, grant access to
+      // local files.
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
+          GetProcess()->GetID(), common_params.base_url_for_data_url);
+    }
+  }
+
+  // We may be returning to an existing NavigationEntry that had been granted
+  // file access.  If this is a different process, we will need to grant the
+  // access again.  The files listed in the page state are validated when they
+  // are received from the renderer to prevent abuse.
+  if (request_params.page_state.IsValid()) {
+    render_view_host_->GrantFileAccessFromPageState(request_params.page_state);
+  }
 }
 
 }  // namespace content
