@@ -9,7 +9,7 @@ group("mandoline_all") {
     "//mojo:mojo",
   ]
 
-  if (!is_component_build) {
+  if (!is_android && !is_component_build) {
     deps += [ "//mandoline/app:mandoline" ]
   }
 }
