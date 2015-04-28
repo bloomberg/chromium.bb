@@ -149,7 +149,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual void setSharedTimerFiredFunction(void (*func)());
   virtual void setSharedTimerFireInterval(double interval_seconds);
   virtual void stopSharedTimer();
-  virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual blink::WebGestureCurve* createFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,

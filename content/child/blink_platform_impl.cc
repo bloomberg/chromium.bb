@@ -1093,11 +1093,6 @@ void BlinkPlatformImpl::stopSharedTimer() {
   shared_timer_.Stop();
 }
 
-void BlinkPlatformImpl::callOnMainThread(
-    void (*func)(void*), void* context) {
-  main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(func, context));
-}
-
 blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,

@@ -51,7 +51,6 @@ class BlinkPlatformImpl : public blink::Platform {
   virtual void setSharedTimerFiredFunction(void (*func)());
   virtual void setSharedTimerFireInterval(double interval_seconds);
   virtual void stopSharedTimer();
-  virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual bool isThreadedCompositingEnabled();
   virtual blink::WebCompositorSupport* compositorSupport();
   void createMessageChannel(blink::WebMessagePortChannel** channel1,
@@ -92,7 +91,6 @@ class BlinkPlatformImpl : public blink::Platform {
 
   static void DestroyCurrentThread(void*);
 
-  base::MessageLoop* main_loop_;
   base::OneShotTimer<BlinkPlatformImpl> shared_timer_;
   void (*shared_timer_func_)();
   double shared_timer_fire_time_;

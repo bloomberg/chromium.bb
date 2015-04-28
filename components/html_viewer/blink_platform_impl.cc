@@ -59,13 +59,12 @@ class WebWaitableEventImpl : public blink::WebWaitableEvent {
 }  // namespace
 
 BlinkPlatformImpl::BlinkPlatformImpl(mojo::ApplicationImpl* app)
-    : main_loop_(base::MessageLoop::current()),
-      shared_timer_func_(NULL),
+    : shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0),
       current_thread_slot_(&DestroyCurrentThread),
-      scheduler_(main_loop_->message_loop_proxy()) {
+      scheduler_(base::ThreadTaskRunnerHandle::Get()) {
   if (app) {
     app->ConnectToService("mojo:network_service", &network_service_);
 
@@ -162,11 +161,6 @@ void BlinkPlatformImpl::setSharedTimerFireInterval(
 
 void BlinkPlatformImpl::stopSharedTimer() {
   shared_timer_.Stop();
-}
-
-void BlinkPlatformImpl::callOnMainThread(
-    void (*func)(void*), void* context) {
-  main_loop_->PostTask(FROM_HERE, base::Bind(func, context));
 }
 
 bool BlinkPlatformImpl::isThreadedCompositingEnabled() {
