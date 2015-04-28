@@ -145,6 +145,7 @@
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/dev_tools_discovery_provider_android.h"
 #include "chrome/browser/metrics/thread_watcher_android.h"
 #else
 #include "chrome/browser/feedback/feedback_profile_observer.h"
@@ -1093,6 +1094,11 @@ void ChromeBrowserMainParts::PreProfileInit() {
 
 void ChromeBrowserMainParts::PostProfileInit() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostProfileInit");
+
+#if defined(OS_ANDROID)
+  DevToolsDiscoveryProviderAndroid::Install();
+#endif  // defined(OS_ANDROID)
+
   LaunchDevToolsHandlerIfNeeded(parsed_command_line());
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostProfileInit();

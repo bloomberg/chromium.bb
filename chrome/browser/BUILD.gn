@@ -242,6 +242,7 @@ source_set("browser") {
       "//components/autofill/content/browser",
       "//components/browsing_data",
       "//components/data_reduction_proxy/content/browser",
+      "//components/devtools_discovery",
       "//components/devtools_http_handler",
       "//components/dom_distiller/content",
       "//components/favicon/content",

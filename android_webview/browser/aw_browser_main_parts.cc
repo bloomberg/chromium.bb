@@ -13,7 +13,6 @@
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -95,10 +94,7 @@ int AwBrowserMainParts::PreCreateThreads() {
 void AwBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_->PreMainMessageLoopRun();
 
-  devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
-      devtools_discovery::DevToolsDiscoveryManager::GetInstance();
-  discovery_manager->AddProvider(make_scoped_ptr(
-      new AwDevToolsDiscoveryProvider()));
+  AwDevToolsDiscoveryProvider::Install();
 
   // This is needed for WebView Classic backwards compatibility
   // See crbug.com/298495

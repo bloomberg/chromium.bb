@@ -48,6 +48,8 @@ class TargetDescriptor : public devtools_discovery::BasicTargetDescriptor {
 
  private:
   std::string description_;
+
+  DISALLOW_COPY_AND_ASSIGN(TargetDescriptor);
 };
 
 TargetDescriptor::TargetDescriptor(scoped_refptr<DevToolsAgentHost> agent_host)
@@ -59,6 +61,14 @@ TargetDescriptor::TargetDescriptor(scoped_refptr<DevToolsAgentHost> agent_host)
 }  // namespace
 
 namespace android_webview {
+
+// static
+void AwDevToolsDiscoveryProvider::Install() {
+  devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
+      devtools_discovery::DevToolsDiscoveryManager::GetInstance();
+  discovery_manager->AddProvider(
+      make_scoped_ptr(new AwDevToolsDiscoveryProvider()));
+}
 
 AwDevToolsDiscoveryProvider::AwDevToolsDiscoveryProvider() {
 }

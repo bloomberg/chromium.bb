@@ -40,6 +40,18 @@ DevToolsTargetDescriptor::List DevToolsDiscoveryManager::GetDescriptors() {
   return result;
 }
 
+void DevToolsDiscoveryManager::SetCreateCallback(
+    const CreateCallback& callback) {
+  create_callback_ = callback;
+}
+
+scoped_ptr<DevToolsTargetDescriptor>
+DevToolsDiscoveryManager::CreateNew(const GURL& url) {
+  if (create_callback_.is_null())
+    return scoped_ptr<DevToolsTargetDescriptor>();
+  return create_callback_.Run(url);
+}
+
 DevToolsTargetDescriptor::List
 DevToolsDiscoveryManager::GetDescriptorsFromProviders() {
   DevToolsTargetDescriptor::List result;

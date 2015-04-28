@@ -21,13 +21,18 @@ class DevToolsDiscoveryManager {
     virtual DevToolsTargetDescriptor::List GetDescriptors() = 0;
   };
 
+  using CreateCallback = base::Callback<
+      scoped_ptr<DevToolsTargetDescriptor>(const GURL& url)>;
+
   // Returns single instance of this class. The instance is destroyed on the
   // browser main loop exit so this method MUST NOT be called after that point.
   static DevToolsDiscoveryManager* GetInstance();
 
   void AddProvider(scoped_ptr<Provider> provider);
+  void SetCreateCallback(const CreateCallback& callback);
 
   DevToolsTargetDescriptor::List GetDescriptors();
+  scoped_ptr<DevToolsTargetDescriptor> CreateNew(const GURL& url);
 
  private:
   friend struct DefaultSingletonTraits<DevToolsDiscoveryManager>;
@@ -37,6 +42,7 @@ class DevToolsDiscoveryManager {
   DevToolsTargetDescriptor::List GetDescriptorsFromProviders();
 
   std::vector<Provider*> providers_;
+  CreateCallback create_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsDiscoveryManager);
 };

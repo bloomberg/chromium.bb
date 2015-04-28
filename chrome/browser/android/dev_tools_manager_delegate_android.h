@@ -11,6 +11,8 @@
 #include "chrome/browser/devtools/devtools_network_protocol_handler.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
+// TODO(dgozman): remove this class once transition to devtools_discovery is
+// completed.
 class DevToolsManagerDelegateAndroid : public content::DevToolsManagerDelegate {
  public:
   DevToolsManagerDelegateAndroid();

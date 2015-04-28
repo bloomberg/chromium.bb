@@ -2,30 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_AW_DEV_TOOLS_DISCOVERY_PROVIDER_H_
-#define ANDROID_WEBVIEW_BROWSER_AW_DEV_TOOLS_DISCOVERY_PROVIDER_H_
+#ifndef CHROME_BROWSER_ANDROID_DEV_TOOLS_DISCOVERY_PROVIDER_ANDROID_H_
+#define CHROME_BROWSER_ANDROID_DEV_TOOLS_DISCOVERY_PROVIDER_ANDROID_H_
 
 #include "components/devtools_discovery/devtools_discovery_manager.h"
 
-namespace android_webview {
-
-class AwDevToolsDiscoveryProvider :
+class DevToolsDiscoveryProviderAndroid :
     public devtools_discovery::DevToolsDiscoveryManager::Provider {
  public:
   // Installs provider to devtools_discovery.
   static void Install();
 
-  ~AwDevToolsDiscoveryProvider() override;
+  ~DevToolsDiscoveryProviderAndroid() override;
 
   // devtools_discovery::DevToolsDiscoveryManager::Provider implementation.
   devtools_discovery::DevToolsTargetDescriptor::List GetDescriptors() override;
 
  private:
-  AwDevToolsDiscoveryProvider();
+  DevToolsDiscoveryProviderAndroid();
 
-  DISALLOW_COPY_AND_ASSIGN(AwDevToolsDiscoveryProvider);
+  DISALLOW_COPY_AND_ASSIGN(DevToolsDiscoveryProviderAndroid);
 };
 
-}  // namespace android_webview
-
-#endif  // ANDROID_WEBVIEW_BROWSER_AW_DEV_TOOLS_DISCOVERY_PROVIDER_H_
+#endif  // CHROME_BROWSER_ANDROID_DEV_TOOLS_DISCOVERY_PROVIDER_ANDROID_H_
