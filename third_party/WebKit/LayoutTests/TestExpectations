@@ -305,7 +305,12 @@ crbug.com/321607 [ Linux ] fast/forms/submit-to-blank-multiple-times.html [ Fail
 crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 
 # Untriaged pixel diffs, unclear if aura-related?
-crbug.com/229207 [ Win ] virtual/deferred/fast/images/2-dht.html [ ImageOnlyFailure ]
+# crbug.com/229207 [ Win ] virtual/deferred/fast/images/2-dht.html [ ImageOnlyFailure ]
+# TODO(noel): recover the Win line once bug 398235 is complete and new image baselines
+# have been created for bug 398235.
+crbug.com/398235 virtual/deferred/fast/images/2-dht.html [ ImageOnlyFailure ]
+crbug.com/398235 virtual/slimmingpaint/fast/images/2-dht.html [ ImageOnlyFailure ]
+
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/dom/Window/Plug-ins.html [ Skip ]
