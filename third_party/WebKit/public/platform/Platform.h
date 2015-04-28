@@ -40,8 +40,6 @@
 #include "WebCommon.h"
 #include "WebData.h"
 #include "WebDeviceLightListener.h"
-#include "WebDeviceMotionListener.h"
-#include "WebDeviceOrientationListener.h"
 #include "WebGamepadListener.h"
 #include "WebGamepads.h"
 #include "WebGestureDevice.h"

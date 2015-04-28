@@ -28,20 +28,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/platform/modules/device_orientation/WebDeviceMotionData.h"
+#ifndef WebDeviceMotionData_h
+#define WebDeviceMotionData_h
 
-#include <string.h>
+#include "public/platform/WebCommon.h"
+
+#if INSIDE_BLINK
+#include "wtf/Assertions.h"
+#endif
 
 namespace blink {
 
-WebDeviceMotionData::WebDeviceMotionData()
-{
-    // Make sure to zero out the memory so that there are no uninitialized bits.
-    // This object is used in the shared memory buffer and is memory copied by
-    // two processes. Valgrind will complain if we copy around memory that is
-    // only partially initialized.
-    memset(this, 0, sizeof(*this));
-}
+#pragma pack(push, 1)
+
+class WebDeviceMotionData {
+public:
+    BLINK_PLATFORM_EXPORT WebDeviceMotionData();
+    ~WebDeviceMotionData() { }
+
+    double accelerationX;
+    double accelerationY;
+    double accelerationZ;
+
+    double accelerationIncludingGravityX;
+    double accelerationIncludingGravityY;
+    double accelerationIncludingGravityZ;
+
+    double rotationRateAlpha;
+    double rotationRateBeta;
+    double rotationRateGamma;
+
+    double interval;
+
+    bool hasAccelerationX : 1;
+    bool hasAccelerationY : 1;
+    bool hasAccelerationZ : 1;
+
+    bool hasAccelerationIncludingGravityX : 1;
+    bool hasAccelerationIncludingGravityY : 1;
+    bool hasAccelerationIncludingGravityZ : 1;
+
+    bool hasRotationRateAlpha : 1;
+    bool hasRotationRateBeta : 1;
+    bool hasRotationRateGamma : 1;
+
+    bool allAvailableSensorsAreActive : 1;
+};
+
+#if INSIDE_BLINK
+static_assert(sizeof(WebDeviceMotionData) == (10 * sizeof(double) + 2 * sizeof(char)), "WebDeviceMotionData has wrong size");
+#endif
+
+#pragma pack(pop)
 
 } // namespace blink
+
+#endif // WebDeviceMotionData_h

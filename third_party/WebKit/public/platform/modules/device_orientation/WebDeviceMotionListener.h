@@ -28,20 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/platform/modules/device_orientation/WebDeviceMotionData.h"
+#ifndef WebDeviceMotionListener_h
+#define WebDeviceMotionListener_h
 
-#include <string.h>
+#include "public/platform/WebPlatformEventListener.h"
 
 namespace blink {
 
-WebDeviceMotionData::WebDeviceMotionData()
-{
-    // Make sure to zero out the memory so that there are no uninitialized bits.
-    // This object is used in the shared memory buffer and is memory copied by
-    // two processes. Valgrind will complain if we copy around memory that is
-    // only partially initialized.
-    memset(this, 0, sizeof(*this));
-}
+class WebDeviceMotionData;
+
+class WebDeviceMotionListener : public WebPlatformEventListener {
+public:
+    // This method is called every time new device motion data is available.
+    virtual void didChangeDeviceMotion(const WebDeviceMotionData&) = 0;
+
+    virtual ~WebDeviceMotionListener() { }
+};
 
 } // namespace blink
+
+#endif // WebDeviceMotionListener_h

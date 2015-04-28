@@ -28,20 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "public/platform/modules/device_orientation/WebDeviceMotionData.h"
+#ifndef WebDeviceOrientationData_h
+#define WebDeviceOrientationData_h
 
-#include <string.h>
+#include "public/platform/WebCommon.h"
+
+#if INSIDE_BLINK
+#include "wtf/Assertions.h"
+#endif
 
 namespace blink {
 
-WebDeviceMotionData::WebDeviceMotionData()
-{
-    // Make sure to zero out the memory so that there are no uninitialized bits.
-    // This object is used in the shared memory buffer and is memory copied by
-    // two processes. Valgrind will complain if we copy around memory that is
-    // only partially initialized.
-    memset(this, 0, sizeof(*this));
-}
+#pragma pack(push, 1)
+
+class WebDeviceOrientationData {
+public:
+    BLINK_PLATFORM_EXPORT WebDeviceOrientationData();
+    ~WebDeviceOrientationData() { }
+
+    double alpha;
+    double beta;
+    double gamma;
+
+    bool hasAlpha : 1;
+    bool hasBeta : 1;
+    bool hasGamma : 1;
+
+    bool absolute : 1;
+    bool hasAbsolute : 1;
+
+    bool allAvailableSensorsAreActive : 1;
+};
+
+#if INSIDE_BLINK
+static_assert(sizeof(WebDeviceOrientationData) == (3 * sizeof(double) + 1 * sizeof(char)), "WebDeviceOrientationData has wrong size");
+#endif
+
+#pragma pack(pop)
 
 } // namespace blink
+
+#endif // WebDeviceOrientationData_h

@@ -25,7 +25,7 @@
 
 #include "config.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
-#include "public/platform/WebDeviceOrientationData.h"
+#include "public/platform/modules/device_orientation/WebDeviceOrientationData.h"
 
 namespace blink {
 
