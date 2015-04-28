@@ -295,6 +295,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool is_redundant() const { return status_ == REDUNDANT; }
 
   bool skip_waiting() const { return skip_waiting_; }
+  void set_skip_waiting(bool skip_waiting) { skip_waiting_ = skip_waiting; }
 
   bool force_bypass_cache_for_scripts() {
     return force_bypass_cache_for_scripts_;

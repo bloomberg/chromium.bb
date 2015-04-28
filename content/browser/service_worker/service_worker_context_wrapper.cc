@@ -275,6 +275,29 @@ void ServiceWorkerContextWrapper::StartServiceWorker(
       pattern, base::Bind(&StartActiveWorkerOnIO, callback));
 }
 
+void ServiceWorkerContextWrapper::SimulateSkipWaiting(int64_t version_id) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ServiceWorkerContextWrapper::SimulateSkipWaiting, this,
+                   version_id));
+    return;
+  }
+  if (!context_core_.get()) {
+    LOG(ERROR) << "ServiceWorkerContextCore is no longer alive.";
+    return;
+  }
+  ServiceWorkerVersion* version = GetLiveVersion(version_id);
+  if (!version || version->skip_waiting())
+    return;
+  ServiceWorkerRegistration* registration =
+      GetLiveRegistration(version->registration_id());
+  if (!registration || version != registration->waiting_version())
+    return;
+  version->set_skip_waiting(true);
+  registration->ActivateWaitingVersionWhenReady();
+}
+
 static void DidFindRegistrationForDocument(
     const net::CompletionCallback& callback,
     ServiceWorkerStatusCode status,

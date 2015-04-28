@@ -170,11 +170,11 @@ void GetDevToolsRouteInfoOnIO(
   }
 }
 
-Response CreateContextErrorResoponse() {
+Response CreateContextErrorResponse() {
   return Response::InternalError("Could not connect to the context");
 }
 
-Response CreateInvalidVersionIdErrorResoponse() {
+Response CreateInvalidVersionIdErrorResponse() {
   return Response::InternalError("Invalid version ID");
 }
 
@@ -302,7 +302,7 @@ Response ServiceWorkerHandler::Unregister(const std::string& scope_url) {
   if (!enabled_)
     return Response::OK();
   if (!context_)
-    return CreateContextErrorResoponse();
+    return CreateContextErrorResponse();
   context_->UnregisterServiceWorker(GURL(scope_url), base::Bind(&ResultNoOp));
   return Response::OK();
 }
@@ -311,7 +311,7 @@ Response ServiceWorkerHandler::StartWorker(const std::string& scope_url) {
   if (!enabled_)
     return Response::OK();
   if (!context_)
-    return CreateContextErrorResoponse();
+    return CreateContextErrorResponse();
   context_->StartServiceWorker(GURL(scope_url), base::Bind(&StatusNoOp));
   return Response::OK();
 }
@@ -320,10 +320,10 @@ Response ServiceWorkerHandler::StopWorker(const std::string& version_id) {
   if (!enabled_)
     return Response::OK();
   if (!context_)
-    return CreateContextErrorResoponse();
+    return CreateContextErrorResponse();
   int64 id = 0;
   if (!base::StringToInt64(version_id, &id))
-    return CreateInvalidVersionIdErrorResoponse();
+    return CreateInvalidVersionIdErrorResponse();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&StopServiceWorkerOnIO, context_, id));
   return Response::OK();
@@ -334,7 +334,7 @@ Response ServiceWorkerHandler::UpdateRegistration(
   if (!enabled_)
     return Response::OK();
   if (!context_)
-    return CreateContextErrorResoponse();
+    return CreateContextErrorResponse();
   context_->UpdateRegistration(GURL(scope_url));
   return Response::OK();
 }
@@ -343,16 +343,29 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
   if (!enabled_)
     return Response::OK();
   if (!context_)
-    return CreateContextErrorResoponse();
+    return CreateContextErrorResponse();
 
   int64 id = 0;
   if (!base::StringToInt64(version_id, &id))
-    return CreateInvalidVersionIdErrorResoponse();
+    return CreateInvalidVersionIdErrorResponse();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&GetDevToolsRouteInfoOnIO, context_, id,
                  base::Bind(&ServiceWorkerHandler::OpenNewDevToolsWindow,
                             weak_factory_.GetWeakPtr())));
+  return Response::OK();
+}
+
+Response ServiceWorkerHandler::SkipWaiting(const std::string& version_id) {
+  if (!enabled_)
+    return Response::OK();
+  if (!context_)
+    return CreateContextErrorResponse();
+
+  int64 id = 0;
+  if (!base::StringToInt64(version_id, &id))
+    return CreateInvalidVersionIdErrorResponse();
+  context_->SimulateSkipWaiting(id);
   return Response::OK();
 }
 
@@ -369,10 +382,10 @@ Response ServiceWorkerHandler::DeliverPushMessage(
   if (!enabled_)
     return Response::OK();
   if (!render_frame_host_)
-    return CreateContextErrorResoponse();
+    return CreateContextErrorResponse();
   int64 id = 0;
   if (!base::StringToInt64(registration_id, &id))
-    return CreateInvalidVersionIdErrorResoponse();
+    return CreateInvalidVersionIdErrorResponse();
   BrowserContext::DeliverPushMessage(
       render_frame_host_->GetProcess()->GetBrowserContext(), GURL(origin), id,
       data, base::Bind(&PushDeliveryNoOp));

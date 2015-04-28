@@ -124,6 +124,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void StartServiceWorker(const GURL& pattern, const StatusCallback& callback);
   void UpdateRegistration(const GURL& pattern);
+  void SimulateSkipWaiting(int64_t version_id);
   void AddObserver(ServiceWorkerContextObserver* observer);
   void RemoveObserver(ServiceWorkerContextObserver* observer);
 
