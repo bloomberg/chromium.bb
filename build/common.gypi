@@ -3761,17 +3761,9 @@
                 ],
               }],
               ['OS=="android"', {
-                'conditions': [
-                  ['clang==1', {
-                    'variables': {
-                      'release_optimize%': 'z',
-                    },
-                  }, {
-                    'variables': {
-                      'release_optimize%': 's',
-                    },
-                  }],
-                ],
+                'variables': {
+                  'release_optimize%': 's',
+                },
               }],
               ['profiling==1', {
                 'cflags': [
