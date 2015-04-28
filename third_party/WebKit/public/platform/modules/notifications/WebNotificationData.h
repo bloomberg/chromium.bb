@@ -25,18 +25,6 @@ struct WebNotificationData {
     }
 
     // FIXME: Remove this constructor when Chromium has switched to the new one.
-    WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon, bool silent)
-        : title(title)
-        , direction(direction)
-        , lang(lang)
-        , body(body)
-        , tag(tag)
-        , icon(icon)
-        , silent(silent)
-    {
-    }
-
-    // FIXME: Remove this constructor when Chromium has switched to the new one.
     WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon, bool silent, const WebVector<char>& data)
         : title(title)
         , direction(direction)
@@ -49,7 +37,7 @@ struct WebNotificationData {
     {
     }
 
-    WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon, const WebVector<unsigned>& vibrate, bool silent, const WebVector<char>& data)
+    WebNotificationData(const WebString& title, Direction direction, const WebString& lang, const WebString& body, const WebString& tag, const WebURL& icon, const WebVector<int>& vibrate, bool silent, const WebVector<char>& data)
         : title(title)
         , direction(direction)
         , lang(lang)
@@ -68,7 +56,7 @@ struct WebNotificationData {
     WebString body;
     WebString tag;
     WebURL icon;
-    WebVector<unsigned> vibrate;
+    WebVector<int> vibrate;
     bool silent;
     WebVector<char> data;
 };
