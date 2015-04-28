@@ -508,12 +508,13 @@ void ExtensionInfoGenerator::OnImageLoaded(
   --pending_image_loads_;
 
   if (pending_image_loads_ == 0) {  // All done!
-    // We assign to a temporary and Reset() so that at the end of the method,
-    // any stored refs are destroyed.
+    // We assign to a temporary callback and list and reset the stored values so
+    // that at the end of the method, any stored refs are destroyed.
+    ExtensionInfoList list;
+    list.swap(list_);
     ExtensionInfosCallback callback = callback_;
     callback_.Reset();
-    callback.Run(list_);
-    list_.clear();
+    callback.Run(list);  // WARNING: |this| is possibly deleted after this line!
   }
 }
 
