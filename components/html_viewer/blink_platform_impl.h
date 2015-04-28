@@ -6,7 +6,6 @@
 #define COMPONENTS_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
 #include "cc/blink/web_compositor_support_impl.h"

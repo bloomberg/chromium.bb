@@ -10,6 +10,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "components/html_viewer/blink_resource_constants.h"
