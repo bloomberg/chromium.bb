@@ -92,7 +92,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
         return;
 
     const ComputedStyle& style = m_layoutBox.styleRef();
-    BoxDecorationData boxDecorationData(m_layoutBox, paintInfo.context);
+    BoxDecorationData boxDecorationData(m_layoutBox);
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.
@@ -253,40 +253,56 @@ void BoxPainter::applyBoxShadowForBackground(GraphicsContext* context, LayoutObj
     }
 }
 
-// FIXME: See crbug.com/382491. The use of getCTM in this context is incorrect because the matrix returned does not
-// include scales applied at raster time, such as the device zoom.
-static LayoutRect shrinkRectByOnePixel(GraphicsContext* context, const LayoutRect& rect)
+FloatRoundedRect BoxPainter::getBackgroundRoundedRect(LayoutObject& obj, const LayoutRect& borderRect,
+    InlineFlowBox* box, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
+    bool includeLogicalLeftEdge, bool includeLogicalRightEdge, const FloatRectOutsets* insets)
 {
-    ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
-    LayoutRect shrunkRect = rect;
-    AffineTransform transform = context->getCTM();
-    shrunkRect.inflateX(-static_cast<LayoutUnit>(ceil(1 / transform.xScale())));
-    shrunkRect.inflateY(-static_cast<LayoutUnit>(ceil(1 / transform.yScale())));
-    return shrunkRect;
-}
-
-FloatRoundedRect BoxPainter::getBackgroundRoundedRect(LayoutObject& obj, const LayoutRect& borderRect, InlineFlowBox* box, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
-    bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
-{
-    FloatRoundedRect border = obj.style()->getRoundedBorderFor(borderRect, includeLogicalLeftEdge, includeLogicalRightEdge);
+    FloatRoundedRect border = obj.style()->getRoundedBorderFor(borderRect, includeLogicalLeftEdge,
+        includeLogicalRightEdge, insets);
     if (box && (box->nextLineBox() || box->prevLineBox())) {
-        FloatRoundedRect segmentBorder = obj.style()->getRoundedBorderFor(LayoutRect(0, 0, inlineBoxWidth, inlineBoxHeight), includeLogicalLeftEdge, includeLogicalRightEdge);
+        FloatRoundedRect segmentBorder = obj.style()->getRoundedBorderFor(LayoutRect(0, 0, inlineBoxWidth, inlineBoxHeight),
+            includeLogicalLeftEdge, includeLogicalRightEdge, insets);
         border.setRadii(segmentBorder.radii());
     }
 
     return border;
 }
 
-FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(LayoutObject& obj, GraphicsContext* context, const LayoutRect& borderRect, BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box, const LayoutSize& boxSize, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
+FloatRoundedRect BoxPainter::backgroundRoundedRectAdjustedForBleedAvoidance(LayoutObject& obj,
+    const LayoutRect& borderRect, BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* box,
+    const LayoutSize& boxSize, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     if (bleedAvoidance == BackgroundBleedShrinkBackground) {
-        // We shrink the rectangle by one pixel on each side because the bleed is one pixel maximum.
-        return BoxPainter::getBackgroundRoundedRect(obj, shrinkRectByOnePixel(context, borderRect), box, boxSize.width(), boxSize.height(), includeLogicalLeftEdge, includeLogicalRightEdge);
+        // Inset the background rect by a "safe" amount: 1/2 border-width for opaque border styles,
+        // 1/6 border-width for double borders.
+
+        // TODO(fmalita): we should be able to fold these parameters into BoxBorderInfo or
+        // BoxDecorationData and avoid calling getBorderEdgeInfo redundantly here.
+        BorderEdge edges[4];
+        obj.style()->getBorderEdgeInfo(edges, includeLogicalLeftEdge, includeLogicalRightEdge);
+
+        // Use the most conservative inset to avoid mixed-style corner issues.
+        float fractionalInset = 1.0f / 2;
+        for (auto& edge : edges) {
+            if (edge.borderStyle() == DOUBLE) {
+                fractionalInset = 1.0f / 6;
+                break;
+            }
+        }
+
+        FloatRectOutsets insets(
+            -fractionalInset * edges[BSTop].width,
+            -fractionalInset * edges[BSRight].width,
+            -fractionalInset * edges[BSBottom].width,
+            -fractionalInset * edges[BSLeft].width);
+
+        return getBackgroundRoundedRect(obj, borderRect, box, boxSize.width(), boxSize.height(),
+            includeLogicalLeftEdge, includeLogicalRightEdge, &insets);
     }
     if (bleedAvoidance == BackgroundBleedBackgroundOverBorder)
         return obj.style()->getRoundedInnerBorderFor(borderRect, includeLogicalLeftEdge, includeLogicalRightEdge);
 
-    return BoxPainter::getBackgroundRoundedRect(obj, borderRect, box, boxSize.width(), boxSize.height(), includeLogicalLeftEdge, includeLogicalRightEdge);
+    return getBackgroundRoundedRect(obj, borderRect, box, boxSize.width(), boxSize.height(), includeLogicalLeftEdge, includeLogicalRightEdge);
 }
 
 void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintInfo& paintInfo, const Color& color, const FillLayer& bgLayer, const LayoutRect& rect,
@@ -346,7 +362,9 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
             BoxPainter::applyBoxShadowForBackground(context, obj);
 
         if (hasRoundedBorder && !bleedAvoidanceIsClipping(bleedAvoidance)) {
-            FloatRoundedRect border = backgroundRoundedRectAdjustedForBleedAvoidance(obj, context, rect, bleedAvoidance, box, boxSize, includeLeftEdge, includeRightEdge);
+            FloatRoundedRect border = backgroundRoundedRectAdjustedForBleedAvoidance(obj, rect,
+                bleedAvoidance, box, boxSize, includeLeftEdge, includeRightEdge);
+
             if (border.isRenderable()) {
                 context->fillRoundedRect(border, bgColor);
             } else {
@@ -364,7 +382,9 @@ void BoxPainter::paintFillLayerExtended(LayoutBoxModelObject& obj, const PaintIn
     bool clipToBorderRadius = hasRoundedBorder && !(isBorderFill && bleedAvoidanceIsClipping(bleedAvoidance));
     OwnPtr<RoundedInnerRectClipper> clipToBorder;
     if (clipToBorderRadius) {
-        FloatRoundedRect border = isBorderFill ? backgroundRoundedRectAdjustedForBleedAvoidance(obj, context, rect, bleedAvoidance, box, boxSize, includeLeftEdge, includeRightEdge) : getBackgroundRoundedRect(obj, rect, box, boxSize.width(), boxSize.height(), includeLeftEdge, includeRightEdge);
+        FloatRoundedRect border = isBorderFill
+            ? backgroundRoundedRectAdjustedForBleedAvoidance(obj, rect, bleedAvoidance, box, boxSize, includeLeftEdge, includeRightEdge)
+            : getBackgroundRoundedRect(obj, rect, box, boxSize.width(), boxSize.height(), includeLeftEdge, includeRightEdge);
 
         // Clip to the padding or content boxes as necessary.
         if (bgLayer.clip() == ContentFillBox) {

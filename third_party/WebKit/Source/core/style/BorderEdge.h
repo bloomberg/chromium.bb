@@ -17,7 +17,7 @@ struct BorderEdge {
     bool hasVisibleColorAndStyle() const;
     bool shouldRender() const;
     bool presentButInvisible() const;
-    bool obscuresBackgroundEdge(float scale) const;
+    bool obscuresBackgroundEdge() const;
     bool obscuresBackground() const;
     int usedWidth() const;
 

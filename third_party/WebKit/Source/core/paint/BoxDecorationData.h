@@ -17,7 +17,7 @@ class LayoutBox;
 struct BoxDecorationData {
     STACK_ALLOCATED();
 public:
-    BoxDecorationData(const LayoutBox&, GraphicsContext*);
+    BoxDecorationData(const LayoutBox&);
 
     Color backgroundColor;
     BackgroundBleedAvoidance bleedAvoidance;
@@ -26,7 +26,7 @@ public:
     bool hasAppearance;
 
 private:
-    BackgroundBleedAvoidance determineBackgroundBleedAvoidance(const LayoutBox&, GraphicsContext*);
+    BackgroundBleedAvoidance determineBackgroundBleedAvoidance(const LayoutBox&);
 };
 
 } // namespace blink

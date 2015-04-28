@@ -40,7 +40,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
     if (recorder.canUseCachedDrawing())
         return;
 
-    BoxDecorationData boxDecorationData(m_layoutFieldset, paintInfo.context);
+    BoxDecorationData boxDecorationData(m_layoutFieldset);
 
     if (boxDecorationData.bleedAvoidance == BackgroundBleedNone)
         BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutFieldset.styleRef(), Normal);
