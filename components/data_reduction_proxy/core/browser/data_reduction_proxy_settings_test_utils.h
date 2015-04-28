@@ -98,11 +98,11 @@ class ConcreteDataReductionProxySettingsTest
     : public DataReductionProxySettingsTestBase {
  public:
   typedef MockDataReductionProxySettings<C> MockSettings;
-  virtual void ResetSettings(bool allowed,
-                             bool fallback_allowed,
-                             bool alt_allowed,
-                             bool promo_allowed,
-                             bool holdback) override {
+  void ResetSettings(bool allowed,
+                     bool fallback_allowed,
+                     bool alt_allowed,
+                     bool promo_allowed,
+                     bool holdback) override {
     return DataReductionProxySettingsTestBase::ResetSettings<C>(
         allowed, fallback_allowed, alt_allowed, promo_allowed, holdback);
   }

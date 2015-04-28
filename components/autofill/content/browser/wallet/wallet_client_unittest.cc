@@ -660,15 +660,15 @@ class MockWalletClientDelegate : public WalletClientDelegate {
         is_shipping_required_(true) {}
   ~MockWalletClientDelegate() {}
 
-  virtual std::string GetRiskData() const override {
+  std::string GetRiskData() const override {
     return "risky business";
   }
 
-  virtual std::string GetWalletCookieValue() const override {
+  std::string GetWalletCookieValue() const override {
     return "gdToken";
   }
 
-  virtual bool IsShippingAddressRequired() const override {
+  bool IsShippingAddressRequired() const override {
     return is_shipping_required_;
   }
 
@@ -685,12 +685,11 @@ class MockWalletClientDelegate : public WalletClientDelegate {
                     const std::vector<FormFieldError>& form_field_errors));
   MOCK_METHOD1(OnWalletError, void(WalletClient::ErrorType error_type));
 
-  virtual void OnDidGetFullWallet(scoped_ptr<FullWallet> full_wallet) override {
+  void OnDidGetFullWallet(scoped_ptr<FullWallet> full_wallet) override {
     EXPECT_TRUE(full_wallet);
     ++full_wallets_received_;
   }
-  virtual void OnDidGetWalletItems(scoped_ptr<WalletItems> wallet_items)
-      override {
+  void OnDidGetWalletItems(scoped_ptr<WalletItems> wallet_items) override {
     EXPECT_TRUE(wallet_items);
     ++wallet_items_received_;
   }

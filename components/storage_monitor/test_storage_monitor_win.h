@@ -24,13 +24,13 @@ class TestStorageMonitorWin: public StorageMonitorWin {
       TestVolumeMountWatcherWin* volume_mount_watcher,
       TestPortableDeviceWatcherWin* portable_device_watcher);
 
-  virtual ~TestStorageMonitorWin();
+  ~TestStorageMonitorWin() override;
 
   void InjectDeviceChange(UINT event_type, DWORD data);
 
   VolumeMountWatcherWin* volume_mount_watcher();
 
-  virtual Receiver* receiver() const override;
+  Receiver* receiver() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestStorageMonitorWin);

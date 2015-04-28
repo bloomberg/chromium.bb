@@ -121,7 +121,7 @@ template<typename PayloadProto>
 class TypedPolicyBuilder : public PolicyBuilder {
  public:
   TypedPolicyBuilder();
-  virtual ~TypedPolicyBuilder() {}
+  ~TypedPolicyBuilder() override {}
 
   // Returns a reference to the payload protobuf being built.
   PayloadProto& payload() {
@@ -134,7 +134,7 @@ class TypedPolicyBuilder : public PolicyBuilder {
   }
 
   // PolicyBuilder:
-  virtual void Build() override {
+  void Build() override {
     if (payload_.get())
       CHECK(payload_->SerializeToString(policy_data().mutable_policy_value()));
 

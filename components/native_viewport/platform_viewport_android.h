@@ -27,7 +27,7 @@ class PlatformViewportAndroid : public PlatformViewport {
   static bool Register(JNIEnv* env);
 
   explicit PlatformViewportAndroid(Delegate* delegate);
-  virtual ~PlatformViewportAndroid();
+  ~PlatformViewportAndroid() override;
 
   void Destroy(JNIEnv* env, jobject obj);
   void SurfaceCreated(JNIEnv* env, jobject obj, jobject jsurface);
@@ -58,12 +58,12 @@ class PlatformViewportAndroid : public PlatformViewport {
 
  private:
   // Overridden from PlatformViewport:
-  virtual void Init(const gfx::Rect& bounds) override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void Close() override;
-  virtual gfx::Size GetSize() override;
-  virtual void SetBounds(const gfx::Rect& bounds) override;
+  void Init(const gfx::Rect& bounds) override;
+  void Show() override;
+  void Hide() override;
+  void Close() override;
+  gfx::Size GetSize() override;
+  void SetBounds(const gfx::Rect& bounds) override;
 
   void ReleaseWindow();
 

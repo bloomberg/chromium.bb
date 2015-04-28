@@ -28,7 +28,7 @@ class ExitFunnelWinTest : public testing::Test {
   typedef testing::Test Super;
   typedef std::map<base::string16, int64> EventMap;
 
-  virtual void SetUp() override {
+  void SetUp() override {
     Super::SetUp();
 
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER);

@@ -14,13 +14,13 @@ namespace test {
 class MockDistillerPageFactory : public DistillerPageFactory {
  public:
   MockDistillerPageFactory();
-  virtual ~MockDistillerPageFactory();
+  ~MockDistillerPageFactory() override;
   MOCK_CONST_METHOD0(CreateDistillerPageImpl, DistillerPage*());
-  virtual scoped_ptr<DistillerPage> CreateDistillerPage(
+  scoped_ptr<DistillerPage> CreateDistillerPage(
       const gfx::Size& render_view_size) const override {
     return scoped_ptr<DistillerPage>(CreateDistillerPageImpl());
   }
-  virtual scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
+  scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
       scoped_ptr<SourcePageHandle> handle) const override {
     return scoped_ptr<DistillerPage>(CreateDistillerPageImpl());
   }
@@ -29,7 +29,7 @@ class MockDistillerPageFactory : public DistillerPageFactory {
 class MockDistillerPage : public DistillerPage {
  public:
   MockDistillerPage();
-  virtual ~MockDistillerPage();
+  ~MockDistillerPage() override;
   bool StringifyOutput() override { return false; };
   bool CreateNewContext() override { return false; };
   MOCK_METHOD2(DistillPageImpl,

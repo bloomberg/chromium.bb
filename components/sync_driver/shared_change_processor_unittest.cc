@@ -41,16 +41,16 @@ class SyncSharedChangeProcessorTest :
         did_connect_(false),
         has_attachment_service_(false) {}
 
-  virtual ~SyncSharedChangeProcessorTest() {
+  ~SyncSharedChangeProcessorTest() override {
     EXPECT_FALSE(db_syncable_service_.get());
   }
 
-  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override {
     return db_syncable_service_->AsWeakPtr();
   }
 
-  virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
+  scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
       scoped_ptr<syncer::AttachmentStoreForSync> attachment_store,
       const syncer::UserShare& user_share,
       const std::string& store_birthday,
@@ -60,7 +60,7 @@ class SyncSharedChangeProcessorTest :
   }
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     test_user_share_.SetUp();
     shared_change_processor_ = new SharedChangeProcessor();
     ASSERT_TRUE(backend_thread_.Start());
@@ -70,7 +70,7 @@ class SyncSharedChangeProcessorTest :
                    base::Unretained(this))));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     EXPECT_TRUE(backend_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
         base::Bind(&SyncSharedChangeProcessorTest::TearDownDBSyncableService,

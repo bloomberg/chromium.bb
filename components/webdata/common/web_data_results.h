@@ -67,7 +67,7 @@ template <class T> class WDResult : public WDTypedResult {
       : WDTypedResult(type), value_(v) {
   }
 
-  virtual ~WDResult() {
+  ~WDResult() override {
   }
 
   // Return a single value result.
@@ -91,11 +91,10 @@ template <class T> class WDDestroyableResult : public WDResult<T> {
         callback_(callback) {
   }
 
-  virtual ~WDDestroyableResult() {
+  ~WDDestroyableResult() override {
   }
 
-
-  virtual void Destroy()  override {
+  void Destroy() override {
     if (!callback_.is_null()) {
       callback_.Run(this);
     }

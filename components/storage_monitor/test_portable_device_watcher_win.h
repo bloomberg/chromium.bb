@@ -26,7 +26,7 @@ class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
   static const char kStorageUniqueIdA[];
 
   TestPortableDeviceWatcherWin();
-  virtual ~TestPortableDeviceWatcherWin();
+  ~TestPortableDeviceWatcherWin() override;
 
   // Returns the persistent storage unique id of the device specified by the
   // |pnp_device_id|. |storage_object_id| specifies the string ID that uniquely
@@ -60,10 +60,9 @@ class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
 
  private:
   // PortableDeviceWatcherWin:
-  virtual void EnumerateAttachedDevices() override;
-  virtual void HandleDeviceAttachEvent(
-      const base::string16& pnp_device_id) override;
-  virtual bool GetMTPStorageInfoFromDeviceId(
+  void EnumerateAttachedDevices() override;
+  void HandleDeviceAttachEvent(const base::string16& pnp_device_id) override;
+  bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,
       base::string16* device_location,
       base::string16* storage_object_id) const override;

@@ -39,12 +39,12 @@ namespace storage_monitor {
 class StorageMonitorWinTest : public testing::Test {
  public:
   StorageMonitorWinTest();
-  virtual ~StorageMonitorWinTest();
+  ~StorageMonitorWinTest() override;
 
  protected:
   // testing::Test:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void PreAttachDevices();
 

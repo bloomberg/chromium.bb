@@ -174,60 +174,59 @@ namespace wifi {
 class WiFiServiceImpl : public WiFiService {
  public:
   WiFiServiceImpl();
-  virtual ~WiFiServiceImpl();
+  ~WiFiServiceImpl() override;
 
   // WiFiService interface implementation.
-  virtual void Initialize(
+  void Initialize(
       scoped_refptr<base::SequencedTaskRunner> task_runner) override;
 
-  virtual void UnInitialize() override;
+  void UnInitialize() override;
 
-  virtual void GetProperties(const std::string& network_guid,
-                             base::DictionaryValue* properties,
-                             std::string* error) override;
+  void GetProperties(const std::string& network_guid,
+                     base::DictionaryValue* properties,
+                     std::string* error) override;
 
-  virtual void GetManagedProperties(const std::string& network_guid,
-                                    base::DictionaryValue* managed_properties,
-                                    std::string* error) override;
-
-  virtual void GetState(const std::string& network_guid,
-                        base::DictionaryValue* properties,
-                        std::string* error) override;
-
-  virtual void SetProperties(const std::string& network_guid,
-                             scoped_ptr<base::DictionaryValue> properties,
-                             std::string* error) override;
-
-  virtual void CreateNetwork(bool shared,
-                             scoped_ptr<base::DictionaryValue> properties,
-                             std::string* network_guid,
-                             std::string* error) override;
-
-  virtual void GetVisibleNetworks(const std::string& network_type,
-                                  base::ListValue* network_list,
-                                  bool include_details) override;
-
-  virtual void RequestNetworkScan() override;
-
-  virtual void StartConnect(const std::string& network_guid,
+  void GetManagedProperties(const std::string& network_guid,
+                            base::DictionaryValue* managed_properties,
                             std::string* error) override;
 
-  virtual void StartDisconnect(const std::string& network_guid,
-                               std::string* error) override;
+  void GetState(const std::string& network_guid,
+                base::DictionaryValue* properties,
+                std::string* error) override;
 
-  virtual void GetKeyFromSystem(const std::string& network_guid,
-                                std::string* key_data,
-                                std::string* error) override;
+  void SetProperties(const std::string& network_guid,
+                     scoped_ptr<base::DictionaryValue> properties,
+                     std::string* error) override;
 
-  virtual void SetEventObservers(
+  void CreateNetwork(bool shared,
+                     scoped_ptr<base::DictionaryValue> properties,
+                     std::string* network_guid,
+                     std::string* error) override;
+
+  void GetVisibleNetworks(const std::string& network_type,
+                          base::ListValue* network_list,
+                          bool include_details) override;
+
+  void RequestNetworkScan() override;
+
+  void StartConnect(const std::string& network_guid,
+                    std::string* error) override;
+
+  void StartDisconnect(const std::string& network_guid,
+                       std::string* error) override;
+
+  void GetKeyFromSystem(const std::string& network_guid,
+                        std::string* key_data,
+                        std::string* error) override;
+
+  void SetEventObservers(
       scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
       const NetworkGuidListCallback& networks_changed_observer,
       const NetworkGuidListCallback& network_list_changed_observer) override;
 
-  virtual void RequestConnectedNetworkUpdate() override {}
+  void RequestConnectedNetworkUpdate() override {}
 
-  virtual void GetConnectedNetworkSSID(std::string* ssid,
-                                       std::string* error) override;
+  void GetConnectedNetworkSSID(std::string* ssid, std::string* error) override;
 
  private:
   typedef int32 EncryptionType;

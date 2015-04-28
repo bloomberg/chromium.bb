@@ -57,7 +57,7 @@ class POLICY_EXPORT PolicyLoaderWin
   PolicyLoaderWin(scoped_refptr<base::SequencedTaskRunner> task_runner,
                   const base::string16& chrome_policy_key,
                   AppliedGPOListProvider* gpo_provider);
-  virtual ~PolicyLoaderWin();
+  ~PolicyLoaderWin() override;
 
   // Creates a policy loader that uses the Win API to access GPO.
   static scoped_ptr<PolicyLoaderWin> Create(
@@ -65,8 +65,8 @@ class POLICY_EXPORT PolicyLoaderWin
       const base::string16& chrome_policy_key);
 
   // AsyncPolicyLoader implementation.
-  virtual void InitOnBackgroundThread() override;
-  virtual scoped_ptr<PolicyBundle> Load() override;
+  void InitOnBackgroundThread() override;
+  scoped_ptr<PolicyBundle> Load() override;
 
  private:
   // Reads Chrome Policy from a PReg file at the given path and stores the
@@ -107,7 +107,7 @@ class POLICY_EXPORT PolicyLoaderWin
   void SetupWatches();
 
   // ObjectWatcher::Delegate overrides:
-  virtual void OnObjectSignaled(HANDLE object) override;
+  void OnObjectSignaled(HANDLE object) override;
 
   bool is_initialized_;
   const base::string16 chrome_policy_key_;

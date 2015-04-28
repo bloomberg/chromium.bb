@@ -24,7 +24,7 @@ namespace storage_monitor {
 class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
  public:
   TestVolumeMountWatcherWin();
-  virtual ~TestVolumeMountWatcherWin();
+  ~TestVolumeMountWatcherWin() override;
 
   static bool GetDeviceRemovable(const base::FilePath& device_path,
                                  bool* removable);
@@ -47,11 +47,9 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
   void ReleaseDeviceCheck();
 
   // VolumeMountWatcherWin:
-  virtual void DeviceCheckComplete(const base::FilePath& device_path) override;
-  virtual GetAttachedDevicesCallbackType
-      GetAttachedDevicesCallback() const override;
-  virtual GetDeviceDetailsCallbackType
-      GetDeviceDetailsCallback() const override;
+  void DeviceCheckComplete(const base::FilePath& device_path) override;
+  GetAttachedDevicesCallbackType GetAttachedDevicesCallback() const override;
+  GetDeviceDetailsCallbackType GetDeviceDetailsCallback() const override;
 
  private:
   std::vector<base::FilePath> devices_checked_;

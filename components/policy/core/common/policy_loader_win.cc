@@ -285,19 +285,19 @@ class ScopedDisableWow64Redirection {
 // AppliedGPOListProvider implementation that calls actual Windows APIs.
 class WinGPOListProvider : public AppliedGPOListProvider {
  public:
-  virtual ~WinGPOListProvider() {}
+  ~WinGPOListProvider() override {}
 
   // AppliedGPOListProvider:
-  virtual DWORD GetAppliedGPOList(DWORD flags,
-                                  LPCTSTR machine_name,
-                                  PSID sid_user,
-                                  GUID* extension_guid,
-                                  PGROUP_POLICY_OBJECT* gpo_list) override {
+  DWORD GetAppliedGPOList(DWORD flags,
+                          LPCTSTR machine_name,
+                          PSID sid_user,
+                          GUID* extension_guid,
+                          PGROUP_POLICY_OBJECT* gpo_list) override {
     return ::GetAppliedGPOList(flags, machine_name, sid_user, extension_guid,
                                gpo_list);
   }
 
-  virtual BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) override {
+  BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) override {
     return ::FreeGPOList(gpo_list);
   }
 };

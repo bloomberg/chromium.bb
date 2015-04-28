@@ -40,11 +40,11 @@ class PDFWebContentsHelper
  private:
   PDFWebContentsHelper(content::WebContents* web_contents,
                        scoped_ptr<PDFWebContentsHelperClient> client);
-  virtual ~PDFWebContentsHelper();
+  ~PDFWebContentsHelper() override;
 
   // content::WebContentsObserver overrides:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
-  virtual void DidNavigateMainFrame(
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 

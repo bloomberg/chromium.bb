@@ -63,7 +63,7 @@ class MockBluetoothConnection : public BluetoothConnection {
   MOCK_METHOD2(OnDidSendMessage,
                void(const WireMessage& message, bool success));
 
-  virtual void SetStatus(Status status) override {
+  void SetStatus(Status status) override {
     SetStatusProxy(status);
     BluetoothConnection::SetStatus(status);
   }

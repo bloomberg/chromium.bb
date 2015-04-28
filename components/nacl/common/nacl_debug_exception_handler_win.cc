@@ -23,7 +23,7 @@ class DebugExceptionHandler : public base::PlatformThread::Delegate {
         message_loop_(message_loop),
         on_connected_(on_connected) {}
 
-  virtual void ThreadMain() override {
+  void ThreadMain() override {
     // In the Windows API, the set of processes being debugged is
     // thread-local, so we have to attach to the process (using
     // DebugActiveProcess()) on the same thread on which

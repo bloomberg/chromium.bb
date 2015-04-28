@@ -31,10 +31,10 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
   // will clear the registry data, but not report it.
   WatcherMetricsProviderWin(const base::char16* registry_path,
                             bool report_exit_funnels);
-  ~WatcherMetricsProviderWin();
+  ~WatcherMetricsProviderWin() override;
 
   // metrics::MetricsProvider implementation.
-  virtual void ProvideStabilityMetrics(
+  void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
 
  private:

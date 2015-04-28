@@ -22,8 +22,7 @@ class MockDistillerFactory : public DistillerFactory {
   MockDistillerFactory();
   virtual ~MockDistillerFactory();
   MOCK_METHOD0(CreateDistillerImpl, Distiller*());
-  virtual scoped_ptr<Distiller> CreateDistillerForUrl(
-      const GURL& unused) override {
+  scoped_ptr<Distiller> CreateDistillerForUrl(const GURL& unused) override {
     return scoped_ptr<Distiller>(CreateDistillerImpl());
   }
 };
@@ -38,14 +37,13 @@ class FakeDistiller : public Distiller {
   // "auto-distilling" or calling the provided closure.
   explicit FakeDistiller(bool execute_callback,
                          const base::Closure& distillation_initiated_callback);
-  virtual ~FakeDistiller();
+  ~FakeDistiller() override;
   MOCK_METHOD0(Die, void());
 
-  virtual void DistillPage(
-      const GURL& url,
-      scoped_ptr<DistillerPage> distiller_page,
-      const DistillationFinishedCallback& article_callback,
-      const DistillationUpdateCallback& page_callback) override;
+  void DistillPage(const GURL& url,
+                   scoped_ptr<DistillerPage> distiller_page,
+                   const DistillationFinishedCallback& article_callback,
+                   const DistillationUpdateCallback& page_callback) override;
 
   void RunDistillerCallback(scoped_ptr<DistilledArticleProto> proto);
   void RunDistillerUpdateCallback(const ArticleDistillationUpdate& update);

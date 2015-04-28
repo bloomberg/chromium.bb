@@ -79,7 +79,7 @@ class ExitCodeWatcherTest : public testing::Test {
 
   ExitCodeWatcherTest() : cmd_line_(base::CommandLine::NO_PROGRAM) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     Super::SetUp();
 
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER);

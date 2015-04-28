@@ -106,15 +106,15 @@ template <class T>
 class ImageStoreUnitTestIOS : public PlatformTest {
  protected:
   ImageStoreUnitTestIOS() {}
-  virtual ~ImageStoreUnitTestIOS() {}
+  ~ImageStoreUnitTestIOS() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     bool success = temp_dir_.CreateUniqueTempDir();
     ASSERT_TRUE(success);
     store_.reset(CreateStore<T>(temp_dir_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (store_ && use_persistent_store())
       store_->ClearAll();
   }

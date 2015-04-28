@@ -237,7 +237,7 @@ class MockLogoCache : public LogoCache {
     metadata_.reset(logo ? new LogoMetadata(logo->metadata) : NULL);
   }
 
-  virtual scoped_ptr<EncodedLogo> GetCachedLogo() override {
+  scoped_ptr<EncodedLogo> GetCachedLogo() override {
     OnGetCachedLogo();
     return make_scoped_ptr(logo_ ? new EncodedLogo(*logo_) : NULL);
   }

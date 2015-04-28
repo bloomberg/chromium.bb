@@ -133,15 +133,15 @@ template <class T>
 class ImageStoreUnitTest : public PlatformTest {
  protected:
   ImageStoreUnitTest() {}
-  virtual ~ImageStoreUnitTest() {}
+  ~ImageStoreUnitTest() override {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     bool success = tempDir_.CreateUniqueTempDir();
     ASSERT_TRUE(success);
     store_.reset(CreateStore<T>(tempDir_));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (store_ && use_persistent_store())
       store_->ClearAll();
   }

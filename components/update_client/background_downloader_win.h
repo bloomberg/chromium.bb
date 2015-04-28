@@ -38,11 +38,11 @@ class BackgroundDownloader : public CrxDownloader {
   BackgroundDownloader(scoped_ptr<CrxDownloader> successor,
                        net::URLRequestContextGetter* context_getter,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  virtual ~BackgroundDownloader();
+  ~BackgroundDownloader() override;
 
  private:
   // Overrides for CrxDownloader.
-  virtual void DoStartDownload(const GURL& url) override;
+  void DoStartDownload(const GURL& url) override;
 
   // Called asynchronously on the |task_runner_| at different stages during
   // the download. |OnDownloading| can be called multiple times.

@@ -88,13 +88,13 @@ class ComponentsTestSuite : public base::TestSuite {
 class ComponentsUnitTestEventListener : public testing::EmptyTestEventListener {
  public:
   ComponentsUnitTestEventListener() {}
-  virtual ~ComponentsUnitTestEventListener() {}
+  ~ComponentsUnitTestEventListener() override {}
 
-  virtual void OnTestStart(const testing::TestInfo& test_info) override {
+  void OnTestStart(const testing::TestInfo& test_info) override {
     content_initializer_.reset(new content::TestContentClientInitializer());
   }
 
-  virtual void OnTestEnd(const testing::TestInfo& test_info) override {
+  void OnTestEnd(const testing::TestInfo& test_info) override {
     content_initializer_.reset();
   }
 

@@ -95,13 +95,14 @@ MATCHER_P(DataBundleCheck, n_bundle, "") {
 class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
  public:
   MockSyncChangeProcessor() {}
-  virtual ~MockSyncChangeProcessor() {}
+  ~MockSyncChangeProcessor() override {}
 
   MOCK_METHOD2(ProcessSyncChanges,
                syncer::SyncError(const tracked_objects::Location&,
                                  const syncer::SyncChangeList&));
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
-      const override { return syncer::SyncDataList(); }
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
+    return syncer::SyncDataList();
+  }
 };
 
 class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {

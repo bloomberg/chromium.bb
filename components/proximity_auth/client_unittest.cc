@@ -39,16 +39,16 @@ class MockSecureContext : public SecureContext {
     ON_CALL(*this, GetProtocolVersion())
         .WillByDefault(Return(SecureContext::PROTOCOL_VERSION_THREE_ONE));
   }
-  virtual ~MockSecureContext() {}
+  ~MockSecureContext() override {}
 
   MOCK_CONST_METHOD0(GetReceivedAuthMessage, std::string());
   MOCK_CONST_METHOD0(GetProtocolVersion, ProtocolVersion());
 
-  virtual std::string Encode(const std::string& message) override {
+  std::string Encode(const std::string& message) override {
     return message + kFakeEncodingSuffix;
   }
 
-  virtual std::string Decode(const std::string& encoded_message) override {
+  std::string Decode(const std::string& encoded_message) override {
     EXPECT_THAT(encoded_message, EndsWith(kFakeEncodingSuffix));
     std::string decoded_message = encoded_message;
     decoded_message.erase(decoded_message.rfind(kFakeEncodingSuffix));

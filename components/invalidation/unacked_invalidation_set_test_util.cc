@@ -28,11 +28,11 @@ class UnackedInvalidationSetEqMatcher
   explicit UnackedInvalidationSetEqMatcher(
       const UnackedInvalidationSet& expected);
 
-  virtual bool MatchAndExplain(
+  bool MatchAndExplain(
       const UnackedInvalidationSet& actual,
       MatchResultListener* listener) const override;
-  virtual void DescribeTo(::std::ostream* os) const override;
-  virtual void DescribeNegationTo(::std::ostream* os) const override;
+  void DescribeTo(::std::ostream* os) const override;
+  void DescribeNegationTo(::std::ostream* os) const override;
 
  private:
   const UnackedInvalidationSet expected_;

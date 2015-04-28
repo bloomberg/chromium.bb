@@ -35,15 +35,15 @@ const char kUuid[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEF";
 class MockConnection : public Connection {
  public:
   MockConnection() : Connection(kRemoteDevice) {}
-  virtual ~MockConnection() {}
+  ~MockConnection() override {}
 
   MOCK_METHOD0(Connect, void());
 
   using Connection::SetStatus;
 
  private:
-  void Disconnect() {}
-  void SendMessageImpl(scoped_ptr<WireMessage> message) {}
+  void Disconnect() override {}
+  void SendMessageImpl(scoped_ptr<WireMessage> message) override {}
 
   DISALLOW_COPY_AND_ASSIGN(MockConnection);
 };
@@ -54,7 +54,7 @@ class MockBluetoothConnectionFinder : public BluetoothConnectionFinder {
       : BluetoothConnectionFinder(kRemoteDevice,
                                   device::BluetoothUUID(kUuid),
                                   base::TimeDelta()) {}
-  virtual ~MockBluetoothConnectionFinder() {}
+  ~MockBluetoothConnectionFinder() override {}
 
   MOCK_METHOD0(CreateConnectionProxy, Connection*());
 
@@ -75,7 +75,7 @@ class MockBluetoothConnectionFinder : public BluetoothConnectionFinder {
   using BluetoothConnectionFinder::AdapterPoweredChanged;
 
  protected:
-  virtual scoped_ptr<Connection> CreateConnection() override {
+  scoped_ptr<Connection> CreateConnection() override {
     return make_scoped_ptr(CreateConnectionProxy());
   }
 

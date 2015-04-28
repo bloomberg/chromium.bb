@@ -25,9 +25,9 @@ class NaClBrokerSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
   NaClBrokerSandboxedProcessLauncherDelegate() {}
-  virtual ~NaClBrokerSandboxedProcessLauncherDelegate() {}
+  ~NaClBrokerSandboxedProcessLauncherDelegate() override {}
 
-  virtual bool ShouldSandbox() override {
+  bool ShouldSandbox() override {
     return false;
   }
 

@@ -100,7 +100,7 @@ class ChangePolicyObserver : public PolicyService::Observer {
 class PolicyServiceTest : public testing::Test {
  public:
   PolicyServiceTest() {}
-  virtual void SetUp() override {
+  void SetUp() override {
     EXPECT_CALL(provider0_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     EXPECT_CALL(provider1_, IsInitializationComplete(_))
@@ -126,7 +126,7 @@ class PolicyServiceTest : public testing::Test {
     policy_service_.reset(new PolicyServiceImpl(providers));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     provider0_.Shutdown();
     provider1_.Shutdown();
     provider2_.Shutdown();

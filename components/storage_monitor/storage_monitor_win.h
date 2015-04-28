@@ -29,20 +29,20 @@ class StorageMonitorWin : public StorageMonitor {
   // unit tests or in StorageMonitorWin CreateInternal() function.
   StorageMonitorWin(VolumeMountWatcherWin* volume_mount_watcher,
                     PortableDeviceWatcherWin* portable_device_watcher);
-  virtual ~StorageMonitorWin();
+  ~StorageMonitorWin() override;
 
   // Must be called after the file thread is created.
-  virtual void Init() override;
+  void Init() override;
 
   // StorageMonitor:
-  virtual bool GetStorageInfoForPath(const base::FilePath& path,
-                                     StorageInfo* device_info) const override;
-  virtual bool GetMTPStorageInfoFromDeviceId(
+  bool GetStorageInfoForPath(const base::FilePath& path,
+                             StorageInfo* device_info) const override;
+  bool GetMTPStorageInfoFromDeviceId(
       const std::string& storage_device_id,
       base::string16* device_location,
       base::string16* storage_object_id) const override;
 
-  virtual void EjectDevice(
+  void EjectDevice(
       const std::string& device_id,
       base::Callback<void(EjectStatus)> callback) override;
 
