@@ -239,10 +239,10 @@ class GaiaCookieManagerService : public KeyedService,
   scoped_ptr<UbertokenFetcher> uber_token_fetcher_;
   ExternalCcResultFetcher external_cc_result_fetcher_;
 
-  // If the GaiaAuthFetcher fails, retry with exponential backoff.
-  net::BackoffEntry gaia_auth_fetcher_backoff_;
-  base::OneShotTimer<GaiaCookieManagerService> gaia_auth_fetcher_timer_;
-  int gaia_auth_fetcher_retries_;
+  // If the GaiaAuthFetcher or URLFetcher fails, retry with exponential backoff.
+  net::BackoffEntry fetcher_backoff_;
+  base::OneShotTimer<GaiaCookieManagerService> fetcher_timer_;
+  int fetcher_retries_;
 
   // The last fetched ubertoken, for use in MergeSession retries.
   std::string uber_token_;
