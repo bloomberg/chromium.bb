@@ -66,11 +66,7 @@ static Length parseHTMLAreaCoordinate(const CharType* data, unsigned length)
     unsigned doubleLength;
     splitLength(data, length, intLength, doubleLength);
 
-    bool ok;
-    int r = charactersToIntStrict(data, intLength, &ok);
-    if (ok)
-        return Length(r, Fixed);
-    return Length(0, Fixed);
+    return Length(charactersToIntStrict(data, intLength), Fixed);
 }
 
 // FIXME: Per HTML5, this should follow the "rules for parsing a list of integers".
