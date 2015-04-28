@@ -463,6 +463,7 @@
         'containers/hash_tables_unittest.cc',
         'containers/linked_list_unittest.cc',
         'containers/mru_cache_unittest.cc',
+        'containers/scoped_ptr_hash_map_unittest.cc',
         'containers/small_map_unittest.cc',
         'containers/stack_container_unittest.cc',
         'cpu_unittest.cc',

@@ -153,11 +153,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
         RenderPassTextureSize(render_passes_in_draw_order[i])));
 
   std::vector<RenderPassId> passes_to_delete;
-  base::ScopedPtrHashMap<RenderPassId, ScopedResource>::const_iterator
-      pass_iter;
-  for (pass_iter = render_pass_textures_.begin();
-       pass_iter != render_pass_textures_.end();
-       ++pass_iter) {
+  for (auto pass_iter = render_pass_textures_.begin();
+       pass_iter != render_pass_textures_.end(); ++pass_iter) {
     base::hash_map<RenderPassId, gfx::Size>::const_iterator it =
         render_passes_in_frame.find(pass_iter->first);
     if (it == render_passes_in_frame.end()) {

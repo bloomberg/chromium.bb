@@ -106,7 +106,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   }
 
  private:
-  typedef base::ScopedPtrHashMap<int, GpuChannel> GpuChannelMap;
+  typedef base::ScopedPtrHashMap<int, scoped_ptr<GpuChannel>> GpuChannelMap;
 
   // Message handlers.
   void OnEstablishChannel(int client_id,

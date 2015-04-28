@@ -69,7 +69,7 @@ class CC_EXPORT LayerTilingData {
     DISALLOW_COPY_AND_ASSIGN(Tile);
   };
   typedef std::pair<int, int> TileMapKey;
-  typedef base::ScopedPtrHashMap<TileMapKey, Tile> TileMap;
+  typedef base::ScopedPtrHashMap<TileMapKey, scoped_ptr<Tile>> TileMap;
 
   void AddTile(scoped_ptr<Tile> tile, int i, int j);
   scoped_ptr<Tile> TakeTile(int i, int j);

@@ -94,7 +94,7 @@ class MediaStreamCaptureIndicator
   // A map that contains the usage counts of the opened capture devices for each
   // WebContents instance.
   base::ScopedPtrHashMap<content::WebContents*,
-                         WebContentsDeviceUsage> usage_map_;
+                         scoped_ptr<WebContentsDeviceUsage>> usage_map_;
 
   // A vector which maps command IDs to their associated WebContents
   // instance. This is rebuilt each time the status tray icon context menu is

@@ -71,7 +71,9 @@ class WUG_EXPORT View {
 
   bool ready() const { return ready_; }
 
-  base::ScopedPtrHashMap<std::string, View>& children() { return children_; }
+  base::ScopedPtrHashMap<std::string, scoped_ptr<View>>& children() {
+    return children_;
+  }
 
   // Adds |child| to the list of children of |this|. Can be called only from
   // CreateAndAddChildren() override.
@@ -104,7 +106,7 @@ class WUG_EXPORT View {
 
   bool view_model_ready_;
   bool ready_;
-  base::ScopedPtrHashMap<std::string, View> children_;
+  base::ScopedPtrHashMap<std::string, scoped_ptr<View>> children_;
   scoped_ptr<ViewModel> view_model_;
   base::WeakPtrFactory<View> weak_factory_;
 

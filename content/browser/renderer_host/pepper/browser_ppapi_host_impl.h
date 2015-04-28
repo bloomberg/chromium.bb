@@ -155,7 +155,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   scoped_refptr<SSLContextHelper> ssl_context_helper_;
 
   // Tracks all PP_Instances in this plugin and associated data.
-  base::ScopedPtrHashMap<PP_Instance, InstanceData> instance_map_;
+  base::ScopedPtrHashMap<PP_Instance, scoped_ptr<InstanceData>> instance_map_;
 
   scoped_refptr<HostMessageFilter> message_filter_;
 

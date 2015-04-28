@@ -58,7 +58,8 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
 
  private:
   // Map from RenderFrameHost* to BrowserMediaPlayerManager.
-  typedef base::ScopedPtrHashMap<uintptr_t, BrowserMediaPlayerManager>
+  typedef base::ScopedPtrHashMap<uintptr_t,
+                                 scoped_ptr<BrowserMediaPlayerManager>>
       MediaPlayerManagerMap;
   MediaPlayerManagerMap media_player_managers_;
 #endif  // defined(OS_ANDROID)

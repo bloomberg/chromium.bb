@@ -69,7 +69,7 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
   Reporter* GetReporter(const blink::WebString& key_system);
 
   // Reporter singletons.
-  base::ScopedPtrHashMap<std::string, Reporter> reporters_;
+  base::ScopedPtrHashMap<std::string, scoped_ptr<Reporter>> reporters_;
 
   CdmFactory* cdm_factory_;
   KeySystemConfigSelector key_system_config_selector_;

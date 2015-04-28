@@ -41,7 +41,7 @@ class Sampler {
   std::map<std::string, int> sample_counts_;
 
   // Stores a Sample for each metric, by metric name.
-  base::ScopedPtrHashMap<std::string, Sample> samples_;
+  base::ScopedPtrHashMap<std::string, scoped_ptr<Sample>> samples_;
 
   DISALLOW_COPY_AND_ASSIGN(Sampler);
 };

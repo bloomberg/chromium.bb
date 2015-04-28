@@ -160,7 +160,7 @@ class CommandBufferProxyImpl
  private:
   typedef std::map<int32, scoped_refptr<gpu::Buffer> > TransferBufferMap;
   typedef base::hash_map<uint32, base::Closure> SignalTaskMap;
-  typedef base::ScopedPtrHashMap<int32, gfx::GpuMemoryBuffer>
+  typedef base::ScopedPtrHashMap<int32, scoped_ptr<gfx::GpuMemoryBuffer>>
       GpuMemoryBufferMap;
 
   void CheckLock() {

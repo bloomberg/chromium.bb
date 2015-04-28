@@ -79,7 +79,8 @@ class AttachmentDownloaderImpl : public AttachmentDownloader,
 
   struct DownloadState;
   typedef std::string AttachmentUrl;
-  typedef base::ScopedPtrHashMap<AttachmentUrl, DownloadState> StateMap;
+  typedef base::ScopedPtrHashMap<AttachmentUrl, scoped_ptr<DownloadState>>
+      StateMap;
   typedef std::vector<DownloadState*> StateList;
 
   scoped_ptr<net::URLFetcher> CreateFetcher(const AttachmentUrl& url,

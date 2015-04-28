@@ -99,7 +99,8 @@ class TabContentManager : public ThumbnailCacheObserver {
   class TabReadbackRequest;
   typedef base::hash_map<int, scoped_refptr<cc::Layer>> LayerMap;
   typedef base::hash_map<int, scoped_refptr<ThumbnailLayer>> ThumbnailLayerMap;
-  typedef base::ScopedPtrHashMap<int, TabReadbackRequest> TabReadbackRequestMap;
+  typedef base::ScopedPtrHashMap<int, scoped_ptr<TabReadbackRequest>>
+      TabReadbackRequestMap;
 
   void PutThumbnailIntoCache(int tab_id,
                              float thumbnail_scale,

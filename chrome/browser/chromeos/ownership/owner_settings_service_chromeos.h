@@ -178,7 +178,7 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   bool has_pending_fixups_;
 
   // A set of pending changes to device settings.
-  base::ScopedPtrHashMap<std::string, base::Value> pending_changes_;
+  base::ScopedPtrHashMap<std::string, scoped_ptr<base::Value>> pending_changes_;
 
   // True if there're pending changes to management settings.
   bool has_pending_management_settings_;

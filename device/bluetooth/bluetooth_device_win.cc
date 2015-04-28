@@ -89,8 +89,8 @@ bool BluetoothDeviceWin::IsEqual(
 
   // Checks service collection
   typedef std::set<BluetoothUUID> UUIDSet;
-  typedef base::ScopedPtrHashMap<std::string, BluetoothServiceRecordWin>
-      ServiceRecordMap;
+  typedef base::ScopedPtrHashMap<
+      std::string, scoped_ptr<BluetoothServiceRecordWin>> ServiceRecordMap;
 
   UUIDSet known_services;
   for (UUIDList::const_iterator iter = uuids_.begin(); iter != uuids_.end();

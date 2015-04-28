@@ -94,7 +94,8 @@ class InputHandlerManager {
       const cc::InputHandlerScrollResult& scroll_result);
 
   typedef base::ScopedPtrHashMap<int,  // routing_id
-                                 InputHandlerWrapper> InputHandlerMap;
+                                 scoped_ptr<InputHandlerWrapper>>
+      InputHandlerMap;
   InputHandlerMap input_handlers_;
 
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;

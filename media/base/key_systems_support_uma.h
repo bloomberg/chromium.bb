@@ -48,7 +48,7 @@ class KeySystemsSupportUMA {
   Reporter* GetReporter(const std::string& key_system);
 
   // Key system <-> Reporter map.
-  typedef base::ScopedPtrHashMap<std::string, Reporter> Reporters;
+  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<Reporter>> Reporters;
   Reporters reporters_;
 };
 

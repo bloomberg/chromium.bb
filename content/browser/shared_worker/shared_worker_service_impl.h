@@ -109,9 +109,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   typedef bool (*TryIncrementWorkerRefCountFunc)(bool);
   // Pair of render_process_id and worker_route_id.
   typedef std::pair<int, int> ProcessRouteIdPair;
-  typedef base::ScopedPtrHashMap<ProcessRouteIdPair, SharedWorkerHost>
-      WorkerHostMap;
-  typedef base::ScopedPtrHashMap<int, SharedWorkerPendingInstance>
+  typedef base::ScopedPtrHashMap<ProcessRouteIdPair,
+                                 scoped_ptr<SharedWorkerHost>> WorkerHostMap;
+  typedef base::ScopedPtrHashMap<int, scoped_ptr<SharedWorkerPendingInstance>>
       PendingInstaneMap;
 
   SharedWorkerServiceImpl();

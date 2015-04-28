@@ -113,8 +113,8 @@ class ExtensionEventObserver : public content::NotificationObserver,
   void MaybeReportSuspendReadiness();
 
   struct KeepaliveSources;
-  base::ScopedPtrHashMap<const extensions::ExtensionHost*, KeepaliveSources>
-      keepalive_sources_;
+  base::ScopedPtrHashMap<const extensions::ExtensionHost*,
+                         scoped_ptr<KeepaliveSources>> keepalive_sources_;
 
   std::set<Profile*> active_profiles_;
 

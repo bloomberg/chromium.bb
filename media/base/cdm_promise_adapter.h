@@ -42,7 +42,7 @@ class MEDIA_EXPORT CdmPromiseAdapter {
 
  private:
   // A map between promise IDs and CdmPromises. It owns the CdmPromises.
-  typedef base::ScopedPtrHashMap<uint32_t, CdmPromise> PromiseMap;
+  typedef base::ScopedPtrHashMap<uint32_t, scoped_ptr<CdmPromise>> PromiseMap;
 
   // Finds, takes the ownership of and returns the promise for |promise_id|.
   // Returns null if no promise can be found.

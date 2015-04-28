@@ -112,8 +112,9 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   // Mapping table from a device id to its property data.
   // GestureDevicePropertyData contains both properties in use and default
   // properties whose values will be applied upon the device attachment.
-  typedef base::ScopedPtrHashMap<DeviceId, internal::GestureDevicePropertyData>
-      ScopedDeviceDataMap;
+  typedef base::ScopedPtrHashMap<
+      DeviceId,
+      scoped_ptr<internal::GestureDevicePropertyData>> ScopedDeviceDataMap;
 
   // Register a device. Setup data-structures and the device's default
   // properties.

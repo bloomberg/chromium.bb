@@ -129,9 +129,11 @@ class ExtensionManagement : public KeyedService {
                            std::string* required_version) const;
 
  private:
-  typedef base::ScopedPtrHashMap<ExtensionId, internal::IndividualSettings>
+  typedef base::ScopedPtrHashMap<ExtensionId,
+                                 scoped_ptr<internal::IndividualSettings>>
       SettingsIdMap;
-  typedef base::ScopedPtrHashMap<std::string, internal::IndividualSettings>
+  typedef base::ScopedPtrHashMap<std::string,
+                                 scoped_ptr<internal::IndividualSettings>>
       SettingsUpdateUrlMap;
   friend class ExtensionManagementServiceTest;
 

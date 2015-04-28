@@ -80,7 +80,7 @@ class PPAPI_PROXY_EXPORT InterfaceList {
   // Give friendship for HashInterfaceName.
   friend class InterfaceInfo;
 
-  typedef base::ScopedPtrHashMap<std::string, InterfaceInfo>
+  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<InterfaceInfo>>
       NameToInterfaceInfoMap;
 
   void AddProxy(ApiID id, InterfaceProxy::Factory factory);

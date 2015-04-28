@@ -118,7 +118,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
 
   // A map of paths to TrackedPreferences; this map owns this individual
   // TrackedPreference objects.
-  typedef base::ScopedPtrHashMap<std::string, TrackedPreference>
+  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<TrackedPreference>>
       TrackedPreferencesMap;
   // A map from changed paths to their corresponding TrackedPreferences (which
   // aren't owned by this map).

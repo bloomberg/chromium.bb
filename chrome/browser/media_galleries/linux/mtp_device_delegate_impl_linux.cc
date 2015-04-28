@@ -395,7 +395,8 @@ class MTPDeviceDelegateImplLinux::MTPFileNode {
 
  private:
   // Container for holding a node's children.
-  typedef base::ScopedPtrHashMap<std::string, MTPFileNode> ChildNodes;
+  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<MTPFileNode>>
+      ChildNodes;
 
   const uint32 file_id_;
   const std::string file_name_;

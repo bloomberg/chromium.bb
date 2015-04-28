@@ -136,7 +136,7 @@ class AffiliationBackend : public FacetManagerHost,
 
   // Contains a FacetManager for each facet URI that need ongoing attention. To
   // save memory, managers are discarded as soon as they become redundant.
-  base::ScopedPtrHashMap<FacetURI, FacetManager> facet_managers_;
+  base::ScopedPtrHashMap<FacetURI, scoped_ptr<FacetManager>> facet_managers_;
 
   base::WeakPtrFactory<AffiliationBackend> weak_ptr_factory_;
 

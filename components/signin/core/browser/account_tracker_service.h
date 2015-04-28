@@ -176,7 +176,7 @@ class AccountTrackerService : public KeyedService,
   std::list<std::string> pending_user_info_fetches_;
 
   // Holds references to refresh token annotation requests keyed by account_id.
-  base::ScopedPtrHashMap<std::string, RefreshTokenAnnotationRequest>
+  base::ScopedPtrHashMap<std::string, scoped_ptr<RefreshTokenAnnotationRequest>>
       refresh_token_annotation_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountTrackerService);

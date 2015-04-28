@@ -95,8 +95,9 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   std::vector<std::string> GetAllMetadataIDs() const override;
 
  private:
-  typedef base::ScopedPtrHashMap<std::string, FileMetadata> MetadataByID;
-  typedef base::ScopedPtrHashMap<int64, FileTracker> TrackerByID;
+  typedef base::ScopedPtrHashMap<std::string, scoped_ptr<FileMetadata>>
+      MetadataByID;
+  typedef base::ScopedPtrHashMap<int64, scoped_ptr<FileTracker>> TrackerByID;
   typedef base::hash_map<std::string, TrackerIDSet> TrackerIDsByFileID;
   typedef base::hash_map<std::string, TrackerIDSet> TrackerIDsByTitle;
   typedef std::map<int64, TrackerIDsByTitle> TrackerIDsByParentAndTitle;

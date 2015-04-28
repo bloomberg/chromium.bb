@@ -210,7 +210,8 @@ class LowLevelHookHandler {
   // executed on same thread that registered the hook and there is only one
   // thread
   // that execute all view code in browser.
-  base::ScopedPtrHashMap<HWND, KeyboardInterceptRegistration> registrations_;
+  base::ScopedPtrHashMap<HWND, scoped_ptr<KeyboardInterceptRegistration>>
+      registrations_;
 
   DISALLOW_COPY_AND_ASSIGN(LowLevelHookHandler);
 };

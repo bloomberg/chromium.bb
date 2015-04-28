@@ -50,7 +50,8 @@ class ServiceWorkerContextWatcher
 
   void StoreRegistrationInfo(
       const ServiceWorkerRegistrationInfo& registration,
-      base::ScopedPtrHashMap<int64, ServiceWorkerRegistrationInfo>* info_map);
+      base::ScopedPtrHashMap<int64, scoped_ptr<ServiceWorkerRegistrationInfo>>*
+          info_map);
   void StoreVersionInfo(const ServiceWorkerVersionInfo& version);
 
   void SendRegistrationInfo(
@@ -88,7 +89,8 @@ class ServiceWorkerContextWatcher
   void OnRegistrationDeleted(int64 registration_id,
                              const GURL& pattern) override;
 
-  base::ScopedPtrHashMap<int64, ServiceWorkerVersionInfo> version_info_map_;
+  base::ScopedPtrHashMap<int64, scoped_ptr<ServiceWorkerVersionInfo>>
+      version_info_map_;
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   WorkerRegistrationUpdatedCallback registration_callback_;
   WorkerVersionUpdatedCallback version_callback_;

@@ -81,7 +81,7 @@ class OZONE_EXPORT ScreenManager {
  private:
   typedef ScopedVector<HardwareDisplayController> HardwareDisplayControllers;
 
-  typedef base::ScopedPtrHashMap<gfx::AcceleratedWidget, DrmWindow>
+  typedef base::ScopedPtrHashMap<gfx::AcceleratedWidget, scoped_ptr<DrmWindow>>
       WidgetToWindowMap;
 
   // Returns an iterator into |controllers_| for the controller identified by

@@ -112,7 +112,8 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
   class SessionIdDecryptionKeyMap;
 
   // Key ID <-> SessionIdDecryptionKeyMap map.
-  typedef base::ScopedPtrHashMap<std::string, SessionIdDecryptionKeyMap>
+  typedef base::ScopedPtrHashMap<std::string,
+                                 scoped_ptr<SessionIdDecryptionKeyMap>>
       KeyIdToSessionKeysMap;
 
   // Creates a DecryptionKey using |key_string| and associates it with |key_id|.

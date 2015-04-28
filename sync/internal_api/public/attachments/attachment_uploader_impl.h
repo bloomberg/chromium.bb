@@ -77,7 +77,7 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
  private:
   class UploadState;
   typedef std::string UniqueId;
-  typedef base::ScopedPtrHashMap<UniqueId, UploadState> StateMap;
+  typedef base::ScopedPtrHashMap<UniqueId, scoped_ptr<UploadState>> StateMap;
 
   void OnUploadStateStopped(const UniqueId& unique_id);
 

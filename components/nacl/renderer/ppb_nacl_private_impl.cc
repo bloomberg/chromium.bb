@@ -128,7 +128,8 @@ class NaClPluginInstance {
   uint64_t pexe_size;
 };
 
-typedef base::ScopedPtrHashMap<PP_Instance, NaClPluginInstance> InstanceMap;
+typedef base::ScopedPtrHashMap<PP_Instance, scoped_ptr<NaClPluginInstance>>
+    InstanceMap;
 base::LazyInstance<InstanceMap> g_instance_map = LAZY_INSTANCE_INITIALIZER;
 
 NaClPluginInstance* GetNaClPluginInstance(PP_Instance instance) {

@@ -176,7 +176,7 @@ class SyncTaskManager {
 
   // Owns running backgrounded SyncTask to cancel the task on SyncTaskManager
   // deletion.
-  base::ScopedPtrHashMap<int64, SyncTask> running_background_tasks_;
+  base::ScopedPtrHashMap<int64, scoped_ptr<SyncTask>> running_background_tasks_;
 
   size_t maximum_background_task_;
 

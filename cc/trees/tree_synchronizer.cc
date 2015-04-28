@@ -19,7 +19,8 @@
 
 namespace cc {
 
-typedef base::ScopedPtrHashMap<int, LayerImpl> ScopedPtrLayerImplMap;
+typedef base::ScopedPtrHashMap<int, scoped_ptr<LayerImpl>>
+    ScopedPtrLayerImplMap;
 typedef base::hash_map<int, LayerImpl*> RawPtrLayerImplMap;
 
 void CollectExistingLayerImplRecursive(ScopedPtrLayerImplMap* old_layers,

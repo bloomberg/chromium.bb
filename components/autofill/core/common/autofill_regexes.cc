@@ -27,7 +27,8 @@ class AutofillRegexes {
   friend struct DefaultSingletonTraits<AutofillRegexes>;
 
   // Maps patterns to their corresponding regex matchers.
-  base::ScopedPtrHashMap<base::string16, icu::RegexMatcher> matchers_;
+  base::ScopedPtrHashMap<base::string16, scoped_ptr<icu::RegexMatcher>>
+      matchers_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillRegexes);
 };

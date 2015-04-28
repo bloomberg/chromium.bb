@@ -26,7 +26,8 @@
 
 namespace em = enterprise_management;
 
-typedef base::ScopedPtrHashMap<policy::PolicyNamespace, em::PolicyFetchResponse>
+typedef base::ScopedPtrHashMap<policy::PolicyNamespace,
+                               scoped_ptr<em::PolicyFetchResponse>>
     ScopedResponseMap;
 
 namespace policy {

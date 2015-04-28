@@ -88,10 +88,12 @@ class TokenHandleUtil {
   user_manager::UserManager* user_manager_;
 
   // Map of pending check operations.
-  base::ScopedPtrHashMap<std::string, TokenDelegate> validation_delegates_;
+  base::ScopedPtrHashMap<std::string, scoped_ptr<TokenDelegate>>
+      validation_delegates_;
 
   // Map of pending obtain operations.
-  base::ScopedPtrHashMap<user_manager::UserID, TokenDelegate> obtain_delegates_;
+  base::ScopedPtrHashMap<user_manager::UserID, scoped_ptr<TokenDelegate>>
+      obtain_delegates_;
 
   // Instance of GAIA Client.
   scoped_ptr<gaia::GaiaOAuthClient> gaia_client_;

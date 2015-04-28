@@ -16,12 +16,12 @@
 
 namespace base {
 
-// This type acts like a hash_map<K, scoped_ptr<V> >, based on top of
+// This type acts like a hash_map<K, scoped_ptr<V, D> >, based on top of
 // base::hash_map. The ScopedPtrHashMap has ownership of all values in the data
 // structure.
-template <typename Key, typename Value>
+template <typename Key, typename ScopedPtr>
 class ScopedPtrHashMap {
-  typedef base::hash_map<Key, Value*> Container;
+  typedef base::hash_map<Key, typename ScopedPtr::element_type*> Container;
 
  public:
   typedef typename Container::key_type key_type;
@@ -34,15 +34,17 @@ class ScopedPtrHashMap {
 
   ~ScopedPtrHashMap() { clear(); }
 
-  void swap(ScopedPtrHashMap<Key, Value>& other) {
+  void swap(ScopedPtrHashMap<Key, ScopedPtr>& other) {
     data_.swap(other.data_);
   }
 
   // Replaces value but not key if key is already present.
-  iterator set(const Key& key, scoped_ptr<Value> data) {
+  iterator set(const Key& key, ScopedPtr data) {
     iterator it = find(key);
     if (it != end()) {
-      delete it->second;
+      // Let ScopedPtr decide how to delete. For example, it may use custom
+      // deleter.
+      ScopedPtr(it->second).reset();
       it->second = data.release();
       return it;
     }
@@ -51,7 +53,7 @@ class ScopedPtrHashMap {
   }
 
   // Does nothing if key is already present
-  std::pair<iterator, bool> add(const Key& key, scoped_ptr<Value> data) {
+  std::pair<iterator, bool> add(const Key& key, ScopedPtr data) {
     std::pair<iterator, bool> result =
         data_.insert(std::make_pair(key, data.get()));
     if (result.second)
@@ -60,7 +62,8 @@ class ScopedPtrHashMap {
   }
 
   void erase(iterator it) {
-    delete it->second;
+    // Let ScopedPtr decide how to delete.
+    ScopedPtr(it->second).reset();
     data_.erase(it);
   }
 
@@ -72,45 +75,45 @@ class ScopedPtrHashMap {
     return 1;
   }
 
-  scoped_ptr<Value> take(iterator it) {
+  ScopedPtr take(iterator it) {
     DCHECK(it != data_.end());
     if (it == data_.end())
-      return scoped_ptr<Value>();
+      return ScopedPtr();
 
-    scoped_ptr<Value> ret(it->second);
+    ScopedPtr ret(it->second);
     it->second = NULL;
     return ret.Pass();
   }
 
-  scoped_ptr<Value> take(const Key& k) {
+  ScopedPtr take(const Key& k) {
     iterator it = find(k);
     if (it == data_.end())
-      return scoped_ptr<Value>();
+      return ScopedPtr();
 
     return take(it);
   }
 
-  scoped_ptr<Value> take_and_erase(iterator it) {
+  ScopedPtr take_and_erase(iterator it) {
     DCHECK(it != data_.end());
     if (it == data_.end())
-      return scoped_ptr<Value>();
+      return ScopedPtr();
 
-    scoped_ptr<Value> ret(it->second);
+    ScopedPtr ret(it->second);
     data_.erase(it);
     return ret.Pass();
   }
 
-  scoped_ptr<Value> take_and_erase(const Key& k) {
+  ScopedPtr take_and_erase(const Key& k) {
     iterator it = find(k);
     if (it == data_.end())
-      return scoped_ptr<Value>();
+      return ScopedPtr();
 
     return take_and_erase(it);
   }
 
   // Returns the element in the hash_map that matches the given key.
   // If no such element exists it returns NULL.
-  Value* get(const Key& k) const {
+  typename ScopedPtr::element_type* get(const Key& k) const {
     const_iterator it = find(k);
     if (it == end())
       return NULL;
@@ -119,7 +122,19 @@ class ScopedPtrHashMap {
 
   inline bool contains(const Key& k) const { return data_.count(k) > 0; }
 
-  inline void clear() { STLDeleteValues(&data_); }
+  inline void clear() {
+    auto it = data_.begin();
+    while (it != data_.end()) {
+      // NOTE: Like STLDeleteContainerPointers, deleting behind the iterator.
+      // Deleting the value does not always invalidate the iterator, but it may
+      // do so if the key is a pointer into the value object.
+      auto temp = it;
+      ++it;
+      // Let ScopedPtr decide how to delete.
+      ScopedPtr(temp->second).reset();
+    }
+    data_.clear();
+  }
 
   inline const_iterator find(const Key& k) const { return data_.find(k); }
   inline iterator find(const Key& k) { return data_.find(k); }

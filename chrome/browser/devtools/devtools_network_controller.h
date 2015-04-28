@@ -50,7 +50,8 @@ class DevToolsNetworkController {
   typedef scoped_ptr<DevToolsNetworkInterceptor> Interceptor;
   Interceptor default_interceptor_;
   Interceptor appcache_interceptor_;
-  typedef base::ScopedPtrHashMap<std::string, DevToolsNetworkInterceptor>
+  typedef base::ScopedPtrHashMap<std::string,
+                                 scoped_ptr<DevToolsNetworkInterceptor>>
       Interceptors;
   Interceptors interceptors_;
 

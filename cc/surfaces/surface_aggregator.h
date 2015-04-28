@@ -88,7 +88,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   ResourceProvider* provider_;
 
   class RenderPassIdAllocator;
-  typedef base::ScopedPtrHashMap<SurfaceId, RenderPassIdAllocator>
+  typedef base::ScopedPtrHashMap<SurfaceId, scoped_ptr<RenderPassIdAllocator>>
       RenderPassIdAllocatorMap;
   RenderPassIdAllocatorMap render_pass_allocator_map_;
   int next_render_pass_id_;

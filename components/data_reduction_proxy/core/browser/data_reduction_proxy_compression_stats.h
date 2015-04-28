@@ -81,7 +81,7 @@ class DataReductionProxyCompressionStats {
   friend class DataReductionProxyCompressionStatsTest;
 
   typedef std::map<const char*, int64> DataReductionProxyPrefMap;
-  typedef base::ScopedPtrHashMap<const char*, base::ListValue>
+  typedef base::ScopedPtrHashMap<const char*, scoped_ptr<base::ListValue>>
       DataReductionProxyListPrefMap;
 
   // Loads all data_reduction_proxy::prefs into the |pref_map_| and

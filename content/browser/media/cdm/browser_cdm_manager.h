@@ -179,7 +179,7 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   // |cdm_id|.
 
   // Map of managed BrowserCdms.
-  typedef base::ScopedPtrHashMap<uint64, media::BrowserCdm> CdmMap;
+  typedef base::ScopedPtrHashMap<uint64, scoped_ptr<media::BrowserCdm>> CdmMap;
   CdmMap cdm_map_;
 
   // Map of CDM's security origin.

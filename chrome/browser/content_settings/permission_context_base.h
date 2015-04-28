@@ -130,7 +130,7 @@ class PermissionContextBase : public KeyedService {
   Profile* profile_;
   const ContentSettingsType permission_type_;
   scoped_ptr<PermissionQueueController> permission_queue_controller_;
-  base::ScopedPtrHashMap<std::string, PermissionBubbleRequest>
+  base::ScopedPtrHashMap<std::string, scoped_ptr<PermissionBubbleRequest>>
       pending_bubbles_;
 
   // Must be the last member, to ensure that it will be

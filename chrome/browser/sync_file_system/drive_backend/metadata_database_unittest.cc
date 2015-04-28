@@ -103,8 +103,9 @@ void ExpectEquivalent(const base::hash_map<Key, Value>& left,
 }
 
 template <typename Key, typename Value>
-void ExpectEquivalent(const base::ScopedPtrHashMap<Key, Value>& left,
-                      const base::ScopedPtrHashMap<Key, Value>& right) {
+void ExpectEquivalent(
+    const base::ScopedPtrHashMap<Key, scoped_ptr<Value>>& left,
+    const base::ScopedPtrHashMap<Key, scoped_ptr<Value>>& right) {
   ExpectEquivalentMaps(std::map<Key, Value*>(left.begin(), left.end()),
                        std::map<Key, Value*>(right.begin(), right.end()));
 }

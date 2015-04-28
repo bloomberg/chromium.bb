@@ -425,7 +425,7 @@ class TestWebGraphicsContext3D {
     unsigned next_image_id;
     unsigned next_texture_id;
     unsigned next_renderbuffer_id;
-    base::ScopedPtrHashMap<unsigned, Buffer> buffers;
+    base::ScopedPtrHashMap<unsigned, scoped_ptr<Buffer>> buffers;
     base::hash_set<unsigned> images;
     OrderedTextureMap textures;
     base::hash_set<unsigned> renderbuffer_set;

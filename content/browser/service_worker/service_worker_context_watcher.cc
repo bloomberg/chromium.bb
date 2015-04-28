@@ -63,7 +63,7 @@ void ServiceWorkerContextWatcher::OnStoredRegistrationsOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_->AddObserver(this);
 
-  base::ScopedPtrHashMap<int64, ServiceWorkerRegistrationInfo>
+  base::ScopedPtrHashMap<int64, scoped_ptr<ServiceWorkerRegistrationInfo>>
       registration_info_map;
   for (const auto& registration : stored_registrations)
     StoreRegistrationInfo(registration, &registration_info_map);
@@ -105,7 +105,8 @@ ServiceWorkerContextWatcher::~ServiceWorkerContextWatcher() {
 
 void ServiceWorkerContextWatcher::StoreRegistrationInfo(
     const ServiceWorkerRegistrationInfo& registration_info,
-    base::ScopedPtrHashMap<int64, ServiceWorkerRegistrationInfo>* info_map) {
+    base::ScopedPtrHashMap<int64, scoped_ptr<ServiceWorkerRegistrationInfo>>*
+        info_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (registration_info.registration_id == kInvalidServiceWorkerRegistrationId)
     return;

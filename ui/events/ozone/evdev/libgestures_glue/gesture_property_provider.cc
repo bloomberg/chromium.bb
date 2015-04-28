@@ -608,7 +608,8 @@ namespace internal {
 // Mapping table from a property name to its corresponding GesturesProp
 // object pointer.
 typedef base::hash_map<std::string, GesturesProp*> PropertiesMap;
-typedef base::ScopedPtrHashMap<std::string, GesturesProp> ScopedPropertiesMap;
+typedef base::ScopedPtrHashMap<std::string, scoped_ptr<GesturesProp>>
+    ScopedPropertiesMap;
 
 // Struct holding properties of a device.
 //

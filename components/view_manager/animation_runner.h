@@ -86,7 +86,7 @@ class AnimationRunner {
   };
 
   using ViewToAnimationMap =
-      base::ScopedPtrHashMap<ServerView*, ScheduledAnimationGroup>;
+      base::ScopedPtrHashMap<ServerView*, scoped_ptr<ScheduledAnimationGroup>>;
   using IdToViewsMap = std::map<AnimationId, std::set<ServerView*>>;
 
   void CancelAnimationForViewImpl(ServerView* view, CancelSource source);

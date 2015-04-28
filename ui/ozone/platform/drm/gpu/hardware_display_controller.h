@@ -147,7 +147,7 @@ class OZONE_EXPORT HardwareDisplayController {
   scoped_refptr<DrmDevice> GetAllocationDrmDevice() const;
 
  private:
-  base::ScopedPtrHashMap<DrmDevice*, HardwareDisplayPlaneList>
+  base::ScopedPtrHashMap<DrmDevice*, scoped_ptr<HardwareDisplayPlaneList>>
       owned_hardware_planes_;
 
   // Stores the CRTC configuration. This is used to identify monitors and

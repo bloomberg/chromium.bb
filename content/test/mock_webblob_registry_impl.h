@@ -45,7 +45,8 @@ class MockWebBlobRegistryImpl : public blink::WebBlobRegistry {
                     blink::WebVector<blink::WebBlobData::Item*>* items) const;
 
  private:
-  base::ScopedPtrHashMap<std::string, ScopedVector<blink::WebBlobData::Item>>
+  base::ScopedPtrHashMap<std::string,
+                         scoped_ptr<ScopedVector<blink::WebBlobData::Item>>>
       blob_data_items_map_;
   std::map<std::string, int> blob_ref_count_map_;
 

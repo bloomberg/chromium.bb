@@ -519,7 +519,8 @@ void TestWebGraphicsContext3D::bindBuffer(GLenum target,
   DCHECK_LT(buffer_id, namespace_->next_buffer_id);
   DCHECK_EQ(context_id, context_id_);
 
-  base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
+  base::ScopedPtrHashMap<unsigned, scoped_ptr<Buffer>>& buffers =
+      namespace_->buffers;
   if (buffers.count(bound_buffer_) == 0)
     buffers.set(bound_buffer_, make_scoped_ptr(new Buffer).Pass());
 
@@ -531,7 +532,8 @@ void TestWebGraphicsContext3D::bufferData(GLenum target,
                                           const void* data,
                                           GLenum usage) {
   base::AutoLock lock(namespace_->lock);
-  base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
+  base::ScopedPtrHashMap<unsigned, scoped_ptr<Buffer>>& buffers =
+      namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
   DCHECK_EQ(target, buffers.get(bound_buffer_)->target);
   Buffer* buffer = buffers.get(bound_buffer_);
@@ -578,7 +580,8 @@ void TestWebGraphicsContext3D::pixelStorei(GLenum pname, GLint param) {
 void* TestWebGraphicsContext3D::mapBufferCHROMIUM(GLenum target,
                                                   GLenum access) {
   base::AutoLock lock(namespace_->lock);
-  base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
+  base::ScopedPtrHashMap<unsigned, scoped_ptr<Buffer>>& buffers =
+      namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
   DCHECK_EQ(target, buffers.get(bound_buffer_)->target);
   if (times_map_buffer_chromium_succeeds_ >= 0) {
@@ -594,7 +597,8 @@ void* TestWebGraphicsContext3D::mapBufferCHROMIUM(GLenum target,
 GLboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(
     GLenum target) {
   base::AutoLock lock(namespace_->lock);
-  base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
+  base::ScopedPtrHashMap<unsigned, scoped_ptr<Buffer>>& buffers =
+      namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
   DCHECK_EQ(target, buffers.get(bound_buffer_)->target);
   buffers.get(bound_buffer_)->pixels = nullptr;

@@ -86,7 +86,7 @@ class WakeOnWifiManager : public content::NotificationObserver,
   bool wifi_properties_received_;
 
   class WakeOnPacketConnectionObserver;
-  base::ScopedPtrHashMap<Profile*, WakeOnPacketConnectionObserver>
+  base::ScopedPtrHashMap<Profile*, scoped_ptr<WakeOnPacketConnectionObserver>>
       connection_observers_;
 
   scoped_ptr<ExtensionEventObserver> extension_event_observer_;

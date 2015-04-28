@@ -139,7 +139,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
       DrawingFrame* frame,
       scoped_ptr<CopyOutputRequest> request) = 0;
 
-  base::ScopedPtrHashMap<RenderPassId, ScopedResource> render_pass_textures_;
+  base::ScopedPtrHashMap<RenderPassId, scoped_ptr<ScopedResource>>
+      render_pass_textures_;
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
   scoped_ptr<OverlayProcessor> overlay_processor_;

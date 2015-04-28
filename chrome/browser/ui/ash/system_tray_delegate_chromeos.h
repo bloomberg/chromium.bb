@@ -295,7 +295,8 @@ class SystemTrayDelegateChromeOS
   scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
   scoped_ptr<CrosSettingsObserverSubscription> device_settings_observer_;
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
-  base::ScopedPtrHashMap<std::string, ash::tray::UserAccountsDelegate>
+  base::ScopedPtrHashMap<std::string,
+                         scoped_ptr<ash::tray::UserAccountsDelegate>>
       accounts_delegates_;
   scoped_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
   scoped_ptr<ash::VPNDelegate> vpn_delegate_;
