@@ -91,6 +91,7 @@
         '<(webrtc_base)/cpumonitor.h',
         '<(webrtc_base)/crc32.cc',
         '<(webrtc_base)/crc32.h',
+        '<(webrtc_base)/criticalsection.cc',
         '<(webrtc_base)/criticalsection.h',
         '<(webrtc_base)/cryptstring.cc',
         '<(webrtc_base)/cryptstring.h',
