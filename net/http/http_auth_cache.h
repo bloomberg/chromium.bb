@@ -36,9 +36,7 @@ class NET_EXPORT_PRIVATE HttpAuthCache {
     }
 
     // The case-sensitive realm string of the challenge.
-    const std::string realm() const {
-      return realm_;
-    }
+    const std::string& realm() const { return realm_; }
 
     // The authentication scheme of the challenge.
     HttpAuth::Scheme scheme() const {
@@ -46,9 +44,7 @@ class NET_EXPORT_PRIVATE HttpAuthCache {
     }
 
     // The authentication challenge.
-    const std::string auth_challenge() const {
-      return auth_challenge_;
-    }
+    const std::string& auth_challenge() const { return auth_challenge_; }
 
     // The login credentials.
     const AuthCredentials& credentials() const {

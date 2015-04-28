@@ -87,9 +87,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   }
 
   // The challenge which was issued when creating the handler.
-  const std::string challenge() const {
-    return auth_challenge_;
-  }
+  const std::string& challenge() const { return auth_challenge_; }
 
   // Numeric rank based on the challenge's security level. Higher
   // numbers are better. Used by HttpAuth::ChooseBestChallenge().
