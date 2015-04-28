@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(LanguageOptionsWebUITest, TestAvailableLanguages) {
 // This test will validate that the language webui is accessible through
 // the keyboard.
 // This test must be updated if the tab order of the elements on this page
-// is chagned.
+// is changed.
 // flaky: http://crbug.com/405711
 IN_PROC_BROWSER_TEST_F(LanguageOptionsWebUITest, TestListTabAccessibility) {
   // Verify that the language list is focused by default.

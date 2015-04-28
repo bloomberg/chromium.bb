@@ -71,7 +71,7 @@ class NET_EXPORT_PRIVATE DnsConfigServicePosix : public DnsConfigService {
   scoped_refptr<ConfigReader> config_reader_;
   scoped_refptr<HostsReader> hosts_reader_;
 #if defined(OS_ANDROID)
-  // Has DnsConfigWatcher detected any config chagnes yet?
+  // Has DnsConfigWatcher detected any config changes yet?
   bool seen_config_change_;
 #endif
 

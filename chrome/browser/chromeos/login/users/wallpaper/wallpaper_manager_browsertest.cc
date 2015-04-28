@@ -697,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, DisplayChange) {
             WallpaperManager::Get()->GetAppropriateResolution());
   EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
 
-  // Max display size didn't chagne.
+  // Max display size didn't change.
   UpdateDisplay("900x800/r,400x1366");
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();

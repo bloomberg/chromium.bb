@@ -38,7 +38,7 @@ function testAutoSize() {
   });
 
   webview.addEventListener('sizechanged', function(e) {
-    window.console.log('sizechagned: dimension: ' + e.newWidth + ' X ' +
+    window.console.log('sizechanged: dimension: ' + e.newWidth + ' X ' +
                        e.newHeight);
     chrome.test.assertTrue(e.newWidth >= minw);
     chrome.test.assertTrue(e.newWidth <= maxw);

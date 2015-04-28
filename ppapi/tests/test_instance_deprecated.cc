@@ -74,7 +74,7 @@ bool TestInstance::Init() {
 TestInstance::~TestInstance() {
   ResetTestObject();
   if (testing_interface_->IsOutOfProcess() == PP_FALSE) {
-    // This should cause the instance object's descructor to be called.
+    // This should cause the instance object's destructor to be called.
     testing_interface_->RunV8GC(instance_->pp_instance());
 
     // Test a post-condition which ensures the instance objects destructor is

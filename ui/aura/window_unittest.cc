@@ -1871,7 +1871,7 @@ TEST_F(WindowObserverTest, WindowObserver) {
   w1->RemoveObserver(this);
 }
 
-// Test if OnWindowVisibilityChagned is invoked with expected
+// Test if OnWindowVisibilityChanged is invoked with expected
 // parameters.
 TEST_F(WindowObserverTest, WindowVisibility) {
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));

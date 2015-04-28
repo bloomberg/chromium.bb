@@ -25,7 +25,7 @@ class TestMessageHandler {
   enum MessageResponse {
     // Reset the timeout and keep running.
     CONTINUE,
-    // Stop runnning.
+    // Stop running.
     DONE
   };
 

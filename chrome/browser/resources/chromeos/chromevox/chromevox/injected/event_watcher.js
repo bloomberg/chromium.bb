@@ -218,7 +218,7 @@ cvox.ChromeVoxEventWatcher.secondPassThroughKeyUp_ = false;
   cvox.ChromeVox.searchKeyHeld = false;
 
   /**
-   * The mutation observer that listens for chagnes to text controls
+   * The mutation observer that listens for changes to text controls
    * that might not send other events.
    * @type {MutationObserver}
    * @private

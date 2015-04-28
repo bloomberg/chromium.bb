@@ -155,7 +155,7 @@ TEST_F(ShadowControllerTest, ShadowStyle) {
   EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow2->style());
 }
 
-// Tests that shadow gets updated when the window show state chagnes.
+// Tests that shadow gets updated when the window show state changes.
 TEST_F(ShadowControllerTest, ShowState) {
   ShadowController::TestApi api(shadow_controller());
 
