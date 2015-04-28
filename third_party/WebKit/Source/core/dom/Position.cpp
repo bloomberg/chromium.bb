@@ -972,7 +972,7 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
     if (isHTMLHtmlElement(*m_anchorNode))
         return false;
 
-    if (renderer->isLayoutBlockFlow() || renderer->isLayoutGrid()) {
+    if (renderer->isLayoutBlockFlow() || renderer->isFlexibleBox() || renderer->isLayoutGrid()) {
         if (toLayoutBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
             if (!hasRenderedNonAnonymousDescendantsWithHeight(renderer))
                 return atFirstEditingPositionForNode() && !nodeIsUserSelectNone(deprecatedNode());
