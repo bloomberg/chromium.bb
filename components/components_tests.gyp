@@ -442,9 +442,11 @@
       'scheduler/child/task_queue_manager_unittest.cc',
       'scheduler/child/test_time_source.cc',
       'scheduler/child/test_time_source.h',
+      'scheduler/child/webthread_impl_for_worker_scheduler_unittest.cc',
       'scheduler/child/worker_scheduler_impl_unittest.cc',
       'scheduler/renderer/deadline_task_runner_unittest.cc',
       'scheduler/renderer/renderer_scheduler_impl_unittest.cc',
+      'scheduler/renderer/webthread_impl_for_renderer_scheduler_unittest.cc',
     ],
     'search_unittest_sources': [
       'search/search_android_unittest.cc',
