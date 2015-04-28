@@ -314,23 +314,24 @@ FileManagerUI.prototype.initAdditionalUI = function(
 
   // Add handlers.
   document.defaultView.addEventListener('resize', this.relayout.bind(this));
+};
 
+/**
+ * Initializes the focus.
+ */
+FileManagerUI.prototype.initUIFocus = function() {
   // Set the initial focus. When there is no focus, the active element is the
   // <body>.
-  setTimeout(function() {
-    if (document.activeElement === document.body) {
-      var targetElement = null;
-      if (this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
-        targetElement = this.dialogFooter.filenameInput;
-      } else if (this.listContainer.currentListType !=
-                 ListContainer.ListType.UNINITIALIZED) {
-        targetElement = this.listContainer.currentList;
-      }
+  var targetElement = null;
+  if (this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
+    targetElement = this.dialogFooter.filenameInput;
+  } else if (this.listContainer.currentListType !=
+             ListContainer.ListType.UNINITIALIZED) {
+    targetElement = this.listContainer.currentList;
+  }
 
-      if (targetElement)
-        targetElement.focus();
-    }
-  }.bind(this), 0);
+  if (targetElement)
+    targetElement.focus();
 };
 
 /**

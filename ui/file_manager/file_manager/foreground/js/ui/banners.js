@@ -42,20 +42,24 @@ function Banners(
   chrome.storage.onChanged.addListener(this.onStorageChange_.bind(this));
   this.welcomeHeaderCounter_ = WELCOME_HEADER_COUNTER_LIMIT;
   this.warningDismissedCounter_ = 0;
-  chrome.storage.local.get(
-      [WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
-      function(values) {
-        this.welcomeHeaderCounter_ =
-            parseInt(values[WELCOME_HEADER_COUNTER_KEY], 10) || 0;
-        this.warningDismissedCounter_ =
-            parseInt(values[WARNING_DISMISSED_KEY], 10) || 0;
 
-        // If it's in test, override the counter to show the header by force.
-        if (window.IN_TEST) {
-          this.welcomeHeaderCounter_ = 0;
-          this.warningDismissedCounter_ = 0;
-        }
-      }.bind(this));
+  this.ready_ = new Promise(function(resolve, reject) {
+    chrome.storage.local.get(
+        [WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
+        function(values) {
+          this.welcomeHeaderCounter_ =
+              parseInt(values[WELCOME_HEADER_COUNTER_KEY], 10) || 0;
+          this.warningDismissedCounter_ =
+              parseInt(values[WARNING_DISMISSED_KEY], 10) || 0;
+
+          // If it's in test, override the counter to show the header by force.
+          if (chrome.test) {
+            this.welcomeHeaderCounter_ = 0;
+            this.warningDismissedCounter_ = 0;
+          }
+          resolve();
+        }.bind(this));
+  }.bind(this));
 
   // Authentication failed banner.
   this.authFailedBanner_ =
@@ -301,73 +305,76 @@ Banners.prototype.closeWelcomeBanner_ = function() {
  * @private
  */
 Banners.prototype.checkSpaceAndMaybeShowWelcomeBanner_ = function() {
-  if (!this.isOnCurrentProfileDrive()) {
-    // We are not on the drive file system. Do not show (close) the welcome
-    // banner.
-    this.cleanupWelcomeBanner_();
-    this.previousDirWasOnDrive_ = false;
-    return;
-  }
+  this.ready_.then(function() {
+    if (!this.isOnCurrentProfileDrive()) {
+      // We are not on the drive file system. Do not show (close) the welcome
+      // banner.
+      this.cleanupWelcomeBanner_();
+      this.previousDirWasOnDrive_ = false;
+      return;
+    }
 
-  var driveVolume = this.volumeManager_.getCurrentProfileVolumeInfo(
-      VolumeManagerCommon.VolumeType.DRIVE);
-  if (this.welcomeHeaderCounter_ >= WELCOME_HEADER_COUNTER_LIMIT ||
-      !driveVolume || driveVolume.error) {
-    // The banner is already shown enough times or the drive FS is not mounted.
-    // So, do nothing here.
-    return;
-  }
+    var driveVolume = this.volumeManager_.getCurrentProfileVolumeInfo(
+        VolumeManagerCommon.VolumeType.DRIVE);
+    if (this.welcomeHeaderCounter_ >= WELCOME_HEADER_COUNTER_LIMIT ||
+        !driveVolume || driveVolume.error) {
+      // The banner is already shown enough times or the drive FS is not
+      // mounted. So, do nothing here.
+      return;
+    }
 
-  if (!this.showOffers_ || !this.showWelcome_) {
-    // Because it is not necessary to show the offer, set
-    // |usePromoWelcomeBanner_| false here. Note that it probably should be able
-    // to do this in the constructor, but there remains non-trivial path,
-    // which may be causes |usePromoWelcomeBanner_| == true's behavior even
-    // if |showOffers_| is false.
-    // TODO(hidehiko): Make sure if it is expected or not, and simplify
-    // |showOffers_| if possible.
-    this.usePromoWelcomeBanner_ = false;
-  }
+    if (!this.showOffers_ || !this.showWelcome_) {
+      // Because it is not necessary to show the offer, set
+      // |usePromoWelcomeBanner_| false here. Note that it probably should be
+      // able to do this in the constructor, but there remains non-trivial path,
+      // which may be causes |usePromoWelcomeBanner_| == true's behavior even
+      // if |showOffers_| is false.
+      // TODO(hidehiko): Make sure if it is expected or not, and simplify
+      // |showOffers_| if possible.
+      this.usePromoWelcomeBanner_ = false;
+    }
 
-  // Perform asynchronous tasks in parallel.
-  var group = new AsyncUtil.Group();
+    // Choose the offer basing on the board name. The default one is 100 GB.
+    var offerSize = 100;  // In GB.
+    var offerServiceId = 'drive.cros.echo.1';
 
-  // Choose the offer basing on the board name. The default one is 100 GB.
-  var offerSize = 100;  // In GB.
-  var offerServiceId = 'drive.cros.echo.1';
+    if (util.boardIs('link')) {
+      offerSize = 1024;  // 1 TB.
+      offerServiceId = 'drive.cros.echo.2';
+    }
 
-  if (util.boardIs('link')) {
-    offerSize = 1024;  // 1 TB.
-    offerServiceId = 'drive.cros.echo.2';
-  }
+    // Perform asynchronous tasks in parallel.
+    var group = new AsyncUtil.Group();
 
-  // If the offer has been checked, then do not show the promo anymore.
-  group.add(function(onCompleted) {
-    chrome.echoPrivate.getOfferInfo(offerServiceId, function(offerInfo) {
-      // If the offer has not been checked, then an error is raised.
-      if (!chrome.runtime.lastError)
-        this.usePromoWelcomeBanner_ = false;
-      onCompleted();
-    }.bind(this));
-  }.bind(this));
-
-  if (this.usePromoWelcomeBanner_) {
-    // getSizeStats for Drive file system accesses to the server, so we should
-    // minimize the invocation.
+    // If the offer has been checked, then do not show the promo anymore.
     group.add(function(onCompleted) {
-      // Current directory must be set, since this code is called after
-      // scanning is completed. However, the volumeInfo may be gone.
-      chrome.fileManagerPrivate.getSizeStats(
-          driveVolume.volumeId,
-          function(result) {
-            if (result && result.totalSize >= offerSize * 1024 * 1024 * 1024)
-              this.usePromoWelcomeBanner_ = false;
-            onCompleted();
-          }.bind(this));
+      chrome.echoPrivate.getOfferInfo(offerServiceId, function(offerInfo) {
+        // If the offer has not been checked, then an error is raised.
+        if (!chrome.runtime.lastError)
+          this.usePromoWelcomeBanner_ = false;
+        onCompleted();
+      }.bind(this));
     }.bind(this));
-  }
 
-  group.run(this.maybeShowWelcomeBanner_.bind(this));
+    group.add(function(onCompleted) {
+      if (this.usePromoWelcomeBanner_) {
+        // getSizeStats for Drive file system accesses to the server, so we
+        // should minimize the invocation.
+
+        // Current directory must be set, since this code is called after
+        // scanning is completed. However, the volumeInfo may be gone.
+        chrome.fileManagerPrivate.getSizeStats(
+            driveVolume.volumeId,
+            function(result) {
+              if (result && result.totalSize >= offerSize * 1024 * 1024 * 1024)
+                this.usePromoWelcomeBanner_ = false;
+              onCompleted();
+            }.bind(this));
+      }
+    }.bind(this));
+
+    group.run(this.maybeShowWelcomeBanner_.bind(this));
+  }.bind(this));
 };
 
 /**
@@ -376,27 +383,29 @@ Banners.prototype.checkSpaceAndMaybeShowWelcomeBanner_ = function() {
  * @private
  */
 Banners.prototype.maybeShowWelcomeBanner_ = function() {
-  if (this.directoryModel_.getFileList().length == 0 &&
-      this.welcomeHeaderCounter_ == 0) {
-    // Only show the full page banner if the header banner was never shown.
-    // Do not increment the counter.
-    // The timeout below is required because sometimes another
-    // 'rescan-completed' event arrives shortly with non-empty file list.
-    setTimeout(function() {
-      if (this.isOnCurrentProfileDrive() && this.welcomeHeaderCounter_ == 0) {
-        this.prepareAndShowWelcomeBanner_('page', 'DRIVE_WELCOME_TEXT_LONG');
+  this.ready_.then(function() {
+    if (this.directoryModel_.getFileList().length == 0 &&
+        this.welcomeHeaderCounter_ == 0) {
+      // Only show the full page banner if the header banner was never shown.
+      // Do not increment the counter.
+      // The timeout below is required because sometimes another
+      // 'rescan-completed' event arrives shortly with non-empty file list.
+      setTimeout(function() {
+        if (this.isOnCurrentProfileDrive() && this.welcomeHeaderCounter_ == 0) {
+          this.prepareAndShowWelcomeBanner_('page', 'DRIVE_WELCOME_TEXT_LONG');
+        }
+      }.bind(this), 2000);
+    } else {
+      // We do not want to increment the counter when the user navigates
+      // between different directories on Drive, but we increment the counter
+      // once anyway to prevent the full page banner from showing.
+      if (!this.previousDirWasOnDrive_ || this.welcomeHeaderCounter_ == 0) {
+        this.setWelcomeHeaderCounter_(this.welcomeHeaderCounter_ + 1);
+        this.prepareAndShowWelcomeBanner_('header', 'DRIVE_WELCOME_TEXT_SHORT');
       }
-    }.bind(this), 2000);
-  } else {
-    // We do not want to increment the counter when the user navigates
-    // between different directories on Drive, but we increment the counter
-    // once anyway to prevent the full page banner from showing.
-    if (!this.previousDirWasOnDrive_ || this.welcomeHeaderCounter_ == 0) {
-      this.setWelcomeHeaderCounter_(this.welcomeHeaderCounter_ + 1);
-      this.prepareAndShowWelcomeBanner_('header', 'DRIVE_WELCOME_TEXT_SHORT');
     }
-  }
-  this.previousDirWasOnDrive_ = true;
+    this.previousDirWasOnDrive_ = true;
+  }.bind(this));
 };
 
 /**

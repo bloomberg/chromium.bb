@@ -598,6 +598,9 @@ FileManager.prototype = /** @struct */ {
     this.initializeQueue_.add(
         this.initFileSystemUI_.bind(this),
         ['initAdditionalUI', 'initSettings'], 'initFileSystemUI');
+    this.initializeQueue_.add(
+        this.initUIFocus_.bind(this),
+        ['initAdditionalUI', 'initFileSystemUI'], 'initUIFocus');
 
     // Run again just in case if all pending closures have completed and the
     // queue has stopped and monitor the completion.
@@ -800,6 +803,17 @@ FileManager.prototype = /** @struct */ {
     this.ui_.listContainer.table.normalizeColumns();
     this.ui_.listContainer.table.redraw();
 
+    callback();
+  };
+
+  /**
+   * One-time initialization of focus. This should run at the last of UI
+   *  initialization.
+   *
+   * @private
+   */
+  FileManager.prototype.initUIFocus_ = function(callback) {
+    this.ui_.initUIFocus();
     callback();
   };
 

@@ -66,9 +66,12 @@ testcase.tabindexFocus = function() {
       appId = inAppId;
       remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
     },
-    // Press the Tab key.
+    function(element) {
+      remoteCall.waitForElement(appId, ['#drive-welcome-link']).then(this.next);
+    },
     function(element) {
       remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
+    // Press the Tab key.
     }, function(element) {
       chrome.test.assertEq('list', element.attributes['class']);
       remoteCall.checkNextTabFocus(appId, 'search-button').then(this.next);
@@ -150,7 +153,9 @@ testcase.tabindexFocusDirectorySelected = function() {
       appId = inAppId;
       remoteCall.waitForElement(appId, ['#file-list:focus']).then(this.next);
     },
-    // Press the Tab key.
+    function(element) {
+      remoteCall.waitForElement(appId, ['#drive-welcome-link']).then(this.next);
+    },
     function(element) {
       remoteCall.callRemoteTestUtil('getActiveElement', appId, [], this.next);
     }, function(element) {
@@ -158,6 +163,7 @@ testcase.tabindexFocusDirectorySelected = function() {
       // Select the directory named 'photos'.
       remoteCall.callRemoteTestUtil(
           'selectFile', appId, ['photos']).then(this.next);
+    // Press the Tab key.
     }, function(result) {
       chrome.test.assertTrue(result);
       remoteCall.checkNextTabFocus(appId, 'share-button').then(this.next);
