@@ -215,4 +215,75 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     ((WebPluginContainerImpl*)(pluginContainerOneElement.pluginContainer()))->handleEvent(keyEventInsert.get());
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 }
+
+// A class to facilitate testing that events are correctly received by plugins.
+class EventTestPlugin : public FakeWebPlugin {
+public:
+    EventTestPlugin(WebFrame* frame, const WebPluginParams& params)
+        : FakeWebPlugin(frame, params)
+        , m_lastEventType(WebInputEvent::Undefined)
+    {
+    }
+
+    virtual bool handleInputEvent(const WebInputEvent& event, WebCursorInfo&) override
+    {
+        m_lastEventType = event.type;
+        return true;
+    }
+    WebInputEvent::Type getLastInputEventType() {return m_lastEventType; }
+
+private:
+    WebInputEvent::Type m_lastEventType;
+};
+
+class EventTestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+    virtual WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
+    {
+        if (params.mimeType == WebString::fromUTF8("application/x-webkit-test-webplugin"))
+            return new EventTestPlugin(frame, params);
+        return WebFrameClient::createPlugin(frame, params);
+    }
+};
+
+TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(
+        WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("plugin_container.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, new EventTestPluginWebFrameClient());
+    ASSERT(webView);
+    webView->settings()->setPluginsEnabled(true);
+    webView->resize(WebSize(300, 300));
+    webView->layout();
+    runPendingTasks();
+
+    WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
+    WebPlugin* plugin = static_cast<WebPluginContainerImpl*>(pluginContainerOneElement.pluginContainer())->plugin();
+    EventTestPlugin* testPlugin = static_cast<EventTestPlugin*>(plugin);
+
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureLongPress;
+
+    // First, send an event that doesn't hit the plugin to verify that the
+    // plugin doesn't receive it.
+    event.x = 0;
+    event.y = 0;
+
+    webView->handleInputEvent(event);
+    runPendingTasks();
+
+    EXPECT_EQ(WebInputEvent::Undefined, testPlugin->getLastInputEventType());
+
+    // Next, send an event that does hit the plugin, and verify it does receive it.
+    WebRect rect = pluginContainerOneElement.boundsInViewportSpace();
+    event.x = rect.x + rect.width / 2;
+    event.y = rect.y + rect.height / 2;
+
+    webView->handleInputEvent(event);
+    runPendingTasks();
+
+    EXPECT_EQ(WebInputEvent::GestureLongPress, testPlugin->getLastInputEventType());
+}
+
 }

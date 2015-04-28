@@ -100,6 +100,7 @@ gamepadconnected
 gamepaddisconnected
 geofenceenter
 geofenceleave
+gesturelongpress
 gesturescrollend
 gesturescrollstart
 gesturescrollupdate

@@ -55,8 +55,9 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
         eventType = EventTypeNames::gesturetapdown; break;
     case PlatformEvent::GestureShowPress:
         eventType = EventTypeNames::gestureshowpress; break;
-    case PlatformEvent::GestureTwoFingerTap:
     case PlatformEvent::GestureLongPress:
+        eventType = EventTypeNames::gesturelongpress; break;
+    case PlatformEvent::GestureTwoFingerTap:
     case PlatformEvent::GesturePinchBegin:
     case PlatformEvent::GesturePinchEnd:
     case PlatformEvent::GesturePinchUpdate:

@@ -720,6 +720,8 @@ WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const Layou
 {
     if (event.type() == EventTypeNames::gestureshowpress)
         type = GestureShowPress;
+    else if (event.type() == EventTypeNames::gesturelongpress)
+        type = GestureLongPress;
     else if (event.type() == EventTypeNames::gesturetapdown)
         type = GestureTapDown;
     else if (event.type() == EventTypeNames::gesturescrollstart)
