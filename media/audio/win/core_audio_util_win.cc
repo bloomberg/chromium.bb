@@ -168,11 +168,12 @@ static HRESULT GetDeviceFriendlyNameInternal(IMMDevice* device,
   return hr;
 }
 
-static ScopedComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal() {
+static ScopedComPtr<IMMDeviceEnumerator> CreateDeviceEnumeratorInternal(
+    bool allow_reinitialize) {
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator;
   HRESULT hr = device_enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
                                                 NULL, CLSCTX_INPROC_SERVER);
-  if (hr == CO_E_NOTINITIALIZED) {
+  if (hr == CO_E_NOTINITIALIZED && allow_reinitialize) {
     LOG(ERROR) << "CoCreateInstance fails with CO_E_NOTINITIALIZED";
     // We have seen crashes which indicates that this method can in fact
     // fail with CO_E_NOTINITIALIZED in combination with certain 3rd party
@@ -215,7 +216,7 @@ static bool IsSupportedInternal() {
   // that it is possible to a create the IMMDeviceEnumerator interface. If this
   // works as well we should be home free.
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator =
-      CreateDeviceEnumeratorInternal();
+      CreateDeviceEnumeratorInternal(false);
   if (!device_enumerator) {
     LOG(ERROR)
         << "Failed to create Core Audio device enumerator on thread with ID "
@@ -274,7 +275,7 @@ int CoreAudioUtil::NumberOfActiveDevices(EDataFlow data_flow) {
 ScopedComPtr<IMMDeviceEnumerator> CoreAudioUtil::CreateDeviceEnumerator() {
   DCHECK(IsSupported());
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator =
-      CreateDeviceEnumeratorInternal();
+      CreateDeviceEnumeratorInternal(true);
   CHECK(device_enumerator);
   return device_enumerator;
 }
