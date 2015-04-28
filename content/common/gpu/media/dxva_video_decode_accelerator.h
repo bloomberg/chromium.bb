@@ -343,14 +343,11 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Used to synchronize access between the decoder thread and the main thread.
   base::Lock decoder_lock_;
 
-  // WeakPtrFactory for posting tasks back to |this|.
-  base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;
-
   // Disallow rebinding WeakReference ownership to a different thread by
   // keeping a persistent reference. This avoids problems with the
   // thread safety of reaching into this class from multiple threads to
   // attain a WeakPtr.
-  const base::WeakPtr<DXVAVideoDecodeAccelerator> weak_ptr_;
+  base::WeakPtr<DXVAVideoDecodeAccelerator> weak_ptr_;
 
   // Set to true if we are in the context of a Flush operation. Used to prevent
   // multiple flush done notifications being sent out.
@@ -366,6 +363,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // The GLContext to be used by the decoder.
   scoped_refptr<gfx::GLContext> gl_context_;
+
+  // WeakPtrFactory for posting tasks back to |this|.
+  base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;
 
   // Function pointer for the MFCreateDXGIDeviceManager API.
   static CreateDXGIDeviceManager create_dxgi_device_manager_;
