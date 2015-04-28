@@ -282,6 +282,69 @@ function test()
     {
         "args": {},
         "cat": "disabled-by-default-devtools.timeline",
+        "name": "FunctionCall",
+        "ph": "X",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 250000,
+        "dur": 10000
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "y", "callUID": "y", "scriptId": 1 },
+                    { "functionName": "x", "callUID": "x", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "FunctionCall",
+        "ph": "X",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 251000,
+        "dur": 8000
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "w", "callUID": "w", "scriptId": 1 },
+                    { "functionName": "z", "callUID": "z", "scriptId": 1 },
+                    { "functionName": "y", "callUID": "y", "scriptId": 1 },
+                    { "functionName": "x", "callUID": "x", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 251000,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "w", "callUID": "w", "scriptId": 1 },
+                    { "functionName": "z", "callUID": "z", "scriptId": 1 },
+                    { "functionName": "y", "callUID": "y", "scriptId": 1 },
+                    { "functionName": "x", "callUID": "x", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 251100,
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
         "name": "Program",
         "ph": "E",
         "pid": 17851,
@@ -294,11 +357,12 @@ function test()
     var tracingTimelineModel = InspectorTest.tracingTimelineModel();
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var events = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(tracingTimelineModel.mainThreadEvents());
-    events.forEach(function(e) {
-        InspectorTest.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + e.args.data.functionName);
+    events = events.mergeOrdered(tracingTimelineModel.mainThreadEvents(), WebInspector.TracingModel.Event.orderedCompareStartTime);
+    events.filter(function(e) { return e.duration; }).forEach(function(e) {
+        InspectorTest.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + (e.args.data && e.args.data.functionName || ""));
     });
 
-    events = events.mergeOrdered(tracingTimelineModel.mainThreadEvents(), WebInspector.TracingModel.Event.orderedCompareStartTime);
+    InspectorTest.addResult("");
     tracingTimelineModel._setMainThreadEvents(events);
     var dataProvider = new WebInspector.TimelineFlameChartBottomUpDataProvider(tracingTimelineModel);
     dataProvider.setWindowTimes(0, Infinity);
