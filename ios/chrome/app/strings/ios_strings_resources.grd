@@ -14,7 +14,7 @@ all other OS specific variables will be false.
       source_lang_id="en" enc_check="möl">
   <outputs>
     <output filename="grit/ios_strings_resources.h" type="rc_header">
-      <emit emit_type="preprend"></emit>
+      <emit emit_type="prepend"></emit>
     </output>
     <output filename="ios_strings_resources_am.pak" type="data_package" lang="am" />
     <output filename="ios_strings_resources_ar.pak" type="data_package" lang="ar" />
