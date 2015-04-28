@@ -410,6 +410,11 @@ def main(argv):
     print('\n'.join(sorted(opts.tests or FindTests((constants.CHROMITE_DIR,)))))
     return
 
+  # Many of our tests require a valid chroot to run. Make sure it's created
+  # before we block network access.
+  if ChrootAvailable() and not cros_build_lib.IsInsideChroot():
+    cros_build_lib.RunCommand(['cros_sdk', '--create'])
+
   # Now let's run some tests.
   _ReExecuteIfNeeded([sys.argv[0]] + argv, opts.network)
   # A lot of pieces here expect to be run in the root of the chromite tree.
