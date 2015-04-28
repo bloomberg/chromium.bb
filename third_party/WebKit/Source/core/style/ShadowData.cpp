@@ -35,14 +35,14 @@ bool ShadowData::operator==(const ShadowData& o) const
         && m_color == o.m_color;
 }
 
-ShadowData ShadowData::blend(const ShadowData& from, double progress) const
+ShadowData ShadowData::blend(const ShadowData& from, double progress, const Color& currentColor) const
 {
     ASSERT(style() == from.style());
     return ShadowData(blink::blend(from.location(), location(), progress),
         clampTo(blink::blend(from.blur(), blur(), progress), 0.0f),
         blink::blend(from.spread(), spread(), progress),
         style(),
-        blink::blend(from.color(), color(), progress));
+        blink::blend(from.color().resolve(currentColor), color().resolve(currentColor), progress));
 }
 
 } // namespace blink

@@ -57,7 +57,7 @@ void ShadowList::adjustRectForShadow(FloatRect& rect) const
     rect.expand(rectOutsetsIncludingOriginal());
 }
 
-PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from, const ShadowList* to, double progress)
+PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from, const ShadowList* to, double progress, const Color& currentColor)
 {
     size_t fromLength = from ? from->shadows().size() : 0;
     size_t toLength = to ? to->shadows().size() : 0;
@@ -66,8 +66,8 @@ PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from, const ShadowLis
 
     ShadowDataVector shadows;
 
-    DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData, (FloatPoint(), 0, 0, Normal, Color::transparent));
-    DEFINE_STATIC_LOCAL(ShadowData, defaultInsetShadowData, (FloatPoint(), 0, 0, Inset, Color::transparent));
+    DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData, (FloatPoint(), 0, 0, Normal, StyleColor(Color::transparent)));
+    DEFINE_STATIC_LOCAL(ShadowData, defaultInsetShadowData, (FloatPoint(), 0, 0, Inset, StyleColor(Color::transparent)));
 
     size_t maxLength = std::max(fromLength, toLength);
     for (size_t i = 0; i < maxLength; ++i) {
@@ -77,20 +77,20 @@ PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from, const ShadowLis
             fromShadow = toShadow->style() == Inset ? &defaultInsetShadowData : &defaultShadowData;
         else if (!toShadow)
             toShadow = fromShadow->style() == Inset ? &defaultInsetShadowData : &defaultShadowData;
-        shadows.append(toShadow->blend(*fromShadow, progress));
+        shadows.append(toShadow->blend(*fromShadow, progress, currentColor));
     }
 
     return ShadowList::adopt(shadows);
 }
 
-PassOwnPtr<DrawLooperBuilder> ShadowList::createDrawLooper(DrawLooperBuilder::ShadowAlphaMode alphaMode, bool isHorizontal) const
+PassOwnPtr<DrawLooperBuilder> ShadowList::createDrawLooper(DrawLooperBuilder::ShadowAlphaMode alphaMode, const Color& currentColor, bool isHorizontal) const
 {
     OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
     for (size_t i = shadows().size(); i--; ) {
         const ShadowData& shadow = shadows()[i];
         float shadowX = isHorizontal ? shadow.x() : shadow.y();
         float shadowY = isHorizontal ? shadow.y() : -shadow.x();
-        drawLooperBuilder->addShadow(FloatSize(shadowX, shadowY), shadow.blur(), shadow.color(),
+        drawLooperBuilder->addShadow(FloatSize(shadowX, shadowY), shadow.blur(), shadow.color().resolve(currentColor),
             DrawLooperBuilder::ShadowRespectsTransforms, alphaMode);
     }
     drawLooperBuilder->addUnmodifiedContent();

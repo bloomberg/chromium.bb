@@ -39,7 +39,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableShadow::interpolateTo(const An
         return defaultInterpolateTo(this, value, fraction);
 
     const AnimatableShadow* shadowList = toAnimatableShadow(value);
-    return AnimatableShadow::create(ShadowList::blend(m_shadowList.get(), shadowList->m_shadowList.get(), fraction));
+    return AnimatableShadow::create(ShadowList::blend(m_shadowList.get(), shadowList->m_shadowList.get(), fraction, m_currentColor), m_currentColor);
 }
 
 bool AnimatableShadow::usesDefaultInterpolationWith(const AnimatableValue* value) const

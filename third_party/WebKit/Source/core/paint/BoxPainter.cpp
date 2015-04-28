@@ -246,7 +246,8 @@ void BoxPainter::applyBoxShadowForBackground(GraphicsContext* context, LayoutObj
         if (boxShadow.style() != Normal)
             continue;
         FloatSize shadowOffset(boxShadow.x(), boxShadow.y());
-        context->setShadow(shadowOffset, boxShadow.blur(), boxShadow.color(),
+        context->setShadow(shadowOffset, boxShadow.blur(),
+            boxShadow.color().resolve(obj.resolveColor(CSSPropertyColor)),
             DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
         return;
     }
@@ -1987,7 +1988,7 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
         if (shadowOffset.isZero() && !shadowBlur && !shadowSpread)
             continue;
 
-        const Color& shadowColor = shadow.color();
+        const Color& shadowColor = shadow.color().resolve(style.visitedDependentColor(CSSPropertyColor));
 
         if (shadow.style() == Normal) {
             FloatRect fillRect = border.rect();

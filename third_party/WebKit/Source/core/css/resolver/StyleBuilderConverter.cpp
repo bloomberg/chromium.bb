@@ -793,11 +793,9 @@ PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& 
         float blur = item->blur ? item->blur->computeLength<float>(state.cssToLengthConversionData()) : 0;
         float spread = item->spread ? item->spread->computeLength<float>(state.cssToLengthConversionData()) : 0;
         ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
-        Color color;
+        StyleColor color = StyleColor::currentColor();
         if (item->color)
-            color = convertColor(state, item->color.get());
-        else
-            color = state.style()->color();
+            color = convertStyleColor(state, item->color.get());
         shadows.append(ShadowData(FloatPoint(x, y), blur, spread, shadowStyle, color));
     }
     return ShadowList::adopt(shadows);

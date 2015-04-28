@@ -103,7 +103,7 @@ void TextPainter::updateGraphicsContext(GraphicsContext* context, const Style& t
     if (textStyle.shadow && !context->printing()) {
         if (!stateSaver.saved())
             stateSaver.save();
-        context->setDrawLooper(textStyle.shadow->createDrawLooper(DrawLooperBuilder::ShadowIgnoresAlpha, horizontal));
+        context->setDrawLooper(textStyle.shadow->createDrawLooper(DrawLooperBuilder::ShadowIgnoresAlpha, textStyle.currentColor, horizontal));
     }
 }
 
@@ -120,12 +120,14 @@ TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& renderer, const 
     TextPainter::Style textStyle;
 
     if (forceBlackText) {
+        textStyle.currentColor = Color::black;
         textStyle.fillColor = Color::black;
         textStyle.strokeColor = Color::black;
         textStyle.emphasisMarkColor = Color::black;
         textStyle.strokeWidth = style.textStrokeWidth();
         textStyle.shadow = 0;
     } else {
+        textStyle.currentColor = style.visitedDependentColor(CSSPropertyColor);
         textStyle.fillColor = renderer.resolveColor(style, CSSPropertyWebkitTextFillColor);
         textStyle.strokeColor = renderer.resolveColor(style, CSSPropertyWebkitTextStrokeColor);
         textStyle.emphasisMarkColor = renderer.resolveColor(style, CSSPropertyWebkitTextEmphasisColor);

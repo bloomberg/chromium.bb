@@ -72,7 +72,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties)
     EXPECT_EQ(1, textStyle.shadow->shadows()[0].x());
     EXPECT_EQ(2, textStyle.shadow->shadows()[0].y());
     EXPECT_EQ(3, textStyle.shadow->shadows()[0].blur());
-    EXPECT_EQ(Color(255, 255, 0), textStyle.shadow->shadows()[0].color());
+    EXPECT_EQ(Color(255, 255, 0), textStyle.shadow->shadows()[0].color().color());
 }
 
 TEST_F(TextPainterTest, TextPaintingStyle_ForceBlackText)

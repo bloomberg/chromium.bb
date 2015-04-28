@@ -335,7 +335,7 @@ void SVGInlineTextBoxPainter::paintTextWithShadows(const PaintInfo& paintInfo, c
     paint.setAntiAlias(true);
 
     if (hasShadow) {
-        OwnPtr<DrawLooperBuilder> drawLooperBuilder = shadowList->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha);
+        OwnPtr<DrawLooperBuilder> drawLooperBuilder = shadowList->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha, style.visitedDependentColor(CSSPropertyColor));
         RefPtr<SkDrawLooper> drawLooper = drawLooperBuilder->detachDrawLooper();
         paint.setLooper(drawLooper.get());
     }

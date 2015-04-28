@@ -25,9 +25,9 @@
 #ifndef ShadowData_h
 #define ShadowData_h
 
+#include "core/css/StyleColor.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRectOutsets.h"
-#include "platform/graphics/Color.h"
 
 namespace blink {
 
@@ -37,7 +37,7 @@ enum ShadowStyle { Normal, Inset };
 class ShadowData {
     WTF_MAKE_FAST_ALLOCATED(ShadowData);
 public:
-    ShadowData(const FloatPoint& location, float blur, float spread, ShadowStyle style, const Color& color)
+    ShadowData(const FloatPoint& location, float blur, float spread, ShadowStyle style, StyleColor color)
         : m_location(location)
         , m_blur(blur)
         , m_spread(spread)
@@ -49,7 +49,7 @@ public:
     bool operator==(const ShadowData&) const;
     bool operator!=(const ShadowData& o) const { return !(*this == o); }
 
-    ShadowData blend(const ShadowData& from, double progress) const;
+    ShadowData blend(const ShadowData& from, double progress, const Color& currentColor) const;
 
     float x() const { return m_location.x(); }
     float y() const { return m_location.y(); }
@@ -57,7 +57,7 @@ public:
     float blur() const { return m_blur; }
     float spread() const { return m_spread; }
     ShadowStyle style() const { return m_style; }
-    const Color& color() const { return m_color; }
+    StyleColor color() const { return m_color; }
 
     // Outsets needed to adjust a source rectangle to the one cast by this
     // shadow.
@@ -75,8 +75,7 @@ private:
     FloatPoint m_location;
     float m_blur;
     float m_spread;
-    // FIXME: We should use StyleColor here to allow currentColor to work correctly with visited links
-    Color m_color;
+    StyleColor m_color;
     ShadowStyle m_style;
 };
 
