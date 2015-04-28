@@ -13,7 +13,6 @@ set -o errexit
 #@ but rather as:
 #@     toolchain/linux_x86/arm_trusted/qemu_tool_arm.sh
 
-# From a qemu build based on qemu-0.10.1.tar.gz
 readonly SDK_ROOT=$(dirname $0)
 readonly QEMU=${SDK_ROOT}/qemu-arm
 readonly QEMU_STOCK=/usr/bin/qemu-arm

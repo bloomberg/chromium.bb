@@ -409,26 +409,43 @@ CleanupJailSymlinks() {
 # So instead we chose to build 32bit shared images.
 #
 
-readonly QEMU_TARBALL=$(readlink -f ../third_party/qemu/qemu-1.0.1.tar.gz)
-readonly QEMU_PATCH=$(readlink -f ../third_party/qemu/qemu-1.0.1.patch_arm)
+readonly QEMU_TARBALL=qemu-1.0.1.tar.gz
+readonly QEMU_SHA=4d08b5a83538fcd7b222bec6f1c584da8d12497a
 readonly QEMU_DIR=qemu-1.0.1
+
+# TODO(sbc): update to version 2.3.0
+#readonly QEMU_TARBALL=qemu-2.3.0.tar.bz2
+#readonly QEMU_SHA=373d74bfafce1ca45f85195190d0a5e22b29299e
+#readonly QEMU_DIR=qemu-2.3.0
+
+readonly QEMU_URL=http://wiki.qemu-project.org/download/${QEMU_TARBALL}
+readonly QEMU_PATCH=$(readlink -f ../third_party/qemu/${QEMU_DIR}.patch_arm)
 
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
   local tmpdir="${TMP}/qemu.nacl"
 
+  set -x
   Banner "Building qemu in ${tmpdir}"
 
-  if [[ -z "$QEMU_TARBALL" ]] ; then
-    echo "ERROR: missing qemu tarball: ../third_party/qemu/qemu-1.0.1.tar.gz"
-    exit 1
+  if [ -n "${QEMU_URL}" ]; then
+    if [[ ! -f ${TMP}/${QEMU_TARBALL} ]]; then
+      wget -O ${TMP}/${QEMU_TARBALL} $QEMU_URL
+    fi
+
+    echo "${QEMU_SHA}  ${TMP}/${QEMU_TARBALL}" | sha1sum --check -
+  else
+    if [[ ! -f "$QEMU_TARBALL" ]] ; then
+      echo "ERROR: missing qemu tarball: $QEMU_TARBALL"
+      exit 1
+    fi
   fi
 
   rm -rf ${tmpdir}
   mkdir ${tmpdir}
   cd ${tmpdir}
   SubBanner "Untaring ${QEMU_TARBALL}"
-  tar zxf ${QEMU_TARBALL}
+  tar xf ${TMP}/${QEMU_TARBALL}
   cd ${QEMU_DIR}
 
   SubBanner "Patching ${QEMU_PATCH}"
@@ -438,11 +455,9 @@ BuildAndInstallQemu() {
   env -i PATH=/usr/bin/:/bin LIBS=-lrt \
     ./configure \
     --extra-cflags="-m32" \
-    --extra-ldflags="-Wl,-rpath=/lib32" \
     --disable-system \
     --disable-docs \
     --enable-linux-user \
-    --disable-darwin-user \
     --disable-bsd-user \
     --target-list=arm-linux-user \
     --disable-smartcard-nss \

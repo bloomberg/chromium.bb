@@ -13,7 +13,6 @@ set -o errexit
 #@ but rather as:
 #@     toolchain/linux_x86/mips_trusted/qemu-mips32
 
-# From a qemu build based on qemu-0.12.5.tar.gz
 readonly SDK_ROOT=$(dirname $0)
 readonly QEMU=${SDK_ROOT}/qemu-mips32
 readonly QEMU_JAIL=${SDK_ROOT}/sysroot
