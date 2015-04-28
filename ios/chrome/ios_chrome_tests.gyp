@@ -26,6 +26,8 @@
       ],
       'sources': [
         'app/safe_mode_util_unittest.cc',
+        'browser/geolocation/CLLocation+XGeoHeaderTest.mm',
+        'browser/geolocation/location_manager_unittest.mm',
         'browser/net/image_fetcher_unittest.mm',
         'browser/net/metrics_network_client_unittest.mm',
         'browser/net/retryable_url_fetcher_unittest.mm',
@@ -49,6 +51,9 @@
         'ios_chrome.gyp:ios_chrome_browser',
       ],
       'sources': [
+        'browser/geolocation/location_manager+Testing.h',
+        'browser/geolocation/test_location_manager.h',
+        'browser/geolocation/test_location_manager.mm',
         'browser/net/mock_image_fetcher.h',
         'browser/net/mock_image_fetcher.mm',
         'test/ios_chrome_unit_test_suite.cc',

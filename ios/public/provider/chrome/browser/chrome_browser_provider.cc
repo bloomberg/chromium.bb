@@ -48,6 +48,11 @@ StringProvider* ChromeBrowserProvider::GetStringProvider() {
   return nullptr;
 }
 
+GeolocationUpdaterProvider*
+ChromeBrowserProvider::GetGeolocationUpdaterProvider() {
+  return nullptr;
+}
+
 void ChromeBrowserProvider::ShowTranslateSettings() {
 }
 

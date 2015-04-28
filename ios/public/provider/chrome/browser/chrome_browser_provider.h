@@ -29,6 +29,7 @@ class UIView;
 namespace ios {
 
 class ChromeBrowserProvider;
+class GeolocationUpdaterProvider;
 class StringProvider;
 class UpdatableResourceProvider;
 
@@ -55,6 +56,7 @@ class ChromeBrowserProvider {
   virtual InfoBarViewPlaceholder* CreateInfoBarView();
   // Returns an instance of a string provider.
   virtual StringProvider* GetStringProvider();
+  virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
   // Displays the Translate settings screen.
   virtual void ShowTranslateSettings();
   // Returns the chrome UI scheme.
