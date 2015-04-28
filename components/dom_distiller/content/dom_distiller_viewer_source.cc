@@ -232,6 +232,7 @@ void DomDistillerViewerSource::StartDataRequest(
     return;
   } else if (kFeedbackBad == path) {
     FeedbackReporter::ReportQuality(false);
+    callback.Run(NULL);
     if (!external_feedback_reporter_)
       return;
     content::WebContents* contents =
@@ -241,6 +242,7 @@ void DomDistillerViewerSource::StartDataRequest(
     return;
   } else if (kFeedbackGood == path) {
     FeedbackReporter::ReportQuality(true);
+    callback.Run(NULL);
     return;
   }
   content::WebContents* web_contents =
