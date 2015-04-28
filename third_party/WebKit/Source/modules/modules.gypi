@@ -599,6 +599,7 @@
       'bluetooth/BluetoothGATTRemoteServer.h',
       'bluetooth/BluetoothGATTRemoteServer.cpp',
       'bluetooth/BluetoothInteraction.h',
+      'bluetooth/BluetoothInteraction.cpp',
       'bluetooth/BluetoothUUIDs.h',
       'bluetooth/BluetoothUUIDsService.h',
       'bluetooth/NavigatorBluetooth.cpp',

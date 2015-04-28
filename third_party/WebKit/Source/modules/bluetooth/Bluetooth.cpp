@@ -6,6 +6,7 @@
 #include "modules/bluetooth/Bluetooth.h"
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "modules/bluetooth/BluetoothUUIDs.h"
 
 namespace blink {
 
@@ -14,11 +15,23 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* s)
     return bluetoothDiscovery()->requestDevice(s);
 }
 
+BluetoothUUIDs* Bluetooth::uuids()
+{
+    return bluetoothInteraction()->uuids();
+}
+
 BluetoothDiscovery* Bluetooth::bluetoothDiscovery()
 {
     if (!m_bluetoothDiscovery)
         m_bluetoothDiscovery = new BluetoothDiscovery;
     return m_bluetoothDiscovery.get();
+}
+
+BluetoothInteraction* Bluetooth::bluetoothInteraction()
+{
+    if (!m_bluetoothInteraction)
+        m_bluetoothInteraction = new BluetoothInteraction;
+    return m_bluetoothInteraction.get();
 }
 
 }; // blink

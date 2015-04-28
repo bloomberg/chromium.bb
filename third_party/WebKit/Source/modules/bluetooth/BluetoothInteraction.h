@@ -6,6 +6,7 @@
 #define BluetoothInteraction_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/bluetooth/BluetoothUUIDs.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -17,9 +18,17 @@ class BluetoothInteraction
     DEFINE_WRAPPERTYPEINFO();
 public:
 
-    DEFINE_INLINE_TRACE() { }
+    BluetoothUUIDs* uuids();
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_bluetoothUUIDs);
+    }
+
+private:
+    Member<BluetoothUUIDs> m_bluetoothUUIDs;
 };
 
 } // namespace blink
 
-#endif // BluetoothInteraction
+#endif // BluetoothInteraction_h

@@ -11,7 +11,7 @@
     NoInterfaceObject,
     RuntimeEnabled=Bluetooth,
 ] interface BluetoothInteraction {
-    // readonly    attribute BluetoothUUIDs uuids;
+    readonly    attribute BluetoothUUIDs uuids;
     // Promise<BluetoothGATTService>        getService(DOMString serviceInstanceID);
     // Promise<BluetoothGATTCharacteristic> getCharacteristic(DOMString characteristicInstanceID);
     // Promise<BluetoothGATTDescriptor>     getDescriptor(DOMString descriptorInstanceID);
