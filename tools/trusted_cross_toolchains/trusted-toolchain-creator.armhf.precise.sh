@@ -425,8 +425,20 @@ BuildAndInstallQemu() {
   local saved_dir=$(pwd)
   local tmpdir="${TMP}/qemu.nacl"
 
-  set -x
   Banner "Building qemu in ${tmpdir}"
+
+  if [ -z "${DEBIAN_I386_SYSROOT:-}" ]; then
+    echo "Please set \$DEBIAN_I386_SYSROOT to the location of a debian/stable"
+    echo "32-bit sysroot"
+    echo "e.g. <chrome>/chrome/installer/linux/debian_wheezy_i386-sysroot"
+    echo "Which itself is setup by chrome's install-debian.wheezy.sysroot.py"
+    exit 1
+  fi
+
+  if [ ! -d "${DEBIAN_I386_SYSROOT:-}" ]; then
+    echo "\$DEBIAN_I386_SYSROOT does not exist: $DEBIAN_I386_SYSROOT"
+    exit 1
+  fi
 
   if [ -n "${QEMU_URL}" ]; then
     if [[ ! -f ${TMP}/${QEMU_TARBALL} ]]; then
@@ -452,9 +464,11 @@ BuildAndInstallQemu() {
   patch -p1 < ${QEMU_PATCH}
 
   SubBanner "Configuring"
+  set -x
   env -i PATH=/usr/bin/:/bin LIBS=-lrt \
     ./configure \
-    --extra-cflags="-m32" \
+    --extra-cflags="-m32 --sysroot=$DEBIAN_I386_SYSROOT" \
+    --extra-ldflags="-Wl,-rpath-link=$DEBIAN_I386_SYSROOT/lib/i386-linux-gnu" \
     --disable-system \
     --disable-docs \
     --enable-linux-user \
@@ -467,7 +481,7 @@ BuildAndInstallQemu() {
 #    --static
 
   SubBanner "Make"
-  env -i PATH=/usr/bin/:/bin V=99 make MAKE_OPTS=${MAKE_OPTS}
+  env -i PATH=/usr/bin/:/bin make MAKE_OPTS=${MAKE_OPTS}
 
   SubBanner "Install ${INSTALL_ROOT}"
   cp arm-linux-user/qemu-arm ${INSTALL_ROOT}
