@@ -12,14 +12,14 @@ properties-special.html:11 anonymous(a, b)
     length: 2
     name: ""
     prototype: Object
-    __proto__: Empty()
+    __proto__: ()
     <function scope>
 properties-special.html:12 b()
     arguments: (...)
     caller: (...)
     length: 1
     name: ""
-    __proto__: Empty()
+    __proto__: ()
     [[TargetFunction]]: (a,b)
     [[BoundThis]]: Object
     [[BoundArgs]]: Array[1]

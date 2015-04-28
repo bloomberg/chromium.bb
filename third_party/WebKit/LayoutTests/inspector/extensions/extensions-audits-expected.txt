@@ -21,16 +21,16 @@ Progress: 75%
     return 4;
 }
            /path/to/error.html:10
-              object details
-               a
-               : 
-               42
-               b
-               : 
-               "foo"
-               __proto__
-               : 
-               Object
+               object details
+                 a
+                 : 
+                 42
+                 b
+                 : 
+                 "foo"
+                 __proto__
+                 : 
+                 Object
                   <
                    span
                    

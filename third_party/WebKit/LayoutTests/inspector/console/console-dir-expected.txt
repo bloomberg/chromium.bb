@@ -6,7 +6,7 @@ CONSOLE MESSAGE: line 24: function () {}
 CONSOLE MESSAGE: line 28: [object Object]
 CONSOLE MESSAGE: line 31: [object Object]
 CONSOLE MESSAGE: line 32: [object Object]
-CONSOLE MESSAGE: line 34: function __proto__() { [native code] }
+CONSOLE MESSAGE: line 34: function get __proto__() { [native code] }
 CONSOLE MESSAGE: line 39: [object Uint8Array]
 Tests that console logging dumps proper messages.
 
@@ -38,7 +38,7 @@ console-dir.html:24 anonymous()
     length: 0
     name: ""
     prototype: Object
-    __proto__: Empty()
+    __proto__: ()
     <function scope>
         Global: Window
 console-dir.html:28 outer.inner
@@ -49,12 +49,12 @@ console-dir.html:32 Object
     foo: Object
         No Properties
     __proto__: Object
-console-dir.html:34 __proto__()
+console-dir.html:34 get __proto__()
     arguments: null
     caller: null
     length: 0
-    name: "__proto__"
-    __proto__: Empty()
+    name: "get __proto__"
+    __proto__: ()
     <function scope>
         No Scopes
 console-dir.html:39 Uint8Array[400000000]

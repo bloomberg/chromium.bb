@@ -261,8 +261,6 @@ crbug.com/442235 imported/web-platform-tests/shadow-dom/shadow-trees/upper-bound
 crbug.com/442235 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
 crbug.com/442235 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
 
-crbug.com/481157 inspector/console/console-format.html [ Pass Failure ]
-
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/mediastreamtrack/mediastreamtrack-end.html [ Skip ]
@@ -593,8 +591,6 @@ crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeo
 crbug.com/267206 [ Mac ] virtual/slimmingpaint/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Pass Timeout ]
-
-crbug.com/463050 inspector/extensions/extensions-audits.html [ Failure Pass ]
 
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
 
@@ -1563,10 +1559,6 @@ crbug.com/431172 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Timeout
 
 crbug.com/399507 inspector/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 virtual/deferred/inspector/tracing/update-layer-tree.html [ Failure Pass ]
-crbug.com/407915 inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
-crbug.com/407915 virtual/deferred/inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
-crbug.com/448440 virtual/deferred/inspector/tracing/timeline-script-tag-1.html [ Failure Pass ]
-crbug.com/448440 inspector/tracing/timeline-script-tag-1.html [ Failure Pass ]
 crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass ]
 
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
@@ -1986,8 +1978,6 @@ crbug.com/459555 fast/js/reserved-words-as-property.html [ NeedsManualRebaseline
 crbug.com/459555 virtual/slimmingpaint/fast/js/reserved-words-as-property.html [ NeedsManualRebaseline ]
 
 crbug.com/479773 fast/workers/constructor-proto.html [ Pass Failure ]
-crbug.com/479773 inspector/console/console-dir.html [ Pass Failure ]
-crbug.com/479773 inspector/sources/debugger/properties-special.html [ Pass Failure ]
 crbug.com/479773 virtual/slimmingpaint/fast/workers/constructor-proto.html [ Pass Failure ]
 
 crbug.com/459575 [ XP ] virtual/slimmingpaint/fast/text/emoticons.html [ Failure ]

@@ -345,8 +345,8 @@ console-format.html:12 Object {}
     toLocaleString: toLocaleString()
     toString: toString()
     valueOf: valueOf()
-    get __proto__: __proto__()
-    set __proto__: __proto__()
+    get __proto__: get __proto__()
+    set __proto__: set __proto__()
 console-format.html:13 [Object]
     0: Object
     length: 1
@@ -364,8 +364,8 @@ Object {}
     toLocaleString: toLocaleString()
     toString: toString()
     valueOf: valueOf()
-    get __proto__: __proto__()
-    set __proto__: __proto__()
+    get __proto__: get __proto__()
+    set __proto__: set __proto__()
 console-format.html:12 arrayLikeFunction(foo, bar, baz)
 console-format.html:13 [function]
     0: ( /**/ foo/**/, /*/**/bar,     /**/baz)
