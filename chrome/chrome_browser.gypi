@@ -1623,6 +1623,7 @@
       'android/java/src/org/chromium/chrome/browser/appmenu/AppMenuDragHelper.java',
       'android/java/src/org/chromium/chrome/browser/autofill/AutofillDialogControllerAndroid.java',
       'android/java/src/org/chromium/chrome/browser/autofill/AutofillDialogResult.java',
+      'android/java/src/org/chromium/chrome/browser/autofill/AutofillKeyboardAccessoryBridge.java',
       'android/java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java',
       'android/java/src/org/chromium/chrome/browser/autofill/AutofillPopupBridge.java',
       'android/java/src/org/chromium/chrome/browser/autofill/CardUnmaskBridge.java',

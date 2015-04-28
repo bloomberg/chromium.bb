@@ -17,6 +17,8 @@
       'browser/ui/android/autofill/autofill_dialog_controller_android.h',
       'browser/ui/android/autofill/autofill_dialog_result.cc',
       'browser/ui/android/autofill/autofill_dialog_result.h',
+      'browser/ui/android/autofill/autofill_keyboard_accessory_view.cc',
+      'browser/ui/android/autofill/autofill_keyboard_accessory_view.h',
       'browser/ui/android/autofill/autofill_logger_android.cc',
       'browser/ui/android/autofill/autofill_logger_android.h',
       'browser/ui/android/autofill/autofill_popup_view_android.cc',

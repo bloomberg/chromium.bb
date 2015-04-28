@@ -6,10 +6,13 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/command_line.h"
 #include "chrome/browser/android/resource_mapper.h"
+#include "chrome/browser/ui/android/autofill/autofill_keyboard_accessory_view.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "jni/AutofillPopupBridge_jni.h"
 #include "ui/android/view_android.h"
@@ -113,6 +116,11 @@ bool AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid(JNIEnv* env) {
 // static
 AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAccessorySuggestionView)) {
+    return new AutofillKeyboardAccessoryView(controller);
+  }
+
   return new AutofillPopupViewAndroid(controller);
 }
 

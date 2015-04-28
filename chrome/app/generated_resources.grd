@@ -15132,6 +15132,15 @@ After you create a new supervised user, you can manage their settings at any tim
         Import cards from my Wallet.
       </message>
 
+      <if expr="is_android">
+        <message name="IDS_FLAGS_AUTOFILL_ACCESSORY_VIEW_NAME" desc="Title for the flag to show Autofill suggestions at top of keyboard">
+          Autofill suggestions as keyboard accessory view
+        </message>
+        <message name="IDS_FLAGS_AUTOFILL_ACCESSORY_VIEW_DESCRIPTION" desc="Description for the flag to show Autofill suggestions at top of keyboard">
+          Shows Autofill suggestions on top of the keyboard rather than in a dropdown.
+        </message>
+      </if>
+
       <!-- Reader mode experiment flags -->
       <if expr="is_android">
         <message name="IDS_FLAGS_READER_MODE_HEURISTICS_NAME" desc="A name of an about:flags experiment for controlling when to show the reader mode button">

@@ -157,15 +157,15 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
   IssueOnQuery(kQueryId);
 
   // The enums must be cast to ints to prevent compile errors on linux_rel.
+  auto element_ids = testing::ElementsAre(
+      kAutofillProfileId,
+#if !defined(OS_ANDROID)
+      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+#endif
+      static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
   EXPECT_CALL(
       autofill_client_,
-      ShowAutofillPopup(_,
-                        _,
-                        SuggestionVectorIdsAre(testing::ElementsAre(
-                            kAutofillProfileId,
-                            static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-                            static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS))),
-                        _));
+      ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), _));
 
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> autofill_item;
@@ -199,17 +199,19 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
                                                data_list_items);
 
   // The enums must be cast to ints to prevent compile errors on linux_rel.
+  auto element_ids = testing::ElementsAre(
+      static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
+#if !defined(OS_ANDROID)
+      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+#endif
+      kAutofillProfileId,
+#if !defined(OS_ANDROID)
+      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+#endif
+      static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
   EXPECT_CALL(
       autofill_client_,
-      ShowAutofillPopup(_,
-                        _,
-                        SuggestionVectorIdsAre(testing::ElementsAre(
-                            static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
-                            static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-                            kAutofillProfileId,
-                            static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-                            static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS))),
-                        _));
+      ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), _));
 
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> autofill_item;
@@ -253,17 +255,19 @@ TEST_F(AutofillExternalDelegateUnitTest, UpdateDataListWhileShowingPopup) {
                                                data_list_items);
 
   // The enums must be cast to ints to prevent compile errors on linux_rel.
+  auto element_ids = testing::ElementsAre(
+      static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
+#if !defined(OS_ANDROID)
+      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+#endif
+      kAutofillProfileId,
+#if !defined(OS_ANDROID)
+      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+#endif
+      static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
   EXPECT_CALL(
       autofill_client_,
-      ShowAutofillPopup(_,
-                        _,
-                        SuggestionVectorIdsAre(testing::ElementsAre(
-                            static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
-                            static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-                            kAutofillProfileId,
-                            static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-                            static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS))),
-                        _));
+      ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), _));
 
   // Ensure the popup is displayed.
   std::vector<Suggestion> autofill_item;

@@ -88,9 +88,11 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Add or hide warnings as appropriate.
   ApplyAutofillWarnings(&suggestions);
 
+#if !defined(OS_ANDROID)
   // Add a separator to go between the values and menu items.
   suggestions.push_back(Suggestion());
   suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
+#endif
 
   if (should_show_scan_credit_card_) {
     Suggestion scan_credit_card(
@@ -118,10 +120,12 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (has_suggestion_)
     ApplyAutofillOptions(&suggestions);
 
+#if !defined(OS_ANDROID)
   // Remove the separator if it is the last element.
   DCHECK_GT(suggestions.size(), 0U);
   if (suggestions.back().frontend_id == POPUP_ITEM_ID_SEPARATOR)
     suggestions.pop_back();
+#endif
 
   // If anything else is added to modify the values after inserting the data
   // list, AutofillPopupControllerImpl::UpdateDataListValues will need to be
@@ -359,12 +363,14 @@ void AutofillExternalDelegate::InsertDataListValues(
   if (data_list_values_.empty())
     return;
 
+#if !defined(OS_ANDROID)
   // Insert the separator between the datalist and Autofill values (if there
   // are any).
   if (!suggestions->empty()) {
     suggestions->insert(suggestions->begin(), Suggestion());
     (*suggestions)[0].frontend_id = POPUP_ITEM_ID_SEPARATOR;
   }
+#endif
 
   // Insert the datalist elements at the beginning.
   suggestions->insert(suggestions->begin(), data_list_values_.size(),

@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
@@ -54,6 +55,8 @@ public class WindowAndroid {
     // We track all animations over content and provide a drawing placeholder for them.
     private HashSet<Animator> mAnimationsOverContent = new HashSet<Animator>();
     private View mAnimationPlaceholderView;
+
+    private ViewGroup mKeyboardAccessoryView;
 
     private final VSyncMonitor.Listener mVSyncListener = new VSyncMonitor.Listener() {
         @Override
@@ -305,6 +308,22 @@ public class WindowAndroid {
      */
     public void setAnimationPlaceholderView(View view) {
         mAnimationPlaceholderView = view;
+    }
+
+    /**
+     * Sets the keyboard accessory view.
+     * @param view This view sits at the bottom of the content area and pushes the content up rather
+     *             than overlaying it. Currently used as a container for Autofill suggestions.
+     */
+    public void setKeyboardAccessoryView(ViewGroup view) {
+        mKeyboardAccessoryView = view;
+    }
+
+    /**
+     * {@see setKeyboardAccessoryView(ViewGroup)}.
+     */
+    public ViewGroup getKeyboardAccessoryView() {
+        return mKeyboardAccessoryView;
     }
 
     /**

@@ -247,6 +247,10 @@ void AutofillAgent::WillSubmitForm(const WebFormElement& form) {
 }
 
 void AutofillAgent::DidChangeScrollOffset() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAccessorySuggestionView)) {
+    return;
+  }
   HidePopup();
 }
 

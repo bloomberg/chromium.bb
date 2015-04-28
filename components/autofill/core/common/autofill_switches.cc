@@ -28,6 +28,9 @@ const char kDisablePasswordGeneration[]     = "disable-password-generation";
 // The "disable" flag for kEnableSingleClickAutofill.
 const char kDisableSingleClickAutofill[]    = "disable-single-click-autofill";
 
+const char kEnableAccessorySuggestionView[] =
+    "enable-autofill-keyboard-accessory-view";
+
 // Enables using device's camera to scan a new credit card when filling out a
 // credit card form.
 const char kEnableCreditCardScan[]          = "enable-credit-card-scan";

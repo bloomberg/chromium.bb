@@ -2396,6 +2396,15 @@ const Experiment kExperiments[] = {
     kOsAndroid | kOsMac | kOsWin | kOsLinux | kOsCrOS,
     MULTI_VALUE_TYPE(kSupervisedUserSafeSitesChoices)
   },
+#if defined(OS_ANDROID)
+  {
+    "enable-autofill-keyboard-accessory-view",
+    IDS_FLAGS_AUTOFILL_ACCESSORY_VIEW_NAME,
+    IDS_FLAGS_AUTOFILL_ACCESSORY_VIEW_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(autofill::switches::kEnableAccessorySuggestionView)
+  },
+#endif  // defined(OS_ANDROID)
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

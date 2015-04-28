@@ -59,6 +59,7 @@ class PageClickTracker : public content::RenderFrameObserver {
   void DidHandleMouseEvent(const blink::WebMouseEvent& event);
   void DidHandleGestureEvent(const blink::WebGestureEvent& event);
   void FocusChangeComplete();
+  void DoFocusChangeComplete();
 
   // True when the last click was on the focused node.
   bool focused_node_was_last_clicked_;
