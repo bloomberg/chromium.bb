@@ -69,7 +69,8 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
   // Implement |BrowserChildProcessObserver|.
   void BrowserChildProcessHostDisconnected(
       const ChildProcessData& data) override;
-  void BrowserChildProcessCrashed(const ChildProcessData& data) override;
+  void BrowserChildProcessCrashed(const ChildProcessData& data,
+      int exit_code) override;
 
   // Implement |NotificationObserver|.
   void Observe(int type,

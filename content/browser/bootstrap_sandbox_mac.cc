@@ -31,7 +31,9 @@ class BootstrapSandboxPolicy : public BrowserChildProcessObserver {
   // BrowserChildProcessObserver:
   void BrowserChildProcessHostDisconnected(
       const ChildProcessData& data) override;
-  void BrowserChildProcessCrashed(const ChildProcessData& data) override;
+  void BrowserChildProcessCrashed(
+      const ChildProcessData& data,
+      int exit_code) override;
 
  private:
   friend struct DefaultSingletonTraits<BootstrapSandboxPolicy>;
@@ -53,7 +55,8 @@ void BootstrapSandboxPolicy::BrowserChildProcessHostDisconnected(
 }
 
 void BootstrapSandboxPolicy::BrowserChildProcessCrashed(
-      const ChildProcessData& data) {
+      const ChildProcessData& data,
+      int exit_code) {
   sandbox()->ChildDied(data.handle);
 }
 

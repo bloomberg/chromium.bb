@@ -236,7 +236,8 @@ void ChromeStabilityMetricsProvider::Observe(
 }
 
 void ChromeStabilityMetricsProvider::BrowserChildProcessCrashed(
-    const content::ChildProcessData& data) {
+    const content::ChildProcessData& data,
+    int exit_code) {
 #if defined(ENABLE_PLUGINS)
   // Exclude plugin crashes from the count below because we report them via
   // a separate UMA metric.

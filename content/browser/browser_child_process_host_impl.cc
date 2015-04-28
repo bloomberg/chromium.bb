@@ -53,9 +53,9 @@ void NotifyProcessHostDisconnected(const ChildProcessData& data) {
                     BrowserChildProcessHostDisconnected(data));
 }
 
-void NotifyProcessCrashed(const ChildProcessData& data) {
+void NotifyProcessCrashed(const ChildProcessData& data, int exit_code) {
   FOR_EACH_OBSERVER(BrowserChildProcessObserver, g_observers.Get(),
-                    BrowserChildProcessCrashed(data));
+                    BrowserChildProcessCrashed(data, exit_code));
 }
 
 }  // namespace
@@ -282,8 +282,9 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION: {
         delegate_->OnProcessCrashed(exit_code);
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::Bind(&NotifyProcessCrashed, data_));
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::Bind(&NotifyProcessCrashed, data_, exit_code));
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed2",
                                   data_.process_type,
                                   PROCESS_TYPE_MAX);

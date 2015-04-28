@@ -140,7 +140,8 @@ void CastStabilityMetricsProvider::Observe(
 }
 
 void CastStabilityMetricsProvider::BrowserChildProcessCrashed(
-    const content::ChildProcessData& data) {
+    const content::ChildProcessData& data,
+    int exit_code) {
   IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
 }
 

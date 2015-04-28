@@ -353,7 +353,8 @@ void PluginMetricsProvider::BrowserChildProcessHostConnected(
 }
 
 void PluginMetricsProvider::BrowserChildProcessCrashed(
-    const content::ChildProcessData& data) {
+    const content::ChildProcessData& data,
+    int exit_code) {
   GetChildProcessStats(data).process_crashes++;
   RecordCurrentStateWithDelay(kRecordStateDelayMs);
 }

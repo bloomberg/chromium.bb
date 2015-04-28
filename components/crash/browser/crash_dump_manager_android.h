@@ -55,7 +55,8 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
   void BrowserChildProcessHostDisconnected(
       const content::ChildProcessData& data) override;
   void BrowserChildProcessCrashed(
-      const content::ChildProcessData& data) override;
+      const content::ChildProcessData& data,
+      int exit_code) override;
 
   // NotificationObserver implementation:
   void Observe(int type,

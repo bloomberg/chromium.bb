@@ -90,8 +90,8 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
   // content::BrowserChildProcessObserver:
   void BrowserChildProcessHostConnected(
       const content::ChildProcessData& data) override;
-  void BrowserChildProcessCrashed(
-      const content::ChildProcessData& data) override;
+  void BrowserChildProcessCrashed(const content::ChildProcessData& data,
+                                  int exit_code) override;
   void BrowserChildProcessInstanceCreated(
       const content::ChildProcessData& data) override;
 

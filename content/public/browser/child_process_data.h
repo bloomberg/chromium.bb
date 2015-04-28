@@ -30,9 +30,15 @@ struct ChildProcessData {
   // current process.
   base::ProcessHandle handle;
 
+  // The exit code for the process. This is only valid for processes that have
+  // already exited e.g. when receiving a BrowserChildProcessCrashed callback.
+  int exit_code;
+
   explicit ChildProcessData(int process_type)
-      : process_type(process_type), id(0), handle(base::kNullProcessHandle) {
-  }
+      : process_type(process_type),
+        id(0),
+        handle(base::kNullProcessHandle),
+        exit_code(0) {}
 };
 
 }  // namespace content

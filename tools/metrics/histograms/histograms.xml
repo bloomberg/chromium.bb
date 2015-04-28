@@ -2772,6 +2772,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ChildProcess.InvalidSandboxStateCrash.NoStartupWindow"
+    enum="BooleanPresent">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Whether the browser command line had the switch --no-startup-window when a
+    child process crashed due to invalid sandbox state. Recorded when a child
+    process crashes if the exit code from the child process is
+    RESULT_CODE_INVALID_SANDBOX_STATE.
+  </summary>
+</histogram>
+
 <histogram name="ChildProcess.Killed" enum="ProcessType">
   <obsolete>
     Deprecated 3/2013. Renamed to ChildProcess.Killed2.

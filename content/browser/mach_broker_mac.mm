@@ -217,7 +217,8 @@ void MachBroker::BrowserChildProcessHostDisconnected(
   InvalidateChildProcessId(data.id);
 }
 
-void MachBroker::BrowserChildProcessCrashed(const ChildProcessData& data) {
+void MachBroker::BrowserChildProcessCrashed(const ChildProcessData& data,
+    int exit_code) {
   InvalidateChildProcessId(data.id);
 }
 

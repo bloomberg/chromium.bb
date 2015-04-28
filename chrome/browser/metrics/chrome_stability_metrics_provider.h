@@ -48,7 +48,8 @@ class ChromeStabilityMetricsProvider
 
   // content::BrowserChildProcessObserver:
   void BrowserChildProcessCrashed(
-      const content::ChildProcessData& data) override;
+      const content::ChildProcessData& data,
+      int exit_code) override;
 
   // Logs the initiation of a page load and uses |web_contents| to do
   // additional logging of the type of page loaded.

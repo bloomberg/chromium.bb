@@ -268,6 +268,8 @@
       'browser/chrome_browser_main_mac.mm',
       'browser/chrome_browser_main_win.cc',
       'browser/chrome_browser_main_win.h',
+      'browser/chrome_child_process_watcher.cc',
+      'browser/chrome_child_process_watcher.h',
       'browser/chrome_content_browser_client.cc',
       'browser/chrome_content_browser_client.h',
       'browser/chrome_content_browser_client_parts.h',

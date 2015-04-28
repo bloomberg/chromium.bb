@@ -21,6 +21,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 
+class ChromeChildProcessWatcher;
 class ChromeDeviceClient;
 class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
@@ -300,6 +301,8 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
   scoped_ptr<gcm::GCMDriver> gcm_driver_;
+
+  scoped_ptr<ChromeChildProcessWatcher> child_process_watcher_;
 
 #if !defined(OS_ANDROID)
   scoped_ptr<ChromeDeviceClient> device_client_;

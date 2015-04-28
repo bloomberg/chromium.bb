@@ -27,6 +27,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_child_process_watcher.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
@@ -272,6 +273,8 @@ void BrowserProcessImpl::StartTearDown() {
   // PromoResourceService must be destroyed after the keyed services and before
   // the IO thread.
   promo_resource_service_.reset();
+
+  child_process_watcher_.reset();
 
 #if !defined(OS_ANDROID)
   // Debugger must be cleaned up before IO thread and NotificationService.
@@ -1060,6 +1063,8 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   storage_monitor::StorageMonitor::Create();
 #endif
+
+  child_process_watcher_.reset(new ChromeChildProcessWatcher());
 
   platform_part_->PreMainMessageLoopRun();
 }

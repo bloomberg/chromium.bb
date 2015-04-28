@@ -24,7 +24,9 @@ class CONTENT_EXPORT BrowserChildProcessObserver {
       const ChildProcessData& data) {}
 
   // Called when a child process disappears unexpectedly as a result of a crash.
-  virtual void BrowserChildProcessCrashed(const ChildProcessData& data) {}
+  // |exit_code| contains the exit code from the process.
+  virtual void BrowserChildProcessCrashed(const ChildProcessData& data,
+                                          int exit_code) {}
 
   // Called when an instance of a particular child is created in a page. If one
   // page contains several regions rendered by the same child, this will be

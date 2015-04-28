@@ -57,7 +57,8 @@ class CastStabilityMetricsProvider
 
   // content::BrowserChildProcessObserver implementation:
   void BrowserChildProcessCrashed(
-      const content::ChildProcessData& data) override;
+      const content::ChildProcessData& data,
+      int exit_code) override;
 
   // Records a renderer process crash.
   void LogRendererCrash(content::RenderProcessHost* host,

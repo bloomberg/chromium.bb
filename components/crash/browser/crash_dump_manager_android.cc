@@ -126,7 +126,8 @@ void CrashDumpManager::BrowserChildProcessHostDisconnected(
 }
 
 void CrashDumpManager::BrowserChildProcessCrashed(
-    const content::ChildProcessData& data) {
+    const content::ChildProcessData& data,
+    int exit_code) {
   OnChildExit(data.id, data.handle);
 }
 
