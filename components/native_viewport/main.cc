@@ -37,12 +37,13 @@ class NativeViewportAppDelegate : public mojo::ApplicationDelegate,
     tracing_.Initialize(application);
 
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(mojo::kUseTestConfig))
-      gfx::GLSurface::InitializeOneOffForTests();
-    else
-      gfx::GLSurface::InitializeOneOff();
-
     is_headless_ = command_line->HasSwitch(mojo::kUseHeadlessConfig);
+    if (!is_headless_) {
+      if (command_line->HasSwitch(mojo::kUseTestConfig))
+        gfx::GLSurface::InitializeOneOffForTests();
+      else
+        gfx::GLSurface::InitializeOneOff();
+    }
   }
 
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
