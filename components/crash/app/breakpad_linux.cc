@@ -730,11 +730,12 @@ void InitMicrodumpCrashHandlerIfNecessary(const std::string& process_type) {
   VLOG(1) << "Enabling microdumps crash handler (process_type:"
           << process_type << ")";
   DCHECK(!g_microdump);
+  bool is_browser_process = process_type.empty() || process_type == "webview";
   g_microdump = new ExceptionHandler(
         MinidumpDescriptor(MinidumpDescriptor::kMicrodumpOnConsole),
         NULL,
         MicrodumpCrashDone,
-        reinterpret_cast<void*>(process_type.empty()),
+        reinterpret_cast<void*>(is_browser_process),
         true,  // Install handlers.
         -1);   // Server file descriptor. -1 for in-process.
     return;
