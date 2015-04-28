@@ -7,7 +7,6 @@ from telemetry import benchmark
 from measurements import blink_style
 import page_sets
 
-@benchmark.Disabled # http://crbug.com/479048
 class BlinkStyleTop25(benchmark.Benchmark):
   """Measures performance of Blink's style engine (CSS Parsing, Style Recalc,
   etc.) on the top 25 pages.
@@ -33,7 +32,7 @@ class BlinkStyleKeyMobileSites(benchmark.Benchmark):
     return 'blink_style.key_mobile_sites'
 
 
-@benchmark.Disabled('mac', 'reference')  # http://crbug.com/479048
+@benchmark.Enabled('android')
 class BlinkStylePolymer(benchmark.Benchmark):
   """Measures performance of Blink's style engine (CSS Parsing, Style Recalc,
   etc.) for Polymer cases.

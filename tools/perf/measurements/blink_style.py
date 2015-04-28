@@ -4,8 +4,8 @@
 
 from itertools import starmap
 from collections import defaultdict
-
 from telemetry.core import util
+from telemetry.core import exceptions
 from telemetry.page import page_test
 from telemetry.value import scalar
 
@@ -19,7 +19,7 @@ class BlinkStyle(page_test.PageTest):
 
   def WillNavigateToPage(self, page, tab):
     self._controller = timeline_controller.TimelineController()
-    self._controller.trace_categories = 'blink,benchmark,blink.console'
+    self._controller.trace_categories = 'blink_style,blink.console'
     self._controller.SetUp(page, tab)
     self._controller.Start(tab)
 
@@ -28,9 +28,15 @@ class BlinkStyle(page_test.PageTest):
       self._controller.CleanUp(tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    tab.WaitForDocumentReadyStateToBeComplete()
-    if not util.WaitFor(tab.HasReachedQuiescence, 30):
-      raise page_test.MeasurementFailure('Failed to reach quiesence.')
+    tab.ExecuteJavaScript('console.time("wait-for-quiescence");')
+    try:
+      util.WaitFor(tab.HasReachedQuiescence, 15)
+    except exceptions.TimeoutException:
+      # Some sites never reach quiesence. As this benchmark normalizes/
+      # categories results, it shouldn't be necessary to reach the same
+      # state on every run.
+      pass
+    tab.ExecuteJavaScript('console.timeEnd("wait-for-quiescence");')
 
     tab.ExecuteJavaScript(
         'console.time("style-update");'
@@ -62,7 +68,10 @@ class BlinkStyle(page_test.PageTest):
       if (event.name == 'Document::updateStyle'
           and event.start >= marker.start
           and event.end <= marker.end):
-        access_count = event.args['resolverAccessCount']
+        access_count = event.args.get('resolverAccessCount')
+        if access_count is None:
+          # absent in earlier versions
+          continue
         min_access_count = 50
 
         if access_count >= min_access_count:
