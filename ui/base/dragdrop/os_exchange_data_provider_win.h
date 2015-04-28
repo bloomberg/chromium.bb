@@ -104,17 +104,8 @@ class DataObjectImpl : public DownloadFileObserver,
     bool owns_medium;
     scoped_refptr<DownloadFileProvider> downloader;
 
-    StoredDataInfo(const FORMATETC& format_etc, STGMEDIUM* medium)
-        : format_etc(format_etc), medium(medium), owns_medium(true) {}
-
-    ~StoredDataInfo() {
-      if (owns_medium) {
-        ReleaseStgMedium(medium);
-        delete medium;
-      }
-      if (downloader.get())
-        downloader->Stop();
-    }
+    StoredDataInfo(const FORMATETC& format_etc, STGMEDIUM* medium);
+    ~StoredDataInfo();
   };
 
   typedef ScopedVector<StoredDataInfo> StoredData;

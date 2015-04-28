@@ -626,6 +626,20 @@ static void DuplicateMedium(CLIPFORMAT source_clipformat,
     destination->pUnkForRelease->AddRef();
 }
 
+DataObjectImpl::StoredDataInfo::StoredDataInfo(const FORMATETC& format_etc,
+                                               STGMEDIUM* medium)
+    : format_etc(format_etc), medium(medium), owns_medium(true) {
+}
+
+DataObjectImpl::StoredDataInfo::~StoredDataInfo() {
+  if (owns_medium) {
+    ReleaseStgMedium(medium);
+    delete medium;
+  }
+  if (downloader.get())
+    downloader->Stop();
+}
+
 DataObjectImpl::DataObjectImpl()
     : is_aborting_(false),
       in_drag_loop_(false),
