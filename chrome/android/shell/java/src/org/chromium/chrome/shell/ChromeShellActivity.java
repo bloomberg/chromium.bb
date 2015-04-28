@@ -32,6 +32,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
@@ -123,6 +124,11 @@ public class ChromeShellActivity extends AppCompatActivity implements AppMenuPro
         waitForDebuggerIfNeeded();
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
+
+        String url = getUrlFromIntent(getIntent());
+        if (url != null) {
+            WarmupManager.getInstance().maybePrefetchDnsForUrlInBackground(this, url);
+        }
 
         BrowserStartupController.StartupCallback callback =
                 new BrowserStartupController.StartupCallback() {
