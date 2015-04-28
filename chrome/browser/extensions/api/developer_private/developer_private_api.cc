@@ -226,12 +226,10 @@ void DeveloperPrivateEventRouter::OnExtensionUnloaded(
   BroadcastItemStateChanged(developer::EVENT_TYPE_UNLOADED, extension->id());
 }
 
-void DeveloperPrivateEventRouter::OnExtensionWillBeInstalled(
+void DeveloperPrivateEventRouter::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
-    bool is_update,
-    bool from_ephemeral,
-    const std::string& old_name) {
+    bool is_update) {
   DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
   BroadcastItemStateChanged(developer::EVENT_TYPE_INSTALLED, extension->id());
 }

@@ -162,15 +162,26 @@ cr.define('extensions', function() {
            compare(a.id, b.id);
   }
 
+  /** @interface */
+  function ExtensionListDelegate() {}
+
+  ExtensionListDelegate.prototype = {
+    /**
+     * Called when the number of extensions in the list has changed.
+     */
+    onExtensionCountChanged: assertNotReached,
+  };
+
   /**
    * Creates a new list of extensions.
+   * @param {extensions.ExtensionListDelegate} delegate
    * @constructor
    * @extends {HTMLDivElement}
    */
-  function ExtensionList() {
+  function ExtensionList(delegate) {
     var div = document.createElement('div');
     div.__proto__ = ExtensionList.prototype;
-    div.initialize();
+    div.initialize(delegate);
     return div;
   }
 
@@ -230,10 +241,14 @@ cr.define('extensions', function() {
 
     /**
      * Initializes the list.
+     * @param {!extensions.ExtensionListDelegate} delegate
      */
-    initialize: function() {
+    initialize: function(delegate) {
       /** @private {!Array<ExtensionInfo>} */
       this.extensions_ = [];
+
+      /** @private {!extensions.ExtensionListDelegate} */
+      this.delegate_ = delegate;
 
       /**
        * |loadFinished| should be used for testing purposes and will be
@@ -260,11 +275,18 @@ cr.define('extensions', function() {
               this.updateExtension_(eventData.extensionInfo);
             break;
           case EventType.UNINSTALLED:
+            var index = this.getIndexOfExtension_(eventData.item_id);
+            this.extensions_.splice(index, 1);
             var childNode = $(eventData.item_id);
             childNode.parentNode.removeChild(childNode);
             break;
           default:
             assertNotReached();
+        }
+
+        if (eventData.event_type == EventType.INSTALLED ||
+            eventData.event_type == EventType.UNINSTALLED) {
+          this.delegate_.onExtensionCountChanged();
         }
       }.bind(this));
     },
@@ -332,6 +354,19 @@ cr.define('extensions', function() {
     /** @return {number} The number of extensions being displayed. */
     getNumExtensions: function() {
       return this.extensions_.length;
+    },
+
+    /**
+     * @param {string} id The id of the extension.
+     * @return {number} The index of the extension with the given id.
+     * @private
+     */
+    getIndexOfExtension_: function(id) {
+      for (var i = 0; i < this.extensions_.length; ++i) {
+        if (this.extensions_[i].id == id)
+          return i;
+      }
+      return -1;
     },
 
     getIdQueryParam_: function() {
@@ -1063,13 +1098,7 @@ cr.define('extensions', function() {
      * @private
      */
     updateExtension_: function(extension) {
-      var currIndex = -1;
-      for (var i = 0; i < this.extensions_.length; ++i) {
-        if (this.extensions_[i].id == extension.id) {
-          currIndex = i;
-          break;
-        }
-      }
+      var currIndex = this.getIndexOfExtension_(extension.id);
       if (currIndex != -1) {
         // If there is a current version of the extension, update it with the
         // new version.
@@ -1093,6 +1122,7 @@ cr.define('extensions', function() {
   };
 
   return {
-    ExtensionList: ExtensionList
+    ExtensionList: ExtensionList,
+    ExtensionListDelegate: ExtensionListDelegate
   };
 });

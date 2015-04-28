@@ -98,6 +98,8 @@ cr.define('extensions', function() {
   /**
    * ExtensionSettings class
    * @class
+   * @constructor
+   * @implements {extensions.ExtensionListDelegate}
    */
   function ExtensionSettings() {}
 
@@ -133,7 +135,7 @@ cr.define('extensions', function() {
       // Set the title.
       uber.setTitle(loadTimeData.getString('extensionSettings'));
 
-      var extensionList = new ExtensionList();
+      var extensionList = new ExtensionList(this);
       extensionList.id = 'extension-settings-list';
       var wrapper = $('extension-list-wrapper');
       wrapper.insertBefore(extensionList, wrapper.firstChild);
@@ -274,10 +276,7 @@ cr.define('extensions', function() {
           document.documentElement.classList.remove('loading');
         }, 0);
 
-        /** @const */
-        var hasExtensions = extensionList.getNumExtensions() != 0;
-        $('no-extensions').hidden = hasExtensions;
-        $('extension-list-wrapper').hidden = !hasExtensions;
+        this.onExtensionCountChanged();
       }.bind(this));
     },
 
@@ -293,10 +292,9 @@ cr.define('extensions', function() {
 
     /**
      * Shows the Extension Commands configuration UI.
-     * @param {Event} e Change event.
      * @private
      */
-    showExtensionCommandsConfigUi_: function(e) {
+    showExtensionCommandsConfigUi_: function() {
       ExtensionSettings.showOverlay($('extension-commands-overlay'));
       chrome.send('metricsHandler:recordAction',
                   ['Options_ExtensionCommands']);
@@ -347,8 +345,20 @@ cr.define('extensions', function() {
             buttons.offsetHeight + 'px';
       }.bind(this));
     },
+
+    /** @override */
+    onExtensionCountChanged: function() {
+      /** @const */
+      var hasExtensions = $('extension-settings-list').getNumExtensions() != 0;
+      $('no-extensions').hidden = hasExtensions;
+      $('extension-list-wrapper').hidden = !hasExtensions;
+    },
   };
 
+  /**
+   * Called by the WebUI when something has changed and the extensions UI needs
+   * to be updated.
+   */
   ExtensionSettings.onExtensionsChanged = function() {
     ExtensionSettings.getInstance().update_();
   };

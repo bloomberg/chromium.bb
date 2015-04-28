@@ -68,11 +68,9 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionInfo::Reason reason) override;
-  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
-                                  const Extension* extension,
-                                  bool is_update,
-                                  bool from_ephemeral,
-                                  const std::string& old_name) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const Extension* extension,
+                            bool is_update) override;
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               extensions::UninstallReason reason) override;
