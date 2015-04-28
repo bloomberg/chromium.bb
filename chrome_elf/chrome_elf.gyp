@@ -15,19 +15,9 @@
     {
       'target_name': 'chrome_elf_resources',
       'type': 'none',
-      'conditions': [
-        ['branding == "Chrome"', {
-          'variables': {
-             'branding_path': '../chrome/app/theme/google_chrome/BRANDING',
-          },
-        }, { # else branding!="Chrome"
-          'variables': {
-             'branding_path': '../chrome/app/theme/chromium/BRANDING',
-          },
-        }],
-      ],
       'variables': {
         'output_dir': 'chrome_elf',
+        'branding_path': '../chrome/app/theme/<(branding_path_component)/BRANDING',
         'template_input_path': '../chrome/app/chrome_version.rc.version',
       },
       'sources': [
