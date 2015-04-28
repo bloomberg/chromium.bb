@@ -14,8 +14,6 @@ namespace devtools_http_handler {
 class DevToolsHttpHandler;
 }
 
-class DevToolsManagerDelegateAndroid;
-
 // This class controls Developer Tools remote debugging server.
 class DevToolsServer {
  public:
@@ -32,8 +30,6 @@ class DevToolsServer {
 
  private:
   std::string socket_name_;
-  // TODO(dgozman): remove once devtools_discovery component is extracted.
-  scoped_ptr<DevToolsManagerDelegateAndroid> manager_delegate_;
   scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsServer);

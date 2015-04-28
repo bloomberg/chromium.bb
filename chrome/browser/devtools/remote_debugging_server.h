@@ -15,8 +15,6 @@ namespace devtools_http_handler {
 class DevToolsHttpHandler;
 }
 
-class ChromeDevToolsManagerDelegate;
-
 class RemoteDebuggingServer {
  public:
   static void EnableTetheringForDebug();
@@ -28,8 +26,6 @@ class RemoteDebuggingServer {
   virtual ~RemoteDebuggingServer();
 
  private:
-  // TODO(dgozman): remove once devtools_discovery component is extracted.
-  scoped_ptr<ChromeDevToolsManagerDelegate> manager_delegate_;
   scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
   DISALLOW_COPY_AND_ASSIGN(RemoteDebuggingServer);
 };

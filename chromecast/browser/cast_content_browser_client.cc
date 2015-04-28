@@ -19,7 +19,6 @@
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
-#include "chromecast/browser/devtools/cast_dev_tools_delegate.h"
 #include "chromecast/browser/geolocation/cast_access_token_store.h"
 #include "chromecast/browser/media/cma_message_filter_host.h"
 #include "chromecast/browser/url_request_context_factory.h"
@@ -311,11 +310,6 @@ bool CastContentBrowserClient::CanCreateWindow(
     bool* no_javascript_access) {
   *no_javascript_access = true;
   return false;
-}
-
-content::DevToolsManagerDelegate*
-CastContentBrowserClient::GetDevToolsManagerDelegate() {
-  return new CastDevToolsManagerDelegate();
 }
 
 void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(

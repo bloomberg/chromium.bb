@@ -4,7 +4,6 @@
 
 #include "android_webview/native/aw_dev_tools_server.h"
 
-#include "android_webview/browser/aw_dev_tools_manager_delegate.h"
 #include "android_webview/common/aw_content_client.h"
 #include "android_webview/native/aw_contents.h"
 #include "base/bind.h"
@@ -17,7 +16,6 @@
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_target.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/user_agent.h"
 #include "jni/AwDevToolsServer_jni.h"
@@ -51,6 +49,7 @@ class AwDevToolsServerDelegate :
   // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
+  std::string GetPageThumbnailData(const GURL&) override;
 
  private:
 
@@ -70,6 +69,10 @@ std::string AwDevToolsServerDelegate::GetDiscoveryPageHTML() {
 
 std::string AwDevToolsServerDelegate::GetFrontendResource(
     const std::string& path) {
+  return std::string();
+}
+
+std::string AwDevToolsServerDelegate::GetPageThumbnailData(const GURL&) {
   return std::string();
 }
 
@@ -131,12 +134,10 @@ void AwDevToolsServer::Start() {
   scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new UnixDomainServerSocketFactory(
           base::StringPrintf(kSocketNameFormat, getpid())));
-  manager_delegate_.reset(new AwDevToolsManagerDelegate());
   devtools_http_handler_.reset(new DevToolsHttpHandler(
       factory.Pass(),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       new AwDevToolsServerDelegate(),
-      manager_delegate_.get(),
       base::FilePath(),
       base::FilePath(),
       GetProduct(),
@@ -145,7 +146,6 @@ void AwDevToolsServer::Start() {
 
 void AwDevToolsServer::Stop() {
   devtools_http_handler_.reset();
-  manager_delegate_.reset();
 }
 
 bool AwDevToolsServer::IsStarted() const {

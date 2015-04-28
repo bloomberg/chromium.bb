@@ -9,6 +9,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../components/components.gyp:devtools_discovery',
         '../content/content.gyp:content_browser',
         '../net/net.gyp:net',
         '../net/net.gyp:http_server',

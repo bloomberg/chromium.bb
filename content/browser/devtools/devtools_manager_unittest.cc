@@ -15,7 +15,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
-#include "content/public/browser/devtools_target.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
@@ -95,100 +94,17 @@ class TestWebContentsDelegate : public WebContentsDelegate {
   bool renderer_unresponsive_received_;
 };
 
-class TestTarget : public DevToolsTarget {
- public:
-  explicit TestTarget(scoped_refptr<DevToolsAgentHost> agent_host)
-      : agent_host_(agent_host) {}
-  ~TestTarget() override {}
-
-  std::string GetId() const override { return agent_host_->GetId(); }
-  std::string GetParentId() const override { return std::string(); }
-  std::string GetType() const override { return std::string(); }
-  std::string GetTitle() const override { return agent_host_->GetTitle(); }
-  std::string GetDescription() const override { return std::string(); }
-  GURL GetURL() const override { return agent_host_->GetURL(); }
-  GURL GetFaviconURL() const override { return GURL(); }
-  base::TimeTicks GetLastActivityTime() const override {
-    return base::TimeTicks();
-  }
-  bool IsAttached() const override { return agent_host_->IsAttached(); }
-  scoped_refptr<DevToolsAgentHost> GetAgentHost() const override {
-    return agent_host_;
-  }
-  bool Activate() const override { return agent_host_->Activate(); }
-  bool Close() const override { return agent_host_->Close(); }
-
- private:
-  scoped_refptr<DevToolsAgentHost> agent_host_;
-};
-
-class TestDevToolsManagerDelegate : public DevToolsManagerDelegate {
- public:
-  ~TestDevToolsManagerDelegate() override {}
-
-  void Inspect(BrowserContext* browser_context,
-               DevToolsAgentHost* agent_host) override {}
-
-  void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
-                                 bool attached) override {}
-
-  base::DictionaryValue* HandleCommand(
-      DevToolsAgentHost* agent_host,
-      base::DictionaryValue* command) override {
-    return NULL;
-  }
-
-  scoped_ptr<DevToolsTarget> CreateNewTarget(const GURL& url) override {
-    return scoped_ptr<DevToolsTarget>();
-  }
-
-  void EnumerateTargets(TargetCallback callback) override {
-    TargetList result;
-    DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
-    for (DevToolsAgentHost::List::iterator it = agents.begin();
-         it != agents.end(); ++it) {
-      if ((*it)->GetType() == DevToolsAgentHost::TYPE_WEB_CONTENTS)
-        result.insert(result.begin(), new TestTarget(*it));
-      else
-        result.push_back(new TestTarget(*it));
-    }
-    callback.Run(result);
-  }
-
-  std::string GetPageThumbnailData(const GURL& url) override {
-    return std::string();
-  }
-};
-
-class ContentBrowserClientWithDevTools : public TestContentBrowserClient {
- public:
-  ~ContentBrowserClientWithDevTools() override {}
-  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override {
-    return new TestDevToolsManagerDelegate();
-  }
-};
-
 }  // namespace
 
 class DevToolsManagerTest : public RenderViewHostImplTestHarness {
  public:
-  DevToolsManagerTest()
-      : old_browser_client_(NULL) {}
+  DevToolsManagerTest() {}
 
  protected:
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
-    old_browser_client_ = SetBrowserClientForTesting(&browser_client_);
   }
-
-  void TearDown() override {
-    SetBrowserClientForTesting(old_browser_client_);
-    RenderViewHostImplTestHarness::TearDown();
-  }
-
-  ContentBrowserClientWithDevTools browser_client_;
-  ContentBrowserClient* old_browser_client_;
 };
 
 TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {

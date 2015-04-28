@@ -17,7 +17,6 @@
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_frontend_host.h"
-#include "content/public/browser/devtools_target.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -153,6 +152,7 @@ class ShellDevToolsDelegate :
   // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
+  std::string GetPageThumbnailData(const GURL& url) override;
 
  private:
   BrowserContext* browser_context_;
@@ -187,6 +187,10 @@ std::string ShellDevToolsDelegate::GetFrontendResource(
   return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
+std::string ShellDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
+  return std::string();
+}
+
 }  // namespace
 
 // ShellDevToolsManagerDelegate ----------------------------------------------
@@ -203,7 +207,6 @@ ShellDevToolsManagerDelegate::CreateHttpHandler(
       CreateSocketFactory(),
       frontend_url,
       new ShellDevToolsDelegate(browser_context),
-      new ShellDevToolsManagerDelegate(browser_context),
       base::FilePath(),
       base::FilePath(),
       std::string(),
@@ -222,27 +225,6 @@ base::DictionaryValue* ShellDevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHost* agent_host,
     base::DictionaryValue* command) {
   return NULL;
-}
-
-std::string ShellDevToolsManagerDelegate::GetPageThumbnailData(
-    const GURL& url) {
-  return std::string();
-}
-
-scoped_ptr<DevToolsTarget>
-ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
-  devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
-      devtools_discovery::DevToolsDiscoveryManager::GetInstance();
-  return discovery_manager->CreateNew(url);
-}
-
-void ShellDevToolsManagerDelegate::EnumerateTargets(TargetCallback callback) {
-  TargetList targets;
-  devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
-      devtools_discovery::DevToolsDiscoveryManager::GetInstance();
-  for (const auto& descriptor : discovery_manager->GetDescriptors())
-    targets.push_back(descriptor);
-  callback.Run(targets);
 }
 
 }  // namespace content

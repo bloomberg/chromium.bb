@@ -78,8 +78,6 @@
       'browser/android/cookies/cookies_fetcher.h',
       'browser/android/dev_tools_discovery_provider_android.cc',
       'browser/android/dev_tools_discovery_provider_android.h',
-      'browser/android/dev_tools_manager_delegate_android.cc',
-      'browser/android/dev_tools_manager_delegate_android.h',
       'browser/android/dev_tools_server.cc',
       'browser/android/dev_tools_server.h',
       'browser/android/dom_distiller/external_feedback_reporter_android.cc',

@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/devtools_manager_delegate.h"
+#include "components/devtools_discovery/devtools_target_descriptor.h"
 #include "net/http/http_status_code.h"
 
 class GURL;
@@ -64,13 +64,10 @@ class DevToolsHttpHandler {
   // socket_factory was initialized with an ephemeral port (0). The
   // port selected by the OS will be written to a well-known file in
   // the output directory.
-  // TODO(dgozman): remove |manager_delegate| by moving targets to another
-  // component (http://crbug.com/476496).
   DevToolsHttpHandler(
       scoped_ptr<ServerSocketFactory> server_socket_factory,
       const std::string& frontend_url,
       DevToolsHttpHandlerDelegate* delegate,
-      content::DevToolsManagerDelegate* manager_delegate,
       const base::FilePath& active_port_output_directory,
       const base::FilePath& debug_frontend_dir,
       const std::string& product_name,
@@ -104,17 +101,8 @@ class DevToolsHttpHandler {
                      ServerSocketFactory* socket_factory,
                      scoped_ptr<net::IPEndPoint> ip_address);
 
-  static void OnTargetListReceivedWeak(
-      base::WeakPtr<DevToolsHttpHandler> handler,
-      int connection_id,
-      const std::string& host,
-      const content::DevToolsManagerDelegate::TargetList& targets);
-  void OnTargetListReceived(
-      int connection_id,
-      const std::string& host,
-      const content::DevToolsManagerDelegate::TargetList& targets);
-
-  content::DevToolsTarget* GetTarget(const std::string& id);
+  devtools_discovery::DevToolsTargetDescriptor* GetDescriptor(
+      const std::string& target_id);
 
   void SendJson(int connection_id,
                 net::HttpStatusCode status_code,
@@ -133,8 +121,9 @@ class DevToolsHttpHandler {
   std::string GetFrontendURLInternal(const std::string target_id,
                                      const std::string& host);
 
-  base::DictionaryValue* SerializeTarget(const content::DevToolsTarget& target,
-                                         const std::string& host);
+  base::DictionaryValue* SerializeDescriptor(
+      const devtools_discovery::DevToolsTargetDescriptor& descriptor,
+      const std::string& host);
 
   // The thread used by the devtools handler to run server socket.
   base::Thread* thread_;
@@ -146,10 +135,10 @@ class DevToolsHttpHandler {
   typedef std::map<int, DevToolsAgentHostClientImpl*> ConnectionToClientMap;
   ConnectionToClientMap connection_to_client_;
   const scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
-  content::DevToolsManagerDelegate* manager_delegate_;
   ServerSocketFactory* socket_factory_;
-  typedef std::map<std::string, content::DevToolsTarget*> TargetMap;
-  TargetMap target_map_;
+  using DescriptorMap =
+      std::map<std::string, devtools_discovery::DevToolsTargetDescriptor*>;
+  DescriptorMap descriptor_map_;
   base::WeakPtrFactory<DevToolsHttpHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandler);

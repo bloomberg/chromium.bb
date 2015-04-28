@@ -140,7 +140,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   OverrideCreateExternalVideoSurfaceContainer(
       content::WebContents* web_contents) override;
 #endif
-  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
  private:
   // Android WebView currently has a single global (non-off-the-record) browser

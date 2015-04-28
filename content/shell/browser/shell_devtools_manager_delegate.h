@@ -33,9 +33,6 @@ class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
                                  bool attached) override {}
   base::DictionaryValue* HandleCommand(DevToolsAgentHost* agent_host,
                                        base::DictionaryValue* command) override;
-  scoped_ptr<DevToolsTarget> CreateNewTarget(const GURL& url) override;
-  void EnumerateTargets(TargetCallback callback) override;
-  std::string GetPageThumbnailData(const GURL& url) override;
 
  private:
   BrowserContext* browser_context_;

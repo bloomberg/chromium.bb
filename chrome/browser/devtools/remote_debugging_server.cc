@@ -7,7 +7,6 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -85,6 +84,7 @@ class ChromeDevToolsHttpHandlerDelegate
   // devtools_http_handler::DevToolsHttpHandlerDelegate implementation.
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
+  std::string GetPageThumbnailData(const GURL& url) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeDevToolsHttpHandlerDelegate);
@@ -119,6 +119,21 @@ std::string ChromeDevToolsHttpHandlerDelegate::GetFrontendResource(
   return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
+std::string ChromeDevToolsHttpHandlerDelegate::GetPageThumbnailData(
+    const GURL& url) {
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Profile* profile = (*it)->profile();
+    scoped_refptr<history::TopSites> top_sites =
+        TopSitesFactory::GetForProfile(profile);
+    if (!top_sites)
+      continue;
+    scoped_refptr<base::RefCountedMemory> data;
+    if (top_sites->GetPageThumbnail(url, false, &data))
+      return std::string(data->front_as<char>(), data->size());
+  }
+  return std::string();
+}
+
 }  // namespace
 
 // static
@@ -139,8 +154,6 @@ RemoteDebuggingServer::RemoteDebuggingServer(
     DCHECK(result);
   }
 
-  manager_delegate_.reset(new ChromeDevToolsManagerDelegate());
-
   base::FilePath debug_frontend_dir;
 #if defined(DEBUG_DEVTOOLS)
   PathService::Get(chrome::DIR_INSPECTOR, &debug_frontend_dir);
@@ -152,7 +165,6 @@ RemoteDebuggingServer::RemoteDebuggingServer(
       make_scoped_ptr(new TCPServerSocketFactory(ip, port)),
       std::string(),
       new ChromeDevToolsHttpHandlerDelegate(),
-      manager_delegate_.get(),
       output_dir,
       debug_frontend_dir,
       version_info.ProductNameAndVersionForUserAgent(),

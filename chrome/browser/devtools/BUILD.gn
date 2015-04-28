@@ -30,6 +30,8 @@ action("devtools_protocol_constants") {
 static_library("devtools") {
   # Note: new sources and deps should be generally added in (!is_android) below.
   sources = [
+    "chrome_devtools_manager_delegate.cc",
+    "chrome_devtools_manager_delegate.h",
     "devtools_network_conditions.cc",
     "devtools_network_conditions.h",
     "devtools_network_controller.cc",
@@ -79,8 +81,6 @@ static_library("devtools") {
     sources += [
       "chrome_devtools_discovery_provider.cc",
       "chrome_devtools_discovery_provider.h",
-      "chrome_devtools_manager_delegate.cc",
-      "chrome_devtools_manager_delegate.h",
       "device/adb/adb_client_socket.cc",
       "device/adb/adb_client_socket.h",
       "device/adb/adb_device_provider.cc",

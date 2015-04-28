@@ -148,12 +148,10 @@ void RemoteDebuggingServer::OnPortChanged() {
 
   port_ = new_port;
   if (port_ > 0) {
-    manager_delegate_.reset(new CastDevToolsManagerDelegate());
     devtools_http_handler_.reset(new DevToolsHttpHandler(
         CreateSocketFactory(port_),
         GetFrontendUrl(),
         new CastDevToolsDelegate(),
-        manager_delegate_.get(),
         base::FilePath(),
         base::FilePath(),
         std::string(),

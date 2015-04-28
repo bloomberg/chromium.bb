@@ -4,17 +4,7 @@
 
 #include "chromecast/browser/devtools/cast_dev_tools_delegate.h"
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/devtools_discovery/devtools_discovery_manager.h"
-#include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_target.h"
-#include "content/public/browser/favicon_status.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "grit/shell_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -43,37 +33,8 @@ std::string CastDevToolsDelegate::GetFrontendResource(
   return std::string();
 }
 
-// CastDevToolsManagerDelegate -----------------------------------------------
-
-CastDevToolsManagerDelegate::CastDevToolsManagerDelegate() {
-}
-
-CastDevToolsManagerDelegate::~CastDevToolsManagerDelegate() {
-}
-
-base::DictionaryValue* CastDevToolsManagerDelegate::HandleCommand(
-    content::DevToolsAgentHost* agent_host,
-    base::DictionaryValue* command) {
-  return NULL;
-}
-
-std::string CastDevToolsManagerDelegate::GetPageThumbnailData(
-    const GURL& url) {
-  return "";
-}
-
-scoped_ptr<content::DevToolsTarget>
-CastDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
-  return scoped_ptr<content::DevToolsTarget>();
-}
-
-void CastDevToolsManagerDelegate::EnumerateTargets(TargetCallback callback) {
-  TargetList targets;
-  devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
-      devtools_discovery::DevToolsDiscoveryManager::GetInstance();
-  for (const auto& descriptor : discovery_manager->GetDescriptors())
-    targets.push_back(descriptor);
-  callback.Run(targets);
+std::string CastDevToolsDelegate::GetPageThumbnailData(const GURL& url) {
+  return std::string();
 }
 
 }  // namespace shell

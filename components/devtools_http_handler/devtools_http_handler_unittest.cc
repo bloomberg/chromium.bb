@@ -7,9 +7,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/values.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
-#include "content/public/browser/devtools_target.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/ip_endpoint.h"
@@ -98,33 +98,6 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
   std::string GetFrontendResource(const std::string& path) override {
     return std::string();
   }
-};
-
-class DummyManagerDelegate : public content::DevToolsManagerDelegate {
- public:
-  ~DummyManagerDelegate() override {}
-
-  void Inspect(content::BrowserContext* browser_context,
-               content::DevToolsAgentHost* agent_host) override {}
-
-  void DevToolsAgentStateChanged(content::DevToolsAgentHost* agent_host,
-                                 bool attached) override {}
-
-  base::DictionaryValue* HandleCommand(
-      content::DevToolsAgentHost* agent_host,
-      base::DictionaryValue* command) override {
-    return NULL;
-  }
-
-  scoped_ptr<content::DevToolsTarget> CreateNewTarget(
-      const GURL& url) override {
-    return scoped_ptr<content::DevToolsTarget>();
-  }
-
-  void EnumerateTargets(TargetCallback callback) override {
-    TargetList result;
-    callback.Run(result);
-  }
 
   std::string GetPageThumbnailData(const GURL& url) override {
     return std::string();
@@ -136,9 +109,6 @@ class DummyManagerDelegate : public content::DevToolsManagerDelegate {
 class DevToolsHttpHandlerTest : public testing::Test {
  public:
   DevToolsHttpHandlerTest() : testing::Test() { }
-
- protected:
-  DummyManagerDelegate manager_delegate_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -153,7 +123,6 @@ TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
       new DevToolsHttpHandler(factory.Pass(),
                               std::string(),
                               new DummyDelegate(),
-                              &manager_delegate_,
                               base::FilePath(),
                               base::FilePath(),
                               std::string(),
@@ -175,7 +144,6 @@ TEST_F(DevToolsHttpHandlerTest, TestServerSocketFailed) {
       new DevToolsHttpHandler(factory.Pass(),
                               std::string(),
                               new DummyDelegate(),
-                              &manager_delegate_,
                               base::FilePath(),
                               base::FilePath(),
                               std::string(),
@@ -204,7 +172,6 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
       new DevToolsHttpHandler(factory.Pass(),
                               std::string(),
                               new DummyDelegate(),
-                              &manager_delegate_,
                               temp_dir.path(),
                               base::FilePath(),
                               std::string(),

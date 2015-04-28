@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/android/dev_tools_manager_delegate_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/top_sites_factory.h"
@@ -33,7 +32,6 @@
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_target.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -103,6 +101,19 @@ class DevToolsServerDelegate :
   }
 
   std::string GetFrontendResource(const std::string& path) override {
+    return std::string();
+  }
+
+  std::string GetPageThumbnailData(const GURL& url) override {
+    Profile* profile =
+        ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
+    scoped_refptr<history::TopSites> top_sites =
+        TopSitesFactory::GetForProfile(profile);
+    if (top_sites) {
+      scoped_refptr<base::RefCountedMemory> data;
+      if (top_sites->GetPageThumbnail(url, false, &data))
+        return std::string(data->front_as<char>(), data->size());
+    }
     return std::string();
   }
 
@@ -195,7 +206,6 @@ void DevToolsServer::Start(bool allow_debug_permission) {
       allow_debug_permission ?
           base::Bind(&AuthorizeSocketAccessWithDebugPermission) :
           base::Bind(&content::CanUserConnectToDevTools);
-  manager_delegate_.reset(new DevToolsManagerDelegateAndroid());
   chrome::VersionInfo version_info;
 
   scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
@@ -204,7 +214,6 @@ void DevToolsServer::Start(bool allow_debug_permission) {
       factory.Pass(),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       new DevToolsServerDelegate(),
-      manager_delegate_.get(),
       base::FilePath(),
       base::FilePath(),
       version_info.ProductNameAndVersionForUserAgent(),
@@ -213,7 +222,6 @@ void DevToolsServer::Start(bool allow_debug_permission) {
 
 void DevToolsServer::Stop() {
   devtools_http_handler_.reset();
-  manager_delegate_.reset();
 }
 
 bool DevToolsServer::IsStarted() const {

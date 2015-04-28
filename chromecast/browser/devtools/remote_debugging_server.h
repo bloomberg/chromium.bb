@@ -30,8 +30,6 @@ class RemoteDebuggingServer {
   // on device startup.
   bool ShouldStartImmediately();
 
-  // TODO(dgozman): remove once devtools_discovery component is extracted.
-  scoped_ptr<CastDevToolsManagerDelegate> manager_delegate_;
   scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
 
   IntegerPrefMember pref_port_;

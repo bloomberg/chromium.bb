@@ -11,6 +11,7 @@ source_set("devtools_http_handler") {
 
   deps = [
     "//base",
+    "//components/devtools_discovery",
     "//content/public/browser",
     "//net",
     "//net:http_server",

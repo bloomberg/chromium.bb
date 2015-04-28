@@ -24,9 +24,6 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   base::DictionaryValue* HandleCommand(
       content::DevToolsAgentHost* agent_host,
       base::DictionaryValue* command_dict) override;
-  scoped_ptr<content::DevToolsTarget> CreateNewTarget(const GURL& url) override;
-  void EnumerateTargets(TargetCallback callback) override;
-  std::string GetPageThumbnailData(const GURL& url) override;
 
  private:
   scoped_ptr<DevToolsNetworkProtocolHandler> network_protocol_handler_;

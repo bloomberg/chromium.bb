@@ -17,8 +17,6 @@ class DevToolsHttpHandler;
 
 namespace android_webview {
 
-class AwDevToolsManagerDelegate;
-
 // This class controls WebView-specific Developer Tools remote debugging server.
 class AwDevToolsServer {
  public:
@@ -34,8 +32,6 @@ class AwDevToolsServer {
   bool IsStarted() const;
 
  private:
-  // TODO(dgozman): remove once devtools_discovery component is extracted.
-  scoped_ptr<AwDevToolsManagerDelegate> manager_delegate_;
   scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsServer);

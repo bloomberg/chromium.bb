@@ -210,8 +210,6 @@
         'browser/aw_cookie_access_policy.h',
         'browser/aw_dev_tools_discovery_provider.cc',
         'browser/aw_dev_tools_discovery_provider.h',
-        'browser/aw_dev_tools_manager_delegate.cc',
-        'browser/aw_dev_tools_manager_delegate.h',
         'browser/aw_download_manager_delegate.cc',
         'browser/aw_download_manager_delegate.h',
         'browser/aw_form_database_service.cc',

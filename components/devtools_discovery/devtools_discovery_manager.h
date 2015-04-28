@@ -18,6 +18,8 @@ class DevToolsDiscoveryManager {
   class Provider {
    public:
     virtual ~Provider() {}
+
+    // Caller takes ownership of created descriptors.
     virtual DevToolsTargetDescriptor::List GetDescriptors() = 0;
   };
 
@@ -31,6 +33,7 @@ class DevToolsDiscoveryManager {
   void AddProvider(scoped_ptr<Provider> provider);
   void SetCreateCallback(const CreateCallback& callback);
 
+  // Caller takes ownership of created descriptors.
   DevToolsTargetDescriptor::List GetDescriptors();
   scoped_ptr<DevToolsTargetDescriptor> CreateNew(const GURL& url);
 

@@ -17,11 +17,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_target.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "net/base/escape.h"
@@ -40,8 +40,7 @@
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostClient;
-using content::DevToolsManagerDelegate;
-using content::DevToolsTarget;
+using devtools_discovery::DevToolsTargetDescriptor;
 
 namespace devtools_http_handler {
 
@@ -319,9 +318,9 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   scoped_refptr<DevToolsAgentHost> agent_host_;
 };
 
-static bool TimeComparator(const DevToolsTarget* target1,
-                           const DevToolsTarget* target2) {
-  return target1->GetLastActivityTime() > target2->GetLastActivityTime();
+static bool TimeComparator(const DevToolsTargetDescriptor* desc1,
+                           const DevToolsTargetDescriptor* desc2) {
+  return desc1->GetLastActivityTime() > desc2->GetLastActivityTime();
 }
 
 // DevToolsHttpHandler::ServerSocketFactory ----------------------------------
@@ -341,7 +340,7 @@ DevToolsHttpHandler::ServerSocketFactory::CreateForTethering(
 
 DevToolsHttpHandler::~DevToolsHttpHandler() {
   TerminateOnUI(thread_, server_wrapper_, socket_factory_);
-  STLDeleteValues(&target_map_);
+  STLDeleteValues(&descriptor_map_);
   STLDeleteValues(&connection_to_client_);
 }
 
@@ -565,14 +564,17 @@ void DevToolsHttpHandler::OnJsonRequest(
 
   if (command == "list") {
     std::string host = info.headers["host"];
-    if (manager_delegate_) {
-      manager_delegate_->EnumerateTargets(
-          base::Bind(&DevToolsHttpHandler::OnTargetListReceivedWeak,
-                     weak_factory_.GetWeakPtr(), connection_id, host));
-    } else {
-      DevToolsManagerDelegate::TargetList empty_list;
-      OnTargetListReceived(connection_id, host, empty_list);
+    DevToolsTargetDescriptor::List descriptors =
+        devtools_discovery::DevToolsDiscoveryManager::GetInstance()->
+            GetDescriptors();
+    std::sort(descriptors.begin(), descriptors.end(), TimeComparator);
+    STLDeleteValues(&descriptor_map_);
+    base::ListValue list_value;
+    for (DevToolsTargetDescriptor* descriptor : descriptors) {
+      descriptor_map_[descriptor->GetId()] = descriptor;
+      list_value.Append(SerializeDescriptor(*descriptor, host));
     }
+    SendJson(connection_id, net::HTTP_OK, &list_value, std::string());
     return;
   }
 
@@ -581,10 +583,10 @@ void DevToolsHttpHandler::OnJsonRequest(
         query, net::UnescapeRule::URL_SPECIAL_CHARS));
     if (!url.is_valid())
       url = GURL(url::kAboutBlankURL);
-    scoped_ptr<DevToolsTarget> target;
-    if (manager_delegate_)
-      target = manager_delegate_->CreateNewTarget(url);
-    if (!target) {
+    scoped_ptr<DevToolsTargetDescriptor> descriptor =
+        devtools_discovery::DevToolsDiscoveryManager::GetInstance()->
+            CreateNew(url);
+    if (!descriptor) {
       SendJson(connection_id,
                net::HTTP_INTERNAL_SERVER_ERROR,
                NULL,
@@ -593,16 +595,16 @@ void DevToolsHttpHandler::OnJsonRequest(
     }
     std::string host = info.headers["host"];
     scoped_ptr<base::DictionaryValue> dictionary(
-        SerializeTarget(*target.get(), host));
+        SerializeDescriptor(*descriptor.get(), host));
     SendJson(connection_id, net::HTTP_OK, dictionary.get(), std::string());
-    const std::string target_id = target->GetId();
-    target_map_[target_id] = target.release();
+    const std::string target_id = descriptor->GetId();
+    descriptor_map_[target_id] = descriptor.release();
     return;
   }
 
   if (command == "activate" || command == "close") {
-    DevToolsTarget* target = GetTarget(target_id);
-    if (!target) {
+    DevToolsTargetDescriptor* descriptor = GetDescriptor(target_id);
+    if (!descriptor) {
       SendJson(connection_id,
                net::HTTP_NOT_FOUND,
                NULL,
@@ -611,7 +613,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     }
 
     if (command == "activate") {
-      if (target->Activate()) {
+      if (descriptor->Activate()) {
         SendJson(connection_id, net::HTTP_OK, NULL, "Target activated");
       } else {
         SendJson(connection_id,
@@ -623,7 +625,7 @@ void DevToolsHttpHandler::OnJsonRequest(
     }
 
     if (command == "close") {
-      if (target->Close()) {
+      if (descriptor->Close()) {
         SendJson(connection_id, net::HTTP_OK, NULL, "Target is closing");
       } else {
         SendJson(connection_id,
@@ -641,52 +643,21 @@ void DevToolsHttpHandler::OnJsonRequest(
   return;
 }
 
-// static
-void DevToolsHttpHandler::OnTargetListReceivedWeak(
-    base::WeakPtr<DevToolsHttpHandler> handler,
-    int connection_id,
-    const std::string& host,
-    const DevToolsManagerDelegate::TargetList& targets) {
-  if (handler) {
-    handler->OnTargetListReceived(connection_id, host, targets);
-  } else {
-    STLDeleteContainerPointers(targets.begin(), targets.end());
-  }
-}
-
-void DevToolsHttpHandler::OnTargetListReceived(
-    int connection_id,
-    const std::string& host,
-    const DevToolsManagerDelegate::TargetList& targets) {
-  DevToolsManagerDelegate::TargetList sorted_targets = targets;
-  std::sort(sorted_targets.begin(), sorted_targets.end(), TimeComparator);
-
-  STLDeleteValues(&target_map_);
-  base::ListValue list_value;
-  for (DevToolsManagerDelegate::TargetList::const_iterator it =
-      sorted_targets.begin(); it != sorted_targets.end(); ++it) {
-    DevToolsTarget* target = *it;
-    target_map_[target->GetId()] = target;
-    list_value.Append(SerializeTarget(*target, host));
-  }
-  SendJson(connection_id, net::HTTP_OK, &list_value, std::string());
-}
-
-DevToolsTarget* DevToolsHttpHandler::GetTarget(const std::string& id) {
-  TargetMap::const_iterator it = target_map_.find(id);
-  if (it == target_map_.end())
-    return NULL;
+DevToolsTargetDescriptor* DevToolsHttpHandler::GetDescriptor(
+    const std::string& target_id) {
+  DescriptorMap::const_iterator it = descriptor_map_.find(target_id);
+  if (it == descriptor_map_.end())
+    return nullptr;
   return it->second;
 }
 
 void DevToolsHttpHandler::OnThumbnailRequest(
     int connection_id, const std::string& target_id) {
-  DevToolsTarget* target = GetTarget(target_id);
+  DevToolsTargetDescriptor* descriptor = GetDescriptor(target_id);
   GURL page_url;
-  if (target)
-    page_url = target->GetURL();
-  std::string data = manager_delegate_ ?
-      manager_delegate_->GetPageThumbnailData(page_url) : "";
+  if (descriptor)
+    page_url = descriptor->GetURL();
+  std::string data = delegate_->GetPageThumbnailData(page_url);
   if (!data.empty())
     Send200(connection_id, data, "image/png");
   else
@@ -731,18 +702,18 @@ void DevToolsHttpHandler::OnWebSocketRequest(
     return;
   }
 
-  std::string page_id = request.path.substr(strlen(kPageUrlPrefix));
-  DevToolsTarget* target = GetTarget(page_id);
+  std::string target_id = request.path.substr(strlen(kPageUrlPrefix));
+  DevToolsTargetDescriptor* descriptor = GetDescriptor(target_id);
   scoped_refptr<DevToolsAgentHost> agent =
-      target ? target->GetAgentHost() : NULL;
+      descriptor ? descriptor->GetAgentHost() : nullptr;
   if (!agent.get()) {
-    Send500(connection_id, "No such target id: " + page_id);
+    Send500(connection_id, "No such target id: " + target_id);
     return;
   }
 
   if (agent->IsAttached()) {
     Send500(connection_id,
-            "Target with given id is being inspected: " + page_id);
+            "Target with given id is being inspected: " + target_id);
     return;
   }
 
@@ -775,7 +746,6 @@ DevToolsHttpHandler::DevToolsHttpHandler(
     scoped_ptr<ServerSocketFactory> server_socket_factory,
     const std::string& frontend_url,
     DevToolsHttpHandlerDelegate* delegate,
-    DevToolsManagerDelegate* manager_delegate,
     const base::FilePath& output_directory,
     const base::FilePath& debug_frontend_dir,
     const std::string& product_name,
@@ -786,7 +756,6 @@ DevToolsHttpHandler::DevToolsHttpHandler(
       user_agent_(user_agent),
       server_wrapper_(nullptr),
       delegate_(delegate),
-      manager_delegate_(manager_delegate),
       socket_factory_(nullptr),
       weak_factory_(this) {
   bool bundles_resources = frontend_url_.empty();
@@ -912,35 +881,34 @@ void DevToolsHttpHandler::AcceptWebSocket(
                  request));
 }
 
-base::DictionaryValue* DevToolsHttpHandler::SerializeTarget(
-    const DevToolsTarget& target,
+base::DictionaryValue* DevToolsHttpHandler::SerializeDescriptor(
+    const DevToolsTargetDescriptor& descriptor,
     const std::string& host) {
   base::DictionaryValue* dictionary = new base::DictionaryValue;
 
-  std::string id = target.GetId();
+  std::string id = descriptor.GetId();
   dictionary->SetString(kTargetIdField, id);
-  std::string parent_id = target.GetParentId();
+  std::string parent_id = descriptor.GetParentId();
   if (!parent_id.empty())
     dictionary->SetString(kTargetParentIdField, parent_id);
-  dictionary->SetString(kTargetTypeField, target.GetType());
+  dictionary->SetString(kTargetTypeField, descriptor.GetType());
   dictionary->SetString(kTargetTitleField,
-                        net::EscapeForHTML(target.GetTitle()));
-  dictionary->SetString(kTargetDescriptionField, target.GetDescription());
+                        net::EscapeForHTML(descriptor.GetTitle()));
+  dictionary->SetString(kTargetDescriptionField, descriptor.GetDescription());
 
-  GURL url = target.GetURL();
+  GURL url = descriptor.GetURL();
   dictionary->SetString(kTargetUrlField, url.spec());
 
-  GURL favicon_url = target.GetFaviconURL();
+  GURL favicon_url = descriptor.GetFaviconURL();
   if (favicon_url.is_valid())
     dictionary->SetString(kTargetFaviconUrlField, favicon_url.spec());
 
-  if (manager_delegate_ &&
-      !manager_delegate_->GetPageThumbnailData(url).empty()) {
+  if (!delegate_->GetPageThumbnailData(url).empty()) {
     dictionary->SetString(kTargetThumbnailUrlField,
                           std::string(kThumbUrlPrefix) + id);
   }
 
-  if (!target.IsAttached()) {
+  if (!descriptor.IsAttached()) {
     dictionary->SetString(kTargetWebSocketDebuggerUrlField,
                           base::StringPrintf("ws://%s%s%s",
                                              host.c_str(),

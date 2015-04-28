@@ -9,7 +9,6 @@
 #include "android_webview/browser/aw_contents_client_bridge_base.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
-#include "android_webview/browser/aw_dev_tools_manager_delegate.h"
 #include "android_webview/browser/aw_printing_message_filter.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_web_preferences_populater.h"
@@ -472,10 +471,5 @@ AwContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
   return native_factory_->CreateExternalVideoSurfaceContainer(web_contents);
 }
 #endif
-
-content::DevToolsManagerDelegate*
-AwContentBrowserClient::GetDevToolsManagerDelegate() {
-  return new AwDevToolsManagerDelegate();
-}
 
 }  // namespace android_webview
