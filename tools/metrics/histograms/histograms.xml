@@ -40437,6 +40437,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Sync.DeviceIdMismatchDetails" enum="DeviceIdMismatch">
+  <owner>pavely@chromium.org</owner>
+  <summary>
+    When signin_scoped_device_id from pref doesn't match the one in
+    DeviceInfoSpecfics this histogram tells if sync or pref copy was empty. This
+    will indicate how often such mismatch happens and what was the state before.
+  </summary>
+</histogram>
+
 <histogram name="Sync.DictionaryAssociationTime" units="milliseconds">
   <owner>zea@chromium.org</owner>
   <summary>Time taken during dictionary association.</summary>
@@ -48603,6 +48612,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="3" label="First screen capture call failed."/>
   <int value="4" label="First window capture call succeeded."/>
   <int value="5" label="First window capture call failed."/>
+</enum>
+
+<enum name="DeviceIdMismatch" type="int">
+  <int value="0" label="BOTH_NONEMPTY"/>
+  <int value="1" label="SYNC_EMPTY"/>
+  <int value="2" label="PREF_EMPTY"/>
 </enum>
 
 <enum name="DeviceOrientationSensorTypeAndroid" type="int">

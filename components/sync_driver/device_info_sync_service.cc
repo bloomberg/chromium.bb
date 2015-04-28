@@ -4,6 +4,7 @@
 
 #include "components/sync_driver/device_info_sync_service.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "sync/api/sync_change.h"
@@ -20,6 +21,38 @@ using syncer::SyncData;
 using syncer::SyncDataList;
 using syncer::SyncErrorFactory;
 using syncer::SyncMergeResult;
+
+namespace {
+
+// TODO(pavely): Remove histogram once device_id mismatch is understood
+// (crbug/481596).
+// When signin_scoped_device_id from pref doesn't match the one in
+// DeviceInfoSpecfics record histogram telling if sync or pref copy was empty.
+// This will indicate how often such mismatch happens and what was the state
+// before.
+enum DeviceIdMismatchForHistogram {
+  DEVICE_ID_MISMATCH_BOTH_NONEMPTY = 0,
+  DEVICE_ID_MISMATCH_SYNC_EMPTY,
+  DEVICE_ID_MISMATCH_PREF_EMPTY,
+  DEVICE_ID_MISMATCH_COUNT,
+};
+
+void RecordDeviceIdChangedHistogram(const std::string& device_id_from_sync,
+                                    const std::string& device_id_from_pref) {
+  DCHECK(device_id_from_sync != device_id_from_pref);
+  DeviceIdMismatchForHistogram device_id_mismatch_for_histogram =
+      DEVICE_ID_MISMATCH_BOTH_NONEMPTY;
+  if (device_id_from_sync.empty()) {
+    device_id_mismatch_for_histogram = DEVICE_ID_MISMATCH_SYNC_EMPTY;
+  } else if (device_id_from_pref.empty()) {
+    device_id_mismatch_for_histogram = DEVICE_ID_MISMATCH_PREF_EMPTY;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Sync.DeviceIdMismatchDetails",
+                            device_id_mismatch_for_histogram,
+                            DEVICE_ID_MISMATCH_COUNT);
+}
+
+}  // namespace
 
 DeviceInfoSyncService::DeviceInfoSyncService(
     LocalDeviceInfoProvider* local_device_info_provider)
@@ -84,6 +117,14 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
       // hasn't been set yet.
       if (!has_local_device_backup_time() && has_synced_backup_time) {
         set_local_device_backup_time(synced_backup_time);
+      }
+      // TODO(pavely): Remove histogram once device_id mismatch is understood
+      // (crbug/481596).
+      if (synced_local_device_info->signin_scoped_device_id() !=
+          local_device_info->signin_scoped_device_id()) {
+        RecordDeviceIdChangedHistogram(
+            synced_local_device_info->signin_scoped_device_id(),
+            local_device_info->signin_scoped_device_id());
       }
 
       // Store the synced device info for the local device only
