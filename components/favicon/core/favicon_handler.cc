@@ -74,12 +74,17 @@ bool IsValid(const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   return bitmap_result.is_valid();
 }
 
-// Returns true if at least one of the bitmaps in |bitmap_results| is expired or
-// if |bitmap_results| is missing favicons for |desired_size_in_dip| and one of
-// the scale factors in favicon_base::GetFaviconScales().
+// Returns true if |bitmap_results| is non-empty and:
+// - At least one of the bitmaps in |bitmap_results| is expired
+// OR
+// - |bitmap_results| is missing favicons for |desired_size_in_dip| and one of
+//   the scale factors in favicon_base::GetFaviconScales().
 bool HasExpiredOrIncompleteResult(
     int desired_size_in_dip,
     const std::vector<favicon_base::FaviconRawBitmapResult>& bitmap_results) {
+  if (bitmap_results.empty())
+    return false;
+
   // Check if at least one of the bitmaps is expired.
   std::vector<favicon_base::FaviconRawBitmapResult>::const_iterator it =
       std::find_if(bitmap_results.begin(), bitmap_results.end(), IsExpired);
@@ -558,7 +563,7 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
   got_favicon_from_history_ = true;
   history_results_ = favicon_bitmap_results;
   bool has_results = !favicon_bitmap_results.empty();
-  favicon_expired_or_incomplete_ = has_results && HasExpiredOrIncompleteResult(
+  favicon_expired_or_incomplete_ = HasExpiredOrIncompleteResult(
       preferred_icon_size(), favicon_bitmap_results);
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
 
@@ -643,34 +648,27 @@ void FaviconHandler::OnFaviconData(const std::vector<
   bool has_expired_or_incomplete_result = HasExpiredOrIncompleteResult(
       preferred_icon_size(), favicon_bitmap_results);
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
+  history_results_ = favicon_bitmap_results;
 
-  if (has_results && handler_type_ == FAVICON && !download_largest_icon_) {
-    if (has_valid_result) {
-      // There is a favicon, set it now. If expired we'll download the current
-      // one again, but at least the user will get some icon instead of the
-      // default and most likely the current one is fine anyway.
-      NotifyFaviconAvailable(favicon_bitmap_results);
-    }
-    if (has_expired_or_incomplete_result) {
-      // The favicon is out of date. Request the current one.
-      ScheduleDownload(driver_->GetActiveURL(),
-                       driver_->GetActiveFaviconURL(),
-                       favicon_base::FAVICON);
-    }
-  } else if (current_candidate() &&
-      (!has_results || has_expired_or_incomplete_result ||
-       !(DoUrlsAndIconsMatch(*current_candidate(), favicon_bitmap_results)))) {
-    // We don't know the favicon, it is out of date or its type is not same as
-    // one got from page. Request the current one.
+  if (has_valid_result) {
+    // There is a valid favicon. Notify any observers. It is useful to notify
+    // the observers even if the favicon is expired or incomplete (incorrect
+    // size) because temporarily showing the user an expired favicon or
+    // streched favicon is preferable to showing the user the default favicon.
+    NotifyFaviconAvailable(favicon_bitmap_results);
+  }
+
+  if (!current_candidate() ||
+      (has_results &&
+       !DoUrlsAndIconsMatch(*current_candidate(), favicon_bitmap_results))) {
+    // The icon URLs have been updated since the favicon data was requested.
+    return;
+  }
+
+  if (!has_results || has_expired_or_incomplete_result) {
     ScheduleDownload(driver_->GetActiveURL(),
                      current_candidate()->icon_url,
                      current_candidate()->icon_type);
-  }
-  history_results_ = favicon_bitmap_results;
-
-  if (has_valid_result &&
-      (handler_type_ != FAVICON || download_largest_icon_)) {
-    NotifyFaviconAvailable(favicon_bitmap_results);
   }
 }
 
