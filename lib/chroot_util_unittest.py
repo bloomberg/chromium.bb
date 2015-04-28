@@ -10,7 +10,7 @@ import itertools
 
 from chromite.lib import chroot_util
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_test_lib
+from chromite.lib import cros_build_lib_unittest
 
 if cros_build_lib.IsInsideChroot():
   from chromite.scripts import cros_list_modified_packages
@@ -18,18 +18,8 @@ if cros_build_lib.IsInsideChroot():
 # pylint: disable=protected-access
 
 
-class ChrootUtilTest(cros_test_lib.MockTempDirTestCase):
+class ChrootUtilTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Test class for the chroot_util functions."""
-
-  def setUp(self):
-    self.last_rc_cmd = None
-    self.last_rc_kwargs = None
-    self.PatchObject(cros_build_lib, 'RunCommand',
-                     side_effect=self.OnRunCommand)
-
-  def OnRunCommand(self, cmd, **kwargs):
-    self.last_rc_cmd = cmd
-    self.last_rc_kwargs = kwargs
 
   def testGetToolchainPackages(self):
     """Test GetToolchainPackages function without mocking."""
@@ -38,7 +28,6 @@ class ChrootUtilTest(cros_test_lib.MockTempDirTestCase):
 
   def testEmerge(self):
     """Tests correct invocation of emerge."""
-
     packages = ['foo-app/bar', 'sys-baz/clap']
     self.PatchObject(cros_list_modified_packages, 'ListModifiedWorkonPackages',
                      return_value=[packages[0]])
@@ -62,7 +51,7 @@ class ChrootUtilTest(cros_test_lib.MockTempDirTestCase):
       chroot_util.Emerge(packages, sysroot=sysroot, with_deps=with_deps,
                          rebuild_deps=rebuild_deps, use_binary=use_binary,
                          jobs=jobs, debug_output=debug_output)
-      cmd = self.last_rc_cmd
+      cmd = self.rc.call_args_list[-1][0][-1]
       self.assertEquals(sysroot != '/',
                         any(p.startswith('--sysroot') for p in cmd))
       self.assertEquals(with_deps, '--deep' in cmd)
