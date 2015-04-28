@@ -200,11 +200,11 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   // Context needs to be created before initializing ContextGroup, which will
   // in turn initialize FeatureInfo, which needs a context to determine
   // extension support.
-  context_ = new gfx::GLContextStubWithExtensions;
+  context_ = new StrictMock<GLContextMock>();
   context_->AddExtensionsString(normalized_init.extensions.c_str());
   context_->SetGLVersionString(normalized_init.gl_version.c_str());
 
-  context_->MakeCurrent(surface_.get());
+  context_->GLContextStubWithExtensions::MakeCurrent(surface_.get());
   gfx::GLSurface::InitializeDynamicMockBindingsForTests(context_.get());
 
   TestHelper::SetupContextGroupInitExpectations(
@@ -401,6 +401,11 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
                        surface_->GetSize(),
                        DisallowedFeatures(),
                        attribs);
+  EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
+  if (context_->WasAllocatedUsingRobustnessExtension()) {
+    EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())
+        .WillOnce(Return(GL_NO_ERROR));
+  }
   decoder_->MakeCurrent();
   decoder_->set_engine(engine_.get());
   decoder_->BeginDecoding();

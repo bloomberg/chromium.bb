@@ -90,7 +90,7 @@ void CreateContextOnUIThread(ProcessContextCallback bottom_half) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if !defined(OS_ANDROID)
   bottom_half.Run(ContextProviderCommandBuffer::Create(
-      CreateOffscreenCommandBufferContext(), "Offscreen-CaptureThread"));
+      CreateOffscreenCommandBufferContext(), OFFSCREEN_VIDEO_CAPTURE_CONTEXT));
   return;
 #endif
 }

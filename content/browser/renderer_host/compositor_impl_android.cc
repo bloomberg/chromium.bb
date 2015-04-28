@@ -604,7 +604,7 @@ void CompositorImpl::CreateOutputSurface() {
   scoped_refptr<ContextProviderCommandBuffer> context_provider(
       ContextProviderCommandBuffer::Create(
           CreateGpuProcessViewContext(gpu_channel_host, attrs, surface_id_),
-          "BrowserCompositor"));
+          BROWSER_COMPOSITOR_ONSCREEN_CONTEXT));
   DCHECK(context_provider.get());
 
   scoped_ptr<cc::OutputSurface> real_output_surface(

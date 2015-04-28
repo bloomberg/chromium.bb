@@ -39,18 +39,19 @@ class ContextProviderCommandBuffer::LostContextCallbackProxy
 scoped_refptr<ContextProviderCommandBuffer>
 ContextProviderCommandBuffer::Create(
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
-    const std::string& debug_name) {
+    CommandBufferContextType type) {
   if (!context3d)
     return NULL;
 
-  return new ContextProviderCommandBuffer(context3d.Pass(), debug_name);
+  return new ContextProviderCommandBuffer(context3d.Pass(), type);
 }
 
 ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
-    const std::string& debug_name)
+    CommandBufferContextType type)
     : context3d_(context3d.Pass()),
-      debug_name_(debug_name),
+      context_type_(type),
+      debug_name_(CommandBufferContextTypeToString(type)),
       destroyed_(false) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
@@ -93,6 +94,7 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   if (lost_context_callback_proxy_)
     return true;
 
+  context3d_->SetContextType(context_type_);
   if (!context3d_->InitializeOnCurrentThread())
     return false;
 

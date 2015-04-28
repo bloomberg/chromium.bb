@@ -360,10 +360,10 @@ uint32 ContextGroup::GetMemRepresented() const {
   return total;
 }
 
-void ContextGroup::LoseContexts(GLenum reset_status) {
+void ContextGroup::LoseContexts(error::ContextLostReason reason) {
   for (size_t ii = 0; ii < decoders_.size(); ++ii) {
     if (decoders_[ii].get()) {
-      decoders_[ii]->LoseContext(reset_status);
+      decoders_[ii]->MarkContextLost(reason);
     }
   }
 }

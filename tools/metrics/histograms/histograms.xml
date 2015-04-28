@@ -11466,6 +11466,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GPU.ContextLost" enum="ContextLostReason">
+  <owner>sievers@chromium.org</owner>
+  <summary>
+    The reason a GPU command buffer context of a given type was lost.
+  </summary>
+</histogram>
+
 <histogram name="GPU.CreateBrowserCompositor" units="microseconds">
   <owner>vangelis@chromium.org</owner>
   <summary>
@@ -48156,6 +48163,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="22" label="App banner setting (Android only)"/>
 </enum>
 
+<enum name="ContextLostReason" type="int">
+  <summary>The reason for losing a GPU context.</summary>
+  <int value="0" label="CONTEXT_INIT_FAILED"/>
+  <int value="1" label="CONTEXT_LOST_GPU_CHANNEL_ERROR"/>
+  <int value="2" label="CONTEXT_PARSE_ERROR_INVALID_SIZE"/>
+  <int value="3" label="CONTEXT_PARSE_ERROR_OUT_OF_BOUNDS"/>
+  <int value="4" label="CONTEXT_PARSE_ERROR_UNKNOWN_COMMAND"/>
+  <int value="5" label="CONTEXT_PARSE_ERROR_INVALID_ARGS"/>
+  <int value="6" label="CONTEXT_PARSE_ERROR_GENERIC_ERROR"/>
+  <int value="7" label="CONTEXT_LOST_GUILTY"/>
+  <int value="8" label="CONTEXT_LOST_INNOCENT"/>
+  <int value="9" label="CONTEXT_LOST_UNKNOWN"/>
+  <int value="10" label="CONTEXT_LOST_OUT_OF_MEMORY"/>
+  <int value="11" label="CONTEXT_LOST_MAKECURRENT_FAILED"/>
+</enum>
+
 <enum name="CookieDeletionCause" type="int">
   <summary>Reason why a cookie was removed from the cookie store</summary>
   <int value="0" label="explicit">
@@ -64797,6 +64820,26 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ContextType" separator=".">
+  <suffix name="BrowserCompositor"
+      label="A BrowserCompositor GPU command buffer context"/>
+  <suffix name="BrowserMainThread"
+      label="A BrowserMainThread GPU command buffer context"/>
+  <suffix name="RenderCompositor"
+      label="A RenderCompositor GPU command buffer context"/>
+  <suffix name="RenderMainThread"
+      label="A RenderMainThread GPU command buffer context"/>
+  <suffix name="RenderWorker"
+      label="A RenderWorker GPU command buffer context"/>
+  <suffix name="Unknown" label="A GPU command buffer context of unknown type"/>
+  <suffix name="VideoAccelerator"
+      label="A VideoAccelerator GPU command buffer context"/>
+  <suffix name="VideoCapture"
+      label="A VideoCapture GPU command buffer context"/>
+  <suffix name="WebGL" label="A WebGL GPU command buffer context"/>
+  <affected-histogram name="GPU.ContextLost"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CreditCardScanSuccess">

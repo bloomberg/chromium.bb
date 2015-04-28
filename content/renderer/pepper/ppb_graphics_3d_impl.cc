@@ -312,7 +312,7 @@ bool PPB_Graphics3D_Impl::InitRaw(
     return false;
   sync_point_ = command_buffer_->InsertSyncPoint();
 
-  command_buffer_->SetChannelErrorCallback(base::Bind(
+  command_buffer_->SetContextLostCallback(base::Bind(
       &PPB_Graphics3D_Impl::OnContextLost, weak_ptr_factory_.GetWeakPtr()));
 
   command_buffer_->SetOnConsoleMessageCallback(base::Bind(

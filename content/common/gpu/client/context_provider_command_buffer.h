@@ -12,6 +12,7 @@
 #include "cc/blink/context_provider_web_context.h"
 #include "cc/output/context_provider.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/client/command_buffer_metrics.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 
 namespace webkit {
@@ -29,7 +30,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
  public:
   static scoped_refptr<ContextProviderCommandBuffer> Create(
       scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
-      const std::string& debug_name);
+      CommandBufferContextType type);
 
   CommandBufferProxyImpl* GetCommandBufferProxy();
 
@@ -58,7 +59,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
  protected:
   ContextProviderCommandBuffer(
       scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
-      const std::string& debug_name);
+      CommandBufferContextType type);
   ~ContextProviderCommandBuffer() override;
 
   void OnLostContext();
@@ -74,6 +75,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
 
   cc::ContextProvider::Capabilities capabilities_;
+  CommandBufferContextType context_type_;
   std::string debug_name_;
 
   LostContextCallback lost_context_callback_;

@@ -19,6 +19,7 @@ class GL_EXPORT GLContextStubWithExtensions : public gfx::GLContextStub {
 
   void AddExtensionsString(const char* extensions);
   void SetGLVersionString(const char* version_str);
+  bool WasAllocatedUsingRobustnessExtension() override;
 
  protected:
   std::string GetGLVersion() override;

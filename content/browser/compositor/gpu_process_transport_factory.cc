@@ -256,7 +256,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       context_provider = ContextProviderCommandBuffer::Create(
           GpuProcessTransportFactory::CreateContextCommon(gpu_channel_host,
                                                           data->surface_id),
-          "Compositor");
+          BROWSER_COMPOSITOR_ONSCREEN_CONTEXT);
       if (context_provider && !context_provider->BindToCurrentThread())
         context_provider = nullptr;
     }
@@ -504,7 +504,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   // context so that skia and gl_helper don't step on each other.
   shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
       GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
-      "Offscreen-MainThread");
+      BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
 
   if (shared_main_thread_contexts_.get()) {
     shared_main_thread_contexts_->SetLostContextCallback(

@@ -739,35 +739,6 @@ TEST_P(GLES2DecoderWithShaderTest, DrawArraysSimulatedAttrib0OOMFails) {
   EXPECT_FALSE(GetDecoder()->WasContextLost());
 }
 
-// Test that we lose context.
-TEST_P(GLES2DecoderManualInitTest, LoseContextWhenOOM) {
-  InitState init;
-  init.has_alpha = true;
-  init.has_depth = true;
-  init.request_alpha = true;
-  init.request_depth = true;
-  init.bind_generates_resource = true;
-  init.lose_context_when_out_of_memory = true;
-  InitDecoder(init);
-  SetupDefaultProgram();
-
-  const GLsizei kFakeLargeCount = 0x1234;
-  SetupTexture();
-  AddExpectationsForSimulatedAttrib0WithError(
-      kFakeLargeCount, 0, GL_OUT_OF_MEMORY);
-  EXPECT_CALL(*gl_, DrawArrays(_, _, _)).Times(0).RetiresOnSaturation();
-  // Other contexts in the group should be lost also.
-  EXPECT_CALL(*mock_decoder_, LoseContext(GL_UNKNOWN_CONTEXT_RESET_ARB))
-      .Times(1)
-      .RetiresOnSaturation();
-  DrawArrays cmd;
-  cmd.Init(GL_TRIANGLES, 0, kFakeLargeCount);
-  // This context should be lost.
-  EXPECT_EQ(error::kLostContext, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
-  EXPECT_TRUE(decoder_->WasContextLost());
-}
-
 TEST_P(GLES2DecoderWithShaderTest, DrawArraysBadTextureUsesBlack) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   // This is an NPOT texture. As the default filtering requires mips

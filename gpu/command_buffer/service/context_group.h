@@ -166,7 +166,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   uint32 GetMemRepresented() const;
 
   // Loses all the context associated with this group.
-  void LoseContexts(GLenum reset_status);
+  void LoseContexts(error::ContextLostReason reason);
 
   // EXT_draw_buffer related states for backbuffer.
   GLenum draw_buffer() const {

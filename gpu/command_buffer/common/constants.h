@@ -23,7 +23,8 @@ namespace error {
     kInvalidArguments,
     kLostContext,
     kGenericError,
-    kDeferCommandUntilLater
+    kDeferCommandUntilLater,
+    kErrorLast = kDeferCommandUntilLater,
   };
 
   // Return true if the given error code is an actual error.
@@ -41,7 +42,17 @@ namespace error {
 
     // It is unknown whether this context provoked the loss of context.
     kUnknown,
-    kContextLostReasonLast = kUnknown
+
+    // GL_OUT_OF_MEMORY caused this context to be lost.
+    kOutOfMemory,
+
+    // A failure to make the context current caused it to be lost.
+    kMakeCurrentFailed,
+
+    // The GPU channel was lost. This error is set client-side.
+    kGpuChannelLost,
+
+    kContextLostReasonLast = kGpuChannelLost
   };
 }
 

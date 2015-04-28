@@ -760,6 +760,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void OnFboChanged() const;
   void OnUseFramebuffer() const;
 
+  error::ContextLostReason GetContextLostReasonFromResetStatus(
+      GLenum reset_status) const;
+
   // TODO(gman): Cache these pointers?
   BufferManager* buffer_manager() {
     return group_->buffer_manager();
@@ -1657,10 +1660,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
                        GLenum* result_type,
                        GLsizei* result_size);
 
-  void MaybeExitOnContextLost();
-  bool WasContextLost() override;
-  bool WasContextLostByRobustnessExtension() override;
-  void LoseContext(uint32 reset_status) override;
+  bool WasContextLost() const override;
+  bool WasContextLostByRobustnessExtension() const override;
+  void MarkContextLost(error::ContextLostReason reason) override;
+  bool CheckResetStatus();
 
 #if defined(OS_MACOSX)
   void ReleaseIOSurfaceForTexture(GLuint texture_id);
@@ -1863,7 +1866,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   int commands_to_process_;
 
   bool has_robustness_extension_;
-  GLenum reset_status_;
+  error::ContextLostReason context_lost_reason_;
+  bool context_was_lost_;
   bool reset_by_robustness_extension_;
   bool supports_post_sub_buffer_;
 
@@ -2405,7 +2409,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       feature_info_(group_->feature_info()),
       frame_number_(0),
       has_robustness_extension_(false),
-      reset_status_(GL_NO_ERROR),
+      context_lost_reason_(error::kUnknown),
+      context_was_lost_(false),
       reset_by_robustness_extension_(false),
       supports_post_sub_buffer_(false),
       force_webgl_glsl_validation_(false),
@@ -3328,11 +3333,22 @@ bool GLES2DecoderImpl::MakeCurrent() {
   if (!context_.get())
     return false;
 
-  if (!context_->MakeCurrent(surface_.get()) || WasContextLost()) {
+  if (WasContextLost()) {
+    LOG(ERROR) << "  GLES2DecoderImpl: Trying to make lost context current.";
+    return false;
+  }
+
+  if (!context_->MakeCurrent(surface_.get())) {
     LOG(ERROR) << "  GLES2DecoderImpl: Context lost during MakeCurrent.";
+    MarkContextLost(error::kMakeCurrentFailed);
+    group_->LoseContexts(error::kUnknown);
+    return false;
+  }
 
-    MaybeExitOnContextLost();
-
+  if (CheckResetStatus()) {
+    LOG(ERROR)
+        << "  GLES2DecoderImpl: Context reset detected after MakeCurrent.";
+    group_->LoseContexts(error::kUnknown);
     return false;
   }
 
@@ -10306,7 +10322,8 @@ void GLES2DecoderImpl::DoSwapBuffers() {
             GL_FRAMEBUFFER_COMPLETE) {
           LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
                      << "because offscreen saved FBO was incomplete.";
-          LoseContext(GL_UNKNOWN_CONTEXT_RESET_ARB);
+          MarkContextLost(error::kUnknown);
+          group_->LoseContexts(error::kUnknown);
           return;
         }
 
@@ -10363,7 +10380,10 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   } else {
     if (!surface_->SwapBuffers()) {
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
-      LoseContext(GL_UNKNOWN_CONTEXT_RESET_ARB);
+      if (!CheckResetStatus()) {
+        MarkContextLost(error::kUnknown);
+        group_->LoseContexts(error::kUnknown);
+      }
     }
   }
 
@@ -10623,7 +10643,12 @@ error::Error GLES2DecoderImpl::HandleGetTransformFeedbackVaryingsCHROMIUM(
 }
 
 error::ContextLostReason GLES2DecoderImpl::GetContextLostReason() {
-  switch (reset_status_) {
+  return context_lost_reason_;
+}
+
+error::ContextLostReason GLES2DecoderImpl::GetContextLostReasonFromResetStatus(
+    GLenum reset_status) const {
+  switch (reset_status) {
     case GL_NO_ERROR:
       // TODO(kbr): improve the precision of the error code in this case.
       // Consider delegating to context for error code if MakeCurrent fails.
@@ -10640,7 +10665,24 @@ error::ContextLostReason GLES2DecoderImpl::GetContextLostReason() {
   return error::kUnknown;
 }
 
-void GLES2DecoderImpl::MaybeExitOnContextLost() {
+bool GLES2DecoderImpl::WasContextLost() const {
+  return context_was_lost_;
+}
+
+bool GLES2DecoderImpl::WasContextLostByRobustnessExtension() const {
+  return WasContextLost() && reset_by_robustness_extension_;
+}
+
+void GLES2DecoderImpl::MarkContextLost(error::ContextLostReason reason) {
+  // Only lose the context once.
+  if (WasContextLost())
+    return;
+
+  // Don't make GL calls in here, the context might not be current.
+  context_lost_reason_ = reason;
+  current_decoder_error_ = error::kLostContext;
+  context_was_lost_ = true;
+
   // Some D3D drivers cannot recover from device lost in the GPU process
   // sandbox. Allow a new GPU process to launch.
   if (workarounds().exit_on_context_lost) {
@@ -10653,57 +10695,43 @@ void GLES2DecoderImpl::MaybeExitOnContextLost() {
   }
 }
 
-bool GLES2DecoderImpl::WasContextLost() {
-  if (reset_status_ != GL_NO_ERROR) {
-    MaybeExitOnContextLost();
-    return true;
-  }
+bool GLES2DecoderImpl::CheckResetStatus() {
+  DCHECK(!WasContextLost());
+  DCHECK(context_->IsCurrent(NULL));
+
   if (IsRobustnessSupported()) {
-    GLenum status = glGetGraphicsResetStatusARB();
-    if (status != GL_NO_ERROR) {
-      // The graphics card was reset. Signal a lost context to the application.
-      reset_status_ = status;
-      reset_by_robustness_extension_ = true;
-      LOG(ERROR) << (surface_->IsOffscreen() ? "Offscreen" : "Onscreen")
-                 << " context lost via ARB/EXT_robustness. Reset status = "
-                 << GLES2Util::GetStringEnum(status);
-      MaybeExitOnContextLost();
-      return true;
-    }
-  }
-  return false;
-}
-
-bool GLES2DecoderImpl::WasContextLostByRobustnessExtension() {
-  return WasContextLost() && reset_by_robustness_extension_;
-}
-
-void GLES2DecoderImpl::LoseContext(uint32 reset_status) {
-  // Only loses the context once.
-  if (reset_status_ != GL_NO_ERROR) {
-    return;
-  }
-
-  if (workarounds().use_virtualized_gl_contexts) {
-    // If the context is virtual, the real context being guilty does not ensure
-    // that the virtual context is guilty.
-    if (reset_status == GL_GUILTY_CONTEXT_RESET_ARB) {
-      reset_status = GL_UNKNOWN_CONTEXT_RESET_ARB;
-    }
-  } else if (reset_status == GL_UNKNOWN_CONTEXT_RESET_ARB &&
-             IsRobustnessSupported()) {
     // If the reason for the call was a GL error, we can try to determine the
     // reset status more accurately.
     GLenum driver_status = glGetGraphicsResetStatusARB();
-    if (driver_status == GL_GUILTY_CONTEXT_RESET_ARB ||
-        driver_status == GL_INNOCENT_CONTEXT_RESET_ARB) {
-      reset_status = driver_status;
-    }
-  }
+    if (driver_status == GL_NO_ERROR)
+      return false;
 
-  // Marks this context as lost.
-  reset_status_ = reset_status;
-  current_decoder_error_ = error::kLostContext;
+    LOG(ERROR) << (surface_->IsOffscreen() ? "Offscreen" : "Onscreen")
+               << " context lost via ARB/EXT_robustness. Reset status = "
+               << GLES2Util::GetStringEnum(driver_status);
+
+    // Don't pretend we know which client was responsible.
+    if (workarounds().use_virtualized_gl_contexts)
+      driver_status = GL_UNKNOWN_CONTEXT_RESET_ARB;
+
+    switch (driver_status) {
+      case GL_GUILTY_CONTEXT_RESET_ARB:
+        MarkContextLost(error::kGuilty);
+        break;
+      case GL_INNOCENT_CONTEXT_RESET_ARB:
+        MarkContextLost(error::kInnocent);
+        break;
+      case GL_UNKNOWN_CONTEXT_RESET_ARB:
+        MarkContextLost(error::kUnknown);
+        break;
+      default:
+        NOTREACHED();
+        return false;
+    }
+    reset_by_robustness_extension_ = true;
+    return true;
+  }
+  return false;
 }
 
 error::Error GLES2DecoderImpl::HandleInsertSyncPointCHROMIUM(
@@ -12079,9 +12107,9 @@ void GLES2DecoderImpl::DoDrawBuffersEXT(
 }
 
 void GLES2DecoderImpl::DoLoseContextCHROMIUM(GLenum current, GLenum other) {
-  group_->LoseContexts(other);
-  reset_status_ = current;
-  current_decoder_error_ = error::kLostContext;
+  MarkContextLost(GetContextLostReasonFromResetStatus(current));
+  group_->LoseContexts(GetContextLostReasonFromResetStatus(other));
+  reset_by_robustness_extension_ = true;
 }
 
 void GLES2DecoderImpl::DoMatrixLoadfCHROMIUM(GLenum matrix_mode,
@@ -12599,8 +12627,9 @@ error::Error GLES2DecoderImpl::HandleUnmapBuffer(
     // the second unmap could still return GL_FALSE. For now, we simply lose
     // the contexts in the share group.
     LOG(ERROR) << "glUnmapBuffer unexpectedly returned GL_FALSE";
-    group_->LoseContexts(GL_INNOCENT_CONTEXT_RESET_ARB);
-    reset_status_ = GL_GUILTY_CONTEXT_RESET_ARB;
+    // Need to lose current context before broadcasting!
+    MarkContextLost(error::kGuilty);
+    group_->LoseContexts(error::kInnocent);
     return error::kLostContext;
   }
   return error::kNoError;
@@ -12612,13 +12641,27 @@ void GLES2DecoderImpl::OnTextureRefDetachedFromFramebuffer(
   DoDidUseTexImageIfNeeded(texture, texture->target());
 }
 
+// Note that GL_LOST_CONTEXT is specific to GLES.
+// For desktop GL we have to query the reset status proactively.
 void GLES2DecoderImpl::OnContextLostError() {
-  group_->LoseContexts(GL_UNKNOWN_CONTEXT_RESET_ARB);
+  if (!WasContextLost()) {
+    // Need to lose current context before broadcasting!
+    CheckResetStatus();
+    group_->LoseContexts(error::kUnknown);
+    reset_by_robustness_extension_ = true;
+  }
 }
 
 void GLES2DecoderImpl::OnOutOfMemoryError() {
-  if (lose_context_when_out_of_memory_) {
-    group_->LoseContexts(GL_UNKNOWN_CONTEXT_RESET_ARB);
+  if (lose_context_when_out_of_memory_ && !WasContextLost()) {
+    error::ContextLostReason other = error::kOutOfMemory;
+    if (CheckResetStatus()) {
+      other = error::kUnknown;
+    } else {
+      // Need to lose current context before broadcasting!
+      MarkContextLost(error::kOutOfMemory);
+    }
+    group_->LoseContexts(other);
   }
 }
 

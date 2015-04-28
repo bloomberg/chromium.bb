@@ -267,6 +267,8 @@
       'common/gin_java_bridge_messages.h',
       'common/gpu/client/command_buffer_proxy_impl.cc',
       'common/gpu/client/command_buffer_proxy_impl.h',
+      'common/gpu/client/command_buffer_metrics.cc',
+      'common/gpu/client/command_buffer_metrics.h',
       'common/gpu/client/context_provider_command_buffer.cc',
       'common/gpu/client/context_provider_command_buffer.h',
       'common/gpu/client/gl_helper.cc',

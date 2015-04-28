@@ -27,4 +27,10 @@ std::string GLContextStubWithExtensions::GetGLVersion() {
   return version_str_;
 }
 
+bool GLContextStubWithExtensions::WasAllocatedUsingRobustnessExtension() {
+  return HasExtension("GL_ARB_robustness") ||
+         HasExtension("GL_KHR_robustness") ||
+         HasExtension("GL_EXT_robustness");
+}
+
 }  // namespace gfx

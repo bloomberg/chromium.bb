@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/gl_context_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -22,7 +23,6 @@
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_mock.h"
 
@@ -209,6 +209,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
   const ContextGroup& group() const {
     return *group_.get();
+  }
+
+  void LoseContexts(error::ContextLostReason reason) const {
+    group_->LoseContexts(reason);
   }
 
   ::testing::StrictMock< ::gfx::MockGLInterface>* GetGLMock() const {
@@ -540,7 +544,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<gfx::GLSurfaceStub> surface_;
-  scoped_refptr<gfx::GLContextStubWithExtensions> context_;
+  scoped_refptr<GLContextMock> context_;
   scoped_ptr<MockGLES2Decoder> mock_decoder_;
   scoped_ptr<GLES2Decoder> decoder_;
   MemoryTracker* memory_tracker_;

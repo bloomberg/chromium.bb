@@ -71,23 +71,24 @@ void CommandBufferProxyImpl::OnChannelError() {
   scoped_ptr<base::AutoLock> lock;
   if (lock_)
     lock.reset(new base::AutoLock(*lock_));
-  OnDestroyed(gpu::error::kUnknown);
+  OnDestroyed(gpu::error::kGpuChannelLost, gpu::error::kLostContext);
 }
 
-void CommandBufferProxyImpl::OnDestroyed(gpu::error::ContextLostReason reason) {
+void CommandBufferProxyImpl::OnDestroyed(gpu::error::ContextLostReason reason,
+                                         gpu::error::Error error) {
   CheckLock();
   // Prevent any further messages from being sent.
   channel_ = NULL;
 
   // When the client sees that the context is lost, they should delete this
   // CommandBufferProxyImpl and create a new one.
-  last_state_.error = gpu::error::kLostContext;
+  last_state_.error = error;
   last_state_.context_lost_reason = reason;
 
-  if (!channel_error_callback_.is_null()) {
-    channel_error_callback_.Run();
+  if (!context_lost_callback_.is_null()) {
+    context_lost_callback_.Run();
     // Avoid calling the error callback more than once.
-    channel_error_callback_.Reset();
+    context_lost_callback_.Reset();
   }
 }
 
@@ -134,10 +135,10 @@ void CommandBufferProxyImpl::OnSignalSyncPointAck(uint32 id) {
   callback.Run();
 }
 
-void CommandBufferProxyImpl::SetChannelErrorCallback(
+void CommandBufferProxyImpl::SetContextLostCallback(
     const base::Closure& callback) {
   CheckLock();
-  channel_error_callback_ = callback;
+  context_lost_callback_ = callback;
 }
 
 bool CommandBufferProxyImpl::Initialize() {

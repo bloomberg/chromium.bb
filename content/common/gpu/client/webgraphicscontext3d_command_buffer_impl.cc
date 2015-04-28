@@ -97,10 +97,13 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       host_(host),
       surface_id_(surface_id),
       active_url_(active_url),
+      context_type_(CONTEXT_TYPE_UNKNOWN),
       gpu_preference_(attributes.preferDiscreteGPU ? gfx::PreferDiscreteGpu
                                                    : gfx::PreferIntegratedGpu),
       mem_limits_(limits),
       weak_ptr_factory_(this) {
+  if (attributes_.webGL)
+    context_type_ = OFFSCREEN_CONTEXT_FOR_WEBGL;
   if (share_context) {
     DCHECK(!attributes_.shareResources);
     share_group_ = share_context->share_group_;
@@ -145,8 +148,8 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
   if (gl_ && attributes_.webGL)
     gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
 
-  command_buffer_->SetChannelErrorCallback(
-      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnGpuChannelLost,
+  command_buffer_->SetContextLostCallback(
+      base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
                  weak_ptr_factory_.GetWeakPtr()));
 
   command_buffer_->SetOnConsoleMessageCallback(
@@ -198,6 +201,7 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
 
   if (!command_buffer_) {
     DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";
+    UmaRecordContextInitFailed(context_type_);
     return false;
   }
 
@@ -207,6 +211,8 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   // Initialize the command buffer.
   bool result = command_buffer_->Initialize();
   LOG_IF(ERROR, !result) << "CommandBufferProxy::Initialize failed.";
+  if (!result)
+    UmaRecordContextInitFailed(context_type_);
   return result;
 }
 
@@ -351,7 +357,7 @@ bool WebGraphicsContext3DCommandBufferImpl::IsCommandBufferContextLost() {
   if (host_.get() && host_->IsLost())
     return true;
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
-  return state.error == gpu::error::kLostContext;
+  return gpu::error::IsError(state.error);
 }
 
 // static
@@ -387,7 +393,10 @@ WGC3Denum convertReason(gpu::error::ContextLostReason reason) {
     return GL_GUILTY_CONTEXT_RESET_ARB;
   case gpu::error::kInnocent:
     return GL_INNOCENT_CONTEXT_RESET_ARB;
+  case gpu::error::kOutOfMemory:
+  case gpu::error::kMakeCurrentFailed:
   case gpu::error::kUnknown:
+  case gpu::error::kGpuChannelLost:
     return GL_UNKNOWN_CONTEXT_RESET_ARB;
   }
 
@@ -397,9 +406,9 @@ WGC3Denum convertReason(gpu::error::ContextLostReason reason) {
 
 }  // anonymous namespace
 
-void WebGraphicsContext3DCommandBufferImpl::OnGpuChannelLost() {
-  context_lost_reason_ = convertReason(
-      command_buffer_->GetLastState().context_lost_reason);
+void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
+  context_lost_reason_ =
+      convertReason(command_buffer_->GetLastState().context_lost_reason);
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }
@@ -411,6 +420,9 @@ void WebGraphicsContext3DCommandBufferImpl::OnGpuChannelLost() {
     base::AutoLock lock(g_default_share_groups_lock.Get());
     g_default_share_groups.Get().erase(host_.get());
   }
+
+  gpu::CommandBuffer::State state = command_buffer_->GetLastState();
+  UmaRecordContextLost(context_type_, state.error, state.context_lost_reason);
 }
 
 }  // namespace content

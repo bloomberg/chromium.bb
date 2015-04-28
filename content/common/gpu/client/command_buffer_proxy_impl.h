@@ -120,7 +120,7 @@ class CommandBufferProxyImpl
 
   int GetRouteID() const;
   bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);
-  void SetChannelErrorCallback(const base::Closure& callback);
+  void SetContextLostCallback(const base::Closure& callback);
 
   typedef base::Callback<void(const gpu::MemoryAllocation&)>
       MemoryAllocationChangedCallback;
@@ -175,7 +175,8 @@ class CommandBufferProxyImpl
 
   // Message handlers:
   void OnUpdateState(const gpu::CommandBuffer::State& state);
-  void OnDestroyed(gpu::error::ContextLostReason reason);
+  void OnDestroyed(gpu::error::ContextLostReason reason,
+                   gpu::error::Error error);
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
   void OnSetMemoryAllocation(const gpu::MemoryAllocation& allocation);
   void OnSignalSyncPointAck(uint32 id);
@@ -208,7 +209,7 @@ class CommandBufferProxyImpl
   int32 last_put_offset_;
   int32 last_barrier_put_offset_;
 
-  base::Closure channel_error_callback_;
+  base::Closure context_lost_callback_;
 
   MemoryAllocationChangedCallback memory_allocation_changed_callback_;
 

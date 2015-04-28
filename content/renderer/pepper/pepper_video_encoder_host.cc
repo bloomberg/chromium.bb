@@ -513,7 +513,7 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
     return false;
   }
 
-  command_buffer_->SetChannelErrorCallback(media::BindToCurrentLoop(
+  command_buffer_->SetContextLostCallback(media::BindToCurrentLoop(
       base::Bind(&PepperVideoEncoderHost::NotifyPepperError,
                  weak_ptr_factory_.GetWeakPtr(), PP_ERROR_RESOURCE_FAILED)));
   if (!command_buffer_->Initialize()) {

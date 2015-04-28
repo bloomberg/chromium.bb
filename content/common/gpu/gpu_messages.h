@@ -54,6 +54,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::SurfaceType,
                           gfx::SURFACE_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::MemoryAllocation::PriorityCutoff,
                           gpu::MemoryAllocation::CUTOFF_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::Error, gpu::error::kErrorLast)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::ContextLostReason,
                           gpu::error::kContextLostReasonLast)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoEncodeAccelerator::Error,
@@ -552,8 +553,9 @@ IPC_SYNC_MESSAGE_ROUTED5_1(GpuCommandBufferMsg_CreateVideoEncoder,
 
 // Tells the proxy that there was an error and the command buffer had to be
 // destroyed for some reason.
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
-                    gpu::error::ContextLostReason /* reason */)
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_Destroyed,
+                    gpu::error::ContextLostReason, /* reason */
+                    gpu::error::Error /* error */)
 
 // Tells the browser that SwapBuffers returned and passes latency info
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SwapBuffersCompleted,

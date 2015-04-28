@@ -1294,7 +1294,7 @@ RenderThreadImpl::GetGpuFactories() {
                   GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D"),
                   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
                   NULL)),
-          "GPU-VideoAccelerator-Offscreen");
+          GPU_VIDEO_ACCELERATOR_CONTEXT);
     }
   }
   if (gpu_va_context_provider_.get()) {
@@ -1336,7 +1336,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 #endif
     if (!shared_main_thread_contexts_.get()) {
       shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
-          CreateOffscreenContext3d(), "Offscreen-MainThread");
+          CreateOffscreenContext3d(), RENDERER_MAINTHREAD_CONTEXT);
     }
     if (shared_main_thread_contexts_.get() &&
         !shared_main_thread_contexts_->BindToCurrentThread())

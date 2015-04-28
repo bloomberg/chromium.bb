@@ -404,8 +404,8 @@ void GLManager::Destroy() {
   gles2_helper_.reset();
   command_buffer_.reset();
   if (decoder_.get()) {
-    decoder_->MakeCurrent();
-    decoder_->Destroy(true);
+    bool have_context = decoder_->GetGLContext()->MakeCurrent(surface_.get());
+    decoder_->Destroy(have_context);
     decoder_.reset();
   }
 }
