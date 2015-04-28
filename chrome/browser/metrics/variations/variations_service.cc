@@ -321,7 +321,7 @@ bool VariationsService::CreateTrialsFromSeed() {
 }
 
 void VariationsService::StartRepeatedVariationsSeedFetch() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Initialize the Variations server URL.
   variations_server_url_ =
@@ -494,7 +494,7 @@ void VariationsService::StoreSeed(const std::string& seed_data,
 }
 
 void VariationsService::FetchVariationsSeed() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const web_resource::ResourceRequestAllowedNotifier::State state =
       resource_request_allowed_notifier_->GetResourceRequestsAllowedState();

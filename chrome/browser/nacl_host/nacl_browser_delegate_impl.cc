@@ -59,7 +59,7 @@ const char* const kAllowedNonSfiOrigins[] = {
 void OnKeepaliveOnUIThread(
     const content::BrowserPpapiHost::OnKeepaliveInstanceData& instance_data,
     const base::FilePath& profile_data_directory) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Only one instance will exist for NaCl embeds, even when more than one
   // embed of the same plugin exists on the same page.

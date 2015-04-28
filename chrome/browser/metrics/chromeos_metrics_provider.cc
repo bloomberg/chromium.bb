@@ -177,7 +177,7 @@ void ChromeOSMetricsProvider::InitTaskGetHardwareClass(
 }
 
 void ChromeOSMetricsProvider::InitTaskGetHardwareClassOnFileThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
       "hardware_class", &hardware_class_);
 }

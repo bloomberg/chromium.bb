@@ -38,7 +38,7 @@ void FieldTrialSynchronizer::NotifyAllRenderers(
     const std::string& group_name) {
   // To iterate over RenderProcessHosts, or to send messages to the hosts, we
   // need to be on the UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (content::RenderProcessHost::iterator it(
           content::RenderProcessHost::AllHostsIterator());
