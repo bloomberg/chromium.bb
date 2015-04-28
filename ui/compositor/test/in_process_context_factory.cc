@@ -32,6 +32,8 @@ class FakeReflector : public Reflector {
   FakeReflector() {}
   ~FakeReflector() override {}
   void OnMirroringCompositorResized() override {}
+  void AddMirroringLayer(Layer* layer) override {}
+  void RemoveMirroringLayer(Layer* layer) override {}
 };
 
 // An OutputSurface implementation that directly draws and swaps to an actual

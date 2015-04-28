@@ -1572,6 +1572,8 @@
       'browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h',
       'browser/compositor/image_transport_factory.cc',
       'browser/compositor/image_transport_factory.h',
+      'browser/compositor/offscreen_browser_compositor_output_surface.cc',
+      'browser/compositor/offscreen_browser_compositor_output_surface.h',
       'browser/compositor/owned_mailbox.cc',
       'browser/compositor/owned_mailbox.h',
       'browser/compositor/reflector_impl.cc',

@@ -145,8 +145,7 @@ void MirrorWindowController::UpdateWindow(
       mirror_window->SetBounds(host->window()->bounds());
       mirror_window->Show();
       if (reflector_) {
-        // TODO(oshima): Enable this once reflector change is landed.
-        // reflector_->AddMirroringLayer(mirror_window->layer());
+        reflector_->AddMirroringLayer(mirror_window->layer());
       } else {
         reflector_ =
             aura::Env::GetInstance()->context_factory()->CreateReflector(
@@ -268,8 +267,7 @@ void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info) {
   host->RemoveObserver(Shell::GetInstance()->display_controller());
   host->RemoveObserver(this);
   host_info->ash_host->PrepareForShutdown();
-  // TODO(oshima): Enable this once reflector change is landed.
-  // reflector_->RemovedMirroringLayer(mirror_window->layer());
+  reflector_->RemoveMirroringLayer(host_info->mirror_window->layer());
   delete host_info;
 }
 

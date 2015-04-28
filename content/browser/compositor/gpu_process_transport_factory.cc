@@ -24,6 +24,7 @@
 #include "content/browser/compositor/browser_compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
+#include "content/browser/compositor/offscreen_browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -283,6 +284,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         compositor->vsync_manager()));
   } else {
     DCHECK(context_provider);
+    if (!data->surface_id) {
+      surface = make_scoped_ptr(new OffscreenBrowserCompositorOutputSurface(
+          context_provider, compositor->vsync_manager(),
+          scoped_ptr<BrowserCompositorOverlayCandidateValidator>()));
+    } else
 #if defined(USE_OZONE)
     if (ui::SurfaceFactoryOzone::GetInstance()
             ->CanShowPrimaryPlaneAsOverlay()) {
@@ -366,7 +372,8 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   // output_surface_map_ here.
   if (data->surface)
     output_surface_map_.Remove(data->surface_id);
-  GpuSurfaceTracker::Get()->RemoveSurface(data->surface_id);
+  if (data->surface_id)
+    GpuSurfaceTracker::Get()->RemoveSurface(data->surface_id);
   delete data;
   per_compositor_data_.erase(it);
   if (per_compositor_data_.empty()) {
@@ -526,10 +533,13 @@ GpuProcessTransportFactory::CreatePerCompositorData(
   GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
 
   PerCompositorData* data = new PerCompositorData;
-  data->surface_id = tracker->AddSurfaceForNativeWidget(widget);
-  tracker->SetSurfaceHandle(
-      data->surface_id,
-      gfx::GLSurfaceHandle(widget, gfx::NATIVE_DIRECT));
+  if (compositor->widget() == gfx::kNullAcceleratedWidget) {
+    data->surface_id = 0;
+  } else {
+    data->surface_id = tracker->AddSurfaceForNativeWidget(widget);
+    tracker->SetSurfaceHandle(data->surface_id,
+                              gfx::GLSurfaceHandle(widget, gfx::NATIVE_DIRECT));
+  }
 
   per_compositor_data_[compositor] = data;
 

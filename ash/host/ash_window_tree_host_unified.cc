@@ -104,7 +104,6 @@ ui::EventSource* AshWindowTreeHostUnified::GetEventSource() {
 }
 
 gfx::AcceleratedWidget AshWindowTreeHostUnified::GetAcceleratedWidget() {
-  // TODO(oshima): Enable offscreen compositor.
   return gfx::kNullAcceleratedWidget;
 }
 

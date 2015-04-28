@@ -7,6 +7,7 @@
 
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -47,6 +48,8 @@ class CONTENT_EXPORT ReflectorImpl
 
   // ui::Reflector implementation.
   void OnMirroringCompositorResized() override;
+  void AddMirroringLayer(ui::Layer* layer) override;
+  void RemoveMirroringLayer(ui::Layer* layer) override;
 
   // Called in |BrowserCompositorOutputSurface::SwapBuffers| to copy
   // the full screen image to the |mailbox_| texture.
@@ -60,14 +63,19 @@ class CONTENT_EXPORT ReflectorImpl
   void OnSourceSurfaceReady(BrowserCompositorOutputSurface* surface);
 
  private:
-  void UpdateTexture(const gfx::Size& size, const gfx::Rect& redraw_rect);
+  struct LayerData;
+
+  ScopedVector<ReflectorImpl::LayerData>::iterator FindLayerData(
+      ui::Layer* layer);
+  void UpdateTexture(LayerData* layer_data,
+                     const gfx::Size& size,
+                     const gfx::Rect& redraw_rect);
 
   ui::Compositor* mirrored_compositor_;
-  ui::Layer* mirroring_layer_;
+  ScopedVector<LayerData> mirroring_layers_;
   scoped_refptr<OwnedMailbox> mailbox_;
   scoped_ptr<GLHelper> mirrored_compositor_gl_helper_;
   int mirrored_compositor_gl_helper_texture_id_;
-  bool needs_set_mailbox_;
   bool flip_texture_;
   BrowserCompositorOutputSurface* output_surface_;
 };
