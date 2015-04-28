@@ -8,8 +8,7 @@
 <script id="script">
 <![CDATA[
 
-var g = document.getElementById("g");
-
+'use strict';
 function log(message) {
     var logDiv = document.getElementById('log');
     logDiv.appendChild(document.createTextNode(message));
@@ -38,6 +37,7 @@ function cleanup() {
     asyncGC(function() {
         var originalLiveElements = internals.numberOfLiveNodes();
 
+        var g = document.getElementById("g");
         while (g.hasChildNodes())
             g.removeChild(g.lastChild);
 
@@ -45,7 +45,7 @@ function cleanup() {
             // This is 400 instead of 200 as it creates shadow tree elements.
             var liveDelta = originalLiveElements - internals.numberOfLiveNodes() - 400;
 
-            if (liveDelta == 0)
+            if (liveDelta === 0)
                 log("PASS");
             else
                 log("FAIL: " + liveDelta + " extra live node(s)");
@@ -56,11 +56,11 @@ function cleanup() {
 }
 
 function startTest() {
+    var g = document.getElementById("g");
     for (var i = 0; i < 100; i++)
         g.appendChild(createAnimatedRectInstance());
 
-    // FIXME: we need a better way of waiting for chromium events to happen
-    setTimeout(cleanup, 1);
+    requestAnimationFrame(cleanup);
 }
 
 function load() {
@@ -72,8 +72,7 @@ function load() {
         return;
     }
 
-    // FIXME: we need a better way of waiting for chromium events to happen
-    setTimeout(startTest, 1);
+    requestAnimationFrame(startTest);
 }
 ]]>
 </script>
