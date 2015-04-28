@@ -3706,7 +3706,6 @@ interface Promise
 interface PushManager
     method constructor
     method getSubscription
-    method hasPermission
     method permissionState
     method subscribe
 interface PushSubscription

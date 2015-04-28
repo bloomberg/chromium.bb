@@ -90,11 +90,6 @@ ScriptPromise PushManager::permissionState(ScriptState* scriptState)
     return promise;
 }
 
-ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
-{
-    return permissionState(scriptState);
-}
-
 DEFINE_TRACE(PushManager)
 {
     visitor->trace(m_registration);

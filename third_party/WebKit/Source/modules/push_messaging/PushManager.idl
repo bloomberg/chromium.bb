@@ -12,7 +12,4 @@
     [CallWith=ScriptState] Promise<PushSubscription> subscribe();
     [CallWith=ScriptState] Promise<PushSubscription?> getSubscription();
     [RuntimeEnabled=PushMessagingHasPermission,CallWith=ScriptState] Promise permissionState();
-
-    // temporarily enabled as well for three sided patch
-    [RuntimeEnabled=PushMessagingHasPermission,CallWith=ScriptState] Promise hasPermission();
 };
