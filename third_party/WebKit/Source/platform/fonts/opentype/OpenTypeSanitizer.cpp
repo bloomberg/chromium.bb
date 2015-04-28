@@ -53,7 +53,7 @@ static void recordDecodeSpeedHistogram(SharedBuffer* buffer, double decodeTime, 
     }
 
     double kbPerSecond = decodedSize / (1000 * decodeTime);
-    blink::Platform::current()->histogramCustomCounts(histogramName, kbPerSecond, 1000, 300000, 50);
+    Platform::current()->histogramCustomCounts(histogramName, kbPerSecond, 1000, 300000, 50);
 }
 
 PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()

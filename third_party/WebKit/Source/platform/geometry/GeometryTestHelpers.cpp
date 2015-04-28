@@ -8,7 +8,10 @@
 #include <limits>
 #include <math.h>
 
-bool blink::GeometryTest::ApproximatelyEqual(float a, float b, float testEpsilon)
+namespace blink {
+namespace GeometryTest {
+
+bool ApproximatelyEqual(float a, float b, float testEpsilon)
 {
     float absA = ::fabs(a);
     float absB = ::fabs(b);
@@ -22,7 +25,7 @@ bool blink::GeometryTest::ApproximatelyEqual(float a, float b, float testEpsilon
     return ((absErr / (absA + absB)) < testEpsilon);
 }
 
-::testing::AssertionResult blink::GeometryTest::AssertAlmostEqual(const char* actual_expr, const char* expected_expr, float actual, float expected, float testEpsilon)
+::testing::AssertionResult AssertAlmostEqual(const char* actual_expr, const char* expected_expr, float actual, float expected, float testEpsilon)
 {
     if (!ApproximatelyEqual(actual, expected, testEpsilon)) {
         return ::testing::AssertionFailure() << "       Value of:" << actual_expr << std::endl
@@ -33,3 +36,6 @@ bool blink::GeometryTest::ApproximatelyEqual(float a, float b, float testEpsilon
 
     return ::testing::AssertionSuccess();
 }
+
+} // namespace GeometryTest
+} // namespace blink

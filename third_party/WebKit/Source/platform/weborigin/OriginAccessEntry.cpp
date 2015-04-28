@@ -51,7 +51,7 @@ OriginAccessEntry::OriginAccessEntry(const String& protocol, const String& host,
 
     // Look for top-level domains, either with or without an additional dot.
     if (!m_hostIsIPAddress) {
-        blink::WebPublicSuffixList* suffixList = blink::Platform::current()->publicSuffixList();
+        WebPublicSuffixList* suffixList = Platform::current()->publicSuffixList();
         if (suffixList && m_host.length() <= suffixList->getPublicSuffixLength(m_host) + 1)
             m_hostIsPublicSuffix = true;
     }

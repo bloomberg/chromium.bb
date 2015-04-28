@@ -33,18 +33,18 @@
 namespace blink {
 namespace testing {
 
-class QuitTask : public blink::WebThread::Task {
+class QuitTask : public WebThread::Task {
 public:
     virtual void run()
     {
-        blink::Platform::current()->currentThread()->exitRunLoop();
+        Platform::current()->currentThread()->exitRunLoop();
     }
 };
 
 void runPendingTasks()
 {
-    blink::Platform::current()->currentThread()->postTask(FROM_HERE, new QuitTask);
-    blink::Platform::current()->currentThread()->enterRunLoop();
+    Platform::current()->currentThread()->postTask(FROM_HERE, new QuitTask);
+    Platform::current()->currentThread()->enterRunLoop();
 }
 
 }

@@ -29,7 +29,9 @@
 #include "platform/geometry/FloatBox.h"
 const static float kTestEpsilon = 1e-6;
 
-void blink::PrintTo(const FloatBox& box, ::std::ostream* os)
+namespace blink {
+
+void PrintTo(const FloatBox& box, ::std::ostream* os)
 {
     *os << "FloatBox("
         << box.x() << ", "
@@ -40,12 +42,14 @@ void blink::PrintTo(const FloatBox& box, ::std::ostream* os)
         << box.depth() << ")";
 }
 
-bool blink::FloatBoxTest::ApproximatelyEqual(const float& a, const float& b)
+namespace FloatBoxTest {
+
+bool ApproximatelyEqual(const float& a, const float& b)
 {
-    return blink::GeometryTest::ApproximatelyEqual(a, b, kTestEpsilon);
+    return GeometryTest::ApproximatelyEqual(a, b, kTestEpsilon);
 }
 
-bool blink::FloatBoxTest::ApproximatelyEqual(const FloatBox& a, const FloatBox& b)
+bool ApproximatelyEqual(const FloatBox& a, const FloatBox& b)
 {
     if (!ApproximatelyEqual(a.x(), b.x())
         || !ApproximatelyEqual(a.y(), b.y())
@@ -58,7 +62,7 @@ bool blink::FloatBoxTest::ApproximatelyEqual(const FloatBox& a, const FloatBox& 
     return true;
 }
 
-::testing::AssertionResult blink::FloatBoxTest::AssertAlmostEqual(const char* m_expr, const char* n_expr, const FloatBox& m, const FloatBox& n)
+::testing::AssertionResult AssertAlmostEqual(const char* m_expr, const char* n_expr, const FloatBox& m, const FloatBox& n)
 {
     if (!ApproximatelyEqual(m, n)) {
         return ::testing::AssertionFailure() << "       Value of:" << n_expr << std::endl
@@ -69,7 +73,7 @@ bool blink::FloatBoxTest::ApproximatelyEqual(const FloatBox& a, const FloatBox& 
     return ::testing::AssertionSuccess();
 }
 
-::testing::AssertionResult blink::FloatBoxTest::AssertContains(const char* m_expr, const char* n_expr, const FloatBox& m, const FloatBox& n)
+::testing::AssertionResult AssertContains(const char* m_expr, const char* n_expr, const FloatBox& m, const FloatBox& n)
 {
     FloatBox newM = m;
     newM.expandTo(n);
@@ -82,4 +86,5 @@ bool blink::FloatBoxTest::ApproximatelyEqual(const FloatBox& a, const FloatBox& 
     return ::testing::AssertionSuccess();
 }
 
-
+} // namespace FloatBoxTest
+} // namespace blink
