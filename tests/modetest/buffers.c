@@ -1022,7 +1022,7 @@ bo_create_dumb(int fd, unsigned int width, unsigned int height, unsigned int bpp
 	struct bo *bo;
 	int ret;
 
-	bo = malloc(sizeof(*bo));
+	bo = calloc(1, sizeof(*bo));
 	if (bo == NULL) {
 		fprintf(stderr, "failed to allocate buffer object\n");
 		return NULL;
