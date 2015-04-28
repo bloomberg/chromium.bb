@@ -399,6 +399,9 @@ deps_os = {
     'src/chrome/tools/test/reference_build/chrome_linux':
      Var('chromium_git') + '/chromium/reference_builds/chrome_linux64.git' + '@' + '033d053a528e820e1de3e2db766678d862a86b36',
 
+    'src/third_party/junit/src':
+      Var('chromium_git') + '/external/junit.git' + '@' + '45a44647e7306262162e1346b750c3209019f2e1',
+
     'src/third_party/xdg-utils':
      Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
 
@@ -470,9 +473,6 @@ deps_os = {
 
     'src/third_party/jsr-305/src':
       Var('chromium_git') + '/external/jsr-305.git' + '@' + '642c508235471f7220af6d5df2d3210e3bfc0919',
-
-    'src/third_party/junit/src':
-      Var('chromium_git') + '/external/junit.git' + '@' + '45a44647e7306262162e1346b750c3209019f2e1',
 
     'src/third_party/mockito/src':
       Var('chromium_git') + '/external/mockito/mockito.git' + '@' + 'ed99a52e94a84bd7c467f2443b475a22fcc6ba8e',

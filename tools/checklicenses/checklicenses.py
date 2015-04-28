@@ -217,6 +217,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         # https://github.com/open-source-parsers/jsoncpp/issues/234
         'UNKNOWN',
     ],
+    'third_party/junit/src': [
+        # https://github.com/junit-team/junit/issues/1132
+        'UNKNOWN',
+    ],
     'third_party/lcov': [  # http://crbug.com/98304
         'UNKNOWN',
     ],
