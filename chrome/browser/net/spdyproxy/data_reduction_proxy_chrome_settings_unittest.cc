@@ -75,35 +75,78 @@ TEST_F(DataReductionProxyChromeSettingsTest, MigrateSystemProxy) {
 }
 
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateDataReductionProxy) {
-  dict_->SetString("mode", "fixed_servers");
-  dict_->SetString("server", "http=https://proxy.googlezip.net");
-  test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
-  EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(1)
-    .WillOnce(Return(true));
+  const std::string kTestServers[] = {"http=http://proxy.googlezip.net",
+                                      "http=https://my-drp.org",
+                                      "https=https://tunneldrp.com"};
 
-  drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
-      test_context_->pref_service());
+  for (const std::string& test_server : kTestServers) {
+    dict_.reset(new base::DictionaryValue());
+    dict_->SetString("mode", "fixed_servers");
+    dict_->SetString("server", test_server);
+    test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
+    EXPECT_CALL(*config_, ContainsDataReductionProxy(_))
+        .Times(1)
+        .WillOnce(Return(true));
 
-  EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
+    drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
+        test_context_->pref_service());
+
+    EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
+  }
+}
+
+TEST_F(DataReductionProxyChromeSettingsTest,
+       MigrateGooglezipDataReductionProxy) {
+  const std::string kTestServers[] = {
+      "http=http://proxy-dev.googlezip.net",
+      "http=https://arbitraryprefix.googlezip.net",
+      "https=https://tunnel.googlezip.net"};
+
+  for (const std::string& test_server : kTestServers) {
+    dict_.reset(new base::DictionaryValue());
+    // The proxy pref is set to a Data Reduction Proxy that doesn't match the
+    // currently configured DRP, but the pref should still be cleared.
+    dict_->SetString("mode", "fixed_servers");
+    dict_->SetString("server", test_server);
+    test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
+    EXPECT_CALL(*config_, ContainsDataReductionProxy(_))
+        .Times(1)
+        .WillOnce(Return(false));
+
+    drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
+        test_context_->pref_service());
+
+    EXPECT_EQ(NULL, test_context_->pref_service()->GetUserPref(prefs::kProxy));
+  }
 }
 
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateIgnoreOtherProxy) {
-  dict_->SetString("mode", "fixed_servers");
-  dict_->SetString("server", "http=https://youtube.com");
-  test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
-  EXPECT_CALL(*config_, ContainsDataReductionProxy(_)).Times(1)
-    .WillOnce(Return(false));
+  const std::string kTestServers[] = {
+      "http=https://youtube.com",
+      "http=http://googlezip.net",
+      "http=http://thisismyproxynotgooglezip.net",
+      "https=http://arbitraryprefixgooglezip.net"};
 
-  drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
-      test_context_->pref_service());
+  for (const std::string& test_server : kTestServers) {
+    dict_.reset(new base::DictionaryValue());
+    dict_->SetString("mode", "fixed_servers");
+    dict_->SetString("server", test_server);
+    test_context_->pref_service()->Set(prefs::kProxy, *dict_.get());
+    EXPECT_CALL(*config_, ContainsDataReductionProxy(_))
+        .Times(1)
+        .WillOnce(Return(false));
 
-  base::DictionaryValue* value =
-      (base::DictionaryValue*)test_context_->pref_service()->GetUserPref(
-          prefs::kProxy);
-  std::string mode;
-  EXPECT_TRUE(value->GetString("mode", &mode));
-  EXPECT_EQ("fixed_servers", mode);
-  std::string server;
-  EXPECT_TRUE(value->GetString("server", &server));
-  EXPECT_EQ("http=https://youtube.com", server);
+    drp_chrome_settings_->MigrateDataReductionProxyOffProxyPrefs(
+        test_context_->pref_service());
+
+    base::DictionaryValue* value =
+        (base::DictionaryValue*)test_context_->pref_service()->GetUserPref(
+            prefs::kProxy);
+    std::string mode;
+    EXPECT_TRUE(value->GetString("mode", &mode));
+    EXPECT_EQ("fixed_servers", mode);
+    std::string server;
+    EXPECT_TRUE(value->GetString("server", &server));
+    EXPECT_EQ(test_server, server);
+  }
 }

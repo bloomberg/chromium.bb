@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -22,7 +23,42 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "net/base/host_port_pair.h"
+#include "net/proxy/proxy_config.h"
+#include "net/proxy/proxy_list.h"
+#include "net/proxy/proxy_server.h"
 #include "net/url_request/url_request_context_getter.h"
+
+namespace {
+
+// Assume that any proxy host ending with this suffix is a Data Reduction Proxy.
+const char kDataReductionProxyDefaultHostSuffix[] = ".googlezip.net";
+
+// Searches |proxy_list| for any Data Reduction Proxies, even if they don't
+// match a currently configured Data Reduction Proxy.
+bool ContainsDataReductionProxyDefaultHostSuffix(
+    const net::ProxyList& proxy_list) {
+  for (const net::ProxyServer& proxy : proxy_list.GetAll()) {
+    if (proxy.is_valid() && !proxy.is_direct() &&
+        EndsWith(proxy.host_port_pair().host(),
+                 kDataReductionProxyDefaultHostSuffix, true)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Searches |proxy_rules| for any Data Reduction Proxies, even if they don't
+// match a currently configured Data Reduction Proxy.
+bool ContainsDataReductionProxyDefaultHostSuffix(
+    const net::ProxyConfig::ProxyRules& proxy_rules) {
+  return ContainsDataReductionProxyDefaultHostSuffix(
+             proxy_rules.proxies_for_http) ||
+         ContainsDataReductionProxyDefaultHostSuffix(
+             proxy_rules.proxies_for_https);
+}
+
+}  // namespace
 
 // The Data Reduction Proxy has been turned into a "best effort" proxy,
 // meaning it is used only if the effective proxy configuration resolves to
@@ -58,7 +94,12 @@ void DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefs(
     return;
   net::ProxyConfig::ProxyRules proxy_rules;
   proxy_rules.ParseFromString(proxy_server);
-  if (!Config()->ContainsDataReductionProxy(proxy_rules)) {
+  // Clear the proxy pref if it matches a currently configured Data Reduction
+  // Proxy, or if the proxy host ends with ".googlezip.net", in order to ensure
+  // that any DRP in the pref is cleared even if the DRP configuration was
+  // changed. See http://crbug.com/476610.
+  if (!Config()->ContainsDataReductionProxy(proxy_rules) &&
+      !ContainsDataReductionProxyDefaultHostSuffix(proxy_rules)) {
     return;
   }
   prefs->ClearPref(prefs::kProxy);
