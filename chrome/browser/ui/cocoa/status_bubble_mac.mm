@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/debug/stack_trace.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -142,6 +143,32 @@ const CGFloat kExpansionDurationSeconds = 0.125;
 
 @end
 
+// Mac implementation of the status bubble.
+//
+// Child windows interact with Spaces in interesting ways, so this code has to
+// follow these rules:
+//
+// 1) NSWindows cannot have zero size.  At times when the status bubble window
+//    has no specific size (for example, when hidden), its size is set to
+//    ui::kWindowSizeDeterminedLater.
+//
+// 2) Child window frames are in the coordinate space of the screen, not of the
+//    parent window.  If a child window has its origin at (0, 0), Spaces will
+//    position it in the corner of the screen but group it with the parent
+//    window in Spaces.  This causes Chrome windows to have a large (mostly
+//    blank) area in Spaces.  To avoid this, child windows always have their
+//    origin set to the lower-left corner of the window.
+//
+// 3) Detached child windows may show up as top-level windows in Spaces.  To
+//    avoid this, once the status bubble is Attach()ed to the parent, it is
+//    never detached (except in rare cases when reparenting to a fullscreen
+//    window).
+//
+// 4) To avoid unnecessary redraws, if a bubble is in the kBubbleHidden state,
+//    its size is always set to ui::kWindowSizeDeterminedLater.  The proper
+//    width for the current URL or status text is not calculated until the
+//    bubble leaves the kBubbleHidden state.
+
 StatusBubbleMac::StatusBubbleMac(NSWindow* parent, id delegate)
     : parent_(parent),
       delegate_(delegate),
@@ -177,16 +204,25 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
   url_ = url;
   languages_ = languages;
 
-  NSRect frame = [window_ frame];
-
-  // Reset frame size when bubble is hidden.
+  CGFloat bubble_width = NSWidth([window_ frame]);
   if (state_ == kBubbleHidden) {
-    is_expanded_ = false;
-    frame.size.width = NSWidth(CalculateWindowFrame(/*expand=*/false));
-    [window_ setFrame:frame display:NO];
+    // TODO(rohitrao): The window size is expected to be (1,1) whenever the
+    // window is hidden, but the GPU bots are hitting cases where this is not
+    // true.  Instead of enforcing this invariant with a DCHECK, add temporary
+    // logging to try and debug it and fix up the window size if needed.
+    // This logging is temporary and should be removed: crbug.com/467998
+    NSRect frame = [window_ frame];
+    if (!CGSizeEqualToSize(frame.size, ui::kWindowSizeDeterminedLater.size)) {
+      LOG(ERROR) << "Window size should be (1,1), but is instead ("
+                 << frame.size.width << "," << frame.size.height << ")";
+      LOG(ERROR) << base::debug::StackTrace().ToString();
+      frame.size = ui::kWindowSizeDeterminedLater.size;
+      [window_ setFrame:frame display:NO];
+    }
+    bubble_width = NSWidth(CalculateWindowFrame(/*expand=*/false));
   }
 
-  int text_width = static_cast<int>(NSWidth(frame) -
+  int text_width = static_cast<int>(bubble_width -
                                     kBubbleViewTextPositionX -
                                     kTextPadding);
 
@@ -260,8 +296,10 @@ void StatusBubbleMac::SetText(const base::string16& text, bool is_url) {
     show = false;
 
   if (show) {
-    UpdateSizeAndPosition();
+    // Call StartShowing() first to update the current bubble state before
+    // calculating a new size.
     StartShowing();
+    UpdateSizeAndPosition();
   } else {
     StartHiding();
   }
@@ -284,21 +322,22 @@ void StatusBubbleMac::Hide() {
     }
   }
 
+  NSRect frame = CalculateWindowFrame(/*expand=*/false);
   if (!fade_out) {
     // No animation is in progress, so the opacity can be set directly.
     [window_ setAlphaValue:0.0];
     SetState(kBubbleHidden);
+    frame.size = ui::kWindowSizeDeterminedLater.size;
   }
 
   // Stop any width animation and reset the bubble size.
   if (!immediate_) {
     [NSAnimationContext beginGrouping];
     [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
-    [[window_ animator] setFrame:CalculateWindowFrame(/*expand=*/false)
-                         display:NO];
+    [[window_ animator] setFrame:frame display:NO];
     [NSAnimationContext endGrouping];
   } else {
-    [window_ setFrame:CalculateWindowFrame(/*expand=*/false) display:NO];
+    [window_ setFrame:frame display:NO];
   }
 
   [status_text_ release];
@@ -446,7 +485,14 @@ void StatusBubbleMac::Detach() {
   DCHECK(is_attached());
 
   // Magic setFrame: See http://crbug.com/58506 and http://crrev.com/3564021 .
-  [window_ setFrame:CalculateWindowFrame(/*expand=*/false) display:NO];
+  // TODO(rohitrao): Does the frame size actually matter here?  Can we always
+  // set it to kWindowSizeDeterminedLater?
+  NSRect frame = [window_ frame];
+  frame.size = ui::kWindowSizeDeterminedLater.size;
+  if (state_ != kBubbleHidden) {
+    frame = CalculateWindowFrame(/*expand=*/false);
+  }
+  [window_ setFrame:frame display:NO];
   [parent_ removeChildWindow:window_];  // See crbug.com/28107 ...
   [window_ orderOut:nil];               // ... and crbug.com/29054.
 
@@ -472,6 +518,8 @@ void StatusBubbleMac::SetState(StatusBubbleState state) {
     return;
 
   if (state == kBubbleHidden) {
+    is_expanded_ = false;
+
     // When hidden (with alpha of 0), make the window have the minimum size,
     // while still keeping the same origin. It's important to not set the
     // origin to 0,0 as that will cause the window to use more space in
@@ -716,6 +764,31 @@ void StatusBubbleMac::ExpandBubble() {
 void StatusBubbleMac::UpdateSizeAndPosition() {
   if (!window_)
     return;
+
+  // There is no need to update the size if the bubble is hidden.
+  if (state_ == kBubbleHidden) {
+    // Verify that hidden bubbles always have size equal to
+    // ui::kWindowSizeDeterminedLater.
+
+    // TODO(rohitrao): The GPU bots are hitting cases where this is not true.
+    // Instead of enforcing this invariant with a DCHECK, add temporary logging
+    // to try and debug it and fix up the window size if needed.
+    // This logging is temporary and should be removed: crbug.com/467998
+    NSRect frame = [window_ frame];
+    if (!CGSizeEqualToSize(frame.size, ui::kWindowSizeDeterminedLater.size)) {
+      LOG(ERROR) << "Window size should be (1,1), but is instead ("
+                 << frame.size.width << "," << frame.size.height << ")";
+      LOG(ERROR) << base::debug::StackTrace().ToString();
+      frame.size = ui::kWindowSizeDeterminedLater.size;
+    }
+
+    // During the fullscreen animation, the parent window's origin may change
+    // without updating the status bubble.  To avoid animation glitches, always
+    // update the bubble's origin to match the parent's, even when hidden.
+    frame.origin = [parent_ frame].origin;
+    [window_ setFrame:frame display:NO];
+    return;
+  }
 
   SetFrameAvoidingMouse(CalculateWindowFrame(/*expand=*/false),
                         GetMouseLocation());

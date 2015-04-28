@@ -667,3 +667,19 @@ TEST_F(StatusBubbleMacTest, BubbleAvoidsMouse) {
     ASSERT_TRUE(CheckAvoidsMouse(x, smallValue));
   }
 }
+
+TEST_F(StatusBubbleMacTest, ReparentBubble) {
+  // The second window is borderless, like the window used in fullscreen mode.
+  base::scoped_nsobject<NSWindow> fullscreenParent(
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 800, 600)
+                                  styleMask:NSBorderlessWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO]);
+
+  // Switch parents with the bubble hidden.
+  bubble_->SwitchParentWindow(fullscreenParent);
+
+  // Switch back to the original parent with the bubble showing.
+  bubble_->SetStatus(UTF8ToUTF16("Showing"));
+  bubble_->SwitchParentWindow(test_window());
+}
