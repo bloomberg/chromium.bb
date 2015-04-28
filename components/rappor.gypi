@@ -41,6 +41,12 @@
         'rappor/rappor_service.h',
         'rappor/rappor_utils.cc',
         'rappor/rappor_utils.h',
+        'rappor/reports.cc',
+        'rappor/reports.h',
+        'rappor/sample.cc',
+        'rappor/sample.h',
+        'rappor/sampler.cc',
+        'rappor/sampler.h',
       ],
       'variables': {
         'proto_in_dir': 'rappor/proto',

@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/prefs/testing_pref_service.h"
+#include "components/metrics/metrics_hashes.h"
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_parameters.h"
@@ -93,6 +94,26 @@ TEST(RapporServiceTest, Incognito) {
   RapporReports reports;
   rappor_service.GetReports(&reports);
   EXPECT_EQ(0, reports.report_size());
+}
+
+// Check that Sample objects record correctly.
+TEST(RapporServiceTest, RecordSample) {
+  TestRapporService rappor_service;
+  scoped_ptr<Sample> sample = rappor_service.CreateSample(COARSE_RAPPOR_TYPE);
+  sample->SetStringField("Url", "example.com");
+  sample->SetFlagsField("Flags1", 0xbcd, 12);
+  rappor_service.RecordSampleObj("ObjMetric", sample.Pass());
+  uint64_t url_hash = metrics::HashMetricName("ObjMetric.Url");
+  uint64_t flags_hash = metrics::HashMetricName("ObjMetric.Flags1");
+  RapporReports reports;
+  rappor_service.GetReports(&reports);
+  EXPECT_EQ(2, reports.report_size());
+  size_t url_index = reports.report(0).name_hash() == url_hash ? 0 : 1;
+  size_t flags_index = url_index == 0 ? 1 : 0;
+  EXPECT_EQ(url_hash, reports.report(url_index).name_hash());
+  EXPECT_EQ(1u, reports.report(url_index).bits().size());
+  EXPECT_EQ(flags_hash, reports.report(flags_index).name_hash());
+  EXPECT_EQ(2u, reports.report(flags_index).bits().size());
 }
 
 }  // namespace rappor

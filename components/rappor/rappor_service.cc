@@ -184,26 +184,23 @@ void RapporService::OnLogInterval() {
 }
 
 bool RapporService::ExportMetrics(RapporReports* reports) {
-  if (metrics_map_.empty()) {
-    DVLOG(2) << "metrics_map_ is empty.";
-    return false;
-  }
-
   DCHECK_GE(cohort_, 0);
   reports->set_cohort(cohort_);
 
-  for (std::map<std::string, RapporMetric*>::const_iterator it =
-           metrics_map_.begin();
-       it != metrics_map_.end();
-       ++it) {
-    const RapporMetric* metric = it->second;
+  for (const auto& kv : metrics_map_) {
+    const RapporMetric* metric = kv.second;
     RapporReports::Report* report = reports->add_report();
-    report->set_name_hash(metrics::HashMetricName(it->first));
+    report->set_name_hash(metrics::HashMetricName(kv.first));
     ByteVector bytes = metric->GetReport(secret_);
     report->set_bits(std::string(bytes.begin(), bytes.end()));
   }
   STLDeleteValues(&metrics_map_);
-  return true;
+
+  sampler_.ExportMetrics(secret_, reports);
+
+  DVLOG(2) << "Generated a report with " << reports->report_size()
+           << "metrics.";
+  return reports->report_size() > 0;
 }
 
 bool RapporService::IsInitialized() const {
@@ -232,7 +229,7 @@ void RapporService::RecordSampleInternal(const std::string& metric_name,
     DVLOG(2) << "Metric not logged due to incognito mode.";
     return;
   }
-  // Skip this metric if it's reporting level is less than the enabled
+  // Skip this metric if its reporting level is less than the enabled
   // reporting level.
   if (recording_level_ < parameters.recording_level) {
     DVLOG(2) << "Metric not logged due to recording_level "
@@ -257,6 +254,29 @@ RapporMetric* RapporService::LookUpMetric(const std::string& metric_name,
   RapporMetric* new_metric = new RapporMetric(metric_name, parameters, cohort_);
   metrics_map_[metric_name] = new_metric;
   return new_metric;
+}
+
+scoped_ptr<Sample> RapporService::CreateSample(RapporType type) {
+  DCHECK(IsInitialized());
+  return scoped_ptr<Sample>(
+      new Sample(cohort_, kRapporParametersForType[type]));
+}
+
+void RapporService::RecordSampleObj(const std::string& metric_name,
+                                    scoped_ptr<Sample> sample) {
+  if (is_incognito_callback_.Run()) {
+    DVLOG(2) << "Metric not logged due to incognito mode.";
+    return;
+  }
+  // Skip this metric if its reporting level is less than the enabled
+  // reporting level.
+  if (recording_level_ < sample->parameters().recording_level) {
+    DVLOG(2) << "Metric not logged due to recording_level "
+             << recording_level_ << " < "
+             << sample->parameters().recording_level;
+    return;
+  }
+  sampler_.AddSample(metric_name, sample.Pass());
 }
 
 }  // namespace rappor

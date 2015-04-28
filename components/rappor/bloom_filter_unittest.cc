@@ -51,4 +51,15 @@ TEST(BloomFilterTest, HugeFilter) {
   EXPECT_EQ(1, CountBits(filter.bytes()));
 }
 
+TEST(BloomFilterTest, GetBloomBitsSmall) {
+  uint64_t bytes_from_get = internal::GetBloomBits(1u, 4u, 0u, "Bar");
+  EXPECT_EQ(0xa8u, bytes_from_get);
+}
+
+TEST(BloomFilterTest, GetBloomBitsLarge) {
+  // Make sure that a 64-bit bloom filter can set the full range of bits.
+  uint64_t bytes_from_get = internal::GetBloomBits(8u, 1024u, 0u, "Bar");
+  EXPECT_EQ(0xffffffffffffffffu, bytes_from_get);
+}
+
 }  // namespace rappor

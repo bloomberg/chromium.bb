@@ -9,6 +9,16 @@
 
 namespace rappor {
 
+namespace {
+
+uint32_t ComputeHash(const std::string& str, uint32_t seed) {
+    // Using CityHash here because we have support for it in Dremel.  Many hash
+    // functions, such as MD5, SHA1, or Murmur, would probably also work.
+    return CityHash64WithSeed(str.data(), str.size(), seed);
+}
+
+}  // namespace
+
 BloomFilter::BloomFilter(uint32_t bytes_size,
                          uint32_t hash_function_count,
                          uint32_t hash_seed_offset)
@@ -25,10 +35,7 @@ void BloomFilter::SetString(const std::string& str) {
     bytes_[i] = 0;
   }
   for (size_t i = 0; i < hash_function_count_; ++i) {
-    // Using CityHash here because we have support for it in Dremel.  Many hash
-    // functions, such as MD5, SHA1, or Murmur, would probably also work.
-    uint32_t index =
-        CityHash64WithSeed(str.data(), str.size(), hash_seed_offset_ + i);
+    uint32_t index = ComputeHash(str, hash_seed_offset_ + i);
     // Note that the "bytes" are uint8_t, so they are always 8-bits.
     uint32_t byte_index = (index / 8) % bytes_.size();
     uint32_t bit_index = index % 8;
@@ -42,5 +49,24 @@ void BloomFilter::SetBytesForTesting(const ByteVector& bytes) {
     bytes_[i] = bytes[i];
   }
 }
+
+namespace internal {
+
+uint64_t GetBloomBits(uint32_t bytes_size,
+                      uint32_t hash_function_count,
+                      uint32_t hash_seed_offset,
+                      const std::string& str) {
+  // Make sure result fits in uint64.
+  DCHECK_LE(bytes_size, 8u);
+  uint64_t output = 0;
+  const uint32_t bits_size = bytes_size * 8;
+  for (size_t i = 0; i < hash_function_count; ++i) {
+    uint32_t index = ComputeHash(str, hash_seed_offset + i);
+    output |= 1ULL << uint64_t(index % bits_size);
+  }
+  return output;
+}
+
+}  // namespace internal
 
 }  // namespace rappor

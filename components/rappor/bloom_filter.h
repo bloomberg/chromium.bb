@@ -47,6 +47,17 @@ class BloomFilter {
   DISALLOW_COPY_AND_ASSIGN(BloomFilter);
 };
 
+
+namespace internal {
+
+// A function for getting bloom filters less than or equal to 64 bits.
+uint64_t GetBloomBits(uint32_t bytes_size,
+                      uint32_t hash_function_count,
+                      uint32_t hash_seed_offset,
+                      const std::string& str);
+
+}  // namespace internal
+
 }  // namespace rappor
 
 #endif  // COMPONENTS_RAPPOR_BLOOM_FILTER_H_

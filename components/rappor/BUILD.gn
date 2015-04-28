@@ -24,6 +24,12 @@ static_library("rappor") {
     "rappor_service.h",
     "rappor_utils.cc",
     "rappor_utils.h",
+    "reports.cc",
+    "reports.h",
+    "sample.cc",
+    "sample.h",
+    "sampler.cc",
+    "sampler.h",
   ]
 
   deps = [
@@ -63,6 +69,7 @@ source_set("unit_tests") {
     "rappor_prefs_unittest.cc",
     "rappor_service_unittest.cc",
     "rappor_utils_unittest.cc",
+    "sampler_unittest.cc",
   ]
 
   deps = [

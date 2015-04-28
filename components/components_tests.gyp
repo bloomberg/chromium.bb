@@ -432,6 +432,7 @@
       'rappor/rappor_prefs_unittest.cc',
       'rappor/rappor_service_unittest.cc',
       'rappor/rappor_utils_unittest.cc',
+      'rappor/sampler_unittest.cc',
     ],
     'scheduler_unittest_sources': [
       'scheduler/child/nestable_task_runner_for_test.cc',
