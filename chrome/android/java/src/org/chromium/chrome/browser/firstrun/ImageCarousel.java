@@ -82,6 +82,9 @@ public class ImageCarousel extends FrameLayout implements GestureDetector.OnGest
     private static final int SCROLL_ANIMATION_DURATION_MS = 200;
     private static final int ACCOUNT_SIGNED_IN_ANIMATION_DURATION_MS = 200;
 
+    private static final float MINIMUM_POSITION_TWO_IMAGES = -0.1f;
+    private static final float MAXIMUM_POSITION_TWO_IMAGES = 1.1f;
+
     /**
      * Number of ImageViews used in ImageCarousel.
      */
@@ -177,6 +180,10 @@ public class ImageCarousel extends FrameLayout implements GestureDetector.OnGest
         if (mScrollAnimator != null) mScrollAnimator.cancel();
 
         position = Math.round(position);
+        if (mImages != null && mImages.length == 2) {
+            if (position < 0) position = 0;
+            if (position > 1) position = 1;
+        }
         mScrollAnimator = ObjectAnimator.ofFloat(this, POSITION_PROPERTY, mPosition, position);
         mScrollAnimator.setDuration(SCROLL_ANIMATION_DURATION_MS);
         if (decelerate) mScrollAnimator.setInterpolator(new DecelerateInterpolator());
@@ -368,15 +375,25 @@ public class ImageCarousel extends FrameLayout implements GestureDetector.OnGest
     }
 
     private void updateBitmap(int i) {
-        if (mImages.length == 1 && i < 3) return;
-        ImageView image = mViews[getChildDrawingOrder(VIEW_COUNT, i)];
+        int drawingOrder = getChildDrawingOrder(VIEW_COUNT, i);
+        // Only draw one top bitmap for one image case.
+        if (mImages.length == 1 && drawingOrder > 0) return;
+        // Only draw two top bitmaps for two images case.
+        if (mImages.length == 2 && drawingOrder > 1) return;
+        ImageView image = mViews[drawingOrder];
         image.setImageBitmap(mImages[
                 (mImages.length + Math.round(mPosition) + BITMAP_OFFSETS[i]) % mImages.length]);
     }
 
     private void setPosition(float position) {
         if (mImages != null) {
-            mPosition = ((position % mImages.length) + mImages.length) % mImages.length;
+            if (mImages.length == 2) {
+                position = Math.max(MINIMUM_POSITION_TWO_IMAGES, position);
+                position = Math.min(MAXIMUM_POSITION_TWO_IMAGES, position);
+                mPosition = position;
+            } else {
+                mPosition = ((position % mImages.length) + mImages.length) % mImages.length;
+            }
         }
 
         int adjustedPosition = getCenterPosition();
