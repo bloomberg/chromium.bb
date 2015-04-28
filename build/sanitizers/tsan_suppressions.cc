@@ -157,6 +157,9 @@ char kTSanDefaultSuppressions[] =
 "race:PrepareTextureMailbox\n"
 "race:cc::LayerTreeHost::PaintLayerContents\n"
 
+// http://crbug.com/476529
+"deadlock:cc::VideoLayerImpl::WillDraw\n"
+
 // http://crbug.com/328826
 "race:gLCDOrder\n"
 "race:gLCDOrientation\n"
