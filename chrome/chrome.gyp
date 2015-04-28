@@ -76,15 +76,8 @@
       ['OS=="linux"', {
         'conditions': [
           ['chromeos==1', {
-            'conditions': [
-              ['branding=="Chrome"', {
-                'platform_locale_settings_grd':
-                    'app/resources/locale_settings_google_chromeos.grd',
-              }, {  # branding!=Chrome
-                'platform_locale_settings_grd':
-                    'app/resources/locale_settings_chromiumos.grd',
-              }],
-            ]
+            'platform_locale_settings_grd':
+                    'app/resources/locale_settings_<(branding_path_component)os.grd',
           }, {  # chromeos==0
             'platform_locale_settings_grd':
                 'app/resources/locale_settings_linux.grd',

@@ -13,18 +13,8 @@
     {
       'target_name': 'caps_resources',
       'type': 'none',
-      'conditions': [
-        ['branding == "Chrome"', {
-          'variables': {
-             'branding_path': '../../../app/theme/google_chrome/BRANDING',
-          },
-        }, { # else branding!="Chrome"
-          'variables': {
-             'branding_path': '../../../app/theme/chromium/BRANDING',
-          },
-        }],
-      ],
       'variables': {
+        'branding_path': '../../../app/theme/<(branding_path_component)/BRANDING',
         'output_dir': 'caps',
         'template_input_path': '../../../app/chrome_version.rc.version',
       },
