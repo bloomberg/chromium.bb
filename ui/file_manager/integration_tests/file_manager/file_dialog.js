@@ -5,58 +5,6 @@
 'use strict';
 
 /**
- * Opens a file dialog and waits for closing it.
- *
- * @param {string} volumeName Volume name passed to the selectVolume remote
- *     funciton.
- * @param {Array.<TestEntryInfo>} expectedSet Expected set of the entries.
- * @param {function(windowId:string):Promise} closeDialog Function to close the
- *     dialog.
- * @return {Promise} Promise to be fulfilled with the result entry of the
- *     dialog.
- */
-function openAndWaitForClosingDialog(volumeName, expectedSet, closeDialog) {
-  var resultPromise = new Promise(function(fulfill) {
-    chrome.fileSystem.chooseEntry(
-        {type: 'openFile'},
-        function(entry) { fulfill(entry); });
-  });
-
-  return remoteCall.waitForWindow('dialog#').then(function(windowId) {
-    return remoteCall.waitForElement(windowId, '#file-list').
-        then(function() {
-          // Wait for initialization of Files.app.
-          return remoteCall.waitForFiles(
-              windowId, TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
-        }).
-        then(function() {
-          return remoteCall.callRemoteTestUtil(
-              'selectVolume', windowId, [volumeName]);
-        }).
-        then(function() {
-          var expectedRows = TestEntryInfo.getExpectedRows(expectedSet);
-          return remoteCall.waitForFiles(windowId, expectedRows);
-        }).
-        then(function() {
-          return remoteCall.callRemoteTestUtil(
-              'selectFile', windowId, ['hello.txt']);
-        }).
-        then(closeDialog.bind(null, windowId)).
-        then(function() {
-          return repeatUntil(function() {
-            return remoteCall.callRemoteTestUtil('getWindows', null, []).
-                then(function(windows) {
-                  if (windows[windowId])
-                    return pending('Window %s does not hide.', windowId);
-                  else
-                    return resultPromise;
-                });
-          });
-        });
-  });
-}
-
-/**
  * Tests to open and cancel the file dialog.
  *
  * @param {string} volumeName Volume name passed to the selectVolume remote
@@ -72,17 +20,21 @@ function openFileDialog(volumeName, expectedSet) {
 
   var closeByCancelButtonPromise = setupPromise.then(function() {
     return openAndWaitForClosingDialog(
+        {type: 'openFile'},
         volumeName,
         expectedSet,
         function(windowId) {
-          return remoteCall.waitForElement(windowId,
-                                           '.button-panel button.cancel').
-              then(function() {
-                return remoteCall.callRemoteTestUtil(
-                    'fakeEvent',
-                    windowId,
-                    ['.button-panel button.cancel', 'click']);
-              });
+          return remoteCall.callRemoteTestUtil(
+              'selectFile', windowId, ['hello.txt']
+          ).then(function() {
+            return remoteCall.waitForElement(windowId,
+                                             '.button-panel button.cancel');
+          }).then(function() {
+            return remoteCall.callRemoteTestUtil(
+                'fakeEvent',
+                windowId,
+                ['.button-panel button.cancel', 'click']);
+          });
         });
   }).then(function(result) {
     // Undefined means the dialog is canceled.
@@ -91,13 +43,18 @@ function openFileDialog(volumeName, expectedSet) {
 
   var closeByEscKeyPromise = closeByCancelButtonPromise.then(function() {
     return openAndWaitForClosingDialog(
+        {type: 'openFile'},
         volumeName,
         expectedSet,
         function(windowId) {
           return remoteCall.callRemoteTestUtil(
-              'fakeKeyDown',
-              windowId,
-              ['#file-list', 'U+001B', false]);
+              'selectFile', windowId, ['hello.txt']
+          ).then(function() {
+            return remoteCall.callRemoteTestUtil(
+                'fakeKeyDown',
+                windowId,
+                ['#file-list', 'U+001B', false]);
+          });
         });
   }).then(function(result) {
     // Undefined means the dialog is canceled.
@@ -106,17 +63,21 @@ function openFileDialog(volumeName, expectedSet) {
 
   var closeByOkButtonPromise = closeByEscKeyPromise.then(function() {
     return openAndWaitForClosingDialog(
+        {type: 'openFile'},
         volumeName,
         expectedSet,
         function(windowId) {
-          return remoteCall.waitForElement(windowId,
-                                           '.button-panel button.ok').
-              then(function() {
-                return remoteCall.callRemoteTestUtil(
-                    'fakeEvent',
-                    windowId,
-                    ['.button-panel button.ok', 'click']);
-              });
+          return remoteCall.callRemoteTestUtil(
+              'selectFile', windowId, ['hello.txt']
+          ).then(function() {
+            return remoteCall.waitForElement(windowId,
+                                             '.button-panel button.ok');
+          }).then(function() {
+            return remoteCall.callRemoteTestUtil(
+                'fakeEvent',
+                windowId,
+                ['.button-panel button.ok', 'click']);
+          });
         });
   }).then(function(result) {
     chrome.test.assertEq('hello.txt', result.name);

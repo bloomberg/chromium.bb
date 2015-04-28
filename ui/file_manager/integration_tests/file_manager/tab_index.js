@@ -191,21 +191,41 @@ testcase.tabindexFocusDirectorySelected = function() {
 
 /**
  * Tests the tab focus in the dialog and closes the dialog.
+ *
+ * @param {Object} dialogParams Dialog parameters to be passed to
+ *     chrome.fileSystem.chooseEntry.
+ * @param {string} volumeName Volume name passed to the selectVolume remote
+ *     function.
+ * @param {Array.<TestEntryInfo>} expectedSet Expected set of the entries.
+ * @param {boolean} selectFile True to select 'hello.txt' before the tab order
+ *     check, false do not select any file before the check.
+ * @param {string} initialElement Selector of the element which shows ready.
+ * @param {Array.<string>} expectedTabOrder Array with the IDs of the element
+ *     with the corresponding order of expected tab-indexes.
  */
-function tabindexFocus(volumeName, expectedSet, expectedTabOrder) {
+function tabindexFocus(dialogParams, volumeName, expectedSet, selectFile,
+                       initialElement, expectedTabOrder) {
   var localEntriesPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
   var driveEntriesPromise = addEntries(['drive'], BASIC_DRIVE_ENTRY_SET);
   var setupPromise = Promise.all([localEntriesPromise, driveEntriesPromise]);
 
-  var checkAndClose = function(appId) {
-    var promise = remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  var selectAndCheckAndClose = function(appId) {
+    var promise = Promise.resolve();
+
+    if (selectFile) {
+      promise = promise.then(function() {
+        return remoteCall.callRemoteTestUtil(
+            'selectFile', appId, ['hello.txt']);
+      });
+    }
+
     promise = promise.then(function() {
-      return remoteCall.waitForElement(appId, ['#ok-button:not([disabled])']);
+      return remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
     });
 
-    // Checks initial focus.
+    // Waits for the initial element.
     promise = promise.then(function() {
-      return remoteCall.waitForElement(appId, ['#file-list:focus']);
+      return remoteCall.waitForElement(appId, [initialElement]);
     });
 
     // Checks tabfocus.
@@ -220,16 +240,15 @@ function tabindexFocus(volumeName, expectedSet, expectedTabOrder) {
     promise = promise.then(function() {
       // Closes the window by pressing Enter.
       return remoteCall.callRemoteTestUtil(
-          'fakeKeyDown',
-          appId,
-          ['#file-list', 'Enter', false]);
+          'fakeKeyDown', appId, ['#file-list', 'Enter', false]);
     });
 
     return promise;
   };
 
   return setupPromise.then(function() {
-    return openAndWaitForClosingDialog(volumeName, expectedSet, checkAndClose);
+    return openAndWaitForClosingDialog(
+        dialogParams, volumeName, expectedSet, selectAndCheckAndClose);
   });
 }
 
@@ -238,9 +257,10 @@ function tabindexFocus(volumeName, expectedSet, expectedTabOrder) {
  */
 testcase.tabindexOpenDialogDownloads = function() {
   testPromise(tabindexFocus(
-        'downloads', BASIC_LOCAL_ENTRY_SET,
-        ['ok-button', 'cancel-button', 'search-button', 'view-button',
-         'gear-button', 'directory-tree', 'file-list']));
+      {type: 'openFile'}, 'downloads', BASIC_LOCAL_ENTRY_SET, true,
+      '#ok-button:not([disabled])',
+      ['ok-button', 'cancel-button', 'search-button', 'view-button',
+       'gear-button', 'directory-tree', 'file-list']));
 };
 
 /**
@@ -248,7 +268,40 @@ testcase.tabindexOpenDialogDownloads = function() {
  */
 testcase.tabindexOpenDialogDrive = function() {
   testPromise(tabindexFocus(
-        'drive', BASIC_DRIVE_ENTRY_SET,
-        ['ok-button', 'cancel-button', 'search-button', 'view-button',
-         'gear-button', 'directory-tree', 'file-list']));
+      {type: 'openFile'}, 'drive', BASIC_DRIVE_ENTRY_SET, true,
+      '#ok-button:not([disabled])',
+      ['ok-button', 'cancel-button', 'search-button', 'view-button',
+       'gear-button', 'directory-tree', 'file-list']));
+};
+
+/**
+ * Tests the tab focus behavior of Save File Dialog (Downloads).
+ */
+testcase.tabindexSaveFileDialogDownloads = function() {
+  testPromise(tabindexFocus(
+      {
+        type: 'saveFile',
+        suggestedName: 'hoge.txt'  // Prevent showing a override prompt
+      },
+      'downloads', BASIC_LOCAL_ENTRY_SET, false,
+      '#ok-button:not([disabled])',
+      ['ok-button', 'cancel-button', 'search-button', 'view-button',
+       'gear-button', 'directory-tree', 'file-list', 'new-folder-button',
+       'filename-input-textbox']));
+};
+
+/**
+ * Tests the tab focus behavior of Save File Dialog (Drive).
+ */
+testcase.tabindexSaveFileDialogDrive = function() {
+  testPromise(tabindexFocus(
+      {
+        type: 'saveFile',
+        suggestedName: 'hoge.txt'  // Prevent showing a override prompt
+      },
+      'drive', BASIC_DRIVE_ENTRY_SET, false,
+      '#ok-button:not([disabled])',
+      ['ok-button', 'cancel-button', 'search-button', 'view-button',
+       'gear-button', 'directory-tree', 'file-list', 'new-folder-button',
+       'filename-input-textbox']));
 };

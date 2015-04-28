@@ -228,6 +228,58 @@ function openNewWindow(appState, initialRoot, opt_callback) {
 }
 
 /**
+ * Opens a file dialog and waits for closing it.
+ *
+ * @param {Object} dialogParams Dialog parameters to be passed to chrome.
+ *     fileSystem.chooseEntry() API.
+ * @param {string} volumeName Volume name passed to the selectVolume remote
+ *     funciton.
+ * @param {Array.<TestEntryInfo>} expectedSet Expected set of the entries.
+ * @param {function(windowId:string):Promise} closeDialog Function to close the
+ *     dialog.
+ * @return {Promise} Promise to be fulfilled with the result entry of the
+ *     dialog.
+ */
+function openAndWaitForClosingDialog(
+    dialogParams, volumeName, expectedSet, closeDialog) {
+  var resultPromise = new Promise(function(fulfill) {
+    chrome.fileSystem.chooseEntry(
+        dialogParams,
+        function(entry) { fulfill(entry); });
+    chrome.test.assertTrue(!chrome.runtime.lastError, 'chooseEntry failed.');
+  });
+
+  return remoteCall.waitForWindow('dialog#').then(function(windowId) {
+    return remoteCall.waitForElement(windowId, '#file-list').
+        then(function() {
+          // Wait for initialization of Files.app.
+          return remoteCall.waitForFiles(
+              windowId, TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
+        }).
+        then(function() {
+          return remoteCall.callRemoteTestUtil(
+              'selectVolume', windowId, [volumeName]);
+        }).
+        then(function() {
+          var expectedRows = TestEntryInfo.getExpectedRows(expectedSet);
+          return remoteCall.waitForFiles(windowId, expectedRows);
+        }).
+        then(closeDialog.bind(null, windowId)).
+        then(function() {
+          return repeatUntil(function() {
+            return remoteCall.callRemoteTestUtil('getWindows', null, []).
+                then(function(windows) {
+                  if (windows[windowId])
+                    return pending('Window %s does not hide.', windowId);
+                  else
+                    return resultPromise;
+                });
+          });
+        });
+  });
+}
+
+/**
  * Opens a Files.app's main window and waits until it is initialized. Fills
  * the window with initial files. Should be called for the first window only.
  *

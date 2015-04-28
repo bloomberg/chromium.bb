@@ -1169,6 +1169,14 @@ INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "tabindexOpenDialogDownloads"),
         TestParameter(IN_GUEST_MODE, "tabindexOpenDialogDownloads")));
 
+INSTANTIATE_TEST_CASE_P(
+    TabindexSaveFileDialog,
+    FileManagerBrowserTest,
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "tabindexSaveFileDialogDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "tabindexSaveFileDialogDownloads"),
+        TestParameter(IN_GUEST_MODE, "tabindexSaveFileDialogDownloads")));
+
 // Fails on official build. http://crbug.com/429294
 // Disabled under MSAN as well. http://crbug.com/468980.
 #if !defined(NDEBUG) || defined(OFFICIAL_BUILD) || defined(MEMORY_SANITIZER)
