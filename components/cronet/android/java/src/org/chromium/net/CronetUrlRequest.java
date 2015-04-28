@@ -616,16 +616,7 @@ final class CronetUrlRequest implements UrlRequest {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onSucceeded() {
-        long totalReceivedBytes;
-        synchronized (mUrlRequestAdapterLock) {
-            if (mUrlRequestAdapter == 0) {
-                return;
-            }
-            totalReceivedBytes =
-                    nativeGetTotalReceivedBytes(mUrlRequestAdapter);
-        }
-
+    private void onSucceeded(long totalReceivedBytes) {
         final NativeExtendedResponseInfo extendedResponseInfo =
                 new NativeExtendedResponseInfo(mResponseInfo,
                         totalReceivedBytes);
@@ -714,7 +705,4 @@ final class CronetUrlRequest implements UrlRequest {
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native boolean nativeGetWasCached(long nativePtr);
-
-    @NativeClassQualifiedName("CronetURLRequestAdapter")
-    private native long nativeGetTotalReceivedBytes(long nativePtr);
 }

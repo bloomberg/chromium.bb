@@ -232,12 +232,6 @@ jboolean CronetURLRequestAdapter::GetWasCached(JNIEnv* env,
   return url_request_->response_info().was_cached;
 }
 
-int64 CronetURLRequestAdapter::GetTotalReceivedBytes(JNIEnv* env,
-                                                     jobject jcaller) const {
-  DCHECK(context_->IsOnNetworkThread());
-  return url_request_->GetTotalReceivedBytes();
-}
-
 // net::URLRequest::Delegate overrides (called on network thread).
 
 void CronetURLRequestAdapter::OnReceivedRedirect(
@@ -278,7 +272,8 @@ void CronetURLRequestAdapter::OnReadCompleted(net::URLRequest* request,
     read_buffer_ = nullptr;
   } else {
     JNIEnv* env = base::android::AttachCurrentThread();
-    cronet::Java_CronetUrlRequest_onSucceeded(env, owner_.obj());
+    cronet::Java_CronetUrlRequest_onSucceeded(
+        env, owner_.obj(), url_request_->GetTotalReceivedBytes());
   }
 }
 

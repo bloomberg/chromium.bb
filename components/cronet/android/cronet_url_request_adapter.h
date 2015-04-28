@@ -107,11 +107,6 @@ class CronetURLRequestAdapter : public net::URLRequest::Delegate {
   // Returns true if response is coming from the cache.
   jboolean GetWasCached(JNIEnv* env, jobject jcaller) const;
 
-  // Gets the total amount of body data received from network after
-  // SSL/SPDY/QUIC decoding and proxy handling. Basically the size of the body
-  // prior to decompression.
-  int64 GetTotalReceivedBytes(JNIEnv* env, jobject jcaller) const;
-
   // net::URLRequest::Delegate implementations:
 
   void OnReceivedRedirect(net::URLRequest* request,
