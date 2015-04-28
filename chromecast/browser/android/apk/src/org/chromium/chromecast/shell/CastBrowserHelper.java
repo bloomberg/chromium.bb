@@ -20,6 +20,7 @@ import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.media.MediaDrmBridge;
+import org.chromium.net.NetworkChangeNotifier;
 
 import java.util.UUID;
 
@@ -75,6 +76,9 @@ public class CastBrowserHelper {
             Log.d(TAG, "Loading BrowserStartupController...");
             BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
                     .startBrowserProcessesSync(false);
+            NetworkChangeNotifier.init(context);
+            // Cast shell always expects to receive notifications to track network state.
+            NetworkChangeNotifier.registerToReceiveNotificationsAlways();
             sIsBrowserInitialized = true;
             MediaDrmBridge.addKeySystemUuidMapping(PLAYREADY_KEY_SYSTEM_NAME, PLAYREADY_UUID);
             return true;
