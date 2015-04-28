@@ -13,10 +13,10 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -26,9 +26,7 @@
 
 using content::BrowserThread;
 using content::DevToolsAgentHost;
-using content::RenderViewHost;
 using content::WebContents;
-using content::WorkerService;
 
 const char DevToolsTargetImpl::kTargetTypeApp[] = "app";
 const char DevToolsTargetImpl::kTargetTypeBackgroundPage[] = "background_page";
@@ -47,8 +45,7 @@ class WebContentsTarget : public DevToolsTargetImpl {
  public:
   WebContentsTarget(WebContents* web_contents, bool is_tab);
 
-  // DevToolsTargetImpl overrides:
-  WebContents* GetWebContents() const override;
+  // DevToolsTargetImpl overrides.
   int GetTabId() const override;
   std::string GetExtensionId() const override;
   void Inspect(Profile* profile) const override;
@@ -62,12 +59,6 @@ WebContentsTarget::WebContentsTarget(WebContents* web_contents, bool is_tab)
     : DevToolsTargetImpl(DevToolsAgentHost::GetOrCreateFor(web_contents)),
       tab_id_(-1) {
   set_type(kTargetTypeOther);
-
-  content::NavigationController& controller = web_contents->GetController();
-  content::NavigationEntry* entry = controller.GetActiveEntry();
-  if (entry != NULL && entry->GetURL().is_valid())
-    set_favicon_url(entry->GetFavicon().url);
-  set_last_activity_time(web_contents->GetLastActiveTime());
 
   extensions::GuestViewBase* guest =
       extensions::GuestViewBase::FromWebContents(web_contents);
@@ -110,10 +101,6 @@ WebContentsTarget::WebContentsTarget(WebContents* web_contents, bool is_tab)
   set_favicon_url(extensions::ExtensionIconSource::GetIconURL(
       extension, extension_misc::EXTENSION_ICON_SMALLISH,
       ExtensionIconSet::MATCH_BIGGER, false, NULL));
-}
-
-WebContents* WebContentsTarget::GetWebContents() const {
-  return GetAgentHost()->GetWebContents();
 }
 
 int WebContentsTarget::GetTabId() const {
@@ -190,58 +177,7 @@ DevToolsTargetImpl::~DevToolsTargetImpl() {
 
 DevToolsTargetImpl::DevToolsTargetImpl(
     scoped_refptr<DevToolsAgentHost> agent_host)
-    : agent_host_(agent_host),
-      title_(agent_host->GetTitle()),
-      url_(agent_host->GetURL()) {
-}
-
-std::string DevToolsTargetImpl::GetParentId() const {
-  return parent_id_;
-}
-
-std::string DevToolsTargetImpl::GetId() const {
-  return agent_host_->GetId();
-}
-
-std::string DevToolsTargetImpl::GetType() const {
-  return type_;
-}
-
-std::string DevToolsTargetImpl::GetTitle() const {
-  return title_;
-}
-
-std::string DevToolsTargetImpl::GetDescription() const {
-  return description_;
-}
-
-GURL DevToolsTargetImpl::GetURL() const {
-  return url_;
-}
-
-GURL DevToolsTargetImpl::GetFaviconURL() const {
-  return favicon_url_;
-}
-
-base::TimeTicks DevToolsTargetImpl::GetLastActivityTime() const {
-  return last_activity_time_;
-}
-
-scoped_refptr<content::DevToolsAgentHost>
-DevToolsTargetImpl::GetAgentHost() const {
-  return agent_host_;
-}
-
-bool DevToolsTargetImpl::IsAttached() const {
-  return agent_host_->IsAttached();
-}
-
-bool DevToolsTargetImpl::Activate() const {
-  return agent_host_->Activate();
-}
-
-bool DevToolsTargetImpl::Close() const {
-  return agent_host_->Close();
+    : devtools_discovery::BasicTargetDescriptor(agent_host) {
 }
 
 int DevToolsTargetImpl::GetTabId() const {
@@ -249,7 +185,7 @@ int DevToolsTargetImpl::GetTabId() const {
 }
 
 WebContents* DevToolsTargetImpl::GetWebContents() const {
-  return NULL;
+  return GetAgentHost()->GetWebContents();
 }
 
 std::string DevToolsTargetImpl::GetExtensionId() const {
@@ -263,22 +199,21 @@ void DevToolsTargetImpl::Reload() const {
 }
 
 // static
-scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForWebContents(
-    content::WebContents* web_contents,
-    bool is_tab) {
+scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForTab(
+    content::WebContents* web_contents) {
   return scoped_ptr<DevToolsTargetImpl>(
-      new WebContentsTarget(web_contents, is_tab));
+      new WebContentsTarget(web_contents, true));
 }
 
 // static
-void DevToolsTargetImpl::EnumerateAllTargets(Callback callback) {
+std::vector<DevToolsTargetImpl*> DevToolsTargetImpl::EnumerateAll() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::set<WebContents*> tab_web_contents;
   for (TabContentsIterator it; !it.done(); it.Next())
     tab_web_contents.insert(*it);
 
-  DevToolsTargetImpl::List result;
+  std::vector<DevToolsTargetImpl*> result;
   DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
   for (DevToolsAgentHost::List::iterator it = agents.begin();
        it != agents.end(); ++it) {
@@ -304,6 +239,5 @@ void DevToolsTargetImpl::EnumerateAllTargets(Callback callback) {
         break;
     }
   }
-
-  callback.Run(result);
+  return result;
 }

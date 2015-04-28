@@ -34,8 +34,21 @@ class BasicTargetDescriptor : public DevToolsTargetDescriptor {
   bool Activate() const override;
   bool Close() const override;
 
+ protected:
+  void set_parent_id(const std::string& parent_id) { parent_id_ = parent_id; }
+  void set_type(const std::string& type) { type_ = type; }
+  void set_title(const std::string& title) { title_ = title; }
+  void set_description(const std::string& desc) { description_ = desc; }
+  void set_url(const GURL& url) { url_ = url; }
+  void set_favicon_url(const GURL& url) { favicon_url_ = url; }
+
  private:
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
+  std::string parent_id_;
+  std::string type_;
+  std::string title_;
+  std::string description_;
+  GURL url_;
   GURL favicon_url_;
   base::TimeTicks last_activity_time_;
 };

@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
+#include "components/devtools_discovery/devtools_discovery_manager.h"
 #include "components/history/core/browser/top_sites.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -66,18 +67,16 @@ std::string ChromeDevToolsManagerDelegate::GetPageThumbnailData(
 
 scoped_ptr<content::DevToolsTarget>
 ChromeDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
-  chrome::NavigateParams params(ProfileManager::GetLastUsedProfile(),
-      url, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  params.disposition = NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
-  if (!params.target_contents)
-    return scoped_ptr<content::DevToolsTarget>();
-  return scoped_ptr<content::DevToolsTarget>(
-      DevToolsTargetImpl::CreateForWebContents(params.target_contents, true));
+  return devtools_discovery::DevToolsDiscoveryManager::GetInstance()->
+      CreateNew(url);
 }
 
 void ChromeDevToolsManagerDelegate::EnumerateTargets(TargetCallback callback) {
-  DevToolsTargetImpl::EnumerateAllTargets(
-      *reinterpret_cast<DevToolsTargetImpl::Callback*>(&callback));
+  TargetList targets;
+  devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
+      devtools_discovery::DevToolsDiscoveryManager::GetInstance();
+  for (const auto& descriptor : discovery_manager->GetDescriptors())
+    targets.push_back(descriptor);
+  callback.Run(targets);
 }
 

@@ -77,6 +77,8 @@ static_library("devtools") {
       ":webrtc_device_provider_resources",
     ]
     sources += [
+      "chrome_devtools_discovery_provider.cc",
+      "chrome_devtools_discovery_provider.h",
       "chrome_devtools_manager_delegate.cc",
       "chrome_devtools_manager_delegate.h",
       "device/adb/adb_client_socket.cc",

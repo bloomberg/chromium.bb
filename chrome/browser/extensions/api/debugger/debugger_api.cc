@@ -31,6 +31,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -732,8 +733,11 @@ DebuggerGetTargetsFunction::~DebuggerGetTargetsFunction() {
 }
 
 bool DebuggerGetTargetsFunction::RunAsync() {
-  DevToolsTargetImpl::EnumerateAllTargets(
-      base::Bind(&DebuggerGetTargetsFunction::SendTargetList, this));
+  std::vector<DevToolsTargetImpl*> list = DevToolsTargetImpl::EnumerateAll();
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&DebuggerGetTargetsFunction::SendTargetList, this, list));
   return true;
 }
 

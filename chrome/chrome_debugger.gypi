@@ -57,6 +57,8 @@
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/grit/webrtc_device_provider_resources_map.cc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/grit/webrtc_device_provider_resources_map.h',
+            'browser/devtools/chrome_devtools_discovery_provider.cc',
+            'browser/devtools/chrome_devtools_discovery_provider.h',
             'browser/devtools/chrome_devtools_manager_delegate.cc',
             'browser/devtools/chrome_devtools_manager_delegate.h',
             'browser/devtools/device/adb/adb_client_socket.cc',

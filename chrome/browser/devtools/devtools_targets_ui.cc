@@ -169,7 +169,7 @@ private:
 
   void ScheduleUpdate();
   void UpdateTargets();
-  void SendTargets(const DevToolsTargetImpl::List& targets);
+  void SendTargets(const std::vector<DevToolsTargetImpl*>& targets);
 
   content::NotificationRegistrar notification_registrar_;
   scoped_ptr<CancelableTimer> timer_;
@@ -222,20 +222,16 @@ void LocalTargetsUIHandler::ScheduleUpdate() {
 }
 
 void LocalTargetsUIHandler::UpdateTargets() {
-  DevToolsTargetImpl::EnumerateAllTargets(base::Bind(
-      &LocalTargetsUIHandler::SendTargets,
-      weak_factory_.GetWeakPtr()));
+  SendTargets(DevToolsTargetImpl::EnumerateAll());
 }
 
 void LocalTargetsUIHandler::SendTargets(
-    const DevToolsTargetImpl::List& targets) {
+    const std::vector<DevToolsTargetImpl*>& targets) {
   base::ListValue list_value;
   std::map<std::string, base::DictionaryValue*> id_to_descriptor;
 
   STLDeleteValues(&targets_);
-  for (DevToolsTargetImpl::List::const_iterator it = targets.begin();
-      it != targets.end(); ++it) {
-    DevToolsTargetImpl* target = *it;
+  for (DevToolsTargetImpl* target : targets) {
     targets_[target->GetId()] = target;
     id_to_descriptor[target->GetId()] = Serialize(*target);
   }

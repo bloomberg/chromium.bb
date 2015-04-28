@@ -18,9 +18,30 @@ const char BasicTargetDescriptor::kTypeServiceWorker[] = "service_worker";
 const char BasicTargetDescriptor::kTypeSharedWorker[] = "worker";
 const char BasicTargetDescriptor::kTypeOther[] = "other";
 
+namespace {
+
+std::string GetTypeFromAgentHost(DevToolsAgentHost* agent_host) {
+  switch (agent_host->GetType()) {
+    case DevToolsAgentHost::TYPE_WEB_CONTENTS:
+      return BasicTargetDescriptor::kTypePage;
+    case DevToolsAgentHost::TYPE_SERVICE_WORKER:
+      return BasicTargetDescriptor::kTypeServiceWorker;
+    case DevToolsAgentHost::TYPE_SHARED_WORKER:
+      return BasicTargetDescriptor::kTypeSharedWorker;
+    default:
+      break;
+  }
+  return BasicTargetDescriptor::kTypeOther;
+}
+
+}  // namespace
+
 BasicTargetDescriptor::BasicTargetDescriptor(
     scoped_refptr<DevToolsAgentHost> agent_host)
-    : agent_host_(agent_host) {
+    : agent_host_(agent_host),
+      type_(GetTypeFromAgentHost(agent_host.get())),
+      title_(agent_host->GetTitle()),
+      url_(agent_host->GetURL()) {
   if (content::WebContents* web_contents = agent_host_->GetWebContents()) {
     content::NavigationController& controller = web_contents->GetController();
     content::NavigationEntry* entry = controller.GetActiveEntry();
@@ -38,33 +59,23 @@ std::string BasicTargetDescriptor::GetId() const {
 }
 
 std::string BasicTargetDescriptor::GetParentId() const {
-  return std::string();
+  return parent_id_;
 }
 
 std::string BasicTargetDescriptor::GetType() const {
-  switch (agent_host_->GetType()) {
-    case DevToolsAgentHost::TYPE_WEB_CONTENTS:
-      return kTypePage;
-    case DevToolsAgentHost::TYPE_SERVICE_WORKER:
-      return kTypeServiceWorker;
-    case DevToolsAgentHost::TYPE_SHARED_WORKER:
-      return kTypeSharedWorker;
-    default:
-      break;
-  }
-  return kTypeOther;
+  return type_;
 }
 
 std::string BasicTargetDescriptor::GetTitle() const {
-  return agent_host_->GetTitle();
+  return title_;
 }
 
 std::string BasicTargetDescriptor::GetDescription() const {
-  return std::string();
+  return description_;
 }
 
 GURL BasicTargetDescriptor::GetURL() const {
-  return agent_host_->GetURL();
+  return url_;
 }
 
 GURL BasicTargetDescriptor::GetFaviconURL() const {

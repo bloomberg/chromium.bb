@@ -148,6 +148,7 @@
 #include "chrome/browser/android/dev_tools_discovery_provider_android.h"
 #include "chrome/browser/metrics/thread_watcher_android.h"
 #else
+#include "chrome/browser/devtools/chrome_devtools_discovery_provider.h"
 #include "chrome/browser/feedback/feedback_profile_observer.h"
 #endif  // defined(OS_ANDROID)
 
@@ -1097,6 +1098,8 @@ void ChromeBrowserMainParts::PostProfileInit() {
 
 #if defined(OS_ANDROID)
   DevToolsDiscoveryProviderAndroid::Install();
+#else
+  ChromeDevToolsDiscoveryProvider::Install();
 #endif  // defined(OS_ANDROID)
 
   LaunchDevToolsHandlerIfNeeded(parsed_command_line());
