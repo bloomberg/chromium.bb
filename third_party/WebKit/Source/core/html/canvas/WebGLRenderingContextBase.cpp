@@ -3858,6 +3858,12 @@ void WebGLRenderingContextBase::texParameter(GLenum target, GLenum pname, GLfloa
     case GL_TEXTURE_MIN_FILTER:
     case GL_TEXTURE_MAG_FILTER:
         break;
+    case GL_TEXTURE_WRAP_R:
+        // fall through to WRAP_S and WRAP_T for WebGL 2 or higher
+        if (!isWebGL2OrHigher()) {
+            synthesizeGLError(GL_INVALID_ENUM, "texParameter", "invalid parameter name");
+            return;
+        }
     case GL_TEXTURE_WRAP_S:
     case GL_TEXTURE_WRAP_T:
         if ((isFloat && paramf != GL_CLAMP_TO_EDGE && paramf != GL_MIRRORED_REPEAT && paramf != GL_REPEAT)
@@ -3869,6 +3875,17 @@ void WebGLRenderingContextBase::texParameter(GLenum target, GLenum pname, GLfloa
     case GL_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
         if (!extensionEnabled(EXTTextureFilterAnisotropicName)) {
             synthesizeGLError(GL_INVALID_ENUM, "texParameter", "invalid parameter, EXT_texture_filter_anisotropic not enabled");
+            return;
+        }
+        break;
+    case GL_TEXTURE_COMPARE_FUNC:
+    case GL_TEXTURE_COMPARE_MODE:
+    case GL_TEXTURE_BASE_LEVEL:
+    case GL_TEXTURE_MAX_LEVEL:
+    case GL_TEXTURE_MAX_LOD:
+    case GL_TEXTURE_MIN_LOD:
+        if (!isWebGL2OrHigher()) {
+            synthesizeGLError(GL_INVALID_ENUM, "texParameter", "invalid parameter name");
             return;
         }
         break;
