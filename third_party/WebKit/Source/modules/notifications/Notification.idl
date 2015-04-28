@@ -58,7 +58,7 @@
 
     [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<unsigned long>? vibrate;
     readonly attribute boolean silent;
-    [RuntimeEnabled=NotificationExperimental, CallWith=ScriptState] readonly attribute any data;
+    [CallWith=ScriptState] readonly attribute any data;
 
     [MeasureAs=NotificationClosed] void close();
 };

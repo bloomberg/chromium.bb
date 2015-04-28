@@ -3173,6 +3173,7 @@ interface NodeList
     method item
 interface Notification
     getter body
+    getter data
     getter dir
     getter icon
     getter lang
