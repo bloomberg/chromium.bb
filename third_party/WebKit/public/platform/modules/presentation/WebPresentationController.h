@@ -10,6 +10,7 @@
 namespace blink {
 
 class WebPresentationSessionClient;
+class WebString;
 enum class WebPresentationSessionState;
 
 // The delegate Blink provides to WebPresentationClient in order to get updates.
@@ -30,6 +31,9 @@ public:
 
     // Called when the state of a session changes.
     virtual void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) = 0;
+
+    // Called when a text message of a session is received.
+    virtual void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString& message) = 0;
 };
 
 } // namespace blink

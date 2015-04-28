@@ -55,6 +55,9 @@ public:
     // Notifies the session about its state change.
     void didChangeState(WebPresentationSessionState);
 
+    // Notifies the session about new text message.
+    void didReceiveTextMessage(const String& message);
+
 private:
     PresentationSession(LocalFrame*, const String& id, const String& url);
 

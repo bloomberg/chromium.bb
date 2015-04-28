@@ -10,6 +10,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
+#include "core/events/MessageEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/Presentation.h"
@@ -133,6 +134,11 @@ void PresentationSession::sendInternal(const uint8_t* data, size_t size, Excepti
     PresentationController* controller = presentationController();
     if (controller)
         controller->send(m_url, m_id, data, size);
+}
+
+void PresentationSession::didReceiveTextMessage(const String& message)
+{
+    dispatchEvent(MessageEvent::create(message));
 }
 
 void PresentationSession::close()

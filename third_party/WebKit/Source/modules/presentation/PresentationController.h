@@ -46,6 +46,7 @@ public:
     virtual bool isAvailableChangeWatched() const override;
     virtual void didStartDefaultSession(WebPresentationSessionClient*) override;
     virtual void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) override;
+    virtual void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString&) override;
 
     // Called when the first listener was added to or the last listener was removed from the
     // |availablechange| event.

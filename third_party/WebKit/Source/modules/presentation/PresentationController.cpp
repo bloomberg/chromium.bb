@@ -94,6 +94,14 @@ void PresentationController::didChangeSessionState(WebPresentationSessionClient*
         PresentationSession::dispose(sessionClient);
 }
 
+void PresentationController::didReceiveSessionTextMessage(WebPresentationSessionClient* sessionClient, const WebString& message)
+{
+    if (m_presentation)
+        m_presentation->didReceiveSessionTextMessage(sessionClient, message);
+    else
+        PresentationSession::dispose(sessionClient);
+}
+
 void PresentationController::startSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks* callbacks)
 {
     if (!m_client) {

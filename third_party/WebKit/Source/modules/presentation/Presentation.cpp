@@ -161,6 +161,15 @@ void Presentation::didChangeSessionState(WebPresentationSessionClient* sessionCl
     PresentationSession::dispose(sessionClient);
 }
 
+void Presentation::didReceiveSessionTextMessage(WebPresentationSessionClient* sessionClient, const String& message)
+{
+    PresentationSession* session = findSession(sessionClient);
+    if (session)
+        session->didReceiveTextMessage(message);
+
+    PresentationSession::dispose(sessionClient);
+}
+
 void Presentation::registerSession(PresentationSession* session)
 {
     m_openSessions.add(session);

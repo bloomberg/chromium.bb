@@ -67,6 +67,9 @@ public:
     // Called when the |onstatechange| event needs to be fired to the right session.
     void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState);
 
+    // Called when the |onmessage| event needs to be fired to the right session.
+    void didReceiveSessionTextMessage(WebPresentationSessionClient*, const String& message);
+
     // Adds a session to the open sessions list.
     void registerSession(PresentationSession*);
 
