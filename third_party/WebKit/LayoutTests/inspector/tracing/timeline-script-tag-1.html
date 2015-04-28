@@ -27,11 +27,9 @@ function test()
 
     function step3()
     {
-        function format(record)
+        function format1(record)
         {
-            if (record.type() === WebInspector.TimelineModel.RecordType.EvaluateScript)
-                InspectorTest.printTimelineRecordProperties(record);
-            else if (record.type() === WebInspector.TimelineModel.RecordType.ParseHTML) {
+            if (record.type() === WebInspector.TimelineModel.RecordType.ParseHTML) {
                 InspectorTest.dumpTimelineRecord(record, undefined, undefined, [
                     "ParseHTML",
                     "EvaluateScript",
@@ -43,7 +41,15 @@ function test()
                 ]);
             }
         }
-        InspectorTest.printTimelineRecords(null, InspectorTest.safeWrap(format));
+
+        function format2(record)
+        {
+            if (record.type() === WebInspector.TimelineModel.RecordType.EvaluateScript)
+                InspectorTest.printTimelineRecordProperties(record);
+        }
+
+        InspectorTest.printTimelineRecords(null, InspectorTest.safeWrap(format1));
+        InspectorTest.printTimelineRecords(null, InspectorTest.safeWrap(format2));
         InspectorTest.completeTest();
     }
 }
