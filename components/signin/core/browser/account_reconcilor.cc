@@ -64,6 +64,7 @@ AccountReconcilor::AccountReconcilor(
       registered_with_content_settings_(false),
       is_reconcile_started_(false),
       first_execution_(true),
+      error_during_last_reconcile_(false),
       chrome_accounts_changed_(false) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
 }
@@ -176,6 +177,18 @@ bool AccountReconcilor::IsProfileConnected() {
   return signin_manager_->IsAuthenticated();
 }
 
+AccountReconcilor::State AccountReconcilor::GetState() {
+  if (!is_reconcile_started_) {
+    return error_during_last_reconcile_
+        ? AccountReconcilor::State::NOT_RECONCILING_ERROR_OCCURED
+        : AccountReconcilor::State::NOT_RECONCILING;
+  }
+
+  return add_to_cookie_.empty()
+      ? AccountReconcilor::State::GATHERING_INFORMATION
+      : AccountReconcilor::State::APPLYING_CHANGES;
+}
+
 void AccountReconcilor::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -249,6 +262,7 @@ void AccountReconcilor::StartReconcile() {
     return;
 
   is_reconcile_started_ = true;
+  error_during_last_reconcile_ = false;
 
   // Reset state for validating gaia cookie.
   gaia_accounts_.clear();
@@ -269,6 +283,9 @@ void AccountReconcilor::StartReconcile() {
 void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
         const std::vector<std::pair<std::string, bool> >& accounts,
         const GoogleServiceAuthError& error) {
+  VLOG(1) << "AccountReconcilor::OnGaiaAccountsInCookieUpdated: "
+          << "CookieJar " << accounts.size() << " accounts, "
+          << "Error was " << error.ToString();
   if (error.state() == GoogleServiceAuthError::NONE) {
     gaia_accounts_ = accounts;
 
@@ -278,6 +295,8 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
 
     is_reconcile_started_ ? FinishReconcile() : StartReconcile();
   } else {
+    if (is_reconcile_started_)
+      error_during_last_reconcile_ = true;
     AbortReconcile();
   }
 }
@@ -432,8 +451,13 @@ bool AccountReconcilor::MarkAccountAsAddedToCookie(
 void AccountReconcilor::OnAddAccountToCookieCompleted(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
+  VLOG(1) << "AccountReconcilor::OnAddAccountToCookieCompleted: "
+          << "Account added: " << account_id << ", "
+          << "Error was " << error.ToString();
   // Always listens to GaiaCookieManagerService. Only proceed if reconciling.
   if (is_reconcile_started_ && MarkAccountAsAddedToCookie(account_id)) {
+    if (error.state() != GoogleServiceAuthError::State::NONE)
+      error_during_last_reconcile_ = true;
     CalculateIfReconcileIsDone();
     ScheduleStartReconcileIfChromeAccountsChanged();
   }

@@ -432,9 +432,9 @@ void OneClickSigninSyncStarter::SigninFailed(
 void OneClickSigninSyncStarter::SigninSuccess() {
 }
 
-void OneClickSigninSyncStarter::MergeSessionComplete(
+void OneClickSigninSyncStarter::AccountAddedToCookie(
     const GoogleServiceAuthError& error) {
-  // Regardless of whether the merge session completed sucessfully or not,
+  // Regardless of whether the account was successfully added or not,
   // continue with sync starting.
 
   if (!sync_setup_completed_callback_.is_null())

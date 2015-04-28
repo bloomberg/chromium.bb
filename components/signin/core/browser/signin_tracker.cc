@@ -53,5 +53,5 @@ void SigninTracker::OnRefreshTokenRevoked(const std::string& account_id) {
 void SigninTracker::OnAddAccountToCookieCompleted(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
-  observer_->MergeSessionComplete(error);
+  observer_->AccountAddedToCookie(error);
 }

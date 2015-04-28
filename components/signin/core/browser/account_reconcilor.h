@@ -40,6 +40,13 @@ class AccountReconcilor : public KeyedService,
                           public OAuth2TokenService::Observer,
                           public SigninManagerBase::Observer {
  public:
+  enum State {
+      NOT_RECONCILING,
+      NOT_RECONCILING_ERROR_OCCURED,
+      GATHERING_INFORMATION,
+      APPLYING_CHANGES
+  };
+
   AccountReconcilor(ProfileOAuth2TokenService* token_service,
                     SigninManagerBase* signin_manager,
                     SigninClient* client,
@@ -55,6 +62,9 @@ class AccountReconcilor : public KeyedService,
 
   // KeyedService implementation.
   void Shutdown() override;
+
+  // Determine what the reconcilor is currently doing.
+  State GetState();
 
  private:
   bool IsRegisteredWithTokenService() const {
@@ -173,6 +183,9 @@ class AccountReconcilor : public KeyedService,
 
   // True iff this is the first time the reconcilor is executing.
   bool first_execution_;
+
+  // True iff an error occured during the last attempt to reconcile.
+  bool error_during_last_reconcile_;
 
   // Used during reconcile action.
   // These members are used to validate the gaia cookie.  |gaia_accounts_|

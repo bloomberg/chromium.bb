@@ -323,8 +323,12 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
 
+  ASSERT_EQ(AccountReconcilor::State::NOT_RECONCILING, reconcilor->GetState());
   reconcilor->StartReconcile();
+  ASSERT_EQ(AccountReconcilor::State::GATHERING_INFORMATION,
+            reconcilor->GetState());
   base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(AccountReconcilor::State::APPLYING_CHANGES, reconcilor->GetState());
 
   std::vector<std::pair<std::string, bool> > accounts;
   ASSERT_TRUE(cookie_manager_service()->ListAccounts(&accounts));
@@ -334,18 +338,25 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
 
 TEST_F(AccountReconcilorTest, GetAccountsFromCookieFailure) {
   ConnectProfileToAccount("12345", "user@gmail.com");
-  cookie_manager_service()->SetListAccountsResponseHttpNotFound();
+  cookie_manager_service()->SetListAccountsResponseWebLoginRequired();
 
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
 
+  ASSERT_EQ(AccountReconcilor::State::NOT_RECONCILING, reconcilor->GetState());
   reconcilor->StartReconcile();
+  ASSERT_EQ(AccountReconcilor::State::GATHERING_INFORMATION,
+            reconcilor->GetState());
   base::RunLoop().RunUntilIdle();
 
   std::vector<std::pair<std::string, bool> > accounts;
   ASSERT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   ASSERT_EQ(0u, accounts.size());
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(AccountReconcilor::State::NOT_RECONCILING_ERROR_OCCURED,
+            reconcilor->GetState());
 }
 
 TEST_P(AccountReconcilorTest, StartReconcileNoop) {

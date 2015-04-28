@@ -129,7 +129,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // SigninTracker::Observer override.
   void SigninFailed(const GoogleServiceAuthError& error) override;
   void SigninSuccess() override;
-  void MergeSessionComplete(const GoogleServiceAuthError& error) override;
+  void AccountAddedToCookie(const GoogleServiceAuthError& error) override;
 
   // LoginUIService::Observer override.
   void OnSyncConfirmationUIClosed(bool configure_sync_first) override;

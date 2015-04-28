@@ -45,7 +45,7 @@ class MockObserver : public SigninTracker::Observer {
 
   MOCK_METHOD1(SigninFailed, void(const GoogleServiceAuthError&));
   MOCK_METHOD0(SigninSuccess, void(void));
-  MOCK_METHOD1(MergeSessionComplete, void(const GoogleServiceAuthError&));
+  MOCK_METHOD1(AccountAddedToCookie, void(const GoogleServiceAuthError&));
 };
 
 }  // namespace

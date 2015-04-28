@@ -130,7 +130,7 @@ TEST_F(OneClickSigninSyncStarterTest, LoadContinueUrl) {
   CreateSyncStarter(base::Bind(&OneClickSigninSyncStarterTest::Callback,
                                base::Unretained(this)),
                     kTestURL);
-  sync_starter_->MergeSessionComplete(
+  sync_starter_->AccountAddedToCookie(
       GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   EXPECT_EQ(1, succeeded_count_);
   EXPECT_EQ(kTestURL, controller.GetPendingEntry()->GetURL());

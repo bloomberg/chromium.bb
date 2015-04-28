@@ -64,7 +64,7 @@ class SigninTracker : public SigninManagerBase::Observer,
 
     // The signed in account has been added into the content area cookie jar.
     // This will be called only after a call to SigninSuccess().
-    virtual void MergeSessionComplete(const GoogleServiceAuthError& error) = 0;
+    virtual void AccountAddedToCookie(const GoogleServiceAuthError& error) = 0;
   };
 
   // Creates a SigninTracker that tracks the signin status on the passed

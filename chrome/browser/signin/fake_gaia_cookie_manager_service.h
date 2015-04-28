@@ -21,6 +21,7 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
   void Init(net::FakeURLFetcherFactory* url_fetcher_factory);
 
   void SetListAccountsResponseHttpNotFound();
+  void SetListAccountsResponseWebLoginRequired();
   void SetListAccountsResponseNoAccounts();
   void SetListAccountsResponseOneAccount(const char* account);
   void SetListAccountsResponseOneAccountWithExpiry(

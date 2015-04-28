@@ -55,7 +55,7 @@ class SignInObserver : public SigninTracker::Observer {
     running_ = false;
   }
 
-  void MergeSessionComplete(const GoogleServiceAuthError& error) override {}
+  void AccountAddedToCookie(const GoogleServiceAuthError& error) override {}
 
   void SigninSuccess() override {
     DVLOG(1) << "Google signin succeeded.";

@@ -34,6 +34,16 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseHttpNotFound() {
       net::URLRequestStatus::SUCCESS);
 }
 
+void FakeGaiaCookieManagerService::SetListAccountsResponseWebLoginRequired() {
+  DCHECK(url_fetcher_factory_);
+  url_fetcher_factory_->SetFakeResponse(
+      GaiaUrls::GetInstance()->ListAccountsURLWithSource(
+          GaiaConstants::kChromeSource),
+      "Info=WebLoginRequired",
+      net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
+}
+
 void FakeGaiaCookieManagerService::SetListAccountsResponseNoAccounts() {
   DCHECK(url_fetcher_factory_);
   url_fetcher_factory_->SetFakeResponse(
