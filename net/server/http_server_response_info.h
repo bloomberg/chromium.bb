@@ -7,8 +7,8 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
+#include "base/strings/string_split.h"
 #include "net/http/http_status_code.h"
 
 namespace net {
@@ -37,7 +37,7 @@ class HttpServerResponseInfo {
   const std::string& body() const;
 
  private:
-  typedef std::vector<std::pair<std::string, std::string> > Headers;
+  using Headers = base::StringPairs;
 
   HttpStatusCode status_code_;
   Headers headers_;
