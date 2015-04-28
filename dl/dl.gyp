@@ -120,8 +120,13 @@
           ],
         }],
         ['target_arch=="ia32" or target_arch=="x64"', {
-          'cflags': [
-            '-msse2',
+          'conditions': [
+            ['os_posix==1', {
+              'cflags': [ '-msse2', ],
+              'xcode_settings': {
+                'OTHER_CFLAGS': [ '-msse2', ],
+              },
+            }],
           ],
           'sources': [
             # Real 32-bit floating-point FFT.

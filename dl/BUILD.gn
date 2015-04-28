@@ -102,7 +102,9 @@ source_set("dl") {
   }
 
   if (current_cpu == "x86" || current_cpu == "x64") {
-    cflags += [ "-msse2" ]
+    if (is_posix) {
+      cflags += [ "-msse2" ]
+    }
 
     sources += [
       # Real 32-bit floating-point FFT.
