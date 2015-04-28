@@ -90,7 +90,7 @@ void RemoveCookieTester::AddCookie(const std::string& host,
 void RemoveCookieTester::GetCookieOnIOThread(
     net::URLRequestContextGetter* context_getter,
     const std::string& host) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* cookie_store = context_getter->
       GetURLRequestContext()->cookie_store();
   cookie_store->GetCookiesWithOptionsAsync(
@@ -103,7 +103,7 @@ void RemoveCookieTester::SetCookieOnIOThread(
     net::URLRequestContextGetter* context_getter,
     const std::string& host,
     const std::string& definition) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* cookie_store = context_getter->
       GetURLRequestContext()->cookie_store();
   cookie_store->SetCookieWithOptionsAsync(

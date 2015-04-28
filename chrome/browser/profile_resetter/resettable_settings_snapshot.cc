@@ -60,7 +60,7 @@ ResettableSettingsSnapshot::ResettableSettingsSnapshot(
     : startup_(SessionStartupPref::GetStartupPref(profile)),
       shortcuts_determined_(false),
       weak_ptr_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // URLs are always stored sorted.
   std::sort(startup_.urls.begin(), startup_.urls.end());
 
@@ -90,14 +90,14 @@ ResettableSettingsSnapshot::ResettableSettingsSnapshot(
 }
 
 ResettableSettingsSnapshot::~ResettableSettingsSnapshot() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (cancellation_flag_.get())
     cancellation_flag_->data.Set();
 }
 
 void ResettableSettingsSnapshot::Subtract(
     const ResettableSettingsSnapshot& snapshot) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ExtensionList extensions = base::STLSetDifference<ExtensionList>(
       enabled_extensions_, snapshot.enabled_extensions_);
   enabled_extensions_.swap(extensions);
@@ -105,7 +105,7 @@ void ResettableSettingsSnapshot::Subtract(
 
 int ResettableSettingsSnapshot::FindDifferentFields(
     const ResettableSettingsSnapshot& snapshot) const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int bit_mask = 0;
 
   if (startup_.type != snapshot.startup_.type ||
@@ -134,7 +134,7 @@ int ResettableSettingsSnapshot::FindDifferentFields(
 
 void ResettableSettingsSnapshot::RequestShortcuts(
     const base::Closure& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!cancellation_flag_.get() && !shortcuts_determined());
 
   cancellation_flag_ = new SharedCancellationFlag;
@@ -150,7 +150,7 @@ void ResettableSettingsSnapshot::RequestShortcuts(
 void ResettableSettingsSnapshot::SetShortcutsAndReport(
     const base::Closure& callback,
     const std::vector<ShortcutCommand>& shortcuts) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   shortcuts_ = shortcuts;
   shortcuts_determined_ = true;
   cancellation_flag_ = NULL;
@@ -161,7 +161,7 @@ void ResettableSettingsSnapshot::SetShortcutsAndReport(
 
 std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
                                     int field_mask) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::DictionaryValue dict;
 
   if (field_mask & ResettableSettingsSnapshot::STARTUP_MODE) {
@@ -248,7 +248,7 @@ scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
     Profile* profile,
     const ResettableSettingsSnapshot& snapshot) {
   DCHECK(profile);
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_ptr<base::ListValue> list(new base::ListValue);
   AddPair(list.get(),
           l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_LOCALE),

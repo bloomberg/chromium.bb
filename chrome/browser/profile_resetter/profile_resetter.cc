@@ -37,7 +37,7 @@
 namespace {
 
 void ResetShortcutsOnFileThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   // Get full path of chrome.
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))
@@ -127,7 +127,7 @@ void ProfileResetter::Reset(
 }
 
 bool ProfileResetter::IsActive() const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return pending_reset_flags_ != 0;
 }
 
@@ -326,7 +326,7 @@ void ProfileResetter::OnBrowsingDataRemoverDone() {
 
 std::vector<ShortcutCommand> GetChromeLaunchShortcuts(
     const scoped_refptr<SharedCancellationFlag>& cancel) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 #if defined(OS_WIN)
   // Get full path of chrome.
   base::FilePath chrome_exe;
