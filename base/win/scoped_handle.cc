@@ -40,9 +40,11 @@ typedef base::internal::LockImpl NativeLock;
 base::LazyInstance<NativeLock>::Leaky g_lock = LAZY_INSTANCE_INITIALIZER;
 
 bool CloseHandleWrapper(HANDLE handle) {
-  if (!::CloseHandle(handle))
-    CHECK(false);
-  return true;
+  if (::CloseHandle(handle))
+    return true;
+
+  NOTREACHED();
+  return false;
 }
 
 // Simple automatic locking using a native critical section so it supports
