@@ -25,9 +25,15 @@ public class LogTest {
     /** Test method for {@link Log#makeTag(String)} */
     @Test
     public void testMakeTag() {
-        assertEquals("chromium.Foo", Log.makeTag("Foo"));
-        assertEquals("chromium", Log.makeTag(null));
-        assertEquals("chromium", Log.makeTag(""));
+        assertEquals("cr.Foo", Log.makeTag("Foo"));
+        assertEquals("cr", Log.makeTag(null));
+        assertEquals("cr", Log.makeTag(""));
+    }
+
+    /** Test method for {@link Log#makeTag(String)} */
+    @Test(expected = IllegalArgumentException.class)
+    public void testMakeTagFailure() {
+        Log.makeTag("ThisIs21Char.....Long");
     }
 
     /** Tests that the computed call origin is the correct one. */

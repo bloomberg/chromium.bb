@@ -24,22 +24,23 @@ import java.util.Locale;
  * calls will be stripped out of the binary. Concatenations and method calls however will still
  * remain and be executed. If they can't be avoided, try to generate the logs in a method annotated
  * with {@link NoSideEffects}. Another possibility is to use
- * {@link android.util.Log#isLoggable(String, int)}, with {@link Log#makeTag(String)} to get the
- * correct tag.
+ * {@link android.util.Log#isLoggable(String, int)} to guard those calls.
  * </p>
  *
  * Usage:
  * <pre>
+ * private static final String TAG = Log.makeTag("Group");
+ *
  * private void myMethod(String awesome) {
- *   Log.i("Group", "My %s message.", awesome);
- *   Log.d("Group", "My debug message");
+ *   Log.i(TAG, "My %s message.", awesome);
+ *   Log.d(TAG, "My debug message");
  * }
  * </pre>
  *
  * Logcat output:
  * <pre>
- * I/chromium.Group (999): My awesome message
- * D/chromium.Group (999): [MyClass.java:42] My debug message
+ * I/cr.Group (999): My awesome message
+ * D/cr.Group (999): [MyClass.java:42] My debug message
  * </pre>
  *
  * Set the log level for a given group:
@@ -48,7 +49,25 @@ import java.util.Locale;
  * </pre>
  */
 public class Log {
-    private static final String BASE_TAG = "chromium";
+    private static final String BASE_TAG = "cr";
+
+    /** Convenience property, same as {@link android.util.Log#ASSERT}. */
+    public static final int ASSERT = android.util.Log.ASSERT;
+
+    /** Convenience property, same as {@link android.util.Log#DEBUG}. */
+    public static final int DEBUG = android.util.Log.DEBUG;
+
+    /** Convenience property, same as {@link android.util.Log#ERROR}. */
+    public static final int ERROR = android.util.Log.ERROR;
+
+    /** Convenience property, same as {@link android.util.Log#INFO}. */
+    public static final int INFO = android.util.Log.INFO;
+
+    /** Convenience property, same as {@link android.util.Log#VERBOSE}. */
+    public static final int VERBOSE = android.util.Log.VERBOSE;
+
+    /** Convenience property, same as {@link android.util.Log#WARN}. */
+    public static final int WARN = android.util.Log.WARN;
 
     private Log() {
         // Static only access
@@ -73,13 +92,26 @@ public class Log {
 
     /**
      * Returns a full tag for the provided group tag. Full tags longer than 23 characters
-     * will cause a runtime exception later. (see {@link android.util.Log#isLoggable(String, int)})
+     * will cause a runtime exception.
      *
      * @param groupTag {@code null} and empty string are allowed.
+     *
+     * @see android.util.Log#isLoggable(String, int)
+     * @throws IllegalArgumentException if the tag is too long.
      */
     public static String makeTag(String groupTag) {
         if (TextUtils.isEmpty(groupTag)) return BASE_TAG;
-        return BASE_TAG + "." + groupTag;
+        String tag = BASE_TAG + "." + groupTag;
+        if (tag.length() > 23) {
+            throw new IllegalArgumentException(
+                    "The full tag (" + tag + ") is longer than 23 characters.");
+        }
+        return tag;
+    }
+
+    /** Convenience function, forwards to {@link android.util.Log#isLoggable(String, int)}. */
+    public static boolean isLoggable(String tag, int level) {
+        return android.util.Log.isLoggable(tag, level);
     }
 
     /**
@@ -89,16 +121,15 @@ public class Log {
      * than 7 parameters, consider building your log message using a function annotated with
      * {@link NoSideEffects}.
      *
-     * @param groupTag Used to identify the source of a log message. It usually refers to the
-     *                 package or feature, to logically group related logs.
+     * @param tag Used to identify the source of a log message. Should be created using
+     *            {@link #makeTag(String)}.
      *
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
-    private static void verbose(String groupTag, String messageTemplate, Object... args) {
-        String tag = makeTag(groupTag);
+    private static void verbose(String tag, String messageTemplate, Object... args) {
         if (android.util.Log.isLoggable(tag, android.util.Log.VERBOSE)) {
             String message = formatLogWithStack(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
@@ -111,48 +142,48 @@ public class Log {
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 0 arg version. */
-    public static void v(String groupTag, String message) {
-        verbose(groupTag, message);
+    public static void v(String tag, String message) {
+        verbose(tag, message);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 1 arg version. */
-    public static void v(String groupTag, String messageTemplate, Object arg1) {
-        verbose(groupTag, messageTemplate, arg1);
+    public static void v(String tag, String messageTemplate, Object arg1) {
+        verbose(tag, messageTemplate, arg1);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 2 args version */
-    public static void v(String groupTag, String messageTemplate, Object arg1, Object arg2) {
-        verbose(groupTag, messageTemplate, arg1, arg2);
+    public static void v(String tag, String messageTemplate, Object arg1, Object arg2) {
+        verbose(tag, messageTemplate, arg1, arg2);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 3 args version */
     public static void v(
-            String groupTag, String messageTemplate, Object arg1, Object arg2, Object arg3) {
-        verbose(groupTag, messageTemplate, arg1, arg2, arg3);
+            String tag, String messageTemplate, Object arg1, Object arg2, Object arg3) {
+        verbose(tag, messageTemplate, arg1, arg2, arg3);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 4 args version */
-    public static void v(String groupTag, String messageTemplate, Object arg1, Object arg2,
-            Object arg3, Object arg4) {
-        verbose(groupTag, messageTemplate, arg1, arg2, arg3, arg4);
+    public static void v(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
+            Object arg4) {
+        verbose(tag, messageTemplate, arg1, arg2, arg3, arg4);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 5 args version */
-    public static void v(String groupTag, String messageTemplate, Object arg1, Object arg2,
-            Object arg3, Object arg4, Object arg5) {
-        verbose(groupTag, messageTemplate, arg1, arg2, arg3, arg4, arg5);
+    public static void v(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
+            Object arg4, Object arg5) {
+        verbose(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 6 args version */
-    public static void v(String groupTag, String messageTemplate, Object arg1, Object arg2,
-            Object arg3, Object arg4, Object arg5, Object arg6) {
-        verbose(groupTag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6);
+    public static void v(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
+            Object arg4, Object arg5, Object arg6) {
+        verbose(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6);
     }
 
     /** Sends a {@link android.util.Log#VERBOSE} log message. 7 args version */
-    public static void v(String groupTag, String messageTemplate, Object arg1, Object arg2,
-            Object arg3, Object arg4, Object arg5, Object arg6, Object arg7) {
-        verbose(groupTag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    public static void v(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
+            Object arg4, Object arg5, Object arg6, Object arg7) {
+        verbose(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
 
     /**
@@ -162,16 +193,15 @@ public class Log {
      * than 7 parameters, consider building your log message using a function annotated with
      * {@link NoSideEffects}.
      *
-     * @param groupTag Used to identify the source of a log message. It usually refers to the
-     *                 package or feature, to logically group related logs.
+     * @param tag Used to identify the source of a log message. Should be created using
+     *            {@link #makeTag(String)}.
      *
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
-    private static void debug(String groupTag, String messageTemplate, Object... args) {
-        String tag = makeTag(groupTag);
+    private static void debug(String tag, String messageTemplate, Object... args) {
         if (android.util.Log.isLoggable(tag, android.util.Log.VERBOSE)) {
             String message = formatLogWithStack(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
@@ -184,60 +214,59 @@ public class Log {
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 0 arg version. */
-    public static void d(String groupTag, String message) {
-        debug(groupTag, message);
+    public static void d(String tag, String message) {
+        debug(tag, message);
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 1 arg version. */
-    public static void d(String groupTag, String messageTemplate, Object arg1) {
-        debug(groupTag, messageTemplate, arg1);
+    public static void d(String tag, String messageTemplate, Object arg1) {
+        debug(tag, messageTemplate, arg1);
     }
     /** Sends a {@link android.util.Log#DEBUG} log message. 2 args version */
-    public static void d(String groupTag, String messageTemplate, Object arg1, Object arg2) {
-        debug(groupTag, messageTemplate, arg1, arg2);
+    public static void d(String tag, String messageTemplate, Object arg1, Object arg2) {
+        debug(tag, messageTemplate, arg1, arg2);
     }
     /** Sends a {@link android.util.Log#DEBUG} log message. 3 args version */
     public static void d(
-            String groupTag, String messageTemplate, Object arg1, Object arg2, Object arg3) {
-        debug(groupTag, messageTemplate, arg1, arg2, arg3);
+            String tag, String messageTemplate, Object arg1, Object arg2, Object arg3) {
+        debug(tag, messageTemplate, arg1, arg2, arg3);
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 4 args version */
-    public static void d(String groupTag, String messageTemplate, Object arg1, Object arg2,
-            Object arg3, Object arg4) {
-        debug(groupTag, messageTemplate, arg1, arg2, arg3, arg4);
+    public static void d(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
+            Object arg4) {
+        debug(tag, messageTemplate, arg1, arg2, arg3, arg4);
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 5 args version */
-    public static void d(String groupTag, String messageTemplate, Object arg1, Object arg2,
-            Object arg3, Object arg4, Object arg5) {
-        debug(groupTag, messageTemplate, arg1, arg2, arg3, arg4, arg5);
+    public static void d(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
+            Object arg4, Object arg5) {
+        debug(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5);
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 6 args version */
-    public static void d(String groupTag, String messageTemplate, Object arg1, Object arg2,
-            Object arg3, Object arg4, Object arg5, Object arg6) {
-        debug(groupTag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6);
+    public static void d(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
+            Object arg4, Object arg5, Object arg6) {
+        debug(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6);
     }
 
     /** Sends a {@link android.util.Log#DEBUG} log message. 7 args version */
-    public static void d(String groupTag, String messageTemplate, Object arg1, Object arg2,
-            Object arg3, Object arg4, Object arg5, Object arg6, Object arg7) {
-        debug(groupTag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    public static void d(String tag, String messageTemplate, Object arg1, Object arg2, Object arg3,
+            Object arg4, Object arg5, Object arg6, Object arg7) {
+        debug(tag, messageTemplate, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
 
     /**
      * Sends an {@link android.util.Log#INFO} log message.
      *
-     * @param groupTag Used to identify the source of a log message. It usually refers to the
-     *                 package or feature, to logically group related logs.
+     * @param tag Used to identify the source of a log message. Should be created using
+     *            {@link #makeTag(String)}.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
-    public static void i(String groupTag, String messageTemplate, Object... args) {
-        String tag = makeTag(groupTag);
+    public static void i(String tag, String messageTemplate, Object... args) {
         if (android.util.Log.isLoggable(tag, android.util.Log.INFO)) {
             String message = formatLog(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
@@ -252,15 +281,14 @@ public class Log {
     /**
      * Sends a {@link android.util.Log#WARN} log message.
      *
-     * @param groupTag Used to identify the source of a log message. It usually refers to the
-     *                 package or feature, to logically group related logs.
+     * @param tag Used to identify the source of a log message. Should be created using
+     *            {@link #makeTag(String)}.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
-    public static void w(String groupTag, String messageTemplate, Object... args) {
-        String tag = makeTag(groupTag);
+    public static void w(String tag, String messageTemplate, Object... args) {
         if (android.util.Log.isLoggable(tag, android.util.Log.WARN)) {
             String message = formatLog(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
@@ -275,15 +303,14 @@ public class Log {
     /**
      * Sends an {@link android.util.Log#ERROR} log message.
      *
-     * @param groupTag Used to identify the source of a log message. It usually refers to the
-     *                 package or feature, to logically group related logs.
+     * @param tag Used to identify the source of a log message. Should be created using
+     *            {@link #makeTag(String)}.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
-    public static void e(String groupTag, String messageTemplate, Object... args) {
-        String tag = makeTag(groupTag);
+    public static void e(String tag, String messageTemplate, Object... args) {
         if (android.util.Log.isLoggable(tag, android.util.Log.ERROR)) {
             String message = formatLog(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
@@ -302,15 +329,14 @@ public class Log {
      *
      * @see android.util.Log#wtf(String, String, Throwable)
      *
-     * @param groupTag Used to identify the source of a log message. It usually refers to the
-     *                 package or feature, to logically group related logs.
+     * @param tag Used to identify the source of a log message. Should be created using
+     *            {@link #makeTag(String)}.
      * @param messageTemplate The message you would like logged. It is to be specified as a format
      *                        string.
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
-    public static void wtf(String groupTag, String messageTemplate, Object... args) {
-        String tag = makeTag(groupTag);
+    public static void wtf(String tag, String messageTemplate, Object... args) {
         if (android.util.Log.isLoggable(tag, android.util.Log.ERROR)) {
             String message = formatLog(messageTemplate, args);
             Throwable tr = getThrowableToLog(args);
