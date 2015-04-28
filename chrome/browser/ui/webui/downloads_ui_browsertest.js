@@ -96,6 +96,18 @@ TEST_F('BaseDownloadsWebUITest', 'DatesCollapse', function() {
   expectGT(firstContainer.querySelector('.date').textContent.trim().length, 0);
 });
 
+TEST_F('BaseDownloadsWebUITest', 'EmptyProgressStatusText', function() {
+  this.createdDownloads[0].state = downloads.Item.States.PAUSED;
+  this.createdDownloads[0].progress_status_text = '';
+  downloads.Manager.updateItem(this.createdDownloads[0]);  // Might assert().
+});
+
+TEST_F('BaseDownloadsWebUITest', 'EmptyLastStatusText', function() {
+  this.createdDownloads[0].state = downloads.Item.States.INTERRUPTED;
+  this.createdDownloads[0].last_reason_text = '';
+  downloads.Manager.updateItem(this.createdDownloads[0]);  // Might assert().
+});
+
 /**
  * @constructor
  * @extends {BaseDownloadsWebUITest}

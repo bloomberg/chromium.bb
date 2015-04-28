@@ -346,13 +346,15 @@ cr.define('downloads', function() {
       switch (data.state) {
         case Item.States.IN_PROGRESS:
         case Item.States.PAUSED:  // Fallthrough.
-          return assert(data.progress_status_text);
+          assert(typeof data.progress_status_text == 'string');
+          return data.progress_status_text;
         case Item.States.CANCELLED:
           return loadTimeData.getString('status_cancelled');
         case Item.States.DANGEROUS:
           break;  // Intentionally hit assertNotReached(); at bottom.
         case Item.States.INTERRUPTED:
-          return assert(data.last_reason_text);
+          assert(typeof data.last_reason_text == 'string');
+          return data.last_reason_text;
         case Item.States.COMPLETE:
           return data.file_externally_removed ?
               loadTimeData.getString('status_removed') : '';
