@@ -2119,9 +2119,6 @@ void Document::detach(const AttachContext& context)
     if (m_frame->loader().client()->sharedWorkerRepositoryClient())
         m_frame->loader().client()->sharedWorkerRepositoryClient()->documentDetached(this);
 
-    if (this == &axObjectCacheOwner())
-        clearAXObjectCache();
-
     stopActiveDOMObjects();
 
     // FIXME: consider using ActiveDOMObject.
@@ -2151,8 +2148,10 @@ void Document::detach(const AttachContext& context)
         m_focusedElement = nullptr;
         if (frameHost())
             frameHost()->chrome().focusedNodeChanged(oldFocusedElement.get(), nullptr);
-
     }
+
+    if (this == &axObjectCacheOwner())
+        clearAXObjectCache();
 
     m_layoutView = nullptr;
     ContainerNode::detach(context);
