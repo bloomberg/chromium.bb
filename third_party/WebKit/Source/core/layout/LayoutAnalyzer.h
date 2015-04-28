@@ -5,8 +5,7 @@
 #ifndef LayoutAnalyzer_h
 #define LayoutAnalyzer_h
 
-#include "wtf/LinkedStack.h"
-#include "wtf/Vector.h"
+#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -70,8 +69,8 @@ private:
     const char* nameForCounter(Counter) const;
 
     double m_startMs;
-    WTF::Vector<unsigned> m_counters;
-    WTF::LinkedStack<const LayoutObject*> m_stack;
+    unsigned m_depth;
+    unsigned m_counters[NumCounters];
 };
 
 } // namespace blink
