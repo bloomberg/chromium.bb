@@ -16,7 +16,7 @@
 
 .gaia-footer,
 #progress-bar::shadow #progressContainer {
-  background-color: rgb(238, 238, 238);
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
 .gaia-footer {
