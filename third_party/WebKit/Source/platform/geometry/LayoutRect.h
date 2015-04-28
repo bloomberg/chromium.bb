@@ -39,6 +39,7 @@
 namespace blink {
 
 class FloatRect;
+class DoubleRect;
 
 class PLATFORM_EXPORT LayoutRect {
 public:
@@ -56,6 +57,7 @@ public:
     explicit LayoutRect(const IntRect& rect) : m_location(rect.location()), m_size(rect.size()) { }
 
     explicit LayoutRect(const FloatRect&); // don't do this implicitly since it's lossy
+    explicit LayoutRect(const DoubleRect&); // don't do this implicitly since it's lossy
 
     LayoutPoint location() const { return m_location; }
     LayoutSize size() const { return m_size; }

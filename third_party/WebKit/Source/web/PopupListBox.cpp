@@ -351,7 +351,7 @@ void PopupListBox::paint(GraphicsContext* gc, const IntRect& rect)
     paintRect.moveBy(-location());
 
     if (numItems()) {
-        IntSize scrollOffset = flooredIntSize(m_scrollOffset);
+        IntSize scrollOffset = toIntSize(m_scrollOffset);
         // FIXME: Calling this part of the scroll might cause issues later on
         // depending on how the compositor winds up using this information.
         // We may need to use an additional TransformRecorder instead, if that

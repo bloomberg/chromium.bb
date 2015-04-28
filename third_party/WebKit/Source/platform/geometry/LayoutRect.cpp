@@ -32,6 +32,7 @@
 #include "platform/geometry/LayoutRect.h"
 
 #include "platform/LayoutUnit.h"
+#include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatRect.h"
 #include <algorithm>
 #include <stdio.h>
@@ -39,6 +40,12 @@
 namespace blink {
 
 LayoutRect::LayoutRect(const FloatRect& r)
+    : m_location(LayoutPoint(r.location()))
+    , m_size(LayoutSize(r.size()))
+{
+}
+
+LayoutRect::LayoutRect(const DoubleRect& r)
     : m_location(LayoutPoint(r.location()))
     , m_size(LayoutSize(r.size()))
 {

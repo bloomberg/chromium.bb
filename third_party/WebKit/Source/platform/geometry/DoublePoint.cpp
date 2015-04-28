@@ -4,7 +4,7 @@
 
 #include "config.h"
 #include "platform/geometry/DoublePoint.h"
-
+#include "platform/geometry/FloatSize.h"
 #include "platform/geometry/LayoutPoint.h"
 
 namespace blink {
@@ -14,5 +14,11 @@ DoublePoint::DoublePoint(const LayoutPoint& p)
     , m_y(p.y().toDouble())
 {
 }
+
+DoublePoint::DoublePoint(const FloatSize& size)
+    : m_x(size.width()), m_y(size.height())
+{
+}
+
 
 } // namespace blink

@@ -4,11 +4,18 @@
 
 #include "config.h"
 #include "platform/geometry/DoubleSize.h"
+#include "platform/geometry/LayoutSize.h"
 
 #include <limits>
 #include <math.h>
 
 namespace blink {
+
+DoubleSize::DoubleSize(const LayoutSize& size)
+    : m_width(size.width().toDouble())
+    , m_height(size.height().toDouble())
+{
+}
 
 bool DoubleSize::isZero() const
 {

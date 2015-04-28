@@ -419,6 +419,8 @@
       'fonts/win/FontPlatformDataWin.cpp',
       'geometry/DoublePoint.cpp',
       'geometry/DoublePoint.h',
+      'geometry/DoubleRect.cpp',
+      'geometry/DoubleRect.h',
       'geometry/DoubleSize.cpp',
       'geometry/DoubleSize.h',
       'geometry/FloatRectOutsets.h',
