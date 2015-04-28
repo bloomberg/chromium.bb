@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -32,6 +33,22 @@ using content::PluginService;
 namespace {
 
 typedef std::map<std::string, PluginMetadata*> PluginMap;
+
+// Do not change these values, as they are used in UMA.
+enum class PluginListError {
+  // NO_ERROR is defined by Windows headers.
+  PLUGIN_LIST_NO_ERROR = 0,
+  JSON_INVALID_ESCAPE = 1,
+  JSON_SYNTAX_ERROR = 2,
+  JSON_UNEXPECTED_TOKEN = 3,
+  JSON_TRAILING_COMMA = 4,
+  JSON_TOO_MUCH_NESTING = 5,
+  JSON_UNEXPECTED_DATA_AFTER_ROOT = 5,
+  JSON_UNSUPPORTED_ENCODING = 6,
+  JSON_UNQUOTED_DICTIONARY_KEY = 7,
+  SCHEMA_ERROR = 8,
+  NUM_VALUES
+};
 
 // Gets the full path of the plugin file as the identifier.
 std::string GetLongIdentifier(const content::WebPluginInfo& plugin) {
@@ -128,6 +145,12 @@ PluginMetadata* CreatePluginMetadata(
   return plugin;
 }
 
+void RecordBuiltInPluginListError(PluginListError error_code) {
+  UMA_HISTOGRAM_ENUMERATION("PluginFinder.BuiltInPluginList.ErrorCode",
+                            static_cast<int>(error_code),
+                            static_cast<int>(PluginListError::NUM_VALUES));
+}
+
 }  // namespace
 
 // static
@@ -151,7 +174,13 @@ void PluginFinder::Init() {
   // Load the built-in plugin list first. If we have a newer version stored
   // locally or download one, we will replace this one with it.
   scoped_ptr<base::DictionaryValue> plugin_list(LoadBuiltInPluginList());
-  DCHECK(plugin_list);
+
+  // Gracefully handle the case where we couldn't parse the built-in plugin list
+  // for some reason (https://crbug.com/388560). TODO(bauerb): Change back to a
+  // DCHECK once we have gathered more data about the underlying problem.
+  if (!plugin_list)
+    return;
+
   ReinitializePlugins(plugin_list.get());
 }
 
@@ -161,17 +190,56 @@ base::DictionaryValue* PluginFinder::LoadBuiltInPluginList() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PLUGIN_DB_JSON));
   std::string error_str;
+  int error_code = base::JSONReader::JSON_NO_ERROR;
   scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-      json_resource,
-      base::JSON_PARSE_RFC,
-      NULL,
-      &error_str));
-  if (!value.get()) {
+      json_resource, base::JSON_PARSE_RFC, &error_code, &error_str));
+  if (!value) {
     DLOG(ERROR) << error_str;
-    return NULL;
+    switch (error_code) {
+      case base::JSONReader::JSON_INVALID_ESCAPE:
+        RecordBuiltInPluginListError(PluginListError::JSON_INVALID_ESCAPE);
+        break;
+      case base::JSONReader::JSON_SYNTAX_ERROR:
+        RecordBuiltInPluginListError(PluginListError::JSON_SYNTAX_ERROR);
+        break;
+      case base::JSONReader::JSON_UNEXPECTED_TOKEN:
+        RecordBuiltInPluginListError(PluginListError::JSON_UNEXPECTED_TOKEN);
+        break;
+      case base::JSONReader::JSON_TRAILING_COMMA:
+        RecordBuiltInPluginListError(PluginListError::JSON_TRAILING_COMMA);
+        break;
+      case base::JSONReader::JSON_TOO_MUCH_NESTING:
+        RecordBuiltInPluginListError(PluginListError::JSON_TOO_MUCH_NESTING);
+        break;
+      case base::JSONReader::JSON_UNEXPECTED_DATA_AFTER_ROOT:
+        RecordBuiltInPluginListError(
+            PluginListError::JSON_UNEXPECTED_DATA_AFTER_ROOT);
+        break;
+      case base::JSONReader::JSON_UNSUPPORTED_ENCODING:
+        RecordBuiltInPluginListError(
+            PluginListError::JSON_UNSUPPORTED_ENCODING);
+        break;
+      case base::JSONReader::JSON_UNQUOTED_DICTIONARY_KEY:
+        RecordBuiltInPluginListError(
+            PluginListError::JSON_UNQUOTED_DICTIONARY_KEY);
+        break;
+      case base::JSONReader::JSON_NO_ERROR:
+      case base::JSONReader::JSON_PARSE_ERROR_COUNT:
+        NOTREACHED();
+        break;
+    }
+    return nullptr;
   }
-  if (value->GetType() != base::Value::TYPE_DICTIONARY)
-    return NULL;
+
+  if (value->GetType() != base::Value::TYPE_DICTIONARY) {
+    // JSONReader::JSON_PARSE_ERROR_COUNT is used for the case where the JSON
+    // value has the wrong type.
+    RecordBuiltInPluginListError(PluginListError::SCHEMA_ERROR);
+    return nullptr;
+  }
+
+  DCHECK_EQ(base::JSONReader::JSON_NO_ERROR, error_code);
+  RecordBuiltInPluginListError(PluginListError::PLUGIN_LIST_NO_ERROR);
   return static_cast<base::DictionaryValue*>(value.release());
 }
 

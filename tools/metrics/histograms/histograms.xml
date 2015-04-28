@@ -28665,6 +28665,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="PluginFinder.BuiltInPluginList.ErrorCode"
+    enum="PluginListError">
+  <owner>bauerb@chromium.org</owner>
+  <summary>
+    Error codes when parsing the built-in plugin list. Logged when the
+    PluginFinder singleton is created.
+  </summary>
+</histogram>
+
 <histogram name="Power.BacklightLevelOnAC" units="%">
   <owner>derat@chromium.org</owner>
   <summary>
@@ -59014,6 +59023,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="PLUGIN_NOT_REGISTERED"/>
   <int value="1" label="PLUGIN_AVAILABLE"/>
   <int value="2" label="PLUGIN_DISABLED"/>
+</enum>
+
+<enum name="PluginListError" type="int">
+  <int value="0" label="NoError"/>
+  <int value="1" label="JsonInvalidEscape"/>
+  <int value="2" label="JsonSyntaxError"/>
+  <int value="3" label="JsonUnexpectedToken"/>
+  <int value="4" label="JsonTrailingComma"/>
+  <int value="5" label="JsonTooMuchNesting"/>
+  <int value="6" label="JsonUnexpectedDataAfterRoot"/>
+  <int value="7" label="JsonUnsupportedEncoding"/>
+  <int value="8" label="JsonUnquotedDictionaryKey"/>
+  <int value="9" label="SchemaError"/>
 </enum>
 
 <enum name="PluginLoadResult" type="int">
