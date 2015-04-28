@@ -1,0 +1,28 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<polymer-element name="route-details">
+<template>
+  <link rel="stylesheet" href="../../media_router_common.css">
+  <link rel="stylesheet" href="route_details.css">
+  <div>
+    <div id="back-to-devices" on-click="{{back}}">
+      <span i18n-content="backToSinkPicker"></span>
+    </div>
+    <hr>
+    <div class="route">
+      <div class="route-title">
+        {{route.title}}
+      </div>
+      <div class="route-status">
+        <span i18n-content="castingActivityStatus"></span>
+        <span class="device-name">{{sink.name}}</span>
+      </div>
+    </div>
+  </div>
+  <div>
+    <button class="button" on-click="{{closeRoute}}"
+        i18n-content="stopCastingButton">
+    </button>
+  </div>
+</template>
+<script src="route_details.js"></script>
+</polymer-element>

@@ -2,18 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-button {
-  border: 1px solid rgb(193, 193, 195);
-  color: rgb(44, 44, 44);
-  cursor: pointer;
-  font-size: 0.875em;
-  font-weight: bold;
-  height: 32px;
-  overflow: hidden;
-  text-align: center;
-  width: 100%;
-}
-
 .button-secondary {
   background: linear-gradient(to top, rgb(254, 254, 254), rgb(222, 222, 222));
 }
