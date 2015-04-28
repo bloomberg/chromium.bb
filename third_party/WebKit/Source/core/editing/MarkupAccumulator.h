@@ -110,12 +110,6 @@ private:
     String resolveURLIfNeeded(const Element&, const String&) const;
     void appendQuotedURLAttributeValue(StringBuilder&, const Element&, const Attribute&);
 
-    // FIXME: |PageSerializer| uses |m_nodes| for collecting nodes in document
-    // included into serialized text then extracts image, object, etc. The size
-    // of this vector isn't small for large document. It is better to use
-    // callback like functionality.
-    RawPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Node>>> const m_nodes;
-
     StringBuilder m_markup;
     const EAbsoluteURLs m_resolveURLsMethod;
     SerializationType m_serializationType;
