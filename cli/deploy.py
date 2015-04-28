@@ -818,6 +818,32 @@ def _ConfirmDeploy(num_updates):
   return True
 
 
+def _CheckDeviceVersion(device):
+  """Decide whether the device is version-compatible with the SDK.
+
+  Args:
+    device: ChromiumOSDeviceHandler instance.
+
+  Raises:
+    DeployError: if device is not compatible.
+  """
+  sdk_version = project_sdk.FindVersion()
+  if not sdk_version:
+    return
+
+  # TODO(garnold) We ignore the third version component because, as long as the
+  # version comes from CHROMEOS_RELEASE_VERSION, it is a random timestamp. Undo
+  # when we start probing actual SDK versions (brillo:280)
+  adjusted_sdk_version = (sdk_version.rpartition('.')[0] + '.'
+                          if '.' in sdk_version else sdk_version)
+
+  if not (device.sdk_version and
+          device.sdk_version.startswith(adjusted_sdk_version)):
+    raise DeployError('Device SDK version (%s) is incompatible with '
+                      'your environment (%s)' %
+                      (device.sdk_version or 'unknown', sdk_version))
+
+
 def Deploy(device, packages, board=None, brick=None, emerge=True, update=False,
            deep=False, deep_rev=False, clean_binpkg=True, root='/', strip=True,
            emerge_args=None, ssh_private_key=None, ping=True, force=False,
@@ -881,12 +907,8 @@ def Deploy(device, packages, board=None, brick=None, emerge=True, update=False,
           raise DeployError('Device (%s) is incompatible with board' %
                             device.board)
 
-        # If this is an official SDK, check that the target is compatible.
-        sdk_version = project_sdk.FindVersion()
-        if sdk_version and device.sdk_version != sdk_version:
-          raise DeployError('Device SDK version (%s) is incompatible with '
-                            'your environment (%s)' %
-                            (device.sdk_version or 'unknown', sdk_version))
+        # Check that the target is compatible with the SDK (if any).
+        _CheckDeviceVersion(device)
 
       sysroot = cros_build_lib.GetSysroot(board=board)
 
