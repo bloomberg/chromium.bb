@@ -31,6 +31,12 @@ public:
     static size_t getUnderestimatedStackSize();
     static void* getStackStart();
 
+#if COMPILER(MSVC)
+// Ignore C4172: returning address of local variable or temporary: dummy. This
+// warning suppression has to go outside of the function to take effect.
+#pragma warning(push)
+#pragma warning(disable: 4172)
+#endif
     static uintptr_t currentStackFrame(const char* dummy = nullptr)
     {
 #if COMPILER(GCC)
@@ -42,6 +48,9 @@ public:
         return 0;
 #endif
     }
+#if COMPILER(MSVC)
+#pragma warning(pop)
+#endif
 
 private:
     // The maximum depth of eager, unrolled trace() calls that is
