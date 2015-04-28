@@ -51,6 +51,12 @@ void LogFailure(const FilePath& path, TempFileFailure failure_code,
                  << " : " << message;
 }
 
+// Helper function to call WriteFileAtomically() with a scoped_ptr<std::string>.
+bool WriteScopedStringToFileAtomically(const FilePath& path,
+                                       scoped_ptr<std::string> data) {
+  return ImportantFileWriter::WriteFileAtomically(path, *data);
+}
+
 }  // namespace
 
 // static
@@ -139,9 +145,9 @@ bool ImportantFileWriter::HasPendingWrite() const {
   return timer_.IsRunning();
 }
 
-void ImportantFileWriter::WriteNow(const std::string& data) {
+void ImportantFileWriter::WriteNow(scoped_ptr<std::string> data) {
   DCHECK(CalledOnValidThread());
-  if (data.length() > static_cast<size_t>(kint32max)) {
+  if (data->length() > static_cast<size_t>(kint32max)) {
     NOTREACHED();
     return;
   }
@@ -149,13 +155,14 @@ void ImportantFileWriter::WriteNow(const std::string& data) {
   if (HasPendingWrite())
     timer_.Stop();
 
-  if (!PostWriteTask(data)) {
+  auto task = Bind(&WriteScopedStringToFileAtomically, path_, Passed(&data));
+  if (!PostWriteTask(task)) {
     // Posting the task to background message loop is not expected
     // to fail, but if it does, avoid losing data and just hit the disk
     // on the current thread.
     NOTREACHED();
 
-    WriteFileAtomically(path_, data);
+    task.Run();
   }
 }
 
@@ -173,9 +180,9 @@ void ImportantFileWriter::ScheduleWrite(DataSerializer* serializer) {
 
 void ImportantFileWriter::DoScheduledWrite() {
   DCHECK(serializer_);
-  std::string data;
-  if (serializer_->SerializeData(&data)) {
-    WriteNow(data);
+  scoped_ptr<std::string> data(new std::string);
+  if (serializer_->SerializeData(data.get())) {
+    WriteNow(data.Pass());
   } else {
     DLOG(WARNING) << "failed to serialize data to be saved in "
                   << path_.value().c_str();
@@ -189,7 +196,7 @@ void ImportantFileWriter::RegisterOnNextSuccessfulWriteCallback(
   on_next_successful_write_ = on_next_successful_write;
 }
 
-bool ImportantFileWriter::PostWriteTask(const std::string& data) {
+bool ImportantFileWriter::PostWriteTask(const Callback<bool()>& task) {
   // TODO(gab): This code could always use PostTaskAndReplyWithResult and let
   // ForwardSuccessfulWrite() no-op if |on_next_successful_write_| is null, but
   // PostTaskAndReply causes memory leaks in tests (crbug.com/371974) and
@@ -199,16 +206,13 @@ bool ImportantFileWriter::PostWriteTask(const std::string& data) {
     return base::PostTaskAndReplyWithResult(
         task_runner_.get(),
         FROM_HERE,
-        MakeCriticalClosure(
-            Bind(&ImportantFileWriter::WriteFileAtomically, path_, data)),
+        MakeCriticalClosure(task),
         Bind(&ImportantFileWriter::ForwardSuccessfulWrite,
              weak_factory_.GetWeakPtr()));
   }
   return task_runner_->PostTask(
       FROM_HERE,
-      MakeCriticalClosure(
-          Bind(IgnoreResult(&ImportantFileWriter::WriteFileAtomically),
-               path_, data)));
+      MakeCriticalClosure(base::Bind(IgnoreResult(task))));
 }
 
 void ImportantFileWriter::ForwardSuccessfulWrite(bool result) {

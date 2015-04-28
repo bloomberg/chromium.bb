@@ -100,7 +100,7 @@ TEST_F(ImportantFileWriterTest, Basic) {
   ImportantFileWriter writer(file_, MessageLoopProxy::current().get());
   EXPECT_FALSE(PathExists(writer.path()));
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
-  writer.WriteNow("foo");
+  writer.WriteNow(make_scoped_ptr(new std::string("foo")));
   RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
@@ -113,7 +113,7 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
   EXPECT_FALSE(PathExists(writer.path()));
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
   successful_write_observer_.ObserveNextSuccessfulWrite(&writer);
-  writer.WriteNow("foo");
+  writer.WriteNow(make_scoped_ptr(new std::string("foo")));
   RunLoop().RunUntilIdle();
 
   // Confirm that the observer is invoked.
@@ -124,7 +124,7 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
   // Confirm that re-installing the observer works for another write.
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
   successful_write_observer_.ObserveNextSuccessfulWrite(&writer);
-  writer.WriteNow("bar");
+  writer.WriteNow(make_scoped_ptr(new std::string("bar")));
   RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(successful_write_observer_.GetAndResetObservationState());
@@ -134,7 +134,7 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
   // Confirm that writing again without re-installing the observer doesn't
   // result in a notification.
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
-  writer.WriteNow("baz");
+  writer.WriteNow(make_scoped_ptr(new std::string("baz")));
   RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());

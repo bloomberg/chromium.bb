@@ -78,7 +78,7 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
 
   // Save |data| to target filename. Does not block. If there is a pending write
   // scheduled by ScheduleWrite, it is cancelled.
-  void WriteNow(const std::string& data);
+  void WriteNow(scoped_ptr<std::string> data);
 
   // Schedule a save to target filename. Data will be serialized and saved
   // to disk after the commit interval. If another ScheduleWrite is issued
@@ -106,7 +106,7 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
 
  private:
   // Helper method for WriteNow().
-  bool PostWriteTask(const std::string& data);
+  bool PostWriteTask(const Callback<bool()>& task);
 
   // If |result| is true and |on_next_successful_write_| is set, invokes
   // |on_successful_write_| and then resets it; no-ops otherwise.

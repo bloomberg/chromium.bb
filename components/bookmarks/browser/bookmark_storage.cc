@@ -205,10 +205,10 @@ bool BookmarkStorage::SaveNow() {
     return false;
   }
 
-  std::string data;
-  if (!SerializeData(&data))
+  scoped_ptr<std::string> data(new std::string);
+  if (!SerializeData(data.get()))
     return false;
-  writer_.WriteNow(data);
+  writer_.WriteNow(data.Pass());
   return true;
 }
 
