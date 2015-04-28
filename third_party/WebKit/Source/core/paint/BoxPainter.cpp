@@ -2009,13 +2009,12 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
 
                     // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
                     // when painting the shadow. On the other hand, it introduces subpixel gaps along the
-                    // corners. Those are avoided by insetting the clipping path by one pixel.
+                    // corners. Those are avoided by insetting the clipping path by one CSS pixel.
                     if (hasOpaqueBackground)
                         rectToClipOut.inflateWithRadii(-1);
 
-                    if (!rectToClipOut.isEmpty()) {
+                    if (!rectToClipOut.isEmpty())
                         context->clipOutRoundedRect(rectToClipOut);
-                    }
                 } else {
                     // This IntRect is correct even with fractional shadows, because it is used for the rectangle
                     // of the box itself, which is always pixel-aligned.
@@ -2024,21 +2023,12 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRe
                     // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
                     // when painting the shadow. On the other hand, it introduces subpixel gaps along the
                     // edges if they are not pixel-aligned. Those are avoided by insetting the clipping path
-                    // by one pixel.
-                    // When Slimming Paint is enabled, turn off this heuristic. See crbug.com/382491 for details.
-                    if (hasOpaqueBackground && !RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-                        // FIXME: The function to decide on the policy based on the transform should be a named function.
-                        // FIXME: It's not clear if this check is right. What about integral scale factors?
-                        // FIXME: See crbug.com/382491. The use of getCTM may also be wrong because it does not include
-                        // device zoom applied at raster time.
-                        AffineTransform transform = context->getCTM();
-                        if (transform.a() != 1 || (transform.d() != 1 && transform.d() != -1) || transform.b() || transform.c())
-                            rectToClipOut.inflate(-1);
-                    }
+                    // by one CSS pixel.
+                    if (hasOpaqueBackground)
+                        rectToClipOut.inflate(-1);
 
-                    if (!rectToClipOut.isEmpty()) {
+                    if (!rectToClipOut.isEmpty())
                         context->clipOut(rectToClipOut);
-                    }
                 }
             }
 
