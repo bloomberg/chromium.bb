@@ -238,7 +238,8 @@ BOT_ASSIGNMENT = {
         python +
         ' buildbot/buildbot_toolchain_build.py'
         ' --trybot'
-        ' --test_toolchain nacl_arm_newlib'
+        # TODO(mcgrathr): Enable nacl_arm_glibc testing when ready for it.
+        #' --test_toolchain nacl_arm_newlib'
         ' toolchain_build',
     'nacl-toolchain-mac-newlib-arm':
         python +

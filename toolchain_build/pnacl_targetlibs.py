@@ -16,8 +16,6 @@ import pynacl.platform
 import command
 import pnacl_commands
 
-from toolchain_build import NewlibLibcScript
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
@@ -267,6 +265,30 @@ def TargetLibsSrc(GitSyncCmds):
       },
   }
   return source
+
+
+def NewlibLibcScript(arch, elfclass_x86_64='elf32'):
+  template = """/*
+ * This is a linker script that gets installed as libc.a for the
+ * newlib-based NaCl toolchain.  It brings in the constituent
+ * libraries that make up what -lc means semantically.
+ */
+OUTPUT_FORMAT(%s)
+GROUP ( libnacl.a libcrt_common.a )
+"""
+  if arch == 'arm':
+    # Listing three formats instead of one makes -EL/-EB switches work
+    # for the endian-switchable ARM backend.
+    format_list = ['elf32-littlearm-nacl',
+                   'elf32-bigarm-nacl',
+                   'elf32-littlearm-nacl']
+  elif arch == 'i686':
+    format_list = ['elf32-i386-nacl']
+  elif arch == 'x86_64':
+    format_list = ['%s-x86-64-nacl' % elfclass_x86_64]
+  else:
+    raise Exception('TODO(mcgrathr): OUTPUT_FORMAT for %s' % arch)
+  return template % ', '.join(['"' + fmt + '"' for fmt in format_list])
 
 
 def NewlibDirectoryCmds(bias_arch, newlib_triple):

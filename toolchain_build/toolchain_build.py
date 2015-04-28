@@ -50,13 +50,6 @@ GIT_REVISIONS = {
          # Upstream tag gcc-<GCC_VERSION>-release:
         'upstream-base': 'c1283af40b65f1ad862cf5b27e2d9ed10b2076b6',
         },
-    'newlib': {
-        'rev': '8c4da477c5348743d900307ce8443da4cc2fcdb8',
-        'upstream-branch': 'upstream/master',
-        'upstream-name': 'newlib-2.1.0',
-        # Upstream tag newlib_2_1_0:
-        'upstream-base': '99fc6c167467b41466ec90e8260e9c49cbe3d13c',
-        },
     'glibc': {
         'rev': 'aa4980fc31e9ce176fe954bd0f29bcd65a61556a',
         'upstream-branch': 'upstream/master',
@@ -179,27 +172,6 @@ def CollectSources():
             'libstdc++-v3',
             ])]
       }
-
-  # We have to populate the newlib source tree with the "exported" form of
-  # some headers from the native_client source tree.  The newlib build
-  # needs these to be in the expected place.  By doing this in the source
-  # target, these files will be part of the input hash and so we don't need
-  # to do anything else to keep track of when they might have changed in
-  # the native_client source tree.
-  newlib_sys_nacl = command.path.join('%(output)s',
-                                      'newlib', 'libc', 'sys', 'nacl')
-  newlib_unpack = [command.RemoveDirectory(command.path.join(newlib_sys_nacl,
-                                                             dirname))
-                   for dirname in ['bits', 'sys', 'machine']]
-  newlib_unpack.append(command.Command([
-      'python',
-      command.path.join('%(top_srcdir)s', 'src',
-                        'trusted', 'service_runtime', 'export_header.py'),
-      command.path.join('%(top_srcdir)s', 'src',
-                        'trusted', 'service_runtime', 'include'),
-      newlib_sys_nacl,
-      ]))
-  sources['newlib']['commands'] += newlib_unpack
 
   return sources
 
@@ -386,30 +358,6 @@ def InstallDocFiles(subdir, files):
                             command.path.join(doc_dir, file))
                for file in files])
   return commands
-
-
-def NewlibLibcScript(arch, elfclass_x86_64='elf32'):
-  template = """/*
- * This is a linker script that gets installed as libc.a for the
- * newlib-based NaCl toolchain.  It brings in the constituent
- * libraries that make up what -lc means semantically.
- */
-OUTPUT_FORMAT(%s)
-GROUP ( libnacl.a libcrt_common.a )
-"""
-  if arch == 'arm':
-    # Listing three formats instead of one makes -EL/-EB switches work
-    # for the endian-switchable ARM backend.
-    format_list = ['elf32-littlearm-nacl',
-                   'elf32-bigarm-nacl',
-                   'elf32-littlearm-nacl']
-  elif arch == 'i686':
-    format_list = ['elf32-i386-nacl']
-  elif arch == 'x86_64':
-    format_list = ['%s-x86-64-nacl' % elfclass_x86_64]
-  else:
-    raise Exception('TODO(mcgrathr): OUTPUT_FORMAT for %s' % arch)
-  return template % ', '.join(['"' + fmt + '"' for fmt in format_list])
 
 
 # The default strip behavior removes debugging and symbol table
@@ -620,20 +568,15 @@ def HostGccLibsDeps(host):
   return [ForHost(package, host) for package in HOST_GCC_LIBS_DEPS]
 
 
-def SDKLibs(host, target, libc):
+def SDKLibs(host, target):
   def H(component_name):
     return ForHost(component_name, host)
 
-  if libc == 'newlib':
-    libs_name = 'libs'
-  else:
-    libs_name = 'libs_' + libc
-
   host_components = [H('binutils_%s' % target), H('gcc_%s' % target)]
-  target_components = [libc + '_' + target, 'gcc_' + libs_name + '_' + target]
+  target_components = ['glibc_' + target, 'gcc_libs_' + target]
   components = host_components + target_components
 
-  sdk_compiler = H('sdk_compiler_' + libc + '_' + target)
+  sdk_compiler = H('sdk_compiler_' + target)
 
   builds = {
     sdk_compiler: {
@@ -643,7 +586,7 @@ def SDKLibs(host, target, libc):
                      for item in components],
     },
 
-    'sdk_' + libs_name + '_' + target: {
+    'sdk_libs_' + target: {
         'type': 'build',
         'dependencies': [sdk_compiler],
         'inputs': {
@@ -657,7 +600,7 @@ def SDKLibs(host, target, libc):
               [sys.executable, '%(scons.py)s',
                '--verbose', '--mode=nacl', '-j%(cores)s', 'naclsdk_validate=0',
                'platform=%s' % target,
-               'nacl_' + libc + '_dir=%(abs_' + sdk_compiler + ')s',
+               'nacl_glibc_dir=%(abs_' + sdk_compiler + ')s',
                'DESTINATION_ROOT=%(work_dir)s',
                'includedir=' + command.path.join('%(output)s',
                                                  target + '-nacl', 'include'),
@@ -712,13 +655,6 @@ def ConfigureGccCommand(source_component, host, target, extra_args=[]):
           '--enable-linker-build-id',
           '--enable-languages=c,c++,lto',
           ] + extra_args)
-
-
-CONFIGURE_GCC_FOR_NEWLIB = [
-    '--disable-dlopen',
-    '--disable-shared',
-    '--with-newlib',
-    ]
 
 
 def HostTools(host, target):
@@ -790,8 +726,12 @@ def HostTools(host, target):
           'dependencies': (['gcc'] + HostGccLibsDeps(host) +
                            GccDeps(host, target)),
           'commands': ConfigureTargetPrep(target) + [
-              ConfigureGccCommand('gcc', host, target,
-                                  CONFIGURE_GCC_FOR_NEWLIB),
+              ConfigureGccCommand('gcc', host, target, [
+                  # This doesn't really have anything to with newlib.
+                  # It says not to expect any header files from a C library.
+                  # This prevents the fixincludes step from barfing.
+                  '--with-newlib',
+                  ]),
               # GCC's configure step writes configargs.h with some strings
               # including the configure command line, which get embedded
               # into the gcc driver binary.  The build only works if we use
@@ -903,74 +843,6 @@ def TargetLibs(host, target):
   lib_deps = [ForHost(component + '_' + target, host)
               for component in ['binutils', 'gcc']]
 
-  def NewlibFile(subdir, name):
-    return command.path.join('%(output)s', target + '-nacl', subdir, name)
-
-  # See the comment at ConfigureTargetPrep, above.
-  newlib_install_data = ' '.join(['STRIPPROG=%(cwd)s/strip_for_target',
-                                  '%(abs_newlib)s/install-sh',
-                                  '-c', '-s', '-m', '644'])
-
-  iconv_encodings = 'UTF-8,UTF-16LE,UCS-4LE,UTF-16,UCS-4'
-  newlib_configure_args = [
-      '--disable-libgloss',
-      '--enable-newlib-iconv',
-      '--enable-newlib-iconv-from-encodings=' + iconv_encodings,
-      '--enable-newlib-iconv-to-encodings=' + iconv_encodings,
-      '--enable-newlib-io-long-long',
-      '--enable-newlib-io-long-double',
-      '--enable-newlib-io-c99-formats',
-      '--enable-newlib-mb',
-      'CFLAGS=-O2',
-      'INSTALL_DATA=' + newlib_install_data,
-      ]
-
-  newlib_post_install = [
-      command.Rename(NewlibFile('lib', 'libc.a'),
-                     NewlibFile('lib', 'libcrt_common.a')),
-      command.WriteData(NewlibLibcScript(target),
-                        NewlibFile('lib', 'libc.a')),
-      ] + [
-      command.Copy(
-          command.path.join('%(pthread_headers)s', header),
-          NewlibFile('include', header))
-      for header in ('pthread.h', 'semaphore.h')
-      ]
-
-
-  def GccLibsTarget(libc, configure_args):
-    sysroot = '%(abs_' + libc + '_' + target + ')s'
-    tooldir = '%s/%s-nacl' % (sysroot, target)
-    package = {
-        'type': 'build',
-        'dependencies': (['gcc_libs'] + lib_deps + [libc + '_' + target] +
-                         HostGccLibsDeps(host)),
-        # This actually builds the compiler again and uses that compiler
-        # to build the target libraries.  That's by far the easiest thing
-        # to get going given the interdependencies of the target
-        # libraries (especially libgcc) on the gcc subdirectory, and
-        # building the compiler doesn't really take all that long in the
-        # grand scheme of things.
-        # TODO(mcgrathr): If upstream ever cleans up all their
-        # interdependencies better, unpack the compiler, configure with
-        # --disable-gcc, and just build all-target.
-        'commands': ConfigureTargetPrep(target) + [
-            ConfigureGccCommand('gcc_libs', host, target, configure_args + [
-                '--with-build-sysroot=' + tooldir,
-                ]),
-            GccCommand(host, target,
-                       MakeCommand(host) + [
-                           'build_tooldir=' + tooldir,
-                           'MAKEOVERRIDES=NATIVE_SYSTEM_HEADER_DIR=/include',
-                           'all-target',
-                           ]),
-            GccCommand(host, target,
-                       MAKE_DESTDIR_CMD + ['install-strip-target']),
-            REMOVE_INFO_DIR,
-            ],
-        }
-    return package
-
   # The 'minisdk_<target>' component is a workalike subset of what the full
   # NaCl SDK provides.  The glibc build uses a handful of things from the
   # SDK (ncval, sel_ldr, etc.), and expects them relative to $NACL_SDK_ROOT
@@ -985,57 +857,80 @@ def TargetLibs(host, target):
 
   scons_target = pynacl.platform.GetArch3264(target)
   sdk_target = scons_target.replace('-', '_')
+  nacl_scons_out = 'nacl-' + scons_target
   irt_scons_out = 'nacl_irt-' + scons_target
   trusted_scons_out = 'opt-linux-' + scons_target
   host_scons_out = 'opt-%s-%s' % (pynacl.platform.GetOS(),
                                   pynacl.platform.GetArch3264())
+
   support = {
-    'minisdk_' + target: {
-      'type': 'work',
-      'inputs': {
-          'src': os.path.join(NACL_DIR, 'src'),
-          'sconstruct': os.path.join(NACL_DIR, 'SConstruct'),
-          'scons.py': os.path.join(NACL_DIR, 'scons.py'),
-          'site_scons': os.path.join(NACL_DIR, 'site_scons'),
-          'arm_trusted': os.path.join(NACL_DIR, 'toolchain', 'linux_x86',
-                                      'arm_trusted'),
-      },
-      'commands': [
-          SconsCommand(['platform=' + scons_target,
-                        'nacl_helper_bootstrap', 'sel_ldr', 'irt_core']),
-          command.Mkdir(command.path.join('%(output)s', 'tools')),
-          command.Copy(command.path.join(irt_scons_out, 'staging',
-                                         'irt_core.nexe'),
-                       command.path.join('%(output)s', 'tools',
-                                         'irt_core_' + sdk_target + '.nexe')),
-      ] + [command.Copy(command.path.join(trusted_scons_out, 'staging', name),
-                        command.path.join('%(output)s', 'tools',
-                                          name + '_' + sdk_target),
-                        permissions=True)
-           for name in ['sel_ldr', 'nacl_helper_bootstrap']] + [
-          SconsCommand(['platform=' + pynacl.platform.GetArch3264(),
-                        'ncval_new']),
-          command.Copy(command.path.join(host_scons_out, 'staging',
-                                         'ncval_new'),
-                       command.path.join('%(output)s', 'tools', 'ncval'),
-                       permissions=True),
-          command.Mkdir(command.path.join('%(output)s', 'tools',
-                                           'arm_trusted', 'lib'),
-                        parents=True),
-      ] + [command.Copy(command.path.join('%(arm_trusted)s', *(dir + [name])),
-                        command.path.join('%(output)s', 'tools', 'arm_trusted',
-                                          'lib', name))
-           for dir, name in [
-               (['lib', 'arm-linux-gnueabihf'], 'librt.so.1'),
-               (['lib', 'arm-linux-gnueabihf'], 'libpthread.so.0'),
-               (['lib', 'arm-linux-gnueabihf'], 'libgcc_s.so.1'),
-               (['lib', 'arm-linux-gnueabihf'], 'libc.so.6'),
-               (['lib', 'arm-linux-gnueabihf'], 'ld-linux-armhf.so.3'),
-               (['lib', 'arm-linux-gnueabihf'], 'libm.so.6'),
-               (['usr', 'lib', 'arm-linux-gnueabihf'], 'libstdc++.so.6')
-           ]]
+      'minisdk_' + target: {
+          'type': 'work',
+          'inputs': {
+              'src': os.path.join(NACL_DIR, 'src'),
+              'sconstruct': os.path.join(NACL_DIR, 'SConstruct'),
+              'scons.py': os.path.join(NACL_DIR, 'scons.py'),
+              'site_scons': os.path.join(NACL_DIR, 'site_scons'),
+              'arm_trusted': os.path.join(NACL_DIR, 'toolchain', 'linux_x86',
+                                          'arm_trusted'),
+              },
+          'commands': [
+              SconsCommand(['platform=' + scons_target,
+                            'nacl_helper_bootstrap', 'sel_ldr',
+                            'irt_core', 'elf_loader']),
+              command.Mkdir(command.path.join('%(output)s', 'tools')),
+              command.Copy(command.path.join(irt_scons_out, 'staging',
+                                             'irt_core.nexe'),
+                           command.path.join('%(output)s', 'tools',
+                                             'irt_core_' +
+                                             sdk_target + '.nexe')),
+              command.Copy(command.path.join(nacl_scons_out, 'staging',
+                                             'elf_loader.nexe'),
+                           command.path.join('%(output)s', 'tools',
+                                             'elf_loader_' +
+                                             sdk_target + '.nexe')),
+              ] + [command.Copy(command.path.join(trusted_scons_out,
+                                                  'staging', name),
+                                command.path.join('%(output)s', 'tools',
+                                                  name + '_' + sdk_target),
+                                permissions=True)
+                   for name in ['sel_ldr', 'nacl_helper_bootstrap']] + [
+                       SconsCommand(['platform=' +
+                                     pynacl.platform.GetArch3264(),
+                                     'ncval_new']),
+                       command.Copy(command.path.join(host_scons_out, 'staging',
+                                                      'ncval_new'),
+                                    command.path.join('%(output)s', 'tools',
+                                                      'ncval'),
+                                    permissions=True),
+                       command.Mkdir(command.path.join('%(output)s', 'tools',
+                                                       'arm_trusted', 'lib'),
+                                     parents=True),
+                       ] + [command.Copy(command.path.join('%(arm_trusted)s',
+                                                           *(dir + [name])),
+                                         command.path.join('%(output)s',
+                                                           'tools',
+                                                           'arm_trusted',
+                                                           'lib', name))
+                            for dir, name in [
+                                (['lib', 'arm-linux-gnueabihf'],
+                                 'librt.so.1'),
+                                (['lib', 'arm-linux-gnueabihf'],
+                                 'libpthread.so.0'),
+                                (['lib', 'arm-linux-gnueabihf'],
+                                 'libgcc_s.so.1'),
+                                (['lib', 'arm-linux-gnueabihf'],
+                                 'libc.so.6'),
+                                (['lib', 'arm-linux-gnueabihf'],
+                                 'ld-linux-armhf.so.3'),
+                                (['lib', 'arm-linux-gnueabihf'],
+                                 'libm.so.6'),
+                                (['usr', 'lib', 'arm-linux-gnueabihf'],
+                                 'libstdc++.so.6'),
+                                ]
+                          ]
+          },
       }
-    }
 
   minisdk_root = 'NACL_SDK_ROOT=%(abs_minisdk_' + target + ')s'
 
@@ -1052,37 +947,51 @@ override static-gnulib-tests := -lgcc
 CFLAGS-doasin.c = -mtune=generic-armv7-a
 """
 
-  libs = {
-      'newlib_' + target: {
-          'type': 'build',
-          'dependencies': ['newlib'] + lib_deps,
-          'inputs': { 'pthread_headers':
-                      os.path.join(NACL_DIR, 'src', 'untrusted',
-                                   'pthread') },
-          'commands': (ConfigureTargetPrep(target) +
-                       TargetCommands(host, target, [
-                           ConfigureCommand('newlib') +
-                           ConfigureHostTool(host) +
-                           ConfigureTargetArgs(target) +
-                           newlib_configure_args,
-                           MakeCommand(host),
-                           MAKE_DESTDIR_CMD + ['install-strip'],
-                           ]) +
-                       newlib_post_install +
-                       InstallDocFiles('newlib', ['COPYING.NEWLIB'])),
-          },
+  glibc_sysroot = '%(abs_glibc_' + target + ')s'
+  glibc_tooldir = '%s/%s-nacl' % (glibc_sysroot, target)
 
-      'gcc_libs_' + target: GccLibsTarget('newlib', CONFIGURE_GCC_FOR_NEWLIB),
+  libs = {
+      # The glibc build needs a libgcc.a (and the unwind.h header).
+      # This is never going to be installed, only used to build glibc.
+      # So it could be a 'work' target.  But it's a 'build' target instead
+      # so it can benefit from memoization when glibc has changed but
+      # binutils and gcc have not.
+      'bootstrap_libgcc_' + target: {
+          'type': 'build',
+          'dependencies': ['gcc_libs'] + lib_deps + HostGccLibsDeps(host),
+          # This actually builds the compiler again and uses that compiler
+          # to build libgcc.  That's by far the easiest thing to get going
+          # given the interdependencies of libgcc on the gcc subdirectory,
+          # and building the compiler doesn't really take all that long in
+          # the grand scheme of things.  TODO(mcgrathr): If upstream ever
+          # cleans up all their interdependencies better, unpack the compiler,
+          # configure with --disable-gcc.
+          'commands': ConfigureTargetPrep(target) + [
+              ConfigureGccCommand('gcc_libs', host, target, [
+                  #'--with-build-sysroot=' + glibc_tooldir,
+                  '--disable-dlopen',
+                  '--disable-shared',
+                  # This doesn't really have anything to with newlib.
+                  # It says to build a libgcc that does not refer to
+                  # any header files or functions from any C library.
+                  '--with-newlib',
+                  ]),
+              GccCommand(host, target,
+                         MakeCommand(host) + [
+                             #'build_tooldir=' + glibc_tooldir,
+                             #'MAKEOVERRIDES=NATIVE_SYSTEM_HEADER_DIR=/include',
+                             'all-target-libgcc',
+                             ]),
+              GccCommand(host, target,
+                         MAKE_DESTDIR_CMD + ['install-strip-target-libgcc']),
+              REMOVE_INFO_DIR,
+              ],
+          },
 
       'glibc_' + target: {
           'type': 'build',
-          # The glibc build needs a libgcc.a (and the unwind.h header).
-          # For now, we just use the one built for the newlib toolchain
-          # and that seems to suffice.
-          # TODO(mcgrathr): Eventually figure out a proper minimal build
-          # of just the libgcc bits needed for the glibc build.
           'dependencies': ['glibc', 'minisdk_' + target,
-                           'gcc_libs_' + target] + lib_deps,
+                           'bootstrap_libgcc_' + target] + lib_deps,
           'commands': (ConfigureTargetPrep(target) +
                        [command.WriteData(glibc_configparms, 'configparms')] +
                        TargetCommands(host, target, [
@@ -1104,14 +1013,41 @@ CFLAGS-doasin.c = -mtune=generic-armv7-a
                             'install_root=%(abs_output)s/' + target + '-nacl',
                             'inst_infodir=%(abs_output)s/share/info',
                            ],
-                           ], target_deps=['gcc_libs']) +
+                           ], target_deps=['bootstrap_libgcc']) +
                        InstallDocFiles('glibc', ['COPYING.LIB']) + [
                            REMOVE_INFO_DIR,
-                       ]
-                       ),
-        },
+                           ]
+                     ),
+          },
 
-      'gcc_libs_glibc_' + target: GccLibsTarget('glibc', []),
+      'gcc_libs_' + target: {
+          'type': 'build',
+          'dependencies': (['gcc_libs'] + lib_deps + ['glibc_' + target] +
+                           HostGccLibsDeps(host)),
+          # This actually builds the compiler again and uses that compiler
+          # to build the target libraries.  That's by far the easiest thing
+          # to get going given the interdependencies of the target
+          # libraries (especially libgcc) on the gcc subdirectory, and
+          # building the compiler doesn't really take all that long in the
+          # grand scheme of things.
+          # TODO(mcgrathr): If upstream ever cleans up all their
+          # interdependencies better, unpack the compiler, configure with
+          # --disable-gcc, and just build all-target.
+          'commands': ConfigureTargetPrep(target) + [
+              ConfigureGccCommand('gcc_libs', host, target, [
+                  '--with-build-sysroot=' + glibc_tooldir,
+                  ]),
+              GccCommand(host, target,
+                         MakeCommand(host) + [
+                             'build_tooldir=' + glibc_tooldir,
+                             'MAKEOVERRIDES=NATIVE_SYSTEM_HEADER_DIR=/include',
+                             'all-target',
+                             ]),
+              GccCommand(host, target,
+                         MAKE_DESTDIR_CMD + ['install-strip-target']),
+              REMOVE_INFO_DIR,
+              ],
+          },
       }
 
   libs.update(support)
@@ -1165,12 +1101,12 @@ def GetPackageTargets():
       target_arch = target.name
       package_prefix = target.pkg_prefix
 
-      # Each package target contains non-platform specific newlib and gcc libs.
+      # Each package target contains non-platform specific glibc and gcc libs.
       # These packages are added inside of TargetLibs(host, target).
-      newlib_package = 'newlib_%s' % target_arch
+      glibc_package = 'glibc_%s' % target_arch
       gcc_lib_package = 'gcc_libs_%s' % target_arch
       sdk_lib_packages = ['sdk_libs_%s' % target_arch]
-      shared_packages = [newlib_package, gcc_lib_package]
+      shared_packages = [glibc_package, gcc_lib_package]
 
       # Each package target contains arm binutils and gcc.
       # These packages are added inside of HostTools(host, target).
@@ -1185,36 +1121,20 @@ def GetPackageTargets():
       raw_packages = shared_packages + platform_packages
       all_packages = raw_packages + sdk_lib_packages
 
-      glibc_raw_packages = platform_packages + [
-          'glibc_' + target_arch,
-          'gcc_libs_glibc_' + target_arch,
-          ]
-      glibc_all_packages = glibc_raw_packages + ['sdk_libs_glibc_' +
-                                                 target_arch]
-
       os_name = pynacl.platform.GetOS(host_target.os)
       if host_target.differ3264:
         arch_name = pynacl.platform.GetArch3264(host_target.arch)
       else:
         arch_name = pynacl.platform.GetArch(host_target.arch)
       package_target = '%s_%s' % (os_name, arch_name)
-      package_name = '%snacl_%s_newlib' % (package_prefix,
-                                           pynacl.platform.GetArch(target_arch))
+      package_name = '%snacl_%s_glibc' % (package_prefix,
+                                          pynacl.platform.GetArch(target_arch))
       raw_package_name = package_name + '_raw'
 
       # Toolchains by default are "raw" unless they include the Core SDK
       package_target_dict = package_targets.setdefault(package_target, {})
       package_target_dict.setdefault(raw_package_name, []).extend(raw_packages)
       package_target_dict.setdefault(package_name, []).extend(all_packages)
-
-      glibc_package_name = (package_prefix +
-                            ('nacl_%s_glibc' %
-                             pynacl.platform.GetArch(target_arch)))
-      glibc_raw_package_name = glibc_package_name + '_raw'
-      package_target_dict.setdefault(glibc_raw_package_name,
-                                     []).extend(glibc_raw_packages)
-      package_target_dict.setdefault(glibc_package_name,
-                                     []).extend(glibc_all_packages)
 
   # GDB is a special and shared, we will inject it into various other packages.
   for platform, arch in GDB_INJECT_HOSTS:
@@ -1239,8 +1159,7 @@ def CollectPackagesForHost(host, targets):
     packages.update(HostTools(host, target))
     if BuildTargetLibsOn(host):
       packages.update(TargetLibs(host, target))
-      packages.update(SDKLibs(host, target, 'newlib'))
-      packages.update(SDKLibs(host, target, 'glibc'))
+      packages.update(SDKLibs(host, target))
   return packages
 
 
