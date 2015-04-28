@@ -75,6 +75,10 @@ gfx::Display GetDisplayForScreen(NSScreen* screen) {
     scale = [screen backingScaleFactor];
   else
     scale = [screen userSpaceScaleFactor];
+
+  if (gfx::Display::HasForceDeviceScaleFactor())
+    scale = gfx::Display::GetForcedDeviceScaleFactor();
+
   display.set_device_scale_factor(scale);
   // CGDisplayRotation returns a double. Display::SetRotationAsDegree will
   // handle the unexpected situations were the angle is not a multiple of 90.
