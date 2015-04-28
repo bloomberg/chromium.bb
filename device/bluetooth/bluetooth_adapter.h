@@ -14,12 +14,14 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
 
+class BluetoothAdvertisement;
 class BluetoothDiscoveryFilter;
 class BluetoothDiscoverySession;
 class BluetoothGattCharacteristic;
@@ -190,6 +192,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       CreateServiceErrorCallback;
   typedef base::Callback<void(scoped_refptr<BluetoothAudioSink>)>
       AcquiredCallback;
+  typedef base::Callback<void(scoped_refptr<BluetoothAdvertisement>)>
+      CreateAdvertisementCallback;
+  typedef base::Callback<void(BluetoothAdvertisement::ErrorCode)>
+      CreateAdvertisementErrorCallback;
 
   // Returns a weak pointer to a new adapter.  For platforms with asynchronous
   // initialization, the returned adapter will run the |init_callback| once
@@ -368,6 +374,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const BluetoothAudioSink::Options& options,
       const AcquiredCallback& callback,
       const BluetoothAudioSink::ErrorCallback& error_callback) = 0;
+
+  // Creates and registers an advertisement for broadcast over the LE channel.
+  // The created advertisement will be returned via the success callback.
+  virtual void RegisterAdvertisement(
+      scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+      const CreateAdvertisementCallback& callback,
+      const CreateAdvertisementErrorCallback& error_callback) = 0;
 
  protected:
   friend class base::RefCounted<BluetoothAdapter>;

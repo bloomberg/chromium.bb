@@ -96,6 +96,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
       const device::BluetoothAdapter::AcquiredCallback& callback,
       const device::BluetoothAudioSink::ErrorCallback& error_callback) override;
 
+  void RegisterAdvertisement(
+      scoped_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
+      const CreateAdvertisementCallback& callback,
+      const CreateAdvertisementErrorCallback& error_callback) override;
+
   // Locates the device object by object path (the devices map and
   // BluetoothDevice methods are by address).
   BluetoothDeviceChromeOS* GetDeviceWithPath(

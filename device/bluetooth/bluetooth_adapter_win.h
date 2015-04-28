@@ -71,6 +71,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
       const BluetoothAudioSink::Options& options,
       const AcquiredCallback& callback,
       const BluetoothAudioSink::ErrorCallback& error_callback) override;
+  void RegisterAdvertisement(
+      scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+      const CreateAdvertisementCallback& callback,
+      const CreateAdvertisementErrorCallback& error_callback) override;
 
   // BluetoothTaskManagerWin::Observer override
   void AdapterStateChanged(

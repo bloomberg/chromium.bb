@@ -36,9 +36,6 @@ class CHROMEOS_EXPORT FakeBluetoothLEAdvertisementServiceProvider
  private:
   friend class FakeBluetoothLEAdvertisingManagerClient;
 
-  // D-Bus object path we are faking.
-  dbus::ObjectPath object_path_;
-
   // All incoming method calls are passed on to the Delegate and a callback
   // passed to generate the reply. |delegate_| is generally the object that
   // owns this one, and must outlive it.

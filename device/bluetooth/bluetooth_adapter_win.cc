@@ -182,6 +182,14 @@ void BluetoothAdapterWin::RegisterAudioSink(
   error_callback.Run(BluetoothAudioSink::ERROR_UNSUPPORTED_PLATFORM);
 }
 
+void BluetoothAdapterWin::RegisterAdvertisement(
+    scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+    const CreateAdvertisementCallback& callback,
+    const CreateAdvertisementErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+  error_callback.Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
+}
+
 void BluetoothAdapterWin::RemovePairingDelegateInternal(
     BluetoothDevice::PairingDelegate* pairing_delegate) {
 }

@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/observer_list.h"
-#include "bluetooth_le_advertising_manager_client.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/bluetooth_le_advertising_manager_client.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 

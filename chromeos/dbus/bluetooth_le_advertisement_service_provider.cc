@@ -37,7 +37,6 @@ class BluetoothAdvertisementServiceProviderImpl
       : origin_thread_id_(base::PlatformThread::CurrentId()),
         bus_(bus),
         delegate_(delegate),
-        object_path_(object_path),
         type_(type),
         service_uuids_(service_uuids.Pass()),
         manufacturer_data_(manufacturer_data.Pass()),
@@ -49,6 +48,7 @@ class BluetoothAdvertisementServiceProviderImpl
 
     VLOG(1) << "Creating Bluetooth Advertisement: " << object_path_.value();
 
+    object_path_ = object_path;
     exported_object_ = bus_->GetExportedObject(object_path_);
 
     // Export Bluetooth Advertisement interface methods.
@@ -358,10 +358,6 @@ class BluetoothAdvertisementServiceProviderImpl
   // owns this one, and must outlive it.
   Delegate* delegate_;
 
-  // D-Bus object path of object we are exporting, kept so we can unregister
-  // again in our destructor.
-  dbus::ObjectPath object_path_;
-
   // Advertisement data that needs to be provided to BlueZ when requested.
   AdvertisementType type_;
   scoped_ptr<UUIDList> service_uuids_;
@@ -391,7 +387,7 @@ BluetoothLEAdvertisementServiceProvider::
 }
 
 // static
-BluetoothLEAdvertisementServiceProvider*
+scoped_ptr<BluetoothLEAdvertisementServiceProvider>
 BluetoothLEAdvertisementServiceProvider::Create(
     dbus::Bus* bus,
     const dbus::ObjectPath& object_path,
@@ -402,12 +398,12 @@ BluetoothLEAdvertisementServiceProvider::Create(
     scoped_ptr<UUIDList> solicit_uuids,
     scoped_ptr<ServiceData> service_data) {
   if (!DBusThreadManager::Get()->IsUsingStub(DBusClientBundle::BLUETOOTH)) {
-    return new BluetoothAdvertisementServiceProviderImpl(
+    return make_scoped_ptr(new BluetoothAdvertisementServiceProviderImpl(
         bus, object_path, delegate, type, service_uuids.Pass(),
-        manufacturer_data.Pass(), solicit_uuids.Pass(), service_data.Pass());
+        manufacturer_data.Pass(), solicit_uuids.Pass(), service_data.Pass()));
   } else {
-    return new FakeBluetoothLEAdvertisementServiceProvider(object_path,
-                                                           delegate);
+    return make_scoped_ptr(
+        new FakeBluetoothLEAdvertisementServiceProvider(object_path, delegate));
   }
 }
 

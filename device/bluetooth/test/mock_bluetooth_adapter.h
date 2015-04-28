@@ -109,6 +109,10 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   void SetDiscoveryFilter(scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback) override;
+  void RegisterAdvertisement(
+      scoped_ptr<BluetoothAdvertisement::Data> advertisement_data,
+      const CreateAdvertisementCallback& callback,
+      const CreateAdvertisementErrorCallback& error_callback) override;
   virtual ~MockBluetoothAdapter();
 
   MOCK_METHOD1(RemovePairingDelegateInternal,
