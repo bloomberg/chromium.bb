@@ -57,6 +57,7 @@
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DisplayItemListContextRecorder.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/PassRefPtr.h"
@@ -244,16 +245,17 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     FloatRect spacedTile(tile);
     spacedTile.expand(repeatSpacing);
 
-    SkPictureBuilder pictureBuilder(spacedTile);
+    SkPictureBuilder patternPicture(spacedTile);
     {
-        // When generating an expanded tile, make sure we don't draw into the spacing area.
-        OwnPtr<FloatClipRecorder> clipRecorder;
-        if (tile != spacedTile)
-            clipRecorder = adoptPtr(new FloatClipRecorder(pictureBuilder.context(), *this, PaintPhaseForeground, tile));
-        drawForContainer(&pictureBuilder.context(), containerSize, zoom, tile, srcRect, SkXfermode::kSrcOver_Mode);
+        DrawingRecorder patternPictureRecorder(patternPicture.context(), *this, DisplayItem::Type::SVGImage, spacedTile);
+        if (!patternPictureRecorder.canUseCachedDrawing()) {
+            // When generating an expanded tile, make sure we don't draw into the spacing area.
+            if (tile != spacedTile)
+                patternPicture.context().clip(tile);
+            drawForContainer(&patternPicture.context(), containerSize, zoom, tile, srcRect, SkXfermode::kSrcOver_Mode);
+        }
     }
-
-    RefPtr<const SkPicture> tilePicture = pictureBuilder.endRecording();
+    RefPtr<const SkPicture> tilePicture = patternPicture.endRecording();
 
     SkMatrix patternTransform;
     patternTransform.setTranslate(phase.x() + spacedTile.x(), phase.y() + spacedTile.y());

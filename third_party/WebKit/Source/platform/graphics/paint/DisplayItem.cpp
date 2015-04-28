@@ -46,6 +46,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::ColumnRules: return "DrawingColumnRules";
     case DisplayItem::DebugRedFill: return "DrawingDebugRedFill";
     case DisplayItem::DragImage: return "DrawingDragImage";
+    case DisplayItem::SVGImage: return "DrawingSVGImage";
     case DisplayItem::LinkHighlight: return "DrawingLinkHighlight";
     case DisplayItem::PageOverlay: return "PageOverlay";
     case DisplayItem::PageWidgetDelegateBackgroundFallback: return "DrawingPageWidgetDelegateBackgroundFallback";

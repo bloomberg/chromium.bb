@@ -60,6 +60,7 @@ public:
         ColumnRules,
         DebugRedFill,
         DragImage,
+        SVGImage,
         LinkHighlight,
         PageOverlay,
         PageWidgetDelegateBackgroundFallback,
