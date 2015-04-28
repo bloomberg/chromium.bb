@@ -1,6 +1,6 @@
 {
   "name": "__MSG_ALT_APPNAME__",
-  "version": "1.0",
+  "version": "1.0.1",
   "description": "__MSG_ALT_APPDESC__",
   "background": {
     "scripts": [ "background.js" ]
