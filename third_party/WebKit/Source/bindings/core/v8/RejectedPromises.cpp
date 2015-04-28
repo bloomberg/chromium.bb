@@ -149,9 +149,9 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
 {
     // First look it up in the pending messages and fast return, it'll be covered by processQueue().
     for (auto it = m_queue.begin(); it != m_queue.end(); ++it) {
-        if ((*it)->isCollected() || (*it)->hasPromise(data.GetPromise())) {
+        if (!(*it)->isCollected() && (*it)->hasPromise(data.GetPromise())) {
             m_queue.remove(it);
-            continue;
+            return;
         }
     }
 
