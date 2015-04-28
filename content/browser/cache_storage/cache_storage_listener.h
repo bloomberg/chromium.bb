@@ -32,26 +32,6 @@ class CacheStorageListener {
   bool OnMessageReceived(const IPC::Message& message);
 
  private:
-  // The message receiver functions for the CacheStorage API:
-  void OnCacheStorageHas(int thread_id,
-                         int request_id,
-                         const GURL& origin,
-                         const base::string16& cache_name);
-  void OnCacheStorageOpen(int thread_id,
-                          int request_id,
-                          const GURL& origin,
-                          const base::string16& cache_name);
-  void OnCacheStorageDelete(int thread_id,
-                            int request_id,
-                            const GURL& origin,
-                            const base::string16& cache_name);
-  void OnCacheStorageKeys(int thread_id, int request_id, const GURL& origin);
-  void OnCacheStorageMatch(int thread_id,
-                           int request_id,
-                           const GURL& origin,
-                           const ServiceWorkerFetchRequest& request,
-                           const CacheStorageCacheQueryParams& match_params);
-
   // The message receiver functions for the Cache API:
   void OnCacheMatch(int thread_id,
                     int request_id,
@@ -76,36 +56,14 @@ class CacheStorageListener {
   void OnBlobDataHandled(const std::string& uuid);
 
  private:
+  friend class CacheStorageDispatcherHost;
+
   typedef int32_t CacheID;  // TODO(jkarlin): Bump to 64 bit.
   typedef std::map<CacheID, scoped_refptr<CacheStorageCache>> IDToCacheMap;
   typedef std::map<std::string, std::list<storage::BlobDataHandle>>
       UUIDToBlobDataHandleList;
 
   void Send(IPC::Message* message);
-
-  // CacheStorageManager callbacks
-  void OnCacheStorageHasCallback(int thread_id,
-                                 int request_id,
-                                 bool has_cache,
-                                 CacheStorage::CacheStorageError error);
-  void OnCacheStorageOpenCallback(int thread_id,
-                                  int request_id,
-                                  const scoped_refptr<CacheStorageCache>& cache,
-                                  CacheStorage::CacheStorageError error);
-  void OnCacheStorageDeleteCallback(int thread_id,
-                                    int request_id,
-                                    bool deleted,
-                                    CacheStorage::CacheStorageError error);
-  void OnCacheStorageKeysCallback(int thread_id,
-                                  int request_id,
-                                  const std::vector<std::string>& strings,
-                                  CacheStorage::CacheStorageError error);
-  void OnCacheStorageMatchCallback(
-      int thread_id,
-      int request_id,
-      CacheStorageCache::ErrorType error,
-      scoped_ptr<ServiceWorkerResponse> response,
-      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
 
   // Cache callbacks
   void OnCacheMatchCallback(
