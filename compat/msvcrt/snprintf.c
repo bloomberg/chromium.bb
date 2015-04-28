@@ -24,6 +24,7 @@
 #include <limits.h>
 #include <string.h>
 
+#include "compat/msvcrt/snprintf.h"
 #include "compat/va_copy.h"
 #include "libavutil/error.h"
 
