@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
 #include "content/renderer/shared_memory_seqlock_reader.h"
-#include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
+#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
 
 namespace blink {
 class WebDeviceOrientationListener;

@@ -8,7 +8,7 @@
 
 #include "content/common/device_sensors/device_orientation_messages.h"
 #include "content/public/renderer/render_thread.h"
-#include "third_party/WebKit/public/platform/WebDeviceOrientationListener.h"
+#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
 
 namespace content {
 

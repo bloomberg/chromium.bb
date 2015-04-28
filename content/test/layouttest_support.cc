@@ -24,9 +24,9 @@
 #include "content/shell/renderer/test_runner/web_frame_test_proxy.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatus.h"
-#include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
-#include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h"
+#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebView.h"
 

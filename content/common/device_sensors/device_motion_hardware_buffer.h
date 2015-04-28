@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_DEVICE_SENSORS_DEVICE_MOTION_HARDWARE_BUFFER_H_
 
 #include "content/common/shared_memory_seqlock_buffer.h"
-#include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
+#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h"
 
 namespace content {
 

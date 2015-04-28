@@ -10,7 +10,7 @@
 #include "content/common/device_sensors/device_motion_hardware_buffer.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebDeviceMotionListener.h"
+#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 
 namespace content {
 
