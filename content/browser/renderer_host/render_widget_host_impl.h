@@ -201,9 +201,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     owned_by_render_frame_host_ = owned_by_rfh;
   }
 
-  // Called by RenderFrameHost before destroying this object.
-  void Cleanup();
-
   // Tells the renderer to die and then calls Destroy().
   virtual void Shutdown();
 

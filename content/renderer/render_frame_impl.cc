@@ -2224,8 +2224,13 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   CHECK_EQ(it->second, this);
   g_frame_map.Get().erase(it);
 
-  if (is_subframe)
+  if (is_subframe) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSitePerProcess) && render_widget_) {
+      render_widget_->UnregisterRenderFrame(this);
+    }
     frame->parent()->removeChild(frame);
+  }
 
   // |frame| is invalid after here.  Be sure to clear frame_ as well, since this
   // object may not be deleted immediately and other methods may try to access

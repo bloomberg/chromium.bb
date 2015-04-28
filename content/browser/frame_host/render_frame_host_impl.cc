@@ -149,6 +149,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       render_frame_proxy_host_(NULL),
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
+      render_widget_host_(nullptr),
       routing_id_(routing_id),
       render_frame_created_(false),
       navigations_suspended_(false),
@@ -180,8 +181,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
 
   if (flags & CREATE_RF_NEEDS_RENDER_WIDGET_HOST) {
-    render_widget_host_.reset(new RenderWidgetHostImpl(
-        rwh_delegate, GetProcess(), MSG_ROUTING_NONE, hidden));
+    render_widget_host_ = new RenderWidgetHostImpl(rwh_delegate, GetProcess(),
+                                                   MSG_ROUTING_NONE, hidden);
     render_widget_host_->set_owned_by_render_frame_host(true);
   }
 }
@@ -213,8 +214,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
     iter.second.Run(false);
   }
 
-  if (render_widget_host_)
-    render_widget_host_->Cleanup();
+  if (render_widget_host_) {
+    // Shutdown causes the RenderWidgetHost to delete itself.
+    render_widget_host_->Shutdown();
+  }
 }
 
 int RenderFrameHostImpl::GetRoutingID() {
@@ -596,7 +599,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int parent_routing_id,
   // lifetime of the current RenderProcessHost for this RenderFrameHost.
   if (render_widget_host_) {
     RenderWidgetHostView* rwhv =
-        new RenderWidgetHostViewChildFrame(render_widget_host_.get());
+        new RenderWidgetHostViewChildFrame(render_widget_host_);
     rwhv->Hide();
   }
 
@@ -871,7 +874,7 @@ void RenderFrameHostImpl::OnDidDropNavigation() {
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
   if (render_widget_host_)
-    return render_widget_host_.get();
+    return render_widget_host_;
 
   // TODO(kenrb): When RenderViewHost no longer inherits RenderWidgetHost,
   // we can remove this fallback. Currently it is only used for the main

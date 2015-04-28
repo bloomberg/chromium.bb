@@ -627,7 +627,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // frames.
   // TODO(kenrb): Later this will also be used on the top-level frame, when
   // RenderFrameHost owns its RenderViewHost.
-  scoped_ptr<RenderWidgetHostImpl> render_widget_host_;
+  RenderWidgetHostImpl* render_widget_host_;
 
   int routing_id_;
 

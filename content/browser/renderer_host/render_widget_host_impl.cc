@@ -1336,13 +1336,6 @@ void RenderWidgetHostImpl::SetAutoResize(bool enable,
   max_size_for_auto_resize_ = max_size;
 }
 
-void RenderWidgetHostImpl::Cleanup() {
-  if (view_) {
-    view_->Destroy();
-    view_ = nullptr;
-  }
-}
-
 void RenderWidgetHostImpl::Destroy() {
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
