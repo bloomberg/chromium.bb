@@ -22,7 +22,6 @@
 
 [
     CheckSecurity=Window,
-    Custom=ToV8,
     WillBeGarbageCollected,
     Exposed=(Window,Worker)
 ] interface EventTarget {

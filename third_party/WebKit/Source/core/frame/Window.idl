@@ -29,7 +29,6 @@
 // FIXME: explain all uses of [DoNotCheckSecurity]
 [
     CheckSecurity=Frame,
-    Custom=ToV8,
     ImplementedAs=DOMWindow,
     PrimaryGlobal,
 ] interface Window : EventTarget {

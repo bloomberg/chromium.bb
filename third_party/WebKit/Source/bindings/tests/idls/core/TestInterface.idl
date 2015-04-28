@@ -34,7 +34,7 @@
 [
     ActiveDOMObject,
     Conditional=CONDITION,
-    Custom=(LegacyCallAsFunction,ToV8),
+    Custom=LegacyCallAsFunction,
     DoNotCheckConstants,
     ImplementedAs=TestInterfaceImplementation,
     Iterable,

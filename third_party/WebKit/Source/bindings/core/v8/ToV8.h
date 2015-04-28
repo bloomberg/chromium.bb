@@ -48,7 +48,7 @@ inline v8::Handle<v8::Value> toV8(Node* impl, v8::Handle<v8::Object> creationCon
     return ScriptWrappable::fromNode(impl)->wrap(creationContext, isolate);
 }
 
-// [Custom=ToV8]
+// Special versions for DOMWindow, WorkerGlobalScope and EventTarget
 
 CORE_EXPORT v8::Handle<v8::Value> toV8(DOMWindow*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 CORE_EXPORT v8::Handle<v8::Value> toV8(EventTarget*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
@@ -191,7 +191,7 @@ inline v8::Handle<v8::Value> toV8(const ScriptValue& value, v8::Handle<v8::Objec
 
 inline v8::Handle<v8::Value> toV8(const Dictionary& value, v8::Handle<v8::Object> creationContext, v8::Isolate*)
 {
-    ASSERT_NOT_REACHED();
+    RELEASE_ASSERT_NOT_REACHED();
     return v8::Handle<v8::Value>();
 }
 

@@ -107,6 +107,7 @@
             'SerializedScriptValueFactory.cpp',
             'SerializedScriptValueFactory.h',
             'SharedPersistent.h',
+            'ToV8.cpp',
             'ToV8.h',
             'V8AbstractEventListener.cpp',
             'V8AbstractEventListener.h',

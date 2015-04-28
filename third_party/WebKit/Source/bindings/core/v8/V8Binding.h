@@ -55,12 +55,13 @@ namespace blink {
 class DOMWindow;
 class EventListener;
 class EventTarget;
-class ExecutionContext;
 class ExceptionState;
+class ExecutionContext;
 class Frame;
 class LocalDOMWindow;
 class LocalFrame;
 class NodeFilter;
+class WorkerGlobalScope;
 class XPathNSResolver;
 
 template <typename T>
@@ -216,6 +217,26 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Node* impl)
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
+// Special versions for DOMWindow, WorkerGlobalScope and EventTarget
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, DOMWindow* impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, EventTarget* impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, WorkerGlobalScope* impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
 template<typename CallbackInfo, typename T>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<T> impl)
 {
@@ -245,10 +266,11 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Scrip
 template<typename CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Node* impl)
 {
-    // Since EventTarget has [Custom=ToV8] and V8EventTarget.h defines its own
-    // v8SetReturnValue family, which are slow, we need to override them with
-    // optimized versions for Node and its subclasses. Without this overload,
-    // v8SetReturnValueForMainWorld for Node would be very slow.
+    // Since EventTarget has a special version of ToV8 and V8EventTarget.h
+    // defines its own v8SetReturnValue family, which are slow, we need to
+    // override them with optimized versions for Node and its subclasses.
+    // Without this overload, v8SetReturnValueForMainWorld for Node would be
+    // very slow.
     //
     // class hierarchy:
     //     ScriptWrappable <-- EventTarget <--+-- Node <-- ...
@@ -263,6 +285,26 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Node*
     //     v8SetReturnValueForMainWorld(Window*)
     //         Uses custom toV8 function and slow.
     v8SetReturnValueForMainWorld(callbackInfo, ScriptWrappable::fromNode(impl));
+}
+
+// Special versions for DOMWindow, WorkerGlobalScope and EventTarget
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, DOMWindow* impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, EventTarget* impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, WorkerGlobalScope* impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template<typename CallbackInfo, typename T>
@@ -301,6 +343,26 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Node* impl, c
         return;
     v8::Handle<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
+}
+
+// Special versions for DOMWindow, WorkerGlobalScope and EventTarget
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, DOMWindow* impl, const ScriptWrappable*)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, EventTarget* impl, const ScriptWrappable*)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, WorkerGlobalScope* impl, const ScriptWrappable*)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template<typename CallbackInfo, typename T, typename Wrappable>

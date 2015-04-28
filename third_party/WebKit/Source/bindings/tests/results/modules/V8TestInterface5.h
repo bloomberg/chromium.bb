@@ -45,24 +45,6 @@ public:
     static void preparePrototypeObject(v8::Isolate*, v8::Local<v8::Object>);
 };
 
-template<typename CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface5Implementation* impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
-}
-
-template<typename CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestInterface5Implementation* impl)
-{
-     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
-}
-
-template<typename CallbackInfo>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterface5Implementation* impl, const ScriptWrappable*)
-{
-     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
-}
-
 template <>
 struct V8TypeOf<TestInterface5Implementation> {
     typedef V8TestInterface5 Type;

@@ -175,26 +175,6 @@ private:
     {% endif %}
 };
 
-{% if has_custom_to_v8 %}
-template<typename CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}* impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
-}
-
-template<typename CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, {{cpp_class}}* impl)
-{
-     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
-}
-
-template<typename CallbackInfo>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}* impl, const ScriptWrappable*)
-{
-     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
-}
-
-{% endif %}{# has_custom_to_v8 #}
 {% if has_event_constructor %}
 {{exported}}bool initialize{{cpp_class}}({{cpp_class}}Init&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info);
 

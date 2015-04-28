@@ -32,23 +32,8 @@
 #include "bindings/core/v8/V8EventTarget.h"
 
 #include "bindings/core/v8/V8Window.h"
-#include "core/EventTargetNames.h"
 
 namespace blink {
-
-v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (UNLIKELY(!impl))
-        return v8::Null(isolate);
-
-    if (impl->interfaceName() == EventTargetNames::DOMWindow)
-        return toV8(static_cast<DOMWindow*>(impl), creationContext, isolate);
-
-    v8::Local<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return impl->wrap(creationContext, isolate);
-}
 
 void V8EventTarget::addEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget* impl)
 {
