@@ -2,18 +2,15 @@
 <head>
 <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script type="text/javascript">
-window.testIsAsync = true; // The sub-document will call finishRepaintTest() of this window.
 function repaintTest() {
-    var object1 = document.getElementsByTagName("object")[0];
-    object1.setAttribute("data", "resources/nested-embedded-svg-size-changes-target-no-layout-triggers-2.html");
-    object1.setAttribute("style", "border: 1px red solid; width: 400px; height: 200px");
+    document.getElementsByTagName("object")[0].setAttribute("style", "border: 1px red solid; width: 400px; height: 200px");
 }
 </script>
 </head>
 <body onload="runRepaintAndPixelTest()" style="margin: 0px">
 
 <!-- This test is the same as nested-embedded-svg-size-changes.html but doesn't do any query of the computed style to avoid triggering any layouts -->
-<object></object>
+<object data="resources/nested-embedded-svg-size-changes-target-no-layout-triggers-2.html"></object>
 
 </body>
 </html>
