@@ -95,7 +95,8 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
 };
 
 // Time out under MSan. http://crbug.com/478091
-#if defined(MEMORY_SANITIZER)
+// Flaky under LSan on ChromeOS. http://crbug.com/482002
+#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) && defined(OS_CHROMEOS)
 #define MAYBE_LockUnlock DISABLED_LockUnlock
 #define MAYBE_AuthType DISABLED_AuthType
 #else
