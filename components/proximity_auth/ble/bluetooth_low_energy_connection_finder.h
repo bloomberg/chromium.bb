@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CONNECTION_FINDER_H
 #define COMPONENTS_PROXIMITY_AUTH_BLE_BLUETOOTH_LOW_ENERGY_CONNECTION_FINDER_H
 
+#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -34,10 +35,17 @@ class BluetoothLowEnergyConnectionFinder
                 connection_callback);
   void Find(const ConnectionCallback& connection_callback) override;
 
+  // Closes the connection and forgets the device.
+  void CloseConnection(scoped_ptr<device::BluetoothGattConnection> connection);
+
  protected:
   // device::BluetoothAdapter::Observer:
   void DeviceAdded(device::BluetoothAdapter* adapter,
                    device::BluetoothDevice* device) override;
+  void DeviceChanged(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
+  void DeviceRemoved(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
 
  private:
   // Callback to be called when the Bluetooth adapter is initialized.
@@ -45,7 +53,7 @@ class BluetoothLowEnergyConnectionFinder
 
   // Checks if |remote_device| contains |remote_service_uuid| and creates a
   // connection in that case.
-  void HandleDeviceAdded(device::BluetoothDevice* remote_device);
+  void HandleDeviceUpdated(device::BluetoothDevice* remote_device);
 
   // Callback called when a new discovery session is started.
   void OnDiscoverySessionStarted(
@@ -71,6 +79,7 @@ class BluetoothLowEnergyConnectionFinder
 
   // Callback called when there is an error creating the connection.
   void OnCreateConnectionError(
+      std::string device_address,
       device::BluetoothDevice::ConnectErrorCode error_code);
 
   // Callback called when the connection is created.
@@ -90,11 +99,15 @@ class BluetoothLowEnergyConnectionFinder
   // The discovery session associated to this object.
   scoped_ptr<device::BluetoothDiscoverySession> discovery_session_;
 
-  // True if there is a connection.
+  // True if a connection was established to a remote device that has the
+  // service |remote_service_uuid|.
   bool connected_;
 
   // Callback called when the connection is established.
   device::BluetoothDevice::GattConnectionCallback connection_callback_;
+
+  // The set of devices this connection finder has tried to connect to.
+  std::set<device::BluetoothDevice*> pending_connections_;
 
   base::WeakPtrFactory<BluetoothLowEnergyConnectionFinder> weak_ptr_factory_;
 

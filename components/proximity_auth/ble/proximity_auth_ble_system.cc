@@ -70,6 +70,11 @@ void ProximityAuthBleSystem::OnFocusedUserChanged(const std::string& user_id) {
 
 void ProximityAuthBleSystem::OnConnectionFound(
     scoped_ptr<device::BluetoothGattConnection> connection) {
+  VLOG(1) << "Connection found. Unlock.";
+
+  // Close the connection as it it no longer needed.
+  connection_finder_->CloseConnection(connection.Pass());
+
   // Unlock the screen when a connection is found.
   //
   // Note that this magically unlocks Chrome (no user interaction is needed).
