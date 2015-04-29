@@ -3100,6 +3100,15 @@ void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const Compute
     if (isRuby())
         return;
 
+    // Fieldsets look for a legend special child (layoutSpecialExcludedChild()). We currently only
+    // support one special child per layout object, and the flow thread would make for a second one.
+    if (isFieldset())
+        return;
+
+    // Form controls are replaced content, and are therefore not supposed to support multicol.
+    if (isFileUploadControl() || isTextControl() || isListBox())
+        return;
+
     LayoutMultiColumnFlowThread* flowThread = createMultiColumnFlowThread(type);
     addChild(flowThread);
 
