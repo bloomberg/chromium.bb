@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
@@ -110,7 +111,7 @@ void DriveAppConverter::Start() {
 
   if (drive_app_info_.app_name.empty() ||
       !drive_app_info_.create_url.is_valid()) {
-    finished_callback_.Run(this, false);
+    base::ResetAndReturn(&finished_callback_).Run(this, false);
     return;
   }
 
@@ -198,6 +199,6 @@ void DriveAppConverter::OnFinishCrxInstall(const std::string& extension_id,
   is_new_install_ = success && crx_installer_->current_version().empty();
   PostInstallCleanUp();
 
-  finished_callback_.Run(this, success);
+  base::ResetAndReturn(&finished_callback_).Run(this, success);
   // |finished_callback_| could delete this.
 }
