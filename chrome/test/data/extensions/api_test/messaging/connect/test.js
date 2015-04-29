@@ -290,6 +290,48 @@ chrome.test.getConfig(function(config) {
       chrome.test.succeed();
     },
 
+    // Tests that chrome.runtime.sendMessage is *not* delivered to the current
+    // context, consistent behavior with chrome.runtime.connect() and web APIs
+    // like localStorage changed listeners.
+    // Regression test for http://crbug.com/479951.
+    function sendMessageToCurrentContextFails() {
+      var stopFailing = failWhileListening(chrome.runtime.onMessage);
+      chrome.runtime.sendMessage('ping', chrome.test.callbackFail(
+          'Could not establish connection. Receiving end does not exist.',
+          function() {
+            stopFailing();
+            chrome.test.succeed();
+          }
+      ));
+    },
+
+    // Like sendMessageToCurrentContextFails, but with the sendMessage call not
+    // given a callback. This requires a more creative test setup because there
+    // is no callback to signal when it's supposed to have been done.
+    // Regression test for http://crbug.com/479951.
+    function sendMessageToCurrentTextWithoutCallbackFails() {
+      // Make the iframe - in a different context - watch for the message
+      // event. It *should* get it, while the current context's one doesn't.
+      var iframe = document.createElement('iframe');
+      iframe.src = chrome.runtime.getURL('blank_iframe.html');
+      document.body.appendChild(iframe);
+
+      var stopFailing = failWhileListening(chrome.runtime.onMessage);
+      chrome.test.listenOnce(
+        iframe.contentWindow.chrome.runtime.onMessage,
+        function(msg, sender) {
+          chrome.test.assertEq('ping', msg);
+          chrome.test.assertEq(chrome.runtime.id, sender.id);
+          chrome.test.assertEq(location.href, sender.url);
+          setTimeout(function() {
+            stopFailing();
+            chrome.test.succeed();
+          }, 0);
+        }
+      );
+
+      chrome.runtime.sendMessage('ping');
+    },
   ]);
 });
 
@@ -317,4 +359,20 @@ function connectToTabWithFrameId(frameId, expectedMessages) {
   });
   port.postMessage({testSendMessageToFrame: true});
   chrome.test.log('connectToTabWithFrameId: port to frame ' + frameId);
+}
+
+// Listens to |event| and returns a callback to run to stop listening. While
+// listening, if |event| is fired, calls chrome.test.fail().
+function failWhileListening(event, doneListening) {
+  var failListener = function() {
+    chrome.test.fail('Event listener ran, but it shouldn\'t have. ' +
+                     'It\'s possible that may be triggered flakily, but this ' +
+                     'really is a real failure, not flaky sadness. Promise!');
+  };
+  var release = chrome.test.callbackAdded();
+  event.addListener(failListener);
+  return function() {
+    event.removeListener(failListener);
+    release();
+  };
 }
