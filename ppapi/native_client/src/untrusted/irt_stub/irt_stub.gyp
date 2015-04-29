@@ -16,6 +16,10 @@
         'build_newlib': 1,
         'build_pnacl_newlib': 1,
       },
+      # Always compile libppapi_stub with -fPIC so that -lppapi can be linked
+      # into shared libraries (libppapi.so is a linker script that pulls in
+      # ppapi_stub).
+      'compile_flags': [ '-fPIC' ],
       'include_dirs': [
         '../../../..',
       ],
