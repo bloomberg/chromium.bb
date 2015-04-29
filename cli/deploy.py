@@ -891,24 +891,24 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
 
   with remote_access.ChromiumOSDeviceHandler(
       hostname, port=port, username=username, private_key=ssh_private_key,
-      base_dir=_DEVICE_BASE_DIR, ping=ping) as device:
+      base_dir=_DEVICE_BASE_DIR, ping=ping) as device_handler:
     try:
-      board = cros_build_lib.GetBoard(device_board=device.board,
+      board = cros_build_lib.GetBoard(device_board=device_handler.board,
                                       override_board=board)
       logging.info('Board is %s', board)
 
       if not force:
         # If a brick is specified, it must be compatible with the device.
         if brick:
-          if not brick.Inherits(device.board):
+          if not brick.Inherits(device_handler.board):
             raise DeployError('Device (%s) is incompatible with brick' %
-                              device.board)
-        elif board != device.board:
+                              device_handler.board)
+        elif board != device_handler.board:
           raise DeployError('Device (%s) is incompatible with board' %
-                            device.board)
+                            device_handler.board)
 
         # Check that the target is compatible with the SDK (if any).
-        _CheckDeviceVersion(device)
+        _CheckDeviceVersion(device_handler)
 
       sysroot = cros_build_lib.GetSysroot(board=board)
 
@@ -921,15 +921,15 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
         logging.info('Cleaning outdated binary packages for %s', board)
         portage_util.CleanOutdatedBinaryPackages(board)
 
-      if not device.IsPathWritable(root):
+      if not device_handler.IsPathWritable(root):
         # Only remounts rootfs if the given root is not writable.
-        if not device.MountRootfsReadWrite():
+        if not device_handler.MountRootfsReadWrite():
           raise DeployError('Cannot remount rootfs as read-write. Exiting.')
 
       # Obtain list of packages to upgrade/remove.
       pkg_scanner = _InstallPackageScanner(sysroot)
-      pkgs, listed, num_updates = pkg_scanner.Run(device, root, packages,
-                                                  update, deep, deep_rev)
+      pkgs, listed, num_updates = pkg_scanner.Run(
+          device_handler, root, packages, update, deep, deep_rev)
       if emerge:
         action_str = 'emerge'
       else:
@@ -949,16 +949,16 @@ def Deploy(device, packages, board=None, brick_name=None, emerge=True,
 
       for pkg in pkgs:
         if emerge:
-          _Emerge(device, pkg, strip, board, sysroot, root,
+          _Emerge(device_handler, pkg, strip, board, sysroot, root,
                   extra_args=emerge_args)
         else:
-          _Unmerge(device, pkg, root)
+          _Unmerge(device_handler, pkg, root)
 
       logging.warning('Please restart any updated services on the device, '
                       'or just reboot it.')
     except Exception:
-      if device.lsb_release:
-        lsb_entries = sorted(device.lsb_release.items())
+      if device_handler.lsb_release:
+        lsb_entries = sorted(device_handler.lsb_release.items())
         logging.info('Following are the LSB version details of the device:\n%s',
                      '\n'.join('%s=%s' % (k, v) for k, v in lsb_entries))
       raise
