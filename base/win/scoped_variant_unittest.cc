@@ -27,34 +27,34 @@ class FakeComObject : public IDispatch {
   FakeComObject() : ref_(0) {
   }
 
-  STDMETHOD_(DWORD, AddRef)() {
+  STDMETHOD_(DWORD, AddRef)() override {
     ref_++;
     return ref_;
   }
 
-  STDMETHOD_(DWORD, Release)() {
+  STDMETHOD_(DWORD, Release)() override {
     ref_--;
     return ref_;
   }
 
-  STDMETHOD(QueryInterface)(REFIID, void**) {
+  STDMETHOD(QueryInterface)(REFIID, void**) override { return E_NOTIMPL; }
+
+  STDMETHOD(GetTypeInfoCount)(UINT*) override { return E_NOTIMPL; }
+
+  STDMETHOD(GetTypeInfo)(UINT, LCID, ITypeInfo**) override { return E_NOTIMPL; }
+
+  STDMETHOD(GetIDsOfNames)(REFIID, LPOLESTR*, UINT, LCID, DISPID*) override {
     return E_NOTIMPL;
   }
 
-  STDMETHOD(GetTypeInfoCount)(UINT*) {
-    return E_NOTIMPL;
-  }
-
-  STDMETHOD(GetTypeInfo)(UINT, LCID, ITypeInfo**) {
-    return E_NOTIMPL;
-  }
-
-  STDMETHOD(GetIDsOfNames)(REFIID, LPOLESTR*, UINT, LCID, DISPID*) {
-    return E_NOTIMPL;
-  }
-
-  STDMETHOD(Invoke)(DISPID, REFIID, LCID, WORD, DISPPARAMS*, VARIANT*,
-                    EXCEPINFO*, UINT*) {
+  STDMETHOD(Invoke)(DISPID,
+                    REFIID,
+                    LCID,
+                    WORD,
+                    DISPPARAMS*,
+                    VARIANT*,
+                    EXCEPINFO*,
+                    UINT*) override {
     return E_NOTIMPL;
   }
 
