@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
@@ -25,6 +24,10 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_export.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace device {
 class BluetoothSocketThread;
