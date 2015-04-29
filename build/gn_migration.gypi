@@ -464,6 +464,7 @@
         ['OS=="win"', {
           'dependencies': [
             '../base/base.gyp:pe_image_test',
+            '../chrome/chrome.gyp:crash_service',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
             '../chrome_elf/chrome_elf.gyp:dll_hash_main',
             '../components/components.gyp:wifi_test',
@@ -610,7 +611,6 @@
             '../chrome/chrome.gyp:app_installer',
             '../chrome/chrome.gyp:app_installer_unittests',
             '../chrome/chrome.gyp:app_shim',
-            '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:gcapi_dll',
             '../chrome/chrome.gyp:gcapi_test',
             '../chrome/chrome.gyp:installer_util_unittests',
