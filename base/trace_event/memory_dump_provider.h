@@ -27,7 +27,6 @@ class BASE_EXPORT MemoryDumpProvider {
   MemoryDumpProvider() {}
   virtual ~MemoryDumpProvider() {}
 
- private:
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpProvider);
 };
 
