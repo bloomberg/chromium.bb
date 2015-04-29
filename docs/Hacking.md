@@ -13,37 +13,6 @@ as follows:
 ```
 git clone https://chromium.googlesource.com/external/gyp.git
 cd gyp
-git svn init --prefix=origin/ -T trunk http://gyp.googlecode.com/svn/
-git config --replace-all svn-remote.svn.fetch trunk:refs/remotes/origin/master
-git svn fetch
-```
-
-At this point you should get a quick stream of output as git-svn rebuilds
-it's SVN version->SHA1 database:
-
-```
-Rebuilding .git/svn/refs/remotes/origin/master/...
-r1 = 880a7f243635258fa4938bb7ebf9b4d5f46e3e48
-r2 = 24a2a4ceedce0ae16d0a107d9898e4828775c633
-r3 = 41276136692399ac4bb84c6664d02384fcad70ad
-```
-
-If you get slow trickling output with a bunch of file names as such:
-
-```
-r1 = 880a7f243635258fa4938bb7ebf9b4d5f46e3e48 (refs/remotes/git-svn)
-        A       xc.py
-```
-
-then these instructions are out of date, and you're re-downloading
-the entire version history from SVN. Please update these instructions
-once you've figured out what's up.
-
-If you intend to commit your changes back to the GYP SVN repository,
-you need to configure git-svn's commit url.
-
-```
-git config svn-remote.svn.commiturl https://gyp.googlecode.com/svn/trunk
 ```
 
 ## Testing your change
@@ -94,9 +63,15 @@ Once the change has been approved (LGTMed) and passes trybots, you can submit
 it with:
 
 ```
-git cl dcommit
+git cl land
 ```
 
-To be allowed to submit, you will need committer rights in the project, and
-your password for the SVN server.  You can get that password here:
-https://code.google.com/hosting/settings
+To be allowed to submit, you will need committer rights in the project. You
+need to do the new password dance at
+https://chromium.googlesource.com/new-password .
+
+## Migrating from an old with-svn checkout
+
+Remove the [svn] entry from .git/config, and the .git/svn subdirs to avoid
+having `git cl land` complain that it looks like the repo is a SVN one. It might
+be easier to just repull instead.
