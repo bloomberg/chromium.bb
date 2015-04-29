@@ -145,11 +145,6 @@ component("media") {
     "filters/source_buffer_stream.h",
     "filters/stream_parser_factory.cc",
     "filters/stream_parser_factory.h",
-    "filters/video_frame_scheduler.h",
-    "filters/video_frame_scheduler_impl.cc",
-    "filters/video_frame_scheduler_impl.h",
-    "filters/video_frame_scheduler_proxy.cc",
-    "filters/video_frame_scheduler_proxy.h",
     "filters/vp8_bool_decoder.cc",
     "filters/vp8_bool_decoder.h",
     "filters/vp8_parser.cc",
@@ -565,8 +560,6 @@ test("media_unittests") {
     "filters/jpeg_parser_unittest.cc",
     "filters/source_buffer_stream_unittest.cc",
     "filters/video_decoder_selector_unittest.cc",
-    "filters/video_frame_scheduler_impl_unittest.cc",
-    "filters/video_frame_scheduler_unittest.cc",
     "filters/video_frame_stream_unittest.cc",
     "filters/vp8_bool_decoder_unittest.cc",
     "filters/vp8_parser_unittest.cc",
@@ -730,10 +723,6 @@ test("media_perftests") {
 source_set("test_support") {
   testonly = true
   sources = [
-    "filters/clockless_video_frame_scheduler.cc",
-    "filters/clockless_video_frame_scheduler.h",
-    "filters/test_video_frame_scheduler.cc",
-    "filters/test_video_frame_scheduler.h",
     "renderers/mock_gpu_video_accelerator_factories.cc",
     "renderers/mock_gpu_video_accelerator_factories.h",
     "video/mock_video_decode_accelerator.cc",
