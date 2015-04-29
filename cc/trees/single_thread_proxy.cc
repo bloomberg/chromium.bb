@@ -47,6 +47,7 @@ SingleThreadProxy::SingleThreadProxy(
       next_frame_is_newly_committed_frame_(false),
       inside_draw_(false),
       defer_commits_(false),
+      animate_requested_(false),
       commit_requested_(false),
       inside_synchronous_composite_(false),
       output_surface_creation_requested_(false),
@@ -178,7 +179,12 @@ void SingleThreadProxy::SetNeedsAnimate() {
   TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsAnimate");
   DCHECK(Proxy::IsMainThread());
   client_->ScheduleAnimation();
-  SetNeedsCommit();
+  if (animate_requested_)
+    return;
+  animate_requested_ = true;
+  DebugScopedSetImplThread impl(this);
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->SetNeedsCommit();
 }
 
 void SingleThreadProxy::SetNeedsUpdateLayers() {
@@ -335,10 +341,10 @@ void SingleThreadProxy::SetNeedsCommit() {
   client_->ScheduleComposite();
   if (commit_requested_)
     return;
+  commit_requested_ = true;
   DebugScopedSetImplThread impl(this);
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetNeedsCommit();
-  commit_requested_ = true;
 }
 
 void SingleThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
@@ -809,6 +815,7 @@ void SingleThreadProxy::SendBeginMainFrameNotExpectedSoon() {
 
 void SingleThreadProxy::BeginMainFrame() {
   commit_requested_ = false;
+  animate_requested_ = false;
 
   if (defer_commits_) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",
@@ -838,6 +845,8 @@ void SingleThreadProxy::BeginMainFrame() {
   }
 
   // Prevent new commits from being requested inside DoBeginMainFrame.
+  // Note: We do not want to prevent SetNeedsAnimate from requesting
+  // a commit here.
   commit_requested_ = true;
 
   const BeginFrameArgs& begin_frame_args =

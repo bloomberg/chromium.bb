@@ -162,6 +162,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   bool inside_draw_;
   bool defer_commits_;
+  bool animate_requested_;
   bool commit_requested_;
   bool inside_synchronous_composite_;
 

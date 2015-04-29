@@ -102,7 +102,7 @@ class LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback
   int num_begin_frames_;
 };
 
-MULTI_THREAD_TEST_F(
+SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestSetNeedsAnimateInsideAnimationCallback);
 
 // Add a layer animation and confirm that
