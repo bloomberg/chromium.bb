@@ -120,8 +120,8 @@ def Main(args):
     pnacl_branch = 'origin/pnacl'
     upstream_branches = []
   elif options.component == 'binutils':
-    pnacl_branch = 'origin/pnacl/2.24/master'
-    upstream_branches = ['origin/ng/2.24/master']
+    pnacl_branch = 'origin/pnacl/2.25/master'
+    upstream_branches = ['origin/ng/2.25/master']
   elif options.component == 'subzero':
     pnacl_branch = 'origin/master'
     upstream_branches = []
