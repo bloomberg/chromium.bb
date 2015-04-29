@@ -155,17 +155,6 @@ hooks = [
     ],
   },
   {
-    "name": "gn_linux32",
-    "pattern": ".",
-    "action": [ "download_from_google_storage",
-                "--no_resume",
-                "--platform=linux*",
-                "--no_auth",
-                "--bucket", "chromium-gn",
-                "-s", "buildtools/linux32/gn.sha1",
-    ],
-  },
-  {
     "name": "gn_linux64",
     "pattern": ".",
     "action": [ "download_from_google_storage",
