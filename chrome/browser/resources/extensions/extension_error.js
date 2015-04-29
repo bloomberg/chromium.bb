@@ -26,6 +26,19 @@ cr.define('extensions', function() {
   }
 
   /**
+   * @param {!Array<(ManifestError|RuntimeError)>} errors
+   * @param {number} id
+   * @return {number} The index of the error with |id|, or -1 if not found.
+   */
+  function findErrorById(errors, id) {
+    for (var i = 0; i < errors.length; ++i) {
+      if (errors[i].id == id)
+        return i;
+    }
+    return -1;
+  }
+
+  /**
    * Creates a new ExtensionError HTMLElement; this is used to show a
    * notification to the user when an error is caused by an extension.
    * @param {(RuntimeError|ManifestError)} error The error the element should
@@ -46,7 +59,14 @@ cr.define('extensions', function() {
 
     /** @override */
     getEquivalentElement: function(element) {
-      return assert(this.querySelector('.extension-error-view-details'));
+      if (element.classList.contains('extension-error-metadata'))
+        return this;
+      if (element.classList.contains('error-delete-button')) {
+        return /** @type {!HTMLElement} */ (this.querySelector(
+            '.error-delete-button'));
+      }
+      assertNotReached();
+      return element;
     },
 
     /**
@@ -57,6 +77,12 @@ cr.define('extensions', function() {
      */
     decorateWithError_: function(error, boundary) {
       this.decorate(boundary);
+
+      /**
+       * The backing error.
+       * @type {(ManifestError|RuntimeError)}
+       */
+      this.error = error;
 
       // Add an additional class for the severity level.
       if (error.type == chrome.developerPrivate.ErrorType.RUNTIME) {
@@ -87,28 +113,35 @@ cr.define('extensions', function() {
 
       var messageSpan = this.querySelector('.extension-error-message');
       messageSpan.textContent = error.message;
-      messageSpan.title = error.message;
 
-      var extensionUrl = 'chrome-extension://' + error.extensionId + '/';
-      var viewDetailsLink = this.querySelector('.extension-error-view-details');
+      var deleteButton = this.querySelector('.error-delete-button');
+      deleteButton.addEventListener('click', function(e) {
+        this.dispatchEvent(
+            new CustomEvent('deleteExtensionError',
+                            {bubbles: true, detail: this.error}));
+      }.bind(this));
 
-      // If we cannot open the file source and there are no external frames in
-      // the stack, then there are no details to display.
-      if (!extensions.ExtensionErrorOverlay.canShowOverlayForError(
-              error, extensionUrl)) {
-        viewDetailsLink.hidden = true;
-      } else {
-        var stringId = extensionUrl.toLowerCase() == 'manifest.json' ?
-            'extensionErrorViewManifest' : 'extensionErrorViewDetails';
-        viewDetailsLink.textContent = loadTimeData.getString(stringId);
+      this.addEventListener('click', function(e) {
+        if (e.target != deleteButton)
+          this.requestActive_();
+      }.bind(this));
+      this.addEventListener('keydown', function(e) {
+        if (e.keyIdentifier == 'Enter' && e.target != deleteButton)
+          this.requestActive_();
+      });
 
-        viewDetailsLink.addEventListener('click', function(e) {
-          extensions.ExtensionErrorOverlay.getInstance().setErrorAndShowOverlay(
-              error, extensionUrl);
-        });
+      this.addFocusableElement(this);
+      this.addFocusableElement(this.querySelector('.error-delete-button'));
+    },
 
-        this.addFocusableElement(viewDetailsLink);
-      }
+    /**
+     * Bubble up an event to request to become active.
+     * @private
+     */
+    requestActive_: function() {
+      this.dispatchEvent(
+          new CustomEvent('highlightExtensionError',
+                          {bubbles: true, detail: this.error}));
     },
   };
 
@@ -116,61 +149,213 @@ cr.define('extensions', function() {
    * A variable length list of runtime or manifest errors for a given extension.
    * @param {Array<(RuntimeError|ManifestError)>} errors The list of extension
    *     errors with which to populate the list.
+   * @param {string} extensionId The id of the extension.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  function ExtensionErrorList(errors) {
+  function ExtensionErrorList(errors, extensionId) {
     var div = cloneTemplate('extension-error-list');
     div.__proto__ = ExtensionErrorList.prototype;
-    div.errors_ = errors;
-    div.decorate();
+    div.extensionId_ = extensionId;
+    div.decorate(errors);
     return div;
   }
-
-  /**
-   * @private
-   * @const
-   * @type {number}
-   */
-  ExtensionErrorList.MAX_ERRORS_TO_SHOW_ = 3;
 
   ExtensionErrorList.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    decorate: function() {
+    /**
+     * Initializes the extension error list.
+     * @param {Array<(RuntimeError|ManifestError)>} errors The list of errors.
+     */
+    decorate: function(errors) {
+      /**
+       * @private {!Array<(ManifestError|RuntimeError)>}
+       */
+      this.errors_ = [];
+
       this.focusGrid_ = new cr.ui.FocusGrid();
       this.gridBoundary_ = this.querySelector('.extension-error-list-contents');
       this.gridBoundary_.addEventListener('focus', this.onFocus_.bind(this));
       this.gridBoundary_.addEventListener('focusin',
                                           this.onFocusin_.bind(this));
-      this.errors_.forEach(function(error) {
-        if (idIsValid(error.extensionId)) {
-          var focusRow = new ExtensionError(error, this.gridBoundary_);
-          this.gridBoundary_.appendChild(
-              document.createElement('li')).appendChild(focusRow);
-          this.focusGrid_.addRow(focusRow);
-        }
-      }, this);
-      this.focusGrid_.ensureRowActive();
+      errors.forEach(this.addError_, this);
 
-      var numShowing = this.focusGrid_.rows.length;
-      if (numShowing > ExtensionErrorList.MAX_ERRORS_TO_SHOW_)
-        this.initShowMoreLink_();
+      this.addEventListener('highlightExtensionError', function(e) {
+        this.setActiveErrorNode_(e.target);
+      });
+      this.addEventListener('deleteExtensionError', function(e) {
+        this.removeError_(e.detail);
+      });
+
+      this.querySelector('#extension-error-list-clear').addEventListener(
+          'click', function(e) {
+        this.clear(true);
+      }.bind(this));
+
+      /**
+       * The callback for the extension changed event.
+       * @private {function(EventData):void}
+       */
+      this.onItemStateChangedListener_ = function(data) {
+        var type = chrome.developerPrivate.EventType;
+        if ((data.event_type == type.ERRORS_REMOVED ||
+             data.event_type == type.ERROR_ADDED) &&
+            data.extensionInfo.id == this.extensionId_) {
+          var newErrors = data.extensionInfo.runtimeErrors.concat(
+              data.extensionInfo.manifestErrors);
+          this.updateErrors_(newErrors);
+        }
+      }.bind(this);
+
+      chrome.developerPrivate.onItemStateChanged.addListener(
+          this.onItemStateChangedListener_);
+
+      /**
+       * The active error element in the list.
+       * @private {?}
+       */
+      this.activeError_ = null;
+
+      this.setActiveError(0);
     },
 
     /**
-     * @return {?Element} The element that toggles between show more and show
-     *     less, or null if it's hidden. Button will be hidden if there are less
-     *     errors than |MAX_ERRORS_TO_SHOW_|.
+     * Adds an error to the list.
+     * @param {(RuntimeError|ManifestError)} error The error to add.
+     * @private
      */
-    getToggleElement: function() {
-      return this.querySelector(
-          '.extension-error-list-show-more [is="action-link"]:not([hidden])');
+    addError_: function(error) {
+      this.querySelector('#no-errors-span').hidden = true;
+      this.errors_.push(error);
+      var focusRow = new ExtensionError(error, this.gridBoundary_);
+      this.gridBoundary_.appendChild(document.createElement('li')).
+          appendChild(focusRow);
+      this.focusGrid_.addRow(focusRow);
     },
 
-    /** @return {!Element} The element containing the list of errors. */
-    getErrorListElement: function() {
-      return this.gridBoundary_;
+    /**
+     * Removes an error from the list.
+     * @param {(RuntimeError|ManifestError)} error The error to remove.
+     * @private
+     */
+    removeError_: function(error) {
+      var index = 0;
+      for (; index < this.errors_.length; ++index) {
+        if (this.errors_[index].id == error.id)
+          break;
+      }
+      assert(index != this.errors_.length);
+      var errorList = this.querySelector('.extension-error-list-contents');
+
+      var wasActive =
+          this.activeError_ && this.activeError_.error.id == error.id;
+
+      this.errors_.splice(index, 1);
+      var listElement = errorList.children[index];
+      listElement.parentNode.removeChild(listElement);
+
+      if (wasActive) {
+        index = Math.min(index, this.errors_.length - 1);
+        this.setActiveError(index);  // Gracefully handles the -1 case.
+      }
+
+      chrome.developerPrivate.deleteExtensionErrors({
+        extensionId: error.extensionId,
+        errorIds: [error.id]
+      });
+
+      if (this.errors_.length == 0)
+        this.querySelector('#no-errors-span').hidden = false;
+    },
+
+    /**
+     * Updates the list of errors.
+     * @param {!Array<(ManifestError|RuntimeError)>} newErrors The new list of
+     *     errors.
+     * @private
+     */
+    updateErrors_: function(newErrors) {
+      this.errors_.forEach(function(error) {
+        if (findErrorById(newErrors, error.id) == -1)
+          this.removeError_(error);
+      }, this);
+      newErrors.forEach(function(error) {
+        var index = findErrorById(this.errors_, error.id);
+        if (index == -1)
+          this.addError_(error);
+        else
+          this.errors_[index] = error;  // Update the existing reference.
+      }, this);
+    },
+
+    /**
+     * Called when the list is being removed.
+     */
+    onRemoved: function() {
+      chrome.developerPrivate.onItemStateChanged.removeListener(
+          this.onItemStateChangedListener_);
+      this.clear(false);
+    },
+
+    /**
+     * Sets the active error in the list.
+     * @param {number} index The index to set to be active.
+     */
+    setActiveError: function(index) {
+      var errorList = this.querySelector('.extension-error-list-contents');
+      var item = errorList.children[index];
+      this.setActiveErrorNode_(
+          item ? item.querySelector('.extension-error-metadata') : null);
+      var node = null;
+      if (index >= 0 && index < errorList.children.length) {
+        node = errorList.children[index].querySelector(
+                   '.extension-error-metadata');
+      }
+      this.setActiveErrorNode_(node);
+    },
+
+    /**
+     * Clears the list of all errors.
+     * @param {boolean} deleteErrors Whether or not the errors should be deleted
+     *     on the backend.
+     */
+    clear: function(deleteErrors) {
+      if (this.errors_.length == 0)
+        return;
+
+      if (deleteErrors) {
+        var ids = this.errors_.map(function(error) { return error.id; });
+        chrome.developerPrivate.deleteExtensionErrors({
+          extensionId: this.extensionId_,
+          errorIds: ids
+        });
+      }
+
+      this.setActiveErrorNode_(null);
+      this.errors_.length = 0;
+      var errorList = this.querySelector('.extension-error-list-contents');
+      while (errorList.firstChild)
+        errorList.removeChild(errorList.firstChild);
+    },
+
+    /**
+     * Sets the active error in the list.
+     * @param {?} node The error to make active.
+     * @private
+     */
+    setActiveErrorNode_: function(node) {
+      if (this.activeError_)
+        this.activeError_.classList.remove('extension-error-active');
+
+      if (node)
+        node.classList.add('extension-error-active');
+
+      this.activeError_ = node;
+
+      this.dispatchEvent(
+          new CustomEvent('activeExtensionErrorChanged',
+                          {bubbles: true, detail: node ? node.error : null}));
     },
 
     /**
@@ -189,65 +374,8 @@ cr.define('extensions', function() {
      */
     onFocus_: function() {
       var activeRow = this.gridBoundary_.querySelector('.focus-row-active');
-      var toggleButton = this.getToggleElement();
-
-      if (toggleButton && !toggleButton.isShowingAll) {
-        var rows = this.focusGrid_.rows;
-        assert(rows.length > ExtensionErrorList.MAX_ERRORS_TO_SHOW_);
-
-        var firstVisible = rows.length - ExtensionErrorList.MAX_ERRORS_TO_SHOW_;
-        if (rows.indexOf(activeRow) < firstVisible)
-          activeRow = rows[firstVisible];
-      } else if (!activeRow) {
-        activeRow = this.focusGrid_.rows[0];
-      }
-
       activeRow.getEquivalentElement(null).focus();
     },
-
-    /**
-     * Initialize the "Show More" link for the error list. If there are more
-     * than |MAX_ERRORS_TO_SHOW_| errors in the list.
-     * @private
-     */
-    initShowMoreLink_: function() {
-      var link = this.querySelector(
-          '.extension-error-list-show-more [is="action-link"]');
-      link.hidden = false;
-      link.isShowingAll = false;
-
-      var listContents = this.querySelector('.extension-error-list-contents');
-
-      // TODO(dbeam/kalman): trade all this transition voodoo for .animate()?
-      listContents.addEventListener('webkitTransitionEnd', function(e) {
-        if (listContents.classList.contains('deactivating'))
-          listContents.classList.remove('deactivating', 'active');
-        else
-          listContents.classList.add('scrollable');
-      });
-
-      link.addEventListener('click', function(e) {
-        // Needs to be enabled in case the focused row is now hidden.
-        this.gridBoundary_.tabIndex = 0;
-
-        link.isShowingAll = !link.isShowingAll;
-
-        var message = link.isShowingAll ? 'extensionErrorsShowFewer' :
-                                          'extensionErrorsShowMore';
-        link.textContent = loadTimeData.getString(message);
-
-        // Disable scrolling while transitioning. If the element is active,
-        // scrolling is enabled when the transition ends.
-        listContents.classList.remove('scrollable');
-
-        if (link.isShowingAll) {
-          listContents.classList.add('active');
-          listContents.classList.remove('deactivating');
-        } else {
-          listContents.classList.add('deactivating');
-        }
-      }.bind(this));
-    }
   };
 
   return {

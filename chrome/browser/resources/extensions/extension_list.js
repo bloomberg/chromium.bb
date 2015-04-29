@@ -270,6 +270,7 @@ cr.define('extensions', function() {
           case EventType.LOADED:
           case EventType.UNLOADED:
           case EventType.ERROR_ADDED:
+          case EventType.ERRORS_REMOVED:
           case EventType.PREFS_CHANGED:
             if (eventData.extensionInfo)
               this.updateExtension_(eventData.extensionInfo);
@@ -556,6 +557,18 @@ cr.define('extensions', function() {
         chrome.management.launchApp(extension.id);
       });
 
+      row.setupColumn('.errors-link', 'errors', 'click', function(e) {
+        var extensionId = extension.id;
+        assert(this.extensions_.length > 0);
+        var newEx = this.extensions_.filter(function(e) {
+          return e.state == chrome.developerPrivate.ExtensionState.ENABLED &&
+              e.id == extensionId;
+        })[0];
+        var errors = newEx.manifestErrors.concat(newEx.runtimeErrors);
+        extensions.ExtensionErrorOverlay.getInstance().setErrorsAndShowOverlay(
+            errors, extensionId, newEx.name);
+      }.bind(this));
+
       // The 'Reload' terminated link.
       row.setupColumn('.terminated-reload-link', 'terminatedReload', 'click',
                       function(e) {
@@ -756,6 +769,34 @@ cr.define('extensions', function() {
           isUnpacked && extension.type ==
                             chrome.developerPrivate.ExtensionType.PLATFORM_APP);
 
+      // The 'Errors' link.
+      var hasErrors = extension.runtimeErrors.length > 0 ||
+          extension.manifestErrors.length > 0;
+      this.updateVisibility_(row, '.errors-link', hasErrors, function(item) {
+        var Level = chrome.developerPrivate.ErrorLevel;
+
+        var map = {};
+        map[Level.LOG] = {weight: 0, name: 'extension-error-info-icon'};
+        map[Level.WARN] = {weight: 1, name: 'extension-error-warning-icon'};
+        map[Level.ERROR] = {weight: 2, name: 'extension-error-fatal-icon'};
+
+        // Find the highest severity of all the errors; manifest errors all have
+        // a 'warning' level severity.
+        var highestSeverity = extension.runtimeErrors.reduce(
+            function(prev, error) {
+          return map[error.severity].weight > map[prev].weight ?
+              error.severity : prev;
+        }, extension.manifestErrors.length ? Level.WARN : Level.LOG);
+
+        // Adjust the class on the icon.
+        var icon = item.querySelector('.extension-error-icon');
+        // TODO(hcarmona): Populate alt text with a proper description since
+        // this icon conveys the severity of the error. (info, warning, fatal).
+        icon.alt = '';
+        icon.className = 'extension-error-icon';  // Remove other classes.
+        icon.classList.add(map[highestSeverity].name);
+      });
+
       // The 'Reload' terminated link.
       var isTerminated =
           extension.state == chrome.developerPrivate.ExtensionState.TERMINATED;
@@ -941,15 +982,6 @@ cr.define('extensions', function() {
         });
       });
 
-      // If the ErrorConsole is enabled, we should have manifest and/or runtime
-      // errors. Otherwise, we may have install warnings. We should not have
-      // both ErrorConsole errors and install warnings.
-      // Errors.
-      this.updateErrors_(row.querySelector('.manifest-errors'),
-                         'dev-manifestErrors', extension.manifestErrors);
-      this.updateErrors_(row.querySelector('.runtime-errors'),
-                         'dev-runtimeErrors', extension.runtimeErrors);
-
       // Install warnings.
       this.updateVisibility_(row, '.install-warnings',
                              extension.installWarnings.length > 0,
@@ -1006,38 +1038,6 @@ cr.define('extensions', function() {
       item.hidden = !visible;
       if (visible && opt_shownCallback)
         opt_shownCallback(item);
-    },
-
-    /**
-     * Updates an element to show a list of errors.
-     * @param {Element} panel An element to hold the errors.
-     * @param {string} columnType A tag used to identify the column when
-     *     changing focus.
-     * @param {Array<RuntimeError|ManifestError>|undefined} errors The errors
-     *     to be displayed.
-     * @private
-     */
-    updateErrors_: function(panel, columnType, errors) {
-      // TODO(hcarmona): Look into updating the ExtensionErrorList rather than
-      // rebuilding it every time.
-      panel.hidden = !errors || errors.length == 0;
-      panel.textContent = '';
-
-      if (panel.hidden)
-        return;
-
-      var errorList =
-          new extensions.ExtensionErrorList(assertInstanceof(errors, Array));
-
-      panel.appendChild(errorList);
-
-      var list = errorList.getErrorListElement();
-      if (list)
-        list.setAttribute('column-type', columnType + 'list');
-
-      var button = errorList.getToggleElement();
-      if (button)
-        button.setAttribute('column-type', columnType + 'button');
     },
 
     /**

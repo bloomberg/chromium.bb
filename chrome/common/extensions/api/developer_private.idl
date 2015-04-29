@@ -105,6 +105,7 @@ namespace developerPrivate {
     boolean fromIncognito;
     DOMString source;
     DOMString message;
+    long id;
     DOMString manifestKey;
     DOMString? manifestSpecific;
   };
@@ -115,6 +116,7 @@ namespace developerPrivate {
     boolean fromIncognito;
     DOMString source;
     DOMString message;
+    long id;
     ErrorLevel severity;
     DOMString contextUrl;
     long occurrences;
@@ -285,6 +287,7 @@ namespace developerPrivate {
     // window / view closed.
     VIEW_UNREGISTERED,
     ERROR_ADDED,
+    ERRORS_REMOVED,
     PREFS_CHANGED
   };
 

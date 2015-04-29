@@ -246,11 +246,19 @@ void DeveloperPrivateEventRouter::OnErrorAdded(const ExtensionError* error) {
   // We don't want to handle errors thrown by extensions subscribed to these
   // events (currently only the Apps Developer Tool), because doing so risks
   // entering a loop.
-  if (extension_ids_.find(error->extension_id()) != extension_ids_.end())
+  if (extension_ids_.count(error->extension_id()))
     return;
 
   BroadcastItemStateChanged(developer::EVENT_TYPE_ERROR_ADDED,
                             error->extension_id());
+}
+
+void DeveloperPrivateEventRouter::OnErrorsRemoved(
+    const std::set<std::string>& removed_ids) {
+  for (const std::string& id : removed_ids) {
+    if (!extension_ids_.count(id))
+      BroadcastItemStateChanged(developer::EVENT_TYPE_ERRORS_REMOVED, id);
+  }
 }
 
 void DeveloperPrivateEventRouter::OnExtensionFrameRegistered(

@@ -87,7 +87,8 @@ class ErrorMap::ExtensionEntry {
 
   // Delete any errors in the entry that match the given ids and type, if
   // provided.
-  void DeleteErrors(const ErrorMap::Filter& filter);
+  // Returns true if any errors were deleted.
+  bool DeleteErrors(const ErrorMap::Filter& filter);
   // Delete all errors in the entry.
   void DeleteAllErrors();
 
@@ -112,15 +113,18 @@ ErrorMap::ExtensionEntry::~ExtensionEntry() {
   DeleteAllErrors();
 }
 
-void ErrorMap::ExtensionEntry::DeleteErrors(const Filter& filter) {
+bool ErrorMap::ExtensionEntry::DeleteErrors(const Filter& filter) {
+  bool deleted = false;
   for (ErrorList::iterator iter = list_.begin(); iter != list_.end();) {
     if (filter.Matches(*iter)) {
       delete *iter;
       iter = list_.erase(iter);
+      deleted = true;
     } else {
       ++iter;
     }
   }
+  return deleted;
 }
 
 void ErrorMap::ExtensionEntry::DeleteAllErrors() {
@@ -182,14 +186,19 @@ const ExtensionError* ErrorMap::AddError(scoped_ptr<ExtensionError> error) {
   return iter->second->AddError(error.Pass());
 }
 
-void ErrorMap::RemoveErrors(const Filter& filter) {
+void ErrorMap::RemoveErrors(const Filter& filter,
+                            std::set<std::string>* affected_ids) {
   if (!filter.restrict_to_extension_id.empty()) {
     EntryMap::iterator iter = map_.find(filter.restrict_to_extension_id);
-    if (iter != map_.end())
-      iter->second->DeleteErrors(filter);
+    if (iter != map_.end()) {
+      if (iter->second->DeleteErrors(filter) && affected_ids)
+        affected_ids->insert(filter.restrict_to_extension_id);
+    }
   } else {
-    for (auto& key_val : map_)
-      key_val.second->DeleteErrors(filter);
+    for (auto& key_val : map_) {
+      if (key_val.second->DeleteErrors(filter) && affected_ids)
+        affected_ids->insert(key_val.first);
+    }
   }
 }
 

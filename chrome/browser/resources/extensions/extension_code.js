@@ -43,18 +43,19 @@ cr.define('extensions', function() {
       // Clear any remnant content, so we don't have multiple code listed.
       this.clear();
 
-      var sourceDiv = document.createElement('div');
-      sourceDiv.classList.add('extension-code-source');
-      this.appendChild(sourceDiv);
-
       // If there's no code, then display an appropriate message.
       if (!code ||
           (!code.highlight && !code.beforeHighlight && !code.afterHighlight)) {
         var span = document.createElement('span');
+        span.classList.add('extension-code-empty');
         span.textContent = emptyMessage;
-        sourceDiv.appendChild(span);
+        this.appendChild(span);
         return;
       }
+
+      var sourceDiv = document.createElement('div');
+      sourceDiv.classList.add('extension-code-source');
+      this.appendChild(sourceDiv);
 
       var lineCount = 0;
       var createSpan = function(source, isHighlighted) {

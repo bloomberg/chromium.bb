@@ -11,6 +11,12 @@
   flex-direction: column;
 }
 
+#extension-error-overlay .extension-error-list {
+  border: 1px solid #ccc;
+  margin-bottom: 3px;
+  overflow-y: auto;
+}
+
 .extension-error-overlay-runtime-content {
   flex: none;
 }

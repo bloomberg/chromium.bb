@@ -51,11 +51,14 @@ TEST_F(ErrorMapUnitTest, AddAndRemoveErrors) {
 
   // Remove the incognito errors; three errors should remain, and all should
   // be from non-incognito contexts.
-  errors_.RemoveErrors(ErrorMap::Filter::IncognitoErrors());
+  std::set<std::string> affected_ids;
+  errors_.RemoveErrors(ErrorMap::Filter::IncognitoErrors(), &affected_ids);
   const ErrorList& list = errors_.GetErrorsForExtension(kId);
   EXPECT_EQ(kNumNonIncognitoErrors, list.size());
   for (size_t i = 0; i < list.size(); ++i)
     EXPECT_FALSE(list[i]->from_incognito());
+  EXPECT_EQ(1u, affected_ids.size());
+  EXPECT_TRUE(affected_ids.count(kId));
 
   // Add another error for a different extension id.
   const std::string kSecondId = crx_file::id_util::GenerateId("id2");
@@ -67,16 +70,20 @@ TEST_F(ErrorMapUnitTest, AddAndRemoveErrors) {
   EXPECT_EQ(1u, errors_.GetErrorsForExtension(kSecondId).size());
 
   // Remove all errors for the second id.
-  errors_.RemoveErrors(ErrorMap::Filter::ErrorsForExtension(kSecondId));
+  affected_ids.clear();
+  errors_.RemoveErrors(ErrorMap::Filter::ErrorsForExtension(kSecondId),
+                       &affected_ids);
   EXPECT_EQ(0u, errors_.GetErrorsForExtension(kSecondId).size());
   // First extension should be unaffected.
   EXPECT_EQ(kNumNonIncognitoErrors, errors_.GetErrorsForExtension(kId).size());
+  EXPECT_EQ(1u, affected_ids.size());
+  EXPECT_TRUE(affected_ids.count(kSecondId));
 
   errors_.AddError(CreateNewManifestError(kId, "manifest error"));
   EXPECT_EQ(kNumNonIncognitoErrors + 1,
             errors_.GetErrorsForExtension(kId).size());
   errors_.RemoveErrors(ErrorMap::Filter::ErrorsForExtensionWithType(
-      kId, ExtensionError::MANIFEST_ERROR));
+      kId, ExtensionError::MANIFEST_ERROR), nullptr);
   EXPECT_EQ(kNumNonIncognitoErrors, errors_.GetErrorsForExtension(kId).size());
 
   const ExtensionError* added_error =
@@ -85,7 +92,8 @@ TEST_F(ErrorMapUnitTest, AddAndRemoveErrors) {
             errors_.GetErrorsForExtension(kId).size());
   std::set<int> ids;
   ids.insert(added_error->id());
-  errors_.RemoveErrors(ErrorMap::Filter::ErrorsForExtensionWithIds(kId, ids));
+  errors_.RemoveErrors(ErrorMap::Filter::ErrorsForExtensionWithIds(kId, ids),
+                       nullptr);
   EXPECT_EQ(kNumNonIncognitoErrors, errors_.GetErrorsForExtension(kId).size());
 
   // Remove remaining errors.

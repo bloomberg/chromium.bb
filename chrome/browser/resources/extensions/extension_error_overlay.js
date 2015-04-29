@@ -116,6 +116,8 @@ cr.define('extensions', function() {
      * @param {string} extensionUrl The URL associated with this extension.
      */
     setError: function(error, extensionUrl) {
+      this.clearError();
+
       this.error_ = error;
       this.extensionUrl_ = extensionUrl;
       this.contextUrl_.textContent = error.contextUrl ?
@@ -246,15 +248,6 @@ cr.define('extensions', function() {
   }
 
   /**
-   * Value of ExtensionError::RUNTIME_ERROR enum.
-   * @see extensions/browser/extension_error.h
-   * @type {number}
-   * @const
-   * @private
-   */
-  ExtensionErrorOverlay.RUNTIME_ERROR_TYPE_ = 1;
-
-  /**
    * The manifest filename.
    * @type {string}
    * @const
@@ -276,29 +269,6 @@ cr.define('extensions', function() {
            file.toLowerCase() == ExtensionErrorOverlay.MANIFEST_FILENAME_;
   };
 
-  /**
-   * Determine whether or not we can show an overlay with more details for
-   * the given extension error.
-   * @param {Object} error The extension error.
-   * @param {string} extensionUrl The url for the extension, in the form
-   *     "chrome-extension://<extension-id>/".
-   * @return {boolean} True if we can show an overlay for the error,
-   *     false otherwise.
-   */
-  ExtensionErrorOverlay.canShowOverlayForError = function(error, extensionUrl) {
-    if (ExtensionErrorOverlay.canLoadFileSource(error.source, extensionUrl))
-      return true;
-
-    if (error.stackTrace) {
-      for (var i = 0; i < error.stackTrace.length; ++i) {
-        if (RuntimeErrorContent.shouldDisplayForUrl(error.stackTrace[i].url))
-          return true;
-      }
-    }
-
-    return false;
-  };
-
   cr.addSingletonGetter(ExtensionErrorOverlay);
 
   ExtensionErrorOverlay.prototype = {
@@ -307,7 +277,7 @@ cr.define('extensions', function() {
      * @type {?(RuntimeError|ManifestError)}
      * @private
      */
-    error_: null,
+    selectedError_: null,
 
     /**
      * Initialize the page.
@@ -376,21 +346,91 @@ cr.define('extensions', function() {
       // There's a chance that the overlay receives multiple dismiss events; in
       // this case, handle it gracefully and return (since all necessary work
       // will already have been done).
-      if (!this.error_)
+      if (!this.selectedError_)
         return;
 
       // Remove all previous content.
       this.codeDiv_.clear();
 
-      this.openDevtoolsButton_.hidden = true;
+      this.overlayDiv_.querySelector('.extension-error-list').onRemoved();
 
-      if (this.error_.type == ExtensionErrorOverlay.RUNTIME_ERROR_TYPE_) {
-        this.overlayDiv_.querySelector('.content-area').removeChild(
+      this.clearRuntimeContent_();
+
+      this.selectedError_ = null;
+    },
+
+    /**
+     * Clears the current content.
+     * @private
+     */
+    clearRuntimeContent_: function() {
+      if (this.runtimeErrorContent_.parentNode) {
+        this.runtimeErrorContent_.parentNode.removeChild(
             this.runtimeErrorContent_);
         this.runtimeErrorContent_.clearError();
       }
+      this.openDevtoolsButton_.hidden = true;
+    },
 
-      this.error_ = null;
+    /**
+     * Sets the active error for the overlay.
+     * @param {?(ManifestError|RuntimeError)} error The error to make active.
+     * TODO(dbeam): add URL externs and re-enable typechecking in this method.
+     * @suppress {missingProperties}
+     * @private
+     */
+    setActiveError_: function(error) {
+      this.selectedError_ = error;
+
+      // If there is no error (this can happen if, e.g., the user deleted all
+      // the errors), then clear the content.
+      if (!error) {
+        this.codeDiv_.populate(
+            null, loadTimeData.getString('extensionErrorNoErrorsCodeMessage'));
+        this.clearRuntimeContent_();
+        return;
+      }
+
+      var extensionUrl = 'chrome-extension://' + error.extensionId + '/';
+      // Set or hide runtime content.
+      if (error.type == chrome.developerPrivate.ErrorType.RUNTIME) {
+        this.runtimeErrorContent_.setError(error, extensionUrl);
+        this.overlayDiv_.querySelector('.content-area').insertBefore(
+            this.runtimeErrorContent_,
+            this.codeDiv_.nextSibling);
+        this.openDevtoolsButton_.hidden = false;
+        this.openDevtoolsButton_.disabled = !error.canInspect;
+      } else {
+        this.clearRuntimeContent_();
+      }
+
+      // Read the file source to populate the code section, or set it to null if
+      // the file is unreadable.
+      if (ExtensionErrorOverlay.canLoadFileSource(error.source, extensionUrl)) {
+        // Use pathname instead of relativeUrl.
+        var requestFileSourceArgs = {extensionId: error.extensionId,
+                                     message: error.message};
+        switch (error.type) {
+          case chrome.developerPrivate.ErrorType.MANIFEST:
+            requestFileSourceArgs.pathSuffix = error.source;
+            requestFileSourceArgs.manifestKey = error.manifestKey;
+            requestFileSourceArgs.manifestSpecific = error.manifestSpecific;
+            break;
+          case chrome.developerPrivate.ErrorType.RUNTIME:
+            // slice(1) because pathname starts with a /.
+            var pathname = new URL(error.source).pathname.slice(1);
+            requestFileSourceArgs.pathSuffix = pathname;
+            requestFileSourceArgs.lineNumber =
+                error.stackTrace && error.stackTrace[0] ?
+                    error.stackTrace[0].lineNumber : 0;
+            break;
+          default:
+            assertNotReached();
+        }
+        this.requestFileSource(requestFileSourceArgs);
+      } else {
+        this.onFileSourceResponse_(null);
+      }
     },
 
     /**
@@ -398,47 +438,27 @@ cr.define('extensions', function() {
      * overlay, and, if possible, will populate the code section of the overlay
      * with the relevant file, load the stack trace, and generate links for
      * opening devtools (the latter two only happen for runtime errors).
-     * @param {(RuntimeError|ManifestError)} error The error to show in the
-     *     overlay.
-     * @param {string} extensionUrl The URL of the extension, in the form
-     *     "chrome-extension://<extension_id>".
-     * TODO(dbeam): add URL externs and re-enable typechecking in this method.
-     * @suppress {missingProperties}
+     * @param {Array<(RuntimeError|ManifestError)>} errors The error to show in
+     *     the overlay.
+     * @param {string} extensionId The id of the extension.
+     * @param {string} extensionName The name of the extension.
      */
-    setErrorAndShowOverlay: function(error, extensionUrl) {
-      this.error_ = error;
+    setErrorsAndShowOverlay: function(errors, extensionId, extensionName) {
+      document.querySelector(
+          '#extension-error-overlay .extension-error-overlay-title').
+              textContent = extensionName;
+      var errorsDiv = this.overlayDiv_.querySelector('.extension-error-list');
+      var extensionErrors =
+          new extensions.ExtensionErrorList(errors, extensionId);
+      errorsDiv.parentNode.replaceChild(extensionErrors, errorsDiv);
+      extensionErrors.addEventListener('activeExtensionErrorChanged',
+                                       function(e) {
+        this.setActiveError_(e.detail);
+      }.bind(this));
 
-      if (this.error_.type == ExtensionErrorOverlay.RUNTIME_ERROR_TYPE_) {
-        this.runtimeErrorContent_.setError(this.error_, extensionUrl);
-        this.overlayDiv_.querySelector('.content-area').insertBefore(
-            this.runtimeErrorContent_,
-            this.codeDiv_.nextSibling);
-        this.openDevtoolsButton_.hidden = false;
-        this.openDevtoolsButton_.disabled = !error.canInspect;
-      }
-
-      if (ExtensionErrorOverlay.canLoadFileSource(error.source, extensionUrl)) {
-        // slice(1) because pathname starts with a /.
-        var pathname = new URL(error.source).pathname.slice(1);
-
-        // Use pathname instead of relativeUrl.
-        var requestFileSourceArgs = {extensionId: error.extensionId,
-                                     message: error.message,
-                                     pathSuffix: pathname};
-
-        if (pathname.toLowerCase() ==
-                ExtensionErrorOverlay.MANIFEST_FILENAME_) {
-          requestFileSourceArgs.manifestKey = error.manifestKey;
-          requestFileSourceArgs.manifestSpecific = error.manifestSpecific;
-        } else {
-          requestFileSourceArgs.lineNumber =
-              error.stackTrace && error.stackTrace[0] ?
-                  error.stackTrace[0].lineNumber : 0;
-        }
-        this.requestFileSource(requestFileSourceArgs);
-      } else {
-        this.onFileSourceResponse_(null);
-      }
+      if (errors.length > 0)
+        this.setActiveError_(errors[0]);
+      this.setVisible(true);
     },
 
     /**
@@ -459,11 +479,6 @@ cr.define('extensions', function() {
      *     instead.
      */
     onFileSourceResponse_: function(response) {
-      if (response) {
-        document.querySelector(
-            '#extension-error-overlay .extension-error-overlay-title').
-                textContent = response.title;
-      }
       this.codeDiv_.populate(
           response,  // ExtensionCode can handle a null response.
           loadTimeData.getString('extensionErrorOverlayNoCodeToDisplay'));

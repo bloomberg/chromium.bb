@@ -4885,17 +4885,17 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_EXTENSIONS_LOAD_ADDITIONAL_FAILURES" desc="The text displayed above additional extension load failures.">
           Other extensions that failed to load:
         </message>
-        <message name="IDS_EXTENSIONS_ERRORS_SHOW_MORE" desc="The text which allows the user to display more errors for a given extension.">
-          Show more...
+        <message name="IDS_EXTENSIONS_ERROR_HEADING" desc="The heading of the list of errors for an extension.">
+          Errors
         </message>
-        <message name="IDS_EXTENSIONS_ERRORS_SHOW_FEWER" desc="The text which allows the user to display fewer errors for a given extension.">
-          Show fewer...
+        <message name="IDS_EXTENSIONS_ERROR_CLEAR_ALL" desc="The text for the button to delete all extension errors.">
+          Clear all
         </message>
-        <message name="IDS_EXTENSIONS_ERROR_VIEW_DETAILS" desc="The link to view the details of an extension error.">
-          View details
+        <message name="IDS_EXTENSIONS_ERROR_NO_ERRORS" desc="The text displayed when an extension has no errors.">
+          Awesome, no errors!
         </message>
-        <message name="IDS_EXTENSIONS_ERROR_VIEW_MANIFEST" desc="The link to view the details of an extension error.">
-          View manifest.json
+        <message name="IDS_EXTENSIONS_ERROR_NO_ERRORS_CODE_MESSAGE" desc="The text displayed in the 'code' section when an extension has no errors.">
+          Nothing to see here, move along.
         </message>
         <message name="IDS_EXTENSIONS_ERROR_CONTEXT" desc="The label for the context of an extension's error.">
           Context:

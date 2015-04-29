@@ -2,96 +2,108 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+.extension-error-list-heading {
+  align-content: flex-start;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 3px;
+}
+
+.extension-error-list-heading span {
+  font-weight: bold;
+}
+
 .extension-error-list a {
   cursor: pointer;
 }
 
 .extension-error-list-contents {
-  -webkit-transition: max-height 150ms;
+  -webkit-padding-start: 0;
+  cursor: pointer;
   list-style-type: none;
-  overflow-y: hidden;
+  margin-bottom: 0;
+  margin-top: 0;
 }
 
-.extension-error-list-contents.active {
-  max-height: 200px;
-}
-
-.extension-error-list-contents,
-.extension-error-list-contents.deactivating {
-  /* Simply toggling .active on and off doesn't transition both ways as it
-   * changes the display type of some li elements. To fix this, .deactivating
-   * is added while the list is closing to change only the max-height. */
-  max-height: 50px;
+#no-errors-span {
+  -webkit-margin-start: 10px;
 }
 
 .extension-error-list-contents.scrollable {
   overflow-y: auto;
 }
 
-/* These next three rules hide all except for the most recent three entries in
- * the list, unless the list is active. */
-.extension-error-list-contents li {
-  display: none;
-}
-.extension-error-list-contents.active li,
-.extension-error-list ul li:nth-last-child(-n + 3) {
-  display: initial;
+.extension-error-list-contents .extension-error-metadata:hover {
+  background-color: #eee;
 }
 
-.extension-error-list-contents {
-  -webkit-padding-start: 20px;
-}
-
-.extension-error-list-show-more {
-  text-align: center;
-  width: 100%;
-}
-
-.extension-error-list-show-more button {
-  width: auto;
+.extension-error-list-contents
+    .extension-error-metadata.extension-error-active {
+  background-color: rgba(0, 100, 255, 0.1);
 }
 
 .extension-error-metadata {
   -webkit-padding-end: 1px;
+  -webkit-padding-start: 3px;
   display: flex;
   flex-direction: row;
-  margin-bottom: 1px;
-  margin-top: 1px;
 }
 
 .extension-error-icon {
   -webkit-margin-end: 3px;
-  -webkit-margin-start: 3px;
   height: 15px;
-  vertical-align: middle;
   width: 15px;
 }
 
 .extension-error-message {
+  -webkit-margin-end: 15px;
   flex: 1;
+  margin-bottom: 0;
+  margin-top: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: middle;
-  white-space: nowrap;
+}
+
+.extension-error-metadata {
+  align-items: center;
+  display: flex;
+}
+
+.extension-error-metadata > .error-delete-button {
+  background: url(chrome://theme/IDR_CLOSE_DIALOG) center no-repeat;
+  height: 14px;
+  opacity: 0.6;
+  width: 14px;
+}
+
+.extension-error-metadata > .error-delete-button:hover {
+  opacity: 0.8;
+}
+
+.extension-error-metadata > .error-delete-button:active {
+  opacity: 1.0;
 }
 
 .extension-error-severity-info .extension-error-message {
   color: #333;
 }
-.extension-error-severity-info .extension-error-icon {
+.extension-error-severity-info .extension-error-icon,
+.extension-error-info-icon {
   content: url(extension_error_severity_info.png);
 }
 
 .extension-error-severity-warning .extension-error-message {
   color: rgba(250, 145, 0, 255);
 }
-.extension-error-severity-warning .extension-error-icon {
+.extension-error-severity-warning .extension-error-icon,
+.extension-error-warning-icon {
   content: url(extension_error_severity_warning.png);
 }
 
 .extension-error-severity-fatal .extension-error-message {
   color: rgba(200, 50, 50, 255);
 }
-.extension-error-severity-fatal .extension-error-icon {
+.extension-error-severity-fatal .extension-error-icon,
+.extension-error-fatal-icon {
   content: url(extension_error_severity_fatal.png);
 }

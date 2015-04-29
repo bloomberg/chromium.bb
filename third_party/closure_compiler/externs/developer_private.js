@@ -148,6 +148,7 @@ var StackFrame;
  *   fromIncognito: boolean,
  *   source: string,
  *   message: string,
+ *   id: number,
  *   manifestKey: string,
  *   manifestSpecific: (string|undefined)
  * }}
@@ -162,6 +163,7 @@ var ManifestError;
  *   fromIncognito: boolean,
  *   source: string,
  *   message: string,
+ *   id: number,
  *   severity: !chrome.developerPrivate.ErrorLevel,
  *   contextUrl: string,
  *   occurrences: number,
@@ -386,6 +388,7 @@ chrome.developerPrivate.EventType = {
   VIEW_REGISTERED: 'VIEW_REGISTERED',
   VIEW_UNREGISTERED: 'VIEW_UNREGISTERED',
   ERROR_ADDED: 'ERROR_ADDED',
+  ERRORS_REMOVED: 'ERRORS_REMOVED',
   PREFS_CHANGED: 'PREFS_CHANGED',
 };
 

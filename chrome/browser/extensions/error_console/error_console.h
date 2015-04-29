@@ -42,7 +42,13 @@ class ErrorConsole : public content::NotificationObserver,
   class Observer {
    public:
     // Sent when a new error is reported to the error console.
-    virtual void OnErrorAdded(const ExtensionError* error) = 0;
+    virtual void OnErrorAdded(const ExtensionError* error);
+
+    // Sent when errors are removed from the error console. |extension_ids| is
+    // the set of ids that were affected.
+    // Note: This is not sent when an extension is uninstalled, or when a
+    // profile is destroyed.
+    virtual void OnErrorsRemoved(const std::set<std::string>& extension_ids);
 
     // Sent upon destruction to allow any observers to invalidate any references
     // they have to the error console.

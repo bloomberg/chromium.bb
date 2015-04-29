@@ -60,8 +60,10 @@ class ErrorMap {
   // Add the |error| to the ErrorMap.
   const ExtensionError* AddError(scoped_ptr<ExtensionError> error);
 
-  // Removes errors that match the given |filter| from the map.
-  void RemoveErrors(const Filter& filter);
+  // Removes errors that match the given |filter| from the map. If non-null,
+  // |affected_ids| will be populated with the set of extension ids that were
+  // affected by this removal.
+  void RemoveErrors(const Filter& filter, std::set<std::string>* affected_ids);
 
   // Remove all errors for all extensions, and clear the map.
   void RemoveAllErrors();

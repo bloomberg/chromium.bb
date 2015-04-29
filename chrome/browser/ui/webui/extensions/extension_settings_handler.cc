@@ -246,18 +246,15 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_ERROR_TITLE));
 
   // Extension Error and Extension Error Overlay:
+  source->AddString("extensionErrorHeading",
+                    l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_HEADING));
+  source->AddString("extensionErrorClearAll",
+                    l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_CLEAR_ALL));
+  source->AddString("extensionErrorNoErrors",
+                    l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_NO_ERRORS));
   source->AddString(
-      "extensionErrorsShowMore",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_SHOW_MORE));
-  source->AddString(
-      "extensionErrorsShowFewer",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERRORS_SHOW_FEWER));
-  source->AddString(
-      "extensionErrorViewDetails",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_VIEW_DETAILS));
-  source->AddString(
-      "extensionErrorViewManifest",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_VIEW_MANIFEST));
+      "extensionErrorNoErrorsCodeMessage",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_NO_ERRORS_CODE_MESSAGE));
   source->AddString("extensionErrorOverlayDone",
                     l10n_util::GetStringUTF16(IDS_DONE));
   source->AddString(

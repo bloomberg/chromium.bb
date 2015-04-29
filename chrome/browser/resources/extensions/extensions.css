@@ -85,6 +85,14 @@ html:not(.focus-outline-visible)
   text-align: right;
 }
 
+.extension-code-empty {
+  background-color: #eee;
+  display: inline-block;
+  line-height: 100px;  /* Vertically centers text and serves as min-height. */
+  text-align: center;
+  width: 100%;
+}
+
 .extension-details > .developer-extras > div,
 .extension-details > .permanent-warnings > div {
   margin: 5px 0;
@@ -209,6 +217,12 @@ html[dir='rtl'] .extension-list-item {
 .action-links a {
   -webkit-margin-end: 1em;
   -webkit-margin-start: 0;
+}
+
+.action-links .errors-link {
+  align-items: center;
+  display: inline-flex;
+  vertical-align: bottom;
 }
 
 .extension-details {

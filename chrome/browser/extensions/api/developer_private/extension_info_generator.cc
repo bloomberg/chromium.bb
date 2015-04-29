@@ -88,6 +88,7 @@ void PopulateErrorBase(const ExtensionError& error, ErrorType* out) {
   out->from_incognito = error.from_incognito();
   out->source = base::UTF16ToUTF8(error.source());
   out->message = base::UTF16ToUTF8(error.message());
+  out->id = error.id();
 }
 
 // Given a ManifestError object, converts it into its developer_private

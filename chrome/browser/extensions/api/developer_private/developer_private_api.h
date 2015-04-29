@@ -77,6 +77,7 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
 
   // ErrorConsole::Observer:
   void OnErrorAdded(const ExtensionError* error) override;
+  void OnErrorsRemoved(const std::set<std::string>& extension_ids) override;
 
   // ProcessManagerObserver:
   void OnExtensionFrameRegistered(

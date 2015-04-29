@@ -146,6 +146,10 @@
               i18n-content="extensionSettingsLaunch" hidden></a>
           <a is="action-link" role="button" class="reload-link"
               i18n-content="extensionSettingsReloadUnpacked" hidden></a>
+          <a is="action-link" role="button" class="errors-link">
+            <img class="extension-error-icon"></img>
+            <span i18n-content="extensionErrorHeading"></span>
+          </a>
         </div>
         <div class="permanent-warnings">
           <div class="extension-warnings" hidden>
@@ -184,8 +188,6 @@
             <span i18n-content="extensionSettingsInspectViews"></span>
             <a is="action-link"></a>
           </div>
-          <div class="manifest-errors" hidden></div>
-          <div class="runtime-errors" hidden></div>
           <div class="install-warnings" hidden>
             <span i18n-content="extensionSettingsInstallWarnings"></span>
             <ul></ul>
