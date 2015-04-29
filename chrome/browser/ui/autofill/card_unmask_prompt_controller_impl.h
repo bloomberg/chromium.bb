@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_CONTROLLER_IMPL_H_
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
@@ -19,7 +20,14 @@ class CardUnmaskPromptView;
 
 class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
  public:
-  explicit CardUnmaskPromptControllerImpl(content::WebContents* web_contents);
+  typedef base::Callback<void(const base::Callback<void(const std::string&)>&)>
+      RiskDataCallback;
+
+  CardUnmaskPromptControllerImpl(
+      content::WebContents* web_contents,
+      const RiskDataCallback& risk_data_callback,
+      PrefService* pref_service,
+      bool is_off_the_record);
   virtual ~CardUnmaskPromptControllerImpl();
 
   // Functions called by ChromeAutofillClient.
@@ -64,6 +72,9 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   AutofillMetrics::UnmaskPromptEvent GetCloseReasonEvent();
 
   content::WebContents* web_contents_;
+  RiskDataCallback risk_data_callback_;
+  PrefService* pref_service_;
+  bool is_off_the_record_;
   CreditCard card_;
   base::WeakPtr<CardUnmaskDelegate> delegate_;
   CardUnmaskPromptView* card_unmask_view_;

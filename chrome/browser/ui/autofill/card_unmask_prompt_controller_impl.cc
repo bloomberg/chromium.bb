@@ -9,23 +9,26 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/user_prefs/user_prefs.h"
-#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 
 CardUnmaskPromptControllerImpl::CardUnmaskPromptControllerImpl(
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    const RiskDataCallback& risk_data_callback,
+    PrefService* pref_service,
+    bool is_off_the_record)
     : web_contents_(web_contents),
+      risk_data_callback_(risk_data_callback),
+      pref_service_(pref_service),
+      is_off_the_record_(is_off_the_record),
       card_unmask_view_(nullptr),
       unmasking_result_(AutofillClient::NONE),
       unmasking_initial_should_store_pan_(false),
@@ -194,7 +197,7 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
   if (CanStoreLocally()) {
     pending_response_.should_store_pan = should_store_pan;
     // Remember the last choice the user made (on this device).
-    user_prefs::UserPrefs::Get(web_contents_->GetBrowserContext())->SetBoolean(
+    pref_service_->SetBoolean(
         prefs::kAutofillWalletImportStorageCheckboxState, should_store_pan);
   } else {
     DCHECK(!should_store_pan);
@@ -241,16 +244,14 @@ bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
 
 bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {
   // Never offer to save for incognito.
-  if (Profile::FromBrowserContext(web_contents_->GetBrowserContext())
-          ->IsOffTheRecord())
+  if (is_off_the_record_)
     return false;
   return autofill::OfferStoreUnmaskedCards();
 }
 
 bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {
-  PrefService* prefs =
-      user_prefs::UserPrefs::Get(web_contents_->GetBrowserContext());
-  return prefs->GetBoolean(prefs::kAutofillWalletImportStorageCheckboxState);
+  return pref_service_->GetBoolean(
+      prefs::kAutofillWalletImportStorageCheckboxState);
 }
 
 bool CardUnmaskPromptControllerImpl::InputCvcIsValid(
@@ -306,8 +307,7 @@ CardUnmaskPromptView* CardUnmaskPromptControllerImpl::CreateAndShowView() {
 }
 
 void CardUnmaskPromptControllerImpl::LoadRiskFingerprint() {
-  LoadRiskData(
-      0, web_contents_,
+  risk_data_callback_.Run(
       base::Bind(&CardUnmaskPromptControllerImpl::OnDidLoadRiskFingerprint,
                  weak_pointer_factory_.GetWeakPtr()));
 }

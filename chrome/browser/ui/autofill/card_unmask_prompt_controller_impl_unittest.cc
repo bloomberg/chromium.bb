@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller_impl.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -62,7 +64,9 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
       content::WebContents* contents,
       TestCardUnmaskPromptView* test_unmask_prompt_view,
       scoped_refptr<content::MessageLoopRunner> runner)
-      : CardUnmaskPromptControllerImpl(contents),
+      : CardUnmaskPromptControllerImpl(contents,
+            base::Bind(&LoadRiskData, 0, contents),
+            user_prefs::UserPrefs::Get(contents->GetBrowserContext()), false),
         test_unmask_prompt_view_(test_unmask_prompt_view),
         can_store_locally_(true),
         runner_(runner),

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller_impl.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view_tester.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,6 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 
@@ -50,7 +53,9 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   TestCardUnmaskPromptController(
       content::WebContents* contents,
       scoped_refptr<content::MessageLoopRunner> runner)
-      : CardUnmaskPromptControllerImpl(contents),
+      : CardUnmaskPromptControllerImpl(contents,
+            base::Bind(&LoadRiskData, 0, contents),
+            user_prefs::UserPrefs::Get(contents->GetBrowserContext()), false),
         runner_(runner),
         weak_factory_(this) {}
 

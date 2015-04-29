@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -30,6 +32,7 @@
 #include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -47,7 +50,12 @@ namespace autofill {
 
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      unmask_controller_(web_contents),
+      unmask_controller_(
+          web_contents,
+          base::Bind(&LoadRiskData, 0, web_contents),
+          user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())
+              ->IsOffTheRecord()),
       last_rfh_to_rac_(nullptr) {
   DCHECK(web_contents);
 
