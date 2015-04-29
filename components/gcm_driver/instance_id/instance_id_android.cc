@@ -1,0 +1,51 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/gcm_driver/instance_id/instance_id_android.h"
+
+#include "base/logging.h"
+
+namespace instance_id {
+
+// static
+InstanceID* InstanceID::Create(const std::string& app_id) {
+  return new InstanceIDAndroid(app_id);
+}
+
+InstanceIDAndroid::InstanceIDAndroid(const std::string& app_id)
+    : InstanceID(app_id) {
+}
+
+InstanceIDAndroid::~InstanceIDAndroid() {
+}
+
+std::string InstanceIDAndroid::GetID() {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
+base::Time InstanceIDAndroid::GetCreationTime() {
+  NOTIMPLEMENTED();
+  return base::Time();
+}
+
+void InstanceIDAndroid::GetToken(
+    const std::string& audience,
+    const std::string& scope,
+    const std::map<std::string, std::string>& options,
+    const GetTokenCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void InstanceIDAndroid::DeleteToken(const std::string& audience,
+                                    const std::string& scope,
+                                    const DeleteTokenCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void InstanceIDAndroid::DeleteID(const DeleteIDCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+}  // namespace instance_id

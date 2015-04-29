@@ -1,0 +1,32 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: components/gcm_driver.gypi:instance_id_driver
+static_library("instance_id_driver") {
+  sources = [
+    "instance_id.cc",
+    "instance_id.h",
+    "instance_id_driver.cc",
+    "instance_id_driver.h",
+    "instance_id_impl.cc",
+    "instance_id_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//google_apis/gcm",
+    "//net",
+  ]
+
+  if (is_android) {
+    sources -= [
+      "instance_id_impl.cc",
+      "instance_id_impl.h",
+    ]
+    sources += [
+      "instance_id_android.cc",
+      "instance_id_android.h",
+    ]
+  }
+}

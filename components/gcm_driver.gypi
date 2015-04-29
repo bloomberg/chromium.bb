@@ -135,6 +135,33 @@
         }],
       ],
     },
+    {
+      # GN version: //components/gcm_driver/instance_id:instance_id_driver
+      'target_name': 'instance_id_driver',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # Note: file list duplicated in GN build.
+        'gcm_driver/instance_id/instance_id.cc',
+        'gcm_driver/instance_id/instance_id.h',
+        'gcm_driver/instance_id/instance_id_android.cc',
+        'gcm_driver/instance_id/instance_id_android.h',
+        'gcm_driver/instance_id/instance_id_driver.cc',
+        'gcm_driver/instance_id/instance_id_driver.h',
+        'gcm_driver/instance_id/instance_id_impl.cc',
+        'gcm_driver/instance_id/instance_id_impl.h',
+      ],
+      'conditions': [
+        ['OS == "android"', {
+          'sources!': [
+            'gcm_driver/instance_id/instance_id_impl.cc',
+            'gcm_driver/instance_id/instance_id_impl.h',
+          ],
+        }],
+      ],
+    },
   ],
   'conditions': [
     ['OS == "android"', {
