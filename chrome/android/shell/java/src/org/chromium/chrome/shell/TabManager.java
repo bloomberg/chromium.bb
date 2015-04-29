@@ -34,7 +34,7 @@ import org.chromium.ui.base.WindowAndroid;
  * {@link ChromeShellToolbar} and {@link ContentViewRenderView} show the proper content.
  */
 public class TabManager extends LinearLayout {
-    private static final String DEFAULT_URL = "http://www.google.com";
+    private static final String DEFAULT_URL = "https://www.google.com";
 
     private ViewGroup mContentViewHolder;
     private ContentViewRenderView mContentViewRenderView;

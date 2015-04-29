@@ -83,7 +83,8 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     public static final String ARGUMENT_ACCOUNT = "account";
 
     private static final int ERROR_COLOR = Color.RED;
-    private static final String PREF_SYNC_SWITCH = "sync_switch";
+    @VisibleForTesting
+    public static final String PREF_SYNC_SWITCH = "sync_switch";
     private static final String PREFERENCE_SYNC_MANAGE_DATA = "sync_manage_data";
 
     private ChromeSwitchPreference mSyncSwitchPreference;

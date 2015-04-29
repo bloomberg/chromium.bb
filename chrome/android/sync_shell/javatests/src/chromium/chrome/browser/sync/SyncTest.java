@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.content.Context;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Log;
 
@@ -14,12 +13,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
-import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
-import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
-import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
@@ -33,8 +27,6 @@ import org.chromium.sync.protocol.SyncEnums;
 import org.chromium.sync.protocol.TypedUrlSpecifics;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
-import org.chromium.sync.test.util.MockAccountManager;
-import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.ui.base.PageTransition;
 
 import java.util.Map;
@@ -43,72 +35,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test suite for Sync.
  */
-public class SyncTest extends ChromeShellTestBase {
+public class SyncTest extends SyncTestBase {
     private static final String TAG = "SyncTest";
-
-    private static final String FOREIGN_SESSION_TEST_MACHINE_ID =
-            "DeleteForeignSessionTest_Machine_1";
-
-    private SyncTestUtil.SyncTestContext mContext;
-    private MockAccountManager mAccountManager;
-    private SyncController mSyncController;
-    private FakeServerHelper mFakeServerHelper;
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        clearAppData();
-
-        // Setup fake mapper from accountNames to Ids.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                if (AccountIdProvider.getInstance() != null) {
-                    return;
-                }
-
-                AccountIdProvider.setInstance(new AccountIdProvider() {
-                    public String getAccountId(Context ctx, String accountName) {
-                        return "gaia-id-" + accountName;
-                    }
-                });
-            }
-        });
-
-        // Mock out the account manager on the device.
-        mContext = new SyncTestUtil.SyncTestContext(getInstrumentation().getTargetContext());
-        mAccountManager = new MockAccountManager(mContext, getInstrumentation().getContext());
-        AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
-        MockSyncContentResolverDelegate syncContentResolverDelegate =
-                new MockSyncContentResolverDelegate();
-        syncContentResolverDelegate.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideForTests(mContext, syncContentResolverDelegate);
-        // This call initializes the ChromeSigninController to use our test context.
-        ChromeSigninController.get(mContext);
-        startChromeBrowserProcessSync(getInstrumentation().getTargetContext());
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSyncController = SyncController.get(mContext);
-                mFakeServerHelper = FakeServerHelper.get();
-            }
-        });
-        FakeServerHelper.useFakeServer(getInstrumentation().getTargetContext());
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSyncController.stop();
-                FakeServerHelper.deleteFakeServer();
-            }
-        });
-
-        super.tearDown();
-    }
 
     /**
      * This is a regression test for http://crbug.com/475299.
@@ -116,14 +44,14 @@ public class SyncTest extends ChromeShellTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testGcmInitialized() throws Throwable {
-        setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
+        setupTestAccountAndSignInToSync(CLIENT_ID);
         assertTrue(ChromeSigninController.get(mContext).isGcmInitialized());
     }
 
     @LargeTest
     @Feature({"Sync"})
     public void testGetAboutSyncInfoYieldsValidData() throws Throwable {
-        setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
+        setupTestAccountAndSignInToSync(CLIENT_ID);
 
         final SyncTestUtil.AboutSyncInfoGetter syncInfoGetter =
                 new SyncTestUtil.AboutSyncInfoGetter(getActivity());
@@ -142,7 +70,7 @@ public class SyncTest extends ChromeShellTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testFlushDirectoryDoesntBreakSync() throws Throwable {
-        setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
+        setupTestAccountAndSignInToSync(CLIENT_ID);
         final Activity activity = getActivity();
 
         runTestOnUiThread(new Runnable() {
@@ -158,7 +86,7 @@ public class SyncTest extends ChromeShellTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testAboutSyncPageDisplaysCurrentSyncStatus() throws InterruptedException {
-        setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
+        setupTestAccountAndSignInToSync(CLIENT_ID);
 
         loadUrlWithSanitization("chrome://sync");
         SyncTestUtil.AboutSyncInfoGetter aboutInfoGetter =
@@ -203,7 +131,7 @@ public class SyncTest extends ChromeShellTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testDisableAndEnableSync() throws InterruptedException {
-        setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
+        setupTestAccountAndSignInToSync(CLIENT_ID);
         Account account =
                 AccountManagerHelper.createAccountFromName(SyncTestUtil.DEFAULT_TEST_ACCOUNT);
 
@@ -220,7 +148,7 @@ public class SyncTest extends ChromeShellTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testUploadTypedUrl() throws Exception {
-        setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
+        setupTestAccountAndSignInToSync(CLIENT_ID);
 
         // TestHttpServerClient is preferred here but it can't be used. The test server
         // serves pages on localhost and Chrome doesn't sync localhost URLs as typed URLs.
@@ -290,7 +218,7 @@ public class SyncTest extends ChromeShellTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadTypedUrl() throws InterruptedException {
-        setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
+        setupTestAccountAndSignInToSync(CLIENT_ID);
         assertLocalEntityCount("Typed URLs", 0);
 
         String url = "data:text,testDownloadTypedUrl";
@@ -312,7 +240,7 @@ public class SyncTest extends ChromeShellTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadBookmark() throws InterruptedException {
-        setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
+        setupTestAccountAndSignInToSync(CLIENT_ID);
         // 3 bookmark folders exist by default: Bookmarks Bar, Other Bookmarks, Mobile Bookmarks.
         assertLocalEntityCount("Bookmarks", 3);
 
@@ -324,36 +252,6 @@ public class SyncTest extends ChromeShellTestBase {
 
         // TODO(pvalenzuela): Also verify that the downloaded bookmark matches the one that was
         // injected. This data should be retrieved from the Sync node browser data.
-    }
-
-    private void setupTestAccountAndSignInToSync(
-            final String syncClientIdentifier)
-            throws InterruptedException {
-        Account defaultTestAccount = SyncTestUtil.setupTestAccountThatAcceptsAllAuthTokens(
-                mAccountManager, SyncTestUtil.DEFAULT_TEST_ACCOUNT, SyncTestUtil.DEFAULT_PASSWORD);
-
-        UniqueIdentificationGeneratorFactory.registerGenerator(
-                UuidBasedUniqueIdentificationGenerator.GENERATOR_ID,
-                new UniqueIdentificationGenerator() {
-                    @Override
-                    public String getUniqueId(String salt) {
-                        return syncClientIdentifier;
-                    }
-                }, true);
-
-        SyncTestUtil.verifySyncIsSignedOut(getActivity());
-
-        final Activity activity = launchChromeShellWithBlankPage();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mSyncController.signIn(activity, SyncTestUtil.DEFAULT_TEST_ACCOUNT);
-            }
-        });
-
-        SyncTestUtil.verifySyncIsSignedIn(mContext, defaultTestAccount);
-        assertTrue("Sync everything should be enabled",
-                SyncTestUtil.isSyncEverythingEnabled(mContext));
     }
 
     private static ContentViewCore getContentViewCore(ChromeShellActivity activity) {
