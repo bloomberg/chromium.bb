@@ -561,20 +561,8 @@
             'version_py_path': '<(DEPTH)/build/util/version.py',
             'version_path': 'VERSION',
             'template_input_path': 'common/chrome_version_info_values.h.version',
+            'branding_path': 'app/theme/<(branding_path_component)/BRANDING',
           },
-          'conditions': [
-            [ 'branding == "Chrome"', {
-              'variables': {
-                  'branding_path':
-                    'app/theme/google_chrome/BRANDING',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                  'branding_path':
-                    'app/theme/chromium/BRANDING',
-              },
-            }],
-          ],
           'inputs': [
             '<(template_input_path)',
             '<(version_path)',

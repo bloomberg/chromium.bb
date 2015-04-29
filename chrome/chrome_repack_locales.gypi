@@ -8,12 +8,8 @@
   'variables': {
     'repack_locales_path': 'tools/build/repack_locales.py',
     'repack_options%': [],
+    'branding_flag': ['-b', '<(branding_path_component)',],
     'conditions': [
-      ['branding=="Chrome"', {
-        'branding_flag': ['-b', 'google_chrome',],
-      }, {  # else: branding!="Chrome"
-        'branding_flag': ['-b', 'chromium',],
-      }],
       ['chromeos==1', {
         'chromeos_flag': ['--chromeos=1'],
       }, {
