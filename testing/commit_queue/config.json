@@ -30,9 +30,6 @@
                 "trybots": {
                     "launched": {
                         "tryserver.chromium.linux": {
-                            "linux_arm_compile": [
-                                "defaulttests"
-                            ],
                             "linux_chromium_asan_rel_ng": [
                                 "defaulttests"
                             ]
@@ -59,6 +56,9 @@
                     "launched": {
                         "tryserver.chromium.linux": {
                             "android_amp_rel_tests_recipe": [
+                                "defaulttests"
+                            ],
+                            "linux_arm_compile": [
                                 "defaulttests"
                             ]
                         },
