@@ -26,6 +26,7 @@ import org.chromium.ui.VSyncMonitor;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * The window base class that has the minimum functionality.
@@ -57,6 +58,15 @@ public class WindowAndroid {
     private View mAnimationPlaceholderView;
 
     private ViewGroup mKeyboardAccessoryView;
+
+    /**
+     * An interface to notify listeners of changes in the soft keyboard's visibility.
+     */
+    public interface KeyboardVisibilityListener {
+        public void keyboardVisibilityChanged(boolean isShowing);
+    }
+    private LinkedList<KeyboardVisibilityListener> mKeyboardVisibilityListeners =
+            new LinkedList<KeyboardVisibilityListener>();
 
     private final VSyncMonitor.Listener mVSyncListener = new VSyncMonitor.Listener() {
         @Override
@@ -324,6 +334,34 @@ public class WindowAndroid {
      */
     public ViewGroup getKeyboardAccessoryView() {
         return mKeyboardAccessoryView;
+    }
+
+    /**
+     * Adds a listener that is updated of keyboard visibility changes. This works as a best guess.
+     * {@see UiUtils.isKeyboardShowing}
+     */
+    public void addKeyboardVisibilityListener(KeyboardVisibilityListener listener) {
+        mKeyboardVisibilityListeners.add(listener);
+    }
+
+    /**
+     * {@see addKeyboardVisibilityListener()}.
+     */
+    public void removeKeyboardVisibilityListener(KeyboardVisibilityListener listener) {
+        mKeyboardVisibilityListeners.remove(listener);
+    }
+
+    /**
+     * To be called when the keyboard visibility state has changed. Informs listeners of the state
+     * change.
+     */
+    public void keyboardVisibilityChanged(boolean isShowing) {
+        // Clone the list in case a listener tries to remove itself during the callback.
+        LinkedList<KeyboardVisibilityListener> listeners =
+                new LinkedList<KeyboardVisibilityListener>(mKeyboardVisibilityListeners);
+        for (KeyboardVisibilityListener listener : listeners) {
+            listener.keyboardVisibilityChanged(isShowing);
+        }
     }
 
     /**

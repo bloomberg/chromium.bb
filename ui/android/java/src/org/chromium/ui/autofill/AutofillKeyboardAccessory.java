@@ -24,7 +24,8 @@ import java.util.HashSet;
  * The Autofill suggestion view that lists relevant suggestions. It sits above the keyboard and
  * below the content area.
  */
-public class AutofillKeyboardAccessory extends ListView implements AdapterView.OnItemClickListener {
+public class AutofillKeyboardAccessory extends ListView implements AdapterView.OnItemClickListener,
+        WindowAndroid.KeyboardVisibilityListener {
     private final WindowAndroid mWindowAndroid;
     private final AutofillKeyboardAccessoryDelegate mAutofillCallback;
 
@@ -59,6 +60,7 @@ public class AutofillKeyboardAccessory extends ListView implements AdapterView.O
         mWindowAndroid = windowAndroid;
         mAutofillCallback = autofillCallback;
 
+        mWindowAndroid.addKeyboardVisibilityListener(this);
         setBackgroundResource(R.drawable.autofill_accessory_view_border);
         setOnItemClickListener(this);
         setContentDescription(windowAndroid.getActivity().get().getString(
@@ -108,10 +110,19 @@ public class AutofillKeyboardAccessory extends ListView implements AdapterView.O
         ViewGroup container = mWindowAndroid.getKeyboardAccessoryView();
         container.removeView(this);
         container.setVisibility(View.GONE);
+        mWindowAndroid.removeKeyboardVisibilityListener(this);
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         mAutofillCallback.suggestionSelected(position);
+    }
+
+    @Override
+    public void keyboardVisibilityChanged(boolean isShowing) {
+        if (!isShowing) {
+            dismiss();
+            mAutofillCallback.dismissed();
+        }
     }
 }
