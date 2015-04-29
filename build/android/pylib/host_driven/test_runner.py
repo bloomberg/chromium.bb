@@ -86,7 +86,7 @@ class HostDrivenTestRunner(base_test_runner.BaseTestRunner):
     exception_raised = False
 
     try:
-      test.SetUp(str(self.device), self.shard_index)
+      test.SetUp(self.device, self.shard_index)
     except Exception:
       logging.exception(
           'Caught exception while trying to run SetUp() for test: ' +

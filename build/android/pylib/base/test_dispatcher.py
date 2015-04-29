@@ -21,7 +21,6 @@ Performs the following steps:
 import logging
 import threading
 
-from pylib import android_commands
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_collection
@@ -102,7 +101,7 @@ def _RunTestsFromQueue(runner, collection, out_results, watcher,
   for test in collection:
     watcher.Reset()
     try:
-      if runner.device_serial not in android_commands.GetAttachedDevices():
+      if not runner.device.IsOnline():
         # Device is unresponsive, stop handling tests on this device.
         msg = 'Device %s is unresponsive.' % runner.device_serial
         logging.warning(msg)
@@ -150,10 +149,7 @@ def _SetUp(runner_factory, device, out_runners, threadsafe_counter):
     runner = runner_factory(device, index)
     runner.SetUp()
     out_runners.append(runner)
-  except (device_errors.DeviceUnreachableError,
-          # TODO(jbudorick) Remove this once the underlying implementations
-          #                 for the above are switched or wrapped.
-          android_commands.errors.DeviceUnresponsiveError) as e:
+  except device_errors.DeviceUnreachableError as e:
     logging.warning('Failed to create shard for %s: [%s]', device, e)
 
 
@@ -195,10 +191,7 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
   # Catch DeviceUnreachableErrors and set a warning exit code
   try:
     workers.JoinAll(watcher)
-  except (device_errors.DeviceUnreachableError,
-          # TODO(jbudorick) Remove this once the underlying implementations
-          #                 for the above are switched or wrapped.
-          android_commands.errors.DeviceUnresponsiveError) as e:
+  except device_errors.DeviceUnreachableError as e:
     logging.error(e)
 
   if not all((len(tc) == 0 for tc in test_collections)):
@@ -236,7 +229,7 @@ def _CreateRunners(runner_factory, devices, timeout=None):
   threads = reraiser_thread.ReraiserThreadGroup(
       [reraiser_thread.ReraiserThread(_SetUp,
                                       [runner_factory, d, runners, counter],
-                                      name=d[-4:])
+                                      name=str(d)[-4:])
        for d in devices])
   threads.StartAll()
   threads.JoinAll(watchdog_timer.WatchdogTimer(timeout))
@@ -333,10 +326,7 @@ def RunTests(tests, runner_factory, devices, shard=True,
   finally:
     try:
       _TearDownRunners(runners, setup_timeout)
-    except (device_errors.DeviceUnreachableError,
-            # TODO(jbudorick) Remove this once the underlying implementations
-            #                 for the above are switched or wrapped.
-            android_commands.errors.DeviceUnresponsiveError) as e:
+    except device_errors.DeviceUnreachableError as e:
       logging.warning('Device unresponsive during TearDown: [%s]', e)
     except Exception as e:
       logging.error('Unexpected exception caught during TearDown: %s' % str(e))

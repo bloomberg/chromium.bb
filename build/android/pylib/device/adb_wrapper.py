@@ -542,6 +542,24 @@ class AdbWrapper(object):
       raise device_errors.AdbCommandFailedError(
           ['root'], output, device_serial=self._device_serial)
 
+  def Emu(self, cmd, timeout=_DEFAULT_TIMEOUT,
+               retries=_DEFAULT_RETRIES):
+    """Runs an emulator console command.
+
+    See http://developer.android.com/tools/devices/emulator.html#console
+
+    Args:
+      cmd: The command to run on the emulator console.
+      timeout: (optional) Timeout per try in seconds.
+      retries: (optional) Number of retries to attempt.
+
+    Returns:
+      The output of the emulator console command.
+    """
+    if isinstance(cmd, basestring):
+      cmd = [cmd]
+    return self._RunDeviceAdbCmd(['emu'] + cmd, timeout, retries)
+
   @property
   def is_emulator(self):
     return _EMULATOR_RE.match(self._device_serial)

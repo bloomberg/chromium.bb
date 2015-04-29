@@ -10,10 +10,10 @@ import logging
 import os
 import shutil
 
-from pylib import android_commands
 from pylib import constants
 from pylib import forwarder
 from pylib.device import device_list
+from pylib.device import device_utils
 from pylib.perf import test_runner
 from pylib.utils import test_environment
 
@@ -22,10 +22,11 @@ def _GetAllDevices():
   devices_path = os.path.join(os.environ.get('CHROMIUM_OUT_DIR', 'out'),
                               device_list.LAST_DEVICES_FILENAME)
   try:
-    devices = device_list.GetPersistentDeviceList(devices_path)
+    devices = [device_utils.DeviceUtils(s)
+               for s in device_list.GetPersistentDeviceList(devices_path)]
   except IOError as e:
     logging.error('Unable to find %s [%s]', devices_path, e)
-    devices = android_commands.GetAttachedDevices()
+    devices = device_utils.DeviceUtils.HealthyDevices()
   return sorted(devices)
 
 

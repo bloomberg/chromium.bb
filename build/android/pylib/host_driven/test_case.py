@@ -68,9 +68,9 @@ class HostDrivenTestCase(object):
   def SetUp(self, device, shard_index, ports_to_forward=None):
     if not ports_to_forward:
       ports_to_forward = []
-    self.device_id = device
+    self.device = device
     self.shard_index = shard_index
-    self.device = device_utils.DeviceUtils(self.device_id)
+    self.device_id = str(self.device)
     if ports_to_forward:
       self.ports_to_forward = ports_to_forward
 
@@ -117,10 +117,9 @@ class HostDrivenTestCase(object):
     # TODO(bulach): move this to SetUp() stage.
     self.__StartForwarder()
 
-    java_test_runner = test_runner.TestRunner(self.instrumentation_options,
-                                              self.device_id,
-                                              self.shard_index, test_pkg,
-                                              additional_flags=additional_flags)
+    java_test_runner = test_runner.TestRunner(
+        self.instrumentation_options, self.device, self.shard_index,
+        test_pkg, additional_flags=additional_flags)
     try:
       java_test_runner.SetUp()
       return java_test_runner.RunTest(test)[0]

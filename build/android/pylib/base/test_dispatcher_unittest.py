@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,27 +11,38 @@ import os
 import sys
 import unittest
 
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                os.pardir, os.pardir))
 
-# Mock out android_commands.GetAttachedDevices().
-from pylib import android_commands
-android_commands.GetAttachedDevices = lambda: ['0', '1']
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_collection
 from pylib.base import test_dispatcher
+from pylib.device import adb_wrapper
+from pylib.device import device_utils
 from pylib.utils import watchdog_timer
+
+sys.path.append(
+    os.path.join(constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
+import mock
 
 
 class TestException(Exception):
   pass
 
 
+def _MockDevice(serial):
+  d = mock.MagicMock(spec=device_utils.DeviceUtils)
+  d.__str__.return_value = serial
+  d.adb = mock.MagicMock(spec=adb_wrapper.AdbWrapper)
+  d.adb.GetDeviceSerial = mock.MagicMock(return_value=serial)
+  d.IsOnline = mock.MagicMock(return_value=True)
+  return d
+
+
 class MockRunner(object):
   """A mock TestRunner."""
-  def __init__(self, device='0', shard_index=0):
-    self.device_serial = device
+  def __init__(self, device=None, shard_index=0):
+    self.device = device or _MockDevice('0')
+    self.device_serial = self.device.adb.GetDeviceSerial()
     self.shard_index = shard_index
     self.setups = 0
     self.teardowns = 0
@@ -57,7 +69,7 @@ class MockRunnerFail(MockRunner):
 
 
 class MockRunnerFailTwice(MockRunner):
-  def __init__(self, device='0', shard_index=0):
+  def __init__(self, device=None, shard_index=0):
     super(MockRunnerFailTwice, self).__init__(device, shard_index)
     self._fails = 0
 
@@ -111,7 +123,7 @@ class TestFunctions(unittest.TestCase):
   def testSetUp(self):
     runners = []
     counter = test_dispatcher._ThreadSafeCounter()
-    test_dispatcher._SetUp(MockRunner, '0', runners, counter)
+    test_dispatcher._SetUp(MockRunner, _MockDevice('0'), runners, counter)
     self.assertEqual(len(runners), 1)
     self.assertEqual(runners[0].setups, 1)
 
@@ -135,7 +147,8 @@ class TestThreadGroupFunctions(unittest.TestCase):
     self.test_collection_factory = lambda: shared_test_collection
 
   def testCreate(self):
-    runners = test_dispatcher._CreateRunners(MockRunner, ['0', '1'])
+    runners = test_dispatcher._CreateRunners(
+        MockRunner, [_MockDevice('0'), _MockDevice('1')])
     for runner in runners:
       self.assertEqual(runner.setups, 1)
     self.assertEqual(set([r.device_serial for r in runners]),
@@ -144,27 +157,29 @@ class TestThreadGroupFunctions(unittest.TestCase):
                      set([0, 1]))
 
   def testRun(self):
-    runners = [MockRunner('0'), MockRunner('1')]
+    runners = [MockRunner(_MockDevice('0')), MockRunner(_MockDevice('1'))]
     results, exit_code = test_dispatcher._RunAllTests(
         runners, self.test_collection_factory, 0)
     self.assertEqual(len(results.GetPass()), len(self.tests))
     self.assertEqual(exit_code, 0)
 
   def testTearDown(self):
-    runners = [MockRunner('0'), MockRunner('1')]
+    runners = [MockRunner(_MockDevice('0')), MockRunner(_MockDevice('1'))]
     test_dispatcher._TearDownRunners(runners)
     for runner in runners:
       self.assertEqual(runner.teardowns, 1)
 
   def testRetry(self):
-    runners = test_dispatcher._CreateRunners(MockRunnerFail, ['0', '1'])
+    runners = test_dispatcher._CreateRunners(
+        MockRunnerFail, [_MockDevice('0'), _MockDevice('1')])
     results, exit_code = test_dispatcher._RunAllTests(
         runners, self.test_collection_factory, 0)
     self.assertEqual(len(results.GetFail()), len(self.tests))
     self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 
   def testReraise(self):
-    runners = test_dispatcher._CreateRunners(MockRunnerException, ['0', '1'])
+    runners = test_dispatcher._CreateRunners(
+        MockRunnerException, [_MockDevice('0'), _MockDevice('1')])
     with self.assertRaises(TestException):
       test_dispatcher._RunAllTests(runners, self.test_collection_factory, 0)
 
@@ -174,7 +189,8 @@ class TestShard(unittest.TestCase):
   @staticmethod
   def _RunShard(runner_factory):
     return test_dispatcher.RunTests(
-        ['a', 'b', 'c'], runner_factory, ['0', '1'], shard=True)
+        ['a', 'b', 'c'], runner_factory, [_MockDevice('0'), _MockDevice('1')],
+        shard=True)
 
   def testShard(self):
     results, exit_code = TestShard._RunShard(MockRunner)
@@ -189,7 +205,7 @@ class TestShard(unittest.TestCase):
 
   def testNoTests(self):
     results, exit_code = test_dispatcher.RunTests(
-        [], MockRunner, ['0', '1'], shard=True)
+        [], MockRunner, [_MockDevice('0'), _MockDevice('1')], shard=True)
     self.assertEqual(len(results.GetAll()), 0)
     self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 
@@ -199,7 +215,8 @@ class TestReplicate(unittest.TestCase):
   @staticmethod
   def _RunReplicate(runner_factory):
     return test_dispatcher.RunTests(
-        ['a', 'b', 'c'], runner_factory, ['0', '1'], shard=False)
+        ['a', 'b', 'c'], runner_factory, [_MockDevice('0'), _MockDevice('1')],
+        shard=False)
 
   def testReplicate(self):
     results, exit_code = TestReplicate._RunReplicate(MockRunner)
@@ -215,7 +232,7 @@ class TestReplicate(unittest.TestCase):
 
   def testNoTests(self):
     results, exit_code = test_dispatcher.RunTests(
-        [], MockRunner, ['0', '1'], shard=False)
+        [], MockRunner, [_MockDevice('0'), _MockDevice('1')], shard=False)
     self.assertEqual(len(results.GetAll()), 0)
     self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 
