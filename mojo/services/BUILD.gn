@@ -50,14 +50,14 @@ group("tests") {
   ]
   if (!is_component_build) {
     deps += [
-      "//components/html_viewer:tests",
+      "//components/html_viewer:html_viewer_unittests",
       "//components/view_manager:view_manager_service_unittests",
     ]
 
     # TODO(GYP): Make this work.
     if (is_mac) {
       deps -= [
-        "//components/html_viewer:tests",
+        "//components/html_viewer:html_viewer_unittests",
         "//components/view_manager:view_manager_service_unittests",
       ]
     }

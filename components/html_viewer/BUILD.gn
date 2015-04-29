@@ -212,8 +212,7 @@ if (is_android) {
   }
 }
 
-test("tests") {
-  output_name = "html_viewer_unittests"
+test("html_viewer_unittests") {
   sources = [
     "ax_provider_impl_unittest.cc",
     "discardable_memory_allocator_unittest.cc",
