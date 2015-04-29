@@ -838,8 +838,8 @@ void PluginServiceImpl::AppActivated() {
 bool GetPluginPropertyFromWindow(
     HWND window, const wchar_t* plugin_atom_property,
     base::string16* plugin_property) {
-  ATOM plugin_atom = reinterpret_cast<ATOM>(
-      GetPropW(window, plugin_atom_property));
+  ATOM plugin_atom = static_cast<ATOM>(
+      reinterpret_cast<uintptr_t>(GetPropW(window, plugin_atom_property)));
   if (plugin_atom != 0) {
     WCHAR plugin_property_local[MAX_PATH] = {0};
     GlobalGetAtomNameW(plugin_atom,
