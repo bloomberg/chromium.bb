@@ -43,14 +43,14 @@ class TargetServicesBase : public TargetServices {
   TargetServicesBase();
 
   // Public interface of TargetServices.
-  virtual ResultCode Init();
-  virtual void LowerToken();
-  virtual ProcessState* GetState();
-  virtual ResultCode DuplicateHandle(HANDLE source_handle,
-                                     DWORD target_process_id,
-                                     HANDLE* target_handle,
-                                     DWORD desired_access,
-                                     DWORD options);
+  ResultCode Init() override;
+  void LowerToken() override;
+  ProcessState* GetState() override;
+  ResultCode DuplicateHandle(HANDLE source_handle,
+                             DWORD target_process_id,
+                             HANDLE* target_handle,
+                             DWORD desired_access,
+                             DWORD options) override;
 
   // Factory method.
   static TargetServicesBase* GetInstance();

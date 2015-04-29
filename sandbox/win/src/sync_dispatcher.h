@@ -16,10 +16,10 @@ namespace sandbox {
 class SyncDispatcher : public Dispatcher {
  public:
   explicit SyncDispatcher(PolicyBase* policy_base);
-  ~SyncDispatcher() {}
+  ~SyncDispatcher() override {}
 
   // Dispatcher interface.
-  virtual bool SetupService(InterceptionManager* manager, int service);
+  bool SetupService(InterceptionManager* manager, int service) override;
 
 private:
   // Processes IPC requests coming from calls to CreateEvent in the target.

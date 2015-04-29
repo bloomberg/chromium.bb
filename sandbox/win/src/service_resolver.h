@@ -18,30 +18,30 @@ class ServiceResolverThunk : public ResolverThunk {
   ServiceResolverThunk(HANDLE process, bool relaxed)
       : process_(process), ntdll_base_(NULL),
         relaxed_(relaxed), relative_jump_(0) {}
-  virtual ~ServiceResolverThunk() {}
+  ~ServiceResolverThunk() override {}
 
   // Implementation of Resolver::Setup.
-  virtual NTSTATUS Setup(const void* target_module,
-                         const void* interceptor_module,
-                         const char* target_name,
-                         const char* interceptor_name,
-                         const void* interceptor_entry_point,
-                         void* thunk_storage,
-                         size_t storage_bytes,
-                         size_t* storage_used);
+  NTSTATUS Setup(const void* target_module,
+                 const void* interceptor_module,
+                 const char* target_name,
+                 const char* interceptor_name,
+                 const void* interceptor_entry_point,
+                 void* thunk_storage,
+                 size_t storage_bytes,
+                 size_t* storage_used) override;
 
   // Implementation of Resolver::ResolveInterceptor.
-  virtual NTSTATUS ResolveInterceptor(const void* module,
-                                      const char* function_name,
-                                      const void** address);
+  NTSTATUS ResolveInterceptor(const void* module,
+                              const char* function_name,
+                              const void** address) override;
 
   // Implementation of Resolver::ResolveTarget.
-  virtual NTSTATUS ResolveTarget(const void* module,
-                                 const char* function_name,
-                                 void** address);
+  NTSTATUS ResolveTarget(const void* module,
+                         const char* function_name,
+                         void** address) override;
 
   // Implementation of Resolver::GetThunkSize.
-  virtual size_t GetThunkSize() const;
+  size_t GetThunkSize() const override;
 
   // Call this to set up ntdll_base_ which will allow for local patches.
   virtual void AllowLocalPatches();
@@ -95,10 +95,10 @@ class Wow64ResolverThunk : public ServiceResolverThunk {
   // The service resolver needs a child process to write to.
   Wow64ResolverThunk(HANDLE process, bool relaxed)
       : ServiceResolverThunk(process, relaxed) {}
-  virtual ~Wow64ResolverThunk() {}
+  ~Wow64ResolverThunk() override {}
 
  private:
-  virtual bool IsFunctionAService(void* local_thunk) const;
+  bool IsFunctionAService(void* local_thunk) const override;
 
   DISALLOW_COPY_AND_ASSIGN(Wow64ResolverThunk);
 };
@@ -110,10 +110,10 @@ class Wow64W8ResolverThunk : public ServiceResolverThunk {
   // The service resolver needs a child process to write to.
   Wow64W8ResolverThunk(HANDLE process, bool relaxed)
       : ServiceResolverThunk(process, relaxed) {}
-  virtual ~Wow64W8ResolverThunk() {}
+  ~Wow64W8ResolverThunk() override {}
 
  private:
-  virtual bool IsFunctionAService(void* local_thunk) const;
+  bool IsFunctionAService(void* local_thunk) const override;
 
   DISALLOW_COPY_AND_ASSIGN(Wow64W8ResolverThunk);
 };
@@ -125,10 +125,10 @@ class Win8ResolverThunk : public ServiceResolverThunk {
   // The service resolver needs a child process to write to.
   Win8ResolverThunk(HANDLE process, bool relaxed)
       : ServiceResolverThunk(process, relaxed) {}
-  virtual ~Win8ResolverThunk() {}
+  ~Win8ResolverThunk() override {}
 
  private:
-  virtual bool IsFunctionAService(void* local_thunk) const;
+  bool IsFunctionAService(void* local_thunk) const override;
 
   DISALLOW_COPY_AND_ASSIGN(Win8ResolverThunk);
 };

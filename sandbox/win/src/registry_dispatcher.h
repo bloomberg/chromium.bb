@@ -16,10 +16,10 @@ namespace sandbox {
 class RegistryDispatcher : public Dispatcher {
  public:
   explicit RegistryDispatcher(PolicyBase* policy_base);
-  ~RegistryDispatcher() {}
+  ~RegistryDispatcher() override {}
 
   // Dispatcher interface.
-  virtual bool SetupService(InterceptionManager* manager, int service);
+  bool SetupService(InterceptionManager* manager, int service) override;
 
  private:
   // Processes IPC requests coming from calls to NtCreateKey in the target.

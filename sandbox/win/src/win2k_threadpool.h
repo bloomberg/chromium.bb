@@ -25,13 +25,14 @@ namespace sandbox {
 class Win2kThreadPool : public ThreadProvider {
  public:
   Win2kThreadPool();
-  virtual ~Win2kThreadPool();
+  ~Win2kThreadPool() override;
 
-  virtual bool RegisterWait(const void* cookie, HANDLE waitable_object,
-                            CrossCallIPCCallback callback,
-                            void* context);
+  bool RegisterWait(const void* cookie,
+                    HANDLE waitable_object,
+                    CrossCallIPCCallback callback,
+                    void* context) override;
 
-  virtual bool UnRegisterWaits(void* cookie);
+  bool UnRegisterWaits(void* cookie) override;
 
   // Returns the total number of wait objects associated with
   // the thread pool.

@@ -16,10 +16,10 @@ namespace sandbox {
 class NamedPipeDispatcher : public Dispatcher {
  public:
   explicit NamedPipeDispatcher(PolicyBase* policy_base);
-  ~NamedPipeDispatcher() {}
+  ~NamedPipeDispatcher() override {}
 
   // Dispatcher interface.
-  virtual bool SetupService(InterceptionManager* manager, int service);
+  bool SetupService(InterceptionManager* manager, int service) override;
 
  private:
   // Processes IPC requests coming from calls to CreateNamedPipeW() in the

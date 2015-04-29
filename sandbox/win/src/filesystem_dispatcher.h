@@ -16,10 +16,10 @@ namespace sandbox {
 class FilesystemDispatcher : public Dispatcher {
  public:
   explicit FilesystemDispatcher(PolicyBase* policy_base);
-  ~FilesystemDispatcher() {}
+  ~FilesystemDispatcher() override {}
 
   // Dispatcher interface.
-  virtual bool SetupService(InterceptionManager* manager, int service);
+  bool SetupService(InterceptionManager* manager, int service) override;
 
  private:
   // Processes IPC requests coming from calls to NtCreateFile in the target.

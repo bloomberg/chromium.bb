@@ -565,9 +565,9 @@ class UnitTestIPCDispatcher : public Dispatcher {
   };
 
   UnitTestIPCDispatcher();
-  ~UnitTestIPCDispatcher() {};
+  ~UnitTestIPCDispatcher() override{};
 
-  virtual bool SetupService(InterceptionManager* manager, int service) {
+  bool SetupService(InterceptionManager* manager, int service) override {
     return true;
   }
 

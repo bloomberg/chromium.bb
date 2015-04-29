@@ -18,12 +18,12 @@ namespace sandbox {
 
 class AddressSanitizerTests : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     env_.reset(base::Environment::Create());
     had_asan_options_ = env_->GetVar("ASAN_OPTIONS", &old_asan_options_);
   }
 
-  void TearDown() {
+  void TearDown() override {
     if (had_asan_options_)
       ASSERT_TRUE(env_->SetVar("ASAN_OPTIONS", old_asan_options_));
     else

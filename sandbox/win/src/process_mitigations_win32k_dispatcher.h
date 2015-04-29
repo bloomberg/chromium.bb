@@ -15,10 +15,10 @@ namespace sandbox {
 class ProcessMitigationsWin32KDispatcher : public Dispatcher {
  public:
   explicit ProcessMitigationsWin32KDispatcher(PolicyBase* policy_base);
-  ~ProcessMitigationsWin32KDispatcher() {}
+  ~ProcessMitigationsWin32KDispatcher() override {}
 
   // Dispatcher interface.
-  virtual bool SetupService(InterceptionManager* manager, int service);
+  bool SetupService(InterceptionManager* manager, int service) override;
 
  private:
   PolicyBase* policy_base_;

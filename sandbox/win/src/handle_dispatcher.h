@@ -15,10 +15,10 @@ namespace sandbox {
 class HandleDispatcher : public Dispatcher {
  public:
   explicit HandleDispatcher(PolicyBase* policy_base);
-  ~HandleDispatcher() {}
+  ~HandleDispatcher() override {}
 
   // Dispatcher interface.
-  virtual bool SetupService(InterceptionManager* manager, int service);
+  bool SetupService(InterceptionManager* manager, int service) override;
 
  private:
   // Processes IPC requests coming from calls to
