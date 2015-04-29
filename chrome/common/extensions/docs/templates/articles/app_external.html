@@ -178,14 +178,11 @@ one for the main app window that isn't sandboxed,
 and one for the sandboxed page:
 </p>
 
-<p class="warning">
+<p class="note">
 NOTE:
-<a href="https://code.google.com/p/chromium/issues/detail?id=154662">issue 154662</a>
-is a bug when using sandbox pages to create windows.
-The effect is that an error "Uncaught TypeError: Cannot call method
-'initializeAppWindow' of undefined" is output to the developer console
-and that the app.window.create call does not call the callback function
-with a window object. However, the sandbox page is created as a new window.
+A sandboxed window will not have access to the chrome.app APIs. If a
+callback is provided to app.window.create it will be run, but will not have
+the sandboxed window provided to it.
 </p>
 
 <pre data-filename="background.js">

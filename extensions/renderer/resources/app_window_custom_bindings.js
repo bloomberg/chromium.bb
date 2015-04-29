@@ -140,10 +140,21 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     }
 
     // Initialize appWindowData in the newly created JS context
-    view.chrome.app.window.initializeAppWindow(windowParams);
+    if (view.chrome.app) {
+      view.chrome.app.window.initializeAppWindow(windowParams);
+    } else {
+      var sandbox_window_message = 'Creating sandboxed window, it doesn\'t ' +
+          'have access to the chrome.app API.';
+      if (callback) {
+        sandbox_window_message = sandbox_window_message +
+            ' The chrome.app.window.create callback will be called, but ' +
+            'there will be no object provided for the sandboxed window.';
+      }
+      console.warn(sandbox_window_message);
+    }
 
     if (callback) {
-      if (!view) {
+      if (!view || !view.chrome.app /* sandboxed window */) {
         callback(undefined);
         return;
       }
