@@ -179,6 +179,7 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
  private:
   class IOWatcher;
+  class PageFlipManager;
 
   // Path to DRM device.
   const base::FilePath device_path_;
@@ -191,6 +192,8 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   // Watcher for |fd_| listening for page flip events.
   scoped_refptr<IOWatcher> watcher_;
+
+  scoped_refptr<PageFlipManager> page_flip_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDevice);
 };
