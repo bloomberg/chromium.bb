@@ -254,7 +254,7 @@
       </if>
       <!-- For Chrome OS -->
       <if expr="chromeos">
-        <!-- The font name like: 'Font Name, 10' -->
+        <!-- The font name like: 'Font Name, 12px' -->
         <message name="IDS_UI_FONT_FAMILY_CROS" use_name_for_id="true">
           Noto Sans UI, 13px
         </message>
@@ -265,8 +265,12 @@
         </message>
 
         <!-- The relative font size in % used in Web UI (e.g. History).  -->
+        <!-- TODO(xdai): 80% is an appropriate size for Roboto, which is the
+             default as of M42, rather than for Noto Sans UI. This comment
+             should be deleted when the old Noto Sans UI code is removed; see
+             http://crbug.com/482042. -->
         <message name="IDS_WEB_FONT_SIZE" use_name_for_id="true">
-          75%
+          80%
         </message>
       </if>
     </messages>
