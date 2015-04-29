@@ -3,20 +3,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-#@ This script builds the (trusted) cross toolchain for arm.
+#@ This script builds the (trusted) sysroot image for ARM.
 #@ It must be run from the native_client/ directory.
+#@ Set $DIST to 'trusty' to build trusty rather then precise image.
 #@
-#@ The toolchain consists primarily of a jail with arm header and libraries.
+#@ The sysroot consists primarily of ARM headers and libraries.
 #@ It also provides additional tools such as QEMU.
 #@ It does NOT provide the actual cross compiler anymore.
 #@ The cross compiler is now coming straight from a Debian package.
 #@ So there is a one-time step required for all machines using this TC:
 #@
-#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.trusty.sh InstallCrossArmBasePackages
+#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.sh InstallCrossArmBasePackages
 #@
 #@ Generally this script is invoked as:
 #@
-#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.trusty.sh <mode> <args>*
+#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.sh <mode> <args>*
 #@
 #@ List of modes:
 
@@ -27,10 +28,10 @@
 set -o nounset
 set -o errexit
 
-readonly DIST=trusty
+DIST=${DIST:-precise}
 readonly SCRIPT_DIR=$(dirname $0)
 readonly NACL_ROOT=$(pwd)
-# this where we create the ARMHF sysroot
+# this where we create the sysroot image
 readonly INSTALL_ROOT=${NACL_ROOT}/toolchain/linux_x86/arm_trusted
 readonly TAR_ARCHIVE=$(dirname ${NACL_ROOT})/out/sysroot_arm_trusted_${DIST}.tgz
 readonly TMP=$(dirname ${NACL_ROOT})/out/sysroot_arm_trusted_${DIST}
@@ -44,170 +45,33 @@ readonly MAKE_OPTS="-j8"
 # this where we get the cross toolchain from for the manual install:
 readonly CROSS_ARM_TC_REPO=http://archive.ubuntu.com/ubuntu
 # this is where we get all the armhf packages from
-readonly ARMHF_REPO=http://ports.ubuntu.com/ubuntu-ports
+readonly REPO=http://ports.ubuntu.com/ubuntu-ports
 
-readonly PACKAGE_LIST="${ARMHF_REPO}/dists/${DIST}/main/binary-armhf/Packages.bz2"
-readonly PACKAGE_LIST2="${ARMHF_REPO}/dists/${DIST}-security/main/binary-armhf/Packages.bz2"
+readonly PACKAGE_LIST="${REPO}/dists/${DIST}/main/binary-armhf/Packages.bz2"
+readonly PACKAGE_LIST2="${REPO}/dists/${DIST}-security/main/binary-armhf/Packages.bz2"
 
 # Packages for the host system
-readonly CROSS_ARM_TC_PACKAGES="\
-  g++-arm-linux-gnueabihf"
-
-# Jail packages: these are good enough for native client
-# NOTE: the package listing here should be updated using the
-# GeneratePackageListXXX() functions below
-readonly ARMHF_BASE_PACKAGES="\
-  libssl-dev \
-  libssl1.0.0 \
-  libgcc1 \
-  libc6 \
-  libc6-dev \
-  libstdc++6 \
-  libx11-dev \
-  libx11-6 \
-  x11proto-core-dev \
-  libxt-dev \
-  libxt6 \
-  zlib1g \
-  zlib1g-dev"
-
-# Additional jail packages needed to build chrome
-# NOTE: the package listing here should be updated using the
-# GeneratePackageListXXX() functions below
-readonly ARMHF_BASE_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.base"
-readonly ARMHF_BASE_DEP_FILES="$(cat ${ARMHF_BASE_DEP_LIST})"
-
-readonly ARMHF_EXTRA_PACKAGES="\
-  comerr-dev \
-  krb5-multidev \
-  libasound2 \
-  libasound2-dev \
-  libatk1.0-0 \
-  libatk1.0-dev \
-  libcairo2 \
-  libcairo2-dev \
-  libcairo-gobject2 \
-  libcairo-script-interpreter2 \
-  libcomerr2 \
-  libcups2 \
-  libcups2-dev \
-  libdbus-1-3 \
-  libdbus-1-dev \
-  libexpat1 \
-  libexpat1-dev \
-  libffi6 \
-  libfontconfig1 \
-  libfontconfig1-dev \
-  libfreetype6 \
-  libfreetype6-dev \
-  libgconf-2-4 \
-  libgconf2-4 \
-  libgconf2-dev \
-  libgpg-error0 \
-  libgpg-error-dev \
-  libgcrypt11 \
-  libgcrypt11-dev \
-  libgdk-pixbuf2.0-0 \
-  libgdk-pixbuf2.0-dev \
-  libgnutls26 \
-  libgnutlsxx27 \
-  libgnutls-dev \
-  libgnutls-openssl27 \
-  libgssapi-krb5-2 \
-  libgssrpc4 \
-  libgtk2.0-0 \
-  libgtk2.0-dev \
-  libglib2.0-0 \
-  libglib2.0-dev \
-  libgnome-keyring0 \
-  libgnome-keyring-dev \
-  libkadm5clnt-mit9 \
-  libkadm5srv-mit9 \
-  libkdb5-7 \
-  libkrb5-3 \
-  libkrb5-dev \
-  libkrb5support0 \
-  libk5crypto3 \
-  libnspr4 \
-  libnspr4-dev \
-  libnss3 \
-  libnss3-dev \
-  libnss-db \
-  liborbit2 \
-  libcap-dev \
-  libcap2 \
-  libpam0g \
-  libpam0g-dev \
-  libpango-1.0-0 \
-  libpango1.0-dev \
-  libpangocairo-1.0-0 \
-  libpangoft2-1.0-0 \
-  libpangoxft-1.0-0 \
-  libpci3 \
-  libpci-dev \
-  libpcre3 \
-  libpcre3-dev \
-  libpcrecpp0 \
-  libpixman-1-0 \
-  libpixman-1-dev \
-  libpng12-0 \
-  libpng12-dev \
-  libpulse0 \
-  libpulse-dev \
-  libpulse-mainloop-glib0 \
-  libselinux1 \
-  libspeechd2 \
-  libspeechd-dev \
-  libstdc++-4.8-dev \
-  libudev1 \
-  libudev-dev \
-  libxext-dev \
-  libxext6 \
-  libxau-dev \
-  libxau6 \
-  libxcb1 \
-  libxcb1-dev \
-  libxcb-render0 \
-  libxcb-render0-dev \
-  libxcb-shm0 \
-  libxcb-shm0-dev \
-  libxcomposite1 \
-  libxcomposite-dev \
-  libxcursor1 \
-  libxcursor-dev \
-  libxdamage1 \
-  libxdamage-dev \
-  libxdmcp6 \
-  libxfixes3 \
-  libxfixes-dev \
-  libxi6 \
-  libxi-dev \
-  libxinerama1 \
-  libxinerama-dev \
-  libxrandr2 \
-  libxrandr-dev \
-  libxrender1 \
-  libxrender-dev \
-  libxss1 \
-  libxss-dev \
-  libxtst6 \
-  libxtst-dev \
-  speech-dispatcher \
-  x11proto-composite-dev \
-  x11proto-damage-dev \
-  x11proto-fixes-dev \
-  x11proto-input-dev \
-  x11proto-kb-dev \
-  x11proto-randr-dev \
-  x11proto-record-dev \
-  x11proto-render-dev \
-  x11proto-scrnsaver-dev \
-  x11proto-xext-dev"
+readonly CROSS_ARM_TC_PACKAGES="g++-arm-linux-gnueabihf"
 
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMHF_EXTRA_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.extra"
-readonly ARMHF_EXTRA_DEP_FILES="$(cat ${ARMHF_EXTRA_DEP_LIST})"
+readonly BASE_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.base"
+if [ ! -f ${BASE_DEP_LIST} ]; then
+  echo "Missing file: ${BASE_DEP_LIST}"
+  exit 1
+fi
+readonly BASE_DEP_FILES="$(cat ${BASE_DEP_LIST})"
+
+# NOTE: the package listing here should be updated using the
+# GeneratePackageListXXX() functions below
+readonly EXTRA_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.extra"
+if [ ! -f ${EXTRA_DEP_LIST} ]; then
+  echo "Missing file: ${EXTRA_DEP_LIST}"
+  exit 1
+fi
+readonly EXTRA_DEP_FILES="$(cat ${EXTRA_DEP_LIST})"
+
+readonly RAW_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.sh"
 
 ######################################################################
 # Helper
@@ -332,7 +196,7 @@ InstallMissingArmLibrariesAndHeadersIntoJail() {
   for file in $@ ; do
     local package="${TMP}/armhf-packages/${file##*/}"
     Banner "installing ${file}"
-    DownloadOrCopy ${ARMHF_REPO}/pool/${file} ${package}
+    DownloadOrCopy ${REPO}/pool/${file} ${package}
     SubBanner "extracting to ${INSTALL_ROOT}"
     if [[ ! -s ${package} ]] ; then
       echo
@@ -368,7 +232,6 @@ CleanupJailSymlinks() {
   done
 
   find usr/lib -type l -printf '%p %l\n' | while read link target; do
-    # Make sure we catch new bad links.
     if [ ! -r "${link}" ]; then
       echo "ERROR: FOUND BAD LINK ${link}"
       exit -1
@@ -403,7 +266,6 @@ readonly QEMU_DIR=qemu-1.0.1
 
 readonly QEMU_URL=http://wiki.qemu-project.org/download/${QEMU_TARBALL}
 readonly QEMU_PATCH=$(readlink -f ../third_party/qemu/${QEMU_DIR}.patch_arm)
-
 
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
@@ -482,8 +344,7 @@ BuildAndInstallQemu() {
 BuildJail() {
   ClearInstallDir
   InstallMissingArmLibrariesAndHeadersIntoJail \
-    ${ARMHF_BASE_DEP_FILES} \
-    ${ARMHF_EXTRA_DEP_FILES}
+    ${BASE_DEP_FILES} ${EXTRA_DEP_FILES}
   CleanupJailSymlinks
   HacksAndPatches
   BuildAndInstallQemu
@@ -516,8 +377,8 @@ GeneratePackageList() {
 #@
 #@ UpdatePackageLists
 #@
-#@     Regenerate the armhf package lists such that they contain an up-to-date
-#@     list of URLs within the ubuntu archive.
+#@    Regenerate the armhf package lists such that they contain an up-to-date
+#@    list of URLs within the ubuntu archive.
 #@
 UpdatePackageLists() {
   local package_list="${TMP}/Packages.${DIST}.bz2"
@@ -526,8 +387,9 @@ UpdatePackageLists() {
   DownloadOrCopy ${PACKAGE_LIST2} ${package_list2}
   bzcat ${package_list} ${package_list2} | egrep '^(Package:|Filename:)' > ${TMP}/Packages
 
-  GeneratePackageList ${ARMHF_BASE_DEP_LIST} "${ARMHF_BASE_PACKAGES}"
-  GeneratePackageList ${ARMHF_EXTRA_DEP_LIST} "${ARMHF_EXTRA_PACKAGES}"
+  . "${RAW_DEP_LIST}"
+  GeneratePackageList ${BASE_DEP_LIST} "${BASE_PACKAGES}"
+  GeneratePackageList ${EXTRA_DEP_LIST} "${EXTRA_PACKAGES}"
 }
 
 if [[ $# -eq 0 ]] ; then
