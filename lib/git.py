@@ -308,9 +308,10 @@ class ProjectCheckout(dict):
       return False
 
     # Old heuristic.
-    return (
-        self['remote'] in constants.CROS_REMOTES and
-        re.match(constants.BRANCHABLE_PROJECTS[self['remote']], self['name']))
+    if (self['remote'] not in constants.CROS_REMOTES or
+        self['remote'] not in constants.BRANCHABLE_PROJECTS):
+      return False
+    return re.match(constants.BRANCHABLE_PROJECTS[self['remote']], self['name'])
 
   def IsPinnableProject(self):
     """Return whether we should pin to a revision on the CrOS branch."""

@@ -1214,6 +1214,10 @@ class GerritTestCase(MockTempDirTestCase):
     self.PatchObject(constants, 'INTERNAL_GERRIT_HOST', gi.gerrit_host)
     self.PatchObject(constants, 'INTERNAL_GOB_URL', gi.git_url)
     self.PatchObject(constants, 'INTERNAL_GERRIT_URL', gi.gerrit_url)
+    self.PatchObject(constants, 'AOSP_GOB_HOST', gi.git_host)
+    self.PatchObject(constants, 'AOSP_GERRIT_HOST', gi.gerrit_host)
+    self.PatchObject(constants, 'AOSP_GOB_URL', gi.git_url)
+    self.PatchObject(constants, 'AOSP_GERRIT_URL', gi.gerrit_url)
     self.PatchObject(constants, 'MANIFEST_URL', '%s/%s' % (
         gi.git_url, constants.MANIFEST_PROJECT))
     self.PatchObject(constants, 'MANIFEST_INT_URL', '%s/%s' % (

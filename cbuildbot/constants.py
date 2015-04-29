@@ -226,6 +226,13 @@ INTERNAL_GERRIT_HOST = GOB_HOST % INTERNAL_GERRIT_INSTANCE
 INTERNAL_GOB_URL = 'https://%s' % INTERNAL_GOB_HOST
 INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 
+AOSP_GOB_INSTANCE = 'android'
+AOSP_GERRIT_INSTANCE = 'android-review'
+AOSP_GOB_HOST = GOB_HOST % AOSP_GOB_INSTANCE
+AOSP_GERRIT_HOST = GOB_HOST % AOSP_GERRIT_INSTANCE
+AOSP_GOB_URL = 'https://%s' % AOSP_GOB_HOST
+AOSP_GERRIT_URL = 'https://%s' % AOSP_GERRIT_HOST
+
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
 GITCOOKIES_PATH = os.path.expanduser('~/.gitcookies')
 
@@ -269,10 +276,12 @@ INTERNAL_REMOTE = 'cros-internal'
 KAYLE_INTERNAL_REMOTE = 'kayle-cros-internal'
 CHROMIUM_REMOTE = 'chromium'
 CHROME_REMOTE = 'chrome'
+AOSP_REMOTE = 'aosp'
 
 GERRIT_HOSTS = {
     EXTERNAL_REMOTE: EXTERNAL_GERRIT_HOST,
     INTERNAL_REMOTE: INTERNAL_GERRIT_HOST,
+    AOSP_REMOTE: AOSP_GERRIT_HOST,
 }
 
 # Only remotes listed in CROS_REMOTES are considered branchable.
@@ -281,6 +290,7 @@ CROS_REMOTES = {
     EXTERNAL_REMOTE: EXTERNAL_GOB_URL,
     INTERNAL_REMOTE: INTERNAL_GOB_URL,
     KAYLE_INTERNAL_REMOTE: INTERNAL_GOB_URL,
+    AOSP_REMOTE: AOSP_GOB_URL,
 }
 
 GIT_REMOTES = {
@@ -310,6 +320,8 @@ PROJECT_SDK_GROUPS = ('project_sdk',)
 # remote that can be branched when creating CrOS branch. Branching script will
 # actually create a new git ref when branching these projects. It won't attempt
 # to create a git ref for other projects that may be mentioned in a manifest.
+# If a remote is missing from this dictionary, all projects on that remote are
+# considered to not be branchable.
 BRANCHABLE_PROJECTS = {
     EXTERNAL_REMOTE: r'chromiumos/(.+)',
     INTERNAL_REMOTE: r'chromeos/(.+)',
