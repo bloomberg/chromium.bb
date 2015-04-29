@@ -1332,8 +1332,10 @@ void ProfileManager::UpdateLastUser(Profile* last_active) {
   DCHECK(local_state);
   // Only keep track of profiles that we are managing; tests may create others.
   if (profiles_info_.find(last_active->GetPath()) != profiles_info_.end()) {
-    local_state->SetString(prefs::kProfileLastUsed,
-                           last_active->GetPath().BaseName().MaybeAsASCII());
+    std::string profile_path_base =
+        last_active->GetPath().BaseName().MaybeAsASCII();
+    if (profile_path_base != local_state->GetString(prefs::kProfileLastUsed))
+      local_state->SetString(prefs::kProfileLastUsed, profile_path_base);
 
     ProfileInfoCache& cache = GetProfileInfoCache();
     size_t profile_index =

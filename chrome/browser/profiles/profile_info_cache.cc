@@ -471,6 +471,11 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
 }
 
 void ProfileInfoCache::SetProfileActiveTimeAtIndex(size_t index) {
+  if (base::Time::Now() - GetProfileActiveTimeAtIndex(index) <
+      base::TimeDelta::FromHours(1)) {
+    return;
+  }
+
   scoped_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetDouble(kActiveTimeKey, base::Time::Now().ToDoubleT());
