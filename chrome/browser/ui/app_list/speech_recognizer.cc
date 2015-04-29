@@ -27,7 +27,7 @@ namespace app_list {
 static const int kNoSpeechTimeoutInSeconds = 5;
 
 // Length of timeout to cancel recognition if no different results are received.
-static const int kNoNewSpeechTimeoutInSeconds = 3;
+static const int kNoNewSpeechTimeoutInSeconds = 2;
 
 // Invalid speech session.
 static const int kInvalidSessionId = -1;
