@@ -335,12 +335,40 @@
         {
           'destination': '<(PRODUCT_DIR)/remoting/browser_test_resources',
             'files': [
-              '<@(remoting_webapp_browsertest_all_js_files)',
-              '../third_party/sinonjs/src/sinon.js',
+              '<@(remoting_webapp_browsertest_main_html_extra_files)',
             ],
         },
       ], # end of copies
     },  # end of target 'remoting_browser_test_resources'
+    {
+      'target_name': 'remoting_webapp_browser_test_main_html',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'Build Remoting Webapp Browser test main.html',
+          'inputs': [
+            'webapp/build-html.py',
+            '<(remoting_webapp_template_main)',
+            '<@(remoting_webapp_template_files)',
+            '<@(remoting_webapp_crd_main_html_all_js_files)',
+            '<@(remoting_webapp_browsertest_main_html_extra_files)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/browser_test/main.html',
+          ],
+          'action': [
+            'python', 'webapp/build-html.py',
+            '<(SHARED_INTERMEDIATE_DIR)/browser_test/main.html',
+            '<(remoting_webapp_template_main)',
+            '--template-dir', '<(DEPTH)/remoting',
+            '--templates', '<@(remoting_webapp_template_files)',
+            '--js',
+            '<@(remoting_webapp_crd_main_html_all_js_files)',
+            '<@(remoting_webapp_browsertest_main_html_extra_files)',
+          ],
+        },
+      ],  # end of actions
+    },  # end of target 'remoting_webapp_browser_test_html'
     {
       'target_name': 'remoting_webapp_unittests',
       'type': 'none',
@@ -462,6 +490,30 @@
           ],  # end of 'conditions'
         },  # end of target 'remoting_perftests'
       ]
+    }],  # end of 'enable_remoting_host'
+    ['disable_nacl==0 and disable_nacl_untrusted==0', {
+      'targets': [
+        {
+          'target_name': 'remoting_webapp_browser_test',
+          'type': 'none',
+          'variables': {
+            'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.browsertest.v2',
+            'zip_path': '<(PRODUCT_DIR)/remoting-webapp.browsertest.v2.zip',
+            'webapp_type': 'v2_pnacl',
+            'main_html_file': '<(SHARED_INTERMEDIATE_DIR)/browser_test/main.html',
+            'extra_files': [
+              'webapp/crd/remoting_client_pnacl.nmf.jinja2',
+              '<(PRODUCT_DIR)/remoting_client_plugin_newlib.pexe',
+              '<@(remoting_webapp_browsertest_main_html_extra_files)',
+            ],
+          },
+          'dependencies': [
+            'remoting_nacl.gyp:remoting_client_plugin_nacl',
+            'remoting_webapp_browser_test_main_html',
+          ],
+          'includes': [ 'remoting_webapp.gypi', ],
+        },  # end of target 'remoting_webapp_browser_test'
+      ]
     }]
-  ]
+  ] # end of 'conditions'
 }

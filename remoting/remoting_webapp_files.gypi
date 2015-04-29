@@ -58,6 +58,10 @@
       '<@(remoting_webapp_browsertest_js_files)',
       '<@(remoting_webapp_browsertest_js_mock_files)',
     ],
+    'remoting_webapp_browsertest_main_html_extra_files': [
+      '<@(remoting_webapp_browsertest_all_js_files)',
+      '../third_party/sinonjs/src/sinon.js',
+    ],
 
     #
     # Webapp unittest JavaScript files.
@@ -306,9 +310,6 @@
       '<@(remoting_webapp_js_logging_files)',
       '<@(remoting_webapp_js_ui_files)',
       '<@(remoting_webapp_js_signaling_files)',
-      # Uncomment this line to include browser test files in the web app
-      # to expedite debugging or local development.
-      #'<@(remoting_webapp_browsertest_all_js_files)',
     ],
 
     # The JS files required by unittest.html.

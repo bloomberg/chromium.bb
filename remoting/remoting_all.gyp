@@ -76,6 +76,7 @@
         ['disable_nacl==0 and disable_nacl_untrusted==0', {
           'dependencies': [
              '../remoting/remoting.gyp:remoting_key_tester',
+             '../remoting/remoting.gyp:remoting_webapp_browser_test',
           ],
         }],
       ],
