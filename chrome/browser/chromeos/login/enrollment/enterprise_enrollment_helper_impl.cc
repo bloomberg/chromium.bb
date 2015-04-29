@@ -98,13 +98,12 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingProfile(
   fetch_additional_token_ = fetch_additional_token;
   oauth_fetchers_.resize(fetch_additional_token_ ? 2 : 1);
   for (size_t i = 0; i < oauth_fetchers_.size(); ++i) {
-    oauth_fetchers_[i] = new policy::PolicyOAuth2TokenFetcher(
+    oauth_fetchers_[i] = new policy::PolicyOAuth2TokenFetcher();
+    oauth_fetchers_[i]->StartWithSigninContext(
         profile_->GetRequestContext(),
         g_browser_process->system_request_context(),
         base::Bind(&EnterpriseEnrollmentHelperImpl::OnTokenFetched,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   i));
-    oauth_fetchers_[i]->Start();
+                   weak_ptr_factory_.GetWeakPtr(), i));
   }
 }
 
@@ -112,11 +111,11 @@ void EnterpriseEnrollmentHelperImpl::EnrollUsingAuthCode(
     const std::string& auth_code) {
   DCHECK(!started_);
   started_ = true;
-  oauth_fetchers_.push_back(new policy::PolicyOAuth2TokenFetcher(
+  oauth_fetchers_.push_back(new policy::PolicyOAuth2TokenFetcher());
+  oauth_fetchers_[0]->StartWithAuthCode(
       auth_code, g_browser_process->system_request_context(),
       base::Bind(&EnterpriseEnrollmentHelperImpl::OnTokenFetched,
-                 weak_ptr_factory_.GetWeakPtr(), 0)));
-  oauth_fetchers_[0]->Start();
+                 weak_ptr_factory_.GetWeakPtr(), 0));
 }
 
 void EnterpriseEnrollmentHelperImpl::EnrollUsingToken(

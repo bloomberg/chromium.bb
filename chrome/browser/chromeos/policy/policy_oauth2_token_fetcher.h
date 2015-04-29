@@ -38,24 +38,22 @@ class PolicyOAuth2TokenFetcher
   typedef base::Callback<void(const std::string&,
                               const GoogleServiceAuthError&)> TokenCallback;
 
-  // Fetches the device management service's oauth2 token, after also retrieving
-  // the OAuth2 refresh tokens.
-  PolicyOAuth2TokenFetcher(net::URLRequestContextGetter* auth_context_getter,
-                           net::URLRequestContextGetter* system_context_getter,
-                           const TokenCallback& callback);
-
-  PolicyOAuth2TokenFetcher(const std::string& auth_code,
-                           net::URLRequestContextGetter* system_context_getter,
-                           const TokenCallback& callback);
-
+  PolicyOAuth2TokenFetcher();
   ~PolicyOAuth2TokenFetcher() override;
 
-  // Starts process of minting device management service OAuth2 access token.
-  void Start();
-
-  // Starts minting device management service OAuth2 access token with the given
-  // |oauth2_refresh_token|.
-  void StartWithRefreshToken(const std::string& oauth2_refresh_token);
+  // Fetches the device management service's oauth2 token. This may be fetched
+  // via signin context, auth code, or oauth2 refresh token.
+  void StartWithSigninContext(
+      net::URLRequestContextGetter* auth_context_getter,
+      net::URLRequestContextGetter* system_context_getter,
+      const TokenCallback& callback);
+  void StartWithAuthCode(const std::string& auth_code,
+                         net::URLRequestContextGetter* system_context_getter,
+                         const TokenCallback& callback);
+  void StartWithRefreshToken(
+      const std::string& oauth2_refresh_token,
+      net::URLRequestContextGetter* system_context_getter,
+      const TokenCallback& callback);
 
   // Returns true if we have previously attempted to fetch tokens with this
   // class and failed.
@@ -99,7 +97,7 @@ class PolicyOAuth2TokenFetcher
                           const GoogleServiceAuthError& error);
 
   // Auth code which is used to retreive a refresh token.
-  const std::string auth_code_;
+  std::string auth_code_;
 
   scoped_refptr<net::URLRequestContextGetter> auth_context_getter_;
   scoped_refptr<net::URLRequestContextGetter> system_context_getter_;

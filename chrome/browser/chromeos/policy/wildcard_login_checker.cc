@@ -34,7 +34,7 @@ WildcardLoginChecker::WildcardLoginChecker() {}
 
 WildcardLoginChecker::~WildcardLoginChecker() {}
 
-void WildcardLoginChecker::Start(
+void WildcardLoginChecker::StartWithSigninContext(
     scoped_refptr<net::URLRequestContextGetter> signin_context,
     const StatusCallback& callback) {
   CHECK(!token_fetcher_);
@@ -43,12 +43,11 @@ void WildcardLoginChecker::Start(
   start_timestamp_ = base::Time::Now();
 
   callback_ = callback;
-  token_fetcher_.reset(new PolicyOAuth2TokenFetcher(
-      signin_context.get(),
-      g_browser_process->system_request_context(),
+  token_fetcher_.reset(new PolicyOAuth2TokenFetcher());
+  token_fetcher_->StartWithSigninContext(
+      signin_context.get(), g_browser_process->system_request_context(),
       base::Bind(&WildcardLoginChecker::OnPolicyTokenFetched,
-                 base::Unretained(this))));
-  token_fetcher_->Start();
+                 base::Unretained(this)));
 }
 
 void WildcardLoginChecker::StartWithRefreshToken(
@@ -60,11 +59,11 @@ void WildcardLoginChecker::StartWithRefreshToken(
   start_timestamp_ = base::Time::Now();
 
   callback_ = callback;
-  token_fetcher_.reset(new PolicyOAuth2TokenFetcher(
-      std::string(), g_browser_process->system_request_context(),
+  token_fetcher_.reset(new PolicyOAuth2TokenFetcher());
+  token_fetcher_->StartWithRefreshToken(
+      refresh_token, g_browser_process->system_request_context(),
       base::Bind(&WildcardLoginChecker::OnPolicyTokenFetched,
-                 base::Unretained(this))));
-  token_fetcher_->StartWithRefreshToken(refresh_token);
+                 base::Unretained(this)));
 }
 
 void WildcardLoginChecker::StartWithAccessToken(

@@ -292,11 +292,11 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
                                          ->user_context()
                                          .GetRefreshToken();
   if (!refresh_token.empty()) {
-    token_fetcher_.reset(new PolicyOAuth2TokenFetcher(
-        std::string(), g_browser_process->system_request_context(),
+    token_fetcher_.reset(new PolicyOAuth2TokenFetcher());
+    token_fetcher_->StartWithRefreshToken(
+        refresh_token, g_browser_process->system_request_context(),
         base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
-                   base::Unretained(this))));
-    token_fetcher_->StartWithRefreshToken(refresh_token);
+                   base::Unretained(this)));
     return;
   }
 
@@ -309,12 +309,11 @@ void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
     return;
   }
 
-  token_fetcher_.reset(new PolicyOAuth2TokenFetcher(
-      signin_context.get(),
-      g_browser_process->system_request_context(),
+  token_fetcher_.reset(new PolicyOAuth2TokenFetcher());
+  token_fetcher_->StartWithSigninContext(
+      signin_context.get(), g_browser_process->system_request_context(),
       base::Bind(&UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched,
-                 base::Unretained(this))));
-  token_fetcher_->Start();
+                 base::Unretained(this)));
 }
 
 void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(

@@ -31,34 +31,45 @@ const int kRequestRestartDelay = 3000;
 
 }  // namespace
 
-PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher(
-    net::URLRequestContextGetter* auth_context_getter,
-    net::URLRequestContextGetter* system_context_getter,
-    const TokenCallback& callback)
-    : auth_context_getter_(auth_context_getter),
-      system_context_getter_(system_context_getter),
-      callback_(callback) {}
-
-PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher(
-    const std::string& auth_code,
-    net::URLRequestContextGetter* system_context_getter,
-    const TokenCallback& callback)
-    : auth_code_(auth_code),
-      system_context_getter_(system_context_getter),
-      callback_(callback) {
+PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher() {
 }
 
-PolicyOAuth2TokenFetcher::~PolicyOAuth2TokenFetcher() {}
+PolicyOAuth2TokenFetcher::~PolicyOAuth2TokenFetcher() {
+}
 
-void PolicyOAuth2TokenFetcher::Start() {
-  retry_count_ = 0;
+void PolicyOAuth2TokenFetcher::StartWithSigninContext(
+    net::URLRequestContextGetter* auth_context_getter,
+    net::URLRequestContextGetter* system_context_getter,
+    const TokenCallback& callback) {
+  DCHECK(!refresh_token_fetcher_ && !access_token_fetcher_);
+
+  auth_context_getter_ = auth_context_getter;
+  system_context_getter_ = system_context_getter;
+  callback_ = callback;
+  StartFetchingRefreshToken();
+}
+
+void PolicyOAuth2TokenFetcher::StartWithAuthCode(
+    const std::string& auth_code,
+    net::URLRequestContextGetter* system_context_getter,
+    const TokenCallback& callback) {
+  DCHECK(!refresh_token_fetcher_ && !access_token_fetcher_);
+
+  auth_code_ = auth_code;
+  system_context_getter_ = system_context_getter;
+  callback_ = callback;
   StartFetchingRefreshToken();
 }
 
 void PolicyOAuth2TokenFetcher::StartWithRefreshToken(
-    const std::string& oauth2_refresh_token) {
-  retry_count_ = 0;
+    const std::string& oauth2_refresh_token,
+    net::URLRequestContextGetter* system_context_getter,
+    const TokenCallback& callback) {
+  DCHECK(!refresh_token_fetcher_ && !access_token_fetcher_);
+
   oauth2_refresh_token_ = oauth2_refresh_token;
+  system_context_getter_ = system_context_getter;
+  callback_ = callback;
   StartFetchingAccessToken();
 }
 

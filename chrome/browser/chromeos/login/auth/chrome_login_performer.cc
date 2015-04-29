@@ -104,7 +104,7 @@ void ChromeLoginPerformer::RunOnlineWhitelistCheck(
       !connector->IsNonEnterpriseUser(user_id)) {
     wildcard_login_checker_.reset(new policy::WildcardLoginChecker());
     if (refresh_token.empty()) {
-      wildcard_login_checker_->Start(
+      wildcard_login_checker_->StartWithSigninContext(
           ProfileHelper::GetSigninProfile()->GetRequestContext(),
           base::Bind(&ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted,
                      weak_factory_.GetWeakPtr(), success_callback,

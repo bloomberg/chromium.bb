@@ -38,8 +38,9 @@ class WildcardLoginChecker : public UserInfoFetcher::Delegate {
   virtual ~WildcardLoginChecker();
 
   // Starts checking. The result will be reported via |callback_|.
-  void Start(scoped_refptr<net::URLRequestContextGetter> signin_context,
-             const StatusCallback& callback);
+  void StartWithSigninContext(
+      scoped_refptr<net::URLRequestContextGetter> signin_context,
+      const StatusCallback& callback);
 
   // Starts checking with a provided refresh token.
   void StartWithRefreshToken(const std::string& refresh_token,
