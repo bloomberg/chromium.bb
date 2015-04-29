@@ -68,7 +68,8 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
   }
   bool ConfineCursorToRootWindow() override { return false; }
   void UnConfineCursor() override { NOTIMPLEMENTED(); }
-  void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer) {
+  void SetRootWindowTransformer(
+      scoped_ptr<RootWindowTransformer> transformer) override {
     transformer_helper_.SetRootWindowTransformer(transformer.Pass());
   }
   gfx::Insets GetHostInsets() const override {
@@ -88,7 +89,7 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
   void SetRootTransform(const gfx::Transform& transform) override {
     transformer_helper_.SetTransform(transform);
   }
-  gfx::Transform GetRootTransform() const {
+  gfx::Transform GetRootTransform() const override {
     return transformer_helper_.GetTransform();
   }
   gfx::Transform GetInverseRootTransform() const override {

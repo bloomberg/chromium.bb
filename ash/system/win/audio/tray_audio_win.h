@@ -14,7 +14,7 @@ namespace ash {
 class TrayAudioWin : public TrayAudio {
  public:
   explicit TrayAudioWin(SystemTray* system_tray);
-  virtual ~TrayAudioWin();
+  ~TrayAudioWin() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TrayAudioWin);
