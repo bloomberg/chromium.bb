@@ -352,6 +352,8 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       sign_types = []
       if config['name'].endswith('-%s' % cbuildbot_config.CONFIG_TYPE_FIRMWARE):
         sign_types += ['firmware']
+      if config['name'].endswith('-%s' % cbuildbot_config.CONFIG_TYPE_FACTORY):
+        sign_types += ['factory']
       urls = commands.PushImages(
           board=board,
           archive_url=upload_url,
