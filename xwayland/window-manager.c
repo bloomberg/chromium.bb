@@ -2423,7 +2423,8 @@ weston_wm_window_type_inactive(struct weston_wm_window *window)
 	       window->type == wm->atom.net_wm_window_type_dropdown ||
 	       window->type == wm->atom.net_wm_window_type_dnd ||
 	       window->type == wm->atom.net_wm_window_type_combo ||
-	       window->type == wm->atom.net_wm_window_type_popup;
+	       window->type == wm->atom.net_wm_window_type_popup ||
+	       window->type == wm->atom.net_wm_window_type_utility;
 }
 
 static void
