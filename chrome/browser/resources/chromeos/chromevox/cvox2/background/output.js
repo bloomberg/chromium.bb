@@ -78,57 +78,156 @@ Output.SPACE = ' ';
 
 /**
  * Metadata about supported automation roles.
- * @const {Object<string, {msgId: string, earcon: (string|undefined)}>}
+ * @const {Object<string, {msgId: string,
+ *                         earconId: (string|undefined),
+ *                         inherits: (string|undefined)}>}
+ * msgId: the message id of the role.
+ * earconId: an optional earcon to play when encountering the role.
+ * inherits: inherits rules from this role.
  * @private
  */
 Output.ROLE_INFO_ = {
   alert: {
     msgId: 'aria_role_alert',
-    earcon: 'ALERT_NONMODAL',
+    earconId: 'ALERT_NONMODAL',
+  },
+  alertDialog: {
+    msgId: 'aria_role_alertdialog'
+  },
+  article: {
+    msgId: 'aria_role_article',
+    inherits: 'abstractContainer'
+  },
+  application: {
+    msgId: 'aria_role_application',
+    inherits: 'abstractContainer'
+  },
+  banner: {
+    msgId: 'aria_role_banner',
+    inherits: 'abstractContainer'
   },
   button: {
     msgId: 'tag_button',
-    earcon: 'BUTTON'
+    earconId: 'BUTTON'
+  },
+  cell: {
+    msgId: 'aria_role_gridcell'
   },
   checkBox: {
     msgId: 'input_type_checkbox'
   },
+  columnHeader: {
+    msgId: 'aria_role_columnheader',
+    inherits: 'abstractContainer'
+  },
+  comboBox: {
+    msgId: 'aria_role_combobox'
+  },
+  complementary: {
+    msgId: 'aria_role_complementary',
+    inherits: 'abstractContainer'
+  },
+  contentInfo: {
+    msgId: 'aria_role_contentinfo',
+    inherits: 'abstractContainer'
+  },
   date: {
-    msgId: 'input_type_date'
+    msgId: 'input_type_date',
+    inherits: 'abstractContainer'
+  },
+  definition: {
+    msgId: 'aria_role_definition',
+    inherits: 'abstractContainer'
   },
   dialog: {
     msgId: 'dialog'
   },
+  directory: {
+    msgId: 'aria_role_directory',
+    inherits: 'abstractContainer'
+  },
+  document: {
+    msgId: 'aria_role_document',
+    inherits: 'abstractContainer'
+  },
+  form: {
+    msgId: 'aria_role_form',
+    inherits: 'abstractContainer'
+  },
+  grid: {
+    msgId: 'aria_role_grid'
+  },
+  group: {
+    msgId: 'aria_role_group'
+  },
   heading: {
     msgId: 'aria_role_heading',
   },
+  image: {
+    msgId: 'aria_role_img',
+  },
   link: {
     msgId: 'tag_link',
-    earcon: 'LINK'
+    earconId: 'LINK'
   },
   listBox: {
     msgId: 'aria_role_listbox',
-    earcon: 'LISTBOX'
+    earconId: 'LISTBOX'
   },
   listBoxOption: {
     msgId: 'aria_role_listitem',
-    earcon: 'LIST_ITEM'
+    earconId: 'LIST_ITEM'
   },
   listItem: {
-    msgId: 'ARIA_ROLE_LISTITEM',
-    earcon: 'list_item'
+    msgId: 'aria_role_listitem',
+    earconId: 'LIST_ITEM'
+  },
+  log: {
+    msgId: 'aria_role_log',
+  },
+  main: {
+    msgId: 'aria_role_main',
+    inherits: 'abstractContainer'
+  },
+  marquee: {
+    msgId: 'aria_role_marquee',
+  },
+  math: {
+    msgId: 'aria_role_math',
+    inherits: 'abstractContainer'
   },
   menu: {
     msgId: 'aria_role_menu'
   },
+  menuBar: {
+    msgId: 'aria_role_menubar',
+  },
   menuItem: {
     msgId: 'aria_role_menuitem'
+  },
+  menuItemCheckBox: {
+    msgId: 'aria_role_menuitemcheckbox'
+  },
+  menuItemRadio: {
+    msgId: 'aria_role_menuitemradio'
   },
   menuListOption: {
     msgId: 'aria_role_menuitem'
   },
   menuListPopup: {
     msgId: 'aria_role_menu'
+  },
+  navigation: {
+    msgId: 'aria_role_navigation',
+    inherits: 'abstractContainer'
+  },
+  note: {
+    msgId: 'aria_role_note',
+    inherits: 'abstractContainer'
+  },
+  region: {
+    msgId: 'aria_role_region',
+    inherits: 'abstractContainer'
   },
   popUpButton: {
     msgId: 'tag_button',
@@ -137,20 +236,54 @@ Output.ROLE_INFO_ = {
   radioButton: {
     msgId: 'input_type_radio'
   },
+  radioGroup: {
+    msgId: 'aria_role_radiogroup',
+  },
+  rowHeader: {
+    msgId: 'aria_role_rowheader',
+    inherits: 'abstractContainer'
+  },
+  scrollBar: {
+    msgId: 'aria_role_scrollbar',
+  },
+  search: {
+    msgId: 'aria_role_search',
+    inherits: 'abstractContainer'
+  },
+  separator: {
+    msgId: 'aria_role_separator',
+    inherits: 'abstractContainer'
+  },
   spinButton: {
-    msgId: 'aria_role_combobox',
-    earcon: 'LISTBOX'
+    msgId: 'aria_role_spinbutton',
+    earconId: 'LISTBOX'
+  },
+  status: {
+    msgId: 'aria_role_status'
+  },
+  tab: {
+    msgId: 'aria_role_tab'
+  },
+  tabList: {
+    msgId: 'aria_role_tablist'
+  },
+  tabPanel: {
+    msgId: 'aria_role_tabpanel'
   },
   textBox: {
     msgId: 'input_type_text',
-    earcon: 'EDITABLE_TEXT'
+    earconId: 'EDITABLE_TEXT'
   },
   textField: {
     msgId: 'input_type_text',
-    earcon: 'EDITABLE_TEXT'
+    earconId: 'EDITABLE_TEXT'
   },
   time: {
-    msgId: 'tag_time'
+    msgId: 'tag_time',
+    inherits: 'abstractContainer'
+  },
+  timer: {
+    msgId: 'aria_role_timer'
   },
   toolbar: {
     msgId: 'aria_role_toolbar'
@@ -217,17 +350,23 @@ Output.RULES = {
       speak: '$name $value $description $help $role',
       braille: ''
     },
+    abstractContainer: {
+      enter: '$name $role',
+      leave: '@exited_container($role)'
+    },
     alert: {
       speak: '!doNotInterrupt $role $descendants'
+    },
+    alertDialog: {
+      enter: '$name $role $descendants'
     },
     checkBox: {
       speak: '$name $role $checked'
     },
-    date: {
-      enter: '$name $role',
-      leave: '@exited_container($role)'
-    },
     dialog: {
+      enter: '$name $role'
+    },
+    grid: {
       enter: '$name $role'
     },
     heading: {
@@ -277,6 +416,9 @@ Output.RULES = {
       speak: '$if($checked, @describe_radio_selected($name), ' +
           '@describe_radio_unselected($name))'
     },
+    radioGroup: {
+      enter: '$name $role'
+    },
     slider: {
       speak: '@describe_slider($value, $name) $help'
     },
@@ -291,10 +433,6 @@ Output.RULES = {
           '$textInputType, @input_type_+$textInputType, @input_type_text) ' +
           '$earcon(EDITABLE_TEXT)',
       braille: ''
-    },
-    time: {
-      enter: '$name $role',
-      leave: '@exited_container($role)'
     },
     toolbar: {
       enter: '$name $role'
@@ -684,7 +822,7 @@ Output.prototype = {
               msg = cvox.ChromeVox.msgs.getMsg(info.msgId + '_brl');
             else
               msg = cvox.ChromeVox.msgs.getMsg(info.msgId);
-            earconId = info.earcon;
+            earconId = info.earconId;
           } else {
             console.error('Missing role info for ' + node.role);
           }
@@ -834,10 +972,22 @@ Output.prototype = {
     // Navigate is the default event.
     var eventBlock = Output.RULES[type] || Output.RULES['navigate'];
 
+    var getMergedRoleBlock = function(role) {
+      var parentRole = (Output.ROLE_INFO_[role] || {}).inherits;
+      var roleBlock = eventBlock[role] || eventBlock['default'];
+      var parentRoleBlock = parentRole ? eventBlock[parentRole] : {};
+      var mergedRoleBlock = {};
+      for (var key in parentRoleBlock)
+        mergedRoleBlock[key] = parentRoleBlock[key];
+      for (var key in roleBlock)
+        mergedRoleBlock[key] = roleBlock[key];
+      return mergedRoleBlock;
+    };
+
     for (var i = 0, formatPrevNode;
          (formatPrevNode = prevUniqueAncestors[i]);
          i++) {
-      var roleBlock = eventBlock[formatPrevNode.role] || eventBlock['default'];
+      var roleBlock = getMergedRoleBlock(formatPrevNode.role);
       if (roleBlock.leave)
         this.format_(formatPrevNode, roleBlock.leave, buff, opt_exclude);
     }
@@ -847,7 +997,7 @@ Output.prototype = {
     for (var j = uniqueAncestors.length - 2, formatNode;
          (formatNode = uniqueAncestors[j]);
          j--) {
-      var roleBlock = eventBlock[formatNode.role] || eventBlock['default'];
+      var roleBlock = getMergedRoleBlock(formatNode.role);
       if (roleBlock.enter) {
         if (enterRole[formatNode.role])
           continue;
@@ -856,8 +1006,8 @@ Output.prototype = {
         this.format_(formatNode, roleBlock.enter, tempBuff, opt_exclude);
         enterOutputs.unshift(tempBuff);
       }
-        if (formatNode.role == 'window')
-            break;
+      if (formatNode.role == 'window')
+        break;
     }
     enterOutputs.forEach(function(b) {
       buff.push.apply(buff, b);
