@@ -89,7 +89,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
     }
 
     void setValueForTesting(String value) {
-        radioButtonClicked(Integer.parseInt(value));
+        searchEngineSelected(Integer.parseInt(value));
     }
 
     /**
@@ -164,22 +164,19 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
             view = mLayoutInflater.inflate(R.layout.search_engine, null);
         }
 
+        view.setOnClickListener(this);
+        view.setTag(position);
+
         RadioButton radioButton = (RadioButton) view.findViewById(R.id.radiobutton);
-        TextView description = (TextView) view.findViewById(R.id.description);
-        TextView link = (TextView) view.findViewById(R.id.link);
-
-        TemplateUrl templateUrl = mSearchEngines.get(position);
-        Resources resources = mContext.getResources();
-
         boolean selected = position == mSelectedSearchEnginePosition;
         radioButton.setChecked(selected);
-        radioButton.setOnClickListener(this);
-        radioButton.setTag(position);
 
+        TextView description = (TextView) view.findViewById(R.id.description);
+        TemplateUrl templateUrl = mSearchEngines.get(position);
+        Resources resources = mContext.getResources();
         description.setText(getSearchEngineNameAndDomain(resources, templateUrl));
-        description.setOnClickListener(this);
-        description.setTag(position);
 
+        TextView link = (TextView) view.findViewById(R.id.link);
         link.setVisibility(selected ? View.VISIBLE : View.GONE);
         if (selected) {
             ForegroundColorSpan linkSpan = new ForegroundColorSpan(
@@ -219,19 +216,17 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         if (view.getTag() == null) {
             onLocationLinkClicked();
         } else {
-            radioButtonClicked((int) view.getTag());
+            searchEngineSelected((int) view.getTag());
         }
     }
 
-    private void radioButtonClicked(int position) {
+    private void searchEngineSelected(int position) {
         // First clean up any automatically added permissions (if any) for the previously selected
         // search engine.
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(mContext);
         if (sharedPreferences.getBoolean(PrefServiceBridge.LOCATION_AUTO_ALLOWED, false)) {
             if (locationEnabled(mSelectedSearchEnginePosition)) {
-                TemplateUrl templateUrl = mSearchEngines.get(mSelectedSearchEnginePosition);
-
                 String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(
                         toIndex(mSelectedSearchEnginePosition));
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
