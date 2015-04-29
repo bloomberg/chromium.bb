@@ -20,8 +20,16 @@ class Error(Exception):
   """Base exception for CLI command VM tests."""
 
 
+class SetupError(Error):
+  """Raised when error occurs during test environment setup."""
+
+
+class TestError(Error):
+  """Raised when a command test has failed."""
+
+
 class CommandError(Error):
-  """Raised when running a command test."""
+  """Raised when error occurs during a command test."""
 
 
 def _PrintCommandLog(command, content):
@@ -47,7 +55,7 @@ def TestCommandDecorator(command_name):
         logging.info('Test for %s passed.', command)
       except CommandError as e:
         _PrintCommandLog(command, str(e))
-        raise Error('Test for %s failed.' % command)
+        raise TestError('Test for %s failed.' % command)
 
     return Wrapper
 
@@ -95,7 +103,7 @@ class CommandVMTest(object):
       self.vm.Start()
       logging.info('The VM has been successfully set up. Ready to run tests.')
     except vm.VMError as e:
-      raise Error('Failed to set up the VM for testing: %s' % e)
+      raise SetupError('Failed to set up the VM for testing: %s' % e)
 
   def TearDown(self):
     """Stops the VM instance after testing."""
@@ -106,6 +114,27 @@ class CommandVMTest(object):
       logging.info('The VM has been stopped.')
     except vm.VMStopError as e:
       logging.warning('Failed to stop the VM: %s', e)
+
+  @TestCommandDecorator('devices')
+  def TestDevices(self):
+    """Tests the devices command."""
+    logging.info('Test to use devices command to set a user-friendly alias '
+                 'name for the VM device.')
+    alias = 'vm_device'
+    cmd = self.BuildCommand('devices', device=self.vm.device_addr,
+                            pos_args=['alias', alias])
+    result = cros_build_lib.RunCommand(cmd, capture_output=True,
+                                       error_code_ok=True)
+    if result.returncode:
+      logging.error('Failed to set an alias for the VM device.')
+      raise CommandError(result.error)
+
+    # Verify that the alias is set correctly.
+    with remote_access.ChromiumOSDeviceHandler(
+        remote_access.LOCALHOST, port=self.vm.port) as device:
+      if device.alias != alias:
+        logging.error('VM alias is "%s", which is not expected.', device.alias)
+        raise CommandError()
 
   @TestCommandDecorator('shell')
   def TestShell(self):
@@ -157,23 +186,19 @@ class CommandVMTest(object):
     logging.info('Test to attach a running process on the VM device.')
     with remote_access.ChromiumOSDeviceHandler(
         remote_access.LOCALHOST, port=self.vm.port) as device:
-      try:
-        exe = 'update_engine'
-        pids = device.GetRunningPids(exe, full_path=False)
-        if not pids:
-          logging.error('Failed to find any running process to debug.')
-          raise CommandError()
-        pid = pids[0]
-        attach_cmd = self.BuildCommand('debug', device=self.vm.device_addr,
-                                       opt_args=['--pid', str(pid)])
-        result = cros_build_lib.RunCommand(attach_cmd, capture_output=True,
-                                           error_code_ok=True, input='\n')
-        if result.returncode:
-          logging.error('Failed to attach a running process on the VM device.')
-          raise CommandError(result.error)
-      except remote_access.SSHConnectionError:
-        logging.error('Unable to connect to the VM to get running processes.')
+      exe = 'update_engine'
+      pids = device.GetRunningPids(exe, full_path=False)
+      if not pids:
+        logging.error('Failed to find any running process to debug.')
         raise CommandError()
+      pid = pids[0]
+      attach_cmd = self.BuildCommand('debug', device=self.vm.device_addr,
+                                     opt_args=['--pid', str(pid)])
+      result = cros_build_lib.RunCommand(attach_cmd, capture_output=True,
+                                         error_code_ok=True, input='\n')
+      if result.returncode:
+        logging.error('Failed to attach a running process on the VM device.')
+        raise CommandError(result.error)
 
   @TestCommandDecorator('flash')
   def TestFlash(self):
@@ -222,15 +247,13 @@ class CommandVMTest(object):
       try:
         device.RunCommand(['python', '-c', '"import cherrypy"'])
         device.RunCommand(['qmerge', '-h'])
-      except remote_access.SSHConnectionError as e:
-        logging.error('Unable to connect to the VM to verify packages: %s', e)
-        raise CommandError()
       except cros_build_lib.RunCommandError as e:
         logging.error('Unable to verify packages installed on VM: %s', e)
         raise CommandError()
 
   def RunTests(self):
     """Calls the test functions."""
+    self.TestDevices()
     self.TestShell()
     self.TestDebug()
     self.TestFlash()

@@ -29,7 +29,11 @@ class CrosVMTest(command_vm_test.CommandVMTest):
     if opt_args:
       cmd.extend(opt_args)
     if device:
-      cmd.append(device)
+      if command == 'devices':
+        # The device argument is optional for 'cros devices' command.
+        cmd.extend(['--device', device])
+      else:
+        cmd.append(device)
     if pos_args:
       cmd.extend(pos_args)
     return cmd
