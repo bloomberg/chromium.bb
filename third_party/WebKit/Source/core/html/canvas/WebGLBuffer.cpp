@@ -57,7 +57,7 @@ WebGLBuffer::~WebGLBuffer()
     detachAndDeleteObject();
 }
 
-void WebGLBuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
+void WebGLBuffer::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     context3d->deleteBuffer(m_object);
     m_object = 0;
@@ -72,4 +72,4 @@ void WebGLBuffer::setTarget(GLenum target)
         m_target = target;
 }
 
-}
+} // namespace blink

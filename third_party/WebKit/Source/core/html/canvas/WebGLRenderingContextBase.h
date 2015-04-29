@@ -117,7 +117,7 @@ public:
 
     static unsigned getWebGLVersion(const CanvasRenderingContext*);
 
-    static PassOwnPtr<blink::WebGraphicsContext3D> createWebGraphicsContext3D(HTMLCanvasElement*, WebGLContextAttributes, unsigned webGLVersion);
+    static PassOwnPtr<WebGraphicsContext3D> createWebGraphicsContext3D(HTMLCanvasElement*, WebGLContextAttributes, unsigned webGLVersion);
     static void forceNextWebGLContextCreationToFail();
 
     int drawingBufferWidth() const;
@@ -351,7 +351,7 @@ public:
     void forceRestoreContext();
     void loseContextImpl(LostContextMode, AutoRecoveryMethod);
 
-    blink::WebGraphicsContext3D* webContext() const { return drawingBuffer()->context(); }
+    WebGraphicsContext3D* webContext() const { return drawingBuffer()->context(); }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
     Extensions3DUtil* extensionsUtil();
 
@@ -408,8 +408,8 @@ protected:
     friend class ScopedTexture2DRestorer;
     friend class ScopedFramebufferRestorer;
 
-    WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes&);
-    PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D>);
+    WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes&);
+    PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<WebGraphicsContext3D>);
     void setupFlags();
 
 #if ENABLE(OILPAN)
@@ -421,7 +421,7 @@ protected:
     virtual bool isAccelerated() const override { return true; }
     virtual void setIsHidden(bool) override;
     bool paintRenderingResultsToCanvas(SourceDrawingBuffer) override;
-    virtual blink::WebLayer* platformLayer() const override;
+    virtual WebLayer* platformLayer() const override;
     void stop() override;
 
     bool isWebGL2OrHigher() { return version() >= 2; }

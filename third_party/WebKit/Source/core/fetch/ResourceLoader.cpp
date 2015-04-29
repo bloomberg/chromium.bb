@@ -144,9 +144,9 @@ void ResourceLoader::start()
     RELEASE_ASSERT(m_connectionState == ConnectionStateNew);
     m_connectionState = ConnectionStateStarted;
 
-    m_loader = adoptPtr(blink::Platform::current()->createURLLoader());
+    m_loader = adoptPtr(Platform::current()->createURLLoader());
     ASSERT(m_loader);
-    blink::WrappedResourceRequest wrappedRequest(m_request);
+    WrappedResourceRequest wrappedRequest(m_request);
     m_loader->loadAsynchronously(wrappedRequest, this);
 }
 
@@ -185,7 +185,7 @@ void ResourceLoader::attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedD
     }
 }
 
-void ResourceLoader::didDownloadData(blink::WebURLLoader*, int length, int encodedDataLength)
+void ResourceLoader::didDownloadData(WebURLLoader*, int length, int encodedDataLength)
 {
     ASSERT(m_state != Terminated);
     RefPtrWillBeRawPtr<ResourceLoader> protect(this);
@@ -214,7 +214,7 @@ void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority, int in
     if (m_loader) {
         m_host->didChangeLoadingPriority(m_resource, loadPriority, intraPriorityValue);
         ASSERT(m_state != Terminated);
-        m_loader->didChangePriority(static_cast<blink::WebURLRequest::Priority>(loadPriority), intraPriorityValue);
+        m_loader->didChangePriority(static_cast<WebURLRequest::Priority>(loadPriority), intraPriorityValue);
     }
 }
 
@@ -268,7 +268,7 @@ void ResourceLoader::cancel(const ResourceError& error)
         releaseResources();
 }
 
-void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest& passedNewRequest, const blink::WebURLResponse& passedRedirectResponse)
+void ResourceLoader::willSendRequest(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse)
 {
     ASSERT(m_state != Terminated);
     RefPtrWillBeRawPtr<ResourceLoader> protect(this);
@@ -299,14 +299,14 @@ void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&
     m_request = newRequest;
 }
 
-void ResourceLoader::didReceiveCachedMetadata(blink::WebURLLoader*, const char* data, int length)
+void ResourceLoader::didReceiveCachedMetadata(WebURLLoader*, const char* data, int length)
 {
     RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
     ASSERT(m_state == Initialized);
     m_resource->setSerializedCachedMetadata(data, length);
 }
 
-void ResourceLoader::didSendData(blink::WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
+void ResourceLoader::didSendData(WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
     ASSERT(m_state == Initialized);
     m_resource->didSendData(bytesSent, totalBytesToBeSent);
@@ -318,7 +318,7 @@ bool ResourceLoader::responseNeedsAccessControlCheck() const
     return m_options.corsEnabled == IsCORSEnabled;
 }
 
-void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse& response, WebDataConsumerHandle* rawHandle)
+void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& response, WebDataConsumerHandle* rawHandle)
 {
     ASSERT(!response.isNull());
     ASSERT(m_state == Initialized);
@@ -341,9 +341,9 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
                 m_loader.clear();
                 m_connectionState = ConnectionStateStarted;
                 m_request = *m_fallbackRequestForServiceWorker;
-                m_loader = adoptPtr(blink::Platform::current()->createURLLoader());
+                m_loader = adoptPtr(Platform::current()->createURLLoader());
                 ASSERT(m_loader);
-                blink::WrappedResourceRequest wrappedRequest(m_request);
+                WrappedResourceRequest wrappedRequest(m_request);
                 m_loader->loadAsynchronously(wrappedRequest, this);
                 return;
             }
@@ -384,7 +384,7 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
         // Since a subresource loader does not load multipart sections progressively, data was delivered to the loader all at once.
         // After the first multipart section is complete, signal to delegates that this load is "finished"
         m_host->subresourceLoaderFinishedLoadingOnePart(this);
-        didFinishLoadingOnePart(0, blink::WebURLLoaderClient::kUnknownEncodedDataLength);
+        didFinishLoadingOnePart(0, WebURLLoaderClient::kUnknownEncodedDataLength);
     }
     if (m_state == Terminated)
         return;
@@ -403,12 +403,12 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
     cancel();
 }
 
-void ResourceLoader::didReceiveResponse(blink::WebURLLoader* loader, const blink::WebURLResponse& response)
+void ResourceLoader::didReceiveResponse(WebURLLoader* loader, const WebURLResponse& response)
 {
     didReceiveResponse(loader, response, nullptr);
 }
 
-void ResourceLoader::didReceiveData(blink::WebURLLoader*, const char* data, int length, int encodedDataLength)
+void ResourceLoader::didReceiveData(WebURLLoader*, const char* data, int length, int encodedDataLength)
 {
     ASSERT(m_state != Terminated);
     RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
@@ -434,7 +434,7 @@ void ResourceLoader::didReceiveData(blink::WebURLLoader*, const char* data, int 
     m_resource->appendData(data, length);
 }
 
-void ResourceLoader::didFinishLoading(blink::WebURLLoader*, double finishTime, int64_t encodedDataLength)
+void ResourceLoader::didFinishLoading(WebURLLoader*, double finishTime, int64_t encodedDataLength)
 {
     RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
     m_connectionState = ConnectionStateFinishedLoading;
@@ -459,7 +459,7 @@ void ResourceLoader::didFinishLoading(blink::WebURLLoader*, double finishTime, i
     releaseResources();
 }
 
-void ResourceLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& error)
+void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
 {
     m_connectionState = ConnectionStateFailed;
     ASSERT(m_state != Terminated);
@@ -493,7 +493,7 @@ bool ResourceLoader::isLoadedBy(ResourceLoaderHost* loader) const
 
 void ResourceLoader::requestSynchronously()
 {
-    OwnPtr<blink::WebURLLoader> loader = adoptPtr(blink::Platform::current()->createURLLoader());
+    OwnPtr<WebURLLoader> loader = adoptPtr(Platform::current()->createURLLoader());
     ASSERT(loader);
 
     // downloadToFile is not supported for synchronous requests.
@@ -506,11 +506,11 @@ void ResourceLoader::requestSynchronously()
     RELEASE_ASSERT(m_connectionState == ConnectionStateNew);
     m_connectionState = ConnectionStateStarted;
 
-    blink::WrappedResourceRequest requestIn(m_request);
-    blink::WebURLResponse responseOut;
+    WrappedResourceRequest requestIn(m_request);
+    WebURLResponse responseOut;
     responseOut.initialize();
-    blink::WebURLError errorOut;
-    blink::WebData dataOut;
+    WebURLError errorOut;
+    WebData dataOut;
     loader->loadSynchronously(requestIn, responseOut, errorOut, dataOut);
     if (errorOut.reason) {
         didFail(0, errorOut);
@@ -520,7 +520,7 @@ void ResourceLoader::requestSynchronously()
     if (m_state == Terminated)
         return;
     RefPtr<ResourceLoadInfo> resourceLoadInfo = responseOut.toResourceResponse().resourceLoadInfo();
-    int64_t encodedDataLength = resourceLoadInfo ? resourceLoadInfo->encodedDataLength : blink::WebURLLoaderClient::kUnknownEncodedDataLength;
+    int64_t encodedDataLength = resourceLoadInfo ? resourceLoadInfo->encodedDataLength : WebURLLoaderClient::kUnknownEncodedDataLength;
     m_host->didReceiveData(m_resource, dataOut.data(), dataOut.size(), encodedDataLength);
     m_resource->setResourceBuffer(dataOut);
     didFinishLoading(0, monotonicallyIncreasingTime(), encodedDataLength);

@@ -655,16 +655,16 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
 
         switch (compositorTiming.direction) {
         case Timing::PlaybackDirectionNormal:
-            animation->setDirection(blink::WebCompositorAnimation::DirectionNormal);
+            animation->setDirection(WebCompositorAnimation::DirectionNormal);
             break;
         case Timing::PlaybackDirectionReverse:
-            animation->setDirection(blink::WebCompositorAnimation::DirectionReverse);
+            animation->setDirection(WebCompositorAnimation::DirectionReverse);
             break;
         case Timing::PlaybackDirectionAlternate:
-            animation->setDirection(blink::WebCompositorAnimation::DirectionAlternate);
+            animation->setDirection(WebCompositorAnimation::DirectionAlternate);
             break;
         case Timing::PlaybackDirectionAlternateReverse:
-            animation->setDirection(blink::WebCompositorAnimation::DirectionAlternateReverse);
+            animation->setDirection(WebCompositorAnimation::DirectionAlternateReverse);
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -673,16 +673,16 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
 
         switch (compositorTiming.fillMode) {
         case Timing::FillModeNone:
-            animation->setFillMode(blink::WebCompositorAnimation::FillModeNone);
+            animation->setFillMode(WebCompositorAnimation::FillModeNone);
             break;
         case Timing::FillModeForwards:
-            animation->setFillMode(blink::WebCompositorAnimation::FillModeForwards);
+            animation->setFillMode(WebCompositorAnimation::FillModeForwards);
             break;
         case Timing::FillModeBackwards:
-            animation->setFillMode(blink::WebCompositorAnimation::FillModeBackwards);
+            animation->setFillMode(WebCompositorAnimation::FillModeBackwards);
             break;
         case Timing::FillModeBoth:
-            animation->setFillMode(blink::WebCompositorAnimation::FillModeBoth);
+            animation->setFillMode(WebCompositorAnimation::FillModeBoth);
             break;
         default:
             ASSERT_NOT_REACHED();

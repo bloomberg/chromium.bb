@@ -48,7 +48,7 @@ public:
     static HTMLParserThread* shared();
 
     void postTask(PassOwnPtr<Closure>);
-    blink::WebThread& platformThread();
+    WebThread& platformThread();
     bool isRunning();
 
 private:

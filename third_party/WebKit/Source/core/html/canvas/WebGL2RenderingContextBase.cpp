@@ -36,9 +36,9 @@ WGC3Dsync syncObjectOrZero(const WebGLSync* object)
     return object ? object->object() : 0;
 }
 
-}
+} // namespace
 
-WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<blink::WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
+WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
     : WebGLRenderingContextBase(passedCanvas, context, requestedAttributes)
 {
 

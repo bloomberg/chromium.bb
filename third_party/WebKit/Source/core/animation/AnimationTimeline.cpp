@@ -47,7 +47,7 @@ namespace blink {
 
 namespace {
 
-bool compareAnimationPlayers(const RefPtrWillBeMember<blink::AnimationPlayer>& left, const RefPtrWillBeMember<blink::AnimationPlayer>& right)
+bool compareAnimationPlayers(const RefPtrWillBeMember<AnimationPlayer>& left, const RefPtrWillBeMember<AnimationPlayer>& right)
 {
     return AnimationPlayer::hasLowerPriority(left.get(), right.get());
 }

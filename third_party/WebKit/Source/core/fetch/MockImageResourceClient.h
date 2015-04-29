@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class MockImageResourceClient final : public blink::ImageResourceClient {
+class MockImageResourceClient final : public ImageResourceClient {
 public:
     MockImageResourceClient()
         : m_imageChangedCount(0)

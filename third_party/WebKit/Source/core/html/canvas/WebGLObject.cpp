@@ -41,7 +41,7 @@ WebGLObject::~WebGLObject()
     ASSERT(m_deleted);
 }
 
-void WebGLObject::deleteObject(blink::WebGraphicsContext3D* context3d)
+void WebGLObject::deleteObject(WebGraphicsContext3D* context3d)
 {
     m_deleted = true;
     if (!hasObject())
@@ -85,7 +85,7 @@ void WebGLObject::detachAndDeleteObject()
     deleteObject(nullptr);
 }
 
-void WebGLObject::onDetached(blink::WebGraphicsContext3D* context3d)
+void WebGLObject::onDetached(WebGraphicsContext3D* context3d)
 {
     if (m_attachmentCount)
         --m_attachmentCount;
@@ -93,4 +93,4 @@ void WebGLObject::onDetached(blink::WebGraphicsContext3D* context3d)
         deleteObject(context3d);
 }
 
-}
+} // namespace blink

@@ -35,9 +35,9 @@
 
 namespace blink {
 
-static blink::WebMediaPlayer::TrackId nextTrackId()
+static WebMediaPlayer::TrackId nextTrackId()
 {
-    static blink::WebMediaPlayer::TrackId next = 0;
+    static WebMediaPlayer::TrackId next = 0;
     return ++next;
 }
 

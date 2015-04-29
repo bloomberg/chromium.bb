@@ -47,7 +47,7 @@ public:
 protected:
     explicit WebGLBuffer(WebGLRenderingContextBase*);
 
-    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*) override;
 
 private:
     bool isBuffer() const override { return true; }

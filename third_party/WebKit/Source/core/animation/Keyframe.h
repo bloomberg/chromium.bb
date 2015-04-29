@@ -69,7 +69,7 @@ public:
         virtual bool isSVGPropertySpecificKeyframe() const { return false; }
 
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const = 0;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, blink::Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const = 0;
+        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(PropertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle* baseStyle) const = 0;
 
         DEFINE_INLINE_VIRTUAL_TRACE() { }
 

@@ -349,13 +349,13 @@ void HTMLAnchorElement::handleClick(Event* event)
     request.setUIStartTime(event->uiCreateTime());
     request.setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy::ReportLink);
     if (hasAttribute(downloadAttr)) {
-        request.setRequestContext(blink::WebURLRequest::RequestContextDownload);
+        request.setRequestContext(WebURLRequest::RequestContextDownload);
         bool isSameOrigin = completedURL.protocolIsData() || document().securityOrigin()->canRequest(completedURL);
         const AtomicString& suggestedName = (isSameOrigin ? fastGetAttribute(downloadAttr) : nullAtom);
 
         frame->loader().client()->loadURLExternally(request, NavigationPolicyDownload, suggestedName);
     } else {
-        request.setRequestContext(blink::WebURLRequest::RequestContextHyperlink);
+        request.setRequestContext(WebURLRequest::RequestContextHyperlink);
         FrameLoadRequest frameRequest(&document(), request, getAttribute(targetAttr));
         frameRequest.setTriggeringEvent(event);
         if (hasRel(RelationNoReferrer))
@@ -398,4 +398,4 @@ Node::InsertionNotificationRequest HTMLAnchorElement::insertedInto(ContainerNode
     return HTMLElement::insertedInto(insertionPoint);
 }
 
-}
+} // namespace blink

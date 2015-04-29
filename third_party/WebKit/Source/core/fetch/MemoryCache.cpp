@@ -123,7 +123,7 @@ PassOwnPtrWillBeRawPtr<MemoryCache> MemoryCache::create()
 MemoryCache::~MemoryCache()
 {
     if (m_prunePending)
-        blink::Platform::current()->currentThread()->removeTaskObserver(this);
+        Platform::current()->currentThread()->removeTaskObserver(this);
 }
 
 DEFINE_TRACE(MemoryCache)
@@ -725,7 +725,7 @@ void MemoryCache::prune(Resource* justReleasedResource)
             pruneNow(currentTime, AutomaticPrune); // Delay exceeded, prune now.
         } else {
             // Defer.
-            blink::Platform::current()->currentThread()->addTaskObserver(this);
+            Platform::current()->currentThread()->addTaskObserver(this);
             m_prunePending = true;
         }
     }
@@ -771,7 +771,7 @@ void MemoryCache::pruneNow(double currentTime, PruneStrategy strategy)
 {
     if (m_prunePending) {
         m_prunePending = false;
-        blink::Platform::current()->currentThread()->removeTaskObserver(this);
+        Platform::current()->currentThread()->removeTaskObserver(this);
     }
 
     TemporaryChange<bool> reentrancyProtector(m_inPruneResources, true);

@@ -160,7 +160,7 @@ String HTMLSelectElement::validationMessage() const
     if (customError())
         return customValidationMessage();
     if (valueMissing())
-        return locale().queryString(blink::WebLocalizedString::ValidationValueMissingForSelect);
+        return locale().queryString(WebLocalizedString::ValidationValueMissingForSelect);
     return String();
 }
 

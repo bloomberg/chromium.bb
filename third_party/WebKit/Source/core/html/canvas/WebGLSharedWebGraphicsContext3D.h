@@ -16,7 +16,7 @@ class DrawingBuffer;
 
 #if ENABLE(OILPAN)
 // The attached WebGLContextObjects are finalized using the
-// blink::WebGraphicsContext3D object of this object's DrawingBuffer.
+// WebGraphicsContext3D object of this object's DrawingBuffer.
 // Naturally the DrawingBuffer must then be kept alive until those
 // finalizers have run. With Oilpan, accomplish that by having the
 // WebGLContextObjects keep a RefPtr<> to an off-heap object that
@@ -35,7 +35,7 @@ public:
 
     DrawingBuffer* drawingBuffer() const;
 
-    blink::WebGraphicsContext3D* webContext() const;
+    WebGraphicsContext3D* webContext() const;
 private:
     explicit WebGLSharedWebGraphicsContext3D(PassRefPtr<DrawingBuffer>);
 
@@ -43,6 +43,6 @@ private:
 };
 #endif
 
-}
+} // namespace blink
 
 #endif // WebGLSharedWebGraphicsContext3D_h

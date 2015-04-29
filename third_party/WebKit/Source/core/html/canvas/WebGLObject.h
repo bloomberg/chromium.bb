@@ -53,10 +53,10 @@ public:
     // deleteObject may not always delete the OpenGL resource.  For programs and
     // shaders, deletion is delayed until they are no longer attached.
     // FIXME: revisit this when resource sharing between contexts are implemented.
-    void deleteObject(blink::WebGraphicsContext3D*);
+    void deleteObject(WebGraphicsContext3D*);
 
     void onAttached() { ++m_attachmentCount; }
-    void onDetached(blink::WebGraphicsContext3D*);
+    void onDetached(WebGraphicsContext3D*);
 
     // This indicates whether the client side issue a delete call already, not
     // whether the OpenGL resource is deleted.
@@ -81,7 +81,7 @@ protected:
     void detach();
     void detachAndDeleteObject();
 
-    virtual blink::WebGraphicsContext3D* getAWebGraphicsContext3D() const = 0;
+    virtual WebGraphicsContext3D* getAWebGraphicsContext3D() const = 0;
 
 private:
     unsigned m_attachmentCount;

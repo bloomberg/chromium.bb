@@ -227,7 +227,7 @@ bool HTMLVideoElement::hasAvailableVideoFrame() const
     if (!webMediaPlayer())
         return false;
 
-    return webMediaPlayer()->hasVideo() && webMediaPlayer()->readyState() >= blink::WebMediaPlayer::ReadyStateHaveCurrentData;
+    return webMediaPlayer()->hasVideo() && webMediaPlayer()->readyState() >= WebMediaPlayer::ReadyStateHaveCurrentData;
 }
 
 void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& exceptionState)
@@ -325,4 +325,4 @@ FloatSize HTMLVideoElement::elementSize() const
     return FloatSize(videoWidth(), videoHeight());
 }
 
-}
+} // namespace blink

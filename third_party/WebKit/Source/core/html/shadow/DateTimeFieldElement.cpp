@@ -40,7 +40,7 @@ using namespace HTMLNames;
 
 static String emptyValueAXText()
 {
-    return Locale::defaultLocale().queryString(blink::WebLocalizedString::AXDateTimeFieldEmptyValueText);
+    return Locale::defaultLocale().queryString(WebLocalizedString::AXDateTimeFieldEmptyValueText);
 }
 
 DateTimeFieldElement::FieldOwner::~FieldOwner()

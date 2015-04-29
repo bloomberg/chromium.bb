@@ -62,7 +62,7 @@ static FontPackageFormat packageFormatOf(SharedBuffer* buffer)
 
 static void recordPackageFormatHistogram(FontPackageFormat format)
 {
-    blink::Platform::current()->histogramEnumeration("WebFont.PackageFormat", format, PackageFormatEnumMax);
+    Platform::current()->histogramEnumeration("WebFont.PackageFormat", format, PackageFormatEnumMax);
 }
 
 FontResource::FontResource(const ResourceRequest& resourceRequest)

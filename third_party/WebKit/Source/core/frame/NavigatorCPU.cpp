@@ -11,7 +11,7 @@ namespace blink {
 
 unsigned NavigatorCPU::hardwareConcurrency() const
 {
-    return blink::Platform::current()->numberOfProcessors();
+    return Platform::current()->numberOfProcessors();
 }
 
 } // namespace blink

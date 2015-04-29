@@ -352,7 +352,7 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
         m_overlayScrollbarHorizontal = GraphicsLayer::create(graphicsLayerFactory, this);
         m_overlayScrollbarVertical = GraphicsLayer::create(graphicsLayerFactory, this);
 
-        blink::ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
+        ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
         ASSERT(coordinator);
         coordinator->setLayerIsContainerForFixedPositionLayers(m_innerViewportScrollLayer.get(), true);
 

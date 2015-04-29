@@ -123,8 +123,8 @@ public:
     // scale factor is left unchanged.
     bool magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoint& anchor);
 
-    void registerLayersWithTreeView(blink::WebLayerTreeView*) const;
-    void clearLayersForTreeView(blink::WebLayerTreeView*) const;
+    void registerLayersWithTreeView(WebLayerTreeView*) const;
+    void clearLayersForTreeView(WebLayerTreeView*) const;
 
     ScrollResult wheelEvent(const PlatformWheelEvent&);
 
@@ -208,7 +208,7 @@ private:
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) override;
     virtual String debugName(const GraphicsLayer*) override;
 
-    void setupScrollbar(blink::WebScrollbar::Orientation);
+    void setupScrollbar(WebScrollbar::Orientation);
     FloatPoint clampOffsetToBoundaries(const FloatPoint&);
 
     LocalFrame* mainFrame() const;
@@ -227,8 +227,8 @@ private:
     OwnPtr<GraphicsLayer> m_innerViewportScrollLayer;
     OwnPtr<GraphicsLayer> m_overlayScrollbarHorizontal;
     OwnPtr<GraphicsLayer> m_overlayScrollbarVertical;
-    OwnPtr<blink::WebScrollbarLayer> m_webOverlayScrollbarHorizontal;
-    OwnPtr<blink::WebScrollbarLayer> m_webOverlayScrollbarVertical;
+    OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarHorizontal;
+    OwnPtr<WebScrollbarLayer> m_webOverlayScrollbarVertical;
 
     // Offset of the pinch viewport from the main frame's origin, in CSS pixels.
     FloatPoint m_offset;

@@ -66,12 +66,12 @@ public:
     bool isSelectionMode() const;
     void setSelectionMode(bool);
 
-    blink::WebClipboard::Buffer buffer() const { return m_buffer; }
+    WebClipboard::Buffer buffer() const { return m_buffer; }
 
 private:
     Pasteboard();
 
-    blink::WebClipboard::Buffer m_buffer;
+    WebClipboard::Buffer m_buffer;
 };
 
 } // namespace blink

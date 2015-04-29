@@ -30,7 +30,7 @@ void LocalFontFaceSource::LocalFontHistograms::record(bool loadSuccess)
     if (m_reported)
         return;
     m_reported = true;
-    blink::Platform::current()->histogramEnumeration("WebFont.LocalFontUsed", loadSuccess ? 1 : 0, 2);
+    Platform::current()->histogramEnumeration("WebFont.LocalFontUsed", loadSuccess ? 1 : 0, 2);
 }
 
 } // namespace blink

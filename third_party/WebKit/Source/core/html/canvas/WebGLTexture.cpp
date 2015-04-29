@@ -273,7 +273,7 @@ bool WebGLTexture::needToUseBlackTexture(TextureExtensionFlag flag) const
     return false;
 }
 
-void WebGLTexture::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
+void WebGLTexture::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     context3d->deleteTexture(m_object);
     m_object = 0;
@@ -418,4 +418,4 @@ const WebGLTexture::LevelInfo* WebGLTexture::getLevelInfo(GLenum target, GLint l
     return &(m_info[targetIndex][level]);
 }
 
-}
+} // namespace blink

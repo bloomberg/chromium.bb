@@ -74,7 +74,7 @@ WebGLVertexArrayObjectOES::~WebGLVertexArrayObjectOES()
     detachAndDeleteObject();
 }
 
-void WebGLVertexArrayObjectOES::dispatchDetached(blink::WebGraphicsContext3D* context3d)
+void WebGLVertexArrayObjectOES::dispatchDetached(WebGraphicsContext3D* context3d)
 {
     if (m_boundElementArrayBuffer)
         m_boundElementArrayBuffer->onDetached(context3d);
@@ -86,7 +86,7 @@ void WebGLVertexArrayObjectOES::dispatchDetached(blink::WebGraphicsContext3D* co
     }
 }
 
-void WebGLVertexArrayObjectOES::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
+void WebGLVertexArrayObjectOES::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     switch (m_type) {
     case VaoTypeDefault:
@@ -183,4 +183,4 @@ DEFINE_TRACE(WebGLVertexArrayObjectOES)
     WebGLContextObject::trace(visitor);
 }
 
-}
+} // namespace blink

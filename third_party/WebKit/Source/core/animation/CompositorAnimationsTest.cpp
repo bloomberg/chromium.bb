@@ -660,7 +660,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionNormal));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -708,7 +708,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionNormal));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -763,7 +763,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionAlternate));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionAlternate));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(2.0));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -813,7 +813,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(-3.25));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionNormal));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -873,7 +873,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(10));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionAlternate));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionAlternate));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -920,10 +920,10 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
     EXPECT_CALL(mockCompositor, createFloatAnimationCurve())
         .WillOnce(Return(mockCurvePtr));
 
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.0, 2.0), blink::WebCompositorAnimationCurve::TimingFunctionTypeEaseIn));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.25, -1.0), blink::WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.5, 20.0), 0.0, 0.0, 0.0, 1.0));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(1.0, 5.0)));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.0, 2.0), WebCompositorAnimationCurve::TimingFunctionTypeEaseIn));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.25, -1.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.5, 20.0), 0.0, 0.0, 0.0, 1.0));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(1.0, 5.0)));
 
     // Create the animation
     WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(WebCompositorAnimation::TargetPropertyOpacity);
@@ -934,7 +934,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(10));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionAlternateReverse));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionAlternateReverse));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -973,8 +973,8 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
     EXPECT_CALL(mockCompositor, createFloatAnimationCurve())
         .WillOnce(Return(mockCurvePtr));
 
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(0.0, 2.0), blink::WebCompositorAnimationCurve::TimingFunctionTypeLinear));
-    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(blink::WebFloatKeyframe(1.5, 5.0)));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(0.0, 2.0), WebCompositorAnimationCurve::TimingFunctionTypeLinear));
+    usesMockCurve += EXPECT_CALL(*mockCurvePtr, add(WebFloatKeyframe(1.5, 5.0)));
 
     // Create animation
     WebCompositorAnimationMock* mockAnimationPtr = new WebCompositorAnimationMock(WebCompositorAnimation::TargetPropertyOpacity);
@@ -985,7 +985,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(3.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionAlternateReverse));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionAlternateReverse));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -1033,7 +1033,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRa
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionNormal));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(-3));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -1081,9 +1081,9 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNo
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionNormal));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setFillMode(blink::WebCompositorAnimation::FillModeNone));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setFillMode(WebCompositorAnimation::FillModeNone));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
         .Times(1)
@@ -1129,9 +1129,9 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAu
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionNormal));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setFillMode(blink::WebCompositorAnimation::FillModeNone));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setFillMode(WebCompositorAnimation::FillModeNone));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
         .Times(1)
@@ -1178,7 +1178,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(blink::WebCompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(WebCompositorAnimation::DirectionNormal));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())

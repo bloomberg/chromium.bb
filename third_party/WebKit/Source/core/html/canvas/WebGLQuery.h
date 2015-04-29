@@ -22,7 +22,7 @@ public:
 protected:
     explicit WebGLQuery(WebGL2RenderingContextBase*);
 
-    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*) override;
 
 private:
     bool isQuery() const override { return true; }

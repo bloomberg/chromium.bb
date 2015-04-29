@@ -66,7 +66,7 @@ protected:
         return m_contextGroup;
     }
 
-    virtual blink::WebGraphicsContext3D* getAWebGraphicsContext3D() const override final;
+    virtual WebGraphicsContext3D* getAWebGraphicsContext3D() const override final;
 
 private:
     WebGLContextGroup* m_contextGroup;

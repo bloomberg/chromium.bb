@@ -154,7 +154,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     EXPECT_EQ(Resource::LoadError, cachedImage->status());
     EXPECT_EQ(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
-    blink::Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
+    Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
 }
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)

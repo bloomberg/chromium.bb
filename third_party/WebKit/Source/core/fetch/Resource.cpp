@@ -489,7 +489,7 @@ void Resource::setCachedMetadata(unsigned dataTypeID, const char* data, size_t s
     // a ServiceWorker. https://crbug.com/448706
     if (cacheType == CachedMetadataHandler::SendToPlatform && !m_response.wasFetchedViaServiceWorker()) {
         const Vector<char>& serializedData = m_cachedMetadata->serialize();
-        blink::Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), serializedData.data(), serializedData.size());
+        Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), serializedData.data(), serializedData.size());
     }
 }
 
@@ -498,7 +498,7 @@ void Resource::clearCachedMetadata(CachedMetadataHandler::CacheType cacheType)
     m_cachedMetadata.clear();
 
     if (cacheType == CachedMetadataHandler::SendToPlatform)
-        blink::Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), 0, 0);
+        Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), 0, 0);
 }
 
 bool Resource::canDelete() const
@@ -1081,4 +1081,4 @@ const char* ResourceTypeName(Resource::Type type)
 }
 #endif // !LOG_DISABLED
 
-}
+} // namespace blink

@@ -63,7 +63,7 @@ bool RadioInputType::valueMissing(const String&) const
 
 String RadioInputType::valueMissingText() const
 {
-    return locale().queryString(blink::WebLocalizedString::ValidationValueMissingForRadio);
+    return locale().queryString(WebLocalizedString::ValidationValueMissingForRadio);
 }
 
 void RadioInputType::handleClickEvent(MouseEvent* event)

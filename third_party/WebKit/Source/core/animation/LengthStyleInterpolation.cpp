@@ -54,7 +54,7 @@ bool pixelsForKeyword(CSSPropertyID property, CSSValueID valueID, double& result
 bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value, CSSPropertyID property)
 {
     if (value.isPrimitiveValue()) {
-        const CSSPrimitiveValue& primitiveValue = blink::toCSSPrimitiveValue(value);
+        const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
         if (primitiveValue.cssCalcValue())
             return true;
 

@@ -22,7 +22,7 @@ public:
         return adoptRefWillBeNoop(new ApplicationCacheErrorEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create(blink::WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
+    static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create(WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
     {
         return adoptRefWillBeNoop(new ApplicationCacheErrorEvent(reason, url, status, message));
     }
@@ -43,7 +43,7 @@ public:
 
 private:
     ApplicationCacheErrorEvent();
-    ApplicationCacheErrorEvent(blink::WebApplicationCacheHost::ErrorReason, const String& url, int status, const String& message);
+    ApplicationCacheErrorEvent(WebApplicationCacheHost::ErrorReason, const String& url, int status, const String& message);
     ApplicationCacheErrorEvent(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer);
 
     String m_reason;

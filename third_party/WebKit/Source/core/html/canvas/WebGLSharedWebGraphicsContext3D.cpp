@@ -44,7 +44,7 @@ DrawingBuffer* WebGLSharedWebGraphicsContext3D::drawingBuffer() const
     return m_buffer.get();
 }
 
-blink::WebGraphicsContext3D* WebGLSharedWebGraphicsContext3D::webContext() const
+WebGraphicsContext3D* WebGLSharedWebGraphicsContext3D::webContext() const
 {
     return m_buffer ? m_buffer->context() : 0;
 }

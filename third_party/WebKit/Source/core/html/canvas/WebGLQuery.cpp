@@ -33,7 +33,7 @@ WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
     setObject(ctx->webContext()->createQueryEXT());
 }
 
-void WebGLQuery::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
+void WebGLQuery::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     context3d->deleteQueryEXT(m_object);
     m_object = 0;

@@ -95,9 +95,9 @@ public:
 private:
     WebGLVertexArrayObjectOES(WebGLRenderingContextBase*, VaoType);
 
-    void dispatchDetached(blink::WebGraphicsContext3D*);
+    void dispatchDetached(WebGraphicsContext3D*);
     bool hasObject() const override { return m_object != 0; }
-    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*) override;
 
     Platform3DObject m_object;
 

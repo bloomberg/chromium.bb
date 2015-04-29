@@ -84,7 +84,7 @@ bool SubmitInputType::canBeSuccessfulSubmitButton()
 
 String SubmitInputType::defaultValue() const
 {
-    return locale().queryString(blink::WebLocalizedString::SubmitButtonDefaultLabel);
+    return locale().queryString(WebLocalizedString::SubmitButtonDefaultLabel);
 }
 
 bool SubmitInputType::isTextButton() const

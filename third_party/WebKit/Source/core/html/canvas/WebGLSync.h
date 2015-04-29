@@ -23,7 +23,7 @@ protected:
     WebGLSync(WebGL2RenderingContextBase*, WGC3Dsync, GLenum objectType);
 
     bool hasObject() const override { return m_object != 0; }
-    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*) override;
 
     GLenum objectType() const { return m_objectType; }
 

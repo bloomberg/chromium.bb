@@ -852,7 +852,7 @@ String HTMLInputElement::altText() const
     if (alt.isNull())
         alt = fastGetAttribute(valueAttr);
     if (alt.isEmpty())
-        alt = locale().queryString(blink::WebLocalizedString::InputElementAltText);
+        alt = locale().queryString(WebLocalizedString::InputElementAltText);
     return alt;
 }
 

@@ -45,7 +45,7 @@ namespace blink {
 
 class MemoryCacheTest : public ::testing::Test {
 public:
-    class FakeDecodedResource : public blink::Resource {
+    class FakeDecodedResource : public Resource {
     public:
         FakeDecodedResource(const ResourceRequest& request, Type type)
             : Resource(request, type)
@@ -65,7 +65,7 @@ public:
         }
     };
 
-    class FakeResource : public blink::Resource {
+    class FakeResource : public Resource {
     public:
         FakeResource(const ResourceRequest& request, Type type)
             : Resource(request, type)
@@ -205,7 +205,7 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, co
     cachedLiveResource->addClient(&client);
     cachedLiveResource->appendData(data, 4u);
 
-    class Task1 : public blink::WebThread::Task {
+    class Task1 : public WebThread::Task {
     public:
         Task1(const ResourcePtr<Resource>& live, Resource* dead)
             : m_live(live)
@@ -240,7 +240,7 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, co
         Resource* m_dead;
     };
 
-    class Task2 : public blink::WebThread::Task {
+    class Task2 : public WebThread::Task {
     public:
         Task2(unsigned liveSizeWithoutDecode)
             : m_liveSizeWithoutDecode(liveSizeWithoutDecode) { }
@@ -257,8 +257,8 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, co
     };
 
 
-    blink::Platform::current()->currentThread()->postTask(FROM_HERE, new Task1(cachedLiveResource, cachedDeadResource));
-    blink::Platform::current()->currentThread()->postTask(FROM_HERE, new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
+    Platform::current()->currentThread()->postTask(FROM_HERE, new Task1(cachedLiveResource, cachedDeadResource));
+    Platform::current()->currentThread()->postTask(FROM_HERE, new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
     testing::runPendingTasks();
     cachedLiveResource->removeClient(&client);
 }

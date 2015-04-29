@@ -43,7 +43,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes&);
+    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes&);
 
     // Enabled extension objects.
     RefPtrWillBeMember<ANGLEInstancedArrays> m_angleInstancedArrays;

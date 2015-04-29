@@ -22,7 +22,7 @@ public:
 protected:
     explicit WebGLTransformFeedback(WebGL2RenderingContextBase*);
 
-    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*) override;
 
 private:
     bool isTransformFeedback() const override { return true; }

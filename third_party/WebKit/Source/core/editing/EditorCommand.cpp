@@ -1737,7 +1737,7 @@ bool Editor::Command::execute(const String& parameter, Event* triggeringEvent) c
             return false;
     }
     frame().document()->updateLayoutIgnorePendingStylesheets();
-    blink::Platform::current()->histogramSparse("WebCore.Editing.Commands", m_command->idForUserMetrics);
+    Platform::current()->histogramSparse("WebCore.Editing.Commands", m_command->idForUserMetrics);
     return m_command->execute(*m_frame, triggeringEvent, m_source, parameter);
 }
 

@@ -315,7 +315,7 @@ BaseMultipleFieldsDateAndTimeInputType::~BaseMultipleFieldsDateAndTimeInputType(
 
 String BaseMultipleFieldsDateAndTimeInputType::badInputText() const
 {
-    return locale().queryString(blink::WebLocalizedString::ValidationBadInputForDateTime);
+    return locale().queryString(WebLocalizedString::ValidationBadInputForDateTime);
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::blur()

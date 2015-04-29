@@ -162,7 +162,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
     // The exact value doesn't matter; valid time stamps are much bigger than this value.
     const double epsilon = 1;
     if (pendingScriptType == PendingScript::ParsingBlocking && !m_parserBlockingScriptAlreadyLoaded && compilationFinishTime > epsilon && loadFinishTime > epsilon) {
-        blink::Platform::current()->histogramCustomCounts("WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled", (compilationFinishTime - loadFinishTime) * 1000, 0, 10000, 50);
+        Platform::current()->histogramCustomCounts("WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled", (compilationFinishTime - loadFinishTime) * 1000, 0, 10000, 50);
     }
 
     ASSERT(!isExecutingScript());
@@ -371,4 +371,4 @@ DEFINE_TRACE(HTMLScriptRunner)
     visitor->trace(m_scriptsToExecuteAfterParsing);
 }
 
-}
+} // namespace blink

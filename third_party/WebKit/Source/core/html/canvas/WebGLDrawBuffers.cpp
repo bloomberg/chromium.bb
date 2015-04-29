@@ -100,7 +100,7 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers)
 // static
 bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* webglContext)
 {
-    blink::WebGraphicsContext3D* context = webglContext->webContext();
+    WebGraphicsContext3D* context = webglContext->webContext();
     Extensions3DUtil* extensionsUtil = webglContext->extensionsUtil();
 
     // This is called after we make sure GL_EXT_draw_buffers is supported.

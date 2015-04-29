@@ -22,7 +22,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<blink::WebGraphicsContext3D>, const WebGLContextAttributes& requestedAttributes);
+    WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes& requestedAttributes);
 
     RefPtrWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
     RefPtrWillBeMember<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;

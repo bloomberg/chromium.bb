@@ -54,9 +54,9 @@ public:
         virtual WebGLSharedObject* object() const = 0;
         virtual bool isSharedObject(WebGLSharedObject*) const = 0;
         virtual bool valid() const = 0;
-        virtual void onDetached(blink::WebGraphicsContext3D*) = 0;
-        virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) = 0;
-        virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) = 0;
+        virtual void onDetached(WebGraphicsContext3D*) = 0;
+        virtual void attach(WebGraphicsContext3D*, GLenum attachment) = 0;
+        virtual void unattach(WebGraphicsContext3D*, GLenum attachment) = 0;
 
         DEFINE_INLINE_VIRTUAL_TRACE() { }
 
@@ -84,7 +84,7 @@ public:
     // readPixels, copyTexImage2D, copyTexSubImage2D if this framebuffer is
     // currently bound.
     // Return false if the framebuffer is incomplete.
-    bool onAccess(blink::WebGraphicsContext3D*, const char** reason);
+    bool onAccess(WebGraphicsContext3D*, const char** reason);
 
     // Software version of glCheckFramebufferStatus(), except that when
     // FRAMEBUFFER_COMPLETE is returned, it is still possible for
@@ -109,7 +109,7 @@ protected:
     explicit WebGLFramebuffer(WebGLRenderingContextBase*);
 
     bool hasObject() const override { return m_object != 0; }
-    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*) override;
 
 private:
     WebGLAttachment* getAttachment(GLenum) const;

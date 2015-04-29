@@ -3154,7 +3154,7 @@ void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode ve
 
     if (!layerForScrolling())
         return;
-    blink::WebLayer* layer = layerForScrolling()->platformLayer();
+    WebLayer* layer = layerForScrolling()->platformLayer();
     if (!layer)
         return;
     layer->setUserScrollable(userInputScrollable(HorizontalScrollbar), userInputScrollable(VerticalScrollbar));

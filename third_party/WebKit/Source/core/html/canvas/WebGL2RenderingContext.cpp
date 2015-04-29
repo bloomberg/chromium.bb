@@ -34,7 +34,7 @@ PassOwnPtrWillBeRawPtr<WebGL2RenderingContext> WebGL2RenderingContext::create(HT
     }
 
     WebGLContextAttributes attributes = toWebGLContextAttributes(attrs);
-    OwnPtr<blink::WebGraphicsContext3D> context(createWebGraphicsContext3D(canvas, attributes, 2));
+    OwnPtr<WebGraphicsContext3D> context(createWebGraphicsContext3D(canvas, attributes, 2));
     if (!context)
         return nullptr;
     OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get());
@@ -57,7 +57,7 @@ PassOwnPtrWillBeRawPtr<WebGL2RenderingContext> WebGL2RenderingContext::create(HT
     return renderingContext.release();
 }
 
-WebGL2RenderingContext::WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<blink::WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
+WebGL2RenderingContext::WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
     : WebGL2RenderingContextBase(passedCanvas, context, requestedAttributes)
 {
 }

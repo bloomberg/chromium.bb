@@ -86,7 +86,7 @@ PassOwnPtr<Vector<double>> StyleRuleKeyframe::createKeyList(CSSParserValueList* 
     size_t numKeys = keys ? keys->size() : 0;
     OwnPtr<Vector<double>> keyVector = adoptPtr(new Vector<double>(numKeys));
     for (size_t i = 0; i < numKeys; ++i) {
-        ASSERT(keys->valueAt(i)->unit == blink::CSSPrimitiveValue::CSS_NUMBER);
+        ASSERT(keys->valueAt(i)->unit == CSSPrimitiveValue::CSS_NUMBER);
         double key = keys->valueAt(i)->fValue;
         if (key < 0 || key > 100) {
             // As per http://www.w3.org/TR/css3-animations/#keyframes,

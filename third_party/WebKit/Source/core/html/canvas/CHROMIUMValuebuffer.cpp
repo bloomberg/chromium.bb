@@ -34,7 +34,7 @@ CHROMIUMValuebuffer::CHROMIUMValuebuffer(WebGLRenderingContextBase* ctx)
     setObject(ctx->webContext()->createValuebufferCHROMIUM());
 }
 
-void CHROMIUMValuebuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
+void CHROMIUMValuebuffer::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     context3d->deleteValuebufferCHROMIUM(m_object);
     m_object = 0;

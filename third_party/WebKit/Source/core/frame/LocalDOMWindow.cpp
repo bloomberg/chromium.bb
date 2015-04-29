@@ -158,7 +158,7 @@ private:
 
 static void updateSuddenTerminationStatus(LocalDOMWindow* domWindow, bool addedListener, FrameLoaderClient::SuddenTerminationDisablerType disablerType)
 {
-    blink::Platform::current()->suddenTerminationChanged(!addedListener);
+    Platform::current()->suddenTerminationChanged(!addedListener);
     if (domWindow->frame() && domWindow->frame()->loader().client())
         domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(addedListener, disablerType);
 }

@@ -79,7 +79,7 @@ public:
 private:
     explicit WebGLTexture(WebGLRenderingContextBase*);
 
-    void deleteObjectImpl(blink::WebGraphicsContext3D*) override;
+    void deleteObjectImpl(WebGraphicsContext3D*) override;
 
     class LevelInfo {
     public:

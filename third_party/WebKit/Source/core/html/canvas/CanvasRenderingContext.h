@@ -64,7 +64,7 @@ public:
     // Return true if the content is updated.
     virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) { return false; }
 
-    virtual blink::WebLayer* platformLayer() const { return nullptr; }
+    virtual WebLayer* platformLayer() const { return nullptr; }
 
     bool wouldTaintOrigin(CanvasImageSource*);
     void didMoveToNewDocument(Document*);

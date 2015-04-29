@@ -22,7 +22,7 @@ public:
     // EventTarget
     virtual const AtomicString& interfaceName() const override;
 
-    void trackSelected(blink::WebMediaPlayer::TrackId selectedTrackId);
+    void trackSelected(WebMediaPlayer::TrackId selectedTrackId);
 
 private:
     explicit VideoTrackList(HTMLMediaElement&);

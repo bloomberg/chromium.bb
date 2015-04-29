@@ -53,9 +53,9 @@ namespace {
         virtual WebGLSharedObject* object() const override;
         virtual bool isSharedObject(WebGLSharedObject*) const override;
         virtual bool valid() const override;
-        virtual void onDetached(blink::WebGraphicsContext3D*) override;
-        virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) override;
-        virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) override;
+        virtual void onDetached(WebGraphicsContext3D*) override;
+        virtual void attach(WebGraphicsContext3D*, GLenum attachment) override;
+        virtual void unattach(WebGraphicsContext3D*, GLenum attachment) override;
 
         RefPtrWillBeMember<WebGLRenderbuffer> m_renderbuffer;
     };
@@ -112,12 +112,12 @@ namespace {
         return m_renderbuffer->object();
     }
 
-    void WebGLRenderbufferAttachment::onDetached(blink::WebGraphicsContext3D* context)
+    void WebGLRenderbufferAttachment::onDetached(WebGraphicsContext3D* context)
     {
         m_renderbuffer->onDetached(context);
     }
 
-    void WebGLRenderbufferAttachment::attach(blink::WebGraphicsContext3D* context, GLenum attachment)
+    void WebGLRenderbufferAttachment::attach(WebGraphicsContext3D* context, GLenum attachment)
     {
         Platform3DObject object = objectOrZero(m_renderbuffer.get());
         if (attachment == GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL && m_renderbuffer->emulatedStencilBuffer()) {
@@ -128,7 +128,7 @@ namespace {
         }
     }
 
-    void WebGLRenderbufferAttachment::unattach(blink::WebGraphicsContext3D* context, GLenum attachment)
+    void WebGLRenderbufferAttachment::unattach(WebGraphicsContext3D* context, GLenum attachment)
     {
         if (attachment == GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL) {
             context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 0);
@@ -161,9 +161,9 @@ namespace {
         virtual WebGLSharedObject* object() const override;
         virtual bool isSharedObject(WebGLSharedObject*) const override;
         virtual bool valid() const override;
-        virtual void onDetached(blink::WebGraphicsContext3D*) override;
-        virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) override;
-        virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) override;
+        virtual void onDetached(WebGraphicsContext3D*) override;
+        virtual void attach(WebGraphicsContext3D*, GLenum attachment) override;
+        virtual void unattach(WebGraphicsContext3D*, GLenum attachment) override;
 
         RefPtrWillBeMember<WebGLTexture> m_texture;
         GLenum m_target;
@@ -218,18 +218,18 @@ namespace {
         return m_texture->object();
     }
 
-    void WebGLTextureAttachment::onDetached(blink::WebGraphicsContext3D* context)
+    void WebGLTextureAttachment::onDetached(WebGraphicsContext3D* context)
     {
         m_texture->onDetached(context);
     }
 
-    void WebGLTextureAttachment::attach(blink::WebGraphicsContext3D* context, GLenum attachment)
+    void WebGLTextureAttachment::attach(WebGraphicsContext3D* context, GLenum attachment)
     {
         Platform3DObject object = objectOrZero(m_texture.get());
         context->framebufferTexture2D(GL_FRAMEBUFFER, attachment, m_target, object, m_level);
     }
 
-    void WebGLTextureAttachment::unattach(blink::WebGraphicsContext3D* context, GLenum attachment)
+    void WebGLTextureAttachment::unattach(WebGraphicsContext3D* context, GLenum attachment)
     {
         if (attachment == GC3D_DEPTH_STENCIL_ATTACHMENT_WEBGL) {
             context->framebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_target, 0, m_level);
@@ -544,7 +544,7 @@ GLenum WebGLFramebuffer::checkStatus(const char** reason) const
     return GL_FRAMEBUFFER_COMPLETE;
 }
 
-bool WebGLFramebuffer::onAccess(blink::WebGraphicsContext3D* context3d, const char** reason)
+bool WebGLFramebuffer::onAccess(WebGraphicsContext3D* context3d, const char** reason)
 {
     if (checkStatus(reason) != GL_FRAMEBUFFER_COMPLETE)
         return false;
@@ -559,7 +559,7 @@ bool WebGLFramebuffer::hasStencilBuffer() const
     return attachment && attachment->valid();
 }
 
-void WebGLFramebuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
+void WebGLFramebuffer::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
 #if !ENABLE(OILPAN)
     // With Oilpan, both the AttachmentMap and its WebGLAttachment objects are

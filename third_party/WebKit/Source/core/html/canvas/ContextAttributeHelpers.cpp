@@ -29,9 +29,9 @@ WebGLContextAttributes toWebGLContextAttributes(const CanvasContextCreationAttri
     return result;
 }
 
-WebGraphicsContext3D::Attributes toWebGraphicsContext3DAttributes(const WebGLContextAttributes& attrs, const blink::WebString& topDocumentURL, Settings* settings, unsigned webGLVersion)
+WebGraphicsContext3D::Attributes toWebGraphicsContext3DAttributes(const WebGLContextAttributes& attrs, const WebString& topDocumentURL, Settings* settings, unsigned webGLVersion)
 {
-    blink::WebGraphicsContext3D::Attributes result;
+    WebGraphicsContext3D::Attributes result;
     result.alpha = attrs.alpha();
     result.depth = attrs.depth();
     result.stencil = attrs.stencil();

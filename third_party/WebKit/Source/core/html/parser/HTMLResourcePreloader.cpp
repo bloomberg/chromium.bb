@@ -92,8 +92,8 @@ void HTMLResourcePreloader::takeAndPreload(PreloadRequestStream& r)
 void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
 {
     FetchRequest request = preload->resourceRequest(m_document);
-    blink::Platform::current()->histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);
+    Platform::current()->histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);
     m_document->fetcher()->preload(preload->resourceType(), request, preload->charset());
 }
 
-}
+} // namespace blink

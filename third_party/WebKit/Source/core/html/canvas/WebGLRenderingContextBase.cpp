@@ -496,7 +496,7 @@ private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
 };
 
-class WebGLRenderingContextLostCallback final : public NoBaseWillBeGarbageCollectedFinalized<WebGLRenderingContextLostCallback>, public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+class WebGLRenderingContextLostCallback final : public NoBaseWillBeGarbageCollectedFinalized<WebGLRenderingContextLostCallback>, public WebGraphicsContext3D::WebGraphicsContextLostCallback {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WebGLRenderingContextLostCallback);
 public:
     static PassOwnPtrWillBeRawPtr<WebGLRenderingContextLostCallback> create(WebGLRenderingContextBase* context)
@@ -520,7 +520,7 @@ private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
 };
 
-class WebGLRenderingContextErrorMessageCallback final : public NoBaseWillBeGarbageCollectedFinalized<WebGLRenderingContextErrorMessageCallback>, public blink::WebGraphicsContext3D::WebGraphicsErrorMessageCallback {
+class WebGLRenderingContextErrorMessageCallback final : public NoBaseWillBeGarbageCollectedFinalized<WebGLRenderingContextErrorMessageCallback>, public WebGraphicsContext3D::WebGraphicsErrorMessageCallback {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WebGLRenderingContextErrorMessageCallback);
 public:
     static PassOwnPtrWillBeRawPtr<WebGLRenderingContextErrorMessageCallback> create(WebGLRenderingContextBase* context)
@@ -530,7 +530,7 @@ public:
 
     virtual ~WebGLRenderingContextErrorMessageCallback() { }
 
-    virtual void onErrorMessage(const blink::WebString& message, blink::WGC3Dint)
+    virtual void onErrorMessage(const WebString& message, WGC3Dint)
     {
         if (m_context->m_synthesizedErrorsToConsole)
             m_context->printGLErrorToConsole(message);
@@ -549,7 +549,7 @@ private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
 };
 
-PassOwnPtr<blink::WebGraphicsContext3D> WebGLRenderingContextBase::createWebGraphicsContext3D(HTMLCanvasElement* canvas, WebGLContextAttributes attributes, unsigned webGLVersion)
+PassOwnPtr<WebGraphicsContext3D> WebGLRenderingContextBase::createWebGraphicsContext3D(HTMLCanvasElement* canvas, WebGLContextAttributes attributes, unsigned webGLVersion)
 {
     Document& document = canvas->document();
     LocalFrame* frame = document.frame();
@@ -566,9 +566,9 @@ PassOwnPtr<blink::WebGraphicsContext3D> WebGLRenderingContextBase::createWebGrap
         return nullptr;
     }
 
-    blink::WebGraphicsContext3D::Attributes wgc3dAttributes = toWebGraphicsContext3DAttributes(attributes, document.topDocument().url().string(), settings, webGLVersion);
-    blink::WebGLInfo glInfo;
-    OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(wgc3dAttributes, 0, &glInfo));
+    WebGraphicsContext3D::Attributes wgc3dAttributes = toWebGraphicsContext3DAttributes(attributes, document.topDocument().url().string(), settings, webGLVersion);
+    WebGLInfo glInfo;
+    OwnPtr<WebGraphicsContext3D> context = adoptPtr(Platform::current()->createOffscreenGraphicsContext3D(wgc3dAttributes, 0, &glInfo));
     if (!context || shouldFailContextCreationForTesting) {
         shouldFailContextCreationForTesting = false;
         String statusMessage;
@@ -619,7 +619,7 @@ void WebGLRenderingContextBase::forceNextWebGLContextCreationToFail()
     shouldFailContextCreationForTesting = true;
 }
 
-WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<blink::WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
+WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
     : CanvasRenderingContext(passedCanvas)
     , m_contextLostMode(NotLostContext)
     , m_autoRecoveryMethod(Manual)
@@ -656,9 +656,9 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     setupFlags();
 }
 
-PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwnPtr<blink::WebGraphicsContext3D> context)
+PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context)
 {
-    blink::WebGraphicsContext3D::Attributes attrs;
+    WebGraphicsContext3D::Attributes attrs;
     attrs.alpha = m_requestedAttributes.alpha();
     attrs.depth = m_requestedAttributes.depth();
     attrs.stencil = m_requestedAttributes.stencil();
@@ -2117,7 +2117,7 @@ PassRefPtrWillBeRawPtr<WebGLActiveInfo> WebGLRenderingContextBase::getActiveAttr
 {
     if (isContextLost() || !validateWebGLObject("getActiveAttrib", program))
         return nullptr;
-    blink::WebGraphicsContext3D::ActiveInfo info;
+    WebGraphicsContext3D::ActiveInfo info;
     if (!webContext()->getActiveAttrib(objectOrZero(program), index, info))
         return nullptr;
     return WebGLActiveInfo::create(info.name, info.type, info.size);
@@ -2127,7 +2127,7 @@ PassRefPtrWillBeRawPtr<WebGLActiveInfo> WebGLRenderingContextBase::getActiveUnif
 {
     if (isContextLost() || !validateWebGLObject("getActiveUniform", program))
         return nullptr;
-    blink::WebGraphicsContext3D::ActiveInfo info;
+    WebGraphicsContext3D::ActiveInfo info;
     if (!webContext()->getActiveUniform(objectOrZero(program), index, info))
         return nullptr;
     return WebGLActiveInfo::create(info.name, info.type, info.size);
@@ -2216,7 +2216,7 @@ void WebGLRenderingContextBase::getContextAttributes(Nullable<WebGLContextAttrib
     result.set(m_requestedAttributes);
     // Some requested attributes may not be honored, so we need to query the underlying
     // context/drawing buffer and adjust accordingly.
-    blink::WebGraphicsContext3D::Attributes attrs = drawingBuffer()->getActualAttributes();
+    WebGraphicsContext3D::Attributes attrs = drawingBuffer()->getActualAttributes();
     if (m_requestedAttributes.depth() && !attrs.depth)
         result.get().setDepth(false);
     if (m_requestedAttributes.stencil() && !attrs.stencil)
@@ -2814,7 +2814,7 @@ ScriptValue WebGLRenderingContextBase::getUniform(ScriptState* scriptState, WebG
     GLint activeUniforms = 0;
     webContext()->getProgramiv(objectOrZero(program), GL_ACTIVE_UNIFORMS, &activeUniforms);
     for (GLint i = 0; i < activeUniforms; i++) {
-        blink::WebGraphicsContext3D::ActiveInfo info;
+        WebGraphicsContext3D::ActiveInfo info;
         if (!webContext()->getActiveUniform(objectOrZero(program), i, info))
             return ScriptValue::createNull(scriptState);
         String name = info.name;
@@ -3299,7 +3299,7 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
     }
     if (format != GL_RGBA || type != GL_UNSIGNED_BYTE) {
         // Check against the implementation color read format and type.
-        blink::WGC3Dint implFormat = 0, implType = 0;
+        WGC3Dint implFormat = 0, implType = 0;
         webContext()->getIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &implFormat);
         webContext()->getIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &implType);
         if (!implFormat || !implType || format != static_cast<GLenum>(implFormat) || type != static_cast<GLenum>(implType)) {
@@ -4642,7 +4642,7 @@ void WebGLRenderingContextBase::forceRestoreContext()
         m_restoreTimer.startOneShot(0, FROM_HERE);
 }
 
-blink::WebLayer* WebGLRenderingContextBase::platformLayer() const
+WebLayer* WebGLRenderingContextBase::platformLayer() const
 {
     return isContextLost() ? 0 : drawingBuffer()->platformLayer();
 }
@@ -5874,8 +5874,8 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
 #endif
     }
 
-    blink::WebGraphicsContext3D::Attributes attributes = toWebGraphicsContext3DAttributes(m_requestedAttributes, canvas()->document().topDocument().url().string(), settings, version());
-    OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes, 0));
+    WebGraphicsContext3D::Attributes attributes = toWebGraphicsContext3DAttributes(m_requestedAttributes, canvas()->document().topDocument().url().string(), settings, version());
+    OwnPtr<WebGraphicsContext3D> context = adoptPtr(Platform::current()->createOffscreenGraphicsContext3D(attributes, 0));
     RefPtr<DrawingBuffer> buffer;
     if (context) {
         // Construct a new drawing buffer with the new WebGraphicsContext3D.

@@ -44,10 +44,10 @@ namespace blink {
 DataObject* DataObject::createFromPasteboard(PasteMode pasteMode)
 {
     DataObject* dataObject = create();
-    blink::WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
-    uint64_t sequenceNumber = blink::Platform::current()->clipboard()->sequenceNumber(buffer);
+    WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
+    uint64_t sequenceNumber = Platform::current()->clipboard()->sequenceNumber(buffer);
     bool ignored;
-    blink::WebVector<blink::WebString> webTypes = blink::Platform::current()->clipboard()->readAvailableTypes(buffer, &ignored);
+    WebVector<WebString> webTypes = Platform::current()->clipboard()->readAvailableTypes(buffer, &ignored);
     ListHashSet<String> types;
     for (size_t i = 0; i < webTypes.size(); ++i)
         types.add(webTypes[i]);

@@ -42,7 +42,7 @@ namespace blink {
 
 namespace {
 
-void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<blink::Interpolation>>& source, ActiveInterpolationMap& target)
+void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<Interpolation>>& source, ActiveInterpolationMap& target)
 {
     for (const auto& interpolation : source) {
         target.set(interpolation->property(), interpolation.get());

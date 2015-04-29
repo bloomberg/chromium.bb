@@ -77,7 +77,7 @@ public:
         scheduleTrackEvent(EventTypeNames::addtrack, track.release());
     }
 
-    void remove(blink::WebMediaPlayer::TrackId trackId)
+    void remove(WebMediaPlayer::TrackId trackId)
     {
         for (unsigned i = 0; i < m_tracks.size(); ++i) {
             if (m_tracks[i]->trackId() != trackId)
@@ -127,6 +127,6 @@ private:
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
 };
 
-}
+} // namespace blink
 
 #endif

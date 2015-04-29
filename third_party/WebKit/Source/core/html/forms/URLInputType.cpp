@@ -65,7 +65,7 @@ bool URLInputType::typeMismatch() const
 
 String URLInputType::typeMismatchText() const
 {
-    return locale().queryString(blink::WebLocalizedString::ValidationTypeMismatchForURL);
+    return locale().queryString(WebLocalizedString::ValidationTypeMismatchForURL);
 }
 
 } // namespace blink

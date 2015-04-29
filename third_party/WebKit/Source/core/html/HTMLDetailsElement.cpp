@@ -85,7 +85,7 @@ void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     DEFINE_STATIC_LOCAL(const AtomicString, summarySelector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
 
     RefPtrWillBeRawPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(document());
-    defaultSummary->appendChild(Text::create(document(), locale().queryString(blink::WebLocalizedString::DetailsLabel)));
+    defaultSummary->appendChild(Text::create(document(), locale().queryString(WebLocalizedString::DetailsLabel)));
 
     RefPtrWillBeRawPtr<HTMLContentElement> summary = HTMLContentElement::create(document());
     summary->setIdAttribute(ShadowElementNames::detailsSummary());

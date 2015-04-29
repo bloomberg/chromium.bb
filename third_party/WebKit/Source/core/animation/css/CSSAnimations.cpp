@@ -114,7 +114,7 @@ static PassRefPtrWillBeRawPtr<StringKeyframeEffectModel> createKeyframeEffect(St
 
     for (CSSPropertyID property : specifiedPropertiesForUseCounter) {
         ASSERT(property != CSSPropertyInvalid);
-        blink::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property));
+        Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property));
     }
 
     // Merge duplicate keyframes.
@@ -447,7 +447,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         runningTransition.player = player;
         m_transitions.set(id, runningTransition);
         ASSERT(id != CSSPropertyInvalid);
-        blink::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(id));
+        Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(id));
     }
 }
 

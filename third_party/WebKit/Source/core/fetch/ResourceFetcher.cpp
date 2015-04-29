@@ -144,9 +144,9 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request, cons
     const KURL& url = request.url();
     ASSERT(url.protocolIsData());
 
-    blink::WebString mimetype;
-    blink::WebString charset;
-    RefPtr<SharedBuffer> data = PassRefPtr<SharedBuffer>(blink::Platform::current()->parseDataURL(url, mimetype, charset));
+    WebString mimetype;
+    WebString charset;
+    RefPtr<SharedBuffer> data = PassRefPtr<SharedBuffer>(Platform::current()->parseDataURL(url, mimetype, charset));
     if (!data)
         return nullptr;
     ResourceResponse response(url, mimetype, data->size(), charset, String());
@@ -1265,11 +1265,11 @@ ResourceFetcher::DeadResourceStatsRecorder::DeadResourceStatsRecorder()
 
 ResourceFetcher::DeadResourceStatsRecorder::~DeadResourceStatsRecorder()
 {
-    blink::Platform::current()->histogramCustomCounts(
+    Platform::current()->histogramCustomCounts(
         "WebCore.ResourceFetcher.HitCount", m_useCount, 0, 1000, 50);
-    blink::Platform::current()->histogramCustomCounts(
+    Platform::current()->histogramCustomCounts(
         "WebCore.ResourceFetcher.RevalidateCount", m_revalidateCount, 0, 1000, 50);
-    blink::Platform::current()->histogramCustomCounts(
+    Platform::current()->histogramCustomCounts(
         "WebCore.ResourceFetcher.LoadCount", m_loadCount, 0, 1000, 50);
 }
 

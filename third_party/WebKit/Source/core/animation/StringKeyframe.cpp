@@ -151,7 +151,7 @@ InterpolationRange setRange(CSSPropertyID id)
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, blink::Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
+PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
 {
     CSSPropertyID property = propertyHandle.cssProperty();
 
@@ -530,7 +530,7 @@ PassRefPtrWillBeRawPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fr
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, blink::Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
+PassRefPtrWillBeRawPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
 {
     ASSERT(element);
     RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> attribute = toSVGElement(element)->propertyFromAttribute(*propertyHandle.svgAttribute());
@@ -545,4 +545,4 @@ PassRefPtrWillBeRawPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateIn
     return createSVGInterpolation(fromValue.get(), toValue.get(), attribute.get());
 }
 
-}
+} // namespace blink

@@ -126,7 +126,7 @@ Blob* DataObjectItem::getAsFile() const
         // method to the blob registry; that way the data is only copied over
         // into the renderer when it's actually read, not when the blob is
         // initially constructed).
-        RefPtr<SharedBuffer> data = static_cast<PassRefPtr<SharedBuffer>>(blink::Platform::current()->clipboard()->readImage(blink::WebClipboard::BufferStandard));
+        RefPtr<SharedBuffer> data = static_cast<PassRefPtr<SharedBuffer>>(Platform::current()->clipboard()->readImage(WebClipboard::BufferStandard));
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendBytes(data->data(), data->size());
         blobData->setContentType(mimeTypeImagePng);
@@ -145,20 +145,20 @@ String DataObjectItem::getAsString() const
 
     ASSERT(m_source == PasteboardSource);
 
-    blink::WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
+    WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
     String data;
     // This is ugly but there's no real alternative.
     if (m_type == mimeTypeTextPlain) {
-        data = blink::Platform::current()->clipboard()->readPlainText(buffer);
+        data = Platform::current()->clipboard()->readPlainText(buffer);
     } else if (m_type == mimeTypeTextHTML) {
-        blink::WebURL ignoredSourceURL;
+        WebURL ignoredSourceURL;
         unsigned ignored;
-        data = blink::Platform::current()->clipboard()->readHTML(buffer, &ignoredSourceURL, &ignored, &ignored);
+        data = Platform::current()->clipboard()->readHTML(buffer, &ignoredSourceURL, &ignored, &ignored);
     } else {
-        data = blink::Platform::current()->clipboard()->readCustomData(buffer, m_type);
+        data = Platform::current()->clipboard()->readCustomData(buffer, m_type);
     }
 
-    return blink::Platform::current()->clipboard()->sequenceNumber(buffer) == m_sequenceNumber ? data : String();
+    return Platform::current()->clipboard()->sequenceNumber(buffer) == m_sequenceNumber ? data : String();
 }
 
 bool DataObjectItem::isFilename() const

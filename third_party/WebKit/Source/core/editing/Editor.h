@@ -280,7 +280,7 @@ private:
 
     SpellChecker& spellChecker() const;
 
-    bool handleEditingKeyboardEvent(blink::KeyboardEvent*);
+    bool handleEditingKeyboardEvent(KeyboardEvent*);
 };
 
 inline void Editor::setStartNewKillRingSequence(bool flag)

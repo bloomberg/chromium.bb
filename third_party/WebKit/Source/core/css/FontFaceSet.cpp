@@ -546,10 +546,10 @@ void FontFaceSet::FontLoadHistogram::record()
 {
     if (!m_recorded) {
         m_recorded = true;
-        blink::Platform::current()->histogramCustomCounts("WebFont.WebFontsInPage", m_count, 1, 100, 50);
+        Platform::current()->histogramCustomCounts("WebFont.WebFontsInPage", m_count, 1, 100, 50);
     }
     if (m_status == HadBlankText || m_status == DidNotHaveBlankText) {
-        blink::Platform::current()->histogramEnumeration("WebFont.HadBlankText", m_status == HadBlankText ? 1 : 0, 2);
+        Platform::current()->histogramEnumeration("WebFont.HadBlankText", m_status == HadBlankText ? 1 : 0, 2);
         m_status = Reported;
     }
 }

@@ -40,7 +40,7 @@ class CORE_EXPORT TrackBase : public WillBeGarbageCollectedMixin, public RefCoun
 public:
     virtual ~TrackBase();
 
-    blink::WebMediaPlayer::TrackId trackId() const { return m_trackId; }
+    WebMediaPlayer::TrackId trackId() const { return m_trackId; }
 
     enum Type { TextTrack, AudioTrack, VideoTrack };
     Type type() const { return m_type; }
@@ -70,7 +70,7 @@ protected:
     virtual AtomicString defaultKind() const = 0;
 
 private:
-    blink::WebMediaPlayer::TrackId m_trackId;
+    WebMediaPlayer::TrackId m_trackId;
     Type m_type;
     AtomicString m_kind;
     AtomicString m_label;

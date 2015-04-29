@@ -66,7 +66,7 @@ void ResetInputType::handleDOMActivateEvent(Event* event)
 
 String ResetInputType::defaultValue() const
 {
-    return locale().queryString(blink::WebLocalizedString::ResetButtonDefaultLabel);
+    return locale().queryString(WebLocalizedString::ResetButtonDefaultLabel);
 }
 
 bool ResetInputType::isTextButton() const

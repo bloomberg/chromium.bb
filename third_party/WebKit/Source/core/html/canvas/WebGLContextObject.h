@@ -62,7 +62,7 @@ protected:
         return m_context;
     }
 
-    virtual blink::WebGraphicsContext3D* getAWebGraphicsContext3D() const override final;
+    virtual WebGraphicsContext3D* getAWebGraphicsContext3D() const override final;
 
 private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;

@@ -56,10 +56,10 @@ WebGLShader::~WebGLShader()
     detachAndDeleteObject();
 }
 
-void WebGLShader::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
+void WebGLShader::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     context3d->deleteShader(m_object);
     m_object = 0;
 }
 
-}
+} // namespace blink

@@ -53,7 +53,7 @@ public:
     void addObject(WebGLSharedObject*);
     void removeObject(WebGLSharedObject*);
 
-    blink::WebGraphicsContext3D* getAWebGraphicsContext3D();
+    WebGraphicsContext3D* getAWebGraphicsContext3D();
 
     void loseContextGroup(WebGLRenderingContextBase::LostContextMode, WebGLRenderingContextBase::AutoRecoveryMethod);
 

@@ -41,7 +41,7 @@ int VideoTrackList::selectedIndex() const
     return -1;
 }
 
-void VideoTrackList::trackSelected(blink::WebMediaPlayer::TrackId selectedTrackId)
+void VideoTrackList::trackSelected(WebMediaPlayer::TrackId selectedTrackId)
 {
     // Clear the selected flag on the previously selected track, if any.
     for (unsigned i = 0; i < length(); ++i) {
@@ -56,4 +56,4 @@ void VideoTrackList::trackSelected(blink::WebMediaPlayer::TrackId selectedTrackI
     scheduleChangeEvent();
 }
 
-}
+} // namespace blink

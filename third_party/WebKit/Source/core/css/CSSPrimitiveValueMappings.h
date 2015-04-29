@@ -50,6 +50,7 @@
 #include "platform/text/TextRun.h"
 #include "platform/text/UnicodeBidi.h"
 #include "platform/text/WritingMode.h"
+#include "public/platform/WebBlendMode.h"
 #include "public/platform/WebScrollBlocksOn.h"
 #include "wtf/MathExtras.h"
 
@@ -3548,104 +3549,104 @@ template<> inline CSSPrimitiveValue::operator ESpeak() const
     return SpeakNormal;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(blink::WebBlendMode blendMode)
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(WebBlendMode blendMode)
     : CSSValue(PrimitiveClass)
 {
     m_primitiveUnitType = CSS_VALUE_ID;
     switch (blendMode) {
-    case blink::WebBlendModeNormal:
+    case WebBlendModeNormal:
         m_value.valueID = CSSValueNormal;
         break;
-    case blink::WebBlendModeMultiply:
+    case WebBlendModeMultiply:
         m_value.valueID = CSSValueMultiply;
         break;
-    case blink::WebBlendModeScreen:
+    case WebBlendModeScreen:
         m_value.valueID = CSSValueScreen;
         break;
-    case blink::WebBlendModeOverlay:
+    case WebBlendModeOverlay:
         m_value.valueID = CSSValueOverlay;
         break;
-    case blink::WebBlendModeDarken:
+    case WebBlendModeDarken:
         m_value.valueID = CSSValueDarken;
         break;
-    case blink::WebBlendModeLighten:
+    case WebBlendModeLighten:
         m_value.valueID = CSSValueLighten;
         break;
-    case blink::WebBlendModeColorDodge:
+    case WebBlendModeColorDodge:
         m_value.valueID = CSSValueColorDodge;
         break;
-    case blink::WebBlendModeColorBurn:
+    case WebBlendModeColorBurn:
         m_value.valueID = CSSValueColorBurn;
         break;
-    case blink::WebBlendModeHardLight:
+    case WebBlendModeHardLight:
         m_value.valueID = CSSValueHardLight;
         break;
-    case blink::WebBlendModeSoftLight:
+    case WebBlendModeSoftLight:
         m_value.valueID = CSSValueSoftLight;
         break;
-    case blink::WebBlendModeDifference:
+    case WebBlendModeDifference:
         m_value.valueID = CSSValueDifference;
         break;
-    case blink::WebBlendModeExclusion:
+    case WebBlendModeExclusion:
         m_value.valueID = CSSValueExclusion;
         break;
-    case blink::WebBlendModeHue:
+    case WebBlendModeHue:
         m_value.valueID = CSSValueHue;
         break;
-    case blink::WebBlendModeSaturation:
+    case WebBlendModeSaturation:
         m_value.valueID = CSSValueSaturation;
         break;
-    case blink::WebBlendModeColor:
+    case WebBlendModeColor:
         m_value.valueID = CSSValueColor;
         break;
-    case blink::WebBlendModeLuminosity:
+    case WebBlendModeLuminosity:
         m_value.valueID = CSSValueLuminosity;
         break;
     }
 }
 
-template<> inline CSSPrimitiveValue::operator blink::WebBlendMode() const
+template<> inline CSSPrimitiveValue::operator WebBlendMode() const
 {
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueNormal:
-        return blink::WebBlendModeNormal;
+        return WebBlendModeNormal;
     case CSSValueMultiply:
-        return blink::WebBlendModeMultiply;
+        return WebBlendModeMultiply;
     case CSSValueScreen:
-        return blink::WebBlendModeScreen;
+        return WebBlendModeScreen;
     case CSSValueOverlay:
-        return blink::WebBlendModeOverlay;
+        return WebBlendModeOverlay;
     case CSSValueDarken:
-        return blink::WebBlendModeDarken;
+        return WebBlendModeDarken;
     case CSSValueLighten:
-        return blink::WebBlendModeLighten;
+        return WebBlendModeLighten;
     case CSSValueColorDodge:
-        return blink::WebBlendModeColorDodge;
+        return WebBlendModeColorDodge;
     case CSSValueColorBurn:
-        return blink::WebBlendModeColorBurn;
+        return WebBlendModeColorBurn;
     case CSSValueHardLight:
-        return blink::WebBlendModeHardLight;
+        return WebBlendModeHardLight;
     case CSSValueSoftLight:
-        return blink::WebBlendModeSoftLight;
+        return WebBlendModeSoftLight;
     case CSSValueDifference:
-        return blink::WebBlendModeDifference;
+        return WebBlendModeDifference;
     case CSSValueExclusion:
-        return blink::WebBlendModeExclusion;
+        return WebBlendModeExclusion;
     case CSSValueHue:
-        return blink::WebBlendModeHue;
+        return WebBlendModeHue;
     case CSSValueSaturation:
-        return blink::WebBlendModeSaturation;
+        return WebBlendModeSaturation;
     case CSSValueColor:
-        return blink::WebBlendModeColor;
+        return WebBlendModeColor;
     case CSSValueLuminosity:
-        return blink::WebBlendModeLuminosity;
+        return WebBlendModeLuminosity;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return blink::WebBlendModeNormal;
+    return WebBlendModeNormal;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(LineCap e)
@@ -4710,6 +4711,6 @@ template<> inline CSSPrimitiveValue::operator ScrollBehavior() const
     return ScrollBehaviorAuto;
 }
 
-}
+} // namespace blink
 
 #endif

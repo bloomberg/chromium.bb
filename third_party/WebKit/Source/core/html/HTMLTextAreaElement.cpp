@@ -511,7 +511,7 @@ String HTMLTextAreaElement::validationMessage() const
         return customValidationMessage();
 
     if (valueMissing())
-        return locale().queryString(blink::WebLocalizedString::ValidationValueMissing);
+        return locale().queryString(WebLocalizedString::ValidationValueMissing);
 
     if (tooLong())
         return locale().validationMessageTooLongText(computeLengthForSubmission(value()), maxLength());

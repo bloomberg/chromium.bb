@@ -54,9 +54,9 @@ void WebGLSharedObject::detachContextGroup()
     }
 }
 
-blink::WebGraphicsContext3D* WebGLSharedObject::getAWebGraphicsContext3D() const
+WebGraphicsContext3D* WebGLSharedObject::getAWebGraphicsContext3D() const
 {
     return m_contextGroup ? m_contextGroup->getAWebGraphicsContext3D() : nullptr;
 }
 
-}
+} // namespace blink

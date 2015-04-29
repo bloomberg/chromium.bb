@@ -33,7 +33,7 @@ WebGLSampler::WebGLSampler(WebGL2RenderingContextBase* ctx)
     setObject(ctx->webContext()->createSampler());
 }
 
-void WebGLSampler::deleteObjectImpl(blink::WebGraphicsContext3D* context3d)
+void WebGLSampler::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     context3d->deleteSampler(m_object);
     m_object = 0;

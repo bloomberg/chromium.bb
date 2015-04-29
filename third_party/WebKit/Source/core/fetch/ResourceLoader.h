@@ -70,15 +70,15 @@ public:
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
 
     // WebURLLoaderClient
-    void willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&, const blink::WebURLResponse& redirectResponse) override;
-    void didSendData(blink::WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-    void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) override;
-    void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&, WebDataConsumerHandle*) override;
-    void didReceiveData(blink::WebURLLoader*, const char*, int, int encodedDataLength) override;
-    void didReceiveCachedMetadata(blink::WebURLLoader*, const char* data, int length) override;
-    void didFinishLoading(blink::WebURLLoader*, double finishTime, int64_t encodedDataLength) override;
-    void didFail(blink::WebURLLoader*, const blink::WebURLError&) override;
-    void didDownloadData(blink::WebURLLoader*, int, int) override;
+    void willSendRequest(WebURLLoader*, WebURLRequest&, const WebURLResponse& redirectResponse) override;
+    void didSendData(WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
+    void didReceiveResponse(WebURLLoader*, const WebURLResponse&) override;
+    void didReceiveResponse(WebURLLoader*, const WebURLResponse&, WebDataConsumerHandle*) override;
+    void didReceiveData(WebURLLoader*, const char*, int, int encodedDataLength) override;
+    void didReceiveCachedMetadata(WebURLLoader*, const char* data, int length) override;
+    void didFinishLoading(WebURLLoader*, double finishTime, int64_t encodedDataLength) override;
+    void didFail(WebURLLoader*, const WebURLError&) override;
+    void didDownloadData(WebURLLoader*, int, int) override;
 
     const KURL& url() const { return m_request.url(); }
     bool isLoadedBy(ResourceLoaderHost*) const;
@@ -99,7 +99,7 @@ private:
 
     ResourceRequest& applyOptions(ResourceRequest&) const;
 
-    OwnPtr<blink::WebURLLoader> m_loader;
+    OwnPtr<WebURLLoader> m_loader;
     RefPtrWillBeMember<ResourceLoaderHost> m_host;
 
     ResourceRequest m_request;

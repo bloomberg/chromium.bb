@@ -73,7 +73,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupple
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
 public:
-    static blink::WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
+    static WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
 
     static void setMediaStreamRegistry(URLRegistry*);
     static bool isMediaStreamURL(const String& url);
@@ -82,14 +82,14 @@ public:
 #if ENABLE(WEB_AUDIO)
     void clearWeakMembers(Visitor*);
 #endif
-    blink::WebMediaPlayer* webMediaPlayer() const { return m_player ? m_player->webMediaPlayer() : 0; }
+    WebMediaPlayer* webMediaPlayer() const { return m_player ? m_player->webMediaPlayer() : 0; }
 
     virtual bool hasVideo() const { return false; }
     bool hasAudio() const;
 
     bool supportsSave() const;
 
-    blink::WebLayer* platformLayer() const;
+    WebLayer* platformLayer() const;
 
     enum DelayedActionType {
         LoadMediaResource = 1 << 0,
@@ -169,7 +169,7 @@ public:
     void audioTrackChanged();
 
     VideoTrackList& videoTracks();
-    void selectedVideoTrackChanged(blink::WebMediaPlayer::TrackId*);
+    void selectedVideoTrackChanged(WebMediaPlayer::TrackId*);
 
     PassRefPtrWillBeRawPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);
 
@@ -187,13 +187,13 @@ public:
     void didAddTrackElement(HTMLTrackElement*);
     void didRemoveTrackElement(HTMLTrackElement*);
 
-    blink::WebMediaPlayer::TrackId addAudioTrack(const String& id, blink::WebMediaPlayerClient::AudioTrackKind, const AtomicString& label, const AtomicString& language, bool enabled);
-    void removeAudioTrack(blink::WebMediaPlayer::TrackId);
-    blink::WebMediaPlayer::TrackId addVideoTrack(const String& id, blink::WebMediaPlayerClient::VideoTrackKind, const AtomicString& label, const AtomicString& language, bool selected);
-    void removeVideoTrack(blink::WebMediaPlayer::TrackId);
+    WebMediaPlayer::TrackId addAudioTrack(const String& id, WebMediaPlayerClient::AudioTrackKind, const AtomicString& label, const AtomicString& language, bool enabled);
+    void removeAudioTrack(WebMediaPlayer::TrackId);
+    WebMediaPlayer::TrackId addVideoTrack(const String& id, WebMediaPlayerClient::VideoTrackKind, const AtomicString& label, const AtomicString& language, bool selected);
+    void removeVideoTrack(WebMediaPlayer::TrackId);
 
-    virtual void mediaPlayerDidAddTextTrack(blink::WebInbandTextTrack*) override final;
-    virtual void mediaPlayerDidRemoveTextTrack(blink::WebInbandTextTrack*) override final;
+    virtual void mediaPlayerDidAddTextTrack(WebInbandTextTrack*) override final;
+    virtual void mediaPlayerDidRemoveTextTrack(WebInbandTextTrack*) override final;
     // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
     virtual KURL mediaPlayerPosterURL() override { return KURL(); }
 
@@ -326,7 +326,7 @@ private:
     virtual void updateDisplayState() { }
 
     void setReadyState(ReadyState);
-    void setNetworkState(blink::WebMediaPlayer::NetworkState);
+    void setNetworkState(WebMediaPlayer::NetworkState);
 
     virtual void mediaPlayerNetworkStateChanged() override final;
     virtual void mediaPlayerReadyStateChanged() override final;
@@ -337,8 +337,8 @@ private:
     virtual void mediaPlayerRequestSeek(double) override final;
     virtual void mediaPlayerRepaint() override final;
     virtual void mediaPlayerSizeChanged() override final;
-    virtual void mediaPlayerSetWebLayer(blink::WebLayer*) override final;
-    virtual void mediaPlayerMediaSourceOpened(blink::WebMediaSource*) override final;
+    virtual void mediaPlayerSetWebLayer(WebLayer*) override final;
+    virtual void mediaPlayerMediaSourceOpened(WebMediaSource*) override final;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);
@@ -361,7 +361,7 @@ private:
     void loadResource(const KURL&, ContentType&, const String& keySystem);
     void startPlayerLoad();
     void setPlayerPreload();
-    blink::WebMediaPlayer::LoadType loadType() const;
+    WebMediaPlayer::LoadType loadType() const;
     void scheduleNextSourceChild();
     void loadNextSourceChild();
     void userCancelledLoad();
@@ -376,7 +376,7 @@ private:
 
     KURL selectNextSourceChild(ContentType*, String* keySystem, InvalidURLAction);
 
-    void mediaLoadingFailed(blink::WebMediaPlayer::NetworkState);
+    void mediaLoadingFailed(WebMediaPlayer::NetworkState);
 
     // deferred loading (preload=none)
     bool loadIsDeferred() const;
@@ -429,7 +429,7 @@ private:
     bool isBlockedOnMediaController() const;
     bool isAutoplaying() const { return m_autoplaying; }
 
-    blink::WebMediaPlayer::CORSMode corsMode() const;
+    WebMediaPlayer::CORSMode corsMode() const;
 
     // Returns the "direction of playback" value as specified in the HTML5 spec.
     enum DirectionOfPlayback { Backward, Forward };
@@ -506,7 +506,7 @@ private:
     Timer<HTMLMediaElement> m_deferredLoadTimer;
 
     OwnPtr<MediaPlayer> m_player;
-    blink::WebLayer* m_webLayer;
+    WebLayer* m_webLayer;
 
     MediaPlayer::Preload m_preload;
 

@@ -33,7 +33,7 @@ void VideoTrack::setSelected(bool selected)
     m_selected = selected;
 
     if (mediaElement()) {
-        blink::WebMediaPlayer::TrackId selectedTrackId = trackId();
+        WebMediaPlayer::TrackId selectedTrackId = trackId();
         mediaElement()->selectedVideoTrackChanged(selected ? &selectedTrackId : 0);
     }
 }
@@ -90,4 +90,4 @@ AtomicString VideoTrack::defaultKind() const
     return emptyAtom;
 }
 
-}
+} // namespace blink
