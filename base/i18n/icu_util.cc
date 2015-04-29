@@ -19,6 +19,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "third_party/icu/source/common/unicode/putil.h"
 #include "third_party/icu/source/common/unicode/udata.h"
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "third_party/icu/source/i18n/unicode/timezone.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
@@ -91,6 +94,7 @@ bool InitializeICU() {
   g_called_once = true;
 #endif
 
+  bool result;
 #if (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_SHARED)
   // We expect to find the ICU data module alongside the current module.
   FilePath data_path;
@@ -112,10 +116,10 @@ bool InitializeICU() {
 
   UErrorCode err = U_ZERO_ERROR;
   udata_setCommonData(reinterpret_cast<void*>(addr), &err);
-  return err == U_ZERO_ERROR;
+  result = (err == U_ZERO_ERROR);
 #elif (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_STATIC)
   // The ICU data is statically linked.
-  return true;
+  result = true;
 #elif (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
   // If the ICU data directory is set, ICU won't actually load the data until
   // it is needed.  This can fail if the process is sandboxed at that time.
@@ -174,11 +178,22 @@ bool InitializeICU() {
   }
   UErrorCode err = U_ZERO_ERROR;
   udata_setCommonData(const_cast<uint8*>(mapped_file.data()), &err);
+  result = (err == U_ZERO_ERROR);
 #if defined(OS_WIN)
-  CHECK(err == U_ZERO_ERROR);  // TODO(scottmg): http://crbug.com/445616
+  CHECK(result);  // TODO(scottmg): http://crbug.com/445616
 #endif
-  return err == U_ZERO_ERROR;
 #endif
+
+// To respond to the timezone change properly, the default timezone
+// cache in ICU has to be populated on starting up.
+// TODO(jungshik): Some callers do not care about tz at all. If necessary,
+// add a boolean argument to this function to init'd the default tz only
+// when requested.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (result)
+    scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+#endif
+  return result;
 }
 #endif
 

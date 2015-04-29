@@ -137,6 +137,7 @@
 #include "third_party/WebKit/public/web/WebScriptController.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -1711,9 +1712,15 @@ void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
   CHECK(false);
 }
 
-void RenderThreadImpl::OnUpdateTimezone() {
+void RenderThreadImpl::OnUpdateTimezone(const std::string& zone_id) {
   if (!blink_platform_impl_)
     return;
+  if (!zone_id.empty()) {
+    icu::TimeZone *new_zone = icu::TimeZone::createTimeZone(
+        icu::UnicodeString::fromUTF8(zone_id));
+    icu::TimeZone::adoptDefault(new_zone);
+    VLOG(1) << "ICU default timezone is set to " << zone_id;
+  }
   NotifyTimezoneChange();
 }
 

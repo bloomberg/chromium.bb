@@ -601,8 +601,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,
 IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
                     content::WebPreferences)
 
-// Informs the renderer that the timezone has changed.
-IPC_MESSAGE_CONTROL0(ViewMsg_TimezoneChange)
+// Informs the renderer that the timezone has changed along with a new
+// timezone ID.
+IPC_MESSAGE_CONTROL1(ViewMsg_TimezoneChange, std::string)
 
 // Tells the render view to close.
 // Expects a Close_ACK message when finished.

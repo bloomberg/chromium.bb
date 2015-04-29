@@ -241,7 +241,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Notifies the renderer that the timezone configuration of the system might
   // have changed.
-  virtual void NotifyTimezoneChange() = 0;
+  virtual void NotifyTimezoneChange(const std::string& zone_id) = 0;
 
   // Returns the ServiceRegistry for this process.
   virtual ServiceRegistry* GetServiceRegistry() = 0;

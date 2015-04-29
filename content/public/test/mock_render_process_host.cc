@@ -244,7 +244,7 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
 void MockRenderProcessHost::ResumeRequestsForView(int route_id) {
 }
 
-void MockRenderProcessHost::NotifyTimezoneChange() {
+void MockRenderProcessHost::NotifyTimezoneChange(const std::string& zone_id) {
 }
 
 ServiceRegistry* MockRenderProcessHost::GetServiceRegistry() {
