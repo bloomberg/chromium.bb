@@ -429,7 +429,7 @@ void GpuCommandBufferStub::Destroy() {
   scheduler_.reset();
 
   bool have_context = false;
-  if (decoder_) {
+  if (decoder_ && decoder_->GetGLContext()) {
     // Try to make the context current regardless of whether it was lost, so we
     // don't leak resources.
     have_context = decoder_->GetGLContext()->MakeCurrent(surface_.get());
