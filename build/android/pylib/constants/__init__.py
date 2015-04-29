@@ -229,7 +229,8 @@ def GetBuildType():
   try:
     return os.environ['BUILDTYPE']
   except KeyError:
-    raise Exception('The BUILDTYPE environment variable has not been set')
+    raise EnvironmentError(
+        'The BUILDTYPE environment variable has not been set')
 
 
 def SetBuildType(build_type):

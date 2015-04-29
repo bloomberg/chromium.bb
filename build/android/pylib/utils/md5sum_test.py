@@ -24,6 +24,8 @@ class Md5SumTest(unittest.TestCase):
     self._patchers = [
         mock.patch('pylib.constants.GetOutDirectory',
                    new=mock.Mock(return_value=TEST_OUT_DIR)),
+        mock.patch('os.path.exists',
+                   new=mock.Mock(return_value=True)),
     ]
     for p in self._patchers:
       p.start()

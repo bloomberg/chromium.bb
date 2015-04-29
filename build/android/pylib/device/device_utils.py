@@ -876,13 +876,17 @@ class DeviceUtils(object):
     if not real_device_path:
       return [(host_path, device_path)]
 
-    host_checksums = md5sum.CalculateHostMd5Sums([real_host_path])
-    device_paths_to_md5 = (
-        real_device_path if os.path.isfile(real_host_path)
-        else ('%s/%s' % (real_device_path, os.path.relpath(p, real_host_path))
-              for p in host_checksums.iterkeys()))
-    device_checksums = md5sum.CalculateDeviceMd5Sums(
-        device_paths_to_md5, self)
+    try:
+      host_checksums = md5sum.CalculateHostMd5Sums([real_host_path])
+      device_paths_to_md5 = (
+          real_device_path if os.path.isfile(real_host_path)
+          else ('%s/%s' % (real_device_path, os.path.relpath(p, real_host_path))
+                for p in host_checksums.iterkeys()))
+      device_checksums = md5sum.CalculateDeviceMd5Sums(
+          device_paths_to_md5, self)
+    except EnvironmentError as e:
+      logging.warning('Error calculating md5: %s', e)
+      return [(host_path, device_path)]
 
     if os.path.isfile(host_path):
       host_checksum = host_checksums.get(real_host_path)
