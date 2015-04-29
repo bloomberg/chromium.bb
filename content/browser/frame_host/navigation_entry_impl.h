@@ -152,7 +152,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // its FrameNavigationEntry.  A new FrameNavigationEntry is added if none
   // exists, or else the existing one (which might be shared with other
   // NavigationEntries) is updated with the given parameters.
-  void AddOrUpdateFrameEntry(int64 frame_tree_node_id,
+  void AddOrUpdateFrameEntry(int frame_tree_node_id,
                              SiteInstanceImpl* site_instance,
                              const GURL& url,
                              const Referrer& referrer);
@@ -281,10 +281,10 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // Indicates which FrameTreeNode to navigate.  Currently only used if the
   // --site-per-process flag is passed.
-  int64 frame_tree_node_id() const {
+  int frame_tree_node_id() const {
     return frame_tree_node_id_;
   }
-  void set_frame_tree_node_id(int64 frame_tree_node_id) {
+  void set_frame_tree_node_id(int frame_tree_node_id) {
     frame_tree_node_id_ = frame_tree_node_id;
   }
 
@@ -418,7 +418,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // --site-per-process flag is passed.  It is cleared in |ResetForCommit|
   // because we only use it while the navigation is pending.
   // TODO(creis): Move this to FrameNavigationEntry.
-  int64 frame_tree_node_id_;
+  int frame_tree_node_id_;
 
 #if defined(OS_ANDROID)
   // The time at which Chrome received the Android Intent that triggered this

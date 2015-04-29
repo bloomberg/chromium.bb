@@ -27,7 +27,7 @@ class CONTENT_EXPORT FrameAccessibility {
   // frame tree.
   void AddChildFrame(RenderFrameHostImpl* parent_frame_host,
                      int accessibility_node_id,
-                     int64 child_frame_tree_node_id);
+                     int child_frame_tree_node_id);
 
   // Add a mapping between an accessibility node of |parent_frame_host|
   // and the main frame of the guest Webcontents with the given
@@ -69,7 +69,7 @@ class CONTENT_EXPORT FrameAccessibility {
 
   RenderFrameHostImpl* GetRFHIFromFrameTreeNodeId(
       RenderFrameHostImpl* parent_frame_host,
-      int64 child_frame_tree_node_id);
+      int child_frame_tree_node_id);
 
   // This structure stores the parent-child relationship between an
   // accessibility node in a parent frame and its child frame, where the
@@ -89,7 +89,7 @@ class CONTENT_EXPORT FrameAccessibility {
 
     // If the child frame is an iframe, this is the iframe's FrameTreeNode id,
     // otherwise 0.
-    int64 child_frame_tree_node_id;
+    int child_frame_tree_node_id;
 
     // If the child frame is a browser plugin, this is its instance id,
     // otherwise 0.

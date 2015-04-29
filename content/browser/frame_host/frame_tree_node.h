@@ -33,7 +33,7 @@ class CONTENT_EXPORT FrameTreeNode {
  public:
   // Returns the FrameTreeNode with the given global |frame_tree_node_id|,
   // regardless of which FrameTree it is in.
-  static FrameTreeNode* GloballyFindByID(int64 frame_tree_node_id);
+  static FrameTreeNode* GloballyFindByID(int frame_tree_node_id);
 
   FrameTreeNode(FrameTree* frame_tree,
                 Navigator* navigator,
@@ -67,7 +67,7 @@ class CONTENT_EXPORT FrameTreeNode {
     return &render_manager_;
   }
 
-  int64 frame_tree_node_id() const {
+  int frame_tree_node_id() const {
     return frame_tree_node_id_;
   }
 
@@ -167,7 +167,7 @@ class CONTENT_EXPORT FrameTreeNode {
   void set_parent(FrameTreeNode* parent) { parent_ = parent; }
 
   // The next available browser-global FrameTreeNode ID.
-  static int64 next_frame_tree_node_id_;
+  static int next_frame_tree_node_id_;
 
   // The FrameTree that owns us.
   FrameTree* frame_tree_;  // not owned.
@@ -184,7 +184,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // A browser-global identifier for the frame in the page, which stays stable
   // even if the frame does a cross-process navigation.
-  const int64 frame_tree_node_id_;
+  const int frame_tree_node_id_;
 
   // The parent node of this frame. NULL if this node is the root or if it has
   // not yet been attached to the frame tree.

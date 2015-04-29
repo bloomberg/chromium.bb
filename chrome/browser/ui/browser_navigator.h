@@ -67,7 +67,7 @@ struct NavigateParams {
   content::Referrer referrer;
 
   // The browser-global ID of the frame to navigate, or -1 for the main frame.
-  int64 frame_tree_node_id;
+  int frame_tree_node_id;
 
   // Any redirect URLs that occurred for this navigation before |url|.
   // Usually empty.

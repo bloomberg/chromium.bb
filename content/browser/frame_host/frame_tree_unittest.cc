@@ -328,9 +328,9 @@ TEST_F(FrameTreeTest, ProcessCrashClearsGlobalMap) {
   child1_rfh->OnCreateChildFrame(33, std::string(), SandboxFlags::NONE);
 
   // Ensure they can be found by id.
-  int64 id1 = root->child_at(0)->frame_tree_node_id();
-  int64 id2 = root->child_at(1)->frame_tree_node_id();
-  int64 id3 = root->child_at(0)->child_at(0)->frame_tree_node_id();
+  int id1 = root->child_at(0)->frame_tree_node_id();
+  int id2 = root->child_at(1)->frame_tree_node_id();
+  int id3 = root->child_at(0)->child_at(0)->frame_tree_node_id();
   EXPECT_TRUE(FrameTreeNode::GloballyFindByID(id1));
   EXPECT_TRUE(FrameTreeNode::GloballyFindByID(id2));
   EXPECT_TRUE(FrameTreeNode::GloballyFindByID(id3));

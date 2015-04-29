@@ -37,7 +37,7 @@ NavigationURLLoaderImplCore::~NavigationURLLoaderImplCore() {
 
 void NavigationURLLoaderImplCore::Start(
     ResourceContext* resource_context,
-    int64 frame_tree_node_id,
+    int frame_tree_node_id,
     scoped_ptr<NavigationRequestInfo> request_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

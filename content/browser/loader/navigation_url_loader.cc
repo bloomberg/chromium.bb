@@ -14,7 +14,7 @@ static NavigationURLLoaderFactory* g_factory = nullptr;
 
 scoped_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     BrowserContext* browser_context,
-    int64 frame_tree_node_id,
+    int frame_tree_node_id,
     scoped_ptr<NavigationRequestInfo> request_info,
     NavigationURLLoaderDelegate* delegate) {
   if (g_factory) {

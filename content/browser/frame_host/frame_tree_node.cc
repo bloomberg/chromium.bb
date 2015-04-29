@@ -23,7 +23,7 @@ namespace {
 
 // This is a global map between frame_tree_node_ids and pointers to
 // FrameTreeNodes.
-typedef base::hash_map<int64, FrameTreeNode*> FrameTreeNodeIDMap;
+typedef base::hash_map<int, FrameTreeNode*> FrameTreeNodeIDMap;
 
 base::LazyInstance<FrameTreeNodeIDMap> g_frame_tree_node_id_map =
     LAZY_INSTANCE_INITIALIZER;
@@ -37,10 +37,10 @@ const double kLoadingProgressDone = 1.0;
 
 }  // namespace
 
-int64 FrameTreeNode::next_frame_tree_node_id_ = 1;
+int FrameTreeNode::next_frame_tree_node_id_ = 1;
 
 // static
-FrameTreeNode* FrameTreeNode::GloballyFindByID(int64 frame_tree_node_id) {
+FrameTreeNode* FrameTreeNode::GloballyFindByID(int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FrameTreeNodeIDMap* nodes = g_frame_tree_node_id_map.Pointer();
   FrameTreeNodeIDMap::iterator it = nodes->find(frame_tree_node_id);

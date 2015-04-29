@@ -461,7 +461,7 @@ void NavigationEntryImpl::ResetForCommit() {
 #endif
 }
 
-void NavigationEntryImpl::AddOrUpdateFrameEntry(int64 frame_tree_node_id,
+void NavigationEntryImpl::AddOrUpdateFrameEntry(int frame_tree_node_id,
                                                 SiteInstanceImpl* site_instance,
                                                 const GURL& url,
                                                 const Referrer& referrer) {

@@ -24,7 +24,7 @@ namespace {
 
 // Used with FrameTree::ForEach() to search for the FrameTreeNode
 // corresponding to |frame_tree_node_id| within a specific FrameTree.
-bool FrameTreeNodeForId(int64 frame_tree_node_id,
+bool FrameTreeNodeForId(int frame_tree_node_id,
                         FrameTreeNode** out_node,
                         FrameTreeNode* node) {
   if (node->frame_tree_node_id() == frame_tree_node_id) {
@@ -116,7 +116,7 @@ FrameTree::FrameTree(Navigator* navigator,
 FrameTree::~FrameTree() {
 }
 
-FrameTreeNode* FrameTree::FindByID(int64 frame_tree_node_id) {
+FrameTreeNode* FrameTree::FindByID(int frame_tree_node_id) {
   FrameTreeNode* node = nullptr;
   ForEach(base::Bind(&FrameTreeNodeForId, frame_tree_node_id, &node));
   return node;

@@ -127,7 +127,7 @@ class NavigationController {
     ui::PageTransition transition_type;
 
     // The FrameTreeNode ID for the frame to navigate, or -1 for the main frame.
-    int64 frame_tree_node_id;
+    int frame_tree_node_id;
 
     // Referrer for this load. Empty if none.
     Referrer referrer;

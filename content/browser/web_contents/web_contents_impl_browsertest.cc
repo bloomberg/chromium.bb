@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = wc->GetFrameTree()->root();
   ASSERT_EQ(3UL, root->child_count());
-  int64 frame_tree_node_id = root->child_at(0)->frame_tree_node_id();
+  int frame_tree_node_id = root->child_at(0)->frame_tree_node_id();
   EXPECT_NE(-1, frame_tree_node_id);
 
   // Navigate with the subframe's FrameTreeNode ID.

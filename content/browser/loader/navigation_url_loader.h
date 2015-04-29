@@ -34,7 +34,7 @@ class CONTENT_EXPORT NavigationURLLoader {
   // should_replace_current_entry shouldn't be needed at this layer.
   static scoped_ptr<NavigationURLLoader> Create(
       BrowserContext* browser_context,
-      int64 frame_tree_node_id,
+      int frame_tree_node_id,
       scoped_ptr<NavigationRequestInfo> request_info,
       NavigationURLLoaderDelegate* delegate);
 

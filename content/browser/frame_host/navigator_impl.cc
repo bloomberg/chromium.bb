@@ -564,7 +564,7 @@ void NavigatorImpl::RequestTransferURL(
     dest_url = GURL(url::kAboutBlankURL);
   }
 
-  int64 frame_tree_node_id = -1;
+  int frame_tree_node_id = -1;
 
   // Send the navigation to the current FrameTreeNode if it's destined for a
   // subframe in the current tab.  We'll assume it's for the main frame

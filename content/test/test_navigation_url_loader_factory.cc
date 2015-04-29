@@ -19,7 +19,7 @@ TestNavigationURLLoaderFactory::~TestNavigationURLLoaderFactory() {
 
 scoped_ptr<NavigationURLLoader> TestNavigationURLLoaderFactory::CreateLoader(
     BrowserContext* browser_context,
-    int64 frame_tree_node_id,
+    int frame_tree_node_id,
     scoped_ptr<NavigationRequestInfo> request_info,
     NavigationURLLoaderDelegate* delegate) {
   return scoped_ptr<NavigationURLLoader>(new TestNavigationURLLoader(

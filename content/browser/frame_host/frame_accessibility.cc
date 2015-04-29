@@ -30,7 +30,7 @@ FrameAccessibility::~FrameAccessibility() {}
 void FrameAccessibility::AddChildFrame(
     RenderFrameHostImpl* parent_frame_host,
     int accessibility_node_id,
-    int64 child_frame_tree_node_id) {
+    int child_frame_tree_node_id) {
   for (std::vector<ChildFrameMapping>::iterator iter = mappings_.begin();
        iter != mappings_.end();
        ++iter) {
@@ -204,7 +204,7 @@ bool FrameAccessibility::GetParent(
 
 RenderFrameHostImpl* FrameAccessibility::GetRFHIFromFrameTreeNodeId(
     RenderFrameHostImpl* parent_frame_host,
-    int64 child_frame_tree_node_id) {
+    int child_frame_tree_node_id) {
   FrameTreeNode* child_node =
       FrameTreeNode::GloballyFindByID(child_frame_tree_node_id);
   if (!child_node)

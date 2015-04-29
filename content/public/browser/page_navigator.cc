@@ -26,7 +26,7 @@ OpenURLParams::OpenURLParams(
 OpenURLParams::OpenURLParams(
     const GURL& url,
     const Referrer& referrer,
-    int64 frame_tree_node_id,
+    int frame_tree_node_id,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
     bool is_renderer_initiated)

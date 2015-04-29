@@ -54,7 +54,7 @@ class CONTENT_EXPORT FrameTree {
 
   // Returns the FrameTreeNode with the given |frame_tree_node_id| if it is part
   // of this FrameTree.
-  FrameTreeNode* FindByID(int64 frame_tree_node_id);
+  FrameTreeNode* FindByID(int frame_tree_node_id);
 
   // Returns the FrameTreeNode with the given renderer-specific |routing_id|.
   FrameTreeNode* FindByRoutingID(int process_id, int routing_id);
@@ -177,7 +177,7 @@ class CONTENT_EXPORT FrameTree {
 
   scoped_ptr<FrameTreeNode> root_;
 
-  int64 focused_frame_tree_node_id_;
+  int focused_frame_tree_node_id_;
 
   base::Callback<void(RenderFrameHost*)> on_frame_removed_;
 

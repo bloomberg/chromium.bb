@@ -1850,7 +1850,7 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
 
 void ResourceDispatcherHostImpl::BeginNavigationRequest(
     ResourceContext* resource_context,
-    int64 frame_tree_node_id,
+    int frame_tree_node_id,
     const NavigationRequestInfo& info,
     NavigationURLLoaderImplCore* loader) {
   // PlzNavigate: BeginNavigationRequest currently should only be used for the

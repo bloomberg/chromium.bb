@@ -262,7 +262,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // PlzNavigate: Begins a request for NavigationURLLoader. |loader| is the
   // loader to attach to the leaf resource handler.
   void BeginNavigationRequest(ResourceContext* resource_context,
-                              int64 frame_tree_node_id,
+                              int frame_tree_node_id,
                               const NavigationRequestInfo& info,
                               NavigationURLLoaderImplCore* loader);
 

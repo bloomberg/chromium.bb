@@ -40,7 +40,7 @@ class NavigationURLLoaderImplCore {
 
   // Starts the request.
   void Start(ResourceContext* resource_context,
-             int64 frame_tree_node_id,
+             int frame_tree_node_id,
              scoped_ptr<NavigationRequestInfo> request_info);
 
   // Follows the current pending redirect.

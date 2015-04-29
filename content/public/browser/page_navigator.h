@@ -33,7 +33,7 @@ struct CONTENT_EXPORT OpenURLParams {
                 bool is_renderer_initiated);
   OpenURLParams(const GURL& url,
                 const Referrer& referrer,
-                int64 frame_tree_node_id,
+                int frame_tree_node_id,
                 WindowOpenDisposition disposition,
                 ui::PageTransition transition,
                 bool is_renderer_initiated);
@@ -65,7 +65,7 @@ struct CONTENT_EXPORT OpenURLParams {
   std::string extra_headers;
 
   // The browser-global FrameTreeNode ID or -1 to indicate the main frame.
-  int64 frame_tree_node_id;
+  int frame_tree_node_id;
 
   // The disposition requested by the navigation source.
   WindowOpenDisposition disposition;
