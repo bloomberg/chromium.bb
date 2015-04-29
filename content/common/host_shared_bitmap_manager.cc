@@ -6,6 +6,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "content/common/view_messages.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -49,6 +51,8 @@ class HostSharedBitmap : public cc::SharedBitmap {
   scoped_refptr<BitmapData> bitmap_data_;
   HostSharedBitmapManager* manager_;
 };
+
+const char kMemoryAllocatorName[] = "sharedbitmap";
 
 }  // namespace
 
@@ -144,6 +148,26 @@ scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetSharedBitmapFromId(
 
   return make_scoped_ptr(new HostSharedBitmap(
       static_cast<uint8*>(data->memory->memory()), data, id, nullptr));
+}
+
+bool HostSharedBitmapManager::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd) {
+  base::AutoLock lock(lock_);
+
+  for (const auto& bitmap : handle_map_) {
+    base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+        base::StringPrintf("%s/%s", kMemoryAllocatorName,
+                           base::HexEncode(bitmap.first.name,
+                                           sizeof(bitmap.first.name)).c_str()));
+    if (!dump)
+      return false;
+
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameOuterSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    bitmap.second->buffer_size);
+  }
+
+  return true;
 }
 
 void HostSharedBitmapManager::ChildAllocatedSharedBitmap(

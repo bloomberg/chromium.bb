@@ -44,6 +44,7 @@
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/content_browser_client.h"
@@ -581,6 +582,10 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 
   base::trace_event::MemoryDumpManager::GetInstance()->Initialize();
+
+  // Enable the dump providers.
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      HostSharedBitmapManager::current());
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
   trace_memory_controller_.reset(new base::trace_event::TraceMemoryController(

@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "content/common/content_export.h"
 
@@ -55,7 +56,9 @@ class CONTENT_EXPORT HostSharedBitmapManagerClient {
   DISALLOW_COPY_AND_ASSIGN(HostSharedBitmapManagerClient);
 };
 
-class CONTENT_EXPORT HostSharedBitmapManager : public cc::SharedBitmapManager {
+class CONTENT_EXPORT HostSharedBitmapManager
+    : public cc::SharedBitmapManager,
+      public base::trace_event::MemoryDumpProvider {
  public:
   HostSharedBitmapManager();
   ~HostSharedBitmapManager() override;
@@ -68,6 +71,9 @@ class CONTENT_EXPORT HostSharedBitmapManager : public cc::SharedBitmapManager {
   scoped_ptr<cc::SharedBitmap> GetSharedBitmapFromId(
       const gfx::Size& size,
       const cc::SharedBitmapId&) override;
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
 
   size_t AllocatedBitmapCount() const;
 
