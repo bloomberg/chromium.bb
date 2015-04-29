@@ -4,7 +4,10 @@
 
 #include "chromeos/dbus/session_manager_client.h"
 
+#include <sys/socket.h>
+
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -58,6 +61,23 @@ void StoreFile(const base::FilePath& path, const std::string& data) {
   }
 }
 
+// Creates a pair of file descriptors that form a conduit for trustworthy
+// transfer of credentials between Chrome and the session_manager
+void CreateValidCredConduit(dbus::FileDescriptor* local_auth_fd,
+                            dbus::FileDescriptor* remote_auth_fd) {
+  int sockets[2] = {-1, -1};
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0) {
+    PLOG(ERROR) << "Failed to create a unix domain socketpair";
+    return;
+  }
+
+  local_auth_fd->PutValue(sockets[0]);
+  local_auth_fd->CheckValidity();
+
+  remote_auth_fd->PutValue(sockets[1]);
+  remote_auth_fd->CheckValidity();
+}
+
 }  // namespace
 
 // The SessionManagerClient implementation used in production.
@@ -96,16 +116,27 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void RestartJob(int pid, const std::string& command_line) override {
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 login_manager::kSessionManagerRestartJob);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendInt32(pid);
-    writer.AppendString(command_line);
-    session_manager_proxy_->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&SessionManagerClientImpl::OnRestartJob,
-                   weak_ptr_factory_.GetWeakPtr()));
+    dbus::ScopedFileDescriptor local_auth_fd(new dbus::FileDescriptor());
+    dbus::ScopedFileDescriptor remote_auth_fd(new dbus::FileDescriptor());
+
+    // The session_manager provides a new method to replace RestartJob, called
+    // RestartJobWithAuth, that is able to be used correctly within a PID
+    // namespace. To use it, the caller must create a unix domain socket pair
+    // and pass one end over dbus while holding the local end open for the
+    // duration of the call.
+    // Here, we call CreateValidCredConduit() to create the socket pair,
+    // and then pass both ends along to CallRestartJobWithValidFd(), which
+    // takes care of them from there.
+    // NB: PostTaskAndReply ensures that the second callback (which owns the
+    //     ScopedFileDescriptor objects) outlives the first, so passing the
+    //     bare pointers to CreateValidCredConduit is safe.
+    base::WorkerPool::PostTaskAndReply(
+        FROM_HERE, base::Bind(&CreateValidCredConduit, local_auth_fd.get(),
+                              remote_auth_fd.get()),
+        base::Bind(&SessionManagerClientImpl::CallRestartJobWithValidFd,
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&local_auth_fd),
+                   base::Passed(&remote_auth_fd), command_line),
+        false);
   }
 
   void StartSession(const std::string& user_email) override {
@@ -379,8 +410,35 @@ class SessionManagerClientImpl : public SessionManagerClient {
             callback));
   }
 
+  // Calls RestartJobWithAuth to tell the session manager to restart the
+  // browser using the contents of command_line, authorizing the call
+  // using credentials acquired via remote_auth_fd.
+  // Ownership of local_auth_fd is held for the duration of the dbus call.
+  void CallRestartJobWithValidFd(dbus::ScopedFileDescriptor local_auth_fd,
+                                 dbus::ScopedFileDescriptor remote_auth_fd,
+                                 const std::string& command_line) {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerRestartJobWithAuth);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendFileDescriptor(*remote_auth_fd);
+    writer.AppendString(command_line);
+
+    // Ownership of local_auth_fd is passed to the callback that is to be
+    // called on completion of this method call. This keeps the browser end
+    // of the socket-pair alive for the duration of the RPC.
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&SessionManagerClientImpl::OnRestartJob,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(&local_auth_fd)));
+  }
+
   // Called when kSessionManagerRestartJob method is complete.
-  void OnRestartJob(dbus::Response* response) {
+  // Now that the call is complete, local_auth_fd can be closed and discarded,
+  // which will happen automatically when it goes out of scope.
+  void OnRestartJob(dbus::ScopedFileDescriptor local_auth_fd,
+                    dbus::Response* response) {
     LOG_IF(ERROR, !response)
         << "Failed to call "
         << login_manager::kSessionManagerRestartJob;
