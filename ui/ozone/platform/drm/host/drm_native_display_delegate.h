@@ -7,12 +7,11 @@
 
 #include <map>
 #include <queue>
-#include <set>
 
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -24,6 +23,7 @@ namespace ui {
 
 class DeviceManager;
 class DisplayManager;
+class DrmDeviceHandle;
 class DrmGpuPlatformSupportHost;
 
 struct DisplaySnapshot_Params;
@@ -97,7 +97,8 @@ class DrmNativeDisplayDelegate : public NativeDisplayDelegate,
 
   // Called as a result of finishing to process the display hotplug event. These
   // are responsible for dequing the event and scheduling the next event.
-  void OnAddGraphicsDevice(const base::FilePath& path, base::File file);
+  void OnAddGraphicsDevice(const base::FilePath& path,
+                           scoped_ptr<DrmDeviceHandle> handle);
   void OnUpdateGraphicsDevice();
   void OnRemoveGraphicsDevice(const base::FilePath& path);
 
@@ -141,7 +142,8 @@ class DrmNativeDisplayDelegate : public NativeDisplayDelegate,
   bool task_pending_;
 
   // Keeps track of all the active DRM devices.
-  std::set<base::FilePath> drm_devices_;
+  base::ScopedPtrHashMap<base::FilePath, scoped_ptr<DrmDeviceHandle>>
+      drm_devices_;
 
   base::WeakPtrFactory<DrmNativeDisplayDelegate> weak_ptr_factory_;
 

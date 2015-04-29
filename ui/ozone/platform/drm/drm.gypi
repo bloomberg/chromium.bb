@@ -92,6 +92,8 @@
         'host/display_manager.h',
         'host/drm_cursor.cc',
         'host/drm_cursor.h',
+        'host/drm_device_handle.cc',
+        'host/drm_device_handle.h',
         'host/drm_gpu_platform_support_host.cc',
         'host/drm_gpu_platform_support_host.h',
         'host/drm_native_display_delegate.cc',

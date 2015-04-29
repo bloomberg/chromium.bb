@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
 
 #include <stdio.h>
-#include <xf86drm.h>
 
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
@@ -19,13 +18,14 @@
 #include "ui/ozone/common/display_util.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/drm/host/display_manager.h"
+#include "ui/ozone/platform/drm/host/drm_device_handle.h"
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 
 namespace ui {
 
 namespace {
 
-typedef base::Callback<void(const base::FilePath&, base::File)>
+typedef base::Callback<void(const base::FilePath&, scoped_ptr<DrmDeviceHandle>)>
     OnOpenDeviceReplyCallback;
 
 const char* kDisplayActionString[] = {
@@ -34,52 +34,22 @@ const char* kDisplayActionString[] = {
     "CHANGE",
 };
 
-bool Authenticate(int fd) {
-  drm_magic_t magic = 0;
-  // We need to make sure the DRM device has enough privilege. Use the DRM
-  // authentication logic to figure out if the device has enough permissions.
-  return !drmGetMagic(fd, &magic) && !drmAuthMagic(fd, magic);
-}
-
-base::File OpenDrmDevice(const base::FilePath& path) {
-  base::File file;
-  bool print_warning = true;
-  while (true) {
-    file = base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
-                                base::File::FLAG_WRITE);
-
-    base::File::Info info;
-    file.GetInfo(&info);
-
-    CHECK(!info.is_directory);
-    CHECK(path.DirName() == base::FilePath("/dev/dri"));
-
-    if (!file.IsValid()) {
-      LOG(ERROR) << "Failed to open " << path.value() << ": "
-                 << base::File::ErrorToString(file.error_details());
-      return file.Pass();
-    }
-
-    if (Authenticate(file.GetPlatformFile()))
-      break;
-
-    LOG_IF(WARNING, print_warning) << "Failed to authenticate " << path.value();
-
-    print_warning = false;
-    usleep(100000);
-  }
-
-  VLOG(1) << "Succeeded authenticating " << path.value();
-  return file.Pass();
-}
-
 void OpenDeviceOnWorkerThread(
     const base::FilePath& path,
     const scoped_refptr<base::TaskRunner>& reply_runner,
     const OnOpenDeviceReplyCallback& callback) {
-  base::File file = OpenDrmDevice(path);
-  reply_runner->PostTask(FROM_HERE,
-                         base::Bind(callback, path, base::Passed(file.Pass())));
+  scoped_ptr<DrmDeviceHandle> handle(new DrmDeviceHandle());
+  handle->Initialize(path);
+  reply_runner->PostTask(
+      FROM_HERE, base::Bind(callback, path, base::Passed(handle.Pass())));
+}
+
+void CloseDeviceOnWorkerThread(
+    scoped_ptr<DrmDeviceHandle> handle,
+    const scoped_refptr<base::TaskRunner>& reply_runner,
+    const base::Closure& callback) {
+  handle.reset();
+  reply_runner->PostTask(FROM_HERE, callback);
 }
 
 class DrmDisplaySnapshotProxy : public DisplaySnapshotProxy {
@@ -115,15 +85,36 @@ DrmNativeDisplayDelegate::DrmNativeDisplayDelegate(
       task_pending_(false),
       weak_ptr_factory_(this) {
   proxy_->RegisterHandler(this);
-  drm_devices_.insert(primary_graphics_card_path);
 }
 
 DrmNativeDisplayDelegate::~DrmNativeDisplayDelegate() {
   device_manager_->RemoveObserver(this);
   proxy_->UnregisterHandler(this);
+
+  for (auto it = drm_devices_.begin(); it != drm_devices_.end(); ++it) {
+    base::WorkerPool::PostTask(FROM_HERE,
+                               base::Bind(&CloseDeviceOnWorkerThread,
+                                          base::Passed(drm_devices_.take(it)),
+                                          base::ThreadTaskRunnerHandle::Get(),
+                                          base::Bind(&base::DoNothing)),
+                               false /* task_is_slow */);
+  }
 }
 
 void DrmNativeDisplayDelegate::Initialize() {
+  {
+    // First device needs to be treated specially. We need to open this
+    // synchronously since the GPU process will need it to initialize the
+    // graphics state.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    scoped_ptr<DrmDeviceHandle> handle(new DrmDeviceHandle());
+    if (!handle->Initialize(primary_graphics_card_path_)) {
+      LOG(FATAL) << "Failed to open primary graphics card";
+      return;
+    }
+    drm_devices_.add(primary_graphics_card_path_, handle.Pass());
+  }
+
   device_manager_->AddObserver(this);
   device_manager_->ScanDevices(this);
 
@@ -277,7 +268,6 @@ void DrmNativeDisplayDelegate::ProcessEvent() {
     switch (event.action_type) {
       case DeviceEvent::ADD:
         if (drm_devices_.find(event.path) == drm_devices_.end()) {
-          drm_devices_.insert(event.path);
           task_pending_ = base::WorkerPool::PostTask(
               FROM_HERE,
               base::Bind(
@@ -299,20 +289,28 @@ void DrmNativeDisplayDelegate::ProcessEvent() {
             << "Removing primary graphics card";
         auto it = drm_devices_.find(event.path);
         if (it != drm_devices_.end()) {
-          drm_devices_.erase(it);
-          task_pending_ = base::ThreadTaskRunnerHandle::Get()->PostTask(
+          task_pending_ = base::WorkerPool::PostTask(
               FROM_HERE,
-              base::Bind(&DrmNativeDisplayDelegate::OnRemoveGraphicsDevice,
-                         weak_ptr_factory_.GetWeakPtr(), event.path));
+              base::Bind(
+                  &CloseDeviceOnWorkerThread,
+                  base::Passed(drm_devices_.take_and_erase(it)),
+                  base::ThreadTaskRunnerHandle::Get(),
+                  base::Bind(&DrmNativeDisplayDelegate::OnRemoveGraphicsDevice,
+                             weak_ptr_factory_.GetWeakPtr(), event.path)),
+              false /* task_is_slow */);
+          return;
         }
         break;
     }
   }
 }
 
-void DrmNativeDisplayDelegate::OnAddGraphicsDevice(const base::FilePath& path,
-                                                   base::File file) {
-  if (file.IsValid()) {
+void DrmNativeDisplayDelegate::OnAddGraphicsDevice(
+    const base::FilePath& path,
+    scoped_ptr<DrmDeviceHandle> handle) {
+  if (handle->IsValid()) {
+    base::ScopedFD file = handle->Duplicate();
+    drm_devices_.add(path, handle.Pass());
     proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
         path, base::FileDescriptor(file.Pass())));
     FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
@@ -343,20 +341,18 @@ void DrmNativeDisplayDelegate::OnChannelEstablished(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
     const base::Callback<void(IPC::Message*)>& send_callback) {
-  drm_devices_.clear();
-  drm_devices_.insert(primary_graphics_card_path_);
-  {
-    // First device needs to be treated specially. We need to open this
-    // synchronously since the GPU process will need it to initialize the
-    // graphics state.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    base::File file = OpenDrmDevice(primary_graphics_card_path_);
-    if (!file.IsValid()) {
-      LOG(FATAL) << "Failed to open primary graphics card";
-      return;
+  auto it = drm_devices_.find(primary_graphics_card_path_);
+  DCHECK(it != drm_devices_.end());
+  // Send the primary device first since this is used to initialize graphics
+  // state.
+  proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
+      it->first, base::FileDescriptor(it->second->Duplicate())));
+
+  for (auto pair : drm_devices_) {
+    if (pair.second->IsValid() && pair.first != primary_graphics_card_path_) {
+      proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
+          pair.first, base::FileDescriptor(pair.second->Duplicate())));
     }
-    proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
-        primary_graphics_card_path_, base::FileDescriptor(file.Pass())));
   }
 
   device_manager_->ScanDevices(this);
