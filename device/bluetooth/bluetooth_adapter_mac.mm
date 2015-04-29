@@ -260,7 +260,6 @@ void BluetoothAdapterMac::PollAdapter() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "461181 BluetoothAdapterMac::PollAdapter::Start"));
   bool was_present = IsPresent();
-  std::string name;
   std::string address;
   bool powered = false;
   IOBluetoothHostController* controller =
@@ -272,14 +271,21 @@ void BluetoothAdapterMac::PollAdapter() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "461181 BluetoothAdapterMac::PollAdapter::GetControllerStats"));
   if (controller != nil) {
-    name = base::SysNSStringToUTF8([controller nameAsString]);
     address = BluetoothDevice::CanonicalizeAddress(
         base::SysNSStringToUTF8([controller addressAsString]));
     powered = ([controller powerState] == kBluetoothHCIPowerStateON);
+
+    // For performance reasons, cache the adapter's name. It's not uncommon for
+    // a call to [controller nameAsString] to take tens of milliseconds. Note
+    // that this caching strategy might result in clients receiving a stale
+    // name. If this is a significant issue, then some more sophisticated
+    // workaround for the performance bottleneck will be needed. For additional
+    // context, see http://crbug.com/461181 and http://crbug.com/467316
+    if (address != address_ || (!address.empty() && name_.empty()))
+      name_ = base::SysNSStringToUTF8([controller nameAsString]);
   }
 
   bool is_present = !address.empty();
-  name_ = name;
   address_ = address;
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461181
