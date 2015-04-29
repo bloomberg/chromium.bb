@@ -40,8 +40,12 @@
  * The pathname or SHM-namespace prefixes for memory objects created
  * by CreateMemoryObject().
  */
-static const char kShmTempPrefix[] = "/tmp/google-nacl-shm-";
 static const char kShmOpenPrefix[] = "/google-nacl-shm-";
+/*
+ * Default path to use for temporary shared memory files when not using
+ * shm_open. This is only used if TMPDIR is not found in the environment.
+ */
+static const char kDefaultTmp[] = "/tmp";
 
 static NaClCreateMemoryObjectFunc g_create_memory_object_func = NULL;
 
@@ -81,12 +85,24 @@ int NaClWouldBlock(void) {
 #if !NACL_ANDROID
 static Atomic32 memory_object_count = 0;
 
+static const char *GetTempDir() {
+  const char *tmpenv = getenv("TMPDIR");
+  if (tmpenv)
+    return tmpenv;
+  return kDefaultTmp;
+}
 
 static int TryShmOrTempOpen(size_t length, bool use_temp) {
-  const char* prefix = use_temp ? kShmTempPrefix : kShmOpenPrefix;
   char name[PATH_MAX];
+  char tmpname[PATH_MAX];
+  const char *prefix = kShmOpenPrefix;
   if (0 == length) {
     return -1;
+  }
+
+  if (use_temp) {
+    snprintf(tmpname, sizeof tmpname, "%s%s", GetTempDir(), prefix);
+    prefix = tmpname;
   }
 
   for (;;) {
@@ -171,7 +187,7 @@ NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
     /*
      * On Mac OS X, shm_open() gives us file descriptors that the OS
      * won't mmap() with PROT_EXEC, which is no good for the dynamic
-     * code region, so we must use /tmp instead.
+     * code region, so we use open() in $TMPDIR instead.
      */
     if (NACL_OSX)
       use_shm_open = false;
