@@ -42,7 +42,10 @@ tests = [
   {
     "test": "mojo:view_manager_apptests",
     "type": "gtest_isolated",
-    "shell-args": ["--url-mappings=mojo:window_manager=mojo:test_window_manager"]
+    "shell-args": [
+      "--use-headless-config",
+      "--url-mappings=mojo:window_manager=mojo:test_window_manager"
+    ]
   },
   {
     "test": "mojo:window_manager_apptests",
