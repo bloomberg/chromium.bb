@@ -30,9 +30,8 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
-// Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
 
 @interface IOBluetoothDevice (LionSDKDeclarations)
 - (IOReturn)performSDPQuery:(id)target uuids:(NSArray*)uuids;
