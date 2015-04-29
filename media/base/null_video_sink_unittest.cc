@@ -1,0 +1,147 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/bind.h"
+#include "base/callback_helpers.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "media/base/null_video_sink.h"
+#include "media/base/test_helpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::DoAll;
+using testing::Return;
+
+namespace media {
+
+ACTION_P(RunClosure, closure) {
+  closure.Run();
+}
+
+class NullVideoSinkTest : public testing::Test,
+                          public VideoRendererSink::RenderCallback {
+ public:
+  NullVideoSinkTest() {
+    // Never use null TimeTicks since they have special connotations.
+    tick_clock_.Advance(base::TimeDelta::FromMicroseconds(12345));
+  }
+  ~NullVideoSinkTest() override {}
+
+  scoped_ptr<NullVideoSink> ConstructSink(bool clockless,
+                                          base::TimeDelta interval) {
+    scoped_ptr<NullVideoSink> new_sink(new NullVideoSink(
+        clockless, interval,
+        base::Bind(&NullVideoSinkTest::FrameReceived, base::Unretained(this)),
+        message_loop_.task_runner()));
+    new_sink->set_tick_clock_for_testing(&tick_clock_);
+    return new_sink;
+  }
+
+  scoped_refptr<VideoFrame> CreateFrame(base::TimeDelta timestamp) {
+    const gfx::Size natural_size(8, 8);
+    return VideoFrame::CreateFrame(VideoFrame::YV12, natural_size,
+                                   gfx::Rect(natural_size), natural_size,
+                                   timestamp);
+  }
+
+  // VideoRendererSink::RenderCallback implementation.
+  MOCK_METHOD2(Render,
+               scoped_refptr<VideoFrame>(base::TimeTicks, base::TimeTicks));
+  MOCK_METHOD0(OnFrameDropped, void());
+
+  MOCK_METHOD1(FrameReceived, void(const scoped_refptr<VideoFrame>&));
+
+ protected:
+  base::MessageLoop message_loop_;
+  base::SimpleTestTickClock tick_clock_;
+
+  DISALLOW_COPY_AND_ASSIGN(NullVideoSinkTest);
+};
+
+TEST_F(NullVideoSinkTest, BasicFunctionality) {
+  const base::TimeDelta kInterval = base::TimeDelta::FromMilliseconds(25);
+
+  scoped_ptr<NullVideoSink> sink = ConstructSink(false, kInterval);
+  scoped_refptr<VideoFrame> test_frame = CreateFrame(base::TimeDelta());
+
+  // The sink shouldn't have to be started to use the paint method.
+  EXPECT_CALL(*this, FrameReceived(test_frame));
+  sink->PaintFrameUsingOldRenderingPath(test_frame);
+
+  {
+    SCOPED_TRACE("Waiting for sink startup.");
+    sink->Start(this);
+    const base::TimeTicks current_time = tick_clock_.NowTicks();
+    const base::TimeTicks current_interval_end = current_time + kInterval;
+    EXPECT_CALL(*this, Render(current_time, current_interval_end))
+        .WillOnce(Return(test_frame));
+    WaitableMessageLoopEvent event;
+    EXPECT_CALL(*this, FrameReceived(test_frame))
+        .WillOnce(RunClosure(event.GetClosure()));
+    event.RunAndWait();
+  }
+
+  // A second call returning the same frame should not result in a new call to
+  // FrameReceived().
+  {
+    SCOPED_TRACE("Waiting for second render call.");
+    WaitableMessageLoopEvent event;
+    EXPECT_CALL(*this, Render(_, _))
+        .WillOnce(Return(test_frame))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*this, FrameReceived(test_frame)).Times(0);
+    EXPECT_CALL(*this, FrameReceived(scoped_refptr<VideoFrame>()))
+        .WillOnce(RunClosure(event.GetClosure()));
+    event.RunAndWait();
+  }
+
+  {
+    SCOPED_TRACE("Waiting for stop event.");
+    WaitableMessageLoopEvent event;
+    sink->set_stop_cb(event.GetClosure());
+    sink->Stop();
+    event.RunAndWait();
+  }
+}
+
+TEST_F(NullVideoSinkTest, ClocklessFunctionality) {
+  // Construct the sink with a huge interval, it should still complete quickly.
+  const base::TimeDelta interval = base::TimeDelta::FromSeconds(10);
+  scoped_ptr<NullVideoSink> sink = ConstructSink(true, interval);
+
+  scoped_refptr<VideoFrame> test_frame = CreateFrame(base::TimeDelta());
+  sink->Start(this);
+
+  EXPECT_CALL(*this, FrameReceived(test_frame)).Times(1);
+  EXPECT_CALL(*this, FrameReceived(scoped_refptr<VideoFrame>())).Times(1);
+
+  const int kTestRuns = 6;
+  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeTicks current_time = tick_clock_.NowTicks();
+
+  // Use a RunLoop instead of WaitableMessageLoopEvent() since it will only quit
+  // the loop when it's idle, instead of quitting immediately which is required
+  // when clockless playback is enabled (otherwise the loop is never idle).
+  base::RunLoop run_loop;
+  for (int i = 0; i < kTestRuns; ++i) {
+    if (i < kTestRuns - 1) {
+      EXPECT_CALL(*this, Render(current_time + i * interval,
+                                current_time + (i + 1) * interval))
+          .WillOnce(Return(test_frame));
+    } else {
+      EXPECT_CALL(*this, Render(current_time + i * interval,
+                                current_time + (i + 1) * interval))
+          .WillOnce(DoAll(RunClosure(run_loop.QuitClosure()), Return(nullptr)));
+    }
+  }
+
+  run_loop.Run();
+  ASSERT_LT(base::TimeTicks::Now() - now, kTestRuns * interval);
+  sink->Stop();
+}
+
+}

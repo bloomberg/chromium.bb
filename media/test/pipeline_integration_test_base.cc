@@ -35,9 +35,6 @@ namespace media {
 const char kNullVideoHash[] = "d41d8cd98f00b204e9800998ecf8427e";
 const char kNullAudioHash[] = "0.00,0.00,0.00,0.00,0.00,0.00,";
 
-MockVideoRendererSink::MockVideoRendererSink() {}
-MockVideoRendererSink::~MockVideoRendererSink() {}
-
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
       clockless_playback_(false),
@@ -240,14 +237,17 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
       new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
 #endif
 
-  EXPECT_CALL(video_sink_, PaintFrameUsingOldRenderingPath(_))
-      .WillRepeatedly(
-          Invoke(this, &PipelineIntegrationTestBase::OnVideoFramePaint));
+  // Simulate a 60Hz rendering sink.
+  video_sink_.reset(new NullVideoSink(
+      clockless_playback_, base::TimeDelta::FromSecondsD(1.0 / 60),
+      base::Bind(&PipelineIntegrationTestBase::OnVideoFramePaint,
+                 base::Unretained(this)),
+      message_loop_.task_runner()));
 
   // Disable frame dropping if hashing is enabled.
-  scoped_ptr<VideoRenderer> video_renderer(
-      new VideoRendererImpl(message_loop_.message_loop_proxy(), &video_sink_,
-                            video_decoders.Pass(), false, new MediaLog()));
+  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
+      message_loop_.message_loop_proxy(), video_sink_.get(),
+      video_decoders.Pass(), false, new MediaLog()));
 
   if (!clockless_playback_) {
     audio_sink_ = new NullAudioSink(message_loop_.message_loop_proxy());

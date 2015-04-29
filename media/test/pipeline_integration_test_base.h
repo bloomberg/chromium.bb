@@ -12,6 +12,7 @@
 #include "media/base/audio_hardware_config.h"
 #include "media/base/demuxer.h"
 #include "media/base/media_keys.h"
+#include "media/base/null_video_sink.h"
 #include "media/base/pipeline.h"
 #include "media/base/text_track.h"
 #include "media/base/text_track_config.h"
@@ -43,20 +44,6 @@ class DummyTickClock : public base::TickClock {
 
  private:
   base::TimeTicks now_;
-};
-
-// TODO(dalecurtis): Mocks won't be useful for the new rendering path, we'll
-// need fake callback generators like we have for the audio path.
-// http://crbug.com/473424
-class MockVideoRendererSink : public VideoRendererSink {
- public:
-  MockVideoRendererSink();
-  ~MockVideoRendererSink() override;
-
-  MOCK_METHOD1(Start, void(VideoRendererSink::RenderCallback*));
-  MOCK_METHOD0(Stop, void());
-  MOCK_METHOD1(PaintFrameUsingOldRenderingPath,
-               void(const scoped_refptr<VideoFrame>&));
 };
 
 // Integration tests for Pipeline. Real demuxers, real decoders, and
@@ -119,7 +106,7 @@ class PipelineIntegrationTestBase {
   scoped_ptr<Pipeline> pipeline_;
   scoped_refptr<NullAudioSink> audio_sink_;
   scoped_refptr<ClocklessAudioSink> clockless_audio_sink_;
-  testing::NiceMock<MockVideoRendererSink> video_sink_;
+  scoped_ptr<NullVideoSink> video_sink_;
   bool ended_;
   PipelineStatus pipeline_status_;
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
