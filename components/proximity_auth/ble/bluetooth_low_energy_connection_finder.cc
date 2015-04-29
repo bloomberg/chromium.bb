@@ -129,6 +129,7 @@ void BluetoothLowEnergyConnectionFinder::StopDiscoverySession() {
   }
   if (!discovery_session_ || !discovery_session_->IsActive()) {
     VLOG(1) << "No Active discovery session";
+    return;
   }
 
   discovery_session_->Stop(
