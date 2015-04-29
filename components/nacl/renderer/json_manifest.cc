@@ -442,8 +442,7 @@ bool JsonManifest::GetProgramURL(std::string* full_url,
   return true;
 }
 
-void JsonManifest::GetPrefetchableFiles(
-    std::vector<std::pair<std::string, std::string> >* out_files) const {
+void JsonManifest::GetPrefetchableFiles(base::StringPairs* out_files) const {
   const Json::Value& files = dictionary_[kFilesKey];
   if (!files.isObject())
     return;

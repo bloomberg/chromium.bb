@@ -47,8 +47,7 @@ NaClLaunchParams::NaClLaunchParams(
     const IPC::PlatformFileForTransit& nexe_file,
     uint64_t nexe_token_lo,
     uint64_t nexe_token_hi,
-    const std::vector<
-      std::pair<std::string, std::string> >& resource_files_to_prefetch,
+    const base::StringPairs& resource_files_to_prefetch,
     int render_view_id,
     uint32 permission_bits,
     bool uses_nonsfi_mode,

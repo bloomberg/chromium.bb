@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_platform_file.h"
@@ -111,18 +112,16 @@ struct NaClStartParams {
 // nacl_host_messages.h.
 struct NaClLaunchParams {
   NaClLaunchParams();
-  NaClLaunchParams(
-      const std::string& manifest_url,
-      const IPC::PlatformFileForTransit& nexe_file,
-      uint64_t nexe_token_lo,
-      uint64_t nexe_token_hi,
-      // A pair of a manifest key and its resource URL.
-      const std::vector<
-        std::pair<std::string, std::string> >& resource_files_to_prefetch,
-      int render_view_id,
-      uint32 permission_bits,
-      bool uses_nonsfi_mode,
-      NaClAppProcessType process_type);
+  NaClLaunchParams(const std::string& manifest_url,
+                   const IPC::PlatformFileForTransit& nexe_file,
+                   uint64_t nexe_token_lo,
+                   uint64_t nexe_token_hi,
+                   // A pair of a manifest key and its resource URL.
+                   const base::StringPairs& resource_files_to_prefetch,
+                   int render_view_id,
+                   uint32 permission_bits,
+                   bool uses_nonsfi_mode,
+                   NaClAppProcessType process_type);
   ~NaClLaunchParams();
 
   std::string manifest_url;
@@ -132,7 +131,7 @@ struct NaClLaunchParams {
   IPC::PlatformFileForTransit nexe_file;
   uint64_t nexe_token_lo;
   uint64_t nexe_token_hi;
-  std::vector<std::pair<std::string, std::string> > resource_files_to_prefetch;
+  base::StringPairs resource_files_to_prefetch;
 
   int render_view_id;
   uint32 permission_bits;

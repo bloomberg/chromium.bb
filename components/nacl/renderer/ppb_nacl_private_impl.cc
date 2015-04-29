@@ -421,8 +421,7 @@ void LaunchSelLdr(PP_Instance instance,
   IPC::PlatformFileForTransit nexe_for_transit =
       IPC::InvalidPlatformFileForTransit();
 
-  std::vector<std::pair<
-    std::string /*key*/, std::string /*url*/> > resource_files_to_prefetch;
+  base::StringPairs resource_files_to_prefetch;
   if (process_type == kNativeNaClProcessType && uses_nonsfi_mode) {
     JsonManifest* manifest = GetJsonManifest(instance);
     if (manifest)
