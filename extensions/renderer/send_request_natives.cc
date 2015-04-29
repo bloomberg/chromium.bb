@@ -74,7 +74,7 @@ void SendRequestNatives::GetGlobal(
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsObject());
   args.GetReturnValue().Set(
-      v8::Handle<v8::Object>::Cast(args[0])->CreationContext()->Global());
+      v8::Local<v8::Object>::Cast(args[0])->CreationContext()->Global());
 }
 
 }  // namespace extensions

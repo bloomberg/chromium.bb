@@ -29,15 +29,15 @@ class V8SchemaRegistry {
   scoped_ptr<NativeHandler> AsNativeHandler();
 
   // Returns a v8::Array with all the schemas for the APIs in |apis|.
-  v8::Handle<v8::Array> GetSchemas(const std::vector<std::string>& apis);
+  v8::Local<v8::Array> GetSchemas(const std::vector<std::string>& apis);
 
   // Returns a v8::Object for the schema for |api|, possibly from the cache.
-  v8::Handle<v8::Object> GetSchema(const std::string& api);
+  v8::Local<v8::Object> GetSchema(const std::string& api);
 
  private:
   // Gets the separate context that backs the registry, creating a new one if
   // if necessary. Will also initialize schema_cache_.
-  v8::Handle<v8::Context> GetOrCreateContext(v8::Isolate* isolate);
+  v8::Local<v8::Context> GetOrCreateContext(v8::Isolate* isolate);
 
   // Cache of schemas. Created lazily by GetOrCreateContext.
   typedef v8::StdGlobalValueMap<std::string, v8::Object> SchemaCache;

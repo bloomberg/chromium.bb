@@ -27,17 +27,17 @@ class ActivityLogConverterStrategy
   ~ActivityLogConverterStrategy() override;
 
   // content::V8ValueConverter::Strategy implementation.
-  bool FromV8Object(v8::Handle<v8::Object> value,
+  bool FromV8Object(v8::Local<v8::Object> value,
                     base::Value** out,
                     v8::Isolate* isolate,
                     const FromV8ValueCallback& callback) const override;
-  bool FromV8Array(v8::Handle<v8::Array> value,
+  bool FromV8Array(v8::Local<v8::Array> value,
                    base::Value** out,
                    v8::Isolate* isolate,
                    const FromV8ValueCallback& callback) const override;
 
  private:
-  bool FromV8Internal(v8::Handle<v8::Object> value,
+  bool FromV8Internal(v8::Local<v8::Object> value,
                       base::Value** out,
                       v8::Isolate* isolate,
                       const FromV8ValueCallback& callback) const;

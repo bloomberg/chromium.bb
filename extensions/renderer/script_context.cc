@@ -69,17 +69,17 @@ class ScriptContext::Runner : public gin::Runner {
   // gin::Runner overrides.
   void Run(const std::string& source,
            const std::string& resource_name) override;
-  v8::Handle<v8::Value> Call(v8::Handle<v8::Function> function,
-                             v8::Handle<v8::Value> receiver,
-                             int argc,
-                             v8::Handle<v8::Value> argv[]) override;
+  v8::Local<v8::Value> Call(v8::Local<v8::Function> function,
+                            v8::Local<v8::Value> receiver,
+                            int argc,
+                            v8::Local<v8::Value> argv[]) override;
   gin::ContextHolder* GetContextHolder() override;
 
  private:
   ScriptContext* context_;
 };
 
-ScriptContext::ScriptContext(const v8::Handle<v8::Context>& v8_context,
+ScriptContext::ScriptContext(const v8::Local<v8::Context>& v8_context,
                              blink::WebLocalFrame* web_frame,
                              const Extension* extension,
                              Feature::Context context_type,
@@ -176,9 +176,9 @@ content::RenderFrame* ScriptContext::GetRenderFrame() const {
 }
 
 v8::Local<v8::Value> ScriptContext::CallFunction(
-    v8::Handle<v8::Function> function,
+    v8::Local<v8::Function> function,
     int argc,
-    v8::Handle<v8::Value> argv[]) const {
+    v8::Local<v8::Value> argv[]) const {
   v8::EscapableHandleScope handle_scope(isolate());
   v8::Context::Scope scope(v8_context());
 
@@ -188,7 +188,7 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
         v8::Local<v8::Primitive>(v8::Undefined(isolate())));
   }
 
-  v8::Handle<v8::Object> global = v8_context()->Global();
+  v8::Local<v8::Object> global = v8_context()->Global();
   if (!web_frame_)
     return handle_scope.Escape(function->Call(global, argc, argv));
   return handle_scope.Escape(
@@ -212,12 +212,12 @@ Feature::Availability ScriptContext::GetAvailability(
 }
 
 void ScriptContext::DispatchEvent(const char* event_name,
-                                  v8::Handle<v8::Array> args) const {
+                                  v8::Local<v8::Array> args) const {
   v8::HandleScope handle_scope(isolate());
   v8::Context::Scope context_scope(v8_context());
 
-  v8::Handle<v8::Value> argv[] = {
-      v8::String::NewFromUtf8(isolate(), event_name), args};
+  v8::Local<v8::Value> argv[] = {v8::String::NewFromUtf8(isolate(), event_name),
+                                 args};
   module_system_->CallModuleMethod(
       kEventBindings, "dispatchEvent", arraysize(argv), argv);
 }
@@ -300,7 +300,7 @@ void ScriptContext::OnResponseReceived(const std::string& name,
   v8::HandleScope handle_scope(isolate());
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  v8::Handle<v8::Value> argv[] = {
+  v8::Local<v8::Value> argv[] = {
       v8::Integer::New(isolate(), request_id),
       v8::String::NewFromUtf8(isolate(), name.c_str()),
       v8::Boolean::New(isolate(), success),
@@ -308,7 +308,7 @@ void ScriptContext::OnResponseReceived(const std::string& name,
                            v8::Local<v8::Context>::New(isolate(), v8_context_)),
       v8::String::NewFromUtf8(isolate(), error.c_str())};
 
-  v8::Handle<v8::Value> retval = module_system()->CallModuleMethod(
+  v8::Local<v8::Value> retval = module_system()->CallModuleMethod(
       "sendRequest", "handleResponse", arraysize(argv), argv);
 
   // In debug, the js will validate the callback parameters and return a
@@ -376,11 +376,11 @@ void ScriptContext::Runner::Run(const std::string& source,
   context_->module_system()->RunString(source, resource_name);
 }
 
-v8::Handle<v8::Value> ScriptContext::Runner::Call(
-    v8::Handle<v8::Function> function,
-    v8::Handle<v8::Value> receiver,
+v8::Local<v8::Value> ScriptContext::Runner::Call(
+    v8::Local<v8::Function> function,
+    v8::Local<v8::Value> receiver,
     int argc,
-    v8::Handle<v8::Value> argv[]) {
+    v8::Local<v8::Value> argv[]) {
   return context_->CallFunction(function, argc, argv);
 }
 

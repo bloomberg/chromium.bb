@@ -68,8 +68,7 @@ class MimeHandlerViewContainer : public GuestViewContainer,
   void OnRenderFrameDestroyed() override;
 
   // Post a JavaScript message to the guest.
-  void PostMessage(v8::Isolate* isolate,
-                   v8::Handle<v8::Value> message);
+  void PostMessage(v8::Isolate* isolate, v8::Local<v8::Value> message);
 
   // Post |message| to the guest.
   void PostMessageFromValue(const base::Value& message);

@@ -25,7 +25,7 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
   class Request {
    public:
     Request(GuestViewContainer* container,
-            v8::Handle<v8::Function> callback,
+            v8::Local<v8::Function> callback,
             v8::Isolate* isolate);
     virtual ~Request();
 
@@ -33,13 +33,13 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
     virtual void HandleResponse(const IPC::Message& message) = 0;
 
     void ExecuteCallbackIfAvailable(int argc,
-                                    scoped_ptr<v8::Handle<v8::Value>[]> argv);
+                                    scoped_ptr<v8::Local<v8::Value>[]> argv);
 
     GuestViewContainer* container() const { return container_; }
 
     bool HasCallback() const;
 
-    v8::Handle<v8::Function> GetCallback() const;
+    v8::Local<v8::Function> GetCallback() const;
 
     v8::Isolate* isolate() const { return isolate_; }
 
@@ -58,7 +58,7 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
     AttachRequest(GuestViewContainer* container,
                   int guest_instance_id,
                   scoped_ptr<base::DictionaryValue> params,
-                  v8::Handle<v8::Function> callback,
+                  v8::Local<v8::Function> callback,
                   v8::Isolate* isolate);
     ~AttachRequest() override;
 
@@ -73,7 +73,7 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
   class DetachRequest : public Request {
    public:
     DetachRequest(GuestViewContainer* container,
-                  v8::Handle<v8::Function> callback,
+                  v8::Local<v8::Function> callback,
                   v8::Isolate* isolate);
     ~DetachRequest() override;
 
@@ -87,9 +87,9 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
   static ExtensionsGuestViewContainer* FromID(int element_instance_id);
 
   void IssueRequest(linked_ptr<Request> request);
-  void RegisterDestructionCallback(v8::Handle<v8::Function> callback,
+  void RegisterDestructionCallback(v8::Local<v8::Function> callback,
                                    v8::Isolate* isolate);
-  void RegisterElementResizeCallback(v8::Handle<v8::Function> callback,
+  void RegisterElementResizeCallback(v8::Local<v8::Function> callback,
                                      v8::Isolate* isolate);
 
   // BrowserPluginDelegate implementation.

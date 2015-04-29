@@ -25,7 +25,7 @@ ExtensionFrameHelper::~ExtensionFrameHelper() {
 }
 
 void ExtensionFrameHelper::DidCreateScriptContext(
-    v8::Handle<v8::Context> context,
+    v8::Local<v8::Context> context,
     int extension_group,
     int world_id) {
   extension_dispatcher_->DidCreateScriptContext(
@@ -33,7 +33,7 @@ void ExtensionFrameHelper::DidCreateScriptContext(
 }
 
 void ExtensionFrameHelper::WillReleaseScriptContext(
-    v8::Handle<v8::Context> context,
+    v8::Local<v8::Context> context,
     int world_id) {
   extension_dispatcher_->WillReleaseScriptContext(
       render_frame()->GetWebFrame(), context, world_id);

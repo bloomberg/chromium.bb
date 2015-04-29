@@ -37,7 +37,7 @@ class ExtensionSet;
 // Extensions wrapper for a v8 context.
 class ScriptContext : public RequestSender::Source {
  public:
-  ScriptContext(const v8::Handle<v8::Context>& context,
+  ScriptContext(const v8::Local<v8::Context>& context,
                 blink::WebLocalFrame* frame,
                 const Extension* extension,
                 Feature::Context context_type,
@@ -64,7 +64,7 @@ class ScriptContext : public RequestSender::Source {
   // A context becomes invalid via Invalidate().
   bool is_valid() const { return is_valid_; }
 
-  v8::Handle<v8::Context> v8_context() const {
+  v8::Local<v8::Context> v8_context() const {
     return v8::Local<v8::Context>::New(isolate_, v8_context_);
   }
 
@@ -108,11 +108,11 @@ class ScriptContext : public RequestSender::Source {
   // must do that if they want.
   //
   // USE THIS METHOD RATHER THAN v8::Function::Call WHEREVER POSSIBLE.
-  v8::Local<v8::Value> CallFunction(v8::Handle<v8::Function> function,
+  v8::Local<v8::Value> CallFunction(v8::Local<v8::Function> function,
                                     int argc,
-                                    v8::Handle<v8::Value> argv[]) const;
+                                    v8::Local<v8::Value> argv[]) const;
 
-  void DispatchEvent(const char* event_name, v8::Handle<v8::Array> args) const;
+  void DispatchEvent(const char* event_name, v8::Local<v8::Array> args) const;
 
   // Fires the onunload event on the unload_event module.
   void DispatchOnUnloadEvent();

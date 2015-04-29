@@ -84,7 +84,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
     return testing::AssertionFailure();
   }
 
-  v8::Handle<v8::Context> context() const {
+  v8::Local<v8::Context> context() const {
     return v8::Local<v8::Context>::New(isolate_, context_);
   }
 
@@ -122,9 +122,9 @@ TEST_F(ActivityLogConverterStrategyTest, ConversionTest) {
       "};"
       "})();";
 
-  v8::Handle<v8::Script> script(
+  v8::Local<v8::Script> script(
       v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
-  v8::Handle<v8::Object> v8_object = script->Run().As<v8::Object>();
+  v8::Local<v8::Object> v8_object = script->Run().As<v8::Object>();
 
   EXPECT_TRUE(VerifyString(v8_object, "[Object]"));
   EXPECT_TRUE(

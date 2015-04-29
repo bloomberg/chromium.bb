@@ -92,7 +92,7 @@ class DefaultExceptionHandler : public ModuleSystem::ExceptionHandler {
 
 std::string ModuleSystem::ExceptionHandler::CreateExceptionString(
     const v8::TryCatch& try_catch) {
-  v8::Handle<v8::Message> message(try_catch.Message());
+  v8::Local<v8::Message> message(try_catch.Message());
   if (message.IsEmpty()) {
     return "try_catch has no message";
   }
@@ -135,7 +135,7 @@ ModuleSystem::ModuleSystem(ScriptContext* context, SourceMap* source_map)
   RouteFunction("privates",
                 base::Bind(&ModuleSystem::Private, base::Unretained(this)));
 
-  v8::Handle<v8::Object> global(context->v8_context()->Global());
+  v8::Local<v8::Object> global(context->v8_context()->Global());
   v8::Isolate* isolate = context->isolate();
   global->SetHiddenValue(v8::String::NewFromUtf8(isolate, kModulesField),
                          v8::Object::New(isolate));
@@ -157,7 +157,7 @@ void ModuleSystem::Invalidate() {
   // and we use this as a signal in lazy handlers that we no longer exist.
   {
     v8::HandleScope scope(GetIsolate());
-    v8::Handle<v8::Object> global = context()->v8_context()->Global();
+    v8::Local<v8::Object> global = context()->v8_context()->Global();
     global->DeleteHiddenValue(
         v8::String::NewFromUtf8(GetIsolate(), kModulesField));
     global->DeleteHiddenValue(
@@ -188,7 +188,7 @@ void ModuleSystem::HandleException(const v8::TryCatch& try_catch) {
   exception_handler_->HandleUncaughtException(try_catch);
 }
 
-v8::Handle<v8::Value> ModuleSystem::Require(const std::string& module_name) {
+v8::Local<v8::Value> ModuleSystem::Require(const std::string& module_name) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   return handle_scope.Escape(RequireForJsInner(
       v8::String::NewFromUtf8(GetIsolate(), module_name.c_str())));
@@ -196,28 +196,28 @@ v8::Handle<v8::Value> ModuleSystem::Require(const std::string& module_name) {
 
 void ModuleSystem::RequireForJs(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  v8::Handle<v8::String> module_name = args[0]->ToString(args.GetIsolate());
+  v8::Local<v8::String> module_name = args[0]->ToString(args.GetIsolate());
   args.GetReturnValue().Set(RequireForJsInner(module_name));
 }
 
 v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
-    v8::Handle<v8::String> module_name) {
+    v8::Local<v8::String> module_name) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   v8::Context::Scope context_scope(context()->v8_context());
 
-  v8::Handle<v8::Object> global(context()->v8_context()->Global());
+  v8::Local<v8::Object> global(context()->v8_context()->Global());
 
   // The module system might have been deleted. This can happen if a different
   // context keeps a reference to us, but our frame is destroyed (e.g.
   // background page keeps reference to chrome object in a closed popup).
-  v8::Handle<v8::Value> modules_value = global->GetHiddenValue(
+  v8::Local<v8::Value> modules_value = global->GetHiddenValue(
       v8::String::NewFromUtf8(GetIsolate(), kModulesField));
   if (modules_value.IsEmpty() || modules_value->IsUndefined()) {
     Warn(GetIsolate(), "Extension view no longer exists");
     return v8::Undefined(GetIsolate());
   }
 
-  v8::Handle<v8::Object> modules(v8::Handle<v8::Object>::Cast(modules_value));
+  v8::Local<v8::Object> modules(v8::Local<v8::Object>::Cast(modules_value));
   v8::Local<v8::Value> exports(modules->Get(module_name));
   if (!exports->IsUndefined())
     return handle_scope.Escape(exports);
@@ -231,7 +231,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     const std::string& module_name,
     const std::string& method_name) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
-  v8::Handle<v8::Value> no_args;
+  v8::Local<v8::Value> no_args;
   return handle_scope.Escape(
       CallModuleMethod(module_name, method_name, 0, &no_args));
 }
@@ -239,7 +239,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
 v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     const std::string& module_name,
     const std::string& method_name,
-    std::vector<v8::Handle<v8::Value> >* args) {
+    std::vector<v8::Local<v8::Value>>* args) {
   return CallModuleMethod(
       module_name, method_name, args->size(), vector_as_array(args));
 }
@@ -248,7 +248,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     const std::string& module_name,
     const std::string& method_name,
     int argc,
-    v8::Handle<v8::Value> argv[]) {
+    v8::Local<v8::Value> argv[]) {
   TRACE_EVENT2("v8",
                "v8.callModuleMethod",
                "module_name",
@@ -273,7 +273,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
         v8::Local<v8::Primitive>(v8::Undefined(GetIsolate())));
   }
 
-  v8::Local<v8::Value> value = v8::Handle<v8::Object>::Cast(module)->Get(
+  v8::Local<v8::Value> value = v8::Local<v8::Object>::Cast(module)->Get(
       v8::String::NewFromUtf8(GetIsolate(), method_name.c_str()));
   if (value.IsEmpty() || !value->IsFunction()) {
     Fatal(context_, module_name + "." + method_name + " is not a function");
@@ -281,7 +281,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
         v8::Local<v8::Primitive>(v8::Undefined(GetIsolate())));
   }
 
-  v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(value);
   v8::Local<v8::Value> result;
   {
     v8::TryCatch try_catch;
@@ -334,11 +334,11 @@ void ModuleSystem::LazyFieldGetterInner(
   CHECK(!info.Data().IsEmpty());
   CHECK(info.Data()->IsObject());
   v8::HandleScope handle_scope(info.GetIsolate());
-  v8::Handle<v8::Object> parameters = v8::Handle<v8::Object>::Cast(info.Data());
+  v8::Local<v8::Object> parameters = v8::Local<v8::Object>::Cast(info.Data());
   // This context should be the same as context()->v8_context().
-  v8::Handle<v8::Context> context = parameters->CreationContext();
-  v8::Handle<v8::Object> global(context->Global());
-  v8::Handle<v8::Value> module_system_value = global->GetHiddenValue(
+  v8::Local<v8::Context> context = parameters->CreationContext();
+  v8::Local<v8::Object> global(context->Global());
+  v8::Local<v8::Value> module_system_value = global->GetHiddenValue(
       v8::String::NewFromUtf8(info.GetIsolate(), kModuleSystem));
   if (module_system_value.IsEmpty() || !module_system_value->IsExternal()) {
     // ModuleSystem has been deleted.
@@ -349,7 +349,7 @@ void ModuleSystem::LazyFieldGetterInner(
   }
 
   ModuleSystem* module_system = static_cast<ModuleSystem*>(
-      v8::Handle<v8::External>::Cast(module_system_value)->Value());
+      v8::Local<v8::External>::Cast(module_system_value)->Value());
 
   std::string name = *v8::String::Utf8Value(parameters->Get(
       v8::String::NewFromUtf8(info.GetIsolate(), kModuleName)));
@@ -360,7 +360,7 @@ void ModuleSystem::LazyFieldGetterInner(
   NativesEnabledScope natives_enabled_scope(module_system);
 
   v8::TryCatch try_catch;
-  v8::Handle<v8::Value> module_value = (module_system->*require_function)(name);
+  v8::Local<v8::Value> module_value = (module_system->*require_function)(name);
   if (try_catch.HasCaught()) {
     module_system->HandleException(try_catch);
     return;
@@ -370,8 +370,8 @@ void ModuleSystem::LazyFieldGetterInner(
     return;
   }
 
-  v8::Handle<v8::Object> module = v8::Handle<v8::Object>::Cast(module_value);
-  v8::Handle<v8::String> field =
+  v8::Local<v8::Object> module = v8::Local<v8::Object>::Cast(module_value);
+  v8::Local<v8::String> field =
       parameters->Get(v8::String::NewFromUtf8(info.GetIsolate(), kModuleField))
           ->ToString(info.GetIsolate());
 
@@ -395,9 +395,9 @@ void ModuleSystem::LazyFieldGetterInner(
 
   // Delete the getter and set this field to |new_field| so the same object is
   // returned every time a certain API is accessed.
-  v8::Handle<v8::Value> val = info.This();
+  v8::Local<v8::Value> val = info.This();
   if (val->IsObject()) {
-    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(val);
+    v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(val);
     object->Delete(property);
     object->Set(property, new_field);
   } else {
@@ -406,7 +406,7 @@ void ModuleSystem::LazyFieldGetterInner(
   info.GetReturnValue().Set(new_field);
 }
 
-void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
+void ModuleSystem::SetLazyField(v8::Local<v8::Object> object,
                                 const std::string& field,
                                 const std::string& module_name,
                                 const std::string& module_field) {
@@ -414,13 +414,13 @@ void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
       object, field, module_name, module_field, &ModuleSystem::LazyFieldGetter);
 }
 
-void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
+void ModuleSystem::SetLazyField(v8::Local<v8::Object> object,
                                 const std::string& field,
                                 const std::string& module_name,
                                 const std::string& module_field,
                                 v8::AccessorGetterCallback getter) {
   v8::HandleScope handle_scope(GetIsolate());
-  v8::Handle<v8::Object> parameters = v8::Object::New(GetIsolate());
+  v8::Local<v8::Object> parameters = v8::Object::New(GetIsolate());
   parameters->Set(v8::String::NewFromUtf8(GetIsolate(), kModuleName),
                   v8::String::NewFromUtf8(GetIsolate(), module_name.c_str()));
   parameters->Set(v8::String::NewFromUtf8(GetIsolate(), kModuleField),
@@ -431,7 +431,7 @@ void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
                       parameters);
 }
 
-void ModuleSystem::SetNativeLazyField(v8::Handle<v8::Object> object,
+void ModuleSystem::SetNativeLazyField(v8::Local<v8::Object> object,
                                       const std::string& field,
                                       const std::string& module_name,
                                       const std::string& module_field) {
@@ -442,8 +442,8 @@ void ModuleSystem::SetNativeLazyField(v8::Handle<v8::Object> object,
                &ModuleSystem::NativeLazyFieldGetter);
 }
 
-v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
-                                              v8::Handle<v8::String> name) {
+v8::Local<v8::Value> ModuleSystem::RunString(v8::Local<v8::String> code,
+                                             v8::Local<v8::String> name) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   v8::Context::Scope context_scope(context()->v8_context());
 
@@ -455,12 +455,10 @@ v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
   blink::WebScopedMicrotaskSuppression suppression;
   v8::TryCatch try_catch;
   try_catch.SetCaptureMessage(true);
-  v8::Handle<v8::Script> script(
-      v8::Script::Compile(code,
-                          v8::String::NewFromUtf8(GetIsolate(),
-                                                  internal_name.c_str(),
-                                                  v8::String::kNormalString,
-                                                  internal_name.size())));
+  v8::Local<v8::Script> script(v8::Script::Compile(
+      code, v8::String::NewFromUtf8(GetIsolate(), internal_name.c_str(),
+                                    v8::String::kNormalString,
+                                    internal_name.size())));
   if (try_catch.HasCaught()) {
     HandleException(try_catch);
     return v8::Undefined(GetIsolate());
@@ -475,7 +473,7 @@ v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
   return handle_scope.Escape(result);
 }
 
-v8::Handle<v8::Value> ModuleSystem::GetSource(const std::string& module_name) {
+v8::Local<v8::Value> ModuleSystem::GetSource(const std::string& module_name) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   if (!source_map_->Contains(module_name))
     return v8::Undefined(GetIsolate());
@@ -490,7 +488,7 @@ void ModuleSystem::RequireNative(
   args.GetReturnValue().Set(RequireNativeFromString(native_name));
 }
 
-v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
+v8::Local<v8::Value> ModuleSystem::RequireNativeFromString(
     const std::string& native_name) {
   if (natives_enabled_ == 0) {
     // HACK: if in test throw exception so that we can test the natives-disabled
@@ -522,7 +520,7 @@ void ModuleSystem::RequireAsync(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   std::string module_name = *v8::String::Utf8Value(args[0]);
-  v8::Handle<v8::Promise::Resolver> resolver(
+  v8::Local<v8::Promise::Resolver> resolver(
       v8::Promise::Resolver::New(GetIsolate()));
   args.GetReturnValue().Set(resolver->GetPromise());
   scoped_ptr<v8::Global<v8::Promise::Resolver>> global_resolver(
@@ -543,16 +541,16 @@ void ModuleSystem::RequireAsync(
     LoadModule(module_name);
 }
 
-v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
+v8::Local<v8::String> ModuleSystem::WrapSource(v8::Local<v8::String> source) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   // Keep in order with the arguments in RequireForJsInner.
-  v8::Handle<v8::String> left = v8::String::NewFromUtf8(
+  v8::Local<v8::String> left = v8::String::NewFromUtf8(
       GetIsolate(),
       "(function(define, require, requireNative, requireAsync, exports, "
       "console, privates,"
       "$Array, $Function, $JSON, $Object, $RegExp, $String, $Error) {"
       "'use strict';");
-  v8::Handle<v8::String> right = v8::String::NewFromUtf8(GetIsolate(), "\n})");
+  v8::Local<v8::String> right = v8::String::NewFromUtf8(GetIsolate(), "\n})");
   return handle_scope.Escape(v8::Local<v8::String>(
       v8::String::Concat(left, v8::String::Concat(source, right))));
 }
@@ -584,19 +582,19 @@ void ModuleSystem::Private(const v8::FunctionCallbackInfo<v8::Value>& args) {
   args.GetReturnValue().Set(privates);
 }
 
-v8::Handle<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
+v8::Local<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   v8::Context::Scope context_scope(context()->v8_context());
 
-  v8::Handle<v8::Value> source(GetSource(module_name));
+  v8::Local<v8::Value> source(GetSource(module_name));
   if (source.IsEmpty() || source->IsUndefined()) {
     Fatal(context_, "No source for require(" + module_name + ")");
     return v8::Undefined(GetIsolate());
   }
-  v8::Handle<v8::String> wrapped_source(
-      WrapSource(v8::Handle<v8::String>::Cast(source)));
+  v8::Local<v8::String> wrapped_source(
+      WrapSource(v8::Local<v8::String>::Cast(source)));
   // Modules are wrapped in (function(){...}) so they always return functions.
-  v8::Handle<v8::Value> func_as_value =
+  v8::Local<v8::Value> func_as_value =
       RunString(wrapped_source,
                 v8::String::NewFromUtf8(GetIsolate(), module_name.c_str()));
   if (func_as_value.IsEmpty() || func_as_value->IsUndefined()) {
@@ -604,31 +602,31 @@ v8::Handle<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
     return v8::Undefined(GetIsolate());
   }
 
-  v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(func_as_value);
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(func_as_value);
 
-  v8::Handle<v8::Object> define_object = v8::Object::New(GetIsolate());
+  v8::Local<v8::Object> define_object = v8::Object::New(GetIsolate());
   gin::ModuleRegistry::InstallGlobals(GetIsolate(), define_object);
 
   v8::Local<v8::Value> exports = v8::Object::New(GetIsolate());
-  v8::Handle<v8::Object> natives(NewInstance());
+  v8::Local<v8::Object> natives(NewInstance());
   CHECK(!natives.IsEmpty());  // this can happen if v8 has issues
 
   // These must match the argument order in WrapSource.
-  v8::Handle<v8::Value> args[] = {
+  v8::Local<v8::Value> args[] = {
       // AMD.
       define_object->Get(v8::String::NewFromUtf8(GetIsolate(), "define")),
       // CommonJS.
-      natives->Get(v8::String::NewFromUtf8(
-          GetIsolate(), "require", v8::String::kInternalizedString)),
-      natives->Get(v8::String::NewFromUtf8(
-          GetIsolate(), "requireNative", v8::String::kInternalizedString)),
-      natives->Get(v8::String::NewFromUtf8(
-          GetIsolate(), "requireAsync", v8::String::kInternalizedString)),
+      natives->Get(v8::String::NewFromUtf8(GetIsolate(), "require",
+                                           v8::String::kInternalizedString)),
+      natives->Get(v8::String::NewFromUtf8(GetIsolate(), "requireNative",
+                                           v8::String::kInternalizedString)),
+      natives->Get(v8::String::NewFromUtf8(GetIsolate(), "requireAsync",
+                                           v8::String::kInternalizedString)),
       exports,
       // Libraries that we magically expose to every module.
       console::AsV8Object(GetIsolate()),
-      natives->Get(v8::String::NewFromUtf8(
-          GetIsolate(), "privates", v8::String::kInternalizedString)),
+      natives->Get(v8::String::NewFromUtf8(GetIsolate(), "privates",
+                                           v8::String::kInternalizedString)),
       // Each safe builtin. Keep in order with the arguments in WrapSource.
       context_->safe_builtins()->GetArray(),
       context_->safe_builtins()->GetFunction(),
@@ -673,11 +671,11 @@ void ModuleSystem::OnDidAddPendingModule(
 
 void ModuleSystem::OnModuleLoaded(
     scoped_ptr<v8::Global<v8::Promise::Resolver>> resolver,
-    v8::Handle<v8::Value> value) {
+    v8::Local<v8::Value> value) {
   if (!is_valid())
     return;
   v8::HandleScope handle_scope(GetIsolate());
-  v8::Handle<v8::Promise::Resolver> resolver_local(
+  v8::Local<v8::Promise::Resolver> resolver_local(
       v8::Local<v8::Promise::Resolver>::New(GetIsolate(), *resolver));
   resolver_local->Resolve(value);
 }

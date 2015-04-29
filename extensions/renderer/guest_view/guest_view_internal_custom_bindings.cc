@@ -91,11 +91,9 @@ void GuestViewInternalCustomBindings::AttachGuest(
 
   linked_ptr<ExtensionsGuestViewContainer::Request> request(
       new ExtensionsGuestViewContainer::AttachRequest(
-          guest_view_container,
-          guest_instance_id,
-          params.Pass(),
-          args.Length() == 4 ? args[3].As<v8::Function>() :
-              v8::Handle<v8::Function>(),
+          guest_view_container, guest_instance_id, params.Pass(),
+          args.Length() == 4 ? args[3].As<v8::Function>()
+                             : v8::Local<v8::Function>(),
           args.GetIsolate()));
   guest_view_container->IssueRequest(request);
 
@@ -123,9 +121,8 @@ void GuestViewInternalCustomBindings::DetachGuest(
 
   linked_ptr<ExtensionsGuestViewContainer::Request> request(
       new ExtensionsGuestViewContainer::DetachRequest(
-          guest_view_container,
-          args.Length() == 2 ? args[1].As<v8::Function>() :
-              v8::Handle<v8::Function>(),
+          guest_view_container, args.Length() == 2 ? args[1].As<v8::Function>()
+                                                   : v8::Local<v8::Function>(),
           args.GetIsolate()));
   guest_view_container->IssueRequest(request);
 
@@ -209,8 +206,8 @@ void GuestViewInternalCustomBindings::RunWithGesture(
   blink::WebScopedUserGesture user_gesture;
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsFunction());
-  v8::Handle<v8::Value> no_args;
-  context()->CallFunction(v8::Handle<v8::Function>::Cast(args[0]), 0, &no_args);
+  v8::Local<v8::Value> no_args;
+  context()->CallFunction(v8::Local<v8::Function>::Cast(args[0]), 0, &no_args);
 }
 
 }  // namespace extensions

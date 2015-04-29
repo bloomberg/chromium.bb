@@ -135,7 +135,7 @@ void SaveImpl(const char* name,
                                     value);
 }
 
-v8::Local<v8::Object> Load(const char* name, v8::Handle<v8::Context> context) {
+v8::Local<v8::Object> Load(const char* name, v8::Local<v8::Context> context) {
   v8::Local<v8::Value> value =
       context->Global()->GetHiddenValue(MakeKey(name, context->GetIsolate()));
   CHECK(!value.IsEmpty() && value->IsObject()) << name;
@@ -147,15 +147,15 @@ class ExtensionImpl : public v8::Extension {
   ExtensionImpl() : v8::Extension(kClassName, kScript) {}
 
  private:
-  v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+  v8::Local<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
-      v8::Handle<v8::String> name) override {
+      v8::Local<v8::String> name) override {
     if (name->Equals(v8::String::NewFromUtf8(isolate, "Apply")))
       return v8::FunctionTemplate::New(isolate, Apply);
     if (name->Equals(v8::String::NewFromUtf8(isolate, "Save")))
       return v8::FunctionTemplate::New(isolate, Save);
     NOTREACHED() << *v8::String::Utf8Value(name);
-    return v8::Handle<v8::FunctionTemplate>();
+    return v8::Local<v8::FunctionTemplate>();
   }
 
   static void Apply(const v8::FunctionCallbackInfo<v8::Value>& info) {

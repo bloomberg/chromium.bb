@@ -81,7 +81,7 @@ TEST_F(JsonSchemaTest, TestType) {
     // through a global.
     scoped_ptr<ModuleSystemTestEnvironment> other_env(CreateEnvironment());
     v8::Context::Scope scope(other_env->context()->v8_context());
-    v8::Handle<v8::ArrayBuffer> array_buffer(
+    v8::Local<v8::ArrayBuffer> array_buffer(
         v8::ArrayBuffer::New(env()->isolate(), 1));
     array_buffer_container.Set("value", array_buffer);
   }

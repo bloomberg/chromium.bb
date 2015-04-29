@@ -57,7 +57,7 @@ class ScriptContextSet {
   // Creates and starts managing a new ScriptContext. Ownership is held.
   // Returns a weak reference to the new ScriptContext.
   ScriptContext* Register(blink::WebLocalFrame* frame,
-                          const v8::Handle<v8::Context>& v8_context,
+                          const v8::Local<v8::Context>& v8_context,
                           int extension_group,
                           int world_id);
 
@@ -76,7 +76,7 @@ class ScriptContextSet {
 
   // Gets the ScriptContext corresponding to the specified
   // v8::Context or NULL if no such context exists.
-  ScriptContext* GetByV8Context(const v8::Handle<v8::Context>& context) const;
+  ScriptContext* GetByV8Context(const v8::Local<v8::Context>& context) const;
 
   // Synchronously runs |callback| with each ScriptContext that belongs to
   // |extension_id| in |render_view|.

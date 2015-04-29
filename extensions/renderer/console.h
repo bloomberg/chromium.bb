@@ -33,15 +33,15 @@ void AddMessage(content::RenderView* render_view,
                 const std::string& message);
 
 // Adds |message| to the console that hosts |context|, if any.
-void Debug(v8::Handle<v8::Context> context, const std::string& message);
-void Log(v8::Handle<v8::Context> context, const std::string& message);
-void Warn(v8::Handle<v8::Context> context, const std::string& message);
-void Error(v8::Handle<v8::Context> context, const std::string& message);
+void Debug(v8::Local<v8::Context> context, const std::string& message);
+void Log(v8::Local<v8::Context> context, const std::string& message);
+void Warn(v8::Local<v8::Context> context, const std::string& message);
+void Error(v8::Local<v8::Context> context, const std::string& message);
 
 // Logs an Error then crashes the current process.
-void Fatal(v8::Handle<v8::Context> context, const std::string& message);
+void Fatal(v8::Local<v8::Context> context, const std::string& message);
 
-void AddMessage(v8::Handle<v8::Context> context,
+void AddMessage(v8::Local<v8::Context> context,
                 content::ConsoleMessageLevel level,
                 const std::string& message);
 

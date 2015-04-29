@@ -101,8 +101,8 @@ class ModuleSystemTestEnvironment::StringSourceMap
   StringSourceMap() {}
   ~StringSourceMap() override {}
 
-  v8::Handle<v8::Value> GetSource(v8::Isolate* isolate,
-                                  const std::string& name) override {
+  v8::Local<v8::Value> GetSource(v8::Isolate* isolate,
+                                 const std::string& name) override {
     if (source_map_.count(name) == 0)
       return v8::Undefined(isolate);
     return v8::String::NewFromUtf8(isolate, source_map_[name].c_str());
@@ -201,7 +201,7 @@ void ModuleSystemTestEnvironment::ShutdownModuleSystem() {
   context_->Invalidate();
 }
 
-v8::Handle<v8::Object> ModuleSystemTestEnvironment::CreateGlobal(
+v8::Local<v8::Object> ModuleSystemTestEnvironment::CreateGlobal(
     const std::string& name) {
   v8::EscapableHandleScope handle_scope(isolate_);
   v8::Local<v8::Object> object = v8::Object::New(isolate_);

@@ -35,7 +35,7 @@ void V8ContextNativeHandler::GetAvailability(
   std::string api_name = *v8::String::Utf8Value(args[0]);
   Feature::Availability availability = context_->GetAvailability(api_name);
 
-  v8::Handle<v8::Object> ret = v8::Object::New(isolate);
+  v8::Local<v8::Object> ret = v8::Object::New(isolate);
   ret->Set(v8::String::NewFromUtf8(isolate, "is_available"),
            v8::Boolean::New(isolate, availability.is_available()));
   ret->Set(v8::String::NewFromUtf8(isolate, "message"),
@@ -49,8 +49,8 @@ void V8ContextNativeHandler::GetModuleSystem(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsObject());
-  v8::Handle<v8::Context> v8_context =
-      v8::Handle<v8::Object>::Cast(args[0])->CreationContext();
+  v8::Local<v8::Context> v8_context =
+      v8::Local<v8::Object>::Cast(args[0])->CreationContext();
   ScriptContext* context =
       dispatcher_->script_context_set().GetByV8Context(v8_context);
   args.GetReturnValue().Set(context->module_system()->NewInstance());
@@ -60,12 +60,11 @@ void V8ContextNativeHandler::RunWithNativesEnabledModuleSystem(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsFunction());
-  v8::Handle<v8::Value> call_with_args[] = {
-    context()->module_system()->NewInstance()
-  };
+  v8::Local<v8::Value> call_with_args[] = {
+      context()->module_system()->NewInstance()};
   ModuleSystem::NativesEnabledScope natives_enabled(context()->module_system());
-  context()->CallFunction(
-      v8::Handle<v8::Function>::Cast(args[0]), 1, call_with_args);
+  context()->CallFunction(v8::Local<v8::Function>::Cast(args[0]), 1,
+                          call_with_args);
 }
 
 }  // namespace extensions

@@ -16,7 +16,7 @@ namespace {
 // returns only a string with a description of the value (e.g.,
 // "[HTMLElement]").
 scoped_ptr<base::Value> SummarizeV8Value(v8::Isolate* isolate,
-                                         v8::Handle<v8::Object> object) {
+                                         v8::Local<v8::Object> object) {
   v8::TryCatch try_catch;
   v8::Isolate::DisallowJavascriptExecutionScope scope(
       isolate, v8::Isolate::DisallowJavascriptExecutionScope::THROW_ON_FAILURE);
@@ -25,10 +25,10 @@ scoped_ptr<base::Value> SummarizeV8Value(v8::Isolate* isolate,
     name =
         v8::String::Concat(name, v8::String::NewFromUtf8(isolate, "Function"));
     v8::Local<v8::Value> fname =
-        v8::Handle<v8::Function>::Cast(object)->GetName();
-    if (fname->IsString() && v8::Handle<v8::String>::Cast(fname)->Length()) {
+        v8::Local<v8::Function>::Cast(object)->GetName();
+    if (fname->IsString() && v8::Local<v8::String>::Cast(fname)->Length()) {
       name = v8::String::Concat(name, v8::String::NewFromUtf8(isolate, " "));
-      name = v8::String::Concat(name, v8::Handle<v8::String>::Cast(fname));
+      name = v8::String::Concat(name, v8::Local<v8::String>::Cast(fname));
       name = v8::String::Concat(name, v8::String::NewFromUtf8(isolate, "()"));
     }
   } else {
@@ -52,7 +52,7 @@ ActivityLogConverterStrategy::ActivityLogConverterStrategy() {}
 ActivityLogConverterStrategy::~ActivityLogConverterStrategy() {}
 
 bool ActivityLogConverterStrategy::FromV8Object(
-    v8::Handle<v8::Object> value,
+    v8::Local<v8::Object> value,
     base::Value** out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
@@ -60,7 +60,7 @@ bool ActivityLogConverterStrategy::FromV8Object(
 }
 
 bool ActivityLogConverterStrategy::FromV8Array(
-    v8::Handle<v8::Array> value,
+    v8::Local<v8::Array> value,
     base::Value** out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
@@ -68,7 +68,7 @@ bool ActivityLogConverterStrategy::FromV8Array(
 }
 
 bool ActivityLogConverterStrategy::FromV8Internal(
-    v8::Handle<v8::Object> value,
+    v8::Local<v8::Object> value,
     base::Value** out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {

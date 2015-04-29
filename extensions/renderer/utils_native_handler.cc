@@ -35,7 +35,7 @@ void UtilsNativeHandler::CreateClassWrapper(
 
   v8::HandleScope handle_scope(GetIsolate());
   // TODO(fsamuel): Consider moving the source wrapping to ModuleSystem.
-  v8::Handle<v8::String> source = v8::String::NewFromUtf8(
+  v8::Local<v8::String> source = v8::String::NewFromUtf8(
       GetIsolate(),
       base::StringPrintf(
           "(function($Object, $Function, privates, cls, superclass) {"
@@ -51,10 +51,8 @@ void UtilsNativeHandler::CreateClassWrapper(
           "  }\n"
           "  return %s;\n"
           "})",
-          name.c_str(),
-          name.c_str(),
-          name.c_str()).c_str());
-  v8::Handle<v8::Value> func_as_value = context()->module_system()->RunString(
+          name.c_str(), name.c_str(), name.c_str()).c_str());
+  v8::Local<v8::Value> func_as_value = context()->module_system()->RunString(
       source, v8::String::NewFromUtf8(GetIsolate(), name.c_str()));
   if (func_as_value.IsEmpty() || func_as_value->IsUndefined()) {
     args.GetReturnValue().SetUndefined();
@@ -62,14 +60,14 @@ void UtilsNativeHandler::CreateClassWrapper(
   }
 
   // TODO(fsamuel): Move privates from ModuleSystem to a shared location.
-  v8::Handle<v8::Object> natives(context()->module_system()->NewInstance());
+  v8::Local<v8::Object> natives(context()->module_system()->NewInstance());
   CHECK(!natives.IsEmpty());  // this can happen if v8 has issues
-  v8::Handle<v8::Function> func = func_as_value.As<v8::Function>();
-  v8::Handle<v8::Value> func_args[] = {
+  v8::Local<v8::Function> func = func_as_value.As<v8::Function>();
+  v8::Local<v8::Value> func_args[] = {
       context()->safe_builtins()->GetObjekt(),
       context()->safe_builtins()->GetFunction(),
-      natives->Get(v8::String::NewFromUtf8(
-          GetIsolate(), "privates", v8::String::kInternalizedString)),
+      natives->Get(v8::String::NewFromUtf8(GetIsolate(), "privates",
+                                           v8::String::kInternalizedString)),
       cls,
       superclass};
   v8::Local<v8::Value> result;

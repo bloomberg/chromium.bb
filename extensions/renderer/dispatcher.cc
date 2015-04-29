@@ -124,11 +124,11 @@ static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 //
 // Note that this isn't necessarily an object, since webpages can write, for
 // example, "window.chrome = true".
-v8::Handle<v8::Value> GetOrCreateChrome(ScriptContext* context) {
-  v8::Handle<v8::String> chrome_string(
+v8::Local<v8::Value> GetOrCreateChrome(ScriptContext* context) {
+  v8::Local<v8::String> chrome_string(
       v8::String::NewFromUtf8(context->isolate(), "chrome"));
-  v8::Handle<v8::Object> global(context->v8_context()->Global());
-  v8::Handle<v8::Value> chrome(global->Get(chrome_string));
+  v8::Local<v8::Object> global(context->v8_context()->Global());
+  v8::Local<v8::Value> chrome(global->Get(chrome_string));
   if (chrome->IsUndefined()) {
     chrome = v8::Object::New(context->isolate());
     global->Set(chrome_string, chrome);
@@ -137,8 +137,8 @@ v8::Handle<v8::Value> GetOrCreateChrome(ScriptContext* context) {
 }
 
 // Returns |value| cast to an object if possible, else an empty handle.
-v8::Handle<v8::Object> AsObjectOrEmpty(v8::Handle<v8::Value> value) {
-  return value->IsObject() ? value.As<v8::Object>() : v8::Handle<v8::Object>();
+v8::Local<v8::Object> AsObjectOrEmpty(v8::Local<v8::Value> value) {
+  return value->IsObject() ? value.As<v8::Object>() : v8::Local<v8::Object>();
 }
 
 // Calls a method |method_name| in a module |module_name| belonging to the
@@ -154,7 +154,7 @@ void CallModuleMethod(const std::string& module_name,
   scoped_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
 
-  std::vector<v8::Handle<v8::Value> > arguments;
+  std::vector<v8::Local<v8::Value>> arguments;
   for (base::ListValue::const_iterator it = args->begin(); it != args->end();
        ++it) {
     arguments.push_back(converter->ToV8Value(*it, context->v8_context()));
@@ -229,7 +229,7 @@ bool Dispatcher::IsExtensionActive(const std::string& extension_id) const {
 
 void Dispatcher::DidCreateScriptContext(
     blink::WebLocalFrame* frame,
-    const v8::Handle<v8::Context>& v8_context,
+    const v8::Local<v8::Context>& v8_context,
     int extension_group,
     int world_id) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
@@ -258,7 +258,7 @@ void Dispatcher::DidCreateScriptContext(
   // lazily evalulate to Event from event_bindings.js. For extensions only
   // though, not all webpages!
   if (context->extension()) {
-    v8::Handle<v8::Object> chrome = AsObjectOrEmpty(GetOrCreateChrome(context));
+    v8::Local<v8::Object> chrome = AsObjectOrEmpty(GetOrCreateChrome(context));
     if (!chrome.IsEmpty())
       module_system->SetLazyField(chrome, "Event", kEventBindings, "Event");
   }
@@ -308,7 +308,7 @@ void Dispatcher::DidCreateScriptContext(
 
 void Dispatcher::WillReleaseScriptContext(
     blink::WebLocalFrame* frame,
-    const v8::Handle<v8::Context>& v8_context,
+    const v8::Local<v8::Context>& v8_context,
     int world_id) {
   ScriptContext* context = script_context_set_->GetByV8Context(v8_context);
   if (!context)
@@ -1183,7 +1183,7 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
 void Dispatcher::RegisterBinding(const std::string& api_name,
                                  ScriptContext* context) {
   std::string bind_name;
-  v8::Handle<v8::Object> bind_object =
+  v8::Local<v8::Object> bind_object =
       GetOrCreateBindObjectIfAvailable(api_name, &bind_name, context);
 
   // Empty if the bind object failed to be created, probably because the
@@ -1301,35 +1301,35 @@ bool Dispatcher::IsWithinPlatformApp() {
   return false;
 }
 
-v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
-    const v8::Handle<v8::Object>& object,
+v8::Local<v8::Object> Dispatcher::GetOrCreateObject(
+    const v8::Local<v8::Object>& object,
     const std::string& field,
     v8::Isolate* isolate) {
-  v8::Handle<v8::String> key = v8::String::NewFromUtf8(isolate, field.c_str());
+  v8::Local<v8::String> key = v8::String::NewFromUtf8(isolate, field.c_str());
   // If the object has a callback property, it is assumed it is an unavailable
   // API, so it is safe to delete. This is checked before GetOrCreateObject is
   // called.
   if (object->HasRealNamedCallbackProperty(key)) {
     object->Delete(key);
   } else if (object->HasRealNamedProperty(key)) {
-    v8::Handle<v8::Value> value = object->Get(key);
+    v8::Local<v8::Value> value = object->Get(key);
     CHECK(value->IsObject());
-    return v8::Handle<v8::Object>::Cast(value);
+    return v8::Local<v8::Object>::Cast(value);
   }
 
-  v8::Handle<v8::Object> new_object = v8::Object::New(isolate);
+  v8::Local<v8::Object> new_object = v8::Object::New(isolate);
   object->Set(key, new_object);
   return new_object;
 }
 
-v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
+v8::Local<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
     const std::string& api_name,
     std::string* bind_name,
     ScriptContext* context) {
   std::vector<std::string> split;
   base::SplitString(api_name, '.', &split);
 
-  v8::Handle<v8::Object> bind_object;
+  v8::Local<v8::Object> bind_object;
 
   // Check if this API has an ancestor. If the API's ancestor is available and
   // the API is not available, don't install the bindings for this API. If
@@ -1358,13 +1358,13 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
     if (bind_object.IsEmpty()) {
       bind_object = AsObjectOrEmpty(GetOrCreateChrome(context));
       if (bind_object.IsEmpty())
-        return v8::Handle<v8::Object>();
+        return v8::Local<v8::Object>();
     }
     bind_object = GetOrCreateObject(bind_object, split[i], context->isolate());
   }
 
   if (only_ancestor_available)
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   if (bind_name)
     *bind_name = split.back();

@@ -91,12 +91,12 @@ class Dispatcher : public content::RenderProcessObserver,
   bool IsExtensionActive(const std::string& extension_id) const;
 
   void DidCreateScriptContext(blink::WebLocalFrame* frame,
-                              const v8::Handle<v8::Context>& context,
+                              const v8::Local<v8::Context>& context,
                               int extension_group,
                               int world_id);
 
   void WillReleaseScriptContext(blink::WebLocalFrame* frame,
-                                const v8::Handle<v8::Context>& context,
+                                const v8::Local<v8::Context>& context,
                                 int world_id);
 
   void DidCreateDocumentElement(blink::WebFrame* frame);
@@ -231,11 +231,11 @@ class Dispatcher : public content::RenderProcessObserver,
 
   // Gets |field| from |object| or creates it as an empty object if it doesn't
   // exist.
-  v8::Handle<v8::Object> GetOrCreateObject(const v8::Handle<v8::Object>& object,
-                                           const std::string& field,
-                                           v8::Isolate* isolate);
+  v8::Local<v8::Object> GetOrCreateObject(const v8::Local<v8::Object>& object,
+                                          const std::string& field,
+                                          v8::Isolate* isolate);
 
-  v8::Handle<v8::Object> GetOrCreateBindObjectIfAvailable(
+  v8::Local<v8::Object> GetOrCreateBindObjectIfAvailable(
       const std::string& api_name,
       std::string* bind_name,
       ScriptContext* context);

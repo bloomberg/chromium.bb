@@ -52,17 +52,17 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
                          const blink::WebURL& url,
                          const blink::WebString& title);
   virtual void logSetter(const blink::WebString& api_name,
-                         const v8::Handle<v8::Value>& new_value,
+                         const v8::Local<v8::Value>& new_value,
                          const blink::WebURL& url,
                          const blink::WebString& title);
   virtual void logSetter(const blink::WebString& api_name,
-                         const v8::Handle<v8::Value>& new_value,
-                         const v8::Handle<v8::Value>& old_value,
+                         const v8::Local<v8::Value>& new_value,
+                         const v8::Local<v8::Value>& old_value,
                          const blink::WebURL& url,
                          const blink::WebString& title);
   virtual void logMethod(const blink::WebString& api_name,
                          int argc,
-                         const v8::Handle<v8::Value>* argv,
+                         const v8::Local<v8::Value>* argv,
                          const blink::WebURL& url,
                          const blink::WebString& title);
   virtual void logEvent(const blink::WebString& event_name,

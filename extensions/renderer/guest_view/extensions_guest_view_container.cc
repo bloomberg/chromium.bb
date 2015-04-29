@@ -21,10 +21,9 @@ static base::LazyInstance<ExtensionsGuestViewContainerMap>
 
 namespace extensions {
 
-ExtensionsGuestViewContainer::Request::Request(
-    GuestViewContainer* container,
-    v8::Handle<v8::Function> callback,
-    v8::Isolate* isolate)
+ExtensionsGuestViewContainer::Request::Request(GuestViewContainer* container,
+                                               v8::Local<v8::Function> callback,
+                                               v8::Isolate* isolate)
     : container_(container), callback_(isolate, callback), isolate_(isolate) {
 }
 
@@ -35,19 +34,20 @@ bool ExtensionsGuestViewContainer::Request::HasCallback() const {
   return !callback_.IsEmpty();
 }
 
-v8::Handle<v8::Function>
-ExtensionsGuestViewContainer::Request::GetCallback() const {
+v8::Local<v8::Function> ExtensionsGuestViewContainer::Request::GetCallback()
+    const {
   return v8::Local<v8::Function>::New(isolate_, callback_);
 }
 
 void ExtensionsGuestViewContainer::Request::ExecuteCallbackIfAvailable(
-    int argc, scoped_ptr<v8::Handle<v8::Value>[]> argv) {
+    int argc,
+    scoped_ptr<v8::Local<v8::Value>[]> argv) {
   if (!HasCallback())
     return;
 
   v8::HandleScope handle_scope(isolate());
-  v8::Handle<v8::Function> callback = GetCallback();
-  v8::Handle<v8::Context> context = callback->CreationContext();
+  v8::Local<v8::Function> callback = GetCallback();
+  v8::Local<v8::Context> context = callback->CreationContext();
   if (context.IsEmpty())
     return;
 
@@ -63,7 +63,7 @@ ExtensionsGuestViewContainer::AttachRequest::AttachRequest(
     GuestViewContainer* container,
     int guest_instance_id,
     scoped_ptr<base::DictionaryValue> params,
-    v8::Handle<v8::Function> callback,
+    v8::Local<v8::Function> callback,
     v8::Isolate* isolate)
     : Request(container, callback, isolate),
       guest_instance_id_(guest_instance_id),
@@ -104,7 +104,7 @@ void ExtensionsGuestViewContainer::AttachRequest::HandleResponse(
   v8::Local<v8::Value> window = frame->mainWorldScriptContext()->Global();
 
   const int argc = 1;
-  scoped_ptr<v8::Handle<v8::Value>[]> argv(new v8::Handle<v8::Value>[argc]);
+  scoped_ptr<v8::Local<v8::Value>[]> argv(new v8::Local<v8::Value>[argc]);
   argv[0] = window;
 
   ExecuteCallbackIfAvailable(argc, argv.Pass());
@@ -112,7 +112,7 @@ void ExtensionsGuestViewContainer::AttachRequest::HandleResponse(
 
 ExtensionsGuestViewContainer::DetachRequest::DetachRequest(
     GuestViewContainer* container,
-    v8::Handle<v8::Function> callback,
+    v8::Local<v8::Function> callback,
     v8::Isolate* isolate)
     : Request(container, callback, isolate) {
 }
@@ -158,10 +158,9 @@ ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
   // Call the destruction callback, if one is registered.
   if (!destruction_callback_.IsEmpty()) {
     v8::HandleScope handle_scope(destruction_isolate_);
-    v8::Handle<v8::Function> callback =
-        v8::Local<v8::Function>::New(destruction_isolate_,
-                                     destruction_callback_);
-    v8::Handle<v8::Context> context = callback->CreationContext();
+    v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(
+        destruction_isolate_, destruction_callback_);
+    v8::Local<v8::Context> context = callback->CreationContext();
     if (context.IsEmpty())
       return;
 
@@ -186,14 +185,14 @@ void ExtensionsGuestViewContainer::IssueRequest(linked_ptr<Request> request) {
 }
 
 void ExtensionsGuestViewContainer::RegisterDestructionCallback(
-    v8::Handle<v8::Function> callback,
+    v8::Local<v8::Function> callback,
     v8::Isolate* isolate) {
   destruction_callback_.Reset(isolate, callback);
   destruction_isolate_ = isolate;
 }
 
 void ExtensionsGuestViewContainer::RegisterElementResizeCallback(
-    v8::Handle<v8::Function> callback,
+    v8::Local<v8::Function> callback,
     v8::Isolate* isolate) {
   element_resize_callback_.Reset(isolate, callback);
   element_resize_isolate_ = isolate;
@@ -245,18 +244,18 @@ void ExtensionsGuestViewContainer::CallElementResizeCallback(
     const gfx::Size& old_size,
     const gfx::Size& new_size) {
   v8::HandleScope handle_scope(element_resize_isolate_);
-  v8::Handle<v8::Function> callback = v8::Local<v8::Function>::New(
+  v8::Local<v8::Function> callback = v8::Local<v8::Function>::New(
       element_resize_isolate_, element_resize_callback_);
-  v8::Handle<v8::Context> context = callback->CreationContext();
+  v8::Local<v8::Context> context = callback->CreationContext();
   if (context.IsEmpty())
     return;
 
   const int argc = 4;
-  v8::Handle<v8::Value> argv[argc] = {
-    v8::Integer::New(element_resize_isolate_, old_size.width()),
-    v8::Integer::New(element_resize_isolate_, old_size.height()),
-    v8::Integer::New(element_resize_isolate_, new_size.width()),
-    v8::Integer::New(element_resize_isolate_, new_size.height())};
+  v8::Local<v8::Value> argv[argc] = {
+      v8::Integer::New(element_resize_isolate_, old_size.width()),
+      v8::Integer::New(element_resize_isolate_, old_size.height()),
+      v8::Integer::New(element_resize_isolate_, new_size.width()),
+      v8::Integer::New(element_resize_isolate_, new_size.height())};
 
   v8::Context::Scope context_scope(context);
   blink::WebScopedMicrotaskSuppression suppression;

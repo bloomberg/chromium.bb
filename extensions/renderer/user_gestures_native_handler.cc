@@ -36,8 +36,8 @@ void UserGesturesNativeHandler::RunWithUserGesture(
   blink::WebScopedUserGesture user_gesture;
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsFunction());
-  v8::Handle<v8::Value> no_args;
-  context()->CallFunction(v8::Handle<v8::Function>::Cast(args[0]), 0, &no_args);
+  v8::Local<v8::Value> no_args;
+  context()->CallFunction(v8::Local<v8::Function>::Cast(args[0]), 0, &no_args);
 }
 
 void UserGesturesNativeHandler::RunWithoutUserGesture(
@@ -45,8 +45,8 @@ void UserGesturesNativeHandler::RunWithoutUserGesture(
   blink::WebUserGestureIndicator::consumeUserGesture();
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsFunction());
-  v8::Handle<v8::Value> no_args;
-  context()->CallFunction(v8::Handle<v8::Function>::Cast(args[0]), 0, &no_args);
+  v8::Local<v8::Value> no_args;
+  context()->CallFunction(v8::Local<v8::Function>::Cast(args[0]), 0, &no_args);
 }
 
 }  // namespace extensions

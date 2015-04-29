@@ -27,14 +27,14 @@ namespace {
 // contexts in each RenderView.
 class ByContextFinder : public content::RenderViewVisitor {
  public:
-  static content::RenderView* Find(v8::Handle<v8::Context> context) {
+  static content::RenderView* Find(v8::Local<v8::Context> context) {
     ByContextFinder finder(context);
     content::RenderView::ForEach(&finder);
     return finder.found_;
   }
 
  private:
-  explicit ByContextFinder(v8::Handle<v8::Context> context)
+  explicit ByContextFinder(v8::Local<v8::Context> context)
       : context_(context), found_(NULL) {}
 
   bool Visit(content::RenderView* render_view) override {
@@ -48,7 +48,7 @@ class ByContextFinder : public content::RenderViewVisitor {
     return !found_;
   }
 
-  v8::Handle<v8::Context> context_;
+  v8::Local<v8::Context> context_;
   content::RenderView* found_;
 
   DISALLOW_COPY_AND_ASSIGN(ByContextFinder);
@@ -63,7 +63,7 @@ void CheckWithMinidump(const std::string& message) {
   CHECK(false) << message;
 }
 
-typedef void (*LogMethod)(v8::Handle<v8::Context> context,
+typedef void (*LogMethod)(v8::Local<v8::Context> context,
                           const std::string& message);
 
 void BoundLogMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -139,28 +139,28 @@ void AddMessage(content::RenderView* render_view,
       blink::WebConsoleMessage(target_level, base::UTF8ToUTF16(message)));
 }
 
-void Debug(v8::Handle<v8::Context> context, const std::string& message) {
+void Debug(v8::Local<v8::Context> context, const std::string& message) {
   AddMessage(context, content::CONSOLE_MESSAGE_LEVEL_DEBUG, message);
 }
 
-void Log(v8::Handle<v8::Context> context, const std::string& message) {
+void Log(v8::Local<v8::Context> context, const std::string& message) {
   AddMessage(context, content::CONSOLE_MESSAGE_LEVEL_LOG, message);
 }
 
-void Warn(v8::Handle<v8::Context> context, const std::string& message) {
+void Warn(v8::Local<v8::Context> context, const std::string& message) {
   AddMessage(context, content::CONSOLE_MESSAGE_LEVEL_WARNING, message);
 }
 
-void Error(v8::Handle<v8::Context> context, const std::string& message) {
+void Error(v8::Local<v8::Context> context, const std::string& message) {
   AddMessage(context, content::CONSOLE_MESSAGE_LEVEL_ERROR, message);
 }
 
-void Fatal(v8::Handle<v8::Context> context, const std::string& message) {
+void Fatal(v8::Local<v8::Context> context, const std::string& message) {
   Error(context, message);
   CheckWithMinidump(message);
 }
 
-void AddMessage(v8::Handle<v8::Context> context,
+void AddMessage(v8::Local<v8::Context> context,
                 content::ConsoleMessageLevel level,
                 const std::string& message) {
   if (context.IsEmpty()) {

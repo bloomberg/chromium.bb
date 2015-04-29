@@ -182,8 +182,8 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
   // not be executed re-entrantly to avoid running JS in an unexpected state.
   class GCCallback {
    public:
-    static void Bind(v8::Handle<v8::Object> object,
-                     v8::Handle<v8::Function> callback,
+    static void Bind(v8::Local<v8::Object> object,
+                     v8::Local<v8::Function> callback,
                      v8::Isolate* isolate) {
       GCCallback* cb = new GCCallback(object, callback, isolate);
       cb->object_.SetWeak(cb, FirstWeakCallback,
@@ -207,8 +207,8 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
                      base::Owned(data.GetParameter())));
     }
 
-    GCCallback(v8::Handle<v8::Object> object,
-               v8::Handle<v8::Function> callback,
+    GCCallback(v8::Local<v8::Object> object,
+               v8::Local<v8::Function> callback,
                v8::Isolate* isolate)
         : object_(isolate, object),
           callback_(isolate, callback),
@@ -216,9 +216,9 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
 
     void RunCallback() {
       v8::HandleScope handle_scope(isolate_);
-      v8::Handle<v8::Function> callback =
+      v8::Local<v8::Function> callback =
           v8::Local<v8::Function>::New(isolate_, callback_);
-      v8::Handle<v8::Context> context = callback->CreationContext();
+      v8::Local<v8::Context> context = callback->CreationContext();
       if (context.IsEmpty())
         return;
       v8::Context::Scope context_scope(context);
@@ -274,9 +274,9 @@ void DispatchOnConnectToScriptContext(
   std::string target_extension_id = script_context->GetExtensionID();
   const Extension* extension = script_context->extension();
 
-  v8::Handle<v8::Value> tab = v8::Null(isolate);
-  v8::Handle<v8::Value> tls_channel_id_value = v8::Undefined(isolate);
-  v8::Handle<v8::Value> guest_process_id = v8::Undefined(isolate);
+  v8::Local<v8::Value> tab = v8::Null(isolate);
+  v8::Local<v8::Value> tls_channel_id_value = v8::Undefined(isolate);
+  v8::Local<v8::Value> guest_process_id = v8::Undefined(isolate);
 
   if (extension) {
     if (!source->tab.empty() && !extension->is_platform_app())
@@ -296,14 +296,12 @@ void DispatchOnConnectToScriptContext(
       guest_process_id = v8::Integer::New(isolate, info.guest_process_id);
   }
 
-  v8::Handle<v8::Value> arguments[] = {
+  v8::Local<v8::Value> arguments[] = {
       // portId
       v8::Integer::New(isolate, target_port_id),
       // channelName
-      v8::String::NewFromUtf8(isolate,
-                              channel_name.c_str(),
-                              v8::String::kNormalString,
-                              channel_name.size()),
+      v8::String::NewFromUtf8(isolate, channel_name.c_str(),
+                              v8::String::kNormalString, channel_name.size()),
       // sourceTab
       tab,
       // source_frame_id
@@ -311,25 +309,21 @@ void DispatchOnConnectToScriptContext(
       // guestProcessId
       guest_process_id,
       // sourceExtensionId
-      v8::String::NewFromUtf8(isolate,
-                              info.source_id.c_str(),
-                              v8::String::kNormalString,
-                              info.source_id.size()),
+      v8::String::NewFromUtf8(isolate, info.source_id.c_str(),
+                              v8::String::kNormalString, info.source_id.size()),
       // targetExtensionId
-      v8::String::NewFromUtf8(isolate,
-                              target_extension_id.c_str(),
+      v8::String::NewFromUtf8(isolate, target_extension_id.c_str(),
                               v8::String::kNormalString,
                               target_extension_id.size()),
       // sourceUrl
-      v8::String::NewFromUtf8(isolate,
-                              source_url_spec.c_str(),
+      v8::String::NewFromUtf8(isolate, source_url_spec.c_str(),
                               v8::String::kNormalString,
                               source_url_spec.size()),
       // tlsChannelId
       tls_channel_id_value,
   };
 
-  v8::Handle<v8::Value> retval =
+  v8::Local<v8::Value> retval =
       script_context->module_system()->CallModuleMethod(
           "messaging", "dispatchOnConnect", arraysize(arguments), arguments);
 
@@ -349,17 +343,17 @@ void DeliverMessageToScriptContext(const Message& message,
 
   // Check to see whether the context has this port before bothering to create
   // the message.
-  v8::Handle<v8::Value> port_id_handle =
+  v8::Local<v8::Value> port_id_handle =
       v8::Integer::New(isolate, target_port_id);
-  v8::Handle<v8::Value> has_port =
-      script_context->module_system()->CallModuleMethod(
-          "messaging", "hasPort", 1, &port_id_handle);
+  v8::Local<v8::Value> has_port =
+      script_context->module_system()->CallModuleMethod("messaging", "hasPort",
+                                                        1, &port_id_handle);
 
   CHECK(!has_port.IsEmpty());
   if (!has_port->BooleanValue())
     return;
 
-  std::vector<v8::Handle<v8::Value> > arguments;
+  std::vector<v8::Local<v8::Value>> arguments;
   arguments.push_back(v8::String::NewFromUtf8(isolate,
                                               message.data.c_str(),
                                               v8::String::kNormalString,
@@ -388,7 +382,7 @@ void DispatchOnDisconnectToScriptContext(int port_id,
   v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 
-  std::vector<v8::Handle<v8::Value> > arguments;
+  std::vector<v8::Local<v8::Value>> arguments;
   arguments.push_back(v8::Integer::New(isolate, port_id));
   if (!error_message.empty()) {
     arguments.push_back(

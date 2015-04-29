@@ -38,7 +38,7 @@ class ModuleSystemTestEnvironment {
                         const std::string& file_name);
 
   // Create an empty object in the global scope with name |name|.
-  v8::Handle<v8::Object> CreateGlobal(const std::string& name);
+  v8::Local<v8::Object> CreateGlobal(const std::string& name);
 
   void ShutdownGin();
 

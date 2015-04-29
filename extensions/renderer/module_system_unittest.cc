@@ -141,7 +141,7 @@ TEST_F(ModuleSystemTest, TestLazyField) {
       env()->module_system());
   env()->RegisterModule("lazy", "exports.x = 5;");
 
-  v8::Handle<v8::Object> object = env()->CreateGlobal("object");
+  v8::Local<v8::Object> object = env()->CreateGlobal("object");
 
   env()->module_system()->SetLazyField(object, "blah", "lazy", "x");
 
@@ -162,7 +162,7 @@ TEST_F(ModuleSystemTest, TestLazyFieldYieldingObject) {
       "object.y = function() { return 10; };"
       "exports.object = object;");
 
-  v8::Handle<v8::Object> object = env()->CreateGlobal("object");
+  v8::Local<v8::Object> object = env()->CreateGlobal("object");
 
   env()->module_system()->SetLazyField(object, "thing", "lazy", "object");
 
@@ -184,7 +184,7 @@ TEST_F(ModuleSystemTest, TestLazyFieldIsOnlyEvaledOnce) {
                         "requireNative('counter').Increment();"
                         "exports.x = 5;");
 
-  v8::Handle<v8::Object> object = env()->CreateGlobal("object");
+  v8::Local<v8::Object> object = env()->CreateGlobal("object");
 
   env()->module_system()->SetLazyField(object, "x", "lazy", "x");
 
@@ -203,7 +203,7 @@ TEST_F(ModuleSystemTest, TestRequireNativesAfterLazyEvaluation) {
   ModuleSystem::NativesEnabledScope natives_enabled_scope(
       env()->module_system());
   env()->RegisterModule("lazy", "exports.x = 5;");
-  v8::Handle<v8::Object> object = env()->CreateGlobal("object");
+  v8::Local<v8::Object> object = env()->CreateGlobal("object");
 
   env()->module_system()->SetLazyField(object, "x", "lazy", "x");
   env()->RegisterModule("test",
@@ -218,7 +218,7 @@ TEST_F(ModuleSystemTest, TestTransitiveRequire) {
   env()->RegisterModule("dependency", "exports.x = 5;");
   env()->RegisterModule("lazy", "exports.output = require('dependency');");
 
-  v8::Handle<v8::Object> object = env()->CreateGlobal("object");
+  v8::Local<v8::Object> object = env()->CreateGlobal("object");
 
   env()->module_system()->SetLazyField(object, "thing", "lazy", "output");
 

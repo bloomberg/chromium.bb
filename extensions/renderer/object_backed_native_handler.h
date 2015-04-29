@@ -27,7 +27,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
 
   // Create an object with bindings to the native functions defined through
   // RouteFunction().
-  v8::Handle<v8::Object> NewInstance() override;
+  v8::Local<v8::Object> NewInstance() override;
 
   v8::Isolate* GetIsolate() const;
 

@@ -27,7 +27,7 @@ ScriptContextSet::~ScriptContextSet() {
 
 ScriptContext* ScriptContextSet::Register(
     blink::WebLocalFrame* frame,
-    const v8::Handle<v8::Context>& v8_context,
+    const v8::Local<v8::Context>& v8_context,
     int extension_group,
     int world_id) {
   const Extension* extension =
@@ -71,7 +71,7 @@ ScriptContext* ScriptContextSet::GetCalling() const {
 }
 
 ScriptContext* ScriptContextSet::GetByV8Context(
-    const v8::Handle<v8::Context>& v8_context) const {
+    const v8::Local<v8::Context>& v8_context) const {
   for (ScriptContext* script_context : contexts_) {
     if (script_context->v8_context() == v8_context)
       return script_context;

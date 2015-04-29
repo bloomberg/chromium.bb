@@ -38,7 +38,7 @@ class ScriptableObject : public gin::Wrappable<ScriptableObject>,
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  static v8::Handle<v8::Object> Create(
+  static v8::Local<v8::Object> Create(
       v8::Isolate* isolate,
       base::WeakPtr<MimeHandlerViewContainer> container) {
     ScriptableObject* scriptable_object =
@@ -209,7 +209,7 @@ void MimeHandlerViewContainer::didFinishLoading(
 }
 
 void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
-                                           v8::Handle<v8::Value> message) {
+                                           v8::Local<v8::Value> message) {
   if (!guest_loaded_) {
     linked_ptr<v8::Global<v8::Value>> global(
         new v8::Global<v8::Value>(isolate, message));
@@ -231,16 +231,15 @@ void MimeHandlerViewContainer::PostMessage(v8::Isolate* isolate,
   v8::Local<v8::Object> guest_proxy_window =
       guest_proxy_frame->mainWorldScriptContext()->Global();
   gin::Dictionary window_object(isolate, guest_proxy_window);
-  v8::Handle<v8::Function> post_message;
+  v8::Local<v8::Function> post_message;
   if (!window_object.Get(std::string(kPostMessageName), &post_message))
     return;
 
-  v8::Handle<v8::Value> args[] = {
-    message,
-    // Post the message to any domain inside the browser plugin. The embedder
-    // should already know what is embedded.
-    gin::StringToV8(isolate, "*")
-  };
+  v8::Local<v8::Value> args[] = {
+      message,
+      // Post the message to any domain inside the browser plugin. The embedder
+      // should already know what is embedded.
+      gin::StringToV8(isolate, "*")};
   guest_proxy_frame->callFunctionEvenIfScriptDisabled(
       post_message.As<v8::Function>(),
       guest_proxy_window,

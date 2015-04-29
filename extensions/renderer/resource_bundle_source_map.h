@@ -26,15 +26,15 @@ class ResourceBundleSourceMap : public extensions::ModuleSystem::SourceMap {
   explicit ResourceBundleSourceMap(const ui::ResourceBundle* resource_bundle);
   ~ResourceBundleSourceMap() override;
 
-  v8::Handle<v8::Value> GetSource(v8::Isolate* isolate,
-                                  const std::string& name) override;
+  v8::Local<v8::Value> GetSource(v8::Isolate* isolate,
+                                 const std::string& name) override;
   bool Contains(const std::string& name) override;
 
   void RegisterSource(const std::string& name, int resource_id);
 
  private:
-  v8::Handle<v8::String> ConvertString(v8::Isolate* isolate,
-                                       const base::StringPiece& string);
+  v8::Local<v8::String> ConvertString(v8::Isolate* isolate,
+                                      const base::StringPiece& string);
 
   const ui::ResourceBundle* resource_bundle_;
   std::map<std::string, int> resource_id_map_;

@@ -222,7 +222,7 @@ void ExtensionHelper::OnAddMessageToConsole(ConsoleMessageLevel level,
 
 void ExtensionHelper::OnAppWindowClosed() {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
-  v8::Handle<v8::Context> v8_context =
+  v8::Local<v8::Context> v8_context =
       render_view()->GetWebView()->mainFrame()->mainWorldScriptContext();
   ScriptContext* script_context =
       dispatcher_->script_context_set().GetByV8Context(v8_context);

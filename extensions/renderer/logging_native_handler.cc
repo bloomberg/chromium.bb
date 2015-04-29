@@ -72,13 +72,13 @@ void LoggingNativeHandler::ParseArgs(
     *error_message = "Error: " + std::string(*v8::String::Utf8Value(args[1]));
   }
 
-  v8::Handle<v8::StackTrace> stack_trace =
+  v8::Local<v8::StackTrace> stack_trace =
       v8::StackTrace::CurrentStackTrace(args.GetIsolate(), 10);
   if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() <= 0) {
     *error_message += "\n    <no stack trace>";
   } else {
     for (size_t i = 0; i < (size_t)stack_trace->GetFrameCount(); ++i) {
-      v8::Handle<v8::StackFrame> frame = stack_trace->GetFrame(i);
+      v8::Local<v8::StackFrame> frame = stack_trace->GetFrame(i);
       CHECK(!frame.IsEmpty());
       *error_message += base::StringPrintf(
           "\n    at %s (%s:%d:%d)",
@@ -91,7 +91,7 @@ void LoggingNativeHandler::ParseArgs(
 }
 
 std::string LoggingNativeHandler::ToStringOrDefault(
-    const v8::Handle<v8::String>& v8_string,
+    const v8::Local<v8::String>& v8_string,
     const std::string& dflt) {
   if (v8_string.IsEmpty())
     return dflt;

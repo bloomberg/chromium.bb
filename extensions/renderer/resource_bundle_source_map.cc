@@ -22,7 +22,7 @@ void ResourceBundleSourceMap::RegisterSource(const std::string& name,
   resource_id_map_[name] = resource_id;
 }
 
-v8::Handle<v8::Value> ResourceBundleSourceMap::GetSource(
+v8::Local<v8::Value> ResourceBundleSourceMap::GetSource(
     v8::Isolate* isolate,
     const std::string& name) {
   if (!Contains(name)) {
@@ -43,7 +43,7 @@ bool ResourceBundleSourceMap::Contains(const std::string& name) {
   return !!resource_id_map_.count(name);
 }
 
-v8::Handle<v8::String> ResourceBundleSourceMap::ConvertString(
+v8::Local<v8::String> ResourceBundleSourceMap::ConvertString(
     v8::Isolate* isolate,
     const base::StringPiece& string) {
   // v8 takes ownership of the StaticV8ExternalOneByteStringResource (see
