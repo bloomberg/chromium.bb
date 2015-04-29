@@ -120,7 +120,7 @@ class BlacklistTest : public testing::Test {
   int num_initially_blocked_;
 
  private:
-  virtual void SetUp() {
+  void SetUp() override {
     // Force an import from blacklist_test_main_dll.
     InitBlacklistTestDll();
     blacklist_registry_key_.reset(
@@ -132,7 +132,7 @@ class BlacklistTest : public testing::Test {
     TestDll_SuccessfullyBlocked(NULL, &num_initially_blocked_);
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     TestDll_RemoveDllFromBlacklist(kTestDllName1);
     TestDll_RemoveDllFromBlacklist(kTestDllName2);
     TestDll_RemoveDllFromBlacklist(kTestDllName3);
