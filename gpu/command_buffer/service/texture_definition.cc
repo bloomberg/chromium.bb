@@ -411,6 +411,13 @@ void TextureDefinition::UpdateTexture(Texture* texture) const {
     glGenTextures(1, &service_id);
     old_service_id = texture->service_id();
     texture->SetServiceId(service_id);
+
+    DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), target_);
+    GLint bound_id = 0;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &bound_id);
+    if (bound_id == static_cast<GLint>(old_service_id)) {
+      glBindTexture(target_, service_id);
+    }
   }
 
   UpdateTextureInternal(texture);
