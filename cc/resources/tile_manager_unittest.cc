@@ -183,9 +183,8 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
     EXPECT_TRUE(tile);
-    EXPECT_EQ(TilePriority::NOW, tile->priority(ACTIVE_TREE).priority_bin);
-    EXPECT_EQ(TilePriority::NOW, tile->priority(PENDING_TREE).priority_bin);
-    if (tile->priority(ACTIVE_TREE).resolution == LOW_RESOLUTION)
+    EXPECT_EQ(TilePriority::NOW, tile->priority().priority_bin);
+    if (tile->priority().resolution == LOW_RESOLUTION)
       had_low_res = true;
     else
       smoothness_tiles.insert(tile);
@@ -284,28 +283,23 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
     if (!last_tile)
       last_tile = tile;
 
-    EXPECT_LE(last_tile->priority(ACTIVE_TREE).priority_bin,
-              tile->priority(ACTIVE_TREE).priority_bin);
+    EXPECT_LE(last_tile->priority().priority_bin,
+              tile->priority().priority_bin);
     bool skip_updating_last_tile = false;
-    if (last_tile->priority(ACTIVE_TREE).priority_bin ==
-        tile->priority(ACTIVE_TREE).priority_bin) {
-      correct_order_tiles +=
-          last_tile->priority(ACTIVE_TREE).distance_to_visible <=
-          tile->priority(ACTIVE_TREE).distance_to_visible;
-    } else if (tile->priority(ACTIVE_TREE).priority_bin ==
-                   TilePriority::EVENTUALLY &&
-               tile->priority(PENDING_TREE).priority_bin == TilePriority::NOW) {
+    if (last_tile->priority().priority_bin == tile->priority().priority_bin) {
+      correct_order_tiles += last_tile->priority().distance_to_visible <=
+                             tile->priority().distance_to_visible;
+    } else if (tile->priority().priority_bin == TilePriority::NOW) {
       // Since we'd return pending tree now tiles before the eventually tiles on
       // the active tree, update the value.
       ++correct_order_tiles;
       skip_updating_last_tile = true;
     }
 
-    if (tile->priority(ACTIVE_TREE).priority_bin == TilePriority::NOW &&
-        last_tile->priority(ACTIVE_TREE).resolution !=
-            tile->priority(ACTIVE_TREE).resolution) {
+    if (tile->priority().priority_bin == TilePriority::NOW &&
+        last_tile->priority().resolution != tile->priority().resolution) {
       // Low resolution should come first.
-      EXPECT_EQ(LOW_RESOLUTION, last_tile->priority(ACTIVE_TREE).resolution);
+      EXPECT_EQ(LOW_RESOLUTION, last_tile->priority().resolution);
     }
 
     if (!skip_updating_last_tile)
@@ -368,20 +362,17 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
     if (!last_tile)
       last_tile = tile;
 
-    EXPECT_LE(last_tile->priority(PENDING_TREE).priority_bin,
-              tile->priority(PENDING_TREE).priority_bin);
-    if (last_tile->priority(PENDING_TREE).priority_bin ==
-        tile->priority(PENDING_TREE).priority_bin) {
-      increasing_distance_tiles +=
-          last_tile->priority(PENDING_TREE).distance_to_visible <=
-          tile->priority(PENDING_TREE).distance_to_visible;
+    EXPECT_LE(last_tile->priority().priority_bin,
+              tile->priority().priority_bin);
+    if (last_tile->priority().priority_bin == tile->priority().priority_bin) {
+      increasing_distance_tiles += last_tile->priority().distance_to_visible <=
+                                   tile->priority().distance_to_visible;
     }
 
-    if (tile->priority(PENDING_TREE).priority_bin == TilePriority::NOW &&
-        last_tile->priority(PENDING_TREE).resolution !=
-            tile->priority(PENDING_TREE).resolution) {
+    if (tile->priority().priority_bin == TilePriority::NOW &&
+        last_tile->priority().resolution != tile->priority().resolution) {
       // High resolution should come first.
-      EXPECT_EQ(HIGH_RESOLUTION, last_tile->priority(PENDING_TREE).resolution);
+      EXPECT_EQ(HIGH_RESOLUTION, last_tile->priority().resolution);
     }
 
     last_tile = tile;
@@ -435,6 +426,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   pending_layer_->tilings()->AddTiling(1.5f, pending_layer_->raster_source());
   active_layer_->tilings()->AddTiling(1.5f, active_layer_->raster_source());
+  pending_layer_->tilings()->AddTiling(1.7f, pending_layer_->raster_source());
+  active_layer_->tilings()->AddTiling(1.7f, active_layer_->raster_source());
 
   pending_layer_->tilings()->UpdateTilePriorities(gfx::Rect(viewport), 1.f, 5.0,
                                                   Occlusion(), true);
@@ -444,7 +437,6 @@ TEST_F(TileManagerTilePriorityQueueTest,
   std::set<Tile*> all_expected_tiles;
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = pending_layer_->tilings()->tiling_at(i);
-    tiling->CreateAllTilesForTesting();
     if (tiling->contents_scale() == 1.f) {
       tiling->set_resolution(HIGH_RESOLUTION);
       const auto& all_tiles = tiling->AllTilesForTesting();
@@ -456,13 +448,21 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   for (size_t i = 0; i < active_layer_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = active_layer_->tilings()->tiling_at(i);
-    tiling->CreateAllTilesForTesting();
     if (tiling->contents_scale() == 1.5f) {
       tiling->set_resolution(HIGH_RESOLUTION);
       const auto& all_tiles = tiling->AllTilesForTesting();
       all_expected_tiles.insert(all_tiles.begin(), all_tiles.end());
     } else {
       tiling->set_resolution(NON_IDEAL_RESOLUTION);
+      // Non ideal tilings with a high res pending twin have to be processed
+      // because of possible activation tiles.
+      if (tiling->contents_scale() == 1.f) {
+        tiling->UpdateAllTilePrioritiesForTesting();
+        const auto& all_tiles = tiling->AllTilesForTesting();
+        for (auto* tile : all_tiles)
+          EXPECT_TRUE(tile->required_for_activation());
+        all_expected_tiles.insert(all_tiles.begin(), all_tiles.end());
+      }
     }
   }
 
@@ -492,19 +492,19 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
   // Use a tile's content rect as an invalidation. We should inset it a bit to
   // ensure that border math doesn't invalidate neighbouring tiles.
   gfx::Rect invalidation =
-      pending_layer_->HighResTiling()->TileAt(1, 0)->content_rect();
+      active_layer_->HighResTiling()->TileAt(1, 0)->content_rect();
   invalidation.Inset(2, 2);
 
   pending_layer_->set_invalidation(invalidation);
   pending_layer_->HighResTiling()->Invalidate(invalidation);
+  pending_layer_->HighResTiling()->CreateMissingTilesInLiveTilesRect();
   pending_layer_->LowResTiling()->Invalidate(invalidation);
+  pending_layer_->LowResTiling()->CreateMissingTilesInLiveTilesRect();
 
-  // Sanity checks: Tile at 0, 0 should be the same on both trees, tile at 1, 0
-  // should be different.
-  EXPECT_TRUE(pending_layer_->HighResTiling()->TileAt(0, 0));
+  // Sanity checks: Tile at 0, 0 not exist on the pending tree (it's not
+  // invalidated). Tile 1, 0 should exist on both.
+  EXPECT_FALSE(pending_layer_->HighResTiling()->TileAt(0, 0));
   EXPECT_TRUE(active_layer_->HighResTiling()->TileAt(0, 0));
-  EXPECT_EQ(pending_layer_->HighResTiling()->TileAt(0, 0),
-            active_layer_->HighResTiling()->TileAt(0, 0));
   EXPECT_TRUE(pending_layer_->HighResTiling()->TileAt(1, 0));
   EXPECT_TRUE(active_layer_->HighResTiling()->TileAt(1, 0));
   EXPECT_NE(pending_layer_->HighResTiling()->TileAt(1, 0),
@@ -515,13 +515,20 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
   std::set<Tile*> expected_required_for_activation_tiles;
   for (int i = 0; i <= 1; ++i) {
     for (int j = 0; j <= 1; ++j) {
-      expected_now_tiles.insert(pending_layer_->HighResTiling()->TileAt(i, j));
-      expected_now_tiles.insert(active_layer_->HighResTiling()->TileAt(i, j));
-
-      expected_required_for_activation_tiles.insert(
-          pending_layer_->HighResTiling()->TileAt(i, j));
-      expected_required_for_draw_tiles.insert(
-          active_layer_->HighResTiling()->TileAt(i, j));
+      bool have_pending_tile = false;
+      if (pending_layer_->HighResTiling()->TileAt(i, j)) {
+        expected_now_tiles.insert(
+            pending_layer_->HighResTiling()->TileAt(i, j));
+        expected_required_for_activation_tiles.insert(
+            pending_layer_->HighResTiling()->TileAt(i, j));
+        have_pending_tile = true;
+      }
+      Tile* active_tile = active_layer_->HighResTiling()->TileAt(i, j);
+      EXPECT_TRUE(active_tile);
+      expected_now_tiles.insert(active_tile);
+      expected_required_for_draw_tiles.insert(active_tile);
+      if (!have_pending_tile)
+        expected_required_for_activation_tiles.insert(active_tile);
     }
   }
   // Expect 3 shared tiles and 1 unshared tile in total.
@@ -535,7 +542,10 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
   std::set<Tile*> expected_all_tiles;
   for (int i = 0; i <= 3; ++i) {
     for (int j = 0; j <= 3; ++j) {
-      expected_all_tiles.insert(pending_layer_->HighResTiling()->TileAt(i, j));
+      if (pending_layer_->HighResTiling()->TileAt(i, j))
+        expected_all_tiles.insert(
+            pending_layer_->HighResTiling()->TileAt(i, j));
+      EXPECT_TRUE(active_layer_->HighResTiling()->TileAt(i, j));
       expected_all_tiles.insert(active_layer_->HighResTiling()->TileAt(i, j));
     }
   }
@@ -551,7 +561,7 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
     queue->Pop();
-    if (tile->combined_priority().priority_bin == TilePriority::NOW)
+    if (tile->priority().priority_bin == TilePriority::NOW)
       actual_now_tiles.insert(tile);
     actual_all_tiles.insert(tile);
   }
@@ -620,7 +630,7 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
   std::vector<Tile*> all_tiles;
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
-    if (tile->combined_priority().priority_bin >= TilePriority::EVENTUALLY)
+    if (tile->priority().priority_bin >= TilePriority::EVENTUALLY)
       break;
 
     all_tiles.push_back(tile);
@@ -669,8 +679,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
     EXPECT_TRUE(tile);
-    EXPECT_EQ(TilePriority::NOW, tile->priority(ACTIVE_TREE).priority_bin);
-    EXPECT_EQ(TilePriority::NOW, tile->priority(PENDING_TREE).priority_bin);
+    EXPECT_EQ(TilePriority::NOW, tile->priority().priority_bin);
     EXPECT_TRUE(tile->HasResource());
     smoothness_tiles.insert(tile);
     queue->Pop();
@@ -685,7 +694,9 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   // Invalidate the pending tree.
   pending_layer_->set_invalidation(invalidation);
   pending_layer_->HighResTiling()->Invalidate(invalidation);
+  pending_layer_->HighResTiling()->CreateMissingTilesInLiveTilesRect();
   pending_layer_->LowResTiling()->Invalidate(invalidation);
+  pending_layer_->LowResTiling()->CreateMissingTilesInLiveTilesRect();
 
   active_layer_->ResetAllTilesPriorities();
   pending_layer_->ResetAllTilesPriorities();
@@ -741,8 +752,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
     if (!last_tile)
       last_tile = tile;
 
-    const TilePriority& last_priority = last_tile->combined_priority();
-    const TilePriority& priority = tile->combined_priority();
+    const TilePriority& last_priority = last_tile->priority();
+    const TilePriority& priority = tile->priority();
 
     EXPECT_GE(last_priority.priority_bin, priority.priority_bin);
     if (last_priority.priority_bin == priority.priority_bin) {
@@ -782,8 +793,8 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
     if (!last_tile)
       last_tile = tile;
 
-    const TilePriority& last_priority = last_tile->combined_priority();
-    const TilePriority& priority = tile->combined_priority();
+    const TilePriority& last_priority = last_tile->priority();
+    const TilePriority& priority = tile->priority();
 
     EXPECT_GE(last_priority.priority_bin, priority.priority_bin);
     if (last_priority.priority_bin == priority.priority_bin) {
@@ -922,7 +933,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
     if (!last_tile)
       last_tile = tile;
 
-    bool tile_is_occluded = tile->is_occluded_combined();
+    bool tile_is_occluded = tile->is_occluded();
 
     // The only way we will encounter an occluded tile after an unoccluded
     // tile is if the priorty bin decreased, the tile is required for
@@ -930,12 +941,12 @@ TEST_F(TileManagerTilePriorityQueueTest,
     if (tile_is_occluded) {
       occluded_count++;
 
-      bool last_tile_is_occluded = last_tile->is_occluded_combined();
+      bool last_tile_is_occluded = last_tile->is_occluded();
       if (!last_tile_is_occluded) {
         TilePriority::PriorityBin tile_priority_bin =
-            tile->priority_for_tree_priority(tree_priority).priority_bin;
+            tile->priority().priority_bin;
         TilePriority::PriorityBin last_tile_priority_bin =
-            last_tile->priority_for_tree_priority(tree_priority).priority_bin;
+            last_tile->priority().priority_bin;
 
         EXPECT_TRUE((tile_priority_bin < last_tile_priority_bin) ||
                     tile->required_for_activation() ||
@@ -1045,7 +1056,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
       host_impl_.BuildEvictionQueue(tree_priority));
   while (!queue->IsEmpty()) {
     Tile* tile = queue->Top();
-    const TilePriority& pending_priority = tile->priority(PENDING_TREE);
+    const TilePriority& pending_priority = tile->priority();
     EXPECT_NE(std::numeric_limits<float>::infinity(),
               pending_priority.distance_to_visible);
     if (all_pending_child_tiles.find(tile) != all_pending_child_tiles.end())
@@ -1208,7 +1219,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
     std::set<Tile*> unique_tiles;
     unique_tiles.insert(queue->Top());
     Tile* last_tile = queue->Top();
-    have_tiles[last_tile->priority(ACTIVE_TREE).priority_bin] = true;
+    have_tiles[last_tile->priority().priority_bin] = true;
 
     // On the second iteration, mark everything as ready to draw (solid color).
     if (i == 1) {
@@ -1223,8 +1234,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
       queue->Pop();
       unique_tiles.insert(new_tile);
 
-      TilePriority last_priority = last_tile->priority(ACTIVE_TREE);
-      TilePriority new_priority = new_tile->priority(ACTIVE_TREE);
+      TilePriority last_priority = last_tile->priority();
+      TilePriority new_priority = new_tile->priority();
       EXPECT_LE(last_priority.priority_bin, new_priority.priority_bin);
       if (last_priority.priority_bin == new_priority.priority_bin) {
         if (last_priority.priority_bin == TilePriority::EVENTUALLY) {
@@ -1311,8 +1322,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
     Tile* new_tile = queue->Top();
 
-    TilePriority last_priority = last_tile->priority(ACTIVE_TREE);
-    TilePriority new_priority = new_tile->priority(ACTIVE_TREE);
+    TilePriority last_priority = last_tile->priority();
+    TilePriority new_priority = new_tile->priority();
 
     have_tiles[new_priority.priority_bin] = true;
 

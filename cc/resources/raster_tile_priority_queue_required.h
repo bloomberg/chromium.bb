@@ -28,6 +28,10 @@ class RasterTilePriorityQueueRequired : public RasterTilePriorityQueue {
 
   void Build(const std::vector<PictureLayerImpl::Pair>& paired_layers,
              Type type);
+  void BuildRequiredForDraw(
+      const std::vector<PictureLayerImpl::Pair>& paired_layers);
+  void BuildRequiredForActivation(
+      const std::vector<PictureLayerImpl::Pair>& paired_layers);
 
   ScopedPtrVector<TilingSetRasterQueueRequired> tiling_set_queues_;
 

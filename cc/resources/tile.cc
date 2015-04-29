@@ -32,14 +32,11 @@ Tile::Tile(TileManager* tile_manager,
       flags_(flags),
       tiling_i_index_(-1),
       tiling_j_index_(-1),
-      is_shared_(false),
       required_for_activation_(false),
       required_for_draw_(false),
       id_(s_next_id_++),
       scheduled_priority_(0) {
   set_raster_source(raster_source);
-  for (int i = 0; i <= LAST_TREE; i++)
-    is_occluded_[i] = false;
 }
 
 Tile::~Tile() {
@@ -62,11 +59,11 @@ void Tile::AsValueWithPriorityInto(const TilePriority& priority,
   // TODO(vmpstr): Remove active and pending priority once tracing is using
   // combined priority or at least can support both.
   res->BeginDictionary("active_priority");
-  priority_[ACTIVE_TREE].AsValueInto(res);
+  priority_.AsValueInto(res);
   res->EndDictionary();
 
   res->BeginDictionary("pending_priority");
-  priority_[PENDING_TREE].AsValueInto(res);
+  priority_.AsValueInto(res);
   res->EndDictionary();
 
   res->BeginDictionary("combined_priority");
@@ -79,8 +76,7 @@ void Tile::AsValueWithPriorityInto(const TilePriority& priority,
 
   res->SetBoolean("has_resource", HasResource());
   res->SetBoolean("is_using_gpu_memory", HasResource() || HasRasterTask());
-  res->SetString("resolution",
-                 TileResolutionToString(combined_priority().resolution));
+  res->SetString("resolution", TileResolutionToString(priority_.resolution));
 
   res->SetInteger("scheduled_priority", scheduled_priority_);
 

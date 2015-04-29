@@ -451,7 +451,7 @@ TileManager::FreeTileResourcesWithLowerPriorityUntilUsageIsWithinLimit(
       break;
 
     Tile* tile = eviction_priority_queue->Top();
-    if (!other_priority.IsHigherPriorityThan(tile->combined_priority()))
+    if (!other_priority.IsHigherPriorityThan(tile->priority()))
       break;
 
     *usage -= MemoryUsage::FromTile(tile);
@@ -506,7 +506,7 @@ void TileManager::AssignGpuMemoryToTiles(
   scoped_ptr<EvictionTilePriorityQueue> eviction_priority_queue;
   for (; !raster_priority_queue->IsEmpty(); raster_priority_queue->Pop()) {
     Tile* tile = raster_priority_queue->Top();
-    TilePriority priority = tile->combined_priority();
+    TilePriority priority = tile->priority();
 
     if (TilePriorityViolatesMemoryPolicy(priority)) {
       TRACE_EVENT_INSTANT0(
@@ -698,9 +698,9 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(Tile* tile) {
 
   return make_scoped_refptr(new RasterTaskImpl(
       const_resource, tile->raster_source(), tile->content_rect(),
-      tile->contents_scale(), tile->combined_priority().resolution,
-      tile->layer_id(), static_cast<const void*>(tile),
-      tile->source_frame_number(), tile->use_picture_analysis(),
+      tile->contents_scale(), tile->priority().resolution, tile->layer_id(),
+      static_cast<const void*>(tile), tile->source_frame_number(),
+      tile->use_picture_analysis(),
       base::Bind(&TileManager::OnRasterTaskCompleted, base::Unretained(this),
                  tile->id(), base::Passed(&resource)),
       &decode_tasks));
@@ -805,6 +805,15 @@ bool TileManager::AreRequiredTilesReadyToDraw(
     if (!raster_priority_queue->Top()->IsReadyToDraw())
       return false;
   }
+
+#if DCHECK_IS_ON()
+  scoped_ptr<RasterTilePriorityQueue> all_queue(
+      client_->BuildRasterQueue(global_state_.tree_priority, type));
+  for (; !all_queue->IsEmpty(); all_queue->Pop()) {
+    auto* tile = all_queue->Top();
+    DCHECK_IMPLIES(tile->required_for_activation(), tile->IsReadyToDraw());
+  }
+#endif
   return true;
 }
 bool TileManager::IsReadyToActivate() const {

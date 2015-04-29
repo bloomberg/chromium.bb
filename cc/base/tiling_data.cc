@@ -418,6 +418,9 @@ bool TilingData::BaseDifferenceIterator::HasConsiderRect() const {
   return consider_left_ != -1;
 }
 
+TilingData::DifferenceIterator::DifferenceIterator() {
+}
+
 TilingData::DifferenceIterator::DifferenceIterator(
     const TilingData* tiling_data,
     const gfx::Rect& consider_rect,

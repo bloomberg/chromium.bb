@@ -31,7 +31,6 @@ class CC_EXPORT RasterTilePriorityQueueAll : public RasterTilePriorityQueue {
     void Pop(TreePriority tree_priority);
 
     WhichTree NextTileIteratorTree(TreePriority tree_priority) const;
-    void SkipTilesReturnedByTwin(TreePriority tree_priority);
 
     scoped_refptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
         const;
@@ -46,7 +45,6 @@ class CC_EXPORT RasterTilePriorityQueueAll : public RasterTilePriorityQueue {
    private:
     scoped_ptr<TilingSetRasterQueueAll> active_queue_;
     scoped_ptr<TilingSetRasterQueueAll> pending_queue_;
-    bool has_both_layers_;
 
     // Set of returned tiles (excluding the current one) for DCHECKing.
     std::set<const Tile*> returned_tiles_for_debug_;
