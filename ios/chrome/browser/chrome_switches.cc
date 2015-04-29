@@ -15,4 +15,7 @@ namespace switches {
 // Enables Open from Clipboard.
 const char kEnableIOSOpenFromClipboard[] = "enable-ios-open-from-clipboard";
 
+// Defines the value in MB of the memory wedge to insert at cold launch.
+const char kIOSMemoryWedgeSize[] = "ios-memory-wedge-size-mb";
+
 }  // namespace switches

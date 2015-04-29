@@ -156,6 +156,8 @@
         'browser/memory/memory_debugger_manager.mm',
         'browser/memory/memory_metrics.cc',
         'browser/memory/memory_metrics.h',
+        'browser/memory/memory_wedge.cc',
+        'browser/memory/memory_wedge.h',
         'browser/net/chrome_cookie_store_ios_client.h',
         'browser/net/chrome_cookie_store_ios_client.mm',
         'browser/net/image_fetcher.h',

@@ -15,6 +15,7 @@ include_rules = [
   "+components/sync_driver",
   "+components/translate/core",
   "+components/translate/ios",
+  "+components/variations",
   "+components/web_resource",
   "+components/webp_transcode",
   "+ios/net",

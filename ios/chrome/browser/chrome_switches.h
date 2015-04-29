@@ -11,6 +11,8 @@ namespace switches {
 
 extern const char kEnableIOSOpenFromClipboard[];
 
+extern const char kIOSMemoryWedgeSize[];
+
 }  // namespace switches
 
 #endif  // IOS_CHROME_BROWSER_CHROME_SWITCHES_H_
