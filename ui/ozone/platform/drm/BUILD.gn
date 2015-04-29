@@ -136,8 +136,8 @@ if (ozone_platform_dri || ozone_platform_drm) {
       "gpu/hardware_display_controller_unittest.cc",
       "gpu/hardware_display_plane_manager_unittest.cc",
       "gpu/screen_manager_unittest.cc",
-      "test/mock_drm_wrapper.cc",
-      "test/mock_drm_wrapper.h",
+      "test/mock_drm_device.cc",
+      "test/mock_drm_device.h",
     ]
 
     deps = [

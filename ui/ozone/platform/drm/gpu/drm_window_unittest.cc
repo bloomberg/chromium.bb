@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/ozone/platform/drm/drm_surface_factory.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
+#include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_surface.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
@@ -82,7 +83,7 @@ void DrmWindowTest::SetUp() {
   screen_manager_->ConfigureDisplayController(
       drm_, kDefaultCrtc, kDefaultConnector, gfx::Point(), kDefaultMode);
 
-  drm_device_manager_.reset(new ui::DrmDeviceManager(drm_));
+  drm_device_manager_.reset(new ui::DrmDeviceManager(nullptr));
 
   scoped_ptr<ui::DrmWindow> window_delegate(new ui::DrmWindow(
       kDefaultWidgetHandle, drm_device_manager_.get(), screen_manager_.get()));

@@ -83,13 +83,7 @@ void GbmSurfaceFactory::InitializeGpu(DrmDeviceManager* drm_device_manager,
 }
 
 intptr_t GbmSurfaceFactory::GetNativeDisplay() {
-#if defined(USE_MESA_PLATFORM_NULL)
   return EGL_DEFAULT_DISPLAY;
-#else
-  scoped_refptr<GbmDevice> gbm = GetGbmDevice(gfx::kNullAcceleratedWidget);
-  DCHECK(gbm);
-  return reinterpret_cast<intptr_t>(gbm->device());
-#endif
 }
 
 const int32* GbmSurfaceFactory::GetEGLSurfaceProperties(

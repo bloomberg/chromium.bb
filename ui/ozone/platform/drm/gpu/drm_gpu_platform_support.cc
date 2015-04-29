@@ -10,6 +10,7 @@
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
@@ -286,11 +287,11 @@ void DrmGpuPlatformSupport::OnRelinquishDisplayControl() {
 void DrmGpuPlatformSupport::OnAddGraphicsDevice(
     const base::FilePath& path,
     const base::FileDescriptor& fd) {
-  ndd_->AddGraphicsDevice(path, fd);
+  drm_device_manager_->AddDrmDevice(path, fd);
 }
 
 void DrmGpuPlatformSupport::OnRemoveGraphicsDevice(const base::FilePath& path) {
-  ndd_->RemoveGraphicsDevice(path);
+  drm_device_manager_->RemoveDrmDevice(path);
 }
 
 void DrmGpuPlatformSupport::RelinquishGpuResources(
@@ -312,7 +313,7 @@ void DrmGpuPlatformSupport::OnSetHDCPState(int64_t display_id,
 
 void DrmGpuPlatformSupport::SetIOTaskRunner(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner) {
-  ndd_->InitializeIOTaskRunner(io_task_runner);
+  drm_device_manager_->InitializeIOTaskRunner(io_task_runner);
 }
 
 IPC::MessageFilter* DrmGpuPlatformSupport::GetMessageFilter() {

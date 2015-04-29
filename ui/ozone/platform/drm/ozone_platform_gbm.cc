@@ -143,10 +143,9 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(new DrmNativeDisplayDelegate(
         gpu_platform_support_host_.get(), device_manager_.get(),
-        display_manager_.get(), primary_graphics_card_path_));
+        display_manager_.get(), GetPrimaryDisplayCardPath()));
   }
   void InitializeUI() override {
-    primary_graphics_card_path_ = GetPrimaryDisplayCardPath();
     display_manager_.reset(new DisplayManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
@@ -175,26 +174,17 @@ class OzonePlatformGbm : public OzonePlatform {
     gpu_lock_.reset(new GpuLock());
 #endif
     gl_api_loader_.reset(new GlApiLoader());
-    // Async page flips are supported only on surfaceless mode.
-    gbm_ = new GbmDevice(GetPrimaryDisplayCardPath());
-    if (!gbm_->Initialize())
-      LOG(FATAL) << "Failed to initialize primary DRM device";
-
-    drm_device_manager_.reset(new DrmDeviceManager(gbm_));
+    drm_device_manager_.reset(new DrmDeviceManager(
+        scoped_ptr<DrmDeviceGenerator>(new GbmDeviceGenerator())));
     buffer_generator_.reset(new GbmBufferGenerator());
     screen_manager_.reset(new ScreenManager(buffer_generator_.get()));
-    // This makes sure that simple targets that do not handle display
-    // configuration can still use the primary display.
-    ForceInitializationOfPrimaryDisplay(gbm_, screen_manager_.get());
-
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
     surface_factory_ozone_->InitializeGpu(drm_device_manager_.get(),
                                           screen_manager_.get());
     scoped_ptr<DrmGpuDisplayManager> ndd(new DrmGpuDisplayManager(
-        screen_manager_.get(), gbm_,
-        scoped_ptr<DrmDeviceGenerator>(new GbmDeviceGenerator())));
+        screen_manager_.get(), drm_device_manager_.get()));
     gpu_platform_support_.reset(new DrmGpuPlatformSupport(
         drm_device_manager_.get(), screen_manager_.get(), ndd.Pass()));
   }
@@ -207,14 +197,12 @@ class OzonePlatformGbm : public OzonePlatform {
   // Objects in the GPU process.
   scoped_ptr<GpuLock> gpu_lock_;
   scoped_ptr<GlApiLoader> gl_api_loader_;
-  scoped_refptr<GbmDevice> gbm_;
   scoped_ptr<DrmDeviceManager> drm_device_manager_;
   scoped_ptr<GbmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DrmGpuPlatformSupport> gpu_platform_support_;
 
   // Objects in the Browser process.
-  base::FilePath primary_graphics_card_path_;
   scoped_ptr<DeviceManager> device_manager_;
   scoped_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<DrmWindowHostManager> window_manager_;

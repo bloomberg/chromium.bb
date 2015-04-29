@@ -13,7 +13,7 @@
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/ozone/common/display_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
-#include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
+#include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_display_mode.h"
 #include "ui/ozone/platform/drm/gpu/drm_display_snapshot.h"
 #include "ui/ozone/platform/drm/gpu/drm_util.h"
@@ -77,18 +77,6 @@ class DisplaySnapshotComparator {
   uint32_t connector_;
 };
 
-class FindByDevicePath {
- public:
-  explicit FindByDevicePath(const base::FilePath& path) : path_(path) {}
-
-  bool operator()(const scoped_refptr<DrmDevice>& device) {
-    return device->device_path() == path_;
-  }
-
- private:
-  base::FilePath path_;
-};
-
 std::string GetEnumNameForProperty(drmModeConnector* connector,
                                    drmModePropertyRes* property) {
   for (int prop_idx = 0; prop_idx < connector->count_props; ++prop_idx) {
@@ -108,29 +96,12 @@ std::string GetEnumNameForProperty(drmModeConnector* connector,
 
 }  // namespace
 
-DrmGpuDisplayManager::DrmGpuDisplayManager(
-    ScreenManager* screen_manager,
-    const scoped_refptr<DrmDevice>& primary_device,
-    scoped_ptr<DrmDeviceGenerator> drm_device_generator)
-    : screen_manager_(screen_manager),
-      drm_device_generator_(drm_device_generator.Pass()) {
-  devices_.push_back(primary_device);
+DrmGpuDisplayManager::DrmGpuDisplayManager(ScreenManager* screen_manager,
+                                           DrmDeviceManager* drm_device_manager)
+    : screen_manager_(screen_manager), drm_device_manager_(drm_device_manager) {
 }
 
 DrmGpuDisplayManager::~DrmGpuDisplayManager() {
-}
-
-void DrmGpuDisplayManager::InitializeIOTaskRunner(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  DCHECK(!io_task_runner_);
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  // If not surfaceless, there isn't support for async page flips.
-  if (!cmd->HasSwitch(switches::kOzoneUseSurfaceless))
-    return;
-
-  io_task_runner_ = task_runner;
-  for (const auto& device : devices_)
-    device->InitializeTaskRunner(io_task_runner_);
 }
 
 std::vector<DisplaySnapshot_Params> DrmGpuDisplayManager::GetDisplays() {
@@ -200,7 +171,8 @@ bool DrmGpuDisplayManager::DisableDisplay(int64_t id) {
 }
 
 bool DrmGpuDisplayManager::TakeDisplayControl() {
-  for (const auto& drm : devices_) {
+  const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
+  for (const auto& drm : devices) {
     if (!drm->SetMaster()) {
       LOG(ERROR) << "Failed to take control of the display";
       return false;
@@ -210,47 +182,14 @@ bool DrmGpuDisplayManager::TakeDisplayControl() {
 }
 
 bool DrmGpuDisplayManager::RelinquishDisplayControl() {
-  for (const auto& drm : devices_) {
+  const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
+  for (const auto& drm : devices) {
     if (!drm->DropMaster()) {
       LOG(ERROR) << "Failed to relinquish control of the display";
       return false;
     }
   }
   return true;
-}
-
-void DrmGpuDisplayManager::AddGraphicsDevice(const base::FilePath& path,
-                                             const base::FileDescriptor& fd) {
-  base::File file(fd.fd);
-  auto it =
-      std::find_if(devices_.begin(), devices_.end(), FindByDevicePath(path));
-  if (it != devices_.end()) {
-    VLOG(2) << "Got request to add existing device '" << path.value() << "'";
-    return;
-  }
-
-  scoped_refptr<DrmDevice> device =
-      drm_device_generator_->CreateDevice(path, file.Pass());
-  if (!device) {
-    VLOG(2) << "Could not initialize DRM device for '" << path.value() << "'";
-    return;
-  }
-
-  devices_.push_back(device);
-  if (io_task_runner_)
-    device->InitializeTaskRunner(io_task_runner_);
-}
-
-void DrmGpuDisplayManager::RemoveGraphicsDevice(const base::FilePath& path) {
-  auto it =
-      std::find_if(devices_.begin(), devices_.end(), FindByDevicePath(path));
-  if (it == devices_.end()) {
-    VLOG(2) << "Got request to remove non-existent device '" << path.value()
-            << "'";
-    return;
-  }
-
-  devices_.erase(it);
 }
 
 DrmDisplaySnapshot* DrmGpuDisplayManager::FindDisplaySnapshot(int64_t id) {
@@ -278,7 +217,8 @@ void DrmGpuDisplayManager::RefreshDisplayList() {
   ScopedVector<DrmDisplaySnapshot> old_displays(cached_displays_.Pass());
   ScopedVector<const DisplayMode> old_modes(cached_modes_.Pass());
 
-  for (const auto& drm : devices_) {
+  const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
+  for (const auto& drm : devices) {
     ScopedVector<HardwareDisplayControllerInfo> displays =
         GetAvailableDisplayControllerInfos(drm->get_fd());
     for (size_t i = 0; i < displays.size(); ++i) {

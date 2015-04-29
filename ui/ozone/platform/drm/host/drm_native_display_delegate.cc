@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
 
 #include <stdio.h>
+#include <xf86drm.h>
 
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
@@ -33,21 +34,42 @@ const char* kDisplayActionString[] = {
     "CHANGE",
 };
 
+bool Authenticate(int fd) {
+  drm_magic_t magic = 0;
+  // We need to make sure the DRM device has enough privilege. Use the DRM
+  // authentication logic to figure out if the device has enough permissions.
+  return !drmGetMagic(fd, &magic) && !drmAuthMagic(fd, magic);
+}
+
 base::File OpenDrmDevice(const base::FilePath& path) {
-  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
-                            base::File::FLAG_WRITE);
+  base::File file;
+  bool print_warning = true;
+  while (true) {
+    file = base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                base::File::FLAG_WRITE);
 
-  base::File::Info info;
-  file.GetInfo(&info);
+    base::File::Info info;
+    file.GetInfo(&info);
 
-  CHECK(!info.is_directory);
-  CHECK(path.DirName() == base::FilePath("/dev/dri"));
+    CHECK(!info.is_directory);
+    CHECK(path.DirName() == base::FilePath("/dev/dri"));
 
-  if (!file.IsValid()) {
-    LOG(ERROR) << "Failed to open " << path.value() << ": "
-               << base::File::ErrorToString(file.error_details());
+    if (!file.IsValid()) {
+      LOG(ERROR) << "Failed to open " << path.value() << ": "
+                 << base::File::ErrorToString(file.error_details());
+      return file.Pass();
+    }
+
+    if (Authenticate(file.GetPlatformFile()))
+      break;
+
+    LOG_IF(WARNING, print_warning) << "Failed to authenticate " << path.value();
+
+    print_warning = false;
+    usleep(100000);
   }
 
+  VLOG(1) << "Succeeded authenticating " << path.value();
   return file.Pass();
 }
 
@@ -323,6 +345,20 @@ void DrmNativeDisplayDelegate::OnChannelEstablished(
     const base::Callback<void(IPC::Message*)>& send_callback) {
   drm_devices_.clear();
   drm_devices_.insert(primary_graphics_card_path_);
+  {
+    // First device needs to be treated specially. We need to open this
+    // synchronously since the GPU process will need it to initialize the
+    // graphics state.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::File file = OpenDrmDevice(primary_graphics_card_path_);
+    if (!file.IsValid()) {
+      LOG(FATAL) << "Failed to open primary graphics card";
+      return;
+    }
+    proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
+        primary_graphics_card_path_, base::FileDescriptor(file.Pass())));
+  }
+
   device_manager_->ScanDevices(this);
   FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
                     OnConfigurationChanged());

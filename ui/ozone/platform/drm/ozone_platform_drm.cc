@@ -49,8 +49,7 @@ namespace {
 class OzonePlatformDrm : public OzonePlatform {
  public:
   OzonePlatformDrm()
-      : drm_(new DrmDevice(GetPrimaryDisplayCardPath())),
-        buffer_generator_(new DrmBufferGenerator()),
+      : buffer_generator_(new DrmBufferGenerator()),
         screen_manager_(new ScreenManager(buffer_generator_.get())),
         device_manager_(CreateDeviceManager()) {}
   ~OzonePlatformDrm() override {}
@@ -87,26 +86,20 @@ class OzonePlatformDrm : public OzonePlatform {
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(new DrmNativeDisplayDelegate(
         gpu_platform_support_host_.get(), device_manager_.get(),
-        display_manager_.get(), drm_->device_path()));
+        display_manager_.get(), GetPrimaryDisplayCardPath()));
   }
   void InitializeUI() override {
 #if defined(OS_CHROMEOS)
     gpu_lock_.reset(new GpuLock());
 #endif
-    if (!drm_->Initialize())
-      LOG(FATAL) << "Failed to initialize primary DRM device";
-
-    // This makes sure that simple targets that do not handle display
-    // configuration can still use the primary display.
-    ForceInitializationOfPrimaryDisplay(drm_, screen_manager_.get());
-    drm_device_manager_.reset(new DrmDeviceManager(drm_));
+    drm_device_manager_.reset(new DrmDeviceManager(
+        scoped_ptr<DrmDeviceGenerator>(new DrmDeviceGenerator())));
     display_manager_.reset(new DisplayManager());
     window_manager_.reset(new DrmWindowHostManager());
     cursor_.reset(new DrmCursor(window_manager_.get()));
     surface_factory_ozone_.reset(new DrmSurfaceFactory(screen_manager_.get()));
     scoped_ptr<DrmGpuDisplayManager> ndd(new DrmGpuDisplayManager(
-        screen_manager_.get(), drm_,
-        scoped_ptr<DrmDeviceGenerator>(new DrmDeviceGenerator())));
+        screen_manager_.get(), drm_device_manager_.get()));
     gpu_platform_support_.reset(new DrmGpuPlatformSupport(
         drm_device_manager_.get(), screen_manager_.get(), ndd.Pass()));
     gpu_platform_support_host_.reset(
@@ -133,7 +126,6 @@ class OzonePlatformDrm : public OzonePlatform {
  private:
   // Objects in the "GPU" process.
   scoped_ptr<GpuLock> gpu_lock_;
-  scoped_refptr<DrmDevice> drm_;
   scoped_ptr<DrmDeviceManager> drm_device_manager_;
   scoped_ptr<DrmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;

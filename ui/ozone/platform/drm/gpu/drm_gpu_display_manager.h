@@ -21,7 +21,7 @@ namespace ui {
 class DeviceManager;
 class DisplayMode;
 class DrmDevice;
-class DrmDeviceGenerator;
+class DrmDeviceManager;
 class DrmDisplaySnapshot;
 class DrmDisplayMode;
 class ScreenManager;
@@ -29,8 +29,7 @@ class ScreenManager;
 class DrmGpuDisplayManager {
  public:
   DrmGpuDisplayManager(ScreenManager* screen_manager,
-                       const scoped_refptr<DrmDevice>& primary_device,
-                       scoped_ptr<DrmDeviceGenerator> device_generator);
+                       DrmDeviceManager* drm_device_manager);
   ~DrmGpuDisplayManager();
 
   void InitializeIOTaskRunner(
@@ -75,7 +74,7 @@ class DrmGpuDisplayManager {
       const std::vector<DrmDisplaySnapshot*>& old_displays) const;
 
   ScreenManager* screen_manager_;  // Not owned.
-  scoped_ptr<DrmDeviceGenerator> drm_device_generator_;
+  DrmDeviceManager* drm_device_manager_;  // Not owned.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   std::vector<scoped_refptr<DrmDevice>> devices_;
   // Modes can be shared between different displays, so we need to keep track
