@@ -72,7 +72,7 @@ class TestDelegateExecuteModule
     return ParentClass::RegisterServer(FALSE);
   }
 
-  virtual HRESULT AddCommonRGSReplacements(IRegistrarBase* registrar) throw() {
+  HRESULT AddCommonRGSReplacements(IRegistrarBase* registrar) throw() override {
     AtlTrace(L"In %hs\n", __FUNCTION__);
     HRESULT hr = ParentClass::AddCommonRGSReplacements(registrar);
     if (FAILED(hr))

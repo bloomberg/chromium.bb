@@ -11,7 +11,7 @@ class ChromeAppViewFactory
     : public mswr::RuntimeClass<winapp::Core::IFrameworkViewSource> {
  public:
   ChromeAppViewFactory(winapp::Core::ICoreApplication* icore_app);
-  IFACEMETHOD(CreateView)(winapp::Core::IFrameworkView** view);
+  IFACEMETHOD(CreateView)(winapp::Core::IFrameworkView** view) override;
 };
 
 #endif  // WIN8_METRO_DRIVER_METRO_DRIVER_H_

@@ -62,11 +62,11 @@ class ChromeAppViewAsh
   ~ChromeAppViewAsh() override;
 
   // IViewProvider overrides.
-  IFACEMETHOD(Initialize)(winapp::Core::ICoreApplicationView* view);
-  IFACEMETHOD(SetWindow)(winui::Core::ICoreWindow* window);
-  IFACEMETHOD(Load)(HSTRING entryPoint);
-  IFACEMETHOD(Run)();
-  IFACEMETHOD(Uninitialize)();
+  IFACEMETHOD(Initialize)(winapp::Core::ICoreApplicationView* view) override;
+  IFACEMETHOD(SetWindow)(winui::Core::ICoreWindow* window) override;
+  IFACEMETHOD(Load)(HSTRING entryPoint) override;
+  IFACEMETHOD(Run)() override;
+  IFACEMETHOD(Uninitialize)() override;
 
   // Helper function to unsnap the chrome metro app if it is snapped.
   // Returns S_OK on success.

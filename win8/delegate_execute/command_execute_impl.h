@@ -60,26 +60,26 @@ class ATL_NO_VTABLE DECLSPEC_UUID("071BB5F2-85A4-424F-BFE7-5F1609BE4C2C")
 
  public:
   // IExecuteCommand
-  STDMETHOD(SetKeyState)(DWORD key_state);
-  STDMETHOD(SetParameters)(LPCWSTR params);
-  STDMETHOD(SetPosition)(POINT pt);
-  STDMETHOD(SetShowWindow)(int show);
-  STDMETHOD(SetNoShowUI)(BOOL no_show_ui);
-  STDMETHOD(SetDirectory)(LPCWSTR directory);
-  STDMETHOD(Execute)(void);
+  STDMETHOD(SetKeyState)(DWORD key_state) override;
+  STDMETHOD(SetParameters)(LPCWSTR params) override;
+  STDMETHOD(SetPosition)(POINT pt) override;
+  STDMETHOD(SetShowWindow)(int show) override;
+  STDMETHOD(SetNoShowUI)(BOOL no_show_ui) override;
+  STDMETHOD(SetDirectory)(LPCWSTR directory) override;
+  STDMETHOD(Execute)(void)override;
 
   // IInitializeCommand
-  STDMETHOD(Initialize)(LPCWSTR name, IPropertyBag* bag);
+  STDMETHOD(Initialize)(LPCWSTR name, IPropertyBag * bag) override;
 
   // IObjectWithSelection
-  STDMETHOD(SetSelection)(IShellItemArray* item_array);
-  STDMETHOD(GetSelection)(REFIID riid, void** selection);
+  STDMETHOD(SetSelection)(IShellItemArray * item_array) override;
+  STDMETHOD(GetSelection)(REFIID riid, void** selection) override;
 
   // IExecuteCommandApplicationHostEnvironment
-  STDMETHOD(GetValue)(enum AHE_TYPE* pahe);
+  STDMETHOD(GetValue)(enum AHE_TYPE * pahe) override;
 
   // IForegroundTransfer
-  STDMETHOD(AllowForegroundTransfer)(void* reserved);
+  STDMETHOD(AllowForegroundTransfer)(void* reserved) override;
 
   static bool FindChromeExe(base::FilePath* chrome_exe);
 

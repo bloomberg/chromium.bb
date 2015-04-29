@@ -118,7 +118,7 @@ class UIAutomationClient::Context::EventHandler
 
   // IUIAutomationEventHandler methods.
   STDMETHOD(HandleAutomationEvent)(IUIAutomationElement* sender,
-                                   EVENTID eventId);
+                                   EVENTID eventId) override;
 
  private:
   // The task runner for the UI automation client context.
