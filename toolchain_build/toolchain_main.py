@@ -8,6 +8,7 @@
 import logging
 import optparse
 import os
+import subprocess
 import sys
 import textwrap
 
@@ -49,6 +50,9 @@ def PrintAnnotatorURL(cloud_item):
       log_url = cloud_item.log_url
       pynacl.log_tools.WriteAnnotatorLine('@@@STEP_LINK@log@%s@@@' % log_url)
 
+
+class BuildError(Exception):
+    pass
 
 class PackageBuilder(object):
   """Module to build a setup of packages."""
@@ -159,8 +163,13 @@ class PackageBuilder(object):
         log_file=self._options.log_file,
         quiet=self._options.quiet,
         no_annotator=self._options.no_annotator)
-    self.BuildAll()
-    self.OutputPackagesInformation()
+    try:
+      self.BuildAll()
+      self.OutputPackagesInformation()
+    except BuildError as e:
+      print e
+      return 1
+    return 0
 
   def GetOutputDir(self, package, use_subdir):
     # The output dir of source packages is in the source directory, and can be
@@ -186,10 +195,10 @@ class PackageBuilder(object):
 
     # Validate the package description.
     if 'type' not in package_info:
-      raise Exception('package %s does not have a type' % package)
+      raise BuildError('package %s does not have a type' % package)
     type_text = package_info['type']
     if type_text not in ('source', 'build', 'build_noncanonical', 'work'):
-      raise Exception('package %s has unrecognized type: %s' %
+      raise BuildError('package %s has unrecognized type: %s' %
                       (package, type_text))
     is_source_target = type_text == 'source'
     is_build_target = type_text in ('build', 'build_noncanonical')
@@ -199,7 +208,7 @@ class PackageBuilder(object):
           pynacl.platform.PlatformTriple())
 
     if 'commands' not in package_info:
-      raise Exception('package %s does not have any commands' % package)
+      raise BuildError('package %s does not have any commands' % package)
 
     # Source targets are the only ones to run when doing sync-only.
     if not is_source_target and self._options.sync_sources_only:
@@ -228,7 +237,7 @@ class PackageBuilder(object):
     if 'inputs' in package_info:
       for key, value in package_info['inputs'].iteritems():
         if key in dependencies:
-          raise Exception('key "%s" found in both dependencies and inputs of '
+          raise BuildError('key "%s" found in both dependencies and inputs of '
                           'package "%s"' % (key, package))
         inputs[key] = value
     elif type_text != 'source':
@@ -265,7 +274,8 @@ class PackageBuilder(object):
         buildbot=self._options.buildbot)
 
     # Do it.
-    self._build_once.Run(
+    try:
+      self._build_once.Run(
         package, inputs, output,
         commands=commands,
         cmd_options=cmd_options,
@@ -274,6 +284,9 @@ class PackageBuilder(object):
         signature_file=self._signature_file,
         subdir=output_subdir,
         bskey_extra = build_signature_key_extra)
+    except subprocess.CalledProcessError as e:
+      raise BuildError(
+        'Error building %s: %s' % (package, str(e)))
 
     if not is_source_target and self._options.install:
       install = pynacl.platform.CygPath(self._options.install)

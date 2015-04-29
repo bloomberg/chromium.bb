@@ -1199,4 +1199,4 @@ if __name__ == '__main__':
   tb = toolchain_main.PackageBuilder(packages,
                                      upload_packages,
                                      leftover_args)
-  tb.Main()
+  sys.exit(tb.Main())

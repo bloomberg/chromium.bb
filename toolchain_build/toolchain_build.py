@@ -1182,4 +1182,4 @@ if __name__ == '__main__':
   tb = toolchain_main.PackageBuilder(PACKAGES, PACKAGE_TARGETS, sys.argv[1:])
   # TODO(mcgrathr): The bot ought to run some native_client tests
   # using the new toolchain, like the old x86 toolchain bots do.
-  tb.Main()
+  sys.exit(tb.Main())
