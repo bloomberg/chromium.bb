@@ -55,6 +55,7 @@
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
@@ -590,8 +591,10 @@ using content::WebContents;
 
 // Called right after our window became the main window.
 - (void)windowDidBecomeMain:(NSNotification*)notification {
-  BrowserList::SetLastActive(browser_.get());
-  [self saveWindowPositionIfNeeded];
+  if (chrome::GetLastActiveBrowser() != browser_) {
+    BrowserList::SetLastActive(browser_.get());
+    [self saveWindowPositionIfNeeded];
+  }
 
   [[[self window] contentView] cr_recursivelyInvokeBlock:^(id view) {
       if ([view conformsToProtocol:@protocol(ThemedWindowDrawing)])
