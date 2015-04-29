@@ -41,8 +41,9 @@
         on-tap="{{onBack}}">
     </gaia-core-icon-button>
     <core-animated-pages id="animatedPages" transitions="slide-from-right"
+        valueattr="id"
         on-core-animated-pages-transition-end="{{onTransitionEnd}}" flex>
-      <section flex>
+      <section flex id="emailSection">
         <gaia-card>
           <div class="header" flex vertical layout end-justified start>
             <h1 class="welcome-message" i18n-content="offlineLoginWelcome"></h1>
@@ -62,7 +63,7 @@
           </div>
         </gaia-card>
       </section>
-      <section flex>
+      <section flex id="passwordSection">
         <gaia-card>
           <gaia-header class="header" id="passwordHeader">
           </gaia-header>

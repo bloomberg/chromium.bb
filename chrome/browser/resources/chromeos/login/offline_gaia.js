@@ -12,7 +12,7 @@ Polymer('offline-gaia', (function() {
     },
 
     focus: function() {
-      if (this.$.animatedPages.selected == 0)
+      if (this.$.animatedPages.selected == 'emailSection')
         this.$.emailInput.focus();
       else
         this.$.passwordInput.focus();
@@ -61,6 +61,11 @@ Polymer('offline-gaia', (function() {
     },
 
     setEmail: function(email) {
+      // Reorder elements for proper animation for rtl languages.
+      if (document.querySelector('html[dir=rtl]')) {
+        this.$.emailSection.parentNode.insertBefore(this.$.passwordSection,
+                                                    this.$.emailSection);
+      }
       if (email) {
         if (this.emailDomain)
           email = email.replace(this.emailDomain, '');
@@ -81,7 +86,7 @@ Polymer('offline-gaia', (function() {
       this.$.passwordInput.setValid(true);
       this.$.emailInput.setValid(true);
       this.$.backButton.hidden = true;
-      this.$.animatedPages.selected = 0;
+      this.$.animatedPages.selected = 'emailSection';
     },
 
     switchToPasswordCard(email) {
@@ -94,7 +99,7 @@ Polymer('offline-gaia', (function() {
       }
       this.$.passwordHeader.email = email;
       this.$.backButton.hidden = false;
-      this.$.animatedPages.selected = 1;
+      this.$.animatedPages.selected = 'passwordSection';
     }
   };
 })());
