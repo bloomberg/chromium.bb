@@ -2,36 +2,40 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file defines three targets that we are using to
-# track the progress of the GYP->GN migration:
+# This file defines five targets that we are using to track the progress of the
+# GYP->GN migration:
 #
-# If you run 'ninja gn_build gyp_remaining gyp_groups', and then
-# run 'ninja', the second ninja invocation should do nothing. This
-# indicates that everything built by a ninja build is in fact
-# listed in one of these targets.
+# 'both_gn_and_gyp' lists what GN is currently capable of building and should
+# match the 'both_gn_and_gyp' target in //BUILD.gn.
 #
-# 'gn_all' lists what GN is currently capable of building and should
-#          match the 'gn_all' target in //BUILD.gn.
+# 'gyp_all' Should include everything built when building "all"; i.e., if you
+# type 'ninja gyp_all' and then 'ninja all', the second build should do
+# nothing. 'gyp_all' should just depend on the other four targets.
+#
+# 'gyp_only' lists any targets that are not meant to be ported over to the GN
+# build.
 #
 # 'gyp_remaining' lists all of the targets that still need to be converted,
-#          i.e., all of the other (non-empty) targets that a GYP build
-#          will build.
+# i.e., all of the other (non-empty) targets that a GYP build will build.
 #
-# 'gyp_groups' lists any empty (group) targets in the GYP build that
-#          are not picked up by gn_all or gyp_remaining; this is a
-#          separate target to ensure that when we build it, only
-#          stamp targets file are we don't accidentally pick up something
-#          not listed in one of the other two targets.
-#
-# TODO(GYP), TODO(dpranke) Add a build step to the bot that enforces the
-#          above contracts.
+# TODO(GYP): crbug.com/481694. Add a build step to the bot that enforces the
+# above contracts.
 
 {
   'targets': [
     {
-      # This target should mirror the structure of //:gn_all
-      # as closely as possible, for ease of comparison.
-      'target_name': 'gn_all',
+      'target_name': 'gyp_all',
+      'type': 'none',
+      'dependencies': [
+        'both_gn_and_gyp',
+        'gyp_only',
+        'gyp_remaining',
+      ]
+    },
+    {
+      # This target should mirror the structure of //:both_gn_and_gyp
+      # in src/BUILD.gn as closely as possible, for ease of comparison.
+      'target_name': 'both_gn_and_gyp',
       'type': 'none',
       'dependencies': [
         '../base/base.gyp:base_i18n_perftests',
@@ -663,39 +667,6 @@
             # TODO(GYP): All of these targets need to be ported over.
             '../components/components.gyp:policy_win64',
           ]
-        }],
-      ],
-    },
-    {
-      # This target, when built, should cause no actual work
-      # to be done, just update a bunch of stamp files.
-      'target_name': 'gyp_groups',
-      'type': 'none',
-      'dependencies': [
-        'All',
-        'blink_tests',
-        'chromium_builder_asan',
-        'chromium_builder_chromedriver',
-        'chromium_builder_perf',
-        'chromium_builder_tests',
-        'chromium_builder_webrtc',
-        'chromium_gpu_builder',
-        'chromium_gpu_debug_builder',
-      ],
-      'conditions': [
-        ['use_aura==1', {
-          'dependencies': [
-            'aura_builder',
-          ]
-        }],
-        ['OS=="win"', {
-          'dependencies': [
-            'chromium_builder',
-            'chromium_builder_dbg_drmemory_win',
-            'chromium_builder_nacl_sdk',
-            'chromium_builder_lkgr_drmemory_win',
-            'chromium_builder_dbg_tsan_win',
-          ],
         }],
       ],
     },

@@ -24,18 +24,38 @@ declare_args() {
   root_extra_deps = []
 }
 
-# The "gn_all" target should list every root target (target that
-# nothing else depends on) built by both GN and GYP. One should
-# be able to run 'ninja gn_all gn_only gn_groups' and then run
-# 'ninja' a second time and have the second ninja invocation do nothing.
+# This file defines the following three main targets:
 #
-# In addition, the "gn_all" target serves to pull in all of the other
-# build files needed for the build.
+# "both_gn_and_gyp" should list every root target (target that nothing else
+# depends on) built by GN that is also built in the GYP build.
 #
-# TODO(GYP): make sure that the above is true and there are scripts run
-# on the bots that enforce this.
+# "gn_all" should (transitively) cause everything to be built; if you run
+# 'ninja gn_all' and then 'ninja all', the second build should do no work.
+#
+# "gn_only" should list every root target that is *not* intended to be built
+# in a GYP build. Because GN has different rules for deciding what an 'all'
+# build is, this may end up including targets that are actually defined in a
+# GYP build but not dependencies of GYP's "all" (and so not actually built).
+#
+# TODO(GYP): crbug.com/481694. Make sure that the above is true and there are
+# scripts run on the bots that enforce this. Once the GYP migration is over,
+# we can collapse all of these targets as desired.
 
 group("gn_all") {
+  testonly = true
+
+  deps = [
+    ":both_gn_and_gyp",
+    ":gn_only",
+  ]
+}
+
+# The "both_gn_and_gyp" target should reflect every target that is built
+# in both the GN and GYP builds, and ideally it should match the
+# "both_gn_and_gyp" target in build/gn_migration.gypi line-for-line.
+#
+# TODO(GYP): Add build steps that check and enforce this on the bots.
+group("both_gn_and_gyp") {
   testonly = true
 
   deps = [
@@ -62,7 +82,6 @@ group("gn_all") {
     "//ipc:ipc_tests",
     "//ipc/mojo:ipc_mojo_unittests",
     "//jingle:jingle_unittests",
-    "//mandoline:mandoline_all",
     "//media:media_unittests",
     "//media/cast:cast_unittests",
     "//mojo",
@@ -553,7 +572,9 @@ group("gn_all") {
 group("gn_only") {
   testonly = true
 
-  deps = []
+  deps = [
+    "//mandoline:mandoline_all",
+  ]
 
   if (!is_android && !is_ios) {
     deps += [ "//components/proximity_auth:proximity_auth_unittests" ]
