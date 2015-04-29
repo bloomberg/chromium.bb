@@ -227,9 +227,9 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kCertRevocationCheckingRequiredLocalAnchors,
       default_config.rev_checking_required_local_anchors);
-  registry->RegisterStringPref(prefs::kSSLVersionMin, "");
-  registry->RegisterStringPref(prefs::kSSLVersionMax, "");
-  registry->RegisterStringPref(prefs::kSSLVersionFallbackMin, "");
+  registry->RegisterStringPref(prefs::kSSLVersionMin, std::string());
+  registry->RegisterStringPref(prefs::kSSLVersionMax, std::string());
+  registry->RegisterStringPref(prefs::kSSLVersionFallbackMin, std::string());
   registry->RegisterBooleanPref(prefs::kDisableSSLRecordSplitting,
                                 !default_config.false_start_enabled);
   registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
@@ -283,11 +283,6 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
       SSLProtocolVersionFromString(version_fallback_min_str);
   if (version_min) {
     config->version_min = version_min;
-  } else {
-    const std::string group = base::FieldTrialList::FindFullName("SSLv3");
-    if (group == "Enabled") {
-      config->version_min = net::SSL_PROTOCOL_VERSION_SSL3;
-    }
   }
   if (version_max) {
     uint16 supported_version_max = config->version_max;
