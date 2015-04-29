@@ -939,6 +939,12 @@ void FrameView::layout()
 #endif
 
     Document* document = m_frame->document();
+
+    // If the layout view was marked as needing layout after we added items in the subtree roots we need
+    // to clear the roots and do the layout from the layoutView.
+    if (layoutView()->needsLayout())
+        clearLayoutSubtreeRootsAndMarkContainingBlocks();
+
     bool inSubtreeLayout = isSubtreeLayout();
 
     // FIXME: The notion of a single root for layout is no longer applicable. Remove or update this code. crbug.com/460596
