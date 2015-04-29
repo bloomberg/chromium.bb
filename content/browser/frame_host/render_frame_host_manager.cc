@@ -1534,6 +1534,9 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
         InitRenderView(render_view_host, opener_route_id, proxy_routing_id,
                        !!(flags & CREATE_RF_FOR_MAIN_FRAME_NAVIGATION));
     if (success) {
+      // Remember that InitRenderView also created the RenderFrameProxy.
+      if (swapped_out)
+        proxy->set_render_frame_proxy_created(true);
       if (frame_tree_node_->IsMainFrame()) {
         // Don't show the main frame's view until we get a DidNavigate from it.
         // Only the RenderViewHost for the top-level RenderFrameHost has a
@@ -1569,11 +1572,13 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
   CHECK_NE(instance, render_frame_host_->GetSiteInstance());
 
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
-  if (proxy)
+  if (proxy && proxy->is_render_frame_proxy_live())
     return proxy->GetRoutingID();
 
-  proxy = new RenderFrameProxyHost(instance, frame_tree_node_);
-  proxy_hosts_[instance->GetId()] = proxy;
+  if (!proxy) {
+    proxy = new RenderFrameProxyHost(instance, frame_tree_node_);
+    proxy_hosts_[instance->GetId()] = proxy;
+  }
   proxy->InitRenderFrameProxy();
   return proxy->GetRoutingID();
 }
@@ -1600,6 +1605,7 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
   InitRenderView(render_view_host, opener_route_id, proxy->GetRoutingID(),
                  source->IsMainFrame());
+  proxy->set_render_frame_proxy_created(true);
 }
 
 bool RenderFrameHostManager::InitRenderView(

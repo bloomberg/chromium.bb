@@ -796,6 +796,84 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       DepictFrameTree(root));
 }
 
+// Verify that killing a cross-site frame's process B and then navigating a
+// frame to B correctly recreates all proxies in B.
+//
+//      1           A                    A          A
+//    / | \       / | \                / | \      / | \  .
+//   2  3  4 ->  B  A  A -> Kill B -> B* A  A -> B* B  A
+//
+// After the last step, the test sends a postMessage from node 3 to node 4,
+// verifying that a proxy for node 4 has been recreated in process B.  This
+// verifies the fix for https://crbug.com/478892.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigatingToKilledProcessRestoresAllProxies) {
+  // Navigate to a page with three frames: one cross-site and two same-site.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_three_frames.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  TestNavigationObserver observer(shell()->web_contents());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   |--Site A ------- proxies for B\n"
+      "   +--Site A ------- proxies for B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  // Kill the first subframe's b.com renderer.
+  RenderProcessHost* child_process =
+      root->child_at(0)->current_frame_host()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      child_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  child_process->Shutdown(0, false);
+  crash_observer.Wait();
+
+  // Navigate the second subframe to b.com to recreate the b.com process.
+  GURL b_url = embedded_test_server()->GetURL("b.com", "/post_message.html");
+  NavigateFrameToURL(root->child_at(1), b_url);
+  EXPECT_TRUE(
+      WaitForRenderFrameReady(root->child_at(1)->current_frame_host()));
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(b_url, observer.last_navigation_url());
+  EXPECT_TRUE(root->child_at(1)->current_frame_host()->IsRenderFrameLive());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site A ------- proxies for B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  // Check that third subframe's proxy is available in the b.com process by
+  // sending it a postMessage from second subframe.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      root->child_at(1)->current_frame_host(),
+      "window.domAutomationController.send("
+      "    postToSibling('subframe-msg','frame3'));",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Wait to receive a reply from third subframe.  Second subframe sends
+  // "done-frame2" from the DOMAutomationController when the reply arrives.
+  content::DOMMessageQueue msg_queue;
+  std::string status;
+  while (msg_queue.WaitForMessage(&status)) {
+    if (status == "\"done-frame2\"")
+      break;
+  }
+}
+
 // In A-embed-B-embed-C scenario, verify that killing process B clears proxies
 // of C from the tree.
 //
