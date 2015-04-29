@@ -106,7 +106,6 @@ public:
 
     static bool tagMatches(const Element&, const QualifiedName&);
     static bool matchesFocusPseudoClass(const Element&);
-    static bool isHostInItsShadowTree(const Element&, const ContainerNode* scope);
 
 private:
     template<typename SiblingTraversalStrategy>
@@ -138,11 +137,6 @@ inline bool SelectorChecker::tagMatches(const Element& element, const QualifiedN
         return false;
     const AtomicString& namespaceURI = tagQName.namespaceURI();
     return namespaceURI == starAtom || namespaceURI == element.namespaceURI();
-}
-
-inline bool SelectorChecker::isHostInItsShadowTree(const Element& element, const ContainerNode* scope)
-{
-    return scope && scope->isInShadowTree() && scope->shadowHost() == element;
 }
 
 }
