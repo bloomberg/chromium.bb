@@ -552,6 +552,12 @@ void CompositorImpl::OnGpuChannelTimeout() {
 void CompositorImpl::RequestNewOutputSurface() {
   output_surface_request_pending_ = true;
 
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || defined(SYZYASAN)
+  const int64 kGpuChannelTimeoutInSeconds = 30;
+#else
+  const int64 kGpuChannelTimeoutInSeconds = 10;
+#endif
+
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
   if (!factory->GetGpuChannel() || factory->GetGpuChannel()->IsLost()) {
@@ -560,8 +566,8 @@ void CompositorImpl::RequestNewOutputSurface() {
         base::Bind(&CompositorImpl::OnGpuChannelEstablished,
                    weak_factory_.GetWeakPtr()));
     establish_gpu_channel_timeout_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(7), this,
-        &CompositorImpl::OnGpuChannelTimeout);
+        FROM_HERE, base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
+        this, &CompositorImpl::OnGpuChannelTimeout);
     return;
   }
 
