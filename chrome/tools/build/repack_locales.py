@@ -108,6 +108,11 @@ def calc_inputs(locale):
     inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'strings',
                   'app_locale_settings_%s.pak' % locale))
 
+  else:
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ios/chrome/ios_strings_resources_da.pak'
+    inputs.append(os.path.join(SHARE_INT_DIR, 'ios', 'chrome',
+                  'ios_strings_resources_%s.pak' % locale))
+
   if ENABLE_AUTOFILL_DIALOG:
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/third_party/libaddressinput/
     # address_input_strings_da.pak',

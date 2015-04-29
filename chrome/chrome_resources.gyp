@@ -446,13 +446,12 @@
             '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
           ],
         }, {  # else
+          'dependencies': [
+            '<(DEPTH)/ios/chrome/ios_chrome_resources.gyp:ios_strings_resources_gen',
+          ],
           'actions': [
             {
-              'conditions': [
-                ['OS == "ios"', {
-                  'includes': ['chrome_repack_chrome_300_percent.gypi']
-                }],
-              ],
+              'includes': ['chrome_repack_chrome_300_percent.gypi']
             },
           ],
         }],
