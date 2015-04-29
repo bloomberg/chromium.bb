@@ -229,9 +229,7 @@ class AutofillImporter : public PersonalDataManagerObserver {
   }
 
  private:
-  ~AutofillImporter() {
-    personal_data_manager_->RemoveObserver(this);
-  }
+  ~AutofillImporter() override { personal_data_manager_->RemoveObserver(this); }
 
   PersonalDataManager* personal_data_manager_;
   std::vector<AutofillProfile> profiles_;

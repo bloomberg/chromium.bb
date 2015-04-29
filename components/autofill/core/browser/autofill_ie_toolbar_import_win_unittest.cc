@@ -113,8 +113,8 @@ class AutofillIeToolbarImportTest : public testing::Test {
   AutofillIeToolbarImportTest();
 
   // testing::Test method overrides:
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
  private:
   RegKey temp_hkcu_hive_key_;

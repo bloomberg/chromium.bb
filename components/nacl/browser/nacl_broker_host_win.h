@@ -21,7 +21,7 @@ namespace nacl {
 class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
  public:
   NaClBrokerHost();
-  ~NaClBrokerHost();
+  ~NaClBrokerHost() override;
 
   // This function starts the broker process. It needs to be called
   // before loaders can be launched.
@@ -51,7 +51,7 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
   void OnDebugExceptionHandlerLaunched(int32 pid, bool success);
 
   // BrowserChildProcessHostDelegate implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
   scoped_ptr<content::BrowserChildProcessHost> process_;
   bool is_terminating_;

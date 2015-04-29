@@ -19,7 +19,7 @@ class CrashReportingMetricsTest : public testing::Test {
  protected:
   CrashReportingMetricsTest() {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     // Create a temporary key for testing
     base::win::RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
     key.DeleteKey(test_root);
@@ -28,7 +28,7 @@ class CrashReportingMetricsTest : public testing::Test {
                                         KEY_READ));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     // Clean up the temporary key
     base::win::RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
     ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(test_root));

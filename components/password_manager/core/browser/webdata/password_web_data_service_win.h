@@ -58,7 +58,7 @@ class PasswordWebDataService : public WebDataServiceBase {
   // For unit tests, passes a null callback.
   PasswordWebDataService(scoped_refptr<base::MessageLoopProxy> ui_thread);
 
-  virtual ~PasswordWebDataService();
+  ~PasswordWebDataService() override;
 
  private:
   // The following methods are only invoked on the DB thread.

@@ -90,7 +90,7 @@ MULTIPROCESS_TEST_MAIN(VerifyParentHandle) {
 
 class WatcherClientTest : public base::MultiProcessTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     // Open an inheritable handle on our own process to test handle leakage.
     self_.Set(::OpenProcess(SYNCHRONIZE | PROCESS_QUERY_INFORMATION,
                             TRUE,  // Ineritable handle.

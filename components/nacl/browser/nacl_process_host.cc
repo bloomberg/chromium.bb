@@ -162,7 +162,7 @@ class NaClSandboxedProcessLauncherDelegate
   ~NaClSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  virtual void PostSpawnTarget(base::ProcessHandle process) {
+  void PostSpawnTarget(base::ProcessHandle process) override {
     // For Native Client sel_ldr processes on 32-bit Windows, reserve 1 GB of
     // address space to prevent later failure due to address space fragmentation
     // from .dll loading. The NaCl process will attempt to locate this space by
