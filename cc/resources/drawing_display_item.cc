@@ -26,12 +26,12 @@ DrawingDisplayItem::~DrawingDisplayItem() {
 
 void DrawingDisplayItem::Raster(SkCanvas* canvas,
                                 SkDrawPictureCallback* callback) const {
-  canvas->save();
+  // SkPicture always does a wrapping save/restore on the canvas, so it is not
+  // necessary here.
   if (callback)
     picture_->playback(canvas, callback);
   else
     canvas->drawPicture(picture_.get());
-  canvas->restore();
 }
 
 bool DrawingDisplayItem::IsSuitableForGpuRasterization() const {
