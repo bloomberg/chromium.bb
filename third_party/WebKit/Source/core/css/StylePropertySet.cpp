@@ -414,8 +414,7 @@ bool MutableStylePropertySet::removePropertiesInSet(const CSSPropertyID* set, un
     unsigned newIndex = 0;
     for (unsigned oldIndex = 0; oldIndex < oldSize; ++oldIndex) {
         const CSSProperty& property = properties[oldIndex];
-        // Not quite sure if the isImportant test is needed but it matches the existing behavior.
-        if (!property.isImportant() && containsId(set, length, property.id()))
+        if (containsId(set, length, property.id()))
             continue;
         // Modify m_propertyVector in-place since this method is performance-sensitive.
         properties[newIndex++] = properties[oldIndex];
