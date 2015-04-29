@@ -603,7 +603,7 @@ def HostTools(host, options):
                     host, warning_flags, options,
                     options.binutils_pnacl_extra_configure) +
                   [
-                  '--enable-gold=default',
+                  '--enable-gold=yes',
                   '--enable-plugins',
                   '--enable-shared=no',
                   '--enable-targets=arm-nacl,i686-nacl,x86_64-nacl,mipsel-nacl',
