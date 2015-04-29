@@ -50,51 +50,39 @@ public class BookmarkUtils {
 
     /**
      * Creates an intent that will add a shortcut to the home screen.
-     * @param context Context used to create the intent.
      * @param shortcutIntent Intent to fire when the shortcut is activated.
      * @param title Title of the bookmark.
-     * @param favicon Bookmark favicon.
+     * @param icon Image that represents the bookmark.
      * @param url URL of the bookmark.
-     * @param rValue Red component of the dominant favicon color.
-     * @param gValue Green component of the dominant favicon color.
-     * @param bValue Blue component of the dominant favicon color.
      * @return Intent for the shortcut.
      */
-    public static Intent createAddToHomeIntent(Context context, Intent shortcutIntent, String title,
-            Bitmap favicon, String url, int rValue, int gValue, int bValue) {
+    public static Intent createAddToHomeIntent(
+            Intent shortcutIntent, String title, Bitmap icon, String url) {
         Intent i = new Intent(INSTALL_SHORTCUT);
         i.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
         i.putExtra(Intent.EXTRA_SHORTCUT_NAME, title);
-        i.putExtra(Intent.EXTRA_SHORTCUT_ICON, createIcon(context, favicon, url, rValue,
-                gValue, bValue));
+        i.putExtra(Intent.EXTRA_SHORTCUT_ICON, icon);
         return i;
     }
 
     /**
      * Creates an intent that will add a shortcut to the home screen.
-     * @param context Context used to create the intent.
      * @param url Url of the bookmark.
      * @param title Title of the bookmark.
-     * @param favicon Bookmark favicon.
-     * @param rValue Red component of the dominant favicon color.
-     * @param gValue Green component of the dominant favicon color.
-     * @param bValue Blue component of the dominant favicon color.
+     * @param icon Image that represents the bookmark.
      * @return Intent for the shortcut.
      */
-    public static Intent createAddToHomeIntent(Context context, String url, String title,
-            Bitmap favicon, int rValue, int gValue, int bValue) {
-        Intent shortcutIntent = createShortcutIntent(context, url);
-        return createAddToHomeIntent(
-                context, shortcutIntent, title, favicon, url, rValue, gValue, bValue);
+    public static Intent createAddToHomeIntent(String url, String title, Bitmap icon) {
+        Intent shortcutIntent = createShortcutIntent(url);
+        return createAddToHomeIntent(shortcutIntent, title, icon, url);
     }
 
     /**
      * Shortcut intent for icon on homescreen.
-     * @param context Context used to create the intent.
      * @param url Url of the bookmark.
      * @return Intent for onclick action of the shortcut.
      */
-    public static Intent createShortcutIntent(Context context, String url) {
+    public static Intent createShortcutIntent(String url) {
         Intent shortcutIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         shortcutIntent.putExtra(REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
         return shortcutIntent;
@@ -117,14 +105,14 @@ public class BookmarkUtils {
      * Creates an icon to be associated with this bookmark. If available, the touch icon
      * will be used, else we draw our own.
      * @param context Context used to create the intent.
-     * @param favicon Bookmark favicon bitmap.
+     * @param icon Image representing the bookmark.
      * @param url URL of the bookmark.
-     * @param rValue Red component of the dominant favicon color.
-     * @param gValue Green component of the dominant favicon color.
-     * @param bValue Blue component of the dominant favicon color.
+     * @param rValue Red component of the dominant icon color.
+     * @param gValue Green component of the dominant icon color.
+     * @param bValue Blue component of the dominant icon color.
      * @return Bitmap Either the touch-icon or the newly created favicon.
      */
-    private static Bitmap createIcon(Context context, Bitmap favicon, String url, int rValue,
+    public static Bitmap createLauncherIcon(Context context, Bitmap icon, String url, int rValue,
             int gValue, int bValue) {
         Bitmap bitmap = null;
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
@@ -133,13 +121,13 @@ public class BookmarkUtils {
         try {
             bitmap = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
-            if (favicon == null) {
-                favicon = getBitmapFromResourceId(context, R.drawable.globe_favicon, iconDensity);
+            if (icon == null) {
+                icon = getBitmapFromResourceId(context, R.drawable.globe_favicon, iconDensity);
                 rValue = gValue = bValue = DEFAULT_RGB_VALUE;
             }
             final int smallestSide = iconSize;
-            if (favicon.getWidth() >= smallestSide / 2 && favicon.getHeight() >= smallestSide / 2) {
-                drawTouchIconToCanvas(context, favicon, canvas);
+            if (icon.getWidth() >= smallestSide / 2 && icon.getHeight() >= smallestSide / 2) {
+                drawTouchIconToCanvas(context, icon, canvas);
             } else {
                 drawWidgetBackgroundToCanvas(context, canvas, iconDensity, url,
                         Color.rgb(rValue, gValue, bValue));

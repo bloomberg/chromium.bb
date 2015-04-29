@@ -155,12 +155,13 @@ public class ShortcutHelper {
             shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
         } else {
             // Add the shortcut as a launcher icon to open in the browser Activity.
-            shortcutIntent = BookmarkUtils.createShortcutIntent(context, url);
+            shortcutIntent = BookmarkUtils.createShortcutIntent(url);
         }
 
         shortcutIntent.setPackage(context.getPackageName());
-        context.sendBroadcast(BookmarkUtils.createAddToHomeIntent(context, shortcutIntent, title,
-                icon, url, red, green, blue));
+        Bitmap launchIcon = BookmarkUtils.createLauncherIcon(context, icon, url, red, green, blue);
+        context.sendBroadcast(BookmarkUtils.createAddToHomeIntent(shortcutIntent, title,
+                launchIcon, url));
 
         // Alert the user about adding the shortcut.
         if (returnToHomescreen) {
