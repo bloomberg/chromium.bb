@@ -34,7 +34,7 @@ class DataFetcherSharedMemory::SensorEventSink
     : public ISensorEvents, public base::win::IUnknownImpl {
  public:
   SensorEventSink() {}
-  virtual ~SensorEventSink() {}
+  ~SensorEventSink() override {}
 
   // IUnknown interface
   ULONG STDMETHODCALLTYPE AddRef() override {
@@ -105,7 +105,7 @@ class DataFetcherSharedMemory::SensorEventSinkOrientation
  public:
   explicit SensorEventSinkOrientation(
       DeviceOrientationHardwareBuffer* const buffer) : buffer_(buffer) {}
-  virtual ~SensorEventSinkOrientation() {}
+  ~SensorEventSinkOrientation() override {}
 
  protected:
   bool UpdateSharedMemoryBuffer(
@@ -148,7 +148,7 @@ class DataFetcherSharedMemory::SensorEventSinkMotion
  public:
   explicit SensorEventSinkMotion(DeviceMotionHardwareBuffer* const buffer)
       : buffer_(buffer) {}
-  virtual ~SensorEventSinkMotion() {}
+  ~SensorEventSinkMotion() override {}
 
  protected:
   bool UpdateSharedMemoryBuffer(
@@ -234,7 +234,7 @@ class DataFetcherSharedMemory::SensorEventSinkLight
  public:
   explicit SensorEventSinkLight(DeviceLightHardwareBuffer* const buffer)
       : buffer_(buffer) {}
-  virtual ~SensorEventSinkLight() {}
+  ~SensorEventSinkLight() override {}
 
  protected:
   bool UpdateSharedMemoryBuffer(ISensor* sensor,

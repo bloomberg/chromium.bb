@@ -48,7 +48,7 @@ const LONG CONTENTS_LENGTH = static_cast<LONG>(
 class AccessibilityWinBrowserTest : public ContentBrowserTest {
  public:
   AccessibilityWinBrowserTest();
-  virtual ~AccessibilityWinBrowserTest();
+  ~AccessibilityWinBrowserTest() override;
 
  protected:
   class AccessibleChecker;

@@ -599,7 +599,7 @@ class FontFileStream
     return S_OK;
   }
 
-  virtual ~FontFileStream() {
+  ~FontFileStream() override {
     if (g_font_loader->IsBuildStaticCacheMode()) {
       FontCacheWriter* cache_writer = g_font_loader->GetFontCacheWriter();
       cache_writer->CommitFontEntry(writer_cookie_);

@@ -56,7 +56,7 @@ class RawInputDataFetcher
       public base::MessageLoop::DestructionObserver {
  public:
   explicit RawInputDataFetcher();
-  ~RawInputDataFetcher();
+  ~RawInputDataFetcher() override;
 
   // DestructionObserver overrides.
   void WillDestroyCurrentMessageLoop() override;

@@ -132,7 +132,7 @@ class WebPluginImpl : public WebPlugin,
   bool CheckIfRunInsecureContent(const GURL& url) override;
 #if defined(OS_WIN)
   void SetWindowlessData(HANDLE pump_messages_event,
-                         gfx::NativeViewId dummy_activation_window) { }
+                         gfx::NativeViewId dummy_activation_window) override {}
   void ReparentPluginWindow(HWND window, HWND parent) { }
   void ReportExecutableMemory(size_t size) { }
 #endif

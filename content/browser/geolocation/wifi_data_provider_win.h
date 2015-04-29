@@ -15,11 +15,11 @@ class CONTENT_EXPORT WifiDataProviderWin : public WifiDataProviderCommon {
   WifiDataProviderWin();
 
  private:
-  virtual ~WifiDataProviderWin();
+  ~WifiDataProviderWin() override;
 
   // WifiDataProviderCommon
-  virtual WlanApiInterface* NewWlanApi();
-  virtual WifiPollingPolicy* NewPollingPolicy();
+  WlanApiInterface* NewWlanApi() override;
+  WifiPollingPolicy* NewPollingPolicy() override;
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderWin);
 };

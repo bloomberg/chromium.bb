@@ -63,15 +63,16 @@ class BrowserAccessibilityRelation
   CONTENT_EXPORT void AddTarget(int target_id);
 
   // IAccessibleRelation methods.
-  CONTENT_EXPORT STDMETHODIMP get_relationType(BSTR* relation_type);
-  CONTENT_EXPORT STDMETHODIMP get_nTargets(long* n_targets);
-  CONTENT_EXPORT STDMETHODIMP get_target(long target_index, IUnknown** target);
-  CONTENT_EXPORT STDMETHODIMP get_targets(long max_targets,
-                                          IUnknown** targets,
-                                          long* n_targets);
+  CONTENT_EXPORT STDMETHODIMP get_relationType(BSTR* relation_type) override;
+  CONTENT_EXPORT STDMETHODIMP get_nTargets(long* n_targets) override;
+  CONTENT_EXPORT STDMETHODIMP
+  get_target(long target_index, IUnknown** target) override;
+  CONTENT_EXPORT STDMETHODIMP
+  get_targets(long max_targets, IUnknown** targets, long* n_targets) override;
 
   // IAccessibleRelation methods not implemented.
-  CONTENT_EXPORT STDMETHODIMP get_localizedRelationType(BSTR* relation_type) {
+  CONTENT_EXPORT STDMETHODIMP
+  get_localizedRelationType(BSTR* relation_type) override {
     return E_NOTIMPL;
   }
 

@@ -71,7 +71,7 @@ std::string AccessibilityEventToStringUTF8(int32 event_id) {
 class AccessibilityEventRecorderWin : public AccessibilityEventRecorder {
  public:
   explicit AccessibilityEventRecorderWin(BrowserAccessibilityManager* manager);
-  virtual ~AccessibilityEventRecorderWin();
+  ~AccessibilityEventRecorderWin() override;
 
   // Callback registered by SetWinEventHook. Just calls OnWinEventHook.
   static void CALLBACK WinEventHookThunk(

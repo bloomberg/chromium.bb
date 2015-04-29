@@ -335,8 +335,7 @@ class RendererSandboxedProcessLauncherDelegate
   ~RendererSandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
-                              bool* success) {
+  void PreSpawnTarget(sandbox::TargetPolicy* policy, bool* success) override {
     AddBaseHandleClosePolicy(policy);
 
     if (base::win::GetVersion() == base::win::VERSION_WIN8 ||

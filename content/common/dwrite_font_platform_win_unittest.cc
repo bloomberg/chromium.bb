@@ -18,7 +18,7 @@ class DWriteFontCacheTest : public testing::Test {
  public:
   DWriteFontCacheTest() { }
 
-  virtual void SetUp() {
+  void SetUp() override {
     base::FilePath data_path;
     ASSERT_TRUE(PathService::Get(content::DIR_TEST_DATA, &data_path));
     arial_cache_path_ =

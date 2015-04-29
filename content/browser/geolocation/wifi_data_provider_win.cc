@@ -87,12 +87,12 @@ typedef DWORD (WINAPI* WlanCloseHandleFunction)(HANDLE hClientHandle,
 // Local classes and functions
 class WindowsWlanApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
-  virtual ~WindowsWlanApi();
+  ~WindowsWlanApi() override;
   // Factory function. Will return NULL if this API is unavailable.
   static WindowsWlanApi* Create();
 
   // WlanApiInterface
-  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data);
+  bool GetAccessPointData(WifiData::AccessPointDataSet* data) override;
 
  private:
   // Takes ownership of the library handle.
@@ -120,11 +120,11 @@ class WindowsWlanApi : public WifiDataProviderCommon::WlanApiInterface {
 
 class WindowsNdisApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
-  virtual ~WindowsNdisApi();
+  ~WindowsNdisApi() override;
   static WindowsNdisApi* Create();
 
   // WlanApiInterface
-  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data);
+  bool GetAccessPointData(WifiData::AccessPointDataSet* data) override;
 
  private:
   static bool GetInterfacesNDIS(

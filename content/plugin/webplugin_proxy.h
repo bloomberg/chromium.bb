@@ -90,7 +90,7 @@ class WebPluginProxy : public WebPlugin,
   bool CheckIfRunInsecureContent(const GURL& url) override;
 #if defined(OS_WIN)
   void SetWindowlessData(HANDLE pump_messages_event,
-                         gfx::NativeViewId dummy_activation_window);
+                         gfx::NativeViewId dummy_activation_window) override;
 #endif
 #if defined(OS_MACOSX)
   void FocusChanged(bool focused) override;

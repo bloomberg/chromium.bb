@@ -27,7 +27,7 @@ namespace {
 class CountedBrowserAccessibility : public BrowserAccessibilityWin {
  public:
   CountedBrowserAccessibility();
-  virtual ~CountedBrowserAccessibility();
+  ~CountedBrowserAccessibility() override;
 
   static void reset() { num_instances_ = 0; }
   static int num_instances() { return num_instances_; }

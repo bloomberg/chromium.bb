@@ -18,7 +18,7 @@ class CreateInstanceInPaintTest : public PluginTest {
   //
   // NPAPI functions
   //
-  virtual NPError SetWindow(NPWindow* pNPWindow);
+  NPError SetWindow(NPWindow* pNPWindow) override;
 
  private:
   static LRESULT CALLBACK WindowProc(
