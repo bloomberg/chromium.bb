@@ -2435,8 +2435,7 @@ cr.define('login', function() {
     showUserPodCustomIcon: function(username, icon) {
       var pod = this.getPodWithUsername_(username);
       if (pod == null) {
-        console.error('Unable to show user pod button for ' + username +
-                      ': user pod not found.');
+        console.error('Unable to show user pod button: user pod not found.');
         return;
       }
 
@@ -2498,8 +2497,7 @@ cr.define('login', function() {
     hideUserPodCustomIcon: function(username) {
       var pod = this.getPodWithUsername_(username);
       if (pod == null) {
-        console.error('Unable to hide user pod button for ' + username +
-                      ': user pod not found.');
+        console.error('Unable to hide user pod button: user pod not found.');
         return;
       }
 
@@ -2517,8 +2515,7 @@ cr.define('login', function() {
     setAuthType: function(username, authType, value) {
       var pod = this.getPodWithUsername_(username);
       if (pod == null) {
-        console.error('Unable to set auth type for ' + username +
-                      ': user pod not found.');
+        console.error('Unable to set auth type: user pod not found.');
         return;
       }
       pod.setAuthType(authType, value);
