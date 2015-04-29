@@ -933,6 +933,8 @@
             'animation/SampledEffect.h',
             'animation/ListSVGInterpolation.h',
             'animation/ListStyleInterpolation.h',
+            'animation/PathSVGInterpolation.cpp',
+            'animation/PathSVGInterpolation.h',
             'animation/PointSVGInterpolation.h',
             'animation/ShadowStyleInterpolation.cpp',
             'animation/ShadowStyleInterpolation.h',

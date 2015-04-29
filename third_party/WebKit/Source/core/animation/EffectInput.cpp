@@ -82,6 +82,7 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
             &SVGNames::clipPathUnitsAttr,
             &SVGNames::cxAttr,
             &SVGNames::cyAttr,
+            &SVGNames::dAttr,
             &SVGNames::diffuseConstantAttr,
             &SVGNames::divisorAttr,
             &SVGNames::dxAttr,

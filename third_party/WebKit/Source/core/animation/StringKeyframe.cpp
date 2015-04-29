@@ -25,6 +25,7 @@
 #include "core/animation/ListStyleInterpolation.h"
 #include "core/animation/NumberOptionalNumberSVGInterpolation.h"
 #include "core/animation/NumberSVGInterpolation.h"
+#include "core/animation/PathSVGInterpolation.h"
 #include "core/animation/PointSVGInterpolation.h"
 #include "core/animation/RectSVGInterpolation.h"
 #include "core/animation/SVGStrokeDasharrayStyleInterpolation.h"
@@ -504,6 +505,9 @@ PassRefPtrWillBeRawPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fr
         return NumberOptionalNumberSVGInterpolation::create(fromValue, toValue, attribute);
     case AnimatedNumberList:
         interpolation = ListSVGInterpolation<NumberSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
+        break;
+    case AnimatedPath:
+        interpolation = PathSVGInterpolation::maybeCreate(fromValue, toValue, attribute);
         break;
     case AnimatedPoints:
         interpolation = ListSVGInterpolation<PointSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
