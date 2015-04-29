@@ -50,7 +50,7 @@ static void assertV8RecursionScope()
 
 static bool runningUnitTest()
 {
-    return blink::Platform::current()->unitTestSupport();
+    return Platform::current()->unitTestSupport();
 }
 #endif
 

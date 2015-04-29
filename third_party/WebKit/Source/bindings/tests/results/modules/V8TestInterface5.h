@@ -27,7 +27,7 @@ public:
     MODULES_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterface5Implementation* toImpl(v8::Local<v8::Object> object)
     {
-        return blink::toScriptWrappable(object)->toImpl<TestInterface5Implementation>();
+        return toScriptWrappable(object)->toImpl<TestInterface5Implementation>();
     }
     MODULES_EXPORT static TestInterface5Implementation* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     MODULES_EXPORT static const WrapperTypeInfo wrapperTypeInfo;

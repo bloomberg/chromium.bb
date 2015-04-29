@@ -25,7 +25,7 @@ public:
     CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceCheckSecurity* toImpl(v8::Local<v8::Object> object)
     {
-        return blink::toScriptWrappable(object)->toImpl<TestInterfaceCheckSecurity>();
+        return toScriptWrappable(object)->toImpl<TestInterfaceCheckSecurity>();
     }
     CORE_EXPORT static TestInterfaceCheckSecurity* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;

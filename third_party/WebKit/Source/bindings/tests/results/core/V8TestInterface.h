@@ -34,7 +34,7 @@ public:
     CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceImplementation* toImpl(v8::Local<v8::Object> object)
     {
-        return blink::toScriptWrappable(object)->toImpl<TestInterfaceImplementation>();
+        return toScriptWrappable(object)->toImpl<TestInterfaceImplementation>();
     }
     CORE_EXPORT static TestInterfaceImplementation* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static WrapperTypeInfo wrapperTypeInfo;

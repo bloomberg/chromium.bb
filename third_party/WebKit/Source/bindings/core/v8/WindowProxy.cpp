@@ -299,7 +299,7 @@ void WindowProxy::createContext()
     const char* histogramName = "WebCore.WindowProxy.createContext.MainWorld";
     if (!m_world->isMainWorld())
         histogramName = "WebCore.WindowProxy.createContext.IsolatedWorld";
-    blink::Platform::current()->histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
+    Platform::current()->histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
 }
 
 static v8::Local<v8::Object> toInnerGlobalObject(v8::Local<v8::Context> context)

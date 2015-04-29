@@ -70,10 +70,10 @@ void ScriptStreamerThread::taskDone()
     m_runningTask = false;
 }
 
-blink::WebThread& ScriptStreamerThread::platformThread()
+WebThread& ScriptStreamerThread::platformThread()
 {
     if (!isRunning())
-        m_thread = adoptPtr(blink::Platform::current()->createThread("ScriptStreamerThread"));
+        m_thread = adoptPtr(Platform::current()->createThread("ScriptStreamerThread"));
     return *m_thread;
 }
 

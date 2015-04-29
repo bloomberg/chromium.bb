@@ -76,7 +76,7 @@ namespace blink {
 // example that ownership of the WebCallbacks instance is being passed
 // in and it is up to the callee to free the WebCallbacks instace.
 template<typename S, typename T>
-class CallbackPromiseAdapter final : public blink::WebCallbacks<typename S::WebType, typename T::WebType> {
+class CallbackPromiseAdapter final : public WebCallbacks<typename S::WebType, typename T::WebType> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
     explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
@@ -114,7 +114,7 @@ private:
 };
 
 template<typename T>
-class CallbackPromiseAdapter<void, T> final : public blink::WebCallbacks<void, typename T::WebType> {
+class CallbackPromiseAdapter<void, T> final : public WebCallbacks<void, typename T::WebType> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
     explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
@@ -145,7 +145,7 @@ private:
 };
 
 template<typename S>
-class CallbackPromiseAdapter<S, void> final : public blink::WebCallbacks<typename S::WebType, void> {
+class CallbackPromiseAdapter<S, void> final : public WebCallbacks<typename S::WebType, void> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
     explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
@@ -176,7 +176,7 @@ private:
 };
 
 template<typename T>
-class CallbackPromiseAdapter<bool, T> final : public blink::WebCallbacks<bool, typename T::WebType> {
+class CallbackPromiseAdapter<bool, T> final : public WebCallbacks<bool, typename T::WebType> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
     explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
@@ -207,7 +207,7 @@ private:
 };
 
 template<>
-class CallbackPromiseAdapter<void, void> final : public blink::WebCallbacks<void, void> {
+class CallbackPromiseAdapter<void, void> final : public WebCallbacks<void, void> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
     explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
@@ -236,7 +236,7 @@ private:
 };
 
 template<>
-class CallbackPromiseAdapter<bool, void> final : public blink::WebCallbacks<bool, void> {
+class CallbackPromiseAdapter<bool, void> final : public WebCallbacks<bool, void> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 public:
     explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)

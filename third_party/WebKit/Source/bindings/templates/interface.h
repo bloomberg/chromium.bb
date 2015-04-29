@@ -45,7 +45,7 @@ public:
     {{exported}}static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static {{cpp_class}}* toImpl(v8::Local<v8::Object> object)
     {
-        return blink::toScriptWrappable(object)->toImpl<{{cpp_class}}>();
+        return toScriptWrappable(object)->toImpl<{{cpp_class}}>();
     }
     {% endif %}
     {{exported}}static {{cpp_class}}* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);

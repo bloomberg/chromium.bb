@@ -133,7 +133,7 @@ void ScriptController::clearForClose()
 {
     double start = currentTime();
     m_windowProxyManager->clearForClose();
-    blink::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearForClose", (currentTime() - start) * 1000, 0, 10000, 50);
+    Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearForClose", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 
 void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
@@ -406,7 +406,7 @@ void ScriptController::clearWindowProxy()
     clearScriptObjects();
 
     m_windowProxyManager->clearForNavigation();
-    blink::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearWindowProxy", (currentTime() - start) * 1000, 0, 10000, 50);
+    Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearWindowProxy", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 
 void ScriptController::setCaptureCallStackForUncaughtExceptions(bool value)

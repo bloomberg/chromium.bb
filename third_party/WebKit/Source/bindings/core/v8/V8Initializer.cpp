@@ -90,7 +90,7 @@ static Frame* findFrame(v8::Isolate* isolate, v8::Local<v8::Object> host, v8::Lo
 
 static void reportFatalErrorInMainThread(const char* location, const char* message)
 {
-    int memoryUsageMB = blink::Platform::current()->actualMemoryUsageMB();
+    int memoryUsageMB = Platform::current()->actualMemoryUsageMB();
     printf("V8 error: %s (%s).  Current memory usage: %d MB\n", message, location, memoryUsageMB);
     CRASH();
 }

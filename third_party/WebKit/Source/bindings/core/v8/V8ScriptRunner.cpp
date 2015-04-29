@@ -76,7 +76,7 @@ V8CompileHistogram::~V8CompileHistogram()
 {
     int64_t elapsedMicroSeconds = static_cast<int64_t>((WTF::currentTime() - m_timeStamp) * 1000000);
     const char* name = (m_cacheability == Cacheable) ? "V8.CompileCacheableMicroSeconds" : "V8.CompileNoncacheableMicroSeconds";
-    blink::Platform::current()->histogramCustomCounts(name, elapsedMicroSeconds, 0, 1000000, 50);
+    Platform::current()->histogramCustomCounts(name, elapsedMicroSeconds, 0, 1000000, 50);
 }
 
 // In order to make sure all pending messages to be processed in
@@ -166,7 +166,7 @@ v8::MaybeLocal<v8::Script> compileAndProduceCache(CachedMetadataHandler* cacheHa
         if (length > 1024) {
             // Omit histogram samples for small cache data to avoid outliers.
             int cacheSizeRatio = static_cast<int>(100.0 * length / code->Length());
-            blink::Platform::current()->histogramCustomCounts("V8.CodeCacheSizeRatio", cacheSizeRatio, 0, 10000, 50);
+            Platform::current()->histogramCustomCounts("V8.CodeCacheSizeRatio", cacheSizeRatio, 0, 10000, 50);
         }
         cacheHandler->clearCachedMetadata(CachedMetadataHandler::CacheLocally);
         cacheHandler->setCachedMetadata(tag, data, length, cacheType);

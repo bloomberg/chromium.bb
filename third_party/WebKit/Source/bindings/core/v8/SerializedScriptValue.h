@@ -54,7 +54,7 @@ class WebBlobInfo;
 typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 typedef Vector<RefPtr<DOMArrayBuffer>, 1> ArrayBufferArray;
 typedef HashMap<String, RefPtr<BlobDataHandle>> BlobDataHandleMap;
-typedef Vector<blink::WebBlobInfo> WebBlobInfoArray;
+typedef Vector<WebBlobInfo> WebBlobInfoArray;
 
 class CORE_EXPORT SerializedScriptValue : public ThreadSafeRefCounted<SerializedScriptValue> {
 public:

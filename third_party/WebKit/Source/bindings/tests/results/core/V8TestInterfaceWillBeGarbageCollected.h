@@ -32,7 +32,7 @@ public:
     CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static TestInterfaceWillBeGarbageCollected* toImpl(v8::Local<v8::Object> object)
     {
-        return blink::toScriptWrappable(object)->toImpl<TestInterfaceWillBeGarbageCollected>();
+        return toScriptWrappable(object)->toImpl<TestInterfaceWillBeGarbageCollected>();
     }
     CORE_EXPORT static TestInterfaceWillBeGarbageCollected* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
