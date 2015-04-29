@@ -150,7 +150,7 @@ ScriptPromise rejectAsNotImplemented(ScriptState* scriptState)
 
 class Cache::FetchResolvedForAdd final : public ScriptFunction {
 public:
-    static v8::Handle<v8::Function> create(ScriptState* scriptState, Cache* cache, Request* request)
+    static v8::Local<v8::Function> create(ScriptState* scriptState, Cache* cache, Request* request)
     {
         FetchResolvedForAdd* self = new FetchResolvedForAdd(scriptState, cache, request);
         return self->bindToV8Function();

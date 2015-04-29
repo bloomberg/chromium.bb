@@ -322,7 +322,7 @@ void AudioBuffer::zero()
     }
 }
 
-v8::Handle<v8::Object> AudioBuffer::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper)
+v8::Local<v8::Object> AudioBuffer::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Local<v8::Object> wrapper)
 {
     ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
 
