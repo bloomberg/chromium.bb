@@ -51,7 +51,7 @@ class BluetoothSocketWin : public BluetoothSocketNet {
               const ErrorCompletionCallback& error_callback);
 
   // BluetoothSocketNet:
-  void ResetData();
+  void ResetData() override;
 
   // BluetoothSocket:
   void Accept(const AcceptCompletionCallback& success_callback,
