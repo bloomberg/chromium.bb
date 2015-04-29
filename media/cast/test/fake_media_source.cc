@@ -102,7 +102,7 @@ FakeMediaSource::~FakeMediaSource() {
 }
 
 void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
-                                    int override_fps) {
+                                    int final_fps) {
   DCHECK(!video_file.empty());
 
   LOG(INFO) << "Source: " << video_file.value();
@@ -185,11 +185,11 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
         LOG(WARNING) << "Found multiple video streams.";
       }
       video_stream_index_ = static_cast<int>(i);
-      if (override_fps > 0) {
+      if (final_fps > 0) {
         // If video is played at a manual speed audio needs to match.
-        playback_rate_ = 1.0 * override_fps *
+        playback_rate_ = 1.0 * final_fps *
             av_stream->r_frame_rate.den / av_stream->r_frame_rate.num;
-        video_frame_rate_numerator_ = override_fps;
+        video_frame_rate_numerator_ = final_fps;
         video_frame_rate_denominator_ = 1;
       } else {
         playback_rate_ = 1.0;

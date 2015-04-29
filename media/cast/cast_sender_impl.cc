@@ -27,7 +27,7 @@ class LocalVideoFrameInput : public VideoFrameInput {
                 video_sender->CreateVideoFrameFactory().release() : nullptr) {}
 
   void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                           const base::TimeTicks& capture_time) override {
+                           const base::TimeTicks& capture_time) final {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(&VideoSender::InsertRawVideoFrame,
@@ -38,17 +38,17 @@ class LocalVideoFrameInput : public VideoFrameInput {
 
   scoped_refptr<VideoFrame> MaybeCreateOptimizedFrame(
       const gfx::Size& frame_size,
-      base::TimeDelta timestamp) override {
+      base::TimeDelta timestamp) final {
     return video_frame_factory_ ?
         video_frame_factory_->MaybeCreateFrame(frame_size, timestamp) : nullptr;
   }
 
-  bool CanCreateOptimizedFrames() const override {
+  bool CanCreateOptimizedFrames() const final {
     return video_frame_factory_.get() != nullptr;
   }
 
  protected:
-  ~LocalVideoFrameInput() override {}
+  ~LocalVideoFrameInput() final {}
 
  private:
   friend class base::RefCountedThreadSafe<LocalVideoFrameInput>;
@@ -69,7 +69,7 @@ class LocalAudioFrameInput : public AudioFrameInput {
       : cast_environment_(cast_environment), audio_sender_(audio_sender) {}
 
   void InsertAudio(scoped_ptr<AudioBus> audio_bus,
-                   const base::TimeTicks& recorded_time) override {
+                   const base::TimeTicks& recorded_time) final {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(&AudioSender::InsertAudio,
@@ -79,7 +79,7 @@ class LocalAudioFrameInput : public AudioFrameInput {
   }
 
  protected:
-  ~LocalAudioFrameInput() override {}
+  ~LocalAudioFrameInput() final {}
 
  private:
   friend class base::RefCountedThreadSafe<LocalAudioFrameInput>;

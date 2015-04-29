@@ -36,16 +36,16 @@ class VideoEncoderImpl : public VideoEncoder {
                    const VideoSenderConfig& video_config,
                    const StatusChangeCallback& status_change_cb);
 
-  ~VideoEncoderImpl() override;
+  ~VideoEncoderImpl() final;
 
   // VideoEncoder implementation.
   bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,
-      const FrameEncodedCallback& frame_encoded_callback) override;
-  void SetBitRate(int new_bit_rate) override;
-  void GenerateKeyFrame() override;
-  void LatestFrameIdToReference(uint32 frame_id) override;
+      const FrameEncodedCallback& frame_encoded_callback) final;
+  void SetBitRate(int new_bit_rate) final;
+  void GenerateKeyFrame() final;
+  void LatestFrameIdToReference(uint32 frame_id) final;
 
  private:
   scoped_refptr<CastEnvironment> cast_environment_;

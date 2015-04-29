@@ -170,10 +170,10 @@ class EncodedVideoFrameTracker : public RawEventSubscriber {
   EncodedVideoFrameTracker(FakeMediaSource* media_source)
       : media_source_(media_source),
         last_frame_event_type_(UNKNOWN) {}
-  ~EncodedVideoFrameTracker() override {}
+  ~EncodedVideoFrameTracker() final {}
 
   // RawEventSubscriber implementations.
-  void OnReceiveFrameEvent(const FrameEvent& frame_event) override {
+  void OnReceiveFrameEvent(const FrameEvent& frame_event) final {
     // This method only cares about video FRAME_CAPTURE_END and
     // FRAME_ENCODED events.
     if (frame_event.media_type != VIDEO_EVENT) {
@@ -195,7 +195,7 @@ class EncodedVideoFrameTracker : public RawEventSubscriber {
     last_frame_event_type_ = frame_event.type;
   }
 
-  void OnReceivePacketEvent(const PacketEvent& packet_event) override {
+  void OnReceivePacketEvent(const PacketEvent& packet_event) final {
     // Don't care.
   }
 

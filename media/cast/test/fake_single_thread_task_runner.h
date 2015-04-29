@@ -30,17 +30,17 @@ class FakeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
   // base::SingleThreadTaskRunner implementation.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
-                       base::TimeDelta delay) override;
+                       base::TimeDelta delay) final;
 
-  bool RunsTasksOnCurrentThread() const override;
+  bool RunsTasksOnCurrentThread() const final;
 
   // This function is currently not used, and will return false.
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
-                                  base::TimeDelta delay) override;
+                                  base::TimeDelta delay) final;
 
  protected:
-  ~FakeSingleThreadTaskRunner() override;
+  ~FakeSingleThreadTaskRunner() final;
 
  private:
   base::SimpleTestTickClock* const clock_;

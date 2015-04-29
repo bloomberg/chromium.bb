@@ -43,11 +43,11 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
   ReceiverRtcpEventSubscriber(const size_t max_size_to_retain,
       EventMediaType type);
 
-  ~ReceiverRtcpEventSubscriber() override;
+  ~ReceiverRtcpEventSubscriber() final;
 
   // RawEventSubscriber implementation.
-  void OnReceiveFrameEvent(const FrameEvent& frame_event) override;
-  void OnReceivePacketEvent(const PacketEvent& packet_event) override;
+  void OnReceiveFrameEvent(const FrameEvent& frame_event) final;
+  void OnReceivePacketEvent(const PacketEvent& packet_event) final;
 
   // Assigns events collected to |rtcp_events|. If there is space, some
   // older events will be added for redundancy as well.

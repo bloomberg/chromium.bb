@@ -75,11 +75,11 @@ class InProcessReceiver {
 
   // Helper method that creates |transport_| and |cast_receiver_|, starts
   // |transport_| receiving, and requests the first audio/video frame.
-  // Subclasses may override to provide additional start-up functionality.
+  // Subclasses may final to provide additional start-up functionality.
   virtual void StartOnMainThread();
 
   // Helper method that destroys |transport_| and |cast_receiver_|.
-  // Subclasses may override to provide additional start-up functionality.
+  // Subclasses may final to provide additional start-up functionality.
   virtual void StopOnMainThread(base::WaitableEvent* event);
 
   // Callback for the transport to notify of status changes.  A default

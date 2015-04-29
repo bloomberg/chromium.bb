@@ -108,19 +108,19 @@ class CastTransportSenderWrapper : public CastTransportSender {
 
   void InitializeAudio(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb) override {
+                       const RtcpRttCallback& rtt_cb) final {
     audio_ssrc_ = config.ssrc;
     transport_->InitializeAudio(config, cast_message_cb, rtt_cb);
   }
 
   void InitializeVideo(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb) override {
+                       const RtcpRttCallback& rtt_cb) final {
     video_ssrc_ = config.ssrc;
     transport_->InitializeVideo(config, cast_message_cb, rtt_cb);
   }
 
-  void InsertFrame(uint32 ssrc, const EncodedFrame& frame) override {
+  void InsertFrame(uint32 ssrc, const EncodedFrame& frame) final {
     if (ssrc == audio_ssrc_) {
       *encoded_audio_bytes_ += frame.data.size();
     } else if (ssrc == video_ssrc_) {
@@ -131,26 +131,26 @@ class CastTransportSenderWrapper : public CastTransportSender {
 
   void SendSenderReport(uint32 ssrc,
                         base::TimeTicks current_time,
-                        uint32 current_time_as_rtp_timestamp) override {
+                        uint32 current_time_as_rtp_timestamp) final {
     transport_->SendSenderReport(ssrc,
                                  current_time,
                                  current_time_as_rtp_timestamp);
   }
 
   void CancelSendingFrames(uint32 ssrc,
-                           const std::vector<uint32>& frame_ids) override {
+                           const std::vector<uint32>& frame_ids) final {
     transport_->CancelSendingFrames(ssrc, frame_ids);
   }
 
-  void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) override {
+  void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) final {
     transport_->ResendFrameForKickstart(ssrc, frame_id);
   }
 
-  PacketReceiverCallback PacketReceiverForTesting() override {
+  PacketReceiverCallback PacketReceiverForTesting() final {
     return transport_->PacketReceiverForTesting();
   }
 
-  void AddValidSsrc(uint32 ssrc) override {
+  void AddValidSsrc(uint32 ssrc) final {
     return transport_->AddValidSsrc(ssrc);
   }
 
@@ -161,7 +161,7 @@ class CastTransportSenderWrapper : public CastTransportSender {
       const RtcpCastMessage* cast_message,
       base::TimeDelta target_delay,
       const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-      const RtpReceiverStatistics* rtp_receiver_statistics) override {
+      const RtpReceiverStatistics* rtp_receiver_statistics) final {
     return transport_->SendRtcpFromRtpReceiver(ssrc,
                                                sender_ssrc,
                                                time_data,

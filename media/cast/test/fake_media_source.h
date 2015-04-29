@@ -54,11 +54,11 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
                   const AudioSenderConfig& audio_config,
                   const VideoSenderConfig& video_config,
                   bool keep_frames);
-  ~FakeMediaSource() override;
+  ~FakeMediaSource() final;
 
   // Transcode this file as the source of video and audio frames.
-  // If |override_fps| is non zero then the file is played at the desired rate.
-  void SetSourceFile(const base::FilePath& video_file, int override_fps);
+  // If |final_fps| is non zero then the file is played at the desired rate.
+  void SetSourceFile(const base::FilePath& video_file, int final_fps);
 
   // Set to true to randomly change the frame size at random points in time.
   // Only applies when SetSourceFile() is not used.
@@ -105,7 +105,7 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
 
   // media::AudioConverter::InputCallback implementation.
   double ProvideInput(media::AudioBus* output_bus, base::TimeDelta buffer_delay)
-      override;
+      final;
 
   AVStream* av_audio_stream();
   AVStream* av_video_stream();

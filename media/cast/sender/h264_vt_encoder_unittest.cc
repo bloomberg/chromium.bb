@@ -32,10 +32,10 @@ const int kVideoHeight = 720;
 class MediaTestSuite : public base::TestSuite {
  public:
   MediaTestSuite(int argc, char** argv) : TestSuite(argc, argv) {}
-  ~MediaTestSuite() override {}
+  ~MediaTestSuite() final {}
 
  protected:
-  void Initialize() override;
+  void Initialize() final;
 };
 
 void MediaTestSuite::Initialize() {
@@ -208,14 +208,14 @@ class TestPowerSource : public base::PowerMonitorSource {
   }
 
  private:
-  bool IsOnBatteryPowerImpl() override { return false; }
+  bool IsOnBatteryPowerImpl() final { return false; }
 };
 
 class H264VideoToolboxEncoderTest : public ::testing::Test {
  protected:
   H264VideoToolboxEncoderTest() = default;
 
-  void SetUp() override {
+  void SetUp() final {
     clock_ = new base::SimpleTestTickClock();
     clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
 
@@ -234,7 +234,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
     EXPECT_EQ(STATUS_INITIALIZED, operational_status_);
   }
 
-  void TearDown() override {
+  void TearDown() final {
     encoder_.reset();
     message_loop_.RunUntilIdle();
     power_monitor_.reset();

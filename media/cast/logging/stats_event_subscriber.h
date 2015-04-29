@@ -32,11 +32,11 @@ class StatsEventSubscriber : public RawEventSubscriber {
                        base::TickClock* clock,
                        ReceiverTimeOffsetEstimator* offset_estimator);
 
-  ~StatsEventSubscriber() override;
+  ~StatsEventSubscriber() final;
 
   // RawReventSubscriber implementations.
-  void OnReceiveFrameEvent(const FrameEvent& frame_event) override;
-  void OnReceivePacketEvent(const PacketEvent& packet_event) override;
+  void OnReceiveFrameEvent(const FrameEvent& frame_event) final;
+  void OnReceivePacketEvent(const PacketEvent& packet_event) final;
 
   // Returns stats as a DictionaryValue. The dictionary contains one entry -
   // "audio" or "video" pointing to an inner dictionary.

@@ -32,7 +32,7 @@ class TestPacketSender : public PacketSender {
  public:
   TestPacketSender() : bytes_sent_(0) {}
 
-  bool SendPacket(PacketRef packet, const base::Closure& cb) override {
+  bool SendPacket(PacketRef packet, const base::Closure& cb) final {
     EXPECT_FALSE(expected_packet_size_.empty());
     size_t expected_packet_size = expected_packet_size_.front();
     expected_packet_size_.pop_front();
@@ -41,7 +41,7 @@ class TestPacketSender : public PacketSender {
     return true;
   }
 
-  int64 GetBytesSent() override { return bytes_sent_; }
+  int64 GetBytesSent() final { return bytes_sent_; }
 
   void AddExpectedSize(int expected_packet_size, int repeat_count) {
     for (int i = 0; i < repeat_count; ++i) {

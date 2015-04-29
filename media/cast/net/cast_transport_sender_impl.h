@@ -84,30 +84,30 @@ class CastTransportSenderImpl : public CastTransportSender {
       const PacketReceiverCallback& packet_callback,
       PacketSender* external_transport);
 
-  ~CastTransportSenderImpl() override;
+  ~CastTransportSenderImpl() final;
 
   // CastTransportSender implementation.
   void InitializeAudio(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb) override;
+                       const RtcpRttCallback& rtt_cb) final;
   void InitializeVideo(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
-                       const RtcpRttCallback& rtt_cb) override;
-  void InsertFrame(uint32 ssrc, const EncodedFrame& frame) override;
+                       const RtcpRttCallback& rtt_cb) final;
+  void InsertFrame(uint32 ssrc, const EncodedFrame& frame) final;
 
   void SendSenderReport(uint32 ssrc,
                         base::TimeTicks current_time,
-                        uint32 current_time_as_rtp_timestamp) override;
+                        uint32 current_time_as_rtp_timestamp) final;
 
   void CancelSendingFrames(uint32 ssrc,
-                           const std::vector<uint32>& frame_ids) override;
+                           const std::vector<uint32>& frame_ids) final;
 
-  void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) override;
+  void ResendFrameForKickstart(uint32 ssrc, uint32 frame_id) final;
 
-  PacketReceiverCallback PacketReceiverForTesting() override;
+  PacketReceiverCallback PacketReceiverForTesting() final;
 
   // CastTransportReceiver implementation.
-  void AddValidSsrc(uint32 ssrc) override;
+  void AddValidSsrc(uint32 ssrc) final;
 
   void SendRtcpFromRtpReceiver(
       uint32 ssrc,
@@ -116,7 +116,7 @@ class CastTransportSenderImpl : public CastTransportSender {
       const RtcpCastMessage* cast_message,
       base::TimeDelta target_delay,
       const ReceiverRtcpEventSubscriber::RtcpEvents* rtcp_events,
-      const RtpReceiverStatistics* rtp_receiver_statistics) override;
+      const RtpReceiverStatistics* rtp_receiver_statistics) final;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, NacksCancelRetransmits);

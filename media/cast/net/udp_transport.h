@@ -43,7 +43,7 @@ class UdpTransport : public PacketSender {
       const net::IPEndPoint& remote_end_point,
       int32 send_buffer_size,
       const CastTransportStatusCallback& status_callback);
-  ~UdpTransport() override;
+  ~UdpTransport() final;
 
   // Start receiving packets. Packets are submitted to |packet_receiver|.
   void StartReceiving(const PacketReceiverCallbackWithStatus& packet_receiver);
@@ -59,8 +59,8 @@ class UdpTransport : public PacketSender {
 #endif
 
   // PacketSender implementations.
-  bool SendPacket(PacketRef packet, const base::Closure& cb) override;
-  int64 GetBytesSent() override;
+  bool SendPacket(PacketRef packet, const base::Closure& cb) final;
+  int64 GetBytesSent() final;
 
  private:
   // Requests and processes packets from |udp_socket_|.  This method is called

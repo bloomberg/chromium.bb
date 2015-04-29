@@ -28,7 +28,7 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
   NackFeedbackVerification()
       : triggered_(false), missing_packets_(), last_frame_acked_(0) {}
 
-  void CastFeedback(const RtcpCastMessage& cast_feedback) override {
+  void CastFeedback(const RtcpCastMessage& cast_feedback) final {
     EXPECT_EQ(kSsrc, cast_feedback.media_ssrc);
 
     last_frame_acked_ = cast_feedback.ack_frame_id;

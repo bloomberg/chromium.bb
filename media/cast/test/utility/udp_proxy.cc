@@ -56,7 +56,7 @@ class Buffer : public PacketPipe {
     CHECK_GT(max_megabits_per_second, 0);
   }
 
-  void Send(scoped_ptr<Packet> packet) override {
+  void Send(scoped_ptr<Packet> packet) final {
     if (packet->size() + buffer_size_ <= max_buffer_size_) {
       buffer_size_ += packet->size();
       buffer_.push_back(linked_ptr<Packet>(packet.release()));
@@ -116,7 +116,7 @@ class RandomDrop : public PacketPipe {
   RandomDrop(double drop_fraction)
       : drop_fraction_(static_cast<int>(drop_fraction * RAND_MAX)) {}
 
-  void Send(scoped_ptr<Packet> packet) override {
+  void Send(scoped_ptr<Packet> packet) final {
     if (rand() > drop_fraction_) {
       pipe_->Send(packet.Pass());
     }
@@ -158,7 +158,7 @@ class SimpleDelayBase : public PacketPipe {
 class ConstantDelay : public SimpleDelayBase {
  public:
   ConstantDelay(double delay_seconds) : delay_seconds_(delay_seconds) {}
-  double GetDelay() override { return delay_seconds_; }
+  double GetDelay() final { return delay_seconds_; }
 
  private:
   double delay_seconds_;
@@ -189,11 +189,11 @@ class DuplicateAndDelay : public RandomUnsortedDelay {
       RandomUnsortedDelay(random_delay),
       delay_min_(delay_min) {
   }
-  void Send(scoped_ptr<Packet> packet) override {
+  void Send(scoped_ptr<Packet> packet) final {
     pipe_->Send(scoped_ptr<Packet>(new Packet(*packet.get())));
     RandomUnsortedDelay::Send(packet.Pass());
   }
-  double GetDelay() override {
+  double GetDelay() final {
     return RandomUnsortedDelay::GetDelay() + delay_min_;
   }
  private:
@@ -216,7 +216,7 @@ class RandomSortedDelay : public PacketPipe {
         seconds_between_extra_delay_(seconds_between_extra_delay),
         weak_factory_(this) {}
 
-  void Send(scoped_ptr<Packet> packet) override {
+  void Send(scoped_ptr<Packet> packet) final {
     buffer_.push_back(linked_ptr<Packet>(packet.release()));
     if (buffer_.size() == 1) {
       next_send_ = std::max(
@@ -228,7 +228,7 @@ class RandomSortedDelay : public PacketPipe {
   }
   void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) override {
+      base::TickClock* clock) final {
     PacketPipe::InitOnIOThread(task_runner, clock);
     // As we start the stream, assume that we are in a random
     // place between two extra delays, thus multiplier = 1.0;
@@ -307,12 +307,12 @@ class NetworkGlitchPipe : public PacketPipe {
 
   void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) override {
+      base::TickClock* clock) final {
     PacketPipe::InitOnIOThread(task_runner, clock);
     Flip();
   }
 
-  void Send(scoped_ptr<Packet> packet) override {
+  void Send(scoped_ptr<Packet> packet) final {
     if (works_) {
       pipe_->Send(packet.Pass());
     }
@@ -356,7 +356,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
         weak_factory_(this) {
   }
 
-  void Send(scoped_ptr<Packet> packet) override {
+  void Send(scoped_ptr<Packet> packet) final {
     // Drop if buffer is full.
     if (stored_size_ >= stored_limit_)
       return;
@@ -368,7 +368,7 @@ class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
 
   void InitOnIOThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::TickClock* clock) override {
+      base::TickClock* clock) final {
     clock_ = clock;
     if (ipp_)
       ipp_->InitOnIOThread(task_runner, clock);
@@ -548,8 +548,8 @@ class PacketSender : public PacketPipe {
  public:
   PacketSender(UDPProxyImpl* udp_proxy, const net::IPEndPoint* destination)
       : udp_proxy_(udp_proxy), destination_(destination) {}
-  void Send(scoped_ptr<Packet> packet) override;
-  void AppendToPipe(scoped_ptr<PacketPipe> pipe) override { NOTREACHED(); }
+  void Send(scoped_ptr<Packet> packet) final;
+  void AppendToPipe(scoped_ptr<PacketPipe> pipe) final { NOTREACHED(); }
 
  private:
   UDPProxyImpl* udp_proxy_;
@@ -690,7 +690,7 @@ class UDPProxyImpl : public UDPProxy {
     start_event.Wait();
   }
 
-  ~UDPProxyImpl() override {
+  ~UDPProxyImpl() final {
     base::WaitableEvent stop_event(false, false);
     proxy_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,

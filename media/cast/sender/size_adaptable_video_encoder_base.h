@@ -34,12 +34,12 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
   bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,
-      const FrameEncodedCallback& frame_encoded_callback) override;
-  void SetBitRate(int new_bit_rate) override;
-  void GenerateKeyFrame() override;
-  void LatestFrameIdToReference(uint32 frame_id) override;
-  scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory() override;
-  void EmitFrames() override;
+      const FrameEncodedCallback& frame_encoded_callback) final;
+  void SetBitRate(int new_bit_rate) final;
+  void GenerateKeyFrame() final;
+  void LatestFrameIdToReference(uint32 frame_id) final;
+  scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory() final;
+  void EmitFrames() final;
 
  protected:
   // Accessors for subclasses.

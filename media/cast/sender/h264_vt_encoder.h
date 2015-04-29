@@ -35,22 +35,22 @@ class H264VideoToolboxEncoder : public VideoEncoder,
       const scoped_refptr<CastEnvironment>& cast_environment,
       const VideoSenderConfig& video_config,
       const StatusChangeCallback& status_change_cb);
-  ~H264VideoToolboxEncoder() override;
+  ~H264VideoToolboxEncoder() final;
 
   // media::cast::VideoEncoder implementation
   bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,
-      const FrameEncodedCallback& frame_encoded_callback) override;
-  void SetBitRate(int new_bit_rate) override;
-  void GenerateKeyFrame() override;
-  void LatestFrameIdToReference(uint32 frame_id) override;
-  scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory() override;
-  void EmitFrames() override;
+      const FrameEncodedCallback& frame_encoded_callback) final;
+  void SetBitRate(int new_bit_rate) final;
+  void GenerateKeyFrame() final;
+  void LatestFrameIdToReference(uint32 frame_id) final;
+  scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory() final;
+  void EmitFrames() final;
 
   // base::PowerObserver
-  void OnSuspend() override;
-  void OnResume() override;
+  void OnSuspend() final;
+  void OnResume() final;
 
  private:
   // VideoFrameFactory tied to the VideoToolbox encoder.

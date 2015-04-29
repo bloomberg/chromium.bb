@@ -49,11 +49,11 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   // timestamp).
   EncodingEventSubscriber(EventMediaType event_media_type, size_t max_frames);
 
-  ~EncodingEventSubscriber() override;
+  ~EncodingEventSubscriber() final;
 
   // RawReventSubscriber implementations.
-  void OnReceiveFrameEvent(const FrameEvent& frame_event) override;
-  void OnReceivePacketEvent(const PacketEvent& packet_event) override;
+  void OnReceiveFrameEvent(const FrameEvent& frame_event) final;
+  void OnReceivePacketEvent(const PacketEvent& packet_event) final;
 
   // Assigns frame events and packet events received so far to |frame_events|
   // and |packet_events| and resets the internal state.

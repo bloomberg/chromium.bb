@@ -35,7 +35,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
 
   ~ReceiverRtcpEventSubscriberTest() override {}
 
-  void TearDown() override {
+  void TearDown() final {
     if (event_subscriber_) {
       cast_environment_->Logging()->RemoveRawEventSubscriber(
           event_subscriber_.get());

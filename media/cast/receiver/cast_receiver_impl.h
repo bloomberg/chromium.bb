@@ -29,18 +29,18 @@ class CastReceiverImpl : public CastReceiver {
                    const FrameReceiverConfig& video_config,
                    CastTransportSender* const transport);
 
-  ~CastReceiverImpl() override;
+  ~CastReceiverImpl() final;
 
   // CastReceiver implementation.
-  void ReceivePacket(scoped_ptr<Packet> packet) override;
+  void ReceivePacket(scoped_ptr<Packet> packet) final;
   void RequestDecodedAudioFrame(
-      const AudioFrameDecodedCallback& callback) override;
+      const AudioFrameDecodedCallback& callback) final;
   void RequestEncodedAudioFrame(
-      const ReceiveEncodedFrameCallback& callback) override;
+      const ReceiveEncodedFrameCallback& callback) final;
   void RequestDecodedVideoFrame(
-      const VideoFrameDecodedCallback& callback) override;
+      const VideoFrameDecodedCallback& callback) final;
   void RequestEncodedVideoFrame(
-      const ReceiveEncodedFrameCallback& callback) override;
+      const ReceiveEncodedFrameCallback& callback) final;
 
  private:
   // Feeds an EncodedFrame into |audio_decoder_|.  RequestDecodedAudioFrame()

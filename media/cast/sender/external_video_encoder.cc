@@ -132,7 +132,7 @@ class ExternalVideoEncoder::VEAClientImpl
   }
 
  protected:
-  void NotifyError(VideoEncodeAccelerator::Error error) override {
+  void NotifyError(VideoEncodeAccelerator::Error error) final {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
     DCHECK(error != VideoEncodeAccelerator::kInvalidArgumentError &&
@@ -152,7 +152,7 @@ class ExternalVideoEncoder::VEAClientImpl
   // Called to allocate the input and output buffers.
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
-                               size_t output_buffer_size) override {
+                               size_t output_buffer_size) final {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
     // TODO(miu): Investigate why we are ignoring |input_count| (4) and instead
@@ -169,7 +169,7 @@ class ExternalVideoEncoder::VEAClientImpl
   // to the Cast MAIN thread via the supplied callback.
   void BitstreamBufferReady(int32 bitstream_buffer_id,
                             size_t payload_size,
-                            bool key_frame) override {
+                            bool key_frame) final {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     if (bitstream_buffer_id < 0 ||
         bitstream_buffer_id >= static_cast<int32>(output_buffers_.size())) {
@@ -249,7 +249,7 @@ class ExternalVideoEncoder::VEAClientImpl
  private:
   friend class base::RefCountedThreadSafe<VEAClientImpl>;
 
-  ~VEAClientImpl() override {
+  ~VEAClientImpl() final {
     // According to the media::VideoEncodeAccelerator interface, Destroy()
     // should be called instead of invoking its private destructor.
     task_runner_->PostTask(

@@ -34,7 +34,7 @@ class FakeRtcpTransport : public PacedPacketSender {
   base::TimeDelta packet_delay() const { return packet_delay_; }
   void set_packet_delay(base::TimeDelta delay) { packet_delay_ = delay; }
 
-  bool SendRtcpPacket(uint32 ssrc, PacketRef packet) override {
+  bool SendRtcpPacket(uint32 ssrc, PacketRef packet) final {
     clock_->Advance(packet_delay_);
     if (paused_) {
       packet_queue_.push_back(packet);
@@ -44,14 +44,14 @@ class FakeRtcpTransport : public PacedPacketSender {
     return true;
   }
 
-  bool SendPackets(const SendPacketVector& packets) override { return false; }
+  bool SendPackets(const SendPacketVector& packets) final { return false; }
 
   bool ResendPackets(const SendPacketVector& packets,
-                     const DedupInfo& dedup_info) override {
+                     const DedupInfo& dedup_info) final {
     return false;
   }
 
-  void CancelSendingPacket(const PacketKey& packet_key) override {}
+  void CancelSendingPacket(const PacketKey& packet_key) final {}
 
   void Pause() {
     paused_ = true;

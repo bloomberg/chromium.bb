@@ -20,10 +20,10 @@ class LoopBackPacketPipe : public test::PacketPipe {
       const PacketReceiverCallback& packet_receiver)
       : packet_receiver_(packet_receiver) {}
 
-  ~LoopBackPacketPipe() override {}
+  ~LoopBackPacketPipe() final {}
 
   // PacketPipe implementations.
-  void Send(scoped_ptr<Packet> packet) override {
+  void Send(scoped_ptr<Packet> packet) final {
     packet_receiver_.Run(packet.Pass());
   }
 

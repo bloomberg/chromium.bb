@@ -29,23 +29,23 @@ class AdaptiveCongestionControl : public CongestionControl {
                             uint32 min_bitrate_configured,
                             double max_frame_rate);
 
-  ~AdaptiveCongestionControl() override;
+  ~AdaptiveCongestionControl() final;
 
-  void UpdateRtt(base::TimeDelta rtt) override;
+  void UpdateRtt(base::TimeDelta rtt) final;
 
-  void UpdateTargetPlayoutDelay(base::TimeDelta delay) override;
+  void UpdateTargetPlayoutDelay(base::TimeDelta delay) final;
 
   // Called when an encoded frame is sent to the transport.
   void SendFrameToTransport(uint32 frame_id,
                             size_t frame_size,
-                            base::TimeTicks when) override;
+                            base::TimeTicks when) final;
 
   // Called when we receive an ACK for a frame.
-  void AckFrame(uint32 frame_id, base::TimeTicks when) override;
+  void AckFrame(uint32 frame_id, base::TimeTicks when) final;
 
   // Returns the bitrate we should use for the next frame.
   uint32 GetBitrate(base::TimeTicks playout_time,
-                    base::TimeDelta playout_delay) override;
+                    base::TimeDelta playout_delay) final;
 
  private:
   struct FrameStats {
@@ -96,23 +96,23 @@ class AdaptiveCongestionControl : public CongestionControl {
 class FixedCongestionControl : public CongestionControl {
  public:
   FixedCongestionControl(uint32 bitrate) : bitrate_(bitrate) {}
-  ~FixedCongestionControl() override {}
+  ~FixedCongestionControl() final {}
 
-  void UpdateRtt(base::TimeDelta rtt) override {}
+  void UpdateRtt(base::TimeDelta rtt) final {}
 
-  void UpdateTargetPlayoutDelay(base::TimeDelta delay) override {}
+  void UpdateTargetPlayoutDelay(base::TimeDelta delay) final {}
 
   // Called when an encoded frame is sent to the transport.
   void SendFrameToTransport(uint32 frame_id,
                             size_t frame_size,
-                            base::TimeTicks when) override {}
+                            base::TimeTicks when) final {}
 
   // Called when we receive an ACK for a frame.
-  void AckFrame(uint32 frame_id, base::TimeTicks when) override {}
+  void AckFrame(uint32 frame_id, base::TimeTicks when) final {}
 
   // Returns the bitrate we should use for the next frame.
   uint32 GetBitrate(base::TimeTicks playout_time,
-                    base::TimeDelta playout_delay) override {
+                    base::TimeDelta playout_delay) final {
     return bitrate_;
   }
 

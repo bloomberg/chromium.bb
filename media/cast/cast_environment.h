@@ -71,7 +71,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
  protected:
   virtual ~CastEnvironment();
 
-  // Subclasses may override these.
+  // Subclasses may final these.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy_;
   scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy_;

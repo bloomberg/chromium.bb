@@ -219,7 +219,7 @@ class H264VideoToolboxEncoder::VideoFrameFactoryImpl
 
   scoped_refptr<VideoFrame> MaybeCreateFrame(
       const gfx::Size& frame_size,
-      base::TimeDelta timestamp) override {
+      base::TimeDelta timestamp) final {
     if (frame_size.IsEmpty()) {
       DVLOG(1) << "Rejecting empty video frame.";
       return nullptr;
@@ -269,7 +269,7 @@ class H264VideoToolboxEncoder::VideoFrameFactoryImpl
 
  private:
   friend class base::RefCountedThreadSafe<VideoFrameFactoryImpl>;
-  ~VideoFrameFactoryImpl() override {}
+  ~VideoFrameFactoryImpl() final {}
 
   base::Lock lock_;
   base::ScopedCFTypeRef<CVPixelBufferPoolRef> pool_;
@@ -294,12 +294,12 @@ class H264VideoToolboxEncoder::VideoFrameFactoryImpl::Proxy
 
   scoped_refptr<VideoFrame> MaybeCreateFrame(
       const gfx::Size& frame_size,
-      base::TimeDelta timestamp) override {
+      base::TimeDelta timestamp) final {
     return video_frame_factory_->MaybeCreateFrame(frame_size, timestamp);
   }
 
  private:
-  ~Proxy() override {}
+  ~Proxy() final {}
 
   const scoped_refptr<VideoFrameFactoryImpl> video_frame_factory_;
 

@@ -36,7 +36,7 @@ class AudioSender : public FrameSender,
               const StatusChangeCallback& status_change_cb,
               CastTransportSender* const transport_sender);
 
-  ~AudioSender() override;
+  ~AudioSender() final;
 
   // Note: It is not guaranteed that |audio_frame| will actually be encoded and
   // sent, if AudioSender detects too many frames in flight.  Therefore, clients
@@ -45,9 +45,9 @@ class AudioSender : public FrameSender,
                    const base::TimeTicks& recorded_time);
 
  protected:
-  int GetNumberOfFramesInEncoder() const override;
-  base::TimeDelta GetInFlightMediaDuration() const override;
-  void OnAck(uint32 frame_id) override;
+  int GetNumberOfFramesInEncoder() const final;
+  base::TimeDelta GetInFlightMediaDuration() const final;
+  void OnAck(uint32 frame_id) final;
 
  private:
   // Called by the |audio_encoder_| with the next EncodedFrame to send.

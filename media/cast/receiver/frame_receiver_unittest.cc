@@ -80,7 +80,7 @@ class FrameReceiverTest : public ::testing::Test {
 
   ~FrameReceiverTest() override {}
 
-  void SetUp() override {
+  void SetUp() final {
     payload_.assign(kPacketSize, 0);
 
     // Always start with a key frame.

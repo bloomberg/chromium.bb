@@ -75,7 +75,7 @@ base::LazyInstance<GlobalCounter>::Leaky g_counter =
 class ByteCounterPipe : public media::cast::test::PacketPipe {
  public:
   ByteCounterPipe(ByteCounter* counter) : counter_(counter) {}
-  void Send(scoped_ptr<media::cast::Packet> packet) override {
+  void Send(scoped_ptr<media::cast::Packet> packet) final {
     counter_->Increment(packet->size());
     pipe_->Send(packet.Pass());
   }

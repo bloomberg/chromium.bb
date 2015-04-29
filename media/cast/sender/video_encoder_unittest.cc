@@ -46,7 +46,7 @@ class VideoEncoderTest
 
   ~VideoEncoderTest() override {}
 
-  void SetUp() override {
+  void SetUp() final {
     video_config_.codec = GetParam().first;
     video_config_.use_external_encoder = GetParam().second;
 
@@ -54,7 +54,7 @@ class VideoEncoderTest
       vea_factory_.reset(new FakeVideoEncodeAcceleratorFactory(task_runner_));
   }
 
-  void TearDown() override {
+  void TearDown() final {
     video_encoder_.reset();
     RunTasksAndAdvanceClock();
   }

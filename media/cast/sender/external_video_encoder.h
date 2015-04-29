@@ -35,16 +35,16 @@ class ExternalVideoEncoder : public VideoEncoder {
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
 
-  ~ExternalVideoEncoder() override;
+  ~ExternalVideoEncoder() final;
 
   // VideoEncoder implementation.
   bool EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,
-      const FrameEncodedCallback& frame_encoded_callback) override;
-  void SetBitRate(int new_bit_rate) override;
-  void GenerateKeyFrame() override;
-  void LatestFrameIdToReference(uint32 frame_id) override;
+      const FrameEncodedCallback& frame_encoded_callback) final;
+  void SetBitRate(int new_bit_rate) final;
+  void GenerateKeyFrame() final;
+  void LatestFrameIdToReference(uint32 frame_id) final;
 
  private:
   class VEAClientImpl;
@@ -88,10 +88,10 @@ class SizeAdaptableExternalVideoEncoder : public SizeAdaptableVideoEncoderBase {
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
 
-  ~SizeAdaptableExternalVideoEncoder() override;
+  ~SizeAdaptableExternalVideoEncoder() final;
 
  protected:
-  scoped_ptr<VideoEncoder> CreateEncoder() override;
+  scoped_ptr<VideoEncoder> CreateEncoder() final;
 
  private:
   // Special callbacks needed by media::cast::ExternalVideoEncoder.

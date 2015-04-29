@@ -25,7 +25,7 @@ class SkewedTickClock : public base::TickClock {
   // jump forwards or backwards, only changing the offset will
   // do that.
   void SetSkew(double skew, base::TimeDelta offset);
-  base::TimeTicks NowTicks() override;
+  base::TimeTicks NowTicks() final;
 
  private:
   base::TimeTicks SkewTicks(base::TimeTicks now);

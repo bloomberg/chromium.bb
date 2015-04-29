@@ -100,7 +100,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
   }
 
-  void SetUp() override {
+  void SetUp() final {
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),

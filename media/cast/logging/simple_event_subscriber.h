@@ -22,11 +22,11 @@ class SimpleEventSubscriber : public RawEventSubscriber {
  public:
   SimpleEventSubscriber();
 
-  ~SimpleEventSubscriber() override;
+  ~SimpleEventSubscriber() final;
 
   // RawEventSubscriber implementations.
-  void OnReceiveFrameEvent(const FrameEvent& frame_event) override;
-  void OnReceivePacketEvent(const PacketEvent& packet_event) override;
+  void OnReceiveFrameEvent(const FrameEvent& frame_event) final;
+  void OnReceivePacketEvent(const PacketEvent& packet_event) final;
 
   // Assigns frame events received so far to |frame_events| and clears them
   // from this object.

@@ -60,9 +60,9 @@ class VideoSender : public FrameSender,
   scoped_ptr<VideoFrameFactory> CreateVideoFrameFactory();
 
  protected:
-  int GetNumberOfFramesInEncoder() const override;
-  base::TimeDelta GetInFlightMediaDuration() const override;
-  void OnAck(uint32 frame_id) override;
+  int GetNumberOfFramesInEncoder() const final;
+  base::TimeDelta GetInFlightMediaDuration() const final;
+  void OnAck(uint32 frame_id) final;
 
  private:
   // Called by the |video_encoder_| with the next EncodedFrame to send.

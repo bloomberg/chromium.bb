@@ -24,16 +24,16 @@ class Vp8Encoder : public SoftwareVideoEncoder {
  public:
   explicit Vp8Encoder(const VideoSenderConfig& video_config);
 
-  ~Vp8Encoder() override;
+  ~Vp8Encoder() final;
 
   // SoftwareVideoEncoder implementations.
-  void Initialize() override;
+  void Initialize() final;
   void Encode(const scoped_refptr<media::VideoFrame>& video_frame,
               const base::TimeTicks& reference_time,
-              EncodedFrame* encoded_frame) override;
-  void UpdateRates(uint32 new_bitrate) override;
-  void GenerateKeyFrame() override;
-  void LatestFrameIdToReference(uint32 frame_id) override;
+              EncodedFrame* encoded_frame) final;
+  void UpdateRates(uint32 new_bitrate) final;
+  void GenerateKeyFrame() final;
+  void LatestFrameIdToReference(uint32 frame_id) final;
 
  private:
   enum { kNumberOfVp8VideoBuffers = 3 };

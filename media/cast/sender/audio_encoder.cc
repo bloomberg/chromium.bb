@@ -249,12 +249,12 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
   }
 
  private:
-  ~OpusImpl() override {}
+  ~OpusImpl() final {}
 
   void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                  int source_offset,
                                  int buffer_fill_offset,
-                                 int num_samples) override {
+                                 int num_samples) final {
     // Opus requires channel-interleaved samples in a single array.
     for (int ch = 0; ch < audio_bus->channels(); ++ch) {
       const float* src = audio_bus->channel(ch) + source_offset;
@@ -265,7 +265,7 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
     }
   }
 
-  bool EncodeFromFilledBuffer(std::string* out) override {
+  bool EncodeFromFilledBuffer(std::string* out) final {
     out->resize(kOpusMaxPayloadSize);
     const opus_int32 result =
         opus_encode_float(opus_encoder_,
@@ -353,7 +353,7 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
   }
 
  private:
-  ~AppleAacImpl() override { Teardown(); }
+  ~AppleAacImpl() final { Teardown(); }
 
   // Destroys the existing audio converter and file, if any.
   void Teardown() {
@@ -530,7 +530,7 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
   void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                  int source_offset,
                                  int buffer_fill_offset,
-                                 int num_samples) override {
+                                 int num_samples) final {
     DCHECK_EQ(audio_bus->channels(), input_buffer_->channels());
 
     // See the comment on |input_bus_| for more on this optimization. Note that
@@ -552,7 +552,7 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
         source_offset, num_samples, buffer_fill_offset, input_buffer_.get());
   }
 
-  bool EncodeFromFilledBuffer(std::string* out) override {
+  bool EncodeFromFilledBuffer(std::string* out) final {
     // Reset the buffer size field to the buffer capacity.
     converter_abl_.mBuffers[0].mDataByteSize = max_access_unit_size_;
 
@@ -711,12 +711,12 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
   }
 
  private:
-  ~Pcm16Impl() override {}
+  ~Pcm16Impl() final {}
 
   void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                  int source_offset,
                                  int buffer_fill_offset,
-                                 int num_samples) override {
+                                 int num_samples) final {
     audio_bus->ToInterleavedPartial(
         source_offset,
         num_samples,
@@ -724,7 +724,7 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
         buffer_.get() + buffer_fill_offset * num_channels_);
   }
 
-  bool EncodeFromFilledBuffer(std::string* out) override {
+  bool EncodeFromFilledBuffer(std::string* out) final {
     // Output 16-bit PCM integers in big-endian byte order.
     out->resize(num_channels_ * samples_per_frame_ * sizeof(int16));
     const int16* src = buffer_.get();

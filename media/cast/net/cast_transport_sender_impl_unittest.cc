@@ -31,7 +31,7 @@ class FakePacketSender : public PacketSender {
   FakePacketSender()
       : paused_(false), packets_sent_(0), bytes_sent_(0) {}
 
-  bool SendPacket(PacketRef packet, const base::Closure& cb) override {
+  bool SendPacket(PacketRef packet, const base::Closure& cb) final {
     if (paused_) {
       stored_packet_ = packet;
       callback_ = cb;
@@ -42,7 +42,7 @@ class FakePacketSender : public PacketSender {
     return true;
   }
 
-  int64 GetBytesSent() override { return bytes_sent_; }
+  int64 GetBytesSent() final { return bytes_sent_; }
 
   void SetPaused(bool paused) {
     paused_ = paused;

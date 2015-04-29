@@ -261,15 +261,15 @@ int main(int argc, char** argv) {
                                        video_config,
                                        false));
 
-  int override_fps = 0;
+  int final_fps = 0;
   if (!base::StringToInt(cmd->GetSwitchValueASCII(kSwitchFps),
-                         &override_fps)){
-    override_fps = 0;
+                         &final_fps)){
+    final_fps = 0;
   }
   base::FilePath source_path = cmd->GetSwitchValuePath(kSwitchSourceFile);
   if (!source_path.empty()) {
     LOG(INFO) << "Source: " << source_path.value();
-    fake_media_source->SetSourceFile(source_path, override_fps);
+    fake_media_source->SetSourceFile(source_path, final_fps);
   }
   if (cmd->HasSwitch(kSwitchVaryFrameSizes))
     fake_media_source->SetVariableFrameSizeMode(true);
