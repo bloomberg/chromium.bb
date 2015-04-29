@@ -34,6 +34,26 @@ DEFINE_RESOURCE_ID(IDR_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
 DEFINE_RESOURCE_ID(IDR_BLOCKED_POPUPS, R.drawable.infobar_blocked_popups)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_FULLSCREEN, R.drawable.infobar_fullscreen)
 
+// WebsiteSettingsUI images, used in ConnectionInfoPopup
+// Good:
+DEFINE_RESOURCE_ID(IDR_PAGEINFO_GOOD, R.drawable.pageinfo_good)
+// Warnings:
+DEFINE_RESOURCE_ID(IDR_PAGEINFO_WARNING_MINOR,\
+                   R.drawable.pageinfo_warning)
+// Bad:
+DEFINE_RESOURCE_ID(IDR_PAGEINFO_BAD, R.drawable.pageinfo_bad)
+// Should never occur, use warning just in case:
+// Enterprise managed: ChromeOS only.
+DEFINE_RESOURCE_ID(IDR_PAGEINFO_ENTERPRISE_MANAGED,\
+                   R.drawable.pageinfo_warning)
+// Info: Only shown on chrome:// urls, which don't show the connection info
+// popup.
+DEFINE_RESOURCE_ID(IDR_PAGEINFO_INFO, R.drawable.pageinfo_warning)
+// Major warning: Used on insecure pages, which don't show the connection info
+// popup.
+DEFINE_RESOURCE_ID(IDR_PAGEINFO_WARNING_MAJOR,\
+                   R.drawable.pageinfo_warning)
+
 // Autofill popup images.
 DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_AMEX, R.drawable.amex_card)
 DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_DISCOVER, R.drawable.discover_card)

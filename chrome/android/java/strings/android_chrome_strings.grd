@@ -1297,6 +1297,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_PAGE_INFO_PERMISSION_BLOCK" desc="The label used in the permissions dropdowns in the Page Info dialog on mobile for the option that denies a permission.">
         Block
       </message>
+      <message name="IDS_PAGE_INFO_DETAILS_LINK" desc="The label of the link to open the detailed connection information popup from the page info bubble.">
+        Details
+      </message>
       <message name="IDS_PAGE_INFO_CONNECTION_HTTPS" desc="Message to display in the page info bubble when the connection is private (HTTPS).">
         Your connection to this site is private.
       </message>

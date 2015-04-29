@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.text.Layout;
 import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
@@ -383,6 +384,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         // Set the URL connection message now, and the URL after layout (so it
         // can calculate its ideal height).
         mUrlConnectionMessage.setText(getUrlConnectionMessage());
+        if (isConnectionDetailsLinkVisible()) mUrlConnectionMessage.setOnClickListener(this);
     }
 
     /**
@@ -454,6 +456,14 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     }
 
     /**
+     * Whether to show a 'Details' link to the connection info popup. The link is only shown for
+     * HTTPS connections.
+     */
+    private boolean isConnectionDetailsLinkVisible() {
+        return !mIsInternalPage && mSecurityLevel != ToolbarModelSecurityLevel.NONE;
+    }
+
+    /**
      * Gets the styled connection message to display below the URL.
      */
     private Spannable getUrlConnectionMessage() {
@@ -488,6 +498,18 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             messageBuilder.setSpan(boldSpan, 0, leadingText.length(),
                     Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
+
+        if (isConnectionDetailsLinkVisible()) {
+            messageBuilder.append(" ");
+            SpannableString detailsText = new SpannableString(
+                    mContext.getResources().getString(R.string.page_info_details_link));
+            final ForegroundColorSpan blueSpan = new ForegroundColorSpan(
+                    mContext.getResources().getColor(R.color.website_settings_popup_text_link));
+            detailsText.setSpan(
+                    blueSpan, 0, detailsText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            messageBuilder.append(detailsText);
+        }
+
         return messageBuilder;
     }
 
@@ -609,6 +631,19 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         } else if (view == mUrlTitle) {
             // Expand/collapse the displayed URL title.
             mUrlTitle.toggleTruncation();
+        } else if (view == mUrlConnectionMessage) {
+            if (DeviceFormFactor.isTablet(mContext)) {
+                ConnectionInfoPopup.show(mContext, mWebContents);
+            } else {
+                // Delay while the WebsiteSettingsPopup closes.
+                mContainer.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ConnectionInfoPopup.show(mContext, mWebContents);
+                    }
+                }, FADE_DURATION + CLOSE_CLEANUP_DELAY);
+            }
+            mDialog.dismiss();
         }
     }
 

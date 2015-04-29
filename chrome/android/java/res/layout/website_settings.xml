@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:lineSpacingExtra="3dp"
             android:paddingTop="12dp"
-            android:textColor="#444444"
+            android:textColor="@color/website_settings_popup_text"
             android:textSize="14sp" />
 
         <Button

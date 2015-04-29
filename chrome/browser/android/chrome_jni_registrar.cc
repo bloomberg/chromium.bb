@@ -87,7 +87,9 @@
 #include "chrome/browser/ui/android/autofill/card_unmask_prompt_view_android.h"
 #include "chrome/browser/ui/android/autofill/credit_card_scanner_view_android.h"
 #include "chrome/browser/ui/android/autofill/password_generation_popup_view_android.h"
+#include "chrome/browser/ui/android/certificate_viewer_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
+#include "chrome/browser/ui/android/connection_info_popup_android.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/infobars/account_chooser_infobar.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar.h"
@@ -162,6 +164,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AutofillProfileBridge", autofill::RegisterAutofillProfileBridge},
     {"BookmarksBridge", BookmarksBridge::RegisterBookmarksBridge},
     {"CardUnmaskPrompt", autofill::CardUnmaskPromptViewAndroid::Register},
+    {"CertificateViewer", RegisterCertificateViewer},
     {"ChildAccountFeedbackReporter", RegisterChildAccountFeedbackReporter},
     {"ChildAccountService", RegisterChildAccountService},
     {"ChromeBrowserProvider",
@@ -172,6 +175,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      RegisterChromeWebContentsDelegateAndroid},
     {"ChromiumApplication", ChromiumApplication::RegisterBindings},
     {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},
+    {"ConnectionInfoPopupAndroid",
+     ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid},
     {"ContentViewUtil", RegisterContentViewUtil},
     {"ContextMenuHelper", RegisterContextMenuHelper},
     {"CookiesFetcher", RegisterCookiesFetcher},

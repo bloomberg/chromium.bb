@@ -4,6 +4,10 @@
      found in the LICENSE file. -->
 
 <resources>
+    <!-- Connection info popup dimensions -->
+    <dimen name="connection_info_padding_wide">24dp</dimen>
+    <dimen name="connection_info_padding_thin">16dp</dimen>
+
     <!-- Website Settings Popup Dimensions -->
     <dimen name="website_settings_popup_padding_sides">16dp</dimen>
     <dimen name="website_settings_popup_button_height">36dp</dimen>

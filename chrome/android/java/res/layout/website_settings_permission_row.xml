@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/website_settings_permission_icon"
-        android:textColor="#444444"
+        android:textColor="@color/website_settings_popup_text"
         android:textSize="14sp"
         android:textStyle="bold" />
 
