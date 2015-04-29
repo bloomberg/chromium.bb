@@ -357,7 +357,7 @@ void CompositedDeprecatedPaintLayerMapping::updateCompositingReasons()
     m_graphicsLayer->setCompositingReasons(m_owningLayer.compositingReasons());
 }
 
-bool CompositedDeprecatedPaintLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor()
+bool CompositedDeprecatedPaintLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor(DeprecatedPaintLayer* scrollParent)
 {
     if (!m_owningLayer.parent())
         return false;
@@ -368,6 +368,9 @@ bool CompositedDeprecatedPaintLayerMapping::owningLayerClippedByLayerNotAboveCom
 
     const LayoutObject* clippingContainer = m_owningLayer.clippingContainer();
     if (!clippingContainer)
+        return false;
+
+    if (clippingContainer->enclosingLayer() == scrollParent)
         return false;
 
     if (compositingAncestor->layoutObject()->isDescendantOf(clippingContainer))
@@ -426,14 +429,7 @@ bool CompositedDeprecatedPaintLayerMapping::updateGraphicsLayerConfiguration()
     // DeprecatedPaintLayer that is an ancestor in the layoutObject hierarchy, but a sibling in the z-order
     // hierarchy. Further, that sibling need not be composited at all. In such scenarios, an ancestor
     // clipping layer is necessary to apply the composited clip for this layer.
-    bool needsAncestorClip = owningLayerClippedByLayerNotAboveCompositedAncestor();
-
-    if (scrollParent) {
-        // If our containing block is our ancestor scrolling layer, then we'll already be clipped
-        // to it via our scroll parent and we don't need an ancestor clipping layer.
-        if (m_owningLayer.layoutObject()->containingBlock()->enclosingLayer() == m_owningLayer.ancestorScrollingLayer())
-            needsAncestorClip = false;
-    }
+    bool needsAncestorClip = owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent);
 
     if (updateClippingLayers(needsAncestorClip, needsDescendantsClippingLayer))
         layerConfigChanged = true;
@@ -459,7 +455,7 @@ bool CompositedDeprecatedPaintLayerMapping::updateGraphicsLayerConfiguration()
         layerConfigChanged = true;
 
     updateScrollParent(scrollParent);
-    updateClipParent();
+    updateClipParent(scrollParent);
 
     if (layerConfigChanged)
         updateInternalHierarchy();
@@ -1628,9 +1624,9 @@ static void updateClipParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLayer
     scrollingCoordinator->updateClipParentForGraphicsLayer(layer, clipParent);
 }
 
-void CompositedDeprecatedPaintLayerMapping::updateClipParent()
+void CompositedDeprecatedPaintLayerMapping::updateClipParent(DeprecatedPaintLayer* scrollParent)
 {
-    if (owningLayerClippedByLayerNotAboveCompositedAncestor())
+    if (owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent))
         return;
 
     DeprecatedPaintLayer* clipParent = m_owningLayer.clipParent();

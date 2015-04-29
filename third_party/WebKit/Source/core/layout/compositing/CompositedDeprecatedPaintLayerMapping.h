@@ -239,7 +239,7 @@ private:
     bool requiresScrollCornerLayer() const { return m_owningLayer.scrollableArea() && !m_owningLayer.scrollableArea()->scrollCornerAndResizerRect().isEmpty(); }
     bool updateScrollingLayers(bool scrollingLayers);
     void updateScrollParent(DeprecatedPaintLayer*);
-    void updateClipParent();
+    void updateClipParent(DeprecatedPaintLayer* scrollParent);
     bool updateSquashingLayers(bool needsSquashingLayers);
     void updateDrawsContent();
     void updateChildrenTransform();
@@ -292,7 +292,7 @@ private:
 
     // Return true if |m_owningLayer|'s compositing ancestor is not a descendant (inclusive) of the
     // clipping container for |m_owningLayer|.
-    bool owningLayerClippedByLayerNotAboveCompositedAncestor();
+    bool owningLayerClippedByLayerNotAboveCompositedAncestor(DeprecatedPaintLayer* scrollParent);
 
     DeprecatedPaintLayer& m_owningLayer;
 
