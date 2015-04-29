@@ -173,10 +173,6 @@ class MEDIA_EXPORT AudioRendererImpl
   // completed.
   void DoFlush_Locked();
 
-  // Calls |decoder_|.Reset() and arranges for ResetDecoderDone() to get
-  // called when the reset completes.
-  void ResetDecoder();
-
   // Called when the |decoder_|.Reset() has completed.
   void ResetDecoderDone();
 
