@@ -11,18 +11,21 @@ scanned_src_files_shared = 				\
 scanned_src_files_Client = 				\
 	$(scanned_src_files_shared)			\
 	$(top_srcdir)/src/wayland-client.c	\
-	$(top_srcdir)/src/wayland-client.h
+	$(top_srcdir)/src/wayland-client.h	\
+	$(top_srcdir)/src/wayland-client-core.h
 
 scanned_src_files_Server = 				\
 	$(scanned_src_files_shared)			\
 	$(top_srcdir)/src/wayland-server.c	\
 	$(top_srcdir)/src/wayland-server.h	\
+	$(top_srcdir)/src/wayland-server-core.h	\
 	$(top_srcdir)/src/wayland-shm.c
 
 scanned_src_files_man =					\
 	$(scanned_src_files_Server)			\
 	$(top_srcdir)/src/wayland-client.c	\
-	$(top_srcdir)/src/wayland-client.h
+	$(top_srcdir)/src/wayland-client.h	\
+	$(top_srcdir)/src/wayland-client-core.h
 
 diagramsdir := $(srcdir)/dot
 diagramssrc := $(wildcard $(diagramsdir)/*.gv)
