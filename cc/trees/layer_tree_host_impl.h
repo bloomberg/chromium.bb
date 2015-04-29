@@ -676,7 +676,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   // The optional delegate for the root layer scroll offset.
   LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate_;
-  LayerTreeSettings settings_;
+  const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;
   bool visible_;
   ManagedMemoryPolicy cached_managed_memory_policy_;
