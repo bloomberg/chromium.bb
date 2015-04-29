@@ -166,11 +166,11 @@ PluginFinder* PluginFinder::GetInstance() {
 }
 
 PluginFinder::PluginFinder() : version_(-1) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void PluginFinder::Init() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Load the built-in plugin list first. If we have a newer version stored
   // locally or download one, we will replace this one with it.
   scoped_ptr<base::DictionaryValue> plugin_list(LoadBuiltInPluginList());

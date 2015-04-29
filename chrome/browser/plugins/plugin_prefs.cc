@@ -590,7 +590,7 @@ void PluginPrefs::OnUpdatePreferences(
 }
 
 void PluginPrefs::NotifyPluginStatusChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
       content::Source<Profile>(profile_),

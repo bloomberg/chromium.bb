@@ -41,7 +41,7 @@ ChromePluginServiceFilter* ChromePluginServiceFilter::GetInstance() {
 void ChromePluginServiceFilter::RegisterResourceContext(
     PluginPrefs* plugin_prefs,
     const void* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
   resource_context_map_[context] = plugin_prefs;
 }
@@ -166,7 +166,7 @@ void ChromePluginServiceFilter::AuthorizeAllPlugins(
     content::WebContents* web_contents,
     bool load_blocked,
     const std::string& identifier) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   web_contents->ForEachFrame(base::Bind(&AuthorizeRenderer));
   if (load_blocked) {
     web_contents->SendToAllFrames(new ChromeViewMsg_LoadBlockedPlugins(
@@ -175,7 +175,7 @@ void ChromePluginServiceFilter::AuthorizeAllPlugins(
 }
 
 ChromePluginServiceFilter::ChromePluginServiceFilter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
@@ -189,7 +189,7 @@ void ChromePluginServiceFilter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
       int render_process_id =

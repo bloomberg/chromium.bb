@@ -60,7 +60,7 @@ void PluginStatusPrefSetter::StartUpdate() {
 void PluginStatusPrefSetter::GotPlugins(
     scoped_refptr<PluginPrefs> plugin_prefs,
     const std::vector<content::WebPluginInfo>& plugins) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Set the values on the PrefService instead of through the PrefMembers to
   // notify observers if they changed.
   profile_->GetPrefs()->SetBoolean(
