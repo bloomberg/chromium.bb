@@ -809,5 +809,46 @@ class UserMetricsActionTest(unittest.TestCase):
       output[0].message)
 
 
+class LogUsageTest(unittest.TestCase):
+
+  def testCheckNoNewUtilLogUsage(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+      MockAffectedFile('RandomStuff.java', [
+        'random stuff'
+      ]),
+      MockAffectedFile('HasCrLog.java', [
+        'import org.chromium.base.Log;',
+        'some random stuff',
+        'Log.d("TAG", "foo");',
+      ]),
+      MockAffectedFile('HasAndroidLog.java', [
+        'import android.util.Log;',
+        'some random stuff',
+        'Log.d("TAG", "foo");',
+      ]),
+      MockAffectedFile('HasExplicitLog.java', [
+        'some random stuff',
+        'android.util.Log.d("TAG", "foo");',
+      ]),
+      MockAffectedFile('HasBothLog.java', [
+        'import org.chromium.base.Log;',
+        'some random stuff',
+        'Log.d("TAG", "foo");',
+        'android.util.Log.d("TAG", "foo");',
+      ]),
+    ]
+
+    warnings = PRESUBMIT._CheckNoNewUtilLogUsage(
+        mock_input_api, mock_output_api)
+
+    self.assertEqual(1, len(warnings))
+    self.assertEqual(2, len(warnings[0].items))
+    self.assertTrue('HasAndroidLog.java' in warnings[0].items[0])
+    self.assertTrue('HasExplicitLog.java' in warnings[0].items[1])
+
+
 if __name__ == '__main__':
   unittest.main()

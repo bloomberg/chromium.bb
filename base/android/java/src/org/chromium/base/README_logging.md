@@ -1,0 +1,126 @@
+## Logging ##
+
+Logging used to be done using Android's [android.util.Log](http://developer.android.com/reference/android/util/Log.html).
+
+A wrapper on that is now available: org.chromium.base.Log. It is designed to write logs as belonging to logical groups going beyond single classes, and to make it easy to switch logging on or off for individual groups.
+
+Usage: `Log.i(TAG, "Some debug info here");`
+
+Output: `D/cr.Tag: ( 999): [MyClass.java:42] Some debug info here"`
+
+Here, **TAG** will be a feature or package name, "GSA" or "GCore" for example. In most cases, the class name is not needed anymore. In Debug and Verbose logs, the file name and line number will be prepended to the log message. For higher priority logs, those are currently not added for performance concerns. It might be useful to make the log messages meaningful enough so that with the group tag, it's easy to pinpoint their origin.
+
+All log calls are guarded, which allows to enable or disable logging specific groups using ADB:
+
+    adb shell setprop log.tag.<YOUR_LOG_TAG> <LEVEL>
+
+Level  here is either `VERBOSE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `ASSERT`, or `SUPPRESS`, and the log tag looks like `cr.Tag`. By default, the level for all tags is `INFO`.
+
+**Caveat:** Property keys are limited to 23 characters. If the tag is too long, `Log#isLoggable` throws a RuntimeException.
+
+### Logging Best Practices
+
+#### Rule #1: Never log PII (Personal Identification Information):
+
+This is a huge concern, because other applications can access the log and extract a lot of data from your own by doing so. Even if JellyBean restricted this, people are going to run your application on rooted devices and allow some apps to access it. Also anyone with USB access to the device can use ADB to get the full logcat and get the same data right now.
+
+If you really need to print something , print a series of Xs instead (e.g. "XXXXXX"), or print a truncated hash of the PII instead. Truncation is required to make it harder for an attacker to recover the full data through rainbow tables and similar methods.
+
+Similarly, avoid dumping API keys, cookies, etc...
+
+#### Rule #2: Do not write debug logs in production code:
+
+The kernel log buffer is global and of limited size. Any extra debug log you add to your activity or service makes it more difficult to diagnose problems on other parts of the system, because they tend to push the interesting bit out of the buffer too soon. This is a recurring problem on Android, so avoid participating into it. 
+
+All verbose and debug log calls made using `org.chromium.base.Log` will be stripped out of production binaries using Proguard. So there will be no way to get those logs in a release build. For other levels, they can be disabled using system properties. Because log messages might not be written, the cost of creating them should also be avoided. This can be using three complementary ways:
+
+- Use string formatting instead of concatenations
+  
+  ```
+  // BAD
+  Log.d(TAG, "I " + preference + " writing logs."); // A StringBuilder will be created there and the concatenations will always happen, even when not needed
+
+  // BETTER
+  Log.d(TAG, "I %s writing logs.", preference);
+  ```
+
+  If logging is disabled, the function's arguments will still have to be computed and provided as input. The first call above will lead to the creation of a `StringBuilder` and a few concatenations, while the second will just pass the arguments.
+
+- Guard expensive calls
+
+  Sometimes the values to log aren't readily available and need to be computed specially. This should be avoided when logging is disabled.
+
+  Using `Log#isLoggable` will return whether logging for a specific tag is allowed or not. It is the call used inside the log functions and using allows to know when running the expensive functions is needed.
+  
+  ```
+  if (Log.isLoggable(TAG, Log.DEBUG) {
+    Log.d(TAG, "Something happened: %s", dumpDom(tab));
+  }
+  ```
+
+  See the [android framework documentation](http://developer.android.com/tools/debugging/debugging-log.html) for more info.
+
+  Using a debug constant is a less flexible, but more perfomance oriented alternative.
+
+  ```
+  static private final boolean DEBUG = false;  // set to 'true' to enable debug logs for this class
+
+  ...
+  
+  if (DEBUG) {
+    Log.i(TAG, createThatExpensiveLogMessage(activity))
+  }
+  ```
+
+  Because the variable is a `static final` that can be evaluated at compile time, the Java compiler will optimize out all guarded calls from the generated `.class` file. Changing it however requires editing each of the files for which debug should be enabled and recompiling, while the previous method can enable or disable debugging for a whole feature without changing any source file.
+
+- Annotate debug functions with the `@NoSideEffects` annotation. 
+
+  That annotation tells Proguard to assume that a given function has no side effects, and is called only for its returned value. If this value is unused, the call will be removed. If the function is not called at all, it will also be removed. Since Proguard is already used to strip debug and verbose calls out of release builds, this annotation allows it to have a deeper action by removing also function calls used to generate log arguments.
+  
+  ```
+  /* If that function is only used in Log.d calls, proguard should completely remove it from the
+   * release builds. */
+  @NoSideEffects
+  private static String getSomeDebugLogString(Thing[] things) {
+    /* Still needs to be guard to avoid impacting debug builds, or in case it's used for some
+     * other log levels. But at least it is done only once inside the function */
+    if (!Log.isLoggable(TAG, Log.DEBUG)) return null;
+
+    StringBuilder sb = new StringBuilder("Reporting " + thing.length + " things:");
+    for (Thing thing : things) {
+      sb.append('\n').append(thing.id).append(' ').append(report.foo);
+    }
+    return sb.toString();
+  }
+
+  public void bar() {
+    ...
+    Log.d(TAG, getSomeDebugLogString(things)); /* In debug builds, the function does nothing is 
+                                                * debug is disabled, and the entire line is 
+                                                * removed in release builds. */
+  }
+  ```
+
+#### Rule #3: Favor small log messages
+
+This is still related to the global fixed-sized kernel buffer used to keep all logs. Try to make your log information as terse as possible. This reduces the risk of pushing interesting log data out of the buffer when something really nasty happens. It's really better to have a single-line log message, than several ones. I.e. don't use:
+
+```
+Log.GROUP.d(TAG, "field1 = %s", value1);
+Log.GROUP.d(TAG, "field2 = %s", value2);
+Log.GROUP.d(TAG, "field3 = %s", value3);
+```
+
+Instead, write this as:
+
+```
+Log.d(TAG, "field1 = %s, field2 = %s, field3 = %s", value1, value2, value3);
+```
+
+That doesn't seem to be much different if you count overall character counts, but each independent log entry also implies a small, but non-trivial header, in the kernel log buffer.
+And since every byte count, you can also try something even shorter, as in:
+
+```
+Log.d(TAG, "fields [%s,%s,%s]", value1, value2, value3);
+```
