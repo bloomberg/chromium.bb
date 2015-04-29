@@ -307,13 +307,16 @@ void WakeOnWifiManager::GetDevicePropertiesCallback(
     return;
   }
 
+  // We always resend the wake on wifi setting unless it hasn't been set yet.
+  // This covers situations where shill restarts or ends up recreating the wifi
+  // device (crbug.com/475199).
+  if (current_feature_ != INVALID)
+    HandleWakeOnWifiFeatureUpdated();
+
   if (wifi_properties_received_)
     return;
 
   wifi_properties_received_ = true;
-
-  if (current_feature_ != INVALID)
-    HandleWakeOnWifiFeatureUpdated();
 
   NetworkHandler::Get()
       ->network_device_handler()
