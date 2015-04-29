@@ -257,6 +257,7 @@ static_library("content_shell_lib") {
     "//content/app/strings",
     "//content/gpu",
     "//content/test:layouttest_support",
+    "//device/bluetooth",
     "//gin",
     "//gpu",
     "//ipc",

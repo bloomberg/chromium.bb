@@ -371,7 +371,7 @@ test("components_browsertests") {
     "//base/test:test_support",
     "//content/test:browsertest_support",
     "//content/test:test_support",
-
+    "//device/bluetooth",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",
