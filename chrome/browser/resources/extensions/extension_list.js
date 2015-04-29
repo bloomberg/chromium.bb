@@ -185,14 +185,6 @@ cr.define('extensions', function() {
     return div;
   }
 
-  /**
-   * @type {Object<string, number>} A map from extension id to last reloaded
-   *     timestamp. The timestamp is recorded when the user click the 'Reload'
-   *     link. It is used to refresh the icon of an unpacked extension.
-   *     This persists between calls to decorate.
-   */
-  var extensionReloadedTimestamp = {};
-
   ExtensionList.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -549,7 +541,6 @@ cr.define('extensions', function() {
       // The 'Reload' link.
       row.setupColumn('.reload-link', 'localReload', 'click', function(e) {
         chrome.developerPrivate.reload(extension.id, {failQuietly: true});
-        extensionReloadedTimestamp[extension.id] = Date.now();
       });
 
       // The 'Launch' link.
@@ -677,16 +668,7 @@ cr.define('extensions', function() {
                            row.id == this.getIdQueryParam_());
 
       var item = row.querySelector('.extension-list-item');
-      // Prevent the image cache of extension icon by using the reloaded
-      // timestamp as a query string. The timestamp is recorded when the user
-      // clicks the 'Reload' link. http://crbug.com/159302.
-      if (extensionReloadedTimestamp[extension.id]) {
-        item.style.backgroundImage =
-            'url(' + extension.iconUrl + '?' +
-            extensionReloadedTimestamp[extension.id] + ')';
-      } else {
-        item.style.backgroundImage = 'url(' + extension.iconUrl + ')';
-      }
+      item.style.backgroundImage = 'url(' + extension.iconUrl + ')';
 
       this.setText_(row, '.extension-title', extension.name);
       this.setText_(row, '.extension-version', extension.version);
