@@ -131,7 +131,8 @@ Output.ROLE_INFO_ = {
     msgId: 'aria_role_menu'
   },
   popUpButton: {
-    msgId: 'tag_button'
+    msgId: 'tag_button',
+    earcon: 'LISTBOX'
   },
   radioButton: {
     msgId: 'input_type_radio'
