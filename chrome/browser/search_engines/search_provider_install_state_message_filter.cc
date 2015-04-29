@@ -29,12 +29,12 @@ SearchProviderInstallStateMessageFilter(
       weak_factory_(this) {
   // This is initialized by RenderProcessHostImpl. Do not add any non-trivial
   // initialization here. Instead do it lazily when required.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 bool SearchProviderInstallStateMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SearchProviderInstallStateMessageFilter, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
@@ -47,7 +47,7 @@ bool SearchProviderInstallStateMessageFilter::OnMessageReceived(
 
 SearchProviderInstallStateMessageFilter::
 ~SearchProviderInstallStateMessageFilter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 search_provider::InstallState

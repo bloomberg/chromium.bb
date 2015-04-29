@@ -50,7 +50,7 @@ namespace speech {
 namespace {
 
 void TabClosedCallbackOnIOThread(int render_process_id, int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   SpeechRecognitionManager* manager = SpeechRecognitionManager::GetInstance();
   // |manager| becomes NULL if a browser shutdown happens between the post of
@@ -76,14 +76,14 @@ class ChromeSpeechRecognitionManagerDelegate::OptionalRequestInfo
   }
 
   void Refresh() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // UMA opt-in can be checked only from the UI thread, so switch to that.
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&OptionalRequestInfo::CheckUMAAndGetHardwareInfo, this));
   }
 
   void CheckUMAAndGetHardwareInfo() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // prefs::kMetricsReportingEnabled is not registered for OS_CHROMEOS.
 #if !defined(OS_CHROMEOS)
     if (g_browser_process->local_state()->GetBoolean(
@@ -96,7 +96,7 @@ class ChromeSpeechRecognitionManagerDelegate::OptionalRequestInfo
   }
 
   void GetHardwareInfo() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     base::AutoLock lock(lock_);
     can_report_metrics_ = true;
     base::string16 device_model =
@@ -191,7 +191,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED ||
            type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED);
 
@@ -232,7 +232,7 @@ class ChromeSpeechRecognitionManagerDelegate::TabWatcher
 
   ~TabWatcher() override {
     // Must be destroyed on the UI thread due to |registrar_| non thread-safety.
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
   // Helper function to find the iterator in |registered_web_contents_| which
@@ -276,7 +276,7 @@ ChromeSpeechRecognitionManagerDelegate
 
 void ChromeSpeechRecognitionManagerDelegate::TabClosedCallback(
     int render_process_id, int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Tell the S.R. Manager (which lives on the IO thread) to abort all the
   // sessions for the given renderer view.
@@ -333,7 +333,7 @@ void ChromeSpeechRecognitionManagerDelegate::OnRecognitionEnd(int session_id) {
 void ChromeSpeechRecognitionManagerDelegate::GetDiagnosticInformation(
     bool* can_report_metrics,
     std::string* hardware_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!optional_request_info_.get()) {
     optional_request_info_ = new OptionalRequestInfo();
     // Since hardware info is optional with speech input requests, we start an
@@ -352,7 +352,7 @@ void ChromeSpeechRecognitionManagerDelegate::GetDiagnosticInformation(
 void ChromeSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
     int session_id,
     base::Callback<void(bool ask_user, bool is_allowed)> callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const content::SpeechRecognitionSessionContext& context =
       SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
@@ -400,7 +400,7 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
     base::Callback<void(bool ask_user, bool is_allowed)> callback,
     int render_process_id,
     int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const content::RenderViewHost* render_view_host =
       content::RenderViewHost::FromID(render_process_id, render_view_id);
 

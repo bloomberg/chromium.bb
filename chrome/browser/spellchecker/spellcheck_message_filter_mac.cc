@@ -96,7 +96,7 @@ void SpellingRequest::RequestCheck(
     int document_tag,
     const std::vector<SpellCheckMarker>& markers) {
   DCHECK(!text.empty());
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   route_id_ = route_id;
   identifier_ = identifier;
@@ -163,7 +163,7 @@ void SpellingRequest::OnRemoteCheckCompleted(
     bool success,
     const base::string16& text,
     const std::vector<SpellCheckResult>& results) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   remote_success_ = success;
   remote_results_ = results;
 
@@ -275,7 +275,7 @@ void SpellCheckMessageFilterMac::OnRequestTextCheck(
     const base::string16& text,
     std::vector<SpellCheckMarker> markers) {
   DCHECK(!text.empty());
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Initialize the spellcheck service if needed. The service will send the
   // language code for text breaking to the renderer. (Text breaking is required

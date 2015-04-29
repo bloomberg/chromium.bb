@@ -83,11 +83,11 @@ void SigninNamesOnIOThread::GoogleSignedOut(const std::string& account_id,
 }
 
 void SigninNamesOnIOThread::CheckOnIOThread() const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 void SigninNamesOnIOThread::CheckOnUIThread() const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void SigninNamesOnIOThread::PostTaskToIOThread(bool add,

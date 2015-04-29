@@ -90,7 +90,7 @@ bool ServiceProcessControl::IsConnected() const {
 
 void ServiceProcessControl::Launch(const base::Closure& success_task,
                                    const base::Closure& failure_task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::Closure failure = failure_task;
   if (!success_task.is_null())
@@ -120,12 +120,12 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
 }
 
 void ServiceProcessControl::Disconnect() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   channel_.reset();
 }
 
 void ServiceProcessControl::OnProcessLaunched() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (launcher_->launched()) {
     UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                               SERVICE_EVENT_LAUNCHED, SERVICE_EVENT_MAX);
@@ -157,7 +157,7 @@ bool ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             SERVICE_EVENT_CHANNEL_CONNECTED, SERVICE_EVENT_MAX);
@@ -175,7 +175,7 @@ void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
 }
 
 void ServiceProcessControl::OnChannelError() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             SERVICE_EVENT_CHANNEL_ERROR, SERVICE_EVENT_MAX);
@@ -185,7 +185,7 @@ void ServiceProcessControl::OnChannelError() {
 }
 
 bool ServiceProcessControl::Send(IPC::Message* message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!channel_.get())
     return false;
   return channel_->Send(message);
@@ -203,7 +203,7 @@ void ServiceProcessControl::Observe(
 
 void ServiceProcessControl::OnCloudPrintProxyInfo(
     const cloud_print::CloudPrintProxyInfo& proxy_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             SERVICE_EVENT_INFO_REPLY, SERVICE_EVENT_MAX);
   if (!cloud_print_info_callback_.is_null()) {
@@ -216,14 +216,14 @@ void ServiceProcessControl::OnHistograms(
     const std::vector<std::string>& pickled_histograms) {
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             SERVICE_EVENT_HISTOGRAMS_REPLY, SERVICE_EVENT_MAX);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::HistogramDeltaSerialization::DeserializeAndAddSamples(
       pickled_histograms);
   RunHistogramsCallback();
 }
 
 void ServiceProcessControl::RunHistogramsCallback() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!histograms_callback_.is_null()) {
     histograms_callback_.Run();
     histograms_callback_.Reset();
@@ -233,7 +233,7 @@ void ServiceProcessControl::RunHistogramsCallback() {
 
 void ServiceProcessControl::OnPrinters(
     const std::vector<std::string>& printers) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION(
       "CloudPrint.ServiceEvents", SERVICE_PRINTERS_REPLY, SERVICE_EVENT_MAX);
   UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvailablePrinters", printers.size());
@@ -245,7 +245,7 @@ void ServiceProcessControl::OnPrinters(
 
 bool ServiceProcessControl::GetCloudPrintProxyInfo(
     const CloudPrintProxyInfoCallback& cloud_print_info_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!cloud_print_info_callback.is_null());
   cloud_print_info_callback_.Reset();
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
@@ -259,7 +259,7 @@ bool ServiceProcessControl::GetCloudPrintProxyInfo(
 bool ServiceProcessControl::GetHistograms(
     const base::Closure& histograms_callback,
     const base::TimeDelta& timeout) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!histograms_callback.is_null());
   histograms_callback_.Reset();
 
@@ -294,7 +294,7 @@ bool ServiceProcessControl::GetHistograms(
 
 bool ServiceProcessControl::GetPrinters(
     const PrintersCallback& printers_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!printers_callback.is_null());
   printers_callback_.Reset();
   UMA_HISTOGRAM_ENUMERATION(
@@ -306,7 +306,7 @@ bool ServiceProcessControl::GetPrinters(
 }
 
 bool ServiceProcessControl::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool ret = Send(new ServiceMsg_Shutdown());
   channel_.reset();
   return ret;
@@ -328,7 +328,7 @@ ServiceProcessControl::Launcher::Launcher(
 // After the command is executed, |task| is called with the process handle on
 // the UI thread.
 void ServiceProcessControl::Launcher::Run(const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   notify_task_ = task;
   BrowserThread::PostTask(BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
                           base::Bind(&Launcher::DoRun, this));

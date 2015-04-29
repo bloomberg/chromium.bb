@@ -13,7 +13,7 @@ BaseSessionServiceDelegateImpl::BaseSessionServiceDelegateImpl(
       : should_use_delayed_save_(should_use_delayed_save) {}
 
 base::SequencedWorkerPool* BaseSessionServiceDelegateImpl::GetBlockingPool() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return content::BrowserThread::GetBlockingPool();
 }
 

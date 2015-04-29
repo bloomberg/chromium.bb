@@ -183,7 +183,7 @@ void RecordHotwordEnabledMetric(HotwordService *service, Profile* profile) {
 }
 
 ExtensionService* GetExtensionService(Profile* profile) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);

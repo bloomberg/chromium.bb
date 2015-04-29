@@ -67,7 +67,7 @@ void SSLClientAuthObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DVLOG(1) << "SSLClientAuthObserver::Observe " << this;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(type == chrome::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED);
 
   CertDetails* cert_details = content::Details<CertDetails>(details).ptr();
@@ -84,13 +84,13 @@ void SSLClientAuthObserver::Observe(
 }
 
 void SSLClientAuthObserver::StartObserving() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
       content::Source<content::BrowserContext>(browser_context_));
 }
 
 void SSLClientAuthObserver::StopObserving() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   notification_registrar_.RemoveAll();
 }

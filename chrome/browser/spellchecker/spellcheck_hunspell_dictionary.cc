@@ -28,7 +28,7 @@ namespace {
 
 // Close the file.
 void CloseDictionary(base::File file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   file.Close();
 }
 
@@ -36,7 +36,7 @@ void CloseDictionary(base::File file) {
 // returns false.
 bool SaveDictionaryData(scoped_ptr<std::string> data,
                         const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   size_t bytes_written =
       base::WriteFile(path, data->data(), data->length());
@@ -106,7 +106,7 @@ SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
 }
 
 void SpellcheckHunspellDictionary::Load() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(OS_MACOSX)
   if (spellcheck_mac::SpellCheckerAvailable() &&
@@ -132,7 +132,7 @@ void SpellcheckHunspellDictionary::Load() {
 
 void SpellcheckHunspellDictionary::RetryDownloadDictionary(
       net::URLRequestContextGetter* request_context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   request_context_getter_ = request_context_getter;
   DownloadDictionary(GetDictionaryURL());
 }
@@ -154,12 +154,12 @@ bool SpellcheckHunspellDictionary::IsUsingPlatformChecker() const {
 }
 
 void SpellcheckHunspellDictionary::AddObserver(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.AddObserver(observer);
 }
 
 void SpellcheckHunspellDictionary::RemoveObserver(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 }
 
@@ -174,7 +174,7 @@ bool SpellcheckHunspellDictionary::IsDownloadFailure() {
 void SpellcheckHunspellDictionary::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(source);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<net::URLFetcher> fetcher_destructor(fetcher_.release());
 
   if ((source->GetResponseCode() / 100) != 2) {
@@ -224,7 +224,7 @@ GURL SpellcheckHunspellDictionary::GetDictionaryURL() {
 }
 
 void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request_context_getter_);
 
   download_status_ = DOWNLOAD_IN_PROGRESS;
@@ -248,7 +248,7 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
 // download is chrome::DIR_USER_DATA.
 SpellcheckHunspellDictionary::DictionaryFile
 SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DictionaryFile dictionary;
 
 #if defined(OS_WIN)
@@ -291,7 +291,7 @@ SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
 SpellcheckHunspellDictionary::DictionaryFile
 SpellcheckHunspellDictionary::InitializeDictionaryLocation(
     const std::string& language) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Initialize the BDICT path. Initialization should be in the FILE thread
   // because it checks if there is a "Dictionaries" directory and create it.
@@ -305,7 +305,7 @@ SpellcheckHunspellDictionary::InitializeDictionaryLocation(
 
 void SpellcheckHunspellDictionary::InitializeDictionaryLocationComplete(
     DictionaryFile file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   dictionary_file_ = file.Pass();
 
   if (!dictionary_file_.file.IsValid()) {
@@ -331,7 +331,7 @@ void SpellcheckHunspellDictionary::InitializeDictionaryLocationComplete(
 
 void SpellcheckHunspellDictionary::SaveDictionaryDataComplete(
     bool dictionary_saved) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (dictionary_saved) {
     download_status_ = DOWNLOAD_NONE;

@@ -17,7 +17,7 @@ namespace {
 // Retrieves the Instant data from the |context|'s named user-data.
 InstantIOContext* GetDataForResourceContext(
     content::ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return base::UserDataAdapter<InstantIOContext>::Get(
       context, InstantIOContext::kInstantIOContextKeyName);
 }
@@ -38,7 +38,7 @@ const char InstantIOContext::kInstantIOContextKeyName[] = "instant_io_context";
 InstantIOContext::InstantIOContext() {
   // The InstantIOContext is created on the UI thread but is accessed
   // on the IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 InstantIOContext::~InstantIOContext() {
@@ -57,21 +57,21 @@ void InstantIOContext::SetUserDataOnIO(
 void InstantIOContext::AddInstantProcessOnIO(
     scoped_refptr<InstantIOContext> instant_io_context,
     int process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   instant_io_context->process_ids_.insert(process_id);
 }
 
 // static
 void InstantIOContext::RemoveInstantProcessOnIO(
     scoped_refptr<InstantIOContext> instant_io_context, int process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   instant_io_context->process_ids_.erase(process_id);
 }
 
 // static
 void InstantIOContext::ClearInstantProcessesOnIO(
     scoped_refptr<InstantIOContext> instant_io_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   instant_io_context->process_ids_.clear();
 }
 
@@ -95,6 +95,6 @@ bool InstantIOContext::ShouldServiceRequest(const net::URLRequest* request) {
 }
 
 bool InstantIOContext::IsInstantProcess(int process_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return process_ids_.find(process_id) != process_ids_.end();
 }

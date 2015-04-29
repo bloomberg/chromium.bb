@@ -112,7 +112,7 @@ void SpellCheckMessageFilter::OnCallSpellingService(
     const base::string16& text,
     std::vector<SpellCheckMarker> markers) {
   DCHECK(!text.empty());
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Erase invalid markers (with offsets out of boundaries of text length).
   markers.erase(
       std::remove_if(

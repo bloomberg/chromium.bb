@@ -125,7 +125,7 @@ signin::ManageAccountsParams BuildManageAccountsParams(
 void ProcessMirrorHeaderUIThread(
     int child_id, int route_id,
     signin::ManageAccountsParams manage_accounts_params) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   signin::GAIAServiceType service_type = manage_accounts_params.service_type;
   DCHECK_NE(signin::GAIA_SERVICE_TYPE_NONE, service_type);
@@ -200,7 +200,7 @@ bool AppendMirrorRequestHeaderIfPossible(
     ProfileIOData* io_data,
     int child_id,
     int route_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (io_data->IsOffTheRecord())
     return false;
@@ -279,7 +279,7 @@ void ProcessMirrorResponseHeaderIfExists(
 #if defined(OS_IOS)
   NOTREACHED();
 #else
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
     return;
 

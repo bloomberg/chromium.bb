@@ -105,7 +105,7 @@ void SessionDataDeleter::ClearSessionOnlyLocalStorage(
 
 void SessionDataDeleter::DeleteSessionCookiesOnIOThread(
     ProfileIOData* profile_io_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::URLRequestContext* request_context =
       profile_io_data->GetMainRequestContext();
   cookie_monster_ = request_context->cookie_store()->GetCookieMonster();
@@ -142,7 +142,7 @@ void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
 }  // namespace
 
 void DeleteSessionOnlyData(Profile* profile) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (browser_shutdown::IsTryingToQuit())
     return;
 
