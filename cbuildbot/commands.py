@@ -633,6 +633,7 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
       cmd.append('--only_verify')
       cmd.append('--suite=smoke')
     elif test_type == constants.TELEMETRY_SUITE_TEST_TYPE:
+      cmd.append('--only_verify')
       cmd.append('--suite=telemetry_unit')
     else:
       cmd.append('--quick_update')
