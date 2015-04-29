@@ -533,7 +533,7 @@ public:
     bool causesScrollingIfUncanceled;
 
     // A unique identifier for the touch event.
-    uint64_t uniqueTouchEventId;
+    uint32_t uniqueTouchEventId;
 
     WebTouchEvent()
         : WebInputEvent(sizeof(WebTouchEvent))
