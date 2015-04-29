@@ -136,6 +136,7 @@ crbug.com/451606 virtual/slimmingpaint/svg/filters/feImage-target-style-change.s
 crbug.com/451606 svg/filters/feImage-self-and-other-referencing.html [ Crash Pass ]
 crbug.com/451606 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ ImageOnlyFailure ]
 
+crbug.com/482170 virtual/slimmingpaint/fast/repaint/scroll-stacking-context-backface-visiblity-leaves-traces.html [ Crash ]
 crbug.com/482173 virtual/slimmingpaint/fast/repaint/table-col-background.html [ Crash ]
 crbug.com/482174 virtual/slimmingpaint/fast/repaint/video-unmute-repaint.html [ Crash ]
 crbug.com/482177 virtual/slimmingpaint/fast/repaint/view-background-from-body-2.html [ Crash ]
@@ -2031,12 +2032,6 @@ crbug.com/463358 svg/custom/massive-coordinates.svg [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/006.xml [ Pass ImageOnlyFailure ]
 crbug.com/463358 transforms/2d/hindi-rotated.html [ Pass Failure ImageOnlyFailure ]
-
-crbug.com/481769 css2.1/20110323/abspos-containing-block-initial-004b.htm [ ImageOnlyFailure ]
-crbug.com/481769 css2.1/20110323/abspos-containing-block-initial-004d.htm [ ImageOnlyFailure ]
-
-crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
-crbug.com/482229 virtual/slimmingpaint/compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
 crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
 crbug.com/469657 virtual/slimmingpaint/fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]

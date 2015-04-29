@@ -1215,28 +1215,6 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientWrapper& d
     }
 }
 
-static void invalidateDisplayItemClientForNonCompositingDescendantsRecursive(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutObject& layoutObject)
-{
-    paintInvalidationContainer.invalidateDisplayItemClientOnBacking(layoutObject);
-    for (LayoutObject* child = layoutObject.slowFirstChild(); child; child = child->nextSibling()) {
-        if (!child->isPaintInvalidationContainer())
-            invalidateDisplayItemClientForNonCompositingDescendantsRecursive(paintInvalidationContainer, *child);
-    }
-}
-
-void LayoutObject::invalidateDisplayItemClientForNonCompositingDescendants() const
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
-
-    // Not using enclosingCompositedContainer() directly because this object may be in an orphaned subtree.
-    if (const DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer()) {
-        // This is valid because we want to invalidate the client in the display item list of the current backing.
-        DisableCompositingQueryAsserts disabler;
-        if (const DeprecatedPaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            invalidateDisplayItemClientForNonCompositingDescendantsRecursive(*paintInvalidationLayer->layoutObject(), *this);
-    }
-}
-
 void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());

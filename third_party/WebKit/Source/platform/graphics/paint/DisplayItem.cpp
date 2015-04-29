@@ -154,10 +154,6 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     case EndTransform: return "EndTransform";
     case BeginClipPath: return "BeginClipPath";
     case EndClipPath: return "EndClipPath";
-    case BeginFixedPosition: return "BeginFixedPosition";
-    case EndFixedPosition: return "EndFixedPosition";
-    case BeginFixedPositionContainer: return "BeginFixedPositionContainer";
-    case EndFixedPositionContainer: return "EndFixedPositionContainer";
     default:
         ASSERT_NOT_REACHED();
         return "Unknown";

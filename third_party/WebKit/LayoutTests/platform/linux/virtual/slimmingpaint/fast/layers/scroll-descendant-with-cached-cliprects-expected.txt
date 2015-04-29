@@ -19,10 +19,6 @@
         "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
         "LayoutBlockFlow (relative positioned) DIV class='container'",
         "LayoutBlockFlow (relative positioned) DIV id='ul'",
-        "LayoutBlockFlow DIV",
-        "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
-        "LayoutBlockFlow (relative positioned) DIV class='container'",
-        "LayoutBlockFlow (relative positioned) DIV id='ul'",
         "LayoutBlockFlow DIV"
       ]
     }

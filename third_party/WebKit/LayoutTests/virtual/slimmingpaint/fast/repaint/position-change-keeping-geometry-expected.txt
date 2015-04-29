@@ -9,8 +9,6 @@
         [0, 118, 800, 100]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='target2'",
-        "LayoutBlockFlow (positioned) DIV id='target3'",
         "LayoutBlockFlow HTML"
       ]
     }

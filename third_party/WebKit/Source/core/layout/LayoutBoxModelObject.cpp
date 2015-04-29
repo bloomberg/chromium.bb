@@ -224,17 +224,6 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
             setChildNeedsLayout();
     }
 
-    // Fixed-position is painted using transform. In the case that the object
-    // gets the same layout after changing position property, although no
-    // re-raster (rect-based invalidation) is needed, display items should
-    // still update their paint offset.
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && oldStyle) {
-        bool newStyleIsFixedPosition = style()->position() == FixedPosition;
-        bool oldStyleIsFixedPosition = oldStyle->position() == FixedPosition;
-        if (newStyleIsFixedPosition != oldStyleIsFixedPosition)
-            invalidateDisplayItemClientForNonCompositingDescendants();
-    }
-
     if (FrameView *frameView = view()->frameView()) {
         bool newStyleIsViewportConstained = style()->hasViewportConstrainedPosition();
         bool oldStyleIsViewportConstrained = oldStyle && oldStyle->hasViewportConstrainedPosition();
