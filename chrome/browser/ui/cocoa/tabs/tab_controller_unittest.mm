@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/tabs/media_indicator_button_cocoa.h"
@@ -219,6 +220,9 @@ class TabControllerTest : public CocoaTest {
       EXPECT_LE(NSMaxY(closeButtonFrame), NSMaxY(tabFrame));
     }
   }
+
+ private:
+  base::MessageLoop message_loop_;
 };
 
 // Tests creating the controller, sticking it in a window, and removing it.
