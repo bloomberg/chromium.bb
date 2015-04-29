@@ -64,14 +64,14 @@ class HostResolutionRequestRecorder : public net::HostResolverProc {
   }
 
   bool HasHostBeenRequested(const std::string& hostname) const {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return std::find(requested_hostnames_.begin(),
                      requested_hostnames_.end(),
                      hostname) != requested_hostnames_.end();
   }
 
   void WaitUntilHostHasBeenRequested(const std::string& hostname) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!is_waiting_for_hostname_);
     if (HasHostBeenRequested(hostname))
       return;
@@ -84,7 +84,7 @@ class HostResolutionRequestRecorder : public net::HostResolverProc {
   ~HostResolutionRequestRecorder() override {}
 
   void AddToHistory(const std::string& hostname) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     requested_hostnames_.push_back(hostname);
     if (is_waiting_for_hostname_ && waiting_for_hostname_ == hostname) {
       is_waiting_for_hostname_ = false;

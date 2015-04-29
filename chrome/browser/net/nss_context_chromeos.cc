@@ -21,7 +21,7 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
       GetNSSCertDatabaseCallback;
   explicit NSSCertDatabaseChromeOSManager(const std::string& username_hash)
       : username_hash_(username_hash), weak_ptr_factory_(this) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     crypto::ScopedPK11Slot private_slot(crypto::GetPrivateSlotForChromeOSUser(
         username_hash,
         base::Bind(&NSSCertDatabaseChromeOSManager::DidGetPrivateSlot,
@@ -31,12 +31,12 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
   }
 
   ~NSSCertDatabaseChromeOSManager() override {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   }
 
   net::NSSCertDatabaseChromeOS* GetNSSCertDatabase(
       const GetNSSCertDatabaseCallback& callback) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (nss_cert_database_)
       return nss_cert_database_.get();
@@ -49,7 +49,7 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
   typedef std::vector<GetNSSCertDatabaseCallback> ReadyCallbackList;
 
   void DidGetPrivateSlot(crypto::ScopedPK11Slot private_slot) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     nss_cert_database_.reset(new net::NSSCertDatabaseChromeOS(
         crypto::GetPublicSlotForChromeOSUser(username_hash_),
         private_slot.Pass()));
@@ -79,7 +79,7 @@ net::NSSCertDatabaseChromeOS* GetNSSCertDatabaseChromeOS(
     content::ResourceContext* context,
     const NSSCertDatabaseChromeOSManager::GetNSSCertDatabaseCallback&
         callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   NSSCertDatabaseChromeOSManager* manager =
       static_cast<NSSCertDatabaseChromeOSManager*>(
           context->GetUserData(kDatabaseManagerKey));
@@ -116,14 +116,14 @@ void SetSystemSlotOfDBForResourceContext(content::ResourceContext* context,
 
 crypto::ScopedPK11Slot GetPublicNSSKeySlotForResourceContext(
     content::ResourceContext* context) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return crypto::GetPublicSlotForChromeOSUser(GetUsername(context));
 }
 
 crypto::ScopedPK11Slot GetPrivateNSSKeySlotForResourceContext(
     content::ResourceContext* context,
     const base::Callback<void(crypto::ScopedPK11Slot)>& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return crypto::GetPrivateSlotForChromeOSUser(GetUsername(context), callback);
 }
 
@@ -136,7 +136,7 @@ net::NSSCertDatabase* GetNSSCertDatabaseForResourceContext(
 
 void EnableNSSSystemKeySlotForResourceContext(
     content::ResourceContext* context) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::Callback<void(crypto::ScopedPK11Slot)> callback =
       base::Bind(&SetSystemSlotOfDBForResourceContext, context);
   crypto::ScopedPK11Slot system_slot = crypto::GetSystemNSSKeySlot(callback);

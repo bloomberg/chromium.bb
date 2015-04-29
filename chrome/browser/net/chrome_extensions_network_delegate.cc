@@ -33,7 +33,7 @@ void NotifyEPMRequestStatus(RequestStatus status,
                             uint64 request_id,
                             int process_id,
                             int render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;

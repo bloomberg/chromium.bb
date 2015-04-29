@@ -46,7 +46,7 @@ bool IsDnsError(int net_error) {
 void OnDnsProbeFinishedOnIOThread(
     const base::Callback<void(DnsProbeStatus)>& callback,
     DnsProbeStatus result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -59,7 +59,7 @@ void OnDnsProbeFinishedOnIOThread(
 void StartDnsProbeOnIOThread(
     const base::Callback<void(DnsProbeStatus)>& callback,
     IOThread* io_thread) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DnsProbeService* probe_service =
       io_thread->globals()->dns_probe_service.get();
@@ -80,7 +80,7 @@ void NetErrorTabHelper::set_state_for_testing(TestingState state) {
 void NetErrorTabHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
     content::NavigationController::ReloadType reload_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!is_error_page_)
     return;
@@ -97,7 +97,7 @@ void NetErrorTabHelper::DidStartProvisionalLoadForFrame(
     const GURL& validated_url,
     bool is_error_page,
     bool is_iframe_srcdoc) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (render_frame_host->GetParent())
     return;
@@ -109,7 +109,7 @@ void NetErrorTabHelper::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
     PageTransition transition_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (render_frame_host->GetParent())
     return;
@@ -133,7 +133,7 @@ void NetErrorTabHelper::DidFailProvisionalLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (render_frame_host->GetParent())
     return;
@@ -151,7 +151,7 @@ NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
       dns_error_page_committed_(false),
       dns_probe_status_(chrome_common_net::DNS_PROBE_POSSIBLE),
       weak_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If this helper is under test, it won't have a WebContents.
   if (contents)
@@ -171,7 +171,7 @@ void NetErrorTabHelper::OnMainFrameDnsError() {
 }
 
 void NetErrorTabHelper::StartDnsProbe() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(dns_error_active_);
   DCHECK_NE(chrome_common_net::DNS_PROBE_STARTED, dns_probe_status_);
 
@@ -187,7 +187,7 @@ void NetErrorTabHelper::StartDnsProbe() {
 }
 
 void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeStatus result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(chrome_common_net::DNS_PROBE_STARTED, dns_probe_status_);
   DCHECK(chrome_common_net::DnsProbeStatusIsFinished(result));
 

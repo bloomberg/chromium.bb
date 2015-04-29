@@ -242,7 +242,7 @@ net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
 void SSLConfigServiceManagerPref::OnPreferenceChanged(
     PrefService* prefs,
     const std::string& pref_name_in) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(prefs);
   if (pref_name_in == prefs::kCipherSuiteBlacklist)
     OnDisabledCipherSuitesChange(prefs);

@@ -22,7 +22,7 @@ namespace chrome_browser_net {
 void SetUrlRequestMocksEnabled(bool enabled) {
   // Since this involves changing the net::URLRequest ProtocolFactory, we need
   // to run on the IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (enabled) {
     // We have to look around for our helper files, but we only use

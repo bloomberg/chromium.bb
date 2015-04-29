@@ -43,7 +43,7 @@ net::ProxyConfigService* ProxyServiceFactory::CreateProxyConfigService(
     PrefProxyConfigTracker* tracker) {
   // The linux gconf-based proxy settings getter relies on being initialized
   // from the UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_ptr<net::ProxyConfigService> base_service;
 
@@ -99,7 +99,7 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
     net::ProxyConfigService* proxy_config_service,
     const base::CommandLine& command_line,
     bool quick_check_enabled) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 #if defined(OS_IOS)
   bool use_v8 = false;
 #else

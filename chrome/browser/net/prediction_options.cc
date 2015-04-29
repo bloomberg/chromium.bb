@@ -68,28 +68,28 @@ void MigrateNetworkPredictionUserPrefs(PrefService* pref_service) {
 }
 
 bool CanPrefetchAndPrerenderIO(ProfileIOData* profile_io_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(profile_io_data);
   return CanPrefetchAndPrerender(
       profile_io_data->network_prediction_options()->GetValue());
 }
 
 bool CanPrefetchAndPrerenderUI(PrefService* prefs) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(prefs);
   return CanPrefetchAndPrerender(
       prefs->GetInteger(prefs::kNetworkPredictionOptions));
 }
 
 bool CanPreresolveAndPreconnectIO(ProfileIOData* profile_io_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(profile_io_data);
   return CanPreresolveAndPreconnect(
       profile_io_data->network_prediction_options()->GetValue());
 }
 
 bool CanPreresolveAndPreconnectUI(PrefService* prefs) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(prefs);
   return CanPreresolveAndPreconnect(
       prefs->GetInteger(prefs::kNetworkPredictionOptions));

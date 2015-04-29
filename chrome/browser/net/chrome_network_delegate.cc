@@ -111,7 +111,7 @@ void ForceGoogleSafeSearchCallbackWrapper(
 void RecordPrecacheStatsOnUIThread(const GURL& url,
                                    const base::Time& fetch_time, int64 size,
                                    bool was_cached, void* profile_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
   if (!g_browser_process->profile_manager()->IsValidProfile(profile)) {
@@ -336,7 +336,7 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     BooleanPrefMember* force_google_safe_search,
     BooleanPrefMember* force_youtube_safety_mode,
     PrefService* pref_service) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   enable_referrers->Init(prefs::kEnableReferrers, pref_service);
   enable_referrers->MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));

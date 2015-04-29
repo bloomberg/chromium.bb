@@ -14,14 +14,14 @@ net::NSSCertDatabase* g_nss_cert_database = NULL;
 
 crypto::ScopedPK11Slot GetPublicNSSKeySlotForResourceContext(
     content::ResourceContext* context) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot());
 }
 
 crypto::ScopedPK11Slot GetPrivateNSSKeySlotForResourceContext(
     content::ResourceContext* context,
     const base::Callback<void(crypto::ScopedPK11Slot)>& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot());
 }
 

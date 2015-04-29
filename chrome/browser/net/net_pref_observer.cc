@@ -15,7 +15,7 @@
 using content::BrowserThread;
 
 NetPrefObserver::NetPrefObserver(PrefService* prefs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(prefs);
 
   base::Closure prefs_callback = base::Bind(&NetPrefObserver::ApplySettings,
@@ -26,11 +26,11 @@ NetPrefObserver::NetPrefObserver(PrefService* prefs) {
 }
 
 NetPrefObserver::~NetPrefObserver() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void NetPrefObserver::ApplySettings() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (spdy_disabled_.IsManaged())
     net::HttpStreamFactory::set_spdy_enabled(!*spdy_disabled_);

@@ -73,7 +73,7 @@ void ChromeProxyConfigService::OnLazyPoll() {
 void ChromeProxyConfigService::UpdateProxyConfig(
     ProxyPrefs::ConfigState config_state,
     const net::ProxyConfig& config) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   pref_config_read_pending_ = false;
   pref_config_state_ = config_state;
@@ -101,7 +101,7 @@ void ChromeProxyConfigService::UpdateProxyConfig(
 void ChromeProxyConfigService::OnProxyConfigChanged(
     const net::ProxyConfig& config,
     ConfigAvailability availability) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Check whether there is a proxy configuration defined by preferences. In
   // this case that proxy configuration takes precedence and the change event
@@ -115,7 +115,7 @@ void ChromeProxyConfigService::OnProxyConfigChanged(
 }
 
 void ChromeProxyConfigService::RegisterObserver() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!registered_observer_ && base_service_.get()) {
     base_service_->AddObserver(this);
     registered_observer_ = true;
@@ -154,7 +154,7 @@ PrefProxyConfigTrackerImpl::CreateTrackingProxyConfigService(
 }
 
 void PrefProxyConfigTrackerImpl::DetachFromPrefService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Stop notifications.
   proxy_prefs_.RemoveAll();
   pref_service_ = NULL;
@@ -219,7 +219,7 @@ void PrefProxyConfigTrackerImpl::RegisterProfilePrefs(
 ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::ReadPrefConfig(
     const PrefService* pref_service,
     net::ProxyConfig* config) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Clear the configuration and source.
   *config = net::ProxyConfig();
@@ -252,7 +252,7 @@ ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::ReadPrefConfig(
 
 ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::GetProxyConfig(
     net::ProxyConfig* config) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (config_state_ != ProxyPrefs::CONFIG_UNSET)
     *config = pref_config_;
   return config_state_;
@@ -337,7 +337,7 @@ bool PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(
 }
 
 void PrefProxyConfigTrackerImpl::OnProxyPrefChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::ProxyConfig new_config;
   ProxyPrefs::ConfigState config_state = ReadPrefConfig(pref_service_,
                                                         &new_config);

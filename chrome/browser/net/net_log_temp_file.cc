@@ -27,7 +27,7 @@ NetLogTempFile::~NetLogTempFile() {
 }
 
 void NetLogTempFile::ProcessCommand(Command command) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   if (!EnsureInit())
     return;
 
@@ -51,7 +51,7 @@ void NetLogTempFile::ProcessCommand(Command command) {
 }
 
 base::DictionaryValue* NetLogTempFile::GetState() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   base::DictionaryValue* dict = new base::DictionaryValue;
 
   EnsureInit();
@@ -110,7 +110,7 @@ net::NetLogCaptureMode NetLogTempFile::GetCaptureModeForLogType(
 }
 
 bool NetLogTempFile::EnsureInit() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   if (state_ != STATE_UNINITIALIZED)
     return true;
 
@@ -127,7 +127,7 @@ bool NetLogTempFile::EnsureInit() {
 }
 
 void NetLogTempFile::StartNetLog(LogType log_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   if (state_ == STATE_LOGGING)
     return;
 
@@ -152,7 +152,7 @@ void NetLogTempFile::StartNetLog(LogType log_type) {
 }
 
 void NetLogTempFile::StopNetLog() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   if (state_ != STATE_LOGGING)
     return;
 
@@ -162,7 +162,7 @@ void NetLogTempFile::StopNetLog() {
 }
 
 bool NetLogTempFile::GetFilePath(base::FilePath* path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   if (log_type_ == LOG_TYPE_NONE || state_ == STATE_LOGGING)
     return false;
 
@@ -181,7 +181,7 @@ bool NetLogTempFile::GetFilePath(base::FilePath* path) {
 }
 
 bool NetLogTempFile::GetNetExportLog() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   base::FilePath temp_dir;
   if (!GetNetExportLogDirectory(&temp_dir))
     return false;
@@ -191,12 +191,12 @@ bool NetLogTempFile::GetNetExportLog() {
 }
 
 bool NetLogTempFile::GetNetExportLogDirectory(base::FilePath* path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   return base::GetTempDir(path);
 }
 
 bool NetLogTempFile::NetExportLogExists() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE_USER_BLOCKING);
   DCHECK(!log_path_.empty());
   return base::PathExists(log_path_);
 }

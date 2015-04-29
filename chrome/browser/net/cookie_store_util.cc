@@ -34,7 +34,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonsterDelegate {
       : profile_getter_(
           base::Bind(&GetProfileOnUI, g_browser_process->profile_manager(),
                      profile)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(profile);
   }
 

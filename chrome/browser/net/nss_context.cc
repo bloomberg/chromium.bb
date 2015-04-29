@@ -18,7 +18,7 @@ void DidGetCertDBOnIOThread(
     scoped_refptr<base::MessageLoopProxy> response_message_loop,
     const base::Callback<void(net::NSSCertDatabase*)>& callback,
     net::NSSCertDatabase* cert_db) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   response_message_loop->PostTask(FROM_HERE, base::Bind(callback, cert_db));
 }
@@ -28,7 +28,7 @@ void GetCertDBOnIOThread(
     content::ResourceContext* context,
     scoped_refptr<base::MessageLoopProxy> response_message_loop,
     const base::Callback<void(net::NSSCertDatabase*)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Note that the callback will be used only if the cert database hasn't yet
   // been initialized.
@@ -45,7 +45,7 @@ void GetCertDBOnIOThread(
 void GetNSSCertDatabaseForProfile(
     Profile* profile,
     const base::Callback<void(net::NSSCertDatabase*)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,

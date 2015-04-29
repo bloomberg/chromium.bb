@@ -534,7 +534,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
  private:
   static void NukeSdchDictionariesOnIOThread(
       net::URLRequestContextGetter* context_getter) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     net::SdchManager* sdch_manager =
         context_getter->GetURLRequestContext()->sdch_manager();
     DCHECK(sdch_manager);
@@ -544,7 +544,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
   void GetNumberOfDictionaryFetchesOnIOThread(
       net::URLRequestContextGetter* context_getter,
       int* result) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     net::SdchManager* manager(
         context_getter->GetURLRequestContext()->sdch_manager());
@@ -591,7 +591,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
 
   void SubscribeToSdchNotifications(
       net::URLRequestContextGetter* context_getter) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     net::SdchManager* manager =
         context_getter->GetURLRequestContext()->sdch_manager();
@@ -602,7 +602,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
   }
 
   void UnsubscribeFromAllSdchNotifications() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     for (auto it = fetch_counts_.begin(); it != fetch_counts_.end(); ++it)
       it->first->RemoveObserver(this);
@@ -617,7 +617,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
   void OnGetDictionary(net::SdchManager* manager,
                        const GURL& request_url,
                        const GURL& dictionary_url) override {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     DLOG(ERROR) << "Retrieving count of notifications from manager " << manager;
     DCHECK(fetch_counts_.end() != fetch_counts_.find(manager));
     ++fetch_counts_[manager];

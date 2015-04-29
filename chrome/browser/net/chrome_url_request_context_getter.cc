@@ -179,7 +179,7 @@ ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {}
 // Lazily create a URLRequestContext using our factory.
 net::URLRequestContext*
 ChromeURLRequestContextGetter::GetURLRequestContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (factory_.get()) {
     DCHECK(!url_request_context_);
@@ -195,7 +195,7 @@ ChromeURLRequestContextGetter::GetURLRequestContext() {
 }
 
 void ChromeURLRequestContextGetter::Invalidate() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   factory_.reset();
   url_request_context_ = NULL;
 }
