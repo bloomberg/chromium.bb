@@ -10,12 +10,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_filter.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -26,6 +29,12 @@ namespace base {
 namespace {
 
 const char kHomePage[] = "homepage";
+
+// Set the time on the given SimpleTestClock to the given time in minutes.
+void SetCurrentTimeInMinutes(double minutes, base::SimpleTestClock* clock) {
+  const int32_t kBaseTimeMins = 100;
+  clock->SetNow(base::Time::FromDoubleT((kBaseTimeMins + minutes) * 60));
+}
 
 // A PrefFilter that will intercept all calls to FilterOnLoad() and hold on
 // to the |prefs| until explicitly asked to release them.
@@ -107,6 +116,10 @@ class JsonPrefStoreTest : public testing::Test {
   base::FilePath data_dir_;
   // A message loop that we can use as the file thread message loop.
   MessageLoop message_loop_;
+
+ private:
+  // Ensure histograms are reset for each test.
+  StatisticsRecorder statistics_recorder_;
 };
 
 // Test fallback behavior for a nonexistent file.
@@ -669,6 +682,150 @@ TEST_F(JsonPrefStoreTest, BasicAsyncWithAlternateFile) {
 
   RunBasicJsonPrefStoreTest(
       pref_store.get(), input_file, data_dir_.AppendASCII("write.golden.json"));
+}
+
+TEST_F(JsonPrefStoreTest, WriteCountHistogramTestBasic) {
+  SimpleTestClock* test_clock = new SimpleTestClock;
+  SetCurrentTimeInMinutes(0, test_clock);
+  JsonPrefStore::WriteCountHistogram histogram(
+      base::TimeDelta::FromSeconds(10),
+      base::FilePath(FILE_PATH_LITERAL("/tmp/Local State")),
+      scoped_ptr<base::Clock>(test_clock));
+  int32 report_interval =
+      JsonPrefStore::WriteCountHistogram::kHistogramWriteReportIntervalMins;
+
+  histogram.RecordWriteOccured();
+
+  SetCurrentTimeInMinutes(1.5 * report_interval, test_clock);
+  histogram.ReportOutstandingWrites();
+  scoped_ptr<HistogramSamples> samples =
+      histogram.GetHistogram()->SnapshotSamples();
+  ASSERT_EQ(1, samples->GetCount(1));
+  ASSERT_EQ(1, samples->TotalCount());
+
+  ASSERT_EQ("Settings.JsonDataWriteCount.Local_State",
+            histogram.GetHistogram()->histogram_name());
+  ASSERT_TRUE(histogram.GetHistogram()->HasConstructionArguments(1, 30, 31));
+}
+
+TEST_F(JsonPrefStoreTest, WriteCountHistogramTestSinglePeriod) {
+  SimpleTestClock* test_clock = new SimpleTestClock;
+  SetCurrentTimeInMinutes(0, test_clock);
+  JsonPrefStore::WriteCountHistogram histogram(
+      base::TimeDelta::FromSeconds(10),
+      base::FilePath(FILE_PATH_LITERAL("/tmp/Local State")),
+      scoped_ptr<base::Clock>(test_clock));
+  int32 report_interval =
+      JsonPrefStore::WriteCountHistogram::kHistogramWriteReportIntervalMins;
+
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(0.5 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(0.7 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+
+  // Nothing should be recorded until the report period has elapsed.
+  scoped_ptr<HistogramSamples> samples =
+      histogram.GetHistogram()->SnapshotSamples();
+  ASSERT_EQ(0, samples->TotalCount());
+
+  SetCurrentTimeInMinutes(1.3 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+
+  // Now the report period has elapsed.
+  samples = histogram.GetHistogram()->SnapshotSamples();
+  ASSERT_EQ(1, samples->GetCount(3));
+  ASSERT_EQ(1, samples->TotalCount());
+
+  // The last write won't be recorded because the second count period hasn't
+  // fully elapsed.
+  SetCurrentTimeInMinutes(1.5 * report_interval, test_clock);
+  histogram.ReportOutstandingWrites();
+
+  samples = histogram.GetHistogram()->SnapshotSamples();
+  ASSERT_EQ(1, samples->GetCount(3));
+  ASSERT_EQ(1, samples->TotalCount());
+}
+
+TEST_F(JsonPrefStoreTest, WriteCountHistogramTestMultiplePeriods) {
+  SimpleTestClock* test_clock = new SimpleTestClock;
+  SetCurrentTimeInMinutes(0, test_clock);
+  JsonPrefStore::WriteCountHistogram histogram(
+      base::TimeDelta::FromSeconds(10),
+      base::FilePath(FILE_PATH_LITERAL("/tmp/Local State")),
+      scoped_ptr<base::Clock>(test_clock));
+  int32 report_interval =
+      JsonPrefStore::WriteCountHistogram::kHistogramWriteReportIntervalMins;
+
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(0.5 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(0.7 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(1.3 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(1.5 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(2.1 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(2.5 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(2.7 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(3.3 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+
+  // The last write won't be recorded because the second count period hasn't
+  // fully elapsed
+  SetCurrentTimeInMinutes(3.5 * report_interval, test_clock);
+  histogram.ReportOutstandingWrites();
+  scoped_ptr<HistogramSamples> samples =
+      histogram.GetHistogram()->SnapshotSamples();
+  ASSERT_EQ(2, samples->GetCount(3));
+  ASSERT_EQ(1, samples->GetCount(2));
+  ASSERT_EQ(3, samples->TotalCount());
+}
+
+TEST_F(JsonPrefStoreTest, WriteCountHistogramTestPeriodWithGaps) {
+  SimpleTestClock* test_clock = new SimpleTestClock;
+  SetCurrentTimeInMinutes(0, test_clock);
+  JsonPrefStore::WriteCountHistogram histogram(
+      base::TimeDelta::FromSeconds(10),
+      base::FilePath(FILE_PATH_LITERAL("/tmp/Local State")),
+      scoped_ptr<base::Clock>(test_clock));
+  int32 report_interval =
+      JsonPrefStore::WriteCountHistogram::kHistogramWriteReportIntervalMins;
+
+  // 1 write in the first period.
+  histogram.RecordWriteOccured();
+
+  // No writes in the second and third periods.
+
+  // 2 writes in the fourth period.
+  SetCurrentTimeInMinutes(3.1 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(3.3 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+
+  // No writes in the fifth period.
+
+  // 3 writes in the sixth period.
+  SetCurrentTimeInMinutes(5.1 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(5.3 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+  SetCurrentTimeInMinutes(5.5 * report_interval, test_clock);
+  histogram.RecordWriteOccured();
+
+  SetCurrentTimeInMinutes(6.1 * report_interval, test_clock);
+  histogram.ReportOutstandingWrites();
+  scoped_ptr<HistogramSamples> samples =
+      histogram.GetHistogram()->SnapshotSamples();
+  ASSERT_EQ(3, samples->GetCount(0));
+  ASSERT_EQ(1, samples->GetCount(1));
+  ASSERT_EQ(1, samples->GetCount(2));
+  ASSERT_EQ(1, samples->GetCount(3));
+  ASSERT_EQ(6, samples->TotalCount());
 }
 
 }  // namespace base

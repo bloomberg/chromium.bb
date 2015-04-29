@@ -13,7 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
@@ -24,11 +26,17 @@
 class PrefFilter;
 
 namespace base {
+class Clock;
 class DictionaryValue;
 class FilePath;
+class HistogramBase;
 class SequencedTaskRunner;
 class SequencedWorkerPool;
 class Value;
+FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestBasic);
+FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestSinglePeriod);
+FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestMultiplePeriods);
+FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestPeriodWithGaps);
 }
 
 // A writable PrefStore implementation that is used for user preferences.
@@ -98,6 +106,63 @@ class BASE_PREFS_EXPORT JsonPrefStore
       const base::Closure& on_next_successful_write);
 
  private:
+  // Represents a histogram for recording the number of writes to the pref file
+  // that occur every kHistogramWriteReportIntervalInMins minutes.
+  class BASE_PREFS_EXPORT WriteCountHistogram {
+   public:
+    static const int32_t kHistogramWriteReportIntervalMins;
+
+    WriteCountHistogram(const base::TimeDelta& commit_interval,
+                        const base::FilePath& path);
+    // Constructor for testing. |clock| is a test Clock that is used to retrieve
+    // the time.
+    WriteCountHistogram(const base::TimeDelta& commit_interval,
+                        const base::FilePath& path,
+                        scoped_ptr<base::Clock> clock);
+    ~WriteCountHistogram();
+
+    // Record that a write has occured.
+    void RecordWriteOccured();
+
+    // Reports writes (that have not yet been reported) in all of the recorded
+    // intervals that have elapsed up until current time.
+    void ReportOutstandingWrites();
+
+    base::HistogramBase* GetHistogram();
+
+   private:
+    // The minimum interval at which writes can occur.
+    const base::TimeDelta commit_interval_;
+
+    // The path to the file.
+    const base::FilePath path_;
+
+    // Clock which is used to retrieve the current time.
+    scoped_ptr<base::Clock> clock_;
+
+    // The interval at which to report write counts.
+    const base::TimeDelta report_interval_;
+
+    // The time at which the last histogram value was reported for the number
+    // of write counts.
+    base::Time last_report_time_;
+
+    // The number of writes that have occured since the last write count was
+    // reported.
+    uint32_t writes_since_last_report_;
+
+    DISALLOW_COPY_AND_ASSIGN(WriteCountHistogram);
+  };
+
+  FRIEND_TEST_ALL_PREFIXES(base::JsonPrefStoreTest,
+                           WriteCountHistogramTestBasic);
+  FRIEND_TEST_ALL_PREFIXES(base::JsonPrefStoreTest,
+                           WriteCountHistogramTestSinglePeriod);
+  FRIEND_TEST_ALL_PREFIXES(base::JsonPrefStoreTest,
+                           WriteCountHistogramTestMultiplePeriods);
+  FRIEND_TEST_ALL_PREFIXES(base::JsonPrefStoreTest,
+                           WriteCountHistogramTestPeriodWithGaps);
+
   ~JsonPrefStore() override;
 
   // This method is called after the JSON file has been read.  It then hands
@@ -143,6 +208,8 @@ class BASE_PREFS_EXPORT JsonPrefStore
   PrefReadError read_error_;
 
   std::set<std::string> keys_need_empty_value_;
+
+  WriteCountHistogram write_count_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStore);
 };

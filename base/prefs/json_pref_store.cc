@@ -16,9 +16,11 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_filter.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 
 // Result returned from internal read tasks.
@@ -156,7 +158,8 @@ JsonPrefStore::JsonPrefStore(
       pref_filter_(pref_filter.Pass()),
       initialized_(false),
       filtering_in_progress_(false),
-      read_error_(PREF_READ_ERROR_NONE) {
+      read_error_(PREF_READ_ERROR_NONE),
+      write_count_histogram_(writer_.commit_interval(), path_) {
   DCHECK(!path_.empty());
 }
 
@@ -174,7 +177,8 @@ JsonPrefStore::JsonPrefStore(
       pref_filter_(pref_filter.Pass()),
       initialized_(false),
       filtering_in_progress_(false),
-      read_error_(PREF_READ_ERROR_NONE) {
+      read_error_(PREF_READ_ERROR_NONE),
+      write_count_histogram_(writer_.commit_interval(), path_) {
   DCHECK(!path_.empty());
 }
 
@@ -394,6 +398,8 @@ JsonPrefStore::~JsonPrefStore() {
 bool JsonPrefStore::SerializeData(std::string* output) {
   DCHECK(CalledOnValidThread());
 
+  write_count_histogram_.RecordWriteOccured();
+
   if (pref_filter_)
     pref_filter_->FilterSerializeData(prefs_.get());
 
@@ -434,4 +440,92 @@ void JsonPrefStore::FinalizeFileRead(bool initialization_successful,
                     OnInitializationCompleted(true));
 
   return;
+}
+
+// NOTE: This value should NOT be changed without renaming the histogram
+// otherwise it will create incompatible buckets.
+const int32_t
+    JsonPrefStore::WriteCountHistogram::kHistogramWriteReportIntervalMins = 5;
+
+JsonPrefStore::WriteCountHistogram::WriteCountHistogram(
+    const base::TimeDelta& commit_interval,
+    const base::FilePath& path)
+    : WriteCountHistogram(commit_interval,
+                          path,
+                          scoped_ptr<base::Clock>(new base::DefaultClock)) {
+}
+
+JsonPrefStore::WriteCountHistogram::WriteCountHistogram(
+    const base::TimeDelta& commit_interval,
+    const base::FilePath& path,
+    scoped_ptr<base::Clock> clock)
+    : commit_interval_(commit_interval),
+      path_(path),
+      clock_(clock.release()),
+      report_interval_(
+          base::TimeDelta::FromMinutes(kHistogramWriteReportIntervalMins)),
+      last_report_time_(clock_->Now()),
+      writes_since_last_report_(0) {
+}
+
+JsonPrefStore::WriteCountHistogram::~WriteCountHistogram() {
+  ReportOutstandingWrites();
+}
+
+void JsonPrefStore::WriteCountHistogram::RecordWriteOccured() {
+  ReportOutstandingWrites();
+
+  ++writes_since_last_report_;
+}
+
+void JsonPrefStore::WriteCountHistogram::ReportOutstandingWrites() {
+  base::Time current_time = clock_->Now();
+  base::TimeDelta time_since_last_report = current_time - last_report_time_;
+
+  if (time_since_last_report <= report_interval_)
+    return;
+
+  // If the time since the last report exceeds the report interval, report all
+  // the writes since the last report. They must have all occurred in the same
+  // report interval.
+  base::HistogramBase* histogram = GetHistogram();
+  histogram->Add(writes_since_last_report_);
+
+  // There may be several report intervals that elapsed that don't have any
+  // writes in them. Report these too.
+  int64 total_num_intervals_elapsed =
+      (time_since_last_report / report_interval_);
+  for (int64 i = 0; i < total_num_intervals_elapsed - 1; ++i)
+    histogram->Add(0);
+
+  writes_since_last_report_ = 0;
+  last_report_time_ += total_num_intervals_elapsed * report_interval_;
+}
+
+base::HistogramBase* JsonPrefStore::WriteCountHistogram::GetHistogram() {
+  std::string spaceless_basename;
+  base::ReplaceChars(path_.BaseName().MaybeAsASCII(), " ", "_",
+                     &spaceless_basename);
+  std::string histogram_name =
+      "Settings.JsonDataWriteCount." + spaceless_basename;
+
+  // The min value for a histogram is 1. The max value is the maximum number of
+  // writes that can occur in the window being recorded. The number of buckets
+  // used is the max value (plus the underflow/overflow buckets).
+  int32_t min_value = 1;
+  int32_t max_value = report_interval_ / commit_interval_;
+  int32_t num_buckets = max_value + 1;
+
+  // NOTE: These values should NOT be changed without renaming the histogram
+  // otherwise it will create incompatible buckets.
+  DCHECK_EQ(30, max_value);
+  DCHECK_EQ(31, num_buckets);
+
+  // The histogram below is an expansion of the UMA_HISTOGRAM_CUSTOM_COUNTS
+  // macro adapted to allow for a dynamically suffixed histogram name.
+  // Note: The factory creates and owns the histogram.
+  base::HistogramBase* histogram = base::Histogram::FactoryGet(
+      histogram_name, min_value, max_value, num_buckets,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  return histogram;
 }

@@ -35658,6 +35658,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Settings.JsonDataWriteCount" units="count">
+  <owner>raymes@chromium.org</owner>
+  <summary>
+    The number of writes of a JSON file that occur in every 5 minute period of
+    running Chrome. Suffixed with the name of the corresponding JSON file.
+  </summary>
+</histogram>
+
 <histogram name="Settings.MigratedHashesFromLocalState" enum="BooleanMigrated">
   <owner>csharp@chromium.org</owner>
   <owner>gab@chromium.org</owner>
@@ -67658,6 +67666,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Secure_Preferences" label="Secure Preferences file"/>
   <affected-histogram name="Settings.JsonDataReadSizeKilobytes"/>
   <affected-histogram name="Settings.JsonDataSizeKilobytes"/>
+  <affected-histogram name="Settings.JsonDataWriteCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Prefetch">
