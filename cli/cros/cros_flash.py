@@ -118,10 +118,11 @@ Examples:
         '--disable-rootfs-verification', default=False, action='store_true',
         help='Disable rootfs verification after update is completed.')
     update.add_argument(
-        '--project-sdk', action='store_true',
+        '--project-sdk', nargs='?', const='', metavar='VERSION',
         help='Install a Project SDK image. This resets the device to a clean '
         'state and ensures that it is compatible with the development '
-        'environment. The image argument is ignored.')
+        'environment. The image argument is ignored. If no version provided, '
+        'will use the current SDK version.')
 
     usb = parser.add_argument_group('USB specific options')
     usb.add_argument(
@@ -144,7 +145,8 @@ Examples:
       flash.Flash(
           self.options.device,
           self.options.image,
-          project_sdk_image=self.options.project_sdk,
+          project_sdk_image=self.options.project_sdk is not None,
+          sdk_version=self.options.project_sdk or None,
           board=self.options.board,
           brick_name=self.options.brick or self.curr_brick_locator,
           install=self.options.install,

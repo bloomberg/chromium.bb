@@ -658,11 +658,11 @@ class RemoteDeviceUpdater(object):
 
 
 # TODO(dpursell): replace |brick| argument with blueprints when they're ready.
-def Flash(device, image, project_sdk_image=False, board=None, brick_name=None,
-          install=False, src_image_to_delta=None, rootfs_update=True,
-          stateful_update=True, clobber_stateful=False, reboot=True, wipe=True,
-          ping=True, disable_rootfs_verification=False, clear_cache=False,
-          yes=False, force=False, debug=False):
+def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
+          brick_name=None, install=False, src_image_to_delta=None,
+          rootfs_update=True, stateful_update=True, clobber_stateful=False,
+          reboot=True, wipe=True, ping=True, disable_rootfs_verification=False,
+          clear_cache=False, yes=False, force=False, debug=False):
   """Flashes a device, USB drive, or file with an image.
 
   This provides functionality common to `cros flash` and `brillo flash`
@@ -674,6 +674,7 @@ def Flash(device, image, project_sdk_image=False, board=None, brick_name=None,
     image: Path (string) to the update image. Can be a local or xbuddy path;
         non-existant local paths are converted to xbuddy.
     project_sdk_image: Use a clean project SDK image. Overrides |image| if True.
+    sdk_version: Which version of SDK image to flash; autodetected if None.
     board: Board to use; None to automatically detect.
     brick_name: Brick locator to use. Overrides |board| if not None.
     install: Install to USB using base disk layout; USB |device| scheme only.
@@ -716,12 +717,12 @@ def Flash(device, image, project_sdk_image=False, board=None, brick_name=None,
       raise ValueError('--install can only be used inside the chroot')
 
   # If installing an SDK image, find the version and override image path.
-  sdk_version = None
   if project_sdk_image:
-    sdk_version = project_sdk.FindVersion()
-    if not sdk_version:
-      raise FlashError('Could not find SDK version')
     image = 'project_sdk'
+    if sdk_version is None:
+      sdk_version = project_sdk.FindVersion()
+      if not sdk_version:
+        raise FlashError('Could not find SDK version')
 
   brick = brick_lib.Brick(brick_name) if brick_name else None
   if brick:
