@@ -14,6 +14,7 @@ import os
 import sys
 import unittest
 
+from pylib import android_commands
 from pylib import constants
 from pylib.device import battery_utils
 from pylib.device import device_errors
@@ -61,7 +62,8 @@ class BatteryUtilsInitTest(unittest.TestCase):
 
   def testInitWithDeviceUtil(self):
     serial = '0fedcba987654321'
-    d = device_utils.DeviceUtils(serial)
+    a = android_commands.AndroidCommands(device=serial)
+    d = device_utils.DeviceUtils(a)
     b = battery_utils.BatteryUtils(d)
     self.assertEqual(d, b._device)
 

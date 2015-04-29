@@ -15,6 +15,7 @@ import subprocess
 import time
 
 # TODO(craigdh): Move these pylib dependencies to pylib/utils/.
+from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
 from pylib import pexpect
@@ -89,14 +90,14 @@ def _KillAllEmulators():
   running but a device slot is taken.  A little bot trouble and and
   we're out of room forever.
   """
-  emulators = [d for d in device_utils.HealthyDevices() if d.adb.is_emulator]
+  emulators = android_commands.GetAttachedDevices(hardware=False)
   if not emulators:
     return
-  for e in emulators:
-    e.adb.Emu(['kill'])
+  for emu_name in emulators:
+    cmd_helper.RunCmd(['adb', '-s', emu_name, 'emu', 'kill'])
   logging.info('Emulator killing is async; give a few seconds for all to die.')
   for _ in range(5):
-    if not any(d.adb.is_emulator for d in device_utils.HealthyDevices()):
+    if not android_commands.GetAttachedDevices(hardware=False):
       return
     time.sleep(1)
 
@@ -140,9 +141,9 @@ class PortPool(object):
 def _GetAvailablePort():
   """Returns an available TCP port for the console."""
   used_ports = []
-  emulators = [d for d in device_utils.HealthyDevices() if d.adb.is_emulator]
+  emulators = android_commands.GetAttachedDevices(hardware=False)
   for emulator in emulators:
-    used_ports.append(emulator.adb.GetDeviceSerial().split('-')[1])
+    used_ports.append(emulator.split('-')[1])
   for port in PortPool.port_range():
     if str(port) not in used_ports:
       return port

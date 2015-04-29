@@ -16,6 +16,7 @@ import sys
 import threading
 import unittest
 
+from pylib import android_commands
 from pylib import constants
 from pylib import forwarder
 from pylib import ports
@@ -24,8 +25,6 @@ from pylib.base import environment_factory
 from pylib.base import test_dispatcher
 from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
-from pylib.device import device_errors
-from pylib.device import device_utils
 from pylib.gtest import gtest_config
 from pylib.gtest import setup as gtest_setup
 from pylib.gtest import test_options as gtest_test_options
@@ -868,16 +867,16 @@ def _GetAttachedDevices(test_device=None):
   Returns:
     A list of attached devices.
   """
-  attached_devices = device_utils.DeviceUtils.HealthyDevices()
-  if test_device:
-    test_device = [d for d in attached_devices if d == test_device]
-    if not test_device:
-      raise device_errors.DeviceUnreachableError(
-          'Did not find device %s among attached device. Attached devices: %s'
-          % (test_device, ', '.join(attached_devices)))
+  attached_devices = []
 
-  if not attached_devices:
-    raise device_errors.NoDevicesError()
+  attached_devices = android_commands.GetAttachedDevices()
+  if test_device:
+    assert test_device in attached_devices, (
+        'Did not find device %s among attached device. Attached devices: %s'
+        % (test_device, ', '.join(attached_devices)))
+    attached_devices = [test_device]
+
+  assert attached_devices, 'No devices attached.'
 
   return sorted(attached_devices)
 

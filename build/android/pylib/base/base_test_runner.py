@@ -26,15 +26,14 @@ NET_TEST_SERVER_PORT_INFO_FILE = 'net-test-server-ports'
 class BaseTestRunner(object):
   """Base class for running tests on a single device."""
 
-  def __init__(self, device, tool):
+  def __init__(self, device_serial, tool):
     """
       Args:
-        device: An instance of DeviceUtils that the tests will run on.
+        device: Tests will run on the device of this ID.
         tool: Name of the Valgrind tool.
     """
-    assert isinstance(device, device_utils.DeviceUtils)
-    self.device = device
-    self.device_serial = self.device.adb.GetDeviceSerial()
+    self.device_serial = device_serial
+    self.device = device_utils.DeviceUtils(device_serial)
     self.tool = CreateTool(tool, self.device)
     self._http_server = None
     self._forwarder_device_port = 8000
