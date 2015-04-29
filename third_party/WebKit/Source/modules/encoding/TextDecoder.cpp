@@ -35,6 +35,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/encoding/Encoding.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/TextEncodingRegistry.h"
 
@@ -42,7 +43,7 @@ namespace blink {
 
 TextDecoder* TextDecoder::create(const String& label, const TextDecoderOptions& options, ExceptionState& exceptionState)
 {
-    WTF::TextEncoding encoding(label);
+    WTF::TextEncoding encoding(label.stripWhiteSpace(&Encoding::isASCIIWhiteSpace));
     // The replacement encoding is not valid, but the Encoding API also
     // rejects aliases of the replacement encoding.
     if (!encoding.isValid() || !strcasecmp(encoding.name(), "replacement")) {

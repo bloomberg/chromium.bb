@@ -678,6 +678,8 @@
       'device_orientation/DeviceRotationRate.h',
       'donottrack/NavigatorDoNotTrack.cpp',
       'donottrack/NavigatorDoNotTrack.h',
+      'encoding/Encoding.cpp',
+      'encoding/Encoding.h',
       'encoding/TextDecoder.cpp',
       'encoding/TextDecoder.h',
       'encoding/TextEncoder.cpp',
