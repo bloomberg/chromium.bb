@@ -188,12 +188,14 @@ public class CronetTestActivity extends Activity {
     }
 
     public void startNetLog() {
-        mRequestFactory.startNetLogToFile(
-                Environment.getExternalStorageDirectory().getPath()
-                        + "/cronet_sample_netlog.json");
+        mRequestFactory.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
+                + "/cronet_sample_netlog_old_api.json");
+        mUrlRequestContext.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
+                + "/cronet_sample_netlog_new_api.json");
     }
 
     public void stopNetLog() {
         mRequestFactory.stopNetLog();
+        mUrlRequestContext.stopNetLog();
     }
 }

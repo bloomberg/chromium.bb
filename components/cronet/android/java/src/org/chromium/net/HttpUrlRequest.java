@@ -114,6 +114,11 @@ public interface HttpUrlRequest {
     String getNegotiatedProtocol();
 
     /**
+     * Returns whether the response is serviced from the cache.
+     */
+    boolean wasCached();
+
+    /**
      * Returns the entire response as a ByteBuffer.
      */
     ByteBuffer getByteBuffer();

@@ -20,11 +20,9 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace net {
-
 class WriteToFileNetLogObserver;
-
 class ProxyConfigService;
-
+class SdchOwner;
 }  // namespace net
 
 namespace cronet {
@@ -109,6 +107,7 @@ class URLRequestContextAdapter : public net::URLRequestContextGetter {
   scoped_ptr<NetLogObserver> net_log_observer_;
   scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  scoped_ptr<net::SdchOwner> sdch_owner_;
   scoped_ptr<URLRequestContextConfig> config_;
 
   // A queue of tasks that need to be run after context has been initialized.

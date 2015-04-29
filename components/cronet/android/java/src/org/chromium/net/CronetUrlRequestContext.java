@@ -15,6 +15,7 @@ import android.util.Log;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.NativeClassQualifiedName;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.UsedByReflection;
 
 import java.util.concurrent.Executor;
@@ -152,6 +153,7 @@ public class CronetUrlRequestContext extends UrlRequestContext  {
         mActiveRequestCount.decrementAndGet();
     }
 
+    @VisibleForTesting
     long getUrlRequestContextAdapter() {
         synchronized (mLock) {
             checkHaveAdapter();

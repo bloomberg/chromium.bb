@@ -58,6 +58,8 @@ struct URLRequestContextConfig {
   bool enable_quic;
   // Enable SPDY.
   bool enable_spdy;
+  // Enable SDCH.
+  bool enable_sdch;
   // Type of http cache: "HTTP_CACHE_DISABLED", "HTTP_CACHE_DISK" or
   // "HTTP_CACHE_IN_MEMORY".
   std::string http_cache;

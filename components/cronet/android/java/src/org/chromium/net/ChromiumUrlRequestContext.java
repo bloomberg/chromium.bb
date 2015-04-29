@@ -12,6 +12,7 @@ import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * Provides context for the native HTTP operations.
@@ -93,6 +94,15 @@ public class ChromiumUrlRequestContext {
      */
     public void stopNetLog() {
         nativeStopNetLog(mChromiumUrlRequestContextAdapter);
+    }
+
+    /**
+     * Returns the native URLRequestContextAdapter pointer.
+     * Currently this method is only used in testing.
+     */
+    @VisibleForTesting
+    long getUrlRequestContextAdapterForTesting() {
+        return mChromiumUrlRequestContextAdapter;
     }
 
     @CalledByNative

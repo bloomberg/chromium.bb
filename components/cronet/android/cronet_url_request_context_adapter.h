@@ -25,6 +25,7 @@ namespace net {
 class WriteToFileNetLogObserver;
 class URLRequestContext;
 class ProxyConfigService;
+class SdchOwner;
 }  // namespace net
 
 namespace cronet {
@@ -91,6 +92,7 @@ class CronetURLRequestContextAdapter {
   scoped_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
   scoped_ptr<net::URLRequestContext> context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  scoped_ptr<net::SdchOwner> sdch_owner_;
 
   // Context config is only valid untng context is initialized.
   scoped_ptr<URLRequestContextConfig> context_config_;

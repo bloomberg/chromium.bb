@@ -400,6 +400,17 @@ static jstring GetNegotiatedProtocol(JNIEnv* env,
   return ConvertUTF8ToJavaString(env, negotiated_protocol.c_str()).Release();
 }
 
+static jboolean GetWasCached(JNIEnv* env,
+                             jobject jcaller,
+                             jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
+
+  bool was_cached = request_adapter->GetWasCached();
+  return was_cached ? JNI_TRUE : JNI_FALSE;
+}
+
 static void DisableRedirects(JNIEnv* env, jobject jcaller,
                              jlong jrequest_adapter) {
   URLRequestAdapter* request_adapter =

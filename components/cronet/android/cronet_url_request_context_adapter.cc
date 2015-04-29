@@ -20,6 +20,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
+#include "net/sdch/sdch_owner.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -160,6 +161,12 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
                         net::LOAD_DO_NOT_SEND_COOKIES;
   if (config->load_disable_cache)
     default_load_flags_ |= net::LOAD_DISABLE_CACHE;
+
+  if (config->enable_sdch) {
+    DCHECK(context_->sdch_manager());
+    sdch_owner_.reset(
+        new net::SdchOwner(context_->sdch_manager(), context_.get()));
+  }
 
   // Currently (circa M39) enabling QUIC requires setting probability threshold.
   if (config->enable_quic) {

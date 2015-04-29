@@ -114,6 +114,12 @@ std::string URLRequestAdapter::GetNegotiatedProtocol() const {
   return url_request_->response_info().npn_negotiated_protocol;
 }
 
+bool URLRequestAdapter::GetWasCached() const {
+  if (url_request_ == NULL)
+    return false;
+  return url_request_->response_info().was_cached;
+}
+
 void URLRequestAdapter::Start() {
   context_->PostTaskToNetworkThread(
       FROM_HERE,

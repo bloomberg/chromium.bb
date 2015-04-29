@@ -23,6 +23,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
+#include "net/sdch/sdch_owner.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -150,6 +151,12 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
   config_->ConfigureURLRequestContextBuilder(&context_builder);
 
   context_.reset(context_builder.Build());
+
+  if (config_->enable_sdch) {
+    DCHECK(context_->sdch_manager());
+    sdch_owner_.reset(
+        new net::SdchOwner(context_->sdch_manager(), context_.get()));
+  }
 
   // Currently (circa M39) enabling QUIC requires setting probability threshold.
   if (config_->enable_quic) {

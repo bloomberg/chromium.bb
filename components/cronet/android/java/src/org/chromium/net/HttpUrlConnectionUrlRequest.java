@@ -434,6 +434,11 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
     }
 
     @Override
+    public boolean wasCached() {
+        return false;
+    }
+
+    @Override
     public int getHttpStatusCode() {
         int httpStatusCode = mHttpStatusCode;
 

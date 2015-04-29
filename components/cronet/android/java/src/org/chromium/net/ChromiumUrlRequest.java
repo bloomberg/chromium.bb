@@ -422,6 +422,15 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     }
 
     @Override
+    public boolean wasCached() {
+        synchronized (mLock) {
+            validateNativeAdapterNotDestroyed();
+            validateHeadersAvailable();
+            return nativeGetWasCached(mUrlRequestAdapter);
+        }
+    }
+
+    @Override
     public String getContentType() {
         return mContentType;
     }
@@ -747,6 +756,8 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
             ResponseHeadersMap headers);
 
     private native String nativeGetNegotiatedProtocol(long urlRequestAdapter);
+
+    private native boolean nativeGetWasCached(long urlRequestAdapter);
 
     // Explicit class to work around JNI-generator generics confusion.
     private static class ResponseHeadersMap extends

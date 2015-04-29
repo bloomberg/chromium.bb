@@ -5,7 +5,9 @@
 package org.chromium.net;
 
 import android.content.Context;
+import android.os.ConditionVariable;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 /**
@@ -14,6 +16,8 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("cronet")
 public final class NativeTestServer {
+    private static final ConditionVariable sHostResolverBlock = new ConditionVariable();
+
     public static boolean startNativeTestServer(Context context) {
         return nativeStartNativeTestServer(
                 TestFilesInstaller.getInstalledPath(context));
@@ -21,6 +25,19 @@ public final class NativeTestServer {
 
     public static void shutdownNativeTestServer() {
         nativeShutdownNativeTestServer();
+    }
+
+    /**
+     * Registers customized DNS mapping for {@link NativeTestServer}.
+     * @param contextAdapter native context adapter object that this
+     *             mapping should apply to.
+     * @param isLegacyAPI {@code true} if this context adapter is a part of the
+     *             old API.
+     */
+    public static void registerHostResolverProc(long contextAdapter, boolean isLegacyAPI) {
+        sHostResolverBlock.close();
+        nativeRegisterHostResolverProc(contextAdapter, isLegacyAPI);
+        sHostResolverBlock.block();
     }
 
     public static String getEchoBodyURL() {
@@ -47,12 +64,24 @@ public final class NativeTestServer {
         return nativeGetFileURL(filePath);
     }
 
+    public static String getSdchURL() {
+        return nativeGetSdchURL();
+    }
+
+    @CalledByNative
+    private static void onHostResolverProcRegistered() {
+        sHostResolverBlock.open();
+    }
+
     private static native boolean nativeStartNativeTestServer(String filePath);
     private static native void nativeShutdownNativeTestServer();
+    private static native void nativeRegisterHostResolverProc(
+            long contextAdapter, boolean isLegacyAPI);
     private static native String nativeGetEchoBodyURL();
     private static native String nativeGetEchoHeaderURL(String header);
     private static native String nativeGetEchoAllHeadersURL();
     private static native String nativeGetEchoMethodURL();
     private static native String nativeGetRedirectToEchoBody();
     private static native String nativeGetFileURL(String filePath);
+    private static native String nativeGetSdchURL();
 }

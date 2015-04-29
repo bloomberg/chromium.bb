@@ -26,6 +26,7 @@ public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
     public String mResponseAsString;
     public Exception mException;
     public Map<String, List<String>> mResponseHeaders;
+    public boolean mWasCached = false;
 
     private final ConditionVariable mStarted = new ConditionVariable();
     private final ConditionVariable mComplete = new ConditionVariable();
@@ -42,6 +43,7 @@ public class TestHttpUrlRequestListener implements HttpUrlRequestListener {
         mHttpStatusText = request.getHttpStatusText();
         mNegotiatedProtocol = request.getNegotiatedProtocol();
         mResponseHeaders = request.getAllHeaders();
+        mWasCached = request.wasCached();
         mStarted.open();
     }
 

@@ -16,6 +16,7 @@
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
+#include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
@@ -205,7 +206,8 @@ URLRequestContextBuilder::URLRequestContextBuilder()
       ftp_enabled_(false),
 #endif
       http_cache_enabled_(true),
-      throttling_enabled_(false) {
+      throttling_enabled_(false),
+      sdch_enabled_(false) {
 }
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
@@ -306,6 +308,11 @@ URLRequestContext* URLRequestContextBuilder::Build() {
     // not being used.  Consider lazily creating the thread.
     storage->set_channel_id_service(make_scoped_ptr(new ChannelIDService(
         new DefaultChannelIDStore(NULL), context->GetFileTaskRunner())));
+  }
+
+  if (sdch_enabled_) {
+    storage->set_sdch_manager(
+        scoped_ptr<net::SdchManager>(new SdchManager()).Pass());
   }
 
   storage->set_transport_security_state(new TransportSecurityState());

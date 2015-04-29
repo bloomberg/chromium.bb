@@ -78,6 +78,7 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   context_builder->SetSpdyAndQuicEnabled(enable_spdy, enable_quic);
   context_builder->set_quic_connection_options(
       net::QuicUtils::ParseQuicConnectionOptions(quic_connection_options));
+  context_builder->set_sdch_enabled(enable_sdch);
   // TODO(mef): Use |config| to set cookies.
 }
 
@@ -92,6 +93,8 @@ void URLRequestContextConfig::RegisterJSONConverter(
                                &URLRequestContextConfig::enable_quic);
   converter->RegisterBoolField(REQUEST_CONTEXT_CONFIG_ENABLE_SPDY,
                                &URLRequestContextConfig::enable_spdy);
+  converter->RegisterBoolField(REQUEST_CONTEXT_CONFIG_ENABLE_SDCH,
+                               &URLRequestContextConfig::enable_sdch);
   converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_HTTP_CACHE,
                                  &URLRequestContextConfig::http_cache);
   converter->RegisterBoolField(REQUEST_CONTEXT_CONFIG_LOAD_DISABLE_CACHE,

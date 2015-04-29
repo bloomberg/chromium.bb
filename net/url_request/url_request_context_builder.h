@@ -141,7 +141,6 @@ class NET_EXPORT URLRequestContextBuilder {
     network_delegate_.reset(delegate);
   }
 
-
   // Adds additional auth handler factories to be used in addition to what is
   // provided in the default |HttpAuthHandlerRegistryFactory|. The auth |scheme|
   // and |factory| are provided. The builder takes ownership of the factory and
@@ -196,6 +195,13 @@ class NET_EXPORT URLRequestContextBuilder {
   void SetFileTaskRunner(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
+  // Note that if SDCH is enabled without a policy object observing
+  // the SDCH manager and handling at least Get-Dictionary events, the
+  // result will be "Content-Encoding: sdch" advertisements, but no
+  // dictionaries fetches and no specific dictionaries advertised.
+  // SdchOwner in net/sdch/sdch_owner.h is a simple policy object.
+  void set_sdch_enabled(bool enable) { sdch_enabled_ = enable; }
+
   URLRequestContext* Build();
 
  private:
@@ -221,6 +227,7 @@ class NET_EXPORT URLRequestContextBuilder {
 #endif
   bool http_cache_enabled_;
   bool throttling_enabled_;
+  bool sdch_enabled_;
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   HttpCacheParams http_cache_params_;

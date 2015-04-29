@@ -15,14 +15,14 @@ import java.io.File;
  * UrlRequestContext.
  */
 public class UrlRequestContextConfig {
-
     /**
-     * Default config enables SPDY, QUIC, in memory http cache.
+     * Default config enables SPDY, disables QUIC, SDCH and http cache.
      */
     public UrlRequestContextConfig() {
         enableLegacyMode(false);
         enableQUIC(false);
         enableSPDY(true);
+        enableSDCH(false);
         enableHttpCache(HttpCache.DISABLED, 0);
     }
 
@@ -99,6 +99,13 @@ public class UrlRequestContextConfig {
      */
     public UrlRequestContextConfig enableSPDY(boolean value) {
         return putBoolean(UrlRequestContextConfigList.ENABLE_SPDY, value);
+    }
+
+    /**
+     * Boolean, enable SDCH compression if true.
+     */
+    public UrlRequestContextConfig enableSDCH(boolean value) {
+        return putBoolean(UrlRequestContextConfigList.ENABLE_SDCH, value);
     }
 
     /**

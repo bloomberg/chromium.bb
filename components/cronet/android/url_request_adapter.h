@@ -118,6 +118,9 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   // Get NPN or ALPN Negotiated Protocol (if any) from HttpResponseInfo.
   std::string GetNegotiatedProtocol() const;
 
+  // Returns whether the response is serviced from cache.
+  bool GetWasCached() const;
+
   // net::URLRequest::Delegate implementation:
   void OnResponseStarted(net::URLRequest* request) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
