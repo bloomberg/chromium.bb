@@ -79,7 +79,8 @@ class OverscrollControllerAndroid : public OverscrollGlowClient,
   // TODO(jdduke): Factor out a common API from the two overscroll effects.
   scoped_ptr<OverscrollGlow> glow_effect_;
   scoped_ptr<OverscrollRefresh> refresh_effect_;
-  bool has_initialized_refresh_effect_;
+
+  // For fullscreen HTML5 scenarios, the refresh effect will be disabled.
   bool is_fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollControllerAndroid);

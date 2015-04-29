@@ -97,6 +97,13 @@ OverscrollControllerAndroid::OverscrollControllerAndroid(
       refresh_effect_(CreateRefreshEffect(content_view_core)),
       is_fullscreen_(false) {
   DCHECK(compositor_);
+  // Fullscreen state is only relevant for the refresh effect.
+  if (refresh_effect_) {
+    WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(content_view_core->GetWebContents());
+    is_fullscreen_ = web_contents->IsFullscreenForCurrentTab();
+    Observe(web_contents);
+  }
 }
 
 OverscrollControllerAndroid::~OverscrollControllerAndroid() {
@@ -268,6 +275,7 @@ void OverscrollControllerAndroid::Disable() {
 
 void OverscrollControllerAndroid::DidToggleFullscreenModeForTab(
     bool entered_fullscreen) {
+  DCHECK(refresh_effect_);
   if (is_fullscreen_ == entered_fullscreen)
     return;
   is_fullscreen_ = entered_fullscreen;
