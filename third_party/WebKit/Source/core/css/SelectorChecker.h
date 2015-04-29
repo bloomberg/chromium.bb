@@ -81,12 +81,12 @@ public:
         ComputedStyle* elementStyle;
         RawPtrWillBeMember<LayoutScrollbar> scrollbar;
         ScrollbarPart scrollbarPart;
-        unsigned isSubSelector : 1;
-        unsigned hasScrollbarPseudo : 1;
-        unsigned hasSelectionPseudo : 1;
-        unsigned isUARule : 1;
-        unsigned scopeContainsLastMatchedElement : 1;
-        unsigned treatShadowHostAsNormalScope : 1;
+        bool isSubSelector;
+        bool hasScrollbarPseudo;
+        bool hasSelectionPseudo;
+        bool isUARule;
+        bool scopeContainsLastMatchedElement;
+        bool treatShadowHostAsNormalScope;
     };
 
     struct MatchResult {
