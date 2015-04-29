@@ -64,6 +64,8 @@ protected:
     explicit FullscreenController(WebViewImpl*);
 
 private:
+    void updatePageScaleConstraints(bool removeConstraints);
+
     WebViewImpl* m_webViewImpl;
 
     float m_exitFullscreenPageScaleFactor;
