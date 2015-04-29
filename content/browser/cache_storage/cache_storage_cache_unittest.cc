@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/strings/string_split.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
@@ -90,8 +91,7 @@ class DelayableBackend : public disk_cache::Backend {
   scoped_ptr<Iterator> CreateIterator() override {
     return backend_->CreateIterator();
   }
-  void GetStats(
-      std::vector<std::pair<std::string, std::string>>* stats) override {
+  void GetStats(base::StringPairs* stats) override {
     return backend_->GetStats(stats);
   }
   void OnExternalCacheHit(const std::string& key) override {
