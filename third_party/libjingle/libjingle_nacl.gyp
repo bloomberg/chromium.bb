@@ -139,7 +139,6 @@
         '<(webrtc_base)/messagehandler.h',
         '<(webrtc_base)/messagequeue.cc',
         '<(webrtc_base)/messagequeue.h',
-        '<(webrtc_base)/move.h',
         '<(webrtc_base)/nethelpers.cc',
         '<(webrtc_base)/nethelpers.h',
         '<(webrtc_base)/network.cc',
