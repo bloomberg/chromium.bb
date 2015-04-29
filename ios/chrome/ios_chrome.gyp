@@ -14,6 +14,7 @@
         '../..',
       ],
       'dependencies': [
+        '../../base/base.gyp:base',
         'ios_chrome_browser',
       ],
       'link_settings': {
@@ -22,10 +23,14 @@
         ],
       },
       'sources': [
+        'app/UIApplication+ExitsOnSuspend.h',
+        'app/UIApplication+ExitsOnSuspend.mm',
+        'app/deferred_initialization_runner.h',
+        'app/deferred_initialization_runner.mm',
         'app/safe_mode_crashing_modules_config.h',
         'app/safe_mode_crashing_modules_config.mm',
-        'app/safe_mode_util.h',
         'app/safe_mode_util.cc',
+        'app/safe_mode_util.h',
       ],
     },
     {
