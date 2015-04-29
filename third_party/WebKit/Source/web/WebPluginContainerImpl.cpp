@@ -462,10 +462,10 @@ v8::Local<v8::Object> WebPluginContainerImpl::v8ObjectForElement()
     if (!scriptState->contextIsValid())
         return v8::Local<v8::Object>();
 
-    v8::Handle<v8::Value> v8value = toV8(m_element.get(), scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> v8value = toV8(m_element.get(), scriptState->context()->Global(), scriptState->isolate());
     ASSERT(v8value->IsObject());
 
-    return v8::Handle<v8::Object>::Cast(v8value);
+    return v8::Local<v8::Object>::Cast(v8value);
 }
 
 WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popupsAllowed)
@@ -487,7 +487,7 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
     // Failure is reported as a null string.
     if (result.IsEmpty() || !result->IsString())
         return WebString();
-    return toCoreString(v8::Handle<v8::String>::Cast(result));
+    return toCoreString(v8::Local<v8::String>::Cast(result));
 }
 
 void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request, const WebString& target, bool notifyNeeded, void* notifyData)

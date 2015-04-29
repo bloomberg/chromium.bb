@@ -3111,7 +3111,7 @@ class ContextLifetimeTestWebFrameClient : public FrameTestHelpers::TestWebFrameC
 public:
     struct Notification {
     public:
-        Notification(WebLocalFrame* frame, v8::Handle<v8::Context> context, int worldId)
+        Notification(WebLocalFrame* frame, v8::Local<v8::Context> context, int worldId)
             : frame(frame)
             , context(context->GetIsolate(), context)
             , worldId(worldId)
@@ -3154,12 +3154,12 @@ public:
     std::vector<Notification*> releaseNotifications;
 
  private:
-    virtual void didCreateScriptContext(WebLocalFrame* frame, v8::Handle<v8::Context> context, int extensionGroup, int worldId) override
+    virtual void didCreateScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int extensionGroup, int worldId) override
     {
         createNotifications.push_back(new Notification(frame, context, worldId));
     }
 
-    virtual void willReleaseScriptContext(WebLocalFrame* frame, v8::Handle<v8::Context> context, int worldId) override
+    virtual void willReleaseScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int worldId) override
     {
         releaseNotifications.push_back(new Notification(frame, context, worldId));
     }
@@ -3422,7 +3422,7 @@ TEST_F(WebFrameTest, GetFullHtmlOfPage)
 
 class TestExecuteScriptDuringDidCreateScriptContext : public FrameTestHelpers::TestWebFrameClient {
 public:
-    virtual void didCreateScriptContext(WebLocalFrame* frame, v8::Handle<v8::Context> context, int extensionGroup, int worldId) override
+    virtual void didCreateScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int extensionGroup, int worldId) override
     {
         frame->executeScript(WebScriptSource("window.history = 'replaced';"));
     }
@@ -4316,7 +4316,7 @@ protected:
         const WebSelectionBound* selectEnd = m_fakeSelectionLayerTreeView.end();
 
         v8::HandleScope handleScope(v8::Isolate::GetCurrent());
-        v8::Handle<v8::Value> result = m_webViewHelper.webView()->mainFrame()->toWebLocalFrame()->executeScriptAndReturnValue(WebScriptSource("expectedResult"));
+        v8::Local<v8::Value> result = m_webViewHelper.webView()->mainFrame()->toWebLocalFrame()->executeScriptAndReturnValue(WebScriptSource("expectedResult"));
         if (result.IsEmpty() || (*result)->IsUndefined()) {
             EXPECT_FALSE(selection);
             EXPECT_FALSE(selectStart);

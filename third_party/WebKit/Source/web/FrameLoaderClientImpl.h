@@ -59,8 +59,8 @@ public:
     virtual void dispatchDidClearWindowObjectInMainWorld() override;
     virtual void documentElementAvailable() override;
 
-    virtual void didCreateScriptContext(v8::Handle<v8::Context>, int extensionGroup, int worldId) override;
-    virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId) override;
+    virtual void didCreateScriptContext(v8::Local<v8::Context>, int extensionGroup, int worldId) override;
+    virtual void willReleaseScriptContext(v8::Local<v8::Context>, int worldId) override;
 
     // Returns true if we should allow the given V8 extension to be added to
     // the script context at the currently loading page and given extension group.

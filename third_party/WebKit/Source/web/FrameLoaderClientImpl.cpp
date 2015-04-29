@@ -150,13 +150,13 @@ void FrameLoaderClientImpl::documentElementAvailable()
         m_webFrame->client()->didCreateDocumentElement(m_webFrame);
 }
 
-void FrameLoaderClientImpl::didCreateScriptContext(v8::Handle<v8::Context> context, int extensionGroup, int worldId)
+void FrameLoaderClientImpl::didCreateScriptContext(v8::Local<v8::Context> context, int extensionGroup, int worldId)
 {
     if (m_webFrame->client())
         m_webFrame->client()->didCreateScriptContext(m_webFrame, context, extensionGroup, worldId);
 }
 
-void FrameLoaderClientImpl::willReleaseScriptContext(v8::Handle<v8::Context> context, int worldId)
+void FrameLoaderClientImpl::willReleaseScriptContext(v8::Local<v8::Context> context, int worldId)
 {
     if (m_webFrame->client())
         m_webFrame->client()->willReleaseScriptContext(m_webFrame, context, worldId);
