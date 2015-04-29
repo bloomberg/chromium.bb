@@ -1010,6 +1010,9 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     # On slaves, initialize our pool and apply patches. On the master,
     # we've already done that in GetNextManifest, so this is a no-op.
     if not self._run.config.master:
+      # Print the list of CHUMP changes since the LKGM, then apply changes and
+      # print the list of applied changes.
+      self.manifest_manager.GenerateBlameListSinceLKGM()
       self._SetPoolFromManifest(next_manifest)
       self.pool.ApplyPoolIntoRepo()
 

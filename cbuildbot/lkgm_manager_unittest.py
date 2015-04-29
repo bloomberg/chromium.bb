@@ -310,7 +310,7 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     fake_result = cros_build_lib.CommandResult(output=fake_git_log)
     self.PatchObject(git, 'RunGit', return_value=fake_result)
 
-    self.manager._GenerateBlameListSinceLKGM()
+    self.manager.GenerateBlameListSinceLKGM()
 
     exists_mock.assert_called_once_with(
         os.path.join(self.tmpdir, project['path']))

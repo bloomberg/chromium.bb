@@ -267,7 +267,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     self.RefreshManifestCheckout()
     self.InitializeManifestVariables(version_info)
 
-    self._GenerateBlameListSinceLKGM()
+    self.GenerateBlameListSinceLKGM()
     new_manifest = self.CreateManifest()
 
     # For Chrome PFQ, add the version of Chrome to use.
@@ -409,7 +409,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
             cbuildbot_config.IsPFQType(self.build_type) and
             self.build_type != constants.CHROME_PFQ_TYPE)
 
-  def _GenerateBlameListSinceLKGM(self):
+  def GenerateBlameListSinceLKGM(self):
     """Prints out links to all CL's that have been committed since LKGM.
 
     Add buildbot trappings to print <a href='url'>text</a> in the waterfall for
