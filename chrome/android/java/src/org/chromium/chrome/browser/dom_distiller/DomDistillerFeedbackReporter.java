@@ -8,6 +8,8 @@ import android.app.Activity;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -15,17 +17,24 @@ import org.chromium.ui.base.WindowAndroid;
  */
 @JNINamespace("dom_distiller::android")
 public final class DomDistillerFeedbackReporter {
-    private static ExternalFeedbackReporter sExternalFeedbackReporter =
-            new NoOpExternalFeedbackReporter();
-
-    public static void setExternalFeedbackReporter(ExternalFeedbackReporter reporter) {
-        sExternalFeedbackReporter = reporter;
-    }
-
-    private static class NoOpExternalFeedbackReporter implements ExternalFeedbackReporter {
+    /**
+     * An {@link ExternalFeedbackReporter} that does nothing.
+     */
+    public static class NoOpExternalFeedbackReporter implements ExternalFeedbackReporter {
         @Override
         public void reportFeedback(Activity activity, String url, boolean good) {
         }
+    }
+
+    private static ExternalFeedbackReporter sExternalFeedbackReporter;
+
+    /**
+     * This method should not be called. Instead override the method
+     * {@link ChromiumApplication#createDomDistillerFeedbackLauncher}.
+     */
+    @Deprecated
+    public static void setExternalFeedbackReporter(ExternalFeedbackReporter reporter) {
+        sExternalFeedbackReporter = reporter;
     }
 
     /**
@@ -36,6 +45,14 @@ public final class DomDistillerFeedbackReporter {
      */
     @CalledByNative
     public static void reportFeedbackWithWindow(WindowAndroid window, String url, boolean good) {
-        sExternalFeedbackReporter.reportFeedback(window.getActivity().get(), url, good);
+        ThreadUtils.assertOnUiThread();
+        Activity activity = window.getActivity().get();
+        if (sExternalFeedbackReporter == null) {
+            ChromiumApplication application = (ChromiumApplication) activity.getApplication();
+            sExternalFeedbackReporter = application.createDomDistillerFeedbackLauncher();
+        }
+        sExternalFeedbackReporter.reportFeedback(activity, url, good);
     }
+
+    private DomDistillerFeedbackReporter() {}
 }

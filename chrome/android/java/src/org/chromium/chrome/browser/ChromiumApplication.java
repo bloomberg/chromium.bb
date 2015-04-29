@@ -23,7 +23,9 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.child_accounts.ChildAccountFeedbackReporter;
 import org.chromium.chrome.browser.child_accounts.ChildAccountService;
+import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -321,4 +323,14 @@ public abstract class ChromiumApplication extends ContentApplication {
     private static native void nativeChangeAppStatus(boolean inForeground);
     private static native String nativeGetBrowserUserAgent();
     private static native void nativeFlushPersistentData();
+
+    public org.chromium.chrome.browser.dom_distiller.ExternalFeedbackReporter
+            createDomDistillerFeedbackLauncher() {
+        return new DomDistillerFeedbackReporter.NoOpExternalFeedbackReporter();
+    }
+
+    public org.chromium.chrome.browser.child_accounts.ExternalFeedbackReporter
+            createChildAccountFeedbackLauncher() {
+        return new ChildAccountFeedbackReporter.NoOpExternalFeedbackReporter();
+    }
 }
