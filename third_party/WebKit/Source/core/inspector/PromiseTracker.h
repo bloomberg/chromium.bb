@@ -20,9 +20,8 @@ namespace blink {
 class ScriptState;
 class ScriptValue;
 
-class PromiseTracker final : public NoBaseWillBeGarbageCollected<PromiseTracker> {
+class PromiseTracker final : public NoBaseWillBeGarbageCollectedFinalized<PromiseTracker> {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PromiseTracker);
 public:
     class Listener : public WillBeGarbageCollectedMixin {
     public:
@@ -34,6 +33,8 @@ public:
     {
         return adoptPtrWillBeNoop(new PromiseTracker(listener, isolate));
     }
+
+    ~PromiseTracker();
 
     bool isEnabled() const { return m_isEnabled; }
     void setEnabled(bool enabled, bool captureStacks);

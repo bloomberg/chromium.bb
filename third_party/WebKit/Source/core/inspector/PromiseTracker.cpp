@@ -81,7 +81,9 @@ PromiseTracker::PromiseTracker(Listener* listener, v8::Isolate* isolate)
     clear();
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PromiseTracker);
+PromiseTracker::~PromiseTracker()
+{
+}
 
 DEFINE_TRACE(PromiseTracker)
 {
