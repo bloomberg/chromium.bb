@@ -257,6 +257,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_PUBLIC_IMAGEINFO_FIELDS
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_IMAGEFILTER_TO_COLORFILTER
+#   define SK_SUPPORT_LEGACY_IMAGEFILTER_TO_COLORFILTER
+#endif
+
 #ifndef    SK_IGNORE_ETC1_SUPPORT
 #   define SK_IGNORE_ETC1_SUPPORT
 #endif
