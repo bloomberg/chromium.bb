@@ -26,7 +26,7 @@ remoting.HostListApi = function() {
  * @param {string} hostName The user-visible name of the new host.
  * @param {string} publicKey The public half of the host's key pair.
  * @param {string} hostClientId The OAuth2 client ID of the host.
- * @return {!Promise<string>} An OAuth2 auth code or the empty string.
+ * @return {!Promise<remoting.HostListApi.RegisterResult>}
  */
 remoting.HostListApi.prototype.register = function(
     newHostId, hostName, publicKey, hostClientId) {
@@ -87,3 +87,15 @@ remoting.HostListApi.setInstance = function(newInstance) {
 };
 
 })();
+
+/**
+ * A pair of an OAuth2 auth code and a robot account email.  Depending
+ * on the specifics of the registration process, either could be the
+ * empty string.
+ *
+ * @typedef {{
+ *   authCode: string,
+ *   email: string
+ * }}
+ */
+remoting.HostListApi.RegisterResult;

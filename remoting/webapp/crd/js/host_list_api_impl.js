@@ -41,12 +41,10 @@ remoting.HostListApiImpl.prototype.register = function(
     useIdentity: true
   }).start().then(function(response) {
     if (response.status == 200) {
-      var result = response.getJson();
-      if (result['data']) {
-        return base.getStringAttr(result['data'], 'authorizationCode', '');
-      } else {
-        return '';
-      }
+      var result = /** @type {!Object} */ (response.getJson());
+      var data = base.getObjectAttr(result, 'data');
+      var authCode = base.getStringAttr(data, 'authorizationCode');
+      return { authCode: authCode, email: '' };
     } else {
       console.log(
           'Failed to register the host. Status: ' + response.status +

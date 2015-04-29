@@ -40,7 +40,7 @@ remoting.HostListApiGcdImpl.prototype.register = function(
     }
   };
 
-  return /** @type {!Promise<string>} */ (
+  return /** @type {!Promise<remoting.HostListApi.RegisterResult>} */ (
       this.gcd_.insertRegistrationTicket().
       then(function(ticket) {
         return self.gcd_.patchRegistrationTicket(
@@ -50,7 +50,10 @@ remoting.HostListApiGcdImpl.prototype.register = function(
         return self.gcd_.finalizeRegistrationTicket(ticket.id);
       }).
       then(function(/**remoting.gcd.RegistrationTicket*/ ticket) {
-        return ticket.robotAccountAuthorizationCode;
+        return {
+          authCode: ticket.robotAccountAuthorizationCode,
+          email: ticket.robotAccountEmail
+        };
       }).
       catch(function(error) {
         console.error('Error registering device with GCD: ' + error);

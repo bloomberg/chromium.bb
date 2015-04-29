@@ -31,17 +31,13 @@ QUnit.module('host_list_api_impl', {
 /**
  * Install an HTTP response for requests to the registry.
  * @param {QUnit.Assert} assert
- * @param {boolean} withAuthCode
  */
-function queueRegistryResponse(assert, withAuthCode) {
+function queueRegistryResponse(assert) {
   var responseJson = {
       data: {
         authorizationCode: FAKE_AUTH_CODE
       }
   };
-  if (!withAuthCode) {
-    delete responseJson.data.authorizationCode;
-  }
 
   remoting.MockXhr.setResponseFor(
       'POST', 'DIRECTORY_API_BASE_URL/@me/hosts',
@@ -57,29 +53,17 @@ function queueRegistryResponse(assert, withAuthCode) {
       });
 }
 
-QUnit.test('register with auth code', function(assert) {
+QUnit.test('register', function(assert) {
   var impl = new remoting.HostListApiImpl();
-  queueRegistryResponse(assert, true);
+  queueRegistryResponse(assert);
   return impl.register(
       FAKE_HOST_ID,
       FAKE_HOST_NAME,
       FAKE_PUBLIC_KEY,
       FAKE_HOST_CLIENT_ID
-  ). then(function(authCode) {
-    assert.equal(authCode, FAKE_AUTH_CODE);
-  });
-});
-
-QUnit.test('register without auth code', function(assert) {
-  var impl = new remoting.HostListApiImpl();
-  queueRegistryResponse(assert, false);
-  return impl.register(
-      FAKE_HOST_ID,
-      FAKE_HOST_NAME,
-      FAKE_PUBLIC_KEY,
-      FAKE_HOST_CLIENT_ID
-  ). then(function(authCode) {
-    assert.equal(authCode, '');
+  ). then(function(regResult) {
+    assert.equal(regResult.authCode, FAKE_AUTH_CODE);
+    assert.equal(regResult.email, '');
   });
 });
 

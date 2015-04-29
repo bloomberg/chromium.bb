@@ -165,15 +165,15 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
   });
   var newHostId = base.generateUuid();
   var pinHashPromise = this.hostDaemonFacade_.getPinHash(newHostId, hostPin);
+  var hostOwnerPromise = this.getClientBaseJid_();
 
   /** @type {boolean} */
   var hostRegistered = false;
 
-  // Register the host and extract an optional auth code from the host
-  // response.  The absence of an auth code is represented by an empty
-  // string.
-  /** @type {!Promise<string>} */
-  var authCodePromise = Promise.all([
+  // Register the host and extract an auth code from the host response
+  // and, optionally an email address for the robot account.
+  /** @type {!Promise<remoting.HostListApi.RegisterResult>} */
+  var regResultPromise = Promise.all([
     hostClientIdPromise,
     hostNamePromise,
     keyPairPromise
@@ -184,79 +184,57 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
 
     return remoting.HostListApi.getInstance().register(
         newHostId, hostName, keyPair.publicKey, hostClientId);
-  }).then(function(/** string */ result) {
+  }).then(function(/** remoting.HostListApi.RegisterResult */ result) {
     hostRegistered = true;
     return result;
   });
 
   // Get XMPP creditials.
-  var xmppCredsPromise = authCodePromise.then(function(authCode) {
-    if (authCode) {
+  var xmppCredsPromise = regResultPromise.then(function(regResult) {
+    base.debug.assert(regResult.authCode != '');
+    if (regResult.email) {
+      // Use auth code and email supplied by GCD.
+      return that.hostDaemonFacade_.getRefreshTokenFromAuthCode(
+          regResult.authCode).then(function(token) {
+            return {
+              userEmail: regResult.email,
+              refreshToken: token
+            };
+          });
+    } else {
       // Use auth code supplied by Chromoting registry.
-      return that.hostDaemonFacade_.getCredentialsFromAuthCode(authCode);
-    } else {
-      // No authorization code returned, use regular Chrome
-      // identity credential flow.
-      return remoting.identity.getEmail().then(function(/** string */ email) {
-        return {
-          userEmail: email,
-          refreshToken: remoting.oauth2.getRefreshToken()
-        };
-      });
+      return that.hostDaemonFacade_.getCredentialsFromAuthCode(
+          regResult.authCode);
     }
   });
 
-  // Get as JID to use as the host owner.
-  var hostOwnerPromise = authCodePromise.then(function(authCode) {
-    if (authCode) {
-      return that.getClientBaseJid_();
-    } else {
-      return remoting.identity.getEmail();
-    }
-  });
-
-  // Build an initial host configuration.
+  // Build the host configuration.
   /** @type {!Promise<!Object>} */
-  var hostConfigNoOwnerPromise = Promise.all([
+  var hostConfigPromise = Promise.all([
     hostNamePromise,
     pinHashPromise,
     xmppCredsPromise,
-    keyPairPromise
+    keyPairPromise,
+    hostOwnerPromise,
+    remoting.identity.getEmail()
   ]).then(function(/** Array */ a) {
     var hostName = /** @type {string} */ (a[0]);
     var hostSecretHash = /** @type {string} */ (a[1]);
     var xmppCreds = /** @type {remoting.XmppCredentials} */ (a[2]);
     var keyPair = /** @type {remoting.KeyPair} */ (a[3]);
-    return {
+    var hostOwner = /** @type {string} */ (a[4]);
+    var hostOwnerEmail = /** @type {string} */ (a[5]);
+    var hostConfig = {
       xmpp_login: xmppCreds.userEmail,
       oauth_refresh_token: xmppCreds.refreshToken,
       host_id: newHostId,
       host_name: hostName,
       host_secret_hash: hostSecretHash,
-      private_key: keyPair.privateKey
+      private_key: keyPair.privateKey,
+      host_owner: hostOwner
     };
-  });
-
-  // Add host_owner and host_owner_email fields to the host config if
-  // necessary.  This promise resolves to the same value as
-  // hostConfigNoOwnerPromise, with not until the extra fields are
-  // either added or determined to be redundant.
-  /** @type {!Promise<!Object>} */
-  var hostConfigWithOwnerPromise = Promise.all([
-    hostConfigNoOwnerPromise,
-    hostOwnerPromise,
-    remoting.identity.getEmail(),
-    xmppCredsPromise
-  ]).then(function(/** Array */ a) {
-    var hostConfig = /** @type {!Object} */ (a[0]);
-    var hostOwner = /** @type {string} */ (a[1]);
-    var hostOwnerEmail = /** @type {string} */ (a[2]);
-    var xmppCreds = /** @type {remoting.XmppCredentials} */ (a[3]);
-    if (hostOwner != xmppCreds.userEmail) {
-      hostConfig['host_owner'] = hostOwner;
-      if (hostOwnerEmail != hostOwner) {
-        hostConfig['host_owner_email'] = hostOwnerEmail;
-      }
+    if (hostOwnerEmail != hostOwner) {
+      hostConfig['host_owner_email'] = hostOwnerEmail;
     }
     return hostConfig;
   });
@@ -264,7 +242,7 @@ remoting.HostController.prototype.start = function(hostPin, consent) {
   // Start the daemon.
   /** @type {!Promise<remoting.HostController.AsyncResult>} */
   var startDaemonResultPromise =
-      hostConfigWithOwnerPromise.then(function(hostConfig) {
+      hostConfigPromise.then(function(hostConfig) {
         return that.hostDaemonFacade_.startDaemon(hostConfig, consent);
       });
 

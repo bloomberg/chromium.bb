@@ -18,11 +18,18 @@ var remoting = remoting || {};
  */
 remoting.MockHostListApi = function() {
   /**
-   * The auth code for the |register| method to return, or null if it
-   * should fail.
+   * The auth code value for the |register| method to return, or null
+   * if it should fail.
    * @type {?string}
    */
-  this.registerResult = null;
+  this.authCodeFromRegister = null;
+
+  /**
+   * The email value for the |register| method to return, or null if
+   * it should fail.
+   * @type {?string}
+   */
+  this.emailFromRegister = null;
 
   /** @type {Array<remoting.Host>} */
   this.hosts = [
@@ -50,13 +57,16 @@ remoting.MockHostListApi = function() {
 /** @override */
 remoting.MockHostListApi.prototype.register = function(
     newHostId, hostName, publicKey, hostClientId) {
-  if (this.registerResult === null) {
+  if (this.authCodeFromRegister === null || this.emailFromRegister === null) {
     return Promise.reject(
         new remoting.Error(
             remoting.Error.Tag.REGISTRATION_FAILED,
             'MockHostListApi.register'));
   } else {
-    return Promise.resolve(this.registerResult);
+    return Promise.resolve({
+      authCode: this.authCodeFromRegister,
+      email: this.emailFromRegister
+    });
   }
 };
 
@@ -82,6 +92,7 @@ remoting.MockHostListApi.prototype.put =
   return new Promise(function(resolve, reject) {
     var onTokenValid = function() {
       for (var i = 0; i < that.hosts.length; ++i) {
+        /** type {remoting.Host} */
         var host = that.hosts[i];
         if (host.hostId == hostId) {
           host.hostName = hostName;

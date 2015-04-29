@@ -81,7 +81,8 @@ QUnit.module('host_controller', {
     remoting.settings = new remoting.Settings();
     remoting.identity = new remoting.Identity();
     mockHostListApi = new remoting.MockHostListApi;
-    mockHostListApi.registerResult = FAKE_AUTH_CODE;
+    mockHostListApi.authCodeFromRegister = FAKE_AUTH_CODE;
+    mockHostListApi.emailFromRegister = '';
     remoting.HostListApi.setInstance(mockHostListApi);
     base.debug.assert(remoting.oauth2 === null);
     remoting.oauth2 = new remoting.OAuth2();
@@ -250,7 +251,7 @@ QUnit.test('start with getHostClientId failure', function(assert) {
 // Check what happens when the registry returns an HTTP when we try to
 // register a host.
 QUnit.test('start with host registration failure', function(assert) {
-  mockHostListApi.registerResult = null;
+  mockHostListApi.authCodeFromRegister = null;
   return controller.start(FAKE_HOST_PIN, true).then(function() {
     throw 'test failed';
   }, function(/** remoting.Error */ e) {
@@ -272,22 +273,6 @@ QUnit.test('start with getCredentialsFromAuthCode failure', function(assert) {
     assert.equal(e.getDetail(), 'getCredentialsFromAuthCode');
     assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
     assert.equal(getCredentialsFromAuthCodeSpy.callCount, 1);
-    assert.equal(onLocalHostStartedSpy.callCount, 0);
-    assert.equal(startDaemonSpy.callCount, 0);
-  });
-});
-
-// Check what happens when the HostDaemonFacade's getPinHash method
-// fails, and verify that getPinHash is called when the registry
-// does't return an auth code.
-QUnit.test('start with getRefreshToken+getPinHash failure', function(assert) {
-  mockHostDaemonFacade.pinHashFunc = null;
-  mockHostListApi.registerResult = '';
-  return controller.start(FAKE_HOST_PIN, true).then(function() {
-    throw 'test failed';
-  }, function(/** remoting.Error */ e) {
-    assert.equal(e.getDetail(), 'getPinHash');
-    assert.equal(e.getTag(), remoting.Error.Tag.UNEXPECTED);
     assert.equal(onLocalHostStartedSpy.callCount, 0);
     assert.equal(startDaemonSpy.callCount, 0);
   });
@@ -356,7 +341,7 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
 // Check what happens when the entire host registration process
 // succeeds.
 [false, true].forEach(function(/** boolean */ consent) {
-  QUnit.test('start with auth code, consent=' + consent, function(assert) {
+  QUnit.test('start with consent=' + consent, function(assert) {
     /** @const */
     var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_HOST_PIN);
     stubSignalStrategyConnect(true);
@@ -379,37 +364,6 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
             oauth_refresh_token: FAKE_REFRESH_TOKEN,
             host_owner: FAKE_CLIENT_JID.toLowerCase(),
             host_owner_email: FAKE_USER_EMAIL,
-            host_id: FAKE_HOST_ID,
-            host_name: FAKE_HOST_NAME,
-            host_secret_hash: fakePinHash,
-            private_key: FAKE_PRIVATE_KEY
-          }, consent]);
-    });
-  });
-});
-
-// Check alternative host registration without a registry-supplied
-// auth code.
-[false, true].forEach(function(/** boolean */ consent) {
-  QUnit.test('start without auth code, consent=' + consent, function(assert) {
-    /** @const */
-    var fakePinHash = fakePinHashFunc(FAKE_HOST_ID, FAKE_HOST_PIN);
-    mockHostListApi.registerResult = '';
-    stubSignalStrategyConnect(true);
-    return controller.start(FAKE_HOST_PIN, consent).then(function() {
-      assert.equal(getCredentialsFromAuthCodeSpy.callCount, 0);
-      assert.equal(getPinHashSpy.callCount, 1);
-      assert.deepEqual(
-          getPinHashSpy.args[0].slice(0, 2),
-          [FAKE_HOST_ID, FAKE_HOST_PIN]);
-      assert.equal(unregisterHostByIdSpy.callCount, 0);
-      assert.equal(onLocalHostStartedSpy.callCount, 1);
-      assert.equal(startDaemonSpy.callCount, 1);
-      assert.deepEqual(
-          startDaemonSpy.args[0].slice(0, 2),
-          [{
-            xmpp_login: FAKE_USER_EMAIL,
-            oauth_refresh_token: FAKE_REFRESH_TOKEN,
             host_id: FAKE_HOST_ID,
             host_name: FAKE_HOST_NAME,
             host_secret_hash: fakePinHash,
