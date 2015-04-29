@@ -542,6 +542,7 @@ void ThreadWatcherList::InitializeAndStartWatching(
   // Disable ThreadWatcher in Canary channel.
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
+      channel == chrome::VersionInfo::CHANNEL_STABLE ||
       channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
     return;
   }
