@@ -180,7 +180,6 @@ cr.define('cr.login', function() {
     this.trusted_ = true;
     this.authFlow = AuthFlow.DEFAULT;
     this.samlHandler_.reset();
-    this.loaded_ = false;
   };
 
   /**
@@ -190,6 +189,7 @@ cr.define('cr.login', function() {
    */
   Authenticator.prototype.load = function(authMode, data) {
     this.clearCredentials_();
+    this.loaded_ = false;
     this.idpOrigin_ = data.gaiaUrl || IDP_ORIGIN;
     this.continueUrl_ = data.continueUrl || CONTINUE_URL;
     this.continueUrlWithoutParams_ =
@@ -230,6 +230,7 @@ cr.define('cr.login', function() {
    */
   Authenticator.prototype.reload = function() {
     this.clearCredentials_();
+    this.loaded_ = false;
     this.webview_.src = this.reloadUrl_;
   };
 
