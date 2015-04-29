@@ -147,6 +147,25 @@ static std::string SerializeIceTransportType(
   return transport_type;
 }
 
+static std::string SerializeBundlePolicy(
+    webrtc::PeerConnectionInterface::BundlePolicy policy) {
+  string policy_str;
+  switch (policy) {
+  case webrtc::PeerConnectionInterface::kBundlePolicyBalanced:
+    policy_str = "balanced";
+    break;
+  case webrtc::PeerConnectionInterface::kBundlePolicyMaxBundle:
+    policy_str = "max-bundle";
+    break;
+  case webrtc::PeerConnectionInterface::kBundlePolicyMaxCompat:
+    policy_str = "max-compat";
+    break;
+  default:
+    NOTREACHED();
+  };
+  return policy_str;
+}
+
 #define GET_STRING_OF_STATE(state)                \
   case WebRTCPeerConnectionHandlerClient::state:  \
     result = #state;                              \
@@ -362,7 +381,8 @@ void PeerConnectionTracker::RegisterPeerConnection(
   info.lid = GetNextLocalID();
   info.rtc_configuration =
       "{ servers: " +  SerializeServers(config.servers) + ", " +
-      "iceTransportType: " + SerializeIceTransportType(config.type) + " }";
+      "iceTransportType: " + SerializeIceTransportType(config.type) + ", " +
+      "bundlePolicy: " + SerializeBundlePolicy(config.bundle_policy) + " }";
 
   info.constraints = SerializeMediaConstraints(constraints);
   info.url = frame->document().url().spec();
@@ -433,13 +453,17 @@ void PeerConnectionTracker::TrackUpdateIce(
   string transport_type =
       "iceTransportType: " + SerializeIceTransportType(config.type);
 
+  string bundle_policy =
+      "bundlePolicy: " + SerializeBundlePolicy(config.bundle_policy);
+
   string constraints =
       "constraints: {" + SerializeMediaConstraints(options) + "}";
 
   SendPeerConnectionUpdate(
       pc_handler,
       "updateIce",
-      servers_string + ", " + transport_type + ", " + constraints);
+      servers_string + ", " + transport_type + ", " +
+      bundle_policy + ", " + constraints);
 }
 
 void PeerConnectionTracker::TrackAddIceCandidate(

@@ -169,32 +169,49 @@ void GetSdpAndTypeFromSessionDescription(
   }
 }
 
-// Converter functions from WebKit types to libjingle types.
+// Converter functions from WebKit types to WebRTC types.
 
 void GetNativeRtcConfiguration(
-    const blink::WebRTCConfiguration& server_configuration,
-    webrtc::PeerConnectionInterface::RTCConfiguration* config) {
-  if (server_configuration.isNull() || !config)
+    const blink::WebRTCConfiguration& blink_config,
+    webrtc::PeerConnectionInterface::RTCConfiguration* webrtc_config) {
+  if (blink_config.isNull() || !webrtc_config)
     return;
-  for (size_t i = 0; i < server_configuration.numberOfServers(); ++i) {
+  for (size_t i = 0; i < blink_config.numberOfServers(); ++i) {
     webrtc::PeerConnectionInterface::IceServer server;
     const blink::WebRTCICEServer& webkit_server =
-        server_configuration.server(i);
+        blink_config.server(i);
     server.username = base::UTF16ToUTF8(webkit_server.username());
     server.password = base::UTF16ToUTF8(webkit_server.credential());
     server.uri = webkit_server.uri().spec();
-    config->servers.push_back(server);
+    webrtc_config->servers.push_back(server);
   }
 
-  switch (server_configuration.iceTransports()) {
+  switch (blink_config.iceTransports()) {
   case blink::WebRTCIceTransportsNone:
-    config->type = webrtc::PeerConnectionInterface::kNone;
+    webrtc_config->type = webrtc::PeerConnectionInterface::kNone;
     break;
   case blink::WebRTCIceTransportsRelay:
-    config->type = webrtc::PeerConnectionInterface::kRelay;
+    webrtc_config->type = webrtc::PeerConnectionInterface::kRelay;
     break;
   case blink::WebRTCIceTransportsAll:
-    config->type = webrtc::PeerConnectionInterface::kAll;
+    webrtc_config->type = webrtc::PeerConnectionInterface::kAll;
+    break;
+  default:
+    NOTREACHED();
+  }
+
+  switch (blink_config.bundlePolicy()) {
+  case blink::WebRTCBundlePolicyBalanced:
+    webrtc_config->bundle_policy =
+        webrtc::PeerConnectionInterface::kBundlePolicyBalanced;
+    break;
+  case blink::WebRTCBundlePolicyMaxBundle:
+    webrtc_config->bundle_policy =
+        webrtc::PeerConnectionInterface::kBundlePolicyMaxBundle;
+    break;
+  case blink::WebRTCBundlePolicyMaxCompat:
+    webrtc_config->bundle_policy =
+        webrtc::PeerConnectionInterface::kBundlePolicyMaxCompat;
     break;
   default:
     NOTREACHED();
