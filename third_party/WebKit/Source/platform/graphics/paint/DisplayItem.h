@@ -86,6 +86,7 @@ public:
         ScrollbarVertical, // For ScrollbarThemeMacNonOverlayAPI only.
         SelectionGap,
         SelectionTint,
+        TableCellBackgroundFromSelfPaintingRow, // FIXME: To be deprecated.
         VideoBitmap,
         WebPlugin,
         DrawingLast = WebPlugin,

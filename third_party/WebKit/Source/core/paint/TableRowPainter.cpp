@@ -8,6 +8,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/paint/GraphicsContextAnnotator.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TableCellPainter.h"
@@ -22,8 +23,15 @@ void TableRowPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     paintOutlineForRowIfNeeded(paintInfo, paintOffset);
     for (LayoutTableCell* cell = m_layoutTableRow.firstCell(); cell; cell = cell->nextCell()) {
         // Paint the row background behind the cell.
-        if (paintInfo.phase == PaintPhaseBlockBackground || paintInfo.phase == PaintPhaseChildBlockBackground)
-            TableCellPainter(*cell).paintBackgroundsBehindCell(paintInfo, paintOffset, &m_layoutTableRow);
+        if (paintInfo.phase == PaintPhaseBlockBackground || paintInfo.phase == PaintPhaseChildBlockBackground) {
+            if (m_layoutTableRow.hasBackground()) {
+                TableCellPainter tableCellPainter(*cell);
+                LayoutObjectDrawingRecorder recorder(*paintInfo.context, *cell, DisplayItem::TableCellBackgroundFromSelfPaintingRow, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
+                if (!recorder.canUseCachedDrawing())
+                    tableCellPainter.paintBackgroundsBehindCell(paintInfo, paintOffset, &m_layoutTableRow);
+            }
+        }
+
         if (!cell->hasSelfPaintingLayer())
             cell->paint(paintInfo, paintOffset);
     }

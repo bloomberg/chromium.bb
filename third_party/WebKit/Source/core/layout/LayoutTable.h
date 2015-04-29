@@ -284,6 +284,7 @@ public:
 protected:
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     virtual void simplifiedNormalFlowLayout() override;
+    virtual void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState&) override;
 
 private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTable || LayoutBlock::isOfType(type); }

@@ -72,6 +72,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::ScrollbarVertical: return "ScrollbarVertical";
     case DisplayItem::SelectionGap: return "DrawingSelectionGap";
     case DisplayItem::SelectionTint: return "DrawingSelectionTint";
+    case DisplayItem::TableCellBackgroundFromSelfPaintingRow: return "TableCellBackgroundFromSelfPaintingRow";
     case DisplayItem::VideoBitmap: return "DrawingVideoBitmap";
     case DisplayItem::WebPlugin: return "DrawingWebPlugin";
     default:

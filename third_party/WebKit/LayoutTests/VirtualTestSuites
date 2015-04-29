@@ -188,13 +188,8 @@
   {
     "prefix": "slimmingpaint",
     "base": "svg/as-background-image",
-    "args": ["--enable-slimming-paint"],
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
-  },
-  {
-    "prefix": "rootlayerscrolls",
-    "base": "fast/scrolling",
-    "args": ["--root-layer-scrolls"]
   },
   {
     "prefix": "slimmingpaint",
@@ -213,6 +208,17 @@
     "base": "printing",
     "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
     "reference_args": []
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "tables",
+    "args": ["--enable-slimming-paint", "--enable-blink-features=slimmingPaintUnderInvalidationChecking"],
+    "reference_args": []
+  },
+  {
+    "prefix": "rootlayerscrolls",
+    "base": "fast/scrolling",
+    "args": ["--root-layer-scrolls"]
   },
   {
     "prefix": "scroll_customization",

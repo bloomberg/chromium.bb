@@ -137,7 +137,6 @@ crbug.com/451606 svg/filters/feImage-self-and-other-referencing.html [ Crash Pas
 crbug.com/451606 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ ImageOnlyFailure ]
 
 crbug.com/482170 virtual/slimmingpaint/fast/repaint/scroll-stacking-context-backface-visiblity-leaves-traces.html [ Crash ]
-crbug.com/482173 virtual/slimmingpaint/fast/repaint/table-col-background.html [ Crash ]
 crbug.com/482174 virtual/slimmingpaint/fast/repaint/video-unmute-repaint.html [ Crash ]
 crbug.com/482177 virtual/slimmingpaint/fast/repaint/view-background-from-body-2.html [ Crash ]
 
@@ -202,6 +201,24 @@ crbug.com/471405 [ XP ] virtual/slimmingpaint/svg/text/text-with-geometric-preci
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 crbug.com/225184 virtual/slimmingpaint/fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
+
+crbug.com/482173 virtual/slimmingpaint/fast/repaint/add-table-overpaint.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/repaint/fixed-table-cell.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/repaint/fixed-table-overflow-zindex.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/repaint/fixed-table-overflow.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/repaint/hover-invalidation-table.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/repaint/table-outer-border.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/repaint/table-row.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/table/border-collapsing/cached-69296.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/table/border-collapsing/cached-cell-remove.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-col-border-color.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-col-border-width.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-colgroup-border-color.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-colgroup-border-width.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-row-border-width.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-tbody-border-color.html [ NeedsRebaseline ]
+crbug.com/482173 virtual/slimmingpaint/fast/table/border-collapsing/cached-change-tbody-border-width.html [ NeedsRebaseline ]
 
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ImageOnlyFailure Pass ]
