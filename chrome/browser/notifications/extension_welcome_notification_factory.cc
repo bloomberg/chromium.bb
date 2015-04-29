@@ -15,7 +15,7 @@
 ExtensionWelcomeNotification*
 ExtensionWelcomeNotificationFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return static_cast<ExtensionWelcomeNotification*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }

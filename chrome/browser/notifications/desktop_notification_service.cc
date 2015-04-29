@@ -93,7 +93,7 @@ void DesktopNotificationService::RequestNotificationPermission(
     const GURL& requesting_origin,
     bool user_gesture,
     const BrowserPermissionCallback& result_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(ENABLE_EXTENSIONS)
   extensions::InfoMap* extension_info_map =
