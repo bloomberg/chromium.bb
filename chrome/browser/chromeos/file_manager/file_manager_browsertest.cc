@@ -1169,8 +1169,14 @@ INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "tabindexOpenDialogDownloads"),
         TestParameter(IN_GUEST_MODE, "tabindexOpenDialogDownloads")));
 
+// Fails on official build. http://crbug.com/482121.
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_TabindexSaveFileDialog DISABLED_TabindexSaveFileDialog
+#else
+#define MAYBE_TabindexSaveFileDialog TabindexSaveFileDialog
+#endif
 INSTANTIATE_TEST_CASE_P(
-    TabindexSaveFileDialog,
+    MAYBE_TabindexSaveFileDialog,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "tabindexSaveFileDialogDrive"),
