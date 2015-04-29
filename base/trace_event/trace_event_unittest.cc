@@ -9,10 +9,12 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -95,10 +97,9 @@ class TraceEventTestFixture : public testing::Test {
     WaitableEvent flush_complete_event(false, false);
     Thread flush_thread("flush");
     flush_thread.Start();
-    flush_thread.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&TraceEventTestFixture::EndTraceAndFlushAsync,
-                 base::Unretained(this),
-                 &flush_complete_event));
+    flush_thread.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&TraceEventTestFixture::EndTraceAndFlushAsync,
+                              base::Unretained(this), &flush_complete_event));
     flush_complete_event.Wait();
   }
 
@@ -1424,7 +1425,7 @@ TEST_F(TraceEventTestFixture, DataCapturedOnThread) {
   WaitableEvent task_complete_event(false, false);
   thread.Start();
 
-  thread.message_loop()->PostTask(
+  thread.task_runner()->PostTask(
       FROM_HERE, base::Bind(&TraceWithAllMacroVariants, &task_complete_event));
   task_complete_event.Wait();
   thread.Stop();
@@ -1445,9 +1446,9 @@ TEST_F(TraceEventTestFixture, DataCapturedManyThreads) {
     threads[i] = new Thread(StringPrintf("Thread %d", i));
     task_complete_events[i] = new WaitableEvent(false, false);
     threads[i]->Start();
-    threads[i]->message_loop()->PostTask(
-        FROM_HERE, base::Bind(&TraceManyInstantEvents,
-                              i, num_events, task_complete_events[i]));
+    threads[i]->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&TraceManyInstantEvents, i, num_events,
+                              task_complete_events[i]));
   }
 
   for (int i = 0; i < num_threads; i++) {
@@ -1493,9 +1494,9 @@ TEST_F(TraceEventTestFixture, ThreadNames) {
     task_complete_events[i] = new WaitableEvent(false, false);
     threads[i]->Start();
     thread_ids[i] = threads[i]->thread_id();
-    threads[i]->message_loop()->PostTask(
-        FROM_HERE, base::Bind(&TraceManyInstantEvents,
-                              i, kNumEvents, task_complete_events[i]));
+    threads[i]->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&TraceManyInstantEvents, i, kNumEvents,
+                              task_complete_events[i]));
   }
   for (int i = 0; i < kNumThreads; i++) {
     task_complete_events[i]->Wait();
@@ -2725,17 +2726,17 @@ TEST_F(TraceEventTestFixture, SetCurrentThreadBlocksMessageLoopBeforeTracing) {
   Thread thread("1");
   WaitableEvent task_complete_event(false, false);
   thread.Start();
-  thread.message_loop()->PostTask(
+  thread.task_runner()->PostTask(
       FROM_HERE, Bind(&TraceLog::SetCurrentThreadBlocksMessageLoop,
                       Unretained(TraceLog::GetInstance())));
 
-  thread.message_loop()->PostTask(
+  thread.task_runner()->PostTask(
       FROM_HERE, Bind(&TraceWithAllMacroVariants, &task_complete_event));
   task_complete_event.Wait();
 
   WaitableEvent task_start_event(false, false);
   WaitableEvent task_stop_event(false, false);
-  thread.message_loop()->PostTask(
+  thread.task_runner()->PostTask(
       FROM_HERE, Bind(&BlockUntilStopped, &task_start_event, &task_stop_event));
   task_start_event.Wait();
 
@@ -2796,15 +2797,15 @@ TEST_F(TraceEventTestFixture, SetCurrentThreadBlocksMessageLoopAfterTracing) {
   WaitableEvent task_complete_event(false, false);
   thread.Start();
 
-  thread.message_loop()->PostTask(
+  thread.task_runner()->PostTask(
       FROM_HERE, Bind(&TraceWithAllMacroVariants, &task_complete_event));
   task_complete_event.Wait();
 
   WaitableEvent task_start_event(false, false);
   WaitableEvent task_stop_event(false, false);
-  thread.message_loop()->PostTask(
-      FROM_HERE, Bind(&SetBlockingFlagAndBlockUntilStopped,
-                      &task_start_event, &task_stop_event));
+  thread.task_runner()->PostTask(
+      FROM_HERE, Bind(&SetBlockingFlagAndBlockUntilStopped, &task_start_event,
+                      &task_stop_event));
   task_start_event.Wait();
 
   EndTraceAndFlush();
@@ -2821,14 +2822,14 @@ TEST_F(TraceEventTestFixture, ThreadOnceBlocking) {
   WaitableEvent task_complete_event(false, false);
   thread.Start();
 
-  thread.message_loop()->PostTask(
+  thread.task_runner()->PostTask(
       FROM_HERE, Bind(&TraceWithAllMacroVariants, &task_complete_event));
   task_complete_event.Wait();
   task_complete_event.Reset();
 
   WaitableEvent task_start_event(false, false);
   WaitableEvent task_stop_event(false, false);
-  thread.message_loop()->PostTask(
+  thread.task_runner()->PostTask(
       FROM_HERE, Bind(&BlockUntilStopped, &task_start_event, &task_stop_event));
   task_start_event.Wait();
 
@@ -2843,7 +2844,7 @@ TEST_F(TraceEventTestFixture, ThreadOnceBlocking) {
   // executed in the thread before continuing.
   task_start_event.Reset();
   task_stop_event.Reset();
-  thread.message_loop()->PostTask(
+  thread.task_runner()->PostTask(
       FROM_HERE, Bind(&BlockUntilStopped, &task_start_event, &task_stop_event));
   task_start_event.Wait();
   task_stop_event.Signal();
@@ -2852,7 +2853,7 @@ TEST_F(TraceEventTestFixture, ThreadOnceBlocking) {
   // TraceLog should discover the generation mismatch and recover the thread
   // local buffer for the thread without any error.
   BeginTrace();
-  thread.message_loop()->PostTask(
+  thread.task_runner()->PostTask(
       FROM_HERE, Bind(&TraceWithAllMacroVariants, &task_complete_event));
   task_complete_event.Wait();
   task_complete_event.Reset();

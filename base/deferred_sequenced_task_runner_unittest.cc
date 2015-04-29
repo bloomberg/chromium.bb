@@ -7,9 +7,9 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -58,11 +58,9 @@ class DeferredSequencedTaskRunnerTest : public testing::Test,
   }
 
  protected:
-  DeferredSequencedTaskRunnerTest() :
-      loop_(),
-      runner_(
-          new base::DeferredSequencedTaskRunner(loop_.message_loop_proxy())) {
-  }
+  DeferredSequencedTaskRunnerTest()
+      : loop_(),
+        runner_(new base::DeferredSequencedTaskRunner(loop_.task_runner())) {}
 
   base::MessageLoop loop_;
   scoped_refptr<base::DeferredSequencedTaskRunner> runner_;
@@ -126,21 +124,18 @@ TEST_F(DeferredSequencedTaskRunnerTest, DeferredStartWithMultipleThreads) {
     thread1.Start();
     thread2.Start();
     for (int i = 0; i < 5; ++i) {
-      thread1.message_loop()->PostTask(
+      thread1.task_runner()->PostTask(
           FROM_HERE,
           base::Bind(&DeferredSequencedTaskRunnerTest::PostExecuteTask,
-                     base::Unretained(this),
-                     2 * i));
-      thread2.message_loop()->PostTask(
+                     base::Unretained(this), 2 * i));
+      thread2.task_runner()->PostTask(
           FROM_HERE,
           base::Bind(&DeferredSequencedTaskRunnerTest::PostExecuteTask,
-                     base::Unretained(this),
-                     2 * i + 1));
+                     base::Unretained(this), 2 * i + 1));
       if (i == 2) {
-        thread1.message_loop()->PostTask(
-            FROM_HERE,
-            base::Bind(&DeferredSequencedTaskRunnerTest::StartRunner,
-                       base::Unretained(this)));
+        thread1.task_runner()->PostTask(
+            FROM_HERE, base::Bind(&DeferredSequencedTaskRunnerTest::StartRunner,
+                                  base::Unretained(this)));
       }
     }
   }
@@ -154,8 +149,7 @@ TEST_F(DeferredSequencedTaskRunnerTest, ObjectDestructionOrder) {
   {
     base::Thread thread("DeferredSequencedTaskRunnerTestThread");
     thread.Start();
-    runner_ =
-        new base::DeferredSequencedTaskRunner(thread.message_loop_proxy());
+    runner_ = new base::DeferredSequencedTaskRunner(thread.task_runner());
     for (int i = 0; i < 5; ++i) {
       {
         // Use a block to ensure that no reference to |short_lived_object|

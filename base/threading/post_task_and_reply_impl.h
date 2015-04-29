@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file contains the implementation shared by
-// MessageLoopProxy::PostTaskAndReply and WorkerPool::PostTaskAndReply.
+// TaskRunner::PostTaskAndReply and WorkerPool::PostTaskAndReply.
 
 #ifndef BASE_THREADING_POST_TASK_AND_REPLY_IMPL_H_
 #define BASE_THREADING_POST_TASK_AND_REPLY_IMPL_H_
@@ -21,11 +21,11 @@ namespace internal {
 // MessageLoop.
 //
 // If you're looking for a concrete implementation of
-// PostTaskAndReply, you probably want base::MessageLoopProxy, or you
+// PostTaskAndReply, you probably want base::SingleThreadTaskRunner, or you
 // may want base::WorkerPool.
 class PostTaskAndReplyImpl {
  public:
-  // Implementation for MessageLoopProxy::PostTaskAndReply and
+  // Implementation for TaskRunner::PostTaskAndReply and
   // WorkerPool::PostTaskAndReply.
   bool PostTaskAndReply(const tracked_objects::Location& from_here,
                         const Closure& task,

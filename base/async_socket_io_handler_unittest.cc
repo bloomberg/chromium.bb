@@ -5,6 +5,9 @@
 #include "base/async_socket_io_handler.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -104,8 +107,8 @@ TEST(AsyncSocketIoHandlerTest, SynchronousReadWithMessageLoop) {
   TestSocketReader reader(&pair[0], -1, false, false);
 
   pair[1].Send(kAsyncSocketIoTestString, kAsyncSocketIoTestStringLength);
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(100));
   base::MessageLoop::current()->Run();
 
@@ -135,15 +138,15 @@ TEST(AsyncSocketIoHandlerTest, ReadFromCallback) {
   // Issue sends on an interval to satisfy the Read() requirements.
   int64 milliseconds = 0;
   for (int i = 0; i < kReadOperationCount; ++i) {
-    base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        base::Bind(&SendData, &pair[1], kAsyncSocketIoTestString,
-            kAsyncSocketIoTestStringLength),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&SendData, &pair[1], kAsyncSocketIoTestString,
+                              kAsyncSocketIoTestStringLength),
         base::TimeDelta::FromMilliseconds(milliseconds));
     milliseconds += 10;
   }
 
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(100 + milliseconds));
 
   base::MessageLoop::current()->Run();

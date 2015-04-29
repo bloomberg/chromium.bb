@@ -7,7 +7,6 @@
 #include <sstream>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,12 +39,9 @@ TEST_F(TraceMemoryTest, TraceMemoryController) {
   EXPECT_EQ(0u, TraceLog::GetInstance()->GetObserverCountForTest());
 
   // Creating a controller adds it to the TraceLog observer list.
-  scoped_ptr<TraceMemoryController> controller(
-      new TraceMemoryController(
-          message_loop.message_loop_proxy(),
-          ::HeapProfilerWithPseudoStackStart,
-          ::HeapProfilerStop,
-          ::GetHeapProfile));
+  scoped_ptr<TraceMemoryController> controller(new TraceMemoryController(
+      message_loop.task_runner(), ::HeapProfilerWithPseudoStackStart,
+      ::HeapProfilerStop, ::GetHeapProfile));
   EXPECT_EQ(1u, TraceLog::GetInstance()->GetObserverCountForTest());
   EXPECT_TRUE(
       TraceLog::GetInstance()->HasEnabledStateObserver(controller.get()));

@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 
 namespace base {
@@ -19,7 +19,7 @@ namespace base {
 class ThreadTestHelper : public RefCountedThreadSafe<ThreadTestHelper> {
  public:
   explicit ThreadTestHelper(
-      const scoped_refptr<MessageLoopProxy>& target_thread);
+      scoped_refptr<SingleThreadTaskRunner> target_thread);
 
   // True if RunTest() was successfully executed on the target thread.
   bool Run() WARN_UNUSED_RESULT;
@@ -38,7 +38,7 @@ class ThreadTestHelper : public RefCountedThreadSafe<ThreadTestHelper> {
   void RunInThread();
 
   bool test_result_;
-  scoped_refptr<MessageLoopProxy> target_thread_;
+  scoped_refptr<SingleThreadTaskRunner> target_thread_;
   WaitableEvent done_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadTestHelper);

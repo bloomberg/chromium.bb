@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 
 namespace base {
 
@@ -50,9 +51,8 @@ void SequencedWorkerPoolOwner::WillWaitForShutdown() {
 }
 
 void SequencedWorkerPoolOwner::OnDestruct() {
-  constructor_message_loop_->PostTask(
-      FROM_HERE,
-      constructor_message_loop_->QuitWhenIdleClosure());
+  constructor_message_loop_->task_runner()->PostTask(
+      FROM_HERE, constructor_message_loop_->QuitWhenIdleClosure());
 }
 
 }  // namespace base

@@ -142,7 +142,6 @@ void InvokeCallbackIfBackendIsAlive(
 
 using base::Closure;
 using base::FilePath;
-using base::MessageLoopProxy;
 using base::Time;
 using base::TaskRunner;
 

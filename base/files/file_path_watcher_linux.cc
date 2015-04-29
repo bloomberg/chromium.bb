@@ -26,10 +26,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 
@@ -264,7 +264,7 @@ InotifyReader::InotifyReader()
   shutdown_pipe_[0] = -1;
   shutdown_pipe_[1] = -1;
   if (inotify_fd_ >= 0 && pipe(shutdown_pipe_) == 0 && thread_.Start()) {
-    thread_.message_loop()->PostTask(
+    thread_.task_runner()->PostTask(
         FROM_HERE,
         Bind(&InotifyReaderCallback, this, inotify_fd_, shutdown_pipe_[0]));
     valid_ = true;
@@ -349,12 +349,11 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
                                             bool created,
                                             bool deleted,
                                             bool is_dir) {
-  if (!message_loop()->BelongsToCurrentThread()) {
-    // Switch to message_loop() to access |watches_| safely.
-    message_loop()->PostTask(
-        FROM_HERE,
-        Bind(&FilePathWatcherImpl::OnFilePathChanged, this,
-             fired_watch, child, created, deleted, is_dir));
+  if (!task_runner()->BelongsToCurrentThread()) {
+    // Switch to task_runner() to access |watches_| safely.
+    task_runner()->PostTask(FROM_HERE,
+                            Bind(&FilePathWatcherImpl::OnFilePathChanged, this,
+                                 fired_watch, child, created, deleted, is_dir));
     return;
   }
 
@@ -452,7 +451,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
   DCHECK(target_.empty());
   DCHECK(MessageLoopForIO::current());
 
-  set_message_loop(MessageLoopProxy::current());
+  set_task_runner(ThreadTaskRunnerHandle::Get());
   callback_ = callback;
   target_ = path;
   recursive_ = recursive;
@@ -476,17 +475,16 @@ void FilePathWatcherImpl::Cancel() {
   }
 
   // Switch to the message_loop() if necessary so we can access |watches_|.
-  if (!message_loop()->BelongsToCurrentThread()) {
-    message_loop()->PostTask(FROM_HERE,
-                             Bind(&FilePathWatcher::CancelWatch,
-                                  make_scoped_refptr(this)));
+  if (!task_runner()->BelongsToCurrentThread()) {
+    task_runner()->PostTask(FROM_HERE, Bind(&FilePathWatcher::CancelWatch,
+                                            make_scoped_refptr(this)));
   } else {
     CancelOnMessageLoopThread();
   }
 }
 
 void FilePathWatcherImpl::CancelOnMessageLoopThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   set_cancelled();
 
   if (!callback_.is_null()) {
@@ -510,7 +508,7 @@ void FilePathWatcherImpl::WillDestroyCurrentMessageLoop() {
 void FilePathWatcherImpl::UpdateWatches() {
   // Ensure this runs on the message_loop() exclusively in order to avoid
   // concurrency issues.
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   DCHECK(HasValidWatchVector());
 
   // Walk the list of watches and update them as we go.

@@ -20,14 +20,15 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,14 +47,13 @@ class TestDelegate;
 class NotificationCollector
     : public base::RefCountedThreadSafe<NotificationCollector> {
  public:
-  NotificationCollector()
-      : loop_(base::MessageLoopProxy::current()) {}
+  NotificationCollector() : task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
   // Called from the file thread by the delegates.
   void OnChange(TestDelegate* delegate) {
-    loop_->PostTask(FROM_HERE,
-                    base::Bind(&NotificationCollector::RecordChange, this,
-                               base::Unretained(delegate)));
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&NotificationCollector::RecordChange, this,
+                              base::Unretained(delegate)));
   }
 
   void Register(TestDelegate* delegate) {
@@ -74,13 +74,13 @@ class NotificationCollector
 
   void RecordChange(TestDelegate* delegate) {
     // Warning: |delegate| is Unretained. Do not dereference.
-    ASSERT_TRUE(loop_->BelongsToCurrentThread());
+    ASSERT_TRUE(task_runner_->BelongsToCurrentThread());
     ASSERT_TRUE(delegates_.count(delegate));
     signaled_.insert(delegate);
 
     // Check whether all delegates have been signaled.
     if (signaled_ == delegates_)
-      loop_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+      task_runner_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
   }
 
   // Set of registered delegates.
@@ -90,7 +90,7 @@ class NotificationCollector
   std::set<TestDelegate*> signaled_;
 
   // The loop we should break after all delegates signaled.
-  scoped_refptr<base::MessageLoopProxy> loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 class TestDelegateBase : public SupportsWeakPtr<TestDelegateBase> {
@@ -171,7 +171,7 @@ class FilePathWatcherTest : public testing::Test {
   void TearDown() override { RunLoop().RunUntilIdle(); }
 
   void DeleteDelegateOnFileThread(TestDelegate* delegate) {
-    file_thread_.message_loop_proxy()->DeleteSoon(FROM_HERE, delegate);
+    file_thread_.task_runner()->DeleteSoon(FROM_HERE, delegate);
   }
 
   FilePath test_file() {
@@ -216,10 +216,9 @@ bool FilePathWatcherTest::SetupWatch(const FilePath& target,
                                      bool recursive_watch) {
   base::WaitableEvent completion(false, false);
   bool result;
-  file_thread_.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(SetupWatchCallback, target, watcher, delegate, recursive_watch,
-                 &result, &completion));
+  file_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(SetupWatchCallback, target, watcher, delegate,
+                            recursive_watch, &result, &completion));
   completion.Wait();
   return result;
 }
@@ -289,7 +288,8 @@ class Deleter : public TestDelegateBase {
 
   void OnFileChanged(const FilePath&, bool) override {
     watcher_.reset();
-    loop_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+    loop_->task_runner()->PostTask(FROM_HERE,
+                                   MessageLoop::QuitWhenIdleClosure());
   }
 
   FilePathWatcher* watcher() const { return watcher_.get(); }
@@ -324,7 +324,7 @@ TEST_F(FilePathWatcherTest, DISABLED_DestroyWithPendingNotification) {
   FilePathWatcher* watcher = new FilePathWatcher;
   ASSERT_TRUE(SetupWatch(test_file(), watcher, delegate.get(), false));
   ASSERT_TRUE(WriteFile(test_file(), "content"));
-  file_thread_.message_loop_proxy()->DeleteSoon(FROM_HERE, watcher);
+  file_thread_.task_runner()->DeleteSoon(FROM_HERE, watcher);
   DeleteDelegateOnFileThread(delegate.release());
 }
 

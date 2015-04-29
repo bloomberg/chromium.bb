@@ -12,7 +12,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -22,6 +24,7 @@
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -405,13 +408,10 @@ void SerialGTestCallback(
   // The temporary file's directory is also temporary.
   DeleteFile(callback_state.output_file.DirName(), true);
 
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      Bind(&RunUnitTestsSerially,
-           callback_state.test_launcher,
-           callback_state.platform_delegate,
-           test_names,
-           callback_state.launch_flags));
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, Bind(&RunUnitTestsSerially, callback_state.test_launcher,
+                      callback_state.platform_delegate, test_names,
+                      callback_state.launch_flags));
 }
 
 }  // namespace
@@ -576,12 +576,9 @@ size_t UnitTestLauncherDelegate::RunTests(
 size_t UnitTestLauncherDelegate::RetryTests(
     TestLauncher* test_launcher,
     const std::vector<std::string>& test_names) {
-  MessageLoop::current()->PostTask(
+  ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      Bind(&RunUnitTestsSerially,
-           test_launcher,
-           platform_delegate_,
-           test_names,
+      Bind(&RunUnitTestsSerially, test_launcher, platform_delegate_, test_names,
            use_job_objects_ ? TestLauncher::USE_JOB_OBJECTS : 0));
   return test_names.size();
 }

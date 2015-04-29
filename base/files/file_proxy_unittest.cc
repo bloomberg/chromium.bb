@@ -9,7 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -79,7 +78,7 @@ class FileProxyTest : public testing::Test {
   }
 
   TaskRunner* file_task_runner() const {
-    return file_thread_.message_loop_proxy().get();
+    return file_thread_.task_runner().get();
   }
   const FilePath& test_dir_path() const { return dir_.path(); }
   const FilePath test_path() const { return dir_.path().AppendASCII("test"); }

@@ -5,9 +5,10 @@
 #include "base/prefs/pref_member.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +38,7 @@ class GetPrefValueHelper
 
   void Init(const std::string& pref_name, PrefService* prefs) {
     pref_.Init(pref_name, prefs);
-    pref_.MoveToThread(pref_thread_.message_loop_proxy());
+    pref_.MoveToThread(pref_thread_.task_runner());
   }
 
   void Destroy() {
@@ -46,10 +47,9 @@ class GetPrefValueHelper
 
   void FetchValue() {
     base::WaitableEvent event(true, false);
-    ASSERT_TRUE(
-        pref_thread_.message_loop_proxy()->PostTask(
-            FROM_HERE,
-            base::Bind(&GetPrefValueHelper::GetPrefValue, this, &event)));
+    ASSERT_TRUE(pref_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&GetPrefValueHelper::GetPrefValue, this, &event)));
     event.Wait();
   }
 
@@ -100,7 +100,11 @@ class PrefMemberTestClass {
 
 }  // anonymous namespace
 
-TEST(PrefMemberTest, BasicGetAndSet) {
+class PrefMemberTest : public testing::Test {
+  base::MessageLoop message_loop_;
+};
+
+TEST_F(PrefMemberTest, BasicGetAndSet) {
   TestingPrefServiceSimple prefs;
   RegisterTestPrefs(prefs.registry());
 
@@ -227,7 +231,7 @@ TEST(PrefMemberTest, BasicGetAndSet) {
   EXPECT_EQ(expected_vector, *string_list);
 }
 
-TEST(PrefMemberTest, InvalidList) {
+TEST_F(PrefMemberTest, InvalidList) {
   // Set the vector to an initial good value.
   std::vector<std::string> expected_vector;
   expected_vector.push_back("foo");
@@ -245,7 +249,7 @@ TEST(PrefMemberTest, InvalidList) {
   EXPECT_EQ(expected_vector, vector);
 }
 
-TEST(PrefMemberTest, TwoPrefs) {
+TEST_F(PrefMemberTest, TwoPrefs) {
   // Make sure two DoublePrefMembers stay in sync.
   TestingPrefServiceSimple prefs;
   RegisterTestPrefs(prefs.registry());
@@ -266,7 +270,7 @@ TEST(PrefMemberTest, TwoPrefs) {
   EXPECT_EQ(4.2, *pref2);
 }
 
-TEST(PrefMemberTest, Observer) {
+TEST_F(PrefMemberTest, Observer) {
   TestingPrefServiceSimple prefs;
   RegisterTestPrefs(prefs.registry());
 
@@ -293,12 +297,12 @@ TEST(PrefMemberTest, Observer) {
   EXPECT_EQ("hello", prefs.GetString(kStringPref));
 }
 
-TEST(PrefMemberTest, NoInit) {
+TEST_F(PrefMemberTest, NoInit) {
   // Make sure not calling Init on a PrefMember doesn't cause problems.
   IntegerPrefMember pref;
 }
 
-TEST(PrefMemberTest, MoveToThread) {
+TEST_F(PrefMemberTest, MoveToThread) {
   TestingPrefServiceSimple prefs;
   scoped_refptr<GetPrefValueHelper> helper(new GetPrefValueHelper());
   RegisterTestPrefs(prefs.registry());

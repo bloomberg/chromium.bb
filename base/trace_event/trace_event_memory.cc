@@ -6,9 +6,10 @@
 
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_local_storage.h"
@@ -144,11 +145,11 @@ int GetPseudoStack(int skip_count_ignored, void** stack_out) {
 //////////////////////////////////////////////////////////////////////////////
 
 TraceMemoryController::TraceMemoryController(
-    scoped_refptr<MessageLoopProxy> message_loop_proxy,
+    scoped_refptr<SingleThreadTaskRunner> task_runner,
     HeapProfilerStartFunction heap_profiler_start_function,
     HeapProfilerStopFunction heap_profiler_stop_function,
     GetHeapProfileFunction get_heap_profile_function)
-    : message_loop_proxy_(message_loop_proxy),
+    : task_runner_(task_runner.Pass()),
       heap_profiler_start_function_(heap_profiler_start_function),
       heap_profiler_stop_function_(heap_profiler_stop_function),
       get_heap_profile_function_(get_heap_profile_function),
@@ -174,10 +175,9 @@ void TraceMemoryController::OnTraceLogEnabled() {
   if (!enabled)
     return;
   DVLOG(1) << "OnTraceLogEnabled";
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&TraceMemoryController::StartProfiling,
-                 weak_factory_.GetWeakPtr()));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&TraceMemoryController::StartProfiling,
+                                    weak_factory_.GetWeakPtr()));
 }
 
 void TraceMemoryController::OnTraceLogDisabled() {
@@ -185,10 +185,9 @@ void TraceMemoryController::OnTraceLogDisabled() {
   // called, so we cannot tell if it was enabled before. Always try to turn
   // off profiling.
   DVLOG(1) << "OnTraceLogDisabled";
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&TraceMemoryController::StopProfiling,
-                 weak_factory_.GetWeakPtr()));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&TraceMemoryController::StopProfiling,
+                                    weak_factory_.GetWeakPtr()));
 }
 
 void TraceMemoryController::StartProfiling() {

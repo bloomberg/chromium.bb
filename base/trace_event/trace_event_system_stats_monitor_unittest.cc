@@ -7,7 +7,6 @@
 #include <sstream>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,8 +35,7 @@ TEST_F(TraceSystemStatsMonitorTest, TraceEventSystemStatsMonitor) {
 
   // Creating a system stats monitor adds it to the TraceLog observer list.
   scoped_ptr<TraceEventSystemStatsMonitor> system_stats_monitor(
-      new TraceEventSystemStatsMonitor(
-          message_loop.message_loop_proxy()));
+      new TraceEventSystemStatsMonitor(message_loop.task_runner()));
   EXPECT_EQ(1u, TraceLog::GetInstance()->GetObserverCountForTest());
   EXPECT_TRUE(
       TraceLog::GetInstance()->HasEnabledStateObserver(
