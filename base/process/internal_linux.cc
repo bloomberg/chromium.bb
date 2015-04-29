@@ -106,12 +106,10 @@ bool ParseProcStats(const std::string& stats_data,
 
 typedef std::map<std::string, std::string> ProcStatMap;
 void ParseProcStat(const std::string& contents, ProcStatMap* output) {
-  typedef std::pair<std::string, std::string> StringPair;
-  std::vector<StringPair> key_value_pairs;
+  base::StringPairs key_value_pairs;
   SplitStringIntoKeyValuePairs(contents, ' ', '\n', &key_value_pairs);
   for (size_t i = 0; i < key_value_pairs.size(); ++i) {
-    const StringPair& key_value_pair = key_value_pairs[i];
-    output->insert(key_value_pair);
+    output->insert(key_value_pairs[i]);
   }
 }
 
