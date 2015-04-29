@@ -71,9 +71,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    virtual v8::Handle<v8::Object> holder(v8::Isolate*, v8::Handle<v8::Object> creationContext) override;
-    virtual v8::Handle<v8::Value> resolvedValue(v8::Isolate*, v8::Handle<v8::Object> creationContext) override;
-    virtual v8::Handle<v8::Value> rejectedValue(v8::Isolate*, v8::Handle<v8::Object> creationContext) override;
+    virtual v8::Local<v8::Object> holder(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
+    virtual v8::Local<v8::Value> resolvedValue(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
+    virtual v8::Local<v8::Value> rejectedValue(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
 
     HolderType m_holder;
     ResolvedType m_resolved;
@@ -117,21 +117,21 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reject(PassR
 }
 
 template<typename HolderType, typename ResolvedType, typename RejectedType>
-v8::Handle<v8::Object> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::holder(v8::Isolate* isolate, v8::Handle<v8::Object> creationContext)
+v8::Local<v8::Object> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::holder(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
-    v8::Handle<v8::Value> value = toV8(m_holder, creationContext, isolate);
+    v8::Local<v8::Value> value = toV8(m_holder, creationContext, isolate);
     return value.As<v8::Object>();
 }
 
 template<typename HolderType, typename ResolvedType, typename RejectedType>
-v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolvedValue(v8::Isolate* isolate, v8::Handle<v8::Object> creationContext)
+v8::Local<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolvedValue(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
     ASSERT(state() == Resolved);
     return toV8(m_resolved, creationContext, isolate);
 }
 
 template<typename HolderType, typename ResolvedType, typename RejectedType>
-v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::rejectedValue(v8::Isolate* isolate, v8::Handle<v8::Object> creationContext)
+v8::Local<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::rejectedValue(v8::Isolate* isolate, v8::Local<v8::Object> creationContext)
 {
     ASSERT(state() == Rejected);
     return toV8(m_rejected, creationContext, isolate);

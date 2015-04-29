@@ -92,8 +92,8 @@ public:
     V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
     void setActivityLogger(V8DOMActivityLogger* activityLogger) { m_activityLogger = activityLogger; }
 
-    v8::Handle<v8::Value> compiledPrivateScript(String);
-    void setCompiledPrivateScript(String, v8::Handle<v8::Value>);
+    v8::Local<v8::Value> compiledPrivateScript(String);
+    void setCompiledPrivateScript(String, v8::Local<v8::Value>);
 
 private:
     V8PerContextData(v8::Local<v8::Context>);

@@ -105,14 +105,14 @@ ScriptValue ScriptProfiler::objectByHeapObjectId(unsigned id)
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Value> value = profiler->FindObjectById(id);
+    v8::Local<v8::Value> value = profiler->FindObjectById(id);
     if (value.IsEmpty() || !value->IsObject())
         return ScriptValue();
 
-    v8::Handle<v8::Object> object = value.As<v8::Object>();
+    v8::Local<v8::Object> object = value.As<v8::Object>();
 
     if (object->InternalFieldCount() >= v8DefaultWrapperInternalFieldCount) {
-        v8::Handle<v8::Value> wrapper = object->GetInternalField(v8DOMWrapperObjectIndex);
+        v8::Local<v8::Value> wrapper = object->GetInternalField(v8DOMWrapperObjectIndex);
         // Skip wrapper boilerplates which are like regular wrappers but don't have
         // native object.
         if (!wrapper.IsEmpty() && wrapper->IsUndefined())
@@ -164,7 +164,7 @@ private:
 
 class GlobalObjectNameResolver final : public v8::HeapProfiler::ObjectNameResolver {
 public:
-    virtual const char* GetName(v8::Handle<v8::Object> object) override
+    virtual const char* GetName(v8::Local<v8::Object> object) override
     {
         DOMWindow* window = toDOMWindow(v8::Isolate::GetCurrent(), object);
         if (!window)
@@ -243,7 +243,7 @@ PassRefPtr<ScriptHeapSnapshot> ScriptProfiler::takeHeapSnapshot(HeapSnapshotProg
     return snapshot ? ScriptHeapSnapshot::create(snapshot) : nullptr;
 }
 
-static v8::RetainedObjectInfo* retainedDOMInfo(uint16_t classId, v8::Handle<v8::Value> wrapper)
+static v8::RetainedObjectInfo* retainedDOMInfo(uint16_t classId, v8::Local<v8::Value> wrapper)
 {
     ASSERT(classId == WrapperTypeInfo::NodeClassId);
     if (!wrapper->IsObject())

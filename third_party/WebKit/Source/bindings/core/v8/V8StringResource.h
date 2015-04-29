@@ -154,7 +154,7 @@ enum ExternalMode {
 };
 
 template <typename StringType>
-CORE_EXPORT StringType v8StringToWebCoreString(v8::Handle<v8::String>, ExternalMode);
+CORE_EXPORT StringType v8StringToWebCoreString(v8::Local<v8::String>, ExternalMode);
 CORE_EXPORT String int32ToWebCoreString(int value);
 
 // V8StringResource is an adapter class that converts V8 values to Strings
@@ -174,7 +174,7 @@ public:
     {
     }
 
-    V8StringResource(v8::Handle<v8::Value> object)
+    V8StringResource(v8::Local<v8::Value> object)
         : m_v8Object(object)
         , m_mode(Externalize)
     {
@@ -186,7 +186,7 @@ public:
     {
     }
 
-    void operator=(v8::Handle<v8::Value> object)
+    void operator=(v8::Local<v8::Value> object)
     {
         m_v8Object = object;
     }

@@ -46,7 +46,7 @@ static void domExceptionStackSetter(v8::Local<v8::Name> name, v8::Local<v8::Valu
     info.Data().As<v8::Object>()->Set(v8AtomicString(info.GetIsolate(), "stack"), value);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext)
+v8::Local<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Local<v8::Object>& creationContext)
 {
     if (ec <= 0 || v8::V8::IsExecutionTerminating())
         return v8Undefined();
@@ -64,7 +64,7 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate,
     if (ec == V8ReferenceError)
         return V8ThrowException::createReferenceError(isolate, sanitizedMessage);
 
-    v8::Handle<v8::Object> sanitizedCreationContext = creationContext;
+    v8::Local<v8::Object> sanitizedCreationContext = creationContext;
 
     // FIXME: Is the current context always the right choice?
     Frame* frame = toFrameIfNotDetached(creationContext->CreationContext());
@@ -93,72 +93,72 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate,
     return exception;
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> V8ThrowException::throwDOMException(int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
 {
     ASSERT(ec == SecurityError || unsanitizedMessage.isEmpty());
-    v8::Handle<v8::Value> exception = createDOMException(isolate, ec, sanitizedMessage, unsanitizedMessage, creationContext);
+    v8::Local<v8::Value> exception = createDOMException(isolate, ec, sanitizedMessage, unsanitizedMessage, creationContext);
     if (exception.IsEmpty())
         return v8Undefined();
 
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createGeneralError(v8::Isolate* isolate, const String& message)
+v8::Local<v8::Value> V8ThrowException::createGeneralError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::Error(v8String(isolate, message.isNull() ? "Error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwGeneralError(v8::Isolate* isolate, const String& message)
+v8::Local<v8::Value> V8ThrowException::throwGeneralError(v8::Isolate* isolate, const String& message)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createGeneralError(isolate, message);
+    v8::Local<v8::Value> exception = V8ThrowException::createGeneralError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createTypeError(v8::Isolate* isolate, const String& message)
+v8::Local<v8::Value> V8ThrowException::createTypeError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::TypeError(v8String(isolate, message.isNull() ? "Type error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwTypeError(v8::Isolate* isolate, const String& message)
+v8::Local<v8::Value> V8ThrowException::throwTypeError(v8::Isolate* isolate, const String& message)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createTypeError(isolate, message);
+    v8::Local<v8::Value> exception = V8ThrowException::createTypeError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createRangeError(v8::Isolate* isolate, const String& message)
+v8::Local<v8::Value> V8ThrowException::createRangeError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::RangeError(v8String(isolate, message.isNull() ? "Range error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwRangeError(v8::Isolate* isolate, const String& message)
+v8::Local<v8::Value> V8ThrowException::throwRangeError(v8::Isolate* isolate, const String& message)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createRangeError(isolate, message);
+    v8::Local<v8::Value> exception = V8ThrowException::createRangeError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createSyntaxError(v8::Isolate* isolate, const String& message)
+v8::Local<v8::Value> V8ThrowException::createSyntaxError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::SyntaxError(v8String(isolate, message.isNull() ? "Syntax error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwSyntaxError(v8::Isolate* isolate, const String& message)
+v8::Local<v8::Value> V8ThrowException::throwSyntaxError(v8::Isolate* isolate, const String& message)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createSyntaxError(isolate, message);
+    v8::Local<v8::Value> exception = V8ThrowException::createSyntaxError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createReferenceError(v8::Isolate* isolate, const String& message)
+v8::Local<v8::Value> V8ThrowException::createReferenceError(v8::Isolate* isolate, const String& message)
 {
     return v8::Exception::ReferenceError(v8String(isolate, message.isNull() ? "Reference error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwReferenceError(v8::Isolate* isolate, const String& message)
+v8::Local<v8::Value> V8ThrowException::throwReferenceError(v8::Isolate* isolate, const String& message)
 {
-    v8::Handle<v8::Value> exception = V8ThrowException::createReferenceError(isolate, message);
+    v8::Local<v8::Value> exception = V8ThrowException::createReferenceError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwException(v8::Handle<v8::Value> exception, v8::Isolate* isolate)
+v8::Local<v8::Value> V8ThrowException::throwException(v8::Local<v8::Value> exception, v8::Isolate* isolate)
 {
     if (!v8::V8::IsExecutionTerminating())
         isolate->ThrowException(exception);

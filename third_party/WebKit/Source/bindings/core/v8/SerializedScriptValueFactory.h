@@ -22,8 +22,8 @@ public:
     // be thrown using v8::ThrowException(), and sets |didThrow|. In this case
     // the caller must not invoke any V8 operations until control returns to
     // V8. When serialization is successful, |didThrow| is false.
-    virtual PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, ExceptionState&, v8::Isolate*);
-    PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, ExceptionState&, v8::Isolate*);
+    virtual PassRefPtr<SerializedScriptValue> create(v8::Local<v8::Value>, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, ExceptionState&, v8::Isolate*);
+    PassRefPtr<SerializedScriptValue> create(v8::Local<v8::Value>, MessagePortArray*, ArrayBufferArray*, ExceptionState&, v8::Isolate*);
     PassRefPtr<SerializedScriptValue> createFromWire(const String&);
     PassRefPtr<SerializedScriptValue> createFromWireBytes(const char* data, size_t length);
     PassRefPtr<SerializedScriptValue> create(const String&);
@@ -32,9 +32,9 @@ public:
     PassRefPtr<SerializedScriptValue> create(const ScriptValue&, WebBlobInfoArray*, ExceptionState&, v8::Isolate*);
 
     // Never throws exceptions.
-    PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Isolate*, v8::Handle<v8::Value>);
+    PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Isolate*, v8::Local<v8::Value>);
 
-    v8::Handle<v8::Value> deserialize(SerializedScriptValue*, v8::Isolate*, MessagePortArray*, const WebBlobInfoArray*);
+    v8::Local<v8::Value> deserialize(SerializedScriptValue*, v8::Isolate*, MessagePortArray*, const WebBlobInfoArray*);
 
     static SerializedScriptValueFactory& instance()
     {
@@ -54,11 +54,11 @@ public:
     }
 
 protected:
-    ScriptValueSerializer::Status doSerialize(v8::Handle<v8::Value>, SerializedScriptValueWriter&, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, SerializedScriptValue*, v8::TryCatch&, String& errorMessage, v8::Isolate*);
-    virtual ScriptValueSerializer::Status doSerialize(v8::Handle<v8::Value>, SerializedScriptValueWriter&, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, String& errorMessage, v8::Isolate*);
+    ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, SerializedScriptValue*, v8::TryCatch&, String& errorMessage, v8::Isolate*);
+    virtual ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, String& errorMessage, v8::Isolate*);
     void transferData(SerializedScriptValue*, SerializedScriptValueWriter&, ArrayBufferArray*, ExceptionState&, v8::Isolate*);
 
-    virtual v8::Handle<v8::Value> deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray*, v8::Isolate*, MessagePortArray* messagePorts, const WebBlobInfoArray*);
+    virtual v8::Local<v8::Value> deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray*, v8::Isolate*, MessagePortArray* messagePorts, const WebBlobInfoArray*);
 
 private:
     static SerializedScriptValueFactory* m_instance;

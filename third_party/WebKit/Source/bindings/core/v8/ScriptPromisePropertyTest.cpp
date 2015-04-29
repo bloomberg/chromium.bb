@@ -32,7 +32,7 @@ namespace {
 
 class NotReached : public ScriptFunction {
 public:
-    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState)
+    static v8::Local<v8::Function> createFunction(ScriptState* scriptState)
     {
         NotReached* self = new NotReached(scriptState);
         return self->bindToV8Function();
@@ -55,7 +55,7 @@ ScriptValue NotReached::call(ScriptValue)
 
 class StubFunction : public ScriptFunction {
 public:
-    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, ScriptValue& value, size_t& callCount)
+    static v8::Local<v8::Function> createFunction(ScriptState* scriptState, ScriptValue& value, size_t& callCount)
     {
         StubFunction* self = new StubFunction(scriptState, value, callCount);
         return self->bindToV8Function();
@@ -154,8 +154,8 @@ public:
 
     void gc() { V8GCController::collectGarbage(v8::Isolate::GetCurrent()); }
 
-    v8::Handle<v8::Function> notReached(ScriptState* scriptState) { return NotReached::createFunction(scriptState); }
-    v8::Handle<v8::Function> stub(ScriptState* scriptState, ScriptValue& value, size_t& callCount) { return StubFunction::createFunction(scriptState, value, callCount); }
+    v8::Local<v8::Function> notReached(ScriptState* scriptState) { return NotReached::createFunction(scriptState); }
+    v8::Local<v8::Function> stub(ScriptState* scriptState, ScriptValue& value, size_t& callCount) { return StubFunction::createFunction(scriptState, value, callCount); }
 
     template <typename T>
     ScriptValue wrap(DOMWrapperWorld& world, const T& value)

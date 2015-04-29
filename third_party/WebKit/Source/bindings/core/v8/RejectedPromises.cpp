@@ -19,7 +19,7 @@ static const unsigned maxReportedHandlersPendingResolution = 1000;
 
 class RejectedPromises::Message final : public NoBaseWillBeGarbageCollectedFinalized<RejectedPromises::Message> {
 public:
-    static PassOwnPtrWillBeRawPtr<Message> create(ScriptState* scriptState, v8::Handle<v8::Promise> promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+    static PassOwnPtrWillBeRawPtr<Message> create(ScriptState* scriptState, v8::Local<v8::Promise> promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
     {
         return adoptPtrWillBeNoop(new Message(scriptState, promise, exception, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack));
     }
@@ -34,7 +34,7 @@ public:
         return m_collected || !m_scriptState->contextIsValid();
     }
 
-    bool hasPromise(v8::Handle<v8::Value> promise)
+    bool hasPromise(v8::Local<v8::Value> promise)
     {
         ScriptState::Scope scope(m_scriptState);
         return promise == m_promise.newLocal(m_scriptState->isolate());
@@ -52,11 +52,11 @@ public:
             return;
 
         ScriptState::Scope scope(m_scriptState);
-        v8::Handle<v8::Value> value = m_promise.newLocal(m_scriptState->isolate());
+        v8::Local<v8::Value> value = m_promise.newLocal(m_scriptState->isolate());
         // Either collected or https://crbug.com/450330
         if (value.IsEmpty() || !value->IsPromise())
             return;
-        ASSERT(!v8::Handle<v8::Promise>::Cast(value)->HasHandler());
+        ASSERT(!v8::Local<v8::Promise>::Cast(value)->HasHandler());
 
         const String errorMessage = "Uncaught (in promise)";
         Vector<ScriptValue> args;
@@ -93,7 +93,7 @@ public:
     }
 
 private:
-    Message(ScriptState* scriptState, v8::Handle<v8::Promise> promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+    Message(ScriptState* scriptState, v8::Local<v8::Promise> promise, const ScriptValue& exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
         : m_scriptState(scriptState)
         , m_promise(scriptState->isolate(), promise)
         , m_exception(exception)

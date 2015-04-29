@@ -34,30 +34,30 @@ namespace blink {
 class CORE_EXPORT V8ThrowException {
 public:
 
-    static v8::Handle<v8::Value> createDOMException(v8::Isolate* isolate, int ec, const String& message, const v8::Handle<v8::Object>& creationContext)
+    static v8::Local<v8::Value> createDOMException(v8::Isolate* isolate, int ec, const String& message, const v8::Local<v8::Object>& creationContext)
     {
         return createDOMException(isolate, ec, message, String(), creationContext);
     }
-    static v8::Handle<v8::Value> createDOMException(v8::Isolate*, int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext);
+    static v8::Local<v8::Value> createDOMException(v8::Isolate*, int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Local<v8::Object>& creationContext);
 
-    static v8::Handle<v8::Value> throwDOMException(int ec, const String& message, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
+    static v8::Local<v8::Value> throwDOMException(int ec, const String& message, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
     {
         return throwDOMException(ec, message, String(), creationContext, isolate);
     }
-    static v8::Handle<v8::Value> throwDOMException(int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext, v8::Isolate*);
+    static v8::Local<v8::Value> throwDOMException(int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Local<v8::Object>& creationContext, v8::Isolate*);
 
-    static v8::Handle<v8::Value> throwException(v8::Handle<v8::Value>, v8::Isolate*);
+    static v8::Local<v8::Value> throwException(v8::Local<v8::Value>, v8::Isolate*);
 
-    static v8::Handle<v8::Value> createGeneralError(v8::Isolate*, const String&);
-    static v8::Handle<v8::Value> throwGeneralError(v8::Isolate*, const String&);
-    static v8::Handle<v8::Value> createTypeError(v8::Isolate*, const String&);
-    static v8::Handle<v8::Value> throwTypeError(v8::Isolate*, const String&);
-    static v8::Handle<v8::Value> createRangeError(v8::Isolate*, const String&);
-    static v8::Handle<v8::Value> throwRangeError(v8::Isolate*, const String&);
-    static v8::Handle<v8::Value> createSyntaxError(v8::Isolate*, const String&);
-    static v8::Handle<v8::Value> throwSyntaxError(v8::Isolate*, const String&);
-    static v8::Handle<v8::Value> createReferenceError(v8::Isolate*, const String&);
-    static v8::Handle<v8::Value> throwReferenceError(v8::Isolate*, const String&);
+    static v8::Local<v8::Value> createGeneralError(v8::Isolate*, const String&);
+    static v8::Local<v8::Value> throwGeneralError(v8::Isolate*, const String&);
+    static v8::Local<v8::Value> createTypeError(v8::Isolate*, const String&);
+    static v8::Local<v8::Value> throwTypeError(v8::Isolate*, const String&);
+    static v8::Local<v8::Value> createRangeError(v8::Isolate*, const String&);
+    static v8::Local<v8::Value> throwRangeError(v8::Isolate*, const String&);
+    static v8::Local<v8::Value> createSyntaxError(v8::Isolate*, const String&);
+    static v8::Local<v8::Value> throwSyntaxError(v8::Isolate*, const String&);
+    static v8::Local<v8::Value> createReferenceError(v8::Isolate*, const String&);
+    static v8::Local<v8::Value> throwReferenceError(v8::Isolate*, const String&);
 };
 
 } // namespace blink

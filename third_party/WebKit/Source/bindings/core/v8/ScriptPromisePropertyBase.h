@@ -54,21 +54,21 @@ protected:
     // the property's execution context and the world it is
     // creating/settling promises in; the implementation should use
     // this context.
-    virtual v8::Handle<v8::Object> holder(v8::Isolate*, v8::Handle<v8::Object> creationContext) = 0;
-    virtual v8::Handle<v8::Value> resolvedValue(v8::Isolate*, v8::Handle<v8::Object> creationContext) = 0;
-    virtual v8::Handle<v8::Value> rejectedValue(v8::Isolate*, v8::Handle<v8::Object> creationContext) = 0;
+    virtual v8::Local<v8::Object> holder(v8::Isolate*, v8::Local<v8::Object> creationContext) = 0;
+    virtual v8::Local<v8::Value> resolvedValue(v8::Isolate*, v8::Local<v8::Object> creationContext) = 0;
+    virtual v8::Local<v8::Value> rejectedValue(v8::Isolate*, v8::Local<v8::Object> creationContext) = 0;
 
     void resetBase();
 
 private:
     typedef Vector<OwnPtr<ScopedPersistent<v8::Object>>> WeakPersistentSet;
 
-    void resolveOrRejectInternal(v8::Handle<v8::Promise::Resolver>);
+    void resolveOrRejectInternal(v8::Local<v8::Promise::Resolver>);
     v8::Local<v8::Object> ensureHolderWrapper(ScriptState*);
     void clearWrappers();
 
-    v8::Handle<v8::String> promiseName();
-    v8::Handle<v8::String> resolverName();
+    v8::Local<v8::String> promiseName();
+    v8::Local<v8::String> resolverName();
 
     v8::Isolate* m_isolate;
     Name m_name;

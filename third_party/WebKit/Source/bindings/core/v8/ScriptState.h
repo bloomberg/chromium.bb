@@ -44,10 +44,10 @@ public:
 
     private:
         v8::HandleScope m_handleScope;
-        v8::Handle<v8::Context> m_context;
+        v8::Local<v8::Context> m_context;
     };
 
-    static PassRefPtr<ScriptState> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+    static PassRefPtr<ScriptState> create(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
     virtual ~ScriptState();
 
     static ScriptState* current(v8::Isolate* isolate)
@@ -55,7 +55,7 @@ public:
         return from(isolate->GetCurrentContext());
     }
 
-    static ScriptState* from(v8::Handle<v8::Context> context)
+    static ScriptState* from(v8::Local<v8::Context> context)
     {
         ASSERT(!context.IsEmpty());
         ScriptState* scriptState = static_cast<ScriptState*>(context->GetAlignedPointerFromEmbedderData(v8ContextPerContextDataIndex));
@@ -75,7 +75,7 @@ public:
     virtual void setExecutionContext(ExecutionContext*);
 
     // This can return an empty handle if the v8::Context is gone.
-    v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
+    v8::Local<v8::Context> context() const { return m_context.newLocal(m_isolate); }
     bool contextIsValid() const { return !m_context.isEmpty() && m_perContextData; }
     void detachGlobalObject();
     void clearContext() { return m_context.clear(); }
@@ -99,7 +99,7 @@ public:
     ScriptValue getFromGlobalObject(const char* name);
 
 protected:
-    ScriptState(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+    ScriptState(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
 
 private:
     v8::Isolate* m_isolate;

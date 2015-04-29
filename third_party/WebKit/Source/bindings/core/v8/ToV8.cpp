@@ -11,7 +11,7 @@
 
 namespace blink {
 
-v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> toV8(DOMWindow* window, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // Notice that we explicitly ignore creationContext because the DOMWindow
     // has its own creationContext.
@@ -33,7 +33,7 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
     return global;
 }
 
-v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> toV8(EventTarget* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
@@ -43,7 +43,7 @@ v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationCon
     return toV8(static_cast<ScriptWrappable*>(impl), creationContext, isolate);
 }
 
-v8::Handle<v8::Value> toV8(WorkerGlobalScope* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> toV8(WorkerGlobalScope* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // Notice that we explicitly ignore creationContext because the
     // WorkerGlobalScope has its own creationContext.

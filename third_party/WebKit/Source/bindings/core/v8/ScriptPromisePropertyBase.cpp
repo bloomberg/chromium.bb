@@ -107,7 +107,7 @@ void ScriptPromisePropertyBase::resetBase()
     m_state = Pending;
 }
 
-void ScriptPromisePropertyBase::resolveOrRejectInternal(v8::Handle<v8::Promise::Resolver> resolver)
+void ScriptPromisePropertyBase::resolveOrRejectInternal(v8::Local<v8::Promise::Resolver> resolver)
 {
     v8::Local<v8::Context> context = resolver->CreationContext();
     switch (m_state) {
@@ -163,7 +163,7 @@ void ScriptPromisePropertyBase::clearWrappers()
     m_wrappers.clear();
 }
 
-v8::Handle<v8::String> ScriptPromisePropertyBase::promiseName()
+v8::Local<v8::String> ScriptPromisePropertyBase::promiseName()
 {
     switch (m_name) {
 #define P(Name)                                           \
@@ -175,10 +175,10 @@ v8::Handle<v8::String> ScriptPromisePropertyBase::promiseName()
 #undef P
     }
     ASSERT_NOT_REACHED();
-    return v8::Handle<v8::String>();
+    return v8::Local<v8::String>();
 }
 
-v8::Handle<v8::String> ScriptPromisePropertyBase::resolverName()
+v8::Local<v8::String> ScriptPromisePropertyBase::resolverName()
 {
     switch (m_name) {
 #define P(Name)                                            \
@@ -190,7 +190,7 @@ v8::Handle<v8::String> ScriptPromisePropertyBase::resolverName()
 #undef P
     }
     ASSERT_NOT_REACHED();
-    return v8::Handle<v8::String>();
+    return v8::Local<v8::String>();
 }
 
 DEFINE_TRACE(ScriptPromisePropertyBase)

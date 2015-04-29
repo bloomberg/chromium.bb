@@ -42,7 +42,7 @@ template <typename T>
 class SharedPersistent : public RefCounted<SharedPersistent<T>> {
 WTF_MAKE_NONCOPYABLE(SharedPersistent);
 public:
-    static PassRefPtr<SharedPersistent<T>> create(v8::Handle<T> value, v8::Isolate* isolate)
+    static PassRefPtr<SharedPersistent<T>> create(v8::Local<T> value, v8::Isolate* isolate)
     {
         return adoptRef(new SharedPersistent<T>(value, isolate));
     }
@@ -60,7 +60,7 @@ public:
     }
 
 private:
-    explicit SharedPersistent(v8::Handle<T> value, v8::Isolate* isolate) : m_value(isolate, value) { }
+    explicit SharedPersistent(v8::Local<T> value, v8::Isolate* isolate) : m_value(isolate, value) { }
     ScopedPersistent<T> m_value;
 };
 

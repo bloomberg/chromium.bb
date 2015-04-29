@@ -71,7 +71,7 @@ public:
     bool destructionPending() const { return m_destructionPending; }
     v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
 
-    v8::Handle<v8::FunctionTemplate> toStringTemplate();
+    v8::Local<v8::FunctionTemplate> toStringTemplate();
 
     StringCache* stringCache() { return m_stringCache.get(); }
 
@@ -97,11 +97,11 @@ public:
 
     V8HiddenValue* hiddenValue() { return m_hiddenValue.get(); }
 
-    v8::Handle<v8::FunctionTemplate> domTemplate(const void* domTemplateKey, v8::FunctionCallback = 0, v8::Handle<v8::Value> data = v8::Handle<v8::Value>(), v8::Handle<v8::Signature> = v8::Handle<v8::Signature>(), int length = 0);
-    v8::Handle<v8::FunctionTemplate> existingDOMTemplate(const void* domTemplateKey);
-    void setDOMTemplate(const void* domTemplateKey, v8::Handle<v8::FunctionTemplate>);
+    v8::Local<v8::FunctionTemplate> domTemplate(const void* domTemplateKey, v8::FunctionCallback = 0, v8::Local<v8::Value> data = v8::Local<v8::Value>(), v8::Local<v8::Signature> = v8::Local<v8::Signature>(), int length = 0);
+    v8::Local<v8::FunctionTemplate> existingDOMTemplate(const void* domTemplateKey);
+    void setDOMTemplate(const void* domTemplateKey, v8::Local<v8::FunctionTemplate>);
 
-    bool hasInstance(const WrapperTypeInfo* untrusted, v8::Handle<v8::Value>);
+    bool hasInstance(const WrapperTypeInfo* untrusted, v8::Local<v8::Value>);
     v8::Local<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Local<v8::Value>);
 
     v8::Local<v8::Context> ensureScriptRegexpContext();
@@ -125,7 +125,7 @@ private:
 
     typedef HashMap<const void*, v8::Eternal<v8::FunctionTemplate>> DOMTemplateMap;
     DOMTemplateMap& currentDOMTemplateMap();
-    bool hasInstance(const WrapperTypeInfo* untrusted, v8::Handle<v8::Value>, DOMTemplateMap&);
+    bool hasInstance(const WrapperTypeInfo* untrusted, v8::Local<v8::Value>, DOMTemplateMap&);
     v8::Local<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Local<v8::Value>, DOMTemplateMap&);
 
     bool m_destructionPending;

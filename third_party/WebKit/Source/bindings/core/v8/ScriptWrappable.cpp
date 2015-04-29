@@ -39,7 +39,7 @@ private:
 
 } // namespace
 
-v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Object> ScriptWrappable::wrap(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
 
@@ -50,7 +50,7 @@ v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationCont
 
     ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo, this);
+    v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo, this);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
@@ -58,7 +58,7 @@ v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationCont
     return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }
 
-v8::Handle<v8::Object> ScriptWrappable::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper)
+v8::Local<v8::Object> ScriptWrappable::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object> wrapper)
 {
     return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }

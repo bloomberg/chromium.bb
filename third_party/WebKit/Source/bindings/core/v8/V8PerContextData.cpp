@@ -96,7 +96,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
     // We shouldn't reach this point for the types that are implemented in v8 suche as typed arrays and
     // hence don't have domTemplateFunction.
     ASSERT(type->domTemplateFunction);
-    v8::Handle<v8::FunctionTemplate> functionTemplate = type->domTemplate(m_isolate);
+    v8::Local<v8::FunctionTemplate> functionTemplate = type->domTemplate(m_isolate);
     // Getting the function might fail if we're running out of stack or memory.
     v8::Local<v8::Function> function;
     if (!functionTemplate->GetFunction(currentContext).ToLocal(&function))
@@ -141,12 +141,12 @@ void V8PerContextData::addCustomElementBinding(CustomElementDefinition* definiti
     m_customElementBindings.append(binding);
 }
 
-v8::Handle<v8::Value> V8PerContextData::compiledPrivateScript(String className)
+v8::Local<v8::Value> V8PerContextData::compiledPrivateScript(String className)
 {
     return m_compiledPrivateScript.Get(className);
 }
 
-void V8PerContextData::setCompiledPrivateScript(String className, v8::Handle<v8::Value> compiledObject)
+void V8PerContextData::setCompiledPrivateScript(String className, v8::Local<v8::Value> compiledObject)
 {
     m_compiledPrivateScript.Set(className, compiledObject);
 }

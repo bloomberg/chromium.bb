@@ -71,7 +71,7 @@ static Frame* findFrame(v8::Isolate* isolate, v8::Local<v8::Object> host, v8::Lo
     const WrapperTypeInfo* type = WrapperTypeInfo::unwrap(data);
 
     if (V8Window::wrapperTypeInfo.equals(type)) {
-        v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(host, isolate);
+        v8::Local<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(host, isolate);
         if (windowWrapper.IsEmpty())
             return 0;
         return V8Window::toImpl(windowWrapper)->frame();
@@ -95,9 +95,9 @@ static void reportFatalErrorInMainThread(const char* location, const char* messa
     CRASH();
 }
 
-static PassRefPtrWillBeRawPtr<ScriptCallStack> extractCallStack(v8::Isolate* isolate, v8::Handle<v8::Message> message, int* const scriptId)
+static PassRefPtrWillBeRawPtr<ScriptCallStack> extractCallStack(v8::Isolate* isolate, v8::Local<v8::Message> message, int* const scriptId)
 {
-    v8::Handle<v8::StackTrace> stackTrace = message->GetStackTrace();
+    v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
     RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
     *scriptId = message->GetScriptOrigin().ScriptID()->Value();
     // Currently stack trace is only collected when inspector is open.
@@ -114,17 +114,17 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> extractCallStack(v8::Isolate* iso
     return callStack.release();
 }
 
-static String extractResourceName(v8::Handle<v8::Message> message, const Document* document)
+static String extractResourceName(v8::Local<v8::Message> message, const Document* document)
 {
-    v8::Handle<v8::Value> resourceName = message->GetScriptOrigin().ResourceName();
+    v8::Local<v8::Value> resourceName = message->GetScriptOrigin().ResourceName();
     bool shouldUseDocumentURL = document && (resourceName.IsEmpty() || !resourceName->IsString());
     return shouldUseDocumentURL ? document->url() : toCoreString(resourceName.As<v8::String>());
 }
 
-static String extractMessageForConsole(v8::Isolate* isolate, v8::Handle<v8::Value> data)
+static String extractMessageForConsole(v8::Isolate* isolate, v8::Local<v8::Value> data)
 {
     if (V8DOMWrapper::isWrapper(isolate, data)) {
-        v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(data);
+        v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(data);
         const WrapperTypeInfo* type = toWrapperTypeInfo(obj);
         if (V8DOMException::wrapperTypeInfo.isSubclass(type)) {
             DOMException* exception = V8DOMException::toImpl(obj);
@@ -135,7 +135,7 @@ static String extractMessageForConsole(v8::Isolate* isolate, v8::Handle<v8::Valu
     return emptyString();
 }
 
-static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data)
+static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local<v8::Value> data)
 {
     ASSERT(isMainThread());
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -210,7 +210,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
 
     ASSERT(data.GetEvent() == v8::kPromiseRejectWithNoHandler);
 
-    v8::Handle<v8::Promise> promise = data.GetPromise();
+    v8::Local<v8::Promise> promise = data.GetPromise();
 
     v8::Isolate* isolate = promise->GetIsolate();
     // There is no entered window during microtask callbacks from V8,
@@ -219,12 +219,12 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
     if (!window || !window->isCurrentlyDisplayedInFrame())
         return;
 
-    v8::Handle<v8::Value> exception = data.GetValue();
+    v8::Local<v8::Value> exception = data.GetValue();
     if (V8DOMWrapper::isWrapper(isolate, exception)) {
         // Try to get the stack & location from a wrapped exception object (e.g. DOMException).
         ASSERT(exception->IsObject());
-        v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(exception);
-        v8::Handle<v8::Value> error = V8HiddenValue::getHiddenValue(isolate, obj, V8HiddenValue::error(isolate));
+        v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(exception);
+        v8::Local<v8::Value> error = V8HiddenValue::getHiddenValue(isolate, obj, V8HiddenValue::error(isolate));
         if (!error.IsEmpty())
             exception = error;
     }
@@ -236,7 +236,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
     String errorMessage;
     RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
 
-    v8::Handle<v8::Message> message = v8::Exception::CreateMessage(exception);
+    v8::Local<v8::Message> message = v8::Exception::CreateMessage(exception);
     if (!message.IsEmpty()) {
         if (v8Call(message->GetLineNumber(isolate->GetCurrentContext()), lineNumber)
             && v8Call(message->GetStartColumn(isolate->GetCurrentContext()), columnNumber))
@@ -259,7 +259,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
 
 static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
 {
-    v8::Handle<v8::Promise> promise = data.GetPromise();
+    v8::Local<v8::Promise> promise = data.GetPromise();
 
     // Bail out if called during context initialization.
     v8::Isolate* isolate = promise->GetIsolate();
@@ -288,7 +288,7 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage data)
     String resourceName;
     String errorMessage;
 
-    v8::Handle<v8::Message> message = v8::Exception::CreateMessage(data.GetValue());
+    v8::Local<v8::Message> message = v8::Exception::CreateMessage(data.GetValue());
     if (!message.IsEmpty()) {
         TOSTRING_VOID(V8StringResource<>, resourceName, message->GetScriptOrigin().ResourceName());
         scriptId = message->GetScriptOrigin().ScriptID()->Value();
@@ -421,7 +421,7 @@ static void reportFatalErrorInWorker(const char* location, const char* message)
     CRASH();
 }
 
-static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data)
+static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8::Value> data)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     V8PerIsolateData* perIsolateData = V8PerIsolateData::from(isolate);

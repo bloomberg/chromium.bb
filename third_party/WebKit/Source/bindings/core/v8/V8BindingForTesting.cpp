@@ -9,7 +9,7 @@
 
 namespace blink {
 
-PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::create(v8::Local<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
 {
     RefPtr<ScriptStateForTesting> scriptState = adoptRef(new ScriptStateForTesting(context, world));
     // This ref() is for keeping this ScriptState alive as long as the v8::Context is alive.
@@ -18,7 +18,7 @@ PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::create(v8::Handle<v8::C
     return scriptState;
 }
 
-ScriptStateForTesting::ScriptStateForTesting(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+ScriptStateForTesting::ScriptStateForTesting(v8::Local<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
     : ScriptState(context, world)
 {
 }

@@ -13,14 +13,14 @@ namespace blink {
 
 ScriptValue wrapCanvasContext(ScriptState* scriptState, HTMLCanvasElement* canvas, PassRefPtrWillBeRawPtr<CanvasRenderingContext2D> value)
 {
-    v8::Handle<v8::Value> v8Result = toV8(value, scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> v8Result = toV8(value, scriptState->context()->Global(), scriptState->isolate());
     ScriptValue context(scriptState, v8Result);
     return context;
 }
 
 ScriptValue wrapCanvasContext(ScriptState* scriptState, HTMLCanvasElement* canvas, PassRefPtrWillBeRawPtr<WebGLRenderingContext> value)
 {
-    v8::Handle<v8::Value> v8Result = toV8(value, scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> v8Result = toV8(value, scriptState->context()->Global(), scriptState->isolate());
     ScriptValue context(scriptState, v8Result);
     return context;
 }

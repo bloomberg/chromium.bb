@@ -161,7 +161,7 @@ V8PerIsolateData::DOMTemplateMap& V8PerIsolateData::currentDOMTemplateMap()
     return m_domTemplateMapForNonMainWorld;
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(const void* domTemplateKey, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
+v8::Local<v8::FunctionTemplate> V8PerIsolateData::domTemplate(const void* domTemplateKey, v8::FunctionCallback callback, v8::Local<v8::Value> data, v8::Local<v8::Signature> signature, int length)
 {
     DOMTemplateMap& domTemplateMap = currentDOMTemplateMap();
     DOMTemplateMap::iterator result = domTemplateMap.find(domTemplateKey);
@@ -173,7 +173,7 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(const void* domTe
     return templ;
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(const void* domTemplateKey)
+v8::Local<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(const void* domTemplateKey)
 {
     DOMTemplateMap& domTemplateMap = currentDOMTemplateMap();
     DOMTemplateMap::iterator result = domTemplateMap.find(domTemplateKey);
@@ -182,7 +182,7 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(const voi
     return v8::Local<v8::FunctionTemplate>();
 }
 
-void V8PerIsolateData::setDOMTemplate(const void* domTemplateKey, v8::Handle<v8::FunctionTemplate> templ)
+void V8PerIsolateData::setDOMTemplate(const void* domTemplateKey, v8::Local<v8::FunctionTemplate> templ)
 {
     currentDOMTemplateMap().add(domTemplateKey, v8::Eternal<v8::FunctionTemplate>(isolate(), v8::Local<v8::FunctionTemplate>(templ)));
 }
@@ -196,18 +196,18 @@ v8::Local<v8::Context> V8PerIsolateData::ensureScriptRegexpContext()
     return m_scriptRegexpScriptState->context();
 }
 
-bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeInfo, v8::Handle<v8::Value> value)
+bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeInfo, v8::Local<v8::Value> value)
 {
     return hasInstance(untrustedWrapperTypeInfo, value, m_domTemplateMapForMainWorld)
         || hasInstance(untrustedWrapperTypeInfo, value, m_domTemplateMapForNonMainWorld);
 }
 
-bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeInfo, v8::Handle<v8::Value> value, DOMTemplateMap& domTemplateMap)
+bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* untrustedWrapperTypeInfo, v8::Local<v8::Value> value, DOMTemplateMap& domTemplateMap)
 {
     DOMTemplateMap::iterator result = domTemplateMap.find(untrustedWrapperTypeInfo);
     if (result == domTemplateMap.end())
         return false;
-    v8::Handle<v8::FunctionTemplate> templ = result->value.Get(isolate());
+    v8::Local<v8::FunctionTemplate> templ = result->value.Get(isolate());
     return templ->HasInstance(value);
 }
 
@@ -247,11 +247,11 @@ static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>& inf
         return;
     }
     v8::Local<v8::Value> result;
-    if (V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), info.This(), 0, 0, isolate).ToLocal(&result))
+    if (V8ScriptRunner::callInternalFunction(v8::Local<v8::Function>::Cast(value), info.This(), 0, 0, isolate).ToLocal(&result))
         v8SetReturnValue(info, result);
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
+v8::Local<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
 {
     if (m_toStringTemplate.isEmpty())
         m_toStringTemplate.set(isolate(), v8::FunctionTemplate::New(isolate(), constructorOfToString));

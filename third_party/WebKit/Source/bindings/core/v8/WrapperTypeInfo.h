@@ -92,7 +92,7 @@ struct WrapperTypeInfo {
         RefCountedObject,
     };
 
-    static const WrapperTypeInfo* unwrap(v8::Handle<v8::Value> typeInfoWrapper)
+    static const WrapperTypeInfo* unwrap(v8::Local<v8::Value> typeInfoWrapper)
     {
         return reinterpret_cast<const WrapperTypeInfo*>(v8::External::Cast(*typeInfoWrapper)->Value());
     }
@@ -161,7 +161,7 @@ struct WrapperTypeInfo {
         return toActiveDOMObjectFunction(object);
     }
 
-    EventTarget* toEventTarget(v8::Handle<v8::Object>) const;
+    EventTarget* toEventTarget(v8::Local<v8::Object>) const;
 
     void visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper) const
     {
@@ -201,7 +201,7 @@ inline T* getInternalField(const v8::PersistentBase<v8::Object>& persistent)
 }
 
 template<typename T, int offset>
-inline T* getInternalField(v8::Handle<v8::Object> wrapper)
+inline T* getInternalField(v8::Local<v8::Object> wrapper)
 {
     ASSERT(offset < wrapper->InternalFieldCount());
     return static_cast<T*>(wrapper->GetAlignedPointerFromInternalField(offset));
@@ -217,7 +217,7 @@ inline ScriptWrappable* toScriptWrappable(const v8::Global<v8::Object>& wrapper)
     return getInternalField<ScriptWrappable, v8DOMWrapperObjectIndex>(wrapper);
 }
 
-inline ScriptWrappable* toScriptWrappable(v8::Handle<v8::Object> wrapper)
+inline ScriptWrappable* toScriptWrappable(v8::Local<v8::Object> wrapper)
 {
     return getInternalField<ScriptWrappable, v8DOMWrapperObjectIndex>(wrapper);
 }
@@ -232,12 +232,12 @@ inline const WrapperTypeInfo* toWrapperTypeInfo(const v8::Global<v8::Object>& wr
     return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(wrapper);
 }
 
-inline const WrapperTypeInfo* toWrapperTypeInfo(v8::Handle<v8::Object> wrapper)
+inline const WrapperTypeInfo* toWrapperTypeInfo(v8::Local<v8::Object> wrapper)
 {
     return getInternalField<WrapperTypeInfo, v8DOMWrapperTypeIndex>(wrapper);
 }
 
-inline void releaseObject(v8::Handle<v8::Object> wrapper)
+inline void releaseObject(v8::Local<v8::Object> wrapper)
 {
     toWrapperTypeInfo(wrapper)->derefObject(toScriptWrappable(wrapper));
 }

@@ -42,7 +42,7 @@ class ScopedPersistent {
 public:
     ScopedPersistent() { }
 
-    ScopedPersistent(v8::Isolate* isolate, v8::Handle<T> handle)
+    ScopedPersistent(v8::Isolate* isolate, v8::Local<T> handle)
         : m_handle(isolate, handle)
     {
     }
@@ -73,7 +73,7 @@ public:
     bool isEmpty() const { return m_handle.IsEmpty(); }
     bool isWeak() const { return m_handle.IsWeak(); }
 
-    void set(v8::Isolate* isolate, v8::Handle<T> handle)
+    void set(v8::Isolate* isolate, v8::Local<T> handle)
     {
         m_handle.Reset(isolate, handle);
     }
@@ -90,7 +90,7 @@ public:
     }
 
     template <class S>
-    bool operator==(const v8::Handle<S> other) const
+    bool operator==(const v8::Local<S> other) const
     {
         return m_handle == other;
     }

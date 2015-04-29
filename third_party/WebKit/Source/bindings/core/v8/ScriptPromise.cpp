@@ -44,7 +44,7 @@ namespace {
 
 struct WithScriptState {
     // Used by ToV8Value<WithScriptState, ScriptState*>.
-    static v8::Handle<v8::Object> getCreationContext(ScriptState* scriptState)
+    static v8::Local<v8::Object> getCreationContext(ScriptState* scriptState)
     {
         return scriptState->context()->Global();
     }
@@ -85,21 +85,21 @@ void ScriptPromise::InternalResolver::reject(v8::Local<v8::Value> value)
     clear();
 }
 
-ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Handle<v8::Value> value)
+ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Local<v8::Value> value)
     : m_scriptState(scriptState)
 {
     if (value.IsEmpty())
         return;
 
     if (!value->IsPromise()) {
-        m_promise = ScriptValue(scriptState, v8::Handle<v8::Value>());
+        m_promise = ScriptValue(scriptState, v8::Local<v8::Value>());
         V8ThrowException::throwTypeError(scriptState->isolate(), "the given value is not a Promise");
         return;
     }
     m_promise = ScriptValue(scriptState, value);
 }
 
-ScriptPromise ScriptPromise::then(v8::Handle<v8::Function> onFulfilled, v8::Handle<v8::Function> onRejected)
+ScriptPromise ScriptPromise::then(v8::Local<v8::Function> onFulfilled, v8::Local<v8::Function> onRejected)
 {
     if (m_promise.isEmpty())
         return ScriptPromise();
@@ -128,7 +128,7 @@ ScriptPromise ScriptPromise::cast(ScriptState* scriptState, const ScriptValue& v
     return ScriptPromise::cast(scriptState, value.v8Value());
 }
 
-ScriptPromise ScriptPromise::cast(ScriptState* scriptState, v8::Handle<v8::Value> value)
+ScriptPromise ScriptPromise::cast(ScriptState* scriptState, v8::Local<v8::Value> value)
 {
     if (value.IsEmpty())
         return ScriptPromise();
@@ -146,7 +146,7 @@ ScriptPromise ScriptPromise::reject(ScriptState* scriptState, const ScriptValue&
     return ScriptPromise::reject(scriptState, value.v8Value());
 }
 
-ScriptPromise ScriptPromise::reject(ScriptState* scriptState, v8::Handle<v8::Value> value)
+ScriptPromise ScriptPromise::reject(ScriptState* scriptState, v8::Local<v8::Value> value)
 {
     if (value.IsEmpty())
         return ScriptPromise();
@@ -162,7 +162,7 @@ ScriptPromise ScriptPromise::rejectWithDOMException(ScriptState* scriptState, DO
     return reject(scriptState, toV8(exception, scriptState->context()->Global(), scriptState->isolate()));
 }
 
-v8::Local<v8::Promise> ScriptPromise::rejectRaw(ScriptState* scriptState, v8::Handle<v8::Value> value)
+v8::Local<v8::Promise> ScriptPromise::rejectRaw(ScriptState* scriptState, v8::Local<v8::Value> value)
 {
     if (value.IsEmpty())
         return v8::Local<v8::Promise>();

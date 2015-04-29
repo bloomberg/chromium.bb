@@ -9,7 +9,7 @@
 
 namespace blink {
 
-EventTarget* WrapperTypeInfo::toEventTarget(v8::Handle<v8::Object> object) const
+EventTarget* WrapperTypeInfo::toEventTarget(v8::Local<v8::Object> object) const
 {
     if (eventTargetInheritance == NotInheritFromEventTarget)
         return 0;

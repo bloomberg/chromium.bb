@@ -89,7 +89,7 @@ inline void v8SetReturnValue(const CallbackInfo& info, const v8::Persistent<S>& 
 }
 
 template<typename CallbackInfo, typename S>
-inline void v8SetReturnValue(const CallbackInfo& info, const v8::Handle<S> handle)
+inline void v8SetReturnValue(const CallbackInfo& info, const v8::Local<S> handle)
 {
     info.GetReturnValue().Set(handle);
 }
@@ -200,7 +200,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* 
     }
     if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
         return;
-    v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
@@ -213,7 +213,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Node* impl)
     }
     if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
         return;
-    v8::Handle<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8::Local<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
@@ -259,7 +259,7 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Scrip
     }
     if (DOMDataStore::setReturnValueForMainWorld(callbackInfo.GetReturnValue(), impl))
         return;
-    v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
@@ -328,7 +328,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ScriptWrappab
     }
     if (DOMDataStore::setReturnValueFast(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
         return;
-    v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
@@ -341,7 +341,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Node* impl, c
     }
     if (DOMDataStore::setReturnValueFast(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
         return;
-    v8::Handle<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8::Local<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
@@ -380,26 +380,26 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, RawPtr<T> imp
 // Convert v8::String to a WTF::String. If the V8 string is not already
 // an external string then it is transformed into an external string at this
 // point to avoid repeated conversions.
-inline String toCoreString(v8::Handle<v8::String> value)
+inline String toCoreString(v8::Local<v8::String> value)
 {
     return v8StringToWebCoreString<String>(value, Externalize);
 }
 
-inline String toCoreStringWithNullCheck(v8::Handle<v8::String> value)
+inline String toCoreStringWithNullCheck(v8::Local<v8::String> value)
 {
     if (value.IsEmpty() || value->IsNull())
         return String();
     return toCoreString(value);
 }
 
-inline String toCoreStringWithUndefinedOrNullCheck(v8::Handle<v8::String> value)
+inline String toCoreStringWithUndefinedOrNullCheck(v8::Local<v8::String> value)
 {
     if (value.IsEmpty() || value->IsNull() || value->IsUndefined())
         return String();
     return toCoreString(value);
 }
 
-inline AtomicString toCoreAtomicString(v8::Handle<v8::String> value)
+inline AtomicString toCoreAtomicString(v8::Local<v8::String> value)
 {
     return v8StringToWebCoreString<AtomicString>(value, Externalize);
 }
@@ -407,7 +407,7 @@ inline AtomicString toCoreAtomicString(v8::Handle<v8::String> value)
 // This method will return a null String if the v8::Value does not contain a v8::String.
 // It will not call ToString() on the v8::Value. If you want ToString() to be called,
 // please use the TONATIVE_FOR_V8STRINGRESOURCE_*() macros instead.
-inline String toCoreStringWithUndefinedOrNullCheck(v8::Handle<v8::Value> value)
+inline String toCoreStringWithUndefinedOrNullCheck(v8::Local<v8::Value> value)
 {
     if (value.IsEmpty() || !value->IsString())
         return String();
@@ -418,14 +418,14 @@ inline String toCoreStringWithUndefinedOrNullCheck(v8::Handle<v8::Value> value)
 // Return a V8 external string that shares the underlying buffer with the given
 // WebCore string. The reference counting mechanism is used to keep the
 // underlying buffer alive while the string is still live in the V8 engine.
-inline v8::Handle<v8::String> v8String(v8::Isolate* isolate, const String& string)
+inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const String& string)
 {
     if (string.isNull())
         return v8::String::Empty(isolate);
     return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(isolate, string.impl());
 }
 
-inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, int length = -1)
+inline v8::Local<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, int length = -1)
 {
     ASSERT(isolate);
     v8::Local<v8::String> value;
@@ -437,9 +437,9 @@ inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* s
     return v8::String::Empty(isolate);
 }
 
-inline v8::Handle<v8::Value> v8Undefined()
+inline v8::Local<v8::Value> v8Undefined()
 {
-    return v8::Handle<v8::Value>();
+    return v8::Local<v8::Value>();
 }
 
 // Conversion flags, used in toIntXX/toUIntXX.
@@ -461,28 +461,28 @@ inline bool toBoolean(v8::Isolate* isolate, v8::Local<v8::Value> value, Exceptio
 // Convert a value to a 8-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-byte
-CORE_EXPORT int8_t toInt8(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT int8_t toInt8(v8::Isolate*, v8::Local<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 8-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-octet
-CORE_EXPORT uint8_t toUInt8(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT uint8_t toUInt8(v8::Isolate*, v8::Local<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 16-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-short
-CORE_EXPORT int16_t toInt16(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT int16_t toInt16(v8::Isolate*, v8::Local<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 16-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-short
-CORE_EXPORT uint16_t toUInt16(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT uint16_t toUInt16(v8::Isolate*, v8::Local<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 32-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-long
-CORE_EXPORT int32_t toInt32Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
-inline int32_t toInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+CORE_EXPORT int32_t toInt32Slow(v8::Isolate*, v8::Local<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline int32_t toInt32(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Fast case. The value is already a 32-bit integer.
     if (LIKELY(value->IsInt32()))
@@ -493,8 +493,8 @@ inline int32_t toInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, Intege
 // Convert a value to a 32-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-long
-CORE_EXPORT uint32_t toUInt32Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
-inline uint32_t toUInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+CORE_EXPORT uint32_t toUInt32Slow(v8::Isolate*, v8::Local<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline uint32_t toUInt32(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Fast case. The value is already a 32-bit unsigned integer.
     if (LIKELY(value->IsUint32()))
@@ -510,8 +510,8 @@ inline uint32_t toUInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, Inte
 // Convert a value to a 64-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-long-long
-CORE_EXPORT int64_t toInt64Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
-inline int64_t toInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+CORE_EXPORT int64_t toInt64Slow(v8::Isolate*, v8::Local<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline int64_t toInt64(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Clamping not supported for int64_t/long long int. See Source/wtf/MathExtras.h.
     ASSERT(configuration != Clamp);
@@ -526,8 +526,8 @@ inline int64_t toInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, Intege
 // Convert a value to a 64-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-long-long
-CORE_EXPORT uint64_t toUInt64Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
-inline uint64_t toUInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+CORE_EXPORT uint64_t toUInt64Slow(v8::Isolate*, v8::Local<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline uint64_t toUInt64(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Fast case. The value is a 32-bit unsigned integer.
     if (LIKELY(value->IsUint32()))
@@ -540,8 +540,8 @@ inline uint64_t toUInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, Inte
 }
 
 // Convert a value to a double precision float, which might fail.
-CORE_EXPORT double toDoubleSlow(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
-inline double toDouble(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+CORE_EXPORT double toDoubleSlow(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+inline double toDouble(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     if (LIKELY(value->IsNumber()))
         return value.As<v8::Number>()->Value();
@@ -549,29 +549,29 @@ inline double toDouble(v8::Isolate* isolate, v8::Handle<v8::Value> value, Except
 }
 
 // Convert a value to a double precision float, throwing on non-finite values.
-CORE_EXPORT double toRestrictedDouble(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT double toRestrictedDouble(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 
 // Convert a value to a single precision float, which might fail.
-inline float toFloat(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+inline float toFloat(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     return static_cast<float>(toDouble(isolate, value, exceptionState));
 }
 
 // Convert a value to a single precision float, throwing on non-finite values.
-CORE_EXPORT float toRestrictedFloat(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT float toRestrictedFloat(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 
 // Converts a value to a String, throwing if any code unit is outside 0-255.
-CORE_EXPORT String toByteString(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT String toByteString(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 
 // Converts a value to a String, replacing unmatched UTF-16 surrogates with replacement characters.
-CORE_EXPORT String toUSVString(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT String toUSVString(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 
-inline v8::Handle<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
+inline v8::Local<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
 {
     return value ? v8::True(isolate) : v8::False(isolate);
 }
 
-inline double toCoreDate(v8::Isolate* isolate, v8::Handle<v8::Value> object)
+inline double toCoreDate(v8::Isolate* isolate, v8::Local<v8::Value> object)
 {
     if (object->IsDate())
         return object.As<v8::Date>()->ValueOf();
@@ -587,10 +587,10 @@ inline v8::MaybeLocal<v8::Value> v8DateOrNaN(v8::Isolate* isolate, double value)
 }
 
 // FIXME: Remove the special casing for NodeFilter and XPathNSResolver.
-PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Handle<v8::Object>, ScriptState*);
-XPathNSResolver* toXPathNSResolver(ScriptState*, v8::Handle<v8::Value>);
+PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Local<v8::Value>, v8::Local<v8::Object>, ScriptState*);
+XPathNSResolver* toXPathNSResolver(ScriptState*, v8::Local<v8::Value>);
 
-bool toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*, ExceptionState&);
+bool toV8Sequence(v8::Local<v8::Value>, uint32_t& length, v8::Isolate*, ExceptionState&);
 
 // Converts a JavaScript value to an array as per the Web IDL specification:
 // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-array
@@ -608,7 +608,7 @@ Vector<RefPtr<T>> toRefPtrNativeArrayUnchecked(v8::Local<v8::Value> v8Value, uin
             return Vector<RefPtr<T>>();
         }
         if (V8T::hasInstance(element, isolate)) {
-            v8::Local<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
+            v8::Local<v8::Object> elementObject = v8::Local<v8::Object>::Cast(element);
             result.uncheckedAppend(V8T::toImpl(elementObject));
         } else {
             exceptionState.throwTypeError("Invalid Array element type");
@@ -634,7 +634,7 @@ Vector<RefPtr<T>> toRefPtrNativeArray(v8::Local<v8::Value> value, int argumentIn
 }
 
 template <class T, class V8T>
-Vector<RefPtr<T>> toRefPtrNativeArray(v8::Handle<v8::Value> value, const String& propertyName, v8::Isolate* isolate, ExceptionState& exceptionState)
+Vector<RefPtr<T>> toRefPtrNativeArray(v8::Local<v8::Value> value, const String& propertyName, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
     uint32_t length = 0;
@@ -672,7 +672,7 @@ WillBeHeapVector<RefPtrWillBeMember<T>> toRefPtrWillBeMemberNativeArray(v8::Loca
             return WillBeHeapVector<RefPtrWillBeMember<T>>();
         }
         if (V8T::hasInstance(element, isolate)) {
-            v8::Local<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
+            v8::Local<v8::Object> elementObject = v8::Local<v8::Object>::Cast(element);
             result.uncheckedAppend(V8T::toImpl(elementObject));
         } else {
             exceptionState.throwTypeError("Invalid Array element type");
@@ -706,7 +706,7 @@ WillBeHeapVector<RefPtrWillBeMember<T>> toRefPtrWillBeMemberNativeArray(v8::Loca
             return WillBeHeapVector<RefPtrWillBeMember<T>>();
         }
         if (V8T::hasInstance(element, isolate)) {
-            v8::Local<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
+            v8::Local<v8::Object> elementObject = v8::Local<v8::Object>::Cast(element);
             result.uncheckedAppend(V8T::toImpl(elementObject));
         } else {
             exceptionState.throwTypeError("Invalid Array element type");
@@ -740,7 +740,7 @@ HeapVector<Member<T>> toMemberNativeArray(v8::Local<v8::Value> value, int argume
             return HeapVector<Member<T>>();
         }
         if (V8T::hasInstance(element, isolate)) {
-            v8::Handle<v8::Object> elementObject = v8::Handle<v8::Object>::Cast(element);
+            v8::Local<v8::Object> elementObject = v8::Local<v8::Object>::Cast(element);
             result.uncheckedAppend(V8T::toImpl(elementObject));
         } else {
             exceptionState.throwTypeError("Invalid Array element type");
@@ -820,7 +820,7 @@ Vector<T> toImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info, int s
 
 // Validates that the passed object is a sequence type per WebIDL spec
 // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-sequence
-inline bool toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length, v8::Isolate* isolate, ExceptionState& exceptionState)
+inline bool toV8Sequence(v8::Local<v8::Value> value, uint32_t& length, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     // Attempt converting to a sequence if the value is not already an array but is
     // any kind of object except for a native Date object or a native RegExp object.
@@ -937,12 +937,12 @@ struct NativeValueTraits<JSONValuePtr> {
 CORE_EXPORT v8::Isolate* toIsolate(ExecutionContext*);
 CORE_EXPORT v8::Isolate* toIsolate(LocalFrame*);
 
-DOMWindow* toDOMWindow(v8::Isolate*, v8::Handle<v8::Value>);
-DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
+DOMWindow* toDOMWindow(v8::Isolate*, v8::Local<v8::Value>);
+DOMWindow* toDOMWindow(v8::Local<v8::Context>);
 LocalDOMWindow* enteredDOMWindow(v8::Isolate*);
 CORE_EXPORT LocalDOMWindow* currentDOMWindow(v8::Isolate*);
 LocalDOMWindow* callingDOMWindow(v8::Isolate*);
-ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);
+ExecutionContext* toExecutionContext(v8::Local<v8::Context>);
 CORE_EXPORT ExecutionContext* currentExecutionContext(v8::Isolate*);
 CORE_EXPORT ExecutionContext* callingExecutionContext(v8::Isolate*);
 
@@ -955,23 +955,23 @@ CORE_EXPORT v8::Local<v8::Context> toV8Context(Frame*, DOMWrapperWorld&);
 
 // Returns the frame object of the window object associated with
 // a context, if the window is currently being displayed in a Frame.
-CORE_EXPORT Frame* toFrameIfNotDetached(v8::Handle<v8::Context>);
+CORE_EXPORT Frame* toFrameIfNotDetached(v8::Local<v8::Context>);
 
-CORE_EXPORT EventTarget* toEventTarget(v8::Isolate*, v8::Handle<v8::Value>);
+CORE_EXPORT EventTarget* toEventTarget(v8::Isolate*, v8::Local<v8::Value>);
 
 // If the current context causes out of memory, JavaScript setting
 // is disabled and it returns true.
 bool handleOutOfMemory();
 void crashIfV8IsDead();
 
-inline bool isUndefinedOrNull(v8::Handle<v8::Value> value)
+inline bool isUndefinedOrNull(v8::Local<v8::Value> value)
 {
     return value.IsEmpty() || value->IsNull() || value->IsUndefined();
 }
-v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function>);
+v8::Local<v8::Function> getBoundFunction(v8::Local<v8::Function>);
 
 // Attaches |environment| to |function| and returns it.
-inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::Handle<v8::Value> environment, v8::Isolate* isolate)
+inline v8::Local<v8::Function> createClosure(v8::FunctionCallback function, v8::Local<v8::Value> environment, v8::Isolate* isolate)
 {
     return v8::Function::New(isolate, function, environment);
 }
@@ -981,10 +981,10 @@ template<class Collection> static void indexedPropertyEnumerator(const v8::Prope
 {
     Collection* collection = toScriptWrappable(info.Holder())->toImpl<Collection>();
     int length = collection->length();
-    v8::Handle<v8::Array> properties = v8::Array::New(info.GetIsolate(), length);
+    v8::Local<v8::Array> properties = v8::Array::New(info.GetIsolate(), length);
     for (int i = 0; i < length; ++i) {
         // FIXME: Do we need to check that the item function returns a non-null value for this index?
-        v8::Handle<v8::Integer> integer = v8::Integer::New(info.GetIsolate(), i);
+        v8::Local<v8::Integer> integer = v8::Integer::New(info.GetIsolate(), i);
         properties->Set(integer, integer);
     }
     v8SetReturnValue(info, properties);
@@ -994,9 +994,9 @@ CORE_EXPORT bool isValidEnum(const String& value, const char** validValues, size
 CORE_EXPORT bool isValidEnum(const Vector<String>& values, const char** validValues, size_t length, const String& enumName, ExceptionState&);
 
 // These methods store hidden values into an array that is stored in the internal field of a DOM wrapper.
-void addHiddenValueToArray(v8::Isolate*, v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
-void removeHiddenValueFromArray(v8::Isolate*, v8::Handle<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
-CORE_EXPORT void moveEventListenerToNewWrapper(v8::Isolate*, v8::Handle<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex);
+void addHiddenValueToArray(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
+void removeHiddenValueFromArray(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::Value>, int cacheIndex);
+CORE_EXPORT void moveEventListenerToNewWrapper(v8::Isolate*, v8::Local<v8::Object>, EventListener* oldValue, v8::Local<v8::Value> newValue, int cacheIndex);
 
 // Result values for platform object 'deleter' methods,
 // http://www.w3.org/TR/WebIDL/#delete
@@ -1030,7 +1030,7 @@ private:
 
 class DevToolsFunctionInfo final {
 public:
-    explicit DevToolsFunctionInfo(v8::Handle<v8::Function>& function)
+    explicit DevToolsFunctionInfo(v8::Local<v8::Function>& function)
         : m_scriptId(0)
         , m_lineNumber(1)
         , m_function(function)
@@ -1055,10 +1055,10 @@ private:
     mutable int m_scriptId;
     mutable int m_lineNumber;
     mutable String m_resourceName;
-    mutable v8::Handle<v8::Function> m_function;
+    mutable v8::Local<v8::Function> m_function;
 };
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Handle<v8::Function>);
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Local<v8::Function>);
 
 // Callback functions used by generated code.
 CORE_EXPORT void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);

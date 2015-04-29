@@ -35,7 +35,7 @@ namespace blink {
 template<class StringClass> struct StringTraits {
     static const StringClass& fromStringResource(WebCoreStringResourceBase*);
     template <typename V8StringTrait>
-    static StringClass fromV8String(v8::Handle<v8::String>, int);
+    static StringClass fromV8String(v8::Local<v8::String>, int);
 };
 
 template<>
@@ -45,7 +45,7 @@ struct StringTraits<String> {
         return resource->webcoreString();
     }
     template <typename V8StringTrait>
-    static String fromV8String(v8::Handle<v8::String>, int);
+    static String fromV8String(v8::Local<v8::String>, int);
 };
 
 template<>
@@ -55,12 +55,12 @@ struct StringTraits<AtomicString> {
         return resource->atomicString();
     }
     template <typename V8StringTrait>
-    static AtomicString fromV8String(v8::Handle<v8::String>, int);
+    static AtomicString fromV8String(v8::Local<v8::String>, int);
 };
 
 struct V8StringTwoBytesTrait {
     typedef UChar CharType;
-    ALWAYS_INLINE static void write(v8::Handle<v8::String> v8String, CharType* buffer, int length)
+    ALWAYS_INLINE static void write(v8::Local<v8::String> v8String, CharType* buffer, int length)
     {
         v8String->Write(reinterpret_cast<uint16_t*>(buffer), 0, length);
     }
@@ -68,14 +68,14 @@ struct V8StringTwoBytesTrait {
 
 struct V8StringOneByteTrait {
     typedef LChar CharType;
-    ALWAYS_INLINE static void write(v8::Handle<v8::String> v8String, CharType* buffer, int length)
+    ALWAYS_INLINE static void write(v8::Local<v8::String> v8String, CharType* buffer, int length)
     {
         v8String->WriteOneByte(buffer, 0, length);
     }
 };
 
 template <typename V8StringTrait>
-String StringTraits<String>::fromV8String(v8::Handle<v8::String> v8String, int length)
+String StringTraits<String>::fromV8String(v8::Local<v8::String> v8String, int length)
 {
     ASSERT(v8String->Length() == length);
     typename V8StringTrait::CharType* buffer;
@@ -85,7 +85,7 @@ String StringTraits<String>::fromV8String(v8::Handle<v8::String> v8String, int l
 }
 
 template <typename V8StringTrait>
-AtomicString StringTraits<AtomicString>::fromV8String(v8::Handle<v8::String> v8String, int length)
+AtomicString StringTraits<AtomicString>::fromV8String(v8::Local<v8::String> v8String, int length)
 {
     ASSERT(v8String->Length() == length);
     static const int inlineBufferSize = 32 / sizeof(typename V8StringTrait::CharType);
@@ -101,7 +101,7 @@ AtomicString StringTraits<AtomicString>::fromV8String(v8::Handle<v8::String> v8S
 }
 
 template<typename StringType>
-StringType v8StringToWebCoreString(v8::Handle<v8::String> v8String, ExternalMode external)
+StringType v8StringToWebCoreString(v8::Local<v8::String> v8String, ExternalMode external)
 {
     {
         // This portion of this function is very hot in certain Dromeao benchmarks.
@@ -141,8 +141,8 @@ StringType v8StringToWebCoreString(v8::Handle<v8::String> v8String, ExternalMode
 
 // Explicitly instantiate the above template with the expected parameterizations,
 // to ensure the compiler generates the code; otherwise link errors can result in GCC 4.4.
-template String v8StringToWebCoreString<String>(v8::Handle<v8::String>, ExternalMode);
-template AtomicString v8StringToWebCoreString<AtomicString>(v8::Handle<v8::String>, ExternalMode);
+template String v8StringToWebCoreString<String>(v8::Local<v8::String>, ExternalMode);
+template AtomicString v8StringToWebCoreString<AtomicString>(v8::Local<v8::String>, ExternalMode);
 
 // Fast but non thread-safe version.
 String int32ToWebCoreStringFast(int value)

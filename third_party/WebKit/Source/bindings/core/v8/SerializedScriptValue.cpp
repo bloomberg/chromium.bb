@@ -89,14 +89,14 @@ static void acculumateArrayBuffersForAllWorlds(v8::Isolate* isolate, DOMArrayBuf
         Vector<RefPtr<DOMWrapperWorld>> worlds;
         DOMWrapperWorld::allWorldsInMainThread(worlds);
         for (size_t i = 0; i < worlds.size(); i++) {
-            v8::Handle<v8::Object> wrapper = worlds[i]->domDataStore().get(object, isolate);
+            v8::Local<v8::Object> wrapper = worlds[i]->domDataStore().get(object, isolate);
             if (!wrapper.IsEmpty())
-                buffers.append(v8::Handle<v8::ArrayBuffer>::Cast(wrapper));
+                buffers.append(v8::Local<v8::ArrayBuffer>::Cast(wrapper));
         }
     } else {
-        v8::Handle<v8::Object> wrapper = DOMWrapperWorld::current(isolate).domDataStore().get(object, isolate);
+        v8::Local<v8::Object> wrapper = DOMWrapperWorld::current(isolate).domDataStore().get(object, isolate);
         if (!wrapper.IsEmpty())
-            buffers.append(v8::Handle<v8::ArrayBuffer>::Cast(wrapper));
+            buffers.append(v8::Local<v8::ArrayBuffer>::Cast(wrapper));
     }
 }
 
@@ -148,12 +148,12 @@ SerializedScriptValue::SerializedScriptValue(const String& wireData)
     m_data = wireData.isolatedCopy();
 }
 
-v8::Handle<v8::Value> SerializedScriptValue::deserialize(MessagePortArray* messagePorts)
+v8::Local<v8::Value> SerializedScriptValue::deserialize(MessagePortArray* messagePorts)
 {
     return deserialize(v8::Isolate::GetCurrent(), messagePorts, 0);
 }
 
-v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, MessagePortArray* messagePorts, const WebBlobInfoArray* blobInfo)
+v8::Local<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, MessagePortArray* messagePorts, const WebBlobInfoArray* blobInfo)
 {
     return SerializedScriptValueFactory::instance().deserialize(this, isolate, messagePorts, blobInfo);
 }
@@ -190,7 +190,7 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
         }
         // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
         if (V8MessagePort::hasInstance(transferrable, isolate)) {
-            RefPtrWillBeRawPtr<MessagePort> port = V8MessagePort::toImpl(v8::Handle<v8::Object>::Cast(transferrable));
+            RefPtrWillBeRawPtr<MessagePort> port = V8MessagePort::toImpl(v8::Local<v8::Object>::Cast(transferrable));
             // Check for duplicate MessagePorts.
             if (ports.contains(port)) {
                 exceptionState.throwDOMException(DataCloneError, "Message port at index " + String::number(i) + " is a duplicate of an earlier port.");
@@ -198,7 +198,7 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
             }
             ports.append(port.release());
         } else if (V8ArrayBuffer::hasInstance(transferrable, isolate)) {
-            RefPtr<DOMArrayBuffer> arrayBuffer = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(transferrable));
+            RefPtr<DOMArrayBuffer> arrayBuffer = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferrable));
             if (arrayBuffers.contains(arrayBuffer)) {
                 exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier ArrayBuffer.");
                 return false;
