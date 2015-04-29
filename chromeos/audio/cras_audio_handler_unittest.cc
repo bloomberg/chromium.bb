@@ -2429,4 +2429,68 @@ TEST_F(CrasAudioHandlerTest, HotPlugHDMINotChangeActiveOutput) {
             cras_audio_handler_->GetPrimaryActiveOutputNode());
 }
 
+// Test the case in which the active device was set to inactive from cras after
+// resuming from suspension state. See crbug.com/478968.
+TEST_F(CrasAudioHandlerTest, ActiveNodeLostAfterResume) {
+  AudioNodeList audio_nodes;
+  EXPECT_FALSE(kHeadphone.active);
+  audio_nodes.push_back(kHeadphone);
+  EXPECT_FALSE(kHDMIOutput.active);
+  audio_nodes.push_back(kHDMIOutput);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the headphone is selected as the active output.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+  EXPECT_EQ(kHeadphone.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+  const AudioDevice* active_headphone = GetDeviceFromId(kHeadphone.id);
+  EXPECT_EQ(kHeadphone.id, active_headphone->id);
+  EXPECT_TRUE(active_headphone->active);
+
+  // Simulate NodesChanged signal with headphone turning into inactive state,
+  // and HDMI node removed.
+  audio_nodes.clear();
+  audio_nodes.push_back(kHeadphone);
+  ChangeAudioNodes(audio_nodes);
+
+  // Verify the headphone is set to active again.
+  EXPECT_EQ(kHeadphone.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+  const AudioDevice* headphone_resumed = GetDeviceFromId(kHeadphone.id);
+  EXPECT_EQ(kHeadphone.id, headphone_resumed->id);
+  EXPECT_TRUE(headphone_resumed->active);
+}
+
+// Test the case in which there are two NodesChanged signal for discovering
+// output devices, and there is race between NodesChange and SetActiveOutput
+// during this process. See crbug.com/478968.
+TEST_F(CrasAudioHandlerTest, ActiveNodeLostDuringLoginSession) {
+  AudioNodeList audio_nodes;
+  EXPECT_FALSE(kHeadphone.active);
+  audio_nodes.push_back(kHeadphone);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the headphone is selected as the active output.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+  EXPECT_EQ(kHeadphone.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+  const AudioDevice* active_headphone = GetDeviceFromId(kHeadphone.id);
+  EXPECT_EQ(kHeadphone.id, active_headphone->id);
+  EXPECT_TRUE(active_headphone->active);
+
+  // Simulate NodesChanged signal with headphone turning into inactive state,
+  // and add a new HDMI output node.
+  audio_nodes.clear();
+  audio_nodes.push_back(kHeadphone);
+  audio_nodes.push_back(kHDMIOutput);
+  ChangeAudioNodes(audio_nodes);
+
+  // Verify the headphone is set to active again.
+  EXPECT_EQ(kHeadphone.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+  const AudioDevice* headphone_resumed = GetDeviceFromId(kHeadphone.id);
+  EXPECT_EQ(kHeadphone.id, headphone_resumed->id);
+  EXPECT_TRUE(headphone_resumed->active);
+}
+
 }  // namespace chromeos

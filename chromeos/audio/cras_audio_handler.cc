@@ -852,10 +852,13 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
   }
 
   // If the previous active device is removed from the new node list,
-  // reset active_output_node_id_.
-  if (!GetDeviceFromId(active_output_node_id_))
+  // or changed to inactive by cras, reset active_output_node_id_.
+  // See crbug.com/478968.
+  const AudioDevice* active_output = GetDeviceFromId(active_output_node_id_);
+  if (!active_output || !active_output->active)
     active_output_node_id_ = 0;
-  if (!GetDeviceFromId(active_input_node_id_))
+  const AudioDevice* active_input = GetDeviceFromId(active_input_node_id_);
+  if (!active_input || !active_input->active)
     active_input_node_id_ = 0;
 
   // If audio nodes change is caused by unplugging some non-active audio
