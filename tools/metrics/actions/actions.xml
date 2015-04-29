@@ -11385,6 +11385,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="SwitchTab_Click">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <description>
+    Recorded when the user switches tabs with a mouse click. This user action is
+    only recorded on platforms which use the Views toolkit.
+  </description>
+</action>
+
 <action name="SyncedNotifications.SendingServiceDisabled">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
