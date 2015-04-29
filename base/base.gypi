@@ -62,6 +62,8 @@
           'android/library_loader/library_load_from_apk_status_codes.h',
           'android/library_loader/library_loader_hooks.cc',
           'android/library_loader/library_loader_hooks.h',
+          'android/library_loader/library_prefetcher.cc',
+          'android/library_loader/library_prefetcher.h',
           'android/locale_utils.cc',
           'android/locale_utils.h',
           'android/memory_pressure_listener_android.cc',

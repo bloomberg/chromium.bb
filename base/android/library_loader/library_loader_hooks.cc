@@ -7,6 +7,7 @@
 #include "base/android/command_line_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/library_loader/library_load_from_apk_status_codes.h"
+#include "base/android/library_loader/library_prefetcher.h"
 #include "base/at_exit.h"
 #include "base/metrics/histogram.h"
 #include "jni/LibraryLoader_jni.h"
@@ -120,6 +121,10 @@ void LibraryLoaderExitHook() {
     delete g_at_exit_manager;
     g_at_exit_manager = NULL;
   }
+}
+
+static jboolean ForkAndPrefetchNativeLibrary(JNIEnv* env, jclass clazz) {
+  return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary();
 }
 
 bool RegisterLibraryLoaderEntryHook(JNIEnv* env) {
