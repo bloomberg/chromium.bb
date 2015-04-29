@@ -17,5 +17,6 @@ static_library("webui") {
     "//base",
     "//components/resources",
     "//content/public/browser",
+    "//ui/resources",
   ]
 }

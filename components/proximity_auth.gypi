@@ -133,9 +133,9 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../content/content.gyp:content_browser',
+        '../ui/resources/ui_resources.gyp:ui_resources',
         'components_resources.gyp:components_resources',
         'proximity_auth',
-        'cryptauth',
       ],
       'include_dirs': [
         '..',

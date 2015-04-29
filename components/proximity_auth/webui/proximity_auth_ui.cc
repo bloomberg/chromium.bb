@@ -11,6 +11,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/components_resources.h"
+#include "grit/webui_resources.h"
 
 namespace proximity_auth {
 
@@ -18,10 +19,20 @@ ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIProximityAuthHost);
-  source->SetDefaultResource(IDR_PROXIMITY_AUTH_HTML);
-  source->AddResourcePath("proximity_auth.css", IDR_PROXIMITY_AUTH_CSS);
-  source->AddResourcePath("proximity_auth.js", IDR_PROXIMITY_AUTH_JS);
-  source->SetJsonPath("strings.js");
+  source->SetDefaultResource(IDR_PROXIMITY_AUTH_UI_HTML);
+  source->AddResourcePath("proximity_auth.css", IDR_PROXIMITY_AUTH_UI_CSS);
+  source->AddResourcePath("content-panel.html",
+                          IDR_PROXIMITY_AUTH_CONTENT_PANEL_HTML);
+  source->AddResourcePath("content-panel.js",
+                          IDR_PROXIMITY_AUTH_CONTENT_PANEL_JS);
+  source->AddResourcePath("log-panel.html", IDR_PROXIMITY_AUTH_LOG_PANEL_HTML);
+  source->AddResourcePath("log-panel.js", IDR_PROXIMITY_AUTH_LOG_PANEL_JS);
+  source->AddResourcePath("local-state.html",
+                          IDR_PROXIMITY_AUTH_LOCAL_STATE_HTML);
+  source->AddResourcePath("local-state.js", IDR_PROXIMITY_AUTH_LOCAL_STATE_JS);
+  source->AddResourcePath("device-list.html",
+                          IDR_PROXIMITY_AUTH_DEVICE_LIST_HTML);
+  source->AddResourcePath("device-list.js", IDR_PROXIMITY_AUTH_DEVICE_LIST_JS);
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();

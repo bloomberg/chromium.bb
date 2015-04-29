@@ -1,0 +1,132 @@
+<link href="chrome://resources/polymer/polymer/polymer.html" rel="import">
+<link href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html" rel="import">
+<link href="chrome://resources/polymer/paper-shadow/paper-shadow.html" rel="import">
+<link href="chrome://resources/polymer/core-tooltip/core-tooltip.html" rel="import">
+<link href="chrome://resources/polymer/core-icon/core-icon.html" rel="import">
+<link href="chrome://resources/polymer/core-icons/device-icons.html" rel="import">
+<link href="chrome://resources/polymer/core-icons/hardware-icons.html" rel="import">
+<link href="chrome://resources/polymer/core-icons/notification-icons.html" rel="import">
+
+<polymer-element name="device-list" layout vertical>
+  <template>
+    <style>
+      .devices-label {
+        color: rgb(153, 153, 153);
+        font-size: 16px;
+        margin-top: 20px;
+        padding: 10px 22px;
+      }
+
+      paper-shadow {
+        background-color: white;
+      }
+
+      .item {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        height: 72px;
+      }
+
+      .name {
+        margin: 0 8px 2px 0;
+      }
+
+      .public-key {
+        color: #767676; 
+        font-size: 13px;
+        height: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 300px;
+      }
+
+      .phone-lock {
+        height: 16px;
+        width: 16px;
+      }
+
+      .end-icon {
+        margin: 0 14px;
+      }
+
+      paper-icon-button, core-icon {
+        opacity: 0.25;
+      }
+
+      paper-icon-button:hover, core-icon:hover {
+        opacity: 1;
+      }
+
+      .ineligibility-icons {
+        margin: 0 22px;
+      }
+
+      .ineligibility-icon {
+        color: orange;
+        opacity: 0.5;
+      }
+
+      core-tooltip::shadow .core-tooltip {
+        font-size: 14px;
+        line-height: 18px;
+        padding: 8px 16px;
+      }
+    </style>
+
+    <div class="devices-label">{{label}}</div>
+
+    <paper-shadow>
+      <template repeat="{{device in devices}}">
+        <div class="item" layout horizontal center>
+          <paper-icon-button class="end-icon"
+              icon="hardware:phonelink{{!device.unlockKey ? '-off' : ''}}">
+          </paper-icon-button>
+
+          <div class="info">
+            <div layout horizontal>
+              <span class="name">{{device.friendlyDeviceName}}</span>
+              <core-tooltip position="top">
+                <core-icon icon="lock-open" class="phone-lock"
+                    hidden?="{{!device.remoteState}}">
+                </core-icon>
+                <div tip>
+                  <div>
+                    User Present:
+                    {{ device.remoteState.userPresent  }}
+                  </div>
+                  <div>
+                    Secure Screen Lock:
+                    {{ device.remoteState.secureScreenLock }}
+                  </div>
+                  <div>
+                    Trust Agent:
+                    {{ device.remoteState.trustAgent }}
+                  </div>
+                </div>
+              </core-tooltip>
+            </div>
+            <div class="public-key">{{device.publicKey}}</div>
+          </div>
+
+          <div flex></div>
+          <paper-icon-button class="end-icon"
+              hidden?="{{!device.unlockKey}}"
+              icon="{{ getIconForConnection_(device.connectionStatus) }}">
+          </paper-icon-button>
+
+          <div class="ineligibility-icons"
+              hidden?="{{!device.ineligibilityReasons}}">
+            <template repeat="{{ reason in device.ineligibilityReasons }}">
+              <core-tooltip label="{{prettifyReason_(reason)}}" position=top>
+                <core-icon icon="{{ getIconForIneligibilityReason_(reason) }}"
+                    class="ineligibility-icon">
+                </core-icon>
+              </core-tooltip>
+            </template>
+          </div>
+        </div>
+      </template>
+    </paper-shadow>
+  </template>
+  <script src="device-list.js"></script>
+</polymer-element>

@@ -1,0 +1,67 @@
+<link href="chrome://resources/polymer/polymer/polymer.html" rel="import">
+<link href="chrome://resources/polymer/core-toolbar/core-toolbar.html" rel="import">
+<link href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html" rel="import">
+<link href="chrome://resources/polymer/core-icons/communication-icons.html" rel="import">
+
+<polymer-element name="log-panel" layout vertical>
+  <template>
+    <style>
+      core-toolbar {
+        background-color: #069BDE;
+        box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.2);
+        height: 48px;
+        margin: 0;
+      }
+
+      core-toolbar paper-icon-button {
+        padding: 0;
+      }
+
+      #list {
+        overflow: auto;
+      }
+
+      .list-item {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+        font-family: monospace;
+        font-size: 12px;
+        padding: 15px 30px;
+      }
+
+      .item-metadata {
+        color: rgb(153, 153, 153);
+        font-size: 10px;
+      }
+
+      .item-log {
+        margin: 0;
+        overflow: hidden;
+      }
+
+      .list-item:hover .item-log {
+        overflow: auto;
+        text-overflow: clip;
+      }
+    </style>
+
+    <core-toolbar layout horizontal end-justified center
+                  on-click="{{clearLogs}}">
+      <paper-icon-button icon="communication:clear-all"></paper-icon-button>
+    </core-toolbar>
+
+    <div id="list" flex>
+      <template repeat="{{log in logs}}">
+        <div class="list-item {{ {selected: log.selected} | tokenList }}"
+             on-click={{itemClick}}>
+          <div class="item-metadata" layout horizontal>
+            <div>14:23:50</div>
+            <div flex></div>
+            <div>proximity_auth_class.cc:123</div>
+          </div>
+          <pre class="item-log" flex>{{log.text}}</pre>
+        </div>
+      </template>
+    </div>
+  </template>
+  <script src="log-panel.js"></script>
+</polymer-element>

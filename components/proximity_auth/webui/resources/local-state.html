@@ -1,0 +1,116 @@
+<link href="chrome://resources/polymer/polymer/polymer.html" rel="import">
+<link href="chrome://resources/polymer/paper-shadow/paper-shadow.html" rel="import">
+<link href="chrome://resources/polymer/paper-button/paper-button.html" rel="import">
+<link href="chrome://resources/polymer/paper-icon-button/paper-icon-button.html" rel="import">
+<link href="chrome://resources/polymer/core-icon/core-icon.html" rel="import">
+<link href="chrome://resources/polymer/core-icons/notification-icons.html" rel="import">
+<link rel="import" href="device-list.html">
+
+<polymer-element name="local-state" layout vertical>
+  <template>
+    <style>
+      paper-shadow {
+        background-color: white;
+      }
+
+      #card-row {
+        margin-top: 22px;
+      }
+
+      #enrollment-card {
+        margin-right: 30px;
+      }
+
+      .card-content {
+        margin: 24px 16px 0px 16px;
+      }
+
+      .card-title {
+        font-size: 20px;
+      }
+
+      .card-subtitle {
+        color: #767676;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+
+      paper-button {
+        margin: 8px;
+      }
+
+      .card-icon {
+        color: green;
+        height: 90px;
+        margin: 16px 16px 0 0;
+        width: 90px;
+      }
+
+      .next-sync-icon {
+        color: green;
+        margin-right: 4px;
+      }
+
+      .error-icon {
+        color: orange;
+      }
+    </style>
+
+    <div id="card-row" layout horizontal>
+
+      <!-- CryptAuth Enrollment Info Card -->
+      <paper-shadow id="enrollment-card" layout vertical flex>
+        <div layout horizontal>
+          <div class="card-content" flex layout vertical>
+            <div class="card-title">Enrollment</div>
+            <div class="card-subtitle">
+              {{ enrollmentInfo.lastSuccessTime || "Never enrolled" }}
+            </div>
+            <div class layout horizontal center flex>
+              <core-icon class="next-sync-icon error-icon" icon="schedule">
+              </core-icon>
+              {{enrollmentInfo.nextRefreshTime}} to refresh
+            </div>
+          </div>
+          <core-icon
+                class="card-icon {{
+                  enrollmentInfo.lastAttemptFailed ? 'error-icon' : ''
+                }}"
+                icon="{{
+                  enrollmentInfo.lastAttemptFailed ? 'error' : 'cloud-done'
+                }}">
+          </core-icon>
+        </div>
+        <paper-button self-start>Force Enroll</paper-button>
+      </paper-shadow>
+
+      <!-- Device Sync Info Card -->
+      <paper-shadow id="device-card" layout vertical flex>
+        <div layout horizontal flex>
+          <div class="card-content" flex layout vertical>
+            <div class="card-title">Device Sync</div>
+            <div class="card-subtitle">
+              {{ deviceSyncInfo.lastSuccessTime || "Never synced" }}
+            </div>
+            <div class layout horizontal center flex>
+              <core-icon class="next-sync-icon" icon="schedule"></core-icon>
+               {{ deviceSyncInfo.nextRefreshTime }} to refresh
+            </div>
+          </div>
+          <core-icon
+            class="card-icon {{
+              { 'error-icon': deviceSyncInfo.lastAttemptFailed } | tokenList
+            }}"
+            icon="{{
+              deviceSyncInfo.lastAttemptFailed ? 'error' : 'cloud-done'
+            }}">
+          </core-icon>
+        </div>
+        <paper-button self-start>Force Sync</paper-button>
+      </paper-shadow>
+   </div>
+
+    <device-list label="Unlock Keys" devices="{{unlockKeys}}"></device-list>
+  </template>
+  <script src="local-state.js"></script>
+</polymer-element>

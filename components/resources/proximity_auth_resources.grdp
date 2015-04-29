@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <include name="IDR_PROXIMITY_AUTH_HTML" file="../proximity_auth/webui/resources/proximity_auth.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_CSS" file="../proximity_auth/webui/resources/proximity_auth.css" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_JS" file="../proximity_auth/webui/resources/proximity_auth.js" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_UI_HTML" file="../proximity_auth/webui/resources/proximity_auth.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_UI_CSS" file="../proximity_auth/webui/resources/proximity_auth.css" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_LOG_PANEL_HTML"
+           file="../proximity_auth/webui/resources/log-panel.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_LOG_PANEL_JS"
+           file="../proximity_auth/webui/resources/log-panel.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_CONTENT_PANEL_HTML"
+           file="../proximity_auth/webui/resources/content-panel.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_CONTENT_PANEL_JS"
+           file="../proximity_auth/webui/resources/content-panel.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_LOCAL_STATE_HTML"
+           file="../proximity_auth/webui/resources/local-state.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_LOCAL_STATE_JS"
+           file="../proximity_auth/webui/resources/local-state.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_DEVICE_LIST_HTML"
+           file="../proximity_auth/webui/resources/device-list.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_DEVICE_LIST_JS"
+           file="../proximity_auth/webui/resources/device-list.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
 </grit-part>
