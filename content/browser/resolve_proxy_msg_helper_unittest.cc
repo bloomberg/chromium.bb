@@ -58,11 +58,10 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
   };
 
   ResolveProxyMsgHelperTest()
-      : service_(new net::ProxyService(
-            new MockProxyConfigService,
-            make_scoped_ptr(
-                new net::ForwardingProxyResolverFactory(&resolver_)),
-            NULL)),
+      : resolver_factory_(new net::MockAsyncProxyResolverFactory(false)),
+        service_(new net::ProxyService(new MockProxyConfigService,
+                                       make_scoped_ptr(resolver_factory_),
+                                       NULL)),
         helper_(new TestResolveProxyMsgHelper(service_.get(), this)),
         io_thread_(BrowserThread::IO, &message_loop_) {
     test_sink_.AddFilter(this);
@@ -82,6 +81,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
     return IPC::SyncMessage::GenerateReply(&message);
   }
 
+  net::MockAsyncProxyResolverFactory* resolver_factory_;
   net::MockAsyncProxyResolver resolver_;
   scoped_ptr<net::ProxyService> service_;
   scoped_refptr<ResolveProxyMsgHelper> helper_;
@@ -120,7 +120,9 @@ TEST_F(ResolveProxyMsgHelperTest, Sequential) {
   helper_->OnResolveProxy(url1, msg1);
 
   // Finish ProxyService's initialization.
-  resolver_.pending_set_pac_script_request()->CompleteNow(net::OK);
+  ASSERT_EQ(1u, resolver_factory_->pending_requests().size());
+  resolver_factory_->pending_requests()[0]->CompleteNowWithForwarder(
+      net::OK, &resolver_);
 
   ASSERT_EQ(1u, resolver_.pending_requests().size());
   EXPECT_EQ(url1, resolver_.pending_requests()[0]->url());
@@ -173,7 +175,9 @@ TEST_F(ResolveProxyMsgHelperTest, QueueRequests) {
   helper_->OnResolveProxy(url1, msg1);
 
   // Finish ProxyService's initialization.
-  resolver_.pending_set_pac_script_request()->CompleteNow(net::OK);
+  ASSERT_EQ(1u, resolver_factory_->pending_requests().size());
+  resolver_factory_->pending_requests()[0]->CompleteNowWithForwarder(
+      net::OK, &resolver_);
 
   helper_->OnResolveProxy(url2, msg2);
   helper_->OnResolveProxy(url3, msg3);
@@ -231,7 +235,9 @@ TEST_F(ResolveProxyMsgHelperTest, CancelPendingRequests) {
   helper_->OnResolveProxy(url1, msg1);
 
   // Finish ProxyService's initialization.
-  resolver_.pending_set_pac_script_request()->CompleteNow(net::OK);
+  ASSERT_EQ(1u, resolver_factory_->pending_requests().size());
+  resolver_factory_->pending_requests()[0]->CompleteNowWithForwarder(
+      net::OK, &resolver_);
 
   helper_->OnResolveProxy(url2, msg2);
   helper_->OnResolveProxy(url3, msg3);

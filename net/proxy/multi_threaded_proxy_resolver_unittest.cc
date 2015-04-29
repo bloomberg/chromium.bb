@@ -175,9 +175,8 @@ class BlockableProxyResolverFactory : public LegacyProxyResolverFactory {
 
 TEST(MultiThreadedProxyResolverTest, SingleThread_Basic) {
   const size_t kNumThreads = 1u;
-  scoped_ptr<MockProxyResolver> mock(new MockProxyResolver);
-  MultiThreadedProxyResolver resolver(
-      new ForwardingProxyResolverFactory(mock.get()), kNumThreads);
+  BlockableProxyResolverFactory* factory = new BlockableProxyResolverFactory;
+  MultiThreadedProxyResolver resolver(factory, kNumThreads);
 
   int rv;
 
@@ -191,8 +190,9 @@ TEST(MultiThreadedProxyResolverTest, SingleThread_Basic) {
       set_script_callback.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, set_script_callback.WaitForResult());
+  ASSERT_EQ(1u, factory->resolvers().size());
   EXPECT_EQ(ASCIIToUTF16("pac script bytes"),
-            mock->last_script_data()->utf16());
+            factory->resolvers()[0]->last_script_data()->utf16());
 
   // Start request 0.
   TestCompletionCallback callback0;
@@ -258,9 +258,8 @@ TEST(MultiThreadedProxyResolverTest, SingleThread_Basic) {
 TEST(MultiThreadedProxyResolverTest,
      SingleThread_UpdatesNetLogWithThreadWait) {
   const size_t kNumThreads = 1u;
-  scoped_ptr<BlockableProxyResolver> mock(new BlockableProxyResolver);
-  MultiThreadedProxyResolver resolver(
-      new ForwardingProxyResolverFactory(mock.get()), kNumThreads);
+  BlockableProxyResolverFactory* factory = new BlockableProxyResolverFactory;
+  MultiThreadedProxyResolver resolver(factory, kNumThreads);
 
   int rv;
 
@@ -269,6 +268,9 @@ TEST(MultiThreadedProxyResolverTest,
   rv = resolver.SetPacScript(ProxyResolverScriptData::FromUTF8("foo"),
                              init_callback.callback());
   EXPECT_EQ(OK, init_callback.WaitForResult());
+
+  ASSERT_EQ(1u, factory->resolvers().size());
+  BlockableProxyResolver* mock = factory->resolvers()[0];
 
   // Block the proxy resolver, so no request can complete.
   mock->Block();
@@ -351,10 +353,8 @@ TEST(MultiThreadedProxyResolverTest,
 // is pending.
 TEST(MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
   const size_t kNumThreads = 1u;
-  scoped_ptr<BlockableProxyResolver> mock(new BlockableProxyResolver);
-  MultiThreadedProxyResolver resolver(
-      new ForwardingProxyResolverFactory(mock.get()),
-                                      kNumThreads);
+  BlockableProxyResolverFactory* factory = new BlockableProxyResolverFactory;
+  MultiThreadedProxyResolver resolver(factory, kNumThreads);
 
   int rv;
 
@@ -363,6 +363,9 @@ TEST(MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
   rv = resolver.SetPacScript(ProxyResolverScriptData::FromUTF8("foo"),
                              init_callback.callback());
   EXPECT_EQ(OK, init_callback.WaitForResult());
+
+  ASSERT_EQ(1u, factory->resolvers().size());
+  BlockableProxyResolver* mock = factory->resolvers()[0];
 
   // Block the proxy resolver, so no request can complete.
   mock->Block();
@@ -428,10 +431,9 @@ TEST(MultiThreadedProxyResolverTest, SingleThread_CancelRequest) {
 // outstanding cancels them (and doesn't leak anything).
 TEST(MultiThreadedProxyResolverTest, SingleThread_CancelRequestByDeleting) {
   const size_t kNumThreads = 1u;
-  scoped_ptr<BlockableProxyResolver> mock(new BlockableProxyResolver);
+  BlockableProxyResolverFactory* factory = new BlockableProxyResolverFactory;
   scoped_ptr<MultiThreadedProxyResolver> resolver(
-      new MultiThreadedProxyResolver(
-          new ForwardingProxyResolverFactory(mock.get()), kNumThreads));
+      new MultiThreadedProxyResolver(factory, kNumThreads));
 
   int rv;
 
@@ -440,6 +442,9 @@ TEST(MultiThreadedProxyResolverTest, SingleThread_CancelRequestByDeleting) {
   rv = resolver->SetPacScript(ProxyResolverScriptData::FromUTF8("foo"),
                               init_callback.callback());
   EXPECT_EQ(OK, init_callback.WaitForResult());
+
+  ASSERT_EQ(1u, factory->resolvers().size());
+  BlockableProxyResolver* mock = factory->resolvers()[0];
 
   // Block the proxy resolver, so no request can complete.
   mock->Block();
@@ -491,9 +496,8 @@ TEST(MultiThreadedProxyResolverTest, SingleThread_CancelRequestByDeleting) {
 // Cancel an outstanding call to SetPacScriptByData().
 TEST(MultiThreadedProxyResolverTest, SingleThread_CancelSetPacScript) {
   const size_t kNumThreads = 1u;
-  scoped_ptr<BlockableProxyResolver> mock(new BlockableProxyResolver);
-  MultiThreadedProxyResolver resolver(
-      new ForwardingProxyResolverFactory(mock.get()), kNumThreads);
+  BlockableProxyResolverFactory* factory = new BlockableProxyResolverFactory;
+  MultiThreadedProxyResolver resolver(factory, kNumThreads);
 
   int rv;
 
@@ -501,6 +505,8 @@ TEST(MultiThreadedProxyResolverTest, SingleThread_CancelSetPacScript) {
   rv = resolver.SetPacScript(ProxyResolverScriptData::FromUTF8("data"),
                              set_pac_script_callback.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  EXPECT_EQ(1u, factory->resolvers().size());
 
   // Cancel the SetPacScriptByData request.
   resolver.CancelSetPacScript();
@@ -515,7 +521,9 @@ TEST(MultiThreadedProxyResolverTest, SingleThread_CancelSetPacScript) {
 
   rv = set_pac_script_callback2.WaitForResult();
   EXPECT_EQ(0, rv);
-  EXPECT_EQ(ASCIIToUTF16("data2"), mock->last_script_data()->utf16());
+  ASSERT_EQ(2u, factory->resolvers().size());
+  EXPECT_EQ(ASCIIToUTF16("data2"),
+            factory->resolvers()[1]->last_script_data()->utf16());
 
   // The first SetPacScript callback should never have been completed.
   EXPECT_FALSE(set_pac_script_callback.have_result());

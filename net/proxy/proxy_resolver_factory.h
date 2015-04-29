@@ -5,6 +5,8 @@
 #ifndef NET_PROXY_PROXY_RESOLVER_FACTORY_H_
 #define NET_PROXY_PROXY_RESOLVER_FACTORY_H_
 
+#include <set>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
@@ -33,7 +35,8 @@ class NET_EXPORT ProxyResolverFactory {
   // it returns ERR_IO_PENDING and notifies the result by running |callback|.
   // If the result is OK, then |resolver| contains the ProxyResolver. In the
   // case of asynchronous completion |*request| is written to, and can be
-  // deleted to cancel the request.
+  // deleted to cancel the request. All requests in progress are cancelled if
+  // the ProxyResolverFactory is deleted.
   virtual int CreateProxyResolver(
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
       scoped_ptr<ProxyResolver>* resolver,
@@ -65,6 +68,13 @@ class NET_EXPORT LegacyProxyResolverFactory : public ProxyResolverFactory {
       scoped_ptr<Request>* request) override;
 
   virtual scoped_ptr<ProxyResolver> CreateProxyResolver() = 0;
+
+ private:
+  class Job;
+
+  void RemoveJob(Job* job);
+
+  std::set<Job*> jobs_;
 };
 
 }  // namespace net

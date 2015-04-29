@@ -41,17 +41,18 @@ class TestProxyResolver : public MockAsyncProxyResolver {
 
 class TestLegacyProxyResolverFactory : public LegacyProxyResolverFactory {
  public:
-  TestLegacyProxyResolverFactory() : LegacyProxyResolverFactory(false) {}
+  using ProxyResolverFactory::CreateProxyResolver;
+
+  explicit TestLegacyProxyResolverFactory(ProxyResolver* resolver)
+      : LegacyProxyResolverFactory(false), resolver_(resolver) {}
 
   // LegacyProxyResolverFactory override.
   scoped_ptr<ProxyResolver> CreateProxyResolver() override {
-    return make_scoped_ptr(new ForwardingProxyResolver(&resolver_));
+    return make_scoped_ptr(new ForwardingProxyResolver(resolver_));
   }
 
-  TestProxyResolver& resolver() { return resolver_; }
-
  private:
-  TestProxyResolver resolver_;
+  ProxyResolver* resolver_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLegacyProxyResolverFactory);
 };
@@ -60,11 +61,16 @@ class TestLegacyProxyResolverFactory : public LegacyProxyResolverFactory {
 
 class LegacyProxyResolverFactoryTest : public testing::Test {
  public:
-  ProxyResolverFactory& factory() { return factory_; }
-  TestProxyResolver& mock_resolver() { return factory_.resolver(); }
+  void SetUp() override {
+    factory_.reset(new TestLegacyProxyResolverFactory(&resolver_));
+  }
+
+  ProxyResolverFactory& factory() { return *factory_; }
+  TestProxyResolver& mock_resolver() { return resolver_; }
 
  private:
-  TestLegacyProxyResolverFactory factory_;
+  TestProxyResolver resolver_;
+  scoped_ptr<TestLegacyProxyResolverFactory> factory_;
 };
 
 TEST_F(LegacyProxyResolverFactoryTest, Async_Success) {
@@ -113,6 +119,24 @@ TEST_F(LegacyProxyResolverFactoryTest, Async_Cancel) {
       url,
       mock_resolver().pending_set_pac_script_request()->script_data()->url());
   request.reset();
+  EXPECT_FALSE(resolver);
+}
+
+TEST_F(LegacyProxyResolverFactoryTest, Async_DeleteFactory) {
+  const GURL url("http://proxy");
+  scoped_ptr<ProxyResolver> resolver;
+  scoped_ptr<ProxyResolverFactory::Request> request;
+  {
+    TestProxyResolver test_resolver;
+    TestLegacyProxyResolverFactory factory(&test_resolver);
+    EXPECT_EQ(ERR_IO_PENDING, factory.CreateProxyResolver(
+                                  ProxyResolverScriptData::FromURL(url),
+                                  &resolver, base::Bind(&Fail), &request));
+    ASSERT_TRUE(test_resolver.has_pending_set_pac_script_request());
+    EXPECT_EQ(
+        url,
+        test_resolver.pending_set_pac_script_request()->script_data()->url());
+  }
   EXPECT_FALSE(resolver);
 }
 

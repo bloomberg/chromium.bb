@@ -9589,6 +9589,24 @@ class CapturingProxyResolver : public ProxyResolver {
   DISALLOW_COPY_AND_ASSIGN(CapturingProxyResolver);
 };
 
+class CapturingProxyResolverFactory : public ProxyResolverFactory {
+ public:
+  explicit CapturingProxyResolverFactory(CapturingProxyResolver* resolver)
+      : ProxyResolverFactory(false), resolver_(resolver) {}
+
+  int CreateProxyResolver(
+      const scoped_refptr<ProxyResolverScriptData>& pac_script,
+      scoped_ptr<ProxyResolver>* resolver,
+      const net::CompletionCallback& callback,
+      scoped_ptr<Request>* request) override {
+    resolver->reset(new ForwardingProxyResolver(resolver_));
+    return OK;
+  }
+
+ private:
+  ProxyResolver* resolver_;
+};
+
 TEST_P(HttpNetworkTransactionTest,
        UseAlternateProtocolForTunneledNpnSpdy) {
   session_deps_.use_alternate_protocols = true;
@@ -9602,7 +9620,7 @@ TEST_P(HttpNetworkTransactionTest,
   session_deps_.proxy_service.reset(new ProxyService(
       new ProxyConfigServiceFixed(proxy_config),
       make_scoped_ptr(
-          new ForwardingProxyResolverFactory(&capturing_proxy_resolver)),
+          new CapturingProxyResolverFactory(&capturing_proxy_resolver)),
       NULL));
   TestNetLog net_log;
   session_deps_.net_log = &net_log;
