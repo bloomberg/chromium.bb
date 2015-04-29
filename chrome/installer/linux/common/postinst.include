@@ -63,11 +63,11 @@ insert_after_first_match() {
     }" "$1"
 }
 
-# If /usr/share/gnome-control-center/gnome-default-applications.xml exists, it
-# may need to be updated to add ourselves to the default applications list. If
-# we find the file and it does not seem to contain our patch already (the patch
-# is safe to leave even after uninstall), update it.
-GNOME_DFL_APPS=/usr/share/gnome-control-center/gnome-default-applications.xml
+# If /usr/share/gnome-control-center/default-apps/gnome-default-applications.xml
+# exists, it may need to be updated to add ourselves to the default applications
+# list. If we find the file and it does not seem to contain our patch already
+# (the patch is safe to leave even after uninstall), update it.
+GNOME_DFL_APPS=/usr/share/gnome-control-center/default-apps/gnome-default-applications.xml
 if [ -f "$GNOME_DFL_APPS" ]; then
 # Conditionally insert the contents of the file "default-app-block" after the
 # first "<web-browsers>" line we find in gnome-default-applications.xml

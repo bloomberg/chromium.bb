@@ -2,7 +2,8 @@
 <!DOCTYPE default-apps SYSTEM "gnome-da-list.dtd">
 <!-- This file should be put in /usr/share/gnome-control-center/default-apps,
      or, if that directory does not exist, its web-browser tag patched into
-     /usr/share/gnome-control-center/gnome-default-applications.xml -->
+     /usr/share/gnome-control-center/default-apps/gnome-default-applications.xml
+     -->
 <default-apps>
   <web-browsers>
     <web-browser>
