@@ -308,6 +308,27 @@
         Setup
       </message>
 
+      <!-- Animation extension -->
+
+      <message desc="The title of the extension that controls whether images can animate or not, displayed in the web store." name="IDS_ANIMATION_APPNAME">
+        Animation Policy
+      </message>
+      <message desc="The description of the extension that allows users to disable animations or run them only once." name="IDS_ANIMATION_APPDESC">
+        Run animations only once, or disable animation completely.
+      </message>
+      <message desc="The title of a group of radio buttons controlling the animation policy - whether animation is allowed, allowed once only, or disabled." name="IDS_ANIMATION_POLICY">
+        Animation Policy:
+      </message>
+      <message desc="Indicates that showing animated images is allowed" name="IDS_ANIMATION_ALLOWED">
+        Allow all animated images.
+      </message>
+      <message desc="Indicates that showing animated images should only happen one time" name="IDS_ANIMATION_ONCE">
+        Allow animated images, but only once.
+      </message>
+      <message desc="Indicates that there will be no image animation" name="IDS_ANIMATION_NONE">
+        Disable all image animation.
+      </message>
+
     </messages>
   </release>
 </grit>

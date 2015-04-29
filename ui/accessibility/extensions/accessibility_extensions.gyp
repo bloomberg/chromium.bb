@@ -12,6 +12,7 @@
       'type': 'none',
       'dependencies': [
         'alt',
+        'animation',
         'caretbrowsing',
         'colorenhancer',
         'highcontrast',
@@ -57,6 +58,33 @@
           'variables': {
             'grit_grd_file': 'strings/accessibility_extensions_strings.grd',
             'grit_out_dir': '<(dest_dir)/alt',
+            # We don't generate any RC files, so no resource_ds file is needed.
+            'grit_resource_ids': '',
+          },
+          'includes': [ '../../../build/grit_action.gypi' ],
+        },
+      ],
+    },
+    {
+      'target_name': 'animation',
+      'type': 'none',
+      'copies': [
+        {
+          'destination': '<(dest_dir)/animation',
+          'files': [
+            'animation/manifest.json',
+            'animation/popup.html',
+            'animation/popup.js',
+            'animation/animation.png',
+          ]
+        }
+      ],
+      'actions': [
+        {
+          'action_name': 'animation_strings',
+          'variables': {
+            'grit_grd_file': 'strings/accessibility_extensions_strings.grd',
+            'grit_out_dir': '<(dest_dir)/animation',
             # We don't generate any RC files, so no resource_ds file is needed.
             'grit_resource_ids': '',
           },
