@@ -206,6 +206,13 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
   iaccessible->get_accState(childid_self, state.Receive());
   int ia_state = V_I4(state.ptr());
 
+  // Avoid flakiness. Events fired on a WINDOW are out of the control
+  // of a test.
+  if (role.type() == VT_I4 && ROLE_SYSTEM_WINDOW == V_I4(role.ptr())) {
+    VLOG(1) << "Ignoring event " << event << " on ROLE_SYSTEM_WINDOW";
+    return;
+  }
+
   // Avoid flakiness. The "offscreen" state depends on whether the browser
   // window is frontmost or not, and "hottracked" depends on whether the
   // mouse cursor happens to be over the element.
