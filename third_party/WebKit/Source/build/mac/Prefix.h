@@ -64,7 +64,7 @@ class TimerHeapReference;
 _LIBCPP_BEGIN_NAMESPACE_STD
 
 inline _LIBCPP_INLINE_VISIBILITY
-const blink::TimerHeapReference& move(const blink::TimerHeapReference& t)
+const TimerHeapReference& move(const TimerHeapReference& t)
 {
     return t;
 }
