@@ -1040,7 +1040,7 @@ void CompositedDeprecatedPaintLayerMapping::registerScrollingLayers()
     scrollingCoordinator->updateLayerPositionConstraint(&m_owningLayer);
 
     // Page scale is applied as a transform on the root layout view layer. Because the scroll
-    // layer is further up in the hierarchy, we need to avoid marking the root render view
+    // layer is further up in the hierarchy, we need to avoid marking the root layout view
     // layer as a container.
     bool isContainer = m_owningLayer.hasTransformRelatedProperty() && !m_owningLayer.isRootLayer();
     // FIXME: we should make certain that childForSuperLayers will never be the m_squashingContainmentLayer here

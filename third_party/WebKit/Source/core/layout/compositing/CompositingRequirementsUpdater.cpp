@@ -412,7 +412,7 @@ void CompositingRequirementsUpdater::updateRecursive(DeprecatedPaintLayer* ances
 
         // If the original layer is composited, the reflection needs to be, too.
         if (layer->reflectionInfo()) {
-            // FIXME: Shouldn't we call computeCompositingRequirements to handle a reflection overlapping with another renderer?
+            // FIXME: Shouldn't we call computeCompositingRequirements to handle a reflection overlapping with another layoutObject?
             DeprecatedPaintLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
             CompositingReasons reflectionCompositingReason = willBeCompositedOrSquashed ? CompositingReasonReflectionOfCompositedParent : CompositingReasonNone;
             reflectionLayer->setCompositingReasons(reflectionCompositingReason, CompositingReasonReflectionOfCompositedParent);

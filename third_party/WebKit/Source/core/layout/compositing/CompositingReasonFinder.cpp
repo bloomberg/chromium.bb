@@ -74,16 +74,16 @@ bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const
     return m_layoutView.frameView()->isScrollable();
 }
 
-CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle(LayoutObject* renderer) const
+CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle(LayoutObject* layoutObject) const
 {
     if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled())
         return CompositingReasonNone;
 
     CompositingReasons reasons = CompositingReasonNone;
 
-    const ComputedStyle& style = renderer->styleRef();
+    const ComputedStyle& style = layoutObject->styleRef();
 
-    if (requiresCompositingForTransform(renderer))
+    if (requiresCompositingForTransform(layoutObject))
         reasons |= CompositingReason3DTransform;
 
     if (style.backfaceVisibility() == BackfaceVisibilityHidden)
@@ -107,14 +107,14 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
     // Ignore scroll-blocks-on on the document element, because it will get propagated to
     // the LayoutView (by Document::inheritHtmlAndBodyElementStyles) and we don't want to
     // create two composited layers.
-    if (style.hasScrollBlocksOn() && !renderer->isDocumentElement())
+    if (style.hasScrollBlocksOn() && !layoutObject->isDocumentElement())
         reasons |= CompositingReasonScrollBlocksOn;
 
     if (style.hasCompositorProxy())
         reasons |= CompositingReasonCompositorProxy;
 
     // If the implementation of createsGroup changes, we need to be aware of that in this part of code.
-    ASSERT((renderer->isTransparent() || renderer->hasMask() || renderer->hasFilter() || style.hasBlendMode()) == renderer->createsGroup());
+    ASSERT((layoutObject->isTransparent() || layoutObject->hasMask() || layoutObject->hasFilter() || style.hasBlendMode()) == layoutObject->createsGroup());
 
     if (style.hasMask())
         reasons |= CompositingReasonMaskWithCompositedDescendants;
@@ -123,33 +123,33 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
         reasons |= CompositingReasonFilterWithCompositedDescendants;
 
     // See Layer::updateTransform for an explanation of why we check both.
-    if (renderer->hasTransformRelatedProperty() && style.hasTransform())
+    if (layoutObject->hasTransformRelatedProperty() && style.hasTransform())
         reasons |= CompositingReasonTransformWithCompositedDescendants;
 
-    if (renderer->isTransparent())
+    if (layoutObject->isTransparent())
         reasons |= CompositingReasonOpacityWithCompositedDescendants;
 
     if (style.hasBlendMode())
         reasons |= CompositingReasonBlendingWithCompositedDescendants;
 
-    if (renderer->hasReflection())
+    if (layoutObject->hasReflection())
         reasons |= CompositingReasonReflectionWithCompositedDescendants;
 
     ASSERT(!(reasons & ~CompositingReasonComboAllStyleDeterminedReasons));
     return reasons;
 }
 
-bool CompositingReasonFinder::requiresCompositingForTransform(LayoutObject* renderer) const
+bool CompositingReasonFinder::requiresCompositingForTransform(LayoutObject* layoutObject) const
 {
-    // Note that we ask the renderer if it has a transform, because the style may have transforms,
-    // but the renderer may be an inline that doesn't support them.
-    return renderer->hasTransformRelatedProperty() && renderer->style()->transform().has3DOperation();
+    // Note that we ask the layoutObject if it has a transform, because the style may have transforms,
+    // but the layoutObject may be an inline that doesn't support them.
+    return layoutObject->hasTransformRelatedProperty() && layoutObject->style()->transform().has3DOperation();
 }
 
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const DeprecatedPaintLayer* layer) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
-    LayoutObject* renderer = layer->layoutObject();
+    LayoutObject* layoutObject = layer->layoutObject();
 
     if (hasOverflowScrollTrigger()) {
         if (layer->clipParent())
@@ -170,7 +170,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     if (requiresCompositingForPositionFixed(layer))
         directReasons |= CompositingReasonPositionFixed;
 
-    directReasons |= renderer->additionalCompositingReasons();
+    directReasons |= layoutObject->additionalCompositingReasons();
 
     ASSERT(!(directReasons & CompositingReasonComboAllStyleDeterminedReasons));
     return directReasons;
@@ -193,21 +193,21 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(const Deprecat
     return layer->scrollsWithViewport() && m_layoutView.frameView()->isScrollable();
 }
 
-bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutObject* renderer) const
+bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutObject* layoutObject) const
 {
     // Note that the other requires* functions run at LayoutObject::styleDidChange time and so can rely
     // only on the style of their object.  This function runs at CompositingRequirementsUpdater::update
     // time, and so can consider the style of other objects.
-    const ComputedStyle& style = renderer->styleRef();
+    const ComputedStyle& style = layoutObject->styleRef();
 
     // We should only get here by CompositingReasonScrollBlocksOn being a potential compositing reason.
-    ASSERT(style.hasScrollBlocksOn() && !renderer->isDocumentElement());
+    ASSERT(style.hasScrollBlocksOn() && !layoutObject->isDocumentElement());
 
     // scroll-blocks-on style is propagated from the document element to the document.
-    ASSERT(!renderer->isLayoutView()
-        || !renderer->document().documentElement()
-        || !renderer->document().documentElement()->layoutObject()
-        || renderer->document().documentElement()->layoutObject()->style()->scrollBlocksOn() == style.scrollBlocksOn());
+    ASSERT(!layoutObject->isLayoutView()
+        || !layoutObject->document().documentElement()
+        || !layoutObject->document().documentElement()->layoutObject()
+        || layoutObject->document().documentElement()->layoutObject()->style()->scrollBlocksOn() == style.scrollBlocksOn());
 
     // When a scroll occurs, it's the union of all bits set on the target element's containing block
     // chain that determines the behavior.  Thus we really only need a new layer if this object contains
@@ -218,11 +218,11 @@ bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutO
     // We could consider tracking the current state in CompositingRequirementsUpdater::update.
 
     // Ensure iframes don't get composited when they require no more blocking than their parent.
-    if (renderer->isLayoutView()) {
-        if (const FrameView* parentFrame = toLayoutView(renderer)->frameView()->parentFrameView()) {
-            if (const LayoutView* parentRenderer = parentFrame->layoutView()) {
+    if (layoutObject->isLayoutView()) {
+        if (const FrameView* parentFrame = toLayoutView(layoutObject)->frameView()->parentFrameView()) {
+            if (const LayoutView* parentLayoutObject = parentFrame->layoutView()) {
                 // Does this frame contain only blocks-on bits already present in the parent frame?
-                if (!(style.scrollBlocksOn() & ~parentRenderer->style()->scrollBlocksOn()))
+                if (!(style.scrollBlocksOn() & ~parentLayoutObject->style()->scrollBlocksOn()))
                     return false;
             }
         } else {
