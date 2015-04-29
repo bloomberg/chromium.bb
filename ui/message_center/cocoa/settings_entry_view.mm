@@ -169,21 +169,21 @@ const int kCorrectedEntryRightPadding =
     notifier_ = notifier;
     if (!notifier->icon.IsEmpty())
       notifierIcon_.reset(notifier->icon.CopyNSImage());
-    [self layout];
+    [self layoutEntryView];
   }
   return self;
 }
 
 - (void)setNotifierIcon:(NSImage*)notifierIcon {
   notifierIcon_.reset([notifierIcon retain]);
-  [self layout];
+  [self layoutEntryView];
 }
 
 - (NSButton*)checkbox {
   return checkbox_;
 }
 
-- (void)layout {
+- (void)layoutEntryView {
   BOOL hasLearnMore =
       [controller_ notifierHasAdvancedSettings:notifier_->notifier_id];
 
