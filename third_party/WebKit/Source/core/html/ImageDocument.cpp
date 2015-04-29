@@ -31,9 +31,11 @@
 #include "core/events/EventListener.h"
 #include "core/events/MouseEvent.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLHeadElement.h"
@@ -173,6 +175,7 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
     , m_imageSizeIsKnown(false)
     , m_didShrinkImage(false)
     , m_shouldShrinkImage(shouldShrinkToFit())
+    , m_shrinkToFitMode(frame()->settings()->viewportEnabled() ? Viewport : Desktop)
 {
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
@@ -212,7 +215,8 @@ void ImageDocument::createDocumentStructure()
         RefPtr<EventListener> listener = ImageEventListener::create(this);
         if (LocalDOMWindow* domWindow = this->domWindow())
             domWindow->addEventListener("resize", listener, false);
-        m_imageElement->addEventListener("click", listener.release(), false);
+        if (m_shrinkToFitMode == Desktop)
+            m_imageElement->addEventListener("click", listener.release(), false);
     }
 
     rootElement->appendChild(head);
@@ -255,6 +259,8 @@ void ImageDocument::resizeImageToFit(ScaleType type)
 
 void ImageDocument::imageClicked(int x, int y)
 {
+    ASSERT(m_shrinkToFitMode == Desktop);
+
     if (!m_imageSizeIsKnown || imageFitsInWindow())
         return;
 
@@ -299,6 +305,8 @@ void ImageDocument::imageUpdated()
 
 void ImageDocument::restoreImageSize(ScaleType type)
 {
+    ASSERT(m_shrinkToFitMode == Desktop);
+
     if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this || (pageZoomFactor(this) < 1 && type == ScaleOnlyUnzoomedDocument))
         return;
 
@@ -317,6 +325,8 @@ void ImageDocument::restoreImageSize(ScaleType type)
 
 bool ImageDocument::imageFitsInWindow() const
 {
+    ASSERT(m_shrinkToFitMode == Desktop);
+
     if (!m_imageElement || m_imageElement->document() != this)
         return true;
 
@@ -335,6 +345,17 @@ void ImageDocument::windowSizeChanged(ScaleType type)
 {
     if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this)
         return;
+
+    if (m_shrinkToFitMode == Viewport) {
+        // For huge images, minimum-scale=0.1 is still too big on small screens.
+        // Set max-width so that the image will shrink to fit the width of the screen when
+        // the scale is minimum.
+        // Don't shrink height to fit because we use width=device-width in viewport meta tag,
+        // and expect a full-width reading mode for normal-width-huge-height images.
+        int viewportWidth = frame()->host()->pinchViewport().size().width();
+        m_imageElement->setInlineStyleProperty(CSSPropertyMaxWidth, viewportWidth * 10, CSSPrimitiveValue::CSS_PX);
+        return;
+    }
 
     bool fitsInWindow = imageFitsInWindow();
 
@@ -374,7 +395,7 @@ ImageResource* ImageDocument::cachedImage()
 
 bool ImageDocument::shouldShrinkToFit() const
 {
-    return frame()->settings()->shrinksStandaloneImagesToFit() && frame()->isMainFrame();
+    return frame()->isMainFrame();
 }
 
 #if !ENABLE(OILPAN)

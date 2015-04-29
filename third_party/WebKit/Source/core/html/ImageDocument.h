@@ -63,6 +63,8 @@ private:
 #endif
 
     void createDocumentStructure();
+
+    // These methods are for m_shrinkToFitMode == Desktop.
     void resizeImageToFit(ScaleType);
     void restoreImageSize(ScaleType);
     bool imageFitsInWindow() const;
@@ -79,6 +81,12 @@ private:
 
     // Whether the image should be shrunk or not
     bool m_shouldShrinkImage;
+
+    enum ShrinkToFitMode {
+        Viewport,
+        Desktop
+    };
+    ShrinkToFitMode m_shrinkToFitMode;
 };
 
 DEFINE_DOCUMENT_TYPE_CASTS(ImageDocument);
