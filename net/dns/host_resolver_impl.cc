@@ -1873,8 +1873,8 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
                               RequestHandle* out_req,
                               const BoundNetLog& source_net_log) {
   // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve"));
+  tracked_objects::ScopedTracker tracking_profile_1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 1"));
 
   DCHECK(addresses);
   DCHECK(CalledOnValidThread());
@@ -1896,6 +1896,10 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   // outstanding jobs map.
   Key key = GetEffectiveKeyForRequest(info, ip_number_ptr, source_net_log);
 
+  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile_2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 2"));
+
   int rv = ResolveHelper(key, info, ip_number_ptr, addresses, source_net_log);
   if (rv != ERR_DNS_CACHE_MISS) {
     LogFinishRequest(source_net_log, info, rv);
@@ -1903,15 +1907,26 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
     return rv;
   }
 
+  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile_3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 3"));
+
   // Next we need to attach our request to a "job". This job is responsible for
   // calling "getaddrinfo(hostname)" on a worker thread.
 
   JobMap::iterator jobit = jobs_.find(key);
   Job* job;
   if (jobit == jobs_.end()) {
+    // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
+    tracked_objects::ScopedTracker tracking_profile_4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 4"));
     job =
         new Job(weak_ptr_factory_.GetWeakPtr(), key, priority, source_net_log);
     job->Schedule(false);
+
+    // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
+    tracked_objects::ScopedTracker tracking_profile_5(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 5"));
 
     // Check for queue overflow.
     if (dispatcher_->num_queued_jobs() > max_queued_jobs_) {
@@ -1928,6 +1943,10 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   } else {
     job = jobit->second;
   }
+
+  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile_6(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 6"));
 
   // Can't complete synchronously. Create and attach request.
   scoped_ptr<Request> req(new Request(
