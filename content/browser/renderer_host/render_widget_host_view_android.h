@@ -330,6 +330,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // ContentViewCoreImpl is our interface to the view system.
   ContentViewCoreImpl* content_view_core_;
 
+  // Cache the WindowAndroid instance exposed by ContentViewCore to avoid
+  // calling into ContentViewCore when it is being detached from the
+  // WebContents during destruction. The WindowAndroid has stronger lifetime
+  // guarantees, and should be safe to use for observer detachment.
+  // This will be non-null iff |content_view_core_| is non-null.
+  ui::WindowAndroid* content_view_core_window_android_;
+
   ImeAdapterAndroid ime_adapter_android_;
 
   // Body background color of the underlying document.
