@@ -368,7 +368,7 @@ bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value, Units unitless
         }
         return true;
     }
-    return !id && validUnit(value, FLength | FPercent | FNonNeg | unitless);
+    return validUnit(value, FLength | FPercent | FNonNeg | unitless);
 }
 
 inline PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseValidPrimitive(CSSValueID identifier, CSSParserValue* value)
@@ -799,7 +799,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitPaddingEnd:
     case CSSPropertyWebkitPaddingBefore:
     case CSSPropertyWebkitPaddingAfter:
-        validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg | unitless));
+        validPrimitive = validUnit(value, FLength | FPercent | FNonNeg | unitless);
         break;
 
     case CSSPropertyMaxWidth:
@@ -813,17 +813,12 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 
     case CSSPropertyMinWidth:
     case CSSPropertyMinHeight:
-        unitless = FUnitlessQuirk;
-        // fall through
-    case CSSPropertyWebkitMinLogicalWidth:
-    case CSSPropertyWebkitMinLogicalHeight:
-        validPrimitive = id == CSSValueAuto || validWidthOrHeight(value, unitless);
-        break;
-
     case CSSPropertyWidth:
     case CSSPropertyHeight:
         unitless = FUnitlessQuirk;
         // fall through
+    case CSSPropertyWebkitMinLogicalWidth:
+    case CSSPropertyWebkitMinLogicalHeight:
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
         validPrimitive = (id == CSSValueAuto || validWidthOrHeight(value, unitless));
@@ -842,7 +837,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         if (id >= CSSValueBaseline && id <= CSSValueWebkitBaselineMiddle)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FLength | FPercent | FUnitlessQuirk));
+            validPrimitive = validUnit(value, FLength | FPercent | FUnitlessQuirk);
         break;
 
     case CSSPropertyBottom:               // <length> | <percentage> | auto | inherit
@@ -862,7 +857,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FLength | FPercent | unitless));
+            validPrimitive = validUnit(value, FLength | FPercent | unitless);
         break;
 
     case CSSPropertyOrphans: // <integer> | inherit | auto (We've added support for auto for backwards compatibility)
@@ -870,14 +865,14 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FPositiveInteger));
+            validPrimitive = validUnit(value, FPositiveInteger);
         break;
 
     case CSSPropertyZIndex: // auto | <integer> | inherit
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FInteger));
+            validPrimitive = validUnit(value, FInteger);
         break;
 
     case CSSPropertyLineHeight:
@@ -923,7 +918,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         if (id == CSSValueNormal || id == CSSValueReset || id == CSSValueDocument)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FNumber | FPercent | FNonNeg));
+            validPrimitive = validUnit(value, FNumber | FPercent | FNonNeg);
         if (validPrimitive && m_context.useCounter()
             && !(id == CSSValueNormal
                 || (value->unit == CSSPrimitiveValue::CSS_NUMBER && value->fValue == 1)
@@ -1046,8 +1041,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = (id == CSSValueNone) ? true : validUnit(value, FNumber | FNonNeg);
         break;
     case CSSPropertyOpacity:
-        validPrimitive = validUnit(value, FNumber);
-        break;
     case CSSPropertyWebkitBoxFlex:
         validPrimitive = validUnit(value, FNumber);
         break;
@@ -1084,7 +1077,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg));
+            validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
         break;
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
@@ -1162,7 +1155,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
     case CSSPropertyMotionOffset:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
-        validPrimitive = (!id && validUnit(value, FLength | FPercent));
+        validPrimitive = validUnit(value, FLength | FPercent);
         break;
     case CSSPropertyMotionRotation:
         ASSERT(RuntimeEnabledFeatures::cssMotionPathEnabled());
@@ -1303,14 +1296,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
 
     case CSSPropertyWebkitHyphenateCharacter:
-        if (id == CSSValueAuto) {
-            validPrimitive = true;
-        } else if (value->unit == CSSPrimitiveValue::CSS_STRING) {
-            parsedValue = createPrimitiveStringValue(value);
-            m_valueList->next();
-        }
-        break;
-
     case CSSPropertyWebkitLocale:
         if (id == CSSValueAuto) {
             validPrimitive = true;
@@ -1478,10 +1463,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             parsedValue = parseShapeProperty(propId);
         break;
     case CSSPropertyShapeMargin:
-        validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg));
+        validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
         break;
     case CSSPropertyShapeImageThreshold:
-        validPrimitive = (!id && validUnit(value, FNumber));
+        validPrimitive = validUnit(value, FNumber);
         break;
 
     case CSSPropertyTouchAction:
@@ -1862,8 +1847,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseColumnWidth()
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseColumnCount()
 {
     CSSParserValue* value = m_valueList->current();
-    if (value->id == CSSValueAuto
-        || (!value->id && validUnit(value, FPositiveInteger))) {
+    if (value->id == CSSValueAuto || validUnit(value, FPositiveInteger)) {
         RefPtrWillBeRawPtr<CSSValue> parsedValue = parseValidPrimitive(value->id, value);
         m_valueList->next();
         return parsedValue;
@@ -4630,7 +4614,7 @@ bool CSSPropertyParser::parseLineHeight(bool important)
     if (id == CSSValueNormal)
         validPrimitive = true;
     else
-        validPrimitive = (!id && validUnit(value, FNumber | FLength | FPercent | FNonNeg));
+        validPrimitive = validUnit(value, FNumber | FLength | FPercent | FNonNeg);
     // The line-height property can accept both percents and numbers but additive opertaions are
     // not permitted on them in calc() expressions.
     if (m_parsedCalculation && m_parsedCalculation->category() == CalcPercentNumber) {
@@ -7676,7 +7660,7 @@ bool CSSPropertyParser::parseViewportProperty(CSSPropertyID propId, bool importa
         if (id == CSSValueAuto || id == CSSValueInternalExtendToZoom)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg));
+            validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
         break;
     case CSSPropertyWidth: // shorthand
         return parseViewportShorthand(propId, CSSPropertyMinWidth, CSSPropertyMaxWidth, important);
@@ -7688,7 +7672,7 @@ bool CSSPropertyParser::parseViewportProperty(CSSPropertyID propId, bool importa
         if (id == CSSValueAuto)
             validPrimitive = true;
         else
-            validPrimitive = (!id && validUnit(value, FNumber | FPercent | FNonNeg));
+            validPrimitive = validUnit(value, FNumber | FPercent | FNonNeg);
         break;
     case CSSPropertyUserZoom: // zoom | fixed
         if (id == CSSValueZoom || id == CSSValueFixed)
@@ -7919,7 +7903,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyFillOpacity:
     case CSSPropertyStopOpacity:
     case CSSPropertyFloodOpacity:
-        validPrimitive = (!id && validUnit(value, FNumber | FPercent, SVGAttributeMode));
+        validPrimitive = validUnit(value, FNumber | FPercent, SVGAttributeMode);
         break;
 
     case CSSPropertyShapeRendering:
@@ -8037,6 +8021,13 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
 
     case CSSPropertyStrokeWidth: // <length> | inherit
     case CSSPropertyStrokeDashoffset:
+    case CSSPropertyCx:
+    case CSSPropertyCy:
+    case CSSPropertyX:
+    case CSSPropertyY:
+    case CSSPropertyR:
+    case CSSPropertyRx:
+    case CSSPropertyRy:
         validPrimitive = validUnit(value, FLength | FPercent, SVGAttributeMode);
         break;
     case CSSPropertyStrokeDasharray: // none | <dasharray> | inherit
@@ -8049,15 +8040,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyMaskType: // luminance | alpha | inherit
         if (id == CSSValueLuminance || id == CSSValueAlpha)
             validPrimitive = true;
-        break;
-    case CSSPropertyCx:
-    case CSSPropertyCy:
-    case CSSPropertyX:
-    case CSSPropertyY:
-    case CSSPropertyR:
-    case CSSPropertyRx:
-    case CSSPropertyRy:
-        validPrimitive = (!id && validUnit(value, FLength | FPercent, SVGAttributeMode));
         break;
 
     /* shorthand properties */
