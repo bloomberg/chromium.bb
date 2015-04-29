@@ -43,7 +43,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
   ~MotionEventGeneric() override;
 
   // MotionEvent implementation.
-  int GetId() const override;
+  uint32 GetUniqueEventId() const override;
   Action GetAction() const override;
   int GetActionIndex() const override;
   size_t GetPointerCount() const override;
@@ -87,7 +87,9 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
 
   void set_action(Action action) { action_ = action; }
   void set_event_time(base::TimeTicks event_time) { event_time_ = event_time; }
-  void set_id(int id) { id_ = id; }
+  void set_unique_event_id(uint32 unique_event_id) {
+    unique_event_id_ = unique_event_id;
+  }
   void set_action_index(int action_index) { action_index_ = action_index; }
   void set_button_state(int button_state) { button_state_ = button_state; }
   void set_flags(int flags) { flags_ = flags; }
@@ -107,7 +109,7 @@ class GESTURE_DETECTION_EXPORT MotionEventGeneric : public MotionEvent {
 
   Action action_;
   base::TimeTicks event_time_;
-  int id_;
+  uint32 unique_event_id_;
   int action_index_;
   int button_state_;
   int flags_;

@@ -146,7 +146,6 @@ scoped_ptr<MotionEventGeneric> ResampleMotionEvent(
   }
 
   DCHECK(event);
-  event->set_id(event0.GetId());
   event->set_button_state(event0.GetButtonState());
   return event.Pass();
 }

@@ -5,6 +5,7 @@
 #include "ui/events/gesture_detection/motion_event_generic.h"
 
 #include "base/logging.h"
+#include "ui/events/base_event_utils.h"
 
 namespace ui {
 
@@ -46,7 +47,7 @@ MotionEventGeneric::MotionEventGeneric(Action action,
                                        const PointerProperties& pointer)
     : action_(action),
       event_time_(event_time),
-      id_(0),
+      unique_event_id_(ui::GetNextTouchEventId()),
       action_index_(0),
       button_state_(0),
       flags_(0) {
@@ -56,7 +57,7 @@ MotionEventGeneric::MotionEventGeneric(Action action,
 MotionEventGeneric::MotionEventGeneric(const MotionEventGeneric& other)
     : action_(other.action_),
       event_time_(other.event_time_),
-      id_(other.id_),
+      unique_event_id_(other.unique_event_id_),
       action_index_(other.action_index_),
       button_state_(other.button_state_),
       flags_(other.flags_),
@@ -69,8 +70,8 @@ MotionEventGeneric::MotionEventGeneric(const MotionEventGeneric& other)
 MotionEventGeneric::~MotionEventGeneric() {
 }
 
-int MotionEventGeneric::GetId() const {
-  return id_;
+uint32 MotionEventGeneric::GetUniqueEventId() const {
+  return unique_event_id_;
 }
 
 MotionEvent::Action MotionEventGeneric::GetAction() const {
@@ -194,6 +195,7 @@ scoped_ptr<MotionEventGeneric> MotionEventGeneric::CancelEvent(
   scoped_ptr<MotionEventGeneric> cancel_event(
       new MotionEventGeneric(event, with_history));
   cancel_event->set_action(ACTION_CANCEL);
+  cancel_event->set_unique_event_id(ui::GetNextTouchEventId());
   return cancel_event.Pass();
 }
 
@@ -219,14 +221,17 @@ void MotionEventGeneric::PushHistoricalEvent(scoped_ptr<MotionEvent> event) {
 }
 
 MotionEventGeneric::MotionEventGeneric()
-    : action_(ACTION_CANCEL), id_(0), action_index_(0), button_state_(0) {
+    : action_(ACTION_CANCEL),
+      unique_event_id_(ui::GetNextTouchEventId()),
+      action_index_(0),
+      button_state_(0) {
 }
 
 MotionEventGeneric::MotionEventGeneric(const MotionEvent& event,
                                        bool with_history)
     : action_(event.GetAction()),
       event_time_(event.GetEventTime()),
-      id_(event.GetId()),
+      unique_event_id_(event.GetUniqueEventId()),
       action_index_(
           (action_ == ACTION_POINTER_UP || action_ == ACTION_POINTER_DOWN)
               ? event.GetActionIndex()
@@ -259,7 +264,7 @@ MotionEventGeneric& MotionEventGeneric::operator=(
     const MotionEventGeneric& other) {
   action_ = other.action_;
   event_time_ = other.event_time_;
-  id_ = other.id_;
+  unique_event_id_ = other.unique_event_id_;
   action_index_ = other.action_index_;
   button_state_ = other.button_state_;
   flags_ = other.flags_;

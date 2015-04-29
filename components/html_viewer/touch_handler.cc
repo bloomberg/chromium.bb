@@ -6,6 +6,7 @@
 
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
@@ -70,7 +71,7 @@ bool TouchHandler::UpdateMotionEvent(const mojo::Event& event) {
   const base::TimeTicks timestamp(
       base::TimeTicks::FromInternalValue(event.time_stamp));
   if (current_motion_event_.get()) {
-    current_motion_event_->set_id(current_motion_event_->GetId() + 1);
+    current_motion_event_->set_unique_event_id(ui::GetNextTouchEventId());
     current_motion_event_->set_event_time(timestamp);
   }
 

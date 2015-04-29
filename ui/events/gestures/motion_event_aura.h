@@ -22,7 +22,6 @@ class EVENTS_EXPORT MotionEventAura : public MotionEventGeneric {
   ~MotionEventAura() override;
 
   // MotionEventGeneric:
-  int GetId() const override;
   int GetSourceDeviceId(size_t pointer_index) const override;
 
   // Returns true iff the touch was valid.

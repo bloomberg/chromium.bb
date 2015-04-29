@@ -10,6 +10,7 @@
 
 #include "base/android/jni_android.h"
 #include "jni/MotionEvent_jni.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 
 using base::android::AttachCurrentThread;
@@ -165,7 +166,8 @@ MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
       cached_button_state_(FromAndroidButtonState(android_button_state)),
       cached_flags_(FromAndroidMetaState(meta_state)),
       cached_raw_position_offset_(ToDips(raw_offset_x_pixels),
-                                  ToDips(raw_offset_y_pixels)) {
+                                  ToDips(raw_offset_y_pixels)),
+      unique_event_id_(ui::GetNextTouchEventId()) {
   DCHECK_GT(pointer_count, 0);
 
   event_.Reset(env, event);
@@ -179,8 +181,8 @@ MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
 MotionEventAndroid::~MotionEventAndroid() {
 }
 
-int MotionEventAndroid::GetId() const {
-  return 0;
+uint32 MotionEventAndroid::GetUniqueEventId() const {
+  return unique_event_id_;
 }
 
 MotionEventAndroid::Action MotionEventAndroid::GetAction() const {

@@ -43,6 +43,8 @@
         # Note: sources list duplicated in GN build.
         'android/scroller.cc',
         'android/scroller.h',
+        'base_event_utils.cc',
+        'base_event_utils.h',
         'event_constants.h',
         'event_switches.cc',
         'event_switches.h',

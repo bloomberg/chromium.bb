@@ -7,6 +7,7 @@
 #include <bitset>
 #include <limits>
 
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
@@ -108,10 +109,12 @@ void ApppendTouchPointDetails(const WebTouchPoint& point, std::string* result) {
 
 void ApppendEventDetails(const WebTouchEvent& event, std::string* result) {
   StringAppendF(result,
-                "{\n Touches: %u, Cancelable: %d, CausesScrolling: %d\n[\n",
+                "{\n Touches: %u, Cancelable: %d, CausesScrolling: %d,"
+                " uniqueTouchEventId: %" PRIu64 "\n[\n",
                 event.touchesLength,
                 event.cancelable,
-                event.causesScrollingIfUncanceled);
+                event.causesScrollingIfUncanceled,
+                event.uniqueTouchEventId);
   for (unsigned i = 0; i < event.touchesLength; ++i)
     ApppendTouchPointDetails(event.touches[i], result);
   result->append(" ]\n}");

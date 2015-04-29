@@ -125,13 +125,10 @@ bool MotionEventAura::OnTouch(const TouchEvent& touch) {
   }
 
   UpdateCachedAction(touch);
+  set_unique_event_id(touch.unique_event_id());
   set_flags(touch.flags());
   set_event_time(touch.time_stamp() + base::TimeTicks());
   return true;
-}
-
-int MotionEventAura::GetId() const {
-  return GetPointerId(0);
 }
 
 void MotionEventAura::CleanupRemovedTouchPoints(const TouchEvent& event) {

@@ -58,7 +58,7 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
   ~MotionEventAndroid() override;
 
   // ui::MotionEvent methods.
-  int GetId() const override;
+  uint32 GetUniqueEventId() const override;
   Action GetAction() const override;
   int GetActionIndex() const override;
   size_t GetPointerCount() const override;
@@ -122,6 +122,9 @@ class CONTENT_EXPORT MotionEventAndroid : public ui::MotionEvent {
     float orientation;
     ToolType tool_type;
   } cached_pointers_[MAX_POINTERS_TO_CACHE];
+
+  // A unique identifier for the Android motion event.
+  const uint32 unique_event_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MotionEventAndroid);
 };

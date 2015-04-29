@@ -51,6 +51,7 @@ struct MockMotionEvent : public MotionEventGeneric {
   void SetTouchMajor(float new_touch_major);
   void SetRawOffset(float raw_offset_x, float raw_offset_y);
   void SetToolType(size_t index, ToolType tool_type);
+  void SetPrimaryPointerId(int id);
 
  private:
   void PushPointer(float x, float y);

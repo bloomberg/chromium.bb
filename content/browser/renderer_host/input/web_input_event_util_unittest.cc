@@ -38,6 +38,7 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
   MotionEventGeneric event(
       MotionEvent::ACTION_DOWN, base::TimeTicks::Now(), pointer);
   event.set_flags(ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  event.set_unique_event_id(123456U);
 
   WebTouchEvent expected_event;
   expected_event.type = WebInputEvent::TouchStart;
@@ -56,6 +57,7 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
   expected_pointer.rotationAngle = 0.f;
   expected_pointer.force = pointer.pressure;
   expected_event.touches[0] = expected_pointer;
+  expected_event.uniqueTouchEventId = 123456U;
 
   WebTouchEvent actual_event =
       ui::CreateWebTouchEventFromMotionEvent(event, false);

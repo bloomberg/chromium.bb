@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/common/input/web_touch_event_traits.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace content {
@@ -150,6 +151,7 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildFling(
 }
 
 SyntheticWebTouchEvent::SyntheticWebTouchEvent() : WebTouchEvent() {
+  uniqueTouchEventId = ui::GetNextTouchEventId();
   SetTimestamp(base::TimeTicks::Now() - base::TimeTicks());
 }
 

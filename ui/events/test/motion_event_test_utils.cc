@@ -166,10 +166,15 @@ void MockMotionEvent::ResolvePointers() {
   }
 }
 
+void MockMotionEvent::SetPrimaryPointerId(int id) {
+  DCHECK_GT(GetPointerCount(), 0U);
+  pointer(0).id = id;
+}
+
 std::string ToString(const MotionEvent& event) {
   std::stringstream ss;
   ss << "MotionEvent {"
-     << "\n ID: " << event.GetId() << "\n Action: " << event.GetAction();
+     << "\n Action: " << event.GetAction();
   if (event.GetAction() == MotionEvent::ACTION_POINTER_DOWN ||
       event.GetAction() == MotionEvent::ACTION_POINTER_UP)
     ss << "\n ActionIndex: " << event.GetActionIndex();
@@ -188,6 +193,7 @@ std::string ToString(const MotionEvent& event) {
       DCHECK_GE(pi, 0);
       pointer_ids.clear_first_marked_bit();
       ss << "{"
+          << "\n PointerId: (" << event.GetPointerId(pi) << ")"
          << "\n  Pos: (" << event.GetX(pi) << ", " << event.GetY(pi) << ")"
          << "\n  RawPos: (" << event.GetX(pi) << ", " << event.GetY(pi) << ")"
          << "\n  Size: (" << event.GetTouchMajor(pi) << ", "

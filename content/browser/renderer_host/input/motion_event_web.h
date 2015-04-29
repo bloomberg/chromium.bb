@@ -17,7 +17,7 @@ class MotionEventWeb : public ui::MotionEvent {
   ~MotionEventWeb() override;
 
   // ui::MotionEvent
-  int GetId() const override;
+  uint32 GetUniqueEventId() const override;
   Action GetAction() const override;
   int GetActionIndex() const override;
   size_t GetPointerCount() const override;
@@ -39,6 +39,7 @@ class MotionEventWeb : public ui::MotionEvent {
   blink::WebTouchEvent event_;
   Action cached_action_;
   int cached_action_index_;
+  const uint32 unique_event_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MotionEventWeb);
 };

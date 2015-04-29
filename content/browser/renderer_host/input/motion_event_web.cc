@@ -63,14 +63,15 @@ int GetActionIndexFrom(const WebTouchEvent& event) {
 MotionEventWeb::MotionEventWeb(const WebTouchEvent& event)
     : event_(event),
       cached_action_(GetActionFrom(event)),
-      cached_action_index_(GetActionIndexFrom(event)) {
+      cached_action_index_(GetActionIndexFrom(event)),
+      unique_event_id_(event.uniqueTouchEventId) {
   DCHECK_GT(GetPointerCount(), 0U);
 }
 
 MotionEventWeb::~MotionEventWeb() {}
 
-int MotionEventWeb::GetId() const {
-  return 0;
+uint32 MotionEventWeb::GetUniqueEventId() const {
+  return unique_event_id_;
 }
 
 MotionEventWeb::Action MotionEventWeb::GetAction() const {

@@ -217,7 +217,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       return false;
     if (!pinch_event_sent_) {
       Send(CreateGesture(ET_GESTURE_PINCH_BEGIN,
-                         e.GetId(),
+                         e.GetPointerId(),
                          e.GetToolType(),
                          detector.GetEventTime(),
                          detector.GetFocusX(),
@@ -253,7 +253,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     GestureEventDetails pinch_details(ET_GESTURE_PINCH_UPDATE);
     pinch_details.set_scale(scale);
     Send(CreateGesture(pinch_details,
-                       e.GetId(),
+                       e.GetPointerId(),
                        e.GetToolType(),
                        detector.GetEventTime(),
                        detector.GetFocusX(),
@@ -304,7 +304,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       // Use the co-ordinates from the touch down, as these co-ordinates are
       // used to determine which layer the scroll should affect.
       Send(CreateGesture(scroll_details,
-                         e2.GetId(),
+                         e2.GetPointerId(),
                          e2.GetToolType(),
                          e2.GetEventTime(),
                          e1.GetX(),
@@ -333,7 +333,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       const gfx::PointF raw_center =
           center + gfx::Vector2dF(e2.GetRawOffsetX(), e2.GetRawOffsetY());
       Send(CreateGesture(scroll_details,
-                         e2.GetId(),
+                         e2.GetPointerId(),
                          e2.GetToolType(),
                          e2.GetEventTime(),
                          center.x(),
@@ -393,7 +393,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     GestureEventDetails two_finger_tap_details(
         ET_GESTURE_TWO_FINGER_TAP, e1.GetTouchMajor(), e1.GetTouchMajor());
     Send(CreateGesture(two_finger_tap_details,
-                       e2.GetId(),
+                       e2.GetPointerId(),
                        e2.GetToolType(),
                        e2.GetEventTime(),
                        e1.GetX(),
@@ -541,7 +541,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   GestureEventData CreateGesture(const GestureEventDetails& details,
                                  const MotionEvent& event) {
     return GestureEventData(details,
-                            event.GetId(),
+                            event.GetPointerId(),
                             event.GetToolType(),
                             event.GetEventTime(),
                             event.GetX(),
@@ -772,7 +772,7 @@ void GestureProvider::OnTouchEventHandlingBegin(const MotionEvent& event) {
         const int action_index = event.GetActionIndex();
         gesture_listener_->Send(gesture_listener_->CreateGesture(
             ET_GESTURE_BEGIN,
-            event.GetId(),
+            event.GetPointerId(),
             event.GetToolType(),
             event.GetEventTime(),
             event.GetX(action_index),

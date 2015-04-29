@@ -81,7 +81,6 @@ class MotionEventBufferTest : public testing::Test,
   static void ExpectEqualsImpl(const MotionEvent& a,
                                const MotionEvent& b,
                                bool ignore_history) {
-    EXPECT_EQ(a.GetId(), b.GetId());
     EXPECT_EQ(a.GetAction(), b.GetAction());
     if (a.GetAction() == MotionEvent::ACTION_POINTER_DOWN ||
         a.GetAction() == MotionEvent::ACTION_POINTER_UP) {

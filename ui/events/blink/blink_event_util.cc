@@ -142,6 +142,8 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
       (event.GetEventTime() - base::TimeTicks()).InSecondsF(),
   result.causesScrollingIfUncanceled = may_cause_scrolling;
   result.modifiers = EventFlagsToWebEventModifiers(event.GetFlags());
+  DCHECK_NE(event.GetUniqueEventId(), 0U);
+  result.uniqueTouchEventId = event.GetUniqueEventId();
   result.touchesLength =
       std::min(static_cast<unsigned>(event.GetPointerCount()),
                static_cast<unsigned>(WebTouchEvent::touchesLengthCap));

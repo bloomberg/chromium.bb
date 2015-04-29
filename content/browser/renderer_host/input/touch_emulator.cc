@@ -11,6 +11,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/image/image.h"
@@ -225,6 +226,7 @@ bool TouchEmulator::HandleTouchEvent(const blink::WebTouchEvent& event) {
 
 void TouchEmulator::HandleEmulatedTouchEvent(blink::WebTouchEvent event) {
   DCHECK(gesture_provider_);
+  event.uniqueTouchEventId = ui::GetNextTouchEventId();
   auto result = gesture_provider_->OnTouchEvent(MotionEventWeb(event));
   if (!result.succeeded)
     return;

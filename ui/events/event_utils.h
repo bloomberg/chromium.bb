@@ -28,6 +28,7 @@ namespace base {
 class TimeDelta;
 }
 
+// Common functions to be used for all platforms except Android.
 namespace ui {
 
 class Event;
