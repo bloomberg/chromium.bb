@@ -15,18 +15,12 @@
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::FieldTrialList;
+
 namespace content_settings {
 
-namespace {
-
-const auto& kFieldTrialName = PluginsFieldTrial::kFieldTrialName;
-
-void ForceFieldTrialGroup(const std::string& group_name) {
-  using base::FieldTrialList;
-  ASSERT_TRUE(FieldTrialList::CreateFieldTrial(kFieldTrialName, group_name));
-}
-
-}  // namespace
+const char* kEnableFieldTrial = PluginsFieldTrial::kEnableFieldTrial;
+const char* kForceFieldTrial = PluginsFieldTrial::kForceFieldTrial;
 
 class PluginsFieldTrialTest : public testing::Test {
  public:
@@ -42,48 +36,49 @@ TEST_F(PluginsFieldTrialTest, DisabledByDefault) {
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   ASSERT_FALSE(cl->HasSwitch(plugins::switches::kDisablePluginPowerSaver));
   ASSERT_FALSE(cl->HasSwitch(plugins::switches::kEnablePluginPowerSaver));
-  ASSERT_FALSE(base::FieldTrialList::TrialExists(kFieldTrialName));
+  ASSERT_FALSE(base::FieldTrialList::TrialExists(kEnableFieldTrial));
+  ASSERT_FALSE(base::FieldTrialList::TrialExists(kForceFieldTrial));
   EXPECT_FALSE(PluginsFieldTrial::IsPluginPowerSaverEnabled());
 }
 
-TEST_F(PluginsFieldTrialTest, FieldTrialEnabled) {
-  ForceFieldTrialGroup("Enabled");
+TEST_F(PluginsFieldTrialTest, EnabledByFieldTrial) {
+  ASSERT_TRUE(FieldTrialList::CreateFieldTrial(kForceFieldTrial, "Dogfood"));
   EXPECT_TRUE(PluginsFieldTrial::IsPluginPowerSaverEnabled());
 }
 
-TEST_F(PluginsFieldTrialTest, FieldTrialDisabled) {
-  ForceFieldTrialGroup("Disabled");
+TEST_F(PluginsFieldTrialTest, DisabledByFieldTrial) {
+  ASSERT_TRUE(FieldTrialList::CreateFieldTrial(kEnableFieldTrial, "Disabled"));
   EXPECT_FALSE(PluginsFieldTrial::IsPluginPowerSaverEnabled());
 }
 
-TEST_F(PluginsFieldTrialTest, SwitchEnabled) {
+TEST_F(PluginsFieldTrialTest, EnabledBySwitch) {
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   cl->AppendSwitch(plugins::switches::kEnablePluginPowerSaver);
   EXPECT_TRUE(PluginsFieldTrial::IsPluginPowerSaverEnabled());
 }
 
-TEST_F(PluginsFieldTrialTest, SwitchDisabled) {
+TEST_F(PluginsFieldTrialTest, DisabledBySwitch) {
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   cl->AppendSwitch(plugins::switches::kDisablePluginPowerSaver);
   EXPECT_FALSE(PluginsFieldTrial::IsPluginPowerSaverEnabled());
 }
 
 TEST_F(PluginsFieldTrialTest, SwitchOverridesFieldTrial1) {
-  ForceFieldTrialGroup("Disabled");
+  ASSERT_TRUE(FieldTrialList::CreateFieldTrial(kForceFieldTrial, "Disabled"));
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   cl->AppendSwitch(plugins::switches::kEnablePluginPowerSaver);
   EXPECT_TRUE(PluginsFieldTrial::IsPluginPowerSaverEnabled());
 }
 
 TEST_F(PluginsFieldTrialTest, SwitchOverridesFieldTrial2) {
-  ForceFieldTrialGroup("Enabled");
+  ASSERT_TRUE(FieldTrialList::CreateFieldTrial(kEnableFieldTrial, "Enabled"));
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   cl->AppendSwitch(plugins::switches::kDisablePluginPowerSaver);
   EXPECT_FALSE(PluginsFieldTrial::IsPluginPowerSaverEnabled());
 }
 
 TEST_F(PluginsFieldTrialTest, NoPrefLeftBehind) {
-  ForceFieldTrialGroup("Enabled");
+  ASSERT_TRUE(FieldTrialList::CreateFieldTrial(kEnableFieldTrial, "Enabled"));
   user_prefs::TestingPrefServiceSyncable prefs;
   {
     DefaultProvider::RegisterProfilePrefs(prefs.registry());

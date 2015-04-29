@@ -14,7 +14,11 @@ namespace content_settings {
 // This class manages the Plugins field trials.
 class PluginsFieldTrial {
  public:
-  static const char kFieldTrialName[];
+  // A legacy field trial used to dogfood Plugin Power Saver. Remove soon.
+  static const char kForceFieldTrial[];
+
+  // The field trial responsible for rolling out Plugin Power Saver to users.
+  static const char kEnableFieldTrial[];
 
   // Returns the effective content setting for plugins. Passes non-plugin
   // content settings through without modification.

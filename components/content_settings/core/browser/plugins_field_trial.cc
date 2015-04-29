@@ -8,10 +8,15 @@
 #include "base/metrics/field_trial.h"
 #include "components/plugins/common/plugins_switches.h"
 
+using base::FieldTrialList;
+
 namespace content_settings {
 
 // static
-const char PluginsFieldTrial::kFieldTrialName[] = "ForcePluginPowerSaver";
+const char PluginsFieldTrial::kForceFieldTrial[] = "ForcePluginPowerSaver";
+
+// static
+const char PluginsFieldTrial::kEnableFieldTrial[] = "PluginPowerSaver";
 
 // static
 ContentSetting PluginsFieldTrial::EffectiveContentSetting(
@@ -29,14 +34,21 @@ ContentSetting PluginsFieldTrial::EffectiveContentSetting(
 
 // static
 bool PluginsFieldTrial::IsPluginPowerSaverEnabled() {
+  std::string enable_group = FieldTrialList::FindFullName(kEnableFieldTrial);
+  std::string force_group = FieldTrialList::FindFullName(kForceFieldTrial);
+
   const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(plugins::switches::kDisablePluginPowerSaver))
     return false;
   if (cl->HasSwitch(plugins::switches::kEnablePluginPowerSaver))
     return true;
 
-  std::string group_name = base::FieldTrialList::FindFullName(kFieldTrialName);
-  return !group_name.empty() && group_name != "Disabled";
+  if (!enable_group.empty() && enable_group != "Disabled")
+    return true;
+  if (!force_group.empty() && force_group != "Disabled")
+    return true;
+
+  return false;
 }
 
 // static
