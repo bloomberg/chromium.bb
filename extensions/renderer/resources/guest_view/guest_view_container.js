@@ -59,7 +59,7 @@ GuestViewContainer.registerElement = function(guestViewContainerType) {
 // Create the 'guest' property to track new GuestViews and always listen for
 // their resizes.
 GuestViewContainer.prototype.setupGuestProperty = function() {
-  Object.defineProperty(this, 'guest', {
+  $Object.defineProperty(this, 'guest', {
     get: function() {
       return privates(this).guest;
     }.bind(this),
@@ -184,7 +184,7 @@ GuestViewContainer.prototype.setupAttributes = function() {};
 // Registers the browser plugin <object> custom element. |viewType| is the
 // name of the specific guestview container (e.g. 'webview').
 function registerBrowserPluginElement(viewType) {
-  var proto = Object.create(HTMLObjectElement.prototype);
+  var proto = $Object.create(HTMLElement.prototype);
 
   proto.createdCallback = function() {
     this.setAttribute('type', 'application/browser-plugin');
@@ -220,7 +220,7 @@ function registerBrowserPluginElement(viewType) {
 // |guestViewContainerType| is the type of guestview container
 // (e.g.WebViewImpl).
 function registerGuestViewElement(guestViewContainerType) {
-  var proto = Object.create(HTMLElement.prototype);
+  var proto = $Object.create(HTMLElement.prototype);
 
   proto.createdCallback = function() {
     new guestViewContainerType(this);
