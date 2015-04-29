@@ -1824,6 +1824,16 @@ def CMDgrep(parser, args):
                   'git', 'grep', '--null', '--color=Always'] + args)
 
 
+def CMDroot(parser, args):
+  """Outputs the solution root (or current dir if there isn't one)."""
+  (options, args) = parser.parse_args(args)
+  client = GClient.LoadCurrentConfig(options)
+  if client:
+    print(os.path.abspath(client.root_dir))
+  else:
+    print(os.path.abspath('.'))
+
+
 @subcommand.usage('[url] [safesync url]')
 def CMDconfig(parser, args):
   """Creates a .gclient file in the current directory.
