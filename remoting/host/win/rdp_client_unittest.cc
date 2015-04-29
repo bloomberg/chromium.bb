@@ -57,7 +57,7 @@ static GUID RdpClientModuleLibid = {
 class RdpClientModule : public ATL::CAtlModuleT<RdpClientModule> {
  public:
   RdpClientModule();
-  virtual ~RdpClientModule();
+  ~RdpClientModule() override;
 
   DECLARE_LIBID(RdpClientModuleLibid)
 

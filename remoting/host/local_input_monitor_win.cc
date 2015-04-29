@@ -32,7 +32,7 @@ class LocalInputMonitorWin : public base::NonThreadSafe,
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);
-  ~LocalInputMonitorWin();
+  ~LocalInputMonitorWin() override;
 
  private:
   // The actual implementation resides in LocalInputMonitorWin::Core class.

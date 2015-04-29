@@ -27,10 +27,10 @@ struct EnumDesktopShapeData {
 class DesktopShapeTrackerWin : public DesktopShapeTracker {
  public:
   DesktopShapeTrackerWin();
-  virtual ~DesktopShapeTrackerWin();
+  ~DesktopShapeTrackerWin() override;
 
-  virtual void RefreshDesktopShape();
-  virtual const webrtc::DesktopRegion& desktop_shape();
+  void RefreshDesktopShape() override;
+  const webrtc::DesktopRegion& desktop_shape() override;
 
  private:
   // Callback passed to EnumWindows() to enumerate windows.

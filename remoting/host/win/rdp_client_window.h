@@ -66,7 +66,7 @@ class RdpClientWindow
   RdpClientWindow(const net::IPEndPoint& server_endpoint,
                   const std::string& terminal_id,
                   EventHandler* event_handler);
-  ~RdpClientWindow();
+  ~RdpClientWindow() override;
 
   // Creates the window along with the ActiveX control and initiates the
   // connection. |screen_size| specifies resolution of the screen. Returns false
