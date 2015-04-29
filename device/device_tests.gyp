@@ -49,6 +49,8 @@
         'bluetooth/bluetooth_socket_chromeos_unittest.cc',
         'bluetooth/bluetooth_task_manager_win_unittest.cc',
         'bluetooth/bluetooth_uuid_unittest.cc',
+        'bluetooth/test/test_bluetooth_adapter_observer.cc',
+        'bluetooth/test/test_bluetooth_adapter_observer.h',
         'hid/hid_connection_unittest.cc',
         'hid/hid_device_filter_unittest.cc',
         'hid/hid_report_descriptor_unittest.cc',

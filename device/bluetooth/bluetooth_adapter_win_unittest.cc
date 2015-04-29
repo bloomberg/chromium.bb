@@ -12,6 +12,7 @@
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
+#include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -37,70 +38,6 @@ void MakeDeviceState(const std::string& name,
   state->connected = false;
 }
 
-class AdapterObserver : public device::BluetoothAdapter::Observer {
- public:
-  AdapterObserver() { ResetCounters(); }
-
-  void ResetCounters() {
-    num_present_changed_ = 0;
-    num_powered_changed_ = 0;
-    num_discovering_changed_ = 0;
-    num_device_added_ = 0;
-    num_device_removed_ = 0;
-    num_device_changed_ = 0;
-  }
-
-  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                             bool present) override {
-    num_present_changed_++;
-  }
-
-  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
-                             bool powered) override {
-    num_powered_changed_++;
-  }
-
-  void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
-                                 bool discovering) override {
-    num_discovering_changed_++;
-  }
-
-  void DeviceAdded(device::BluetoothAdapter* adapter,
-                   device::BluetoothDevice* device) override {
-    num_device_added_++;
-  }
-
-  void DeviceRemoved(device::BluetoothAdapter* adapter,
-                     device::BluetoothDevice* device) override {
-    num_device_removed_++;
-  }
-
-  void DeviceChanged(device::BluetoothAdapter* adapter,
-                     device::BluetoothDevice* device) override {
-    num_device_changed_++;
-  }
-
-  int num_present_changed() const { return num_present_changed_; }
-
-  int num_powered_changed() const { return num_powered_changed_; }
-
-  int num_discovering_changed() const { return num_discovering_changed_; }
-
-  int num_device_added() const { return num_device_added_; }
-
-  int num_device_removed() const { return num_device_removed_; }
-
-  int num_device_changed() const { return num_device_changed_; }
-
- private:
-  int num_present_changed_;
-  int num_powered_changed_;
-  int num_discovering_changed_;
-  int num_device_added_;
-  int num_device_removed_;
-  int num_device_changed_;
-};
-
 }  // namespace
 
 namespace device {
@@ -111,22 +48,20 @@ class BluetoothAdapterWinTest : public testing::Test {
       : ui_task_runner_(new base::TestSimpleTaskRunner()),
         bluetooth_task_runner_(new base::TestSimpleTaskRunner()),
         adapter_(new BluetoothAdapterWin(
-          base::Bind(&BluetoothAdapterWinTest::RunInitCallback,
-                     base::Unretained(this)))),
+            base::Bind(&BluetoothAdapterWinTest::RunInitCallback,
+                       base::Unretained(this)))),
         adapter_win_(static_cast<BluetoothAdapterWin*>(adapter_.get())),
+        observer_(adapter_),
         init_callback_called_(false) {
     adapter_win_->InitForTest(ui_task_runner_, bluetooth_task_runner_);
   }
 
   void SetUp() override {
-    adapter_win_->AddObserver(&adapter_observer_);
     num_start_discovery_callbacks_ = 0;
     num_start_discovery_error_callbacks_ = 0;
     num_stop_discovery_callbacks_ = 0;
     num_stop_discovery_error_callbacks_ = 0;
   }
-
-  void TearDown() override { adapter_win_->RemoveObserver(&adapter_observer_); }
 
   void RunInitCallback() {
     init_callback_called_ = true;
@@ -165,7 +100,7 @@ class BluetoothAdapterWinTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> bluetooth_task_runner_;
   scoped_refptr<BluetoothAdapter> adapter_;
   BluetoothAdapterWin* adapter_win_;
-  AdapterObserver adapter_observer_;
+  TestBluetoothAdapterObserver observer_;
   bool init_callback_called_;
   int num_start_discovery_callbacks_;
   int num_start_discovery_error_callbacks_;
@@ -192,24 +127,24 @@ TEST_F(BluetoothAdapterWinTest, AdapterPresentChanged) {
   state.address = kAdapterAddress;
   state.name = kAdapterName;
   adapter_win_->AdapterStateChanged(state);
-  EXPECT_EQ(1, adapter_observer_.num_present_changed());
+  EXPECT_EQ(1, observer_.present_changed_count());
   adapter_win_->AdapterStateChanged(state);
-  EXPECT_EQ(1, adapter_observer_.num_present_changed());
+  EXPECT_EQ(1, observer_.present_changed_count());
   BluetoothTaskManagerWin::AdapterState empty_state;
   adapter_win_->AdapterStateChanged(empty_state);
-  EXPECT_EQ(2, adapter_observer_.num_present_changed());
+  EXPECT_EQ(2, observer_.present_changed_count());
 }
 
 TEST_F(BluetoothAdapterWinTest, AdapterPoweredChanged) {
   BluetoothTaskManagerWin::AdapterState state;
   state.powered = true;
   adapter_win_->AdapterStateChanged(state);
-  EXPECT_EQ(1, adapter_observer_.num_powered_changed());
+  EXPECT_EQ(1, observer_.powered_changed_count());
   adapter_win_->AdapterStateChanged(state);
-  EXPECT_EQ(1, adapter_observer_.num_powered_changed());
+  EXPECT_EQ(1, observer_.powered_changed_count());
   state.powered = false;
   adapter_win_->AdapterStateChanged(state);
-  EXPECT_EQ(2, adapter_observer_.num_powered_changed());
+  EXPECT_EQ(2, observer_.powered_changed_count());
 }
 
 TEST_F(BluetoothAdapterWinTest, AdapterInitialized) {
@@ -235,7 +170,7 @@ TEST_F(BluetoothAdapterWinTest, SingleStartDiscovery) {
   ui_task_runner_->RunPendingTasks();
   EXPECT_TRUE(adapter_->IsDiscovering());
   EXPECT_EQ(1, num_start_discovery_callbacks_);
-  EXPECT_EQ(1, adapter_observer_.num_discovering_changed());
+  EXPECT_EQ(1, observer_.discovering_changed_count());
 }
 
 TEST_F(BluetoothAdapterWinTest, SingleStartDiscoveryFailure) {
@@ -248,7 +183,7 @@ TEST_F(BluetoothAdapterWinTest, SingleStartDiscoveryFailure) {
   ui_task_runner_->RunPendingTasks();
   EXPECT_FALSE(adapter_->IsDiscovering());
   EXPECT_EQ(1, num_start_discovery_error_callbacks_);
-  EXPECT_EQ(0, adapter_observer_.num_discovering_changed());
+  EXPECT_EQ(0, observer_.discovering_changed_count());
 }
 
 TEST_F(BluetoothAdapterWinTest, MultipleStartDiscoveries) {
@@ -269,7 +204,7 @@ TEST_F(BluetoothAdapterWinTest, MultipleStartDiscoveries) {
   ui_task_runner_->RunPendingTasks();
   EXPECT_TRUE(adapter_->IsDiscovering());
   EXPECT_EQ(num_discoveries, num_start_discovery_callbacks_);
-  EXPECT_EQ(1, adapter_observer_.num_discovering_changed());
+  EXPECT_EQ(1, observer_.discovering_changed_count());
 }
 
 TEST_F(BluetoothAdapterWinTest, MultipleStartDiscoveriesFailure) {
@@ -285,7 +220,7 @@ TEST_F(BluetoothAdapterWinTest, MultipleStartDiscoveriesFailure) {
   ui_task_runner_->RunPendingTasks();
   EXPECT_FALSE(adapter_->IsDiscovering());
   EXPECT_EQ(num_discoveries, num_start_discovery_error_callbacks_);
-  EXPECT_EQ(0, adapter_observer_.num_discovering_changed());
+  EXPECT_EQ(0, observer_.discovering_changed_count());
 }
 
 TEST_F(BluetoothAdapterWinTest, MultipleStartDiscoveriesAfterDiscovering) {
@@ -312,7 +247,7 @@ TEST_F(BluetoothAdapterWinTest, MultipleStartDiscoveriesAfterDiscovering) {
     EXPECT_EQ(num_start_discovery_callbacks + 1,
               num_start_discovery_callbacks_);
   }
-  EXPECT_EQ(1, adapter_observer_.num_discovering_changed());
+  EXPECT_EQ(1, observer_.discovering_changed_count());
 }
 
 TEST_F(BluetoothAdapterWinTest, StartDiscoveryAfterDiscoveringFailure) {
@@ -353,7 +288,7 @@ TEST_F(BluetoothAdapterWinTest, SingleStopDiscovery) {
   EXPECT_FALSE(adapter_->IsDiscovering());
   EXPECT_EQ(1, num_stop_discovery_callbacks_);
   EXPECT_TRUE(bluetooth_task_runner_->GetPendingTasks().empty());
-  EXPECT_EQ(2, adapter_observer_.num_discovering_changed());
+  EXPECT_EQ(2, observer_.discovering_changed_count());
 }
 
 TEST_F(BluetoothAdapterWinTest, MultipleStopDiscoveries) {
@@ -384,7 +319,7 @@ TEST_F(BluetoothAdapterWinTest, MultipleStopDiscoveries) {
   ui_task_runner_->RunPendingTasks();
   EXPECT_FALSE(adapter_->IsDiscovering());
   EXPECT_EQ(num_discoveries, num_stop_discovery_callbacks_);
-  EXPECT_EQ(2, adapter_observer_.num_discovering_changed());
+  EXPECT_EQ(2, observer_.discovering_changed_count());
 }
 
 TEST_F(BluetoothAdapterWinTest,
@@ -501,7 +436,7 @@ TEST_F(BluetoothAdapterWinTest, StopDiscoveryBeforeDiscoveryStartedAndFailed) {
   ui_task_runner_->RunPendingTasks();
   EXPECT_EQ(1, num_start_discovery_error_callbacks_);
   EXPECT_EQ(1, num_stop_discovery_callbacks_);
-  EXPECT_EQ(0, adapter_observer_.num_discovering_changed());
+  EXPECT_EQ(0, observer_.discovering_changed_count());
 }
 
 TEST_F(BluetoothAdapterWinTest, DevicesPolled) {
@@ -520,35 +455,35 @@ TEST_F(BluetoothAdapterWinTest, DevicesPolled) {
   devices.push_back(iphone_state);
 
   // Add 3 devices
-  adapter_observer_.ResetCounters();
+  observer_.Reset();
   adapter_win_->DevicesPolled(devices);
-  EXPECT_EQ(3, adapter_observer_.num_device_added());
-  EXPECT_EQ(0, adapter_observer_.num_device_removed());
-  EXPECT_EQ(0, adapter_observer_.num_device_changed());
+  EXPECT_EQ(3, observer_.device_added_count());
+  EXPECT_EQ(0, observer_.device_removed_count());
+  EXPECT_EQ(0, observer_.device_changed_count());
 
   // Change a device name
   android_phone_state->name = "phone2";
-  adapter_observer_.ResetCounters();
+  observer_.Reset();
   adapter_win_->DevicesPolled(devices);
-  EXPECT_EQ(0, adapter_observer_.num_device_added());
-  EXPECT_EQ(0, adapter_observer_.num_device_removed());
-  EXPECT_EQ(1, adapter_observer_.num_device_changed());
+  EXPECT_EQ(0, observer_.device_added_count());
+  EXPECT_EQ(0, observer_.device_removed_count());
+  EXPECT_EQ(1, observer_.device_changed_count());
 
   // Change a device address
   android_phone_state->address = "A1:B2:C3:D4:E5:E6";
-  adapter_observer_.ResetCounters();
+  observer_.Reset();
   adapter_win_->DevicesPolled(devices);
-  EXPECT_EQ(1, adapter_observer_.num_device_added());
-  EXPECT_EQ(1, adapter_observer_.num_device_removed());
-  EXPECT_EQ(0, adapter_observer_.num_device_changed());
+  EXPECT_EQ(1, observer_.device_added_count());
+  EXPECT_EQ(1, observer_.device_removed_count());
+  EXPECT_EQ(0, observer_.device_changed_count());
 
   // Remove a device
   devices.erase(devices.begin());
-  adapter_observer_.ResetCounters();
+  observer_.Reset();
   adapter_win_->DevicesPolled(devices);
-  EXPECT_EQ(0, adapter_observer_.num_device_added());
-  EXPECT_EQ(1, adapter_observer_.num_device_removed());
-  EXPECT_EQ(0, adapter_observer_.num_device_changed());
+  EXPECT_EQ(0, observer_.device_added_count());
+  EXPECT_EQ(1, observer_.device_removed_count());
+  EXPECT_EQ(0, observer_.device_changed_count());
 
   // Add a service
   BluetoothTaskManagerWin::ServiceRecordState* audio_state =
@@ -556,27 +491,27 @@ TEST_F(BluetoothAdapterWinTest, DevicesPolled) {
   audio_state->name = kTestAudioSdpName;
   base::HexStringToBytes(kTestAudioSdpBytes, &audio_state->sdp_bytes);
   laptop_state->service_record_states.push_back(audio_state);
-  adapter_observer_.ResetCounters();
+  observer_.Reset();
   adapter_win_->DevicesPolled(devices);
-  EXPECT_EQ(0, adapter_observer_.num_device_added());
-  EXPECT_EQ(0, adapter_observer_.num_device_removed());
-  EXPECT_EQ(1, adapter_observer_.num_device_changed());
+  EXPECT_EQ(0, observer_.device_added_count());
+  EXPECT_EQ(0, observer_.device_removed_count());
+  EXPECT_EQ(1, observer_.device_changed_count());
 
   // Change a service
   audio_state->name = kTestAudioSdpName2;
-  adapter_observer_.ResetCounters();
+  observer_.Reset();
   adapter_win_->DevicesPolled(devices);
-  EXPECT_EQ(0, adapter_observer_.num_device_added());
-  EXPECT_EQ(0, adapter_observer_.num_device_removed());
-  EXPECT_EQ(1, adapter_observer_.num_device_changed());
+  EXPECT_EQ(0, observer_.device_added_count());
+  EXPECT_EQ(0, observer_.device_removed_count());
+  EXPECT_EQ(1, observer_.device_changed_count());
 
   // Remove a service
   laptop_state->service_record_states.clear();
-  adapter_observer_.ResetCounters();
+  observer_.Reset();
   adapter_win_->DevicesPolled(devices);
-  EXPECT_EQ(0, adapter_observer_.num_device_added());
-  EXPECT_EQ(0, adapter_observer_.num_device_removed());
-  EXPECT_EQ(1, adapter_observer_.num_device_changed());
+  EXPECT_EQ(0, observer_.device_added_count());
+  EXPECT_EQ(0, observer_.device_removed_count());
+  EXPECT_EQ(1, observer_.device_changed_count());
 }
 
 }  // namespace device

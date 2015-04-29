@@ -33,6 +33,8 @@ test("device_unittests") {
     "bluetooth/bluetooth_socket_chromeos_unittest.cc",
     "bluetooth/bluetooth_task_manager_win_unittest.cc",
     "bluetooth/bluetooth_uuid_unittest.cc",
+    "bluetooth/test/test_bluetooth_adapter_observer.cc",
+    "bluetooth/test/test_bluetooth_adapter_observer.h",
     "nfc/nfc_chromeos_unittest.cc",
     "nfc/nfc_ndef_record_unittest.cc",
     "test/run_all_unittests.cc",
