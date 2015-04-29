@@ -983,6 +983,7 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
 
   // Before that commits, a document.write and location.reload can cause the
   // renderer to send a FrameNavigate with page_id -1.
+  // PlzNavigate: this will stop the old navigation and start a new one.
   main_test_rfh()->SendRendererInitiatedNavigationRequest(kExistingURL, true);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(-1, kExistingURL);
@@ -992,7 +993,11 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, delegate->navigation_state_change_count());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation))
+    EXPECT_EQ(4, delegate->navigation_state_change_count());
+  else
+    EXPECT_EQ(2, delegate->navigation_state_change_count());
 
   contents()->SetDelegate(NULL);
 }

@@ -166,10 +166,15 @@ bool FrameTreeNode::IsLoading() const {
       render_manager_.pending_frame_host();
 
   DCHECK(current_frame_host);
-  // TODO(fdegans): Change the implementation logic for PlzNavigate once
-  // DidStartLoading and DidStopLoading are properly called.
-  if (pending_frame_host && pending_frame_host->is_loading())
-    return true;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    if (navigation_request_)
+      return true;
+  } else {
+    if (pending_frame_host && pending_frame_host->is_loading())
+      return true;
+  }
   return current_frame_host->is_loading();
 }
 
@@ -185,22 +190,38 @@ void FrameTreeNode::SetNavigationRequest(
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   ResetNavigationRequest(false);
-  // TODO(clamy): perform the StartLoading logic here.
+
+  // Force the throbber to start to keep it in sync with what is happening in
+  // the UI. Blink doesn't send throb notifications for JavaScript URLs, so it
+  // is not done here either.
+  if (!navigation_request->common_params().url.SchemeIs(
+          url::kJavaScriptScheme)) {
+    // TODO(fdegans): Check if this is a same-document navigation and set the
+    // proper argument.
+    DidStartLoading(true);
+  }
+
   navigation_request_ = navigation_request.Pass();
 }
 
 void FrameTreeNode::ResetNavigationRequest(bool is_commit) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  // Upon commit the current NavigationRequest will be reset. There should be no
-  // cleanup performed since the navigation is still ongoing. If the reset
-  // corresponds to a cancelation, the RenderFrameHostManager should clean up
-  // any speculative RenderFrameHost it created for the navigation.
-  if (navigation_request_ && !is_commit) {
-    // TODO(clamy): perform the StopLoading logic.
-    render_manager_.CleanUpNavigation();
-  }
+  if (!navigation_request_)
+    return;
   navigation_request_.reset();
+
+  // During commit, the clean up of a speculative RenderFrameHost is done in
+  // RenderFrameHostManager::DidNavigateFrame. The load is also still being
+  // tracked.
+  if (is_commit)
+    return;
+
+  // If the reset corresponds to a cancelation, the RenderFrameHostManager
+  // should clean up any speculative RenderFrameHost it created for the
+  // navigation.
+  DidStopLoading();
+  render_manager_.CleanUpNavigation();
 }
 
 bool FrameTreeNode::has_started_loading() const {
