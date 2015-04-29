@@ -333,6 +333,11 @@ bool PresentationServiceImpl::FrameMatches(
          render_frame_host->GetRoutingID() == render_frame_id_;
 }
 
+void PresentationServiceImpl::ListenForSessionMessages(
+    const SessionMessagesCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
 void PresentationServiceImpl::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,

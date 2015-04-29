@@ -211,6 +211,28 @@ void PresentationDispatcher::OnSessionStateChange(
       GetWebPresentationSessionStateFromMojo(session_state));
 }
 
+void PresentationDispatcher::OnSessionMessagesReceived(
+    mojo::Array<presentation::SessionMessagePtr> messages) {
+  if (!controller_)
+    return;
+
+  for (size_t i = 0; i < messages.size(); ++i) {
+    if (messages[i]->type ==
+        presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_TEXT) {
+      controller_->didReceiveSessionTextMessage(
+          new PresentationSessionClient(messages[i]->presentation_url,
+                                        messages[i]->presentation_id),
+          blink::WebString::fromUTF8(messages[i]->message));
+    } else {
+      // TODO(haibinlu): handle binary message
+    }
+  }
+
+  presentation_service_->ListenForSessionMessages(
+      base::Bind(&PresentationDispatcher::OnSessionMessagesReceived,
+                 base::Unretained(this)));
+}
+
 void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
   if (presentation_service_.get())
     return;
@@ -225,6 +247,9 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
       base::Unretained(this)));
   presentation_service_->ListenForSessionStateChange(base::Bind(
       &PresentationDispatcher::OnSessionStateChange,
+      base::Unretained(this)));
+  presentation_service_->ListenForSessionMessages(
+      base::Bind(&PresentationDispatcher::OnSessionMessagesReceived,
       base::Unretained(this)));
   */
 }

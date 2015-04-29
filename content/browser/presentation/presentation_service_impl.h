@@ -64,6 +64,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   using SessionStateCallback =
       mojo::Callback<void(presentation::PresentationSessionInfoPtr,
           presentation::PresentationSessionState)>;
+  using SessionMessagesCallback =
+      mojo::Callback<void(mojo::Array<presentation::SessionMessagePtr>)>;
 
   // A helper data class used by PresentationServiceImpl to do bookkeeping
   // of currently registered screen availability listeners.
@@ -207,6 +209,8 @@ class CONTENT_EXPORT PresentationServiceImpl
       const mojo::String& presentation_id) override;
   void ListenForSessionStateChange(
       const SessionStateCallback& callback) override;
+  void ListenForSessionMessages(
+      const SessionMessagesCallback& callback) override;
 
   // Creates a binding between this object and |request|.
   void Bind(mojo::InterfaceRequest<presentation::PresentationService> request);

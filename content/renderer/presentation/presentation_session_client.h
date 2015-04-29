@@ -19,6 +19,8 @@ class CONTENT_EXPORT PresentationSessionClient
  public:
   explicit PresentationSessionClient(
         presentation::PresentationSessionInfoPtr session_info);
+  explicit PresentationSessionClient(const mojo::String& url,
+                                     const mojo::String& id);
   ~PresentationSessionClient() override;
 
   // WebPresentationSessionClient implementation.

@@ -58,6 +58,8 @@ class CONTENT_EXPORT PresentationDispatcher
   void OnSessionStateChange(
       presentation::PresentationSessionInfoPtr session_info,
       presentation::PresentationSessionState session_state);
+  void OnSessionMessagesReceived(
+      mojo::Array<presentation::SessionMessagePtr> messages);
 
   void ConnectToPresentationServiceIfNeeded();
 

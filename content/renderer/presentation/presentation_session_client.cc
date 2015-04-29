@@ -15,6 +15,12 @@ PresentationSessionClient::PresentationSessionClient(
       id_(blink::WebString::fromUTF8(session_info->id)) {
 }
 
+PresentationSessionClient::PresentationSessionClient(const mojo::String& url,
+                                                     const mojo::String& id)
+    : url_(blink::WebString::fromUTF8(url)),
+      id_(blink::WebString::fromUTF8(id)) {
+}
+
 PresentationSessionClient::~PresentationSessionClient() {
 }
 
