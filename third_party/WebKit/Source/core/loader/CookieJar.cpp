@@ -40,7 +40,7 @@
 
 namespace blink {
 
-static blink::WebCookieJar* toCookieJar(const Document* document)
+static WebCookieJar* toCookieJar(const Document* document)
 {
     if (!document || !document->frame())
         return 0;
@@ -49,7 +49,7 @@ static blink::WebCookieJar* toCookieJar(const Document* document)
 
 String cookies(const Document* document, const KURL& url)
 {
-    blink::WebCookieJar* cookieJar = toCookieJar(document);
+    WebCookieJar* cookieJar = toCookieJar(document);
     if (!cookieJar)
         return String();
     return cookieJar->cookies(url, document->firstPartyForCookies());
@@ -57,7 +57,7 @@ String cookies(const Document* document, const KURL& url)
 
 void setCookies(Document* document, const KURL& url, const String& cookieString)
 {
-    blink::WebCookieJar* cookieJar = toCookieJar(document);
+    WebCookieJar* cookieJar = toCookieJar(document);
     if (!cookieJar)
         return;
     cookieJar->setCookie(url, document->firstPartyForCookies(), cookieString);
@@ -65,7 +65,7 @@ void setCookies(Document* document, const KURL& url, const String& cookieString)
 
 bool cookiesEnabled(const Document* document)
 {
-    blink::WebCookieJar* cookieJar = toCookieJar(document);
+    WebCookieJar* cookieJar = toCookieJar(document);
     if (!cookieJar)
         return false;
     return cookieJar->cookiesEnabled(document->cookieURL(), document->firstPartyForCookies());
@@ -73,10 +73,10 @@ bool cookiesEnabled(const Document* document)
 
 String cookieRequestHeaderFieldValue(const Document* document, const KURL& url)
 {
-    blink::WebCookieJar* cookieJar = toCookieJar(document);
+    WebCookieJar* cookieJar = toCookieJar(document);
     if (!cookieJar)
         return String();
     return cookieJar->cookieRequestHeaderFieldValue(url, document->firstPartyForCookies());
 }
 
-}
+} // namespace blink

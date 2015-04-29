@@ -127,7 +127,7 @@ void EventSource::connect()
     request.setHTTPMethod("GET");
     request.setHTTPHeaderField("Accept", "text/event-stream");
     request.setHTTPHeaderField("Cache-Control", "no-cache");
-    request.setRequestContext(blink::WebURLRequest::RequestContextEventSource);
+    request.setRequestContext(WebURLRequest::RequestContextEventSource);
     if (!m_lastEventId.isEmpty())
         request.setHTTPHeaderField("Last-Event-ID", m_lastEventId);
 

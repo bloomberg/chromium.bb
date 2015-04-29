@@ -70,7 +70,7 @@ static ImageLoader::BypassMainWorldBehavior shouldBypassMainWorldCSP(ImageLoader
     return ImageLoader::DoNotBypassMainWorldCSP;
 }
 
-class ImageLoader::Task : public blink::WebThread::Task {
+class ImageLoader::Task : public WebThread::Task {
 public:
     static PassOwnPtr<Task> create(ImageLoader* loader, UpdateFromElementBehavior updateBehavior)
     {

@@ -48,7 +48,7 @@ namespace blink {
 // data so that they can be run on the worker thread later (by run()).
 class WorkerLoaderClientBridgeSyncHelper : public ThreadableLoaderClient {
 public:
-    static PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> create(ThreadableLoaderClient&, PassOwnPtr<blink::WebWaitableEvent>);
+    static PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> create(ThreadableLoaderClient&, PassOwnPtr<WebWaitableEvent>);
     virtual ~WorkerLoaderClientBridgeSyncHelper();
 
     // Called on the worker context thread.
@@ -66,11 +66,11 @@ public:
     virtual void didFailRedirectCheck() override;
 
 private:
-    WorkerLoaderClientBridgeSyncHelper(ThreadableLoaderClient&, PassOwnPtr<blink::WebWaitableEvent>);
+    WorkerLoaderClientBridgeSyncHelper(ThreadableLoaderClient&, PassOwnPtr<WebWaitableEvent>);
 
     bool m_done;
     ThreadableLoaderClient& m_client;
-    OwnPtr<blink::WebWaitableEvent> m_event;
+    OwnPtr<WebWaitableEvent> m_event;
     Vector<Vector<char>*> m_receivedData;
     Vector<OwnPtr<Closure>> m_clientTasks;
     Mutex m_lock;

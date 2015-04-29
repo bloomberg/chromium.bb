@@ -125,7 +125,7 @@ public:
     virtual void scheduleAnimation() override { }
 
     virtual IntRect viewportToScreen(const IntRect& r) const override { return r; }
-    virtual blink::WebScreenInfo screenInfo() const override { return blink::WebScreenInfo(); }
+    virtual WebScreenInfo screenInfo() const override { return WebScreenInfo(); }
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const override { }
 
     virtual void mouseDidMoveOverElement(const HitTestResult&) override { }
@@ -235,14 +235,14 @@ public:
     virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId) override { }
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) override { return false; }
 
-    virtual blink::WebCookieJar* cookieJar() const override { return 0; }
+    virtual WebCookieJar* cookieJar() const override { return 0; }
 
     virtual void didRequestAutocomplete(HTMLFormElement*) override;
 
-    virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider() override;
+    virtual PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider() override;
     virtual bool isControlledByServiceWorker(DocumentLoader&) override { return false; }
     virtual int64_t serviceWorkerID(DocumentLoader&) override { return -1; }
-    virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) override;
+    virtual PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) override;
 };
 
 class CORE_EXPORT EmptyTextCheckerClient : public TextCheckerClient {
@@ -311,6 +311,6 @@ public:
 
 CORE_EXPORT void fillWithEmptyClients(Page::PageClients&);
 
-}
+} // namespace blink
 
 #endif // EmptyClients_h

@@ -256,7 +256,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
 
     for (const KURL& completeURL : completedURLs) {
         RefPtr<WorkerScriptLoader> scriptLoader(WorkerScriptLoader::create());
-        scriptLoader->setRequestContext(blink::WebURLRequest::RequestContextScript);
+        scriptLoader->setRequestContext(WebURLRequest::RequestContextScript);
         scriptLoader->loadSynchronously(executionContext, completeURL, AllowCrossOriginRequests);
 
         // If the fetching attempt failed, throw a NetworkError exception and abort all these steps.

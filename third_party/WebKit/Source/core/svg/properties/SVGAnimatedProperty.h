@@ -212,7 +212,7 @@ public:
         return this->baseValue()->value();
     }
 
-    void setBaseVal(PrimitiveType value, blink::ExceptionState& exceptionState)
+    void setBaseVal(PrimitiveType value, ExceptionState& exceptionState)
     {
         if (this->isReadOnly()) {
             exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");

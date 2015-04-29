@@ -52,9 +52,9 @@ static unsigned prerenderRelTypesFromRelAttribute(const LinkRelAttribute& relAtt
 {
     unsigned result = 0;
     if (relAttribute.isLinkPrerender())
-        result |= blink::PrerenderRelTypePrerender;
+        result |= PrerenderRelTypePrerender;
     if (relAttribute.isLinkNext())
-        result |= blink::PrerenderRelTypeNext;
+        result |= PrerenderRelTypeNext;
 
     return result;
 }

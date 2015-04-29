@@ -57,7 +57,7 @@ class ResourceRequest;
 // The ping loader is used by audit pings, beacon transmissions and image loads
 // during page unloading.
 //
-class CORE_EXPORT PingLoader : public RefCountedWillBeRefCountedGarbageCollected<PingLoader>, public PageLifecycleObserver, private blink::WebURLLoaderClient {
+class CORE_EXPORT PingLoader : public RefCountedWillBeRefCountedGarbageCollected<PingLoader>, public PageLifecycleObserver, private WebURLLoaderClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PingLoader);
     WTF_MAKE_NONCOPYABLE(PingLoader);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PingLoader);
@@ -83,21 +83,21 @@ protected:
     void dispose();
 
 private:
-    virtual void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) override;
-    virtual void didReceiveData(blink::WebURLLoader*, const char*, int, int) override;
-    virtual void didFinishLoading(blink::WebURLLoader*, double, int64_t) override;
-    virtual void didFail(blink::WebURLLoader*, const blink::WebURLError&) override;
+    virtual void didReceiveResponse(WebURLLoader*, const WebURLResponse&) override;
+    virtual void didReceiveData(WebURLLoader*, const char*, int, int) override;
+    virtual void didFinishLoading(WebURLLoader*, double, int64_t) override;
+    virtual void didFail(WebURLLoader*, const WebURLError&) override;
 
     void timeout(Timer<PingLoader>*);
 
     void didFailLoading(Page*);
 
-    OwnPtr<blink::WebURLLoader> m_loader;
+    OwnPtr<WebURLLoader> m_loader;
     Timer<PingLoader> m_timeout;
     String m_url;
     unsigned long m_identifier;
 };
 
-}
+} // namespace blink
 
 #endif // PingLoader_h

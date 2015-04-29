@@ -195,7 +195,7 @@ private:
     WeakPtr<WorkerThreadCancelableTask> m_lastQueuedTask;
 };
 
-class WorkerThreadTask : public blink::WebThread::Task {
+class WorkerThreadTask : public WebThread::Task {
     WTF_MAKE_NONCOPYABLE(WorkerThreadTask); WTF_MAKE_FAST_ALLOCATED(WorkerThreadTask);
 public:
     static PassOwnPtr<WorkerThreadTask> create(WorkerThread& workerThread, PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
@@ -263,8 +263,8 @@ WorkerThread::WorkerThread(const char* threadName, PassRefPtr<WorkerLoaderProxy>
     , m_workerReportingProxy(workerReportingProxy)
     , m_startupData(startupData)
     , m_isolate(nullptr)
-    , m_shutdownEvent(adoptPtr(blink::Platform::current()->createWaitableEvent()))
-    , m_terminationEvent(adoptPtr(blink::Platform::current()->createWaitableEvent()))
+    , m_shutdownEvent(adoptPtr(Platform::current()->createWaitableEvent()))
+    , m_terminationEvent(adoptPtr(Platform::current()->createWaitableEvent()))
 {
     MutexLocker lock(threadSetMutex());
     workerThreads().add(this);
@@ -484,13 +484,13 @@ void WorkerThread::stopInternal()
 void WorkerThread::didStartRunLoop()
 {
     ASSERT(isCurrentThread());
-    blink::Platform::current()->didStartWorkerRunLoop();
+    Platform::current()->didStartWorkerRunLoop();
 }
 
 void WorkerThread::didStopRunLoop()
 {
     ASSERT(isCurrentThread());
-    blink::Platform::current()->didStopWorkerRunLoop();
+    Platform::current()->didStopWorkerRunLoop();
 }
 
 void WorkerThread::terminateAndWaitForAllWorkers()
@@ -583,8 +583,8 @@ MessageQueueWaitResult WorkerThread::runDebuggerTask(WaitMode waitMode)
 {
     ASSERT(isCurrentThread());
     MessageQueueWaitResult result;
-    double absoluteTime = MessageQueue<blink::WebThread::Task>::infiniteTime();
-    OwnPtr<blink::WebThread::Task> task;
+    double absoluteTime = MessageQueue<WebThread::Task>::infiniteTime();
+    OwnPtr<WebThread::Task> task;
     {
         if (waitMode == DontWaitForMessage)
             absoluteTime = 0.0;

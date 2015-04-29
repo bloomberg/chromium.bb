@@ -162,7 +162,7 @@ void InjectedScriptManager::setCustomObjectFormatterEnabled(bool enabled)
 
 String InjectedScriptManager::injectedScriptSource()
 {
-    const blink::WebData& injectedScriptSourceResource = blink::Platform::current()->loadResource("InjectedScriptSource.js");
+    const WebData& injectedScriptSourceResource = Platform::current()->loadResource("InjectedScriptSource.js");
     return String(injectedScriptSourceResource.data(), injectedScriptSourceResource.size());
 }
 

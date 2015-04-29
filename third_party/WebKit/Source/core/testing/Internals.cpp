@@ -208,7 +208,7 @@ void Internals::resetToConsistentState(Page* page)
     page->setDeviceScaleFactor(1);
     page->setIsCursorVisible(true);
     page->setPageScaleFactor(1, IntPoint(0, 0));
-    blink::overrideUserPreferredLanguages(Vector<AtomicString>());
+    overrideUserPreferredLanguages(Vector<AtomicString>());
     if (!page->deprecatedLocalMainFrame()->spellChecker().isContinuousSpellCheckingEnabled())
         page->deprecatedLocalMainFrame()->spellChecker().toggleContinuousSpellChecking();
     if (page->deprecatedLocalMainFrame()->editor().isOverwriteModeEnabled())
@@ -1122,7 +1122,7 @@ void Internals::setUserPreferredLanguages(const Vector<String>& languages)
     Vector<AtomicString> atomicLanguages;
     for (size_t i = 0; i < languages.size(); ++i)
         atomicLanguages.append(AtomicString(languages[i]));
-    blink::overrideUserPreferredLanguages(atomicLanguages);
+    overrideUserPreferredLanguages(atomicLanguages);
 }
 
 unsigned Internals::activeDOMObjectCount(Document* document)
@@ -1224,7 +1224,7 @@ static DeprecatedPaintLayer* findLayerForGraphicsLayer(DeprecatedPaintLayer* sea
 // of rects returned by an SkRegion (which have been split apart for sorting
 // purposes). No attempt is made to do this efficiently (eg. by relying on the
 // sort criteria of SkRegion).
-static void mergeRects(blink::WebVector<blink::WebRect>& rects)
+static void mergeRects(WebVector<blink::WebRect>& rects)
 {
     for (size_t i = 0; i < rects.size(); ++i) {
         if (rects[i].isEmpty())
@@ -1266,7 +1266,7 @@ static void mergeRects(blink::WebVector<blink::WebRect>& rects)
 
 static void accumulateLayerRectList(DeprecatedPaintLayerCompositor* compositor, GraphicsLayer* graphicsLayer, LayerRectList* rects)
 {
-    blink::WebVector<blink::WebRect> layerRects = graphicsLayer->platformLayer()->touchEventHandlerRegion();
+    WebVector<blink::WebRect> layerRects = graphicsLayer->platformLayer()->touchEventHandlerRegion();
     if (!layerRects.isEmpty()) {
         mergeRects(layerRects);
         String layerType;
@@ -2047,10 +2047,10 @@ int Internals::selectPopupItemStyleFontHeight(Node* node, int itemIndex)
 
 bool Internals::loseSharedGraphicsContext3D()
 {
-    OwnPtr<blink::WebGraphicsContext3DProvider> sharedProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    OwnPtr<WebGraphicsContext3DProvider> sharedProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!sharedProvider)
         return false;
-    blink::WebGraphicsContext3D* sharedContext = sharedProvider->context3d();
+    WebGraphicsContext3D* sharedContext = sharedProvider->context3d();
     sharedContext->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_EXT, GL_INNOCENT_CONTEXT_RESET_EXT);
     // To prevent tests that call loseSharedGraphicsContext3D from being
     // flaky, we call finish so that the context is guaranteed to be lost

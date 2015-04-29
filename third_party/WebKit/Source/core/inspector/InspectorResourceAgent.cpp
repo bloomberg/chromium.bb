@@ -464,7 +464,7 @@ void InspectorResourceAgent::didReceiveCORSRedirectResponse(LocalFrame* frame, u
 {
     // Update the response and finish loading
     didReceiveResourceResponse(frame, identifier, loader, response, resourceLoader);
-    didFinishLoading(identifier, 0, blink::WebURLLoaderClient::kUnknownEncodedDataLength);
+    didFinishLoading(identifier, 0, WebURLLoaderClient::kUnknownEncodedDataLength);
 }
 
 void InspectorResourceAgent::didFailLoading(unsigned long identifier, const ResourceError& error)

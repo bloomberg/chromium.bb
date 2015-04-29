@@ -60,7 +60,7 @@ static LayoutSize sizeFor(HTMLImageElement* image)
 
 static IntSize sizeFor(HTMLVideoElement* video)
 {
-    if (blink::WebMediaPlayer* webMediaPlayer = video->webMediaPlayer())
+    if (WebMediaPlayer* webMediaPlayer = video->webMediaPlayer())
         return webMediaPlayer->naturalSize();
     return IntSize();
 }

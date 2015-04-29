@@ -397,7 +397,7 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
         return;
     m_visibilityState = visibilityState;
 
-    if (visibilityState == blink::PageVisibilityStateVisible)
+    if (visibilityState == PageVisibilityStateVisible)
         setTimerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval());
     else
         setTimerAlignmentInterval(DOMTimer::hiddenPageAlignmentInterval());

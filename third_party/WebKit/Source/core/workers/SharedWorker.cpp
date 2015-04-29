@@ -65,7 +65,7 @@ PassRefPtrWillBeRawPtr<SharedWorker> SharedWorker::create(ExecutionContext* cont
 
     MessageChannel* channel = MessageChannel::create(context);
     worker->m_port = channel->port1();
-    OwnPtr<blink::WebMessagePortChannel> remotePort = channel->port2()->disentangle();
+    OwnPtr<WebMessagePortChannel> remotePort = channel->port2()->disentangle();
     ASSERT(remotePort);
 
     worker->suspendIfNeeded();

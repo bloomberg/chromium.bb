@@ -142,14 +142,14 @@ void EmptyFrameLoaderClient::didRequestAutocomplete(HTMLFormElement*)
 {
 }
 
-PassOwnPtr<blink::WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider()
+PassOwnPtr<WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider()
 {
     return nullptr;
 }
 
-PassOwnPtr<blink::WebApplicationCacheHost> EmptyFrameLoaderClient::createApplicationCacheHost(blink::WebApplicationCacheHostClient*)
+PassOwnPtr<WebApplicationCacheHost> EmptyFrameLoaderClient::createApplicationCacheHost(WebApplicationCacheHostClient*)
 {
     return nullptr;
 }
 
-}
+} // namespace blink

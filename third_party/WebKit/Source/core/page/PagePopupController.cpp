@@ -118,7 +118,7 @@ void PagePopupController::clearPagePopupClient()
 
 void PagePopupController::histogramEnumeration(const String& name, int sample, int boundaryValue)
 {
-    blink::Platform::current()->histogramEnumeration(name.utf8().data(), sample, boundaryValue);
+    Platform::current()->histogramEnumeration(name.utf8().data(), sample, boundaryValue);
 }
 
 void PagePopupController::setWindowRect(int x, int y, int width, int height)
@@ -126,4 +126,4 @@ void PagePopupController::setWindowRect(int x, int y, int width, int height)
     m_popup.setWindowRect(IntRect(x, y, width, height));
 }
 
-}
+} // namespace blink

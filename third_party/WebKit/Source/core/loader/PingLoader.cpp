@@ -67,7 +67,7 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
     }
 
     ResourceRequest request(url);
-    request.setRequestContext(blink::WebURLRequest::RequestContextPing);
+    request.setRequestContext(WebURLRequest::RequestContextPing);
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
     frame->document()->fetcher()->context().addAdditionalRequestHeaders(request, FetchSubresource);
     frame->document()->fetcher()->context().setFirstPartyForCookies(request);
@@ -81,7 +81,7 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
 void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const KURL& destinationURL)
 {
     ResourceRequest request(pingURL);
-    request.setRequestContext(blink::WebURLRequest::RequestContextPing);
+    request.setRequestContext(WebURLRequest::RequestContextPing);
     request.setHTTPMethod("POST");
     request.setHTTPContentType("text/ping");
     request.setHTTPBody(FormData::create("PING"));
@@ -110,7 +110,7 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
 void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType type)
 {
     ResourceRequest request(reportURL);
-    request.setRequestContext(blink::WebURLRequest::RequestContextPing);
+    request.setRequestContext(WebURLRequest::RequestContextPing);
     request.setHTTPMethod("POST");
     request.setHTTPContentType(type == ContentSecurityPolicyViolationReport ? "application/csp-report" : "application/json");
     request.setHTTPBody(report);
@@ -143,9 +143,9 @@ PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchI
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorSendRequestEvent::data(m_identifier, frame, request));
     InspectorInstrumentation::willSendRequest(frame, m_identifier, frame->loader().documentLoader(), request, ResourceResponse(), initiatorInfo);
 
-    m_loader = adoptPtr(blink::Platform::current()->createURLLoader());
+    m_loader = adoptPtr(Platform::current()->createURLLoader());
     ASSERT(m_loader);
-    blink::WrappedResourceRequest wrappedRequest(request);
+    WrappedResourceRequest wrappedRequest(request);
     wrappedRequest.setAllowStoredCredentials(credentialsAllowed == AllowStoredCredentials);
     m_loader->loadAsynchronously(wrappedRequest, this);
 
@@ -169,7 +169,7 @@ void PingLoader::dispose()
     deref();
 }
 
-void PingLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse& response)
+void PingLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& response)
 {
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
@@ -180,7 +180,7 @@ void PingLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLRes
     dispose();
 }
 
-void PingLoader::didReceiveData(blink::WebURLLoader*, const char*, int, int)
+void PingLoader::didReceiveData(WebURLLoader*, const char*, int, int)
 {
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
@@ -189,7 +189,7 @@ void PingLoader::didReceiveData(blink::WebURLLoader*, const char*, int, int)
     dispose();
 }
 
-void PingLoader::didFinishLoading(blink::WebURLLoader*, double, int64_t)
+void PingLoader::didFinishLoading(WebURLLoader*, double, int64_t)
 {
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
@@ -198,7 +198,7 @@ void PingLoader::didFinishLoading(blink::WebURLLoader*, double, int64_t)
     dispose();
 }
 
-void PingLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& resourceError)
+void PingLoader::didFail(WebURLLoader*, const WebURLError& resourceError)
 {
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
@@ -228,4 +228,4 @@ DEFINE_TRACE(PingLoader)
     PageLifecycleObserver::trace(visitor);
 }
 
-}
+} // namespace blink

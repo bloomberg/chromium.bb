@@ -45,15 +45,6 @@
 #include <v8.h>
 
 namespace blink {
-class WebCookieJar;
-class WebRTCPeerConnectionHandler;
-class WebServiceWorkerProvider;
-class WebSocketHandle;
-class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
-}
-
-namespace blink {
 
     class Document;
     class DocumentLoader;
@@ -72,6 +63,12 @@ namespace blink {
     class SecurityOrigin;
     class SharedWorkerRepositoryClient;
     class SubstituteData;
+    class WebApplicationCacheHost;
+    class WebApplicationCacheHostClient;
+    class WebCookieJar;
+    class WebRTCPeerConnectionHandler;
+    class WebServiceWorkerProvider;
+    class WebSocketHandle;
     class Widget;
 
     class CORE_EXPORT FrameLoaderClient : public FrameClient {
@@ -191,15 +188,15 @@ namespace blink {
         // This callback is similar, but for plugins.
         virtual void didNotAllowPlugins() { }
 
-        virtual blink::WebCookieJar* cookieJar() const = 0;
+        virtual WebCookieJar* cookieJar() const = 0;
 
         virtual void didChangeName(const String&) { }
 
         virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) { }
 
-        virtual void dispatchWillOpenWebSocket(blink::WebSocketHandle*) { }
+        virtual void dispatchWillOpenWebSocket(WebSocketHandle*) { }
 
-        virtual void dispatchWillStartUsingPeerConnectionHandler(blink::WebRTCPeerConnectionHandler*) { }
+        virtual void dispatchWillStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler*) { }
 
         virtual void didRequestAutocomplete(HTMLFormElement*) = 0;
 
@@ -213,7 +210,7 @@ namespace blink {
 
         virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) { }
 
-        virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider() = 0;
+        virtual PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider() = 0;
 
         virtual bool isControlledByServiceWorker(DocumentLoader&) = 0;
 
@@ -221,7 +218,7 @@ namespace blink {
 
         virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return 0; }
 
-        virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) = 0;
+        virtual PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) = 0;
 
         virtual void didStopAllLoaders() { }
 

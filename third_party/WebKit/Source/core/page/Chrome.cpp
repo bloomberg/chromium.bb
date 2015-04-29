@@ -74,7 +74,7 @@ IntRect Chrome::viewportToScreen(const IntRect& rect) const
     return m_client->viewportToScreen(rect);
 }
 
-blink::WebScreenInfo Chrome::screenInfo() const
+WebScreenInfo Chrome::screenInfo() const
 {
     return m_client->screenInfo();
 }

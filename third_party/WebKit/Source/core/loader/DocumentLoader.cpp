@@ -358,7 +358,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 
 static bool canShowMIMEType(const String& mimeType, Page* page)
 {
-    if (blink::Platform::current()->mimeRegistry()->supportsMIMEType(mimeType) == blink::WebMimeRegistry::IsSupported)
+    if (Platform::current()->mimeRegistry()->supportsMIMEType(mimeType) == WebMimeRegistry::IsSupported)
         return true;
     PluginData* pluginData = page->pluginData();
     return !mimeType.isEmpty() && pluginData && pluginData->supportsMimeType(mimeType);

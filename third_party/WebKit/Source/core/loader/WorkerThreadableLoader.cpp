@@ -67,12 +67,12 @@ WorkerThreadableLoader::~WorkerThreadableLoader()
 
 void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& workerGlobalScope, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
-    blink::WebWaitableEvent* shutdownEvent =
+    WebWaitableEvent* shutdownEvent =
         workerGlobalScope.thread()->shutdownEvent();
-    OwnPtr<blink::WebWaitableEvent> loaderDone =
-        adoptPtr(blink::Platform::current()->createWaitableEvent());
+    OwnPtr<WebWaitableEvent> loaderDone =
+        adoptPtr(Platform::current()->createWaitableEvent());
 
-    Vector<blink::WebWaitableEvent*> events;
+    Vector<WebWaitableEvent*> events;
     events.append(shutdownEvent);
     events.append(loaderDone.get());
 
@@ -84,10 +84,10 @@ void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope& worker
 
     RefPtr<WorkerThreadableLoader> loader = WorkerThreadableLoader::create(workerGlobalScope, clientWrapper, clientBridge.release(), request, options, resourceLoaderOptions);
 
-    blink::WebWaitableEvent* signalled;
+    WebWaitableEvent* signalled;
     {
         SafePointScope scope(ThreadState::HeapPointersOnStack);
-        signalled = blink::Platform::current()->waitMultipleEvents(events);
+        signalled = Platform::current()->waitMultipleEvents(events);
     }
     if (signalled == shutdownEvent) {
         loader->cancel();

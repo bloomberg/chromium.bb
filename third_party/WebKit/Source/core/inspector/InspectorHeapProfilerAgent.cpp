@@ -84,7 +84,7 @@ void InspectorHeapProfilerAgent::restore()
         startTrackingHeapObjectsInternal(m_state->getBoolean(HeapProfilerAgentState::allocationTrackingEnabled));
 }
 
-void InspectorHeapProfilerAgent::collectGarbage(blink::ErrorString*)
+void InspectorHeapProfilerAgent::collectGarbage(ErrorString*)
 {
     ScriptProfiler::collectGarbage();
 }

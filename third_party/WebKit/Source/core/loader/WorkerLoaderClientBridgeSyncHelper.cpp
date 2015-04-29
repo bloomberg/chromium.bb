@@ -42,7 +42,7 @@
 
 namespace blink {
 
-PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> WorkerLoaderClientBridgeSyncHelper::create(ThreadableLoaderClient& client, PassOwnPtr<blink::WebWaitableEvent> event)
+PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> WorkerLoaderClientBridgeSyncHelper::create(ThreadableLoaderClient& client, PassOwnPtr<WebWaitableEvent> event)
 {
     return adoptPtr(new WorkerLoaderClientBridgeSyncHelper(client, event));
 }
@@ -147,7 +147,7 @@ void WorkerLoaderClientBridgeSyncHelper::didFailRedirectCheck()
     m_event->signal();
 }
 
-WorkerLoaderClientBridgeSyncHelper::WorkerLoaderClientBridgeSyncHelper(ThreadableLoaderClient& client, PassOwnPtr<blink::WebWaitableEvent> event)
+WorkerLoaderClientBridgeSyncHelper::WorkerLoaderClientBridgeSyncHelper(ThreadableLoaderClient& client, PassOwnPtr<WebWaitableEvent> event)
     : m_done(false)
     , m_client(client)
     , m_event(event)

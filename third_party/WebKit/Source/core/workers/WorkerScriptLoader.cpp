@@ -46,7 +46,7 @@ WorkerScriptLoader::WorkerScriptLoader()
     , m_failed(false)
     , m_identifier(0)
     , m_finishing(false)
-    , m_requestContext(blink::WebURLRequest::RequestContextWorker)
+    , m_requestContext(WebURLRequest::RequestContextWorker)
 {
 }
 
