@@ -4,9 +4,10 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
+var promise;
 function testFunction()
 {
-    var promise = new Promise(function promiseConstructor(resolve, reject) {
+    promise = new Promise(function promiseConstructor(resolve, reject) {
         resolve("Resolved!");
     });
     promise
@@ -38,19 +39,25 @@ var test = function ()
         if (typeof minPromiseId === "undefined")
             minPromiseId = promise.id;
 
-        InspectorTest.assertTrue(promise.creationTime > 0, "FAIL: invalid Promise creation time.");
-        InspectorTest.assertTrue(!promise.settlementTime || (promise.settlementTime >= promise.creationTime), "FAIL: invalid Promise creation or settlement time.");
         var parentId = promise.parentId ? promise.parentId - minPromiseId : undefined;
-        var promiseInfo = "Promise (" + eventType + "):" +
-                          "\n    id: " + (promise.id - minPromiseId) +
-                          "\n    status: " + promise.status +
-                          "\n    parent id: " + parentId;
-        var callFrame = promise.callFrame;
-        if (callFrame) {
-            var url = WebInspector.displayNameForURL(callFrame.url);
-            promiseInfo += "\n    " + callFrame.functionName + " " + url + ":" + callFrame.lineNumber;
+        var promiseInfo = [];
+        promiseInfo.push("Promise (" + eventType + "):");
+        if (eventType !== "gc") {
+            promiseInfo.push("id: " + (promise.id - minPromiseId));
+            promiseInfo.push("status: " + promise.status);
+            if (parentId)
+                promiseInfo.push("parent id: " + parentId);
+            var callFrame = promise.callFrame;
+            if (callFrame) {
+                var url = WebInspector.displayNameForURL(callFrame.url);
+                promiseInfo.push(callFrame.functionName + " " + url + ":" + callFrame.lineNumber);
+            }
+            if (promise.creationTime)
+                promiseInfo.push("creationTime: " + (promise.creationTime > 0));
+            if (promise.settlementTime)
+                promiseInfo.push("settlementTime: " + (promise.settlementTime > 0));
         }
-        InspectorTest.addResult(promiseInfo);
+        InspectorTest.addResult(promiseInfo.join("\n    "));
     }
 
     function step1()
@@ -66,6 +73,12 @@ var test = function ()
 
     function didGetPromiseById(error, response)
     {
+        if (error) {
+            InspectorTest.addResult("Failed to get promise by id: " + error);
+            InspectorTest.DebuggerAgent.disablePromiseTracker();
+            InspectorTest.completeDebuggerTest();
+            return;
+        }
         InspectorTest.addResult("Got promise by id: " + !error);
         InspectorTest.addResult("Resolved object class: " + response.className);
         InspectorTest.RuntimeAgent.getProperties(response.objectId, didGetProperties);

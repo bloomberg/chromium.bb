@@ -162,7 +162,6 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_pendingTraceAsyncOperationCompleted(false)
     , m_startingStepIntoAsync(false)
 {
-    m_promiseTracker = PromiseTracker::create(this);
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
 }
 
@@ -175,6 +174,7 @@ InspectorDebuggerAgent::~InspectorDebuggerAgent()
 
 void InspectorDebuggerAgent::init()
 {
+    m_promiseTracker = PromiseTracker::create(this, scriptDebugServer().isolate());
     // FIXME: make breakReason optional so that there was no need to init it with "other".
     clearBreakDetails();
     m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, ScriptDebugServer::DontPauseOnExceptions);

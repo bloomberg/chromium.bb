@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/inspector/PromiseTracker.h"
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -20,204 +19,66 @@ using blink::TypeBuilder::Debugger::PromiseDetails;
 
 namespace blink {
 
-class PromiseTracker::PromiseData final : public RefCountedWillBeGarbageCollectedFinalized<PromiseData> {
+class PromiseTracker::PromiseWeakCallbackData final {
+    WTF_MAKE_NONCOPYABLE(PromiseWeakCallbackData);
 public:
-    static PassRefPtrWillBeRawPtr<PromiseData> create(ScriptState* scriptState, int promiseHash, int promiseId, v8::Local<v8::Object> promise)
+    PromiseWeakCallbackData(PromiseTracker* tracker, int id)
+        : m_tracker(tracker->m_weakPtrFactory.createWeakPtr())
+        , m_id(id)
     {
-        return adoptRefWillBeNoop(new PromiseData(scriptState, promiseHash, promiseId, promise));
     }
 
-    int promiseHash() const { return m_promiseHash; }
-    int promiseId() const { return m_promiseId; }
-    ScopedPersistent<v8::Object>& promise() { return m_promise; }
-
-#if ENABLE(OILPAN)
-    void dispose()
+    ~PromiseWeakCallbackData()
     {
-        m_promise.clear();
-        m_parentPromise.clear();
-    }
-#else
-    WeakPtr<PromiseData> createWeakPtr()
-    {
-        return m_weakPtrFactory.createWeakPtr();
-    }
-#endif
-
-    PassRefPtr<PromiseDetails> toPromiseDetails() const
-    {
-        PromiseDetails::Status::Enum status;
-        if (!m_status)
-            status = PromiseDetails::Status::Pending;
-        else if (m_status == 1)
-            status = PromiseDetails::Status::Resolved;
-        else
-            status = PromiseDetails::Status::Rejected;
+        if (!m_tracker)
+            return;
         RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create()
-            .setId(m_promiseId)
-            .setStatus(status);
-        if (m_parentPromiseId)
-            promiseDetails->setParentId(m_parentPromiseId);
-        if (m_creationStack)
-            promiseDetails->setCallFrame(m_creationStack->at(0).buildInspectorObject());
-        if (m_creationTime)
-            promiseDetails->setCreationTime(m_creationTime);
-        if (m_settlementTime)
-            promiseDetails->setSettlementTime(m_settlementTime);
-        if (m_creationStack && m_fullCreationStack) {
-            promiseDetails->setCreationStack(m_creationStack->buildInspectorArray());
-            RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = m_creationStack->asyncCallStack();
-            if (asyncCallStack)
-                promiseDetails->setAsyncCreationStack(asyncCallStack->buildInspectorObject());
-        }
-        if (m_settlementStack) {
-            promiseDetails->setSettlementStack(m_settlementStack->buildInspectorArray());
-            RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = m_settlementStack->asyncCallStack();
-            if (asyncCallStack)
-                promiseDetails->setAsyncSettlementStack(asyncCallStack->buildInspectorObject());
-        }
-        return promiseDetails.release();
+            .setId(m_id)
+            .setStatus(PromiseDetails::Status::Pending); // FIXME: drop this parameter
+        m_tracker->m_listener->didUpdatePromise(InspectorFrontend::Debugger::EventType::Gc, promiseDetails.release());
     }
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_creationStack);
-        visitor->trace(m_settlementStack);
-    }
-
-private:
-    friend class PromiseTracker;
-
-    PromiseData(ScriptState* scriptState, int promiseHash, int promiseId, v8::Local<v8::Object> promise)
-        : m_scriptState(scriptState)
-        , m_promiseHash(promiseHash)
-        , m_promiseId(promiseId)
-        , m_promise(scriptState->isolate(), promise)
-        , m_parentPromiseId(0)
-        , m_status(0)
-        , m_fullCreationStack(false)
-        , m_creationTime(0)
-        , m_settlementTime(0)
-#if !ENABLE(OILPAN)
-        , m_weakPtrFactory(this)
-#endif
-    {
-    }
-
-    RefPtr<ScriptState> m_scriptState;
-    int m_promiseHash;
-    int m_promiseId;
-    ScopedPersistent<v8::Object> m_promise;
-    int m_parentPromiseId;
-    int m_status;
-    RefPtrWillBeMember<ScriptCallStack> m_creationStack;
-    RefPtrWillBeMember<ScriptCallStack> m_settlementStack;
-    bool m_fullCreationStack;
-    ScopedPersistent<v8::Object> m_parentPromise;
-    double m_creationTime;
-    double m_settlementTime;
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<PromiseData> m_weakPtrFactory;
-#endif
+    WeakPtr<PromiseTracker> m_tracker;
+    int m_id;
 };
 
-static int indexOf(PromiseTracker::PromiseDataVector* vector, const ScopedPersistent<v8::Object>& promise)
+PromiseTracker::IdToPromiseMapTraits::WeakCallbackDataType* PromiseTracker::IdToPromiseMapTraits::WeakCallbackParameter(MapType* map, int key, v8::Local<v8::Object>& value)
 {
-    for (size_t index = 0; index < vector->size(); ++index) {
-        if (vector->at(index)->promise() == promise)
-            return index;
-    }
-    return -1;
+    // This method is called when promise is added into the map, hence the map must be alive at this point. The tracker in turn must be alive too.
+    PromiseTracker* tracker = reinterpret_cast<PromiseTracker*>(reinterpret_cast<intptr_t>(map) - offsetof(PromiseTracker, m_idToPromise));
+    return new PromiseWeakCallbackData(tracker, key);
 }
 
-namespace {
-
-class PromiseDataWrapper final : public NoBaseWillBeGarbageCollected<PromiseDataWrapper> {
-public:
-    static PassOwnPtrWillBeRawPtr<PromiseDataWrapper> create(PromiseTracker::PromiseData* data, PromiseTracker* tracker)
-    {
-#if ENABLE(OILPAN)
-        return new PromiseDataWrapper(data, tracker);
-#else
-        return adoptPtr(new PromiseDataWrapper(data->createWeakPtr(), tracker));
-#endif
-    }
-
-#if ENABLE(OILPAN)
-    static void didRemovePromise(const v8::WeakCallbackInfo<Persistent<PromiseDataWrapper>>& data)
-#else
-    static void didRemovePromise(const v8::WeakCallbackInfo<PromiseDataWrapper>& data)
-#endif
-    {
-#if ENABLE(OILPAN)
-        OwnPtr<Persistent<PromiseDataWrapper> > persistentWrapper = adoptPtr(data.GetParameter());
-        RawPtr<PromiseDataWrapper> wrapper = *persistentWrapper;
-#else
-        OwnPtr<PromiseDataWrapper> wrapper = adoptPtr(data.GetParameter());
-#endif
-        WeakPtrWillBeRawPtr<PromiseTracker::PromiseData> promiseData = wrapper->m_data;
-        if (!promiseData || !wrapper->m_tracker) {
-            // Hitting this would mean the v8 object can't be disposed.
-            ASSERT_NOT_REACHED();
-            return;
-        }
-
-        PromiseTracker::Listener* listener = wrapper->m_tracker->listener();
-        if (listener)
-            listener->didUpdatePromise(InspectorFrontend::Debugger::EventType::Gc, promiseData->toPromiseDetails());
-
-        wrapper->m_tracker->promiseIdToDataMap().remove(promiseData->promiseId());
-
-#if ENABLE(OILPAN)
-        // Oilpan: let go of ScopedPersistent<>s right here (and not wait until the
-        // PromiseDataWrapper is GCed later.) The v8 weak callback handling expects
-        // to see the callback data upon return.
-        promiseData->dispose();
-#endif
-        PromiseTracker::PromiseDataMap& map = wrapper->m_tracker->promiseDataMap();
-        int promiseHash = promiseData->promiseHash();
-
-        PromiseTracker::PromiseDataMap::iterator it = map.find(promiseHash);
-        // The PromiseTracker may have been disabled (and, possibly, re-enabled later),
-        // leaving the promiseHash as unmapped.
-        if (it == map.end())
-            return;
-
-        PromiseTracker::PromiseDataVector* vector = &it->value;
-        int index = indexOf(vector, promiseData->promise());
-        ASSERT(index >= 0);
-        vector->remove(index);
-        if (vector->isEmpty())
-            map.remove(promiseHash);
-    }
-
-    DEFINE_INLINE_TRACE()
-    {
-#if ENABLE(OILPAN)
-        visitor->trace(m_data);
-        visitor->trace(m_tracker);
-#endif
-    }
-
-private:
-    PromiseDataWrapper(WeakPtrWillBeRawPtr<PromiseTracker::PromiseData> data, PromiseTracker* tracker)
-        : m_data(data)
-        , m_tracker(tracker)
-    {
-    }
-
-    WeakPtrWillBeWeakMember<PromiseTracker::PromiseData> m_data;
-    RawPtrWillBeWeakMember<PromiseTracker> m_tracker;
-};
-
+void PromiseTracker::IdToPromiseMapTraits::DisposeCallbackData(WeakCallbackDataType* callbackData)
+{
+    delete callbackData;
 }
 
-PromiseTracker::PromiseTracker(Listener* listener)
+void PromiseTracker::IdToPromiseMapTraits::DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
+{
+    delete data.GetParameter();
+}
+
+PromiseTracker::IdToPromiseMapTraits::MapType* PromiseTracker::IdToPromiseMapTraits::MapFromWeakCallbackInfo(const v8::WeakCallbackInfo<WeakCallbackDataType>& info)
+{
+    return &info.GetParameter()->m_tracker->m_idToPromise;
+}
+
+int PromiseTracker::IdToPromiseMapTraits::KeyFromWeakCallbackInfo(const v8::WeakCallbackInfo<WeakCallbackDataType>& info)
+{
+    return info.GetParameter()->m_id;
+}
+
+PromiseTracker::PromiseTracker(Listener* listener, v8::Isolate* isolate)
     : m_circularSequentialId(0)
     , m_isEnabled(false)
     , m_captureStacks(false)
     , m_listener(listener)
+    , m_isolate(isolate)
+    , m_weakPtrFactory(this)
+    , m_idToPromise(isolate)
 {
+    clear();
 }
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PromiseTracker);
@@ -225,8 +86,6 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PromiseTracker);
 DEFINE_TRACE(PromiseTracker)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_promiseDataMap);
-    visitor->trace(m_promiseIdToDataMap);
     visitor->trace(m_listener);
 #endif
 }
@@ -241,8 +100,9 @@ void PromiseTracker::setEnabled(bool enabled, bool captureStacks)
 
 void PromiseTracker::clear()
 {
-    m_promiseDataMap.clear();
-    m_promiseIdToDataMap.clear();
+    v8::HandleScope scope(m_isolate);
+    m_promiseToId.Reset(m_isolate, v8::NativeWeakMap::New(m_isolate));
+    m_idToPromise.Clear();
 }
 
 int PromiseTracker::circularSequentialId()
@@ -253,37 +113,20 @@ int PromiseTracker::circularSequentialId()
     return m_circularSequentialId;
 }
 
-PassRefPtrWillBeRawPtr<PromiseTracker::PromiseData> PromiseTracker::createPromiseDataIfNeeded(ScriptState* scriptState, v8::Local<v8::Object> promise)
+int PromiseTracker::promiseId(v8::Local<v8::Object> promise, bool* isNewPromise)
 {
-    int promiseHash = promise->GetIdentityHash();
-    RawPtr<PromiseDataVector> vector = nullptr;
-    PromiseDataMap::iterator it = m_promiseDataMap.find(promiseHash);
-    if (it != m_promiseDataMap.end()) {
-        vector = &it->value;
-        int index = indexOf(vector, ScopedPersistent<v8::Object>(scriptState->isolate(), promise));
-        if (index != -1)
-            return vector->at(index);
-    } else {
-        vector = &m_promiseDataMap.add(promiseHash, PromiseDataVector()).storedValue->value;
+    v8::HandleScope scope(m_isolate);
+    v8::Local<v8::NativeWeakMap> map = v8::Local<v8::NativeWeakMap>::New(m_isolate, m_promiseToId);
+    v8::Local<v8::Value> value = map->Get(promise);
+    if (value->IsInt32()) {
+        *isNewPromise = false;
+        return value.As<v8::Int32>()->Value();
     }
-
-    // FIXME: Consider using the ScriptState's DOMWrapperWorld instead
-    // to handle the lifetime of PromiseDataWrapper, avoiding all this
-    // manual labor to achieve the same, with and without Oilpan.
-    int promiseId = circularSequentialId();
-    RefPtrWillBeRawPtr<PromiseData> data = PromiseData::create(scriptState, promiseHash, promiseId, promise);
-    OwnPtrWillBeRawPtr<PromiseDataWrapper> dataWrapper = PromiseDataWrapper::create(data.get(), this);
-#if ENABLE(OILPAN)
-    OwnPtr<Persistent<PromiseDataWrapper> > wrapper = adoptPtr(new Persistent<PromiseDataWrapper>(dataWrapper));
-#else
-    OwnPtr<PromiseDataWrapper> wrapper = dataWrapper.release();
-#endif
-    data->m_promise.setWeak(wrapper.leakPtr(), &PromiseDataWrapper::didRemovePromise);
-    vector->append(data);
-
-    m_promiseIdToDataMap.set(promiseId, data);
-
-    return data.release();
+    *isNewPromise = true;
+    int id = circularSequentialId();
+    map->Set(promise, v8::Int32::New(m_isolate, id));
+    m_idToPromise.Set(id, promise);
+    return id;
 }
 
 void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
@@ -291,68 +134,72 @@ void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Loca
     ASSERT(isEnabled());
     ASSERT(scriptState->contextIsValid());
 
-    ScriptState::Scope scope(scriptState);
-    InspectorFrontend::Debugger::EventType::Enum eventType = InspectorFrontend::Debugger::EventType::Update;
+    bool isNewPromise = false;
+    int id = promiseId(promise, &isNewPromise);
 
-    RefPtrWillBeRawPtr<PromiseData> data = createPromiseDataIfNeeded(scriptState, promise);
+    ScriptState::Scope scope(scriptState);
+    InspectorFrontend::Debugger::EventType::Enum eventType = isNewPromise ? InspectorFrontend::Debugger::EventType::New : InspectorFrontend::Debugger::EventType::Update;
+
+    PromiseDetails::Status::Enum promiseStatus;
+    switch (status) {
+    case 0:
+        promiseStatus = PromiseDetails::Status::Pending;
+        break;
+    case 1:
+        promiseStatus = PromiseDetails::Status::Resolved;
+        break;
+    default:
+        promiseStatus = PromiseDetails::Status::Rejected;
+    };
+    RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create()
+        .setId(id)
+        .setStatus(promiseStatus);
+
     if (!parentPromise.IsEmpty() && parentPromise->IsObject()) {
         v8::Local<v8::Object> handle = parentPromise->ToObject(scriptState->isolate());
-        RefPtrWillBeRawPtr<PromiseData> parentData = createPromiseDataIfNeeded(scriptState, handle);
-        data->m_parentPromiseId = parentData->m_promiseId;
-        data->m_parentPromise.set(scriptState->isolate(), handle);
+        bool parentIsNewPromise = false;
+        int parentPromiseId = promiseId(handle, &parentIsNewPromise);
+        promiseDetails->setParentId(parentPromiseId);
     } else {
-        ASSERT(!data->m_status);
-        data->m_status = status;
         if (!status) {
-            if (!data->m_creationTime) {
-                data->m_creationTime = currentTimeMS();
-                eventType = InspectorFrontend::Debugger::EventType::New;
-            }
-            if (!data->m_creationStack) {
+            if (isNewPromise) {
+                promiseDetails->setCreationTime(currentTimeMS());
                 RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(m_captureStacks ? ScriptCallStack::maxCallStackSizeToCapture : 1, true);
                 if (stack && stack->size()) {
-                    data->m_creationStack = stack;
-                    data->m_fullCreationStack = m_captureStacks;
+                    promiseDetails->setCallFrame(stack->at(0).buildInspectorObject());
+                    if (m_captureStacks) {
+                        promiseDetails->setCreationStack(stack->buildInspectorArray());
+                        RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = stack->asyncCallStack();
+                        if (asyncCallStack)
+                            promiseDetails->setAsyncCreationStack(asyncCallStack->buildInspectorObject());
+                    }
                 }
             }
-        } else if (!data->m_settlementTime) {
-            data->m_settlementTime = currentTimeMS();
+        } else {
+            promiseDetails->setSettlementTime(currentTimeMS());
             if (m_captureStacks) {
                 RefPtrWillBeRawPtr<ScriptCallStack> stack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
-                if (stack && stack->size())
-                    data->m_settlementStack = stack;
+                if (stack && stack->size()) {
+                    promiseDetails->setSettlementStack(stack->buildInspectorArray());
+                    RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = stack->asyncCallStack();
+                    if (asyncCallStack)
+                        promiseDetails->setAsyncSettlementStack(asyncCallStack->buildInspectorObject());
+                }
             }
         }
     }
 
-    if (m_listener)
-        m_listener->didUpdatePromise(eventType, data->toPromiseDetails());
+    m_listener->didUpdatePromise(eventType, promiseDetails.release());
 }
 
-PassRefPtr<Array<PromiseDetails> > PromiseTracker::promises()
+ScriptValue PromiseTracker::promiseById(int promiseId)
 {
     ASSERT(isEnabled());
-    RefPtr<Array<PromiseDetails> > result = Array<PromiseDetails>::create();
-    for (auto& data : m_promiseDataMap) {
-        PromiseDataVector* vector = &data.value;
-        for (size_t index = 0; index < vector->size(); ++index)
-            result->addItem(vector->at(index)->toPromiseDetails());
-    }
-    return result.release();
-}
-
-ScriptValue PromiseTracker::promiseById(int promiseId) const
-{
-    ASSERT(isEnabled());
-
-    PromiseIdToDataMap::const_iterator it = m_promiseIdToDataMap.find(promiseId);
-    if (it == m_promiseIdToDataMap.end())
+    v8::HandleScope scope(m_isolate);
+    v8::Local<v8::Object> value = m_idToPromise.Get(promiseId);
+    if (value.IsEmpty())
         return ScriptValue();
-    RefPtrWillBeRawPtr<PromiseData> data = it->value;
-    ASSERT(data && data->m_promiseId == promiseId);
-    ScriptState* scriptState = data->m_scriptState.get();
-    v8::HandleScope scope(scriptState->isolate());
-    return ScriptValue(scriptState, data->m_promise.newLocal(scriptState->isolate()));
+    return ScriptValue(ScriptState::from(value->CreationContext()) , value);
 }
 
 } // namespace blink

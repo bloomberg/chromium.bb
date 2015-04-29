@@ -3,6 +3,8 @@ Tests promise tracker events in debugger.
 Set timer for test function.
 gc:
     id: 0
+gc:
+    id: 1
 new:
     id: 0
     testFunction promise-events.html:9
