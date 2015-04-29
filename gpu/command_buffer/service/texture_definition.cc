@@ -243,6 +243,8 @@ class NativeImageBufferStub : public NativeImageBuffer {
   DISALLOW_COPY_AND_ASSIGN(NativeImageBufferStub);
 };
 
+bool g_avoid_egl_target_texture_reuse = false;
+
 }  // anonymous namespace
 
 // static
@@ -258,6 +260,11 @@ scoped_refptr<NativeImageBuffer> NativeImageBuffer::Create(GLuint texture_id) {
       NOTREACHED();
       return NULL;
   }
+}
+
+// static
+void TextureDefinition::AvoidEGLTargetTextureReuse() {
+  g_avoid_egl_target_texture_reuse = true;
 }
 
 TextureDefinition::LevelInfo::LevelInfo()
@@ -347,12 +354,12 @@ Texture* TextureDefinition::CreateTexture() const {
   glGenTextures(1, &texture_id);
 
   Texture* texture(new Texture(texture_id));
-  UpdateTexture(texture);
+  UpdateTextureInternal(texture);
 
   return texture;
 }
 
-void TextureDefinition::UpdateTexture(Texture* texture) const {
+void TextureDefinition::UpdateTextureInternal(Texture* texture) const {
   gfx::ScopedTextureBinder texture_binder(target_, texture->service_id());
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter_);
@@ -395,6 +402,22 @@ void TextureDefinition::UpdateTexture(Texture* texture) const {
   texture->wrap_s_ = wrap_s_;
   texture->wrap_t_ = wrap_t_;
   texture->usage_ = usage_;
+}
+
+void TextureDefinition::UpdateTexture(Texture* texture) const {
+  GLuint old_service_id = 0u;
+  if (image_buffer_.get() && g_avoid_egl_target_texture_reuse) {
+    GLuint service_id = 0u;
+    glGenTextures(1, &service_id);
+    old_service_id = texture->service_id();
+    texture->SetServiceId(service_id);
+  }
+
+  UpdateTextureInternal(texture);
+
+  if (old_service_id) {
+    glDeleteTextures(1, &old_service_id);
+  }
 }
 
 bool TextureDefinition::Matches(const Texture* texture) const {

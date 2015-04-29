@@ -10,6 +10,8 @@
 #include "gpu/gpu_export.h"
 
 #define GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)                   \
+  GPU_OP(AVOID_EGL_IMAGE_TARGET_TEXTURE_REUSE,               \
+         avoid_egl_image_target_texture_reuse)               \
   GPU_OP(CLEAR_ALPHA_IN_READPIXELS,                          \
          clear_alpha_in_readpixels)                          \
   GPU_OP(CLEAR_UNIFORMS_BEFORE_FIRST_PROGRAM_USE,            \

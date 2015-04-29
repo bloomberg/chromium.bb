@@ -40,6 +40,8 @@ class NativeImageBuffer : public base::RefCountedThreadSafe<NativeImageBuffer> {
 // the underlying image buffer(s).
 class TextureDefinition {
  public:
+  static void AvoidEGLTargetTextureReuse();
+
   TextureDefinition();
   TextureDefinition(Texture* texture,
                     unsigned int version,
@@ -59,6 +61,7 @@ class TextureDefinition {
 
  private:
   bool SafeToRenderFrom() const;
+  void UpdateTextureInternal(Texture* texture) const;
 
   struct LevelInfo {
     LevelInfo();
