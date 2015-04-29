@@ -153,7 +153,9 @@ const Shape& ShapeOutsideInfo::computedShape() const
     const ComputedStyle& containingBlockStyle = *m_layoutBox.containingBlock()->style();
 
     WritingMode writingMode = containingBlockStyle.writingMode();
-    LayoutUnit maximumValue = m_layoutBox.containingBlock() ? m_layoutBox.containingBlock()->contentWidth() : LayoutUnit();
+    // Make sure contentWidth is not negative. This can happen when containing block has a vertical scrollbar and
+    // its content is smaller than the scrollbar width.
+    LayoutUnit maximumValue = m_layoutBox.containingBlock() ? std::max(LayoutUnit(), m_layoutBox.containingBlock()->contentWidth()) : LayoutUnit();
     float margin = floatValueForLength(m_layoutBox.style()->shapeMargin(), maximumValue.toFloat());
 
     float shapeImageThreshold = style.shapeImageThreshold();
