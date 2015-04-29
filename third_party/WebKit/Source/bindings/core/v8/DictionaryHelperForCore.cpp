@@ -259,11 +259,11 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefP
 
     TrackBase* source = 0;
     if (v8Value->IsObject()) {
-        v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
+        v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::Cast(v8Value);
 
         // FIXME: this will need to be changed so it can also return an AudioTrack or a VideoTrack once
         // we add them.
-        v8::Handle<v8::Object> track = V8TextTrack::findInstanceInPrototypeChain(wrapper, dictionary.isolate());
+        v8::Local<v8::Object> track = V8TextTrack::findInstanceInPrototypeChain(wrapper, dictionary.isolate());
         if (!track.IsEmpty())
             source = V8TextTrack::toImpl(track);
     }
@@ -282,8 +282,8 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefP
     // We need to handle a DOMWindow specially, because a DOMWindow wrapper
     // exists on a prototype chain of v8Value.
     if (v8Value->IsObject()) {
-        v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
-        v8::Handle<v8::Object> window = V8Window::findInstanceInPrototypeChain(wrapper, dictionary.isolate());
+        v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::Cast(v8Value);
+        v8::Local<v8::Object> window = V8Window::findInstanceInPrototypeChain(wrapper, dictionary.isolate());
         if (!window.IsEmpty()) {
             value = toWrapperTypeInfo(window)->toEventTarget(window);
             return true;
@@ -291,7 +291,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefP
     }
 
     if (V8DOMWrapper::isWrapper(dictionary.isolate(), v8Value)) {
-        v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
+        v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::Cast(v8Value);
         value = toWrapperTypeInfo(wrapper)->toEventTarget(wrapper);
     }
     return true;
@@ -407,7 +407,7 @@ struct IntegralTypeTraits {
 
 template <>
 struct IntegralTypeTraits<uint8_t> {
-    static inline uint8_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline uint8_t toIntegral(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
         return toUInt8(isolate, value, configuration, exceptionState);
     }
@@ -416,7 +416,7 @@ struct IntegralTypeTraits<uint8_t> {
 
 template <>
 struct IntegralTypeTraits<int8_t> {
-    static inline int8_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline int8_t toIntegral(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
         return toInt8(isolate, value, configuration, exceptionState);
     }
@@ -425,7 +425,7 @@ struct IntegralTypeTraits<int8_t> {
 
 template <>
 struct IntegralTypeTraits<unsigned short> {
-    static inline uint16_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline uint16_t toIntegral(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
         return toUInt16(isolate, value, configuration, exceptionState);
     }
@@ -434,7 +434,7 @@ struct IntegralTypeTraits<unsigned short> {
 
 template <>
 struct IntegralTypeTraits<short> {
-    static inline int16_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline int16_t toIntegral(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
         return toInt16(isolate, value, configuration, exceptionState);
     }
@@ -443,7 +443,7 @@ struct IntegralTypeTraits<short> {
 
 template <>
 struct IntegralTypeTraits<unsigned> {
-    static inline uint32_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline uint32_t toIntegral(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
         return toUInt32(isolate, value, configuration, exceptionState);
     }
@@ -452,7 +452,7 @@ struct IntegralTypeTraits<unsigned> {
 
 template <>
 struct IntegralTypeTraits<unsigned long> {
-    static inline uint32_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline uint32_t toIntegral(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
         return toUInt32(isolate, value, configuration, exceptionState);
     }
@@ -461,7 +461,7 @@ struct IntegralTypeTraits<unsigned long> {
 
 template <>
 struct IntegralTypeTraits<int> {
-    static inline int32_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline int32_t toIntegral(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
         return toInt32(isolate, value, configuration, exceptionState);
     }
@@ -470,7 +470,7 @@ struct IntegralTypeTraits<int> {
 
 template <>
 struct IntegralTypeTraits<long> {
-    static inline int32_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline int32_t toIntegral(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
         return toInt32(isolate, value, configuration, exceptionState);
     }
@@ -479,7 +479,7 @@ struct IntegralTypeTraits<long> {
 
 template <>
 struct IntegralTypeTraits<unsigned long long> {
-    static inline unsigned long long toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline unsigned long long toIntegral(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
         return toUInt64(isolate, value, configuration, exceptionState);
     }
@@ -488,7 +488,7 @@ struct IntegralTypeTraits<unsigned long long> {
 
 template <>
 struct IntegralTypeTraits<long long> {
-    static inline long long toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline long long toIntegral(v8::Isolate* isolate, v8::Local<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
         return toInt64(isolate, value, configuration, exceptionState);
     }

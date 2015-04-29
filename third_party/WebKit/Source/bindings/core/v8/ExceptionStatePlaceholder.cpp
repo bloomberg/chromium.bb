@@ -36,7 +36,7 @@ namespace blink {
 #if ENABLE(ASSERT)
 
 NoExceptionStateAssertionChecker::NoExceptionStateAssertionChecker(const char* file, int line)
-    : ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Handle<v8::Object>(), 0)
+    : ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Local<v8::Object>(), 0)
     , m_file(file)
     , m_line(line) { }
 

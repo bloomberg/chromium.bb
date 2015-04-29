@@ -45,7 +45,7 @@ typedef int ExceptionCode;
 
 class IgnorableExceptionState final : public ExceptionState {
 public:
-    IgnorableExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Handle<v8::Object>(), 0) { }
+    IgnorableExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Local<v8::Object>(), 0) { }
     ExceptionState& returnThis() { return *this; }
     virtual void throwDOMException(const ExceptionCode&, const String& message = String()) override { }
     virtual void throwTypeError(const String& message = String()) override { }

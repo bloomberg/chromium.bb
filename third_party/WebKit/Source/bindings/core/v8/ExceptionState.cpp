@@ -77,7 +77,7 @@ void ExceptionState::throwSecurityError(const String& sanitizedMessage, const St
     setException(V8ThrowException::createDOMException(m_isolate, SecurityError, finalSanitized, finalUnsanitized, m_creationContext));
 }
 
-void ExceptionState::setException(v8::Handle<v8::Value> exception)
+void ExceptionState::setException(v8::Local<v8::Value> exception)
 {
     // FIXME: Assert that exception is not empty?
     if (exception.IsEmpty()) {

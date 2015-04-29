@@ -62,7 +62,7 @@ public:
         UnknownContext, // FIXME: Remove this once we've flipped over to the new API.
     };
 
-    ExceptionState(Context context, const char* propertyName, const char* interfaceName, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
+    ExceptionState(Context context, const char* propertyName, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
         : m_code(0)
         , m_context(context)
         , m_propertyName(propertyName)
@@ -70,7 +70,7 @@ public:
         , m_creationContext(creationContext)
         , m_isolate(isolate) { }
 
-    ExceptionState(Context context, const char* interfaceName, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
+    ExceptionState(Context context, const char* interfaceName, const v8::Local<v8::Object>& creationContext, v8::Isolate* isolate)
         : m_code(0)
         , m_context(context)
         , m_propertyName(0)
@@ -104,7 +104,7 @@ public:
     const char* propertyName() const { return m_propertyName; }
     const char* interfaceName() const { return m_interfaceName; }
 
-    void rethrowV8Exception(v8::Handle<v8::Value> value)
+    void rethrowV8Exception(v8::Local<v8::Value> value)
     {
         setException(value);
     }
@@ -121,13 +121,13 @@ protected:
     const char* m_interfaceName;
 
 private:
-    void setException(v8::Handle<v8::Value>);
+    void setException(v8::Local<v8::Value>);
     void throwException();
 
     String addExceptionContext(const String&) const;
 
     ScopedPersistent<v8::Value> m_exception;
-    v8::Handle<v8::Object> m_creationContext;
+    v8::Local<v8::Object> m_creationContext;
     v8::Isolate* m_isolate;
 #if ENABLE(ASSERT)
     OnStackObjectChecker m_onStackObjectChecker;
@@ -137,7 +137,7 @@ private:
 // Used if exceptions can/should not be directly thrown.
 class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
 public:
-    NonThrowableExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
+    NonThrowableExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Local<v8::Object>(), v8::Isolate::GetCurrent()) { }
     virtual void throwDOMException(const ExceptionCode&, const String& message) override;
     virtual void throwTypeError(const String& message = String()) override;
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) override;
@@ -147,7 +147,7 @@ public:
 // Used if any exceptions thrown are ignorable.
 class CORE_EXPORT TrackExceptionState final : public ExceptionState {
 public:
-    TrackExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
+    TrackExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Local<v8::Object>(), v8::Isolate::GetCurrent()) { }
     virtual void throwDOMException(const ExceptionCode&, const String& message) override;
     virtual void throwTypeError(const String& message = String()) override;
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) override;

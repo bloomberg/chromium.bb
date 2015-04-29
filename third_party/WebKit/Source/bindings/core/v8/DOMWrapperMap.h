@@ -48,7 +48,7 @@ public:
     {
     }
 
-    v8::Handle<v8::Object> newLocal(v8::Isolate* isolate, KeyType* key)
+    v8::Local<v8::Object> newLocal(v8::Isolate* isolate, KeyType* key)
     {
         return m_map.Get(key);
     }
@@ -68,7 +68,7 @@ public:
         return m_map.Contains(key);
     }
 
-    void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo)
+    void set(KeyType* key, v8::Local<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo)
     {
         ASSERT((getInternalField<KeyType, v8DOMWrapperObjectIndex>(wrapper)) == key);
         RELEASE_ASSERT(!containsKey(key)); // See crbug.com/368095

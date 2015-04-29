@@ -68,7 +68,7 @@ public:
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
     static void allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld>>& worlds);
 
-    static DOMWrapperWorld& world(v8::Handle<v8::Context> context)
+    static DOMWrapperWorld& world(v8::Local<v8::Context> context)
     {
         return ScriptState::from(context)->world();
     }
@@ -126,7 +126,7 @@ public:
 private:
     class DOMObjectHolderBase {
     public:
-        DOMObjectHolderBase(v8::Isolate* isolate, v8::Handle<v8::Value> wrapper)
+        DOMObjectHolderBase(v8::Isolate* isolate, v8::Local<v8::Value> wrapper)
             : m_wrapper(isolate, wrapper)
             , m_world(0)
         {
@@ -148,13 +148,13 @@ private:
     template<typename T>
     class DOMObjectHolder : public DOMObjectHolderBase {
     public:
-        static PassOwnPtr<DOMObjectHolder<T>> create(v8::Isolate* isolate, T* object, v8::Handle<v8::Value> wrapper)
+        static PassOwnPtr<DOMObjectHolder<T>> create(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
         {
             return adoptPtr(new DOMObjectHolder(isolate, object, wrapper));
         }
 
     private:
-        DOMObjectHolder(v8::Isolate* isolate, T* object, v8::Handle<v8::Value> wrapper)
+        DOMObjectHolder(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
             : DOMObjectHolderBase(isolate, wrapper)
             , m_object(object)
         {
@@ -165,7 +165,7 @@ private:
 
 public:
     template<typename T>
-    void registerDOMObjectHolder(v8::Isolate* isolate, T* object, v8::Handle<v8::Value> wrapper)
+    void registerDOMObjectHolder(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
     {
         registerDOMObjectHolderInternal(DOMObjectHolder<T>::create(isolate, object, wrapper));
     }
