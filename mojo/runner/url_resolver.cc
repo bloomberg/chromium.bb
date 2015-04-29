@@ -15,7 +15,7 @@
 #include "url/url_util.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 URLResolver::URLResolver() {
   // Needed to treat first component of mojo URLs as host, not path.
@@ -74,7 +74,7 @@ void URLResolver::AddOriginMapping(const GURL& origin, const GURL& base_url) {
 
 GURL URLResolver::ApplyMappings(const GURL& url) const {
   std::string query;
-  GURL mapped_url = GetBaseURLAndQuery(url, &query);
+  GURL mapped_url = shell::GetBaseURLAndQuery(url, &query);
   for (;;) {
     const auto& url_it = url_map_.find(mapped_url);
     if (url_it != url_map_.end()) {
@@ -110,7 +110,7 @@ GURL URLResolver::ResolveMojoURL(const GURL& mojo_url) const {
 
   // It's still a mojo: URL, use the default mapping scheme.
   std::string query;
-  GURL base_url = GetBaseURLAndQuery(mojo_url, &query);
+  GURL base_url = shell::GetBaseURLAndQuery(mojo_url, &query);
   if (mojo_base_url_.SchemeIsFile()) {
     const GURL url_with_directory(
         mojo_base_url_.Resolve(base_url.host() + "/"));
@@ -121,5 +121,5 @@ GURL URLResolver::ResolveMojoURL(const GURL& mojo_url) const {
   return mojo_base_url_.Resolve(base_url.host() + ".mojo" + query);
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

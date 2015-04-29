@@ -14,7 +14,7 @@
 #include "url/gurl.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 // This class supports the mapping of URLs to other URLs.
 // It's commonly used with mojo: URL, to provide a physical location (i.e.
@@ -73,7 +73,7 @@ class URLResolver {
   DISALLOW_COPY_AND_ASSIGN(URLResolver);
 };
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_URL_RESOLVER_H_

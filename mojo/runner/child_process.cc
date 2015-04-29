@@ -32,7 +32,7 @@
 #include "mojo/runner/switches.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 namespace {
 
@@ -220,12 +220,12 @@ class ChildControllerImpl : public ChildController, public ErrorHandler {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     on_app_complete_ = on_app_complete;
-    unblocker_.Unblock(base::Bind(&ChildControllerImpl::StartAppOnMainThread,
-                                  base::FilePath::FromUTF8Unsafe(app_path),
-                                  clean_app_path
-                                      ? NativeApplicationCleanup::DELETE
-                                      : NativeApplicationCleanup::DONT_DELETE,
-                                  base::Passed(&application_request)));
+    unblocker_.Unblock(base::Bind(
+        &ChildControllerImpl::StartAppOnMainThread,
+        base::FilePath::FromUTF8Unsafe(app_path),
+        clean_app_path ? shell::NativeApplicationCleanup::DELETE
+                       : shell::NativeApplicationCleanup::DONT_DELETE,
+        base::Passed(&application_request)));
   }
 
   void ExitNow(int32_t exit_code) override {
@@ -252,7 +252,7 @@ class ChildControllerImpl : public ChildController, public ErrorHandler {
 
   static void StartAppOnMainThread(
       const base::FilePath& app_path,
-      NativeApplicationCleanup cleanup,
+      shell::NativeApplicationCleanup cleanup,
       InterfaceRequest<Application> application_request) {
     // TODO(vtl): This is copied from in_process_native_runner.cc.
     DVLOG(2) << "Loading/running Mojo app from " << app_path.value()
@@ -317,5 +317,5 @@ int ChildProcessMain() {
   return 0;
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

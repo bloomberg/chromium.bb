@@ -10,7 +10,7 @@
 #include "mojo/runner/android/run_android_application_function.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 void Bootstrap(JNIEnv* env,
                jobject,
@@ -29,14 +29,14 @@ bool RegisterBootstrapJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  if (!mojo::shell::RegisterBootstrapJni(env))
+  if (!mojo::runner::RegisterBootstrapJni(env))
     return -1;
 
   return JNI_VERSION_1_4;

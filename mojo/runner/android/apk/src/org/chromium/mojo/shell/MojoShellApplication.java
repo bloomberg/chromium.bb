@@ -4,9 +4,8 @@
 
 package org.chromium.mojo.shell;
 
-import android.util.Log;
-
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -50,7 +49,7 @@ public class MojoShellApplication extends BaseChromiumApplication {
         try {
             LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         } catch (ProcessInitException e) {
-            Log.e(TAG, "libmojo_shell initialization failed.", e);
+            Log.e(TAG, "libmojo_runner initialization failed.", e);
             throw new RuntimeException(e);
         }
     }

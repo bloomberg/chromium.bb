@@ -20,9 +20,9 @@ namespace mojo {
 
 class ApplicationImpl;
 
-namespace shell {
+namespace runner {
 
-class NativeViewportApplicationLoader : public ApplicationLoader,
+class NativeViewportApplicationLoader : public shell::ApplicationLoader,
                                         public ApplicationDelegate,
                                         public InterfaceFactory<NativeViewport>,
                                         public InterfaceFactory<Gpu> {
@@ -52,7 +52,7 @@ class NativeViewportApplicationLoader : public ApplicationLoader,
   DISALLOW_COPY_AND_ASSIGN(NativeViewportApplicationLoader);
 };
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_ANDROID_NATIVE_VIEWPORT_APPLICATION_LOADER_H_

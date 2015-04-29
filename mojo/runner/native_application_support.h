@@ -7,6 +7,7 @@
 
 #include "base/native_library.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/shell/native_runner.h"
 
 #if defined(OS_WIN)
 #undef DELETE
@@ -20,9 +21,7 @@ namespace mojo {
 
 class Application;
 
-namespace shell {
-
-enum class NativeApplicationCleanup { DELETE, DONT_DELETE };
+namespace runner {
 
 // Loads the native Mojo application from the DSO specified by |app_path|.
 // Returns the |base::NativeLibrary| for the application on success (or null on
@@ -33,8 +32,9 @@ enum class NativeApplicationCleanup { DELETE, DONT_DELETE };
 // this should be done only after the thread on which |LoadNativeApplication()|
 // and |RunNativeApplication()| were called has terminated, so that any
 // thread-local destructors have been executed.
-base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path,
-                                          NativeApplicationCleanup cleanup);
+base::NativeLibrary LoadNativeApplication(
+    const base::FilePath& app_path,
+    shell::NativeApplicationCleanup cleanup);
 
 // Runs the native Mojo application from the DSO that was loaded using
 // |LoadNativeApplication()|; this tolerates |app_library| being null. This
@@ -45,7 +45,7 @@ base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path,
 bool RunNativeApplication(base::NativeLibrary app_library,
                           InterfaceRequest<Application> application_request);
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_NATIVE_APPLICATION_SUPPORT_H_

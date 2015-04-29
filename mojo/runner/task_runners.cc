@@ -7,7 +7,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 namespace {
 
@@ -35,5 +35,5 @@ TaskRunners::~TaskRunners() {
   blocking_pool_->Shutdown();
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

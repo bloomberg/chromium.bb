@@ -9,7 +9,7 @@
 #include "mojo/shell/application_manager.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 UIApplicationLoader::UIApplicationLoader(
     scoped_ptr<ApplicationLoader> real_loader,
@@ -44,5 +44,5 @@ void UIApplicationLoader::ShutdownOnUIThread() {
   loader_.reset();
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
   if (command_line.HasSwitch(switches::kChildProcess)) {
     base::AtExitManager at_exit;
 
-    return mojo::shell::ChildProcessMain();
+    return mojo::runner::ChildProcessMain();
   }
 
   base::TestSuite test_suite(argc, argv);

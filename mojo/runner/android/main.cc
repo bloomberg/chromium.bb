@@ -33,7 +33,7 @@
 using base::LazyInstance;
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 namespace {
 
@@ -201,7 +201,7 @@ bool RegisterShellMain(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 // TODO(vtl): Even though main() should never be called, mojo_shell fails to

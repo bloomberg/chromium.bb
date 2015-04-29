@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 namespace {
 
 // Subclass just so we can observe |DidStart()|.
@@ -59,5 +59,5 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
 }
 
 }  // namespace
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

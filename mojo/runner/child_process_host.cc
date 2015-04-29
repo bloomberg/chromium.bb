@@ -25,7 +25,7 @@
 #include "ui/gl/gl_switches.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 ChildProcessHost::ChildProcessHost(Context* context, const std::string& name)
     : context_(context), name_(name), channel_info_(nullptr) {
@@ -159,5 +159,5 @@ void ChildProcessHost::DidCreateChannel(embedder::ChannelInfo* channel_info) {
   channel_info_ = channel_info;
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

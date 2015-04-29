@@ -18,7 +18,7 @@
 #include "mojo/public/platform/native/system_thunks.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 namespace {
 
@@ -43,13 +43,14 @@ bool SetThunks(Thunks (*make_thunks)(),
 
 }  // namespace
 
-base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path,
-                                          NativeApplicationCleanup cleanup) {
+base::NativeLibrary LoadNativeApplication(
+    const base::FilePath& app_path,
+    shell::NativeApplicationCleanup cleanup) {
   DVLOG(2) << "Loading Mojo app in process from library: " << app_path.value();
 
   base::NativeLibraryLoadError error;
   base::NativeLibrary app_library = base::LoadNativeLibrary(app_path, &error);
-  if (cleanup == NativeApplicationCleanup::DELETE)
+  if (cleanup == shell::NativeApplicationCleanup::DELETE)
     DeleteFile(app_path, false);
   LOG_IF(ERROR, !app_library)
       << "Failed to load app library (error: " << error.ToString() << ")";
@@ -141,5 +142,5 @@ bool RunNativeApplication(base::NativeLibrary app_library,
   return true;
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

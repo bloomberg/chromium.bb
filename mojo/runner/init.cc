@@ -7,7 +7,7 @@
 #include "base/logging.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 void InitializeLogging() {
   logging::LoggingSettings settings;
@@ -20,5 +20,5 @@ void InitializeLogging() {
                        false);  // Tick count
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

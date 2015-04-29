@@ -14,7 +14,7 @@
 #include "mojo/runner/child_process_host.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 class Context;
 
@@ -80,7 +80,7 @@ class ChildProcessHost {
   DISALLOW_COPY_AND_ASSIGN(ChildProcessHost);
 };
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_CHILD_PROCESS_HOST_H_

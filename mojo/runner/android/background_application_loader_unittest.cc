@@ -8,15 +8,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 namespace {
 
-class DummyLoader : public ApplicationLoader {
+class DummyLoader : public shell::ApplicationLoader {
  public:
   DummyLoader() : simulate_app_quit_(true) {}
   ~DummyLoader() override {}
 
-  // ApplicationLoader overrides:
+  // shell::ApplicationLoader overrides:
   void Load(const GURL& url,
             InterfaceRequest<Application> application_request) override {
     if (simulate_app_quit_)
@@ -31,7 +31,7 @@ class DummyLoader : public ApplicationLoader {
 
 // Tests that the loader can start and stop gracefully.
 TEST(BackgroundApplicationLoaderTest, StartStop) {
-  scoped_ptr<ApplicationLoader> real_loader(new DummyLoader());
+  scoped_ptr<shell::ApplicationLoader> real_loader(new DummyLoader());
   BackgroundApplicationLoader loader(real_loader.Pass(), "test",
                                      base::MessageLoop::TYPE_DEFAULT);
 }
@@ -39,7 +39,7 @@ TEST(BackgroundApplicationLoaderTest, StartStop) {
 // Tests that the loader can load a service that is well behaved (quits
 // itself).
 TEST(BackgroundApplicationLoaderTest, Load) {
-  scoped_ptr<ApplicationLoader> real_loader(new DummyLoader());
+  scoped_ptr<shell::ApplicationLoader> real_loader(new DummyLoader());
   BackgroundApplicationLoader loader(real_loader.Pass(), "test",
                                      base::MessageLoop::TYPE_DEFAULT);
   ApplicationPtr application;
@@ -47,5 +47,5 @@ TEST(BackgroundApplicationLoaderTest, Load) {
 }
 
 }  // namespace
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

@@ -13,21 +13,21 @@
 #include "mojo/shell/native_runner.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 class ChildProcessHost;
 class Context;
 
 // An implementation of |NativeRunner| that loads/runs the given app (from the
 // file system) in a separate process (of its own).
-class OutOfProcessNativeRunner : public NativeRunner {
+class OutOfProcessNativeRunner : public shell::NativeRunner {
  public:
   explicit OutOfProcessNativeRunner(Context* context);
   ~OutOfProcessNativeRunner() override;
 
   // |NativeRunner| method:
   void Start(const base::FilePath& app_path,
-             NativeApplicationCleanup cleanup,
+             shell::NativeApplicationCleanup cleanup,
              InterfaceRequest<Application> application_request,
              const base::Closure& app_completed_callback) override;
 
@@ -45,13 +45,13 @@ class OutOfProcessNativeRunner : public NativeRunner {
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessNativeRunner);
 };
 
-class OutOfProcessNativeRunnerFactory : public NativeRunnerFactory {
+class OutOfProcessNativeRunnerFactory : public shell::NativeRunnerFactory {
  public:
   explicit OutOfProcessNativeRunnerFactory(Context* context)
       : context_(context) {}
   ~OutOfProcessNativeRunnerFactory() override {}
 
-  scoped_ptr<NativeRunner> Create(const Options& options) override;
+  scoped_ptr<shell::NativeRunner> Create(const Options& options) override;
 
  private:
   Context* const context_;
@@ -59,7 +59,7 @@ class OutOfProcessNativeRunnerFactory : public NativeRunnerFactory {
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessNativeRunnerFactory);
 };
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_OUT_OF_PROCESS_NATIVE_RUNNER_H_

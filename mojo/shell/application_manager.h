@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/interfaces/application/application.mojom.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
-#include "mojo/runner/native_application_support.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/identity.h"

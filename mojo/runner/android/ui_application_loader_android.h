@@ -14,14 +14,14 @@ class MessageLoop;
 }
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 class ApplicationManager;
 
 // ApplicationLoader implementation that creates a background thread and issues
 // load
 // requests there.
-class UIApplicationLoader : public ApplicationLoader {
+class UIApplicationLoader : public shell::ApplicationLoader {
  public:
   UIApplicationLoader(scoped_ptr<ApplicationLoader> real_loader,
                       base::MessageLoop* ui_message_loop);
@@ -48,7 +48,7 @@ class UIApplicationLoader : public ApplicationLoader {
   DISALLOW_COPY_AND_ASSIGN(UIApplicationLoader);
 };
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_ANDROID_UI_APPLICATION_LOADER_ANDROID_H_

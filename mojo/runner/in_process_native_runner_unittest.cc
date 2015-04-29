@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 TEST(InProcessNativeRunnerTest, NotStarted) {
   Context context;
@@ -19,5 +19,5 @@ TEST(InProcessNativeRunnerTest, NotStarted) {
   // Shouldn't crash or DCHECK on destruction.
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

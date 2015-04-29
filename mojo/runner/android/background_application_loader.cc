@@ -9,7 +9,7 @@
 #include "mojo/shell/application_manager.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 BackgroundApplicationLoader::BackgroundApplicationLoader(
     scoped_ptr<ApplicationLoader> real_loader,
@@ -69,5 +69,5 @@ void BackgroundApplicationLoader::LoadOnBackgroundThread(
   loader_->Load(url, application_request.Pass());
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

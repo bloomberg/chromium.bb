@@ -36,7 +36,7 @@
 #include "url/gurl.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 namespace {
 
 // Used to ensure we only init once.
@@ -103,7 +103,7 @@ bool ConfigureURLMappings(const base::CommandLine& command_line,
   return true;
 }
 
-void InitContentHandlers(ApplicationManager* manager,
+void InitContentHandlers(shell::ApplicationManager* manager,
                          const base::CommandLine& command_line) {
   // Default content handlers.
   manager->RegisterContentHandler("application/pdf", GURL("mojo:pdf_viewer"));
@@ -150,7 +150,7 @@ void InitContentHandlers(ApplicationManager* manager,
   }
 }
 
-void InitNativeOptions(ApplicationManager* manager,
+void InitNativeOptions(shell::ApplicationManager* manager,
                        const base::CommandLine& command_line) {
   std::vector<std::string> force_in_process_url_list;
   base::SplitString(command_line.GetSwitchValueASCII(switches::kForceInProcess),
@@ -163,7 +163,7 @@ void InitNativeOptions(ApplicationManager* manager,
       return;
     }
 
-    NativeRunnerFactory::Options options;
+    shell::NativeRunnerFactory::Options options;
     options.force_in_process = true;
     manager->SetNativeOptionsForURL(options, gurl);
   }
@@ -255,7 +255,7 @@ bool Context::Init() {
       embedder::ProcessType::NONE, task_runners_->shell_runner(), this,
       task_runners_->io_runner(), embedder::ScopedPlatformHandle());
 
-  scoped_ptr<NativeRunnerFactory> runner_factory;
+  scoped_ptr<shell::NativeRunnerFactory> runner_factory;
   if (command_line.HasSwitch(switches::kEnableMultiprocess))
     runner_factory.reset(new OutOfProcessNativeRunnerFactory(this));
   else
@@ -322,5 +322,5 @@ void Context::OnApplicationEnd(const GURL& url) {
   }
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 namespace {
 
 TEST(DataPipePeek, PeekNBytes) {
@@ -30,15 +30,15 @@ TEST(DataPipePeek, PeekNBytes) {
 
   std::string bytes;
   MojoDeadline timeout = 0;
-  EXPECT_TRUE(BlockingPeekNBytes(consumer, &bytes, num_bytes4, timeout));
+  EXPECT_TRUE(shell::BlockingPeekNBytes(consumer, &bytes, num_bytes4, timeout));
   EXPECT_EQ(bytes, std::string(s4));
 
   timeout = 1000;  // 1ms
-  EXPECT_TRUE(BlockingPeekNBytes(consumer, &bytes, num_bytes4, timeout));
+  EXPECT_TRUE(shell::BlockingPeekNBytes(consumer, &bytes, num_bytes4, timeout));
   EXPECT_EQ(bytes, std::string(s4));
 
   timeout = MOJO_DEADLINE_INDEFINITE;
-  EXPECT_TRUE(BlockingPeekNBytes(consumer, &bytes, num_bytes4, timeout));
+  EXPECT_TRUE(shell::BlockingPeekNBytes(consumer, &bytes, num_bytes4, timeout));
   EXPECT_EQ(bytes, std::string(s4));
 
   // Peeking for 5 bytes should fail, until another byte is written.
@@ -49,23 +49,26 @@ TEST(DataPipePeek, PeekNBytes) {
   const char* s5 = "12345";
 
   timeout = 0;
-  EXPECT_FALSE(BlockingPeekNBytes(consumer, &bytes, num_bytes5, timeout));
+  EXPECT_FALSE(
+      shell::BlockingPeekNBytes(consumer, &bytes, num_bytes5, timeout));
 
   timeout = 500;  // Should cause peek to timeout after about 0.5ms.
-  EXPECT_FALSE(BlockingPeekNBytes(consumer, &bytes, num_bytes5, timeout));
+  EXPECT_FALSE(
+      shell::BlockingPeekNBytes(consumer, &bytes, num_bytes5, timeout));
 
   EXPECT_EQ(MOJO_RESULT_OK,
             WriteDataRaw(producer, s1, &bytes1, MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(1u, bytes1);
 
-  EXPECT_TRUE(BlockingPeekNBytes(consumer, &bytes, num_bytes5, timeout));
+  EXPECT_TRUE(shell::BlockingPeekNBytes(consumer, &bytes, num_bytes5, timeout));
   EXPECT_EQ(bytes, std::string(s5));
 
   // If the consumer side of the pipe is closed, peek should fail.
 
   data_pipe.consumer_handle.reset();
   timeout = 0;
-  EXPECT_FALSE(BlockingPeekNBytes(consumer, &bytes, num_bytes5, timeout));
+  EXPECT_FALSE(
+      shell::BlockingPeekNBytes(consumer, &bytes, num_bytes5, timeout));
 }
 
 TEST(DataPipePeek, PeekLine) {
@@ -88,7 +91,8 @@ TEST(DataPipePeek, PeekLine) {
   std::string str;
   size_t max_str_length = 5;
   MojoDeadline timeout = 0;
-  EXPECT_FALSE(BlockingPeekLine(consumer, &str, max_str_length, timeout));
+  EXPECT_FALSE(
+      shell::BlockingPeekLine(consumer, &str, max_str_length, timeout));
 
   // Writing a newline should cause PeekLine to succeed.
 
@@ -98,16 +102,17 @@ TEST(DataPipePeek, PeekLine) {
             WriteDataRaw(producer, s1, &bytes1, MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(1u, bytes1);
 
-  EXPECT_TRUE(BlockingPeekLine(consumer, &str, max_str_length, timeout));
+  EXPECT_TRUE(shell::BlockingPeekLine(consumer, &str, max_str_length, timeout));
   EXPECT_EQ(str, std::string(s4) + "\n");
 
   // If the max_line_length parameter is less than the length of the
   // newline terminated string, then peek should fail.
 
   max_str_length = 3;
-  EXPECT_FALSE(BlockingPeekLine(consumer, &str, max_str_length, timeout));
+  EXPECT_FALSE(
+      shell::BlockingPeekLine(consumer, &str, max_str_length, timeout));
 }
 
 }  // namespace
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

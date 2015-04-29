@@ -6,13 +6,13 @@
 #define MOJO_RUNNER_INIT_H_
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 // Initialization routines shared by desktop and Android main functions.
 
 void InitializeLogging();
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_INIT_H_

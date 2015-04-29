@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/application/application_impl.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 NativeViewportApplicationLoader::NativeViewportApplicationLoader() {
 }
@@ -46,5 +46,5 @@ void NativeViewportApplicationLoader::Create(ApplicationConnection* connection,
   new gles2::GpuImpl(request.Pass(), gpu_state_);
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

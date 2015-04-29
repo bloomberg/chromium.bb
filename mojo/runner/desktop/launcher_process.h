@@ -6,12 +6,12 @@
 #define MOJO_SHELL_LAUNCHER_PROCESS_H_
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 // Main method for the launcher process.
 int LauncherProcessMain(int argc, char** argv);
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_SHELL_LAUNCHER_PROCESS_H_

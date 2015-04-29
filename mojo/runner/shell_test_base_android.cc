@@ -13,7 +13,7 @@
 #include "url/gurl.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 namespace test {
 
 namespace {
@@ -43,5 +43,5 @@ void ShellTestBase::SetUpTestApplications() {
 }
 
 }  // namespace test
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

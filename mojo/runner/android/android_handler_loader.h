@@ -13,9 +13,9 @@
 #include "mojo/shell/application_loader.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
-class AndroidHandlerLoader : public ApplicationLoader {
+class AndroidHandlerLoader : public shell::ApplicationLoader {
  public:
   AndroidHandlerLoader();
   virtual ~AndroidHandlerLoader();
@@ -31,7 +31,7 @@ class AndroidHandlerLoader : public ApplicationLoader {
   DISALLOW_COPY_AND_ASSIGN(AndroidHandlerLoader);
 };
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_ANDROID_ANDROID_HANDLER_LOADER_H_

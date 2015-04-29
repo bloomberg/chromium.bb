@@ -8,11 +8,11 @@
 #include <jni.h>
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 bool RegisterShellMain(JNIEnv* env);
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_ANDROID_MAIN_H_

@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/interfaces/application/application.mojom.h"
-#include "mojo/runner/native_application_support.h"
 
 namespace base {
 class FilePath;
@@ -17,6 +16,8 @@ class FilePath;
 
 namespace mojo {
 namespace shell {
+
+enum class NativeApplicationCleanup { DELETE, DONT_DELETE };
 
 // ApplicationManager requires implementations of NativeRunner and
 // NativeRunnerFactory to run native applications.

@@ -36,7 +36,7 @@ class Paths(object):
       if config and config.target_os == Config.OS_ANDROID:
         self.target_mojo_shell_path = os.path.join(self.build_dir,
                                                    "apks",
-                                                   "MojoShell.apk")
+                                                   "MojoRunner.apk")
       else:
         self.target_mojo_shell_path = self.mojo_shell_path
     else:

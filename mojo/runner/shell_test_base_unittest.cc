@@ -27,7 +27,7 @@ using mojo::test::TestTrackedRequestService;
 using mojo::test::TestTrackedRequestServicePtr;
 
 namespace mojo {
-namespace shell {
+namespace runner {
 namespace test {
 namespace {
 
@@ -305,5 +305,5 @@ TEST_F(ShellTestBaseTest, ConnectManyClientsAndServices) {
 
 }  // namespace
 }  // namespace test
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

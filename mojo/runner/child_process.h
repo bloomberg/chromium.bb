@@ -6,12 +6,12 @@
 #define MOJO_RUNNER_CHILD_PROCESS_H_
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 // Main method for a child process.
 int ChildProcessMain();
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_CHILD_PROCESS_H_

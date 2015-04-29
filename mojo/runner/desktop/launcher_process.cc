@@ -19,7 +19,7 @@
 #include "mojo/runner/switches.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 namespace {
 
 // Whether we're currently tracing.
@@ -75,7 +75,7 @@ void StopTracingAndFlushToDisk() {
   flush_complete_event.Wait();
 }
 
-void StartApp(mojo::shell::Context* context) {
+void StartApp(mojo::runner::Context* context) {
   // If a mojo app isn't specified (i.e. for an apptest), run the mojo shell's
   // window manager.
   GURL app_url(GURL("mojo:window_manager"));
@@ -108,7 +108,7 @@ int LauncherProcessMain(int argc, char** argv) {
 
   // We want the shell::Context to outlive the MessageLoop so that pipes are
   // all gracefully closed / error-out before we try to shut the Context down.
-  mojo::shell::Context shell_context;
+  Context shell_context;
   {
     base::MessageLoop message_loop;
     if (!shell_context.Init()) {
@@ -132,5 +132,5 @@ int LauncherProcessMain(int argc, char** argv) {
   return 0;
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

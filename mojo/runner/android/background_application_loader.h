@@ -13,13 +13,13 @@
 #include "mojo/shell/application_loader.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 class BackgroundApplicationLoader
-    : public ApplicationLoader,
+    : public shell::ApplicationLoader,
       public base::DelegateSimpleThread::Delegate {
  public:
-  BackgroundApplicationLoader(scoped_ptr<ApplicationLoader> real_loader,
+  BackgroundApplicationLoader(scoped_ptr<shell::ApplicationLoader> real_loader,
                               const std::string& thread_name,
                               base::MessageLoop::Type message_loop_type);
   ~BackgroundApplicationLoader() override;
@@ -38,7 +38,7 @@ class BackgroundApplicationLoader
       const GURL& url,
       InterfaceRequest<Application> application_request);
   bool quit_on_shutdown_;
-  scoped_ptr<ApplicationLoader> loader_;
+  scoped_ptr<shell::ApplicationLoader> loader_;
 
   const base::MessageLoop::Type message_loop_type_;
   const std::string thread_name_;
@@ -58,7 +58,7 @@ class BackgroundApplicationLoader
   DISALLOW_COPY_AND_ASSIGN(BackgroundApplicationLoader);
 };
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_ANDROID_BACKGROUND_APPLICATION_LOADER_H_

@@ -15,13 +15,13 @@
 #include "mojo/shell/native_runner.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 class Context;
 
 // An implementation of |NativeRunner| that loads/runs the given app (from the
 // file system) on a separate thread (in the current process).
-class InProcessNativeRunner : public NativeRunner,
+class InProcessNativeRunner : public shell::NativeRunner,
                               public base::DelegateSimpleThread::Delegate {
  public:
   explicit InProcessNativeRunner(Context* context);
@@ -29,7 +29,7 @@ class InProcessNativeRunner : public NativeRunner,
 
   // |NativeRunner| method:
   void Start(const base::FilePath& app_path,
-             NativeApplicationCleanup cleanup,
+             shell::NativeApplicationCleanup cleanup,
              InterfaceRequest<Application> application_request,
              const base::Closure& app_completed_callback) override;
 
@@ -38,7 +38,7 @@ class InProcessNativeRunner : public NativeRunner,
   void Run() override;
 
   base::FilePath app_path_;
-  NativeApplicationCleanup cleanup_;
+  shell::NativeApplicationCleanup cleanup_;
   InterfaceRequest<Application> application_request_;
   base::Callback<bool(void)> app_completed_callback_runner_;
 
@@ -48,12 +48,12 @@ class InProcessNativeRunner : public NativeRunner,
   DISALLOW_COPY_AND_ASSIGN(InProcessNativeRunner);
 };
 
-class InProcessNativeRunnerFactory : public NativeRunnerFactory {
+class InProcessNativeRunnerFactory : public shell::NativeRunnerFactory {
  public:
   explicit InProcessNativeRunnerFactory(Context* context) : context_(context) {}
   ~InProcessNativeRunnerFactory() override {}
 
-  scoped_ptr<NativeRunner> Create(const Options& options) override;
+  scoped_ptr<shell::NativeRunner> Create(const Options& options) override;
 
  private:
   Context* const context_;
@@ -61,7 +61,7 @@ class InProcessNativeRunnerFactory : public NativeRunnerFactory {
   DISALLOW_COPY_AND_ASSIGN(InProcessNativeRunnerFactory);
 };
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_IN_PROCESS_NATIVE_RUNNER_H_

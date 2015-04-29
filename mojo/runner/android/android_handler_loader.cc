@@ -5,7 +5,7 @@
 #include "mojo/runner/android/android_handler_loader.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 AndroidHandlerLoader::AndroidHandlerLoader() {
 }
@@ -21,5 +21,5 @@ void AndroidHandlerLoader::Load(
       new ApplicationImpl(&android_handler_, application_request.Pass()));
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 namespace {
 
 struct TestState {
@@ -23,7 +23,7 @@ struct TestState {
   bool runner_was_destroyed;
 };
 
-class TestNativeRunner : public NativeRunner {
+class TestNativeRunner : public shell::NativeRunner {
  public:
   explicit TestNativeRunner(TestState* state) : state_(state) {
     state_->runner_was_created = true;
@@ -33,7 +33,7 @@ class TestNativeRunner : public NativeRunner {
     base::MessageLoop::current()->Quit();
   }
   void Start(const base::FilePath& app_path,
-             NativeApplicationCleanup cleanup,
+             shell::NativeApplicationCleanup cleanup,
              InterfaceRequest<Application> application_request,
              const base::Closure& app_completed_callback) override {
     state_->runner_was_started = true;
@@ -43,12 +43,12 @@ class TestNativeRunner : public NativeRunner {
   TestState* state_;
 };
 
-class TestNativeRunnerFactory : public NativeRunnerFactory {
+class TestNativeRunnerFactory : public shell::NativeRunnerFactory {
  public:
   explicit TestNativeRunnerFactory(TestState* state) : state_(state) {}
   ~TestNativeRunnerFactory() override {}
-  scoped_ptr<NativeRunner> Create(const Options& options) override {
-    return scoped_ptr<NativeRunner>(new TestNativeRunner(state_));
+  scoped_ptr<shell::NativeRunner> Create(const Options& options) override {
+    return scoped_ptr<shell::NativeRunner>(new TestNativeRunner(state_));
   }
 
  private:
@@ -56,13 +56,13 @@ class TestNativeRunnerFactory : public NativeRunnerFactory {
 };
 
 class NativeApplicationLoaderTest : public testing::Test,
-                                    public ApplicationManager::Delegate {
+                                    public shell::ApplicationManager::Delegate {
  public:
   NativeApplicationLoaderTest() : application_manager_(this) {}
   ~NativeApplicationLoaderTest() override {}
   void SetUp() override {
     context_.Init();
-    scoped_ptr<NativeRunnerFactory> factory(
+    scoped_ptr<shell::NativeRunnerFactory> factory(
         new TestNativeRunnerFactory(&state_));
     application_manager_.set_native_runner_factory(factory.Pass());
     application_manager_.set_blocking_pool(
@@ -71,13 +71,13 @@ class NativeApplicationLoaderTest : public testing::Test,
   void TearDown() override { context_.Shutdown(); }
 
  protected:
-  shell::Context context_;
+  Context context_;
   base::MessageLoop loop_;
-  ApplicationManager application_manager_;
+  shell::ApplicationManager application_manager_;
   TestState state_;
 
  private:
-  // ApplicationManager::Delegate
+  // shell::ApplicationManager::Delegate
   GURL ResolveMappings(const GURL& url) override { return url; }
   GURL ResolveMojoURL(const GURL& url) override { return url; }
 };
@@ -97,5 +97,5 @@ TEST_F(NativeApplicationLoaderTest, DoesNotExist) {
 }
 
 }  // namespace
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

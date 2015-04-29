@@ -14,12 +14,12 @@
 #include "mojo/shell/application_manager.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 class NativeApplicationLoader;
 
 // The "global" context for the shell's main process.
-class Context : public ApplicationManager::Delegate,
+class Context : public shell::ApplicationManager::Delegate,
                 public embedder::ProcessDelegate {
  public:
   Context();
@@ -56,7 +56,9 @@ class Context : public ApplicationManager::Delegate,
   void Run(const GURL& url);
 
   TaskRunners* task_runners() { return task_runners_.get(); }
-  ApplicationManager* application_manager() { return &application_manager_; }
+  shell::ApplicationManager* application_manager() {
+    return &application_manager_;
+  }
   URLResolver* url_resolver() { return &url_resolver_; }
 
  private:
@@ -73,7 +75,7 @@ class Context : public ApplicationManager::Delegate,
 
   std::set<GURL> app_urls_;
   scoped_ptr<TaskRunners> task_runners_;
-  ApplicationManager application_manager_;
+  shell::ApplicationManager application_manager_;
   URLResolver url_resolver_;
   GURL shell_file_root_;
   GURL command_line_cwd_;
@@ -81,7 +83,7 @@ class Context : public ApplicationManager::Delegate,
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_CONTEXT_H_

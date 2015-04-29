@@ -16,7 +16,7 @@
 class GURL;
 
 namespace mojo {
-namespace shell {
+namespace runner {
 namespace test {
 
 class ShellTestBase : public testing::Test {
@@ -53,7 +53,7 @@ class ShellTestBase : public testing::Test {
 };
 
 }  // namespace test
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_SHELL_TEST_BASE_H_

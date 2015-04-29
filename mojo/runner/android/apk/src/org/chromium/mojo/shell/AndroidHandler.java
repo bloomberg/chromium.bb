@@ -22,7 +22,7 @@ import java.lang.reflect.Constructor;
  * TODO(ppi): create a seperate instance for each application being bootstrapped to keep track of
  * the temporary files and clean them up once the execution finishes.
  */
-@JNINamespace("mojo::shell")
+@JNINamespace("mojo::runner")
 public class AndroidHandler {
     private static final String TAG = "AndroidHandler";
 

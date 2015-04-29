@@ -16,7 +16,7 @@ class SequencedWorkerPool;
 }
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 // A context object that contains the common task runners for the shell's main
 // process.
@@ -47,7 +47,7 @@ class TaskRunners {
   DISALLOW_COPY_AND_ASSIGN(TaskRunners);
 };
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_TASK_RUNNERS_H_

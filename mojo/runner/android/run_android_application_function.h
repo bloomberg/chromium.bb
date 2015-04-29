@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 // Type of the function that we inject from the main .so of the Mojo shell to
 // the helper libbootstrap.so. This function will set the thunks in the
@@ -21,7 +21,7 @@ typedef void (*RunAndroidApplicationFn)(JNIEnv* env,
                                         const base::FilePath& app_path,
                                         jint j_handle);
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo
 
 #endif  // MOJO_RUNNER_ANDROID_RUN_ANDROID_APPLICATION_FUNCTION_H_

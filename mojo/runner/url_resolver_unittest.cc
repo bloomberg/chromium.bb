@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 namespace test {
 namespace {
 
@@ -170,5 +170,5 @@ TEST_F(URLResolverTest, PreferDirectory) {
 
 }  // namespace
 }  // namespace test
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

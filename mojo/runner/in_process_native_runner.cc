@@ -12,10 +12,11 @@
 #include "mojo/runner/native_application_support.h"
 
 namespace mojo {
-namespace shell {
+namespace runner {
 
 InProcessNativeRunner::InProcessNativeRunner(Context* context)
-    : cleanup_(NativeApplicationCleanup::DONT_DELETE), app_library_(nullptr) {
+    : cleanup_(shell::NativeApplicationCleanup::DONT_DELETE),
+      app_library_(nullptr) {
 }
 
 InProcessNativeRunner::~InProcessNativeRunner() {
@@ -31,7 +32,7 @@ InProcessNativeRunner::~InProcessNativeRunner() {
 
 void InProcessNativeRunner::Start(
     const base::FilePath& app_path,
-    NativeApplicationCleanup cleanup,
+    shell::NativeApplicationCleanup cleanup,
     InterfaceRequest<Application> application_request,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
@@ -63,10 +64,10 @@ void InProcessNativeRunner::Run() {
   app_completed_callback_runner_.Reset();
 }
 
-scoped_ptr<NativeRunner> InProcessNativeRunnerFactory::Create(
+scoped_ptr<shell::NativeRunner> InProcessNativeRunnerFactory::Create(
     const Options& options) {
   return make_scoped_ptr(new InProcessNativeRunner(context_));
 }
 
-}  // namespace shell
+}  // namespace runner
 }  // namespace mojo

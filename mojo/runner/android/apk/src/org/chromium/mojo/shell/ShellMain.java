@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * A placeholder class to call native functions.
  **/
-@JNINamespace("mojo::shell")
+@JNINamespace("mojo::runner")
 public class ShellMain {
     private static final String TAG = "ShellMain";
 
@@ -29,7 +29,7 @@ public class ShellMain {
     private static final String NETWORK_LIBRARY_APP = "network_service.mojo";
     // The mojo_shell library is also an executable run in forked processes when running
     // multi-process.
-    private static final String MOJO_SHELL_EXECUTABLE = "libmojo_shell.so";
+    private static final String MOJO_SHELL_EXECUTABLE = "libmojo_runner.so";
 
     /**
      * A guard flag for calling nativeInit() only once.
