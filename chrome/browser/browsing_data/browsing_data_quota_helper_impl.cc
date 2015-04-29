@@ -55,8 +55,8 @@ void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
 }
 
 BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
-    base::MessageLoopProxy* ui_thread,
-    base::MessageLoopProxy* io_thread,
+    base::SingleThreadTaskRunner* ui_thread,
+    base::SingleThreadTaskRunner* io_thread,
     storage::QuotaManager* quota_manager)
     : BrowsingDataQuotaHelper(io_thread),
       quota_manager_(quota_manager),

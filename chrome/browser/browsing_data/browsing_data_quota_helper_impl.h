@@ -31,8 +31,8 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
   void RevokeHostQuota(const std::string& host) override;
 
  private:
-  BrowsingDataQuotaHelperImpl(base::MessageLoopProxy* ui_thread,
-                              base::MessageLoopProxy* io_thread,
+  BrowsingDataQuotaHelperImpl(base::SingleThreadTaskRunner* ui_thread,
+                              base::SingleThreadTaskRunner* io_thread,
                               storage::QuotaManager* quota_manager);
   ~BrowsingDataQuotaHelperImpl() override;
 
@@ -61,8 +61,8 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
 
   bool is_fetching_;
 
-  scoped_refptr<base::MessageLoopProxy> ui_thread_;
-  scoped_refptr<base::MessageLoopProxy> io_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
   base::WeakPtrFactory<BrowsingDataQuotaHelperImpl> weak_factory_;
 
   friend class BrowsingDataQuotaHelper;

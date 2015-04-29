@@ -10,9 +10,13 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "storage/common/quota/quota_types.h"
+
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 class BrowsingDataQuotaHelper;
 class Profile;
@@ -67,13 +71,13 @@ class BrowsingDataQuotaHelper
   virtual void RevokeHostQuota(const std::string& host) = 0;
 
  protected:
-  explicit BrowsingDataQuotaHelper(base::MessageLoopProxy* io_thread_);
+  explicit BrowsingDataQuotaHelper(base::SingleThreadTaskRunner* io_thread_);
   virtual ~BrowsingDataQuotaHelper();
 
  private:
   friend class base::DeleteHelper<BrowsingDataQuotaHelper>;
   friend struct BrowsingDataQuotaHelperDeleter;
-  scoped_refptr<base::MessageLoopProxy> io_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataQuotaHelper);
 };

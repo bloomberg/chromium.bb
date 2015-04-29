@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
 
 BrowsingDataQuotaHelper::QuotaInfo::QuotaInfo()
     : temporary_usage(0),
@@ -35,7 +36,7 @@ void BrowsingDataQuotaHelperDeleter::Destruct(
 }
 
 BrowsingDataQuotaHelper::BrowsingDataQuotaHelper(
-    base::MessageLoopProxy* io_thread)
+    base::SingleThreadTaskRunner* io_thread)
     : io_thread_(io_thread) {
 }
 
