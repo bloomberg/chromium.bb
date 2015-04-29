@@ -26,7 +26,7 @@ vars = {
   "android_tools_rev": "f6e2370dff438125897bb3b3800de1ad7aa62c27",
 
   # Separately pinned repositories, update with roll-dep individually.
-  "third_party_rev": "7e4c04567bd393069233676fc648333885e18da9", # from svn revision 13800
+  "third_party_rev": "d4e38e5faf600b39649025e5605d6e7f94518ea7",
   "lcov_rev": "b37daf5968200da8ff520ce65c4e5bce4047dd15", # from svn revision 149720
   "gnu_binutils_rev": "f4003433b61b25666565690caf3d7a7a1a4ec436", # from svn revision 8151
   "mingw_rev": "3cc8b140b883a9fe4986d12cfd46c16a093d3527", # from svn revision 7064
