@@ -9,26 +9,14 @@
 #@ The toolchain consists primarily of a jail with arm header and libraries.
 #@ It also provides additional tools such as QEMU.
 #@ It does NOT provide the actual cross compiler anymore.
-#@ The cross compiler is now comming straight from a debian package.
-#@ So there is a one-time step required for all machines using this TC.
-#@ Which is especially true for build-bots:
+#@ The cross compiler is now coming straight from a Debian package.
+#@ So there is a one-time step required for all machines using this TC:
 #@
-#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.trusty.sh  InstallCrossArmBasePackages
+#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.trusty.sh InstallCrossArmBasePackages
 #@
+#@ Generally this script is invoked as:
 #@
-#@  Generally this script is invoked as:
 #@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.trusty.sh <mode> <args>*
-#@  Available modes are shown below.
-#@
-#@ This Toolchain was tested with Ubuntu Precise
-#@
-#@ Usage of this TC:
-#@  compile: arm-linux-gnueabihf-gcc -march=armv7-a -isystem ${JAIL}/usr/include
-#@  link:    arm-linux-gnueabihf-gcc -L${JAIL}/usr/lib -L${JAIL}/usr/lib/arm-linux-gnueabihf
-#@                                 -L${JAIL}/lib -L${JAIL}/lib/arm-linux-gnueabihf
-#@
-#@ Usage of QEMU
-#@  TBD
 #@
 #@ List of modes:
 
@@ -39,15 +27,14 @@
 set -o nounset
 set -o errexit
 
+readonly DIST=trusty
 readonly SCRIPT_DIR=$(dirname $0)
-
-# this where we create the ARMHF "jail"
-readonly INSTALL_ROOT=$(pwd)/toolchain/linux_x86/arm_trusted
-
-readonly TMP=/tmp/armhf-crosstool-trusty
-
+readonly NACL_ROOT=$(pwd)
+# this where we create the ARMHF sysroot
+readonly INSTALL_ROOT=${NACL_ROOT}/toolchain/linux_x86/arm_trusted
+readonly TAR_ARCHIVE=$(dirname ${NACL_ROOT})/out/sysroot_arm_trusted_${DIST}.tgz
+readonly TMP=$(dirname ${NACL_ROOT})/out/sysroot_arm_trusted_${DIST}
 readonly REQUIRED_TOOLS="wget"
-
 readonly MAKE_OPTS="-j8"
 
 ######################################################################
@@ -59,8 +46,8 @@ readonly CROSS_ARM_TC_REPO=http://archive.ubuntu.com/ubuntu
 # this is where we get all the armhf packages from
 readonly ARMHF_REPO=http://ports.ubuntu.com/ubuntu-ports
 
-readonly PACKAGE_LIST="${ARMHF_REPO}/dists/trusty/main/binary-armhf/Packages.bz2"
-readonly PACKAGE_LIST2="${ARMHF_REPO}/dists/trusty-security/main/binary-armhf/Packages.bz2"
+readonly PACKAGE_LIST="${ARMHF_REPO}/dists/${DIST}/main/binary-armhf/Packages.bz2"
+readonly PACKAGE_LIST2="${ARMHF_REPO}/dists/${DIST}-security/main/binary-armhf/Packages.bz2"
 
 # Packages for the host system
 readonly CROSS_ARM_TC_PACKAGES="\
@@ -87,7 +74,7 @@ readonly ARMHF_BASE_PACKAGES="\
 # Additional jail packages needed to build chrome
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMHF_BASE_DEP_LIST="${SCRIPT_DIR}/packagelist.trusty.armhf.base"
+readonly ARMHF_BASE_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.base"
 readonly ARMHF_BASE_DEP_FILES="$(cat ${ARMHF_BASE_DEP_LIST})"
 
 readonly ARMHF_EXTRA_PACKAGES="\
@@ -219,7 +206,7 @@ readonly ARMHF_EXTRA_PACKAGES="\
 
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMHF_EXTRA_DEP_LIST="${SCRIPT_DIR}/packagelist.trusty.armhf.extra"
+readonly ARMHF_EXTRA_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.extra"
 readonly ARMHF_EXTRA_DEP_FILES="$(cat ${ARMHF_EXTRA_DEP_LIST})"
 
 ######################################################################
@@ -303,9 +290,8 @@ ClearInstallDir() {
 
 
 CreateTarBall() {
-  local tarball=$1
-  Banner "creating tar ball ${tarball}"
-  tar cfz ${tarball} -C ${INSTALL_ROOT} .
+  Banner "creating tar ball ${TAR_ARCHIVE}"
+  tar cfz ${TAR_ARCHIVE} -C ${INSTALL_ROOT} .
 }
 
 ######################################################################
@@ -397,7 +383,7 @@ CleanupJailSymlinks() {
 #@     Build ARM emulator including some patches for better tracing
 #
 # Historic Notes:
-# Traditionally we were builidng static 32 bit images of qemu on a
+# Traditionally we were building static 32 bit images of qemu on a
 # 64bit system which would run then on both x86-32 and x86-64 systems.
 # The latest version of qemu contains new dependencies which
 # currently make it impossible to build such images on 64bit systems
@@ -486,10 +472,11 @@ BuildAndInstallQemu() {
   cd ${saved_dir}
   cp tools/trusted_cross_toolchains/qemu_tool_arm.sh ${INSTALL_ROOT}
   ln -sf qemu_tool_arm.sh ${INSTALL_ROOT}/run_under_qemu_arm
+  set +x
 }
 
 #@
-#@ BuildJail <tarball-name>
+#@ BuildJail
 #@
 #@    Build everything and package it
 BuildJail() {
@@ -500,7 +487,7 @@ BuildJail() {
   CleanupJailSymlinks
   HacksAndPatches
   BuildAndInstallQemu
-  CreateTarBall $1
+  CreateTarBall
 }
 
 #
@@ -533,8 +520,8 @@ GeneratePackageList() {
 #@     list of URLs within the ubuntu archive.
 #@
 UpdatePackageLists() {
-  local package_list="${TMP}/Packages.trusty.bz2"
-  local package_list2="${TMP}/Packages.trusty-security.bz2"
+  local package_list="${TMP}/Packages.${DIST}.bz2"
+  local package_list2="${TMP}/Packages.${DIST}-security.bz2"
   DownloadOrCopy ${PACKAGE_LIST} ${package_list}
   DownloadOrCopy ${PACKAGE_LIST2} ${package_list2}
   bzcat ${package_list} ${package_list2} | egrep '^(Package:|Filename:)' > ${TMP}/Packages

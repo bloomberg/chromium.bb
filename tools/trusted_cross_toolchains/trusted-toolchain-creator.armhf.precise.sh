@@ -9,26 +9,14 @@
 #@ The toolchain consists primarily of a jail with arm header and libraries.
 #@ It also provides additional tools such as QEMU.
 #@ It does NOT provide the actual cross compiler anymore.
-#@ The cross compiler is now comming straight from a debian package.
-#@ So there is a one-time step required for all machines using this TC.
-#@ Which is especially true for build-bots:
+#@ The cross compiler is now coming straight from a Debian package.
+#@ So there is a one-time step required for all machines using this TC:
 #@
-#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.precise.sh  InstallCrossArmBasePackages
+#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.precise.sh InstallCrossArmBasePackages
 #@
+#@ Generally this script is invoked as:
 #@
-#@  Generally this script is invoked as:
 #@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armhf.precise.sh <mode> <args>*
-#@  Available modes are shown below.
-#@
-#@ This Toolchain was tested with Ubuntu Precise
-#@
-#@ Usage of this TC:
-#@  compile: arm-linux-gnueabihf-gcc -march=armv7-a -isystem ${JAIL}/usr/include
-#@  link:    arm-linux-gnueabihf-gcc -L${JAIL}/usr/lib -L${JAIL}/usr/lib/arm-linux-gnueabihf
-#@                                 -L${JAIL}/lib -L${JAIL}/lib/arm-linux-gnueabihf
-#@
-#@ Usage of QEMU
-#@  TBD
 #@
 #@ List of modes:
 
@@ -39,15 +27,14 @@
 set -o nounset
 set -o errexit
 
+readonly DIST=precise
 readonly SCRIPT_DIR=$(dirname $0)
-
-# this where we create the ARMEL "jail"
-readonly INSTALL_ROOT=$(pwd)/toolchain/linux_x86/arm_trusted
-
-readonly TMP=/tmp/armhf-crosstool-precise
-
+readonly NACL_ROOT=$(pwd)
+# this where we create the ARMHF sysroot
+readonly INSTALL_ROOT=${NACL_ROOT}/toolchain/linux_x86/arm_trusted
+readonly TAR_ARCHIVE=$(dirname ${NACL_ROOT})/out/sysroot_arm_trusted_${DIST}.tgz
+readonly TMP=/tmp/sysroot_arm_trusted_${DIST}
 readonly REQUIRED_TOOLS="wget"
-
 readonly MAKE_OPTS="-j8"
 
 ######################################################################
@@ -57,24 +44,19 @@ readonly MAKE_OPTS="-j8"
 # this where we get the cross toolchain from for the manual install:
 readonly CROSS_ARM_TC_REPO=http://archive.ubuntu.com/ubuntu
 # this is where we get all the armhf packages from
-readonly ARMEL_REPO=http://ports.ubuntu.com/ubuntu-ports
+readonly ARMHF_REPO=http://ports.ubuntu.com/ubuntu-ports
 
-readonly PACKAGE_LIST="${ARMEL_REPO}/dists/precise/main/binary-armhf/Packages.bz2"
-readonly PACKAGE_LIST2="${ARMEL_REPO}/dists/precise-security/main/binary-armhf/Packages.bz2"
+readonly PACKAGE_LIST="${ARMHF_REPO}/dists/${DIST}/main/binary-armhf/Packages.bz2"
+readonly PACKAGE_LIST2="${ARMHF_REPO}/dists/${DIST}-security/main/binary-armhf/Packages.bz2"
 
 # Packages for the host system
-# NOTE: at one point we should get rid of the 4.5 packages
 readonly CROSS_ARM_TC_PACKAGES="\
-  g++-arm-linux-gnueabihf \
-  libgomp1-dbg-armhf-cross \
-  libgcc1-dbg-armhf-cross \
-  libmudflap0-dbg-armhf-cross
-"
+  g++-arm-linux-gnueabihf"
 
 # Jail packages: these are good enough for native client
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_BASE_PACKAGES="\
+readonly ARMHF_BASE_PACKAGES="\
   libssl-dev \
   libssl1.0.0 \
   libgcc1 \
@@ -92,10 +74,10 @@ readonly ARMEL_BASE_PACKAGES="\
 # Additional jail packages needed to build chrome
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_BASE_DEP_LIST="${SCRIPT_DIR}/packagelist.precise.armhf.base"
-readonly ARMEL_BASE_DEP_FILES="$(cat ${ARMEL_BASE_DEP_LIST})"
+readonly ARMHF_BASE_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.base"
+readonly ARMHF_BASE_DEP_FILES="$(cat ${ARMHF_BASE_DEP_LIST})"
 
-readonly ARMEL_EXTRA_PACKAGES="\
+readonly ARMHF_EXTRA_PACKAGES="\
   comerr-dev \
   krb5-multidev \
   libasound2 \
@@ -223,8 +205,8 @@ readonly ARMEL_EXTRA_PACKAGES="\
 
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_EXTRA_DEP_LIST="${SCRIPT_DIR}/packagelist.precise.armhf.extra"
-readonly ARMEL_EXTRA_DEP_FILES="$(cat ${ARMEL_EXTRA_DEP_LIST})"
+readonly ARMHF_EXTRA_DEP_LIST="${SCRIPT_DIR}/packagelist.${DIST}.armhf.extra"
+readonly ARMHF_EXTRA_DEP_FILES="$(cat ${ARMHF_EXTRA_DEP_LIST})"
 
 ######################################################################
 # Helper
@@ -307,9 +289,8 @@ ClearInstallDir() {
 
 
 CreateTarBall() {
-  local tarball=$1
-  Banner "creating tar ball ${tarball}"
-  tar cfz ${tarball} -C ${INSTALL_ROOT} .
+  Banner "creating tar ball ${TAR_ARCHIVE}"
+  tar cfz ${TAR_ARCHIVE} -C ${INSTALL_ROOT} .
 }
 
 ######################################################################
@@ -350,7 +331,7 @@ InstallMissingArmLibrariesAndHeadersIntoJail() {
   for file in $@ ; do
     local package="${TMP}/armhf-packages/${file##*/}"
     Banner "installing ${file}"
-    DownloadOrCopy ${ARMEL_REPO}/pool/${file} ${package}
+    DownloadOrCopy ${ARMHF_REPO}/pool/${file} ${package}
     SubBanner "extracting to ${INSTALL_ROOT}"
     if [[ ! -s ${package} ]] ; then
       echo
@@ -488,21 +469,22 @@ BuildAndInstallQemu() {
   cd ${saved_dir}
   cp tools/trusted_cross_toolchains/qemu_tool_arm.sh ${INSTALL_ROOT}
   ln -sf qemu_tool_arm.sh ${INSTALL_ROOT}/run_under_qemu_arm
+  set +x
 }
 
 #@
-#@ BuildJail <tarball-name>
+#@ BuildJail
 #@
 #@    Build everything and package it
 BuildJail() {
   ClearInstallDir
   InstallMissingArmLibrariesAndHeadersIntoJail \
-    ${ARMEL_BASE_DEP_FILES} \
-    ${ARMEL_EXTRA_DEP_FILES}
+    ${ARMHF_BASE_DEP_FILES} \
+    ${ARMHF_EXTRA_DEP_FILES}
   CleanupJailSymlinks
   HacksAndPatches
   BuildAndInstallQemu
-  CreateTarBall $1
+  CreateTarBall
 }
 
 #
@@ -535,14 +517,14 @@ GeneratePackageList() {
 #@     list of URLs within the ubuntu archive.
 #@
 UpdatePackageLists() {
-  local package_list="${TMP}/Packages.precise.bz2"
-  local package_list2="${TMP}/Packages.precise-security.bz2"
+  local package_list="${TMP}/Packages.${DIST}.bz2"
+  local package_list2="${TMP}/Packages.${DIST}-security.bz2"
   DownloadOrCopy ${PACKAGE_LIST} ${package_list}
   DownloadOrCopy ${PACKAGE_LIST2} ${package_list2}
   bzcat ${package_list} ${package_list2} | egrep '^(Package:|Filename:)' > ${TMP}/Packages
 
-  GeneratePackageList ${ARMEL_BASE_DEP_LIST} "${ARMEL_BASE_PACKAGES}"
-  GeneratePackageList ${ARMEL_EXTRA_DEP_LIST} "${ARMEL_EXTRA_PACKAGES}"
+  GeneratePackageList ${ARMHF_BASE_DEP_LIST} "${ARMHF_BASE_PACKAGES}"
+  GeneratePackageList ${ARMHF_EXTRA_DEP_LIST} "${ARMHF_EXTRA_PACKAGES}"
 }
 
 if [[ $# -eq 0 ]] ; then
