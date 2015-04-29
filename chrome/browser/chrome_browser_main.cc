@@ -680,7 +680,8 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // TODO(dalecurtis): Remove these checks and enable for all channels once we
   // track down the root causes of crbug.com/422522 and crbug.com/478932.
   if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-      chrome::VersionInfo::CHANNEL_CANARY || chrome::VersionInfo::CHANNEL_DEV) {
+      channel == chrome::VersionInfo::CHANNEL_CANARY ||
+      channel == chrome::VersionInfo::CHANNEL_DEV) {
     media::AudioManager::EnableHangMonitor();
   }
 
