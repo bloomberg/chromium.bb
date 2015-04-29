@@ -69,6 +69,6 @@ void IconLoader::ReadIcon() {
   }
 
   // Always notify the delegate, regardless of success.
-  target_message_loop_->PostTask(FROM_HERE,
+  target_task_runner_->PostTask(FROM_HERE,
       base::Bind(&IconLoader::NotifyDelegate, this));
 }

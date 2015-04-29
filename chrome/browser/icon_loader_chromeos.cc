@@ -205,6 +205,6 @@ void IconLoader::ReadIcon() {
                                         IconSizeToDIPSize(icon_size_)));
   image_skia.MakeThreadSafe();
   image_.reset(new gfx::Image(image_skia));
-  target_message_loop_->PostTask(
+  target_task_runner_->PostTask(
       FROM_HERE, base::Bind(&IconLoader::NotifyDelegate, this));
 }

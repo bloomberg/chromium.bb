@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -13,7 +14,7 @@ using content::BrowserThread;
 IconLoader::IconLoader(const base::FilePath& file_path,
                        IconSize size,
                        Delegate* delegate)
-    : target_message_loop_(NULL),
+    : target_task_runner_(NULL),
       file_path_(file_path),
       icon_size_(size),
       delegate_(delegate) {}
@@ -22,7 +23,7 @@ IconLoader::~IconLoader() {
 }
 
 void IconLoader::Start() {
-  target_message_loop_ = base::MessageLoopProxy::current();
+  target_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&IconLoader::ReadGroup, this),

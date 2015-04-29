@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/image/image.h"
 
@@ -87,8 +87,8 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   void NotifyDelegate();
 
-  // The message loop object of the thread in which we notify the delegate.
-  scoped_refptr<base::MessageLoopProxy> target_message_loop_;
+  // The task runner object of the thread in which we notify the delegate.
+  scoped_refptr<base::SingleThreadTaskRunner> target_task_runner_;
 
   base::FilePath file_path_;
 

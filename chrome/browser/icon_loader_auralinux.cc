@@ -50,6 +50,6 @@ void IconLoader::ReadIcon() {
       image_.reset(new gfx::Image(image));
   }
 
-  target_message_loop_->PostTask(
+  target_task_runner_->PostTask(
       FROM_HERE, base::Bind(&IconLoader::NotifyDelegate, this));
 }
