@@ -46,17 +46,15 @@ class HTMLDialogWin : public HTMLDialog {
        mshtml_ = LoadLibrary(L"MSHTML.DLL");
   }
 
-  virtual DialogResult ShowModal(void* parent_window,
-                                 CustomizationCallback* callback) {
+  DialogResult ShowModal(void* parent_window,
+                         CustomizationCallback* callback) override {
     int result = HTML_DLG_DECLINE;
     if (!InternalDoDialog(callback, &result))
       return HTML_DLG_ERROR;
     return static_cast<DialogResult>(result);
   }
 
-  virtual std::wstring GetExtraResult() {
-    return extra_result_;
-  }
+  std::wstring GetExtraResult() override { return extra_result_; }
 
  private:
   bool InternalDoDialog(CustomizationCallback* callback, int* result);

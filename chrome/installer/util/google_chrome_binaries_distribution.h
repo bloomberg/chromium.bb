@@ -11,13 +11,13 @@
 
 class GoogleChromeBinariesDistribution : public ChromiumBinariesDistribution {
  public:
-  virtual base::string16 GetDisplayName();
+  base::string16 GetDisplayName() override;
 
-  virtual base::string16 GetShortcutName(ShortcutType shortcut_type);
+  base::string16 GetShortcutName(ShortcutType shortcut_type) override;
 
-  virtual void UpdateInstallStatus(bool system_install,
-      installer::ArchiveType archive_type,
-      installer::InstallStatus install_status);
+  void UpdateInstallStatus(bool system_install,
+                           installer::ArchiveType archive_type,
+                           installer::InstallStatus install_status) override;
 
  protected:
   friend class BrowserDistribution;

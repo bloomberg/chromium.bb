@@ -20,11 +20,11 @@
 // hierarchy is moved back.
 class MoveTreeWorkItem : public WorkItem {
  public:
-  virtual ~MoveTreeWorkItem();
+  ~MoveTreeWorkItem() override;
 
-  virtual bool Do();
+  bool Do() override;
 
-  virtual void Rollback();
+  void Rollback() override;
 
  private:
   friend class WorkItem;

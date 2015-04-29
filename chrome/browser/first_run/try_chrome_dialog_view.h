@@ -85,7 +85,7 @@ class TryChromeDialogView : public views::ButtonListener,
 
  private:
   explicit TryChromeDialogView(size_t flavor);
-  virtual ~TryChromeDialogView();
+  ~TryChromeDialogView() override;
 
   Result ShowModal(const ActiveModalDialogListener& listener);
 

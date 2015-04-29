@@ -19,11 +19,11 @@
 namespace {
 class MasterPreferencesTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(base::CreateTemporaryFile(&prefs_file_));
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     EXPECT_TRUE(base::DeleteFile(prefs_file_, false));
   }
 

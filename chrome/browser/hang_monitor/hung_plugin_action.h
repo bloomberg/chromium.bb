@@ -21,9 +21,9 @@ class HungPluginAction : public HungWindowDetector::HungWindowNotification {
   HungPluginAction();
   ~HungPluginAction();
   // HungWindowNotification implementation
-  virtual bool OnHungWindowDetected(HWND hung_window,
-                                    HWND top_level_window,
-                                    ActionOnHungWindow* action);
+  bool OnHungWindowDetected(HWND hung_window,
+                            HWND top_level_window,
+                            ActionOnHungWindow* action) override;
 
  protected:
   void OnWindowResponsive(HWND window);

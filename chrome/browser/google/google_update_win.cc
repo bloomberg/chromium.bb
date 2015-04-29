@@ -173,16 +173,16 @@ class GoogleUpdateJobObserver : public CComObjectRootEx<CComSingleThreadModel>,
 
  private:
   // IJobObserver:
-  STDMETHOD(OnShow)();
-  STDMETHOD(OnCheckingForUpdate)();
-  STDMETHOD(OnUpdateAvailable)(const TCHAR* version_string);
-  STDMETHOD(OnWaitingToDownload)();
-  STDMETHOD(OnDownloading)(int time_remaining_ms, int pos);
-  STDMETHOD(OnWaitingToInstall)();
-  STDMETHOD(OnInstalling)();
-  STDMETHOD(OnPause)();
-  STDMETHOD(OnComplete)(LegacyCompletionCodes code, const TCHAR* text);
-  STDMETHOD(SetEventSink)(IProgressWndEvents* event_sink);
+  STDMETHOD(OnShow)() override;
+  STDMETHOD(OnCheckingForUpdate)() override;
+  STDMETHOD(OnUpdateAvailable)(const TCHAR* version_string) override;
+  STDMETHOD(OnWaitingToDownload)() override;
+  STDMETHOD(OnDownloading)(int time_remaining_ms, int pos) override;
+  STDMETHOD(OnWaitingToInstall)() override;
+  STDMETHOD(OnInstalling)() override;
+  STDMETHOD(OnPause)() override;
+  STDMETHOD(OnComplete)(LegacyCompletionCodes code, const TCHAR* text) override;
+  STDMETHOD(SetEventSink)(IProgressWndEvents* event_sink) override;
 
   // The task runner associated with the thread in which the job runs.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

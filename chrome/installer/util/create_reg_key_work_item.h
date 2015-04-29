@@ -16,11 +16,11 @@
 // It also creates all necessary intermediate keys if they do not exist.
 class CreateRegKeyWorkItem : public WorkItem {
  public:
-  virtual ~CreateRegKeyWorkItem();
+  ~CreateRegKeyWorkItem() override;
 
-  virtual bool Do();
+  bool Do() override;
 
-  virtual void Rollback();
+  void Rollback() override;
 
  private:
   friend class WorkItem;

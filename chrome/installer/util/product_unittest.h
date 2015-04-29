@@ -13,16 +13,16 @@
 
 class TestWithTempDir : public testing::Test {
  protected:
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   base::ScopedTempDir test_dir_;
 };
 
 class TestWithTempDirAndDeleteTempOverrideKeys : public TestWithTempDir {
  protected:
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_PRODUCT_UNITTEST_H_

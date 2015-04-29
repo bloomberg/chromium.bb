@@ -166,7 +166,7 @@ class MockInstallerState : public InstallerState {
 
 class InstallWorkerTest : public testing::Test {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     current_version_.reset(new Version("1.0.0.0"));
     new_version_.reset(new Version("42.0.0.0"));
 
@@ -186,8 +186,7 @@ class InstallWorkerTest : public testing::Test {
     temp_dir_ = base::FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123");
   }
 
-  virtual void TearDown() {
-  }
+  void TearDown() override {}
 
   void MaybeAddBinariesToInstallationState(
       bool system_level,

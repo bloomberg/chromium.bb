@@ -20,7 +20,7 @@ class RegistryKeyBackupTest : public testing::Test {
     logging::CloseLogFile();
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(test_data_.Initialize(HKEY_CURRENT_USER, L"SOFTWARE\\TmpTmp"));
     destination_path_.assign(test_data_.base_path()).append(L"\\Destination");
   }

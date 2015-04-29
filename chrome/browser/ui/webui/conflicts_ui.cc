@@ -80,10 +80,10 @@ class ConflictsDOMHandler : public WebUIMessageHandler,
                             public content::NotificationObserver {
  public:
   ConflictsDOMHandler() {}
-  virtual ~ConflictsDOMHandler() {}
+  ~ConflictsDOMHandler() override {}
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  void RegisterMessages() override;
 
   // Callback for the "requestModuleList" message.
   void HandleRequestModuleList(const base::ListValue* args);
@@ -93,7 +93,7 @@ class ConflictsDOMHandler : public WebUIMessageHandler,
 
   void Observe(int type,
                const content::NotificationSource& source,
-               const content::NotificationDetails& details);
+               const content::NotificationDetails& details) override;
 
   content::NotificationRegistrar registrar_;
 

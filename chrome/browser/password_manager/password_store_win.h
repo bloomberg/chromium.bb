@@ -38,7 +38,7 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
  private:
   class DBHandler;
 
-  virtual ~PasswordStoreWin();
+  ~PasswordStoreWin() override;
 
   // Invoked from Shutdown, but run on the DB thread.
   void ShutdownOnDBThread();

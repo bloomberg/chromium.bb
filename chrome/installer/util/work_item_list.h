@@ -25,14 +25,14 @@ class FilePath;
 // The WorkItems are executed in the same order as they are added to the list.
 class WorkItemList : public WorkItem {
  public:
-  virtual ~WorkItemList();
+  ~WorkItemList() override;
 
   // Execute the WorkItems in the same order as they are added to the list.
   // It aborts as soon as one WorkItem fails.
-  virtual bool Do();
+  bool Do() override;
 
   // Rollback the WorkItems in the reverse order as they are executed.
-  virtual void Rollback();
+  void Rollback() override;
 
   // Add a WorkItem to the list.
   // A WorkItem can only be added to the list before the list's DO() is called.
@@ -160,15 +160,15 @@ class WorkItemList : public WorkItem {
 // Also, as the class name suggests, Rollback is not possible.
 class NoRollbackWorkItemList : public WorkItemList {
  public:
-  virtual ~NoRollbackWorkItemList();
+  ~NoRollbackWorkItemList() override;
 
   // Execute the WorkItems in the same order as they are added to the list.
   // If a WorkItem fails, the function will return failure but all other
   // WorkItems will still be executed.
-  virtual bool Do();
+  bool Do() override;
 
   // No-op.
-  virtual void Rollback();
+  void Rollback() override;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_WORK_ITEM_LIST_H_

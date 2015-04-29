@@ -21,14 +21,12 @@ namespace {
 
 class CopyTreeWorkItemTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() {
-    logging::CloseLogFile();
-  }
+  void TearDown() override { logging::CloseLogFile(); }
 
   // the path to temporary directory used to contain the test operations
   base::ScopedTempDir test_dir_;

@@ -27,7 +27,7 @@ const DWORD dword2 = 1;
 
 class SetRegValueWorkItemTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Create a temporary key for testing
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
     key.DeleteKey(kTestRoot);
@@ -35,7 +35,7 @@ class SetRegValueWorkItemTest : public testing::Test {
     ASSERT_EQ(ERROR_SUCCESS,
         key.Create(HKEY_CURRENT_USER, kTestRoot, KEY_READ));
   }
-  virtual void TearDown() {
+  void TearDown() override {
     logging::CloseLogFile();
     // Clean up the temporary key
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);

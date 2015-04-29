@@ -19,11 +19,11 @@
 // specified, deletion will be performed only if all key files are not in use.
 class DeleteTreeWorkItem : public WorkItem {
  public:
-  virtual ~DeleteTreeWorkItem();
+  ~DeleteTreeWorkItem() override;
 
-  virtual bool Do();
+  bool Do() override;
 
-  virtual void Rollback();
+  void Rollback() override;
 
  private:
   friend class WorkItem;

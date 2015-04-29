@@ -15,7 +15,7 @@ namespace {
 
 class LzmaUtilTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_dir_));
     data_dir_ = data_dir_.AppendASCII("installer");
     ASSERT_TRUE(base::PathExists(data_dir_));

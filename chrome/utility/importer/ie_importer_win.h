@@ -43,7 +43,7 @@ class IEImporter : public Importer {
 
   FRIEND_TEST_ALL_PREFIXES(ImporterTest, IEImporter);
 
-  virtual ~IEImporter();
+  ~IEImporter() override;
 
   void ImportFavorites();
 

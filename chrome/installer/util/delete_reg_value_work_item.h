@@ -16,11 +16,11 @@
 // key exists.
 class DeleteRegValueWorkItem : public WorkItem {
  public:
-  virtual ~DeleteRegValueWorkItem();
+  ~DeleteRegValueWorkItem() override;
 
-  virtual bool Do();
+  bool Do() override;
 
-  virtual void Rollback();
+  void Rollback() override;
 
  private:
   friend class WorkItem;

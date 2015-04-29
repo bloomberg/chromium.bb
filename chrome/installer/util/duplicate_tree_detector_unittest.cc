@@ -18,7 +18,7 @@ namespace {
 
 class DuplicateTreeDetectorTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_source_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(temp_dest_dir_.CreateUniqueTempDir());
   }

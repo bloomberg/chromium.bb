@@ -17,11 +17,11 @@
 // exists.
 class SetRegValueWorkItem : public WorkItem {
  public:
-  virtual ~SetRegValueWorkItem();
+  ~SetRegValueWorkItem() override;
 
-  virtual bool Do();
+  bool Do() override;
 
-  virtual void Rollback();
+  void Rollback() override;
 
  private:
   friend class WorkItem;

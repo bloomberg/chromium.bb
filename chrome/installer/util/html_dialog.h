@@ -88,8 +88,8 @@ class EulaHTMLDialog {
  private:
   class Customizer : public HTMLDialog::CustomizationCallback {
    public:
-    virtual void OnBeforeCreation(wchar_t** extra);
-    virtual void OnBeforeDisplay(void* window);
+    void OnBeforeCreation(wchar_t** extra) override;
+    void OnBeforeDisplay(void* window) override;
   };
 
   HTMLDialog* dialog_;

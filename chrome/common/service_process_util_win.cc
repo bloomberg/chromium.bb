@@ -62,7 +62,7 @@ class ServiceProcessTerminateMonitor
   }
 
   // base::ObjectWatcher::Delegate implementation.
-  virtual void OnObjectSignaled(HANDLE object) {
+  void OnObjectSignaled(HANDLE object) override {
     if (!terminate_task_.is_null()) {
       terminate_task_.Run();
       terminate_task_.Reset();

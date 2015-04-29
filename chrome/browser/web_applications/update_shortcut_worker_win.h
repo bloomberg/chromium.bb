@@ -31,9 +31,9 @@ class UpdateShortcutWorker : public content::NotificationObserver {
 
  private:
   // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // Downloads icon via the FaviconDriver.
   void DownloadIcon();

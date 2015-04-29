@@ -37,9 +37,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
       : delegate_(NULL),
         did_signal_(false) {
   }
-  ~PrintSystemWatcherWin() {
-    Stop();
-  }
+  ~PrintSystemWatcherWin() override { Stop(); }
 
   class Delegate {
    public:
@@ -87,7 +85,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
   }
 
   // base::ObjectWatcher::Delegate method
-  virtual void OnObjectSignaled(HANDLE object) {
+  void OnObjectSignaled(HANDLE object) override {
     crash_keys::ScopedPrinterInfo crash_key(printer_info_);
     DWORD change = 0;
     FindNextPrinterChangeNotification(object, &change, NULL, NULL);

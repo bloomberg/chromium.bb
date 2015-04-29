@@ -71,7 +71,7 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
 
   // This shows a platform-specific balloon informing the user of the existence
   // of the message center in the status tray area.
-  void DisplayFirstRunBalloon();
+  void DisplayFirstRunBalloon() override;
 
   void EnforceStatusIconVisible();
 #endif

@@ -67,22 +67,18 @@ class WinConsole : public SimpleConsole {
     ::AllocConsole();
   }
 
-  virtual ~WinConsole() {
-    ::FreeConsole();
-  }
+  ~WinConsole() override { ::FreeConsole(); }
 
-  virtual bool Init() {
-    return SetIOHandles();
-  }
+  bool Init() override { return SetIOHandles(); }
 
-  virtual bool Write(const base::string16& txt) {
+  bool Write(const base::string16& txt) override {
     DWORD sz = txt.size();
     return (TRUE == ::WriteConsoleW(std_out_, txt.c_str(), sz, &sz, NULL));
   }
 
   // Reads a string from the console. Internally it is limited to 256
   // characters.
-  virtual void OnQuit() {
+  void OnQuit() override {
     // Block here so the user can see the results.
     SetColor(SimpleConsole::DEFAULT);
     Write(L"Press [enter] to continue\n");
@@ -92,7 +88,7 @@ class WinConsole : public SimpleConsole {
   }
 
   // Sets the foreground and background color.
-  virtual bool SetColor(Color color) {
+  bool SetColor(Color color) override {
     uint16 color_combo = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE |
                          FOREGROUND_INTENSITY;
     switch (color) {

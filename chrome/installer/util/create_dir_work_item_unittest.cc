@@ -16,9 +16,7 @@
 namespace {
   class CreateDirWorkItemTest : public testing::Test {
    protected:
-    virtual void SetUp() {
-      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    }
+    void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
     base::ScopedTempDir temp_dir_;
   };

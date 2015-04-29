@@ -72,7 +72,7 @@ class GetOpenFileNameClient : public content::UtilityProcessHostClient {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  virtual ~GetOpenFileNameClient();
+  ~GetOpenFileNameClient() override;
 
  private:
   void OnResult(const base::FilePath& directory,
@@ -205,7 +205,7 @@ class GetSaveFileNameClient : public content::UtilityProcessHostClient {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
-  virtual ~GetSaveFileNameClient();
+  ~GetSaveFileNameClient() override;
 
  private:
   void OnResult(const base::FilePath& path, int one_based_filter_index);

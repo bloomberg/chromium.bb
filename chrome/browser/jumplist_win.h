@@ -86,7 +86,7 @@ class JumpList : public TabRestoreServiceObserver,
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<JumpList>;
-  virtual ~JumpList();
+  ~JumpList() override;
 
   // Creates a ShellLinkItem object from a tab (or a window) and add it to the
   // given list.

@@ -20,7 +20,7 @@ class DeleteRegKeyWorkItemTest : public testing::Test {
     logging::CloseLogFile();
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(test_data_.Initialize(HKEY_CURRENT_USER, L"SOFTWARE\\TmpTmp"));
   }
 

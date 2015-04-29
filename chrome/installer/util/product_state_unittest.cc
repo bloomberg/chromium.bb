@@ -24,8 +24,8 @@ class ProductStateTest : public testing::Test {
   static void SetUpTestCase();
   static void TearDownTestCase();
 
-  virtual void SetUp();
-  virtual void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   void ApplyUninstallCommand(const wchar_t* exe_path, const wchar_t* args);
   void MinimallyInstallProduct(const wchar_t* version);

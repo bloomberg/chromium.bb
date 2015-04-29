@@ -15,15 +15,15 @@
 class ConditionalWorkItemList : public WorkItemList {
  public:
   explicit ConditionalWorkItemList(Condition* condition);
-  virtual ~ConditionalWorkItemList();
+  ~ConditionalWorkItemList() override;
 
   // If condition_->ShouldRun() returns true, then execute the items in this
   // list and return true iff they all succeed. If condition_->ShouldRun()
   // returns false, does nothing and returns true.
-  virtual bool Do();
+  bool Do() override;
 
   // Does a rollback of the items (if any) that were run in Do.
-  virtual void Rollback();
+  void Rollback() override;
 
  protected:
   // Pointer to a Condition that is used to determine whether to run this
@@ -38,7 +38,7 @@ class ConditionRunIfFileExists : public WorkItem::Condition {
  public:
   explicit ConditionRunIfFileExists(const base::FilePath& key_path)
       : key_path_(key_path) {}
-  bool ShouldRun() const;
+  bool ShouldRun() const override;
 
  private:
   base::FilePath key_path_;
@@ -49,9 +49,9 @@ class ConditionRunIfFileExists : public WorkItem::Condition {
 class Not : public WorkItem::Condition {
  public:
   explicit Not(WorkItem::Condition* original_condition);
-  ~Not();
+  ~Not() override;
 
-  bool ShouldRun() const;
+  bool ShouldRun() const override;
 
  private:
   scoped_ptr<WorkItem::Condition> original_condition_;

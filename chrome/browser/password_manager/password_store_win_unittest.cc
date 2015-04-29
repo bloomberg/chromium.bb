@@ -114,7 +114,7 @@ class PasswordStoreWinTest : public testing::Test {
     return true;
   }
 
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(db_thread_.Start());
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -134,7 +134,7 @@ class PasswordStoreWinTest : public testing::Test {
     wds_->Init();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     if (store_.get())
       store_->Shutdown();
     wds_->ShutdownOnUIThread();

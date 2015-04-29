@@ -48,7 +48,7 @@ class HungWindowDetector : public WorkerThreadTicker::Callback {
   // Note that the Initialize method needs to be called to initiate monitoring
   // of hung windows.
   explicit HungWindowDetector(HungWindowNotification* notification);
-  ~HungWindowDetector();
+  ~HungWindowDetector() override;
 
   // This method initialized the monitoring of hung windows. All descendant
   // windows of the passed-in top-level window which belong to a thread
@@ -62,7 +62,7 @@ class HungWindowDetector : public WorkerThreadTicker::Callback {
                   int message_response_timeout);
 
   // Implementation of the WorkerThreadTicker::Callback interface
-  virtual void OnTick();
+  void OnTick() override;
 
  private:
   // Helper function that checks whether the specified child window is hung.

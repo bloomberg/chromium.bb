@@ -12,13 +12,13 @@ class MultiProcessLockWin : public MultiProcessLock {
  public:
   explicit MultiProcessLockWin(const std::string& name) : name_(name) { }
 
-  virtual ~MultiProcessLockWin() {
+  ~MultiProcessLockWin() override {
     if (event_.Get() != NULL) {
       Unlock();
     }
   }
 
-  virtual bool TryLock() {
+  bool TryLock() override {
     if (event_.Get() != NULL) {
       DLOG(ERROR) << "MultiProcessLock is already locked - " << name_;
       return true;
@@ -40,7 +40,7 @@ class MultiProcessLockWin : public MultiProcessLock {
     }
   }
 
-  virtual void Unlock() {
+  void Unlock() override {
     if (event_.Get() == NULL) {
       DLOG(ERROR) << "Over-unlocked MultiProcessLock - " << name_;
       return;

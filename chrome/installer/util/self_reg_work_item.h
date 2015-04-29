@@ -13,10 +13,10 @@
 // Registers or unregisters the DLL at the given path.
 class SelfRegWorkItem : public WorkItem {
  public:
-  virtual ~SelfRegWorkItem();
+  ~SelfRegWorkItem() override;
 
-  virtual bool Do();
-  virtual void Rollback();
+  bool Do() override;
+  void Rollback() override;
 
  private:
   friend class WorkItem;

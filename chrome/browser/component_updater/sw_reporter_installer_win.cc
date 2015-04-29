@@ -290,23 +290,23 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
  public:
   explicit SwReporterInstallerTraits(PrefService* prefs) : prefs_(prefs) {}
 
-  virtual ~SwReporterInstallerTraits() {}
+  ~SwReporterInstallerTraits() override {}
 
-  virtual bool VerifyInstallation(const base::DictionaryValue& manifest,
-                                  const base::FilePath& dir) const {
+  bool VerifyInstallation(const base::DictionaryValue& manifest,
+                          const base::FilePath& dir) const override {
     return base::PathExists(dir.Append(kSwReporterExeName));
   }
 
-  virtual bool CanAutoUpdate() const { return true; }
+  bool CanAutoUpdate() const override { return true; }
 
-  virtual bool OnCustomInstall(const base::DictionaryValue& manifest,
-                               const base::FilePath& install_dir) {
+  bool OnCustomInstall(const base::DictionaryValue& manifest,
+                       const base::FilePath& install_dir) override {
     return true;
   }
 
-  virtual void ComponentReady(const base::Version& version,
-                              const base::FilePath& install_dir,
-                              scoped_ptr<base::DictionaryValue> manifest) {
+  void ComponentReady(const base::Version& version,
+                      const base::FilePath& install_dir,
+                      scoped_ptr<base::DictionaryValue> manifest) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ReportVersionWithUma(version);
 
@@ -352,11 +352,11 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
     }
   }
 
-  virtual base::FilePath GetBaseDirectory() const { return install_dir(); }
+  base::FilePath GetBaseDirectory() const override { return install_dir(); }
 
-  virtual void GetHash(std::vector<uint8_t>* hash) const { GetPkHash(hash); }
+  void GetHash(std::vector<uint8_t>* hash) const override { GetPkHash(hash); }
 
-  virtual std::string GetName() const { return "Software Reporter Tool"; }
+  std::string GetName() const override { return "Software Reporter Tool"; }
 
   static base::FilePath install_dir() {
     // The base directory on windows looks like:

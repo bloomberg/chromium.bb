@@ -20,7 +20,7 @@
 namespace {
 class MoveTreeWorkItemTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_from_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(temp_to_dir_.CreateUniqueTempDir());
   }

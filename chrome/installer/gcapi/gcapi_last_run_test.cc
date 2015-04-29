@@ -24,7 +24,7 @@ using base::win::RegKey;
 
 class GCAPILastRunTest : public ::testing::Test {
  protected:
-  void SetUp() {
+  void SetUp() override {
     // Override keys - this is undone during destruction.
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
 

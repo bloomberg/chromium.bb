@@ -72,7 +72,7 @@ class TopMostFinder : public BaseWindowFinder {
     return finder.is_top_most_;
   }
 
-  virtual bool ShouldStopIterating(HWND hwnd) {
+  bool ShouldStopIterating(HWND hwnd) override {
     if (hwnd == target_) {
       // Window is topmost, stop iterating.
       is_top_most_ = true;
@@ -176,7 +176,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
   }
 
  protected:
-  virtual bool ShouldStopIterating(HWND hwnd) {
+  bool ShouldStopIterating(HWND hwnd) override {
     RECT r;
     if (IsWindowVisible(hwnd) && GetWindowRect(hwnd, &r) &&
         PtInRect(&r, screen_loc_.ToPOINT())) {

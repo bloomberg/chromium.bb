@@ -61,7 +61,7 @@ class LazyEmf : public MetafilePlayer {
  public:
   LazyEmf(const scoped_refptr<RefCountedTempDir>& temp_dir, ScopedTempFile file)
       : temp_dir_(temp_dir), file_(file.Pass()) {}
-  virtual ~LazyEmf() { Close(); }
+  ~LazyEmf() override { Close(); }
 
   bool SafePlayback(HDC hdc) const override;
   bool SaveTo(base::File* file) const override;
@@ -142,7 +142,7 @@ class PdfToEmfUtilityProcessHostClient
     ScopedTempFile emf_;
   };
 
-  virtual ~PdfToEmfUtilityProcessHostClient();
+  ~PdfToEmfUtilityProcessHostClient() override;
 
   bool Send(IPC::Message* msg);
 
@@ -181,7 +181,7 @@ class PdfToEmfConverterImpl : public PdfToEmfConverter {
  public:
   PdfToEmfConverterImpl();
 
-  virtual ~PdfToEmfConverterImpl();
+  ~PdfToEmfConverterImpl() override;
 
   void Start(const scoped_refptr<base::RefCountedMemory>& data,
              const PdfRenderSettings& conversion_settings,

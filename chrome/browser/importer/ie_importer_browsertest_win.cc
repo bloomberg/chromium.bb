@@ -347,7 +347,7 @@ class TestObserver : public ProfileWriter,
     favicon_count_ += usage.size();
   }
 
-  virtual void AddIE7PasswordInfo(const IE7PasswordInfo& info) {
+  void AddIE7PasswordInfo(const IE7PasswordInfo& info) override {
     // This function also gets called for the IEImporter test. Ignore.
     if (ie_version_ == IE7) {
       EXPECT_EQ(L"Test1", info.url_hash);
@@ -357,13 +357,13 @@ class TestObserver : public ProfileWriter,
     }
   }
 
-  virtual void AddHomepage(const GURL& homepage) {
+  void AddHomepage(const GURL& homepage) override {
     EXPECT_EQ(homepage.spec(), "http://www.test.com/");
     ++homepage_count_;
   }
 
  private:
-  ~TestObserver() {}
+  ~TestObserver() override {}
 
   size_t bookmark_count_;
   size_t history_count_;

@@ -178,7 +178,7 @@ void CALLBACK WinAccessibilityEventMonitor::WinEventHookThunk(
 class NavigationAccessibilityTest : public InProcessBrowserTest {
  protected:
   NavigationAccessibilityTest() {}
-  virtual ~NavigationAccessibilityTest() {}
+  ~NavigationAccessibilityTest() override {}
 
   void SendKeyPress(ui::KeyboardCode key) {
     gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();

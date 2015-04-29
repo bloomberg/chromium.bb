@@ -20,7 +20,7 @@ wchar_t test_root[] = L"TmpTmp";
 
 class CreateRegKeyWorkItemTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     // Create a temporary key for testing
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
     key.DeleteKey(test_root);
@@ -28,7 +28,7 @@ class CreateRegKeyWorkItemTest : public testing::Test {
     ASSERT_EQ(ERROR_SUCCESS, key.Create(HKEY_CURRENT_USER, test_root,
                                         KEY_READ));
   }
-  virtual void TearDown() {
+  void TearDown() override {
     logging::CloseLogFile();
     // Clean up the temporary key
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);

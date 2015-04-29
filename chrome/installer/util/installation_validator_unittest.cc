@@ -277,7 +277,7 @@ class InstallationValidatorTest
       Channel channel,
       Vehicle vehicle,
       FakeInstallationState* state);
-  virtual void TearDown();
+  void TearDown() override;
 
   static logging::LogMessageHandlerFunction old_log_message_handler_;
   static ValidationErrorRecipient* validation_error_recipient_;

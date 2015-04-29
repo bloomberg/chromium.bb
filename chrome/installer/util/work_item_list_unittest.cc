@@ -26,14 +26,12 @@ const wchar_t kName[] = L"name";
 
 class WorkItemListTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
   }
 
-  virtual void TearDown() {
-    logging::CloseLogFile();
-  }
+  void TearDown() override { logging::CloseLogFile(); }
 
   base::ScopedTempDir temp_dir_;
   registry_util::RegistryOverrideManager registry_override_manager_;

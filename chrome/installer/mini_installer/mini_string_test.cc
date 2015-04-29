@@ -15,10 +15,8 @@ using mini_installer::StackString;
 namespace {
 class MiniInstallerStringTest : public testing::Test {
  protected:
-  virtual void SetUp() {
-  }
-  virtual void TearDown() {
-  }
+  void SetUp() override {}
+  void TearDown() override {}
 };
 }
 

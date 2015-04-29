@@ -72,10 +72,10 @@ class StatusTrayStateChangerWin : public INotificationCB,
   // entry in Explorer's list of notification area icons, and ever time
   // one of them changes, until UnregisterCallback is called or |this|
   // is destroyed.
-  virtual HRESULT STDMETHODCALLTYPE Notify(ULONG, NOTIFYITEM*);
+  HRESULT STDMETHODCALLTYPE Notify(ULONG, NOTIFYITEM*) override;
 
  protected:
-  virtual ~StatusTrayStateChangerWin();
+  ~StatusTrayStateChangerWin() override;
 
  private:
   friend class StatusTrayStateChangerWinTest;

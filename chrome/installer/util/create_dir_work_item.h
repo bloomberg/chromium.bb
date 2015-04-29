@@ -14,15 +14,15 @@
 // It also creates all necessary intermediate paths if they do not exist.
 class CreateDirWorkItem : public WorkItem {
  public:
-  virtual ~CreateDirWorkItem();
+  ~CreateDirWorkItem() override;
 
-  virtual bool Do();
+  bool Do() override;
 
   // Rollback tries to remove all directories created along the path.
   // If the leaf directory or one of the intermediate directories are not
   // empty, the non-empty directory and its parent directories will not be
   // removed.
-  virtual void Rollback();
+  void Rollback() override;
 
  private:
   friend class WorkItem;
