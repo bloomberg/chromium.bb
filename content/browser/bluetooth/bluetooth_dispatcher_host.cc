@@ -32,11 +32,19 @@ scoped_refptr<BluetoothDispatcherHost> BluetoothDispatcherHost::Create() {
 }
 
 void BluetoothDispatcherHost::OnDestruct() const {
+  // See class comment: UI Thread Note.
   BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
+void BluetoothDispatcherHost::OverrideThreadForMessage(
+    const IPC::Message& message,
+    content::BrowserThread::ID* thread) {
+  // See class comment: UI Thread Note.
+  *thread = BrowserThread::UI;
+}
+
 bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BluetoothDispatcherHost, message)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_RequestDevice, OnRequestDevice)
@@ -72,16 +80,6 @@ void BluetoothDispatcherHost::set_adapter(
 }
 
 void BluetoothDispatcherHost::OnRequestDevice(int thread_id, int request_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(
-                              &BluetoothDispatcherHost::OnRequestDeviceOnUI,
-                              this, thread_id, request_id));
-}
-
-void BluetoothDispatcherHost::OnRequestDeviceOnUI(int thread_id,
-                                                  int request_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // TODO(scheib) Extend this very simple mock implementation by using
   // device/bluetooth/test mock adapter and related classes.
@@ -148,18 +146,6 @@ void BluetoothDispatcherHost::OnConnectGATT(
     int thread_id,
     int request_id,
     const std::string& device_instance_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(
-                              &BluetoothDispatcherHost::OnConnectGATTOnUI,
-                              this, thread_id, request_id, device_instance_id));
-}
-
-void BluetoothDispatcherHost::OnConnectGATTOnUI(
-    int thread_id,
-    int request_id,
-    const std::string& device_instance_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(ortuno): Add actual implementation of connectGATT. This needs to be
   // done after the "allowed devices map" is implemented.
@@ -169,7 +155,7 @@ void BluetoothDispatcherHost::OnConnectGATTOnUI(
 
 void BluetoothDispatcherHost::OnSetBluetoothMockDataSetForTesting(
     const std::string& name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (name == "RejectRequestDevice_NotFoundError") {
     bluetooth_mock_data_set_ = MockData::REJECT;
     bluetooth_request_device_reject_type_ = BluetoothError::NOT_FOUND;

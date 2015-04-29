@@ -14,22 +14,25 @@ namespace content {
 
 // Dispatches and sends bluetooth related messages sent to/from a child
 // process BluetoothDispatcher from/to the main browser process.
-// Constructed on the main (UI) thread and receives IPC on the IO thread.
+//
 // Intended to be instantiated by the RenderProcessHost and installed as
 // a filter on the channel. BrowserMessageFilter is refcounted and typically
 // lives as long as it is installed on a channel.
 //
-// BluetoothDispatcherHost primarily operates on the UI thread because the
-// BluetoothAdapter and related objects live there. An exception is made for
-// Receiving IPC on the IO thread.
-class BluetoothDispatcherHost : public BrowserMessageFilter,
-                                public device::BluetoothAdapter::Observer {
+// UI Thread Note:
+// BluetoothDispatcherHost is constructed, operates, and destroyed on the UI
+// thread because BluetoothAdapter and related objects live there.
+class BluetoothDispatcherHost final
+    : public BrowserMessageFilter,
+      public device::BluetoothAdapter::Observer {
  public:
   // Creates a BluetoothDispatcherHost.
   static scoped_refptr<BluetoothDispatcherHost> Create();
 
   // BrowserMessageFilter:
   void OnDestruct() const override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  protected:
@@ -46,11 +49,8 @@ class BluetoothDispatcherHost : public BrowserMessageFilter,
 
   // IPC Handlers, see definitions in bluetooth_messages.h.
   void OnRequestDevice(int thread_id, int request_id);
-  void OnRequestDeviceOnUI(int thread_id, int request_id);
   void OnConnectGATT(int thread_id, int request_id,
                      const std::string& device_instance_id);
-  void OnConnectGATTOnUI(int thread_id, int request_id,
-                         const std::string& device_instance_id);
   void OnSetBluetoothMockDataSetForTesting(const std::string& name);
 
   // A BluetoothAdapter instance representing an adapter of the system.
