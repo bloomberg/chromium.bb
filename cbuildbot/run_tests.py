@@ -61,6 +61,7 @@ SPECIAL_TESTS = {
     'cli/cros/cros_debug_unittest': INSIDE,
     'cli/cros/lint_unittest': INSIDE,
     'cli/deploy_unittest': INSIDE,
+    'lib/alerts_unittest': INSIDE,
     'lib/chroot_util_unittest': INSIDE,
     'lib/filetype_unittest': INSIDE,
     'lib/upgrade_table_unittest': INSIDE,
