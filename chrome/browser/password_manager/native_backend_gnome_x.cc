@@ -337,7 +337,7 @@ class GKRMethod : public GnomeKeyringLoader {
 };
 
 void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int64 date_created = form.date_created.ToInternalValue();
   // If we are asked to save a password with 0 date, use the current time.
   // We don't want to actually save passwords as though on January 1, 1601.
@@ -381,7 +381,7 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
 
 void GKRMethod::AddLoginSearch(const PasswordForm& form,
                                const char* app_string) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   lookup_form_.reset(nullptr);
   // Search GNOME Keyring for matching passwords to update.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
@@ -401,7 +401,7 @@ void GKRMethod::AddLoginSearch(const PasswordForm& form,
 
 void GKRMethod::UpdateLoginSearch(const PasswordForm& form,
                                   const char* app_string) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   lookup_form_.reset(nullptr);
   // Search GNOME Keyring for matching passwords to update.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
@@ -419,7 +419,7 @@ void GKRMethod::UpdateLoginSearch(const PasswordForm& form,
 }
 
 void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // We find forms using the same fields as LoginDatabase::RemoveLogin().
   gnome_keyring_delete_password(
       &kGnomeSchema,
@@ -437,7 +437,7 @@ void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
 }
 
 void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   lookup_form_.reset(new PasswordForm(form));
   // Search GNOME Keyring for matching passwords.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
@@ -456,7 +456,7 @@ void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
 
 void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
                               const char* app_string) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   lookup_form_.reset(nullptr);
   // Search GNOME Keyring for matching passwords.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
@@ -470,7 +470,7 @@ void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
 }
 
 void GKRMethod::GetAllLogins(const char* app_string) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   lookup_form_.reset(nullptr);
   // We need to search for something, otherwise we get no results - so
   // we search for the fixed application string.
@@ -484,13 +484,13 @@ void GKRMethod::GetAllLogins(const char* app_string) {
 }
 
 GnomeKeyringResult GKRMethod::WaitResult() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   event_.Wait();
   return result_;
 }
 
 GnomeKeyringResult GKRMethod::WaitResult(ScopedVector<PasswordForm>* forms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   event_.Wait();
   *forms = forms_.Pass();
   return result_;
@@ -560,7 +560,7 @@ bool NativeBackendGnome::Init() {
 }
 
 bool NativeBackendGnome::RawAddLogin(const PasswordForm& form) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&GKRMethod::AddLogin,
@@ -582,7 +582,7 @@ password_manager::PasswordStoreChangeList NativeBackendGnome::AddLogin(
   // element, and signon_realm first, remove that, and then add the new entry.
   // We'd add the new one first, and then delete the original, but then the
   // delete might actually delete the newly-added entry!
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&GKRMethod::AddLoginSearch,
@@ -624,7 +624,7 @@ bool NativeBackendGnome::UpdateLogin(
   // differ in any of the mutable fields, then we remove the original, and
   // then add the new entry. We'd add the new one first, and then delete the
   // original, but then the delete might actually delete the newly-added entry!
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   DCHECK(changes);
   changes->clear();
   GKRMethod method;
@@ -660,7 +660,7 @@ bool NativeBackendGnome::UpdateLogin(
 }
 
 bool NativeBackendGnome::RemoveLogin(const PasswordForm& form) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&GKRMethod::RemoveLogin,
@@ -694,7 +694,7 @@ bool NativeBackendGnome::RemoveLoginsSyncedBetween(
 
 bool NativeBackendGnome::GetLogins(const PasswordForm& form,
                                    ScopedVector<PasswordForm>* forms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&GKRMethod::GetLogins,
@@ -722,7 +722,7 @@ bool NativeBackendGnome::GetBlacklistLogins(ScopedVector<PasswordForm>* forms) {
 
 bool NativeBackendGnome::GetLoginsList(bool autofillable,
                                        ScopedVector<PasswordForm>* forms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
 
   uint32_t blacklisted_by_user = !autofillable;
 
@@ -763,7 +763,7 @@ bool NativeBackendGnome::GetLoginsBetween(base::Time get_begin,
                                           base::Time get_end,
                                           TimestampToCompare date_to_compare,
                                           ScopedVector<PasswordForm>* forms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   forms->clear();
   // We could walk the list and add items as we find them, but it is much
   // easier to build the list and then filter the results.
@@ -790,7 +790,7 @@ bool NativeBackendGnome::RemoveLoginsBetween(
     base::Time get_end,
     TimestampToCompare date_to_compare,
     password_manager::PasswordStoreChangeList* changes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   DCHECK(changes);
   changes->clear();
   // We could walk the list and delete items as we find them, but it is much

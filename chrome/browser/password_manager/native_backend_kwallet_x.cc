@@ -325,7 +325,7 @@ bool NativeBackendKWallet::InitWithBus(scoped_refptr<dbus::Bus> optional_bus) {
 void NativeBackendKWallet::InitOnDBThread(scoped_refptr<dbus::Bus> optional_bus,
                                           base::WaitableEvent* event,
                                           bool* success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   DCHECK(!session_bus_.get());
   if (optional_bus.get()) {
     // The optional_bus parameter is given when this method is called in tests.
@@ -350,7 +350,7 @@ void NativeBackendKWallet::InitOnDBThread(scoped_refptr<dbus::Bus> optional_bus,
 }
 
 bool NativeBackendKWallet::StartKWalletd() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   // Sadly kwalletd doesn't use DBus activation, so we have to make a call to
   // klauncher to start it.
   dbus::ObjectProxy* klauncher =
@@ -394,7 +394,7 @@ bool NativeBackendKWallet::StartKWalletd() {
 }
 
 NativeBackendKWallet::InitResult NativeBackendKWallet::InitWallet() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   {
     // Check that KWallet is enabled.
     dbus::MethodCall method_call(kKWalletInterface, "isEnabled");
@@ -924,7 +924,7 @@ ScopedVector<autofill::PasswordForm> NativeBackendKWallet::DeserializeValue(
 }
 
 int NativeBackendKWallet::WalletHandle() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
 
   // Open the wallet.
   // TODO(mdm): Are we leaking these handles? Find out.

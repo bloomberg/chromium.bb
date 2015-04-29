@@ -186,7 +186,7 @@ bool PasswordStoreX::FillBlacklistLogins(
 }
 
 void PasswordStoreX::CheckMigration() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   if (migration_checked_ || !backend_.get())
     return;
   migration_checked_ = true;

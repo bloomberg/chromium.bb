@@ -45,7 +45,7 @@ using testing::WithArg;
 namespace {
 
 ACTION(QuitUIMessageLoop) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::MessageLoop::current()->Quit();
 }
 
