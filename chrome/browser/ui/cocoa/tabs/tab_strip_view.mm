@@ -211,7 +211,7 @@
 }
 
 // Returns AX children (tabs and new tab button), sorted from left to right.
-- (NSArray*)accessibilityChildren {
+- (NSArray*)tabStripViewAccessibilityChildren {
   NSArray* children =
       [super accessibilityAttributeValue:NSAccessibilityChildrenAttribute];
   return [children sortedArrayUsingComparator:
@@ -235,9 +235,9 @@
   if ([attribute isEqual:NSAccessibilityRoleAttribute]) {
     return NSAccessibilityTabGroupRole;
   } else if ([attribute isEqual:NSAccessibilityChildrenAttribute]) {
-    return [self accessibilityChildren];
+    return [self tabStripViewAccessibilityChildren];
   } else if ([attribute isEqual:NSAccessibilityTabsAttribute]) {
-    NSArray* children = [self accessibilityChildren];
+    NSArray* children = [self tabStripViewAccessibilityChildren];
     NSIndexSet* indexes = [children indexesOfObjectsPassingTest:
         ^BOOL(id child, NSUInteger idx, BOOL* stop) {
             NSString* role = [child
@@ -246,7 +246,7 @@
         }];
     return [children objectsAtIndexes:indexes];
   } else if ([attribute isEqual:NSAccessibilityContentsAttribute]) {
-    return [self accessibilityChildren];
+    return [self tabStripViewAccessibilityChildren];
   } else if ([attribute isEqual:NSAccessibilityValueAttribute]) {
     return [controller_ activeTabView];
   }
