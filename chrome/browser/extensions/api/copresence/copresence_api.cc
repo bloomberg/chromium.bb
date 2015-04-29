@@ -110,14 +110,10 @@ void CopresenceService::ResetState() {
 
 // static
 void CopresenceService::RegisterProfilePrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(
-      prefs::kCopresenceAuthenticatedDeviceId,
-      std::string(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kCopresenceAnonymousDeviceId,
-      std::string(),
-      PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kCopresenceAuthenticatedDeviceId,
+                               std::string());
+  registry->RegisterStringPref(prefs::kCopresenceAnonymousDeviceId,
+                               std::string());
 }
 
 // static

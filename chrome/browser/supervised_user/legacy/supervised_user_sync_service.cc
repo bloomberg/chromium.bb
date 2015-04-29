@@ -137,8 +137,7 @@ SupervisedUserSyncService::~SupervisedUserSyncService() {
 // static
 void SupervisedUserSyncService::RegisterProfilePrefs(
     PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kSupervisedUsers,
-                                   PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kSupervisedUsers);
 }
 
 // static

@@ -1898,44 +1898,24 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(pref_names::kExtensions);
   registry->RegisterListPref(pref_names::kToolbar,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      pref_names::kToolbarSize,
-      -1,  // default value
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(pref_names::kToolbarSize, -1);
   registry->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
   registry->RegisterListPref(pref_names::kInstallAllowList);
   registry->RegisterListPref(pref_names::kInstallDenyList);
   registry->RegisterDictionaryPref(pref_names::kInstallForceList);
   registry->RegisterListPref(pref_names::kAllowedTypes);
-  registry->RegisterBooleanPref(
-      pref_names::kStorageGarbageCollect,
-      false,  // default value
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(
-      pref_names::kLastUpdateCheck,
-      0,  // default value
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterInt64Pref(
-      pref_names::kNextUpdateCheck,
-      0,  // default value
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(pref_names::kStorageGarbageCollect, false);
+  registry->RegisterInt64Pref(pref_names::kLastUpdateCheck, 0);
+  registry->RegisterInt64Pref(pref_names::kNextUpdateCheck, 0);
   registry->RegisterListPref(pref_names::kAllowedInstallSites);
-  registry->RegisterStringPref(
-      pref_names::kLastChromeVersion,
-      std::string(),  // default value
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(pref_names::kLastChromeVersion, std::string());
   registry->RegisterDictionaryPref(kInstallSignature);
 
   registry->RegisterListPref(pref_names::kNativeMessagingBlacklist);
   registry->RegisterListPref(pref_names::kNativeMessagingWhitelist);
-  registry->RegisterBooleanPref(
-      pref_names::kNativeMessagingUserLevelHosts,
-      true,  // default value
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      kCorruptedDisableCount,
-      0,  // default value
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterBooleanPref(pref_names::kNativeMessagingUserLevelHosts,
+                                true);
+  registry->RegisterIntegerPref(kCorruptedDisableCount, 0);
 
 #if !defined(OS_MACOSX)
   registry->RegisterBooleanPref(pref_names::kAppFullscreenAllowed, true);

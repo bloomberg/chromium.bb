@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_registry.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
@@ -122,12 +123,12 @@ void DefaultProvider::RegisterProfilePrefs(
   // after two stable releases.
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    registry->RegisterIntegerPref(
-        GetPrefName(type),
-        GetDefaultValue(type),
-        IsContentSettingsTypeSyncable(type)
-            ? user_prefs::PrefRegistrySyncable::SYNCABLE_PREF
-            : user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+    if (IsContentSettingsTypeSyncable(type)) {
+      registry->RegisterIntegerPref(GetPrefName(type), GetDefaultValue(type),
+          user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+    } else {
+      registry->RegisterIntegerPref(GetPrefName(type), GetDefaultValue(type));
+    }
   }
 
   // Whether the deprecated dictionary preference has already been migrated

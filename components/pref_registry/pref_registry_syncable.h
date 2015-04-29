@@ -44,9 +44,6 @@ class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistrySimple {
   //
   // Note: These must NOT overlap with PrefRegistry::PrefRegistrationFlags.
   enum PrefRegistrationFlags {
-    // The pref will not be synced.
-    UNSYNCABLE_PREF = PrefRegistry::NO_REGISTRATION_FLAGS,
-
     // The pref will be synced.
     SYNCABLE_PREF = 1 << 1,
 

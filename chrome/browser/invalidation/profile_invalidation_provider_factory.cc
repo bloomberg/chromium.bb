@@ -141,8 +141,7 @@ void ProfileInvalidationProviderFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kInvalidationServiceUseGCMChannel,
-      true,  // if no value in prefs, use GCM channel.
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      true);  // if no value in prefs, use GCM channel.
   InvalidatorStorage::RegisterProfilePrefs(registry);
 }
 

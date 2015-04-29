@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_registry.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_split.h"
@@ -120,12 +121,12 @@ void PrefProvider::RegisterProfilePrefs(
                                 false);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    registry->RegisterDictionaryPref(
-        kContentSettingsExceptionsPrefs[i],
-        IsContentSettingsTypeSyncable(ContentSettingsType(i))
-            ? user_prefs::PrefRegistrySyncable::SYNCABLE_PREF
-            : user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF
-    );
+    if (IsContentSettingsTypeSyncable(ContentSettingsType(i))) {
+      registry->RegisterDictionaryPref(kContentSettingsExceptionsPrefs[i],
+          user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+    } else {
+      registry->RegisterDictionaryPref(kContentSettingsExceptionsPrefs[i]);
+    }
   }
 }
 
