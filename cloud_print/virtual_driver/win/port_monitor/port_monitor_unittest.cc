@@ -83,13 +83,9 @@ class PortMonitorTest : public testing::Test  {
   }
 
  protected:
-  virtual void SetUp() {
-    SetUpChromeExeRegistry();
-  }
+  void SetUp() override { SetUpChromeExeRegistry(); }
 
-  virtual void TearDown() {
-    DeleteChromeExeRegistry();
-  }
+  void TearDown() override { DeleteChromeExeRegistry(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PortMonitorTest);

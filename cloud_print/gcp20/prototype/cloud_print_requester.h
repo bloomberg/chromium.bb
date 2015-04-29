@@ -95,7 +95,7 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
                       Delegate* delegate);
 
   // Destroys the object.
-  virtual ~CloudPrintRequester();
+  ~CloudPrintRequester() override;
 
   // Returns |true| if either |gaia| or |request| is awaiting for response.
   bool IsBusy() const;
