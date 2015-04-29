@@ -269,6 +269,7 @@ class GaiaCookieManagerService : public KeyedService,
   std::vector<std::pair<std::string, bool> > listed_accounts_;
 
   bool list_accounts_fetched_once_;
+  scoped_ptr<net::URLFetcher> logout_url_request_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaCookieManagerService);
 };

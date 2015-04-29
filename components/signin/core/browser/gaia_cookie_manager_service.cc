@@ -457,10 +457,11 @@ void GaiaCookieManagerService::StartLogOutUrlFetch() {
   VLOG(1) << "GaiaCookieManagerService::StartLogOutUrlFetch";
   GURL logout_url(GaiaUrls::GetInstance()->service_logout_url().Resolve(
       base::StringPrintf("?source=%s", source_.c_str())));
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(logout_url, net::URLFetcher::GET, this);
-  fetcher->SetRequestContext(signin_client_->GetURLRequestContext());
-  fetcher->Start();
+  logout_url_request_.reset(
+      net::URLFetcher::Create(logout_url, net::URLFetcher::GET, this));
+  logout_url_request_->SetRequestContext(
+      signin_client_->GetURLRequestContext());
+  logout_url_request_->Start();
 }
 
 void GaiaCookieManagerService::OnUbertokenSuccess(
@@ -596,6 +597,7 @@ void GaiaCookieManagerService::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
   VLOG(1) << "GaiaCookieManagerService::OnURLFetchComplete";
+  scoped_ptr<net::URLFetcher> logout_url_request(logout_url_request_.Pass());
 
   if ((!source->GetStatus().is_success() ||
       source->GetResponseCode() != net::HTTP_OK) &&
