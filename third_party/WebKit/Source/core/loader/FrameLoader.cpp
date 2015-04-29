@@ -983,6 +983,9 @@ void FrameLoader::commitProvisionalLoad()
         // Document, since no child frames should be attached. The assert below
         // enforces this invariant.
         m_frame->detachChildren();
+        // If detachChildren() detaches this frame, abandon the current load.
+        if (!client())
+            return;
         m_frame->document()->detach();
     }
     ASSERT(m_frame->tree().childCount() == 0);
