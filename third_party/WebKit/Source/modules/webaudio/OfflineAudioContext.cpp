@@ -101,6 +101,16 @@ OfflineAudioContext::~OfflineAudioContext()
 
 ScriptPromise OfflineAudioContext::startOfflineRendering(ScriptState* scriptState)
 {
+    // Calling close() on an OfflineAudioContext is not supported/allowed,
+    // but it might well have been stopped by its execution context.
+    if (isContextClosed()) {
+        return ScriptPromise::rejectWithDOMException(
+            scriptState,
+            DOMException::create(
+                InvalidStateError,
+                "cannot call startRendering on an OfflineAudioContext in a stopped state."));
+    }
+
     if (m_offlineResolver) {
         // Can't call startRendering more than once.  Return a rejected promise now.
         return ScriptPromise::rejectWithDOMException(

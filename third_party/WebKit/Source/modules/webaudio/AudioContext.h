@@ -222,9 +222,11 @@ public:
     void fireCompletionEvent();
     void notifyStateChange();
 
-    // A context is considered closed if closeContext() has been called, even if the audio HW has
-    // not yet been stopped.  It will be stopped eventually.
-    bool isContextClosed() const { return m_closeResolver; }
+    // A context is considered closed if:
+    //  - closeContext() has been called, even if the audio HW has not yet been
+    //    stopped.  It will be stopped eventually.
+    //  - it has been stopped (or is stopping) by its execution context.
+    bool isContextClosed() const { return m_closeResolver || m_isStopScheduled || m_isCleared; }
 
     static unsigned s_hardwareContextCount;
     static unsigned s_contextId;

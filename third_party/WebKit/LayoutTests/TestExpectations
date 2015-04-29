@@ -1667,8 +1667,6 @@ crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-2.html [ NeedsManu
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsManualRebaseline ]
 crbug.com/116710 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsManualRebaseline ]
 
-crbug.com/435867 [ Linux Win ] webaudio/scriptprocessornode-detached-no-crash.html [ Pass Crash ]
-
 # Timing out on WinXP after r183502
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-canvas-tainting.html [ Pass Timeout ]
 crbug.com/422278 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Timeout ]

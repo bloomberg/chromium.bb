@@ -7,7 +7,7 @@
 </head>
 <body>
 <script>
-description("Tests that ScriptProcessorNode event dispatch doesn't fail when detached from document.");
+description("Tests document-detached use of AudioContext, pass if no crash.");
 
 window.jsTestIsAsync = true;
 
@@ -15,26 +15,23 @@ var sampleRate = 44100.0;
 var renderLengthInFrames = 512;
 var bufferSize = 512;
 var context;
+var node;
 function runTest()
 {
-    var node;
-
     try {
         node = context.createScriptProcessor(bufferSize, 0, 1);
-        testPassed("Successfully created ScriptProcessorNode.");
+        var source = context.createBufferSource();
+        source.buffer = createImpulseBuffer(context, bufferSize);
+        node.onaudioprocess = function(e) { };
+        source.connect(node);
+        node.connect(context.destination);
+        source.start(0);
+
+        context.startRendering();
     } catch (e) {
-        testFailed("Failed to create ScriptProcessorNode.");
+        // The context has been stopped and detached; nothing to test.
+        return;
     }
-
-    var source = context.createBufferSource();
-    source.buffer = createImpulseBuffer(context, bufferSize);
-
-    node.onaudioprocess = function(e) { };
-    source.connect(node);
-    node.connect(context.destination);
-    source.start(0);
-
-    context.startRendering();
 }
 
 var w;

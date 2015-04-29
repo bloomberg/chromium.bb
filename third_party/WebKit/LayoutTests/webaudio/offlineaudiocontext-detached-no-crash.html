@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="resources/compatibility.js"></script>
+<script src="resources/audio-testing.js"></script>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests document-detached use of OfflineAudioContext, pass if no crash.");
+
+window.jsTestIsAsync = true;
+
+function errorCallback(error)
+{
+    testPassed("OfflineAudioContext.startRendering() on a closed context threw an exception.");
+    finishJSTest();
+}
+
+function successCallback()
+{
+    testFailed("OfflineAudioContext.startRendering() on a closed context did not throw an exception.");
+    finishJSTest();
+}
+
+var context;
+function runTest()
+{
+    context.startRendering().then(successCallback, errorCallback);
+}
+
+function createOfflineContext()
+{
+    var sampleRate = 44100.0;
+    var renderLengthInFrames = 512;
+    var bufferSize = 512;
+
+    context = new w.OfflineAudioContext(1, renderLengthInFrames, sampleRate);
+    var node = context.createScriptProcessor(bufferSize, 0, 1);
+    var source = context.createBufferSource();
+    source.buffer = createImpulseBuffer(context, bufferSize);
+    node.onaudioprocess = function(e) { };
+    source.connect(node);
+    node.connect(context.destination);
+    source.start(0);
+}
+
+var w;
+function processMessage(event) {
+    if (event.data == "opened") {
+        createOfflineContext();
+        w.close();
+    } else if (event.data == "closed") {
+        setTimeout(runTest, 100);
+    }
+}
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+    testRunner.setCanOpenWindows();
+}
+
+w = window.open('../resources/window-postmessage-open-close.html');
+window.addEventListener("message", processMessage, false);
+</script>
+</body>
+</html>
