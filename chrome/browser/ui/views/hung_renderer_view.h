@@ -19,6 +19,7 @@ class WebContents;
 }
 
 namespace views {
+class Label;
 class LabelButton;
 }
 
@@ -149,6 +150,12 @@ class HungRendererDialogView : public views::DialogDelegateView,
 
   static void InitClass();
 
+  // An amusing icon image.
+  static gfx::ImageSkia* frozen_icon_;
+
+  // The label describing the list.
+  views::Label* info_label_;
+
   // Controls within the dialog box.
   views::TableView* hung_pages_table_;
 
@@ -161,9 +168,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
 
   // Whether or not we've created controls for ourself.
   bool initialized_;
-
-  // An amusing icon image.
-  static gfx::ImageSkia* frozen_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialogView);
 };

@@ -235,8 +235,9 @@ void HungRendererDialogView::KillRendererProcess(
 
 
 HungRendererDialogView::HungRendererDialogView()
-    : hung_pages_table_(NULL),
-      kill_button_(NULL),
+    : info_label_(nullptr),
+      hung_pages_table_(nullptr),
+      kill_button_(nullptr),
       initialized_(false) {
   InitClass();
 }
@@ -287,6 +288,15 @@ void HungRendererDialogView::ShowForWebContents(WebContents* contents) {
     // the list of hung pages for a potentially unrelated renderer while this
     // one is showing.
     hung_pages_table_model_->InitForWebContents(contents);
+
+    info_label_->SetText(
+        l10n_util::GetPluralStringFUTF16(IDS_BROWSER_HANGMONITOR_RENDERER,
+                                         hung_pages_table_model_->RowCount()));
+    Layout();
+
+    // Make Widget ask for the window title again.
+    GetWidget()->UpdateWindowTitle();
+
     GetWidget()->Show();
   }
 }
@@ -307,7 +317,12 @@ void HungRendererDialogView::EndForWebContents(WebContents* contents) {
 // HungRendererDialogView, views::DialogDelegate implementation:
 
 base::string16 HungRendererDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_TITLE);
+  if (!initialized_)
+    return base::string16();
+
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_BROWSER_HANGMONITOR_RENDERER_TITLE,
+      hung_pages_table_model_->RowCount());
 }
 
 void HungRendererDialogView::WindowClosing() {
@@ -398,10 +413,9 @@ void HungRendererDialogView::Init() {
   views::ImageView* frozen_icon_view = new views::ImageView;
   frozen_icon_view->SetImage(frozen_icon_);
 
-  views::Label* info_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER));
-  info_label->SetMultiLine(true);
-  info_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  info_label_ = new views::Label();
+  info_label_->SetMultiLine(true);
+  info_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   hung_pages_table_model_.reset(new HungPagesTableModel(this));
   std::vector<ui::TableColumn> columns;
@@ -426,10 +440,10 @@ void HungRendererDialogView::Init() {
 
   layout->StartRow(0, double_column_set_id);
   layout->AddView(frozen_icon_view, 1, 3);
-  // Add the label with a preferred width of 1, this way it doesn't effect the
+  // Add the label with a preferred width of 1, this way it doesn't affect the
   // overall preferred size of the dialog.
   layout->AddView(
-      info_label, 1, 1, GridLayout::FILL, GridLayout::LEADING, 1, 0);
+      info_label_, 1, 1, GridLayout::FILL, GridLayout::LEADING, 1, 0);
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 

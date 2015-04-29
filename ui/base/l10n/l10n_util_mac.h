@@ -72,6 +72,12 @@ UI_BASE_EXPORT NSString* GetNSStringFWithFixup(int message_id,
                                                const base::string16& c,
                                                const base::string16& d);
 
+// Get a resource string using |number| with a locale-specific plural rule.
+// |message_id| points to a message in the ICU syntax.
+// See http://userguide.icu-project.org/formatparse/messages and
+// go/plurals (Google internal).
+UI_BASE_EXPORT NSString* GetPluralNSStringF(int message_id, int number);
+
 // Support the override of the locale with the value from Cocoa.
 UI_BASE_EXPORT void OverrideLocaleWithCocoaLocale();
 UI_BASE_EXPORT const std::string& GetLocaleOverride();

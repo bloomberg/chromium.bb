@@ -7571,17 +7571,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
   </ex></ph>Would you like to stop it?
         </message>
       </if>
-      <message name="IDS_BROWSER_HANGMONITOR_RENDERER_TITLE" desc="The title of the 'A renderer has hung' dialog">
-        Page(s) Unresponsive
+      <message name="IDS_BROWSER_HANGMONITOR_RENDERER_TITLE" desc="The title of the 'A renderer has hung' dialog. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+        {NUM_PAGES, plural,
+        =1 {Page Unresponsive}
+        other {Pages Unresponsive}}
       </message>
-      <message name="IDS_BROWSER_HANGMONITOR_RENDERER" desc="A renderer has hung">
-        The following page(s) have become unresponsive. You can wait for them to become responsive or kill them.
+      <message name="IDS_BROWSER_HANGMONITOR_RENDERER" desc="A renderer has hung. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+        {NUM_PAGES, plural,
+        =1 {The following page has become unresponsive. You can wait for it to become responsive or kill it.}
+        other {The following pages have become unresponsive. You can wait for them to become responsive or kill them.}}
       </message>
       <message name="IDS_BROWSER_HANGMONITOR_RENDERER_WAIT" desc="The label of the 'wait' button">
         Wait
       </message>
       <message name="IDS_BROWSER_HANGMONITOR_RENDERER_END" desc="The label of the 'kill' button">
-        Kill pages
+        Kill
       </message>
       <message name="IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR" desc="The text of the infobar notifying the user that a plugin has hung">
         A plugin (<ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>) isn't responding.

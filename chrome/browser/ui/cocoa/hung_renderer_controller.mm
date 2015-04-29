@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -26,6 +27,29 @@
 #include "ui/gfx/image/image.h"
 
 using content::WebContents;
+
+@interface HungRendererController ()
+
+// Lays out the interface for the specified number of items.
+- (void)layoutForItemCount:(int)count;
+
+// Modifies the dialog to show a warning for the given tab contents.
+// The dialog will contain a list of all tabs that share a renderer
+// process with |contents|.  The caller must not delete any tab
+// contents without first calling endForWebContents.
+- (void)showForWebContents:(content::WebContents*)contents;
+
+// Notifies the dialog that |contents| is either responsive or closed.
+// If |contents| shares the same render process as the tab contents
+// this dialog was created for, this function will close the dialog.
+// If |contents| has a different process, this function does nothing.
+- (void)endForWebContents:(content::WebContents*)contents;
+
+// Called by |hungContentsObserver_| to indicate that |hungContents_|
+// has gone away.
+- (void)renderProcessGone;
+
+@end
 
 namespace {
 // We only support showing one of these at a time per app.  The
@@ -77,11 +101,27 @@ class HungRendererWebContentsObserverBridge
 }
 
 - (void)awakeFromNib {
-  // Load in the image
+  // Load in the image.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   NSImage* backgroundImage =
       rb.GetNativeImageNamed(IDR_FROZEN_TAB_ICON).ToNSImage();
   [imageView_ setImage:backgroundImage];
+
+  // Make the "wait" button respond to additional keys.  By setting this to
+  // @"\e", it will respond to both Esc and Command-. (period).
+  KeyEquivalentAndModifierMask key;
+  key.charCode = @"\e";
+  [waitButton_ addKeyEquivalent:key];
+}
+
+- (void)layoutForItemCount:(int)count {
+  // Set the messages.
+  [[self window] setTitle:
+      l10n_util::GetPluralNSStringF(IDS_BROWSER_HANGMONITOR_RENDERER_TITLE,
+                                    count)];
+  [messageView_ setStringValue:
+      l10n_util::GetPluralNSStringF(IDS_BROWSER_HANGMONITOR_RENDERER,
+                                    count)];
 
   // Make the message fit.
   CGFloat messageShift =
@@ -97,12 +137,6 @@ class HungRendererWebContentsObserverBridge
   [GTMUILocalizerAndLayoutTweaker
       resizeWindowWithoutAutoResizingSubViews:[self window]
                                         delta:windowDelta];
-
-  // Make the "wait" button respond to additional keys.  By setting this to
-  // @"\e", it will respond to both Esc and Command-. (period).
-  KeyEquivalentAndModifierMask key;
-  key.charCode = @"\e";
-  [waitButton_ addKeyEquivalent:key];
 }
 
 + (void)showForWebContents:(content::WebContents*)contents {
@@ -201,6 +235,7 @@ class HungRendererWebContentsObserverBridge
   hungFavicons_.reset([favicons copy]);
   [tableView_ reloadData];
 
+  [self layoutForItemCount:[titles count]];
   [[self window] center];
   [self showWindow:self];
 }

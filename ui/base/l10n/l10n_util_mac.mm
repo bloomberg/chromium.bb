@@ -158,5 +158,9 @@ NSString* GetNSStringFWithFixup(int message_id,
                                                            a, b, c, d));
 }
 
+NSString* GetPluralNSStringF(int message_id, int number) {
+  return base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(message_id,
+                                                                   number));
+}
 
 }  // namespace l10n_util

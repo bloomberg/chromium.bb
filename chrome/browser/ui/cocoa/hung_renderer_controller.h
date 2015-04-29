@@ -63,22 +63,6 @@ class WebContents;
 // Waits longer for the renderers to respond.
 - (IBAction)wait:(id)sender;
 
-// Modifies the dialog to show a warning for the given tab contents.
-// The dialog will contain a list of all tabs that share a renderer
-// process with |contents|.  The caller must not delete any tab
-// contents without first calling endForWebContents.
-- (void)showForWebContents:(content::WebContents*)contents;
-
-// Notifies the dialog that |contents| is either responsive or closed.
-// If |contents| shares the same render process as the tab contents
-// this dialog was created for, this function will close the dialog.
-// If |contents| has a different process, this function does nothing.
-- (void)endForWebContents:(content::WebContents*)contents;
-
-// Called by |hungContentsObserver_| to indicate that |hungContents_|
-// has gone away.
-- (void)renderProcessGone;
-
 @end  // HungRendererController
 
 
