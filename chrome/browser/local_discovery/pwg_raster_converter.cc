@@ -39,7 +39,7 @@ class FileHandlers {
   FileHandlers() {}
 
   ~FileHandlers() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   }
 
   void Init(base::RefCountedMemory* data);
@@ -74,7 +74,7 @@ class FileHandlers {
 };
 
 void FileHandlers::Init(base::RefCountedMemory* data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (!temp_dir_.CreateUniqueTempDir()) {
     return;
@@ -156,7 +156,7 @@ PwgUtilityProcessHostClient::~PwgUtilityProcessHostClient() {
 void PwgUtilityProcessHostClient::Convert(
     base::RefCountedMemory* data,
     const PWGRasterConverter::ResultCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback_ = callback;
   CHECK(!files_);
   files_.reset(new FileHandlers());
@@ -186,7 +186,7 @@ bool PwgUtilityProcessHostClient::OnMessageReceived(
 }
 
 void PwgUtilityProcessHostClient::OnProcessStarted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!utility_process_host_) {
     RunCallbackOnUIThread(false);
     return;
@@ -202,17 +202,17 @@ void PwgUtilityProcessHostClient::OnProcessStarted() {
 }
 
 void PwgUtilityProcessHostClient::OnSucceeded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   RunCallback(true);
 }
 
 void PwgUtilityProcessHostClient::OnFailed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   RunCallback(false);
 }
 
 void PwgUtilityProcessHostClient::OnFilesReadyOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!files_->IsValid()) {
     RunCallbackOnUIThread(false);
     return;
@@ -223,7 +223,7 @@ void PwgUtilityProcessHostClient::OnFilesReadyOnUIThread() {
 }
 
 void PwgUtilityProcessHostClient::StartProcessOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   utility_process_host_ =
       content::UtilityProcessHost::Create(
           this,
@@ -241,7 +241,7 @@ void PwgUtilityProcessHostClient::RunCallback(bool success) {
 }
 
 void PwgUtilityProcessHostClient::RunCallbackOnUIThread(bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!callback_.is_null()) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(callback_, success,

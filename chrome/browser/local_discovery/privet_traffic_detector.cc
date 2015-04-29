@@ -22,7 +22,7 @@ const char kPrivetDeviceTypeDnsString[] = "\x07_privet";
 
 void GetNetworkListOnFileThread(
     const base::Callback<void(const net::NetworkInterfaceList&)> callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   net::NetworkInterfaceList networks;
   if (!GetNetworkList(&networks, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
     return;
@@ -76,26 +76,26 @@ void PrivetTrafficDetector::Start() {
 }
 
 PrivetTrafficDetector::~PrivetTrafficDetector() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void PrivetTrafficDetector::StartOnIOThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   ScheduleRestart();
 }
 
 void PrivetTrafficDetector::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   restart_attempts_ = kMaxRestartAttempts;
   if (type != net::NetworkChangeNotifier::CONNECTION_NONE)
     ScheduleRestart();
 }
 
 void PrivetTrafficDetector::ScheduleRestart() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   socket_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
   content::BrowserThread::PostDelayedTask(
@@ -108,7 +108,7 @@ void PrivetTrafficDetector::ScheduleRestart() {
 }
 
 void PrivetTrafficDetector::Restart(const net::NetworkInterfaceList& networks) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   networks_ = networks;
   if (Bind() < net::OK || DoLoop(0) < net::OK) {
     if ((restart_attempts_--) > 0)
@@ -125,7 +125,7 @@ int PrivetTrafficDetector::Bind() {
     UMA_HISTOGRAM_LONG_TIMES("LocalDiscovery.DetectorRestartTime", time_delta);
   }
   start_time_ = base::Time::Now();
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   socket_.reset(new net::UDPServerSocket(NULL, net::NetLog::Source()));
   net::IPEndPoint multicast_addr = net::GetMDnsIPEndPoint(address_family_);
   net::IPAddressNumber address_any(multicast_addr.address().size());
@@ -170,7 +170,7 @@ bool PrivetTrafficDetector::IsPrivetPacket(int rv) const {
 }
 
 int PrivetTrafficDetector::DoLoop(int rv) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   do {
     if (IsPrivetPacket(rv)) {
       socket_.reset();
