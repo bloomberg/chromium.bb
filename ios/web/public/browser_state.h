@@ -17,6 +17,9 @@ class URLRequestContextGetter;
 
 namespace web {
 class CertificatePolicyCache;
+class URLDataManagerIOS;
+class URLDataManagerIOSBackend;
+class URLRequestChromeJob;
 
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread. All these methods must only be called on the UI
@@ -48,6 +51,21 @@ class BrowserState : public base::SupportsUserData {
 
  protected:
   BrowserState();
+
+ private:
+  friend class URLDataManagerIOS;
+  friend class URLRequestChromeJob;
+
+  // Returns the URLDataManagerIOSBackend instance associated with this
+  // BrowserState, creating it if necessary. Should only be called on the IO
+  // thread.
+  // Not intended for usage outside of //web.
+  URLDataManagerIOSBackend* GetURLDataManagerIOSBackendOnIOThread();
+
+  // The URLDataManagerIOSBackend instance associated with this BrowserState.
+  // Created and destroyed on the IO thread, and should be accessed only from
+  // the IO thread.
+  URLDataManagerIOSBackend* url_data_manager_ios_backend_;
 };
 
 }  // namespace web

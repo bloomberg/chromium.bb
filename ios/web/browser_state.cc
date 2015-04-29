@@ -4,15 +4,18 @@
 
 #include "ios/web/public/browser_state.h"
 
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/web_thread.h"
+#include "ios/web/webui/url_data_manager_ios_backend.h"
 
 namespace web {
 namespace {
 // Private key used for safe conversion of base::SupportsUserData to
 // web::BrowserState in web::BrowserState::FromSupportsUserData.
 const char kBrowserStateIdentifierKey[] = "BrowserStateIdentifierKey";
+
 // Data key names.
 const char kCertificatePolicyCacheKeyName[] = "cert_policy_cache";
 
@@ -44,7 +47,7 @@ scoped_refptr<CertificatePolicyCache> BrowserState::GetCertificatePolicyCache(
   return handle->policy_cache;
 }
 
-BrowserState::BrowserState() {
+BrowserState::BrowserState() : url_data_manager_ios_backend_(nullptr) {
   // (Refcounted)?BrowserStateKeyedServiceFactories needs to be able to convert
   // a base::SupportsUserData to a BrowserState. Moreover, since the factories
   // may be passed a content::BrowserContext instead of a BrowserState, attach
@@ -53,6 +56,25 @@ BrowserState::BrowserState() {
 }
 
 BrowserState::~BrowserState() {
+  // Delete the URLDataManagerIOSBackend instance on the IO thread if it has
+  // been created. Note that while this check can theoretically race with a
+  // call to |GetURLDataManagerIOSBackendOnIOThread()|, if any clients of this
+  // BrowserState are still accessing it on the IO thread at this point,
+  // they're going to have a bad time anyway.
+  if (url_data_manager_ios_backend_) {
+    bool posted = web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
+                                             url_data_manager_ios_backend_);
+    if (!posted)
+      delete url_data_manager_ios_backend_;
+  }
+}
+
+URLDataManagerIOSBackend*
+BrowserState::GetURLDataManagerIOSBackendOnIOThread() {
+  DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
+  if (!url_data_manager_ios_backend_)
+    url_data_manager_ios_backend_ = new URLDataManagerIOSBackend();
+  return url_data_manager_ios_backend_;
 }
 
 // static

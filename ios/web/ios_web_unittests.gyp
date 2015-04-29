@@ -16,6 +16,7 @@
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../../third_party/ocmock/ocmock.gyp:ocmock',
+        '../../ui/base/ui_base.gyp:ui_base_test_support',
         '../testing/ios_testing.gyp:ocmock_support',
         'ios_web.gyp:ios_web',
         'ios_web.gyp:test_support_ios_web',
@@ -41,6 +42,8 @@
         'url_util_unittest.cc',
         'weak_nsobject_counter_unittest.mm',
         'web_state/ui/crw_static_file_web_view_unittest.mm',
+        'webui/crw_web_ui_page_builder_unittest.mm',
+        'webui/url_fetcher_block_adapter_unittest.mm',
       ],
       'actions': [
         {

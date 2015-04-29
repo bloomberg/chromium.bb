@@ -362,6 +362,8 @@
             ['include', '^page_transition_type'],
             ['include', '^resource/'],
             ['include', '^ui_base_'],
+            ['include', '^webui/'],
+            ['include', '^window_open_disposition\\.cc'],
           ],
           'link_settings': {
             'libraries': [
