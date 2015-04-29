@@ -14,6 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -55,7 +57,7 @@ class ProfileDataRemover : public BrowsingDataRemover::Observer {
  public:
   ProfileDataRemover(Profile* profile, const base::Closure& callback)
       : callback_(callback),
-        origin_loop_(base::MessageLoopProxy::current()),
+        origin_runner_(base::ThreadTaskRunnerHandle::Get()),
         remover_(BrowsingDataRemover::CreateForUnboundedRange(profile)) {
     remover_->AddObserver(this);
     remover_->Remove(BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
@@ -65,13 +67,13 @@ class ProfileDataRemover : public BrowsingDataRemover::Observer {
 
   void OnBrowsingDataRemoverDone() override {
     remover_->RemoveObserver(this);
-    origin_loop_->PostTask(FROM_HERE, callback_);
-    origin_loop_->DeleteSoon(FROM_HERE, this);
+    origin_runner_->PostTask(FROM_HERE, callback_);
+    origin_runner_->DeleteSoon(FROM_HERE, this);
   }
 
  private:
   base::Closure callback_;
-  scoped_refptr<base::MessageLoopProxy> origin_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> origin_runner_;
   BrowsingDataRemover* remover_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileDataRemover);

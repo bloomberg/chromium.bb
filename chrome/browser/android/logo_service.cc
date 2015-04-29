@@ -5,6 +5,7 @@
 #include "chrome/browser/android/logo_service.h"
 
 #include "base/memory/weak_ptr.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -45,7 +46,7 @@ class LogoDecoderDelegate : public ImageDecoder::ImageRequest {
     // If the ImageDecoder crashes or otherwise never completes, call
     // OnImageDecodeTimedOut() eventually to ensure that image_decoded_callback_
     // is run.
-    base::MessageLoopProxy::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&LogoDecoderDelegate::OnDecodeImageFailed,
                               weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(kDecodeLogoTimeoutSeconds));
