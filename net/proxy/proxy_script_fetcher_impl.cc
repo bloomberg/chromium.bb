@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "net/base/data_url.h"
 #include "net/base/io_buffer.h"
@@ -115,11 +114,6 @@ void ProxyScriptFetcherImpl::OnResponseCompleted(URLRequest* request) {
 
 int ProxyScriptFetcherImpl::Fetch(
     const GURL& url, base::string16* text, const CompletionCallback& callback) {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 ProxyScriptFetcherImpl::Fetch (Other)"));
-
   // It is invalid to call Fetch() while a request is already in progress.
   DCHECK(!cur_request_.get());
   DCHECK(!callback.is_null());
@@ -127,10 +121,6 @@ int ProxyScriptFetcherImpl::Fetch(
 
   // Handle base-64 encoded data-urls that contain custom PAC scripts.
   if (url.SchemeIs("data")) {
-    // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455942 ProxyScriptFetcherImpl::Fetch (data url)"));
     std::string mime_type;
     std::string charset;
     std::string data;
@@ -165,11 +155,6 @@ int ProxyScriptFetcherImpl::Fetch(
 
   // Post a task to timeout this request if it takes too long.
   cur_request_id_ = ++next_id_;
-
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 ProxyScriptFetcherImpl::Fetch (PostDelayedTask)"));
 
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,

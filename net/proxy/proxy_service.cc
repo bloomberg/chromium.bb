@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -507,10 +506,6 @@ class ProxyService::InitProxyResolver {
   }
 
   int DoDecideProxyScript() {
-    // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455942 ProxyService::InitProxyResolver::DoDecideProxyScript"));
     next_state_ = STATE_DECIDE_PROXY_SCRIPT_COMPLETE;
 
     return decider_->Start(

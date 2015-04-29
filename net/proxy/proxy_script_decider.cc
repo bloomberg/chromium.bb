@@ -10,7 +10,6 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -104,10 +103,6 @@ ProxyScriptDecider::~ProxyScriptDecider() {
 int ProxyScriptDecider::Start(
     const ProxyConfig& config, const base::TimeDelta wait_delay,
     bool fetch_pac_bytes, const CompletionCallback& callback) {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 ProxyScriptDecider::Start"));
-
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(!callback.is_null());
   DCHECK(config.HasAutomaticSettings());
@@ -226,10 +221,6 @@ void ProxyScriptDecider::DoCallback(int result) {
 }
 
 int ProxyScriptDecider::DoWait() {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 ProxyScriptDecider::DoWait"));
-
   next_state_ = STATE_WAIT_COMPLETE;
 
   // If no waiting is required, continue on to the next state.
@@ -244,11 +235,6 @@ int ProxyScriptDecider::DoWait() {
 }
 
 int ProxyScriptDecider::DoWaitComplete(int result) {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 ProxyScriptDecider::DoWaitComplete"));
-
   DCHECK_EQ(OK, result);
   if (wait_delay_.ToInternalValue() != 0) {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_PROXY_SCRIPT_DECIDER_WAIT,
@@ -262,11 +248,6 @@ int ProxyScriptDecider::DoWaitComplete(int result) {
 }
 
 int ProxyScriptDecider::DoQuickCheck() {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 ProxyScriptDecider::DoQuickCheck"));
-
   DCHECK(quick_check_enabled_);
   if (host_resolver_.get() == NULL) {
     // If we have no resolver, skip QuickCheck altogether.
@@ -294,11 +275,6 @@ int ProxyScriptDecider::DoQuickCheck() {
 }
 
 int ProxyScriptDecider::DoQuickCheckComplete(int result) {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 ProxyScriptDecider::DoQuickCheckComplete"));
-
   DCHECK(quick_check_enabled_);
   base::TimeDelta delta = base::Time::Now() - quick_check_start_time_;
   if (result == OK)
@@ -314,11 +290,6 @@ int ProxyScriptDecider::DoQuickCheckComplete(int result) {
 }
 
 int ProxyScriptDecider::DoFetchPacScript() {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 ProxyScriptDecider::DoFetchPacScript"));
-
   DCHECK(fetch_pac_bytes_);
 
   next_state_ = STATE_FETCH_PAC_SCRIPT_COMPLETE;
@@ -367,11 +338,6 @@ int ProxyScriptDecider::DoFetchPacScriptComplete(int result) {
 }
 
 int ProxyScriptDecider::DoVerifyPacScript() {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 ProxyScriptDecider::DoVerifyPacScript"));
-
   next_state_ = STATE_VERIFY_PAC_SCRIPT_COMPLETE;
 
   // This is just a heuristic. Ideally we would try to parse the script.
@@ -382,11 +348,6 @@ int ProxyScriptDecider::DoVerifyPacScript() {
 }
 
 int ProxyScriptDecider::DoVerifyPacScriptComplete(int result) {
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "455942 ProxyScriptDecider::DoVerifyPacScriptComplete"));
-
   if (result != OK)
     return TryToFallbackPacSource(result);
 
