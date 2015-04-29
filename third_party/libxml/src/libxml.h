@@ -17,6 +17,9 @@
 #define _FILE_OFFSET_BITS 64
 #endif
 #endif
+#ifndef _CRT_NO_POSIX_ERROR_CODES
+#define _CRT_NO_POSIX_ERROR_CODES
+#endif
 
 #if defined(macintosh)
 #include "config-mac.h"
