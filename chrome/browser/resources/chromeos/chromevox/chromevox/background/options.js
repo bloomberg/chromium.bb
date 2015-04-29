@@ -98,6 +98,31 @@ cvox.OptionsPage.init = function() {
     $('version').textContent =
         chrome.app.getDetails().version;
   }
+
+  // Temporary secret way to enable ChromeVox Next for the current run of
+  // ChromeVox.
+  var next = 'next';
+  document.body.addEventListener('keypress', function(evt) {
+    if (next === undefined) {
+      return;
+    }
+    var key = String.fromCharCode(evt.charCode);
+    if (next[0] === key) {
+      next = next.slice(1);
+
+      if (next === '') {
+        cvox.OptionsPage.speak(
+            'You are now running ChromeVox Next; open a new tab to start',
+            cvox.QueueMode.FLUSH);
+        next = undefined;
+        chrome.extension.getBackgroundPage()['global']
+            .backgroundObj.forceChromeVoxNextActive();
+      }
+    } else {
+      next = 'next';
+    }
+    return true;
+  }, true);
 };
 
 /**

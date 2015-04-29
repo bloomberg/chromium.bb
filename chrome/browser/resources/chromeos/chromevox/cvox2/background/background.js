@@ -77,6 +77,11 @@ Background = function() {
 };
 
 Background.prototype = {
+  /** Forces ChromeVox Next to be active for all tabs. */
+  forceChromeVoxNextActive: function() {
+    this.active_ = true;
+  },
+
   /**
    * Handles all setup once a new automation tree appears.
    * @param {chrome.automation.AutomationNode} desktop
@@ -248,7 +253,7 @@ Background.prototype = {
    * @param {Object} evt
    */
   onLoadComplete: function(evt) {
-    var next = this.isWhitelisted_(evt.target.attributes.url);
+    var next = this.isWhitelisted_(evt.target.attributes.url) || this.active_;
     this.toggleChromeVoxVersion({next: next, classic: !next});
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (evt.target.root.role != chrome.automation.RoleType.desktop &&
