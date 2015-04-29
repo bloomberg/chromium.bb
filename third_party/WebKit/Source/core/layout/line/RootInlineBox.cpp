@@ -695,30 +695,30 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
     if (box->layoutObject().isText())
         return box->parent()->logicalTop();
 
-    LayoutBoxModelObject* renderer = box->boxModelObject();
-    ASSERT(renderer->isInline());
-    if (!renderer->isInline())
+    LayoutBoxModelObject* layoutObject = box->boxModelObject();
+    ASSERT(layoutObject->isInline());
+    if (!layoutObject->isInline())
         return 0;
 
     // This method determines the vertical position for inline elements.
     bool firstLine = isFirstLineStyle();
-    if (firstLine && !renderer->document().styleEngine().usesFirstLineRules())
+    if (firstLine && !layoutObject->document().styleEngine().usesFirstLineRules())
         firstLine = false;
 
     // Check the cache.
-    bool isLayoutInline = renderer->isLayoutInline();
+    bool isLayoutInline = layoutObject->isLayoutInline();
     if (isLayoutInline && !firstLine) {
-        LayoutUnit verticalPosition = verticalPositionCache.get(renderer, baselineType());
+        LayoutUnit verticalPosition = verticalPositionCache.get(layoutObject, baselineType());
         if (verticalPosition != PositionUndefined)
             return verticalPosition;
     }
 
     LayoutUnit verticalPosition = 0;
-    EVerticalAlign verticalAlign = renderer->style()->verticalAlign();
+    EVerticalAlign verticalAlign = layoutObject->style()->verticalAlign();
     if (verticalAlign == TOP || verticalAlign == BOTTOM)
         return 0;
 
-    LayoutObject* parent = renderer->parent();
+    LayoutObject* parent = layoutObject->parent();
     if (parent->isLayoutInline() && parent->style()->verticalAlign() != TOP && parent->style()->verticalAlign() != BOTTOM)
         verticalPosition = box->parent()->logicalTop();
 
@@ -734,30 +734,30 @@ LayoutUnit RootInlineBox::verticalPositionForBox(InlineBox* box, VerticalPositio
         } else if (verticalAlign == SUPER) {
             verticalPosition -= fontSize / 3 + 1;
         } else if (verticalAlign == TEXT_TOP) {
-            verticalPosition += renderer->baselinePosition(baselineType(), firstLine, lineDirection) - fontMetrics.ascent(baselineType());
+            verticalPosition += layoutObject->baselinePosition(baselineType(), firstLine, lineDirection) - fontMetrics.ascent(baselineType());
         } else if (verticalAlign == MIDDLE) {
-            verticalPosition = (verticalPosition - static_cast<LayoutUnit>(fontMetrics.xHeight() / 2) - renderer->lineHeight(firstLine, lineDirection) / 2 + renderer->baselinePosition(baselineType(), firstLine, lineDirection)).round();
+            verticalPosition = (verticalPosition - static_cast<LayoutUnit>(fontMetrics.xHeight() / 2) - layoutObject->lineHeight(firstLine, lineDirection) / 2 + layoutObject->baselinePosition(baselineType(), firstLine, lineDirection)).round();
         } else if (verticalAlign == TEXT_BOTTOM) {
             verticalPosition += fontMetrics.descent(baselineType());
             // lineHeight - baselinePosition is always 0 for replaced elements (except inline blocks), so don't bother wasting time in that case.
-            if (!renderer->isReplaced() || renderer->isInlineBlockOrInlineTable())
-                verticalPosition -= (renderer->lineHeight(firstLine, lineDirection) - renderer->baselinePosition(baselineType(), firstLine, lineDirection));
+            if (!layoutObject->isReplaced() || layoutObject->isInlineBlockOrInlineTable())
+                verticalPosition -= (layoutObject->lineHeight(firstLine, lineDirection) - layoutObject->baselinePosition(baselineType(), firstLine, lineDirection));
         } else if (verticalAlign == BASELINE_MIDDLE) {
-            verticalPosition += -renderer->lineHeight(firstLine, lineDirection) / 2 + renderer->baselinePosition(baselineType(), firstLine, lineDirection);
+            verticalPosition += -layoutObject->lineHeight(firstLine, lineDirection) / 2 + layoutObject->baselinePosition(baselineType(), firstLine, lineDirection);
         } else if (verticalAlign == LENGTH) {
             LayoutUnit lineHeight;
             // Per http://www.w3.org/TR/CSS21/visudet.html#propdef-vertical-align: 'Percentages: refer to the 'line-height' of the element itself'.
-            if (renderer->style()->verticalAlignLength().isPercent())
-                lineHeight = renderer->style()->computedLineHeight();
+            if (layoutObject->style()->verticalAlignLength().isPercent())
+                lineHeight = layoutObject->style()->computedLineHeight();
             else
-                lineHeight = renderer->lineHeight(firstLine, lineDirection);
-            verticalPosition -= valueForLength(renderer->style()->verticalAlignLength(), lineHeight);
+                lineHeight = layoutObject->lineHeight(firstLine, lineDirection);
+            verticalPosition -= valueForLength(layoutObject->style()->verticalAlignLength(), lineHeight);
         }
     }
 
     // Store the cached value.
     if (isLayoutInline && !firstLine)
-        verticalPositionCache.set(renderer, baselineType(), verticalPosition);
+        verticalPositionCache.set(layoutObject, baselineType(), verticalPosition);
 
     return verticalPosition;
 }

@@ -57,7 +57,7 @@ void LineBreaker::reset()
 }
 
 InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo& lineInfo,
-    LayoutTextInfo& renderTextInfo, FloatingObject* lastFloatFromPreviousLine,
+    LayoutTextInfo& layoutTextInfo, FloatingObject* lastFloatFromPreviousLine,
     WordMeasurements& wordMeasurements)
 {
     reset();
@@ -73,7 +73,7 @@ InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo
     if (resolver.position().atEnd())
         return resolver.position();
 
-    BreakingContext context(resolver, lineInfo, width, renderTextInfo, lastFloatFromPreviousLine, appliedStartWidth, m_block);
+    BreakingContext context(resolver, lineInfo, width, layoutTextInfo, lastFloatFromPreviousLine, appliedStartWidth, m_block);
 
     while (context.currentObject()) {
         context.initializeForCurrentObject();

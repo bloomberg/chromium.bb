@@ -38,7 +38,7 @@ namespace blink {
 class InlineIterator {
 public:
     enum IncrementRule {
-        FastIncrementInIsolatedRenderer,
+        FastIncrementInIsolatedLayout,
         FastIncrementInTextNode
     };
 
@@ -221,9 +221,9 @@ static inline LayoutObject* bidiNextShared(LayoutObject* root, LayoutObject* cur
             notifyObserverEnteredObject(observer, next);
         }
 
-        // We hit this when either current has no children, or when current is not a renderer we care about.
+        // We hit this when either current has no children, or when current is not a layoutObject we care about.
         if (!next) {
-            // If it is a renderer we care about, and we're doing our inline-walk, return it.
+            // If it is a layoutObject we care about, and we're doing our inline-walk, return it.
             if (emptyInlineBehavior == IncludeEmptyInlines && !oldEndOfInline && current->isLayoutInline()) {
                 next = current;
                 endOfInline = true;
@@ -382,7 +382,7 @@ inline void InlineIterator::increment(InlineBidiResolver* resolver, IncrementRul
     if (!m_obj)
         return;
 
-    if (rule == FastIncrementInIsolatedRenderer
+    if (rule == FastIncrementInIsolatedLayout
         && resolver && resolver->inIsolate()
         && !endOfLineHasIsolatedObjectAncestor(resolver->endOfLine(), resolver->position())) {
         moveTo(bidiNextSkippingEmptyInlines(m_root, m_obj, resolver), 0);
@@ -438,7 +438,7 @@ ALWAYS_INLINE WTF::Unicode::Direction InlineIterator::direction() const
 template<>
 inline void InlineBidiResolver::increment()
 {
-    m_current.increment(this, InlineIterator::FastIncrementInIsolatedRenderer);
+    m_current.increment(this, InlineIterator::FastIncrementInIsolatedLayout);
 }
 
 template <>
@@ -453,12 +453,12 @@ inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end)
     return inEndOfLine;
 }
 
-static inline bool isCollapsibleSpace(UChar character, LayoutText* renderer)
+static inline bool isCollapsibleSpace(UChar character, LayoutText* layoutObject)
 {
     if (character == ' ' || character == '\t' || character == softHyphen)
         return true;
     if (character == '\n')
-        return !renderer->style()->preserveNewline();
+        return !layoutObject->style()->preserveNewline();
     return false;
 }
 
@@ -699,7 +699,7 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs)
     if (!m_emptyRun && !m_eor.atEnd() && !m_reachedEndOfLine) {
         // Keep track of when we enter/leave "unicode-bidi: isolate" inlines.
         // Initialize our state depending on if we're starting in the middle of such an inline.
-        // FIXME: Could this initialize from this->inIsolate() instead of walking up the render tree?
+        // FIXME: Could this initialize from this->inIsolate() instead of walking up the layout tree?
         IsolateTracker isolateTracker(runs, numberOfIsolateAncestors(m_sor));
         int start = m_sor.offset();
         LayoutObject* obj = m_sor.object();
@@ -729,7 +729,7 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs)
 
         if (isEndOfLine)
             m_reachedEndOfLine = true;
-        // If isolateTrack is inIsolate, the next |start of run| can not be the current isolated renderer.
+        // If isolateTrack is inIsolate, the next |start of run| can not be the current isolated layoutObject.
         if (isolateTracker.inIsolate())
             m_eor.moveTo(bidiNextSkippingEmptyInlines(m_eor.root(), m_eor.object()), 0);
         else

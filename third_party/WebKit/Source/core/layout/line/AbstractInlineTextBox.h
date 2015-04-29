@@ -48,7 +48,7 @@ class InlineTextBox;
 class CORE_EXPORT AbstractInlineTextBox : public RefCounted<AbstractInlineTextBox> {
 private:
     AbstractInlineTextBox(LayoutText* layoutText, InlineTextBox* inlineTextBox)
-        : m_renderText(layoutText)
+        : m_layoutText(layoutText)
         , m_inlineTextBox(inlineTextBox)
     {
     }
@@ -73,7 +73,7 @@ public:
         BottomToTop
     };
 
-    LayoutText* layoutText() const { return m_renderText; }
+    LayoutText* layoutText() const { return m_layoutText; }
 
     PassRefPtr<AbstractInlineTextBox> nextInlineTextBox() const;
     LayoutRect bounds() const;
@@ -87,7 +87,7 @@ private:
     void detach();
 
     // Weak ptrs; these are nulled when InlineTextBox::destroy() calls AbstractInlineTextBox::willDestroy.
-    LayoutText* m_renderText;
+    LayoutText* m_layoutText;
     InlineTextBox* m_inlineTextBox;
 
     typedef HashMap<InlineTextBox*, RefPtr<AbstractInlineTextBox>> InlineToAbstractInlineTextBoxHashMap;

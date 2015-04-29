@@ -271,7 +271,7 @@ LineBoxList* InlineFlowBox::lineBoxes() const
     return toLayoutInline(layoutObject()).lineBoxes();
 }
 
-static inline bool isLastChildForRenderer(LayoutObject* ancestor, LayoutObject* child)
+static inline bool isLastChildForLayoutObject(LayoutObject* ancestor, LayoutObject* child)
 {
     if (!child)
         return false;
@@ -305,7 +305,7 @@ static bool isAnsectorAndWithinBlock(LayoutObject* ancestor, LayoutObject* child
     return false;
 }
 
-void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, LayoutObject* logicallyLastRunRenderer)
+void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogicallyLastRunWrapped, LayoutObject* logicallyLastRunLayoutObject)
 {
     // All boxes start off open.  They will not apply any margins/border/padding on
     // any side.
@@ -330,12 +330,12 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
 
         if (!lineBoxList->lastLineBox()->isConstructed()) {
             LayoutInline& inlineFlow = toLayoutInline(layoutObject());
-            bool isLastObjectOnLine = !isAnsectorAndWithinBlock(&layoutObject(), logicallyLastRunRenderer) || (isLastChildForRenderer(&layoutObject(), logicallyLastRunRenderer) && !isLogicallyLastRunWrapped);
+            bool isLastObjectOnLine = !isAnsectorAndWithinBlock(&layoutObject(), logicallyLastRunLayoutObject) || (isLastChildForLayoutObject(&layoutObject(), logicallyLastRunLayoutObject) && !isLogicallyLastRunWrapped);
 
             // We include the border under these conditions:
             // (1) The next line was not created, or it is constructed. We check the previous line for rtl.
-            // (2) The logicallyLastRun is not a descendant of this renderer.
-            // (3) The logicallyLastRun is a descendant of this renderer, but it is the last child of this renderer and it does not wrap to the next line.
+            // (2) The logicallyLastRun is not a descendant of this layout object.
+            // (3) The logicallyLastRun is a descendant of this layout object, but it is the last child of this layout object and it does not wrap to the next line.
             // (4) The decoration break is set to clone therefore there will be borders on every sides.
             if (layoutObject().style()->boxDecorationBreak() == DCLONE) {
                 includeLeftEdge = includeRightEdge = true;
@@ -357,7 +357,7 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
     for (InlineBox* currChild = firstChild(); currChild; currChild = currChild->nextOnLine()) {
         if (currChild->isInlineFlowBox()) {
             InlineFlowBox* currFlow = toInlineFlowBox(currChild);
-            currFlow->determineSpacingForFlowBoxes(lastLine, isLogicallyLastRunWrapped, logicallyLastRunRenderer);
+            currFlow->determineSpacingForFlowBoxes(lastLine, isLogicallyLastRunWrapped, logicallyLastRunLayoutObject);
         }
     }
 }
@@ -580,7 +580,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
     if (isRootBox) {
         const FontMetrics& fontMetrics = layoutObject().style(isFirstLineStyle())->fontMetrics();
         // RootInlineBoxes are always placed on at pixel boundaries in their logical y direction. Not doing
-        // so results in incorrect rendering of text decorations, most notably underlines.
+        // so results in incorrect layout of text decorations, most notably underlines.
         setLogicalTop(roundToInt(top + maxAscent - fontMetrics.ascent(baselineType)));
     }
 

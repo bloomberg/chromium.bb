@@ -69,7 +69,7 @@ void AbstractInlineTextBox::willDestroy(InlineTextBox* inlineTextBox)
 
 void AbstractInlineTextBox::detach()
 {
-    m_renderText = 0;
+    m_layoutText = 0;
     m_inlineTextBox = 0;
 }
 
@@ -78,16 +78,16 @@ PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextInlineTextBox() con
     if (!m_inlineTextBox)
         return nullptr;
 
-    return getOrCreate(m_renderText, m_inlineTextBox->nextTextBox());
+    return getOrCreate(m_layoutText, m_inlineTextBox->nextTextBox());
 }
 
 LayoutRect AbstractInlineTextBox::bounds() const
 {
-    if (!m_inlineTextBox || !m_renderText)
+    if (!m_inlineTextBox || !m_layoutText)
         return LayoutRect();
 
     FloatRect boundaries = m_inlineTextBox->calculateBoundaries().toFloatRect();
-    return LayoutRect(m_renderText->localToAbsoluteQuad(boundaries).enclosingBoundingBox());
+    return LayoutRect(m_layoutText->localToAbsoluteQuad(boundaries).enclosingBoundingBox());
 }
 
 unsigned AbstractInlineTextBox::len() const
@@ -100,10 +100,10 @@ unsigned AbstractInlineTextBox::len() const
 
 AbstractInlineTextBox::Direction AbstractInlineTextBox::direction() const
 {
-    if (!m_inlineTextBox || !m_renderText)
+    if (!m_inlineTextBox || !m_layoutText)
         return LeftToRight;
 
-    if (m_renderText->style()->isHorizontalWritingMode())
+    if (m_layoutText->style()->isHorizontalWritingMode())
         return (m_inlineTextBox->direction() == RTL ? RightToLeft : LeftToRight);
     return (m_inlineTextBox->direction() == RTL ? BottomToTop : TopToBottom);
 }
@@ -140,19 +140,19 @@ void AbstractInlineTextBox::wordBoundaries(Vector<WordBoundaries>& words) const
 
 String AbstractInlineTextBox::text() const
 {
-    if (!m_inlineTextBox || !m_renderText)
+    if (!m_inlineTextBox || !m_layoutText)
         return String();
 
     unsigned start = m_inlineTextBox->start();
     unsigned len = m_inlineTextBox->len();
-    if (Node* node = m_renderText->node()) {
+    if (Node* node = m_layoutText->node()) {
         RefPtrWillBeRawPtr<Range> range = Range::create(node->document());
         range->setStart(node, start, IGNORE_EXCEPTION);
         range->setEnd(node, start + len, IGNORE_EXCEPTION);
         return plainText(range.get(), TextIteratorIgnoresStyleVisibility);
     }
 
-    String result = m_renderText->text().substring(start, len).simplifyWhiteSpace(WTF::DoNotStripWhiteSpace);
+    String result = m_layoutText->text().substring(start, len).simplifyWhiteSpace(WTF::DoNotStripWhiteSpace);
     if (m_inlineTextBox->nextTextBox() && m_inlineTextBox->nextTextBox()->start() > m_inlineTextBox->end() && result.length() && !result.right(1).containsOnlyWhitespace())
         return result + " ";
     return result;
