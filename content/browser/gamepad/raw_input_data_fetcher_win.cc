@@ -37,6 +37,7 @@ RawInputDataFetcher::RawInputDataFetcher()
     , events_monitored_(false) {}
 
 RawInputDataFetcher::~RawInputDataFetcher() {
+  ClearControllers();
   DCHECK(!window_);
   DCHECK(!events_monitored_);
 }
@@ -52,7 +53,7 @@ RAWINPUTDEVICE* RawInputDataFetcher::GetRawInputDevices(DWORD flags) {
     devices[i].dwFlags = flags;
     devices[i].usUsagePage = 1;
     devices[i].usUsage = DeviceUsages[i];
-    devices[i].hwndTarget = window_->hwnd();
+    devices[i].hwndTarget = (flags & RIDEV_REMOVE) ? 0 : window_->hwnd();
   }
   return devices.release();
 }
@@ -103,7 +104,6 @@ void RawInputDataFetcher::StopMonitor() {
 
   events_monitored_ = false;
   window_.reset();
-  ClearControllers();
 
   // Stop observing message loop destruction if no event is being monitored.
   base::MessageLoop::current()->RemoveDestructionObserver(this);
