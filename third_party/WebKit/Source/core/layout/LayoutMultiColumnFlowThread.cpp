@@ -532,6 +532,21 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(LayoutObject* 
             continue;
         }
         // This layoutObject is regular column content (i.e. not a spanner). Create a set if necessary.
+        while (objectAfterSubtree) {
+            // Walk through the siblings and find the first one which is either in-flow or has this
+            // flow thread as its containing block flow thread.
+            if (!objectAfterSubtree->isOutOfFlowPositioned()) {
+                // In-flow objects are always part of the flow thread (unless it's a spanner - but
+                // we'll deal with that further below).
+                break;
+            }
+            if (objectAfterSubtree->containingBlock()->flowThreadContainingBlock() == this) {
+                // This out-of-flow object is still part of the flow thread, because its containing
+                // block (probably relatively positioned) is part of the flow thread.
+                break;
+            }
+            objectAfterSubtree = objectAfterSubtree->nextInPreOrderAfterChildren(this);
+        }
         if (objectAfterSubtree) {
             if (LayoutMultiColumnSpannerPlaceholder* placeholder = objectAfterSubtree->spannerPlaceholder()) {
                 // If inserted right before a spanner, we need to make sure that there's a set for us there.
