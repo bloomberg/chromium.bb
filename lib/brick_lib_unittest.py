@@ -21,8 +21,6 @@ class BrickLibTest(cros_test_lib.WorkspaceTestCase):
   # pylint: disable=protected-access
 
   def setUp(self):
-    self.brick = None
-    self.brick_path = None
     self.CreateWorkspace()
 
   def SetupLegacyBrick(self, brick_dir=None, brick_name='foo'):
@@ -35,12 +33,12 @@ class BrickLibTest(cros_test_lib.WorkspaceTestCase):
 
   def testLayoutFormat(self):
     """Test that layout.conf is correctly formatted."""
-    (self.brick, self.brick_path) = self.CreateBrick()
+    brick = self.CreateBrick()
     content = {'repo-name': 'hello',
                'bar': 'foo'}
-    self.brick._WriteLayoutConf(content)
+    brick._WriteLayoutConf(content)
 
-    path = os.path.join(self.brick.OverlayDir(), 'metadata', 'layout.conf')
+    path = os.path.join(brick.OverlayDir(), 'metadata', 'layout.conf')
     layout_conf = osutils.ReadFile(path).split('\n')
 
     expected_lines = ['repo-name = hello',
@@ -51,18 +49,18 @@ class BrickLibTest(cros_test_lib.WorkspaceTestCase):
 
   def testConfigurationGenerated(self):
     """Test that portage's files are generated when the config file changes."""
-    (self.brick, self.brick_path) = self.CreateBrick()
+    brick = self.CreateBrick()
     sample_config = {'name': 'hello',
                      'dependencies': []}
 
-    self.brick.UpdateConfig(sample_config)
+    brick.UpdateConfig(sample_config)
 
-    self.assertExists(self.brick._LayoutConfPath())
+    self.assertExists(brick._LayoutConfPath())
 
   def testFindBrickInPath(self):
     """Test that we can infer the current brick from the current directory."""
-    (self.brick, self.brick_path) = self.CreateBrick()
-    os.remove(os.path.join(self.brick_path, brick_lib._CONFIG_FILE))
+    brick = self.CreateBrick()
+    os.remove(os.path.join(brick.brick_dir, brick_lib._CONFIG_FILE))
     brick_dir = os.path.join(self.workspace_path, 'foo', 'bar', 'project')
     expected_name = 'hello'
     brick_lib.Brick(brick_dir, initial_config={'name': 'hello'})
@@ -82,9 +80,9 @@ class BrickLibTest(cros_test_lib.WorkspaceTestCase):
 
   def testBrickCreation(self):
     """Test that brick initialization throws the right errors."""
-    (self.brick, self.brick_path) = self.CreateBrick()
+    brick = self.CreateBrick()
     with self.assertRaises(brick_lib.BrickCreationFailed):
-      brick_lib.Brick(self.brick_path, initial_config={})
+      brick_lib.Brick(brick.brick_dir, initial_config={})
 
     nonexistingbrick = os.path.join(self.workspace_path, 'foo')
     with self.assertRaises(brick_lib.BrickNotFound):
@@ -97,9 +95,9 @@ class BrickLibTest(cros_test_lib.WorkspaceTestCase):
 
   def testLoadExistingNormalBrickSucceeds(self):
     """Tests that loading an existing brick works."""
-    (self.brick, self.brick_path) = self.CreateBrick()
-    self.brick = brick_lib.Brick(self.brick_path, allow_legacy=False)
-    self.assertEquals('thebrickfoo', self.brick.config.get('name'))
+    brick = self.CreateBrick(name='my_brick')
+    brick = brick_lib.Brick(brick.brick_dir, allow_legacy=False)
+    self.assertEquals('my_brick', brick.config.get('name'))
 
   def testLoadExistingLegacyBrickFailsIfNotAllowed(self):
     """Tests that loading a legacy brick fails when not allowed."""
@@ -110,15 +108,15 @@ class BrickLibTest(cros_test_lib.WorkspaceTestCase):
   def testLoadExistingLegacyBrickSucceeds(self):
     """Tests that loading a legacy brick fails when not allowed."""
     self.SetupLegacyBrick()
-    self.brick = brick_lib.Brick(self.workspace_path)
-    self.assertEquals('foo', self.brick.config.get('name'))
+    brick = brick_lib.Brick(self.workspace_path)
+    self.assertEquals('foo', brick.config.get('name'))
 
   def testLegacyBrickUpdateConfigFails(self):
     """Tests that a legacy brick config cannot be updated."""
     self.SetupLegacyBrick()
-    self.brick = brick_lib.Brick(self.workspace_path)
+    brick = brick_lib.Brick(self.workspace_path)
     with self.assertRaises(brick_lib.BrickFeatureNotSupported):
-      self.brick.UpdateConfig({'name': 'bar'})
+      brick.UpdateConfig({'name': 'bar'})
 
   def testInherits(self):
     """Tests the containment checking works as intended."""
@@ -147,8 +145,7 @@ class BrickLibTest(cros_test_lib.WorkspaceTestCase):
 
   def testOverlayDir(self):
     """Tests that overlay directory is returned correctly."""
-    (self.brick, self.brick_path) = self.CreateBrick()
-    self.assertExists(self.brick.OverlayDir())
+    self.assertExists(self.CreateBrick().OverlayDir())
 
   def testOpenUsingLocator(self):
     """Tests that we can open a brick given a locator."""

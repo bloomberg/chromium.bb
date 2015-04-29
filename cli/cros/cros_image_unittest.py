@@ -54,9 +54,8 @@ class ImageCommandTest(cros_test_lib.WorkspaceTestCase):
     self.CreateBrick(name='brick1', main_package='brick/foo')
     self.CreateBrick(name='brick2', main_package='brick/bar')
     self.CreateBrick(name='bsp1', main_package='bsp/baz')
-    self.CreateBlueprint(blueprint_name='foo.json',
-                         bricks=['//brick1', '//brick2'], bsp='//bsp1',
-                         main_package='virtual/target-os-test')
+    self.CreateBlueprint(name='foo.json', bricks=['//brick1', '//brick2'],
+                         bsp='//bsp1')
 
     args = ['--blueprint=//foo.json']
     self.SetupCommandMock(args)
@@ -73,8 +72,7 @@ class ImageCommandTest(cros_test_lib.WorkspaceTestCase):
     self.CreateWorkspace()
     self.CreateBrick(name='brick1', main_package='brick/foo')
     self.CreateBrick(name='bsp1', main_package='bsp/baz')
-    self.CreateBlueprint(blueprint_name='bar.json', bricks=['//brick1'],
-                         bsp='//bsp1', main_package='virtual/target-os')
+    self.CreateBlueprint(name='bar.json', bricks=['//brick1'], bsp='//bsp1')
 
     args = ['--blueprint=//bar.json', '--output_root=//images']
     self.SetupCommandMock(args)

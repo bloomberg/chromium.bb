@@ -12,12 +12,14 @@ import sys
 import time
 import unittest
 
+from chromite.lib import bootstrap_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import timeout_util
+from chromite.lib import workspace_lib
 
 
 # pylint: disable=W0212,W0233
@@ -254,3 +256,84 @@ class OutputTestCaseTest(cros_test_lib.OutputTestCase,
     # Verify that output is actually written to the correct files.
     self.assertEqual('foo\n', osutils.ReadFile(stdout_path))
     self.assertEqual('bar\n', osutils.ReadFile(stderr_path))
+
+
+class WorkspaceTestCaseTest(cros_test_lib.WorkspaceTestCase):
+  """Verification for WorkspaceTestCase."""
+
+  def testCreateWorkspace(self):
+    """Tests CreateWorkspace()."""
+    self.CreateWorkspace()
+    self.assertExists(self.workspace_path)
+    self.assertEqual(self.workspace_path, workspace_lib.WorkspacePath())
+
+  def testCreateWorkspaceSdk(self):
+    """Tests CreateWorkspace() with an SDK version."""
+    self.CreateWorkspace(sdk_version='1.2.3')
+    self.assertEqual('1.2.3',
+                     workspace_lib.GetActiveSdkVersion(self.workspace_path))
+
+  def testCreateBootstrap(self):
+    """Tests CreateBootstrap()."""
+    self.CreateBootstrap()
+    self.assertExists(self.bootstrap_path)
+    self.assertEqual(self.bootstrap_path, bootstrap_lib.FindBootstrapPath())
+
+  def testCreateBootstrapSdk(self):
+    """Tests CreateBootstrap() with an SDK version."""
+    self.CreateBootstrap(sdk_version='1.2.3')
+    self.assertExists(
+        bootstrap_lib.ComputeSdkPath(self.bootstrap_path, '1.2.3'))
+
+  def testCreateBrick(self):
+    """Tests CreateBrick()."""
+    self.CreateWorkspace()
+
+    brick = self.CreateBrick(name='foo', main_package='category/bar')
+    self.assertEqual(os.path.join(self.workspace_path, 'foo'), brick.brick_dir)
+    self.assertEqual('foo', brick.FriendlyName())
+    self.assertEqual(['category/bar'], brick.MainPackages())
+
+  def testCreateBlueprint(self):
+    """Tests CreateBlueprint()."""
+    brick_path = '//foo_brick'
+    bsp_path = '//foo_bsp'
+    blueprint_path = 'foo.json'
+
+    self.CreateWorkspace()
+    self.CreateBrick(brick_path)
+    self.CreateBrick(bsp_path)
+
+    blueprint = self.CreateBlueprint(name=blueprint_path, bsp=bsp_path,
+                                     bricks=[brick_path])
+    self.assertExists(os.path.join(self.workspace_path, blueprint_path))
+    self.assertEqual(bsp_path, blueprint.GetBSP())
+    self.assertEqual([brick_path], blueprint.GetBricks())
+
+  def testAssertBlueprintExists(self):
+    """Tests AssertBlueprintExists()."""
+    brick_path = '//foo_brick'
+    bsp_path = '//foo_bsp'
+    blueprint_path = 'foo.json'
+
+    self.CreateWorkspace()
+    self.CreateBrick(brick_path)
+    self.CreateBrick(bsp_path)
+    self.CreateBlueprint(name=blueprint_path, bsp=bsp_path, bricks=[brick_path])
+
+    # Test success conditions.
+    self.AssertBlueprintExists(blueprint_path)
+    self.AssertBlueprintExists(blueprint_path, bsp=bsp_path)
+    self.AssertBlueprintExists(blueprint_path, bricks=[brick_path])
+    self.AssertBlueprintExists(blueprint_path, bsp=bsp_path,
+                               bricks=[brick_path])
+
+    # Test failure conditions.
+    def TestFailure(blueprint_path, bsp=None, bricks=None):
+      with self.assertRaises(Exception):
+        self.AssertBlueprintExists(blueprint_path, bsp=bsp, bricks=bricks)
+
+    TestFailure('//no/blueprint')
+    TestFailure(blueprint_path, bsp='//no/bsp')
+    TestFailure(blueprint_path, bricks=['//no/brick'])
+    TestFailure(blueprint_path, bricks=[brick_path, '//no/brick'])

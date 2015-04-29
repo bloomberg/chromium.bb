@@ -1563,43 +1563,57 @@ class WorkspaceTestCase(MockTempDirTestCase):
         workspace_lib, 'WorkspacePath', return_value=self.workspace_path)
 
   def CreateBrick(self, name='thebrickfoo', main_package='category/bar'):
-    """Creates a new brick."""
-    # Creates the brick in a subdirectory of tempdir so that we can create other
-    # bricks without interfering with it.
-    brick_path = os.path.join(self.workspace_path, name)
-    brick = brick_lib.Brick(brick_path,
-                            initial_config={'name': name,
-                                            'main_package': main_package})
-    return (brick, brick_path)
+    """Creates a new brick.
 
-  def CreateBlueprint(self, blueprint_name='foo.json', bricks=None, bsp=None,
-                      main_package=None):
-    path = os.path.join(self.workspace_path, blueprint_name)
+    Args:
+      name: Brick name/path relative to the workspace root.
+      main_package: Main package to assign.
+
+    Returns:
+      The created Brick object.
+    """
+    brick_path = os.path.join(self.workspace_path, name)
+
+    return brick_lib.Brick(brick_path,
+                           initial_config={'name': name,
+                                           'main_package': main_package})
+
+  def CreateBlueprint(self, name='theblueprintfoo.json', bsp=None, bricks=None):
+    """Creates a new blueprint.
+
+    Args:
+      name: Blueprint name/path relative to the workspace root.
+      bsp: Path to BSP or None.
+      bricks: List of paths to bricks or None.
+
+    Returns:
+      The created Blueprint object.
+    """
+    blueprint_path = os.path.join(self.workspace_path, name)
 
     config = {}
     if bricks:
-      config['bricks'] = bricks
+      config[blueprint_lib.BRICKS_FIELD] = bricks
     if bsp:
-      config['bsp'] = bsp
-    if main_package:
-      config['main_package'] = main_package
+      config[blueprint_lib.BSP_FIELD] = bsp
 
-    return blueprint_lib.Blueprint(path, initial_config=config)
+    return blueprint_lib.Blueprint(blueprint_path, initial_config=config)
 
-  def AssertBlueprintExists(self, locator, bsp=None, bricks=None):
+  def AssertBlueprintExists(self, name, bsp=None, bricks=None):
     """Verifies a blueprint exists with the specified contents.
 
     Args:
-      locator: blueprint locator to check.
+      name: Blueprint name/path relative to the workspace root.
       bsp: Expected blueprint BSP or None.
       bricks: Expected blueprint bricks or None.
     """
-    actual = blueprint_lib.Blueprint(locator)
+    blueprint_path = os.path.join(self.workspace_path, name)
+    blueprint = blueprint_lib.Blueprint(blueprint_path)
 
     if bsp is not None:
-      self.assertEqual(bsp, actual.GetBSP())
+      self.assertEqual(bsp, blueprint.GetBSP())
     if bricks is not None:
-      self.assertListEqual(bricks, actual.GetBricks())
+      self.assertListEqual(bricks, blueprint.GetBricks())
 
 
 @contextlib.contextmanager

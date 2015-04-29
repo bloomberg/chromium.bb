@@ -73,13 +73,13 @@ class BlueprintLibTest(cros_test_lib.WorkspaceTestCase):
                               initial_config={'name':'c',
                                               'dependencies': ['//b']})
 
-    blueprint = self.CreateBlueprint(blueprint_name='foo.json',
+    blueprint = self.CreateBlueprint(name='foo.json',
                                      bsp='//a', bricks=[brick_c.brick_locator])
     self.assertEqual(3, len(blueprint.GetUsedBricks()))
 
     # We sort out duplicates: c depends on b and b is explicitly listed in
     # bricks too.
-    blueprint = self.CreateBlueprint(blueprint_name='bar.json',
+    blueprint = self.CreateBlueprint(name='bar.json',
                                      bsp='//a', bricks=[brick_c.brick_locator,
                                                         brick_b.brick_locator])
     self.assertEqual(3, len(blueprint.GetUsedBricks()))
@@ -88,9 +88,9 @@ class BlueprintLibTest(cros_test_lib.WorkspaceTestCase):
     """Tests creating a blueprint where one already exists."""
     self.CreateBrick('//foo')
     self.CreateBrick('//bar')
-    self.CreateBlueprint(blueprint_name='//my_blueprint', bricks=['//foo'])
+    self.CreateBlueprint(name='//my_blueprint', bricks=['//foo'])
     with self.assertRaises(blueprint_lib.BlueprintCreationError):
-      self.CreateBlueprint(blueprint_name='//my_blueprint', bricks=['//bar'])
+      self.CreateBlueprint(name='//my_blueprint', bricks=['//bar'])
     # Make sure the original blueprint is untouched.
     self.assertEqual(['//foo'],
                      blueprint_lib.Blueprint('//my_blueprint').GetBricks())
@@ -98,12 +98,12 @@ class BlueprintLibTest(cros_test_lib.WorkspaceTestCase):
   def testBlueprintBrickNotFound(self):
     """Tests creating a blueprint with a non-existent brick fails."""
     with self.assertRaises(blueprint_lib.BlueprintCreationError):
-      self.CreateBlueprint(blueprint_name='//my_blueprint', bricks=['//none'])
+      self.CreateBlueprint(name='//my_blueprint', bricks=['//none'])
 
   def testBlueprintBSPNotFound(self):
     """Tests creating a blueprint with a non-existent BSP fails."""
     with self.assertRaises(blueprint_lib.BlueprintCreationError):
-      self.CreateBlueprint(blueprint_name='//my_blueprint', bsp='//none')
+      self.CreateBlueprint(name='//my_blueprint', bsp='//none')
 
   def testBlueprintNotFound(self):
     """Tests loading a non-existent blueprint file."""

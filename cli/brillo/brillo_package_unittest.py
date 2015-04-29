@@ -40,7 +40,7 @@ class PackageCommandTest(cros_test_lib.OutputTestCase,
       create_cwd_brick: True to create an implicit CWD brick to use.
     """
     if create_cwd_brick:
-      self.cwd_brick = self.CreateBrick()[0]
+      self.cwd_brick = self.CreateBrick()
       self.PatchObject(brick_lib, 'FindBrickInPath',
                        return_value=self.cwd_brick)
       # Save some long paths that are required by several tests.
