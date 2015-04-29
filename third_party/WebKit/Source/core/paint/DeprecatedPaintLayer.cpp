@@ -1166,7 +1166,8 @@ LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer*
         IntPoint pixelSnappedDelta = roundedIntPoint(delta);
         TransformationMatrix transform;
         transform.translate(pixelSnappedDelta.x(), pixelSnappedDelta.y());
-        transform = transform * *layer->transform();
+        if (layer->transform())
+            transform = transform * *layer->transform();
 
         // We don't use fragment boxes when collecting a transformed layer's bounding box, since it always
         // paints unfragmented.
@@ -2481,7 +2482,7 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
         result.expand(m_layoutObject->style()->filterOutsets());
     }
 
-    if (paintsWithTransform(PaintBehaviorNormal) || (options == ApplyBoundsChickenEggHacks && transform()))
+    if (transform() && (paintsWithTransform(PaintBehaviorNormal) || options == ApplyBoundsChickenEggHacks))
         result = transform()->mapRect(result);
 
     if (enclosingPaginationLayer()) {
@@ -2603,7 +2604,7 @@ bool DeprecatedPaintLayer::hasCompositedClippingMask() const
 
 bool DeprecatedPaintLayer::paintsWithTransform(PaintBehavior paintBehavior) const
 {
-    return transform() && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);
+    return (transform() || layoutObject()->style()->position() == FixedPosition) && ((paintBehavior & PaintBehaviorFlattenCompositingLayers) || compositingState() != PaintsIntoOwnBacking);
 }
 
 bool DeprecatedPaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const
