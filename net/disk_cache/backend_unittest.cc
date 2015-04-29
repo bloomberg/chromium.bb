@@ -7,6 +7,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/port.h"
 #include "base/run_loop.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_entropy_provider.h"
@@ -2750,7 +2751,7 @@ void DiskCacheBackendTest::BackendDisabledAPI() {
   iter = CreateIterator();
   EXPECT_NE(net::OK, iter->OpenNextEntry(&entry2));
 
-  std::vector<std::pair<std::string, std::string>> stats;
+  base::StringPairs stats;
   cache_->GetStats(&stats);
   EXPECT_TRUE(stats.empty());
   cache_->OnExternalCacheHit("First");
