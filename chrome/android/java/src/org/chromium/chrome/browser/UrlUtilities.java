@@ -7,10 +7,15 @@ package org.chromium.chrome.browser;
 import android.text.TextUtils;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.Log;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utilities for working with URIs (and URLs). These methods may be used in security-sensitive
@@ -18,6 +23,8 @@ import java.util.HashSet;
  * must be high.
  */
 public class UrlUtilities {
+    private static final String TAG = "UrlUtilities";
+
     /**
      * URI schemes that ContentView can handle.
      */
@@ -205,6 +212,156 @@ public class UrlUtilities {
     public static String getDomainAndRegistry(String uri, boolean includePrivateRegistries) {
         if (TextUtils.isEmpty(uri)) return uri;
         return nativeGetDomainAndRegistry(uri, includePrivateRegistries);
+    }
+
+    // Patterns used in validateIntentUrl.
+    private static final Pattern DNS_HOSTNAME_PATTERN =
+            Pattern.compile("^[\\w\\.-]*$");
+    private static final Pattern JAVA_PACKAGE_NAME_PATTERN =
+            Pattern.compile("^[\\w\\.-]*$");
+    private static final Pattern ANDROID_COMPONENT_NAME_PATTERN =
+            Pattern.compile("^[\\w\\./-]*$");
+    private static final Pattern URL_SCHEME_PATTERN =
+            Pattern.compile("^[a-zA-Z]+$");
+
+    /**
+     * @param url An Android intent:// URL to validate.
+     *
+     * @throws URISyntaxException if url is not a valid Android intent://
+     * URL, as specified at
+     * https://developer.chrome.com/multidevice/android/intents#syntax.
+     */
+    public static boolean validateIntentUrl(String url) {
+        if (url == null) {
+            Log.d(TAG, "url was null");
+            return false;
+        }
+
+        URI parsed = null;
+        try {
+            parsed = new URI(url);
+        } catch (URISyntaxException e) {
+            Log.d(TAG, e.toString());
+            return false;
+        }
+
+        if (!parsed.getScheme().equals("intent")) {
+            Log.d(TAG, "scheme was not 'intent'");
+            return false;
+        }
+
+        String hostname = parsed.getHost();
+        if (hostname == null) {
+            Log.d(TAG, "hostname was null for '" + url + "'");
+            return false;
+        }
+        Matcher m = DNS_HOSTNAME_PATTERN.matcher(hostname);
+        if (!m.matches()) {
+            Log.d(TAG, "hostname did not match DNS_HOSTNAME_PATTERN");
+            return false;
+        }
+
+        String path = parsed.getPath();
+        if (path == null || (!path.isEmpty() && !path.equals("/"))) {
+            Log.d(TAG, "path was null or not '/'");
+            return false;
+        }
+
+        // We need to get the raw, unparsed, un-URL-decoded fragment.
+        // parsed.getFragment() returns a URL-decoded fragment, which can
+        // interfere with lexing and parsing Intent extras correctly. Therefore,
+        // we handle the fragment "manually", but first assert that it
+        // URL-decodes correctly.
+        int fragmentStart = url.indexOf('#');
+        if (fragmentStart == -1 || fragmentStart == url.length() - 1) {
+            Log.d(TAG, "Could not find '#'");
+            return false;
+        }
+        String fragment = url.substring(url.indexOf('#') + 1);
+        try {
+            String f = parsed.getFragment();
+            if (f == null) {
+                Log.d(TAG, "Could not get fragment from parsed URL");
+                return false;
+            }
+            if (!URLDecoder.decode(fragment, "UTF-8").equals(f)) {
+                Log.d(TAG, "Parsed fragment does not equal lexed fragment");
+                return false;
+            }
+        } catch (UnsupportedEncodingException e) {
+            Log.d(TAG, e.toString());
+            return false;
+        }
+
+        // Now lex and parse the correctly-encoded fragment.
+        String[] parts = fragment.split(";");
+        if (parts.length < 3
+                || !parts[0].equals("Intent")
+                || !parts[parts.length - 1].equals("end")) {
+            Log.d(TAG, "Invalid fragment (not enough parts, lacking Intent, "
+                    + "or lacking end");
+            return false;
+        }
+
+        boolean seenPackage = false;
+        boolean seenAction = false;
+        boolean seenCategory = false;
+        boolean seenComponent = false;
+        boolean seenScheme = false;
+
+        for (int i = 1; i < parts.length - 1; ++i) {
+            // This is OK *only* because no valid package, action, category,
+            // component, or scheme contains (unencoded) "=".
+            String[] pair = parts[i].split("=");
+            if (2 != pair.length) {
+                Log.d(TAG, "Invalid key=value pair '" + parts[i] + "'");
+                return false;
+            }
+
+            m = JAVA_PACKAGE_NAME_PATTERN.matcher(pair[1]);
+            if (pair[0].equals("package")) {
+                if (seenPackage || !m.matches()) {
+                    Log.d(TAG, "Invalid package '" + pair[1] + "'");
+                    return false;
+                }
+                seenPackage = true;
+            } else if (pair[0].equals("action")) {
+                if (seenAction || !m.matches()) {
+                    Log.d(TAG, "Invalid action '" + pair[1] + "'");
+                    return false;
+                }
+                seenAction = true;
+            } else if (pair[0].equals("category")) {
+                if (seenCategory || !m.matches()) {
+                    Log.d(TAG, "Invalid category '" + pair[1] + "'");
+                    return false;
+                }
+                seenCategory = true;
+            } else if (pair[0].equals("component")) {
+                Matcher componentMatcher = ANDROID_COMPONENT_NAME_PATTERN.matcher(pair[1]);
+                if (seenComponent || !componentMatcher.matches()) {
+                    Log.d(TAG, "Invalid component '" + pair[1] + "'");
+                    return false;
+                }
+                seenComponent = true;
+            } else if (pair[0].equals("scheme")) {
+                if (seenScheme) return false;
+                Matcher schemeMatcher = URL_SCHEME_PATTERN.matcher(pair[1]);
+                if (!schemeMatcher.matches()) {
+                    Log.d(TAG, "Invalid scheme '" + pair[1] + "'");
+                    return false;
+                }
+                seenScheme = true;
+            } else {
+                // Assume we are seeing an Intent Extra. Up above, we ensured
+                // that the #Intent... fragment was correctly URL-encoded;
+                // beyond that, there is no further validation we can do. Extras
+                // are blobs to us.
+                continue;
+            }
+        }
+
+        return true;
     }
 
     private static native boolean nativeSameDomainOrHost(String primaryUrl, String secondaryUrl,

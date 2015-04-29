@@ -104,4 +104,59 @@ public class UrlUtilitiesTest extends InstrumentationTestCase {
         assertEquals("about:blank", UrlUtilities.getOriginForDisplay(uri, false));
     }
 
+    @SmallTest
+    public void testValidateIntentUrl() {
+        // Valid action, hostname, and (empty) path.
+        assertTrue(UrlUtilities.validateIntentUrl(
+                "intent://10010#Intent;scheme=tel;action=com.google.android.apps."
+                + "authenticator.AUTHENTICATE;end"));
+        // Valid package, scheme, hostname, and path.
+        assertTrue(UrlUtilities.validateIntentUrl(
+                "intent://scan/#Intent;package=com.google.zxing.client.android;"
+                + "scheme=zxing;end;"));
+        // Valid package, scheme, component, hostname, and path.
+        assertTrue(UrlUtilities.validateIntentUrl(
+                "intent://wump-hey.example.com/#Intent;package=com.example.wump;"
+                + "scheme=yow;component=com.example.PUMPKIN;end;"));
+        // Valid package, scheme, action, hostname, and path.
+        assertTrue(UrlUtilities.validateIntentUrl(
+                "intent://wump-hey.example.com/#Intent;package=com.example.wump;"
+                + "scheme=eeek;action=frighten_children;end;"));
+        // Valid package, component, String extra, hostname, and path.
+        assertTrue(UrlUtilities.validateIntentUrl(
+                "intent://testing/#Intent;package=cybergoat.noodle.crumpet;"
+                + "component=wump.noodle/Crumpet;S.goat=leg;end"));
+
+        // Valid package, component, int extra (with URL-encoded key), String
+        // extra, hostname, and path.
+        assertTrue(UrlUtilities.validateIntentUrl(
+                "intent://testing/#Intent;package=cybergoat.noodle.crumpet;"
+                + "component=wump.noodle/Crumpet;i.pumpkinCount%3D=42;"
+                + "S.goat=leg;end"));
+
+        // Junk after end.
+        assertFalse(UrlUtilities.validateIntentUrl(
+                "intent://10010#Intent;scheme=tel;action=com.google.android.apps."
+                + "authenticator.AUTHENTICATE;end','*');"
+                + "alert(document.cookie);//"));
+        // component appears twice.
+        assertFalse(UrlUtilities.validateIntentUrl(
+                "intent://wump-hey.example.com/#Intent;package=com.example.wump;"
+                + "scheme=yow;component=com.example.PUMPKIN;"
+                + "component=com.example.AVOCADO;end;"));
+        // scheme contains illegal character.
+        assertFalse(UrlUtilities.validateIntentUrl(
+                "intent://wump-hey.example.com/#Intent;package=com.example.wump;"
+                + "scheme=hello+goodbye;component=com.example.PUMPKIN;end;"));
+        // category contains illegal character.
+        assertFalse(UrlUtilities.validateIntentUrl(
+                "intent://wump-hey.example.com/#Intent;package=com.example.wump;"
+                + "category=42%_by_volume;end"));
+        // Incorrectly URL-encoded.
+        assertFalse(UrlUtilities.validateIntentUrl(
+                "intent://testing/#Intent;package=cybergoat.noodle.crumpet;"
+                + "component=wump.noodle/Crumpet;i.pumpkinCount%%3D=42;"
+                + "S.goat=&leg;end"));
+    }
+
 }
