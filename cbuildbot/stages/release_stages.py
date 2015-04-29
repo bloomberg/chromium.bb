@@ -202,7 +202,12 @@ class PaygenStage(artifact_stages.ArchivingStage):
         if url in self.signing_results[channel]:
           continue
 
-        signer_json = self._JsonFromUrl(gs_ctx, url)
+        try:
+          signer_json = self._JsonFromUrl(gs_ctx, url)
+        except MalformedResultsException as e:
+          logging.warning('Received malformed json: %s', e)
+          continue
+
         if self._SigningStatusFromJson(signer_json) in COMPLETED_STATUS:
           # If we find a completed result, remember it.
           self.signing_results[channel][url] = signer_json

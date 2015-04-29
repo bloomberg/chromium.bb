@@ -121,23 +121,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       self.assertEqual(mock_gs_ctx.Cat.mock_calls,
                        [mock.call('chan1_uri1.json')])
 
-  def testWaitForSigningResultsMalformedJson(self):
-    """Test _WaitForSigningResults when invalid Json is received.."""
-    with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
-      mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value = "{"
-      notifier = mock.Mock()
-
-      stage = self.ConstructStage()
-
-      self.assertRaises(release_stages.MalformedResultsException,
-                        stage._WaitForSigningResults,
-                        self.INSNS_URLS_PER_CHANNEL, notifier)
-
-      self.assertEqual(notifier.mock_calls, [])
-      self.assertEqual(mock_gs_ctx.Cat.mock_calls,
-                       [mock.call('chan1_uri1.json')])
-
   def testWaitForSigningResultsTimeout(self):
     """Test that _WaitForSigningResults reports timeouts correctly."""
     with patch(release_stages.timeout_util, 'WaitForSuccess') as mock_wait:
@@ -218,7 +201,24 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Verify _CheckForResults handles unexpected Json values."""
     with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
       mock_gs_ctx = mock_gs_ctx_init.return_value
-      mock_gs_ctx.Cat.return_value = "{}"
+      mock_gs_ctx.Cat.return_value = '{}'
+      notifier = mock.Mock()
+
+      stage = self.ConstructStage()
+      self.assertFalse(
+          stage._CheckForResults(mock_gs_ctx,
+                                 self.INSNS_URLS_PER_CHANNEL,
+                                 notifier))
+      self.assertEqual(stage.signing_results, {
+          'chan1': {}, 'chan2': {}
+      })
+      self.assertEqual(notifier.mock_calls, [])
+
+  def testCheckForResultsMalformedJson(self):
+    """Verify _CheckForResults handles unexpected Json values."""
+    with patch(release_stages.gs, 'GSContext') as mock_gs_ctx_init:
+      mock_gs_ctx = mock_gs_ctx_init.return_value
+      mock_gs_ctx.Cat.return_value = '{'
       notifier = mock.Mock()
 
       stage = self.ConstructStage()
