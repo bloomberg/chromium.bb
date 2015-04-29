@@ -9,10 +9,11 @@ from __future__ import print_function
 import mock
 import os
 
-from chromite.lib import gs
+from chromite.lib import gs_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import cache
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 from chromite.lib import retry_util
 
 
@@ -123,8 +124,11 @@ class CacheReferenceTest(cros_test_lib.TestCase):
     self.assertFalse(self.cache._Insert.called)
 
 
-class CacheTestCase(cros_test_lib.TempDirTestCase):
+class CacheTestCase(cros_test_lib.MockTempDirTestCase):
   """Tests for any type of Cache object."""
+
+  def setUp(self):
+    self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
 
   def _testAssign(self):
     """Verify we can assign a file to the cache and get it back out."""
@@ -183,7 +187,7 @@ class DiskCacheTest(CacheTestCase):
   testRemove = CacheTestCase._testRemove
 
 
-class RemoteCacheTest(CacheTestCase, cros_test_lib.MockTestCase):
+class RemoteCacheTest(CacheTestCase):
   """Tests for RemoteCache."""
 
   def setUp(self):
@@ -228,9 +232,14 @@ class RemoteCacheTest(CacheTestCase, cros_test_lib.MockTestCase):
 
   def testFetchGs(self):
     """Verify we fetch from Google Storage and save the result."""
-    def _Fetch(_url, local_path):
-      osutils.Touch(local_path)
-    self.PatchObject(gs.GSContext, 'Copy', side_effect=_Fetch)
+    # pylint: disable=unused-argument
+    def _Fetch(_ctx, cmd, capture_output):
+      # Touch file we tried to copy too.
+      osutils.Touch(cmd[-1])
+
+    self.gs_mock.AddCmdResult(
+        ['cp', '-v', '--', partial_mock.Ignore(), partial_mock.Ignore()],
+        side_effect=_Fetch)
 
     key = ('gs',)
     url = 'gs://some.site.localdomain/file_go_boom'

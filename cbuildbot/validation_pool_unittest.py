@@ -32,7 +32,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import gerrit
 from chromite.lib import gob_util
-from chromite.lib import gs
+from chromite.lib import gs_unittest
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
@@ -119,10 +119,7 @@ class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
     # Suppress all gerrit access; having this occur is generally a sign
     # the code is either misbehaving, or that the tests are bad.
     self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
-    self.PatchObject(gs.GSContext, 'Cat', side_effect=gs.GSNoSuchKey())
-    self.PatchObject(gs.GSContext, 'Copy')
-    self.PatchObject(gs.GSContext, 'Exists', return_value=False)
-    self.PatchObject(gs.GSCounter, 'Increment')
+    self.gs_mock = self.StartPatcher(gs_unittest.GSContextMock())
 
   def tearDown(self):
     cidb.CIDBConnectionFactory.ClearMock()

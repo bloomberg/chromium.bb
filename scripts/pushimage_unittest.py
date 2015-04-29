@@ -22,13 +22,15 @@ from chromite.scripts import pushimage
 class InputInsnsTest(cros_test_lib.MockTestCase):
   """Tests for InputInsns"""
 
+  def setUp(self):
+    self.StartPatcher(gs_unittest.GSContextMock())
+
   def testBasic(self):
     """Simple smoke test"""
-    with mock.patch.object(gs.GSContext, 'Exists', return_value=False):
-      insns = pushimage.InputInsns('test.board')
-      insns.GetInsnFile('recovery')
-      self.assertEqual(insns.GetChannels(), ['dev', 'canary'])
-      self.assertEqual(insns.GetKeysets(), ['stumpy-mp-v3'])
+    insns = pushimage.InputInsns('test.board')
+    insns.GetInsnFile('recovery')
+    self.assertEqual(insns.GetChannels(), ['dev', 'canary'])
+    self.assertEqual(insns.GetKeysets(), ['stumpy-mp-v3'])
 
   def testGetInsnFile(self):
     """Verify various inputs result in right insns path"""
