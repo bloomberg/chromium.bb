@@ -7,7 +7,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
-#include "base/mac/scoped_nsobject.h"
+#import "base/mac/foundation_util.h"
+#import "base/mac/scoped_nsobject.h"
+#import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -24,7 +26,37 @@
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 
+// Donates a testing implementation of [NSWindow isMainWindow].
+@interface IsMainWindowDonorForWindow : NSObject
+@end
+
 namespace {
+
+// Simulates a particular NSWindow to report YES for [NSWindow isMainWindow].
+// This allows test coverage of code relying on window focus changes without
+// resorting to an interactive_ui_test.
+class ScopedFakeWindowMainStatus {
+ public:
+  ScopedFakeWindowMainStatus(NSWindow* window)
+      : swizzler_([NSWindow class],
+                  [IsMainWindowDonorForWindow class],
+                  @selector(isMainWindow)) {
+    DCHECK(!window_);
+    window_ = window;
+  }
+
+  ~ScopedFakeWindowMainStatus() { window_ = nil; }
+
+  static NSWindow* GetMainWindow() { return window_; }
+
+ private:
+  static NSWindow* window_;
+  base::mac::ScopedObjCClassSwizzler swizzler_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedFakeWindowMainStatus);
+};
+
+NSWindow* ScopedFakeWindowMainStatus::window_ = nil;
 
 class AppShimMenuControllerBrowserTest
     : public extensions::PlatformAppBrowserTest {
@@ -170,6 +202,31 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   CheckNoAppMenus();
 }
 
+// Test that closing windows without main status do not update the menu.
+IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
+                       ClosingBackgroundWindowLeavesMenuBar) {
+  // Start with app1 active.
+  SetUpApps(PACKAGED_1);
+  extensions::AppWindow* app_1_app_window = FirstWindowForApp(app_1_);
+  ScopedFakeWindowMainStatus app_1_is_main(app_1_app_window->GetNativeWindow());
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:app_1_app_window->GetNativeWindow()];
+  CheckHasAppMenus(app_1_);
+
+  // Closing a background window without focusing it should not change menus.
+  BrowserWindow* chrome_window = chrome::BrowserIterator()->window();
+  chrome_window->Close();
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowWillCloseNotification
+                    object:chrome_window->GetNativeWindow()];
+  CheckHasAppMenus(app_1_);
+
+  app_1_app_window->GetBaseWindow()->Close();
+  CheckNoAppMenus();
+}
+
 // Test to check that hosted apps have "Find" and "Paste and Match Style" menu
 // items under the "Edit" menu.
 IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
@@ -214,9 +271,11 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   // windows.
   FirstWindowForApp(app_2_)->GetBaseWindow()->Close();
   chrome::BrowserIterator()->window()->Close();
+  NSWindow* app_1_window = FirstWindowForApp(app_1_)->GetNativeWindow();
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSWindowDidBecomeMainNotification
-                    object:FirstWindowForApp(app_1_)->GetNativeWindow()];
+                    object:app_1_window];
+  ScopedFakeWindowMainStatus app_1_is_main(app_1_window);
 
   CheckHasAppMenus(app_1_);
   ExtensionService::UninstallExtensionHelper(
@@ -227,3 +286,10 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
 }
 
 }  // namespace
+
+@implementation IsMainWindowDonorForWindow
+- (BOOL)isMainWindow {
+  NSWindow* selfAsWindow = base::mac::ObjCCastStrict<NSWindow>(self);
+  return selfAsWindow == ScopedFakeWindowMainStatus::GetMainWindow();
+}
+@end

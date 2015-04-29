@@ -394,17 +394,18 @@ void SetItemWithTagVisible(NSMenuItem* top_level_item,
     else
       [self removeMenuItems];
   } else if ([name isEqualToString:NSWindowWillCloseNotification]) {
-    // Always reset back to the Chrome menu. This once scanned [NSApp windows]
-    // to predict whether we could expect another Chrome window to become main,
-    // and skip the reset. However, panels need to do strange things during
-    // window close to ensure panels never get chosen for key status over a
-    // browser window (which is likely because they are given an elevated
-    // [NSWindow level]). Trying to handle this case is not robust.
-    // Unfortunately, resetting the menu to Chrome unconditionally means that
-    // if another packaged app window becomes key, the menu will flicker.
-    // TODO(tapted): Investigate restoring the logic when the panel code is
-    // removed.
-    [self removeMenuItems];
+    // If the window being closed has main status, reset back to the Chrome
+    // menu. This once scanned [NSApp windows] to predict whether we could
+    // expect another Chrome window to become main, and skip the reset. However,
+    // panels need to do strange things during window close to ensure panels
+    // never get chosen for key status over a browser window (which is likely
+    // because they are given an elevated [NSWindow level]). Trying to handle
+    // this case is not robust. Unfortunately, resetting the menu to Chrome
+    // unconditionally means that if another packaged app window becomes key,
+    // the menu will flicker. TODO(tapted): Investigate restoring the logic when
+    // the panel code is removed.
+    if ([[notification object] isMainWindow])
+      [self removeMenuItems];
   } else {
     NOTREACHED();
   }
