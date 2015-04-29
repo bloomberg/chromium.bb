@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.24",
+  "version": "7.25",
   "entries": [
     {
       "id": 1,
@@ -1252,6 +1252,16 @@ LONG_STRING_CONST(
       "features": [
         "avoid_egl_image_target_texture_reuse",
         "disable_egl_khr_wait_sync"
+      ]
+    },
+    {
+      "id": 108,
+      "cr_bugs": [449150],
+      "description": "Mali-400 does not support GL_RGB format",
+      "gl_vendor": "ARM.*",
+      "gl_renderer": ".*Mali-400.*",
+      "features": [
+        "disable_gl_rgb_format"
       ]
     }
   ]

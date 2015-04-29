@@ -126,6 +126,8 @@
          validate_multisample_buffer_allocation)             \
   GPU_OP(WAKE_UP_GPU_BEFORE_DRAWING,                         \
          wake_up_gpu_before_drawing)                         \
+  GPU_OP(DISABLE_GL_RGB_FORMAT,                              \
+         disable_gl_rgb_format)                              \
 
 namespace gpu {
 

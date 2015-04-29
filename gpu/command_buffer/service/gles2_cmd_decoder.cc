@@ -2624,8 +2624,10 @@ bool GLES2DecoderImpl::Initialize(
             GL_RGBA8 : GL_RGB8;
       } else {
         offscreen_target_samples_ = 1;
-        offscreen_target_color_format_ = attrib_parser.alpha_size > 0 ?
-            GL_RGBA : GL_RGB;
+        offscreen_target_color_format_ =
+            attrib_parser.alpha_size > 0 || workarounds().disable_gl_rgb_format
+                ? GL_RGBA
+                : GL_RGB;
       }
 
       // ANGLE only supports packed depth/stencil formats, so use it if it is
@@ -2647,8 +2649,10 @@ bool GLES2DecoderImpl::Initialize(
             GL_STENCIL_INDEX8 : 0;
       }
     } else {
-      offscreen_target_color_format_ = attrib_parser.alpha_size > 0 ?
-          GL_RGBA : GL_RGB;
+      offscreen_target_color_format_ =
+          attrib_parser.alpha_size > 0 || workarounds().disable_gl_rgb_format
+              ? GL_RGBA
+              : GL_RGB;
 
       // If depth is requested at all, use the packed depth stencil format if
       // it's available, as some desktop GL drivers don't support any non-packed
@@ -2670,8 +2674,10 @@ bool GLES2DecoderImpl::Initialize(
       }
     }
 
-    offscreen_saved_color_format_ = attrib_parser.alpha_size > 0 ?
-        GL_RGBA : GL_RGB;
+    offscreen_saved_color_format_ =
+        attrib_parser.alpha_size > 0 || workarounds().disable_gl_rgb_format
+            ? GL_RGBA
+            : GL_RGB;
 
     // Create the target frame buffer. This is the one that the client renders
     // directly to.
