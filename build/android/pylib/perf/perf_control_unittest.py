@@ -9,7 +9,6 @@ import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
-from pylib import android_commands
 from pylib.device import device_utils
 from pylib.perf import perf_control
 
@@ -18,10 +17,9 @@ class TestPerfControl(unittest.TestCase):
     if not os.getenv('BUILDTYPE'):
       os.environ['BUILDTYPE'] = 'Debug'
 
-    devices = android_commands.GetAttachedDevices()
+    devices = device_utils.DeviceUtils.HealthyDevices()
     self.assertGreater(len(devices), 0, 'No device attached!')
-    self._device = device_utils.DeviceUtils(
-        android_commands.AndroidCommands(device=devices[0]))
+    self._device = devices[0]
 
   def testHighPerfMode(self):
     perf = perf_control.PerfControl(self._device)

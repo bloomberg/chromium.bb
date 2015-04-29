@@ -42,6 +42,7 @@ def CommonChecks(input_api, output_api):
       input_api,
       output_api,
       unit_tests=[
+          J('pylib', 'base', 'test_dispatcher_unittest.py'),
           J('pylib', 'device', 'battery_utils_test.py'),
           J('pylib', 'device', 'device_utils_test.py'),
           J('pylib', 'device', 'logcat_monitor_test.py'),

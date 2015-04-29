@@ -161,6 +161,73 @@ class DeviceUtilsTest(mock_calls.TestCase):
         msg, str(self.device)))
 
 
+class DeviceUtilsEqTest(DeviceUtilsTest):
+
+  def testEq_equal_deviceUtils(self):
+    other = device_utils.DeviceUtils(_AdbWrapperMock('0123456789abcdef'))
+    self.assertTrue(self.device == other)
+    self.assertTrue(other == self.device)
+
+  def testEq_equal_adbWrapper(self):
+    other = adb_wrapper.AdbWrapper('0123456789abcdef')
+    self.assertTrue(self.device == other)
+    self.assertTrue(other == self.device)
+
+  def testEq_equal_string(self):
+    other = '0123456789abcdef'
+    self.assertTrue(self.device == other)
+    self.assertTrue(other == self.device)
+
+  def testEq_devicesNotEqual(self):
+    other = device_utils.DeviceUtils(_AdbWrapperMock('0123456789abcdee'))
+    self.assertFalse(self.device == other)
+    self.assertFalse(other == self.device)
+
+  def testEq_identity(self):
+    self.assertTrue(self.device == self.device)
+
+  def testEq_serialInList(self):
+    devices = [self.device]
+    self.assertTrue('0123456789abcdef' in devices)
+
+
+class DeviceUtilsLtTest(DeviceUtilsTest):
+
+  def testLt_lessThan(self):
+    other = device_utils.DeviceUtils(_AdbWrapperMock('ffffffffffffffff'))
+    self.assertTrue(self.device < other)
+    self.assertTrue(other > self.device)
+
+  def testLt_greaterThan_lhs(self):
+    other = device_utils.DeviceUtils(_AdbWrapperMock('0000000000000000'))
+    self.assertFalse(self.device < other)
+    self.assertFalse(other > self.device)
+
+  def testLt_equal(self):
+    other = device_utils.DeviceUtils(_AdbWrapperMock('0123456789abcdef'))
+    self.assertFalse(self.device < other)
+    self.assertFalse(other > self.device)
+
+  def testLt_sorted(self):
+    devices = [
+        device_utils.DeviceUtils(_AdbWrapperMock('ffffffffffffffff')),
+        device_utils.DeviceUtils(_AdbWrapperMock('0000000000000000')),
+    ]
+    sorted_devices = sorted(devices)
+    self.assertEquals('0000000000000000',
+                      sorted_devices[0].adb.GetDeviceSerial())
+    self.assertEquals('ffffffffffffffff',
+                      sorted_devices[1].adb.GetDeviceSerial())
+
+
+class DeviceUtilsStrTest(DeviceUtilsTest):
+
+  def testStr_returnsSerial(self):
+    with self.assertCalls(
+        (self.call.adb.GetDeviceSerial(), '0123456789abcdef')):
+      self.assertEqual('0123456789abcdef', str(self.device))
+
+
 class DeviceUtilsIsOnlineTest(DeviceUtilsTest):
 
   def testIsOnline_true(self):
@@ -1537,14 +1604,6 @@ class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsTest):
             'Private_Dirty': 106,
           },
           self.device.GetMemoryUsageForPid(4321))
-
-
-class DeviceUtilsStrTest(DeviceUtilsTest):
-
-  def testStr_returnsSerial(self):
-    with self.assertCalls(
-        (self.call.adb.GetDeviceSerial(), '0123456789abcdef')):
-      self.assertEqual('0123456789abcdef', str(self.device))
 
 
 class DeviceUtilsClientCache(DeviceUtilsTest):

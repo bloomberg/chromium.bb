@@ -175,6 +175,29 @@ class DeviceUtils(object):
     assert hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR)
     assert hasattr(self, decorators.DEFAULT_RETRIES_ATTR)
 
+  def __eq__(self, other):
+    """Checks whether |other| refers to the same device as |self|.
+
+    Args:
+      other: The object to compare to. This can be a basestring, an instance
+        of adb_wrapper.AdbWrapper, or an instance of DeviceUtils.
+    Returns:
+      Whether |other| refers to the same device as |self|.
+    """
+    return self.adb.GetDeviceSerial() == str(other)
+
+  def __lt__(self, other):
+    """Compares two instances of DeviceUtils.
+
+    This merely compares their serial numbers.
+
+    Args:
+      other: The instance of DeviceUtils to compare to.
+    Returns:
+      Whether |self| is less than |other|.
+    """
+    return self.adb.GetDeviceSerial() < other.adb.GetDeviceSerial()
+
   def __str__(self):
     """Returns the device serial."""
     return self.adb.GetDeviceSerial()
