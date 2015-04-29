@@ -568,12 +568,11 @@ bool PEImage::ImageAddrToOnDiskOffset(LPVOID address,
   if (NULL == section_header)
     return false;
 
-#pragma warning(suppress : 4302) // pointer truncation
-  // These casts generate warnings because they are 32 bit specific.
   // Don't follow the virtual RVAToAddr, use the one on the base.
-  DWORD offset_within_section = reinterpret_cast<DWORD>(address) -
-                                    reinterpret_cast<DWORD>(PEImage::RVAToAddr(
-                                        section_header->VirtualAddress));
+  DWORD offset_within_section =
+      static_cast<DWORD>(reinterpret_cast<uintptr_t>(address)) -
+      static_cast<DWORD>(reinterpret_cast<uintptr_t>(
+          PEImage::RVAToAddr(section_header->VirtualAddress)));
 
   *on_disk_offset = section_header->PointerToRawData + offset_within_section;
   return true;
