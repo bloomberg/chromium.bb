@@ -27,7 +27,7 @@ public final class BeamController {
             final BeamCallback beamCallback = new BeamCallback(activity, provider);
             nfcAdapter.setNdefPushMessageCallback(beamCallback, activity);
             nfcAdapter.setOnNdefPushCompleteCallback(beamCallback, activity);
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | SecurityException e) {
             Log.w("BeamController", "NFC registration failure. Can't retry, giving up.");
         }
     }
