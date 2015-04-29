@@ -4,6 +4,8 @@
 
 #include "ios/chrome/test/ios_chrome_unit_test_suite.h"
 
+#include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
+#include "ios/chrome/browser/chrome_paths.h"
 #include "ios/public/test/test_chrome_browser_provider.h"
 #include "ios/public/test/test_chrome_provider_initializer.h"
 #include "ios/web/public/web_client.h"
@@ -56,6 +58,11 @@ void IOSChromeUnitTestSuite::Initialize() {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new IOSChromeUnitTestSuiteInitializer);
 
+  // Ensure that all BrowserStateKeyedServiceFactories are built before any
+  // test is run so that the dependencies are correctly resolved.
+  EnsureBrowserStateKeyedServiceFactoriesBuilt();
+
+  ios::RegisterPathProvider();
   ui::RegisterPathProvider();
 
   {

@@ -98,6 +98,8 @@
         'browser/autofill/form_suggestion_view.h',
         'browser/autofill/form_suggestion_view.mm',
         'browser/autofill/form_suggestion_view_client.h',
+        'browser/browser_state/browser_state_keyed_service_factories.h',
+        'browser/browser_state/browser_state_keyed_service_factories.mm',
         'browser/browser_state/browser_state_otr_helper.cc',
         'browser/browser_state/browser_state_otr_helper.h',
         'browser/browsing_data_change_listening.h',
