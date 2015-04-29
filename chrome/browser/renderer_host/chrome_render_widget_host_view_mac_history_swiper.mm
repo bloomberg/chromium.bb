@@ -597,7 +597,7 @@ BOOL forceMagicMouse = NO;
       // It is unclear whether the user is attempting to perform history
       // swiping.  If the event has a vertical component, send it on to the
       // renderer.
-      return event.scrollingDeltaY == 0;
+      return [event scrollingDeltaY] == 0;
   }
 }
 
