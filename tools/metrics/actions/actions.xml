@@ -2422,6 +2422,20 @@ should be able to be added at any place in this file.
   </obsolete>
 </action>
 
+<action name="DataSaverPrompt_Clicked">
+  <owner>glevin@chromium.org</owner>
+  <description>
+    Records click on prompt (notification) to install Data Saver extension.
+  </description>
+</action>
+
+<action name="DataSaverPrompt_Shown">
+  <owner>glevin@chromium.org</owner>
+  <description>
+    Records display of prompt (notification) to install Data Saver extension.
+  </description>
+</action>
+
 <action name="Debugger">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

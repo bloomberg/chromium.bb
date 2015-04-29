@@ -28,6 +28,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_registry.h"
 #include "grit/ui_chromeos_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -171,6 +172,8 @@ void NotificationClicked(const std::string& service_path,
     chrome::ScopedTabbedBrowserDisplayer displayer(
         ProfileManager::GetPrimaryUserProfile(), chrome::HOST_DESKTOP_TYPE_ASH);
     chrome::ShowSingletonTab(displayer.browser(), GURL(info_url));
+    if (info_url == kDataSaverExtensionUrl)
+      content::RecordAction(base::UserMetricsAction("DataSaverPrompt_Clicked"));
   } else {
     ui::NetworkConnect::Get()->ShowNetworkSettingsForPath(service_path);
   }
@@ -308,6 +311,7 @@ bool DataPromoNotification::ShowDataSaverNotification() {
           kDataSaverNotificationId, title, message, icon,
           ui::NetworkStateNotifier::kNotifierNetwork,
           base::Bind(&NotificationClicked, "", kDataSaverExtensionUrl)));
+  content::RecordAction(base::UserMetricsAction("DataSaverPrompt_Shown"));
 
   if (DataSaverSwitchDemoMode()) {
     SetDataSaverPromptsShown(0);  // demo mode resets times shown counts.
