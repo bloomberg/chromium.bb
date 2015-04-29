@@ -14,6 +14,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisColorSpan;
+import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSecurityErrorSpan;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
@@ -95,7 +96,8 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
             assertEquals("Unexpected ending index for '" + contents + "' span:",
                     startIndex + contents.length(),
                     getEndIndex());
-            assertEquals("Unexpected class for '" + contents + "' span:", "UrlEmphasisColorSpan",
+            assertEquals("Unexpected class for '" + contents + "' span:",
+                    UrlEmphasisColorSpan.class.getSimpleName(),
                     getClassName());
             assertEquals("Unexpected color for '" + contents + "' span:", color,
                     getColorForColoredSpan());
@@ -109,7 +111,7 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
                     startIndex + contents.length(),
                     getEndIndex());
             assertEquals("Unexpected class for '" + contents + "' span:",
-                    "UrlEmphasisSecurityErrorSpan",
+                    UrlEmphasisSecurityErrorSpan.class.getSimpleName(),
                     getClassName());
         }
     }

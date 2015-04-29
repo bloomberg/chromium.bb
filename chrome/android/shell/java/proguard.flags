@@ -1,0 +1,63 @@
+# Keep line number information, useful for stack traces.
+-keepattributes SourceFile,LineNumberTable
+
+# Keep all runtime visible annotations
+-keepattributes RuntimeVisibleAnnotations
+
+# Keep the annotations.
+-keep @interface ***
+
+# A lot of code in org.chromium is used by both the internal Chrome code and by
+# ChromeShell tests. It doesn't make sense to mark such things as
+# @VisibleForTesting. For now, just keep everything in org.chromium.
+-keep class org.chromium.** {
+  *;
+}
+
+# Keep code annotated with the following annotations.
+-keep class * {
+  @**.AccessedByNative <fields>;
+  @**.CalledByNative <methods>;
+  @**.CalledByNativeUnchecked <methods>;
+  @**.JavascriptInterface <methods>;
+  @**.NativeCall <methods>;
+  @**.UsedByReflection <methods>;
+  @**.VisibleForTesting *;
+  native <methods>;
+}
+
+# Keep the client interfaces for cacheinvalidation as they are used as
+# argument types for some of our code that we're keeping and proguard warns
+# otherwise.
+-keep class com.google.ipc.invalidation.external.client.** {
+  *;
+}
+
+# Keep all enum values and valueOf methods. See
+# http://proguard.sourceforge.net/index.html#manual/examples.html
+# for the reason for this. Also, see http://crbug.com/248037.
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Keep all Parcelables as they might be marshalled outside Chrome.
+-keep class * implements android.os.Parcelable {
+   public static final ** CREATOR;
+}
+
+# SearchView is used in website_preferences_menu.xml and is constructed by
+# Android using reflection.
+-keep class android.support.v7.widget.SearchView {
+  public <init>(...);
+}
+
+# Google Play Services warnings are about its resources.
+-dontwarn com.google.android.gms.R**
+
+# The support library contains references to newer platform versions.
+# Don't warn about those in case this app is linking against an older
+# platform version.  We know about them, and they are safe.
+-dontwarn android.support.**
+
+-dontwarn javax.annotation.Nullable

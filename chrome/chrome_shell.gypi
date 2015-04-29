@@ -102,6 +102,8 @@
         'additional_input_paths': [
           '<@(chrome_android_pak_output_resources)',
         ],
+        'proguard_enabled': 'true',
+        'proguard_flags_paths': ['android/shell/java/proguard.flags'],
       },
       'includes': [ '../build/java_apk.gypi', ],
     },
