@@ -10,7 +10,7 @@
   # bots all using the 'gn_release_bot' config).
   'configs': {
     'android_gn_release_bot': ['android', 'gn', 'release_bot'],
-    'android_gn_debug_bot': ['android', 'gn', 'debug_static_bot'],
+    'android_gn_debug_bot': ['android', 'gn', 'debug_bot'],
     'android_gn_release_trybot': ['android', 'gn', 'release_trybot'],
     'android_gyp_debug_bot': ['android', 'gyp', 'debug_bot'],
     'android_gyp_release_trybot': ['android', 'gyp', 'release_trybot'],
