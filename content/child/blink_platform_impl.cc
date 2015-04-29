@@ -1049,6 +1049,11 @@ double BlinkPlatformImpl::monotonicallyIncreasingTime() {
       static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
+double BlinkPlatformImpl::systemTraceTime() {
+  return base::TimeTicks::NowFromSystemTraceTime().ToInternalValue() /
+      static_cast<double>(base::Time::kMicrosecondsPerSecond);
+}
+
 void BlinkPlatformImpl::cryptographicallyRandomValues(
     unsigned char* buffer, size_t length) {
   base::RandBytes(buffer, length);

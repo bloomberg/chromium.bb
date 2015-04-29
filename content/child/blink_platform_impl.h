@@ -144,6 +144,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual void suddenTerminationChanged(bool enabled) { }
   virtual double currentTime();
   virtual double monotonicallyIncreasingTime();
+  virtual double systemTraceTime();
   virtual void cryptographicallyRandomValues(
       unsigned char* buffer, size_t length);
   virtual void setSharedTimerFiredFunction(void (*func)());
