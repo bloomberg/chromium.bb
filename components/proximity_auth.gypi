@@ -5,6 +5,8 @@
 {
   'targets': [
     {
+      # GN version: //components/proximity_auth and
+      # //components/proximity_auth/ble.
       'target_name': 'proximity_auth',
       'type': 'static_library',
       'include_dirs': [

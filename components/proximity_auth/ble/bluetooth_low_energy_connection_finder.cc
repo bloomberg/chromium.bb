@@ -154,7 +154,7 @@ bool BluetoothLowEnergyConnectionFinder::HasService(
 
 void BluetoothLowEnergyConnectionFinder::OnCreateConnectionError(
     BluetoothDevice::ConnectErrorCode error_code) {
-  VLOG(1) << "Error creating connection";
+  VLOG(1) << "Error creating connection: " << error_code;
 }
 
 void BluetoothLowEnergyConnectionFinder::OnConnectionCreated(
@@ -162,7 +162,10 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionCreated(
   VLOG(1) << "Connection created";
   connected_ = true;
   StopDiscoverySession();
-  connection_callback_.Run(connection.Pass());
+  if (!connection_callback_.is_null()) {
+    connection_callback_.Run(connection.Pass());
+    connection_callback_.Reset();
+  }
 }
 
 void BluetoothLowEnergyConnectionFinder::CreateConnection(

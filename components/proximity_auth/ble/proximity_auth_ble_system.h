@@ -7,22 +7,49 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 
-#include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
+namespace content {
+class BrowserContext;
+}
+
+namespace device {
+class BluetoothGattConnection;
+}
 
 namespace proximity_auth {
+
+class BluetoothLowEnergyConnectionFinder;
 
 // This is the main entry point to start Proximity Auth over Bluetooth Low
 // Energy. This is the underlying system for the Smart Lock features. It will
 // discover Bluetooth Low Energy phones and unlock the lock screen if the phone
 // passes an authorization and authentication protocol.
-class ProximityAuthBleSystem {
+class ProximityAuthBleSystem : public ScreenlockBridge::Observer {
  public:
-  ProximityAuthBleSystem();
-  ~ProximityAuthBleSystem();
+  ProximityAuthBleSystem(ScreenlockBridge* screenlock_bridge,
+                         content::BrowserContext* browser_context);
+  ~ProximityAuthBleSystem() override;
+
+  // ScreenlockBridge::Observer:
+  void OnScreenDidLock(
+      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  void OnScreenDidUnlock(
+      ScreenlockBridge::LockHandler::ScreenType screen_type) override;
+  void OnFocusedUserChanged(const std::string& user_id) override;
 
  private:
+  // Handler for a new connection found event.
+  void OnConnectionFound(
+      scoped_ptr<device::BluetoothGattConnection> connection);
+
+  ScreenlockBridge* screenlock_bridge_;  // Not owned. Must outlive this object.
+  content::BrowserContext*
+      browser_context_;  // Not owned. Must outlive this object.
+
   scoped_ptr<BluetoothLowEnergyConnectionFinder> connection_finder_;
+
+  base::WeakPtrFactory<ProximityAuthBleSystem> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthBleSystem);
 };

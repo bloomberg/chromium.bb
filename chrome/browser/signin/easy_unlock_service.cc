@@ -640,9 +640,11 @@ void EasyUnlockService::UpdateAppState() {
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery) &&
+        GetType() == EasyUnlockService::TYPE_REGULAR &&
         !proximity_auth_ble_system_) {
       proximity_auth_ble_system_.reset(
-          new proximity_auth::ProximityAuthBleSystem());
+          new proximity_auth::ProximityAuthBleSystem(
+              GetScreenlockBridgeInstance(), profile_));
     }
 
 #if defined(OS_CHROMEOS)

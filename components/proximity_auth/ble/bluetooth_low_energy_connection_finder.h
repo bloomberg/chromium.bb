@@ -29,7 +29,7 @@ class BluetoothLowEnergyConnectionFinder
   BluetoothLowEnergyConnectionFinder(const std::string& remote_service_uuid);
   ~BluetoothLowEnergyConnectionFinder() override;
 
-  // Finds a connection the remote device, only the first one is functional.
+  // Finds a connection to the remote device. Only the first one is functional.
   void Find(const device::BluetoothDevice::GattConnectionCallback&
                 connection_callback);
   void Find(const ConnectionCallback& connection_callback) override;
