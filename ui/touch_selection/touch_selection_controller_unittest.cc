@@ -909,6 +909,23 @@ TEST_F(TouchSelectionControllerTest, SelectionClearOnTap) {
   EXPECT_EQ(gfx::PointF(), GetLastEventStart());
 }
 
+TEST_F(TouchSelectionControllerTest, NoSelectionAfterLongpressThenTap) {
+  gfx::RectF start_rect(5, 5, 0, 10);
+  gfx::RectF end_rect(50, 5, 0, 10);
+  bool visible = true;
+
+  // Tap-triggered selections should not be allowed.
+  controller().OnLongPressEvent();
+  controller().OnTapEvent();
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), IsEmpty());
+
+  // Subsequent longpress selections will be allowed.
+  controller().OnLongPressEvent();
+  ChangeSelection(start_rect, visible, end_rect, visible);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_SHOWN));
+}
+
 TEST_F(TouchSelectionControllerTest, AllowShowingFromCurrentSelection) {
   gfx::RectF start_rect(5, 5, 0, 10);
   gfx::RectF end_rect(50, 5, 0, 10);

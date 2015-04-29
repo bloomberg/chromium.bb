@@ -173,6 +173,7 @@ void TouchSelectionController::AllowShowingFromCurrentSelection() {
 
 void TouchSelectionController::OnTapEvent() {
   response_pending_input_event_ = TAP;
+  activate_selection_automatically_ = false;
   ShowInsertionHandleAutomatically();
   if (selection_empty_ && !show_on_tap_for_empty_editable_)
     DeactivateInsertion();
