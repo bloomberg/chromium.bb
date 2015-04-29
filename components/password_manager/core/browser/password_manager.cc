@@ -136,7 +136,7 @@ void PasswordManager::SetFormHasGeneratedPassword(
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
   // ability to detect forms.
-  bool ssl_valid = form.origin.SchemeIsSecure();
+  bool ssl_valid = form.origin.SchemeIsCryptographic();
   PasswordFormManager* manager = new PasswordFormManager(
       this, client_, driver->AsWeakPtr(), form, ssl_valid);
   pending_login_managers_.push_back(manager);
@@ -253,7 +253,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
 
   PasswordForm provisionally_saved_form(form);
   provisionally_saved_form.ssl_valid =
-      form.origin.SchemeIsSecure() &&
+      form.origin.SchemeIsCryptographic() &&
       !client_->DidLastPageLoadEncounterSSLErrors();
   provisionally_saved_form.preferred = true;
   if (logger) {
@@ -415,7 +415,7 @@ void PasswordManager::CreatePendingLoginManagers(
 
     if (logger)
       logger->LogFormSignatures(Logger::STRING_ADDING_SIGNATURE, *iter);
-    bool ssl_valid = iter->origin.SchemeIsSecure();
+    bool ssl_valid = iter->origin.SchemeIsCryptographic();
     PasswordFormManager* manager = new PasswordFormManager(
         this, client_, driver->AsWeakPtr(), *iter, ssl_valid);
     pending_login_managers_.push_back(manager);

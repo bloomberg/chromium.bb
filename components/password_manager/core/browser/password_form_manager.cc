@@ -161,8 +161,8 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
   // we also consider the actions a match. This is to accommodate cases where
   // the original login form is on an HTTP page, but a failed login attempt
   // redirects to HTTPS (as in http://example.org -> https://example.org/auth).
-  if (!origins_match && !observed_form_.origin.SchemeIsSecure() &&
-      form.origin.SchemeIsSecure()) {
+  if (!origins_match && !observed_form_.origin.SchemeIsCryptographic() &&
+      form.origin.SchemeIsCryptographic()) {
     const std::string& old_path = observed_form_.origin.path();
     const std::string& new_path = form.origin.path();
     origins_match =

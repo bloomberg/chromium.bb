@@ -607,7 +607,7 @@ bool ExtractSignonRealmComponents(const std::string& signon_realm,
   if (server)
     *server = realm_as_url.host();
   if (is_secure)
-    *is_secure = realm_as_url.SchemeIsSecure();
+    *is_secure = realm_as_url.SchemeIsCryptographic();
   if (port)
     *port = realm_as_url.has_port() ? atoi(realm_as_url.port().c_str()) : 0;
   if (security_domain) {
