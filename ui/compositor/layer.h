@@ -301,6 +301,8 @@ class COMPOSITOR_EXPORT Layer
 
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);
+  SkColor GetTargetColor();
+  SkColor background_color() const;
 
   // Updates the nine patch layer's image, aperture and border. May only be
   // called for LAYER_NINE_PATCH.

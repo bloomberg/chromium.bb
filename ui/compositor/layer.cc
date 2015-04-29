@@ -652,6 +652,14 @@ void Layer::UpdateNinePatchLayerBorder(const gfx::Rect& border) {
 
 void Layer::SetColor(SkColor color) { GetAnimator()->SetColor(color); }
 
+SkColor Layer::GetTargetColor() {
+  return GetAnimator()->GetTargetColor();
+}
+
+SkColor Layer::background_color() const {
+  return cc_layer_->background_color();
+}
+
 bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
   if ((type_ == LAYER_SOLID_COLOR && !texture_layer_.get()) ||
       type_ == LAYER_NINE_PATCH || (!delegate_ && !mailbox_.IsValid()))

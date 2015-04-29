@@ -58,23 +58,27 @@ void LayerOwnerTestWithCompositor::TearDown() {
 
 }  // namespace
 
-TEST(LayerOwnerTest, RecreateLayerHonorsTargetVisibilityAndOpacity) {
+TEST(LayerOwnerTest, RecreateLayerHonorsAnimationTargets) {
   LayerOwner owner;
-  Layer* layer = new Layer;
+  Layer* layer = new Layer(LAYER_SOLID_COLOR);
   layer->SetVisible(true);
   layer->SetOpacity(1.0f);
+  layer->SetColor(SK_ColorRED);
 
   owner.SetLayer(layer);
 
   ScopedLayerAnimationSettings settings(layer->GetAnimator());
   layer->SetVisible(false);
   layer->SetOpacity(0.0f);
+  layer->SetColor(SK_ColorGREEN);
   EXPECT_TRUE(layer->visible());
   EXPECT_EQ(1.0f, layer->opacity());
+  EXPECT_EQ(SK_ColorRED, layer->background_color());
 
   scoped_ptr<Layer> old_layer(owner.RecreateLayer());
   EXPECT_FALSE(owner.layer()->visible());
   EXPECT_EQ(0.0f, owner.layer()->opacity());
+  EXPECT_EQ(SK_ColorGREEN, owner.layer()->background_color());
 }
 
 TEST(LayerOwnerTest, RecreateRootLayerWithNullCompositor) {
