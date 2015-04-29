@@ -19,6 +19,9 @@ public class PendingDocumentData {
     /** Pending native web contents object to initialize with. */
     public WebContents webContents;
 
+    /** Whether renderer events have been paused for webContents. */
+    public boolean webContentsPaused;
+
     /** The url to load in the current tab. */
     public String url;
 

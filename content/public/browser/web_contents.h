@@ -628,6 +628,13 @@ class WebContents : public PageNavigator,
   // Requests the renderer to exit fullscreen.
   virtual void ExitFullscreen() = 0;
 
+  // Unblocks requests from renderer for a newly created window. This is
+  // used in showCreatedWindow() or sometimes later in cases where
+  // delegate->ShouldResumeRequestsForCreatedWindow() indicated the requests
+  // should not yet be resumed. Then the client is responsible for calling this
+  // as soon as they are ready.
+  virtual void ResumeLoadingCreatedWebContents() = 0;
+
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       jobject jweb_contents_android);

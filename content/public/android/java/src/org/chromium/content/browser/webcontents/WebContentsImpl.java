@@ -193,6 +193,11 @@ import org.chromium.content_public.browser.WebContentsObserver;
     }
 
     @Override
+    public void resumeLoadingCreatedWebContents() {
+        nativeResumeLoadingCreatedWebContents(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public void setHasPendingNavigationTransitionForTesting() {
         nativeSetHasPendingNavigationTransitionForTesting(mNativeWebContentsAndroid);
     }
@@ -398,6 +403,7 @@ import org.chromium.content_public.browser.WebContentsObserver;
     private native String nativeGetLastCommittedURL(long nativeWebContentsAndroid);
     private native boolean nativeIsIncognito(long nativeWebContentsAndroid);
     private native void nativeResumeResponseDeferredAtStart(long nativeWebContentsAndroid);
+    private native void nativeResumeLoadingCreatedWebContents(long nativeWebContentsAndroid);
     private native void nativeSetHasPendingNavigationTransitionForTesting(
             long nativeWebContentsAndroid);
     private native void nativeSetupTransitionView(long nativeWebContentsAndroid,

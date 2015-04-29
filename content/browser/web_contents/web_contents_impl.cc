@@ -1702,6 +1702,9 @@ void WebContentsImpl::ShowCreatedWindow(int route_id,
   WebContentsImpl* contents = GetCreatedWindow(route_id);
   if (contents) {
     WebContentsDelegate* delegate = GetDelegate();
+    if (!delegate || delegate->ShouldResumeRequestsForCreatedWindow())
+      contents->ResumeLoadingCreatedWebContents();
+
     if (delegate) {
       delegate->AddNewContents(
           this, contents, disposition, initial_rect, user_gesture, NULL);
@@ -1788,11 +1791,6 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
   if (!new_contents->GetRenderProcessHost()->HasConnection() ||
       !new_contents->GetRenderViewHost()->GetView())
     return NULL;
-
-  // Resume blocked requests for both the RenderViewHost and RenderFrameHost.
-  // TODO(brettw): It seems bogus to reach into here and initialize the host.
-  new_contents->GetRenderViewHost()->Init();
-  new_contents->GetMainFrame()->Init();
 
   return new_contents;
 }
@@ -2538,6 +2536,13 @@ void WebContentsImpl::ExitFullscreen() {
   // Clean up related state and initiate the fullscreen exit.
   GetRenderViewHost()->RejectMouseLockOrUnlockIfNecessary();
   ExitFullscreenMode();
+}
+
+void WebContentsImpl::ResumeLoadingCreatedWebContents() {
+  // Resume blocked requests for both the RenderViewHost and RenderFrameHost.
+  // TODO(brettw): It seems bogus to reach into here and initialize the host.
+  GetRenderViewHost()->Init();
+  GetMainFrame()->Init();
 }
 
 bool WebContentsImpl::FocusLocationBarByDefault() {

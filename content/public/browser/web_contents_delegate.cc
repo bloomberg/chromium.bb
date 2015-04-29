@@ -63,6 +63,10 @@ bool WebContentsDelegate::ShouldFocusPageAfterCrash() {
   return true;
 }
 
+bool WebContentsDelegate::ShouldResumeRequestsForCreatedWindow() {
+  return true;
+}
+
 bool WebContentsDelegate::TakeFocus(WebContents* source, bool reverse) {
   return false;
 }

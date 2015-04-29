@@ -656,6 +656,10 @@ void GuestViewBase::UpdateTargetURL(content::WebContents* source,
       embedder_web_contents(), url);
 }
 
+bool GuestViewBase::ShouldResumeRequestsForCreatedWindow() {
+  return false;
+}
+
 GuestViewBase::~GuestViewBase() {
 }
 

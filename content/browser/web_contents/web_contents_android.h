@@ -55,6 +55,7 @@ class CONTENT_EXPORT WebContentsAndroid
   jboolean IsIncognito(JNIEnv* env, jobject obj);
 
   void ResumeResponseDeferredAtStart(JNIEnv* env, jobject obj);
+  void ResumeLoadingCreatedWebContents(JNIEnv* env, jobject obj);
   void SetHasPendingNavigationTransitionForTesting(JNIEnv* env, jobject obj);
   void SetupTransitionView(JNIEnv* env, jobject jobj, jstring markup);
   void BeginExitTransition(JNIEnv* env, jobject jobj, jstring css_selector,

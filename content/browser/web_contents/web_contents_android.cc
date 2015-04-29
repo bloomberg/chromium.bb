@@ -241,6 +241,11 @@ void WebContentsAndroid::ResumeResponseDeferredAtStart(JNIEnv* env,
   static_cast<WebContentsImpl*>(web_contents_)->ResumeResponseDeferredAtStart();
 }
 
+void WebContentsAndroid::ResumeLoadingCreatedWebContents(JNIEnv* env,
+                                                         jobject obj) {
+  web_contents_->ResumeLoadingCreatedWebContents();
+}
+
 void WebContentsAndroid::SetHasPendingNavigationTransitionForTesting(
     JNIEnv* env,
     jobject obj) {

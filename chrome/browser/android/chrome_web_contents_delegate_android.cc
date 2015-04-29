@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
+#include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -303,6 +304,11 @@ WebContents* ChromeWebContentsDelegateAndroid::OpenURLFromTab(
   }
 
   return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
+}
+
+bool ChromeWebContentsDelegateAndroid::ShouldResumeRequestsForCreatedWindow() {
+  return chrome::android::GetDocumentModeValue() ==
+      chrome::android::RUNNING_MODE_TABBED_MODE;
 }
 
 void ChromeWebContentsDelegateAndroid::AddNewContents(

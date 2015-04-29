@@ -159,6 +159,11 @@ public interface WebContents {
     public void resumeResponseDeferredAtStart();
 
     /**
+     * Resumes the requests for a newly created window.
+     */
+    public void resumeLoadingCreatedWebContents();
+
+    /**
      * Set pending Navigation for transition testing on this WebContents.
      */
     public void setHasPendingNavigationTransitionForTesting();

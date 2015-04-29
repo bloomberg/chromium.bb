@@ -215,6 +215,11 @@ class CONTENT_EXPORT WebContentsDelegate {
   // to live. Default is true.
   virtual bool ShouldFocusPageAfterCrash();
 
+  // Returns whether the page should resume accepting requests for the new
+  // window. This is used when window creation is asynchronous
+  // and the navigations need to be delayed. Default is true.
+  virtual bool ShouldResumeRequestsForCreatedWindow();
+
   // This is called when WebKit tells us that it is done tabbing through
   // controls on the page. Provides a way for WebContentsDelegates to handle
   // this. Returns true if the delegate successfully handled it.
