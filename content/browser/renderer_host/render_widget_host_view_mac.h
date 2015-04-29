@@ -158,6 +158,14 @@ class Layer;
   // create a specific gesture begin event later.
   scoped_ptr<blink::WebGestureEvent> gestureBeginEvent_;
 
+  // To avoid accidental pinches, require that a certain zoom threshold be
+  // reached before forwarding it to the browser. Use |unusedPinchAmount_| to
+  // hold this value. If the user reaches this value, don't re-require the
+  // threshold be reached until a certain time has passed since the last
+  // zoom. Store the time of the last zoom in |lastUsedPinchEventTimestamp_|.
+  float unusedPinchAmount_;
+  NSTimeInterval lastUsedPinchEventTimestamp_;
+
   // This is set if a GesturePinchBegin event has been sent in the lifetime of
   // |gestureBeginEvent_|. If set, a GesturePinchEnd will be sent when the
   // gesture ends.

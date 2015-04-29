@@ -65,6 +65,7 @@ include_rules = [
   "+third_party/mojo/src/mojo/public",
   "+third_party/mozilla",
   "+third_party/npapi/bindings",
+  "+third_party/ocmock",
   "+third_party/re2",
   "+third_party/skia",
   "+third_party/sqlite",

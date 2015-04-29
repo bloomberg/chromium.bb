@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
+#include <Cocoa/Cocoa.h>
+
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -24,6 +26,8 @@
 #include "content/test/test_render_view_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/ocmock_extensions.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
@@ -87,6 +91,26 @@
 namespace content {
 
 namespace {
+
+id MockGestureEvent(
+    NSEventType type, NSTimeInterval timestamp, double magnification) {
+  id event = [OCMockObject mockForClass:[NSEvent class]];
+  NSPoint locationInWindow = NSMakePoint(0, 0);
+  CGFloat deltaX = 0;
+  CGFloat deltaY = 0;
+  NSUInteger modifierFlags = 0;
+  [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(type)] type];
+  [(NSEvent*)[[event stub]
+      andReturnValue:OCMOCK_VALUE(locationInWindow)] locationInWindow];
+  [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(deltaX)] deltaX];
+  [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(deltaY)] deltaY];
+  [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(timestamp)] timestamp];
+  [(NSEvent*)[[event stub]
+      andReturnValue:OCMOCK_VALUE(modifierFlags)] modifierFlags];
+  [(NSEvent*)[[event stub]
+      andReturnValue:OCMOCK_VALUE(magnification)] magnification];
+  return event;
+}
 
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
@@ -841,5 +865,119 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
 
   host->Shutdown();
 }
+
+TEST_F(RenderWidgetHostViewMacTest, PinchThresholding) {
+  // This tests Lion+ functionality, so don't run the test pre-Lion.
+  if (!base::mac::IsOSLionOrLater())
+    return;
+
+  // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
+  // the MockRenderProcessHost that is set up by the test harness which mocks
+  // out |OnMessageReceived()|.
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+  MockRenderWidgetHostDelegate delegate;
+  MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
+      &delegate, process_host, MSG_ROUTING_NONE);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+
+  // We'll use this IPC message to ack events.
+  InputHostMsg_HandleInputEvent_ACK_Params ack;
+  ack.type = blink::WebInputEvent::GesturePinchUpdate;
+  ack.state = INPUT_EVENT_ACK_STATE_CONSUMED;
+  scoped_ptr<IPC::Message> response(
+      new InputHostMsg_HandleInputEvent_ACK(0, ack));
+
+  // Do a gesture that crosses the threshold.
+  {
+    NSEvent* pinchBeginEvent =
+        MockGestureEvent(NSEventTypeBeginGesture, 100.1, 0);
+    NSEvent* pinchUpdateEvents[3] = {
+        MockGestureEvent(NSEventTypeMagnify, 100.2, 0.25),
+        MockGestureEvent(NSEventTypeMagnify, 100.3, 0.25),
+        MockGestureEvent(NSEventTypeMagnify, 100.4, 0.25),
+    };
+    NSEvent* pinchEndEvent =
+        MockGestureEvent(NSEventTypeEndGesture, 100.5, 0);
+
+    // No messages are sent for the pinch begin and the first update event.
+    [view->cocoa_view() beginGestureWithEvent:pinchBeginEvent];
+    [view->cocoa_view() magnifyWithEvent:pinchUpdateEvents[0]];
+    ASSERT_EQ(0U, process_host->sink().message_count());
+
+    // The second update event crosses the threshold of 0.4, and so a begin
+    // and update are sent.
+    [view->cocoa_view() magnifyWithEvent:pinchUpdateEvents[1]];
+    ASSERT_EQ(2U, process_host->sink().message_count());
+    host->OnMessageReceived(*response);
+
+    // The third update only causes one event to be sent.
+    [view->cocoa_view() magnifyWithEvent:pinchUpdateEvents[2]];
+    ASSERT_EQ(3U, process_host->sink().message_count());
+    host->OnMessageReceived(*response);
+
+    // As does the end.
+    [view->cocoa_view() endGestureWithEvent:pinchEndEvent];
+    ASSERT_EQ(4U, process_host->sink().message_count());
+
+    process_host->sink().ClearMessages();
+  }
+
+  // Do a gesture that doesn't cross the threshold, but happens within 1 second,
+  // so it should be sent to the renderer.
+  {
+    NSEvent* pinchBeginEvent =
+        MockGestureEvent(NSEventTypeBeginGesture, 101.0, 0);
+    NSEvent* pinchUpdateEvent =
+        MockGestureEvent(NSEventTypeMagnify, 101.1, 0.25);
+    NSEvent* pinchEndEvent =
+        MockGestureEvent(NSEventTypeEndGesture, 101.2, 0);
+
+    // No message comes for the begin event.
+    [view->cocoa_view() beginGestureWithEvent:pinchBeginEvent];
+    ASSERT_EQ(0U, process_host->sink().message_count());
+
+    // Two messages come for the first update event.
+    [view->cocoa_view() magnifyWithEvent:pinchUpdateEvent];
+    ASSERT_EQ(2U, process_host->sink().message_count());
+    host->OnMessageReceived(*response);
+
+    // The end event sends one message.
+    [view->cocoa_view() endGestureWithEvent:pinchEndEvent];
+    ASSERT_EQ(3U, process_host->sink().message_count());
+
+    process_host->sink().ClearMessages();
+  }
+
+  // Do a gesture that doesn't cross the threshold and happens more than one
+  // second later.
+  {
+    NSEvent* pinchBeginEvent =
+        MockGestureEvent(NSEventTypeBeginGesture, 103.0, 0);
+    NSEvent* pinchUpdateEvent =
+        MockGestureEvent(NSEventTypeMagnify, 103.1, 0.25);
+    NSEvent* pinchEndEvent =
+        MockGestureEvent(NSEventTypeEndGesture, 103.2, 0);
+
+    // No message comes for the begin event.
+    [view->cocoa_view() beginGestureWithEvent:pinchBeginEvent];
+    ASSERT_EQ(0U, process_host->sink().message_count());
+
+    // Two messages come for the first update event.
+    [view->cocoa_view() magnifyWithEvent:pinchUpdateEvent];
+    ASSERT_EQ(0U, process_host->sink().message_count());
+
+    // As does the end.
+    [view->cocoa_view() endGestureWithEvent:pinchEndEvent];
+    ASSERT_EQ(0U, process_host->sink().message_count());
+
+    process_host->sink().ClearMessages();
+  }
+
+  // Clean up.
+  host->Shutdown();
+}
+
 
 }  // namespace content

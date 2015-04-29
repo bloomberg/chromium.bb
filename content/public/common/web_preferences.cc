@@ -218,6 +218,9 @@ WebPreferences::WebPreferences()
 #if defined(OS_ANDROID)
       default_minimum_page_scale_factor(0.25f),
       default_maximum_page_scale_factor(5.f)
+#elif defined(OS_MACOSX)
+      default_minimum_page_scale_factor(1.f),
+      default_maximum_page_scale_factor(3.f)
 #else
       default_minimum_page_scale_factor(1.f),
       default_maximum_page_scale_factor(4.f)
