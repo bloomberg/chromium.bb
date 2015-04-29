@@ -1002,6 +1002,13 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     # Clear the chroot version as we are in the middle of building it.
     chroot_manager.ClearChrootVersion()
 
+    # Syncing to a pinned manifest ensures that we have the specified
+    # revisions, but, unfortunately, repo won't bother to update branches.
+    # Sync with an unpinned manifest first to ensure that branches are updated
+    # (e.g. in case somebody adds a new branch to a repo.) See crbug.com/482077
+    if not self.skip_sync:
+      self.repo.Sync(self._run.config.manifest, network_only=True)
+
     # Sync to the provided manifest on slaves. On the master, we're
     # already synced to this manifest, so self.skip_sync is set and
     # this is a no-op.
