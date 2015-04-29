@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/location.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -163,7 +162,7 @@ void Thread::StopSoon() {
     return;
 
   stopping_ = true;
-  task_runner()->PostTask(FROM_HERE, base::Bind(&ThreadQuitHelper));
+  message_loop_->PostTask(FROM_HERE, base::Bind(&ThreadQuitHelper));
 }
 
 bool Thread::IsRunning() const {

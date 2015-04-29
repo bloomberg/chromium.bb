@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
 
 // On some platforms these are not defined.
 #if !defined(EV_RECEIPT)
@@ -328,7 +327,7 @@ bool FilePathWatcherKQueue::Watch(const FilePath& path,
   target_ = path;
 
   MessageLoop::current()->AddDestructionObserver(this);
-  io_task_runner_ = ThreadTaskRunnerHandle::Get();
+  io_message_loop_ = base::MessageLoopProxy::current();
 
   kqueue_ = kqueue();
   if (kqueue_ == -1) {
@@ -357,14 +356,14 @@ bool FilePathWatcherKQueue::Watch(const FilePath& path,
 }
 
 void FilePathWatcherKQueue::Cancel() {
-  SingleThreadTaskRunner* task_runner = io_task_runner_.get();
-  if (!task_runner) {
+  base::MessageLoopProxy* proxy = io_message_loop_.get();
+  if (!proxy) {
     set_cancelled();
     return;
   }
-  if (!task_runner->BelongsToCurrentThread()) {
-    task_runner->PostTask(FROM_HERE,
-                          base::Bind(&FilePathWatcherKQueue::Cancel, this));
+  if (!proxy->BelongsToCurrentThread()) {
+    proxy->PostTask(FROM_HERE,
+                    base::Bind(&FilePathWatcherKQueue::Cancel, this));
     return;
   }
   CancelOnMessageLoopThread();
@@ -381,7 +380,7 @@ void FilePathWatcherKQueue::CancelOnMessageLoopThread() {
     kqueue_ = -1;
     std::for_each(events_.begin(), events_.end(), ReleaseEvent);
     events_.clear();
-    io_task_runner_ = NULL;
+    io_message_loop_ = NULL;
     MessageLoop::current()->RemoveDestructionObserver(this);
     callback_.Reset();
   }

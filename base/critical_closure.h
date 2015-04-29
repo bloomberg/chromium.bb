@@ -52,7 +52,7 @@ class CriticalClosure {
 // returned.
 //
 // Example:
-//   file_task_runner_->PostTask(
+//   file_message_loop_proxy_->PostTask(
 //       FROM_HERE,
 //       MakeCriticalClosure(base::Bind(&WriteToDiskTask, path_, data)));
 //

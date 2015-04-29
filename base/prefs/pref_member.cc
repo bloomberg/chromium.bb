@@ -7,10 +7,11 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
 
+using base::MessageLoopProxy;
 using base::SingleThreadTaskRunner;
 
 namespace subtle {
@@ -51,7 +52,7 @@ void PrefMemberBase::Destroy() {
 }
 
 void PrefMemberBase::MoveToThread(
-    scoped_refptr<SingleThreadTaskRunner> task_runner) {
+    const scoped_refptr<SingleThreadTaskRunner>& task_runner) {
   VerifyValuePrefName();
   // Load the value from preferences if it hasn't been loaded so far.
   if (!internal())
@@ -90,14 +91,15 @@ void PrefMemberBase::InvokeUnnamedCallback(const base::Closure& callback,
 }
 
 PrefMemberBase::Internal::Internal()
-    : thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : thread_loop_(MessageLoopProxy::current()),
       is_managed_(false),
       is_user_modifiable_(false) {
 }
 PrefMemberBase::Internal::~Internal() { }
 
 bool PrefMemberBase::Internal::IsOnCorrectThread() const {
-  return thread_task_runner_->BelongsToCurrentThread();
+  // In unit tests, there may not be a message loop.
+  return thread_loop_.get() == NULL || thread_loop_->BelongsToCurrentThread();
 }
 
 void PrefMemberBase::Internal::UpdateValue(
@@ -113,18 +115,19 @@ void PrefMemberBase::Internal::UpdateValue(
     is_managed_ = is_managed;
     is_user_modifiable_ = is_user_modifiable;
   } else {
-    bool may_run = thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PrefMemberBase::Internal::UpdateValue, this,
-                              value.release(), is_managed, is_user_modifiable,
-                              closure_runner.Release()));
+    bool may_run = thread_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&PrefMemberBase::Internal::UpdateValue, this,
+                   value.release(), is_managed, is_user_modifiable,
+                   closure_runner.Release()));
     DCHECK(may_run);
   }
 }
 
 void PrefMemberBase::Internal::MoveToThread(
-    scoped_refptr<SingleThreadTaskRunner> task_runner) {
+    const scoped_refptr<SingleThreadTaskRunner>& task_runner) {
   CheckOnCorrectThread();
-  thread_task_runner_ = task_runner.Pass();
+  thread_loop_ = task_runner;
 }
 
 bool PrefMemberVectorStringUpdate(const base::Value& value,

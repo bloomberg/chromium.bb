@@ -13,7 +13,6 @@
 #include "base/mac/libdispatch_task_runner.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop/message_loop.h"
-#include "base/thread_task_runner_handle.h"
 
 namespace base {
 
@@ -93,7 +92,7 @@ bool FilePathWatcherFSEvents::Watch(const FilePath& path,
   if (!recursive)
     return false;
 
-  set_task_runner(ThreadTaskRunnerHandle::Get());
+  set_message_loop(MessageLoopProxy::current());
   callback_ = callback;
 
   FSEventStreamEventId start_event = FSEventsGetCurrentEventId();
@@ -153,7 +152,7 @@ void FilePathWatcherFSEvents::FSEventsCallback(
 }
 
 FilePathWatcherFSEvents::~FilePathWatcherFSEvents() {
-  // This method may be called on either the libdispatch or task_runner()
+  // This method may be called on either the libdispatch or message_loop()
   // thread. Checking callback_ on the libdispatch thread here is safe because
   // it is executing in a task posted by Cancel() which first reset callback_.
   // PostTask forms a sufficient memory barrier to ensure that the value is
@@ -166,7 +165,7 @@ void FilePathWatcherFSEvents::OnFilePathsChanged(
     const std::vector<FilePath>& paths) {
   DCHECK(g_task_runner.Get().RunsTasksOnCurrentThread());
   DCHECK(!resolved_target_.empty());
-  task_runner()->PostTask(
+  message_loop()->PostTask(
       FROM_HERE, Bind(&FilePathWatcherFSEvents::DispatchEvents, this, paths,
                       target_, resolved_target_));
 }
@@ -174,7 +173,7 @@ void FilePathWatcherFSEvents::OnFilePathsChanged(
 void FilePathWatcherFSEvents::DispatchEvents(const std::vector<FilePath>& paths,
                                              const FilePath& target,
                                              const FilePath& resolved_target) {
-  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(message_loop()->RunsTasksOnCurrentThread());
 
   // Don't issue callbacks after Cancel() has been called.
   if (is_cancelled() || callback_.is_null()) {
@@ -191,7 +190,7 @@ void FilePathWatcherFSEvents::DispatchEvents(const std::vector<FilePath>& paths,
 
 void FilePathWatcherFSEvents::CancelOnMessageLoopThread() {
   // For all other implementations, the "message loop thread" is the IO thread,
-  // as returned by task_runner(). This implementation, however, needs to
+  // as returned by message_loop(). This implementation, however, needs to
   // cancel pending work on the Dispatch Queue thread.
   DCHECK(g_task_runner.Get().RunsTasksOnCurrentThread());
 
@@ -240,7 +239,7 @@ void FilePathWatcherFSEvents::UpdateEventStream(
                                 g_task_runner.Get().GetDispatchQueue());
 
   if (!FSEventStreamStart(fsevent_stream_)) {
-    task_runner()->PostTask(
+    message_loop()->PostTask(
         FROM_HERE, Bind(&FilePathWatcherFSEvents::ReportError, this, target_));
   }
 }
@@ -251,14 +250,14 @@ bool FilePathWatcherFSEvents::ResolveTargetPath() {
   bool changed = resolved != resolved_target_;
   resolved_target_ = resolved;
   if (resolved_target_.empty()) {
-    task_runner()->PostTask(
+    message_loop()->PostTask(
         FROM_HERE, Bind(&FilePathWatcherFSEvents::ReportError, this, target_));
   }
   return changed;
 }
 
 void FilePathWatcherFSEvents::ReportError(const FilePath& target) {
-  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(message_loop()->RunsTasksOnCurrentThread());
   if (!callback_.is_null()) {
     callback_.Run(target, true);
   }

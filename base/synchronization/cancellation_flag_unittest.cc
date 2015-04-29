@@ -7,9 +7,8 @@
 #include "base/synchronization/cancellation_flag.h"
 
 #include "base/bind.h"
-#include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/spin_wait.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -57,7 +56,7 @@ TEST(CancellationFlagTest, SetOnDifferentThreadDeathTest) {
   ASSERT_TRUE(t.IsRunning());
 
   CancellationFlag flag;
-  t.task_runner()->PostTask(FROM_HERE, base::Bind(&CancelHelper, &flag));
+  t.message_loop()->PostTask(FROM_HERE, base::Bind(&CancelHelper, &flag));
 }
 
 }  // namespace

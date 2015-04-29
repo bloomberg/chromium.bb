@@ -18,13 +18,11 @@
 #include "base/format_macros.h"
 #include "base/hash.h"
 #include "base/lazy_instance.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -36,7 +34,6 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -352,7 +349,7 @@ void DoLaunchChildTestProcess(
     TimeDelta timeout,
     int flags,
     bool redirect_stdio,
-    SingleThreadTaskRunner* task_runner,
+    scoped_refptr<MessageLoopProxy> message_loop_proxy,
     const TestLauncher::LaunchChildGTestProcessCallback& callback) {
   TimeTicks start_time = TimeTicks::Now();
 
@@ -426,9 +423,14 @@ void DoLaunchChildTestProcess(
 
   // Run target callback on the thread it was originating from, not on
   // a worker pool thread.
-  task_runner->PostTask(FROM_HERE, Bind(&RunCallback, callback, exit_code,
-                                        TimeTicks::Now() - start_time,
-                                        was_timeout, output_file_contents));
+  message_loop_proxy->PostTask(
+      FROM_HERE,
+      Bind(&RunCallback,
+           callback,
+           exit_code,
+           TimeTicks::Now() - start_time,
+           was_timeout,
+           output_file_contents));
 }
 
 }  // namespace
@@ -502,8 +504,9 @@ bool TestLauncher::Run() {
   // Start the watchdog timer.
   watchdog_timer_.Reset();
 
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, Bind(&TestLauncher::RunTestIteration, Unretained(this)));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&TestLauncher::RunTestIteration, Unretained(this)));
 
   MessageLoop::current()->Run();
 
@@ -533,10 +536,16 @@ void TestLauncher::LaunchChildGTestProcess(
   bool redirect_stdio = (parallel_jobs_ > 1) || BotModeEnabled();
 
   worker_pool_owner_->pool()->PostWorkerTask(
-      FROM_HERE, Bind(&DoLaunchChildTestProcess, new_command_line, timeout,
-                      flags, redirect_stdio, ThreadTaskRunnerHandle::Get(),
-                      Bind(&TestLauncher::OnLaunchTestProcessFinished,
-                           Unretained(this), callback)));
+      FROM_HERE,
+      Bind(&DoLaunchChildTestProcess,
+           new_command_line,
+           timeout,
+           flags,
+           redirect_stdio,
+           MessageLoopProxy::current(),
+           Bind(&TestLauncher::OnLaunchTestProcessFinished,
+                Unretained(this),
+                callback)));
 }
 
 void TestLauncher::OnTestFinished(const TestResult& result) {
@@ -948,8 +957,9 @@ void TestLauncher::RunTests() {
     fflush(stdout);
 
     // No tests have actually been started, so kick off the next iteration.
-    ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, Bind(&TestLauncher::RunTestIteration, Unretained(this)));
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        Bind(&TestLauncher::RunTestIteration, Unretained(this)));
   }
 }
 
@@ -970,7 +980,7 @@ void TestLauncher::RunTestIteration() {
   tests_to_retry_.clear();
   results_tracker_.OnTestIterationStarting();
 
-  ThreadTaskRunnerHandle::Get()->PostTask(
+  MessageLoop::current()->PostTask(
       FROM_HERE, Bind(&TestLauncher::RunTests, Unretained(this)));
 }
 
@@ -1017,8 +1027,9 @@ void TestLauncher::OnTestIterationFinished() {
   results_tracker_.PrintSummaryOfCurrentIteration();
 
   // Kick off the next iteration.
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, Bind(&TestLauncher::RunTestIteration, Unretained(this)));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      Bind(&TestLauncher::RunTestIteration, Unretained(this)));
 }
 
 void TestLauncher::OnOutputTimeout() {

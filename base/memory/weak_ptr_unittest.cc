@@ -8,9 +8,8 @@
 
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
-#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,8 +25,9 @@ class OffThreadObjectCreator {
     {
       Thread creator_thread("creator_thread");
       creator_thread.Start();
-      creator_thread.task_runner()->PostTask(
-          FROM_HERE, base::Bind(OffThreadObjectCreator::CreateObject, &result));
+      creator_thread.message_loop()->PostTask(
+          FROM_HERE,
+          base::Bind(OffThreadObjectCreator::CreateObject, &result));
     }
     DCHECK(result);  // We synchronized on thread destruction above.
     return result;
@@ -66,23 +66,25 @@ class BackgroundThread : public Thread {
 
   void CreateArrowFromTarget(Arrow** arrow, Target* target) {
     WaitableEvent completion(true, false);
-    task_runner()->PostTask(
-        FROM_HERE, base::Bind(&BackgroundThread::DoCreateArrowFromTarget, arrow,
-                              target, &completion));
+    message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundThread::DoCreateArrowFromTarget,
+                   arrow, target, &completion));
     completion.Wait();
   }
 
   void CreateArrowFromArrow(Arrow** arrow, const Arrow* other) {
     WaitableEvent completion(true, false);
-    task_runner()->PostTask(
-        FROM_HERE, base::Bind(&BackgroundThread::DoCreateArrowFromArrow, arrow,
-                              other, &completion));
+    message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundThread::DoCreateArrowFromArrow,
+                   arrow, other, &completion));
     completion.Wait();
   }
 
   void DeleteTarget(Target* object) {
     WaitableEvent completion(true, false);
-    task_runner()->PostTask(
+    message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&BackgroundThread::DoDeleteTarget, object, &completion));
     completion.Wait();
@@ -90,23 +92,25 @@ class BackgroundThread : public Thread {
 
   void CopyAndAssignArrow(Arrow* object) {
     WaitableEvent completion(true, false);
-    task_runner()->PostTask(
-        FROM_HERE, base::Bind(&BackgroundThread::DoCopyAndAssignArrow, object,
-                              &completion));
+    message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundThread::DoCopyAndAssignArrow,
+                   object, &completion));
     completion.Wait();
   }
 
   void CopyAndAssignArrowBase(Arrow* object) {
     WaitableEvent completion(true, false);
-    task_runner()->PostTask(
-        FROM_HERE, base::Bind(&BackgroundThread::DoCopyAndAssignArrowBase,
-                              object, &completion));
+    message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundThread::DoCopyAndAssignArrowBase,
+                   object, &completion));
     completion.Wait();
   }
 
   void DeleteArrow(Arrow* object) {
     WaitableEvent completion(true, false);
-    task_runner()->PostTask(
+    message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&BackgroundThread::DoDeleteArrow, object, &completion));
     completion.Wait();
@@ -115,8 +119,9 @@ class BackgroundThread : public Thread {
   Target* DeRef(const Arrow* arrow) {
     WaitableEvent completion(true, false);
     Target* result = NULL;
-    task_runner()->PostTask(FROM_HERE, base::Bind(&BackgroundThread::DoDeRef,
-                                                  arrow, &result, &completion));
+    message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&BackgroundThread::DoDeRef, arrow, &result, &completion));
     completion.Wait();
     return result;
   }

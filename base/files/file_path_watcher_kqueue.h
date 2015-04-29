@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop_proxy.h"
 
 namespace base {
 
@@ -59,7 +59,7 @@ class FilePathWatcherKQueue : public FilePathWatcher::PlatformDelegate,
 
   typedef std::vector<struct kevent> EventVector;
 
-  // Can only be called on |io_task_runner_|'s thread.
+  // Can only be called on |io_message_loop_|'s thread.
   void CancelOnMessageLoopThread() override;
 
   // Returns true if the kevent values are error free.
@@ -118,7 +118,7 @@ class FilePathWatcherKQueue : public FilePathWatcher::PlatformDelegate,
   }
 
   EventVector events_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   MessageLoopForIO::FileDescriptorWatcher kqueue_watcher_;
   FilePathWatcher::Callback callback_;
   FilePath target_;

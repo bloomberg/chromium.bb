@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -167,12 +165,12 @@ TEST(CancelableCallbackTest, PostTask) {
   CancelableClosure cancelable(base::Bind(&Increment,
                                            base::Unretained(&count)));
 
-  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, cancelable.callback());
+  MessageLoop::current()->PostTask(FROM_HERE, cancelable.callback());
   RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, count);
 
-  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, cancelable.callback());
+  MessageLoop::current()->PostTask(FROM_HERE, cancelable.callback());
 
   // Cancel before running the message loop.
   cancelable.Cancel();

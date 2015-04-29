@@ -9,11 +9,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,7 +97,7 @@ class ImportantFileWriterTest : public testing::Test {
 };
 
 TEST_F(ImportantFileWriterTest, Basic) {
-  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
+  ImportantFileWriter writer(file_, MessageLoopProxy::current().get());
   EXPECT_FALSE(PathExists(writer.path()));
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
   writer.WriteNow(make_scoped_ptr(new std::string("foo")));
@@ -111,7 +109,7 @@ TEST_F(ImportantFileWriterTest, Basic) {
 }
 
 TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
-  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
+  ImportantFileWriter writer(file_, MessageLoopProxy::current().get());
   EXPECT_FALSE(PathExists(writer.path()));
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
   successful_write_observer_.ObserveNextSuccessfulWrite(&writer);
@@ -145,14 +143,15 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
 }
 
 TEST_F(ImportantFileWriterTest, ScheduleWrite) {
-  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
+  ImportantFileWriter writer(file_, MessageLoopProxy::current().get());
   writer.set_commit_interval(TimeDelta::FromMilliseconds(25));
   EXPECT_FALSE(writer.HasPendingWrite());
   DataSerializer serializer("foo");
   writer.ScheduleWrite(&serializer);
   EXPECT_TRUE(writer.HasPendingWrite());
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitWhenIdleClosure(),
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(100));
   MessageLoop::current()->Run();
   EXPECT_FALSE(writer.HasPendingWrite());
@@ -161,14 +160,15 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite) {
 }
 
 TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
-  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
+  ImportantFileWriter writer(file_, MessageLoopProxy::current().get());
   EXPECT_FALSE(writer.HasPendingWrite());
   DataSerializer serializer("foo");
   writer.ScheduleWrite(&serializer);
   EXPECT_TRUE(writer.HasPendingWrite());
   writer.DoScheduledWrite();
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitWhenIdleClosure(),
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(100));
   MessageLoop::current()->Run();
   EXPECT_FALSE(writer.HasPendingWrite());
@@ -177,14 +177,15 @@ TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
 }
 
 TEST_F(ImportantFileWriterTest, BatchingWrites) {
-  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
+  ImportantFileWriter writer(file_, MessageLoopProxy::current().get());
   writer.set_commit_interval(TimeDelta::FromMilliseconds(25));
   DataSerializer foo("foo"), bar("bar"), baz("baz");
   writer.ScheduleWrite(&foo);
   writer.ScheduleWrite(&bar);
   writer.ScheduleWrite(&baz);
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitWhenIdleClosure(),
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMilliseconds(100));
   MessageLoop::current()->Run();
   ASSERT_TRUE(PathExists(writer.path()));

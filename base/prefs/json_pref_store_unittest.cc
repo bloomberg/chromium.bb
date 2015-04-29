@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -16,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_filter.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -108,8 +106,7 @@ class JsonPrefStoreTest : public testing::Test {
   void TearDown() override {
     // Make sure all pending tasks have been processed (e.g., deleting the
     // JsonPrefStore may post write tasks).
-    message_loop_.task_runner()->PostTask(FROM_HERE,
-                                          MessageLoop::QuitWhenIdleClosure());
+    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
     message_loop_.Run();
   }
 
@@ -130,7 +127,9 @@ TEST_F(JsonPrefStoreTest, NonExistentFile) {
   base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      bogus_input_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+      bogus_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
             pref_store->ReadPrefs());
   EXPECT_FALSE(pref_store->ReadOnly());
@@ -143,9 +142,11 @@ TEST_F(JsonPrefStoreTest, NonExistentFileAndAlternateFile) {
       data_dir_.AppendASCII("read_alternate.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   ASSERT_FALSE(PathExists(bogus_alternate_input_file));
-  scoped_refptr<JsonPrefStore> pref_store =
-      new JsonPrefStore(bogus_input_file, bogus_alternate_input_file,
-                        message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      bogus_input_file,
+      bogus_alternate_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
             pref_store->ReadPrefs());
   EXPECT_FALSE(pref_store->ReadOnly());
@@ -156,8 +157,10 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
   base::FilePath invalid_file_original = data_dir_.AppendASCII("invalid.json");
   base::FilePath invalid_file = temp_dir_.path().AppendASCII("invalid.json");
   ASSERT_TRUE(base::CopyFile(invalid_file_original, invalid_file));
-  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      invalid_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(invalid_file,
+                        message_loop_.message_loop_proxy().get(),
+                        scoped_ptr<PrefFilter>());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE,
             pref_store->ReadPrefs());
   EXPECT_FALSE(pref_store->ReadOnly());
@@ -243,7 +246,9 @@ TEST_F(JsonPrefStoreTest, Basic) {
   base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
   ASSERT_TRUE(PathExists(input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      input_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+      input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
   EXPECT_FALSE(pref_store->ReadOnly());
   EXPECT_TRUE(pref_store->IsInitializationComplete());
@@ -270,7 +275,9 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
   base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
   ASSERT_TRUE(PathExists(input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      input_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+      input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
 
   {
     MockPrefStoreObserver mock_observer;
@@ -307,7 +314,9 @@ TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
   FilePath pref_file = temp_dir_.path().AppendASCII("empty_values.json");
 
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      pref_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+      pref_file,
+      message_loop_.message_loop_proxy(),
+      scoped_ptr<PrefFilter>());
 
   // Set some keys with empty values.
   pref_store->SetValue("list", new base::ListValue);
@@ -318,8 +327,10 @@ TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
   MessageLoop::current()->RunUntilIdle();
 
   // Reload.
-  pref_store = new JsonPrefStore(pref_file, message_loop_.task_runner(),
-                                 scoped_ptr<PrefFilter>());
+  pref_store = new JsonPrefStore(
+      pref_file,
+      message_loop_.message_loop_proxy(),
+      scoped_ptr<PrefFilter>());
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
   ASSERT_FALSE(pref_store->ReadOnly());
 
@@ -337,7 +348,9 @@ TEST_F(JsonPrefStoreTest, RemoveClearsEmptyParent) {
   FilePath pref_file = temp_dir_.path().AppendASCII("empty_values.json");
 
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      pref_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+      pref_file,
+      message_loop_.message_loop_proxy(),
+      scoped_ptr<PrefFilter>());
 
   base::DictionaryValue* dict = new base::DictionaryValue;
   dict->SetString("key", "value");
@@ -355,7 +368,9 @@ TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
   base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      bogus_input_file, message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+      bogus_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
   MockPrefStoreObserver mock_observer;
   pref_store->AddObserver(&mock_observer);
 
@@ -383,8 +398,10 @@ TEST_F(JsonPrefStoreTest, ReadWithInterceptor) {
       new InterceptingPrefFilter());
   InterceptingPrefFilter* raw_intercepting_pref_filter_ =
       intercepting_pref_filter.get();
-  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      input_file, message_loop_.task_runner(), intercepting_pref_filter.Pass());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(input_file,
+                        message_loop_.message_loop_proxy().get(),
+                        intercepting_pref_filter.Pass());
 
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE,
             pref_store->ReadPrefs());
@@ -428,8 +445,10 @@ TEST_F(JsonPrefStoreTest, ReadAsyncWithInterceptor) {
       new InterceptingPrefFilter());
   InterceptingPrefFilter* raw_intercepting_pref_filter_ =
       intercepting_pref_filter.get();
-  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      input_file, message_loop_.task_runner(), intercepting_pref_filter.Pass());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(input_file,
+                        message_loop_.message_loop_proxy().get(),
+                        intercepting_pref_filter.Pass());
 
   MockPrefStoreObserver mock_observer;
   pref_store->AddObserver(&mock_observer);
@@ -492,9 +511,11 @@ TEST_F(JsonPrefStoreTest, AlternateFile) {
       temp_dir_.path().AppendASCII("alternate.json");
   ASSERT_FALSE(PathExists(input_file));
   ASSERT_TRUE(PathExists(alternate_input_file));
-  scoped_refptr<JsonPrefStore> pref_store =
-      new JsonPrefStore(input_file, alternate_input_file,
-                        message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      input_file,
+      alternate_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
 
   ASSERT_FALSE(PathExists(input_file));
   ASSERT_TRUE(PathExists(alternate_input_file));
@@ -536,9 +557,11 @@ TEST_F(JsonPrefStoreTest, AlternateFileIgnoredWhenMainFileExists) {
       temp_dir_.path().AppendASCII("alternate.json");
   ASSERT_TRUE(PathExists(input_file));
   ASSERT_TRUE(PathExists(alternate_input_file));
-  scoped_refptr<JsonPrefStore> pref_store =
-      new JsonPrefStore(input_file, alternate_input_file,
-                        message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      input_file,
+      alternate_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
 
   ASSERT_TRUE(PathExists(input_file));
   ASSERT_TRUE(PathExists(alternate_input_file));
@@ -576,9 +599,11 @@ TEST_F(JsonPrefStoreTest, AlternateFileDNE) {
       temp_dir_.path().AppendASCII("alternate.json");
   ASSERT_TRUE(PathExists(input_file));
   ASSERT_FALSE(PathExists(alternate_input_file));
-  scoped_refptr<JsonPrefStore> pref_store =
-      new JsonPrefStore(input_file, alternate_input_file,
-                        message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      input_file,
+      alternate_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
 
   ASSERT_TRUE(PathExists(input_file));
   ASSERT_FALSE(PathExists(alternate_input_file));
@@ -616,9 +641,11 @@ TEST_F(JsonPrefStoreTest, BasicAsyncWithAlternateFile) {
       temp_dir_.path().AppendASCII("alternate.json");
   ASSERT_FALSE(PathExists(input_file));
   ASSERT_TRUE(PathExists(alternate_input_file));
-  scoped_refptr<JsonPrefStore> pref_store =
-      new JsonPrefStore(input_file, alternate_input_file,
-                        message_loop_.task_runner(), scoped_ptr<PrefFilter>());
+  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
+      input_file,
+      alternate_input_file,
+      message_loop_.message_loop_proxy().get(),
+      scoped_ptr<PrefFilter>());
 
   ASSERT_FALSE(PathExists(input_file));
   ASSERT_TRUE(PathExists(alternate_input_file));
