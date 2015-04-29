@@ -18,9 +18,8 @@
         android:contentDescription="@null" />
     <TextView android:id="@+id/text"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:gravity="start|center_vertical"
         android:layout_marginStart="12dp"
-        android:maxLines="2"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 </LinearLayout>
