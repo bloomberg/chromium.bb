@@ -25,6 +25,8 @@
         # Note: file list duplicated in GN build.
         'bluetooth_adapter.cc',
         'bluetooth_adapter.h',
+        'bluetooth_adapter_android.cc',
+        'bluetooth_adapter_android.h',
         'bluetooth_adapter_chromeos.cc',
         'bluetooth_adapter_chromeos.h',
         'bluetooth_adapter_factory.cc',

@@ -32,6 +32,7 @@
         'battery/battery_status_manager_linux_unittest.cc',
         'battery/battery_status_manager_win_unittest.cc',
         'battery/battery_status_service_unittest.cc',
+        'bluetooth/bluetooth_adapter_android_unittest.cc',
         'bluetooth/bluetooth_adapter_mac_unittest.mm',
         'bluetooth/bluetooth_adapter_profile_chromeos_unittest.cc',
         'bluetooth/bluetooth_adapter_unittest.cc',
