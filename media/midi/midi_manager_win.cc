@@ -1093,6 +1093,13 @@ class MidiServiceWinImpl : public MidiServiceWin,
 
 }  // namespace
 
+MidiManagerWin::MidiManagerWin() {
+}
+
+MidiManagerWin::~MidiManagerWin() {
+  midi_service_.reset();
+}
+
 void MidiManagerWin::StartInitialization() {
   midi_service_.reset(new MidiServiceWinImpl);
   // Note that |CompleteInitialization()| will be called from the callback.

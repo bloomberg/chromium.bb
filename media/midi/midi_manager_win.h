@@ -41,8 +41,8 @@ class MidiServiceWin {
 
 class MidiManagerWin final : public MidiManager, public MidiServiceWinDelegate {
  public:
-  MidiManagerWin() {}
-  ~MidiManagerWin() override { midi_service_.reset(); }
+  MidiManagerWin();
+  ~MidiManagerWin() override;
 
   // MidiManager overrides:
   void StartInitialization() final;
