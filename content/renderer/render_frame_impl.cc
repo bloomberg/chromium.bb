@@ -1077,107 +1077,8 @@ void RenderFrameImpl::OnNavigate(
       switches::kEnableBrowserSideNavigation));
   TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate", "id", routing_id_,
                "url", common_params.url.possibly_invalid_spec());
-
-  bool is_reload = IsReload(common_params.navigation_type);
-  bool is_history_navigation = request_params.page_state.IsValid();
-  WebURLRequest::CachePolicy cache_policy =
-      WebURLRequest::UseProtocolCachePolicy;
-  if (!RenderFrameImpl::PrepareRenderViewForNavigation(
-          common_params.url, is_history_navigation, request_params, &is_reload,
-          &cache_policy)) {
-    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
-    return;
-  }
-
-  GetContentClient()->SetActiveURL(common_params.url);
-
-  if (is_reload && !render_view_->history_controller()->GetCurrentEntry()) {
-    // We cannot reload if we do not have any history state.  This happens, for
-    // example, when recovering from a crash.
-    is_reload = false;
-    cache_policy = WebURLRequest::ReloadIgnoringCacheData;
-  }
-
-  pending_navigation_params_.reset(
-      new NavigationParams(common_params, start_params, request_params));
-
-  // If we are reloading, then WebKit will use the history state of the current
-  // page, so we should just ignore any given history state.  Otherwise, if we
-  // have history state, then we need to navigate to it, which corresponds to a
-  // back/forward navigation event.
-  if (is_reload) {
-    bool reload_original_url =
-        (common_params.navigation_type ==
-         FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
-    bool ignore_cache = (common_params.navigation_type ==
-                         FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
-
-    if (reload_original_url)
-      frame_->reloadWithOverrideURL(common_params.url, true);
-    else
-      frame_->reload(ignore_cache);
-  } else if (is_history_navigation) {
-    // We must know the page ID of the page we are navigating back to.
-    DCHECK_NE(request_params.page_id, -1);
-    scoped_ptr<HistoryEntry> entry =
-        PageStateToHistoryEntry(request_params.page_state);
-    if (entry) {
-      // Ensure we didn't save the swapped out URL in UpdateState, since the
-      // browser should never be telling us to navigate to swappedout://.
-      CHECK(entry->root().urlString() != WebString::fromUTF8(kSwappedOutURL));
-      scoped_ptr<NavigationParams> navigation_params(
-          new NavigationParams(*pending_navigation_params_.get()));
-      render_view_->history_controller()->GoToEntry(
-          entry.Pass(), navigation_params.Pass(), cache_policy);
-    }
-  } else if (!common_params.base_url_for_data_url.is_empty()) {
-    LoadDataURL(common_params, frame_);
-  } else {
-    // Navigate to the given URL.
-    WebURLRequest request = CreateURLRequestForNavigation(
-        common_params, scoped_ptr<StreamOverrideParameters>(),
-        frame_->isViewSourceModeEnabled());
-
-    if (!start_params.extra_headers.empty()) {
-      for (net::HttpUtil::HeadersIterator i(start_params.extra_headers.begin(),
-                                            start_params.extra_headers.end(),
-                                            "\n");
-           i.GetNext();) {
-        request.addHTTPHeaderField(WebString::fromUTF8(i.name()),
-                                   WebString::fromUTF8(i.values()));
-      }
-    }
-
-    if (start_params.is_post) {
-      request.setHTTPMethod(WebString::fromUTF8("POST"));
-
-      // Set post data.
-      WebHTTPBody http_body;
-      http_body.initialize();
-      const char* data = NULL;
-      if (start_params.browser_initiated_post_data.size()) {
-        data = reinterpret_cast<const char*>(
-            &start_params.browser_initiated_post_data.front());
-      }
-      http_body.appendData(
-          WebData(data, start_params.browser_initiated_post_data.size()));
-      request.setHTTPBody(http_body);
-    }
-
-    // A session history navigation should have been accompanied by state.
-    CHECK_EQ(request_params.page_id, -1);
-
-    // Record this before starting the load, we need a lower bound of this time
-    // to sanitize the navigationStart override set below.
-    base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
-    frame_->loadRequest(request);
-
-    UpdateFrameNavigationTiming(frame_, request_params.browser_navigation_start,
-                                renderer_navigation_start);
-  }
-
-  // In case LoadRequest failed before didCreateDataSource was called.
-  pending_navigation_params_.reset();
+  NavigateInternal(common_params, start_params, request_params,
+                   scoped_ptr<StreamOverrideParameters>());
 }
 
 void RenderFrameImpl::NavigateToSwappedOutURL() {
@@ -4078,52 +3979,15 @@ void RenderFrameImpl::OnCommitNavigation(
     const RequestNavigationParams& request_params) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
-  bool is_reload = false;
-  bool is_history_navigation = request_params.page_state.IsValid();
-  WebURLRequest::CachePolicy cache_policy =
-      WebURLRequest::UseProtocolCachePolicy;
-  if (!RenderFrameImpl::PrepareRenderViewForNavigation(
-          common_params.url, is_history_navigation, request_params, &is_reload,
-          &cache_policy)) {
-    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
-    return;
-  }
-
-  GetContentClient()->SetActiveURL(common_params.url);
-
-  pending_navigation_params_.reset(new NavigationParams(
-      common_params, StartNavigationParams(), request_params));
-
-  if (!common_params.base_url_for_data_url.is_empty() ||
-      common_params.url.SchemeIs(url::kDataScheme)) {
-    LoadDataURL(common_params, frame_);
-    return;
-  }
-
-  // Create a WebURLRequest that blink can use to get access to the body of the
-  // response through a stream in the browser. Blink will then commit the
-  // navigation.
-  // TODO(clamy): Have the navigation commit directly, without going through
-  // loading a WebURLRequest.
+  // This will override the url requested by the WebURLLoader, as well as
+  // provide it with the response to the request.
   scoped_ptr<StreamOverrideParameters> stream_override(
       new StreamOverrideParameters());
   stream_override->stream_url = stream_url;
   stream_override->response = response;
-  WebURLRequest request =
-      CreateURLRequestForNavigation(common_params,
-                                    stream_override.Pass(),
-                                    frame_->isViewSourceModeEnabled());
 
-  // Make sure that blink loader will not try to use browser side navigation for
-  // this request (since it already went to the browser).
-  request.setCheckForBrowserSideNavigation(false);
-
-  // Record this before starting the load. A lower bound of this time is needed
-  // to sanitize the navigationStart override set below.
-  base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
-  frame_->loadRequest(request);
-  UpdateFrameNavigationTiming(frame_, request_params.browser_navigation_start,
-                              renderer_navigation_start);
+  NavigateInternal(common_params, StartNavigationParams(), request_params,
+                   stream_override.Pass());
 }
 
 void RenderFrameImpl::OnFailedNavigation(
@@ -4454,6 +4318,127 @@ void RenderFrameImpl::OpenURL(WebFrame* frame,
   }
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
+}
+
+void RenderFrameImpl::NavigateInternal(
+    const CommonNavigationParams& common_params,
+    const StartNavigationParams& start_params,
+    const RequestNavigationParams& request_params,
+    scoped_ptr<StreamOverrideParameters> stream_params) {
+  bool browser_side_navigation =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation);
+  bool is_reload = IsReload(common_params.navigation_type);
+  bool is_history_navigation = request_params.page_state.IsValid();
+  WebURLRequest::CachePolicy cache_policy =
+      WebURLRequest::UseProtocolCachePolicy;
+  if (!RenderFrameImpl::PrepareRenderViewForNavigation(
+          common_params.url, is_history_navigation, request_params, &is_reload,
+          &cache_policy)) {
+    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
+    return;
+  }
+
+  GetContentClient()->SetActiveURL(common_params.url);
+
+  if (is_reload && !render_view_->history_controller()->GetCurrentEntry()) {
+    // We cannot reload if we do not have any history state.  This happens, for
+    // example, when recovering from a crash.
+    is_reload = false;
+    cache_policy = WebURLRequest::ReloadIgnoringCacheData;
+  }
+
+  pending_navigation_params_.reset(
+      new NavigationParams(common_params, start_params, request_params));
+
+  // If we are reloading, then Blink will use the history state of the current
+  // page, so we should just ignore any given history state.  Otherwise, if we
+  // have history state, then we need to navigate to it, which corresponds to a
+  // back/forward navigation event.
+  if (is_reload && !browser_side_navigation) {
+    // TODO(clamy): adapt this code for PlzNavigate. In particular the stream
+    // override should be given to the generated request.
+    bool reload_original_url =
+        (common_params.navigation_type ==
+         FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
+    bool ignore_cache = (common_params.navigation_type ==
+                         FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
+
+    if (reload_original_url)
+      frame_->reloadWithOverrideURL(common_params.url, true);
+    else
+      frame_->reload(ignore_cache);
+  } else if (is_history_navigation && !browser_side_navigation) {
+    // TODO(clamy): adapt this code for PlzNavigate. In particular the stream
+    // override should be given to the generated request.
+
+    // We must know the page ID of the page we are navigating back to.
+    DCHECK_NE(request_params.page_id, -1);
+    scoped_ptr<HistoryEntry> entry =
+        PageStateToHistoryEntry(request_params.page_state);
+    if (entry) {
+      // Ensure we didn't save the swapped out URL in UpdateState, since the
+      // browser should never be telling us to navigate to swappedout://.
+      CHECK(entry->root().urlString() != WebString::fromUTF8(kSwappedOutURL));
+      scoped_ptr<NavigationParams> navigation_params(
+          new NavigationParams(*pending_navigation_params_.get()));
+      render_view_->history_controller()->GoToEntry(
+          entry.Pass(), navigation_params.Pass(), cache_policy);
+    }
+  } else if (!common_params.base_url_for_data_url.is_empty() ||
+             (browser_side_navigation &&
+              common_params.url.SchemeIs(url::kDataScheme))) {
+    LoadDataURL(common_params, frame_);
+  } else {
+    // Navigate to the given URL.
+    WebURLRequest request = CreateURLRequestForNavigation(
+        common_params, stream_params.Pass(), frame_->isViewSourceModeEnabled());
+
+    if (!start_params.extra_headers.empty() && !browser_side_navigation) {
+      for (net::HttpUtil::HeadersIterator i(start_params.extra_headers.begin(),
+                                            start_params.extra_headers.end(),
+                                            "\n");
+           i.GetNext();) {
+        request.addHTTPHeaderField(WebString::fromUTF8(i.name()),
+                                   WebString::fromUTF8(i.values()));
+      }
+    }
+
+    if (start_params.is_post && !browser_side_navigation) {
+      request.setHTTPMethod(WebString::fromUTF8("POST"));
+
+      // Set post data.
+      WebHTTPBody http_body;
+      http_body.initialize();
+      const char* data = nullptr;
+      if (start_params.browser_initiated_post_data.size()) {
+        data = reinterpret_cast<const char*>(
+            &start_params.browser_initiated_post_data.front());
+      }
+      http_body.appendData(
+          WebData(data, start_params.browser_initiated_post_data.size()));
+      request.setHTTPBody(http_body);
+    }
+
+    // A session history navigation should have been accompanied by state.
+    CHECK_EQ(request_params.page_id, -1);
+
+    // PlzNavigate: Make sure that Blink's loader will not try to use browser
+    // side navigation for this request (since it already went to the browser).
+    if (browser_side_navigation)
+      request.setCheckForBrowserSideNavigation(false);
+
+    // Record this before starting the load. We need a lower bound of this time
+    // to sanitize the navigationStart override set below.
+    base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
+    frame_->loadRequest(request);
+
+    UpdateFrameNavigationTiming(frame_, request_params.browser_navigation_start,
+                                renderer_navigation_start);
+  }
+
+  // In case LoadRequest failed before didCreateDataSource was called.
+  pending_navigation_params_.reset();
 }
 
 void RenderFrameImpl::UpdateEncoding(WebFrame* frame,
