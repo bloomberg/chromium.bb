@@ -54,7 +54,7 @@ protected:
     // the property's execution context and the world it is
     // creating/settling promises in; the implementation should use
     // this context.
-    virtual v8::Handle<v8::Object> holder(v8::Handle<v8::Object> creationContext, v8::Isolate*) = 0;
+    virtual v8::Handle<v8::Object> holder(v8::Isolate*, v8::Handle<v8::Object> creationContext) = 0;
     virtual v8::Handle<v8::Value> resolvedValue(v8::Isolate*, v8::Handle<v8::Object> creationContext) = 0;
     virtual v8::Handle<v8::Value> rejectedValue(v8::Isolate*, v8::Handle<v8::Object> creationContext) = 0;
 
