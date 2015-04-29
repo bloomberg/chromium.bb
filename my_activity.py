@@ -723,8 +723,8 @@ def main():
       '-w', '--week_of', metavar='<date>',
       help='Show issues for week of the date')
   parser.add_option(
-      '-W', '--last_week', action='store_true',
-      help='Show last week\'s issues')
+      '-W', '--last_week', action='count',
+      help='Show last week\'s issues. Use more times for more weeks.')
   parser.add_option(
       '-a', '--auth',
       action='store_true',
@@ -808,7 +808,8 @@ def main():
     elif options.week_of:
       begin, end = (get_week_of(datetime.strptime(options.week_of, '%m/%d/%y')))
     elif options.last_week:
-      begin, end = (get_week_of(datetime.today() - timedelta(days=7)))
+      begin, end = (get_week_of(datetime.today() -
+                                timedelta(days=1 + 7 * options.last_week)))
     else:
       begin, end = (get_week_of(datetime.today() - timedelta(days=1)))
   else:
