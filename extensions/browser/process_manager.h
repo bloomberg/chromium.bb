@@ -17,6 +17,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/event_page_tracker.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/view_type.h"
@@ -43,7 +44,8 @@ class ProcessManagerObserver;
 // track of split-mode extensions only.
 class ProcessManager : public KeyedService,
                        public content::NotificationObserver,
-                       public ExtensionRegistryObserver {
+                       public ExtensionRegistryObserver,
+                       public EventPageTracker {
  public:
   using ExtensionHostSet = std::set<extensions::ExtensionHost*>;
 
@@ -144,6 +146,11 @@ class ProcessManager : public KeyedService,
       const ImpulseCallbackForTesting& callback);
   void SetKeepaliveImpulseDecrementCallbackForTesting(
       const ImpulseCallbackForTesting& callback);
+
+  // EventPageTracker implementation.
+  bool IsEventPageSuspended(const std::string& extension_id) override;
+  bool WakeEventPage(const std::string& extension_id,
+                     const base::Callback<void(bool)>& callback) override;
 
   // Sets the time in milliseconds that an extension event page can
   // be idle before it is shut down; must be > 0.

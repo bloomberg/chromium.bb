@@ -557,6 +557,7 @@
       'browser/error_map.h',
       'browser/event_listener_map.cc',
       'browser/event_listener_map.h',
+      'browser/event_page_tracker.h',
       'browser/event_router.cc',
       'browser/event_router.h',
       'browser/extension_error.cc',
