@@ -1047,7 +1047,7 @@
           },
           'xcode_settings': {
             'ARCHS': [ 'i386', 'x86_64' ],
-            'MACOSX_DEPLOYMENT_TARGET': '10.4',
+            'MACOSX_DEPLOYMENT_TARGET': '10.5',
             'GCC_ENABLE_OBJC_GC': 'supported',
           },
         },
