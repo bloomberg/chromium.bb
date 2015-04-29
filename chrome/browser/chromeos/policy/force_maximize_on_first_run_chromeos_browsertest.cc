@@ -29,9 +29,14 @@
 
 namespace policy {
 
-class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
+// Boolean parameter is used to run this test for webview (true) and for
+// iframe (false) GAIA sign in.
+class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase,
+                                    public testing::WithParamInterface<bool> {
  protected:
-  ForceMaximizeOnFirstRunTest() : LoginPolicyTestBase() {}
+  ForceMaximizeOnFirstRunTest() : LoginPolicyTestBase() {
+    set_use_webview(GetParam());
+  }
 
   scoped_ptr<base::DictionaryValue> GetMandatoryPoliciesValue() const override {
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
@@ -64,7 +69,7 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(ForceMaximizeOnFirstRunTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
+IN_PROC_BROWSER_TEST_P(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
   SetUpResolution();
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword);
@@ -88,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, PRE_TwoRuns) {
   EXPECT_FALSE(browser1->window()->IsMaximized());
 }
 
-IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, TwoRuns) {
+IN_PROC_BROWSER_TEST_P(ForceMaximizeOnFirstRunTest, TwoRuns) {
   SetUpResolution();
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -100,9 +105,9 @@ IN_PROC_BROWSER_TEST_F(ForceMaximizeOnFirstRunTest, TwoRuns) {
   EXPECT_FALSE(browser->window()->IsMaximized());
 }
 
-class ForceMaximizetPolicyFalseTest : public ForceMaximizeOnFirstRunTest {
+class ForceMaximizePolicyFalseTest : public ForceMaximizeOnFirstRunTest {
  protected:
-  ForceMaximizetPolicyFalseTest() : ForceMaximizeOnFirstRunTest() {}
+  ForceMaximizePolicyFalseTest() : ForceMaximizeOnFirstRunTest() {}
 
   scoped_ptr<base::DictionaryValue> GetMandatoryPoliciesValue() const override {
     scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
@@ -111,10 +116,10 @@ class ForceMaximizetPolicyFalseTest : public ForceMaximizeOnFirstRunTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ForceMaximizetPolicyFalseTest);
+  DISALLOW_COPY_AND_ASSIGN(ForceMaximizePolicyFalseTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ForceMaximizetPolicyFalseTest, GeneralFirstRun) {
+IN_PROC_BROWSER_TEST_P(ForceMaximizePolicyFalseTest, GeneralFirstRun) {
   SetUpResolution();
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword);
@@ -127,4 +132,11 @@ IN_PROC_BROWSER_TEST_F(ForceMaximizetPolicyFalseTest, GeneralFirstRun) {
   EXPECT_FALSE(browser->window()->IsMaximized());
 }
 
+INSTANTIATE_TEST_CASE_P(ForceMaximizeOnFirstRunTestSuite,
+                        ForceMaximizeOnFirstRunTest,
+                        testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(ForceMaximizePolicyFalseTestSuite,
+                        ForceMaximizePolicyFalseTest,
+                        testing::Bool());
 }  // namespace policy

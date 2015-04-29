@@ -945,16 +945,22 @@ void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {
   VLOG(1) << details;
   HelpAppLauncher::HelpTopic help_topic_id;
-  switch (login_performer_->error().state()) {
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      help_topic_id = HelpAppLauncher::HELP_ACCOUNT_DISABLED;
-      break;
-    case GoogleServiceAuthError::HOSTED_NOT_ALLOWED:
-      help_topic_id = HelpAppLauncher::HELP_HOSTED_ACCOUNT;
-      break;
-    default:
-      help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
-      break;
+  if (login_performer_) {
+    switch (login_performer_->error().state()) {
+      case GoogleServiceAuthError::ACCOUNT_DISABLED:
+        help_topic_id = HelpAppLauncher::HELP_ACCOUNT_DISABLED;
+        break;
+      case GoogleServiceAuthError::HOSTED_NOT_ALLOWED:
+        help_topic_id = HelpAppLauncher::HELP_HOSTED_ACCOUNT;
+        break;
+      default:
+        help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
+        break;
+    }
+  } else {
+    // login_performer_ will be null if an error occurred during OAuth2 token
+    // fetch. In this case, show a generic error.
+    help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
   }
 
   if (error_id == IDS_LOGIN_ERROR_AUTHENTICATING) {
@@ -1217,7 +1223,7 @@ void ExistingUserController::OnOAuth2TokensFetched(
     const UserContext& user_context) {
   if (!success) {
     LOG(ERROR) << "OAuth2 token fetch failed.";
-    OnAuthFailure(AuthFailure(AuthFailure::NETWORK_AUTH_FAILED));
+    OnAuthFailure(AuthFailure(AuthFailure::FAILED_TO_INITIALIZE_TOKEN));
     return;
   }
   PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
