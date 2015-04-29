@@ -104,7 +104,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
     VLOG(0) << "bits_per_sample_:" << bits_per_sample_;
   }
 
-  virtual ~WriteToFileAudioSink() {
+  ~WriteToFileAudioSink() override {
     size_t bytes_written = 0;
     while (bytes_written < bytes_to_write_) {
       const uint8* chunk;
@@ -123,10 +123,10 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
   }
 
   // AudioInputStream::AudioInputCallback implementation.
-  virtual void OnData(AudioInputStream* stream,
-                      const AudioBus* src,
-                      uint32 hardware_delay_bytes,
-                      double volume) {
+  void OnData(AudioInputStream* stream,
+              const AudioBus* src,
+              uint32 hardware_delay_bytes,
+              double volume) override {
     EXPECT_EQ(bits_per_sample_, 16);
     const int num_samples = src->frames() * src->channels();
     scoped_ptr<int16> interleaved(new int16[num_samples]);
@@ -142,7 +142,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
     }
   }
 
-  virtual void OnError(AudioInputStream* stream) {}
+  void OnError(AudioInputStream* stream) override {}
 
  private:
   int bits_per_sample_;

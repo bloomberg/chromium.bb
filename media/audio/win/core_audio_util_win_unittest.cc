@@ -26,7 +26,7 @@ class CoreAudioUtilWinTest : public ::testing::Test {
       : com_init_(ScopedCOMInitializer::kMTA) {
     DCHECK(com_init_.succeeded());
   }
-  virtual ~CoreAudioUtilWinTest() {}
+  ~CoreAudioUtilWinTest() override {}
 
   bool DevicesAvailable() {
     if (!CoreAudioUtil::IsSupported())

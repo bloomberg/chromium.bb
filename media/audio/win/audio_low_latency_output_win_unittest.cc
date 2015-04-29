@@ -81,7 +81,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
     delta_times_.reset(new int[kMaxDeltaSamples]);
   }
 
-  virtual ~ReadFromFileAudioSource() {
+  ~ReadFromFileAudioSource() override {
     // Get complete file path to output file in directory containing
     // media_unittests.exe.
     base::FilePath file_name;
@@ -103,8 +103,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
   }
 
   // AudioOutputStream::AudioSourceCallback implementation.
-  virtual int OnMoreData(AudioBus* audio_bus,
-                         uint32 total_bytes_delay) {
+  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
     // Store time difference between two successive callbacks in an array.
     // These values will be written to a file in the destructor.
     const base::TimeTicks now_time = base::TimeTicks::Now();
@@ -131,7 +130,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
     return frames;
   }
 
-  virtual void OnError(AudioOutputStream* stream) {}
+  void OnError(AudioOutputStream* stream) override {}
 
   int file_size() { return file_->data_size(); }
 

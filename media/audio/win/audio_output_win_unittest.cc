@@ -51,17 +51,14 @@ class TestSourceBasic : public AudioOutputStream::AudioSourceCallback {
         had_error_(0) {
   }
   // AudioSourceCallback::OnMoreData implementation:
-  virtual int OnMoreData(AudioBus* audio_bus,
-                         uint32 total_bytes_delay) {
+  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
     ++callback_count_;
     // Touch the channel memory value to make sure memory is good.
     audio_bus->Zero();
     return audio_bus->frames();
   }
   // AudioSourceCallback::OnError implementation:
-  virtual void OnError(AudioOutputStream* stream) {
-    ++had_error_;
-  }
+  void OnError(AudioOutputStream* stream) override { ++had_error_; }
   // Returns how many times OnMoreData() has been called.
   int callback_count() const {
     return callback_count_;
@@ -88,8 +85,7 @@ class TestSourceLaggy : public TestSourceBasic {
   TestSourceLaggy(int laggy_after_buffer, int lag_in_ms)
       : laggy_after_buffer_(laggy_after_buffer), lag_in_ms_(lag_in_ms) {
   }
-  virtual int OnMoreData(AudioBus* audio_bus,
-                         uint32 total_bytes_delay) {
+  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
     // Call the base, which increments the callback_count_.
     TestSourceBasic::OnMoreData(audio_bus, total_bytes_delay);
     if (callback_count() > kMaxNumBuffers) {
@@ -524,11 +520,10 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
         base::AlignedAlloc(data_size_, AudioBus::kChannelAlignment)));
     audio_bus_ = AudioBus::WrapMemory(params, data_.get());
   }
-  ~SyncSocketSource() {}
+  ~SyncSocketSource() override {}
 
   // AudioSourceCallback::OnMoreData implementation:
-  virtual int OnMoreData(AudioBus* audio_bus,
-                         uint32 total_bytes_delay) {
+  int OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) override {
     socket_->Send(&total_bytes_delay, sizeof(total_bytes_delay));
     uint32 size = socket_->Receive(data_.get(), data_size_);
     DCHECK_EQ(static_cast<size_t>(size) % sizeof(*audio_bus_->channel(0)), 0U);
@@ -537,8 +532,7 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
   }
 
   // AudioSourceCallback::OnError implementation:
-  virtual void OnError(AudioOutputStream* stream) {
-  }
+  void OnError(AudioOutputStream* stream) override {}
 
  private:
   base::SyncSocket* socket_;
