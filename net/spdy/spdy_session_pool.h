@@ -58,7 +58,6 @@ class NET_EXPORT SpdySessionPool
       size_t session_max_recv_window_size,
       size_t stream_max_recv_window_size,
       size_t initial_max_concurrent_streams,
-      size_t max_concurrent_streams_limit,
       SpdySessionPool::TimeFunc time_func,
       const std::string& trusted_spdy_proxy);
   ~SpdySessionPool() override;
@@ -216,7 +215,6 @@ class NET_EXPORT SpdySessionPool
   size_t session_max_recv_window_size_;
   size_t stream_max_recv_window_size_;
   size_t initial_max_concurrent_streams_;
-  size_t max_concurrent_streams_limit_;
   TimeFunc time_func_;
 
   // This SPDY proxy is allowed to push resources from origins that are

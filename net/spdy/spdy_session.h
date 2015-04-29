@@ -245,7 +245,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               size_t session_max_recv_window_size,
               size_t stream_max_recv_window_size,
               size_t initial_max_concurrent_streams,
-              size_t max_concurrent_streams_limit,
               TimeFunc time_func,
               const HostPortPair& trusted_spdy_proxy,
               NetLog* net_log);
@@ -1064,7 +1063,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Limits
   size_t max_concurrent_streams_;  // 0 if no limit
-  size_t max_concurrent_streams_limit_;
   size_t max_concurrent_pushed_streams_;
 
   // Some statistics counters for the session.

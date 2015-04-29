@@ -615,7 +615,6 @@ SpdySession::SpdySession(
     size_t session_max_recv_window_size,
     size_t stream_max_recv_window_size,
     size_t initial_max_concurrent_streams,
-    size_t max_concurrent_streams_limit,
     TimeFunc time_func,
     const HostPortPair& trusted_spdy_proxy,
     NetLog* net_log)
@@ -640,9 +639,6 @@ SpdySession::SpdySession(
       max_concurrent_streams_(initial_max_concurrent_streams == 0
                                   ? kInitialMaxConcurrentStreams
                                   : initial_max_concurrent_streams),
-      max_concurrent_streams_limit_(max_concurrent_streams_limit == 0
-                                        ? kMaxConcurrentStreamLimit
-                                        : max_concurrent_streams_limit),
       max_concurrent_pushed_streams_(kMaxConcurrentPushedStreams),
       streams_initiated_count_(0),
       streams_pushed_count_(0),

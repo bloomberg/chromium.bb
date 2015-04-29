@@ -39,7 +39,6 @@ SpdySessionPool::SpdySessionPool(
     size_t session_max_recv_window_size,
     size_t stream_max_recv_window_size,
     size_t initial_max_concurrent_streams,
-    size_t max_concurrent_streams_limit,
     SpdySessionPool::TimeFunc time_func,
     const std::string& trusted_spdy_proxy)
     : http_server_properties_(http_server_properties),
@@ -58,7 +57,6 @@ SpdySessionPool::SpdySessionPool(
       session_max_recv_window_size_(session_max_recv_window_size),
       stream_max_recv_window_size_(stream_max_recv_window_size),
       initial_max_concurrent_streams_(initial_max_concurrent_streams),
-      max_concurrent_streams_limit_(max_concurrent_streams_limit),
       time_func_(time_func),
       trusted_spdy_proxy_(HostPortPair::FromString(trusted_spdy_proxy)) {
   DCHECK(default_protocol_ >= kProtoSPDYMinimumVersion &&
@@ -101,9 +99,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
       verify_domain_authentication_, enable_sending_initial_data_,
       enable_compression_, enable_ping_based_connection_checking_,
       default_protocol_, session_max_recv_window_size_,
-      stream_max_recv_window_size_, initial_max_concurrent_streams_,
-      max_concurrent_streams_limit_, time_func_, trusted_spdy_proxy_,
-      net_log.net_log()));
+      stream_max_recv_window_size_, initial_max_concurrent_streams_, time_func_,
+      trusted_spdy_proxy_, net_log.net_log()));
 
   new_session->InitializeWithSocket(
       connection.Pass(), this, is_secure, certificate_error_code);

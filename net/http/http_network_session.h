@@ -96,7 +96,6 @@ class NET_EXPORT HttpNetworkSession
     size_t spdy_session_max_recv_window_size;
     size_t spdy_stream_max_recv_window_size;
     size_t spdy_initial_max_concurrent_streams;
-    size_t spdy_max_concurrent_streams_limit;
     SpdySessionPool::TimeFunc time_func;
     std::string trusted_spdy_proxy;
     // URLs to exclude from forced SPDY.
