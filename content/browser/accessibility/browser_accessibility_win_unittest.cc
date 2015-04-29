@@ -13,6 +13,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/common/accessibility_messages.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/atl_module.h"
 
@@ -91,6 +92,8 @@ class BrowserAccessibilityTest : public testing::Test {
 
  private:
   void SetUp() override;
+
+  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
 };

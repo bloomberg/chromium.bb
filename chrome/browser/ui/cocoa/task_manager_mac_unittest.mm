@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/task_manager_mac.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -42,6 +43,7 @@ class TestResource : public task_manager::Resource {
 }  // namespace
 
 class TaskManagerWindowControllerTest : public CocoaTest {
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 // Test creation, to ensure nothing leaks or crashes.

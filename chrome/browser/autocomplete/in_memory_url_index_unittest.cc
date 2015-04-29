@@ -1205,6 +1205,7 @@ class InMemoryURLIndexCacheTest : public testing::Test {
   void set_history_dir(const base::FilePath& dir_path);
   bool GetCacheFilePath(base::FilePath* file_path) const;
 
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<InMemoryURLIndex> url_index_;
 };

@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -98,7 +98,7 @@ class SupervisedUserSyncServiceTest : public ::testing::Test {
   MockChangeProcessor* change_processor() { return change_processor_; }
 
  private:
-  base::MessageLoop message_loop;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   SupervisedUserSyncService* service_;
 
