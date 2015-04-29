@@ -43,7 +43,9 @@ per-file copresence.gypi=derat@chromium.org
 per-file copresence_sockets.gypi=rkc@chromium.org
 
 per-file crash.gypi=jochen@chromium.org
+per-file crash.gypi=mark@chromium.org
 per-file crash.gypi=rsesek@chromium.org
+per-file crash.gypi=scottmg@chromium.org
 per-file crash.gypi=thestig@chromium.org
 
 per-file cronet*=mef@chromium.org
