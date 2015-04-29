@@ -7,7 +7,6 @@ FAIL Cache.matchAll with Request promise_test: Unhandled rejection with value: o
 PASS Cache.match with Request 
 FAIL Cache.matchAll with new Request promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"
 PASS Cache.match with new Request 
-FAIL Cache.match with Request containing non-empty body promise_test: Unhandled rejection with value: object "TypeError: Request method 'POST' is unsupported"
 FAIL Cache.matchAll with ignoreSearch option (request with no search parameters) promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"
 PASS Cache.match with ignoreSearch option (request with no search parameters) 
 FAIL Cache.matchAll with ignoreSearch option (request with search parameter) promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"
@@ -23,5 +22,6 @@ FAIL Cache.match with responses containing "Vary" header assert_true: Cache.matc
 FAIL Cache.matchAll with "ignoreVary" parameter promise_test: Unhandled rejection with value: object "TypeError: cache.matchAll is not a function"
 PASS Cache.match with Request and Response objects with different URLs 
 PASS Cache.match invoked multiple times for the same Request/Response 
+FAIL Cache.match with POST Request assert_equals: Cache.match should not find a match expected (undefined) undefined but got (object) object "[object Response]"
 Harness: the test ran to completion.
 

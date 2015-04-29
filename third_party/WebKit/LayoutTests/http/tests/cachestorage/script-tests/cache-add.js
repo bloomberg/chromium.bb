@@ -37,7 +37,7 @@ cache_test(function(cache) {
   }, 'Cache.add called with non-HTTP/HTTPS URL');
 
 cache_test(function(cache) {
-    var request = new Request('../resources/simple.txt', {method: 'GET'});
+    var request = new Request('../resources/simple.txt');
     return cache.add(request)
       .then(function(result) {
           assert_equals(result, undefined,
