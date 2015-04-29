@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,8 +14,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feedback/tracing_manager.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "extensions/browser/event_router.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -54,7 +57,8 @@ FeedbackPrivateAPI::GetFactoryInstance() {
 }
 
 FeedbackPrivateAPI::FeedbackPrivateAPI(content::BrowserContext* context)
-    : browser_context_(context), service_(FeedbackService::CreateInstance()) {}
+    : browser_context_(context), service_(new FeedbackService()) {
+}
 
 FeedbackPrivateAPI::~FeedbackPrivateAPI() {
   delete service_;
@@ -133,10 +137,11 @@ bool FeedbackPrivateGetStringsFunction::RunSync() {
 }
 
 bool FeedbackPrivateGetUserEmailFunction::RunSync() {
-  FeedbackService* service =
-      FeedbackPrivateAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
-  DCHECK(service);
-  SetResult(new base::StringValue(service->GetUserEmail()));
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(GetProfile());
+  SetResult(new base::StringValue(
+      signin_manager ? signin_manager->GetAuthenticatedUsername()
+                     : std::string()));
   return true;
 }
 
@@ -215,7 +220,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
 
   if (feedback_info.send_histograms) {
     scoped_ptr<std::string> histograms(new std::string);
-    service->GetHistograms(histograms.get());
+    *histograms = base::StatisticsRecorder::ToJSON(std::string());
     if (!histograms->empty())
       feedback_data->SetAndCompressHistograms(histograms.Pass());
   }

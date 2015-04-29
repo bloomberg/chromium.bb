@@ -54,8 +54,7 @@ void FeedbackService::SendFeedback(
     // Self-deleting object.
     BlobReader* attached_file_reader = new BlobReader(
         profile, feedback_data_->attached_file_uuid(),
-        base::Bind(&FeedbackService::AttachedFileCallback,
-                   GetWeakPtr()));
+        base::Bind(&FeedbackService::AttachedFileCallback, AsWeakPtr()));
     attached_file_reader->Start();
   }
 
@@ -63,8 +62,7 @@ void FeedbackService::SendFeedback(
     // Self-deleting object.
     BlobReader* screenshot_reader = new BlobReader(
         profile, feedback_data_->screenshot_uuid(),
-        base::Bind(&FeedbackService::ScreenshotCallback,
-                   GetWeakPtr()));
+        base::Bind(&FeedbackService::ScreenshotCallback, AsWeakPtr()));
     screenshot_reader->Start();
   }
 
@@ -95,8 +93,8 @@ void FeedbackService::GetSystemInformation(
 
   system_logs::ScrubbedSystemLogsFetcher* fetcher =
       new system_logs::ScrubbedSystemLogsFetcher();
-  fetcher->Fetch(base::Bind(&FeedbackService::OnSystemLogsFetchComplete,
-                            GetWeakPtr()));
+  fetcher->Fetch(
+      base::Bind(&FeedbackService::OnSystemLogsFetchComplete, AsWeakPtr()));
 }
 
 

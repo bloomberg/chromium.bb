@@ -23,15 +23,16 @@ namespace extensions {
 
 typedef std::vector<linked_ptr<SystemInformation> > SystemInformationList;
 
-class FeedbackService {
+// The feedback service provides the ability to gather the various pieces of
+// data needed to send a feedback report and then send the report once all
+// the pieces are available.
+class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
  public:
   typedef base::Callback<void(bool)> SendFeedbackCallback;
   typedef base::Callback<void(const SystemInformationList& sys_info)>
       GetSystemInformationCallback;
 
-  // Creates a platform-specific FeedbackService instance.
-  static FeedbackService* CreateInstance();
-
+  FeedbackService();
   virtual ~FeedbackService();
 
   // Sends a feedback report.
@@ -43,19 +44,7 @@ class FeedbackService {
   // The |callback| will be invoked once the query is completed.
   void GetSystemInformation(const GetSystemInformationCallback& callback);
 
-  // Platform specific methods:
-  // Gets the email address of the logged in user.
-  virtual std::string GetUserEmail() = 0;
-
-  // Gets the histograms in JSON.
-  virtual void GetHistograms(std::string* histograms) = 0;
-
- protected:
-  FeedbackService();
-
-  // Used to get a weak ptr for a derived class instance.
-  virtual base::WeakPtr<FeedbackService> GetWeakPtr() = 0;
-
+ private:
   // Callbacks to receive blob data.
   void AttachedFileCallback(scoped_ptr<std::string> data,
                             int64 total_blob_length);
@@ -66,7 +55,6 @@ class FeedbackService {
   // data object once all the requisite data has been populated.
   void CompleteSendFeedback();
 
- private:
   void OnSystemLogsFetchComplete(
       scoped_ptr<system_logs::SystemLogsResponse> sys_info);
 

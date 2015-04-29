@@ -46,7 +46,6 @@
     ],
     'chrome_browser_extensions_non_chromeos_sources': [
       'browser/extensions/api/easy_unlock_private/easy_unlock_private_crypto_delegate_stub.cc',
-      'browser/extensions/api/feedback_private/feedback_service_nonchromeos.cc',
       'browser/extensions/api/image_writer_private/operation_nonchromeos.cc',
       'browser/extensions/api/image_writer_private/removable_storage_provider_linux.cc',
       'browser/extensions/api/messaging/native_message_process_host.cc',
@@ -246,7 +245,6 @@
       'browser/extensions/api/feedback_private/feedback_private_api.h',
       'browser/extensions/api/feedback_private/feedback_service.cc',
       'browser/extensions/api/feedback_private/feedback_service.h',
-      'browser/extensions/api/feedback_private/feedback_service_chromeos.cc',
       'browser/extensions/api/file_handlers/app_file_handler_util.cc',
       'browser/extensions/api/file_handlers/app_file_handler_util.h',
       'browser/extensions/api/file_handlers/mime_util.cc',
