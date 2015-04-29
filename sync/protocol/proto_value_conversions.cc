@@ -298,6 +298,14 @@ base::DictionaryValue* AppSettingSpecificsToValue(
   return value;
 }
 
+base::DictionaryValue* LinkedAppIconInfoToValue(
+    const sync_pb::LinkedAppIconInfo& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(url);
+  SET_INT32(size);
+  return value;
+}
+
 base::DictionaryValue* AppSpecificsToValue(
     const sync_pb::AppSpecifics& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -308,6 +316,8 @@ base::DictionaryValue* AppSpecificsToValue(
   SET_ENUM(launch_type, GetLaunchTypeString);
   SET_STR(bookmark_app_url);
   SET_STR(bookmark_app_description);
+  SET_STR(bookmark_app_icon_color);
+  SET_REP(linked_app_icons, LinkedAppIconInfoToValue);
 
   return value;
 }

@@ -418,6 +418,13 @@ void ExtensionSyncService::ProcessBookmarkAppSyncData(
         app_sync_data.bookmark_app_icon_color(),
         &web_app_info.generated_icon_color);
   }
+  for (const auto& icon : app_sync_data.linked_icons()) {
+    WebApplicationInfo::IconInfo icon_info;
+    icon_info.url = icon.url;
+    icon_info.width = icon.size;
+    icon_info.height = icon.size;
+    web_app_info.icons.push_back(icon_info);
+  }
 
   // If the bookmark app already exists, keep the old icons.
   if (!extension) {

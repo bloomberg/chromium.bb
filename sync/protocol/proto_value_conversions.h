@@ -46,6 +46,7 @@ class FaviconTrackingSpecifics;
 class GlobalIdDirective;
 class HistoryDeleteDirectiveSpecifics;
 class KeystoreEncryptionFlagsSpecifics;
+class LinkedAppIconInfo;
 class Media;
 class ManagedUserSettingSpecifics;
 class ManagedUserSharedSettingSpecifics;
@@ -99,9 +100,12 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* EncryptedDataToValue(
 SYNC_EXPORT_PRIVATE base::DictionaryValue* AppListSpecificsToValue(
     const sync_pb::AppListSpecifics& proto);
 
-// Sub-protocol of AppSpecifics.
+// Sub-protocols of AppSpecifics.
 SYNC_EXPORT_PRIVATE base::DictionaryValue* AppSettingsToValue(
     const sync_pb::AppNotificationSettings& app_notification_settings);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* LinkedAppIconInfoToValue(
+    const sync_pb::LinkedAppIconInfo& linked_app_icon_info);
 
 // Sub-protocols of SessionSpecifics.
 

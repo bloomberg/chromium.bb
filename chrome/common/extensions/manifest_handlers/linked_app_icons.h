@@ -1,0 +1,53 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_LINKED_APP_ICONS_H_
+#define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_LINKED_APP_ICONS_H_
+
+#include <vector>
+
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_handler.h"
+
+namespace base {
+class DictionaryValue;
+}
+
+namespace extensions {
+
+// A structure to hold the parsed linked app icon data.
+struct LinkedAppIcons : public Extension::ManifestData {
+  struct IconInfo {
+    IconInfo();
+    ~IconInfo();
+
+    GURL url;
+    int size;
+  };
+
+  LinkedAppIcons();
+  ~LinkedAppIcons() override;
+
+  static const LinkedAppIcons& GetLinkedAppIcons(const Extension* extension);
+
+  std::vector<IconInfo> icons;
+};
+
+// Parses the "app.linked_icons" manifest key.
+class LinkedAppIconsHandler : public ManifestHandler {
+ public:
+  LinkedAppIconsHandler();
+  ~LinkedAppIconsHandler() override;
+
+  bool Parse(Extension* extension, base::string16* error) override;
+
+ private:
+  const std::vector<std::string> Keys() const override;
+
+  DISALLOW_COPY_AND_ASSIGN(LinkedAppIconsHandler);
+};
+
+}  // namespace extensions
+
+#endif  // CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_LINKED_APP_ICONS_H_

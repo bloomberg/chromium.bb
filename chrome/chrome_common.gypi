@@ -187,6 +187,8 @@
       'common/extensions/manifest_handlers/copresence_manifest.h',
       'common/extensions/manifest_handlers/extension_action_handler.cc',
       'common/extensions/manifest_handlers/extension_action_handler.h',
+      'common/extensions/manifest_handlers/linked_app_icons.cc',
+      'common/extensions/manifest_handlers/linked_app_icons.h',
       'common/extensions/manifest_handlers/minimum_chrome_version_checker.cc',
       'common/extensions/manifest_handlers/minimum_chrome_version_checker.h',
       'common/extensions/manifest_handlers/settings_overrides_handler.cc',

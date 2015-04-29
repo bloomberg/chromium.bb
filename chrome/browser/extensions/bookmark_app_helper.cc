@@ -8,6 +8,8 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
+#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -36,7 +38,9 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/url_pattern.h"
 #include "grit/platform_locale_settings.h"
+#include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/url_request/url_request.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -62,6 +66,8 @@
 #endif
 
 namespace {
+
+using extensions::BookmarkAppHelper;
 
 // Overlays a shortcut icon over the bottom left corner of a given image.
 class GeneratedIconImageSource : public gfx::CanvasImageSource {
@@ -146,10 +152,11 @@ std::set<int> SizesToGenerate() {
                        kIconSizesToGenerate + arraysize(kIconSizesToGenerate));
 }
 
-void GenerateIcons(std::set<int> generate_sizes,
-                   const GURL& app_url,
-                   SkColor generated_icon_color,
-                   std::map<int, SkBitmap>* bitmap_map) {
+void GenerateIcons(
+    std::set<int> generate_sizes,
+    const GURL& app_url,
+    SkColor generated_icon_color,
+    std::map<int, BookmarkAppHelper::BitmapAndSource>* bitmap_map) {
   // The letter that will be painted on the generated icon.
   char icon_letter = ' ';
   std::string domain_and_registry(
@@ -177,22 +184,100 @@ void GenerateIcons(std::set<int> generate_sizes,
   }
 }
 
-void ReplaceWebAppIcons(std::map<int, SkBitmap> bitmap_map,
-                        WebApplicationInfo* web_app_info) {
+void ReplaceWebAppIcons(
+    std::map<int, BookmarkAppHelper::BitmapAndSource> bitmap_map,
+    WebApplicationInfo* web_app_info) {
   web_app_info->icons.clear();
 
   // Populate the icon data into the WebApplicationInfo we are using to
   // install the bookmark app.
-  for (std::map<int, SkBitmap>::const_iterator bitmap_map_it =
-           bitmap_map.begin();
-       bitmap_map_it != bitmap_map.end(); ++bitmap_map_it) {
+  for (const auto& pair : bitmap_map) {
     WebApplicationInfo::IconInfo icon_info;
-    icon_info.data = bitmap_map_it->second;
+    icon_info.data = pair.second.bitmap;
+    icon_info.url = pair.second.source_url;
     icon_info.width = icon_info.data.width();
     icon_info.height = icon_info.data.height();
     web_app_info->icons.push_back(icon_info);
   }
 }
+
+// Class to handle installing a bookmark app. Handles downloading and decoding
+// the icons.
+class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
+                             public chrome::BitmapFetcherDelegate {
+ public:
+  BookmarkAppInstaller(ExtensionService* service,
+                       const WebApplicationInfo& web_app_info)
+      : service_(service), web_app_info_(web_app_info) {}
+
+  void Run() {
+    for (const auto& icon : web_app_info_.icons) {
+      if (icon.url.is_valid())
+        urls_to_download_.push_back(icon.url);
+    }
+
+    if (urls_to_download_.size()) {
+      DownloadNextImage();
+
+      // Matched in OnFetchComplete.
+      AddRef();
+      return;
+    }
+
+    FinishInstallation();
+  }
+
+ private:
+  friend class base::RefCounted<BookmarkAppInstaller>;
+  ~BookmarkAppInstaller() override {}
+
+  // BitmapFetcherDelegate:
+  void OnFetchComplete(const GURL& url, const SkBitmap* bitmap) override {
+    if (bitmap && !bitmap->empty() && bitmap->width() == bitmap->height()) {
+      downloaded_bitmaps_.push_back(
+          BookmarkAppHelper::BitmapAndSource(url, *bitmap));
+    }
+
+    if (urls_to_download_.size()) {
+      DownloadNextImage();
+      return;
+    }
+
+    FinishInstallation();
+    Release();
+  }
+
+  void DownloadNextImage() {
+    DCHECK(urls_to_download_.size());
+
+    bitmap_fetcher_.reset(
+        new chrome::BitmapFetcher(urls_to_download_.back(), this));
+    urls_to_download_.pop_back();
+    bitmap_fetcher_->Start(
+        service_->profile()->GetRequestContext(), std::string(),
+        net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
+  }
+
+  void FinishInstallation() {
+    std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
+        BookmarkAppHelper::ResizeIconsAndGenerateMissing(downloaded_bitmaps_,
+                                                         &web_app_info_);
+    BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(size_map,
+                                                             &web_app_info_);
+    scoped_refptr<extensions::CrxInstaller> installer(
+        extensions::CrxInstaller::CreateSilent(service_));
+    installer->set_error_on_unsupported_requirements(true);
+    installer->InstallWebApp(web_app_info_);
+  }
+
+  ExtensionService* service_;
+  WebApplicationInfo web_app_info_;
+
+  scoped_ptr<chrome::BitmapFetcher> bitmap_fetcher_;
+  std::vector<GURL> urls_to_download_;
+  std::vector<BookmarkAppHelper::BitmapAndSource> downloaded_bitmaps_;
+};
 
 }  // namespace
 
@@ -227,10 +312,48 @@ void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
 }
 
 // static
-void BookmarkAppHelper::GenerateIcon(std::map<int, SkBitmap>* bitmaps,
-                                     int output_size,
-                                     SkColor color,
-                                     char letter) {
+std::map<int, BookmarkAppHelper::BitmapAndSource>
+BookmarkAppHelper::ConstrainBitmapsToSizes(
+    const std::vector<BookmarkAppHelper::BitmapAndSource>& bitmaps,
+    const std::set<int>& sizes) {
+  std::map<int, BitmapAndSource> output_bitmaps;
+  std::map<int, BitmapAndSource> ordered_bitmaps;
+  for (std::vector<BitmapAndSource>::const_iterator it = bitmaps.begin();
+       it != bitmaps.end(); ++it) {
+    DCHECK(it->bitmap.width() == it->bitmap.height());
+    ordered_bitmaps[it->bitmap.width()] = *it;
+  }
+
+  std::set<int>::const_iterator sizes_it = sizes.begin();
+  std::map<int, BitmapAndSource>::const_iterator bitmaps_it =
+      ordered_bitmaps.begin();
+  while (sizes_it != sizes.end() && bitmaps_it != ordered_bitmaps.end()) {
+    int size = *sizes_it;
+    // Find the closest not-smaller bitmap.
+    bitmaps_it = ordered_bitmaps.lower_bound(size);
+    ++sizes_it;
+    // Ensure the bitmap is valid and smaller than the next allowed size.
+    if (bitmaps_it != ordered_bitmaps.end() &&
+        (sizes_it == sizes.end() ||
+         bitmaps_it->second.bitmap.width() < *sizes_it)) {
+      output_bitmaps[size] = bitmaps_it->second;
+      // Resize the bitmap if it does not exactly match the desired size.
+      if (output_bitmaps[size].bitmap.width() != size) {
+        output_bitmaps[size].bitmap = skia::ImageOperations::Resize(
+            output_bitmaps[size].bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+            size, size);
+      }
+    }
+  }
+  return output_bitmaps;
+}
+
+// static
+void BookmarkAppHelper::GenerateIcon(
+    std::map<int, BookmarkAppHelper::BitmapAndSource>* bitmaps,
+    int output_size,
+    SkColor color,
+    char letter) {
   // Do nothing if there is already an icon of |output_size|.
   if (bitmaps->count(output_size))
     return;
@@ -238,7 +361,83 @@ void BookmarkAppHelper::GenerateIcon(std::map<int, SkBitmap>* bitmaps,
   gfx::ImageSkia icon_image(
       new GeneratedIconImageSource(letter, color, output_size),
       gfx::Size(output_size, output_size));
-  icon_image.bitmap()->deepCopyTo(&(*bitmaps)[output_size]);
+  icon_image.bitmap()->deepCopyTo(&(*bitmaps)[output_size].bitmap);
+}
+
+// static
+std::map<int, BookmarkAppHelper::BitmapAndSource>
+BookmarkAppHelper::ResizeIconsAndGenerateMissing(
+    std::vector<BookmarkAppHelper::BitmapAndSource> icons,
+    WebApplicationInfo* web_app_info) {
+  // Add the downloaded icons. Extensions only allow certain icon sizes. First
+  // populate icons that match the allowed sizes exactly and then downscale
+  // remaining icons to the closest allowed size that doesn't yet have an icon.
+  std::set<int> allowed_sizes(extension_misc::kExtensionIconSizes,
+                              extension_misc::kExtensionIconSizes +
+                                  extension_misc::kNumExtensionIconSizes);
+
+  // If there are icons that don't match the accepted icon sizes, find the
+  // closest bigger icon to the accepted sizes and resize the icon to it. An
+  // icon will be resized and used for at most one size.
+  std::map<int, BitmapAndSource> resized_bitmaps(
+      ConstrainBitmapsToSizes(icons, allowed_sizes));
+
+  // Determine the color that will be used for the icon's background. For this
+  // the dominant color of the first icon found is used.
+  if (resized_bitmaps.size()) {
+    color_utils::GridSampler sampler;
+    web_app_info->generated_icon_color =
+        color_utils::CalculateKMeanColorOfBitmap(
+            resized_bitmaps.begin()->second.bitmap);
+  }
+
+  std::set<int> generate_sizes;
+  for (int size : SizesToGenerate()) {
+    if (resized_bitmaps.find(size) == resized_bitmaps.end())
+      generate_sizes.insert(size);
+  }
+  GenerateIcons(generate_sizes, web_app_info->app_url,
+                web_app_info->generated_icon_color, &resized_bitmaps);
+
+  return resized_bitmaps;
+}
+
+// static
+void BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(
+    std::map<int, BookmarkAppHelper::BitmapAndSource> bitmap_map,
+    WebApplicationInfo* web_app_info) {
+  // First add in the icon data that have urls with the url / size data from the
+  // original web app info, and the data from the new icons (if any).
+  for (auto& icon : web_app_info->icons) {
+    if (!icon.url.is_empty() && icon.data.empty()) {
+      const auto& it = bitmap_map.find(icon.width);
+      if (it != bitmap_map.end() && it->second.source_url == icon.url)
+        icon.data = it->second.bitmap;
+    }
+  }
+
+  // Now add in any icons from the updated list that don't have URLs.
+  for (const auto& pair : bitmap_map) {
+    if (pair.second.source_url.is_empty()) {
+      WebApplicationInfo::IconInfo icon_info;
+      icon_info.data = pair.second.bitmap;
+      icon_info.width = pair.first;
+      icon_info.height = pair.first;
+      web_app_info->icons.push_back(icon_info);
+    }
+  }
+}
+
+BookmarkAppHelper::BitmapAndSource::BitmapAndSource() {
+}
+
+BookmarkAppHelper::BitmapAndSource::BitmapAndSource(const GURL& source_url_p,
+                                                    const SkBitmap& bitmap_p)
+    : source_url(source_url_p),
+      bitmap(bitmap_p) {
+}
+
+BookmarkAppHelper::BitmapAndSource::~BitmapAndSource() {
 }
 
 BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
@@ -313,7 +512,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
     return;
   }
 
-  std::vector<SkBitmap> downloaded_icons;
+  std::vector<BitmapAndSource> downloaded_icons;
   for (FaviconDownloader::FaviconMap::const_iterator map_it = bitmaps.begin();
        map_it != bitmaps.end();
        ++map_it) {
@@ -324,7 +523,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
       if (bitmap_it->empty() || bitmap_it->width() != bitmap_it->height())
         continue;
 
-      downloaded_icons.push_back(*bitmap_it);
+      downloaded_icons.push_back(BitmapAndSource(map_it->first, *bitmap_it));
     }
   }
 
@@ -334,37 +533,15 @@ void BookmarkAppHelper::OnIconsDownloaded(
        it != web_app_info_.icons.end();
        ++it) {
     const SkBitmap& icon = it->data;
-    if (!icon.drawsNothing() && icon.width() == icon.height())
-      downloaded_icons.push_back(icon);
+    if (!icon.drawsNothing() && icon.width() == icon.height()) {
+      downloaded_icons.push_back(BitmapAndSource(it->url, icon));
+    }
   }
-
-  // Add the downloaded icons. Extensions only allow certain icon sizes. First
-  // populate icons that match the allowed sizes exactly and then downscale
-  // remaining icons to the closest allowed size that doesn't yet have an icon.
-  std::set<int> allowed_sizes(extension_misc::kExtensionIconSizes,
-                              extension_misc::kExtensionIconSizes +
-                                  extension_misc::kNumExtensionIconSizes);
 
   web_app_info_.generated_icon_color = SK_ColorTRANSPARENT;
-  // Determine the color that will be used for the icon's background. For this
-  // the dominant color of the first icon found is used.
-  if (downloaded_icons.size()) {
-    color_utils::GridSampler sampler;
-    web_app_info_.generated_icon_color =
-        color_utils::CalculateKMeanColorOfBitmap(downloaded_icons[0]);
-  }
-
-  std::set<int> generate_sizes = SizesToGenerate();
-
-  std::map<int, SkBitmap> generated_icons;
-  // Icons are always generated, replacing the icons that were downloaded. This
-  // is done so that the icons are consistent across machines.
-  // TODO(benwells): Use blob sync once it is available to sync the downloaded
-  // icons, and then only generate when there are required sizes missing.
-  GenerateIcons(generate_sizes, web_app_info_.app_url,
-                web_app_info_.generated_icon_color, &generated_icons);
-
-  ReplaceWebAppIcons(generated_icons, &web_app_info_);
+  std::map<int, BitmapAndSource> size_to_icons =
+      ResizeIconsAndGenerateMissing(downloaded_icons, &web_app_info_);
+  ReplaceWebAppIcons(size_to_icons, &web_app_info_);
   favicon_downloader_.reset();
 
   if (!contents_) {
@@ -480,17 +657,9 @@ void BookmarkAppHelper::Observe(int type,
 
 void CreateOrUpdateBookmarkApp(ExtensionService* service,
                                WebApplicationInfo* web_app_info) {
-  scoped_refptr<extensions::CrxInstaller> installer(
-      extensions::CrxInstaller::CreateSilent(service));
-  installer->set_error_on_unsupported_requirements(true);
-  if (web_app_info->icons.empty()) {
-    std::map<int, SkBitmap> bitmap_map;
-    GenerateIcons(SizesToGenerate(), web_app_info->app_url,
-                  web_app_info->generated_icon_color, &bitmap_map);
-    ReplaceWebAppIcons(bitmap_map, web_app_info);
-  }
-
-  installer->InstallWebApp(*web_app_info);
+  scoped_refptr<BookmarkAppInstaller> installer(
+      new BookmarkAppInstaller(service, *web_app_info));
+  installer->Run();
 }
 
 void GetWebApplicationInfoFromApp(

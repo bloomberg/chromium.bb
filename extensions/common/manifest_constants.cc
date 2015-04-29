@@ -79,6 +79,9 @@ const char kLaunchLocalPath[] = "app.launch.local_path";
 const char kLaunchWebURL[] = "app.launch.web_url";
 const char kLaunchWidth[] = "app.launch.width";
 const char kLayouts[] = "layouts";
+const char kLinkedAppIcons[] = "app.linked_icons";
+const char kLinkedAppIconURL[] = "url";
+const char kLinkedAppIconSize[] = "size";
 const char kManifestVersion[] = "manifest_version";
 const char kMatchAboutBlank[] = "match_about_blank";
 const char kMatches[] = "matches";
@@ -464,6 +467,14 @@ const char kInvalidLaunchValue[] =
     "Invalid value for '*'.";
 const char kInvalidLaunchValueContainer[] =
     "Invalid container type for '*'.";
+const char kInvalidLinkedAppIcon[] =
+    "Invalid linked app icon. Must be a dictionary";
+const char kInvalidLinkedAppIconSize[] =
+    "Invalid 'size' for linked app icon. Must be an integer";
+const char kInvalidLinkedAppIconURL[] =
+    "Invalid 'url' for linked app icon. Must be a string that is a valid URL";
+const char kInvalidLinkedAppIcons[] =
+    "Invalid 'app.linked_icons'. Must be an array";
 const char kInvalidManifest[] =
     "Manifest file is invalid.";
 const char kInvalidManifestVersion[] =

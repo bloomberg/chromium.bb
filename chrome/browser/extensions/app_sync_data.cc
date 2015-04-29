@@ -6,12 +6,19 @@
 
 #include "chrome/common/extensions/manifest_handlers/app_icon_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
 #include "extensions/common/extension.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace extensions {
+
+AppSyncData::LinkedAppIconInfo::LinkedAppIconInfo() {
+}
+
+AppSyncData::LinkedAppIconInfo::~LinkedAppIconInfo() {
+}
 
 AppSyncData::AppSyncData() {}
 
@@ -35,6 +42,14 @@ AppSyncData::AppSyncData(const Extension& extension,
     bookmark_app_description_ = extension.description();
     bookmark_app_url_ = AppLaunchInfo::GetLaunchWebURL(&extension).spec();
     bookmark_app_icon_color_ = AppIconColorInfo::GetIconColorString(&extension);
+    extensions::LinkedAppIcons icons =
+        LinkedAppIcons::GetLinkedAppIcons(&extension);
+    for (const auto& icon : icons.icons) {
+      LinkedAppIconInfo linked_icon;
+      linked_icon.url = icon.url;
+      linked_icon.size = icon.size;
+      linked_icons_.push_back(linked_icon);
+    }
   }
 }
 
@@ -102,6 +117,13 @@ void AppSyncData::PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const {
   if (!bookmark_app_icon_color_.empty())
     specifics->set_bookmark_app_icon_color(bookmark_app_icon_color_);
 
+  for (const auto& linked_icon : linked_icons_) {
+    sync_pb::LinkedAppIconInfo* linked_app_icon_info =
+        specifics->add_linked_app_icons();
+    linked_app_icon_info->set_url(linked_icon.url.spec());
+    linked_app_icon_info->set_size(linked_icon.size);
+  }
+
   extension_sync_data_.PopulateExtensionSpecifics(
       specifics->mutable_extension());
 }
@@ -122,6 +144,18 @@ bool AppSyncData::PopulateFromAppSpecifics(
   bookmark_app_url_ = specifics.bookmark_app_url();
   bookmark_app_description_ = specifics.bookmark_app_description();
   bookmark_app_icon_color_ = specifics.bookmark_app_icon_color();
+
+  for (int i = 0; i < specifics.linked_app_icons_size(); ++i) {
+    const sync_pb::LinkedAppIconInfo& linked_app_icon_info =
+        specifics.linked_app_icons(i);
+    if (linked_app_icon_info.has_url() && linked_app_icon_info.has_size()) {
+      LinkedAppIconInfo linked_icon;
+      linked_icon.url = GURL(linked_app_icon_info.url());
+      linked_icon.size = linked_app_icon_info.size();
+      linked_icons_.push_back(linked_icon);
+    }
+  }
+
   return true;
 }
 

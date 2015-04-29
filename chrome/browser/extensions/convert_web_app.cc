@@ -112,14 +112,23 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
                                              web_app.generated_icon_color));
   }
 
-  // Add the icons.
+  // Add the icons and linked icon information.
   base::DictionaryValue* icons = new base::DictionaryValue();
   root->Set(keys::kIcons, icons);
-  for (size_t i = 0; i < web_app.icons.size(); ++i) {
-    std::string size = base::StringPrintf("%i", web_app.icons[i].width);
+  base::ListValue* linked_icons = new base::ListValue();
+  root->Set(keys::kLinkedAppIcons, linked_icons);
+  for (const auto& icon : web_app.icons) {
+    std::string size = base::StringPrintf("%i", icon.width);
     std::string icon_path = base::StringPrintf("%s/%s.png", kIconsDirName,
                                                size.c_str());
     icons->SetString(size, icon_path);
+
+    if (icon.url.is_valid()) {
+      base::DictionaryValue* linked_icon = new base::DictionaryValue();
+      linked_icon->SetString(keys::kLinkedAppIconURL, icon.url.spec());
+      linked_icon->SetInteger(keys::kLinkedAppIconSize, icon.width);
+      linked_icons->Append(linked_icon);
+    }
   }
 
   // Write the manifest.

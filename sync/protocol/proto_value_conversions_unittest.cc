@@ -182,6 +182,10 @@ TEST_F(ProtoValueConversionsTest, BookmarkSpecificsData) {
   EXPECT_EQ("value2", meta_value);
 }
 
+TEST_F(ProtoValueConversionsTest, LinkedAppIconInfoToValue) {
+  TestSpecificsToValue(LinkedAppIconInfoToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, PriorityPreferenceSpecificsToValue) {
   TestSpecificsToValue(PriorityPreferenceSpecificsToValue);
 }

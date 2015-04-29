@@ -38,6 +38,15 @@ message AppNotificationSettings {
   optional string oauth_client_id = 3;
 }
 
+// Information about a linked app icon.
+message LinkedAppIconInfo {
+  // The URL of the app icon.
+  optional string url = 1;
+
+  // The size of the app icon in DIPs.
+  optional uint32 size = 2;
+}
+
 // Properties of app sync objects.
 //
 // For now, an app is just an extension.  We keep the two data types
@@ -79,4 +88,8 @@ message AppSpecifics {
   // This is the color to use when generating bookmark app icons. The string is
   // in #rrggbb or #rgb syntax, e.g. #d8d8d8.
   optional string bookmark_app_icon_color = 8;
+
+  // This is information about linked icons (that is, icons that are downloaded
+  // from outside the app's bundle of files.
+  repeated LinkedAppIconInfo linked_app_icons = 9;
 }

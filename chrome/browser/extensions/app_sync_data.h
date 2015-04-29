@@ -28,6 +28,14 @@ class ExtensionSyncData;
 // A class that encapsulates the synced properties of an Application.
 class AppSyncData {
  public:
+  struct LinkedAppIconInfo {
+    LinkedAppIconInfo();
+    ~LinkedAppIconInfo();
+
+    GURL url;
+    int size;
+  };
+
   AppSyncData();
   AppSyncData(const Extension& extension,
               bool enabled,
@@ -82,6 +90,10 @@ class AppSyncData {
     return bookmark_app_icon_color_;
   }
 
+  const std::vector<LinkedAppIconInfo>& linked_icons() const {
+    return linked_icons_;
+  }
+
  private:
   // Convert an AppSyncData back out to a sync structure.
   void PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const;
@@ -98,6 +110,7 @@ class AppSyncData {
   std::string bookmark_app_url_;
   std::string bookmark_app_description_;
   std::string bookmark_app_icon_color_;
+  std::vector<LinkedAppIconInfo> linked_icons_;
 };
 
 }  // namespace extensions

@@ -34,6 +34,15 @@ class Extension;
 // A helper class for creating bookmark apps from a WebContents.
 class BookmarkAppHelper : public content::NotificationObserver {
  public:
+  struct BitmapAndSource {
+    BitmapAndSource();
+    BitmapAndSource(const GURL& source_url_p, const SkBitmap& bitmap_p);
+    ~BitmapAndSource();
+
+    GURL source_url;
+    SkBitmap bitmap;
+  };
+
   typedef base::Callback<void(const Extension*, const WebApplicationInfo&)>
       CreateBookmarkAppCallback;
 
@@ -56,17 +65,34 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // |sizes| and resizes it to that size. This returns a map of sizes to bitmaps
   // which contains only bitmaps of a size in |sizes| and at most one bitmap of
   // each size.
-  static std::map<int, SkBitmap> ConstrainBitmapsToSizes(
-      const std::vector<SkBitmap>& bitmaps,
+  static std::map<int, BitmapAndSource> ConstrainBitmapsToSizes(
+      const std::vector<BitmapAndSource>& bitmaps,
       const std::set<int>& sizes);
 
   // Adds a square container icon of |output_size| pixels to |bitmaps| by
   // drawing the given |letter| into a rounded background of |color|.
   // Does nothing if an icon of |output_size| already exists in |bitmaps|.
-  static void GenerateIcon(std::map<int, SkBitmap>* bitmaps,
+  static void GenerateIcon(std::map<int, BitmapAndSource>* bitmaps,
                            int output_size,
                            SkColor color,
                            char letter);
+
+  // Resize icons to the accepted sizes, and generate any that are missing. Does
+  // not update |web_app_info| except to update |generated_icon_color|.
+  static std::map<int, BitmapAndSource> ResizeIconsAndGenerateMissing(
+      std::vector<BitmapAndSource> icons,
+      WebApplicationInfo* web_app_info);
+
+  // It is important that the linked app information in any extension that
+  // gets created from sync matches the linked app information that came from
+  // sync. If there are any changes, they will be synced back to other devices
+  // and could potentially create a never ending sync cycle.
+  // This function updates |web_app_info| with the image data of any icon from
+  // |bitmap_map| that has a URL and size matching that in |web_app_info|, as
+  // well as adding any new images from |bitmap_map| that have no URL.
+  static void UpdateWebAppIconsWithoutChangingLinks(
+      std::map<int, BookmarkAppHelper::BitmapAndSource> bitmap_map,
+      WebApplicationInfo* web_app_info);
 
   // Begins the asynchronous bookmark app creation.
   void Create(const CreateBookmarkAppCallback& callback);
