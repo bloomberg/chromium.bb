@@ -107,6 +107,7 @@ const char kFindRectHeight[] = "height";
 const char kFindCanceled[] = "canceled";
 
 // Initialization parameters.
+const char kInitialZoomFactor[] = "initialZoomFactor";
 const char kParameterUserAgentOverride[] = "userAgentOverride";
 
 // Miscellaneous.

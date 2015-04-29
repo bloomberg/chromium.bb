@@ -17,7 +17,7 @@ var WebViewInternal = require('webViewInternal').WebViewInternal;
 // Represents the internal state of <webview>.
 function WebViewImpl(webviewElement) {
   GuestViewContainer.call(this, webviewElement, 'webview');
-
+  this.cachedZoom = 1;
   this.setupElementProperties();
   new WebViewEvents(this, this.viewInstanceId);
 }
@@ -168,7 +168,8 @@ WebViewImpl.prototype.onAttach = function(storagePartitionId) {
 };
 
 WebViewImpl.prototype.buildContainerParams = function() {
-  var params = { 'userAgentOverride': this.userAgentOverride };
+  var params = { 'initialZoomFactor': this.cachedZoomFactor,
+                 'userAgentOverride': this.userAgentOverride };
   for (var i in this.attributes) {
     var value = this.attributes[i].getValueIfDirty();
     if (value)

@@ -743,6 +743,7 @@ WebViewGuest::WebViewGuest(content::WebContents* owner_web_contents)
       is_guest_fullscreen_(false),
       is_embedder_fullscreen_(false),
       last_fullscreen_permission_was_allowed_by_embedder_(false),
+      pending_zoom_factor_(0.0),
       weak_ptr_factory_(this) {
   web_view_guest_delegate_.reset(
       ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
@@ -755,8 +756,14 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
     ui::PageTransition transition_type) {
-  if (!render_frame_host->GetParent())
+  if (!render_frame_host->GetParent()) {
     src_ = url;
+    // Handle a pending zoom if one exists.
+    if (pending_zoom_factor_) {
+      SetZoom(pending_zoom_factor_);
+      pending_zoom_factor_ = 0.0;
+    }
+  }
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, !render_frame_host->GetParent());
@@ -1053,6 +1060,9 @@ void WebViewGuest::ApplyAttributes(const base::DictionaryValue& params) {
   bool allow_scaling = false;
   if (params.GetBoolean(webview::kAttributeAllowScaling, &allow_scaling))
     SetAllowScaling(allow_scaling);
+
+  // Check for a pending zoom from before the first navigation.
+  params.GetDouble(webview::kInitialZoomFactor, &pending_zoom_factor_);
 
   bool is_pending_new_window = false;
   if (GetOpener()) {

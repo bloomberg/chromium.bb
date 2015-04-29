@@ -114,6 +114,7 @@ extern const char kFindCanceled[];
 extern const char kFindDone[];
 
 // Initialization parameters.
+extern const char kInitialZoomFactor[];
 extern const char kParameterUserAgentOverride[];
 
 // Miscellaneous.

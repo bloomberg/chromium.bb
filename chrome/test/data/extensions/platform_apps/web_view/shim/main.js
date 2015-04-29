@@ -2637,6 +2637,24 @@ function testDisabledZoomMode() {
   document.body.appendChild(webview);
 }
 
+function testZoomBeforeNavigation() {
+  var webview = new WebView();
+
+  webview.addEventListener('loadstop', function(e) {
+    // Check that the zoom state persisted.
+    webview.getZoom(function(zoomFactor) {
+      embedder.test.assertEq(zoomFactor, 3.14);
+      embedder.test.succeed();
+    });
+  });
+
+  // Set the zoom before the first navigation.
+  webview.setZoom(3.14);
+
+  webview.src = 'about:blank';
+  document.body.appendChild(webview);
+}
+
 function testPlugin() {
   var webview = document.createElement('webview');
   webview.setAttribute('src', embedder.pluginURL);
@@ -2743,6 +2761,7 @@ embedder.test.testList = {
   'testPerOriginZoomMode': testPerOriginZoomMode,
   'testPerViewZoomMode': testPerViewZoomMode,
   'testDisabledZoomMode': testDisabledZoomMode,
+  'testZoomBeforeNavigation': testZoomBeforeNavigation,
   'testPlugin': testPlugin,
 };
 

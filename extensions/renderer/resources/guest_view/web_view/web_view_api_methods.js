@@ -175,6 +175,16 @@ WebViewImpl.prototype.setUserAgentOverride = function(userAgentOverride) {
   return true;
 };
 
+WebViewImpl.prototype.setZoom = function(zoomFactor, callback) {
+  if (!this.guest.getId()) {
+    this.cachedZoomFactor = zoomFactor;
+    return false;
+  }
+  this.cachedZoomFactor = 1;
+  WebViewInternal.setZoom(this.guest.getId(), zoomFactor, callback);
+  return true;
+};
+
 // -----------------------------------------------------------------------------
 
 WebViewImpl.getApiMethods = function() {

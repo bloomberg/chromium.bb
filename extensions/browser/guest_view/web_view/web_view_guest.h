@@ -401,6 +401,10 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   bool is_embedder_fullscreen_;
   bool last_fullscreen_permission_was_allowed_by_embedder_;
 
+  // Tracks whether the webview has a pending zoom from before the first
+  // navigation. This will be equal to 0 when there is no pending zoom.
+  double pending_zoom_factor_;
+
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
   base::WeakPtrFactory<WebViewGuest> weak_ptr_factory_;
