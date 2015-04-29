@@ -651,17 +651,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return;
     }
 
-    // Currently, the UI only works on Windows so we don't even bother with
-    // pinging the server if we're not on Windows.
-    // TODO(noelutz): change this code once the UI is done for Linux and Mac.
-#if defined(OS_MACOSX)
-  // TODO(mattm): remove this (see crbug.com/414834).
-  if (base::FieldTrialList::FindFullName("SafeBrowsingOSXClientDownloadPings")
-      != "Enabled") {
-    PostFinishTask(UNKNOWN, REASON_OS_NOT_SUPPORTED);
-    return;
-  }
-#endif
+    // Currently, the UI is only enabled on Windows and OSX so we don't even
+    // bother with pinging the server if we're not on one of those platforms.
+    // TODO(noelutz): change this code once the UI is done for Linux.
 #if defined(OS_WIN) || defined(OS_MACOSX)
     // The URLFetcher is owned by the UI thread, so post a message to
     // start the pingback.
@@ -845,13 +837,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
       UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats",
                                 reason,
                                 REASON_MAX);
-#if defined(OS_MACOSX)
-      // OSX is currently sending pings only for evaluation purposes, ignore
-      // the result for now.
-      // TODO(mattm): remove this and update the ifdef in
-      // DownloadItemImpl::IsDangerous (see crbug.com/413968).
-      result = UNKNOWN;
-#endif
       callback_.Run(result);
       item_->RemoveObserver(this);
       item_ = NULL;
@@ -1003,11 +988,10 @@ void DownloadProtectionService::CheckDownloadUrl(
 bool DownloadProtectionService::IsSupportedDownload(
     const content::DownloadItem& item,
     const base::FilePath& target_path) const {
-  // Currently, the UI is only enabled on Windows.  On Mac we send the ping but
-  // ignore the result (see ifdef in FinishRequest).  On Linux we still
+  // Currently, the UI is only enabled on Windows and OSX.  On Linux we still
   // want to show the dangerous file type warning if the file is possibly
   // dangerous which means we have to always return false here.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   DownloadCheckResultReason reason = REASON_MAX;
   ClientDownloadRequest::DownloadType type =
       ClientDownloadRequest::WIN_EXECUTABLE;
