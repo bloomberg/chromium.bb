@@ -1305,6 +1305,7 @@
       'browser/chromeos/settings/session_manager_operation_unittest.cc',
       'browser/chromeos/settings/shutdown_policy_handler_unittest.cc',
       'browser/chromeos/settings/stub_cros_settings_provider_unittest.cc',
+      'browser/chromeos/status/data_promo_notification_unittest.cc',
       'browser/chromeos/system/automatic_reboot_manager_unittest.cc',
       'browser/chromeos/system/device_disabling_manager_unittest.cc',
       'browser/chromeos/ui/accessibility_focus_ring_controller_unittest.cc',
