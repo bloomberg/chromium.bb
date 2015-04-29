@@ -582,7 +582,7 @@ void GaiaScreenHandler::HandleToggleEasyBootstrap() {
 void GaiaScreenHandler::HandleAttemptLogin(const std::string& email) {
   std::string device_id =
       user_manager::UserManager::Get()->GetKnownUserDeviceId(
-          gaia::CanonicalizeEmail(email));
+          gaia::CanonicalizeEmail(gaia::SanitizeEmail(email)));
 
   if (!device_id.empty() && StartupUtils::IsWebviewSigninEnabled()) {
     base::DictionaryValue params;
