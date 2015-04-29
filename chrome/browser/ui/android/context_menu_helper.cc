@@ -80,6 +80,7 @@ ContextMenuHelper::CreateJavaContextMenuParams(
       ContextMenuParamsAndroid::Java_ContextMenuParams_create(
           env,
           params.media_type,
+          ConvertUTF8ToJavaString(env, params.page_url.spec()).obj(),
           ConvertUTF8ToJavaString(env, params.link_url.spec()).obj(),
           ConvertUTF16ToJavaString(env, params.link_text).obj(),
           ConvertUTF8ToJavaString(env, params.unfiltered_link_url.spec()).obj(),

@@ -39,6 +39,7 @@ public class ContextMenuParams {
         }
     }
 
+    private final String mPageUrl;
     private final String mLinkUrl;
     private final String mLinkText;
     private final String mUnfilteredLinkUrl;
@@ -85,6 +86,13 @@ public class ContextMenuParams {
     public int getCustomActionAt(int index) {
         assert index >= 0 && index < mCustomMenuItems.size();
         return mCustomMenuItems.get(index).action;
+    }
+
+    /**
+     * @return The URL associated with the main frame of the page that triggered the context menu.
+     */
+    public String getPageUrl() {
+        return mPageUrl;
     }
 
     /**
@@ -157,9 +165,10 @@ public class ContextMenuParams {
         return mIsVideo;
     }
 
-    private ContextMenuParams(int mediaType, String linkUrl, String linkText,
+    private ContextMenuParams(int mediaType, String pageUrl, String linkUrl, String linkText,
             String unfilteredLinkUrl, String srcUrl, String selectionText, boolean isEditable,
             Referrer referrer) {
+        mPageUrl = pageUrl;
         mLinkUrl = linkUrl;
         mLinkText = linkText;
         mUnfilteredLinkUrl = unfilteredLinkUrl;
@@ -174,13 +183,13 @@ public class ContextMenuParams {
     }
 
     @CalledByNative
-    private static ContextMenuParams create(int mediaType, String linkUrl, String linkText,
-            String unfilteredLinkUrl, String srcUrl, String selectionText, boolean isEditable,
-            String sanitizedReferrer, int referrerPolicy) {
+    private static ContextMenuParams create(int mediaType, String pageUrl, String linkUrl,
+            String linkText, String unfilteredLinkUrl, String srcUrl, String selectionText,
+            boolean isEditable, String sanitizedReferrer, int referrerPolicy) {
         Referrer referrer = TextUtils.isEmpty(sanitizedReferrer)
                 ? null : new Referrer(sanitizedReferrer, referrerPolicy);
-        return new ContextMenuParams(mediaType, linkUrl, linkText, unfilteredLinkUrl, srcUrl,
-                selectionText, isEditable, referrer);
+        return new ContextMenuParams(mediaType, pageUrl, linkUrl, linkText, unfilteredLinkUrl,
+                srcUrl, selectionText, isEditable, referrer);
     }
 
     @CalledByNative
