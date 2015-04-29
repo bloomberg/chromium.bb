@@ -34,7 +34,7 @@ ScopedVariant SELF(CHILDID_SELF);
 class AXPlatformNodeWinTest : public testing::Test {
  public:
   AXPlatformNodeWinTest() {}
-  virtual ~AXPlatformNodeWinTest() {}
+  ~AXPlatformNodeWinTest() override {}
 
   void SetUp() override {
     win::CreateATLModuleIfNeeded();
