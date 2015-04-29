@@ -324,17 +324,14 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(true);
     }
 
-    /*
     @SmallTest
     @Feature({"TextInput", "Main"})
-    http://crbug.com/477632
-    */
-    @DisabledTest
     public void testFinishComposingText() throws Throwable {
         DOMUtils.focusNode(mWebContents, "input_radio");
         assertWaitForKeyboardStatus(false);
         DOMUtils.focusNode(mWebContents, "textarea");
         assertWaitForKeyboardStatus(true);
+        Thread.sleep(50);
 
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
