@@ -41,10 +41,10 @@ void WebUIRunner::Run(const std::string& source,
       blink::WebScriptSource(blink::WebString::fromUTF8(source)));
 }
 
-v8::Handle<v8::Value> WebUIRunner::Call(v8::Handle<v8::Function> function,
-                                        v8::Handle<v8::Value> receiver,
+v8::Local<v8::Value> WebUIRunner::Call(v8::Local<v8::Function> function,
+                                        v8::Local<v8::Value> receiver,
                                         int argc,
-                                        v8::Handle<v8::Value> argv[]) {
+                                        v8::Local<v8::Value> argv[]) {
   return frame_->callFunctionEvenIfScriptDisabled(function, receiver, argc,
                                                   argv);
 }

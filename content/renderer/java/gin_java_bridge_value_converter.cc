@@ -24,20 +24,20 @@ GinJavaBridgeValueConverter::GinJavaBridgeValueConverter()
 GinJavaBridgeValueConverter::~GinJavaBridgeValueConverter() {
 }
 
-v8::Handle<v8::Value> GinJavaBridgeValueConverter::ToV8Value(
+v8::Local<v8::Value> GinJavaBridgeValueConverter::ToV8Value(
     const base::Value* value,
-    v8::Handle<v8::Context> context) const {
+    v8::Local<v8::Context> context) const {
   return converter_->ToV8Value(value, context);
 }
 
 scoped_ptr<base::Value> GinJavaBridgeValueConverter::FromV8Value(
-    v8::Handle<v8::Value> value,
-    v8::Handle<v8::Context> context) const {
+    v8::Local<v8::Value> value,
+    v8::Local<v8::Context> context) const {
   return make_scoped_ptr(converter_->FromV8Value(value, context));
 }
 
 bool GinJavaBridgeValueConverter::FromV8Object(
-    v8::Handle<v8::Object> value,
+    v8::Local<v8::Object> value,
     base::Value** out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
@@ -56,7 +56,7 @@ class TypedArraySerializer {
  public:
   virtual ~TypedArraySerializer() {}
   static scoped_ptr<TypedArraySerializer> Create(
-      v8::Handle<v8::TypedArray> typed_array);
+      v8::Local<v8::TypedArray> typed_array);
   virtual void serializeTo(char* data,
                            size_t data_length,
                            base::ListValue* out) = 0;
@@ -68,7 +68,7 @@ template <typename ElementType, typename ListType>
 class TypedArraySerializerImpl : public TypedArraySerializer {
  public:
   static scoped_ptr<TypedArraySerializer> Create(
-      v8::Handle<v8::TypedArray> typed_array) {
+      v8::Local<v8::TypedArray> typed_array) {
     return make_scoped_ptr(
         new TypedArraySerializerImpl<ElementType, ListType>(typed_array));
   }
@@ -87,17 +87,17 @@ class TypedArraySerializerImpl : public TypedArraySerializer {
   }
 
  private:
-  explicit TypedArraySerializerImpl(v8::Handle<v8::TypedArray> typed_array)
+  explicit TypedArraySerializerImpl(v8::Local<v8::TypedArray> typed_array)
       : typed_array_(typed_array) {}
 
-  v8::Handle<v8::TypedArray> typed_array_;
+  v8::Local<v8::TypedArray> typed_array_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedArraySerializerImpl);
 };
 
 // static
 scoped_ptr<TypedArraySerializer> TypedArraySerializer::Create(
-    v8::Handle<v8::TypedArray> typed_array) {
+    v8::Local<v8::TypedArray> typed_array) {
   if (typed_array->IsInt8Array() ||
       typed_array->IsUint8Array() ||
       typed_array->IsUint8ClampedArray()) {
@@ -118,7 +118,7 @@ scoped_ptr<TypedArraySerializer> TypedArraySerializer::Create(
 }  // namespace
 
 bool GinJavaBridgeValueConverter::FromV8ArrayBuffer(
-    v8::Handle<v8::Object> value,
+    v8::Local<v8::Object> value,
     base::Value** out,
     v8::Isolate* isolate) const {
   if (!value->IsTypedArray()) {
@@ -146,7 +146,7 @@ bool GinJavaBridgeValueConverter::FromV8ArrayBuffer(
   return true;
 }
 
-bool GinJavaBridgeValueConverter::FromV8Number(v8::Handle<v8::Number> value,
+bool GinJavaBridgeValueConverter::FromV8Number(v8::Local<v8::Number> value,
                                                base::Value** out) const {
   double double_value = value->Value();
   if (std::isfinite(double_value))

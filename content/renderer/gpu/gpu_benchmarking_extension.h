@@ -51,7 +51,7 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   bool Tap(gin::Arguments* args);
   void ClearImageCache();
   int RunMicroBenchmark(gin::Arguments* args);
-  bool SendMessageToMicroBenchmark(int id, v8::Handle<v8::Object> message);
+  bool SendMessageToMicroBenchmark(int id, v8::Local<v8::Object> message);
   bool HasGpuProcess();
 
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarking);

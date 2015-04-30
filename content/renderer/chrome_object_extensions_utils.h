@@ -9,8 +9,8 @@
 
 namespace content {
 
-v8::Handle<v8::Object> GetOrCreateChromeObject(
-    v8::Isolate* isolate, v8::Handle<v8::Object> global);
+v8::Local<v8::Object> GetOrCreateChromeObject(
+    v8::Isolate* isolate, v8::Local<v8::Object> global);
 
 }  // namespace content
 

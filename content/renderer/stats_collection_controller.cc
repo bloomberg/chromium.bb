@@ -80,7 +80,7 @@ gin::WrapperInfo StatsCollectionController::kWrapperInfo = {
 void StatsCollectionController::Install(blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -90,7 +90,7 @@ void StatsCollectionController::Install(blink::WebFrame* frame) {
       gin::CreateHandle(isolate, new StatsCollectionController());
   if (controller.IsEmpty())
     return;
-  v8::Handle<v8::Object> global = context->Global();
+  v8::Local<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "statsCollectionController"),
               controller.ToV8());
 }

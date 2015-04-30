@@ -24,7 +24,7 @@ HostVarTracker::V8ObjectVarKey::V8ObjectVarKey(V8ObjectVar* object_var)
 }
 
 HostVarTracker::V8ObjectVarKey::V8ObjectVarKey(PP_Instance instance,
-                                               v8::Handle<v8::Object> object)
+                                               v8::Local<v8::Object> object)
     : instance(instance),
       hash(object.IsEmpty() ? 0 : object->GetIdentityHash()) {}
 
@@ -70,7 +70,7 @@ void HostVarTracker::RemoveV8ObjectVar(V8ObjectVar* object_var) {
 }
 
 PP_Var HostVarTracker::V8ObjectVarForV8Object(PP_Instance instance,
-                                              v8::Handle<v8::Object> object) {
+                                              v8::Local<v8::Object> object) {
   CheckThreadingPreconditions();
   ObjectMap::const_iterator it = GetForV8Object(instance, object);
   if (it == object_map_.end())
@@ -83,7 +83,7 @@ int HostVarTracker::GetLiveV8ObjectVarsForTest(PP_Instance instance) {
   int count = 0;
   // Use a key with an empty handle to find the v8 object var in the map with
   // the given instance and the lowest hash.
-  V8ObjectVarKey key(instance, v8::Handle<v8::Object>());
+  V8ObjectVarKey key(instance, v8::Local<v8::Object>());
   ObjectMap::const_iterator it = object_map_.lower_bound(key);
   while (it != object_map_.end() && it->first.instance == instance) {
     ++count;
@@ -119,7 +119,7 @@ void HostVarTracker::DidDeleteInstance(PP_Instance pp_instance) {
 
   // Use a key with an empty handle to find the v8 object var in the map with
   // the given instance and the lowest hash.
-  V8ObjectVarKey key(pp_instance, v8::Handle<v8::Object>());
+  V8ObjectVarKey key(pp_instance, v8::Local<v8::Object>());
   ObjectMap::iterator it = object_map_.lower_bound(key);
   while (it != object_map_.end() && it->first.instance == pp_instance) {
     ForceReleaseV8Object(it->second);
@@ -141,7 +141,7 @@ void HostVarTracker::ForceReleaseV8Object(ppapi::V8ObjectVar* object_var) {
 
 HostVarTracker::ObjectMap::iterator HostVarTracker::GetForV8Object(
     PP_Instance instance,
-    v8::Handle<v8::Object> object) {
+    v8::Local<v8::Object> object) {
   std::pair<ObjectMap::iterator, ObjectMap::iterator> range =
       object_map_.equal_range(V8ObjectVarKey(instance, object));
 

@@ -29,7 +29,7 @@ class CONTENT_EXPORT V8ValueConverter {
   class CONTENT_EXPORT Strategy {
    public:
     typedef base::Callback<base::Value*(
-        v8::Handle<v8::Value>, v8::Isolate* isolate)> FromV8ValueCallback;
+        v8::Local<v8::Value>, v8::Isolate* isolate)> FromV8ValueCallback;
 
     virtual ~Strategy() {}
 
@@ -37,7 +37,7 @@ class CONTENT_EXPORT V8ValueConverter {
     // behavior.
     // Use |callback| to convert any child values, as this will retain
     // the ValueConverter's internal checks for depth and cycles.
-    virtual bool FromV8Object(v8::Handle<v8::Object> value,
+    virtual bool FromV8Object(v8::Local<v8::Object> value,
                               base::Value** out,
                               v8::Isolate* isolate,
                               const FromV8ValueCallback& callback) const;
@@ -46,7 +46,7 @@ class CONTENT_EXPORT V8ValueConverter {
     // behavior.
     // Use |callback| to convert any child values, as this will retain
     // the ValueConverter's internal checks for depth and cycles.
-    virtual bool FromV8Array(v8::Handle<v8::Array> value,
+    virtual bool FromV8Array(v8::Local<v8::Array> value,
                              base::Value** out,
                              v8::Isolate* isolate,
                              const FromV8ValueCallback& callback) const;
@@ -54,14 +54,14 @@ class CONTENT_EXPORT V8ValueConverter {
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior. v8::Object is passed as ArrayBuffer and ArrayBufferView
     // classes are siblings.
-    virtual bool FromV8ArrayBuffer(v8::Handle<v8::Object> value,
+    virtual bool FromV8ArrayBuffer(v8::Local<v8::Object> value,
                                    base::Value** out,
                                    v8::Isolate* isolate) const;
 
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior. This allows to intercept "non-finite" values and do something
     // with them.
-    virtual bool FromV8Number(v8::Handle<v8::Number> value,
+    virtual bool FromV8Number(v8::Local<v8::Number> value,
                               base::Value** out) const;
 
     // If false is returned, V8ValueConverter proceeds with the default
@@ -105,9 +105,9 @@ class CONTENT_EXPORT V8ValueConverter {
   // Unsupported types are replaced with null.  If an array or object throws
   // while setting a value, that property or item is skipped, leaving a hole in
   // the case of arrays.
-  virtual v8::Handle<v8::Value> ToV8Value(
+  virtual v8::Local<v8::Value> ToV8Value(
       const base::Value* value,
-      v8::Handle<v8::Context> context) const = 0;
+      v8::Local<v8::Context> context) const = 0;
 
   // Converts a v8::Value to base::Value.
   //
@@ -118,8 +118,8 @@ class CONTENT_EXPORT V8ValueConverter {
   // Likewise, if an object throws while converting a property it will not be
   // converted, whereas if an array throws while converting an item it will be
   // converted to Value(TYPE_NULL).
-  virtual base::Value* FromV8Value(v8::Handle<v8::Value> value,
-                                   v8::Handle<v8::Context> context) const = 0;
+  virtual base::Value* FromV8Value(v8::Local<v8::Value> value,
+                                   v8::Local<v8::Context> context) const = 0;
 };
 
 }  // namespace content

@@ -43,13 +43,13 @@ class AccessibilityController :
 
   // Bound methods and properties
   void LogAccessibilityEvents();
-  void SetNotificationListener(v8::Handle<v8::Function> callback);
+  void SetNotificationListener(v8::Local<v8::Function> callback);
   void UnsetNotificationListener();
-  v8::Handle<v8::Object> FocusedElement();
-  v8::Handle<v8::Object> RootElement();
-  v8::Handle<v8::Object> AccessibleElementById(const std::string& id);
+  v8::Local<v8::Object> FocusedElement();
+  v8::Local<v8::Object> RootElement();
+  v8::Local<v8::Object> AccessibleElementById(const std::string& id);
 
-  v8::Handle<v8::Object> FindAccessibleElementByIdRecursive(
+  v8::Local<v8::Object> FindAccessibleElementByIdRecursive(
       const blink::WebAXObject&, const blink::WebString& id);
 
   // If true, will log all accessibility notifications.

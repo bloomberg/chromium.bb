@@ -40,7 +40,7 @@ class HostVarTracker : public ppapi::VarTracker {
   void RemoveV8ObjectVar(ppapi::V8ObjectVar* object_var);
   // Creates or retrieves a V8ObjectVar.
   PP_Var V8ObjectVarForV8Object(PP_Instance instance,
-                                v8::Handle<v8::Object> object);
+                                v8::Local<v8::Object> object);
   // Returns the number of V8ObjectVars associated with the given instance.
   // Returns 0 if the instance isn't known.
   CONTENT_EXPORT int GetLiveV8ObjectVarsForTest(PP_Instance instance);
@@ -76,7 +76,7 @@ class HostVarTracker : public ppapi::VarTracker {
   // and the instance it is associated with.
   struct V8ObjectVarKey {
     explicit V8ObjectVarKey(ppapi::V8ObjectVar* object_var);
-    V8ObjectVarKey(PP_Instance i, v8::Handle<v8::Object> object);
+    V8ObjectVarKey(PP_Instance i, v8::Local<v8::Object> object);
     ~V8ObjectVarKey();
 
     bool operator<(const V8ObjectVarKey& other) const;
@@ -89,7 +89,7 @@ class HostVarTracker : public ppapi::VarTracker {
   // Returns an iterator into |object_map| which points to V8Object which
   // is associated with the given instance and object.
   ObjectMap::iterator GetForV8Object(PP_Instance instance,
-                                     v8::Handle<v8::Object> object);
+                                     v8::Local<v8::Object> object);
 
 
   // A multimap of V8ObjectVarKey -> ObjectMap.

@@ -122,8 +122,8 @@ bool DOMFileSystemToResource(
 
 bool ResourceHostToDOMFileSystem(
     content::PepperFileSystemHost* file_system_host,
-    v8::Handle<v8::Context> context,
-    v8::Handle<v8::Value>* dom_file_system) {
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Value>* dom_file_system) {
   GURL root_url = file_system_host->GetRootUrl();
   GURL origin;
   storage::FileSystemType type;
@@ -148,8 +148,8 @@ bool ResourceHostToDOMFileSystem(
 
 bool ResourceHostToDOMMediaStreamVideoTrack(
     content::PepperMediaStreamVideoTrackHost* host,
-    v8::Handle<v8::Context> context,
-    v8::Handle<v8::Value>* dom_video_track) {
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Value>* dom_video_track) {
   // TODO(ronghuawu): Implement this once crbug/352219 is resolved.
   // blink::WebMediaStreamTrack track = host->track();
   // *dom_video_track = track.toV8Value();
@@ -206,8 +206,8 @@ ResourceConverterImpl::~ResourceConverterImpl() {
   DCHECK(browser_vars_.empty());
 }
 
-bool ResourceConverterImpl::FromV8Value(v8::Handle<v8::Object> val,
-                                        v8::Handle<v8::Context> context,
+bool ResourceConverterImpl::FromV8Value(v8::Local<v8::Object> val,
+                                        v8::Local<v8::Context> context,
                                         PP_Var* result,
                                         bool* was_resource) {
   v8::Context::Scope context_scope(context);
@@ -285,8 +285,8 @@ void ResourceConverterImpl::Flush(const base::Callback<void(bool)>& callback) {
 }
 
 bool ResourceConverterImpl::ToV8Value(const PP_Var& var,
-                                      v8::Handle<v8::Context> context,
-                                      v8::Handle<v8::Value>* result) {
+                                      v8::Local<v8::Context> context,
+                                      v8::Local<v8::Value>* result) {
   DCHECK(var.type == PP_VARTYPE_RESOURCE);
 
   ResourceVar* resource = ResourceVar::FromPPVar(var);

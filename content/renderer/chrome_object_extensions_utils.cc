@@ -9,16 +9,16 @@
 
 namespace content {
 
-v8::Handle<v8::Object> GetOrCreateChromeObject(
-    v8::Isolate* isolate, v8::Handle<v8::Object> global) {
-  v8::Handle<v8::Object> chrome;
-  v8::Handle<v8::Value> chrome_value =
+v8::Local<v8::Object> GetOrCreateChromeObject(
+    v8::Isolate* isolate, v8::Local<v8::Object> global) {
+  v8::Local<v8::Object> chrome;
+  v8::Local<v8::Value> chrome_value =
       global->Get(gin::StringToV8(isolate, "chrome"));
   if (chrome_value.IsEmpty() || !chrome_value->IsObject()) {
     chrome = v8::Object::New(isolate);
     global->Set(gin::StringToSymbol(isolate, "chrome"), chrome);
   } else {
-    chrome = v8::Handle<v8::Object>::Cast(chrome_value);
+    chrome = v8::Local<v8::Object>::Cast(chrome_value);
   }
   return chrome;
 }

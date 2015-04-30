@@ -643,16 +643,16 @@ void PepperPluginInstanceImpl::MessageChannelDestroyed() {
 
 v8::Local<v8::Context> PepperPluginInstanceImpl::GetMainWorldContext() {
   if (!container_)
-    return v8::Handle<v8::Context>();
+    return v8::Local<v8::Context>();
 
   if (container_->element().isNull())
-    return v8::Handle<v8::Context>();
+    return v8::Local<v8::Context>();
 
   if (container_->element().document().isNull())
-    return v8::Handle<v8::Context>();
+    return v8::Local<v8::Context>();
 
   if (!container_->element().document().frame())
-    return v8::Handle<v8::Context>();
+    return v8::Local<v8::Context>();
 
   v8::Local<v8::Context> context =
       container_->element().document().frame()->mainWorldScriptContext();
@@ -675,7 +675,7 @@ void PepperPluginInstanceImpl::Delete() {
   // destroy it. We want to do this prior to calling DidDestroy in case the
   // destructor of the instance object tries to use the instance.
   if (message_channel_)
-    message_channel_->SetPassthroughObject(v8::Handle<v8::Object>());
+    message_channel_->SetPassthroughObject(v8::Local<v8::Object>());
   // If this is a NaCl plugin instance, shut down the NaCl plugin by calling
   // its DidDestroy. Don't call DidDestroy on the untrusted plugin instance,
   // since there is little that it can do at this point.
@@ -2408,7 +2408,7 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
   std::string script_string = script_string_var->value();
   blink::WebScriptSource script(
       blink::WebString::fromUTF8(script_string.c_str()));
-  v8::Handle<v8::Value> result;
+  v8::Local<v8::Value> result;
   if (IsProcessingUserGesture()) {
     blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
     result = frame->executeScriptAndReturnValue(script);

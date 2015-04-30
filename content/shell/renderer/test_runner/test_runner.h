@@ -218,11 +218,11 @@ class TestRunner : public WebTestRunner,
   bool CallShouldCloseOnWebView();
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
-  v8::Handle<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
+  v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
       int world_id, const std::string& script);
   void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
   void SetIsolatedWorldSecurityOrigin(int world_id,
-                                      v8::Handle<v8::Value> origin);
+                                      v8::Local<v8::Value> origin);
   void SetIsolatedWorldContentSecurityPolicy(int world_id,
                                              const std::string& policy);
 
@@ -328,7 +328,7 @@ class TestRunner : public WebTestRunner,
   void SetXSSAuditorEnabled(bool enabled);
   void SetAllowUniversalAccessFromFileURLs(bool allow);
   void SetAllowFileAccessFromFileURLs(bool allow);
-  void OverridePreference(const std::string key, v8::Handle<v8::Value> value);
+  void OverridePreference(const std::string key, v8::Local<v8::Value> value);
 
   // Modify accept_languages in RendererPreferences.
   void SetAcceptLanguages(const std::string& accept_languages);
@@ -514,11 +514,11 @@ class TestRunner : public WebTestRunner,
   std::string PathToLocalResource(const std::string& path);
 
   // Used to set the device scale factor.
-  void SetBackingScaleFactor(double value, v8::Handle<v8::Function> callback);
+  void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
 
   // Change the device color profile while running a layout test.
   void SetColorProfile(const std::string& name,
-                       v8::Handle<v8::Function> callback);
+                       v8::Local<v8::Function> callback);
 
   // Change the bluetooth test data while running a layout test.
   void SetBluetoothMockDataSet(const std::string& name);
@@ -571,20 +571,20 @@ class TestRunner : public WebTestRunner,
   void RemoveWebPageOverlay();
 
   void DisplayAsync();
-  void DisplayAsyncThen(v8::Handle<v8::Function> callback);
+  void DisplayAsyncThen(v8::Local<v8::Function> callback);
 
   // Similar to DisplayAsyncThen(), but pass parameters of the captured
   // snapshot (width, height, snapshot) to the callback. The snapshot is in
   // uint8 RGBA format.
-  void CapturePixelsAsyncThen(v8::Handle<v8::Function> callback);
+  void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
   // Similar to CapturePixelsAsyncThen(). Copies to the clipboard the image
   // located at a particular point in the WebView (if there is such an image),
   // reads back its pixels, and provides the snapshot to the callback. If there
   // is no image at that point, calls the callback with (0, 0, empty_snapshot).
   void CopyImageAtAndCapturePixelsAsyncThen(
-      int x, int y, const v8::Handle<v8::Function> callback);
+      int x, int y, const v8::Local<v8::Function> callback);
 
-  void GetManifestThen(v8::Handle<v8::Function> callback);
+  void GetManifestThen(v8::Local<v8::Function> callback);
 
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers

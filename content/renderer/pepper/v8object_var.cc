@@ -15,7 +15,7 @@ namespace ppapi {
 // V8ObjectVar -----------------------------------------------------------------
 
 V8ObjectVar::V8ObjectVar(PP_Instance instance,
-                         v8::Handle<v8::Object> v8_object)
+                         v8::Local<v8::Object> v8_object)
     : instance_(content::HostGlobals::Get()->GetInstance(instance)) {
   v8_object_.Reset(instance_->GetIsolate(), v8_object);
   content::HostGlobals::Get()->host_var_tracker()->AddV8ObjectVar(this);

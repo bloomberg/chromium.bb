@@ -156,7 +156,7 @@ v8::Local<v8::Object> PepperWebPluginImpl::v8ScriptableObject(
       message_channel->SetPassthroughObject(object_var->GetHandle());
   }
 
-  v8::Handle<v8::Object> result = instance_->GetMessageChannelObject();
+  v8::Local<v8::Object> result = instance_->GetMessageChannelObject();
   return result;
 }
 

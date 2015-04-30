@@ -1375,7 +1375,7 @@ void RenderFrameImpl::OnJavaScriptExecuteRequest(
                        TRACE_EVENT_SCOPE_THREAD);
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Handle<v8::Value> result =
+  v8::Local<v8::Value> result =
       frame_->executeScriptAndReturnValue(WebScriptSource(jscript));
 
   HandleJavascriptExecutionResult(jscript, id, notify_result, result);
@@ -1392,7 +1392,7 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestForTests(
   // can grant additional privileges (e.g. the ability to create popups).
   blink::WebScopedUserGesture gesture;
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Handle<v8::Value> result =
+  v8::Local<v8::Value> result =
       frame_->executeScriptAndReturnValue(WebScriptSource(jscript));
 
   HandleJavascriptExecutionResult(jscript, id, notify_result, result);
@@ -1402,7 +1402,7 @@ void RenderFrameImpl::HandleJavascriptExecutionResult(
     const base::string16& jscript,
     int id,
     bool notify_result,
-    v8::Handle<v8::Value> result) {
+    v8::Local<v8::Value> result) {
   if (notify_result) {
     base::ListValue list;
     if (!result.IsEmpty()) {
@@ -1560,7 +1560,7 @@ void RenderFrameImpl::OnPostMessageEvent(
     converter.SetDateAllowed(true);
     converter.SetRegExpAllowed(true);
     scoped_ptr<base::Value> value(new base::StringValue(params.data));
-    v8::Handle<v8::Value> result_value = converter.ToV8Value(value.get(),
+    v8::Local<v8::Value> result_value = converter.ToV8Value(value.get(),
                                                              context);
     serialized_script_value = WebSerializedScriptValue::serialize(result_value);
   } else {
@@ -3361,7 +3361,7 @@ void RenderFrameImpl::didAbortLoading(blink::WebLocalFrame* frame) {
 }
 
 void RenderFrameImpl::didCreateScriptContext(blink::WebLocalFrame* frame,
-                                             v8::Handle<v8::Context> context,
+                                             v8::Local<v8::Context> context,
                                              int extension_group,
                                              int world_id) {
   DCHECK(!frame_ || frame_ == frame);
@@ -3371,7 +3371,7 @@ void RenderFrameImpl::didCreateScriptContext(blink::WebLocalFrame* frame,
 }
 
 void RenderFrameImpl::willReleaseScriptContext(blink::WebLocalFrame* frame,
-                                               v8::Handle<v8::Context> context,
+                                               v8::Local<v8::Context> context,
                                                int world_id) {
   DCHECK(!frame_ || frame_ == frame);
 

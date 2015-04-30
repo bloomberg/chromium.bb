@@ -143,8 +143,8 @@ bool GetOptionalArg(gin::Arguments* args, T* value) {
 class CallbackAndContext : public base::RefCounted<CallbackAndContext> {
  public:
   CallbackAndContext(v8::Isolate* isolate,
-                     v8::Handle<v8::Function> callback,
-                     v8::Handle<v8::Context> context)
+                     v8::Local<v8::Function> callback,
+                     v8::Local<v8::Context> context)
       : isolate_(isolate) {
     callback_.Reset(isolate_, callback);
     context_.Reset(isolate_, context);
@@ -154,11 +154,11 @@ class CallbackAndContext : public base::RefCounted<CallbackAndContext> {
     return isolate_;
   }
 
-  v8::Handle<v8::Function> GetCallback() {
+  v8::Local<v8::Function> GetCallback() {
     return v8::Local<v8::Function>::New(isolate_, callback_);
   }
 
-  v8::Handle<v8::Context> GetContext() {
+  v8::Local<v8::Context> GetContext() {
     return v8::Local<v8::Context>::New(isolate_, context_);
   }
 
@@ -247,14 +247,14 @@ void OnMicroBenchmarkCompleted(
     scoped_ptr<base::Value> result) {
   v8::Isolate* isolate = callback_and_context->isolate();
   v8::HandleScope scope(isolate);
-  v8::Handle<v8::Context> context = callback_and_context->GetContext();
+  v8::Local<v8::Context> context = callback_and_context->GetContext();
   v8::Context::Scope context_scope(context);
   WebLocalFrame* frame = WebLocalFrame::frameForContext(context);
   if (frame) {
     scoped_ptr<V8ValueConverter> converter =
         make_scoped_ptr(V8ValueConverter::create());
-    v8::Handle<v8::Value> value = converter->ToV8Value(result.get(), context);
-    v8::Handle<v8::Value> argv[] = { value };
+    v8::Local<v8::Value> value = converter->ToV8Value(result.get(), context);
+    v8::Local<v8::Value> argv[] = { value };
 
     frame->callFunctionEvenIfScriptDisabled(
         callback_and_context->GetCallback(),
@@ -267,7 +267,7 @@ void OnMicroBenchmarkCompleted(
 void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
   v8::Isolate* isolate = callback_and_context->isolate();
   v8::HandleScope scope(isolate);
-  v8::Handle<v8::Context> context = callback_and_context->GetContext();
+  v8::Local<v8::Context> context = callback_and_context->GetContext();
   v8::Context::Scope context_scope(context);
   WebLocalFrame* frame = WebLocalFrame::frameForContext(context);
   if (frame) {
@@ -278,7 +278,7 @@ void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
 
 bool BeginSmoothScroll(v8::Isolate* isolate,
                        float pixels_to_scroll,
-                       v8::Handle<v8::Function> callback,
+                       v8::Local<v8::Function> callback,
                        int gesture_source_type,
                        const std::string& direction,
                        float speed_in_pixels_s,
@@ -355,7 +355,7 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
                      float start_y,
                      float end_x,
                      float end_y,
-                     v8::Handle<v8::Function> callback,
+                     v8::Local<v8::Function> callback,
                      int gesture_source_type,
                      float speed_in_pixels_s) {
   GpuBenchmarkingContext context;
@@ -400,7 +400,7 @@ gin::WrapperInfo GpuBenchmarking::kWrapperInfo = {gin::kEmbedderNativeGin};
 void GpuBenchmarking::Install(blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -411,7 +411,7 @@ void GpuBenchmarking::Install(blink::WebFrame* frame) {
   if (controller.IsEmpty())
     return;
 
-  v8::Handle<v8::Object> chrome = GetOrCreateChromeObject(isolate,
+  v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate,
                                                           context->Global());
   chrome->Set(gin::StringToV8(isolate, "gpuBenchmarking"), controller.ToV8());
 }
@@ -511,7 +511,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   blink::WebRect rect = context.render_view_impl()->windowRect();
 
   float pixels_to_scroll = 0;
-  v8::Handle<v8::Function> callback;
+  v8::Local<v8::Function> callback;
   float start_x = rect.width / (page_scale_factor * 2);
   float start_y = rect.height / (page_scale_factor * 2);
   int gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
@@ -548,7 +548,7 @@ bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
   float start_y;
   float end_x;
   float end_y;
-  v8::Handle<v8::Function> callback;
+  v8::Local<v8::Function> callback;
   int gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
   float speed_in_pixels_s = 800;
 
@@ -582,7 +582,7 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
 
   std::string direction = "up";
   float pixels_to_scroll = 0;
-  v8::Handle<v8::Function> callback;
+  v8::Local<v8::Function> callback;
   float start_x = rect.width / (page_scale_factor * 2);
   float start_y = rect.height / (page_scale_factor * 2);
   float speed_in_pixels_s = 800;
@@ -619,7 +619,7 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
   float distance_length = 0;
   float overscroll_length = 0;
   int repeat_count = 1;
-  v8::Handle<v8::Function> callback;
+  v8::Local<v8::Function> callback;
   float start_x = rect.width / (page_scale_factor * 2);
   float start_y = rect.height / (page_scale_factor * 2);
   float speed_in_pixels_s = 800;
@@ -691,7 +691,7 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
   float scale_factor;
   float anchor_x;
   float anchor_y;
-  v8::Handle<v8::Function> callback;
+  v8::Local<v8::Function> callback;
   float relative_pointer_speed_in_pixels_s = 800;
 
 
@@ -738,7 +738,7 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
 
   float position_x;
   float position_y;
-  v8::Handle<v8::Function> callback;
+  v8::Local<v8::Function> callback;
   int duration_ms = 50;
   int gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
 
@@ -793,8 +793,8 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
     return 0;
 
   std::string name;
-  v8::Handle<v8::Function> callback;
-  v8::Handle<v8::Object> arguments;
+  v8::Local<v8::Function> callback;
+  v8::Local<v8::Object> arguments;
 
   if (!GetArg(args, &name) || !GetArg(args, &callback) ||
       !GetOptionalArg(args, &arguments)) {
@@ -808,7 +808,7 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
 
   scoped_ptr<V8ValueConverter> converter =
       make_scoped_ptr(V8ValueConverter::create());
-  v8::Handle<v8::Context> v8_context = callback_and_context->GetContext();
+  v8::Local<v8::Context> v8_context = callback_and_context->GetContext();
   scoped_ptr<base::Value> value =
       make_scoped_ptr(converter->FromV8Value(arguments, v8_context));
 
@@ -820,14 +820,14 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
 
 bool GpuBenchmarking::SendMessageToMicroBenchmark(
     int id,
-    v8::Handle<v8::Object> message) {
+    v8::Local<v8::Object> message) {
   GpuBenchmarkingContext context;
   if (!context.Init(true))
     return false;
 
   scoped_ptr<V8ValueConverter> converter =
       make_scoped_ptr(V8ValueConverter::create());
-  v8::Handle<v8::Context> v8_context =
+  v8::Local<v8::Context> v8_context =
       context.web_frame()->mainWorldScriptContext();
   scoped_ptr<base::Value> value =
       make_scoped_ptr(converter->FromV8Value(message, v8_context));

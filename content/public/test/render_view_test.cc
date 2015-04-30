@@ -143,7 +143,7 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
     const base::string16& script,
     int* int_result) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Handle<v8::Value> result =
+  v8::Local<v8::Value> result =
       GetMainFrame()->executeScriptAndReturnValue(WebScriptSource(script));
   if (result.IsEmpty() || !result->IsInt32())
     return false;
@@ -335,17 +335,17 @@ gfx::Rect RenderViewTest::GetElementBounds(const std::string& element_id) {
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Value>  value = GetMainFrame()->executeScriptAndReturnValue(
+  v8::Local<v8::Value>  value = GetMainFrame()->executeScriptAndReturnValue(
       WebScriptSource(WebString::fromUTF8(script)));
   if (value.IsEmpty() || !value->IsArray())
     return gfx::Rect();
 
-  v8::Handle<v8::Array> array = value.As<v8::Array>();
+  v8::Local<v8::Array> array = value.As<v8::Array>();
   if (array->Length() != 4)
     return gfx::Rect();
   std::vector<int> coords;
   for (int i = 0; i < 4; ++i) {
-    v8::Handle<v8::Number> index = v8::Number::New(isolate, i);
+    v8::Local<v8::Number> index = v8::Number::New(isolate, i);
     v8::Local<v8::Value> value = array->Get(index);
     if (value.IsEmpty() || !value->IsInt32())
       return gfx::Rect();

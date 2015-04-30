@@ -29,12 +29,12 @@ class CONTENT_EXPORT PepperTryCatch {
   virtual void SetException(const char* message) = 0;
   virtual bool HasException() = 0;
   // Gets the context to execute scripts in.
-  virtual v8::Handle<v8::Context> GetContext() = 0;
+  virtual v8::Local<v8::Context> GetContext() = 0;
 
   // Convenience functions for doing conversions to/from V8 values and sets an
   // exception if there is an error in the conversion.
-  v8::Handle<v8::Value> ToV8(PP_Var var);
-  ppapi::ScopedPPVar FromV8(v8::Handle<v8::Value> v8_value);
+  v8::Local<v8::Value> ToV8(PP_Var var);
+  ppapi::ScopedPPVar FromV8(v8::Local<v8::Value> v8_value);
 
  protected:
   // Make sure that |instance_| is alive for the lifetime of PepperTryCatch.
@@ -64,7 +64,7 @@ class PepperTryCatchV8 : public PepperTryCatch {
   // PepperTryCatch
   void SetException(const char* message) override;
   bool HasException() override;
-  v8::Handle<v8::Context> GetContext() override;
+  v8::Local<v8::Context> GetContext() override;
 
  private:
   PP_Var exception_;
@@ -86,14 +86,14 @@ class PepperTryCatchVar : public PepperTryCatch {
   // PepperTryCatch
   void SetException(const char* message) override;
   bool HasException() override;
-  v8::Handle<v8::Context> GetContext() override;
+  v8::Local<v8::Context> GetContext() override;
 
  private:
   // Code which uses PepperTryCatchVar doesn't typically have a HandleScope,
   // make one for them. Note that this class is always allocated on the stack.
   v8::HandleScope handle_scope_;
 
-  v8::Handle<v8::Context> context_;
+  v8::Local<v8::Context> context_;
 
   v8::TryCatch try_catch_;
 

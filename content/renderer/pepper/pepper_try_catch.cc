@@ -26,22 +26,22 @@ PepperTryCatch::PepperTryCatch(PepperPluginInstanceImpl* instance,
 
 PepperTryCatch::~PepperTryCatch() {}
 
-v8::Handle<v8::Value> PepperTryCatch::ToV8(PP_Var var) {
+v8::Local<v8::Value> PepperTryCatch::ToV8(PP_Var var) {
   if (HasException()) {
     SetException(kConversionException);
-    return v8::Handle<v8::Value>();
+    return v8::Local<v8::Value>();
   }
 
-  v8::Handle<v8::Value> result;
+  v8::Local<v8::Value> result;
   bool success = var_converter_->ToV8Value(var, GetContext(), &result);
   if (!success) {
     SetException(kConversionException);
-    return v8::Handle<v8::Value>();
+    return v8::Local<v8::Value>();
   }
   return result;
 }
 
-ppapi::ScopedPPVar PepperTryCatch::FromV8(v8::Handle<v8::Value> v8_value) {
+ppapi::ScopedPPVar PepperTryCatch::FromV8(v8::Local<v8::Value> v8_value) {
   if (HasException() || v8_value.IsEmpty()) {
     SetException(kConversionException);
     return ppapi::ScopedPPVar();
@@ -79,7 +79,7 @@ bool PepperTryCatchV8::HasException() {
   return GetContext().IsEmpty() || exception_.type != PP_VARTYPE_UNDEFINED;
 }
 
-v8::Handle<v8::Context> PepperTryCatchV8::GetContext() {
+v8::Local<v8::Context> PepperTryCatchV8::GetContext() {
   // When calling from JS into the plugin always use the current context.
   return instance_->GetIsolate()->GetCurrentContext();
 }
@@ -164,7 +164,7 @@ bool PepperTryCatchVar::HasException() {
   return exception_is_set_;
 }
 
-v8::Handle<v8::Context> PepperTryCatchVar::GetContext() {
+v8::Local<v8::Context> PepperTryCatchVar::GetContext() {
   return context_;
 }
 

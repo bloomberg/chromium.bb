@@ -153,7 +153,7 @@ void WebMessagePortChannelImpl::postMessage(
   if (send_messages_as_values_) {
     blink::WebSerializedScriptValue serialized_value =
         blink::WebSerializedScriptValue::fromString(message_as_string);
-    v8::Handle<v8::Value> v8_value = serialized_value.deserialize();
+    v8::Local<v8::Value> v8_value = serialized_value.deserialize();
     scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     converter->SetDateAllowed(true);
     converter->SetRegExpAllowed(true);
@@ -194,7 +194,7 @@ bool WebMessagePortChannelImpl::tryGetMessage(
     scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     converter->SetDateAllowed(true);
     converter->SetRegExpAllowed(true);
-    v8::Handle<v8::Value> v8_value = converter->ToV8Value(
+    v8::Local<v8::Value> v8_value = converter->ToV8Value(
         data.as_value(), client_->scriptContextForMessageConversion());
     blink::WebSerializedScriptValue serialized_value =
         blink::WebSerializedScriptValue::serialize(v8_value);

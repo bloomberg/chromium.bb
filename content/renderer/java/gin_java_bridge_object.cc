@@ -19,7 +19,7 @@ GinJavaBridgeObject* GinJavaBridgeObject::InjectNamed(
     GinJavaBridgeDispatcher::ObjectID object_id) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   if (context.IsEmpty())
     return NULL;
 
@@ -27,7 +27,7 @@ GinJavaBridgeObject* GinJavaBridgeObject::InjectNamed(
       new GinJavaBridgeObject(isolate, dispatcher, object_id);
 
   v8::Context::Scope context_scope(context);
-  v8::Handle<v8::Object> global = context->Global();
+  v8::Local<v8::Object> global = context->Global();
   gin::Handle<GinJavaBridgeObject> controller =
       gin::CreateHandle(isolate, object);
   // WrappableBase instance deletes itself in case of a wrapper

@@ -36,7 +36,7 @@ WebUIMojo::MainFrameObserver::~MainFrameObserver() {
 }
 
 void WebUIMojo::MainFrameObserver::WillReleaseScriptContext(
-    v8::Handle<v8::Context> context,
+    v8::Local<v8::Context> context,
     int world_id) {
   web_ui_mojo_->DestroyContextState(context);
 }
@@ -58,7 +58,7 @@ void WebUIMojo::CreateContextState() {
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
   blink::WebLocalFrame* frame =
       render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   WebUIMojoContextStateData* data = new WebUIMojoContextStateData;
   data->state.reset(new WebUIMojoContextState(
@@ -66,7 +66,7 @@ void WebUIMojo::CreateContextState() {
   context_data->SetUserData(kWebUIMojoContextStateKey, data);
 }
 
-void WebUIMojo::DestroyContextState(v8::Handle<v8::Context> context) {
+void WebUIMojo::DestroyContextState(v8::Local<v8::Context> context) {
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   if (!context_data)
     return;
@@ -84,7 +84,7 @@ WebUIMojoContextState* WebUIMojo::GetContextState() {
   blink::WebLocalFrame* frame =
       render_view()->GetWebView()->mainFrame()->toWebLocalFrame();
   v8::HandleScope handle_scope(blink::mainThreadIsolate());
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   gin::PerContextData* context_data = gin::PerContextData::From(context);
   if (!context_data)
     return NULL;

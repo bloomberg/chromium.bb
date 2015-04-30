@@ -64,13 +64,13 @@ bool ShouldRespondToRequest(
 void WebUIExtension::Install(blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
   v8::Context::Scope context_scope(context);
 
-  v8::Handle<v8::Object> chrome = GetOrCreateChromeObject(isolate,
+  v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate,
                                                           context->Global());
   chrome->Set(gin::StringToSymbol(isolate, "send"),
               gin::CreateFunctionTemplate(
@@ -100,7 +100,7 @@ void WebUIExtension::Send(gin::Arguments* args) {
   if (args->PeekNext().IsEmpty() || args->PeekNext()->IsUndefined()) {
     content.reset(new base::ListValue());
   } else {
-    v8::Handle<v8::Object> obj;
+    v8::Local<v8::Object> obj;
     if (!args->GetNext(&obj)) {
       args->ThrowError();
       return;

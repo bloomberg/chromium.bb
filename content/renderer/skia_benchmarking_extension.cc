@@ -34,7 +34,7 @@ namespace content {
 namespace {
 
 scoped_ptr<base::Value> ParsePictureArg(v8::Isolate* isolate,
-                                        v8::Handle<v8::Value> arg) {
+                                        v8::Local<v8::Value> arg) {
   scoped_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   return scoped_ptr<base::Value>(
@@ -42,7 +42,7 @@ scoped_ptr<base::Value> ParsePictureArg(v8::Isolate* isolate,
 }
 
 scoped_refptr<cc::Picture> ParsePictureStr(v8::Isolate* isolate,
-                                           v8::Handle<v8::Value> arg) {
+                                           v8::Local<v8::Value> arg) {
   scoped_ptr<base::Value> picture_value = ParsePictureArg(isolate, arg);
   if (!picture_value)
     return NULL;
@@ -50,7 +50,7 @@ scoped_refptr<cc::Picture> ParsePictureStr(v8::Isolate* isolate,
 }
 
 scoped_refptr<cc::Picture> ParsePictureHash(v8::Isolate* isolate,
-                                            v8::Handle<v8::Value> arg) {
+                                            v8::Local<v8::Value> arg) {
   scoped_ptr<base::Value> picture_value = ParsePictureArg(isolate, arg);
   if (!picture_value)
     return NULL;
@@ -78,7 +78,7 @@ gin::WrapperInfo SkiaBenchmarking::kWrapperInfo = {gin::kEmbedderNativeGin};
 void SkiaBenchmarking::Install(blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -89,7 +89,7 @@ void SkiaBenchmarking::Install(blink::WebFrame* frame) {
   if (controller.IsEmpty())
     return;
 
-  v8::Handle<v8::Object> chrome = GetOrCreateChromeObject(isolate,
+  v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate,
                                                           context->Global());
   chrome->Set(gin::StringToV8(isolate, "skiaBenchmarking"), controller.ToV8());
 }
@@ -126,7 +126,7 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   v8::Isolate* isolate = args->isolate();
   if (args->PeekNext().IsEmpty())
     return;
-  v8::Handle<v8::Value> picture_handle;
+  v8::Local<v8::Value> picture_handle;
   args->GetNext(&picture_handle);
   scoped_refptr<cc::Picture> picture =
       ParsePictureHash(isolate, picture_handle);
@@ -138,9 +138,9 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   int stop_index = -1;
   bool overdraw = false;
 
-  v8::Handle<v8::Context> context = isolate->GetCurrentContext();
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   if (!args->PeekNext().IsEmpty()) {
-    v8::Handle<v8::Value> params;
+    v8::Local<v8::Value> params;
     args->GetNext(&params);
     scoped_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
@@ -196,7 +196,7 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
     buffer_pixels[i + 3] = SkGetPackedA32(c);
   }
 
-  v8::Handle<v8::Object> result = v8::Object::New(isolate);
+  v8::Local<v8::Object> result = v8::Object::New(isolate);
   result->Set(v8::String::NewFromUtf8(isolate, "width"),
               v8::Number::New(isolate, snapped_clip.width()));
   result->Set(v8::String::NewFromUtf8(isolate, "height"),
@@ -212,7 +212,7 @@ void SkiaBenchmarking::GetOps(gin::Arguments* args) {
   v8::Isolate* isolate = args->isolate();
   if (args->PeekNext().IsEmpty())
     return;
-  v8::Handle<v8::Value> picture_handle;
+  v8::Local<v8::Value> picture_handle;
   args->GetNext(&picture_handle);
   scoped_refptr<cc::Picture> picture =
       ParsePictureHash(isolate, picture_handle);
@@ -223,7 +223,7 @@ void SkiaBenchmarking::GetOps(gin::Arguments* args) {
   skia::BenchmarkingCanvas benchmarking_canvas(&canvas);
   picture->Replay(&benchmarking_canvas);
 
-  v8::Handle<v8::Context> context = isolate->GetCurrentContext();
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   scoped_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
 
@@ -234,7 +234,7 @@ void SkiaBenchmarking::GetOpTimings(gin::Arguments* args) {
   v8::Isolate* isolate = args->isolate();
   if (args->PeekNext().IsEmpty())
     return;
-  v8::Handle<v8::Value> picture_handle;
+  v8::Local<v8::Value> picture_handle;
   args->GetNext(&picture_handle);
   scoped_refptr<cc::Picture> picture =
       ParsePictureHash(isolate, picture_handle);
@@ -264,7 +264,7 @@ void SkiaBenchmarking::GetOpTimings(gin::Arguments* args) {
     op_times->Set(i, v8::Number::New(isolate, benchmarking_canvas.GetTime(i)));
   }
 
-  v8::Handle<v8::Object> result = v8::Object::New(isolate);
+  v8::Local<v8::Object> result = v8::Object::New(isolate);
   result->Set(v8::String::NewFromUtf8(isolate, "total_time"),
               v8::Number::New(isolate, total_time.InMillisecondsF()));
   result->Set(v8::String::NewFromUtf8(isolate, "cmd_times"), op_times);
@@ -276,14 +276,14 @@ void SkiaBenchmarking::GetInfo(gin::Arguments* args) {
   v8::Isolate* isolate = args->isolate();
   if (args->PeekNext().IsEmpty())
     return;
-  v8::Handle<v8::Value> picture_handle;
+  v8::Local<v8::Value> picture_handle;
   args->GetNext(&picture_handle);
   scoped_refptr<cc::Picture> picture =
       ParsePictureStr(isolate, picture_handle);
   if (!picture.get())
     return;
 
-  v8::Handle<v8::Object> result = v8::Object::New(isolate);
+  v8::Local<v8::Object> result = v8::Object::New(isolate);
   result->Set(v8::String::NewFromUtf8(isolate, "width"),
               v8::Number::New(isolate, picture->LayerRect().width()));
   result->Set(v8::String::NewFromUtf8(isolate, "height"),

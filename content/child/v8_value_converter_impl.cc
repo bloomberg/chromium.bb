@@ -22,7 +22,7 @@ namespace content {
 // Default implementation of V8ValueConverter::Strategy
 
 bool V8ValueConverter::Strategy::FromV8Object(
-    v8::Handle<v8::Object> value,
+    v8::Local<v8::Object> value,
     base::Value** out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
@@ -30,20 +30,20 @@ bool V8ValueConverter::Strategy::FromV8Object(
 }
 
 bool V8ValueConverter::Strategy::FromV8Array(
-    v8::Handle<v8::Array> value,
+    v8::Local<v8::Array> value,
     base::Value** out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
   return false;
 }
 
-bool V8ValueConverter::Strategy::FromV8ArrayBuffer(v8::Handle<v8::Object> value,
+bool V8ValueConverter::Strategy::FromV8ArrayBuffer(v8::Local<v8::Object> value,
                                                    base::Value** out,
                                                    v8::Isolate* isolate) const {
   return false;
 }
 
-bool V8ValueConverter::Strategy::FromV8Number(v8::Handle<v8::Number> value,
+bool V8ValueConverter::Strategy::FromV8Number(v8::Local<v8::Number> value,
                                               base::Value** out) const {
   return false;
 }
@@ -88,7 +88,7 @@ class V8ValueConverterImpl::FromV8ValueState {
   // other handle B in the map points to the same object as A. Note that A can
   // be unique even if there already is another handle with the same identity
   // hash (key) in the map, because two objects can have the same hash.
-  bool UpdateAndCheckUniqueness(v8::Handle<v8::Object> handle) {
+  bool UpdateAndCheckUniqueness(v8::Local<v8::Object> handle) {
     typedef HashToHandleMap::const_iterator Iterator;
     int hash = avoid_identity_hash_for_testing_ ? 0 : handle->GetIdentityHash();
     // We only compare using == with handles to objects with the same identity
@@ -109,7 +109,7 @@ class V8ValueConverterImpl::FromV8ValueState {
   }
 
  private:
-  typedef std::multimap<int, v8::Handle<v8::Object> > HashToHandleMap;
+  typedef std::multimap<int, v8::Local<v8::Object> > HashToHandleMap;
   HashToHandleMap unique_map_;
 
   int max_recursion_depth_;
@@ -149,8 +149,8 @@ void V8ValueConverterImpl::SetStrategy(Strategy* strategy) {
   strategy_ = strategy;
 }
 
-v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Value(
-    const base::Value* value, v8::Handle<v8::Context> context) const {
+v8::Local<v8::Value> V8ValueConverterImpl::ToV8Value(
+    const base::Value* value, v8::Local<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
   v8::EscapableHandleScope handle_scope(context->GetIsolate());
   return handle_scope.Escape(
@@ -158,8 +158,8 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Value(
 }
 
 base::Value* V8ValueConverterImpl::FromV8Value(
-    v8::Handle<v8::Value> val,
-    v8::Handle<v8::Context> context) const {
+    v8::Local<v8::Value> val,
+    v8::Local<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope(context->GetIsolate());
   FromV8ValueState state(avoid_identity_hash_for_testing_);
@@ -168,7 +168,7 @@ base::Value* V8ValueConverterImpl::FromV8Value(
 
 v8::Local<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
     v8::Isolate* isolate,
-    v8::Handle<v8::Object> creation_context,
+    v8::Local<v8::Object> creation_context,
     const base::Value* value) const {
   CHECK(value);
   switch (value->GetType()) {
@@ -221,17 +221,17 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
   }
 }
 
-v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Array(
+v8::Local<v8::Value> V8ValueConverterImpl::ToV8Array(
     v8::Isolate* isolate,
-    v8::Handle<v8::Object> creation_context,
+    v8::Local<v8::Object> creation_context,
     const base::ListValue* val) const {
-  v8::Handle<v8::Array> result(v8::Array::New(isolate, val->GetSize()));
+  v8::Local<v8::Array> result(v8::Array::New(isolate, val->GetSize()));
 
   for (size_t i = 0; i < val->GetSize(); ++i) {
     const base::Value* child = NULL;
     CHECK(val->Get(i, &child));
 
-    v8::Handle<v8::Value> child_v8 =
+    v8::Local<v8::Value> child_v8 =
         ToV8ValueImpl(isolate, creation_context, child);
     CHECK(!child_v8.IsEmpty());
 
@@ -244,16 +244,16 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Array(
   return result;
 }
 
-v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Object(
+v8::Local<v8::Value> V8ValueConverterImpl::ToV8Object(
     v8::Isolate* isolate,
-    v8::Handle<v8::Object> creation_context,
+    v8::Local<v8::Object> creation_context,
     const base::DictionaryValue* val) const {
-  v8::Handle<v8::Object> result(v8::Object::New(isolate));
+  v8::Local<v8::Object> result(v8::Object::New(isolate));
 
   for (base::DictionaryValue::Iterator iter(*val);
        !iter.IsAtEnd(); iter.Advance()) {
     const std::string& key = iter.key();
-    v8::Handle<v8::Value> child_v8 =
+    v8::Local<v8::Value> child_v8 =
         ToV8ValueImpl(isolate, creation_context, &iter.value());
     CHECK(!child_v8.IsEmpty());
 
@@ -271,9 +271,9 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Object(
   return result;
 }
 
-v8::Handle<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
+v8::Local<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
     v8::Isolate* isolate,
-    v8::Handle<v8::Object> creation_context,
+    v8::Local<v8::Object> creation_context,
     const base::BinaryValue* value) const {
   blink::WebArrayBuffer buffer =
       blink::WebArrayBuffer::create(value->GetSize(), 1);
@@ -284,7 +284,7 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
 
 base::Value* V8ValueConverterImpl::FromV8ValueImpl(
     FromV8ValueState* state,
-    v8::Handle<v8::Value> val,
+    v8::Local<v8::Value> val,
     v8::Isolate* isolate) const {
   CHECK(!val.IsEmpty());
 
@@ -367,7 +367,7 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
 }
 
 base::Value* V8ValueConverterImpl::FromV8Array(
-    v8::Handle<v8::Array> val,
+    v8::Local<v8::Array> val,
     FromV8ValueState* state,
     v8::Isolate* isolate) const {
   if (!state->UpdateAndCheckUniqueness(val))
@@ -397,7 +397,7 @@ base::Value* V8ValueConverterImpl::FromV8Array(
   // Only fields with integer keys are carried over to the ListValue.
   for (uint32 i = 0; i < val->Length(); ++i) {
     v8::TryCatch try_catch;
-    v8::Handle<v8::Value> child_v8 = val->Get(i);
+    v8::Local<v8::Value> child_v8 = val->Get(i);
     if (try_catch.HasCaught()) {
       LOG(ERROR) << "Getter for index " << i << " threw an exception.";
       child_v8 = v8::Null(isolate);
@@ -420,7 +420,7 @@ base::Value* V8ValueConverterImpl::FromV8Array(
 }
 
 base::Value* V8ValueConverterImpl::FromV8ArrayBuffer(
-    v8::Handle<v8::Object> val,
+    v8::Local<v8::Object> val,
     v8::Isolate* isolate) const {
   if (strategy_) {
     base::Value* out = NULL;
@@ -452,7 +452,7 @@ base::Value* V8ValueConverterImpl::FromV8ArrayBuffer(
 }
 
 base::Value* V8ValueConverterImpl::FromV8Object(
-    v8::Handle<v8::Object> val,
+    v8::Local<v8::Object> val,
     FromV8ValueState* state,
     v8::Isolate* isolate) const {
   if (!state->UpdateAndCheckUniqueness(val))
@@ -494,10 +494,10 @@ base::Value* V8ValueConverterImpl::FromV8Object(
     return new base::DictionaryValue();
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  v8::Handle<v8::Array> property_names(val->GetOwnPropertyNames());
+  v8::Local<v8::Array> property_names(val->GetOwnPropertyNames());
 
   for (uint32 i = 0; i < property_names->Length(); ++i) {
-    v8::Handle<v8::Value> key(property_names->Get(i));
+    v8::Local<v8::Value> key(property_names->Get(i));
 
     // Extend this test to cover more types as necessary and if sensible.
     if (!key->IsString() &&
@@ -510,7 +510,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
     v8::String::Utf8Value name_utf8(key);
 
     v8::TryCatch try_catch;
-    v8::Handle<v8::Value> child_v8 = val->Get(key);
+    v8::Local<v8::Value> child_v8 = val->Get(key);
 
     if (try_catch.HasCaught()) {
       LOG(WARNING) << "Getter for property " << *name_utf8

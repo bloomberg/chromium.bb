@@ -37,7 +37,7 @@ class WebUIMojo
     ~MainFrameObserver() override;
 
     // RenderFrameObserver overrides:
-    void WillReleaseScriptContext(v8::Handle<v8::Context> context,
+    void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                   int world_id) override;
     void DidFinishDocumentLoad() override;
 
@@ -50,7 +50,7 @@ class WebUIMojo
   ~WebUIMojo() override;
 
   void CreateContextState();
-  void DestroyContextState(v8::Handle<v8::Context> context);
+  void DestroyContextState(v8::Local<v8::Context> context);
 
   // Invoked when the frame finishes loading. Invokes Run() on the
   // WebUIMojoContextState.

@@ -34,7 +34,7 @@ class WebUIRunner;
 class WebUIMojoContextState : public gin::ModuleRegistryObserver {
  public:
   WebUIMojoContextState(blink::WebFrame* frame,
-                        v8::Handle<v8::Context> context);
+                        v8::Local<v8::Context> context);
   ~WebUIMojoContextState() override;
 
   void Run();

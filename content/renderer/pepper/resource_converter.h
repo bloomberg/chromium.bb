@@ -48,8 +48,8 @@ class CONTENT_EXPORT ResourceConverter {
   // On success, writes the resulting var to |result|, sets |was_resource| to
   // true and returns true. If |val| is not a resource, sets |was_resource| to
   // false and returns true. If an error occurs, returns false.
-  virtual bool FromV8Value(v8::Handle<v8::Object> val,
-                           v8::Handle<v8::Context> context,
+  virtual bool FromV8Value(v8::Local<v8::Object> val,
+                           v8::Local<v8::Context> context,
                            PP_Var* result,
                            bool* was_resource) = 0;
 
@@ -57,8 +57,8 @@ class CONTENT_EXPORT ResourceConverter {
   // PP_VARTYPE_RESOURCE. On success, writes the resulting value to |result| and
   // returns true. If an error occurs, returns false.
   virtual bool ToV8Value(const PP_Var& var,
-                         v8::Handle<v8::Context> context,
-                         v8::Handle<v8::Value>* result) = 0;
+                         v8::Local<v8::Context> context,
+                         v8::Local<v8::Value>* result) = 0;
 };
 
 class ResourceConverterImpl : public ResourceConverter {
@@ -70,13 +70,13 @@ class ResourceConverterImpl : public ResourceConverter {
   void Reset() override;
   bool NeedsFlush() override;
   void Flush(const base::Callback<void(bool)>& callback) override;
-  bool FromV8Value(v8::Handle<v8::Object> val,
-                   v8::Handle<v8::Context> context,
+  bool FromV8Value(v8::Local<v8::Object> val,
+                   v8::Local<v8::Context> context,
                    PP_Var* result,
                    bool* was_resource) override;
   bool ToV8Value(const PP_Var& var,
-                 v8::Handle<v8::Context> context,
-                 v8::Handle<v8::Value>* result) override;
+                 v8::Local<v8::Context> context,
+                 v8::Local<v8::Value>* result) override;
 
  private:
   // Creates a resource var with the given |pending_renderer_id| and

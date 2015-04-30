@@ -34,9 +34,9 @@ namespace {
 const char kModulePrefix[] = "chrome://mojo/";
 
 void RunMain(base::WeakPtr<gin::Runner> runner,
-             v8::Handle<v8::Value> module) {
+             v8::Local<v8::Value> module) {
   v8::Isolate* isolate = runner->GetContextHolder()->isolate();
-  v8::Handle<v8::Function> start;
+  v8::Local<v8::Function> start;
   CHECK(gin::ConvertFromV8(isolate, module, &start));
   runner->Call(start, runner->global(), 0, NULL);
 }
@@ -46,7 +46,7 @@ void RunMain(base::WeakPtr<gin::Runner> runner,
 // WebUIMojo -------------------------------------------------------------------
 
 WebUIMojoContextState::WebUIMojoContextState(blink::WebFrame* frame,
-                                             v8::Handle<v8::Context> context)
+                                             v8::Local<v8::Context> context)
     : frame_(frame),
       module_added_(false) {
   gin::PerContextData* context_data = gin::PerContextData::From(context);

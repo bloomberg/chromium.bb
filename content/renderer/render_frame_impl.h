@@ -475,11 +475,11 @@ class CONTENT_EXPORT RenderFrameImpl
                                      const blink::WebURL& target);
   virtual void didAbortLoading(blink::WebLocalFrame* frame);
   virtual void didCreateScriptContext(blink::WebLocalFrame* frame,
-                                      v8::Handle<v8::Context> context,
+                                      v8::Local<v8::Context> context,
                                       int extension_group,
                                       int world_id);
   virtual void willReleaseScriptContext(blink::WebLocalFrame* frame,
-                                        v8::Handle<v8::Context> context,
+                                        v8::Local<v8::Context> context,
                                         int world_id);
   virtual void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame);
   virtual void didChangeScrollOffset(blink::WebLocalFrame* frame);
@@ -716,7 +716,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void HandleJavascriptExecutionResult(const base::string16& javascript,
                                        int id,
                                        bool notify_result,
-                                       v8::Handle<v8::Value> result);
+                                       v8::Local<v8::Value> result);
 
   // Initializes |web_user_media_client_|. If this fails, because it wasn't
   // possible to create a MediaStreamClient (e.g., WebRTC is disabled), then

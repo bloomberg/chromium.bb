@@ -33,11 +33,11 @@ class AccessibilityControllerBindings
       v8::Isolate* isolate) override;
 
   void LogAccessibilityEvents();
-  void SetNotificationListener(v8::Handle<v8::Function> callback);
+  void SetNotificationListener(v8::Local<v8::Function> callback);
   void UnsetNotificationListener();
-  v8::Handle<v8::Object> FocusedElement();
-  v8::Handle<v8::Object> RootElement();
-  v8::Handle<v8::Object> AccessibleElementById(const std::string& id);
+  v8::Local<v8::Object> FocusedElement();
+  v8::Local<v8::Object> RootElement();
+  v8::Local<v8::Object> AccessibleElementById(const std::string& id);
 
   base::WeakPtr<AccessibilityController> controller_;
 
@@ -53,7 +53,7 @@ void AccessibilityControllerBindings::Install(
     blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -64,7 +64,7 @@ void AccessibilityControllerBindings::Install(
                         new AccessibilityControllerBindings(controller));
   if (bindings.IsEmpty())
     return;
-  v8::Handle<v8::Object> global = context->Global();
+  v8::Local<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "accessibilityController"),
               bindings.ToV8());
 }
@@ -107,7 +107,7 @@ void AccessibilityControllerBindings::LogAccessibilityEvents() {
 }
 
 void AccessibilityControllerBindings::SetNotificationListener(
-    v8::Handle<v8::Function> callback) {
+    v8::Local<v8::Function> callback) {
   if (controller_)
     controller_->SetNotificationListener(callback);
 }
@@ -117,18 +117,18 @@ void AccessibilityControllerBindings::UnsetNotificationListener() {
     controller_->UnsetNotificationListener();
 }
 
-v8::Handle<v8::Object> AccessibilityControllerBindings::FocusedElement() {
-  return controller_ ? controller_->FocusedElement() : v8::Handle<v8::Object>();
+v8::Local<v8::Object> AccessibilityControllerBindings::FocusedElement() {
+  return controller_ ? controller_->FocusedElement() : v8::Local<v8::Object>();
 }
 
-v8::Handle<v8::Object> AccessibilityControllerBindings::RootElement() {
-  return controller_ ? controller_->RootElement() : v8::Handle<v8::Object>();
+v8::Local<v8::Object> AccessibilityControllerBindings::RootElement() {
+  return controller_ ? controller_->RootElement() : v8::Local<v8::Object>();
 }
 
-v8::Handle<v8::Object> AccessibilityControllerBindings::AccessibleElementById(
+v8::Local<v8::Object> AccessibilityControllerBindings::AccessibleElementById(
     const std::string& id) {
   return controller_ ? controller_->AccessibleElementById(id)
-                     : v8::Handle<v8::Object>();
+                     : v8::Local<v8::Object>();
 }
 
 AccessibilityController::AccessibilityController()
@@ -171,14 +171,14 @@ void AccessibilityController::NotificationReceived(
   if (!frame || frame->isWebRemoteFrame())
     return;
 
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
   v8::Context::Scope context_scope(context);
 
   // Call notification listeners on the element.
-  v8::Handle<v8::Object> element_handle = elements_.GetOrCreate(target);
+  v8::Local<v8::Object> element_handle = elements_.GetOrCreate(target);
   if (element_handle.IsEmpty())
     return;
 
@@ -191,7 +191,7 @@ void AccessibilityController::NotificationReceived(
     return;
 
   // Call global notification listeners.
-  v8::Handle<v8::Value> argv[] = {
+  v8::Local<v8::Value> argv[] = {
     element_handle,
     v8::String::NewFromUtf8(isolate, notification_name.data(),
                             v8::String::kNormalString,
@@ -217,7 +217,7 @@ void AccessibilityController::LogAccessibilityEvents() {
 }
 
 void AccessibilityController::SetNotificationListener(
-    v8::Handle<v8::Function> callback) {
+    v8::Local<v8::Function> callback) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   notification_callback_.Reset(isolate, callback);
 }
@@ -226,35 +226,35 @@ void AccessibilityController::UnsetNotificationListener() {
   notification_callback_.Reset();
 }
 
-v8::Handle<v8::Object> AccessibilityController::FocusedElement() {
+v8::Local<v8::Object> AccessibilityController::FocusedElement() {
   if (focused_element_.isNull())
     focused_element_ = web_view_->accessibilityObject();
   return elements_.GetOrCreate(focused_element_);
 }
 
-v8::Handle<v8::Object> AccessibilityController::RootElement() {
+v8::Local<v8::Object> AccessibilityController::RootElement() {
   if (root_element_.isNull())
     root_element_ = web_view_->accessibilityObject();
   return elements_.GetOrCreate(root_element_);
 }
 
-v8::Handle<v8::Object>
+v8::Local<v8::Object>
 AccessibilityController::AccessibleElementById(const std::string& id) {
   if (root_element_.isNull())
     root_element_ = web_view_->accessibilityObject();
 
   if (!root_element_.updateLayoutAndCheckValidity())
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return FindAccessibleElementByIdRecursive(
       root_element_, blink::WebString::fromUTF8(id.c_str()));
 }
 
-v8::Handle<v8::Object>
+v8::Local<v8::Object>
 AccessibilityController::FindAccessibleElementByIdRecursive(
     const blink::WebAXObject& obj, const blink::WebString& id) {
   if (obj.isNull() || obj.isDetached())
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   blink::WebNode node = obj.node();
   if (!node.isNull() && node.isElementNode()) {
@@ -266,13 +266,13 @@ AccessibilityController::FindAccessibleElementByIdRecursive(
 
   unsigned childCount = obj.childCount();
   for (unsigned i = 0; i < childCount; i++) {
-    v8::Handle<v8::Object> result =
+    v8::Local<v8::Object> result =
         FindAccessibleElementByIdRecursive(obj.childAt(i), id);
     if (*result)
       return result;
   }
 
-  return v8::Handle<v8::Object>();
+  return v8::Local<v8::Object>();
 }
 
 }  // namespace content

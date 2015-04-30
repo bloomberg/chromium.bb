@@ -26,7 +26,7 @@ gin::WrapperInfo MemoryBenchmarkingExtension::kWrapperInfo = {
 void MemoryBenchmarkingExtension::Install(blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -36,7 +36,7 @@ void MemoryBenchmarkingExtension::Install(blink::WebFrame* frame) {
   if (controller.IsEmpty())
     return;
 
-  v8::Handle<v8::Object> chrome = GetOrCreateChromeObject(isolate,
+  v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate,
                                                           context->Global());
   chrome->Set(gin::StringToV8(isolate, "memoryBenchmarking"),
               controller.ToV8());

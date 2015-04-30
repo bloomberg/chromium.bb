@@ -65,7 +65,7 @@ namespace content {
 
 namespace {
 
-WebString V8StringToWebString(v8::Handle<v8::String> v8_str) {
+WebString V8StringToWebString(v8::Local<v8::String> v8_str) {
   int length = v8_str->Utf8Length() + 1;
   scoped_ptr<char[]> chars(new char[length]);
   v8_str->WriteUtf8(chars.get(), length);
@@ -88,7 +88,7 @@ class HostMethodTask : public WebMethodTask<TestRunner> {
 
 class InvokeCallbackTask : public WebMethodTask<TestRunner> {
  public:
-  InvokeCallbackTask(TestRunner* object, v8::Handle<v8::Function> callback)
+  InvokeCallbackTask(TestRunner* object, v8::Local<v8::Function> callback)
       : WebMethodTask<TestRunner>(object),
         callback_(blink::mainThreadIsolate(), callback),
         argc_(0) {}
@@ -98,15 +98,15 @@ class InvokeCallbackTask : public WebMethodTask<TestRunner> {
     v8::HandleScope handle_scope(isolate);
     WebFrame* frame = object_->web_view_->mainFrame();
 
-    v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+    v8::Local<v8::Context> context = frame->mainWorldScriptContext();
     if (context.IsEmpty())
       return;
 
     v8::Context::Scope context_scope(context);
 
-    scoped_ptr<v8::Handle<v8::Value>[]> local_argv;
+    scoped_ptr<v8::Local<v8::Value>[]> local_argv;
     if (argc_) {
-        local_argv.reset(new v8::Handle<v8::Value>[argc_]);
+        local_argv.reset(new v8::Local<v8::Value>[argc_]);
         for (int i = 0; i < argc_; ++i)
           local_argv[i] = v8::Local<v8::Value>::New(isolate, argv_[i]);
     }
@@ -118,7 +118,7 @@ class InvokeCallbackTask : public WebMethodTask<TestRunner> {
         local_argv.get());
   }
 
-  void SetArguments(int argc, v8::Handle<v8::Value> argv[]) {
+  void SetArguments(int argc, v8::Local<v8::Value> argv[]) {
     v8::Isolate* isolate = blink::mainThreadIsolate();
     argc_ = argc;
     argv_.reset(new v8::UniquePersistent<v8::Value>[argc]);
@@ -169,11 +169,11 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   bool CallShouldCloseOnWebView();
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
-  v8::Handle<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
+  v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
       int world_id, const std::string& script);
   void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
   void SetIsolatedWorldSecurityOrigin(int world_id,
-                                      v8::Handle<v8::Value> origin);
+                                      v8::Local<v8::Value> origin);
   void SetIsolatedWorldContentSecurityPolicy(int world_id,
                                              const std::string& policy);
   void AddOriginAccessWhitelistEntry(const std::string& source_origin,
@@ -219,7 +219,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetXSSAuditorEnabled(bool enabled);
   void SetAllowUniversalAccessFromFileURLs(bool allow);
   void SetAllowFileAccessFromFileURLs(bool allow);
-  void OverridePreference(const std::string key, v8::Handle<v8::Value> value);
+  void OverridePreference(const std::string key, v8::Local<v8::Value> value);
   void SetAcceptLanguages(const std::string& accept_languages);
   void SetPluginsEnabled(bool enabled);
   void DumpEditingCallbacks();
@@ -271,9 +271,9 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetAlwaysAcceptCookies(bool accept);
   void SetWindowIsKey(bool value);
   std::string PathToLocalResource(const std::string& path);
-  void SetBackingScaleFactor(double value, v8::Handle<v8::Function> callback);
+  void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
   void SetColorProfile(const std::string& name,
-                       v8::Handle<v8::Function> callback);
+                       v8::Local<v8::Function> callback);
   void SetPOSIXLocale(const std::string& locale);
   void SetMIDIAccessorResult(bool result);
   void SimulateWebNotificationClick(const std::string& title);
@@ -289,12 +289,12 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
   void DisplayAsync();
-  void DisplayAsyncThen(v8::Handle<v8::Function> callback);
-  void GetManifestThen(v8::Handle<v8::Function> callback);
-  void CapturePixelsAsyncThen(v8::Handle<v8::Function> callback);
+  void DisplayAsyncThen(v8::Local<v8::Function> callback);
+  void GetManifestThen(v8::Local<v8::Function> callback);
+  void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
   void CopyImageAtAndCapturePixelsAsyncThen(int x,
                                             int y,
-                                            v8::Handle<v8::Function> callback);
+                                            v8::Local<v8::Function> callback);
   void SetCustomTextOutput(std::string output);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetBluetoothMockDataSet(const std::string& dataset_name);
@@ -720,11 +720,11 @@ void TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme(
     runner_->SetDomainRelaxationForbiddenForURLScheme(forbidden, scheme);
 }
 
-v8::Handle<v8::Value>
+v8::Local<v8::Value>
 TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue(
     int world_id, const std::string& script) {
   if (!runner_)
-    return v8::Handle<v8::Value>();
+    return v8::Local<v8::Value>();
   return runner_->EvaluateScriptInIsolatedWorldAndReturnValue(world_id,
                                                               script);
 }
@@ -736,7 +736,7 @@ void TestRunnerBindings::EvaluateScriptInIsolatedWorld(
 }
 
 void TestRunnerBindings::SetIsolatedWorldSecurityOrigin(
-    int world_id, v8::Handle<v8::Value> origin) {
+    int world_id, v8::Local<v8::Value> origin) {
   if (runner_)
     runner_->SetIsolatedWorldSecurityOrigin(world_id, origin);
 }
@@ -1014,7 +1014,7 @@ void TestRunnerBindings::SetAllowFileAccessFromFileURLs(bool allow) {
 }
 
 void TestRunnerBindings::OverridePreference(const std::string key,
-                                            v8::Handle<v8::Value> value) {
+                                            v8::Local<v8::Value> value) {
   if (runner_)
     runner_->OverridePreference(key, value);
 }
@@ -1288,13 +1288,13 @@ std::string TestRunnerBindings::PathToLocalResource(const std::string& path) {
 }
 
 void TestRunnerBindings::SetBackingScaleFactor(
-    double value, v8::Handle<v8::Function> callback) {
+    double value, v8::Local<v8::Function> callback) {
   if (runner_)
     runner_->SetBackingScaleFactor(value, callback);
 }
 
 void TestRunnerBindings::SetColorProfile(
-    const std::string& name, v8::Handle<v8::Function> callback) {
+    const std::string& name, v8::Local<v8::Function> callback) {
   if (runner_)
     runner_->SetColorProfile(name, callback);
 }
@@ -1362,24 +1362,24 @@ void TestRunnerBindings::DisplayAsync() {
     runner_->DisplayAsync();
 }
 
-void TestRunnerBindings::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
+void TestRunnerBindings::DisplayAsyncThen(v8::Local<v8::Function> callback) {
   if (runner_)
     runner_->DisplayAsyncThen(callback);
 }
 
-void TestRunnerBindings::GetManifestThen(v8::Handle<v8::Function> callback) {
+void TestRunnerBindings::GetManifestThen(v8::Local<v8::Function> callback) {
   if (runner_)
     runner_->GetManifestThen(callback);
 }
 
 void TestRunnerBindings::CapturePixelsAsyncThen(
-    v8::Handle<v8::Function> callback) {
+    v8::Local<v8::Function> callback) {
   if (runner_)
     runner_->CapturePixelsAsyncThen(callback);
 }
 
 void TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen(
-    int x, int y, v8::Handle<v8::Function> callback) {
+    int x, int y, v8::Local<v8::Function> callback) {
   if (runner_)
     runner_->CopyImageAtAndCapturePixelsAsyncThen(x, y, callback);
 }
@@ -2147,7 +2147,7 @@ void TestRunner::SetDomainRelaxationForbiddenForURLScheme(
                                           WebString::fromUTF8(scheme));
 }
 
-v8::Handle<v8::Value> TestRunner::EvaluateScriptInIsolatedWorldAndReturnValue(
+v8::Local<v8::Value> TestRunner::EvaluateScriptInIsolatedWorldAndReturnValue(
     int world_id,
     const std::string& script) {
   WebVector<v8::Local<v8::Value>> values;
@@ -2159,7 +2159,7 @@ v8::Handle<v8::Value> TestRunner::EvaluateScriptInIsolatedWorldAndReturnValue(
   // Since only one script was added, only one result is expected
   if (values.size() == 1 && !values[0].IsEmpty())
     return values[0];
-  return v8::Handle<v8::Value>();
+  return v8::Local<v8::Value>();
 }
 
 void TestRunner::EvaluateScriptInIsolatedWorld(int world_id,
@@ -2170,7 +2170,7 @@ void TestRunner::EvaluateScriptInIsolatedWorld(int world_id,
 }
 
 void TestRunner::SetIsolatedWorldSecurityOrigin(int world_id,
-                                                v8::Handle<v8::Value> origin) {
+                                                v8::Local<v8::Value> origin) {
   if (!(origin->IsString() || !origin->IsNull()))
     return;
 
@@ -2485,7 +2485,7 @@ void TestRunner::SetAllowFileAccessFromFileURLs(bool allow) {
 }
 
 void TestRunner::OverridePreference(const std::string key,
-                                    v8::Handle<v8::Value> value) {
+                                    v8::Local<v8::Value> value) {
   TestPreferences* prefs = delegate_->Preferences();
   if (key == "WebKitDefaultFontSize") {
     prefs->default_font_size = value->Int32Value();
@@ -2759,13 +2759,13 @@ std::string TestRunner::PathToLocalResource(const std::string& path) {
 }
 
 void TestRunner::SetBackingScaleFactor(double value,
-                                       v8::Handle<v8::Function> callback) {
+                                       v8::Local<v8::Function> callback) {
   delegate_->SetDeviceScaleFactor(value);
   delegate_->PostTask(new InvokeCallbackTask(this, callback));
 }
 
 void TestRunner::SetColorProfile(const std::string& name,
-                                 v8::Handle<v8::Function> callback) {
+                                 v8::Local<v8::Function> callback) {
   delegate_->SetDeviceColorProfile(name);
   delegate_->PostTask(new InvokeCallbackTask(this, callback));
 }
@@ -2851,7 +2851,7 @@ void TestRunner::DisplayAsync() {
   proxy_->DisplayAsyncThen(base::Closure());
 }
 
-void TestRunner::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
+void TestRunner::DisplayAsyncThen(v8::Local<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
   proxy_->DisplayAsyncThen(base::Bind(&TestRunner::InvokeCallback,
@@ -2859,7 +2859,7 @@ void TestRunner::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
                                       base::Passed(&task)));
 }
 
-void TestRunner::GetManifestThen(v8::Handle<v8::Function> callback) {
+void TestRunner::GetManifestThen(v8::Local<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
 
@@ -2869,7 +2869,7 @@ void TestRunner::GetManifestThen(v8::Handle<v8::Function> callback) {
                  base::Passed(&task)));
 }
 
-void TestRunner::CapturePixelsAsyncThen(v8::Handle<v8::Function> callback) {
+void TestRunner::CapturePixelsAsyncThen(v8::Local<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
   proxy_->CapturePixelsAsync(base::Bind(&TestRunner::CapturePixelsCallback,
@@ -2883,7 +2883,7 @@ void TestRunner::ForceNextWebGLContextCreationToFail() {
 }
 
 void TestRunner::CopyImageAtAndCapturePixelsAsyncThen(
-    int x, int y, v8::Handle<v8::Function> callback) {
+    int x, int y, v8::Local<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
   proxy_->CopyImageAtAndCapturePixels(
@@ -2903,13 +2903,13 @@ void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
-  v8::Handle<v8::Context> context =
+  v8::Local<v8::Context> context =
       web_view_->mainFrame()->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
   v8::Context::Scope context_scope(context);
-  v8::Handle<v8::Value> argv[3];
+  v8::Local<v8::Value> argv[3];
   SkAutoLockPixels snapshot_lock(snapshot);
 
   // Size can be 0 for cases where copyImageAt was called on position

@@ -22,7 +22,7 @@ class GinJavaFunctionInvocationHelper {
       const base::WeakPtr<GinJavaBridgeDispatcher>& dispatcher);
   ~GinJavaFunctionInvocationHelper();
 
-  v8::Handle<v8::Value> Invoke(gin::Arguments* args);
+  v8::Local<v8::Value> Invoke(gin::Arguments* args);
 
  private:
   std::string method_name_;

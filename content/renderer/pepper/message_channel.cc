@@ -121,7 +121,7 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
 
   v8::Context::Scope context_scope(context);
 
-  v8::Handle<v8::Value> v8_val;
+  v8::Local<v8::Value> v8_val;
   if (!var_converter_.ToV8Value(message_data, context, &v8_val)) {
     PpapiGlobals::Get()->LogWithSource(instance_->pp_instance(),
                                        PP_LOGLEVEL_ERROR,
@@ -167,7 +167,7 @@ void MessageChannel::Start() {
   DrainCompletedPluginMessages();
 }
 
-void MessageChannel::SetPassthroughObject(v8::Handle<v8::Object> passthrough) {
+void MessageChannel::SetPassthroughObject(v8::Local<v8::Object> passthrough) {
   passthrough_object_.Reset(instance_->GetIsolate(), passthrough);
 }
 
@@ -230,7 +230,7 @@ v8::Local<v8::Value> MessageChannel::GetNamedProperty(
   std::map<std::string, ScopedPPVar>::const_iterator it =
       internal_named_properties_.find(identifier);
   if (it != internal_named_properties_.end()) {
-    v8::Handle<v8::Value> result = try_catch.ToV8(it->second.get());
+    v8::Local<v8::Value> result = try_catch.ToV8(it->second.get());
     if (try_catch.ThrowException())
       return v8::Local<v8::Value>();
     return result;
@@ -284,7 +284,7 @@ void MessageChannel::PostMessageToNative(gin::Arguments* args) {
     return;
   }
 
-  v8::Handle<v8::Value> message_data;
+  v8::Local<v8::Value> message_data;
   if (!args->GetNext(&message_data)) {
     NOTREACHED();
   }
@@ -303,7 +303,7 @@ void MessageChannel::PostBlockingMessageToNative(gin::Arguments* args) {
     return;
   }
 
-  v8::Handle<v8::Value> message_data;
+  v8::Local<v8::Value> message_data;
   if (!args->GetNext(&message_data)) {
     NOTREACHED();
   }
@@ -345,7 +345,7 @@ void MessageChannel::PostBlockingMessageToNative(gin::Arguments* args) {
         "and PPP_MessageHandler.");
     return;
   }
-  v8::Handle<v8::Value> v8_result = try_catch.ToV8(pp_result.get());
+  v8::Local<v8::Value> v8_result = try_catch.ToV8(pp_result.get());
   if (try_catch.ThrowException())
     return;
 
@@ -388,7 +388,7 @@ PluginObject* MessageChannel::GetPluginObject(v8::Isolate* isolate) {
       v8::Local<v8::Object>::New(isolate, passthrough_object_));
 }
 
-void MessageChannel::EnqueuePluginMessage(v8::Handle<v8::Value> v8_value) {
+void MessageChannel::EnqueuePluginMessage(v8::Local<v8::Value> v8_value) {
   plugin_message_queue_.push_back(VarConversionResult());
   // Convert the v8 value in to an appropriate PP_Var like Dictionary,
   // Array, etc. (We explicitly don't want an "Object" PP_Var, which we don't

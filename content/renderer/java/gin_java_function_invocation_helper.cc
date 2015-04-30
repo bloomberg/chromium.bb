@@ -34,7 +34,7 @@ GinJavaFunctionInvocationHelper::GinJavaFunctionInvocationHelper(
 GinJavaFunctionInvocationHelper::~GinJavaFunctionInvocationHelper() {
 }
 
-v8::Handle<v8::Value> GinJavaFunctionInvocationHelper::Invoke(
+v8::Local<v8::Value> GinJavaFunctionInvocationHelper::Invoke(
     gin::Arguments* args) {
   if (!dispatcher_) {
     args->isolate()->ThrowException(v8::Exception::Error(gin::StringToV8(
@@ -58,8 +58,8 @@ v8::Handle<v8::Value> GinJavaFunctionInvocationHelper::Invoke(
   base::ListValue arguments;
   {
     v8::HandleScope handle_scope(args->isolate());
-    v8::Handle<v8::Context> context = args->isolate()->GetCurrentContext();
-    v8::Handle<v8::Value> val;
+    v8::Local<v8::Context> context = args->isolate()->GetCurrentContext();
+    v8::Local<v8::Value> val;
     while (args->GetNext(&val)) {
       scoped_ptr<base::Value> arg(converter_->FromV8Value(val, context));
       if (arg.get()) {

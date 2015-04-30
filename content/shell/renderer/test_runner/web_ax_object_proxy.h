@@ -25,7 +25,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   class Factory {
    public:
     virtual ~Factory() { }
-    virtual v8::Handle<v8::Object> GetOrCreate(
+    virtual v8::Local<v8::Object> GetOrCreate(
         const blink::WebAXObject& object) = 0;
   };
 
@@ -38,7 +38,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
-  virtual v8::Handle<v8::Object> GetChildAtIndex(unsigned index);
+  virtual v8::Local<v8::Object> GetChildAtIndex(unsigned index);
   virtual bool IsRoot() const;
   bool IsEqualToObject(const blink::WebAXObject& object);
 
@@ -102,33 +102,33 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   bool IsButtonStateMixed();
 
   // Bound methods.
-  v8::Handle<v8::Object> AriaControlsElementAtIndex(unsigned index);
-  v8::Handle<v8::Object> AriaFlowToElementAtIndex(unsigned index);
-  v8::Handle<v8::Object> AriaOwnsElementAtIndex(unsigned index);
+  v8::Local<v8::Object> AriaControlsElementAtIndex(unsigned index);
+  v8::Local<v8::Object> AriaFlowToElementAtIndex(unsigned index);
+  v8::Local<v8::Object> AriaOwnsElementAtIndex(unsigned index);
   std::string AllAttributes();
   std::string AttributesOfChildren();
   int LineForIndex(int index);
   std::string BoundsForRange(int start, int end);
-  v8::Handle<v8::Object> ChildAtIndex(int index);
-  v8::Handle<v8::Object> ElementAtPoint(int x, int y);
-  v8::Handle<v8::Object> TableHeader();
-  v8::Handle<v8::Object> RowHeaderAtIndex(unsigned index);
-  v8::Handle<v8::Object> ColumnHeaderAtIndex(unsigned index);
+  v8::Local<v8::Object> ChildAtIndex(int index);
+  v8::Local<v8::Object> ElementAtPoint(int x, int y);
+  v8::Local<v8::Object> TableHeader();
+  v8::Local<v8::Object> RowHeaderAtIndex(unsigned index);
+  v8::Local<v8::Object> ColumnHeaderAtIndex(unsigned index);
   std::string RowIndexRange();
   std::string ColumnIndexRange();
-  v8::Handle<v8::Object> CellForColumnAndRow(int column, int row);
+  v8::Local<v8::Object> CellForColumnAndRow(int column, int row);
   void SetSelectedTextRange(int selection_start, int length);
   bool IsAttributeSettable(const std::string& attribute);
   bool IsPressActionSupported();
   bool IsIncrementActionSupported();
   bool IsDecrementActionSupported();
-  v8::Handle<v8::Object> ParentElement();
+  v8::Local<v8::Object> ParentElement();
   void Increment();
   void Decrement();
   void ShowMenu();
   void Press();
-  bool IsEqual(v8::Handle<v8::Object> proxy);
-  void SetNotificationListener(v8::Handle<v8::Function> callback);
+  bool IsEqual(v8::Local<v8::Object> proxy);
+  void SetNotificationListener(v8::Local<v8::Function> callback);
   void UnsetNotificationListener();
   void TakeFocus();
   void ScrollToMakeVisible();
@@ -141,13 +141,13 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   std::string DeprecatedTitle();
   std::string DeprecatedDescription();
   std::string DeprecatedHelpText();
-  v8::Handle<v8::Object> DeprecatedTitleUIElement();
+  v8::Local<v8::Object> DeprecatedTitleUIElement();
 
   // NEW accessible name and description accessors
   std::string Name();
   std::string NameFrom();
   int NameElementCount();
-  v8::Handle<v8::Object> NameElementAtIndex(unsigned index);
+  v8::Local<v8::Object> NameElementAtIndex(unsigned index);
 
   blink::WebAXObject accessibility_object_;
   Factory* factory_;
@@ -161,7 +161,7 @@ class RootWebAXObjectProxy : public WebAXObjectProxy {
  public:
   RootWebAXObjectProxy(const blink::WebAXObject&, Factory*);
 
-  v8::Handle<v8::Object> GetChildAtIndex(unsigned index) override;
+  v8::Local<v8::Object> GetChildAtIndex(unsigned index) override;
   bool IsRoot() const override;
 };
 
@@ -175,7 +175,7 @@ class WebAXObjectProxyList : public WebAXObjectProxy::Factory {
   ~WebAXObjectProxyList() override;
 
   void Clear();
-  v8::Handle<v8::Object> GetOrCreate(const blink::WebAXObject&) override;
+  v8::Local<v8::Object> GetOrCreate(const blink::WebAXObject&) override;
 
  private:
   typedef v8::PersistentValueVector<v8::Object> ElementList;

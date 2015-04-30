@@ -38,7 +38,7 @@ class PluginObject : public gin::Wrappable<PluginObject>,
   // Returns the PluginObject which is contained in the given v8 object, or NULL
   // if the object isn't backed by a PluginObject.
   static PluginObject* FromV8Object(v8::Isolate* isolate,
-                                    v8::Handle<v8::Object> v8_object);
+                                    v8::Local<v8::Object> v8_object);
 
   // Allocates a new PluginObject and returns it as a PP_Var with a
   // refcount of 1.

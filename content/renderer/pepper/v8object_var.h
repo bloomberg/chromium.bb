@@ -30,7 +30,7 @@ namespace ppapi {
 // plugins that may be running at the same time.
 class CONTENT_EXPORT V8ObjectVar : public Var {
  public:
-  V8ObjectVar(PP_Instance instance, v8::Handle<v8::Object> v8_object);
+  V8ObjectVar(PP_Instance instance, v8::Local<v8::Object> v8_object);
 
   // Var overrides.
   V8ObjectVar* AsV8ObjectVar() override;

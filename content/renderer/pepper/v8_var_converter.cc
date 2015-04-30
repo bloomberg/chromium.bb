@@ -44,10 +44,10 @@ struct StackEntry {
 };
 
 struct HashedHandle {
-  HashedHandle(v8::Handle<v8::Object> h) : handle(h) {}
+  HashedHandle(v8::Local<v8::Object> h) : handle(h) {}
   size_t hash() const { return handle->GetIdentityHash(); }
   bool operator==(const HashedHandle& h) const { return handle == h.handle; }
-  v8::Handle<v8::Object> handle;
+  v8::Local<v8::Object> handle;
 };
 
 }  // namespace
@@ -64,7 +64,7 @@ namespace content {
 namespace {
 
 // Maps PP_Var IDs to the V8 value handle they correspond to.
-typedef base::hash_map<int64_t, v8::Handle<v8::Value> > VarHandleMap;
+typedef base::hash_map<int64_t, v8::Local<v8::Value> > VarHandleMap;
 typedef base::hash_set<int64_t> ParentVarSet;
 
 // Maps V8 value handles to the PP_Var they correspond to.
@@ -76,10 +76,10 @@ typedef base::hash_set<HashedHandle> ParentHandleSet;
 // associated with it in the map will be returned, otherwise a new V8 value will
 // be created and added to the map. |did_create| indicates whether a new v8
 // value was created as a result of calling the function.
-bool GetOrCreateV8Value(v8::Handle<v8::Context> context,
+bool GetOrCreateV8Value(v8::Local<v8::Context> context,
                         const PP_Var& var,
                         V8VarConverter::AllowObjectVars object_vars_allowed,
-                        v8::Handle<v8::Value>* result,
+                        v8::Local<v8::Value>* result,
                         bool* did_create,
                         VarHandleMap* visited_ids,
                         ParentVarSet* parent_ids,
@@ -187,8 +187,8 @@ bool GetOrCreateV8Value(v8::Handle<v8::Context> context,
 // it will be returned, otherwise a new V8 value will be created and added to
 // the map. |did_create| indicates if a new PP_Var was created as a result of
 // calling the function.
-bool GetOrCreateVar(v8::Handle<v8::Value> val,
-                    v8::Handle<v8::Context> context,
+bool GetOrCreateVar(v8::Local<v8::Value> val,
+                    v8::Local<v8::Context> context,
                     PP_Instance instance,
                     V8VarConverter::AllowObjectVars object_vars_allowed,
                     PP_Var* result,
@@ -244,7 +244,7 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
           new HostArrayBufferVar(*web_array_buffer));
       *result = buffer_var->GetPPVar();
     } else if (object_vars_allowed == V8VarConverter::kAllowObjectVars) {
-      v8::Handle<v8::Object> object = val.As<v8::Object>();
+      v8::Local<v8::Object> object = val.As<v8::Object>();
       *result = content::HostGlobals::Get()->
           host_var_tracker()->V8ObjectVarForV8Object(instance, object);
     } else if (val->IsArray()) {
@@ -306,8 +306,8 @@ V8VarConverter::~V8VarConverter() {}
 // stack and erase it from the list of parents.
 // static
 bool V8VarConverter::ToV8Value(const PP_Var& var,
-                               v8::Handle<v8::Context> context,
-                               v8::Handle<v8::Value>* result) {
+                               v8::Local<v8::Context> context,
+                               v8::Local<v8::Value>* result) {
   v8::Context::Scope context_scope(context);
   v8::Isolate* isolate = context->GetIsolate();
   v8::EscapableHandleScope handle_scope(isolate);
@@ -322,7 +322,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
 
   while (!stack.empty()) {
     const PP_Var& current_var = stack.top().val;
-    v8::Handle<v8::Value> current_v8;
+    v8::Local<v8::Value> current_v8;
 
     if (stack.top().sentinel) {
       stack.pop();
@@ -359,11 +359,11 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
         return false;
       }
       DCHECK(current_v8->IsArray());
-      v8::Handle<v8::Array> v8_array = current_v8.As<v8::Array>();
+      v8::Local<v8::Array> v8_array = current_v8.As<v8::Array>();
 
       for (size_t i = 0; i < array_var->elements().size(); ++i) {
         const PP_Var& child_var = array_var->elements()[i].get();
-        v8::Handle<v8::Value> child_v8;
+        v8::Local<v8::Value> child_v8;
         if (!GetOrCreateV8Value(context,
                                 child_var,
                                 object_vars_allowed_,
@@ -391,7 +391,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
         return false;
       }
       DCHECK(current_v8->IsObject());
-      v8::Handle<v8::Object> v8_object = current_v8.As<v8::Object>();
+      v8::Local<v8::Object> v8_object = current_v8.As<v8::Object>();
 
       for (DictionaryVar::KeyValueMap::const_iterator iter =
                dict_var->key_value_map().begin();
@@ -399,7 +399,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
            ++iter) {
         const std::string& key = iter->first;
         const PP_Var& child_var = iter->second.get();
-        v8::Handle<v8::Value> child_v8;
+        v8::Local<v8::Value> child_v8;
         if (!GetOrCreateV8Value(context,
                                 child_var,
                                 object_vars_allowed_,
@@ -431,8 +431,8 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
 }
 
 V8VarConverter::VarResult V8VarConverter::FromV8Value(
-    v8::Handle<v8::Value> val,
-    v8::Handle<v8::Context> context,
+    v8::Local<v8::Value> val,
+    v8::Local<v8::Context> context,
     const base::Callback<void(const ScopedPPVar&, bool)>& callback) {
   VarResult result;
   result.success = FromV8ValueInternal(val, context, &result.var);
@@ -446,8 +446,8 @@ V8VarConverter::VarResult V8VarConverter::FromV8Value(
 }
 
 bool V8VarConverter::FromV8ValueSync(
-    v8::Handle<v8::Value> val,
-    v8::Handle<v8::Context> context,
+    v8::Local<v8::Value> val,
+    v8::Local<v8::Context> context,
     ppapi::ScopedPPVar* result_var) {
   bool success = FromV8ValueInternal(val, context, result_var);
   if (!success || resource_converter_->NeedsFlush()) {
@@ -458,8 +458,8 @@ bool V8VarConverter::FromV8ValueSync(
 }
 
 bool V8VarConverter::FromV8ValueInternal(
-    v8::Handle<v8::Value> val,
-    v8::Handle<v8::Context> context,
+    v8::Local<v8::Value> val,
+    v8::Local<v8::Context> context,
     ppapi::ScopedPPVar* result_var) {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope(context->GetIsolate());
@@ -467,14 +467,14 @@ bool V8VarConverter::FromV8ValueInternal(
   HandleVarMap visited_handles;
   ParentHandleSet parent_handles;
 
-  std::stack<StackEntry<v8::Handle<v8::Value> > > stack;
-  stack.push(StackEntry<v8::Handle<v8::Value> >(val));
+  std::stack<StackEntry<v8::Local<v8::Value> > > stack;
+  stack.push(StackEntry<v8::Local<v8::Value> >(val));
   ScopedPPVar root;
   *result_var = PP_MakeUndefined();
   bool is_root = true;
 
   while (!stack.empty()) {
-    v8::Handle<v8::Value> current_v8 = stack.top().val;
+    v8::Local<v8::Value> current_v8 = stack.top().val;
     PP_Var current_var;
 
     if (stack.top().sentinel) {
@@ -507,7 +507,7 @@ bool V8VarConverter::FromV8ValueInternal(
     // Add child nodes to the stack.
     if (current_var.type == PP_VARTYPE_ARRAY) {
       DCHECK(current_v8->IsArray());
-      v8::Handle<v8::Array> v8_array = current_v8.As<v8::Array>();
+      v8::Local<v8::Array> v8_array = current_v8.As<v8::Array>();
       parent_handles.insert(HashedHandle(v8_array));
 
       ArrayVar* array_var = ArrayVar::FromPPVar(current_var);
@@ -518,7 +518,7 @@ bool V8VarConverter::FromV8ValueInternal(
 
       for (uint32 i = 0; i < v8_array->Length(); ++i) {
         v8::TryCatch try_catch;
-        v8::Handle<v8::Value> child_v8 = v8_array->Get(i);
+        v8::Local<v8::Value> child_v8 = v8_array->Get(i);
         if (try_catch.HasCaught())
           return false;
 
@@ -544,7 +544,7 @@ bool V8VarConverter::FromV8ValueInternal(
       }
     } else if (current_var.type == PP_VARTYPE_DICTIONARY) {
       DCHECK(current_v8->IsObject());
-      v8::Handle<v8::Object> v8_object = current_v8.As<v8::Object>();
+      v8::Local<v8::Object> v8_object = current_v8.As<v8::Object>();
       parent_handles.insert(HashedHandle(v8_object));
 
       DictionaryVar* dict_var = DictionaryVar::FromPPVar(current_var);
@@ -553,9 +553,9 @@ bool V8VarConverter::FromV8ValueInternal(
         return false;
       }
 
-      v8::Handle<v8::Array> property_names(v8_object->GetOwnPropertyNames());
+      v8::Local<v8::Array> property_names(v8_object->GetOwnPropertyNames());
       for (uint32 i = 0; i < property_names->Length(); ++i) {
-        v8::Handle<v8::Value> key(property_names->Get(i));
+        v8::Local<v8::Value> key(property_names->Get(i));
 
         // Extend this test to cover more types as necessary and if sensible.
         if (!key->IsString() && !key->IsNumber()) {
@@ -565,7 +565,7 @@ bool V8VarConverter::FromV8ValueInternal(
           return false;
         }
 
-        v8::Handle<v8::String> key_string =
+        v8::Local<v8::String> key_string =
             key->ToString(context->GetIsolate());
         // Skip all callbacks: crbug.com/139933
         if (v8_object->HasRealNamedCallbackProperty(key_string))
@@ -574,7 +574,7 @@ bool V8VarConverter::FromV8ValueInternal(
         v8::String::Utf8Value name_utf8(key_string);
 
         v8::TryCatch try_catch;
-        v8::Handle<v8::Value> child_v8 = v8_object->Get(key);
+        v8::Local<v8::Value> child_v8 = v8_object->Get(key);
         if (try_catch.HasCaught())
           return false;
 

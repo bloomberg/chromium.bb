@@ -597,7 +597,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
 
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::GetChildAtIndex(unsigned index) {
+v8::Local<v8::Object> WebAXObjectProxy::GetChildAtIndex(unsigned index) {
   return factory_->GetOrCreate(accessibility_object_.childAt(index));
 }
 
@@ -615,13 +615,13 @@ void WebAXObjectProxy::NotificationReceived(
   if (notification_callback_.IsEmpty())
     return;
 
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
 
-  v8::Handle<v8::Value> argv[] = {
+  v8::Local<v8::Value> argv[] = {
     v8::String::NewFromUtf8(isolate, notification_name.data(),
                             v8::String::kNormalString,
                             notification_name.size()),
@@ -886,7 +886,7 @@ bool WebAXObjectProxy::IsButtonStateMixed() {
   return accessibility_object_.isButtonStateMixed();
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(
+v8::Local<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(
                                                                 unsigned index)
 {
   accessibility_object_.updateLayoutAndCheckValidity();
@@ -894,12 +894,12 @@ v8::Handle<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(
   accessibility_object_.ariaControls(elements);
   size_t elementCount = elements.size();
   if (index >= elementCount)
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(elements[index]);
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::AriaFlowToElementAtIndex(
+v8::Local<v8::Object> WebAXObjectProxy::AriaFlowToElementAtIndex(
                                                                 unsigned index)
 {
   accessibility_object_.updateLayoutAndCheckValidity();
@@ -907,19 +907,19 @@ v8::Handle<v8::Object> WebAXObjectProxy::AriaFlowToElementAtIndex(
   accessibility_object_.ariaFlowTo(elements);
   size_t elementCount = elements.size();
   if (index >= elementCount)
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(elements[index]);
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::AriaOwnsElementAtIndex(unsigned index)
+v8::Local<v8::Object> WebAXObjectProxy::AriaOwnsElementAtIndex(unsigned index)
 {
   accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebVector<blink::WebAXObject> elements;
   accessibility_object_.ariaOwns(elements);
   size_t elementCount = elements.size();
   if (index >= elementCount)
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(elements[index]);
 }
@@ -976,48 +976,48 @@ std::string WebAXObjectProxy::BoundsForRange(int start, int end) {
                             bounds.x, bounds.y, bounds.width, bounds.height);
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::ChildAtIndex(int index) {
+v8::Local<v8::Object> WebAXObjectProxy::ChildAtIndex(int index) {
   accessibility_object_.updateLayoutAndCheckValidity();
   return GetChildAtIndex(index);
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::ElementAtPoint(int x, int y) {
+v8::Local<v8::Object> WebAXObjectProxy::ElementAtPoint(int x, int y) {
   accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebPoint point(x, y);
   blink::WebAXObject obj = accessibility_object_.hitTest(point);
   if (obj.isNull())
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(obj);
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::TableHeader() {
+v8::Local<v8::Object> WebAXObjectProxy::TableHeader() {
   accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebAXObject obj = accessibility_object_.headerContainerObject();
   if (obj.isNull())
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(obj);
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::RowHeaderAtIndex(unsigned index) {
+v8::Local<v8::Object> WebAXObjectProxy::RowHeaderAtIndex(unsigned index) {
   accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebVector<blink::WebAXObject> headers;
   accessibility_object_.rowHeaders(headers);
   size_t headerCount = headers.size();
   if (index >= headerCount)
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(headers[index]);
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::ColumnHeaderAtIndex(unsigned index) {
+v8::Local<v8::Object> WebAXObjectProxy::ColumnHeaderAtIndex(unsigned index) {
   accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebVector<blink::WebAXObject> headers;
   accessibility_object_.columnHeaders(headers);
   size_t headerCount = headers.size();
   if (index >= headerCount)
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(headers[index]);
 }
@@ -1036,22 +1036,22 @@ std::string WebAXObjectProxy::ColumnIndexRange() {
   return base::StringPrintf("{%d, %d}", column_index, column_span);
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::CellForColumnAndRow(
+v8::Local<v8::Object> WebAXObjectProxy::CellForColumnAndRow(
     int column, int row) {
   accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebAXObject obj =
       accessibility_object_.cellForColumnAndRow(column, row);
   if (obj.isNull())
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(obj);
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::DeprecatedTitleUIElement() {
+v8::Local<v8::Object> WebAXObjectProxy::DeprecatedTitleUIElement() {
   accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebAXObject obj = accessibility_object_.deprecatedTitleUIElement();
   if (obj.isNull())
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return factory_->GetOrCreate(obj);
 }
@@ -1086,7 +1086,7 @@ bool WebAXObjectProxy::IsDecrementActionSupported() {
   return accessibility_object_.canDecrement();
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::ParentElement() {
+v8::Local<v8::Object> WebAXObjectProxy::ParentElement() {
   accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebAXObject parent_object = accessibility_object_.parentObject();
   while (parent_object.accessibilityIsIgnored())
@@ -1112,7 +1112,7 @@ void WebAXObjectProxy::Press() {
   accessibility_object_.press();
 }
 
-bool WebAXObjectProxy::IsEqual(v8::Handle<v8::Object> proxy) {
+bool WebAXObjectProxy::IsEqual(v8::Local<v8::Object> proxy) {
   WebAXObjectProxy* unwrapped_proxy = NULL;
   if (!gin::ConvertFromV8(blink::mainThreadIsolate(), proxy, &unwrapped_proxy))
     return false;
@@ -1120,7 +1120,7 @@ bool WebAXObjectProxy::IsEqual(v8::Handle<v8::Object> proxy) {
 }
 
 void WebAXObjectProxy::SetNotificationListener(
-    v8::Handle<v8::Function> callback) {
+    v8::Local<v8::Function> callback) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   notification_callback_.Reset(isolate, callback);
 }
@@ -1207,13 +1207,13 @@ int WebAXObjectProxy::NameElementCount() {
   return static_cast<int>(nameObjects.size());
 }
 
-v8::Handle<v8::Object> WebAXObjectProxy::NameElementAtIndex(unsigned index) {
+v8::Local<v8::Object> WebAXObjectProxy::NameElementAtIndex(unsigned index) {
   accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebAXNameFrom nameFrom;
   blink::WebVector<blink::WebAXObject> nameObjects;
   accessibility_object_.name(nameFrom, nameObjects);
   if (index >= nameObjects.size())
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
   return factory_->GetOrCreate(nameObjects[index]);
 }
 
@@ -1222,9 +1222,9 @@ RootWebAXObjectProxy::RootWebAXObjectProxy(
     : WebAXObjectProxy(object, factory) {
 }
 
-v8::Handle<v8::Object> RootWebAXObjectProxy::GetChildAtIndex(unsigned index) {
+v8::Local<v8::Object> RootWebAXObjectProxy::GetChildAtIndex(unsigned index) {
   if (index)
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   return factory()->GetOrCreate(accessibility_object());
 }
@@ -1256,10 +1256,10 @@ void WebAXObjectProxyList::Clear() {
   elements_.Clear();
 }
 
-v8::Handle<v8::Object> WebAXObjectProxyList::GetOrCreate(
+v8::Local<v8::Object> WebAXObjectProxyList::GetOrCreate(
     const blink::WebAXObject& object) {
   if (object.isNull())
-    return v8::Handle<v8::Object>();
+    return v8::Local<v8::Object>();
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
 
@@ -1274,11 +1274,11 @@ v8::Handle<v8::Object> WebAXObjectProxyList::GetOrCreate(
       return elements_.Get(i);
   }
 
-  v8::Handle<v8::Value> value_handle = gin::CreateHandle(
+  v8::Local<v8::Value> value_handle = gin::CreateHandle(
       isolate, new WebAXObjectProxy(object, this)).ToV8();
   if (value_handle.IsEmpty())
-    return v8::Handle<v8::Object>();
-  v8::Handle<v8::Object> handle = value_handle->ToObject(isolate);
+    return v8::Local<v8::Object>();
+  v8::Local<v8::Object> handle = value_handle->ToObject(isolate);
   elements_.Append(handle);
   return handle;
 }

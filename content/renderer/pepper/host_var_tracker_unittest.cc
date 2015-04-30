@@ -30,7 +30,7 @@ class MyObject : public gin::Wrappable<MyObject> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  static v8::Handle<v8::Value> Create(v8::Isolate* isolate) {
+  static v8::Local<v8::Value> Create(v8::Isolate* isolate) {
     return gin::CreateHandle(isolate, new MyObject()).ToV8();
   }
 
@@ -53,7 +53,7 @@ class PepperTryCatchForTest : public PepperTryCatch {
 
   void SetException(const char* message) override { NOTREACHED(); }
   bool HasException() override { return false; }
-  v8::Handle<v8::Context> GetContext() override {
+  v8::Local<v8::Context> GetContext() override {
     return instance_->GetIsolate()->GetCurrentContext();
   }
 
@@ -112,7 +112,7 @@ TEST_F(HostVarTrackerTest, ReuseVar) {
       instance()->pp_instance(), V8VarConverter::kAllowObjectVars);
   PepperTryCatchForTest try_catch(instance(), &converter);
 
-  v8::Handle<v8::Value> v8_object = MyObject::Create(v8::Isolate::GetCurrent());
+  v8::Local<v8::Value> v8_object = MyObject::Create(v8::Isolate::GetCurrent());
   ppapi::ScopedPPVar pp_object1 = try_catch.FromV8(v8_object);
   ppapi::ScopedPPVar pp_object2 = try_catch.FromV8(v8_object);
 

@@ -25,7 +25,7 @@ void DomAutomationController::Install(RenderFrame* render_frame,
                                       blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
@@ -36,7 +36,7 @@ void DomAutomationController::Install(RenderFrame* render_frame,
   if (controller.IsEmpty())
     return;
 
-  v8::Handle<v8::Object> global = context->Global();
+  v8::Local<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "domAutomationController"),
               controller.ToV8());
 }
