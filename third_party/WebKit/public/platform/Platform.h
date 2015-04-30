@@ -58,6 +58,11 @@
 
 class GrContext;
 
+// TODO(hiroshige): This #define is introduced to commit CLs that require
+// Chromium-Blink interface changes, and should be removed after the CLs are
+// landed. https://crbug.com/478149
+#define WEB_CONVERTABLE_TO_TRACE_FORMAT_IS_MOVED
+
 namespace blink {
 
 class WebAudioBus;
@@ -510,6 +515,10 @@ public:
     // - convertableValues is the array of WebConvertableToTraceFormat classes
     //   that may be converted to trace format by calling asTraceFormat method.
     //   ConvertableToTraceFormat interface.
+    //   convertableValues can be moved to another object by
+    //   WebConvertableToTraceFormat::moveFrom() in addTraceEvent(), and thus
+    //   should not be dereferenced (e.g. asTraceFormat() should not be called)
+    //   after return from addTraceEvent().
     // - thresholdBeginId optionally specifies the value returned by a previous
     //   call to addTraceEvent with a BEGIN phase.
     // - threshold is used on an END phase event in conjunction with the
@@ -534,7 +543,7 @@ public:
         const char** argNames,
         const unsigned char* argTypes,
         const unsigned long long* argValues,
-        const WebConvertableToTraceFormat* convertableValues,
+        WebConvertableToTraceFormat* convertableValues,
         unsigned char flags)
     {
         return 0;

@@ -72,7 +72,8 @@ public:
         const char* argNames[],
         const unsigned char argTypes[],
         const unsigned long long argValues[],
-        TraceEvent::ConvertableToTraceFormat*[],
+        PassRefPtr<TraceEvent::ConvertableToTraceFormat>,
+        PassRefPtr<TraceEvent::ConvertableToTraceFormat>,
         unsigned char flags);
     static TraceEvent::TraceEventHandle addTraceEvent(char phase,
         const unsigned char* categoryEnabledFlag,

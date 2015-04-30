@@ -80,6 +80,13 @@ public:
         m_ptr = val;
     }
 
+    void moveFrom(PtrStorageImpl& other)
+    {
+        release();
+        m_ptr = other.m_ptr;
+        other.m_ptr = 0;
+    }
+
     T* get() const { return m_ptr; }
 
     void release()
@@ -112,6 +119,13 @@ public:
     template<typename U> void assign(const RawPtr<U>& val) { assign(RawPtr<T>(val)); }
 
     void assign(const PtrStorageImpl& other) { assign(other.get()); }
+
+    void moveFrom(PtrStorageImpl& other)
+    {
+        release();
+        m_handle = other.m_handle;
+        other.m_handle = 0;
+    }
 
     T* get() const { return m_handle ? m_handle->get() : 0; }
 
@@ -221,6 +235,12 @@ public:
     {
         storage().assign(other.storage());
         return *this;
+    }
+
+    void moveFrom(WebPrivatePtr<T>& other)
+    {
+        storage().moveFrom(other.storage());
+        return;
     }
 
     template<typename U>

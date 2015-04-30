@@ -18,12 +18,13 @@ class WebConvertableToTraceFormat {
 public:
     WebConvertableToTraceFormat() { }
 #if INSIDE_BLINK
-    WebConvertableToTraceFormat(TraceEvent::ConvertableToTraceFormat*);
+    WebConvertableToTraceFormat(PassRefPtr<TraceEvent::ConvertableToTraceFormat>);
 #endif
     ~WebConvertableToTraceFormat() { reset(); }
 
     BLINK_PLATFORM_EXPORT WebString asTraceFormat() const;
     BLINK_PLATFORM_EXPORT void assign(const WebConvertableToTraceFormat&);
+    BLINK_PLATFORM_EXPORT void moveFrom(WebConvertableToTraceFormat&);
     BLINK_PLATFORM_EXPORT void reset();
 
     WebConvertableToTraceFormat(const WebConvertableToTraceFormat& r) { assign(r); }

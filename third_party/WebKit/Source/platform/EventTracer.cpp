@@ -79,18 +79,13 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
     const char* name, unsigned long long id, double timestamp,
     int numArgs, const char* argNames[], const unsigned char argTypes[],
     const unsigned long long argValues[],
-    TraceEvent::ConvertableToTraceFormat* convertableValues[],
+    PassRefPtr<TraceEvent::ConvertableToTraceFormat> convertableValue1,
+    PassRefPtr<TraceEvent::ConvertableToTraceFormat> convertableValue2,
     unsigned char flags)
 {
     WebConvertableToTraceFormat webConvertableValues[2];
-    if (numArgs <= static_cast<int>(WTF_ARRAY_LENGTH(webConvertableValues))) {
-        for (int i = 0; i < numArgs; ++i) {
-            if (convertableValues[i])
-                webConvertableValues[i] = WebConvertableToTraceFormat(convertableValues[i]);
-        }
-    } else {
-        ASSERT_NOT_REACHED();
-    }
+    webConvertableValues[0] = WebConvertableToTraceFormat(convertableValue1);
+    webConvertableValues[1] = WebConvertableToTraceFormat(convertableValue2);
     return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, timestamp, numArgs, argNames, argTypes, argValues, webConvertableValues, flags);
 }
 

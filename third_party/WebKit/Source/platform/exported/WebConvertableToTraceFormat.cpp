@@ -10,7 +10,7 @@
 
 namespace blink {
 
-WebConvertableToTraceFormat::WebConvertableToTraceFormat(TraceEvent::ConvertableToTraceFormat* convertable)
+WebConvertableToTraceFormat::WebConvertableToTraceFormat(PassRefPtr<TraceEvent::ConvertableToTraceFormat> convertable)
     : m_private(convertable)
 {
 }
@@ -23,6 +23,11 @@ WebString WebConvertableToTraceFormat::asTraceFormat() const
 void WebConvertableToTraceFormat::assign(const WebConvertableToTraceFormat& r)
 {
     m_private = r.m_private;
+}
+
+void WebConvertableToTraceFormat::moveFrom(WebConvertableToTraceFormat& r)
+{
+    m_private.moveFrom(r.m_private);
 }
 
 void WebConvertableToTraceFormat::reset()
