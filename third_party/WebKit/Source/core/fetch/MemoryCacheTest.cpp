@@ -90,7 +90,7 @@ protected:
         replaceMemoryCacheForTesting(m_globalMemoryCache.release());
     }
 
-    OwnPtrWillBePersistent<MemoryCache> m_globalMemoryCache;
+    Persistent<MemoryCache> m_globalMemoryCache;
 };
 
 // Verifies that setters and getters for cache capacities work correcty.
