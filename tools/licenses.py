@@ -191,7 +191,7 @@ SPECIAL_CASES = {
         "URL": "http://webkit.org/",
         "License": "BSD and GPL v2",
         # Absolute path here is resolved as relative to the source root.
-        "License File": "/webkit/LICENSE",
+        "License File": "/third_party/WebKit/LICENSE_FOR_ABOUT_CREDITS",
     },
     os.path.join('third_party', 'webpagereplay'): {
         "Name": "webpagereplay",
