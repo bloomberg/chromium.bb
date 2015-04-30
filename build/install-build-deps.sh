@@ -73,11 +73,11 @@ if ! which lsb_release > /dev/null; then
 fi
 
 lsb_release=$(lsb_release --codename --short)
-ubuntu_codenames="(precise|trusty|utopic)"
+ubuntu_codenames="(precise|trusty|utopic|vivid)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if [[ ! $lsb_release =~ $ubuntu_codenames ]]; then
-    echo "ERROR: Only Ubuntu 12.04 (precise), 14.04 (trusty) and " \
-        "14.10 (utopic) are currently supported" >&2
+    echo "ERROR: Only Ubuntu 12.04 (precise), 14.04 (trusty), " \
+      "14.10 (utopic) and 15.04 (vivid) are currently supported" >&2
     exit 1
   fi
 
