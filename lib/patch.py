@@ -1324,13 +1324,18 @@ class LocalPatch(GitRepoPatch):
       ref_to_upload = self.sha1
 
     cmd = ['push']
+
+    # This matches repo's project.py:Project.UploadForReview logic.
     if reviewers or cc:
-      pack = '--receive-pack=git receive-pack '
-      if reviewers:
-        pack += ' '.join(['--reviewer=' + x for x in reviewers])
-      if cc:
-        pack += ' '.join(['--cc=' + x for x in cc])
-      cmd.append(pack)
+      if push_url.startswith('ssh://'):
+        rp = (['gerrit receive-pack'] +
+              ['--reviewer=%s' % x for x in reviewers] +
+              ['--cc=%s' % x for x in cc])
+        cmd.append('--receive-pack=%s' % ' '.join(rp))
+      else:
+        rp = ['r=%s' % x for x in reviewers] + ['cc=%s' % x for x in cc]
+        remote_ref += '%' + ','.join(rp)
+
     cmd += [push_url, '%s:%s' % (ref_to_upload, remote_ref)]
     if dryrun:
       cmd.append('--dry-run')
