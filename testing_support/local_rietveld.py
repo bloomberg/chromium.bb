@@ -58,6 +58,8 @@ class LocalRietveld(object):
     # TODO(maruel): This should be in /tmp but that would mean having to fetch
     # everytime. This test is already annoyingly slow.
     self.rietveld = os.path.join(self.base_dir, '_rietveld')
+    self.rietveld_app = os.path.join(
+        self.rietveld, 'appengine', 'chromium_rietveld')
     self.test_server = None
     self.port = None
     self.tempdir = None
@@ -81,25 +83,40 @@ class LocalRietveld(object):
 
     if os.path.isdir(os.path.join(self.rietveld, '.svn')):
       # Left over from subversion. Delete it.
+      print('Deleting deprecated subversion rietveld files...')
+      shutil.rmtree(self.rietveld)
+
+    if os.path.isdir(os.path.join(self.rietveld, '.hg')):
+      # Left over from mercurial. Delete it.
+      print('Deleting deprecated mercurial rietveld files...')
       shutil.rmtree(self.rietveld)
 
     # Second, checkout rietveld if not available.
-    rev = '9349cab9a3bb'
     if not os.path.isdir(self.rietveld):
       print('Checking out rietveld...')
       try:
+        subprocess2.check_call(['git', 'init', self.rietveld])
         subprocess2.check_call(
-            [ 'hg', 'clone', '-q', '-u', rev, '-r', rev,
-              'https://code.google.com/p/rietveld/', self.rietveld])
+            ['git', 'remote', 'add', '-f', 'origin',
+             'https://chromium.googlesource.com/infra/infra.git'],
+            cwd=self.rietveld)
+        subprocess2.check_call(
+            ['git', 'config', 'core.sparseCheckout', 'true'],
+            cwd=self.rietveld)
+        with file(os.path.join(self.rietveld, '.git/info/sparse-checkout'),
+                  'w') as sparse_file:
+          sparse_file.write('appengine/chromium_rietveld')
+        subprocess2.check_call(
+            ['git', 'pull', 'origin', 'master'],
+            cwd=self.rietveld)
       except (OSError, subprocess2.CalledProcessError), e:
-        raise Failure(
-            'Failed to checkout rietveld. Do you have mercurial installed?\n'
-            '%s' % e)
+        raise Failure('Failed to clone rietveld. \n%s' % e)
     else:
       print('Syncing rietveld...')
       try:
         subprocess2.check_call(
-            ['hg', 'co', '-q', '-C', rev], cwd=self.rietveld)
+            ['git', 'pull', 'origin', 'master'],
+            cwd=self.rietveld)
       except (OSError, subprocess2.CalledProcessError), e:
         raise Failure('Failed to sync rietveld\n%s' % e)
 
@@ -117,7 +134,7 @@ class LocalRietveld(object):
     cmd = [
         sys.executable,
         self.dev_app,
-        '.',
+        './app.yaml',  # Explicitly specify file to avoid bringing up backends.
         '--port', str(self.port),
         '--admin_port', str(admin_port),
         '--storage', self.tempdir,
@@ -133,7 +150,7 @@ class LocalRietveld(object):
       cmd.extend(('-a', '0.0.0.0'))
     logging.info(' '.join(cmd))
     self.test_server = subprocess2.Popen(
-        cmd, stdout=stdout, stderr=stderr, cwd=self.rietveld)
+        cmd, stdout=stdout, stderr=stderr, cwd=self.rietveld_app)
     # Loop until port 127.0.0.1:port opens or the process dies.
     while not test_port(self.port):
       self.test_server.poll()
