@@ -183,10 +183,13 @@ static bool isListElement(Node* node)
     return isHTMLUListElement(*node) || isHTMLOListElement(*node) || isHTMLDListElement(*node);
 }
 
-static bool isPresentationRoleInTable(AXObject* parent, Node* child)
+static bool isPresentationalInTable(AXObject* parent, HTMLElement* currentElement)
 {
+    if (!currentElement)
+        return false;
+
     Node* parentNode = parent->node();
-    if (!parentNode || !parentNode->isElementNode())
+    if (!parentNode || !parentNode->isHTMLElement())
         return false;
 
     // AXTable determines the role as checking isTableXXX.
@@ -196,10 +199,10 @@ static bool isPresentationRoleInTable(AXObject* parent, Node* child)
     // cell(its role)-> tr(tr role)-> tfoot, tbody, thead(ignored role) -> table(table role).
     // If table has presentation role, it will be like
     // cell(group)-> tr(unknown) -> tfoot, tbody, thead(ignored) -> table(presentation).
-    if (child && isHTMLTableCellElement(*child) && isHTMLTableRowElement(*parentNode))
+    if (isHTMLTableCellElement(*currentElement) && isHTMLTableRowElement(*parentNode))
         return parent->hasInheritedPresentationalRole();
 
-    if (isHTMLTableRowElement(child) && isHTMLTableSectionElement(*parentNode)) {
+    if (isHTMLTableRowElement(*currentElement) && isHTMLTableSectionElement(toHTMLElement(*parentNode))) {
         // Because TableSections have ignored role, presentation should be checked with its parent node
         AXObject* tableObject = parent->parentObject();
         Node* tableNode = tableObject ? tableObject->node() : 0;
@@ -208,23 +211,25 @@ static bool isPresentationRoleInTable(AXObject* parent, Node* child)
     return false;
 }
 
-static bool isRequiredOwnedElement(AXObject* parent, AccessibilityRole childRole, Node* childNode)
+static bool isRequiredOwnedElement(AXObject* parent, AccessibilityRole currentRole, HTMLElement* currentElement)
 {
     Node* parentNode = parent->node();
-    if (!parentNode || !parentNode->isElementNode())
+    if (!parentNode || !parentNode->isHTMLElement())
         return false;
 
-    if (childRole == ListItemRole)
+    if (currentRole == ListItemRole)
         return isListElement(parentNode);
-    if (childRole == ListMarkerRole)
+    if (currentRole == ListMarkerRole)
         return isHTMLLIElement(*parentNode);
-    if (childRole == MenuItemCheckBoxRole || childRole ==  MenuItemRole || childRole ==  MenuItemRadioRole)
+    if (currentRole == MenuItemCheckBoxRole || currentRole ==  MenuItemRole || currentRole ==  MenuItemRadioRole)
         return isHTMLMenuElement(*parentNode);
 
-    if (childNode && isHTMLTableCellElement(*childNode))
+    if (!currentElement)
+        return false;
+    if (isHTMLTableCellElement(*currentElement))
         return isHTMLTableRowElement(*parentNode);
-    if (isHTMLTableRowElement(childNode))
-        return isHTMLTableSectionElement(*parentNode);
+    if (isHTMLTableRowElement(*currentElement))
+        return isHTMLTableSectionElement(toHTMLElement(*parentNode));
 
     // In case of ListboxRole and it's child, ListBoxOptionRole,
     // Inheritance of presentation role is handled in AXListBoxOption
@@ -253,14 +258,15 @@ const AXObject* AXNodeObject::inheritsPresentationalRoleFrom() const
     if (!parent)
         return 0;
 
-    Node* curNode = node();
+    HTMLElement* element = nullptr;
+    if (node() && node()->isHTMLElement())
+        element = toHTMLElement(node());
     if (!parent->hasInheritedPresentationalRole()
-        && !isPresentationRoleInTable(parent, curNode))
+        && !isPresentationalInTable(parent, element))
         return 0;
-
     // ARIA spec says that when a parent object is presentational and this object
     // is a required owned element of that parent, then this object is also presentational.
-    if (isRequiredOwnedElement(parent, roleValue(), curNode))
+    if (isRequiredOwnedElement(parent, roleValue(), element))
         return parent;
     return 0;
 }
