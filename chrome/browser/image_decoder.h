@@ -117,7 +117,12 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   // |kBatchModeTimeoutSeconds|.
   void StopBatchMode();
 
+  // Fails all outstanding requests.
+  void FailAllRequests();
+
   // Overidden from UtilityProcessHostClient.
+  void OnProcessCrashed(int exit_code) override;
+  void OnProcessLaunchFailed() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC message handlers.

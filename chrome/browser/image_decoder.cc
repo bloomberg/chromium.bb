@@ -176,6 +176,37 @@ void ImageDecoder::StopBatchMode() {
     utility_process_host_->EndBatchMode();
     utility_process_host_.reset();
   }
+
+  // There could be outstanding request that are taking too long. Fail these so
+  // that there aren't any dangling requests.
+  FailAllRequests();
+}
+
+void ImageDecoder::FailAllRequests() {
+  RequestMap requests;
+  {
+    base::AutoLock lock(map_lock_);
+    requests = image_request_id_map_;
+  }
+
+  // Since |OnProcessCrashed| and |OnProcessLaunchFailed| are run asynchronously
+  // from the actual event, it's possible for a new utility process to have been
+  // created and sent requests by the time these functions are run. This results
+  // in failing requests that are unaffected by the crash. Although not ideal,
+  // this is valid and simpler than tracking which request is sent to which
+  // utility process, and whether the request has been sent at all.
+  for (const auto& request : requests)
+    OnDecodeImageFailed(request.first);
+}
+
+void ImageDecoder::OnProcessCrashed(int exit_code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  FailAllRequests();
+}
+
+void ImageDecoder::OnProcessLaunchFailed() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  FailAllRequests();
 }
 
 bool ImageDecoder::OnMessageReceived(
