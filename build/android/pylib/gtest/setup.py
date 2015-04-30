@@ -37,6 +37,7 @@ ISOLATE_FILE_PATHS = {
     'content_unittests': 'content/content_unittests.isolate',
     'media_perftests': 'media/media_perftests.isolate',
     'media_unittests': 'media/media_unittests.isolate',
+    'midi_unittests': 'media/midi/midi_unittests.isolate',
     'net_unittests': 'net/net_unittests.isolate',
     'sql_unittests': 'sql/sql_unittests.isolate',
     'sync_unit_tests': 'sync/sync_unit_tests.isolate',

@@ -497,6 +497,7 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
         "//media:shared_memory_support",
         "//media/audio:test_support",
         "//media/base:test_support",
+        "//media/midi:midi",
         "//storage/browser",
         "//storage/common",
         "//third_party/WebKit/public:blink",

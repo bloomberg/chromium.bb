@@ -32,9 +32,6 @@ config("media_config") {
   if (use_cras) {
     defines += [ "USE_CRAS" ]
   }
-  if (use_alsa) {
-    defines += [ "USE_ALSA" ]
-  }
 }
 
 config("media_implementation") {
@@ -178,30 +175,6 @@ component("media") {
     "formats/webm/webm_video_client.h",
     "formats/webm/webm_webvtt_parser.cc",
     "formats/webm/webm_webvtt_parser.h",
-    "midi/midi_manager.cc",
-    "midi/midi_manager.h",
-    "midi/midi_manager_mac.cc",
-    "midi/midi_manager_mac.h",
-    "midi/midi_manager_usb.cc",
-    "midi/midi_manager_usb.h",
-    "midi/midi_manager_win.cc",
-    "midi/midi_manager_win.h",
-    "midi/midi_message_queue.cc",
-    "midi/midi_message_queue.h",
-    "midi/midi_message_util.cc",
-    "midi/midi_message_util.h",
-    "midi/midi_port_info.cc",
-    "midi/midi_port_info.h",
-    "midi/midi_scheduler.cc",
-    "midi/midi_scheduler.h",
-    "midi/usb_midi_descriptor_parser.cc",
-    "midi/usb_midi_descriptor_parser.h",
-    "midi/usb_midi_device.h",
-    "midi/usb_midi_input_stream.cc",
-    "midi/usb_midi_input_stream.h",
-    "midi/usb_midi_jack.h",
-    "midi/usb_midi_output_stream.cc",
-    "midi/usb_midi_output_stream.h",
     "renderers/audio_renderer_impl.cc",
     "renderers/audio_renderer_impl.h",
     "renderers/gpu_video_accelerator_factories.h",
@@ -337,11 +310,6 @@ component("media") {
 
   if (is_android) {
     sources += [
-      "midi/midi_manager_android.cc",
-      "midi/usb_midi_device_android.cc",
-      "midi/usb_midi_device_android.h",
-      "midi/usb_midi_device_factory_android.cc",
-      "midi/usb_midi_device_factory_android.h",
       "video/capture/android/video_capture_device_android.cc",
       "video/capture/android/video_capture_device_android.h",
       "video/capture/android/video_capture_device_factory_android.cc",
@@ -370,15 +338,6 @@ component("media") {
     ]
   }
 
-  if (use_alsa && use_udev) {
-    libs += [ "asound" ]
-    sources += [
-      "midi/midi_manager_alsa.cc",
-      "midi/midi_manager_alsa.h",
-    ]
-    deps += [ "//device/udev_linux" ]
-  }
-
   # A simple WebM encoder for animated avatars on ChromeOS.
 
   if (use_ozone) {
@@ -402,7 +361,6 @@ component("media") {
       "//third_party/decklink",
     ]
     libs += [
-      "CoreMIDI.framework",
       "CoreVideo.framework",
       "OpenGL.framework",
       "QTKit.framework",
@@ -421,8 +379,6 @@ component("media") {
   }
 
   if (is_win) {
-    deps += [ "//device/usb" ]
-
     libs += [
       "mf.lib",
       "mfplat.lib",
@@ -575,13 +531,6 @@ test("media_unittests") {
     "formats/webm/webm_parser_unittest.cc",
     "formats/webm/webm_tracks_parser_unittest.cc",
     "formats/webm/webm_webvtt_parser_unittest.cc",
-    "midi/midi_manager_unittest.cc",
-    "midi/midi_manager_usb_unittest.cc",
-    "midi/midi_message_queue_unittest.cc",
-    "midi/midi_message_util_unittest.cc",
-    "midi/usb_midi_descriptor_parser_unittest.cc",
-    "midi/usb_midi_input_stream_unittest.cc",
-    "midi/usb_midi_output_stream_unittest.cc",
     "renderers/audio_renderer_impl_unittest.cc",
     "renderers/renderer_impl_unittest.cc",
     "renderers/video_renderer_impl_unittest.cc",
@@ -669,18 +618,8 @@ test("media_unittests") {
   }
 
   if (is_mac) {
-    sources += [
-      "midi/midi_manager_mac_unittest.cc",
-      "video/capture/mac/video_capture_device_factory_mac_unittest.mm",
-    ]
-    libs = [
-      # Required by midi_manager_mac_unittest.cc.
-      "CoreMIDI.framework",
-    ]
-  }
-
-  if (use_alsa && use_udev) {
-    sources += [ "midi/midi_manager_alsa_unittest.cc" ]
+    sources +=
+        [ "video/capture/mac/video_capture_device_factory_mac_unittest.mm" ]
   }
 
   #      include_dirs += [

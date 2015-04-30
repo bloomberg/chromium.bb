@@ -135,6 +135,9 @@
         "test": "message_center_unittests"
       },
       {
+        "test": "midi_unittests"
+      },
+      {
         "test": "nacl_loader_unittests"
       },
       {
@@ -308,6 +311,9 @@
       },
       {
         "test": "message_center_unittests"
+      },
+      {
+        "test": "midi_unittests"
       },
       {
         "test": "nacl_loader_unittests"

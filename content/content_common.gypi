@@ -594,6 +594,7 @@
         '../ipc/mojo/ipc_mojo.gyp:ipc_mojo',
         '../media/media.gyp:media',
         '../media/media.gyp:shared_memory_support',
+        '../media/midi/midi.gyp:midi',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../storage/storage_common.gyp:storage_common',
         '../third_party/WebKit/public/blink.gyp:blink',

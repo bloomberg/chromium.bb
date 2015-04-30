@@ -101,7 +101,7 @@ ScopedMIDIHDR CreateMIDIHDR(size_t size) {
   ScopedMIDIHDR header(new MIDIHDR);
   ZeroMemory(header.get(), sizeof(*header));
   header->lpData = new char[size];
-  header->dwBufferLength = size;
+  header->dwBufferLength = static_cast<DWORD>(size);
   return header.Pass();
 }
 
@@ -619,7 +619,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
       base::AutoLock auto_lock(input_ports_lock_);
       const auto it = unused_input_ports_.find(state_device_info);
       if (it == unused_input_ports_.end()) {
-        port_number = input_ports_.size();
+        port_number = static_cast<uint32>(input_ports_.size());
         add_new_port = true;
         input_ports_.push_back(nullptr);
         input_ports_ages_.push_back(0);
@@ -800,7 +800,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
       base::AutoLock auto_lock(output_ports_lock_);
       const auto it = unused_output_ports_.find(state_device_info);
       if (it == unused_output_ports_.end()) {
-        port_number = output_ports_.size();
+        port_number = static_cast<uint32>(output_ports_.size());
         add_new_port = true;
         output_ports_.push_back(nullptr);
         output_ports_ages_.push_back(0);

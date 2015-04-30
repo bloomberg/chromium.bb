@@ -98,7 +98,7 @@ bool UsbMidiOutputStream::PushSysExMessage(const std::vector<uint8>& data,
     message[message_size] = byte;
     ++message_size;
     if (byte == kEndOfSysExByte) {
-      uint8 code_index = message_size + 0x4;
+      uint8 code_index = static_cast<uint8>(message_size) + 0x4;
       DCHECK(code_index == 0x5 || code_index == 0x6 || code_index == 0x7);
       data_to_send->push_back((jack_.cable_number << 4) | code_index);
       data_to_send->insert(data_to_send->end(),

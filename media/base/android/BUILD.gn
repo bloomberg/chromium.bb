@@ -87,8 +87,6 @@ generate_jni("media_jni_headers") {
     "java/src/org/chromium/media/MediaDrmBridge.java",
     "java/src/org/chromium/media/MediaPlayerBridge.java",
     "java/src/org/chromium/media/MediaPlayerListener.java",
-    "java/src/org/chromium/media/UsbMidiDeviceAndroid.java",
-    "java/src/org/chromium/media/UsbMidiDeviceFactoryAndroid.java",
     "java/src/org/chromium/media/WebAudioMediaCodecBridge.java",
   ]
   jni_package = "media"

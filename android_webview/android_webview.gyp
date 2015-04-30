@@ -181,6 +181,7 @@
         '../gpu/gpu.gyp:gles2_implementation',
         '../gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings',
         '../media/media.gyp:media',
+        '../media/midi/midi.gyp:midi',
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',

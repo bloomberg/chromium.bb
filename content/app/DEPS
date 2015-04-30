@@ -7,4 +7,5 @@ include_rules = [
   "+gin/public/snapshot_fd_data.h",
   "+gin/v8_initializer.h",
   "+media/base",  # For initializing media library.
+  "+media/midi",  # For initializing midi library.
 ]

@@ -1,0 +1,172 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/config.gni")
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+import("//media/media_options.gni")
+import("//testing/test.gni")
+
+if (is_android) {
+  # For generate_jni().
+  import("//build/config/android/rules.gni")
+}
+
+# Common configuration for targets in the media/midi directory.
+config("midi_config") {
+  if (use_alsa) {
+    defines = [
+      "USE_ALSA",
+      "USE_UDEV",
+    ]
+  }
+
+  visibility = [ ":*" ]
+}
+
+# USB MIDI specific source files that are used in Android port, and unit tests.
+source_set("usb_midi") {
+  sources = [
+    "midi_manager_usb.cc",
+    "midi_manager_usb.h",
+    "usb_midi_descriptor_parser.cc",
+    "usb_midi_descriptor_parser.h",
+    "usb_midi_device.h",
+    "usb_midi_input_stream.cc",
+    "usb_midi_input_stream.h",
+    "usb_midi_jack.h",
+    "usb_midi_output_stream.cc",
+    "usb_midi_output_stream.h",
+  ]
+
+  defines = [ "MEDIA_IMPLEMENTATION" ]
+  deps = [
+    "//base",
+  ]
+}
+
+# Android specific Java source files that are used to generate jni header files.
+if (is_android) {
+  android_library("midi_java") {
+    deps = [
+      "//base:base_java",
+    ]
+
+    DEPRECATED_java_in_dir = "java/src"
+  }
+
+  generate_jni("midi_jni_headers") {
+    sources = [
+      "java/src/org/chromium/media/midi/UsbMidiDeviceAndroid.java",
+      "java/src/org/chromium/media/midi/UsbMidiDeviceFactoryAndroid.java",
+    ]
+    jni_package = "media/midi"
+  }
+}
+
+component("midi") {
+  sources = [
+    "midi_manager.cc",
+    "midi_manager.h",
+    "midi_manager_mac.cc",
+    "midi_manager_mac.h",
+    "midi_manager_win.cc",
+    "midi_manager_win.h",
+    "midi_message_queue.cc",
+    "midi_message_queue.h",
+    "midi_message_util.cc",
+    "midi_message_util.h",
+    "midi_port_info.cc",
+    "midi_port_info.h",
+    "midi_scheduler.cc",
+    "midi_scheduler.h",
+  ]
+
+  configs += [ ":midi_config" ]
+
+  defines = [ "MEDIA_IMPLEMENTATION" ]
+  deps = []
+  libs = []
+
+  if (is_android) {
+    sources += [
+      "midi_jni_registrar.cc",
+      "midi_jni_registrar.h",
+      "midi_manager_android.cc",
+      "usb_midi_device_android.cc",
+      "usb_midi_device_android.h",
+      "usb_midi_device_factory_android.cc",
+      "usb_midi_device_factory_android.h",
+    ]
+
+    deps += [
+      "//base:i18n",
+      ":midi_jni_headers",
+      ":usb_midi",
+    ]
+  }
+
+  if (is_mac) {
+    libs += [
+      "CoreAudio.framework",
+      "CoreMIDI.framework",
+    ]
+  }
+
+  if (is_win) {
+    deps += [ "//device/usb" ]
+  }
+
+  if (use_alsa && use_udev) {
+    deps += [
+      "//crypto",
+      "//crypto:platform",
+    ]
+    libs += [ "asound" ]
+    sources += [
+      "midi_manager_alsa.cc",
+      "midi_manager_alsa.h",
+    ]
+  }
+
+  if (use_udev) {
+    deps += [ "//device/udev_linux" ]
+  }
+}
+
+test("midi_unittests") {
+  sources = [
+    "midi_manager_unittest.cc",
+    "midi_manager_usb_unittest.cc",
+    "midi_message_queue_unittest.cc",
+    "midi_message_util_unittest.cc",
+    "usb_midi_descriptor_parser_unittest.cc",
+    "usb_midi_input_stream_unittest.cc",
+    "usb_midi_output_stream_unittest.cc",
+  ]
+
+  configs += [ ":midi_config" ]
+  deps = [
+    ":midi",
+    "//base/test/:run_all_unittests",
+    "//base/test/:test_support",
+    "//testing/gtest",
+  ]
+
+  if (!is_android) {
+    deps += [ ":usb_midi" ]
+  }
+
+  if (is_mac) {
+    sources += [ "midi_manager_mac_unittest.cc" ]
+  }
+
+  if (use_alsa && use_udev) {
+    sources += [ "midi_manager_alsa_unittest.cc" ]
+  }
+
+  if (use_x11) {
+    deps += [ "//tools/xdisplaycheck" ]
+  }
+}

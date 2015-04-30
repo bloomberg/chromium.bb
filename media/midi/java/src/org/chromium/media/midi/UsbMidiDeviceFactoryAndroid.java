@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.media;
+package org.chromium.media.midi;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -28,7 +28,7 @@ import java.util.Set;
  * Owned by its native counterpart declared in
  * usb_midi_device_factory_android.h. Refer to that class for general comments.
  */
-@JNINamespace("media")
+@JNINamespace("media::midi")
 class UsbMidiDeviceFactoryAndroid {
     /**
      * The UsbManager of this system.
@@ -60,8 +60,7 @@ class UsbMidiDeviceFactoryAndroid {
      */
     private long mNativePointer;
 
-    private static final String ACTION_USB_PERMISSION =
-            "org.chromium.media.USB_PERMISSION";
+    private static final String ACTION_USB_PERMISSION = "org.chromium.media.USB_PERMISSION";
 
     /**
      * Constructs a UsbMidiDeviceAndroid.
@@ -125,7 +124,7 @@ class UsbMidiDeviceFactoryAndroid {
             mIsEnumeratingDevices = false;
             return false;
         }
-        for (UsbDevice device: devices.values()) {
+        for (UsbDevice device : devices.values()) {
             requestDevicePermissionIfNecessary(context, device);
         }
         return true;
@@ -138,7 +137,7 @@ class UsbMidiDeviceFactoryAndroid {
      * @param device a USB device
      */
     private void requestDevicePermissionIfNecessary(Context context, UsbDevice device) {
-        for (UsbDevice d: mRequestedDevices) {
+        for (UsbDevice d : mRequestedDevices) {
             if (d.getDeviceId() == device.getDeviceId()) {
                 // It is already requested.
                 return;
@@ -150,8 +149,9 @@ class UsbMidiDeviceFactoryAndroid {
             if (iface.getInterfaceClass() == UsbConstants.USB_CLASS_AUDIO
                     && iface.getInterfaceSubclass() == UsbMidiDeviceAndroid.MIDI_SUBCLASS) {
                 // There is at least one interface supporting MIDI.
-                mUsbManager.requestPermission(device, PendingIntent.getBroadcast(
-                        context, 0, new Intent(ACTION_USB_PERMISSION), 0));
+                mUsbManager.requestPermission(
+                        device, PendingIntent.getBroadcast(
+                                        context, 0, new Intent(ACTION_USB_PERMISSION), 0));
                 mRequestedDevices.add(device);
                 break;
             }
@@ -164,7 +164,7 @@ class UsbMidiDeviceFactoryAndroid {
      * @param device a USB device
      */
     private void onUsbDeviceDetached(UsbDevice device) {
-        for (UsbDevice usbDevice: mRequestedDevices) {
+        for (UsbDevice usbDevice : mRequestedDevices) {
             if (usbDevice.getDeviceId() == device.getDeviceId()) {
                 mRequestedDevices.remove(usbDevice);
                 break;
@@ -214,7 +214,7 @@ class UsbMidiDeviceFactoryAndroid {
         }
 
         if (device != null) {
-            for (UsbMidiDeviceAndroid registered: mDevices) {
+            for (UsbMidiDeviceAndroid registered : mDevices) {
                 if (!registered.isClosed()
                         && registered.getUsbDevice().getDeviceId() == device.getDeviceId()) {
                     // The device is already registered.

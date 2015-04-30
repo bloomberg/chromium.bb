@@ -213,6 +213,12 @@
       },
       "test": "message_center_unittests"
     },
+    {
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      },
+      "test": "midi_unittests"
+    },
     "mojo_common_unittests",
     "mojo_public_bindings_unittests",
     "mojo_public_environment_unittests",

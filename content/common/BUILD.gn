@@ -177,6 +177,7 @@ source_set("common") {
       "//gpu/ipc",
       "//gpu/skia_bindings",
       "//media",
+      "//media/midi",
       "//media:shared_memory_support",
       "//mojo/environment:chromium",
       "//sandbox",
