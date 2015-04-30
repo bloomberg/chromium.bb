@@ -165,11 +165,7 @@
       "views_unittests",
       "wm_unittests"
     ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
-    ]
+    "gtest_tests": []
   },
   "Linux GN (dbg)": {
     "additional_compile_targets": [
