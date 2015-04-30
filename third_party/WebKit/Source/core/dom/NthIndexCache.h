@@ -56,6 +56,8 @@ private:
 
 inline unsigned NthIndexCache::NthIndexData::nthIndex(Element& element)
 {
+    if (element.isPseudoElement())
+        return 1;
     if (!m_count)
         return cacheNthIndices(element);
 
@@ -70,6 +72,8 @@ inline unsigned NthIndexCache::NthIndexData::nthIndex(Element& element)
 
 inline unsigned NthIndexCache::NthIndexData::nthLastIndex(Element& element)
 {
+    if (element.isPseudoElement())
+        return 1;
     unsigned index = nthIndex(element);
     return m_count - index + 1;
 }

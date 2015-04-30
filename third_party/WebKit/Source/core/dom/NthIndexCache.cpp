@@ -37,6 +37,7 @@ NthIndexCache::NthIndexData& NthIndexCache::ensureNthIndexDataFor(Node& parent)
 
 unsigned NthIndexCache::NthIndexData::cacheNthIndices(Element& element)
 {
+    ASSERT(!element.isPseudoElement());
     unsigned index = 0;
     // The frequency at which we cache the nth-index for a set of siblings.
     // A spread value of 3 means every third Element will have its nth-index cached.
