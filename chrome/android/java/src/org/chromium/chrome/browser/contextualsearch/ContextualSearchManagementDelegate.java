@@ -26,6 +26,11 @@ public interface ContextualSearchManagementDelegate {
     boolean isOptOutPromoAvailable();
 
     /**
+     * Called when the promo Panel gets closed, to log the outcome.
+     */
+    void logPromoOutcome();
+
+    /**
      * @return Whether or not the Contextual Search Bar is peeking.
      */
     boolean isSearchBarPeeking();
@@ -95,6 +100,11 @@ public interface ContextualSearchManagementDelegate {
      * showing as well as any bar that's peeking.
      */
     void dismissContextualSearchBar();
+
+    /**
+     * Notifies that the Contextual Search Panel did get closed.
+     */
+    void onCloseContextualSearch();
 
     /**
      * Gets the {@code ContentViewCore} associated with Contextual Search Panel.

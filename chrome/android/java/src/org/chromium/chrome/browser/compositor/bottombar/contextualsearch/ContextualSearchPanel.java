@@ -153,6 +153,12 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     public void onPromoButtonClick(boolean accepted) {
         super.onPromoButtonClick(accepted);
+        mManagementDelegate.logPromoOutcome();
+    }
+
+    @Override
+    protected void onClose() {
+        mManagementDelegate.onCloseContextualSearch();
     }
 
     // ============================================================================================
@@ -314,9 +320,6 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         if (shouldHideContextualSearchLayout()) {
             if (mSearchPanelHost != null) {
                 mSearchPanelHost.hideLayout(false);
-            }
-            if (getPanelState() == PanelState.CLOSED) {
-                mManagementDelegate.dismissContextualSearchBar();
             }
         }
 

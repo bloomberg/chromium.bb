@@ -229,6 +229,11 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     protected abstract void animatePromoAcceptance();
 
+    /**
+     * Event notification that the Panel did get closed.
+     */
+    protected abstract void onClose();
+
     // ============================================================================================
     // Layout Integration
     // ============================================================================================
@@ -749,6 +754,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
             mIsShowing = false;
             destroySearchPromo();
             destroyContextualSearchControl();
+            onClose();
         } else if (state == PanelState.EXPANDED) {
             showPromoViewAtYPosition(getPromoYPx());
         }
