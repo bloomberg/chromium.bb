@@ -714,8 +714,11 @@ std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
     DCHECK_EQ(profile_, web_contents->GetBrowserContext());
 
     // Make the webview transparent.
-    web_contents->GetRenderViewHost()->GetView()->SetBackgroundColor(
-        SK_ColorTRANSPARENT);
+    content::RenderWidgetHostView* render_view_host_view =
+        web_contents->GetRenderViewHost()->GetView();
+    // The RenderWidgetHostView may be null if the renderer has crashed.
+    if (render_view_host_view)
+      render_view_host_view->SetBackgroundColor(SK_ColorTRANSPARENT);
 
     views::WebView* web_view =
         new views::WebView(web_contents->GetBrowserContext());
