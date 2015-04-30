@@ -554,8 +554,8 @@ scoped_ptr<Emf> Emf::RasterizeMetafile(int raster_area_in_pixels) const {
   XFORM xform = {
     float(page_bounds.width()) / bitmap_rect.width(), 0,
     0, float(page_bounds.height()) / bitmap_rect.height(),
-    page_bounds.x(),
-    page_bounds.y(),
+    static_cast<float>(page_bounds.x()),
+    static_cast<float>(page_bounds.y()),
   };
   ::SetWorldTransform(hdc, &xform);
   ::BitBlt(hdc, 0, 0, bitmap_rect.width(), bitmap_rect.height(),
@@ -577,7 +577,12 @@ scoped_ptr<Emf> Emf::RasterizeAlphaBlend() const {
   RasterBitmap bitmap(page_bounds.size());
 
   // Map metafile page_bounds.x(), page_bounds.y() to bitmap 0, 0.
-  XFORM xform = { 1, 0, 0, 1, -page_bounds.x(), -page_bounds.y()};
+  XFORM xform = {1,
+                 0,
+                 0,
+                 1,
+                 static_cast<float>(-page_bounds.x()),
+                 static_cast<float>(-page_bounds.y())};
   ::SetWorldTransform(bitmap.context(), &xform);
 
   scoped_ptr<Emf> result(new Emf);
