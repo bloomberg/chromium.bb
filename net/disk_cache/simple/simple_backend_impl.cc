@@ -544,8 +544,7 @@ scoped_ptr<Backend::Iterator> SimpleBackendImpl::CreateIterator() {
   return scoped_ptr<Iterator>(new SimpleIterator(AsWeakPtr()));
 }
 
-void SimpleBackendImpl::GetStats(
-    std::vector<std::pair<std::string, std::string> >* stats) {
+void SimpleBackendImpl::GetStats(base::StringPairs* stats) {
   std::pair<std::string, std::string> item;
   item.first = "Cache type";
   item.second = "Simple Cache";
