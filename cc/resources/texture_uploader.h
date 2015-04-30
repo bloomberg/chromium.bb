@@ -45,7 +45,7 @@ class CC_EXPORT TextureUploader {
   void Upload(const uint8* image,
               const gfx::Rect& content_rect,
               const gfx::Rect& source_rect,
-              gfx::Vector2d dest_offset,
+              const gfx::Vector2d& dest_offset,
               ResourceFormat format,
               const gfx::Size& size);
 
@@ -90,12 +90,12 @@ class CC_EXPORT TextureUploader {
   void UploadWithTexSubImage(const uint8* image,
                              const gfx::Rect& image_rect,
                              const gfx::Rect& source_rect,
-                             gfx::Vector2d dest_offset,
+                             const gfx::Vector2d& dest_offset,
                              ResourceFormat format);
   void UploadWithMapTexSubImage(const uint8* image,
                                 const gfx::Rect& image_rect,
                                 const gfx::Rect& source_rect,
-                                gfx::Vector2d dest_offset,
+                                const gfx::Vector2d& dest_offset,
                                 ResourceFormat format);
   void UploadWithTexImageETC1(const uint8* image, const gfx::Size& size);
 

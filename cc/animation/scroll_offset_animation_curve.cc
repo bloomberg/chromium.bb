@@ -18,11 +18,11 @@ namespace cc {
 
 namespace {
 
-static float MaximumDimension(gfx::Vector2dF delta) {
+static float MaximumDimension(const gfx::Vector2dF& delta) {
   return std::max(std::abs(delta.x()), std::abs(delta.y()));
 }
 
-static base::TimeDelta DurationFromDelta(gfx::Vector2dF delta) {
+static base::TimeDelta DurationFromDelta(const gfx::Vector2dF& delta) {
   // The duration of a scroll animation depends on the size of the scroll.
   // The exact relationship between the size and the duration isn't specified
   // by the CSSOM View smooth scroll spec and is instead left up to user agents

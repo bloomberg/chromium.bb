@@ -166,7 +166,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   int transform_tree_index() const { return transform_tree_index_; }
   int opacity_tree_index() const { return opacity_tree_index_; }
 
-  void set_offset_to_transform_parent(gfx::Vector2dF offset) {
+  void set_offset_to_transform_parent(const gfx::Vector2dF& offset) {
     offset_to_transform_parent_ = offset;
     SetNeedsPushProperties();
   }

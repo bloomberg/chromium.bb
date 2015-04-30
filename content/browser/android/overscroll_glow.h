@@ -47,10 +47,10 @@ class OverscrollGlow {
   // |velocity| is in device pixels / second.
   // Returns true if the effect still needs animation ticks.
   bool OnOverscrolled(base::TimeTicks current_time,
-                      gfx::Vector2dF accumulated_overscroll,
+                      const gfx::Vector2dF& accumulated_overscroll,
                       gfx::Vector2dF overscroll_delta,
                       gfx::Vector2dF velocity,
-                      gfx::Vector2dF overscroll_location);
+                      const gfx::Vector2dF& overscroll_location);
 
   // Returns true if the effect still needs animation ticks, with effect layers
   // attached to |parent_layer| if necessary.

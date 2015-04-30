@@ -108,8 +108,8 @@ class NullIPCSender : public IPC::Sender {
 // TODO(jdduke): Use synthetic gesture pipeline, crbug.com/344598.
 typedef std::vector<WebGestureEvent> Gestures;
 Gestures BuildScrollSequence(size_t steps,
-                             gfx::Vector2dF origin,
-                             gfx::Vector2dF distance) {
+                             const gfx::Vector2dF& origin,
+                             const gfx::Vector2dF& distance) {
   Gestures gestures;
   const gfx::Vector2dF delta = ScaleVector2d(distance, 1.f / steps);
 
@@ -135,8 +135,8 @@ Gestures BuildScrollSequence(size_t steps,
 
 typedef std::vector<WebTouchEvent> Touches;
 Touches BuildTouchSequence(size_t steps,
-                           gfx::Vector2dF origin,
-                           gfx::Vector2dF distance) {
+                           const gfx::Vector2dF& origin,
+                           const gfx::Vector2dF& distance) {
   Touches touches;
   const gfx::Vector2dF delta = ScaleVector2d(distance, 1.f / steps);
 
@@ -298,8 +298,8 @@ class InputRouterImplPerfTest : public testing::Test {
 
   void SimulateTouchAndScrollEventSequence(const char* test_name,
                                            size_t steps,
-                                           gfx::Vector2dF origin,
-                                           gfx::Vector2dF distance,
+                                           const gfx::Vector2dF& origin,
+                                           const gfx::Vector2dF& distance,
                                            size_t iterations) {
     OnHasTouchEventHandlers(true);
 
