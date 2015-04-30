@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -156,8 +157,12 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     /**
      * Tests spawning a pending process from queue.
      */
+    /*
     @MediumTest
     @Feature({"ProcessManagement"})
+    crbug.com/483089
+    */
+    @DisabledTest
     public void testPendingSpawnQueue() throws InterruptedException, RemoteException {
         final Context appContext = getInstrumentation().getTargetContext();
         assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
