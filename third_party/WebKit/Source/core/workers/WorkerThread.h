@@ -57,6 +57,7 @@ enum WorkerThreadStartMode {
     PauseWorkerGlobalScopeOnStart
 };
 
+// TODO(sadrul): Rename to WorkerScript.
 class CORE_EXPORT WorkerThread : public RefCounted<WorkerThread> {
 public:
     virtual ~WorkerThread();
@@ -64,7 +65,12 @@ public:
     virtual void start();
     virtual void stop();
 
-    virtual PassOwnPtr<WebThreadSupportingGC> createWebThreadSupportingGC();
+    // Returns the thread this worker runs on. Some implementations can create
+    // a new thread on the first call (e.g. shared, dedicated workers), whereas
+    // some implementations can use an existing thread that is already being
+    // used by other workers (e.g.  compositor workers).
+    virtual WebThreadSupportingGC& backingThread() = 0;
+
     virtual void didStartRunLoop();
     virtual void didStopRunLoop();
 
@@ -78,7 +84,7 @@ public:
     void terminateAndWait();
     static void terminateAndWaitForAllWorkers();
 
-    bool isCurrentThread() const;
+    bool isCurrentThread();
     WorkerLoaderProxy* workerLoaderProxy() const
     {
         RELEASE_ASSERT(m_workerLoaderProxy);
@@ -104,13 +110,13 @@ public:
     // Number of active worker threads.
     static unsigned workerThreadCount();
 
-    PlatformThreadId platformThreadId() const;
+    PlatformThreadId platformThreadId();
 
     void interruptAndDispatchInspectorCommands();
     void setWorkerInspectorController(WorkerInspectorController*);
 
 protected:
-    WorkerThread(const char* threadName, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
+    WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
 
     // Factory method for creating a new worker context for the thread.
     virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
@@ -135,7 +141,7 @@ private:
     void postDelayedTask(PassOwnPtr<ExecutionContextTask>, long long delayMs);
     void postDelayedTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, long long delayMs);
 
-    const char* m_threadName;
+    bool m_started;
     bool m_terminated;
     MessageQueue<WorkerThreadTask> m_debuggerMessageQueue;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
@@ -158,13 +164,6 @@ private:
 
     // Used to signal thread termination.
     OwnPtr<WebWaitableEvent> m_terminationEvent;
-
-    // FIXME: This has to be last because of crbug.com/401397 - the
-    // WorkerThread might get deleted before it had a chance to properly
-    // shut down. By deleting the WebThread first, we can guarantee that
-    // no pending tasks on the thread might want to access any of the other
-    // members during the WorkerThread's destruction.
-    OwnPtr<WebThreadSupportingGC> m_thread;
 };
 
 } // namespace blink

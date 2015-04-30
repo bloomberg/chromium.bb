@@ -44,12 +44,14 @@ public:
     virtual ~SharedWorkerThread();
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
+    PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
+    WebThreadSupportingGC& backingThread() override;
 
 private:
     SharedWorkerThread(const String& name, PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
 
     String m_name;
+    OwnPtr<WebThreadSupportingGC> m_thread;
 };
 
 } // namespace blink

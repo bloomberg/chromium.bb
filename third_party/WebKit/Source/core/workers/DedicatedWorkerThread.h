@@ -45,14 +45,16 @@ public:
     virtual ~DedicatedWorkerThread();
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
-    virtual void postInitialize() override;
+    PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
+    void postInitialize() override;
+    WebThreadSupportingGC& backingThread() override;
 
 private:
     DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerObjectProxy&, double timeOrigin, PassOwnPtr<WorkerThreadStartupData>);
 
     WorkerObjectProxy& m_workerObjectProxy;
     double m_timeOrigin;
+    OwnPtr<WebThreadSupportingGC> m_thread;
 };
 
 } // namespace blink

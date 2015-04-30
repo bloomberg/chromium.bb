@@ -43,7 +43,7 @@ PassRefPtr<ServiceWorkerThread> ServiceWorkerThread::create(PassRefPtr<WorkerLoa
 }
 
 ServiceWorkerThread::ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
-    : WorkerThread("ServiceWorker Thread", workerLoaderProxy, workerReportingProxy, startupData)
+    : WorkerThread(workerLoaderProxy, workerReportingProxy, startupData)
 {
 }
 
@@ -54,6 +54,13 @@ ServiceWorkerThread::~ServiceWorkerThread()
 PassRefPtrWillBeRawPtr<WorkerGlobalScope> ServiceWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return ServiceWorkerGlobalScope::create(this, startupData);
+}
+
+WebThreadSupportingGC& ServiceWorkerThread::backingThread()
+{
+    if (!m_thread)
+        m_thread = WebThreadSupportingGC::create("ServiceWorker Thread");
+    return *m_thread.get();
 }
 
 } // namespace blink

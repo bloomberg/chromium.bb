@@ -20,7 +20,7 @@ PassRefPtr<CompositorWorkerThread> CompositorWorkerThread::create(PassRefPtr<Wor
 }
 
 CompositorWorkerThread::CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtr<WorkerThreadStartupData> startupData)
-    : WorkerThread("CompositorWorker Thread", workerLoaderProxy, workerObjectProxy, startupData)
+    : WorkerThread(workerLoaderProxy, workerObjectProxy, startupData)
     , m_workerObjectProxy(workerObjectProxy)
     , m_timeOrigin(timeOrigin)
 {
@@ -33,6 +33,13 @@ CompositorWorkerThread::~CompositorWorkerThread()
 PassRefPtrWillBeRawPtr<WorkerGlobalScope> CompositorWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return CompositorWorkerGlobalScope::create(this, startupData, m_timeOrigin);
+}
+
+WebThreadSupportingGC& CompositorWorkerThread::backingThread()
+{
+    if (!m_thread)
+        m_thread = WebThreadSupportingGC::create("CompositorWorker Thread");
+    return *m_thread.get();
 }
 
 } // namespace blink

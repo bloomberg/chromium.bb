@@ -23,9 +23,11 @@ private:
 
     // WorkerThread:
     PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
+    WebThreadSupportingGC& backingThread() override;
 
     WorkerObjectProxy& m_workerObjectProxy;
     double m_timeOrigin;
+    OwnPtr<WebThreadSupportingGC> m_thread;
 };
 
 } // namespace blink

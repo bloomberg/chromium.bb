@@ -44,7 +44,7 @@ PassRefPtr<DedicatedWorkerThread> DedicatedWorkerThread::create(PassRefPtr<Worke
 }
 
 DedicatedWorkerThread::DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtr<WorkerThreadStartupData> startupData)
-    : WorkerThread("DedicatedWorker Thread", workerLoaderProxy, workerObjectProxy, startupData)
+    : WorkerThread(workerLoaderProxy, workerObjectProxy, startupData)
     , m_workerObjectProxy(workerObjectProxy)
     , m_timeOrigin(timeOrigin)
 {
@@ -57,6 +57,13 @@ DedicatedWorkerThread::~DedicatedWorkerThread()
 PassRefPtrWillBeRawPtr<WorkerGlobalScope> DedicatedWorkerThread::createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     return DedicatedWorkerGlobalScope::create(this, startupData, m_timeOrigin);
+}
+
+WebThreadSupportingGC& DedicatedWorkerThread::backingThread()
+{
+    if (!m_thread)
+        m_thread = WebThreadSupportingGC::create("DedicatedWorker Thread");
+    return *m_thread.get();
 }
 
 void DedicatedWorkerThread::postInitialize()

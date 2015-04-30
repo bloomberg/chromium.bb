@@ -256,8 +256,8 @@ private:
     WorkerThread* m_thread;
 };
 
-WorkerThread::WorkerThread(const char* threadName, PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
-    : m_threadName(threadName)
+WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
+    : m_started(false)
     , m_terminated(false)
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
@@ -279,11 +279,11 @@ WorkerThread::~WorkerThread()
 
 void WorkerThread::start()
 {
-    if (m_thread)
+    if (m_started)
         return;
 
-    m_thread = createWebThreadSupportingGC();
-    m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this))));
+    m_started = true;
+    backingThread().postTask(FROM_HERE, new Task(threadSafeBind(&WorkerThread::initialize, AllowCrossThreadAccess(this))));
 }
 
 void WorkerThread::interruptAndDispatchInspectorCommands()
@@ -293,11 +293,11 @@ void WorkerThread::interruptAndDispatchInspectorCommands()
         m_workerInspectorController->interruptAndDispatchInspectorCommands();
 }
 
-PlatformThreadId WorkerThread::platformThreadId() const
+PlatformThreadId WorkerThread::platformThreadId()
 {
-    if (!m_thread)
+    if (!m_started)
         return 0;
-    return m_thread->platformThread().threadId();
+    return backingThread().platformThread().threadId();
 }
 
 void WorkerThread::initialize()
@@ -320,8 +320,8 @@ void WorkerThread::initialize()
         }
 
         m_microtaskRunner = adoptPtr(new MicrotaskRunner(this));
-        m_thread->addTaskObserver(m_microtaskRunner.get());
-        m_thread->attachGC();
+        backingThread().addTaskObserver(m_microtaskRunner.get());
+        backingThread().attachGC();
 
         m_isolate = initializeIsolate();
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
@@ -352,11 +352,6 @@ void WorkerThread::initialize()
     postDelayedTask(FROM_HERE, createSameThreadTask(&WorkerThread::idleHandler, this), kShortIdleHandlerDelayMs);
 }
 
-PassOwnPtr<WebThreadSupportingGC> WorkerThread::createWebThreadSupportingGC()
-{
-    return WebThreadSupportingGC::create(m_threadName);
-}
-
 void WorkerThread::cleanup()
 {
     // This should be called before we start the shutdown procedure.
@@ -371,10 +366,10 @@ void WorkerThread::cleanup()
     m_workerGlobalScope->notifyContextDestroyed();
     m_workerGlobalScope = nullptr;
 
-    m_thread->detachGC();
+    backingThread().detachGC();
     destroyIsolate();
 
-    m_thread->removeTaskObserver(m_microtaskRunner.get());
+    backingThread().removeTaskObserver(m_microtaskRunner.get());
     m_microtaskRunner = nullptr;
 
     // Notify the proxy that the WorkerGlobalScope has been disposed of.
@@ -401,7 +396,7 @@ public:
 
         WorkerThread* workerThread = workerGlobalScope->thread();
         workerThread->willDestroyIsolate();
-        workerThread->m_thread->postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::cleanup, workerThread)));
+        workerThread->backingThread().postTask(FROM_HERE, new Task(WTF::bind(&WorkerThread::cleanup, workerThread)));
     }
 
     virtual bool isCleanupTask() const { return true; }
@@ -505,9 +500,9 @@ void WorkerThread::terminateAndWaitForAllWorkers()
         thread->terminationEvent()->wait();
 }
 
-bool WorkerThread::isCurrentThread() const
+bool WorkerThread::isCurrentThread()
 {
-    return m_thread && m_thread->isCurrentThread();
+    return m_started && backingThread().isCurrentThread();
 }
 
 void WorkerThread::idleHandler()
@@ -529,12 +524,12 @@ void WorkerThread::idleHandler()
 
 void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
-    m_thread->postTask(location, WorkerThreadTask::create(*this, task, true).leakPtr());
+    backingThread().postTask(location, WorkerThreadTask::create(*this, task, true).leakPtr());
 }
 
 void WorkerThread::postDelayedTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task, long long delayMs)
 {
-    m_thread->postDelayedTask(location, WorkerThreadTask::create(*this, task, true).leakPtr(), delayMs);
+    backingThread().postDelayedTask(location, WorkerThreadTask::create(*this, task, true).leakPtr(), delayMs);
 }
 
 v8::Isolate* WorkerThread::initializeIsolate()
