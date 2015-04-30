@@ -22,7 +22,7 @@ Modifications:
 - Add a fix for handling of unknown namespaces, commit upstream is pending.
 - Add fixes for ending the parse properly if a SAX callback calls xmlStopParser(), commit upstream is pending.
 - Add fix for entities, commit upstream is http://git.gnome.org/browse/libxml2/commit/?id=5bd3c061823a8499b27422aee04ea20aae24f03e
-- Import UTF-8 fix from upstream: http://git.gnome.org/browse/libxml2/commit/?id=0795348aeb86648723bc391e4d02e20631c10bca 
+- Import UTF-8 fix from upstream: http://git.gnome.org/browse/libxml2/commit/?id=0795348aeb86648723bc391e4d02e20631c10bca
 - Import XPath fix http://git.gnome.org/browse/libxml2/commit/xpath.c?id=2ddecc23862bab1a9a9e51e097aefc92ec305e28
 - Merge clang warning fix http://git.gnome.org/browse/libxml2/commit/?id=aae48e64dfbf2b46b157a4c1857e30645116388f
 - Add a fix for proper escaping of xpointer expressions, commit upstream is pending.
@@ -38,6 +38,7 @@ Modifications:
 - Merge XML_PARSER_EOF checks https://git.gnome.org/browse/libxml2/commit/?id=48b4cdde3483e054af8ea02e0cd7ee467b0e9a50 and https://git.gnome.org/browse/libxml2/commit/?id=e50ba8164eee06461c73cd8abb9b46aa0be81869
 - Prevent snprintf from being defined as _snprintf on VS 2015.
 - Make ucrt of Win10 SDK not define POSIX error codes.
+- Delete/disable nanoftp and nanohttp.
 
 To import a new snapshot of libxml:
 

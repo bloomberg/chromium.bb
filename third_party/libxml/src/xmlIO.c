@@ -85,8 +85,6 @@
 #include <libxml/parserInternals.h>
 #include <libxml/xmlIO.h>
 #include <libxml/uri.h>
-#include <libxml/nanohttp.h>
-#include <libxml/nanoftp.h>
 #include <libxml/xmlerror.h>
 #ifdef LIBXML_CATALOG_ENABLED
 #include <libxml/catalog.h>
