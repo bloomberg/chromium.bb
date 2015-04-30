@@ -243,7 +243,8 @@ void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode)
 {
     ASSERT(styleSheetCandidateNode);
     TreeScope* treeScope = isStyleElement(*styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : m_document.get();
-    markTreeScopeDirty(*treeScope);
+    if (styleSheetCandidateNode->inDocument())
+        markTreeScopeDirty(*treeScope);
 
     // Make sure we knew this sheet was pending, and that our count isn't out of sync.
     ASSERT(m_pendingStylesheets > 0);
@@ -579,6 +580,7 @@ void StyleEngine::markTreeScopeDirty(TreeScope& scope)
         return;
     }
 
+    ASSERT(m_styleSheetCollectionMap.contains(&scope));
     m_dirtyTreeScopes.add(&scope);
 }
 
