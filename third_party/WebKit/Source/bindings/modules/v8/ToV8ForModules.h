@@ -15,7 +15,7 @@ class IDBAny;
 class IDBKey;
 class IDBKeyPath;
 
-inline v8::Handle<v8::Value> toV8(const SQLValue& sqlValue, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Local<v8::Value> toV8(const SQLValue& sqlValue, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (sqlValue.type()) {
     case SQLValue::NullValue:
