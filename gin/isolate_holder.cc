@@ -34,6 +34,7 @@ IsolateHolder::IsolateHolder(AccessMode access_mode)
   params.code_event_handler = DebugImpl::GetJitCodeEventHandler();
   params.constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
                                        base::SysInfo::AmountOfVirtualMemory());
+  params.array_buffer_allocator = allocator;
   isolate_ = v8::Isolate::New(params);
   isolate_data_.reset(new PerIsolateData(isolate_, allocator));
 #if defined(OS_WIN)
@@ -72,7 +73,7 @@ IsolateHolder::~IsolateHolder() {
 void IsolateHolder::Initialize(ScriptMode mode,
                                v8::ArrayBuffer::Allocator* allocator) {
   CHECK(allocator);
-  gin::V8Initializer::Initialize(mode, allocator);
+  V8Initializer::Initialize(mode);
   g_array_buffer_allocator = allocator;
 }
 
