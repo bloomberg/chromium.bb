@@ -61,17 +61,22 @@ class ResourceLoaderSet;
 // and enforces a bunch of security checks and rules for resource revalidation.
 // Its lifetime is roughly per-DocumentLoader, in that it is generally created
 // in the DocumentLoader constructor and loses its ability to generate network
-// requests when the DocumentLoader is destroyed. Documents also hold a pointer
-// to ResourceFetcher for their lifetime (and will create one if they
+// requests when the DocumentLoader is destroyed. Documents also hold a
+// RefPtr<ResourceFetcher> for their lifetime (and will create one if they
 // are initialized without a LocalFrame), so a Document can keep a ResourceFetcher
-// alive past detach if scripts still refer to the Document.
-class CORE_EXPORT ResourceFetcher final : public GarbageCollectedFinalized<ResourceFetcher>, public ResourceLoaderHost {
-    WTF_MAKE_NONCOPYABLE(ResourceFetcher);
-    USING_GARBAGE_COLLECTED_MIXIN(ResourceFetcher);
+// alive past detach if scripts still reference the Document.
+class CORE_EXPORT ResourceFetcher final : public RefCountedWillBeGarbageCollectedFinalized<ResourceFetcher>, public ResourceLoaderHost {
+    WTF_MAKE_NONCOPYABLE(ResourceFetcher); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ResourceFetcher);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ResourceFetcher);
 public:
-    static ResourceFetcher* create(FetchContext* context) { return new ResourceFetcher(context); }
+    static PassRefPtrWillBeRawPtr<ResourceFetcher> create(PassOwnPtrWillBeRawPtr<FetchContext> context) { return adoptRefWillBeNoop(new ResourceFetcher(context)); }
     virtual ~ResourceFetcher();
     DECLARE_VIRTUAL_TRACE();
+
+#if !ENABLE(OILPAN)
+    using RefCounted<ResourceFetcher>::ref;
+    using RefCounted<ResourceFetcher>::deref;
+#endif
 
     ResourcePtr<Resource> fetchSynchronously(FetchRequest&);
     ResourcePtr<ImageResource> fetchImage(FetchRequest&);
@@ -137,6 +142,11 @@ public:
     virtual bool canAccessResource(Resource*, SecurityOrigin*, const KURL&, AccessControlLoggingDecision) const override;
     virtual bool isControlledByServiceWorker() const override;
 
+#if !ENABLE(OILPAN)
+    virtual void refResourceLoaderHost() override;
+    virtual void derefResourceLoaderHost() override;
+#endif
+
     void acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
     enum ResourceLoadStartType {
@@ -155,7 +165,7 @@ public:
 private:
     friend class ResourceCacheValidationSuppressor;
 
-    explicit ResourceFetcher(FetchContext*);
+    explicit ResourceFetcher(PassOwnPtrWillBeRawPtr<FetchContext>);
 
     ResourcePtr<Resource> requestResource(Resource::Type, FetchRequest&);
     ResourcePtr<Resource> createResourceForRevalidation(const FetchRequest&, Resource*);
@@ -185,7 +195,7 @@ private:
 
     void willTerminateResourceLoader(ResourceLoader*);
 
-    Member<FetchContext> m_context;
+    OwnPtrWillBeMember<FetchContext> m_context;
 
     HashSet<String> m_validatedURLs;
     mutable DocumentResourceMap m_documentResources;
@@ -201,8 +211,8 @@ private:
 
     HashMap<RefPtr<ResourceTimingInfo>, bool> m_scheduledResourceTimingReports;
 
-    Member<ResourceLoaderSet> m_loaders;
-    Member<ResourceLoaderSet> m_nonBlockingLoaders;
+    OwnPtrWillBeMember<ResourceLoaderSet> m_loaders;
+    OwnPtrWillBeMember<ResourceLoaderSet> m_nonBlockingLoaders;
 
     // Used in hit rate histograms.
     class DeadResourceStatsRecorder {
@@ -244,7 +254,7 @@ public:
             m_loader->m_allowStaleResources = m_previousState;
     }
 private:
-    Member<ResourceFetcher> m_loader;
+    RawPtrWillBeMember<ResourceFetcher> m_loader;
     bool m_previousState;
 };
 

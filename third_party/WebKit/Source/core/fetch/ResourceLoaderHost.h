@@ -44,7 +44,7 @@ class ResourceResponse;
 
 struct FetchInitiatorInfo;
 
-class CORE_EXPORT ResourceLoaderHost : public GarbageCollectedMixin {
+class CORE_EXPORT ResourceLoaderHost : public WillBeGarbageCollectedMixin {
 public:
     virtual void didLoadResource() = 0;
     virtual void redirectReceived(Resource*, const ResourceResponse&) = 0;
@@ -79,6 +79,13 @@ public:
     };
 
     virtual LoaderHostType objectType() const = 0;
+#if !ENABLE(OILPAN)
+    virtual void refResourceLoaderHost() = 0;
+    virtual void derefResourceLoaderHost() = 0;
+
+    void ref() { refResourceLoaderHost(); }
+    void deref() { derefResourceLoaderHost(); }
+#endif
 };
 
 }

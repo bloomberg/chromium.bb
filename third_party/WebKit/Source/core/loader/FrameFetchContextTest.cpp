@@ -110,7 +110,7 @@ protected:
     // as the ResourceFetcher and Document live due to indirect usage.
     RefPtr<DocumentLoader> documentLoader;
     RefPtrWillBePersistent<Document> document;
-    Persistent<FrameFetchContext> fetchContext;
+    FrameFetchContext* fetchContext;
 };
 
 TEST_F(FrameFetchContextUpgradeTest, UpgradeInsecureResourceRequests)
@@ -230,7 +230,7 @@ protected:
     // as the ResourceFetcher and Document live due to indirect usage.
     RefPtr<DocumentLoader> documentLoader;
     RefPtrWillBePersistent<Document> document;
-    Persistent<FrameFetchContext> fetchContext;
+    FrameFetchContext* fetchContext;
 };
 
 TEST_F(FrameFetchContextHintsTest, MonitorDPRHints)
@@ -272,3 +272,4 @@ TEST_F(FrameFetchContextHintsTest, MonitorBothHints)
 }
 
 } // namespace
+

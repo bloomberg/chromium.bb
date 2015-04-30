@@ -61,9 +61,9 @@ const unsigned char kAConstUnsignedCharZero = 0;
 
 class MockFetchContext : public FetchContext {
 public:
-    static MockFetchContext* create()
+    static PassOwnPtrWillBeRawPtr<MockFetchContext> create()
     {
-        return new MockFetchContext;
+        return adoptPtrWillBeNoop(new MockFetchContext);
     }
 
     ~MockFetchContext() { }
@@ -172,8 +172,8 @@ private:
     blink::Platform* m_savedPlatform;
     ProxyPlatform m_proxyPlatform;
 
-    Persistent<MemoryCache> m_globalMemoryCache;
-    Persistent<ResourceFetcher> m_fetcher;
+    OwnPtrWillBePersistent<MemoryCache> m_globalMemoryCache;
+    RefPtrWillBePersistent<ResourceFetcher> m_fetcher;
 };
 
 TEST_F(CachingCorrectnessTest, FreshFromLastModified)

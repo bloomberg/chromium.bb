@@ -211,7 +211,7 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
     return WebURLRequest::RequestContextSubresource;
 }
 
-ResourceFetcher::ResourceFetcher(FetchContext* context)
+ResourceFetcher::ResourceFetcher(PassOwnPtrWillBeRawPtr<FetchContext> context)
     : m_context(context)
     , m_garbageCollectDocumentResourcesTimer(this, &ResourceFetcher::garbageCollectDocumentResourcesTimerFired)
     , m_resourceTimingReportTimer(this, &ResourceFetcher::resourceTimingReportTimerFired)
@@ -224,6 +224,13 @@ ResourceFetcher::ResourceFetcher(FetchContext* context)
 ResourceFetcher::~ResourceFetcher()
 {
     clearPreloads();
+
+#if !ENABLE(OILPAN)
+    // Make sure no requests still point to this ResourceFetcher
+    // Oilpan: no object reference can be keeping this alive,
+    // so property trivially holds.
+    ASSERT(!m_loaders || m_loaders->isEmpty());
+#endif
 }
 
 Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
@@ -1016,6 +1023,7 @@ bool ResourceFetcher::scheduleArchiveLoad(Resource* resource, const ResourceRequ
 void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)
 {
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
+    RefPtrWillBeRawPtr<ResourceFetcher> protect(this);
     willTerminateResourceLoader(resource->loader());
 
     if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
@@ -1172,6 +1180,18 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& req
         return false;
     return true;
 }
+
+#if !ENABLE(OILPAN)
+void ResourceFetcher::refResourceLoaderHost()
+{
+    ref();
+}
+
+void ResourceFetcher::derefResourceLoaderHost()
+{
+    deref();
+}
+#endif
 
 #if PRELOAD_DEBUG
 void ResourceFetcher::printPreloadStats()

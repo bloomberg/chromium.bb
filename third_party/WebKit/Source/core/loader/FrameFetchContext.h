@@ -50,9 +50,9 @@ class ResourceRequest;
 
 class CORE_EXPORT FrameFetchContext final : public FetchContext {
 public:
-    static ResourceFetcher* createContextAndFetcher(DocumentLoader* loader)
+    static PassRefPtrWillBeRawPtr<ResourceFetcher> createContextAndFetcher(DocumentLoader* loader)
     {
-        return ResourceFetcher::create(new FrameFetchContext(loader));
+        return ResourceFetcher::create(adoptPtrWillBeNoop(new FrameFetchContext(loader)));
     }
 
     ~FrameFetchContext();

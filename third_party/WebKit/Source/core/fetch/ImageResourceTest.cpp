@@ -131,13 +131,13 @@ TEST(ImageResourceTest, CancelOnDetach)
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
 
-    ResourceFetcher* fetcher = ResourceFetcher::create(FetchContext::create());
+    RefPtrWillBeRawPtr<ResourceFetcher> fetcher = ResourceFetcher::create(FetchContext::create());
 
     // Emulate starting a real load.
     ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL));
     cachedImage->setIdentifier(createUniqueIdentifier());
 
-    cachedImage->load(fetcher, ResourceLoaderOptions());
+    cachedImage->load(fetcher.get(), ResourceLoaderOptions());
     memoryCache()->add(cachedImage.get());
 
     MockImageResourceClient client;

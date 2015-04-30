@@ -35,19 +35,21 @@
 
 namespace blink {
 
-ResourceLoaderSet* ResourceLoaderSet::create()
+PassOwnPtrWillBeRawPtr<ResourceLoaderSet> ResourceLoaderSet::create()
 {
-    return new ResourceLoaderSet;
+    return adoptPtrWillBeNoop(new ResourceLoaderSet);
 }
 
 DEFINE_TRACE(ResourceLoaderSet)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_set);
+#endif
 }
 
 void ResourceLoaderSet::cancelAll()
 {
-    HeapVector<Member<ResourceLoader>> loadersCopy;
+    WillBeHeapVector<RefPtrWillBeMember<ResourceLoader>> loadersCopy;
     copyToVector(m_set, loadersCopy);
     for (const auto& loader : loadersCopy)
         loader->cancel();
@@ -55,7 +57,7 @@ void ResourceLoaderSet::cancelAll()
 
 void ResourceLoaderSet::setAllDefersLoading(bool defers)
 {
-    HeapVector<Member<ResourceLoader>> loadersCopy;
+    WillBeHeapVector<RefPtrWillBeMember<ResourceLoader>> loadersCopy;
     copyToVector(m_set, loadersCopy);
     for (const auto& loader : loadersCopy)
         loader->setDefersLoading(defers);

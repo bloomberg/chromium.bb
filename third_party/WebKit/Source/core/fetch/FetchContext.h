@@ -54,12 +54,12 @@ enum FetchResourceType {
     FetchSubresource
 };
 
-class CORE_EXPORT FetchContext : public GarbageCollectedFinalized<FetchContext> {
+class CORE_EXPORT FetchContext : public NoBaseWillBeGarbageCollectedFinalized<FetchContext> {
     WTF_MAKE_NONCOPYABLE(FetchContext);
 public:
-    static FetchContext* create()
+    static PassOwnPtrWillBeRawPtr<FetchContext> create()
     {
-        return new FetchContext;
+        return adoptPtrWillBeNoop(new FetchContext);
     }
 
     virtual ~FetchContext() { }

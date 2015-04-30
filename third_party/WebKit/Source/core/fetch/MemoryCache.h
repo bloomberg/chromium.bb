@@ -73,14 +73,16 @@ enum UpdateReason {
 // MemoryCacheEntry class is used only in MemoryCache class, but we don't make
 // MemoryCacheEntry class an inner class of MemoryCache because of dependency
 // from MemoryCacheLRUList.
-class MemoryCacheEntry final : public GarbageCollectedFinalized<MemoryCacheEntry> {
+class MemoryCacheEntry final : public NoBaseWillBeGarbageCollectedFinalized<MemoryCacheEntry> {
 public:
-    static MemoryCacheEntry* create(Resource* resource)
+    static PassOwnPtrWillBeRawPtr<MemoryCacheEntry> create(Resource* resource)
     {
-        return new MemoryCacheEntry(resource);
+        return adoptPtrWillBeNoop(new MemoryCacheEntry(resource));
     }
     DECLARE_TRACE();
+#if ENABLE(OILPAN)
     void dispose();
+#endif
 
     ResourcePtr<Resource> m_resource;
     bool m_inLiveDecodedResourcesList;
@@ -88,10 +90,10 @@ public:
     MemoryCacheLiveResourcePriority m_liveResourcePriority;
     double m_lastDecodedAccessTime; // Used as a thrash guard
 
-    Member<MemoryCacheEntry> m_previousInLiveResourcesList;
-    Member<MemoryCacheEntry> m_nextInLiveResourcesList;
-    Member<MemoryCacheEntry> m_previousInAllResourcesList;
-    Member<MemoryCacheEntry> m_nextInAllResourcesList;
+    RawPtrWillBeMember<MemoryCacheEntry> m_previousInLiveResourcesList;
+    RawPtrWillBeMember<MemoryCacheEntry> m_nextInLiveResourcesList;
+    RawPtrWillBeMember<MemoryCacheEntry> m_previousInAllResourcesList;
+    RawPtrWillBeMember<MemoryCacheEntry> m_nextInAllResourcesList;
 
 private:
     explicit MemoryCacheEntry(Resource* resource)
@@ -116,8 +118,8 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(MemoryCacheEntry);
 struct MemoryCacheLRUList final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    Member<MemoryCacheEntry> m_head;
-    Member<MemoryCacheEntry> m_tail;
+    RawPtrWillBeMember<MemoryCacheEntry> m_head;
+    RawPtrWillBeMember<MemoryCacheEntry> m_tail;
 
     MemoryCacheLRUList() : m_head(nullptr), m_tail(nullptr) { }
     DECLARE_TRACE();
@@ -129,10 +131,10 @@ WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::MemoryCacheLRUList);
 
 namespace blink {
 
-class CORE_EXPORT MemoryCache final : public GarbageCollectedFinalized<MemoryCache>, public WebThread::TaskObserver {
-    WTF_MAKE_NONCOPYABLE(MemoryCache);
+class CORE_EXPORT MemoryCache final : public NoBaseWillBeGarbageCollectedFinalized<MemoryCache>, public WebThread::TaskObserver {
+    WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(MemoryCache);
 public:
-    static MemoryCache* create();
+    static PassOwnPtrWillBeRawPtr<MemoryCache> create();
     ~MemoryCache();
     DECLARE_TRACE();
 
@@ -291,7 +293,7 @@ private:
     // Size-adjusted and popularity-aware LRU list collection for cache objects. This collection can hold
     // more resources than the cached resource map, since it can also hold "stale" multiple versions of objects that are
     // waiting to die when the clients referencing them go away.
-    HeapVector<MemoryCacheLRUList, 32> m_allResources;
+    WillBeHeapVector<MemoryCacheLRUList, 32> m_allResources;
 
     // Lists just for live resources with decoded data. Access to this list is based off of painting the resource.
     // The lists are ordered by decode priority, with higher indices having higher priorities.
@@ -299,8 +301,8 @@ private:
 
     // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
     // referenced by a Web page).
-    using ResourceMap = HeapHashMap<String, Member<MemoryCacheEntry>>;
-    using ResourceMapIndex = HeapHashMap<String, Member<ResourceMap>>;
+    using ResourceMap = WillBeHeapHashMap<String, OwnPtrWillBeMember<MemoryCacheEntry>>;
+    using ResourceMapIndex = WillBeHeapHashMap<String, OwnPtrWillBeMember<ResourceMap>>;
     ResourceMap* ensureResourceMap(const String& cacheIdentifier);
     ResourceMapIndex m_resourceMaps;
 
@@ -310,7 +312,7 @@ private:
     // objects.
     // FIXME: Can we remove manual lifetime management of Resource and this?
     HeapHashSet<Member<Resource>> m_liveResources;
-    friend CORE_EXPORT MemoryCache* replaceMemoryCacheForTesting(MemoryCache*);
+    friend CORE_EXPORT RawPtr<MemoryCache> replaceMemoryCacheForTesting(RawPtr<MemoryCache>);
 #endif
 
     friend class MemoryCacheTest;
@@ -324,7 +326,7 @@ CORE_EXPORT MemoryCache* memoryCache();
 
 // Sets the global cache, used to swap in a test instance. Returns the old
 // MemoryCache object.
-CORE_EXPORT MemoryCache* replaceMemoryCacheForTesting(MemoryCache*);
+CORE_EXPORT PassOwnPtrWillBeRawPtr<MemoryCache> replaceMemoryCacheForTesting(PassOwnPtrWillBeRawPtr<MemoryCache>);
 
 }
 

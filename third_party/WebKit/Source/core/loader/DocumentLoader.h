@@ -168,7 +168,7 @@ namespace blink {
         bool shouldContinueForResponse() const;
 
         LocalFrame* m_frame;
-        Persistent<ResourceFetcher> m_fetcher;
+        RefPtrWillBePersistent<ResourceFetcher> m_fetcher;
 
         ResourcePtr<RawResource> m_mainResource;
 
