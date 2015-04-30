@@ -1,0 +1,25 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content;
+
+import "content/public/common/background_sync.mojom";
+
+interface BackgroundSyncService {
+  Register(SyncRegistration options, int64 service_worker_registration_id)
+      => (SyncRegistration options);
+  GetRegistration(BackgroundSyncPeriodicity periodicity, string tag,
+                  int64 service_worker_registration_id)
+      => (SyncRegistration? registration);
+  GetRegistrations(BackgroundSyncPeriodicity periodicity,
+                   int64 service_worker_registration_id)
+      => (array<SyncRegistration> registrations);
+  Unregister(BackgroundSyncPeriodicity periodicity, int64 id, string tag,
+             int64 service_worker_registration_id) => (bool success);
+};
+
+interface BackgoundSyncServiceClient {
+  Sync(SyncRegistration event);
+};
+

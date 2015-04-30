@@ -42,6 +42,8 @@
       'child/appcache/web_application_cache_host_impl.cc',
       'child/appcache/web_application_cache_host_impl.h',
       'child/assert_matching_enums.cc',
+      'child/background_sync/background_sync_type_converters.cc',
+      'child/background_sync/background_sync_type_converters.h',
       'child/blink_platform_impl.cc',
       'child/blink_platform_impl.h',
       'child/bluetooth/bluetooth_dispatcher.cc',

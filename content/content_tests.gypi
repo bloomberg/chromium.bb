@@ -579,6 +579,7 @@
       'browser/webui/url_data_manager_backend_unittest.cc',
       'browser/webui/web_ui_data_source_unittest.cc',
       'browser/webui/web_ui_message_handler_unittest.cc',
+      'child/background_sync/background_sync_type_converters_unittest.cc',
       'child/blink_platform_impl_unittest.cc',
       'child/fileapi/webfilewriter_base_unittest.cc',
       'child/indexed_db/indexed_db_dispatcher_unittest.cc',

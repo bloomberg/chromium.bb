@@ -12,6 +12,7 @@
         'mojom_files': [
           # NOTE: Sources duplicated in //content/common/BUILD.gn:mojo_bindings.
           'common/application_setup.mojom',
+          'common/background_sync_service.mojom',
           'common/geolocation_service.mojom',
           'common/permission_service.mojom',
           'common/presentation/presentation_service.mojom',
@@ -19,6 +20,7 @@
 
           # NOTE: Sources duplicated in
           # //content/public/common/BUILD.gn:mojo_bindings.
+          'public/common/background_sync.mojom',
           'public/common/mojo_geoposition.mojom',
           'public/common/permission_status.mojom',
         ],
