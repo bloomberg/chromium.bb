@@ -17,6 +17,7 @@ namespace sandbox {
 class HandleCloserAgent {
  public:
   HandleCloserAgent();
+  ~HandleCloserAgent();
 
   // Reads the serialized list from the broker and creates the lookup map.
   void InitializeHandlesToClose();

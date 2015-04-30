@@ -20,6 +20,7 @@ namespace test {
 class AuraShellTestSuite : public base::TestSuite {
  public:
   AuraShellTestSuite(int argc, char** argv);
+  ~AuraShellTestSuite() override;
 
  protected:
   // base::TestSuite:

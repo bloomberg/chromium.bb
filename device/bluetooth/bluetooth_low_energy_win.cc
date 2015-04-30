@@ -597,6 +597,9 @@ DevicePropertyValue::DevicePropertyValue(DEVPROPTYPE property_type,
       value_size_(value_size) {
 }
 
+DevicePropertyValue::~DevicePropertyValue() {
+}
+
 uint32_t DevicePropertyValue::AsUint32() const {
   CHECK_EQ(property_type_, static_cast<DEVPROPTYPE>(DEVPROP_TYPE_UINT32));
   CHECK_EQ(value_size_, sizeof(uint32_t));

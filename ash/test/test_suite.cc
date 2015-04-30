@@ -25,7 +25,11 @@ namespace ash {
 namespace test {
 
 AuraShellTestSuite::AuraShellTestSuite(int argc, char** argv)
-    : TestSuite(argc, argv) {}
+    : TestSuite(argc, argv) {
+}
+
+AuraShellTestSuite::~AuraShellTestSuite() {
+}
 
 void AuraShellTestSuite::Initialize() {
   base::TestSuite::Initialize();

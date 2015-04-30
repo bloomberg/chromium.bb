@@ -57,6 +57,7 @@ class DEVICE_BLUETOOTH_EXPORT DevicePropertyValue {
   DevicePropertyValue(DEVPROPTYPE property_type,
                       scoped_ptr<uint8_t[]> value,
                       size_t value_size);
+  ~DevicePropertyValue();
 
   DEVPROPTYPE property_type() const { return property_type_; }
 

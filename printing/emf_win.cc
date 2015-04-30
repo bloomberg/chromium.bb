@@ -246,6 +246,14 @@ gfx::Rect Emf::GetPageBounds(unsigned int page_number) const {
                    header.rclBounds.bottom - header.rclBounds.top + 1);
 }
 
+unsigned int Emf::GetPageCount() const {
+  return 1;
+}
+
+HDC Emf::context() const {
+  return hdc_;
+}
+
 uint32 Emf::GetDataSize() const {
   DCHECK(emf_ && !hdc_);
   return GetEnhMetaFileBits(emf_, 0, NULL);
@@ -470,6 +478,9 @@ Emf::Enumerator::Enumerator(const Emf& emf, HDC context, const RECT* rect) {
     items_.clear();
   }
   DCHECK_EQ(context_.hdc, context);
+}
+
+Emf::Enumerator::~Enumerator() {
 }
 
 Emf::Enumerator::const_iterator Emf::Enumerator::begin() const {

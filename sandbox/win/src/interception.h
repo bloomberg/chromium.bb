@@ -134,6 +134,9 @@ class InterceptionManager {
  private:
   // Used to store the interception information until the actual set-up.
   struct InterceptionData {
+    InterceptionData();
+    ~InterceptionData();
+
     InterceptionType type;            // Interception type.
     InterceptorId id;                 // Interceptor id.
     base::string16 dll;               // Name of dll to intercept.

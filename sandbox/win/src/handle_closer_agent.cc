@@ -45,6 +45,9 @@ HandleCloserAgent::HandleCloserAgent()
     : dummy_handle_(::CreateEvent(NULL, FALSE, FALSE, NULL)) {
 }
 
+HandleCloserAgent::~HandleCloserAgent() {
+}
+
 // Attempts to stuff |closed_handle| with a duplicated handle for a dummy Event
 // with no access. This should allow the handle to be closed, to avoid
 // generating EXCEPTION_INVALID_HANDLE on shutdown, but nothing else. For now

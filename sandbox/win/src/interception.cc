@@ -61,6 +61,12 @@ SANDBOX_INTERCEPT OriginalFunctions g_originals = { NULL };
 // Magic constant that identifies that this function is not to be patched.
 const char kUnloadDLLDummyFunction[] = "@";
 
+InterceptionManager::InterceptionData::InterceptionData() {
+}
+
+InterceptionManager::InterceptionData::~InterceptionData() {
+}
+
 InterceptionManager::InterceptionManager(TargetProcess* child_process,
                                          bool relaxed)
     : child_(child_process), names_used_(false), relaxed_(relaxed) {

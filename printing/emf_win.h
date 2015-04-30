@@ -74,12 +74,8 @@ class PRINTING_EXPORT Emf : public Metafile {
   // Should be passed to Playback to keep the exact same size.
   gfx::Rect GetPageBounds(unsigned int page_number) const override;
 
-  unsigned int GetPageCount() const override { return 1; }
-
-  HDC context() const override {
-    return hdc_;
-  }
-
+  unsigned int GetPageCount() const override;
+  HDC context() const override;
   bool Playback(HDC hdc, const RECT* rect) const override;
   bool SafePlayback(HDC hdc) const override;
 
@@ -162,6 +158,8 @@ class PRINTING_EXPORT Emf::Enumerator {
   // both optional at the same time or must both be valid.
   // Warning: |emf| must be kept valid for the time this object is alive.
   Enumerator(const Emf& emf, HDC hdc, const RECT* rect);
+
+  ~Enumerator();
 
   // Retrieves the first Record.
   const_iterator begin() const;
