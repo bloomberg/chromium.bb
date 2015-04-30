@@ -42,6 +42,7 @@ class SingleThreadTaskRunner;
 namespace history {
 class CommitLaterTask;
 struct DownloadRow;
+class HistoryBackendBaseTest;
 class HistoryBackendObserver;
 class HistoryClient;
 class HistoryDatabase;
@@ -450,7 +451,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   friend class base::RefCountedThreadSafe<HistoryBackend>;
   friend class CommitLaterTask;  // The commit task needs to call Commit().
   friend class HistoryBackendTest;
-  friend class HistoryBackendDBTest;  // So the unit tests can poke our innards.
+  friend class HistoryBackendBaseTest;  // So the unit tests can poke our
+                                        // innards.
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAll);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAllThenAddData);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPagesWithDetails);

@@ -218,7 +218,10 @@
       'google/core/browser/google_util_unittest.cc',
     ],
     'history_unittest_sources': [
+      'history/content/browser/content_history_backend_unittest.cc',
       'history/core/browser/android/android_history_types_unittest.cc',
+      'history/core/browser/history_backend_unittest.cc',
+      'history/core/browser/history_service_unittest.cc',
       'history/core/browser/history_types_unittest.cc',
       'history/core/browser/top_sites_cache_unittest.cc',
       'history/core/browser/top_sites_database_unittest.cc',

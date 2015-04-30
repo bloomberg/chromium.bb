@@ -157,6 +157,8 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../sql/sql.gyp:sql',
+        '../sql/sql.gyp:test_support_sql',
+        '../sync/sync.gyp:sync',
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
         'history_core_browser',
@@ -165,6 +167,8 @@
         # Note: sources list duplicated in GN build.
         'history/core/test/database_test_utils.cc',
         'history/core/test/database_test_utils.h',
+        'history/core/test/history_backend_base_test.cc',
+        'history/core/test/history_backend_base_test.h',
         'history/core/test/history_client_fake_bookmarks.cc',
         'history/core/test/history_client_fake_bookmarks.h',
         'history/core/test/history_unittest_base.cc',

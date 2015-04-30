@@ -63,7 +63,7 @@ class HistoryDatabase;
 struct HistoryDatabaseParams;
 class HistoryQueryTest;
 class HistoryServiceObserver;
-class HistoryTest;
+class HistoryServiceTest;
 class InMemoryHistoryBackend;
 struct KeywordSearchTermVisit;
 class PageUsageData;
@@ -520,7 +520,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   friend class HistoryQueryTest;
   friend class HistoryOperation;
   friend class ::HistoryQuickProviderTest;
-  friend class HistoryTest;
+  friend class HistoryServiceTest;
   friend class ::HistoryURLProvider;
   friend class ::HistoryURLProviderTest;
   friend class ::InMemoryURLIndexTest;

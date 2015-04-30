@@ -114,7 +114,6 @@
       'browser/history/history_backend_unittest.cc',
       'browser/history/history_database_unittest.cc',
       'browser/history/history_querying_unittest.cc',
-      'browser/history/history_unittest.cc',
       'browser/history/thumbnail_database_unittest.cc',
       'browser/history/top_sites_impl_unittest.cc',
       'browser/history/typed_url_syncable_service_unittest.cc',

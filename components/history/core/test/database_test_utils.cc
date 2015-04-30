@@ -10,8 +10,6 @@
 
 namespace history {
 
-namespace {
-
 WARN_UNUSED_RESULT bool GetTestDataHistoryDir(base::FilePath* dir) {
   if (!PathService::Get(base::DIR_SOURCE_ROOT, dir))
     return false;
@@ -21,8 +19,6 @@ WARN_UNUSED_RESULT bool GetTestDataHistoryDir(base::FilePath* dir) {
   *dir = dir->AppendASCII("history");
   return true;
 }
-
-}  // namespace
 
 WARN_UNUSED_RESULT bool CreateDatabaseFromSQL(const base::FilePath& db_path,
                                               const char* ascii_path) {

@@ -7,6 +7,8 @@ static_library("test") {
   sources = [
     "database_test_utils.cc",
     "database_test_utils.h",
+    "history_backend_base_test.cc",
+    "history_backend_base_test.h",
     "history_client_fake_bookmarks.cc",
     "history_client_fake_bookmarks.h",
     "history_unittest_base.cc",
@@ -19,6 +21,7 @@ static_library("test") {
     "//base",
     "//components/history/core/browser",
     "//sql",
+    "//sql:test_support",
     "//testing/gtest",
     "//url",
   ]

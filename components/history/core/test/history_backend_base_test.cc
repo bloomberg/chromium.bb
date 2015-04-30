@@ -1,0 +1,137 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/history/core/test/history_backend_base_test.h"
+
+#include "base/files/file_path.h"
+#include "base/strings/stringprintf.h"
+#include "components/history/core/browser/download_constants.h"
+#include "components/history/core/browser/download_row.h"
+#include "components/history/core/browser/history_backend.h"
+#include "components/history/core/browser/history_constants.h"
+#include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/in_memory_history_backend.h"
+#include "components/history/core/test/database_test_utils.h"
+#include "components/history/core/test/test_history_database.h"
+#include "url/gurl.h"
+
+namespace history {
+
+// Delegate class for when we create a backend without a HistoryService.
+class BackendDelegate : public HistoryBackend::Delegate {
+ public:
+  explicit BackendDelegate(HistoryBackendBaseTest* history_test)
+      : history_test_(history_test) {}
+
+  // HistoryBackend::Delegate implementation.
+  void NotifyProfileError(sql::InitStatus init_status) override {}
+  void SetInMemoryBackend(scoped_ptr<InMemoryHistoryBackend> backend) override {
+    // Save the in-memory backend to the history test object, this happens
+    // synchronously, so we don't have to do anything fancy.
+    history_test_->in_mem_backend_.swap(backend);
+  }
+  void NotifyFaviconChanged(const std::set<GURL>& url) override {}
+  void NotifyURLVisited(ui::PageTransition transition,
+                        const URLRow& row,
+                        const RedirectList& redirects,
+                        base::Time visit_time) override {}
+  void NotifyURLsModified(const URLRows& changed_urls) override {}
+  void NotifyURLsDeleted(bool all_history,
+                         bool expired,
+                         const URLRows& deleted_rows,
+                         const std::set<GURL>& favicon_urls) override {}
+  void NotifyKeywordSearchTermUpdated(const URLRow& row,
+                                      KeywordID keyword_id,
+                                      const base::string16& term) override {}
+  void NotifyKeywordSearchTermDeleted(URLID url_id) override {}
+  void DBLoaded() override {}
+
+ private:
+  HistoryBackendBaseTest* history_test_;
+};
+
+HistoryBackendBaseTest::HistoryBackendBaseTest() : db_(nullptr) {
+}
+
+HistoryBackendBaseTest::~HistoryBackendBaseTest() {
+}
+
+void HistoryBackendBaseTest::SetUp() {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  history_dir_ = temp_dir_.path().AppendASCII("HistoryBackendBaseTest");
+  ASSERT_TRUE(base::CreateDirectory(history_dir_));
+}
+
+void HistoryBackendBaseTest::TearDown() {
+  DeleteBackend();
+
+  // Make sure we don't have any event pending that could disrupt the next
+  // test.
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
+}
+
+void HistoryBackendBaseTest::CreateBackendAndDatabase() {
+  backend_ = new HistoryBackend(new BackendDelegate(this), nullptr);
+  backend_->Init(std::string(), false,
+                 TestHistoryDatabaseParamsForPath(history_dir_));
+  db_ = backend_->db_.get();
+  DCHECK(in_mem_backend_) << "Mem backend should have been set by "
+                             "HistoryBackend::Init";
+}
+
+void HistoryBackendBaseTest::CreateDBVersion(int version) {
+  base::FilePath data_path;
+  ASSERT_TRUE(GetTestDataHistoryDir(&data_path));
+  data_path =
+      data_path.AppendASCII(base::StringPrintf("history.%d.sql", version));
+  ASSERT_NO_FATAL_FAILURE(
+      ExecuteSQLScript(data_path, history_dir_.Append(kHistoryFilename)));
+}
+
+void HistoryBackendBaseTest::CreateArchivedDB() {
+  base::FilePath data_path;
+  ASSERT_TRUE(GetTestDataHistoryDir(&data_path));
+  data_path = data_path.AppendASCII("archived_history.4.sql");
+  ASSERT_NO_FATAL_FAILURE(ExecuteSQLScript(
+      data_path, history_dir_.Append(kArchivedHistoryFilename)));
+}
+
+void HistoryBackendBaseTest::DeleteBackend() {
+  if (backend_.get()) {
+    backend_->Closing();
+    backend_ = nullptr;
+  }
+}
+
+bool HistoryBackendBaseTest::AddDownload(uint32 id,
+                                           DownloadState state,
+                                           base::Time time) {
+  std::vector<GURL> url_chain;
+  url_chain.push_back(GURL("foo-url"));
+
+  DownloadRow download(base::FilePath(FILE_PATH_LITERAL("current-path")),
+                       base::FilePath(FILE_PATH_LITERAL("target-path")),
+                       url_chain,
+                       GURL("http://referrer.com/"),
+                       "application/vnd.oasis.opendocument.text",
+                       "application/octet-stream",
+                       time,
+                       time,
+                       std::string(),
+                       std::string(),
+                       0,
+                       512,
+                       state,
+                       DownloadDangerType::NOT_DANGEROUS,
+                       kTestDownloadInterruptReasonNone,
+                       id,
+                       false,
+                       "by_ext_id",
+                       "by_ext_name");
+  return db_->CreateDownload(download);
+}
+
+}  // namespace history
