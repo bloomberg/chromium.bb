@@ -375,7 +375,8 @@ bool CreateExperimentDetails(int flavor, ExperimentDetails* experiment) {
       experiment->flavor = flavor;
       experiment->heading = match.flavors[flavor].heading_id;
       experiment->control_group = match.control_group;
-      const wchar_t prefix[] = { match.prefix[0], match.prefix[1] + flavor, 0 };
+      const wchar_t prefix[] = {
+          match.prefix[0], static_cast<wchar_t>(match.prefix[1] + flavor), 0};
       experiment->prefix = prefix;
       experiment->flags = match.flavors[flavor].flags;
       return true;

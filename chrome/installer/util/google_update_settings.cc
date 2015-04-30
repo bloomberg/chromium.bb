@@ -597,12 +597,13 @@ int GoogleUpdateSettings::DuplicateGoogleUpdateSystemClientKey() {
                        TRUE, DUPLICATE_SAME_ACCESS)) {
     return 0;
   }
-  return reinterpret_cast<int>(target_handle);
+  return static_cast<int>(reinterpret_cast<uintptr_t>(target_handle));
 }
 
 bool GoogleUpdateSettings::WriteGoogleUpdateSystemClientKey(
     int handle, const base::string16& key, const base::string16& value) {
-  HKEY reg_key = reinterpret_cast<HKEY>(reinterpret_cast<void*>(handle));
+  HKEY reg_key = reinterpret_cast<HKEY>(
+      reinterpret_cast<void*>(static_cast<uintptr_t>(handle)));
   DWORD size = static_cast<DWORD>(value.size()) * sizeof(wchar_t);
   LSTATUS status = RegSetValueEx(reg_key, key.c_str(), 0, REG_SZ,
       reinterpret_cast<const BYTE*>(value.c_str()), size);
