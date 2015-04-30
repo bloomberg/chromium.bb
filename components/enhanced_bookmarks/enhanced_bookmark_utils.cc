@@ -4,35 +4,12 @@
 
 #include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
 
-#include "base/i18n/string_compare.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
 namespace enhanced_bookmarks {
-
-// Comparator used to sort bookmarks. No folders are allowed.
-class BookmarkNameComparator : public std::binary_function<const BookmarkNode*,
-                                                           const BookmarkNode*,
-                                                           bool> {
- public:
-  explicit BookmarkNameComparator(icu::Collator* collator)
-      : collator_(collator) {}
-
-  // Returns true if |n1| preceeds |n2|.
-  bool operator()(const BookmarkNode* n1, const BookmarkNode* n2) {
-    DCHECK(!n1->is_folder());
-    DCHECK(!n2->is_folder());
-    if (!collator_)
-      return n1->GetTitle() < n2->GetTitle();
-    return base::i18n::CompareString16WithCollator(*collator_, n1->GetTitle(),
-                                                   n2->GetTitle()) == UCOL_LESS;
-  }
-
- private:
-  icu::Collator* collator_;
-};
 
 std::vector<const BookmarkNode*> PrimaryPermanentNodes(BookmarkModel* model) {
   DCHECK(model->loaded());
