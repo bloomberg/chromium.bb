@@ -275,13 +275,6 @@ crbug.com/377970 [ Win Linux ] http/tests/misc/image-blocked-src-change.html [ F
 crbug.com/321607 [ Linux ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 
-# Untriaged pixel diffs, unclear if aura-related?
-# crbug.com/229207 [ Win ] virtual/deferred/fast/images/2-dht.html [ ImageOnlyFailure ]
-# TODO(noel): recover the Win line once bug 398235 is complete and new image baselines
-# have been created for bug 398235.
-crbug.com/398235 virtual/deferred/fast/images/2-dht.html [ NeedsRebaseline ]
-crbug.com/398235 virtual/slimmingpaint/fast/images/2-dht.html [ NeedsRebaseline ]
-
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/dom/Window/Plug-ins.html [ Skip ]
@@ -966,7 +959,6 @@ crbug.com/474168 [ Mac ] fast/images/182.html [ Crash Pass ]
 # TODO(noel): recover the Mac line once bug 398235 is complete and new image baselines
 # have been created for bug 398235.
 # crbug.com/474168 [ Mac ] fast/images/2-dht.html [ Crash Pass ]
-crbug.com/398235 fast/images/2-dht.html [ NeedsRebaseline ]
 crbug.com/474168 [ Mac ] fast/images/23-55.html [ Crash Pass ]
 crbug.com/474168 [ Mac ] fast/images/55.html [ Crash Pass ]
 
