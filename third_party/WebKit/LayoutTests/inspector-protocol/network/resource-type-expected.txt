@@ -2,7 +2,7 @@ Tests that responseReceived contains the documented resource types.
 
 Test started
 Network agent enabled
-Resource /resources-page.html got type: Document, type: Document, responseAvailable: true, responseEncoded: false
+Resource /resources-page.html got type: Document, type: Document, responseAvailable: false
 Resource /stylesheet.css got type: Stylesheet, type: Stylesheet, responseAvailable: true, responseEncoded: false
 Resource /script.js got type: Script, type: Script, responseAvailable: true, responseEncoded: false
 Resource /abe.png got type: Image, type: Image, responseAvailable: true, responseEncoded: true

@@ -32,7 +32,7 @@ function test()
     }
 
     var resources = [
-        { url: '/resources-page.html', type: "Document" },
+        { url: '/resources-page.html', type: "Document", responseAvailable: false },
         { url: '/stylesheet.css', type: "Stylesheet" },
         { url: '/script.js', type: "Script" },
         { url: '/abe.png', type: "Image" },
@@ -60,12 +60,22 @@ function test()
                 }
                 resource.gotType = type;
                 resource.gotUrl = url;
-                InspectorTest.sendCommand("Network.getResponseBody", { "requestId": requestId }, onResponseBody.bind(null, resource));
+                if ("responseAvailable" in resource)
+                    onResponseReady();
+                else
+                    InspectorTest.sendCommand("Network.getResponseBody", { "requestId": requestId }, onResponseBody.bind(null, resource));
                 return;
             }
         }
         InspectorTest.log("FAIL: received unexpected resource " + url);
         InspectorTest.completeTest();
+    }
+
+    function onResponseReady()
+    {
+        resourcesLeft -= 1;
+        if (resourcesLeft === 0)
+            receivedAllResources();
     }
 
     function onResponseBody(resource, protocolResponse)
@@ -76,9 +86,7 @@ function test()
             resource.responseAvailable = true;
             resource.responseEncoded = protocolResponse.result.base64Encoded;
         }
-        resourcesLeft -= 1;
-        if (resourcesLeft === 0)
-            receivedAllResources();
+        onResponseReady();
     }
 
     function receivedAllResources()
