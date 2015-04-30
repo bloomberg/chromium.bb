@@ -1,0 +1,8 @@
+{
+    "description": "Describes the Web Page Replay archives for a user story set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "new_tab_page_page_001.wpr": [
+            "newtabpagepage"
+        ]
+    }
+}
