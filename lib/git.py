@@ -69,7 +69,7 @@ GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
                                      re.IGNORECASE)
 
 DEFAULT_RETRY_INTERVAL = 3
-DEFAULT_RETRIES = 5
+DEFAULT_RETRIES = 10
 
 
 class GitException(Exception):
