@@ -183,9 +183,9 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
   DCHECK(registration.get());
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          registration->pattern(),
-          provider_host_->topmost_frame_url(),
-          resource_context_)) {
+          registration->pattern(), provider_host_->topmost_frame_url(),
+          resource_context_, provider_host_->process_id(),
+          provider_host_->frame_id())) {
     job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",

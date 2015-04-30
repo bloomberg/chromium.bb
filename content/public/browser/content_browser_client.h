@@ -292,7 +292,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowServiceWorker(const GURL& scope,
                                   const GURL& first_party,
-                                  content::ResourceContext* context);
+                                  content::ResourceContext* context,
+                                  int render_process_id,
+                                  int render_frame_id);
 
   // Allow the embedder to control if the given cookie can be read.
   // This is called on the IO thread.

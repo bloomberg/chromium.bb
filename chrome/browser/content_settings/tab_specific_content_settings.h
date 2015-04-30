@@ -151,6 +151,15 @@ class TabSpecificContentSettings
                                  const GURL& url,
                                  bool blocked_by_policy);
 
+  // Called when a specific Service Worker scope was accessed.
+  // If access was blocked due to the user's content settings,
+  // |blocked_by_policy| should be true, and this function should invoke
+  // OnContentBlocked.
+  static void ServiceWorkerAccessed(int render_process_id,
+                                    int render_frame_id,
+                                    const GURL& scope,
+                                    bool blocked_by_policy);
+
   // Resets the |content_blocked_| and |content_allowed_| arrays, except for
   // CONTENT_SETTINGS_TYPE_COOKIES related information.
   // TODO(vabr): Only public for tests. Move to a test client.
@@ -316,6 +325,7 @@ class TabSpecificContentSettings
   void OnLocalStorageAccessed(const GURL& url,
                               bool local,
                               bool blocked_by_policy);
+  void OnServiceWorkerAccessed(const GURL& scope, bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url,
                              const base::string16& name,
                              const base::string16& display_name,

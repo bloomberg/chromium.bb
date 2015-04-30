@@ -332,7 +332,8 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
   }
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          pattern, provider_host->topmost_frame_url(), resource_context_)) {
+          pattern, provider_host->topmost_frame_url(), resource_context_,
+          render_process_id_, provider_host->frame_id())) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeUnknown,
         base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
@@ -407,7 +408,8 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
   }
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          pattern, provider_host->topmost_frame_url(), resource_context_)) {
+          pattern, provider_host->topmost_frame_url(), resource_context_,
+          render_process_id_, provider_host->frame_id())) {
     Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
         thread_id,
         request_id,
@@ -477,9 +479,8 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
   }
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
-          provider_host->document_url(),
-          provider_host->topmost_frame_url(),
-          resource_context_)) {
+          provider_host->document_url(), provider_host->topmost_frame_url(),
+          resource_context_, render_process_id_, provider_host->frame_id())) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeUnknown,
         base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +

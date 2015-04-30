@@ -91,7 +91,9 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
   ServiceWorkerTestContentBrowserClient() {}
   bool AllowServiceWorker(const GURL& scope,
                           const GURL& first_party,
-                          content::ResourceContext* context) override {
+                          content::ResourceContext* context,
+                          int render_process_id,
+                          int render_frame_id) override {
     return false;
   }
 };

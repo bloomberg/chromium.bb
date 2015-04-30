@@ -120,7 +120,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                      content::ResourceContext* context) override;
   bool AllowServiceWorker(const GURL& scope,
                           const GURL& first_party,
-                          content::ResourceContext* context) override;
+                          content::ResourceContext* context,
+                          int render_process_id,
+                          int render_frame_id) override;
   bool AllowGetCookie(const GURL& url,
                       const GURL& first_party,
                       const net::CookieList& cookie_list,
