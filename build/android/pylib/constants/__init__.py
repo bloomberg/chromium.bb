@@ -241,7 +241,7 @@ def SetBuildDirectory(build_directory):
   os.environ['CHROMIUM_OUT_DIR'] = build_directory
 
 
-def SetOutputDirectort(output_directory):
+def SetOutputDirectory(output_directory):
   os.environ['CHROMIUM_OUTPUT_DIR'] = output_directory
 
 

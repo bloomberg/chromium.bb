@@ -111,7 +111,7 @@ def ProcessCommonOptions(args):
   if args.build_directory:
     constants.SetBuildDirectory(args.build_directory)
   if args.output_directory:
-    constants.SetOutputDirectort(args.output_directory)
+    constants.SetOutputDirectory(args.output_directory)
   if args.adb_path:
     constants.SetAdbPath(args.adb_path)
   # Some things such as Forwarder require ADB to be in the environment path.
