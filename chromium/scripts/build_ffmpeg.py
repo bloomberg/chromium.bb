@@ -60,7 +60,7 @@ Platform specific build notes:
     but as of 1.0.11, it has serious performance issues with make which makes
     building take hours).
 
-    Additionall, ensure you have the correct toolchain environment for building.
+    Additionally, ensure you have the correct toolchain environment for building.
     The x86 toolchain environment is required for ia32 builds and the x64 one
     for x64 builds.  This can be verified by running "cl.exe" and checking if
     the version string ends with "for x64" or "for x86."
@@ -233,7 +233,7 @@ def main(argv):
       '--enable-avutil',
       '--enable-fft',
       '--enable-rdft',
-      '--enable-shared',
+      '--enable-static',
 
       # Disable features.
       '--disable-bzlib',

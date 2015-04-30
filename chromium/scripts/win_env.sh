@@ -6,11 +6,14 @@
 
 # Sets up the appropriate environment for Visual Studio 2013 command line
 # development. Assumes the toolchain has been installed via depot_tools.
+# The environment settings only persist while the script is executing. The
+# command argument must be supplied to be run by this script while the
+# environment is still configured.
 
-if [ "$#" -lt 2 ]; then
-  echo "Usage: $(basename $0) /path/to/depot_tools arch [ command ]"
+if [ "$#" -lt 3 ]; then
+  echo "Usage: $(basename $0) /path/to/depot_tools arch command"
   echo "    arch     must be either x86 or x64"
-  echo "    command  command line to execute"
+  echo "    command  command to execute after environment is configured"
   exit 1
 fi
 
@@ -55,7 +58,7 @@ function add_include_path {
 }
 
 function add_lib_path {
-  if [ -d "$1" ]; then
+  if [ ! -d "$1" ]; then
     echo "Cannot add '$1' to lib path; directory does not exist." >&2
     exit 1
   fi
@@ -93,7 +96,7 @@ case "$2" in
 esac
 
 # Common for x86 and x64.
-add_path $(dirname $0)  # For cygwin-wrapper.
+add_path $(dirname $(readlink -f "$0")) # For cygwin-wrapper.
 add_include_path $VSPATH/win8sdk/Include/um
 add_include_path $VSPATH/win8sdk/Include/shared
 add_include_path $VSPATH/VC/include
@@ -106,4 +109,4 @@ export LIB=$lib
 # Now execute whatever is left trailing.
 shift
 shift
-$*
+$@

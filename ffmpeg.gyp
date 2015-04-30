@@ -8,9 +8,8 @@
 #     FFmpeg.  The Google Chrome version contains additional codecs.
 #     Typical values are Chromium, Chrome, ChromiumOS, and ChromeOS.
 #   build_ffmpegsumo
-#     When set to zero will build Chromium against Chrome's FFmpeg headers, but
-#     not build ffmpegsumo itself.  Users are expected to build and provide
-#     their own version of ffmpegsumo.  Default value is 1.
+#     When set to zero, will not include ffmpegsumo as a library to be built as
+#     part of the larger chrome binary. Default value is 1.
 #
 
 {
@@ -35,6 +34,7 @@
           # Setting the optimizations to 'speed' or to 'max' results in a lot of
           # unresolved symbols. The only supported mode is 'size' (see
           # crbug.com/264459).
+          # NOTE: THIS BUG IS FIXED NOW, SHOULD WE SET MAX?
           'optimize' :'size',
         }],
       ],
@@ -78,11 +78,6 @@
 
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
-
-    # Stub generator script and signatures of all functions used by Chrome.
-    'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
-    'sig_files': ['chromium/ffmpegsumo.sigs'],
-    'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
   },
   'conditions': [
     ['(target_arch == "ia32" or target_arch == "x64") and os_config != "linux-noasm"', {
@@ -139,7 +134,7 @@
         },
       ] # targets
     }], # (target_arch == "ia32" or target_arch == "x64")
-    ['build_ffmpegsumo != 0', {
+    ['build_ffmpegsumo == 1', {
       'includes': [
         'ffmpeg_generated.gypi',
         '../../build/util/version.gypi',
@@ -150,45 +145,16 @@
       },
       'targets': [
         {
-          'target_name': 'ffmpegsumo_resources',
-          'type': 'none',
-          'conditions': [
-            ['branding == "Chrome"', {
-              'variables': {
-                 'branding_path': '../../chrome/app/theme/google_chrome/BRANDING',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                 'branding_path': '../../chrome/app/theme/chromium/BRANDING',
-              },
-            }],
-          ],
-          'variables': {
-            'output_dir': 'ffmpegsumo',
-            'template_input_path': '../../chrome/app/chrome_version.rc.version',
-          },
-          'sources': [
-            'ffmpegsumo.ver',
-          ],
-          'includes': [
-            '../../chrome/version_resource_rules.gypi',
-          ],
-        },
-        {
           'target_name': 'ffmpegsumo',
-          'type': 'loadable_module',
+          'type': 'static_library',
           'sources': [
             '<@(c_sources)',
             '<(platform_config_root)/config.h',
             '<(platform_config_root)/libavutil/avconfig.h',
-            '<(SHARED_INTERMEDIATE_DIR)/ffmpegsumo/ffmpegsumo_version.rc',
           ],
           'include_dirs': [
             '<(platform_config_root)',
             '.',
-          ],
-          'dependencies': [
-            'ffmpegsumo_resources',
           ],
           'defines': [
             'HAVE_AV_CONFIG_H',
@@ -303,7 +269,7 @@
                 '_LARGEFILE_SOURCE',
                 # BUG(ihf): ffmpeg compiles with this define. But according to
                 # ajwong: I wouldn't change _FILE_OFFSET_BITS.  That's a scary change
-                # cause it affects the default length of off_t, and fpos_t,
+                # beccause it affects the default length of off_t, and fpos_t,
                 # which can cause strange problems if the loading code doesn't
                 # have it set and you start passing FILE*s or file descriptors
                 # between symbol contexts.
@@ -321,11 +287,11 @@
                 #
                 # TODO(ajwong): Manually tag the API that we use to be
                 # exported.
-                '-fvisibility=hidden',
+                #'-fvisibility=hidden', # nothing needs to be exported for static link -- is VISIBILITY HIDDEN coming from somewhere else though? ALSO, Dont forget about the xcode case below (search hidden)
               ],
               'link_settings': {
                 'ldflags': [
-                  '-Wl,-Bsymbolic',
+                  '-Wl,-Bsymbolic', #This can maybe go. Bsymbolic can go (its just for shared libs), but WL?
                   '-L<(shared_generated_dir)',
                 ],
                 'libraries': [
@@ -388,9 +354,6 @@
               },
             }],  # OS == "mac"
             ['OS == "win"', {
-              'sources': [
-                '<(shared_generated_dir)/ffmpegsumo.def',
-              ],
               # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
               'msvs_disabled_warnings': [
                 4996, 4018, 4090, 4305, 4133, 4146, 4554, 4028, 4334, 4101, 4102,
@@ -424,14 +387,6 @@
                     4267
                   ],
                 }],
-                ['win_use_allocator_shim==1', {
-                  'dependencies': [
-                    '../../base/allocator/allocator.gyp:allocator',
-                  ],
-                  'sources': [
-                    'chromium/dllmain.cc',
-                  ],
-                }],
               ],
               'msvs_settings': {
                 # Ignore warnings about a local symbol being inefficiently imported,
@@ -440,27 +395,6 @@
                   'AdditionalOptions': ['/ignore:4049', '/ignore:4217'],
                 }
               },
-              'actions': [
-                {
-                  'action_name': 'generate_def',
-                  'inputs': [
-                    '<(generate_stubs_script)',
-                    '<@(sig_files)',
-                  ],
-                  'outputs': [
-                    '<(shared_generated_dir)/ffmpegsumo.def',
-                  ],
-                  'action': ['python',
-                             '<(generate_stubs_script)',
-                             '-i', '<(INTERMEDIATE_DIR)',
-                             '-o', '<(shared_generated_dir)',
-                             '-t', 'windows_def',
-                             '-m', 'ffmpegsumo.dll',
-                             '<@(_inputs)',
-                  ],
-                  'message': 'Generating FFmpeg export definitions',
-                },
-              ],
             }],
           ],
         },
@@ -470,156 +404,27 @@
   'targets': [
     {
       'target_name': 'ffmpeg',
-      'sources': [
-        # Files needed for stub generation rules.
-        '<@(sig_files)',
-      ],
       'defines': [
-        '__STDC_CONSTANT_MACROS',  # FFmpeg uses INT64_C.
+        '__STDC_CONSTANT_MACROS',  # FFmpeg uses INT64_C. maybe this can go.....
       ],
+      #TODO: Is this still needed? https://code.google.com/p/gyp/wiki/InputFormatReference
       'hard_dependency': 1,
 
-      # Do not fear the massive conditional blocks!  They do the following:
-      #   1) Use the Window stub generator on Windows
-      #   2) Else, use the POSIX stub generator on non-Windows
       'conditions': [
-        ['OS == "win"', {
-          'msvs_guid': 'D7A94F58-576A-45D9-A45F-EB87C63ABBB0',
-          'variables': {
-            'conditions': [
-              ['target_arch == "x64"', {
-                'outfile_type': 'windows_lib_x64',
-              }, {  # else, generate x86 stub library
-                'outfile_type': 'windows_lib',
-              }],
-            ],
-            'output_dir': '<(PRODUCT_DIR)/lib',
-            'intermediate_dir': '<(INTERMEDIATE_DIR)',
-          },
+        ['build_ffmpegsumo == 1', {
           'type': 'none',
           'dependencies': [
-            'ffmpegsumo',
-          ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(platform_config_root)',
-              '.',
+              'ffmpegsumo',
             ],
-            'link_settings': {
-              'libraries': [
-                '<(output_dir)/ffmpegsumo.lib',
-              ],
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'DelayLoadDLLs': [
-                    'ffmpegsumo.dll',
-                  ],
-                },
-              },
-            },
-          },
-          'rules': [
-            {
-              'rule_name': 'generate_libs',
-              'extension': 'sigs',
-              'inputs': [
-                '<(generate_stubs_script)',
-                '<@(sig_files)',
-              ],
-              'outputs': [
-                '<(output_dir)/<(RULE_INPUT_ROOT).lib',
-              ],
-              'action': ['python', '<(generate_stubs_script)',
-                         '-i', '<(intermediate_dir)',
-                         '-o', '<(output_dir)',
-                         '-t', '<(outfile_type)',
-                         '<@(RULE_INPUT_PATH)',
-              ],
-              'message': 'Generating FFmpeg import libraries',
-            },
-          ],
-        }, {  # else OS != "win", use POSIX stub generator
-          'variables': {
-            'outfile_type': 'posix_stubs',
-            'stubs_filename_root': 'ffmpeg_stubs',
-            'project_path': 'third_party/ffmpeg',
-            'intermediate_dir': '<(INTERMEDIATE_DIR)',
-            'output_root': '<(SHARED_INTERMEDIATE_DIR)/ffmpeg',
-            'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)'
-          },
-          'sources': [
-            '<(extra_header)',
-          ],
-          'type': '<(component)',
-          'include_dirs': [
-            '<(output_root)',
-            '../..',  # The chromium 'src' directory.
-            '<(platform_config_root)',
-            '.',
-          ],
-          'dependencies': [
-            # Required for the logging done in the stubs generator.
-            '../../base/base.gyp:base',
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              '__STDC_CONSTANT_MACROS',  # FFmpeg uses INT64_C.
-            ],
+            'direct_dependent_settings': {
             'include_dirs': [
-              '<(output_root)',
               '../..',  # The chromium 'src' directory.
               '<(platform_config_root)',
               '.',
-            ],
-          },
-          'actions': [
-            {
-              'action_name': 'generate_stubs',
-              'inputs': [
-                '<(generate_stubs_script)',
-                '<(extra_header)',
-                '<@(sig_files)',
               ],
-              'outputs': [
-                '<(intermediate_dir)/<(stubs_filename_root).cc',
-                '<(output_root)/<(project_path)/<(stubs_filename_root).h',
-              ],
-              'action': ['python',
-                         '<(generate_stubs_script)',
-                         '-i', '<(intermediate_dir)',
-                         '-o', '<(output_root)/<(project_path)',
-                         '-t', '<(outfile_type)',
-                         '-e', '<(extra_header)',
-                         '-s', '<(stubs_filename_root)',
-                         '-p', '<(project_path)',
-                         '<@(_inputs)',
-              ],
-              'process_outputs_as_sources': 1,
-              'message': 'Generating FFmpeg stubs for dynamic loading',
             },
-          ],
-          'conditions': [
-            # Linux/Solaris need libdl for dlopen() and friends.
-            ['OS == "linux" or OS == "solaris"', {
-              'link_settings': {
-                'libraries': [
-                  '-ldl',
-                ],
-              },
-            }],
-            ['component == "shared_library"', {
-              'cflags!': ['-fvisibility=hidden'],
-              'xcode_settings': {
-                'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',  # no -fvisibility=hidden
-              },
-            }],
-            ['build_ffmpegsumo != 0', {
-              'dependencies': [
-                'ffmpegsumo',
-              ],
-            }],
-          ],  # conditions
-        }],
+          }
+        ],
       ],  # conditions
     },
   ],  # targets

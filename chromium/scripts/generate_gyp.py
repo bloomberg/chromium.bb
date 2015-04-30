@@ -75,6 +75,7 @@ import itertools
 import optparse
 import os
 import string
+import subprocess
 
 COPYRIGHT = """# Copyright %d The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -627,6 +628,42 @@ def WriteGn(fd, build_dir, disjoint_sets):
     fd.write(s.GenerateGnStanza())
 
 
+def CheckLicenseForSource(source):
+  # Assumed to be /src/third_party/ffmpeg/chromium/scripts
+  script_path = os.path.dirname(os.path.realpath(__file__));
+  ffmpeg_root = os.path.abspath(
+      os.path.join(script_path, os.path.pardir, os.path.pardir))
+  source_root = os.path.abspath(
+      os.path.join(ffmpeg_root, os.path.pardir, os.path.pardir))
+
+  # Script should live at src/tools/checklicenses/checklicenses.py
+  checklicenses_path = os.path.abspath(os.path.join(
+      source_root, 'tools', 'checklicenses', 'checklicenses.py'));
+  if not os.path.exists(checklicenses_path):
+    print 'Could not find checklicenses.py'
+    return False
+
+  check_process = subprocess.Popen([checklicenses_path,
+                                    '--ignore-suppressions',
+                                    os.path.abspath(source)],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+  check_process.wait()
+  stdout, stderr = check_process.communicate()
+  print stdout
+  print stderr
+  return check_process.returncode == 0
+
+
+def CheckLicensesForStaticLinking(disjoint_sets):
+  for source_set in disjoint_sets:
+    for source in source_set.sources:
+      if not CheckLicenseForSource(source):
+        print 'ARG!', source
+      else:
+        print 'GOOD JORB:', source
+  return False
+
 def main():
   options, args = ParseOptions()
 
@@ -654,17 +691,21 @@ def main():
         sets.append(SourceSet(s, set([arch]), set([target]), set([platform])))
 
   sets = CreatePairwiseDisjointSets(sets)
-  # Open for writing.
-  if options.output_gn:
-    outfile = 'ffmpeg_generated.gni'
-  else:
-    outfile = 'ffmpeg_generated.gypi'
-  output_name = os.path.join(options.source_dir, outfile)
-  with open(output_name, 'w') as fd:
+
+  if (CheckLicensesForStaticLinking(sets)):
+    # Open for writing.
     if options.output_gn:
-      WriteGn(fd, options.build_dir, sets)
+      outfile = 'ffmpeg_generated.gni'
     else:
-      WriteGyp(fd, options.build_dir, sets)
+      outfile = 'ffmpeg_generated.gypi'
+    output_name = os.path.join(options.source_dir, outfile)
+    with open(output_name, 'w') as fd:
+      if options.output_gn:
+        WriteGn(fd, options.build_dir, sets)
+      else:
+        WriteGyp(fd, options.build_dir, sets)
+  else:
+    print 'Generate failed, invalid licenses detected.'
 
 if __name__ == '__main__':
   main()
