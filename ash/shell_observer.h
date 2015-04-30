@@ -29,6 +29,9 @@ class ASH_EXPORT ShellObserver {
   // unlocked.
   virtual void OnLockStateChanged(bool locked) {}
 
+  // Called when a casting session is started or stopped.
+  virtual void OnCastingSessionStartedOrStopped(bool started) {}
+
   // Invoked after a non-primary root window is created.
   virtual void OnRootWindowAdded(aura::Window* root_window) {}
 

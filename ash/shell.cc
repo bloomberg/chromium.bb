@@ -411,8 +411,8 @@ void Shell::OnLockStateChanged(bool locked) {
 
 void Shell::OnCastingSessionStartedOrStopped(bool started) {
 #if defined(OS_CHROMEOS)
-  if (projecting_observer_)
-    projecting_observer_->OnCastingSessionStartedOrStopped(started);
+  FOR_EACH_OBSERVER(ShellObserver, observers_,
+                    OnCastingSessionStartedOrStopped(started));
 #endif
 }
 
@@ -818,8 +818,10 @@ Shell::~Shell() {
         display_configurator_animation_.get());
   if (display_error_observer_)
     display_configurator_->RemoveObserver(display_error_observer_.get());
-  if (projecting_observer_)
+  if (projecting_observer_) {
     display_configurator_->RemoveObserver(projecting_observer_.get());
+    RemoveShellObserver(projecting_observer_.get());
+  }
   display_change_observer_.reset();
 
   PowerStatus::Shutdown();
@@ -846,6 +848,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   projecting_observer_.reset(
       new ProjectingObserver(dbus_thread_manager->GetPowerManagerClient()));
   display_configurator_->AddObserver(projecting_observer_.get());
+  AddShellObserver(projecting_observer_.get());
 
   if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
     display_change_observer_.reset(new DisplayChangeObserver);
