@@ -1046,8 +1046,10 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
   // view believe it has a focus even if the widget doens't have a
   // focus. Either cases, we need to ignore this when the browser
   // window isn't active.
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   if (!force_location_bar_focus_ && !IsActive())
     return;
+#endif
 
   // Temporarily reveal the top-of-window views (if not already revealed) so
   // that the location bar view is visible and is considered focusable. If the

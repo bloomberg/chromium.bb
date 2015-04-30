@@ -1198,6 +1198,17 @@ bool Browser::ShouldPreserveAbortedURLs(WebContents* source) {
   return chrome::IsNTPURL(committed_url, profile);
 }
 
+void Browser::SetFocusToLocationBar(bool select_all) {
+  // Two differences between this and FocusLocationBar():
+  // (1) This doesn't get recorded in user metrics, since it's called
+  //     internally.
+  // (2) This checks whether the location bar can be focused, and if not, clears
+  //     the focus.  FocusLocationBar() is only reached when the location bar is
+  //     focusable, but this may be reached at other times, e.g. while in
+  //     fullscreen mode, where we need to leave focus in a consistent state.
+  window_->SetFocusToLocationBar(select_all);
+}
+
 bool Browser::PreHandleKeyboardEvent(content::WebContents* source,
                                      const NativeWebKeyboardEvent& event,
                                      bool* is_keyboard_shortcut) {
@@ -1553,17 +1564,6 @@ bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
   }
 
   return chrome::NavEntryIsInstantNTP(source, entry);
-}
-
-void Browser::SetFocusToLocationBar(bool select_all) {
-  // Two differences between this and FocusLocationBar():
-  // (1) This doesn't get recorded in user metrics, since it's called
-  //     internally.
-  // (2) This checks whether the location bar can be focused, and if not, clears
-  //     the focus.  FocusLocationBar() is only reached when the location bar is
-  //     focusable, but this may be reached at other times, e.g. while in
-  //     fullscreen mode, where we need to leave focus in a consistent state.
-  window_->SetFocusToLocationBar(select_all);
 }
 
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {

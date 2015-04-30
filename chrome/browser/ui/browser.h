@@ -443,6 +443,7 @@ class Browser : public TabStripModelObserver,
   // Overridden from content::WebContentsDelegate:
   bool CanOverscrollContent() const override;
   bool ShouldPreserveAbortedURLs(content::WebContents* source) override;
+  void SetFocusToLocationBar(bool select_all) override;
   bool PreHandleKeyboardEvent(content::WebContents* source,
                               const content::NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;
@@ -575,7 +576,6 @@ class Browser : public TabStripModelObserver,
                          bool proceed,
                          bool* proceed_to_fire_unload) override;
   bool ShouldFocusLocationBarByDefault(content::WebContents* source) override;
-  void SetFocusToLocationBar(bool select_all) override;
   void ViewSourceForTab(content::WebContents* source,
                         const GURL& page_url) override;
   void ViewSourceForFrame(content::WebContents* source,
