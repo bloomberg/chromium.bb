@@ -338,37 +338,6 @@ void V8TestInterfacePartial::preparePrototypeObject(v8::Isolate* isolate, v8::Lo
     prototypeObject->ForceSet(v8Context, unscopablesSymbol, unscopeables).FromJust();
 }
 
-bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestInterface* holderImpl, int value, int* result)
-{
-    if (!frame)
-        return false;
-    v8::HandleScope handleScope(toIsolate(frame));
-    ScriptForbiddenScope::AllowUserAgentScript script;
-    v8::Local<v8::Context> contextInPrivateScript = toV8Context(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (contextInPrivateScript.IsEmpty())
-        return false;
-    ScriptState* scriptState = ScriptState::from(contextInPrivateScript);
-    ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-    if (!scriptState->executionContext())
-        return false;
-
-    ScriptState::Scope scope(scriptState);
-    v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-
-    v8::Local<v8::Value> valueHandle = v8::Integer::New(scriptState->isolate(), value);
-    v8::Local<v8::Value> argv[] = { valueHandle };
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "shortMethodWithShortArgumentImplementedInPrivateScript", "TestInterfaceImplementation", scriptState->context()->Global(), scriptState->isolate());
-    v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
-    if (v8Value.IsEmpty())
-        return false;
-    int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return false;
-    *result = cppValue;
-    RELEASE_ASSERT(!exceptionState.hadException());
-    return true;
-}
-
 void V8TestInterfacePartial::initialize()
 {
     // Should be invoked from initModules.
