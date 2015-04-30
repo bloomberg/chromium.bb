@@ -185,19 +185,33 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
 // Attempts to connect a UDP socket to |dest|:53.
 bool IsGloballyReachable(const IPAddressNumber& dest,
                          const BoundNetLog& net_log) {
+  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile_1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455942 IsGloballyReachable (create udp socket)"));
+
   scoped_ptr<DatagramClientSocket> socket(
       ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
           DatagramSocket::DEFAULT_BIND,
           RandIntCallback(),
           net_log.net_log(),
           net_log.source()));
+  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
+  tracked_objects::ScopedTracker tracking_profile_2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 IsGloballyReachable (connect)"));
   int rv = socket->Connect(IPEndPoint(dest, 53));
   if (rv != OK)
     return false;
+  tracked_objects::ScopedTracker tracking_profile_3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455942 IsGloballyReachable (get local addr)"));
   IPEndPoint endpoint;
   rv = socket->GetLocalAddress(&endpoint);
   if (rv != OK)
     return false;
+  tracked_objects::ScopedTracker tracking_profile_4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "455942 IsGloballyReachable (remainder)"));
   DCHECK_EQ(ADDRESS_FAMILY_IPV6, endpoint.GetFamily());
   const IPAddressNumber& address = endpoint.address();
   bool is_link_local = (address[0] == 0xFE) && ((address[1] & 0xC0) == 0x80);
@@ -1887,10 +1901,16 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
 
   LogStartRequest(source_net_log, info);
 
+  tracked_objects::ScopedTracker tracking_profile_1a(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 1a"));
+
   IPAddressNumber ip_number;
   IPAddressNumber* ip_number_ptr = nullptr;
   if (ParseIPLiteralToNumber(info.hostname(), &ip_number))
     ip_number_ptr = &ip_number;
+
+  tracked_objects::ScopedTracker tracking_profile_1b(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 1b"));
 
   // Build a key that identifies the request in the cache and in the
   // outstanding jobs map.
@@ -1907,26 +1927,15 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
     return rv;
   }
 
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile_3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 3"));
-
   // Next we need to attach our request to a "job". This job is responsible for
   // calling "getaddrinfo(hostname)" on a worker thread.
 
   JobMap::iterator jobit = jobs_.find(key);
   Job* job;
   if (jobit == jobs_.end()) {
-    // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-    tracked_objects::ScopedTracker tracking_profile_4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 4"));
     job =
         new Job(weak_ptr_factory_.GetWeakPtr(), key, priority, source_net_log);
     job->Schedule(false);
-
-    // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-    tracked_objects::ScopedTracker tracking_profile_5(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 5"));
 
     // Check for queue overflow.
     if (dispatcher_->num_queued_jobs() > max_queued_jobs_) {
@@ -1943,10 +1952,6 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   } else {
     job = jobit->second;
   }
-
-  // TODO(eroman): Remove ScopedTracker below once crbug.com/455942 is fixed.
-  tracked_objects::ScopedTracker tracking_profile_6(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("455942 HostResolverImpl::Resolve 6"));
 
   // Can't complete synchronously. Create and attach request.
   scoped_ptr<Request> req(new Request(
