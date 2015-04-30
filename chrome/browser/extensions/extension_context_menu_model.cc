@@ -72,7 +72,10 @@ bool MenuItemMatchesAction(ExtensionContextMenuModel::ActionType type,
 
 // Returns the id for the visibility command for the given |extension|, or -1
 // if none should be shown.
-int GetVisibilityStringId(Profile* profile, const Extension* extension) {
+int GetVisibilityStringId(
+    Profile* profile,
+    const Extension* extension,
+    ExtensionContextMenuModel::ButtonVisibility button_visibility) {
   DCHECK(profile);
   int string_id = -1;
   if (!extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
@@ -84,20 +87,30 @@ int GetVisibilityStringId(Profile* profile, const Extension* extension) {
     }
   } else {
     // With the redesign, we display "show" or "hide" based on the icon's
-    // visibility.
-    bool visible = ExtensionActionAPI::Get(profile)->GetBrowserActionVisibility(
-                       extension->id());
-    string_id =
-        visible ? IDS_EXTENSIONS_HIDE_BUTTON : IDS_EXTENSIONS_SHOW_BUTTON;
+    // visibility, and can have "transitively shown" buttons that are shown
+    // only while the button has a popup or menu visible.
+    switch (button_visibility) {
+      case (ExtensionContextMenuModel::VISIBLE):
+        string_id = IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU;
+        break;
+      case (ExtensionContextMenuModel::TRANSITIVELY_VISIBLE):
+        string_id = IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR;
+        break;
+      case (ExtensionContextMenuModel::OVERFLOWED):
+        string_id = IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR;
+        break;
+    }
   }
   return string_id;
 }
 
 }  // namespace
 
-ExtensionContextMenuModel::ExtensionContextMenuModel(const Extension* extension,
-                                                     Browser* browser,
-                                                     PopupDelegate* delegate)
+ExtensionContextMenuModel::ExtensionContextMenuModel(
+    const Extension* extension,
+    Browser* browser,
+    ButtonVisibility button_visibility,
+    PopupDelegate* delegate)
     : SimpleMenuModel(this),
       extension_id_(extension->id()),
       browser_(browser),
@@ -105,7 +118,7 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(const Extension* extension,
       delegate_(delegate),
       action_type_(NO_ACTION),
       extension_items_count_(0) {
-  InitMenu(extension);
+  InitMenu(extension, button_visibility);
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode) &&
       delegate_) {
@@ -123,7 +136,7 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(const Extension* extension,
       delegate_(NULL),
       action_type_(NO_ACTION),
       extension_items_count_(0) {
-  InitMenu(extension);
+  InitMenu(extension, VISIBLE);
 }
 
 bool ExtensionContextMenuModel::IsCommandIdChecked(int command_id) const {
@@ -251,7 +264,8 @@ void ExtensionContextMenuModel::ExtensionUninstallCanceled() {
 
 ExtensionContextMenuModel::~ExtensionContextMenuModel() {}
 
-void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
+void ExtensionContextMenuModel::InitMenu(const Extension* extension,
+                                         ButtonVisibility button_visibility) {
   DCHECK(extension);
 
   extensions::ExtensionActionManager* extension_action_manager =
@@ -292,7 +306,8 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
 
   // Add a toggle visibility (show/hide) if the extension icon is shown on the
   // toolbar.
-  int visibility_string_id = GetVisibilityStringId(profile_, extension);
+  int visibility_string_id =
+      GetVisibilityStringId(profile_, extension, button_visibility);
   if (visibility_string_id != -1)
     AddItemWithStringId(TOGGLE_VISIBILITY, visibility_string_id);
 

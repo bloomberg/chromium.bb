@@ -45,6 +45,17 @@ class ExtensionContextMenuModel
   // Type of action the extension icon represents.
   enum ActionType { NO_ACTION = 0, BROWSER_ACTION, PAGE_ACTION };
 
+  // The current visibility of the button; this can affect the "hide"/"show"
+  // strings in the menu.
+  enum ButtonVisibility {
+    // The button is visible on the toolbar.
+    VISIBLE,
+    // The button is temporarily visible on the toolbar, as for showign a popup.
+    TRANSITIVELY_VISIBLE,
+    // The button is showed in the overflow menu.
+    OVERFLOWED
+  };
+
   // Delegate to handle showing an ExtensionAction popup.
   class PopupDelegate {
    public:
@@ -63,6 +74,7 @@ class ExtensionContextMenuModel
   // ShowPopupForDevToolsWindow() to be called on |delegate|.
   ExtensionContextMenuModel(const extensions::Extension* extension,
                             Browser* browser,
+                            ButtonVisibility visibility,
                             PopupDelegate* delegate);
 
   // Create a menu model for the given extension, without support
@@ -87,7 +99,8 @@ class ExtensionContextMenuModel
 
   ~ExtensionContextMenuModel() override;
 
-  void InitMenu(const extensions::Extension* extension);
+  void InitMenu(const extensions::Extension* extension,
+                ButtonVisibility button_visibility_);
 
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.

@@ -166,9 +166,18 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
   if (!ExtensionIsValid() || !extension()->ShowConfigureContextMenus())
     return nullptr;
 
+  ExtensionContextMenuModel::ButtonVisibility visibility =
+      ExtensionContextMenuModel::VISIBLE;
+  if (toolbar_actions_bar_) {
+    if (toolbar_actions_bar_->popped_out_action() == this)
+      visibility = ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
+    else if (!toolbar_actions_bar_->IsActionVisible(this))
+      visibility = ExtensionContextMenuModel::OVERFLOWED;
+    // Else, VISIBLE is correct.
+  }
   // Reconstruct the menu every time because the menu's contents are dynamic.
   context_menu_model_ = make_scoped_refptr(new ExtensionContextMenuModel(
-      extension(), browser_, this));
+      extension(), browser_, visibility, this));
   return context_menu_model_.get();
 }
 

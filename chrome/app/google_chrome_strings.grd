@@ -693,6 +693,18 @@ For Google Chrome, processes used to display diagnostics information (such as th
         <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK" desc="The first part of the sign-in promo paragraph. This part will be converted to a link and will get more text appended to it (see IDS_EXTENSION_INSTALLED_SIGNIN_PROMO). Keep this text short.">
           Sign in to Chrome
         </message>
+
+        <!-- Extension context menu -->
+        <if expr="not use_titlecase">
+          <message name="IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU" desc="The extension context menu item to hide the button in the application menu (sentence case).">
+            Hide in Chrome menu
+          </message>
+        </if>
+        <if expr="use_titlecase">
+          <message name="IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU" desc="The extension context menu item to hide the button in the application menu (title case).">
+            Hide in Chrome Menu
+          </message>
+        </if>
       </if>
 
       <!-- settings reset bubble messages -->
