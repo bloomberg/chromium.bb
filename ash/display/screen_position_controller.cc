@@ -60,20 +60,23 @@ void MoveAllTransientChildrenToNewRoot(const gfx::Display& display,
     MoveAllTransientChildrenToNewRoot(display, *iter);
 }
 
-// Finds the root window at |location| in |window|'s coordinates and returns a
-// pair of root window and location in that root window's coordinates. The
-// function usually returns |window->GetRootWindow()|, but if the mouse pointer
-// is moved outside the |window|'s root while the mouse is captured, it returns
-// the other root window.
-std::pair<aura::Window*, gfx::Point> GetRootWindowRelativeToWindow(
-    aura::Window* window,
-    const gfx::Point& location) {
-  aura::Window* root_window = window->GetRootWindow();
-  gfx::Point location_in_root(location);
-  aura::Window::ConvertPointToTarget(window, root_window, &location_in_root);
+}  // namespace
+
+// static
+void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
+    aura::Window* root_window,
+    const aura::Window::Windows& root_windows,
+    gfx::Point* point,
+    aura::Window** target_root) {
+  DCHECK(!root_window->parent());
+  gfx::Point point_in_root(*point);
+  root_window->GetHost()->ConvertPointFromHost(&point_in_root);
+
+  *target_root = root_window;
+  *point = point_in_root;
 
 #if defined(USE_X11) || defined(USE_OZONE)
-  if (!root_window->ContainsPointInRoot(location_in_root)) {
+  if (!root_window->ContainsPointInRoot(point_in_root)) {
     // This conversion is necessary to deal with X's passive input
     // grab while dragging window. For example, if we have two
     // displays, say 1000x1000 (primary) and 500x500 (extended one
@@ -94,30 +97,25 @@ std::pair<aura::Window*, gfx::Point> GetRootWindowRelativeToWindow(
     // display's coordinate system to anothers may cause events in the
     // primary's coordinate system which fall in the extended display.
 
-    gfx::Point location_in_native(location_in_root);
+    gfx::Point location_in_native(point_in_root);
+
     root_window->GetHost()->ConvertPointToNativeScreen(&location_in_native);
 
-    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
     for (size_t i = 0; i < root_windows.size(); ++i) {
       aura::WindowTreeHost* host = root_windows[i]->GetHost();
       const gfx::Rect native_bounds = host->GetBounds();
       if (native_bounds.Contains(location_in_native)) {
-        root_window = root_windows[i];
-        location_in_root = location_in_native;
-        host->ConvertPointFromNativeScreen(&location_in_root);
+        *target_root = root_windows[i];
+        *point = location_in_native;
+        host->ConvertPointFromNativeScreen(point);
         break;
       }
     }
   }
 #else
-  // TODO(yusukes): Support non-X11 platforms if necessary.
   NOTIMPLEMENTED();
 #endif
-
-  return std::make_pair(root_window, location_in_root);
 }
-
-}  // namespace
 
 void ScreenPositionController::ConvertPointToScreen(
     const aura::Window* window,
@@ -143,11 +141,10 @@ void ScreenPositionController::ConvertHostPointToScreen(
     aura::Window* root_window,
     gfx::Point* point) {
   aura::Window* root = root_window->GetRootWindow();
-  root->GetHost()->ConvertPointFromHost(point);
-  std::pair<aura::Window*, gfx::Point> pair =
-      GetRootWindowRelativeToWindow(root, *point);
-  *point = pair.second;
-  ConvertPointToScreen(pair.first, point);
+  aura::Window* target_root = nullptr;
+  ConvertHostPointToRelativeToRootWindow(root, Shell::GetAllRootWindows(),
+                                         point, &target_root);
+  ConvertPointToScreen(target_root, point);
 }
 
 void ScreenPositionController::SetBounds(aura::Window* window,

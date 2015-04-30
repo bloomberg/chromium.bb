@@ -7,6 +7,14 @@
 #include <algorithm>
 
 #include "ash/display/display_info.h"
+#include "ash/display/display_manager.h"
+#include "ash/host/ash_window_tree_host.h"
+#include "ash/shell.h"
+#include "ui/aura/env.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
@@ -63,6 +71,12 @@ struct ScaleComparator {
   float scale;
 };
 
+void ConvertPointFromScreenToNative(aura::WindowTreeHost* host,
+                                    gfx::Point* point) {
+  ::wm::ConvertPointFromScreen(host->window(), point);
+  host->ConvertPointToNativeScreen(point);
+}
+
 }  // namespace
 
 std::vector<DisplayMode> CreateInternalDisplayModeList(
@@ -102,6 +116,140 @@ bool HasDisplayModeForUIScale(const DisplayInfo& info, float ui_scale) {
   ScaleComparator comparator(ui_scale);
   const std::vector<DisplayMode>& modes = info.display_modes();
   return std::find_if(modes.begin(), modes.end(), comparator) != modes.end();
+}
+
+void ComputeBoundary(const gfx::Display& primary_display,
+                     const gfx::Display& secondary_display,
+                     DisplayLayout::Position position,
+                     gfx::Rect* primary_edge_in_screen,
+                     gfx::Rect* secondary_edge_in_screen) {
+  const gfx::Rect& primary = primary_display.bounds();
+  const gfx::Rect& secondary = secondary_display.bounds();
+  switch (position) {
+    case DisplayLayout::TOP:
+    case DisplayLayout::BOTTOM: {
+      int left = std::max(primary.x(), secondary.x());
+      int right = std::min(primary.right(), secondary.right());
+      if (position == DisplayLayout::TOP) {
+        primary_edge_in_screen->SetRect(left, primary.y(), right - left, 1);
+        secondary_edge_in_screen->SetRect(left, secondary.bottom() - 1,
+                                          right - left, 1);
+      } else {
+        primary_edge_in_screen->SetRect(left, primary.bottom() - 1,
+                                        right - left, 1);
+        secondary_edge_in_screen->SetRect(left, secondary.y(), right - left, 1);
+      }
+      break;
+    }
+    case DisplayLayout::LEFT:
+    case DisplayLayout::RIGHT: {
+      int top = std::max(primary.y(), secondary.y());
+      int bottom = std::min(primary.bottom(), secondary.bottom());
+      if (position == DisplayLayout::LEFT) {
+        primary_edge_in_screen->SetRect(primary.x(), top, 1, bottom - top);
+        secondary_edge_in_screen->SetRect(secondary.right() - 1, top, 1,
+                                          bottom - top);
+      } else {
+        primary_edge_in_screen->SetRect(primary.right() - 1, top, 1,
+                                        bottom - top);
+        secondary_edge_in_screen->SetRect(secondary.y(), top, 1, bottom - top);
+      }
+      break;
+    }
+  }
+}
+
+gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,
+                              const gfx::Rect& bounds_in_screen) {
+  aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
+  gfx::Rect native_bounds = host->GetBounds();
+  native_bounds.Inset(ash_host->GetHostInsets());
+
+  bool vertical = bounds_in_screen.width() < bounds_in_screen.height();
+  gfx::Point start_in_native;
+  gfx::Point end_in_native;
+
+  if (vertical) {
+    start_in_native = bounds_in_screen.origin();
+    end_in_native = start_in_native;
+    end_in_native.set_y(bounds_in_screen.bottom());
+  } else {
+    start_in_native = bounds_in_screen.origin();
+    end_in_native = start_in_native;
+    end_in_native.set_x(bounds_in_screen.right());
+  }
+
+  ConvertPointFromScreenToNative(host, &start_in_native);
+  ConvertPointFromScreenToNative(host, &end_in_native);
+  if (vertical) {
+    // vertical in native
+    int x = std::abs(native_bounds.x() - start_in_native.x()) <
+                    std::abs(native_bounds.right() - start_in_native.x())
+                ? native_bounds.x()
+                : native_bounds.right() - 1;
+    return gfx::Rect(x, std::min(start_in_native.y(), end_in_native.y()), 1,
+                     end_in_native.y() - start_in_native.y());
+  } else {
+    // horizontal in native
+    int y = std::abs(native_bounds.y() - start_in_native.y()) <
+                    std::abs(native_bounds.bottom() - start_in_native.y())
+                ? native_bounds.y()
+                : native_bounds.bottom() - 1;
+    return gfx::Rect(std::min(start_in_native.x(), end_in_native.x()), y,
+                     end_in_native.x() - start_in_native.x(), 1);
+  }
+}
+
+// Moves the cursor to the point inside the root that is closest to
+// the point_in_screen, which is outside of the root window.
+void MoveCursorTo(AshWindowTreeHost* ash_host,
+                  const gfx::Point& point_in_screen,
+                  bool update_last_location_now) {
+  aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
+  gfx::Point point_in_native = point_in_screen;
+  ::wm::ConvertPointFromScreen(host->window(), &point_in_native);
+  host->ConvertPointToNativeScreen(&point_in_native);
+
+  // now fit the point inside the native bounds.
+  gfx::Rect native_bounds = host->GetBounds();
+  gfx::Point native_origin = native_bounds.origin();
+  native_bounds.Inset(ash_host->GetHostInsets());
+  // Shrink further so that the mouse doesn't warp on the
+  // edge. The right/bottom needs to be shrink by 2 to subtract
+  // the 1 px from width/height value.
+  native_bounds.Inset(1, 1, 2, 2);
+
+  // Ensure that |point_in_native| is inside the |native_bounds|.
+  point_in_native.SetToMax(native_bounds.origin());
+  point_in_native.SetToMin(native_bounds.bottom_right());
+
+  gfx::Point point_in_host = point_in_native;
+
+  point_in_host.Offset(-native_origin.x(), -native_origin.y());
+  host->MoveCursorToHostLocation(point_in_host);
+
+  if (update_last_location_now) {
+    gfx::Point new_point_in_screen = point_in_native;
+    if (Shell::GetInstance()->display_manager()->IsInUnifiedMode()) {
+      // TODO(oshima): Do not use ConvertPointFromNativeScreen because
+      // the mirroring display has a transform that should not be applied here.
+      gfx::Point origin = host->GetBounds().origin();
+      new_point_in_screen.Offset(-origin.x(), -origin.y());
+    } else {
+      host->ConvertPointFromNativeScreen(&new_point_in_screen);
+    }
+    ::wm::ConvertPointToScreen(host->window(), &new_point_in_screen);
+    aura::Env::GetInstance()->set_last_mouse_location(new_point_in_screen);
+  }
+}
+
+int FindDisplayIndexContainingPoint(const std::vector<gfx::Display>& displays,
+                                    const gfx::Point& point_in_screen) {
+  auto iter = std::find_if(displays.begin(), displays.end(),
+                           [point_in_screen](const gfx::Display& display) {
+                             return display.bounds().Contains(point_in_screen);
+                           });
+  return iter == displays.end() ? -1 : (iter - displays.begin());
 }
 
 }  // namespace ash

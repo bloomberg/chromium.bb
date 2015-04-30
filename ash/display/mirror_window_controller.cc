@@ -17,6 +17,7 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
+#include "ash/display/screen_position_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
@@ -55,6 +56,51 @@ void DisableInput(XID window) {
 }
 #endif
 
+// ScreenPositionClient for mirroring windows.
+class MirroringScreenPositionClient
+    : public aura::client::ScreenPositionClient {
+ public:
+  explicit MirroringScreenPositionClient(MirrorWindowController* controller)
+      : controller_(controller) {}
+
+  void ConvertPointToScreen(const aura::Window* window,
+                            gfx::Point* point) override {
+    const aura::Window* root = window->GetRootWindow();
+    aura::Window::ConvertPointToTarget(window, root, point);
+    const gfx::Display& display = controller_->GetDisplayForRootWindow(root);
+    const gfx::Point display_origin = display.bounds().origin();
+    point->Offset(display_origin.x(), display_origin.y());
+  }
+
+  void ConvertPointFromScreen(const aura::Window* window,
+                              gfx::Point* point) override {
+    const aura::Window* root = window->GetRootWindow();
+    const gfx::Display& display = controller_->GetDisplayForRootWindow(root);
+    const gfx::Point display_origin = display.bounds().origin();
+    point->Offset(-display_origin.x(), -display_origin.y());
+    aura::Window::ConvertPointToTarget(root, window, point);
+  }
+
+  void ConvertHostPointToScreen(aura::Window* root_window,
+                                gfx::Point* point) override {
+    aura::Window* not_used;
+    ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
+        root_window, controller_->GetAllRootWindows(), point, &not_used);
+    ConvertPointToScreen(root_window, point);
+  }
+
+  void SetBounds(aura::Window* window,
+                 const gfx::Rect& bounds,
+                 const gfx::Display& display) override {
+    NOTREACHED();
+  }
+
+ private:
+  MirrorWindowController* controller_;  // not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(MirroringScreenPositionClient);
+};
+
 class NoneCaptureClient : public aura::client::CaptureClient {
  public:
   NoneCaptureClient() {}
@@ -76,12 +122,22 @@ class NoneCaptureClient : public aura::client::CaptureClient {
 
 }  // namespace
 
+struct MirrorWindowController::MirroringHostInfo {
+  MirroringHostInfo();
+  ~MirroringHostInfo();
+  scoped_ptr<AshWindowTreeHost> ash_host;
+  gfx::Size mirror_window_host_size;
+  aura::Window* mirror_window = nullptr;
+};
+
 MirrorWindowController::MirroringHostInfo::MirroringHostInfo() {
 }
 MirrorWindowController::MirroringHostInfo::~MirroringHostInfo() {
 }
 
-MirrorWindowController::MirrorWindowController() {}
+MirrorWindowController::MirrorWindowController()
+    : screen_position_client_(new MirroringScreenPositionClient(this)) {
+}
 
 MirrorWindowController::~MirrorWindowController() {
   // Make sure the root window gets deleted before cursor_window_delegate.
@@ -119,12 +175,12 @@ void MirrorWindowController::UpdateWindow(
       InitRootWindowSettings(host->window())->display_id = display_info.id();
       host->InitHost();
 #if defined(USE_X11)
-      if (display_manager->multi_display_mode() != DisplayManager::UNIFIED)
+      if (!display_manager->IsInUnifiedMode())
         DisableInput(host->GetAcceleratedWidget());
 #endif
 
 #if defined(OS_CHROMEOS)
-      if (display_manager->multi_display_mode() == DisplayManager::UNIFIED) {
+      if (display_manager->IsInUnifiedMode()) {
         host_info->ash_host->ConfineCursorToRootWindow();
         AshWindowTreeHost* unified_ash_host =
             Shell::GetInstance()
@@ -132,6 +188,8 @@ void MirrorWindowController::UpdateWindow(
                 ->GetAshWindowTreeHostForDisplayId(
                     Shell::GetScreen()->GetPrimaryDisplay().id());
         unified_ash_host->RegisterMirroringHost(host_info->ash_host.get());
+        aura::client::SetScreenPositionClient(host->window(),
+                                              screen_position_client_.get());
       }
 #endif
 
@@ -257,17 +315,55 @@ aura::Window* MirrorWindowController::GetWindow() {
       ->window();
 }
 
+gfx::Display MirrorWindowController::GetDisplayForRootWindow(
+    const aura::Window* root) const {
+  for (const auto& pair : mirroring_host_info_map_) {
+    if (pair.second->ash_host->AsWindowTreeHost()->window() == root) {
+      // Sanity check to catch an error early.
+      int64 id = pair.first;
+      const DisplayManager::DisplayList& list =
+          Shell::GetInstance()
+              ->display_manager()
+              ->software_mirroring_display_list();
+      auto iter = std::find_if(
+          list.begin(), list.end(),
+          [id](const gfx::Display& display) { return display.id() == id; });
+      DCHECK(iter != list.end());
+      if (iter != list.end())
+        return *iter;
+    }
+  }
+  return gfx::Display();
+}
+
+AshWindowTreeHost* MirrorWindowController::GetAshWindowTreeHostForDisplayId(
+    int64 id) {
+  CHECK_EQ(1u, mirroring_host_info_map_.count(id));
+  return mirroring_host_info_map_[id]->ash_host.get();
+}
+
+aura::Window::Windows MirrorWindowController::GetAllRootWindows() const {
+  aura::Window::Windows root_windows;
+  for (const auto& pair : mirroring_host_info_map_)
+    root_windows.push_back(pair.second->ash_host->AsWindowTreeHost()->window());
+  return root_windows;
+}
+
 void MirrorWindowController::CloseAndDeleteHost(MirroringHostInfo* host_info) {
   aura::WindowTreeHost* host = host_info->ash_host->AsWindowTreeHost();
+
+  aura::client::SetScreenPositionClient(host->window(), nullptr);
+
   NoneCaptureClient* capture_client = static_cast<NoneCaptureClient*>(
       aura::client::GetCaptureClient(host->window()));
-  aura::client::SetCaptureClient(host->window(), NULL);
+  aura::client::SetCaptureClient(host->window(), nullptr);
   delete capture_client;
 
   host->RemoveObserver(Shell::GetInstance()->display_controller());
   host->RemoveObserver(this);
   host_info->ash_host->PrepareForShutdown();
   reflector_->RemoveMirroringLayer(host_info->mirror_window->layer());
+
   delete host_info;
 }
 

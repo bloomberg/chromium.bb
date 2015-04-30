@@ -12,12 +12,20 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace aura {
 class Window;
+namespace client {
+class ScreenPositionClient;
+}
+}
+
+namespace gfx {
+class Display;
 }
 
 namespace ui {
@@ -59,16 +67,19 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
   // display is not mirrored by the compositor path.
   aura::Window* GetWindow();
 
+  // Returns the gfx::Display for the mirroring root window.
+  gfx::Display GetDisplayForRootWindow(const aura::Window* root) const;
+
+  // Returns the AshWindwoTreeHost created for |display_id|.
+  AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64 display_id);
+
+  // Returns all root windows hosting mirroring displays.
+  aura::Window::Windows GetAllRootWindows() const;
+
  private:
   friend class test::MirrorWindowTestApi;
 
-  struct MirroringHostInfo {
-    MirroringHostInfo();
-    ~MirroringHostInfo();
-    scoped_ptr<AshWindowTreeHost> ash_host;
-    gfx::Size mirror_window_host_size;
-    aura::Window* mirror_window = nullptr;
-  };
+  struct MirroringHostInfo;
 
   void CloseAndDeleteHost(MirroringHostInfo* host_info);
 
@@ -78,6 +89,8 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
 
   typedef std::map<int64_t, MirroringHostInfo*> MirroringHostInfoMap;
   MirroringHostInfoMap mirroring_host_info_map_;
+
+  scoped_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 
   scoped_ptr<ui::Reflector> reflector_;
 

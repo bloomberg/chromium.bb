@@ -33,6 +33,7 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
 
   // MouseWarpController:
   bool WarpMouseCursor(ui::MouseEvent* event) override;
+  void SetEnabled(bool enable) override;
 
  private:
   friend class test::DisplayManagerTestApi;
@@ -76,6 +77,8 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
 
   // The root window in which the dragging started.
   aura::Window* drag_source_root_;
+
+  bool enabled_;
 
   // Shows the area where a window can be dragged in to/out from
   // another display.

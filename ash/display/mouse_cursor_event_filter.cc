@@ -44,6 +44,10 @@ void MouseCursorEventFilter::OnDisplayConfigurationChanged() {
 }
 
 void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+  // Don't warp due to synthesized event.
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    return;
+
   // Handle both MOVED and DRAGGED events here because when the mouse pointer
   // enters the other root window while dragging, the underlying window system
   // (at least X11) stops generating a ui::ET_MOUSE_MOVED event.
@@ -54,8 +58,9 @@ void MouseCursorEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 
   Shell::GetInstance()->display_controller()->
       cursor_window_controller()->UpdateLocation();
+  mouse_warp_controller_->SetEnabled(mouse_warp_enabled_);
 
-  if (mouse_warp_enabled_ && mouse_warp_controller_->WarpMouseCursor(event))
+  if (mouse_warp_controller_->WarpMouseCursor(event))
     event->StopPropagation();
 }
 

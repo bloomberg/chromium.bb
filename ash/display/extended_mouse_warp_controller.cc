@@ -6,22 +6,13 @@
 
 #include <cmath>
 
-#include "ash/display/cursor_window_controller.h"
-#include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/display_util.h"
 #include "ash/display/shared_display_edge_indicator.h"
-#include "ash/host/ash_window_tree_host.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/window_util.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_tree_host.h"
-#include "ui/base/layout.h"
-#include "ui/compositor/dip_util.h"
-#include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -41,105 +32,6 @@ const int kMinimumIndicatorHeight = 200;
 
 const int kIndicatorThickness = 1;
 
-void ConvertPointFromScreenToNative(const aura::Window* root_window,
-                                    gfx::Point* point) {
-  ::wm::ConvertPointFromScreen(root_window, point);
-  root_window->GetHost()->ConvertPointToNativeScreen(point);
-}
-
-gfx::Rect GetNativeEdgeBounds(const aura::Window* root_window,
-                              gfx::Point start,
-                              gfx::Point end) {
-  gfx::Rect native_bounds = root_window->GetHost()->GetBounds();
-  native_bounds.Inset(
-      GetRootWindowController(root_window)->ash_host()->GetHostInsets());
-
-  ConvertPointFromScreenToNative(root_window, &start);
-  ConvertPointFromScreenToNative(root_window, &end);
-  if (start.x() == end.x()) {
-    // vertical in native
-    int x = std::abs(native_bounds.x() - start.x()) <
-                    std::abs(native_bounds.right() - start.x())
-                ? native_bounds.x()
-                : native_bounds.right() - 1;
-    return gfx::Rect(x, std::min(start.y(), end.y()), 1,
-                     std::abs(start.y() - end.y()));
-  } else {
-    // horizontal in native
-    int y = std::abs(native_bounds.y() - start.y()) <
-                    std::abs(native_bounds.bottom() - start.y())
-                ? native_bounds.y()
-                : native_bounds.bottom() - 1;
-    return gfx::Rect(std::min(start.x(), end.x()), y,
-                     std::abs(start.x() - end.x()), 1);
-  }
-}
-
-// Creates edge bounds from indicator bounds that fits the edge
-// of the native window for |root_window|.
-gfx::Rect CreateVerticalEdgeBoundsInNative(const aura::Window* root_window,
-                                           const gfx::Rect& indicator_bounds) {
-  gfx::Point start = indicator_bounds.origin();
-  gfx::Point end = start;
-  end.set_y(indicator_bounds.bottom());
-  return GetNativeEdgeBounds(root_window, start, end);
-}
-
-gfx::Rect CreateHorizontalEdgeBoundsInNative(
-    const aura::Window* root_window,
-    const gfx::Rect& indicator_bounds) {
-  gfx::Point start = indicator_bounds.origin();
-  gfx::Point end = start;
-  end.set_x(indicator_bounds.right());
-  return GetNativeEdgeBounds(root_window, start, end);
-}
-
-void MovePointInside(const gfx::Rect& native_bounds,
-                     gfx::Point* point_in_native) {
-  if (native_bounds.x() > point_in_native->x())
-    point_in_native->set_x(native_bounds.x());
-  if (native_bounds.right() < point_in_native->x())
-    point_in_native->set_x(native_bounds.right());
-
-  if (native_bounds.y() > point_in_native->y())
-    point_in_native->set_y(native_bounds.y());
-  if (native_bounds.bottom() < point_in_native->y())
-    point_in_native->set_y(native_bounds.bottom());
-}
-
-// Moves the cursor to the point inside the root that is closest to
-// the point_in_screen, which is outside of the root window.
-void MoveCursorTo(aura::Window* root,
-                  const gfx::Point& point_in_screen,
-                  bool update_last_location_now) {
-  gfx::Point point_in_native = point_in_screen;
-  ::wm::ConvertPointFromScreen(root, &point_in_native);
-  root->GetHost()->ConvertPointToNativeScreen(&point_in_native);
-
-  // now fit the point inside the native bounds.
-  gfx::Rect native_bounds = root->GetHost()->GetBounds();
-  gfx::Point native_origin = native_bounds.origin();
-  native_bounds.Inset(
-      GetRootWindowController(root)->ash_host()->GetHostInsets());
-  // Shrink further so that the mouse doesn't warp on the
-  // edge. The right/bottom needs to be shrink by 2 to subtract
-  // the 1 px from width/height value.
-  native_bounds.Inset(1, 1, 2, 2);
-
-  MovePointInside(native_bounds, &point_in_native);
-  gfx::Point point_in_host = point_in_native;
-
-  point_in_host.Offset(-native_origin.x(), -native_origin.y());
-  root->GetHost()->MoveCursorToHostLocation(point_in_host);
-
-  if (update_last_location_now) {
-    gfx::Point new_point_in_screen = point_in_native;
-    root->GetHost()->ConvertPointFromNativeScreen(&new_point_in_screen);
-    ::wm::ConvertPointToScreen(root, &new_point_in_screen);
-    aura::Env::GetInstance()->set_last_mouse_location(new_point_in_screen);
-  }
-}
-
 }  // namespace
 
 ExtendedMouseWarpController::ExtendedMouseWarpController(
@@ -151,6 +43,7 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
                                          ->display_manager()
                                          ->GetCurrentDisplayLayout()
                                          .position;
+  // TODO(oshima): Use ComputeBondary instead.
   if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM)
     UpdateHorizontalEdgeBounds();
   else
@@ -165,7 +58,7 @@ ExtendedMouseWarpController::~ExtendedMouseWarpController() {
 }
 
 bool ExtendedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
-  if (Shell::GetScreen()->GetNumDisplays() <= 1)
+  if (Shell::GetScreen()->GetNumDisplays() <= 1 || !enabled_)
     return false;
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
@@ -200,6 +93,10 @@ bool ExtendedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
   return WarpMouseCursorInNativeCoords(point_in_native, point_in_screen, false);
 }
 
+void ExtendedMouseWarpController::SetEnabled(bool enabled) {
+  enabled_ = enabled;
+}
+
 bool ExtendedMouseWarpController::WarpMouseCursorInNativeCoords(
     const gfx::Point& point_in_native,
     const gfx::Point& point_in_screen,
@@ -210,14 +107,13 @@ bool ExtendedMouseWarpController::WarpMouseCursorInNativeCoords(
     return false;
 
   // The mouse must move.
-  aura::Window* src_root = NULL;
-  aura::Window* dst_root = NULL;
+  aura::Window* src_root = nullptr;
+  aura::Window* dst_root = nullptr;
   GetSrcAndDstRootWindows(&src_root, &dst_root);
+  AshWindowTreeHost* target_ash_host =
+      GetRootWindowController(in_src_edge ? dst_root : src_root)->ash_host();
 
-  if (in_src_edge)
-    MoveCursorTo(dst_root, point_in_screen, update_mouse_location_now);
-  else
-    MoveCursorTo(src_root, point_in_screen, update_mouse_location_now);
+  MoveCursorTo(target_ash_host, point_in_screen, update_mouse_location_now);
   return true;
 }
 
@@ -251,14 +147,14 @@ void ExtendedMouseWarpController::UpdateHorizontalEdgeBounds() {
           ? primary_bounds.y() - (from_primary ? kIndicatorThickness : 0)
           : primary_bounds.bottom() - (from_primary ? 0 : kIndicatorThickness));
 
-  aura::Window* src_root = NULL;
-  aura::Window* dst_root = NULL;
+  aura::Window* src_root = nullptr;
+  aura::Window* dst_root = nullptr;
   GetSrcAndDstRootWindows(&src_root, &dst_root);
 
-  src_edge_bounds_in_native_ =
-      CreateHorizontalEdgeBoundsInNative(src_root, src_indicator_bounds_);
-  dst_edge_bounds_in_native_ =
-      CreateHorizontalEdgeBoundsInNative(dst_root, dst_indicator_bounds_);
+  src_edge_bounds_in_native_ = GetNativeEdgeBounds(
+      GetRootWindowController(src_root)->ash_host(), src_indicator_bounds_);
+  dst_edge_bounds_in_native_ = GetNativeEdgeBounds(
+      GetRootWindowController(dst_root)->ash_host(), dst_indicator_bounds_);
 }
 
 void ExtendedMouseWarpController::UpdateVerticalEdgeBounds() {
@@ -316,15 +212,15 @@ void ExtendedMouseWarpController::UpdateVerticalEdgeBounds() {
   src_indicator_bounds_.set_y(upper_indicator_y);
   src_indicator_bounds_.set_height(lower_indicator_y - upper_indicator_y);
 
-  aura::Window* src_root = NULL;
-  aura::Window* dst_root = NULL;
+  aura::Window* src_root = nullptr;
+  aura::Window* dst_root = nullptr;
   GetSrcAndDstRootWindows(&src_root, &dst_root);
 
   // Native
-  src_edge_bounds_in_native_ =
-      CreateVerticalEdgeBoundsInNative(src_root, src_indicator_bounds_);
-  dst_edge_bounds_in_native_ =
-      CreateVerticalEdgeBoundsInNative(dst_root, dst_indicator_bounds_);
+  src_edge_bounds_in_native_ = GetNativeEdgeBounds(
+      GetRootWindowController(src_root)->ash_host(), src_indicator_bounds_);
+  dst_edge_bounds_in_native_ = GetNativeEdgeBounds(
+      GetRootWindowController(dst_root)->ash_host(), dst_indicator_bounds_);
 }
 
 void ExtendedMouseWarpController::GetSrcAndDstRootWindows(

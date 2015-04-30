@@ -24,6 +24,9 @@ class ASH_EXPORT MouseWarpController {
   // when necessary. Returns true if the mouse cursor has been
   // moved to another display, or false otherwise.
   virtual bool WarpMouseCursor(ui::MouseEvent* event) = 0;
+
+  // Enables/Disables mouse warping.
+  virtual void SetEnabled(bool enable) = 0;
 };
 
 }  // namespace ash

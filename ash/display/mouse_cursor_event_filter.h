@@ -47,6 +47,7 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler,
   friend class test::DisplayManagerTestApi;
   friend class ExtendedMouseWarpControllerTest;
   friend class MouseCursorEventFilterTest;
+  friend class UnifiedMouseWarpControllerTest;
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, DoNotWarpTwice);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest, SetMouseWarpModeFlag);
   FRIEND_TEST_ALL_PREFIXES(MouseCursorEventFilterTest,

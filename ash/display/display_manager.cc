@@ -16,6 +16,7 @@
 #include "ash/display/extended_mouse_warp_controller.h"
 #include "ash/display/null_mouse_warp_controller.h"
 #include "ash/display/screen_ash.h"
+#include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "base/auto_reset.h"
@@ -296,12 +297,9 @@ const gfx::Display& DisplayManager::GetDisplayForId(int64 id) const {
 
 const gfx::Display& DisplayManager::FindDisplayContainingPoint(
     const gfx::Point& point_in_screen) const {
-  auto iter =
-      std::find_if(active_display_list_.begin(), active_display_list_.end(),
-                   [point_in_screen](const gfx::Display& display) {
-                     return display.bounds().Contains(point_in_screen);
-                   });
-  return iter != active_display_list_.end() ? *iter : GetInvalidDisplay();
+  int index =
+      FindDisplayIndexContainingPoint(active_display_list_, point_in_screen);
+  return index < 0 ? GetInvalidDisplay() : active_display_list_[index];
 }
 
 bool DisplayManager::UpdateWorkAreaOfDisplay(int64 display_id,
@@ -1053,6 +1051,8 @@ void DisplayManager::CreateMirrorWindowAsyncIfAny() {
 
 scoped_ptr<MouseWarpController> DisplayManager::CreateMouseWarpController(
     aura::Window* drag_source) const {
+  if (IsInUnifiedMode() && num_connected_displays() >= 2)
+    return make_scoped_ptr(new UnifiedMouseWarpController());
   // Extra check for |num_connected_displays()| is for SystemDisplayApiTest
   // that injects MockScreen.
   if (GetNumDisplays() < 2 || num_connected_displays() < 2)
@@ -1115,14 +1115,19 @@ void DisplayManager::CreateSoftwareMirroringDisplay(
       }
       case UNIFIED: {
         // TODO(oshima): Suport displays that have different heights.
+        // TODO(oshima): Currently, all displays are laid out horizontally,
+        // from left to right. Allow more flexible layouts, such as
+        // right to left, or vertical layouts.
         gfx::Rect unified_bounds;
         software_mirroring_display_list_.clear();
         for (auto& info : *display_info_list) {
           InsertAndUpdateDisplayInfo(info);
-          software_mirroring_display_list_.push_back(
-              CreateDisplayFromDisplayInfoById(info.id()));
+          gfx::Display display = CreateDisplayFromDisplayInfoById(info.id());
           gfx::Point origin(unified_bounds.right(), 0);
-          unified_bounds.Union(gfx::Rect(origin, info.size_in_pixel()));
+          display.set_bounds(gfx::Rect(origin, info.size_in_pixel()));
+          display.UpdateWorkAreaFromInsets(gfx::Insets());
+          unified_bounds.Union(display.bounds());
+          software_mirroring_display_list_.push_back(display);
         }
         DisplayInfo info(kUnifiedDisplayId, "Unified Desktop", false);
         info.SetBounds(unified_bounds);

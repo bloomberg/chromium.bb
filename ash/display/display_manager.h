@@ -253,7 +253,9 @@ class ASH_EXPORT DisplayManager
   // Returns the mirroring status.
   bool IsInMirrorMode() const;
   int64 mirroring_display_id() const { return mirroring_display_id_; }
-
+  const DisplayList& software_mirroring_display_list() const {
+    return software_mirroring_display_list_;
+  }
   bool IsInUnifiedMode() const;
 
   // Returns the display used for software mirrroring. Returns invalid

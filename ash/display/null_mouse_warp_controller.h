@@ -17,6 +17,7 @@ class NullMouseWarpController : public MouseWarpController {
 
   // MouseWarpController:
   bool WarpMouseCursor(ui::MouseEvent* event) override;
+  void SetEnabled(bool enable) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NullMouseWarpController);
