@@ -5,6 +5,8 @@
 // TODO(arv): Now that this is driven by a data model, implement a data model
 //            that handles the loading and the events from the bookmark backend.
 
+'use strict';
+
 /**
  * @typedef {{childIds: Array<string>}}
  *
