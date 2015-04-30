@@ -602,7 +602,7 @@ static inline bool collectCandidateRuns(const UChar* normalizedBuffer,
             lastCharacter = character;
         }
 
-        CandidateRun run = { character, startIndexOfCurrentRun, iterator.offset(), currentFontData, currentScript };
+        CandidateRun run = { character, startIndexOfCurrentRun, static_cast<unsigned>(iterator.offset()), currentFontData, currentScript };
         runs->append(run);
 
         startIndexOfCurrentRun = iterator.offset();
