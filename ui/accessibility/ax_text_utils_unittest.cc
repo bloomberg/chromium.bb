@@ -9,54 +9,60 @@
 namespace ui {
 
 TEST(AXTextUtils, FindAccessibleTextBoundaryLine) {
-  const base::string16 text = base::UTF8ToUTF16("Line 1.\nLine 2\n");
+  const base::string16 text = base::UTF8ToUTF16("Line 1.\nLine 2\n\t");
   const size_t text_length = text.length();
-  std::vector<int> line_breaks;
-  line_breaks.push_back(7);
-  line_breaks.push_back(14);
+  std::vector<int> line_start_offsets;
+  line_start_offsets.push_back(8);
+  line_start_offsets.push_back(15);
   size_t result;
 
 
   // Basic cases.
-  result = FindAccessibleTextBoundary(text, line_breaks, LINE_BOUNDARY, 5,
-                                      FORWARDS_DIRECTION);
-  EXPECT_EQ(7UL, result);
-  result = FindAccessibleTextBoundary(text, line_breaks, LINE_BOUNDARY, 9,
-                                      BACKWARDS_DIRECTION);
-  EXPECT_EQ(7UL, result);
-  result = FindAccessibleTextBoundary(text, line_breaks, LINE_BOUNDARY, 10,
-                                      FORWARDS_DIRECTION);
-  EXPECT_EQ(14UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
+                                      5, FORWARDS_DIRECTION);
+  EXPECT_EQ(8UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
+                                       9, BACKWARDS_DIRECTION);
+  EXPECT_EQ(8UL, result);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
+                                       10, FORWARDS_DIRECTION);
+  EXPECT_EQ(15UL, result);
 
 
   // Edge cases.
 
-  result = FindAccessibleTextBoundary(text, line_breaks, LINE_BOUNDARY,
+  result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
                                       text_length, BACKWARDS_DIRECTION);
-  EXPECT_EQ(14UL, result);
+  EXPECT_EQ(15UL, result);
 
-  // When the start_offset is on a line break and we are searching backwards,
-  // it should return the previous line break.
-  result = FindAccessibleTextBoundary(text, line_breaks, LINE_BOUNDARY, 14,
-                                      BACKWARDS_DIRECTION);
-  EXPECT_EQ(7UL, result);
+  // When the start_offset is at the start of the next line and we are searching
+  // backwards, it should not move.
+  result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
+                                       15, BACKWARDS_DIRECTION);
+  EXPECT_EQ(15UL, result);
 
-  // When the start_offset is on a line break and we are searching forwards,
-  // it should return the next line break.
-  result = FindAccessibleTextBoundary(text, line_breaks, LINE_BOUNDARY, 7,
-                                      FORWARDS_DIRECTION);
-  EXPECT_EQ(14UL, result);
+  // When the start_offset is at a hard line break and we are searching
+  // backwards, it should return the start of the previous line.
+  result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
+                                       14, BACKWARDS_DIRECTION);
+  EXPECT_EQ(8UL, result);
+
+  // When the start_offset is at the start of a line and we are searching
+  // forwards, it should return the start of the next line.
+  result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
+                                      8, FORWARDS_DIRECTION);
+  EXPECT_EQ(15UL, result);
 
   // When there is no previous line break and we are searching backwards,
   // it should return 0.
-  result = FindAccessibleTextBoundary(text, line_breaks, LINE_BOUNDARY, 4,
-                                      BACKWARDS_DIRECTION);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
+                                      4, BACKWARDS_DIRECTION);
   EXPECT_EQ(0UL, result);
 
-  // When we are on the last line break and we are searching forwards.
+  // When we are at the start of the last line and we are searching forwards.
   // it should return the text length.
-  result = FindAccessibleTextBoundary(text, line_breaks, LINE_BOUNDARY, 14,
-                                      FORWARDS_DIRECTION);
+  result = FindAccessibleTextBoundary(text, line_start_offsets, LINE_BOUNDARY,
+                                      15, FORWARDS_DIRECTION);
   EXPECT_EQ(text_length, result);
 }
 

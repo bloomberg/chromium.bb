@@ -1209,7 +1209,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-    DISABLED_TestMultiLineTextAtOffsetWithBoundaryCharacter) {
+    TestMultiLineTextAtOffsetWithBoundaryCharacter) {
   base::win::ScopedComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
   for (LONG offset = 0; offset < CONTENTS_LENGTH; ++offset) {
@@ -1305,7 +1305,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-    DISABLED_TestMultiLineTextAtOffsetWithBoundaryWord) {
+    TestMultiLineTextAtOffsetWithBoundaryWord) {
   base::win::ScopedComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
 
@@ -1423,7 +1423,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-    DISABLED_TestMultiLineTextAtOffsetWithBoundaryLine) {
+    TestMultiLineTextAtOffsetWithBoundaryLine) {
   base::win::ScopedComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
 

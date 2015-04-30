@@ -323,104 +323,157 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
-TEST_F(BrowserAccessibilityTest, DISABLED_TestTextBoundaries) {
-  std::string text1_value = "One two three.\nFour five six.";
-
-  ui::AXNodeData text1;
-  text1.id = 11;
-  text1.role = ui::AX_ROLE_TEXT_FIELD;
-  text1.state = 0;
-  text1.AddStringAttribute(ui::AX_ATTR_VALUE, text1_value);
-  std::vector<int32> line_breaks;
-  line_breaks.push_back(15);
-  text1.AddIntListAttribute(
-      ui::AX_ATTR_LINE_BREAKS, line_breaks);
+TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
+  std::string line1 = "One two three.";
+  std::string line2 = "Four five six.";
+  std::string text_value = line1 + '\n' + line2;
 
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
-  root.state = 0;
-  root.child_ids.push_back(11);
+  root.child_ids.push_back(2);
+
+  ui::AXNodeData text_field;
+  text_field.id = 2;
+  text_field.role = ui::AX_ROLE_TEXT_FIELD;
+  text_field.AddStringAttribute(ui::AX_ATTR_VALUE, text_value);
+  std::vector<int32> line_start_offsets;
+  line_start_offsets.push_back(15);
+  text_field.AddIntListAttribute(
+      ui::AX_ATTR_LINE_BREAKS, line_start_offsets);
+  text_field.child_ids.push_back(3);
+  text_field.child_ids.push_back(5);
+  text_field.child_ids.push_back(6);
+
+  ui::AXNodeData static_text1;
+  static_text1.id = 3;
+  static_text1.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text1.AddStringAttribute(ui::AX_ATTR_VALUE, line1);
+  static_text1.child_ids.push_back(4);
+
+  ui::AXNodeData inline_box1;
+  inline_box1.id = 4;
+  inline_box1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_box1.AddStringAttribute(ui::AX_ATTR_VALUE, line1);
+  std::vector<int32> word_start_offsets1;
+  word_start_offsets1.push_back(0);
+  word_start_offsets1.push_back(4);
+  word_start_offsets1.push_back(8);
+  inline_box1.AddIntListAttribute(
+      ui::AX_ATTR_WORD_STARTS, word_start_offsets1);
+
+  ui::AXNodeData line_break;
+  line_break.id = 5;
+  line_break.role = ui::AX_ROLE_LINE_BREAK;
+  line_break.AddStringAttribute(ui::AX_ATTR_VALUE, "\n");
+
+  ui::AXNodeData static_text2;
+  static_text2.id = 6;
+  static_text2.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text2.AddStringAttribute(ui::AX_ATTR_VALUE, line2);
+  static_text2.child_ids.push_back(7);
+
+  ui::AXNodeData inline_box2;
+  inline_box2.id = 7;
+  inline_box2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  inline_box2.AddStringAttribute(ui::AX_ATTR_VALUE, line2);
+  std::vector<int32> word_start_offsets2;
+  word_start_offsets2.push_back(0);
+  word_start_offsets2.push_back(5);
+  word_start_offsets2.push_back(10);
+  inline_box2.AddIntListAttribute(
+      ui::AX_ATTR_WORD_STARTS, word_start_offsets2);
 
   CountedBrowserAccessibility::reset();
   scoped_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
-          MakeAXTreeUpdate(root, text1),
-          NULL, new CountedBrowserAccessibilityFactory()));
-  ASSERT_EQ(2, CountedBrowserAccessibility::num_instances());
+          MakeAXTreeUpdate(root, text_field, static_text1, inline_box1,
+          line_break, static_text2, inline_box2),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+  ASSERT_EQ(7, CountedBrowserAccessibility::num_instances());
 
   BrowserAccessibilityWin* root_obj =
       manager->GetRoot()->ToBrowserAccessibilityWin();
-  BrowserAccessibilityWin* text1_obj =
-      root_obj->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, root_obj);
+  ASSERT_EQ(1, root_obj->PlatformChildCount());
 
-  long text1_len;
-  ASSERT_EQ(S_OK, text1_obj->get_nCharacters(&text1_len));
+  BrowserAccessibilityWin* text_field_obj =
+      root_obj->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, text_field_obj);
+
+  long text_len;
+  EXPECT_EQ(S_OK, text_field_obj->get_nCharacters(&text_len));
 
   base::win::ScopedBstr text;
-  ASSERT_EQ(S_OK, text1_obj->get_text(0, text1_len, text.Receive()));
-  ASSERT_EQ(text1_value, base::UTF16ToUTF8(base::string16(text)));
+  EXPECT_EQ(S_OK, text_field_obj->get_text(0, text_len, text.Receive()));
+  EXPECT_EQ(text_value, base::UTF16ToUTF8(base::string16(text)));
   text.Reset();
 
-  ASSERT_EQ(S_OK, text1_obj->get_text(0, 4, text.Receive()));
-  ASSERT_STREQ(L"One ", text);
+  EXPECT_EQ(S_OK, text_field_obj->get_text(0, 4, text.Receive()));
+  EXPECT_STREQ(L"One ", text);
   text.Reset();
 
   long start;
   long end;
-  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
+  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
       1, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
-  ASSERT_EQ(1, start);
-  ASSERT_EQ(2, end);
-  ASSERT_STREQ(L"n", text);
+  EXPECT_EQ(1, start);
+  EXPECT_EQ(2, end);
+  EXPECT_STREQ(L"n", text);
   text.Reset();
 
-  ASSERT_EQ(S_FALSE, text1_obj->get_textAtOffset(
-      text1_len, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
-  ASSERT_EQ(0, start);
-  ASSERT_EQ(0, end);
+  EXPECT_EQ(S_FALSE, text_field_obj->get_textAtOffset(
+      text_len, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
+  EXPECT_EQ(0, start);
+  EXPECT_EQ(0, end);
+  EXPECT_EQ(nullptr, text);
   text.Reset();
 
-  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
+  EXPECT_EQ(S_FALSE, text_field_obj->get_textAtOffset(
+      text_len, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
+  EXPECT_EQ(0, start);
+  EXPECT_EQ(0, end);
+  EXPECT_EQ(nullptr, text);
+  text.Reset();
+
+  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
       1, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
-  ASSERT_EQ(0, start);
-  ASSERT_EQ(4, end);
-  ASSERT_STREQ(L"One ", text);
+  EXPECT_EQ(0, start);
+  EXPECT_EQ(4, end);
+  EXPECT_STREQ(L"One ", text);
   text.Reset();
 
-  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
+  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
       6, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
-  ASSERT_EQ(4, start);
-  ASSERT_EQ(8, end);
-  ASSERT_STREQ(L"two\n", text);
+  EXPECT_EQ(4, start);
+  EXPECT_EQ(8, end);
+  EXPECT_STREQ(L"two ", text);
   text.Reset();
 
-  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
-      text1_len, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
-  ASSERT_EQ(25, start);
-  ASSERT_EQ(29, end);
-  ASSERT_STREQ(L"six.", text);
+  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
+      text_len - 1, IA2_TEXT_BOUNDARY_WORD, &start, &end, text.Receive()));
+  EXPECT_EQ(25, start);
+  EXPECT_EQ(29, end);
+  EXPECT_STREQ(L"six.", text);
   text.Reset();
 
-  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
+  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
       1, IA2_TEXT_BOUNDARY_LINE, &start, &end, text.Receive()));
-  ASSERT_EQ(0, start);
-  ASSERT_EQ(15, end);
-  ASSERT_STREQ(L"One two three.\n", text);
+  EXPECT_EQ(0, start);
+  EXPECT_EQ(15, end);
+  EXPECT_STREQ(L"One two three.\n", text);
   text.Reset();
 
-  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
-      text1_len, IA2_TEXT_BOUNDARY_LINE, &start, &end, text.Receive()));
-  ASSERT_EQ(15, start);
-  ASSERT_EQ(text1_len, end);
-  ASSERT_STREQ(L"Four five six.", text);
+  EXPECT_EQ(S_OK, text_field_obj->get_textAtOffset(
+      text_len, IA2_TEXT_BOUNDARY_LINE, &start, &end, text.Receive()));
+  EXPECT_EQ(15, start);
+  EXPECT_EQ(text_len, end);
+  EXPECT_STREQ(L"Four five six.", text);
   text.Reset();
 
-  ASSERT_EQ(S_OK,
-            text1_obj->get_text(0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
-  ASSERT_EQ(0, start);
-  ASSERT_EQ(text1_len, end);
-  ASSERT_STREQ(L"One two three.\nFour five six.", text);
+  EXPECT_EQ(S_OK, text_field_obj->get_text(
+      0, IA2_TEXT_OFFSET_LENGTH, text.Receive()));
+  EXPECT_EQ(text_value, base::UTF16ToUTF8(base::string16(text)));
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.

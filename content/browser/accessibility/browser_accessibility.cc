@@ -228,7 +228,12 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
   gfx::Rect bounds;
   for (size_t i = 0; i < InternalChildCount() && child_end < start + len; ++i) {
     BrowserAccessibility* child = InternalGetChild(i);
-    DCHECK_EQ(child->GetRole(), ui::AX_ROLE_INLINE_TEXT_BOX);
+    if (child->GetRole() != ui::AX_ROLE_INLINE_TEXT_BOX) {
+      DLOG(WARNING) << "BrowserAccessibility objects with role STATIC_TEXT " <<
+          "should have children of role INLINE_TEXT_BOX.";
+      continue;
+    }
+
     std::string child_text;
     child->GetStringAttribute(ui::AX_ATTR_VALUE, &child_text);
     int child_len = static_cast<int>(child_text.size());
@@ -311,71 +316,104 @@ gfx::Rect BrowserAccessibility::GetGlobalBoundsForRange(int start, int len)
 
 int BrowserAccessibility::GetWordStartBoundary(
     int start, ui::TextBoundaryDirection direction) const {
-  int word_start = 0;
-  int prev_word_start = 0;
-  if (GetRole() != ui::AX_ROLE_STATIC_TEXT) {
-    for (size_t i = 0; i < InternalChildCount(); ++i) {
-      BrowserAccessibility* child = InternalGetChild(i);
-      int child_len = child->GetStaticTextLenRecursive();
-      int child_word_start = child->GetWordStartBoundary(start, direction);
-      word_start += child_word_start;
-      if (child_word_start != child_len)
+  DCHECK_GE(start, -1);
+  // Special offset that indicates that a word boundary has not been found.
+  int word_start_not_found = GetStaticTextLenRecursive();
+  int word_start = word_start_not_found;
+
+  switch (GetRole()) {
+    case ui::AX_ROLE_STATIC_TEXT: {
+      int prev_word_start = word_start_not_found;
+      int child_start = 0;
+      int child_end = 0;
+
+      // Go through the inline text boxes.
+      for (size_t i = 0; i < InternalChildCount(); ++i) {
+        // The next child starts where the previous one ended.
+        child_start = child_end;
+        BrowserAccessibility* child = InternalGetChild(i);
+        DCHECK_EQ(child->GetRole(), ui::AX_ROLE_INLINE_TEXT_BOX);
+        const std::string& child_text = child->GetStringAttribute(
+            ui::AX_ATTR_VALUE);
+        int child_len = static_cast<int>(child_text.size());
+        child_end += child_len; // End is one past the last character.
+
+        const std::vector<int32>& word_starts = child->GetIntListAttribute(
+            ui::AX_ATTR_WORD_STARTS);
+        if (word_starts.empty()) {
+          word_start = child_end;
+          continue;
+        }
+
+        int local_start = start - child_start;
+        std::vector<int32>::const_iterator iter = std::upper_bound(
+            word_starts.begin(), word_starts.end(), local_start);
+        if (iter != word_starts.end()) {
+          if (direction == ui::FORWARDS_DIRECTION) {
+            word_start = child_start + *iter;
+          } else if (direction == ui::BACKWARDS_DIRECTION) {
+            if (iter == word_starts.begin()) {
+              // Return the position of the last word in the previous child.
+              word_start = prev_word_start;
+            } else {
+              word_start = child_start + *(iter - 1);
+            }
+          } else {
+            NOTREACHED();
+          }
           break;
-      start -= child_len;
-    }
-    return word_start;
-  }
+        }
 
-  int child_start = 0;
-  int child_end = 0;
-  for (size_t i = 0; i < InternalChildCount(); ++i) {
-    // The next child starts where the previous one ended.
-    child_start = child_end;
-    BrowserAccessibility* child = InternalGetChild(i);
-    DCHECK_EQ(child->GetRole(), ui::AX_ROLE_INLINE_TEXT_BOX);
-    const std::string& child_text = child->GetStringAttribute(
-        ui::AX_ATTR_VALUE);
-    int child_len = static_cast<int>(child_text.size());
-    child_end += child_len; // End is one past the last character.
-
-    const std::vector<int32>& word_starts = child->GetIntListAttribute(
-        ui::AX_ATTR_WORD_STARTS);
-    if (word_starts.empty()) {
-      word_start = child_end;
-      continue;
-    }
-
-    int local_start = start - child_start;
-    std::vector<int32>::const_iterator iter = std::upper_bound(
-        word_starts.begin(), word_starts.end(), local_start);
-    if (iter != word_starts.end()) {
-      if (direction == ui::FORWARDS_DIRECTION) {
-        word_start = child_start + *iter;
-      } else if (direction == ui::BACKWARDS_DIRECTION) {
-        if (iter == word_starts.begin()) {
-          // Return the position of the last word in the previous child.
+        // No word start that is greater than the requested offset has been
+        // found.
+        prev_word_start = child_start + *(iter - 1);
+        if (direction == ui::FORWARDS_DIRECTION) {
+          word_start = child_end;
+        } else if (direction == ui::BACKWARDS_DIRECTION) {
           word_start = prev_word_start;
         } else {
-          word_start = child_start + *(iter - 1);
+          NOTREACHED();
         }
-      } else {
-        NOTREACHED();
       }
-      break;
+      return word_start;
     }
 
-    // No word start that is >= to the requested offset has been found.
-    prev_word_start = child_start + *(iter - 1);
-    if (direction == ui::FORWARDS_DIRECTION) {
-      word_start = child_end;
-    } else if (direction == ui::BACKWARDS_DIRECTION) {
-      word_start = prev_word_start;
-    } else {
-      NOTREACHED();
-    }
+    case ui::AX_ROLE_LINE_BREAK:
+      // Words never start at a line break.
+      return word_start_not_found;
+
+    default:
+      // If there are no children, the word start boundary is still unknown or
+      // found previously depending on the direction.
+      if (!InternalChildCount())
+        return word_start_not_found;
+
+      int child_start = 0;
+      for (size_t i = 0; i < InternalChildCount(); ++i) {
+        BrowserAccessibility* child = InternalGetChild(i);
+        int child_len = child->GetStaticTextLenRecursive();
+        int child_word_start = child->GetWordStartBoundary(start, direction);
+        if (child_word_start < child_len) {
+          // We have found a possible word boundary.
+          word_start = child_start + child_word_start;
+        }
+
+        // Decide when to stop searching.
+        if ((word_start != word_start_not_found &&
+            direction == ui::FORWARDS_DIRECTION) ||
+            (start < child_len &&
+            direction == ui::BACKWARDS_DIRECTION)) {
+          break;
+        }
+
+        child_start += child_len;
+        if (start >= child_len)
+          start -= child_len;
+        else
+          start = -1;
+      }
+      return word_start;
   }
-
-  return word_start;
 }
 
 BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(
@@ -722,8 +760,10 @@ bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
 }
 
 int BrowserAccessibility::GetStaticTextLenRecursive() const {
-  if (GetRole() == ui::AX_ROLE_STATIC_TEXT)
+  if (GetRole() == ui::AX_ROLE_STATIC_TEXT ||
+      GetRole() == ui::AX_ROLE_LINE_BREAK) {
     return static_cast<int>(GetStringAttribute(ui::AX_ATTR_VALUE).size());
+  }
 
   int len = 0;
   for (size_t i = 0; i < InternalChildCount(); ++i)

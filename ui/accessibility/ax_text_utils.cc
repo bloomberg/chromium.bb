@@ -9,13 +9,16 @@
 
 namespace ui {
 
+// line_breaks is a Misnomer. Blink provides the start offsets of each line
+// not the line breaks.
+// TODO(nektar): Rename line_breaks a11y attribute and variable references.
 size_t FindAccessibleTextBoundary(const base::string16& text,
                                   const std::vector<int>& line_breaks,
                                   TextBoundaryType boundary,
                                   size_t start_offset,
                                   TextBoundaryDirection direction) {
   size_t text_size = text.size();
-  DCHECK(start_offset <= text_size);
+  DCHECK_LE(start_offset, text_size);
 
   if (boundary == CHAR_BOUNDARY) {
     if (direction == FORWARDS_DIRECTION && start_offset < text_size)
@@ -33,7 +36,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
     } else {
       for (size_t j = line_breaks.size(); j != 0; --j) {
         size_t line_break = line_breaks[j - 1] >= 0 ? line_breaks[j - 1] : 0;
-        if (line_break < start_offset)
+        if (line_break <= start_offset)
           return line_break;
       }
       return 0;
