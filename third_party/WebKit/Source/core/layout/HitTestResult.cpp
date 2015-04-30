@@ -166,14 +166,14 @@ HTMLAreaElement* HitTestResult::imageAreaForImage() const
         }
     }
 
-    if (!imageElement)
+    if (!imageElement || !imageElement->layoutObject())
         return nullptr;
 
     HTMLMapElement* map = imageElement->treeScope().getImageMap(imageElement->fastGetAttribute(usemapAttr));
     if (!map)
         return nullptr;
 
-    LayoutBox* box = toLayoutBox(layoutObject());
+    LayoutBox* box = toLayoutBox(imageElement->layoutObject());
     LayoutRect contentBox = box->contentBoxRect();
     float scaleFactor = 1 / box->style()->effectiveZoom();
     LayoutPoint location = localPoint();
