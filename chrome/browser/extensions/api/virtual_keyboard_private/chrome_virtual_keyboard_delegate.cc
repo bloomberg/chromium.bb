@@ -62,6 +62,8 @@ bool ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
   results->SetBoolean("experimental",
                       keyboard::IsExperimentalInputViewEnabled());
   scoped_ptr<base::ListValue> features(new base::ListValue());
+  features->AppendString(GenerateFeatureFlag(
+      "floatingvirtualkeyboard", keyboard::IsFloatingVirtualKeyboardEnabled()));
   features->AppendString(
       GenerateFeatureFlag("gesturetyping", keyboard::IsGestureTypingEnabled()));
   features->AppendString(GenerateFeatureFlag(

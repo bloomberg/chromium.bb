@@ -93,6 +93,9 @@ KEYBOARD_EXPORT bool IsInputViewEnabled();
 // Returns true if experimental features are enabled for IME input-views.
 KEYBOARD_EXPORT bool IsExperimentalInputViewEnabled();
 
+// Returns true if floating virtual keyboard feature is enabled.
+KEYBOARD_EXPORT bool IsFloatingVirtualKeyboardEnabled();
+
 // Returns true if gesture typing is enabled for virtual keyboard.
 KEYBOARD_EXPORT bool IsGestureTypingEnabled();
 

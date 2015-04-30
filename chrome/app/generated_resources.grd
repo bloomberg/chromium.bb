@@ -14453,6 +14453,12 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_DESCRIPTION" desc="Description of about::flags option to enable experimental features for IME input-views">
           Enable experimental features for IME input views.
         </message>
+        <message name="IDS_FLAGS_FLOATING_VIRTUAL_KEYBOARD_NAME" desc="Name of about::flags option to toggle floating virtual keyboard">
+          Floating virtual keyboard.
+        </message>
+        <message name="IDS_FLAGS_FLOATING_VIRTUAL_KEYBOARD_DESCRIPTION" desc="Description of about::flags option to toggle floating virtual keyboard">
+          Enable/Disable floating virtual keyboard.
+        </message>
         <message name="IDS_FLAGS_ENABLE_GESTURE_TYPING_NAME" desc="Name of about::flags option to enable gesture typing for the virtual keyboard">
           Gesture typing for the virtual keyboard.
         </message>

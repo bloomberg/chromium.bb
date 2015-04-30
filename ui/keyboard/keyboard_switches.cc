@@ -18,6 +18,9 @@ const char kEnableGestureSelection[] = "enable-gesture-selection";
 const char kEnableGestureDeletion[] = "enable-gesture-deletion";
 
 const char kEnableVirtualKeyboard[] = "enable-virtual-keyboard";
+const char kFloatingVirtualKeyboard[] = "floating-virtual-keyboard";
+const char kFloatingVirtualKeyboardDisabled[] ="disabled";
+const char kFloatingVirtualKeyboardEnabled[] ="enabled";
 const char kDisableSmartVirtualKeyboard[] = "disable-smart-virtual-keyboard";
 
 const char kDisableVirtualKeyboardOverscroll[] =

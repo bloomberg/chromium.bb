@@ -36,6 +36,15 @@ KEYBOARD_EXPORT extern const char kEnableGestureDeletion[];
 // Enables the virtual keyboard.
 KEYBOARD_EXPORT extern const char kEnableVirtualKeyboard[];
 
+// Floating virtual keyboard flag.
+KEYBOARD_EXPORT extern const char kFloatingVirtualKeyboard[];
+
+// Disable floating virtual keyboard.
+KEYBOARD_EXPORT extern const char kFloatingVirtualKeyboardDisabled[];
+
+// Enable floating virtual keyboard.
+KEYBOARD_EXPORT extern const char kFloatingVirtualKeyboardEnabled[];
+
 // Disabled overscrolling of web content when the virtual keyboard is displayed.
 // If disabled, the work area is resized to restrict windows from overlapping
 // with the keybaord area.

@@ -155,6 +155,14 @@ bool IsExperimentalInputViewEnabled() {
           switches::kEnableExperimentalInputViewFeatures);
 }
 
+bool IsFloatingVirtualKeyboardEnabled() {
+  std::string floating_virtual_keyboard_switch =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kFloatingVirtualKeyboard);
+  return floating_virtual_keyboard_switch ==
+      switches::kFloatingVirtualKeyboardEnabled;
+}
+
 bool IsGestureTypingEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGestureTyping);

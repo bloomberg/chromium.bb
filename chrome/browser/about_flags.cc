@@ -466,6 +466,16 @@ const Experiment::Choice kDataSaverPromptChoices[] = {
     chromeos::switches::kEnableDataSaverPrompt,
     chromeos::switches::kDataSaverPromptDemoMode },
 };
+
+const Experiment::Choice kFloatingVirtualKeyboardChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    keyboard::switches::kFloatingVirtualKeyboard,
+    keyboard::switches::kFloatingVirtualKeyboardDisabled},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    keyboard::switches::kFloatingVirtualKeyboard,
+    keyboard::switches::kFloatingVirtualKeyboardEnabled},
+};
 #endif
 
 const Experiment::Choice kSupervisedUserSafeSitesChoices[] = {
@@ -1425,6 +1435,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_EXPERIMENTAL_INPUT_VIEW_FEATURES_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(keyboard::switches::kEnableExperimentalInputViewFeatures)
+  },
+  {
+    "floating-virtual-keyboard",
+    IDS_FLAGS_FLOATING_VIRTUAL_KEYBOARD_NAME,
+    IDS_FLAGS_FLOATING_VIRTUAL_KEYBOARD_DESCRIPTION,
+    kOsCrOS,
+    MULTI_VALUE_TYPE(kFloatingVirtualKeyboardChoices)
   },
   {
     "enable-gesture-typing",
