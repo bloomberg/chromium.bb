@@ -1100,6 +1100,11 @@ void LayoutFlexibleBox::resetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& chil
 
 bool LayoutFlexibleBox::needToStretchChildLogicalHeight(LayoutBox& child) const
 {
+    // This function is a little bit magical. It relies on the fact that blocks intrinsically
+    // "stretch" themselves in their inline axis, i.e. a <div> has an implicit width: 100%.
+    // Therefore, we never need to stretch an item if we're a vertical flow, because the child
+    // will automatically stretch itself.
+    // TODO(cbiesinger): this code is wrong when the child has an orthogonal flow and we're vertical. crbug.com/482766
     if (alignmentForChild(child) != ItemPositionStretch)
         return false;
 
