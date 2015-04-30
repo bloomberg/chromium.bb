@@ -208,7 +208,7 @@ void InMemoryURLIndex::OnHistoryServiceLoaded(
 // Restoring from Cache --------------------------------------------------------
 
 void InMemoryURLIndex::PostRestoreFromCacheFileTask() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   TRACE_EVENT0("browser", "InMemoryURLIndex::PostRestoreFromCacheFileTask");
 
   base::FilePath path;
@@ -286,7 +286,7 @@ void InMemoryURLIndex::ScheduleRebuildFromHistory() {
 void InMemoryURLIndex::DoneRebuidingPrivateDataFromHistoryDB(
     bool succeeded,
     scoped_refptr<URLIndexPrivateData> private_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (succeeded) {
     private_data_tracker_.TryCancelAll();
     private_data_ = private_data;

@@ -18,19 +18,19 @@ using content::BrowserThread;
 
 namespace {
 void SetUserRemovedLoginItemPrefOnUIThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PrefService* service = g_browser_process->local_state();
   service->SetBoolean(prefs::kUserRemovedLoginItem, true);
 }
 
 void SetCreatedLoginItemPrefOnUIThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PrefService* service = g_browser_process->local_state();
   service->SetBoolean(prefs::kChromeCreatedLoginItem, true);
 }
 
 void DisableLaunchOnStartupOnFileThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   // If the LoginItem is not hidden, it means it's user created, so don't
   // delete it.
   bool is_hidden = false;
@@ -39,7 +39,7 @@ void DisableLaunchOnStartupOnFileThread() {
 }
 
 void CheckForUserRemovedLoginItemOnFileThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   if (!base::mac::CheckLoginItemStatus(NULL)) {
     // There's no LoginItem, so set the kUserRemovedLoginItem pref.
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -48,7 +48,7 @@ void CheckForUserRemovedLoginItemOnFileThread() {
 }
 
 void EnableLaunchOnStartupOnFileThread(bool need_migration) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   if (need_migration) {
     // This is the first time running Chrome since the kChromeCreatedLoginItem
     // pref was added. Initialize the status of this pref based on whether

@@ -75,7 +75,7 @@ AppBannerDataFetcher::AppBannerDataFetcher(
 }
 
 void AppBannerDataFetcher::Start(const GURL& validated_url) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents = GetWebContents();
   DCHECK(web_contents);
@@ -87,7 +87,7 @@ void AppBannerDataFetcher::Start(const GURL& validated_url) {
 }
 
 void AppBannerDataFetcher::Cancel() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (is_active_) {
     FOR_EACH_OBSERVER(Observer, observer_list_,
                       OnDecidedWhetherToShow(this, false));

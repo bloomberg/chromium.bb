@@ -37,7 +37,7 @@ void BitmapFetcher::Start(net::URLRequestContextGetter* request_context,
 // Methods inherited from URLFetcherDelegate.
 
 void BitmapFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
     ReportFailure();
