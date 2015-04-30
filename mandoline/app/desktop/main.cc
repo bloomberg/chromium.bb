@@ -13,12 +13,12 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  mojo::shell::InitializeLogging();
+  mojo::runner::InitializeLogging();
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kChildProcess))
-    return mojo::shell::ChildProcessMain();
+    return mojo::runner::ChildProcessMain();
 
   return mandoline::LauncherProcessMain(argc, argv);
 }
