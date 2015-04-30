@@ -92,10 +92,8 @@ class ServiceRuntime {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-  bool StartNexeInternal();
 
   bool SetupCommandChannel();
-  bool StartModule();
 
   void ReportLoadError(const ErrorInfo& error_info);
 

@@ -78,38 +78,6 @@ bool ServiceRuntime::SetupCommandChannel() {
   return true;
 }
 
-bool ServiceRuntime::StartModule() {
-  // start the module.  otherwise we cannot connect for multimedia
-  // subsystem since that is handled by user-level code (not secure!)
-  // in libsrpc.
-  int load_status = -1;
-  if (uses_nonsfi_mode_) {
-    // In non-SFI mode, we don't need to call start_module SRPC to launch
-    // the plugin.
-    load_status = LOAD_OK;
-  } else {
-    // We invoke start_module to unblock NaClWaitForStartModuleCommand in
-    // sel_main_chrome.c on the NaCl side, but the load_status is obtained by
-    // a different hook. Remove this once NaClWaitForStartModuleCommand is no
-    // longer needed.
-    NaClSrpcResultCodes rpc_result =
-        NaClSrpcInvokeBySignature(&command_channel_,
-                                  "start_module::i",
-                                  &load_status);
-
-    if (NACL_SRPC_RESULT_OK != rpc_result) {
-      ErrorInfo error_info;
-      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_START_MODULE,
-                           "ServiceRuntime: could not start nacl module");
-      ReportLoadError(error_info);
-      return false;
-    }
-  }
-
-  NaClLog(4, "ServiceRuntime::StartModule (load_status=%d)\n", load_status);
-  return LOAD_OK == load_status;
-}
-
 void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
                                  pp::CompletionCallback callback) {
   NaClLog(4, "ServiceRuntime::Start\n");
@@ -193,19 +161,13 @@ void ServiceRuntime::SignalNexeStarted(bool ok) {
 }
 
 void ServiceRuntime::StartNexe() {
-  bool ok = StartNexeInternal();
+  bool ok = SetupCommandChannel();
   if (ok) {
     NaClLog(4, "ServiceRuntime::StartNexe (success)\n");
   }
   // This only matters if a background thread is waiting, but we signal in all
   // cases to simplify the code.
   SignalNexeStarted(ok);
-}
-
-bool ServiceRuntime::StartNexeInternal() {
-  if (!SetupCommandChannel())
-    return false;
-  return StartModule();
 }
 
 void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {
