@@ -2413,9 +2413,6 @@ void LayoutObject::willBeDestroyed()
         // If this layoutObject is being autoscrolled, stop the autoscrolling.
         if (frame->page())
             frame->page()->autoscrollController().stopAutoscrollIfNeeded(this);
-
-        if (frame->view() && frame->view()->viewportLayoutObject() == this)
-            frame->view()->clearViewportLayoutObject();
     }
 
     // For accessibility management, notify the parent of the imminent change to its child set.
