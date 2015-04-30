@@ -44,14 +44,14 @@ GIT_REVISIONS = {
         'upstream-base': '68b975af7ef47a9d28f21f4c93431f35777a5109',
         },
     'gcc': {
-        'rev': 'b23dd79950a5453d3b3b5a0030d7a1894cafcffe',
+        'rev': '336bd0bc1724efd6f8b2a4d7228e389dc1bc48da',
         'upstream-branch': 'upstream/gcc-4_9-branch',
         'upstream-name': 'gcc-' + GCC_VERSION,
          # Upstream tag gcc-<GCC_VERSION>-release:
         'upstream-base': 'c1283af40b65f1ad862cf5b27e2d9ed10b2076b6',
         },
     'glibc': {
-        'rev': 'aa4980fc31e9ce176fe954bd0f29bcd65a61556a',
+        'rev': '45c2c5640354b52e5d7acd0a14748e76887d4081',
         'upstream-branch': 'upstream/master',
         'upstream-name': 'glibc-2.21',
         # Upstream tag glibc-2.21:
@@ -726,12 +726,7 @@ def HostTools(host, target):
           'dependencies': (['gcc'] + HostGccLibsDeps(host) +
                            GccDeps(host, target)),
           'commands': ConfigureTargetPrep(target) + [
-              ConfigureGccCommand('gcc', host, target, [
-                  # This doesn't really have anything to with newlib.
-                  # It says not to expect any header files from a C library.
-                  # This prevents the fixincludes step from barfing.
-                  '--with-newlib',
-                  ]),
+              ConfigureGccCommand('gcc', host, target),
               # GCC's configure step writes configargs.h with some strings
               # including the configure command line, which get embedded
               # into the gcc driver binary.  The build only works if we use
@@ -758,7 +753,11 @@ def HostTools(host, target):
               # Since we're doing this build in a clean environment without
               # any libc installed, we need to force its hand here.
               GccCommand(host, target,
-                         MakeCommand(host, ['all-gcc', 'LIMITS_H_TEST=true'])),
+                         MakeCommand(host, [
+                             'all-gcc',
+                             'LIMITS_H_TEST=true',
+                             'MAKEOVERRIDES=inhibit_libc=true',
+                             ])),
               # gcc/Makefile's install targets populate this directory
               # only if it already exists.
               command.Mkdir(command.path.join('%(output)s',
@@ -935,13 +934,8 @@ def TargetLibs(host, target):
   minisdk_root = 'NACL_SDK_ROOT=%(abs_minisdk_' + target + ')s'
 
   glibc_configparms = """
-# TODO(mcgrathr): Make this the default in the compiler driver for !-static.
-rtld-LDFLAGS = $(if $(filter %.so,$@),,-Wl,-Ttext-segment=0x100000) \\
-               -Wl,-dynamic-linker=$(rtlddir)/$(rtld-installed-name)
-
-# Avoid -lgcc_s and -lgcc_eh, which we do not have yet.
+# Avoid -lgcc_s, which we do not have yet.
 override gnulib-tests := -lgcc
-override static-gnulib-tests := -lgcc
 
 # Work around a compiler bug.
 CFLAGS-doasin.c = -mtune=generic-armv7-a
@@ -995,6 +989,13 @@ CFLAGS-doasin.c = -mtune=generic-armv7-a
           'commands': (ConfigureTargetPrep(target) +
                        [command.WriteData(glibc_configparms, 'configparms')] +
                        TargetCommands(host, target, [
+                           # The bootstrap libgcc.a we built above contains
+                           # the unwinder code.  But the GCC driver expects
+                           # the split style used for the static archives when
+                           # building libgcc_s.so, which we will do later.
+                           # So just provide a dummy libgcc_eh.a to be found
+                           # by the static links done while building libc.
+                           [target + '-nacl-ar', 'crs', 'libgcc_eh.a'],
                            ConfigureCommand('glibc') + CONFIGURE_COMMON + [
                                '--host=%s-nacl' % target,
                                '--with-headers=%(abs_top_srcdir)s/..',
