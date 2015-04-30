@@ -7,8 +7,8 @@
 #include <limits>
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/mime_util/mime_util.h"
 #include "content/public/browser/web_contents.h"
-#include "net/base/mime_util.h"
 #include "ui/gfx/screen.h"
 
 using content::Manifest;
@@ -127,7 +127,7 @@ std::vector<Manifest::Icon> ManifestIconSelector::FilterIconsByType(
 
   for (size_t i = 0; i < icons.size(); ++i) {
     if (icons[i].type.is_null() ||
-        net::IsSupportedImageMimeType(
+        mime_util::IsSupportedImageMimeType(
             base::UTF16ToUTF8(icons[i].type.string()))) {
       result.push_back(icons[i]);
     }

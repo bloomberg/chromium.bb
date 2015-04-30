@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "blink/public/resources/grit/blink_image_resources.h"
 #include "blink/public/resources/grit/blink_resources.h"
+#include "components/mime_util/mime_util.h"
 #include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "content/app/resources/grit/content_resources.h"
 #include "content/app/strings/grit/content_strings.h"
@@ -49,7 +50,6 @@
 #include "content/child/worker_task_runner.h"
 #include "content/public/common/content_client.h"
 #include "net/base/data_url.h"
-#include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebConvertableToTraceFormat.h"
@@ -484,8 +484,8 @@ WebData BlinkPlatformImpl::parseDataURL(const WebURL& url,
                                         WebString& mimetype_out,
                                         WebString& charset_out) {
   std::string mime_type, char_set, data;
-  if (net::DataURL::Parse(url, &mime_type, &char_set, &data)
-      && net::IsSupportedMimeType(mime_type)) {
+  if (net::DataURL::Parse(url, &mime_type, &char_set, &data) &&
+      mime_util::IsSupportedMimeType(mime_type)) {
     mimetype_out = WebString::fromUTF8(mime_type);
     charset_out = WebString::fromUTF8(char_set);
     return data;

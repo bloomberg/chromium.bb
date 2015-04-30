@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "components/mime_util/mime_util.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/ftp_directory_listing_response_delegate.h"
 #include "content/child/multipart_response_delegate.h"
@@ -32,7 +33,6 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
-#include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -803,7 +803,7 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
 
   std::string mime_type, unused_charset;
   if (net::DataURL::Parse(request_.url(), &mime_type, &unused_charset, NULL) &&
-      net::IsSupportedMimeType(mime_type))
+      mime_util::IsSupportedMimeType(mime_type))
     return true;
 
   return false;

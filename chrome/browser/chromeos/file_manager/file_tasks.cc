@@ -27,6 +27,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/mime_util/mime_util.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -373,7 +374,7 @@ bool IsGoodMatchFileHandler(
   // regard it as good match.
   if (file_handler_info.types.count("text/*")) {
     for (const auto& path_mime : path_mime_set) {
-      if (net::IsUnsupportedTextMimeType(path_mime.second))
+      if (mime_util::IsUnsupportedTextMimeType(path_mime.second))
         return false;
     }
   }

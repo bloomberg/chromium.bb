@@ -19,11 +19,11 @@
 #include "components/html_viewer/web_message_port_channel_impl.h"
 #include "components/html_viewer/web_socket_handle_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
+#include "components/mime_util/mime_util.h"
 #include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "net/base/data_url.h"
-#include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
@@ -226,8 +226,8 @@ blink::WebData BlinkPlatformImpl::parseDataURL(
     blink::WebString& mimetype_out,
     blink::WebString& charset_out) {
   std::string mimetype, charset, data;
-  if (net::DataURL::Parse(url, &mimetype, &charset, &data)
-      && net::IsSupportedMimeType(mimetype)) {
+  if (net::DataURL::Parse(url, &mimetype, &charset, &data) &&
+      mime_util::IsSupportedMimeType(mimetype)) {
     mimetype_out = blink::WebString::fromUTF8(mimetype);
     charset_out = blink::WebString::fromUTF8(charset);
     return data;

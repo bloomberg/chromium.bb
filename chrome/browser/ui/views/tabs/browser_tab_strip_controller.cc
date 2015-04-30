@@ -30,6 +30,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/mime_util/mime_util.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -581,12 +582,10 @@ void BrowserTabStripController::OnFindURLMimeTypeCompleted(
   content::WebPluginInfo plugin;
   tabstrip_->FileSupported(
       url,
-      mime_type.empty() ||
-      net::IsSupportedMimeType(mime_type) ||
-      content::PluginService::GetInstance()->GetPluginInfo(
-          -1,                // process ID
-          MSG_ROUTING_NONE,  // routing ID
-          model_->profile()->GetResourceContext(),
-          url, GURL(), mime_type, false,
-          NULL, &plugin, NULL));
+      mime_type.empty() || mime_util::IsSupportedMimeType(mime_type) ||
+          content::PluginService::GetInstance()->GetPluginInfo(
+              -1,                // process ID
+              MSG_ROUTING_NONE,  // routing ID
+              model_->profile()->GetResourceContext(), url, GURL(), mime_type,
+              false, NULL, &plugin, NULL));
 }

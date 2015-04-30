@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media_galleries/fileapi/safe_audio_video_checker.h"
+#include "components/mime_util/mime_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
 
@@ -28,7 +29,7 @@ class SupportedAudioVideoExtensions {
     for (size_t i = 0; i < extensions.size(); ++i) {
       std::string mime_type;
       if (net::GetWellKnownMimeTypeFromExtension(extensions[i], &mime_type) &&
-          net::IsSupportedMimeType(mime_type)) {
+          mime_util::IsSupportedMimeType(mime_type)) {
         audio_video_extensions_.insert(
             base::FilePath::kExtensionSeparator + extensions[i]);
       }

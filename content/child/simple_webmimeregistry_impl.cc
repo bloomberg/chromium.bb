@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/mime_util/mime_util.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -24,31 +25,35 @@ std::string SimpleWebMimeRegistryImpl::ToASCIIOrEmpty(const WebString& string) {
 
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMIMEType(
     const WebString& mime_type) {
-  return net::IsSupportedMimeType(ToASCIIOrEmpty(mime_type)) ?
-      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
+  return mime_util::IsSupportedMimeType(ToASCIIOrEmpty(mime_type))
+             ? WebMimeRegistry::IsSupported
+             : WebMimeRegistry::IsNotSupported;
 }
 
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsImageMIMEType(
     const WebString& mime_type) {
-  return net::IsSupportedImageMimeType(ToASCIIOrEmpty(mime_type)) ?
-      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
+  return mime_util::IsSupportedImageMimeType(ToASCIIOrEmpty(mime_type))
+             ? WebMimeRegistry::IsSupported
+             : WebMimeRegistry::IsNotSupported;
 }
 
 WebMimeRegistry::SupportsType
     SimpleWebMimeRegistryImpl::supportsImagePrefixedMIMEType(
     const WebString& mime_type) {
     std::string ascii_mime_type = ToASCIIOrEmpty(mime_type);
-  return (net::IsSupportedImageMimeType(ascii_mime_type) ||
-          (StartsWithASCII(ascii_mime_type, "image/", true) &&
-           net::IsSupportedNonImageMimeType(ascii_mime_type))) ?
-      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
+    return (mime_util::IsSupportedImageMimeType(ascii_mime_type) ||
+            (StartsWithASCII(ascii_mime_type, "image/", true) &&
+             mime_util::IsSupportedNonImageMimeType(ascii_mime_type)))
+               ? WebMimeRegistry::IsSupported
+               : WebMimeRegistry::IsNotSupported;
 }
 
 WebMimeRegistry::SupportsType
     SimpleWebMimeRegistryImpl::supportsJavaScriptMIMEType(
     const WebString& mime_type) {
-  return net::IsSupportedJavascriptMimeType(ToASCIIOrEmpty(mime_type)) ?
-      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
+  return mime_util::IsSupportedJavascriptMimeType(ToASCIIOrEmpty(mime_type))
+             ? WebMimeRegistry::IsSupported
+             : WebMimeRegistry::IsNotSupported;
 }
 
 // When debugging layout tests failures in the test shell,
@@ -71,8 +76,9 @@ bool SimpleWebMimeRegistryImpl::supportsMediaSourceMIMEType(
 WebMimeRegistry::SupportsType
     SimpleWebMimeRegistryImpl::supportsNonImageMIMEType(
     const WebString& mime_type) {
-  return net::IsSupportedNonImageMimeType(ToASCIIOrEmpty(mime_type)) ?
-      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
+  return mime_util::IsSupportedNonImageMimeType(ToASCIIOrEmpty(mime_type))
+             ? WebMimeRegistry::IsSupported
+             : WebMimeRegistry::IsNotSupported;
 }
 
 WebString SimpleWebMimeRegistryImpl::mimeTypeForExtension(

@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/mime_util/mime_util.h"
 #include "media/base/key_systems.h"
 #include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
@@ -25,25 +26,25 @@ std::string ToASCIIOrEmpty(const blink::WebString& string) {
 
 blink::WebMimeRegistry::SupportsType WebMimeRegistryImpl::supportsMIMEType(
     const blink::WebString& mime_type) {
-  return net::IsSupportedMimeType(ToASCIIOrEmpty(mime_type)) ?
-      blink::WebMimeRegistry::IsSupported :
-      blink::WebMimeRegistry::IsNotSupported;
+  return mime_util::IsSupportedMimeType(ToASCIIOrEmpty(mime_type))
+             ? blink::WebMimeRegistry::IsSupported
+             : blink::WebMimeRegistry::IsNotSupported;
 }
 
 blink::WebMimeRegistry::SupportsType WebMimeRegistryImpl::supportsImageMIMEType(
     const blink::WebString& mime_type) {
-  return net::IsSupportedImageMimeType(ToASCIIOrEmpty(mime_type)) ?
-      blink::WebMimeRegistry::IsSupported :
-      blink::WebMimeRegistry::IsNotSupported;
+  return mime_util::IsSupportedImageMimeType(ToASCIIOrEmpty(mime_type))
+             ? blink::WebMimeRegistry::IsSupported
+             : blink::WebMimeRegistry::IsNotSupported;
 }
 
 blink::WebMimeRegistry::SupportsType
 WebMimeRegistryImpl::supportsImagePrefixedMIMEType(
     const blink::WebString& mime_type) {
   std::string ascii_mime_type = ToASCIIOrEmpty(mime_type);
-  return (net::IsSupportedImageMimeType(ascii_mime_type) ||
+  return (mime_util::IsSupportedImageMimeType(ascii_mime_type) ||
           (StartsWithASCII(ascii_mime_type, "image/", true) &&
-           net::IsSupportedNonImageMimeType(ascii_mime_type)))
+           mime_util::IsSupportedNonImageMimeType(ascii_mime_type)))
              ? WebMimeRegistry::IsSupported
              : WebMimeRegistry::IsNotSupported;
 }
@@ -51,9 +52,9 @@ WebMimeRegistryImpl::supportsImagePrefixedMIMEType(
 blink::WebMimeRegistry::SupportsType
     WebMimeRegistryImpl::supportsJavaScriptMIMEType(
     const blink::WebString& mime_type) {
-  return net::IsSupportedJavascriptMimeType(ToASCIIOrEmpty(mime_type)) ?
-      blink::WebMimeRegistry::IsSupported :
-      blink::WebMimeRegistry::IsNotSupported;
+  return mime_util::IsSupportedJavascriptMimeType(ToASCIIOrEmpty(mime_type))
+             ? blink::WebMimeRegistry::IsSupported
+             : blink::WebMimeRegistry::IsNotSupported;
 }
 
 blink::WebMimeRegistry::SupportsType WebMimeRegistryImpl::supportsMediaMIMEType(
@@ -104,9 +105,9 @@ bool WebMimeRegistryImpl::supportsMediaSourceMIMEType(
 blink::WebMimeRegistry::SupportsType
     WebMimeRegistryImpl::supportsNonImageMIMEType(
     const blink::WebString& mime_type) {
-  return net::IsSupportedNonImageMimeType(ToASCIIOrEmpty(mime_type)) ?
-      blink::WebMimeRegistry::IsSupported :
-      blink::WebMimeRegistry::IsNotSupported;
+  return mime_util::IsSupportedNonImageMimeType(ToASCIIOrEmpty(mime_type))
+             ? blink::WebMimeRegistry::IsSupported
+             : blink::WebMimeRegistry::IsNotSupported;
 }
 
 blink::WebString WebMimeRegistryImpl::mimeTypeForExtension(

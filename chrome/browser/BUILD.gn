@@ -107,6 +107,7 @@ source_set("browser") {
     "//components/metrics:net",
     "//components/metrics:profiler",
     "//components/metrics/proto:proto",
+    "//components/mime_util",
     "//components/navigation_metrics",
     "//components/network_time",
     "//components/omnibox",

@@ -58,6 +58,7 @@ group("all_components") {
     "//components/leveldb_proto",
     "//components/login",
     "//components/metrics",
+    "//components/mime_util",
     "//components/navigation_interception",
     "//components/navigation_metrics",
     "//components/network_time",
@@ -270,6 +271,7 @@ test("components_unittests") {
     "//components/invalidation:unittests",
     "//components/login:unit_tests",
     "//components/metrics:unit_tests",
+    "//components/mime_util:unit_tests",
     "//components/omnibox:unit_tests",
     "//components/ownership:unit_tests",
     "//components/packed_ct_ev_whitelist:unit_tests",
@@ -284,6 +286,7 @@ test("components_unittests") {
     "//base",
     "//base/test:test_support",
     "//content/test:test_support",
+    "//net",
     "//ui/base",
   ]
   data_deps = [ ":components_tests_pak" ]

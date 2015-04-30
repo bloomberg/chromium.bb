@@ -59,13 +59,7 @@ class MimeUtil : public PlatformMimeUtil {
   bool GetWellKnownMimeTypeFromExtension(const base::FilePath::StringType& ext,
                                          std::string* mime_type) const;
 
-  bool IsSupportedImageMimeType(const std::string& mime_type) const;
   bool IsSupportedMediaMimeType(const std::string& mime_type) const;
-  bool IsSupportedNonImageMimeType(const std::string& mime_type) const;
-  bool IsUnsupportedTextMimeType(const std::string& mime_type) const;
-  bool IsSupportedJavascriptMimeType(const std::string& mime_type) const;
-
-  bool IsSupportedMimeType(const std::string& mime_type) const;
 
   bool MatchesMimeType(const std::string &mime_type_pattern,
                        const std::string &mime_type) const;
@@ -153,11 +147,7 @@ class MimeUtil : public PlatformMimeUtil {
   bool IsDefaultCodecSupportedLowerCase(
       const std::string& mime_type_lower_case) const;
 
-  MimeMappings image_map_;
   MimeMappings media_map_;
-  MimeMappings non_image_map_;
-  MimeMappings unsupported_text_map_;
-  MimeMappings javascript_map_;
 
   // A map of mime_types and hash map of the supported codecs for the mime_type.
   StrictMappings strict_format_map_;
@@ -307,22 +297,6 @@ bool MimeUtil::GetMimeTypeFromExtensionHelper(
   return false;
 }
 
-// From WebKit's WebCore/platform/MIMETypeRegistry.cpp:
-
-static const char* const supported_image_types[] = {
-  "image/jpeg",
-  "image/pjpeg",
-  "image/jpg",
-  "image/webp",
-  "image/png",
-  "image/gif",
-  "image/bmp",
-  "image/vnd.microsoft.icon",    // ico
-  "image/x-icon",    // ico
-  "image/x-xbitmap",  // xbm
-  "image/x-png"
-};
-
 // A list of media types: http://en.wikipedia.org/wiki/Internet_media_type
 // A comprehensive mime type list: http://plugindoc.mozdev.org/winmime.php
 // This set of codecs is supported by all variations of Chromium.
@@ -367,86 +341,6 @@ static const char* const proprietary_media_types[] = {
   // MPEG-2 TS.
   "video/mp2t",
 #endif
-};
-
-// Note:
-// - does not include javascript types list (see supported_javascript_types)
-// - does not include types starting with "text/" (see
-//   IsSupportedNonImageMimeType())
-static const char* const supported_non_image_types[] = {
-  "image/svg+xml",  // SVG is text-based XML, even though it has an image/ type
-  "application/xml",
-  "application/atom+xml",
-  "application/rss+xml",
-  "application/xhtml+xml",
-  "application/json",
-  "multipart/related",  // For MHTML support.
-  "multipart/x-mixed-replace"
-  // Note: ADDING a new type here will probably render it AS HTML. This can
-  // result in cross site scripting.
-};
-
-// Dictionary of cryptographic file mime types.
-struct CertificateMimeTypeInfo {
-  const char* const mime_type;
-  CertificateMimeType cert_type;
-};
-
-static const CertificateMimeTypeInfo supported_certificate_types[] = {
-  { "application/x-x509-user-cert",
-      CERTIFICATE_MIME_TYPE_X509_USER_CERT },
-#if defined(OS_ANDROID)
-  { "application/x-x509-ca-cert", CERTIFICATE_MIME_TYPE_X509_CA_CERT },
-  { "application/x-pkcs12", CERTIFICATE_MIME_TYPE_PKCS12_ARCHIVE },
-#endif
-};
-
-// These types are excluded from the logic that allows all text/ types because
-// while they are technically text, it's very unlikely that a user expects to
-// see them rendered in text form.
-static const char* const unsupported_text_types[] = {
-  "text/calendar",
-  "text/x-calendar",
-  "text/x-vcalendar",
-  "text/vcalendar",
-  "text/vcard",
-  "text/x-vcard",
-  "text/directory",
-  "text/ldif",
-  "text/qif",
-  "text/x-qif",
-  "text/x-csv",
-  "text/x-vcf",
-  "text/rtf",
-  "text/comma-separated-values",
-  "text/csv",
-  "text/tab-separated-values",
-  "text/tsv",
-  "text/ofx",                           // http://crbug.com/162238
-  "text/vnd.sun.j2me.app-descriptor"    // http://crbug.com/176450
-};
-
-//  Mozilla 1.8 and WinIE 7 both accept text/javascript and text/ecmascript.
-//  Mozilla 1.8 accepts application/javascript, application/ecmascript, and
-// application/x-javascript, but WinIE 7 doesn't.
-//  WinIE 7 accepts text/javascript1.1 - text/javascript1.3, text/jscript, and
-// text/livescript, but Mozilla 1.8 doesn't.
-//  Mozilla 1.8 allows leading and trailing whitespace, but WinIE 7 doesn't.
-//  Mozilla 1.8 and WinIE 7 both accept the empty string, but neither accept a
-// whitespace-only string.
-//  We want to accept all the values that either of these browsers accept, but
-// not other values.
-static const char* const supported_javascript_types[] = {
-  "text/javascript",
-  "text/ecmascript",
-  "application/javascript",
-  "application/ecmascript",
-  "application/x-javascript",
-  "text/javascript1.1",
-  "text/javascript1.2",
-  "text/javascript1.3",
-  "text/jscript",
-  "text/livescript"
 };
 
 #if defined(OS_ANDROID)
@@ -623,39 +517,15 @@ SupportsType MimeUtil::AreSupportedCodecs(
 }
 
 void MimeUtil::InitializeMimeTypeMaps() {
-  for (size_t i = 0; i < arraysize(supported_image_types); ++i)
-    image_map_.insert(supported_image_types[i]);
-
-  // Initialize the supported non-image types.
-  for (size_t i = 0; i < arraysize(supported_non_image_types); ++i)
-    non_image_map_.insert(supported_non_image_types[i]);
-  for (size_t i = 0; i < arraysize(supported_certificate_types); ++i)
-    non_image_map_.insert(supported_certificate_types[i].mime_type);
-  for (size_t i = 0; i < arraysize(unsupported_text_types); ++i)
-    unsupported_text_map_.insert(unsupported_text_types[i]);
-  for (size_t i = 0; i < arraysize(supported_javascript_types); ++i)
-    non_image_map_.insert(supported_javascript_types[i]);
-  for (size_t i = 0; i < arraysize(common_media_types); ++i) {
-    non_image_map_.insert(common_media_types[i]);
-  }
+  // Initialize the supported media types.
+  for (size_t i = 0; i < arraysize(common_media_types); ++i)
+    media_map_.insert(common_media_types[i]);
 #if defined(USE_PROPRIETARY_CODECS)
   allow_proprietary_codecs_ = true;
 
   for (size_t i = 0; i < arraysize(proprietary_media_types); ++i)
-    non_image_map_.insert(proprietary_media_types[i]);
-#endif
-
-  // Initialize the supported media types.
-  for (size_t i = 0; i < arraysize(common_media_types); ++i) {
-    media_map_.insert(common_media_types[i]);
-  }
-#if defined(USE_PROPRIETARY_CODECS)
-  for (size_t i = 0; i < arraysize(proprietary_media_types); ++i)
     media_map_.insert(proprietary_media_types[i]);
 #endif
-
-  for (size_t i = 0; i < arraysize(supported_javascript_types); ++i)
-    javascript_map_.insert(supported_javascript_types[i]);
 
   for (size_t i = 0; i < arraysize(kUnambiguousCodecStringMap); ++i) {
     string_to_codec_map_[kUnambiguousCodecStringMap[i].codec_id] =
@@ -687,40 +557,9 @@ void MimeUtil::InitializeMimeTypeMaps() {
   }
 }
 
-bool MimeUtil::IsSupportedImageMimeType(const std::string& mime_type) const {
-  return image_map_.find(base::StringToLowerASCII(mime_type)) !=
-         image_map_.end();
-}
-
 bool MimeUtil::IsSupportedMediaMimeType(const std::string& mime_type) const {
   return media_map_.find(base::StringToLowerASCII(mime_type)) !=
          media_map_.end();
-}
-
-bool MimeUtil::IsSupportedNonImageMimeType(const std::string& mime_type) const {
-  return non_image_map_.find(base::StringToLowerASCII(mime_type)) !=
-             non_image_map_.end() ||
-         (StartsWithASCII(mime_type, "text/", false /* case insensitive */) &&
-          !IsUnsupportedTextMimeType(mime_type)) ||
-         (StartsWithASCII(mime_type, "application/", false) &&
-          MatchesMimeType("application/*+json", mime_type));
-}
-
-bool MimeUtil::IsUnsupportedTextMimeType(const std::string& mime_type) const {
-  return unsupported_text_map_.find(base::StringToLowerASCII(mime_type)) !=
-         unsupported_text_map_.end();
-}
-
-bool MimeUtil::IsSupportedJavascriptMimeType(
-    const std::string& mime_type) const {
-  return javascript_map_.find(mime_type) != javascript_map_.end();
-}
-
-// Mirrors WebViewImpl::CanShowMIMEType()
-bool MimeUtil::IsSupportedMimeType(const std::string& mime_type) const {
-  return (StartsWithASCII(mime_type, "image/", false) &&
-          IsSupportedImageMimeType(mime_type)) ||
-         IsSupportedNonImageMimeType(mime_type);
 }
 
 // Tests for MIME parameter equality. Each parameter in the |mime_type_pattern|
@@ -935,10 +774,8 @@ SupportsType MimeUtil::IsSupportedStrictMediaMimeType(
 }
 
 void MimeUtil::RemoveProprietaryMediaTypesAndCodecsForTests() {
-  for (size_t i = 0; i < arraysize(proprietary_media_types); ++i) {
-    non_image_map_.erase(proprietary_media_types[i]);
+  for (size_t i = 0; i < arraysize(proprietary_media_types); ++i)
     media_map_.erase(proprietary_media_types[i]);
-  }
   allow_proprietary_codecs_ = false;
 }
 
@@ -1126,28 +963,8 @@ bool GetPreferredExtensionForMimeType(const std::string& mime_type,
                                                             extension);
 }
 
-bool IsSupportedImageMimeType(const std::string& mime_type) {
-  return g_mime_util.Get().IsSupportedImageMimeType(mime_type);
-}
-
 bool IsSupportedMediaMimeType(const std::string& mime_type) {
   return g_mime_util.Get().IsSupportedMediaMimeType(mime_type);
-}
-
-bool IsSupportedNonImageMimeType(const std::string& mime_type) {
-  return g_mime_util.Get().IsSupportedNonImageMimeType(mime_type);
-}
-
-bool IsUnsupportedTextMimeType(const std::string& mime_type) {
-  return g_mime_util.Get().IsUnsupportedTextMimeType(mime_type);
-}
-
-bool IsSupportedJavascriptMimeType(const std::string& mime_type) {
-  return g_mime_util.Get().IsSupportedJavascriptMimeType(mime_type);
-}
-
-bool IsSupportedMimeType(const std::string& mime_type) {
-  return g_mime_util.Get().IsSupportedMimeType(mime_type);
 }
 
 bool MatchesMimeType(const std::string& mime_type_pattern,
@@ -1370,25 +1187,6 @@ void GetExtensionsForMimeType(
 
 void RemoveProprietaryMediaTypesAndCodecsForTests() {
   g_mime_util.Get().RemoveProprietaryMediaTypesAndCodecsForTests();
-}
-
-CertificateMimeType GetCertificateMimeTypeForMimeType(
-    const std::string& mime_type) {
-  // Don't create a map, there is only one entry in the table,
-  // except on Android.
-  for (size_t i = 0; i < arraysize(supported_certificate_types); ++i) {
-    if (base::strcasecmp(mime_type.c_str(),
-                         supported_certificate_types[i].mime_type) == 0) {
-      return supported_certificate_types[i].cert_type;
-    }
-  }
-  return CERTIFICATE_MIME_TYPE_UNKNOWN;
-}
-
-bool IsSupportedCertificateMimeType(const std::string& mime_type) {
-  CertificateMimeType file_type =
-      GetCertificateMimeTypeForMimeType(mime_type);
-  return file_type != CERTIFICATE_MIME_TYPE_UNKNOWN;
 }
 
 void AddMultipartValueForUpload(const std::string& value_name,

@@ -5,6 +5,7 @@
 #include "content/browser/loader/certificate_resource_handler.h"
 
 #include "base/strings/string_util.h"
+#include "components/mime_util/mime_util.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/resource_response.h"
@@ -44,7 +45,8 @@ bool CertificateResourceHandler::OnRequestRedirected(
 
 bool CertificateResourceHandler::OnResponseStarted(ResourceResponse* resp,
                                                    bool* defer) {
-  cert_type_ = net::GetCertificateMimeTypeForMimeType(resp->head.mime_type);
+  cert_type_ =
+      mime_util::GetCertificateMimeTypeForMimeType(resp->head.mime_type);
   return cert_type_ != net::CERTIFICATE_MIME_TYPE_UNKNOWN;
 }
 

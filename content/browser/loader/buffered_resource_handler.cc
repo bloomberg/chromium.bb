@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
+#include "components/mime_util/mime_util.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/loader/certificate_resource_handler.h"
@@ -296,7 +297,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
   ResourceRequestInfoImpl* info = GetRequestInfo();
   const std::string& mime_type = response_->head.mime_type;
 
-  if (net::IsSupportedCertificateMimeType(mime_type)) {
+  if (mime_util::IsSupportedCertificateMimeType(mime_type)) {
     // Install certificate file.
     info->set_is_download(true);
     scoped_ptr<ResourceHandler> handler(
@@ -311,7 +312,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
     scoped_ptr<ResourceHandler> handler(
         host_->MaybeInterceptAsStream(request(), response_.get(), &payload));
     if (handler) {
-      DCHECK(!net::IsSupportedMimeType(mime_type));
+      DCHECK(!mime_util::IsSupportedMimeType(mime_type));
       return UseAlternateNextHandler(handler.Pass(), payload);
     }
   }
@@ -327,7 +328,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
 
   bool must_download = MustDownload();
   if (!must_download) {
-    if (net::IsSupportedMimeType(mime_type))
+    if (mime_util::IsSupportedMimeType(mime_type))
       return true;
 
     std::string payload;

@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/strings/string_util.h"
+#include "components/mime_util/mime_util.h"
 #include "net/base/mime_util.h"
 
 namespace {
@@ -79,7 +80,7 @@ const base::FilePath::CharType* const kExtraSupportedAudioExtensions[] = {
 bool IsUnsupportedExtension(const base::FilePath::StringType& extension) {
   std::string mime_type;
   return !net::GetMimeTypeFromExtension(extension, &mime_type) ||
-      !net::IsSupportedMimeType(mime_type);
+         !mime_util::IsSupportedMimeType(mime_type);
 }
 
 std::vector<base::FilePath::StringType> GetMediaExtensionList(

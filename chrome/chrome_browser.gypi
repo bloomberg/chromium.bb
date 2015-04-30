@@ -3048,6 +3048,7 @@
         '../components/components.gyp:variations_http_provider',
         '../components/components.gyp:webdata_common',
         '../components/components.gyp:webdata_services',
+        '../components/mime_util/mime_util.gyp:mime_util',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../courgette/courgette.gyp:courgette_lib',

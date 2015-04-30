@@ -282,6 +282,9 @@
       'metrics/profiler/profiler_metrics_provider_unittest.cc',
       'metrics/profiler/tracking_synchronizer_unittest.cc',
     ],
+    'mime_util_unittest_sources': [
+      'mime_util/mime_util_unittest.cc',
+    ],
     'nacl_unittest_sources': [
       'nacl/browser/nacl_file_host_unittest.cc',
       'nacl/browser/nacl_process_host_unittest.cc',
@@ -659,6 +662,7 @@
         '<@(leveldb_proto_unittest_sources)',
         '<@(login_unittest_sources)',
         '<@(metrics_unittest_sources)',
+        '<@(mime_util_unittest_sources)',
         '<@(network_time_unittest_sources)',
         '<@(omnibox_unittest_sources)',
         '<@(os_crypt_unittest_sources)',
@@ -798,6 +802,7 @@
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
         'components_tests_pak',
+        'mime_util/mime_util.gyp:mime_util',
       ],
       'conditions': [
         ['toolkit_views == 1', {

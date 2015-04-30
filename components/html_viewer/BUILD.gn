@@ -102,6 +102,7 @@ source_set("lib") {
     "//cc/surfaces",
     "//components/clipboard/public/interfaces",
     "//components/gpu/public/interfaces",
+    "//components/mime_util",
     "//components/scheduler:scheduler",
     "//components/surfaces/public/interfaces",
     "//components/webcrypto",

@@ -51,15 +51,7 @@ NET_EXPORT bool GetPreferredExtensionForMimeType(
     base::FilePath::StringType* extension);
 
 // Check to see if a particular MIME type is in our list.
-NET_EXPORT bool IsSupportedImageMimeType(const std::string& mime_type);
 NET_EXPORT bool IsSupportedMediaMimeType(const std::string& mime_type);
-NET_EXPORT bool IsSupportedNonImageMimeType(const std::string& mime_type);
-NET_EXPORT bool IsUnsupportedTextMimeType(const std::string& mime_type);
-NET_EXPORT bool IsSupportedJavascriptMimeType(const std::string& mime_type);
-NET_EXPORT bool IsSupportedCertificateMimeType(const std::string& mime_type);
-
-// Convenience function.
-NET_EXPORT bool IsSupportedMimeType(const std::string& mime_type);
 
 // Returns true if this the mime_type_pattern matches a given mime-type.
 // Checks for absolute matching and wildcards. MIME types are case insensitive.
@@ -161,9 +153,6 @@ enum CertificateMimeType {
   CERTIFICATE_MIME_TYPE_X509_CA_CERT,
   CERTIFICATE_MIME_TYPE_PKCS12_ARCHIVE,
 };
-
-NET_EXPORT CertificateMimeType GetCertificateMimeTypeForMimeType(
-    const std::string& mime_type);
 
 // Prepares one value as part of a multi-part upload request.
 NET_EXPORT void AddMultipartValueForUpload(const std::string& value_name,

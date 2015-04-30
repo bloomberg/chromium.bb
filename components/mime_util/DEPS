@@ -1,0 +1,7 @@
+include_rules = [
+  # This is used by both //content and //components/html_viewer, so prevent
+  # any dependencies on //content
+  "-content",
+
+  "+net/base",
+]

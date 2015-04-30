@@ -5,6 +5,7 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
+    '../components/mime_util/mime_util.gyp:mime_util',
     '../components/tracing.gyp:tracing',
     '../components/webcrypto/webcrypto.gyp:webcrypto',
     '../mojo/mojo_base.gyp:mojo_environment_chromium',
