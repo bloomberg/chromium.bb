@@ -86,7 +86,7 @@ void CastWindowAndroid::Close() {
   // Close page first, which fires the window.unload event. The WebContents
   // itself will be destroyed after browser-process has received renderer
   // notification that the page is closed.
-  web_contents_->GetRenderViewHost()->ClosePage();
+  web_contents_->ClosePage();
 }
 
 void CastWindowAndroid::Destroy() {

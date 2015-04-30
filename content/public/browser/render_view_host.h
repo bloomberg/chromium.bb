@@ -83,11 +83,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Returns true if the current focused element is editable.
   virtual bool IsFocusedElementEditable() = 0;
 
-  // Causes the renderer to close the current page, including running its
-  // onunload event handler.  A ClosePage_ACK message will be sent to the
-  // ResourceDispatcherHost when it is finished.
-  virtual void ClosePage() = 0;
-
   // Copies the image at location x, y to the clipboard (if there indeed is an
   // image at that location).
   virtual void CopyImageAt(int x, int y) = 0;

@@ -234,7 +234,7 @@ void DefaultBindingsDelegate::OpenInNewTab(const std::string& url) {
 }
 
 void DefaultBindingsDelegate::InspectedContentsClosing() {
-  web_contents_->GetRenderViewHost()->ClosePage();
+  web_contents_->ClosePage();
 }
 
 InfoBarService* DefaultBindingsDelegate::GetInfoBarService() {

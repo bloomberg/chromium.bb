@@ -830,8 +830,8 @@ void ProcessManager::CloseLazyBackgroundPageNow(const std::string& extension_id,
       }
     }
     for (content::RenderFrameHost* frame : frames_to_close) {
-      frame->GetRenderViewHost()->ClosePage();
-      // RenderViewHost::ClosePage() may result in calling
+      content::WebContents::FromRenderFrameHost(frame)->ClosePage();
+      // WebContents::ClosePage() may result in calling
       // UnregisterRenderViewHost() asynchronously and may cause race conditions
       // when the background page is reloaded.
       // To avoid this, unregister the view now.

@@ -123,7 +123,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void AllowBindings(int binding_flags) override;
   void ClearFocusedElement() override;
   bool IsFocusedElementEditable() override;
-  void ClosePage() override;
   void CopyImageAt(int x, int y) override;
   void SaveImageAt(int x, int y) override;
   void DirectoryEnumerationFinished(
@@ -226,6 +225,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // separately so that the PageGroupLoadDeferrers of any current dialogs are no
   // longer on the stack when we attempt to swap it out.
   void SuppressDialogsUntilSwapOut();
+
+  // Tells the renderer process to run the page's unload handler.
+  // A ClosePage_ACK ack is sent back when the handler execution completes.
+  void ClosePage();
 
   // Close the page ignoring whether it has unload events registers.
   // This is called after the beforeunload and unload events have fired

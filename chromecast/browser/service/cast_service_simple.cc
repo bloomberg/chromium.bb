@@ -75,7 +75,7 @@ void CastServiceSimple::StartInternal() {
 }
 
 void CastServiceSimple::StopInternal() {
-  web_contents_->GetRenderViewHost()->ClosePage();
+  web_contents_->ClosePage();
   web_contents_.reset();
   window_.reset();
 }

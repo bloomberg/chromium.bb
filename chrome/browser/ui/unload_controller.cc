@@ -320,7 +320,7 @@ void UnloadController::ProcessPendingTabs() {
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
     if (web_contents->GetRenderViewHost()) {
-      web_contents->GetRenderViewHost()->ClosePage();
+      web_contents->ClosePage();
     } else {
       ClearUnloadState(web_contents, true);
     }

@@ -464,8 +464,8 @@ bool RenderFrameDevToolsAgentHost::Activate() {
 }
 
 bool RenderFrameDevToolsAgentHost::Close() {
-  if (render_frame_host_) {
-    render_frame_host_->GetRenderViewHost()->ClosePage();
+  if (web_contents()) {
+    web_contents()->ClosePage();
     return true;
   }
   return false;

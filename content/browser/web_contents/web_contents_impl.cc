@@ -675,6 +675,10 @@ int WebContentsImpl::GetFullscreenWidgetRoutingID() const {
   return fullscreen_widget_routing_id_;
 }
 
+void WebContentsImpl::ClosePage() {
+  GetRenderViewHost()->ClosePage();
+}
+
 RenderWidgetHostView* WebContentsImpl::GetRenderWidgetHostView() const {
   return GetRenderManager()->GetRenderWidgetHostView();
 }
@@ -3895,6 +3899,7 @@ void WebContentsImpl::DocumentAvailableInMainFrame(
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DocumentAvailableInMainFrame());
 }
+
 void WebContentsImpl::RouteCloseEvent(RenderViewHost* rvh) {
   // Tell the active RenderViewHost to run unload handlers and close, as long
   // as the request came from a RenderViewHost in the same BrowsingInstance.
@@ -3902,7 +3907,7 @@ void WebContentsImpl::RouteCloseEvent(RenderViewHost* rvh) {
   // It is possible to receive it from one that has just been swapped in,
   // in which case we might as well deliver the message anyway.
   if (rvh->GetSiteInstance()->IsRelatedSiteInstance(GetSiteInstance()))
-    GetRenderViewHost()->ClosePage();
+    ClosePage();
 }
 
 bool WebContentsImpl::ShouldRouteMessageEvent(

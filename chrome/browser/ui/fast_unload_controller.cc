@@ -422,7 +422,7 @@ void FastUnloadController::ProcessPendingTabs() {
             CoreTabHelper::FromWebContents(contents);
         core_tab_helper->OnUnloadStarted();
         DetachWebContents(contents);
-        contents->GetRenderViewHost()->ClosePage();
+        contents->ClosePage();
       }
     }
 
