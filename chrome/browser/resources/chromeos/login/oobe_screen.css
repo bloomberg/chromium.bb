@@ -92,6 +92,10 @@ html[dir=rtl] .step-controls {
   top: 50%;
 }
 
+.new-gaia-flow .step-loading {
+  margin-top: -42px;
+}
+
 /* Fixes perfomance problem caused by http://crbug.com/229405 . */
 .step.hidden .throbber,
 .step.hidden .spinner,

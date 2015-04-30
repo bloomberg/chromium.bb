@@ -31,10 +31,6 @@ throbber-notice {
   display: block;
 }
 
-.new-gaia-flow #gaia-loading {
-  margin-top: -38px;
-}
-
 #gaia-signin.full-width {
   padding: 75px 0 0;
 }

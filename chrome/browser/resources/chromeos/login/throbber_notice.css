@@ -8,14 +8,15 @@ paper-spinner::shadow .circle {
 }
 
 paper-spinner {
-  height: 36px;
-  width: 36px;
+  height: 38px;
+  width: 38px;
 }
 
 #spinner-container {
-  margin-bottom: 25px;
+  margin-bottom: 28px;
 }
 
 #spinner-comment {
-  color: grey;
+  color: #747474;
+  font-size: 13px;
 }
