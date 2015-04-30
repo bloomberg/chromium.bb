@@ -2583,6 +2583,8 @@ void TabStrip::SwapLayoutIfNecessary() {
     touch_layout_->SetXAndMiniCount(GetStartXForNormalTabs(),
                                     GetMiniTabCount());
     touch_layout_->SetActiveIndex(controller_->GetActiveIndex());
+
+    content::RecordAction(UserMetricsAction("StackedTab_EnteredStackedLayout"));
   } else {
     touch_layout_.reset();
   }
