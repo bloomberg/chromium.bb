@@ -370,6 +370,8 @@ void ClientSession::OnConnectionClosed(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
 
+  HOST_LOG << "Client disconnected: " << client_jid_ << "; error = " << error;
+
   // Ignore any further callbacks.
   weak_factory_.InvalidateWeakPtrs();
 
@@ -391,7 +393,6 @@ void ClientSession::OnConnectionClosed(
   desktop_environment_.reset();
 
   // Notify the ChromotingHost that this client is disconnected.
-  // TODO(sergeyu): Log failure reason?
   event_handler_->OnSessionClosed(this);
 }
 
