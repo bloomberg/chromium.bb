@@ -54,6 +54,21 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
                                          bool highlight) {
   SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 3, kTrayPopupPaddingBetweenItems));
+  DoAddIconAndLabel(image, text, highlight);
+}
+
+void HoverHighlightView::AddIndentedIconAndLabel(const gfx::ImageSkia& image,
+                                                 const base::string16& text,
+                                                 bool highlight) {
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                        kTrayPopupPaddingHorizontal, 0,
+                                        kTrayPopupPaddingBetweenItems));
+  DoAddIconAndLabel(image, text, highlight);
+}
+
+void HoverHighlightView::DoAddIconAndLabel(const gfx::ImageSkia& image,
+                                           const base::string16& text,
+                                           bool highlight) {
   views::ImageView* image_view =
       new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
   image_view->SetImage(image);

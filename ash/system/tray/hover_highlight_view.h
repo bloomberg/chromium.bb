@@ -32,6 +32,13 @@ class HoverHighlightView : public ActionableView {
                        const base::string16& text,
                        bool highlight);
 
+  // Convenience function for adding an icon and a label. This also sets the
+  // accessible name. The icon has an indent equal to
+  // kTrayPopupPaddingHorizontal.
+  void AddIndentedIconAndLabel(const gfx::ImageSkia& image,
+                               const base::string16& text,
+                               bool highlight);
+
   // Convenience function for adding a label with padding on the left for a
   // blank icon.  This also sets the accessible name. Returns label after
   // parenting it.
@@ -67,6 +74,11 @@ class HoverHighlightView : public ActionableView {
   void SetHoverHighlight(bool hover);
 
  private:
+  // Actually adds the icon and label but does not set the layout manager
+  void DoAddIconAndLabel(const gfx::ImageSkia& image,
+                         const base::string16& text,
+                         bool highlight);
+
   // Overridden from ActionableView:
   bool PerformAction(const ui::Event& event) override;
 
