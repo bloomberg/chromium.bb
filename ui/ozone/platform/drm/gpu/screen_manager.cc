@@ -89,7 +89,8 @@ void ScreenManager::AddDisplayController(const scoped_refptr<DrmDevice>& drm,
   }
 
   controllers_.push_back(new HardwareDisplayController(
-      scoped_ptr<CrtcController>(new CrtcController(drm, crtc, connector))));
+      scoped_ptr<CrtcController>(new CrtcController(drm, crtc, connector)),
+      gfx::Point()));
 }
 
 void ScreenManager::RemoveDisplayController(const scoped_refptr<DrmDevice>& drm,
@@ -154,8 +155,8 @@ bool ScreenManager::ActualConfigureDisplayController(
   // mirror mode, subsequent calls configuring the other controllers will
   // restore mirror mode.
   if (controller->IsMirrored()) {
-    controller =
-        new HardwareDisplayController(controller->RemoveCrtc(drm, crtc));
+    controller = new HardwareDisplayController(
+        controller->RemoveCrtc(drm, crtc), controller->origin());
     controllers_.push_back(controller);
     it = controllers_.end() - 1;
   }
@@ -174,16 +175,21 @@ bool ScreenManager::DisableDisplayController(
     uint32_t crtc) {
   HardwareDisplayControllers::iterator it = FindDisplayController(drm, crtc);
   if (it != controllers_.end()) {
-    if ((*it)->IsMirrored()) {
-      HardwareDisplayController* controller =
-          new HardwareDisplayController((*it)->RemoveCrtc(drm, crtc));
+    HardwareDisplayController* controller = *it;
+    if (controller->IsMirrored()) {
+      controller = new HardwareDisplayController(
+          controller->RemoveCrtc(drm, crtc), controller->origin());
       controllers_.push_back(controller);
     }
 
-    // Workaround for driver bug that does not release the buffer on null
-    // modeset.
-    ModesetDisplayController((*it), (*it)->origin(), (*it)->get_mode(), false);
-    (*it)->Disable();
+    if (!controller->IsDisabled()) {
+      // Workaround for driver bug that does not release the buffer on null
+      // modeset.
+      ModesetDisplayController(controller, controller->origin(),
+                               controller->get_mode(), false);
+    }
+
+    controller->Disable();
     UpdateControllerToWindowMapping();
     return true;
   }

@@ -23,9 +23,11 @@
 namespace ui {
 
 HardwareDisplayController::HardwareDisplayController(
-    scoped_ptr<CrtcController> controller)
-    : is_disabled_(true) {
-  memset(&mode_, 0, sizeof(mode_));
+    scoped_ptr<CrtcController> controller,
+    const gfx::Point& origin)
+    : origin_(origin),
+      mode_(controller->mode()),
+      is_disabled_(controller->is_disabled()) {
   AddCrtc(controller.Pass());
 }
 

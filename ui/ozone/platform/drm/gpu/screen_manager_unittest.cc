@@ -211,12 +211,36 @@ TEST_F(ScreenManagerTest, MonitorGoneInMirrorMode) {
       kDefaultMode);
 
   screen_manager_->RemoveDisplayController(drm_, kSecondaryCrtc);
-  EXPECT_TRUE(screen_manager_->ConfigureDisplayController(
-      drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
-      kDefaultMode));
 
-  EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
+  ui::HardwareDisplayController* controller =
+      screen_manager_->GetDisplayController(GetPrimaryBounds());
+  EXPECT_TRUE(controller);
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
+
+  EXPECT_TRUE(controller->HasCrtc(drm_, kPrimaryCrtc));
+  EXPECT_FALSE(controller->HasCrtc(drm_, kSecondaryCrtc));
+}
+
+TEST_F(ScreenManagerTest, MonitorDisabledInMirrorMode) {
+  screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);
+  screen_manager_->ConfigureDisplayController(
+      drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+  screen_manager_->AddDisplayController(drm_, kSecondaryCrtc,
+                                        kSecondaryConnector);
+  screen_manager_->ConfigureDisplayController(
+      drm_, kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
+      kDefaultMode);
+
+  screen_manager_->DisableDisplayController(drm_, kSecondaryCrtc);
+
+  ui::HardwareDisplayController* controller =
+      screen_manager_->GetDisplayController(GetPrimaryBounds());
+  EXPECT_TRUE(controller);
+  EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
+
+  EXPECT_TRUE(controller->HasCrtc(drm_, kPrimaryCrtc));
+  EXPECT_FALSE(controller->HasCrtc(drm_, kSecondaryCrtc));
 }
 
 TEST_F(ScreenManagerTest, DoNotEnterMirrorModeUnlessSameBounds) {

@@ -87,7 +87,8 @@ class DrmDevice;
 // connectors active if some use the same CRTC to mirror the display.
 class OZONE_EXPORT HardwareDisplayController {
  public:
-  explicit HardwareDisplayController(scoped_ptr<CrtcController> controller);
+  HardwareDisplayController(scoped_ptr<CrtcController> controller,
+                            const gfx::Point& origin);
   ~HardwareDisplayController();
 
   // Performs the initial CRTC configuration. If successful, it will display the

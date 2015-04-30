@@ -34,6 +34,7 @@ class OZONE_EXPORT CrtcController
                  uint32_t connector);
   ~CrtcController();
 
+  drmModeModeInfo mode() const { return mode_; }
   uint32_t crtc() const { return crtc_; }
   uint32_t connector() const { return connector_; }
   const scoped_refptr<DrmDevice>& drm() const { return drm_; }

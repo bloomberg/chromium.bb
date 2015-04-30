@@ -72,8 +72,9 @@ void HardwareDisplayControllerTest::SetUp() {
   crtcs.push_back(kSecondaryCrtc);
   drm_ = new ui::MockDrmDevice(false, crtcs, kPlanesPerCrtc);
   controller_.reset(new ui::HardwareDisplayController(
-      scoped_ptr<ui::CrtcController>(new ui::CrtcController(
-          drm_.get(), kPrimaryCrtc, kPrimaryConnector))));
+      scoped_ptr<ui::CrtcController>(
+          new ui::CrtcController(drm_.get(), kPrimaryCrtc, kPrimaryConnector)),
+      gfx::Point()));
 }
 
 void HardwareDisplayControllerTest::TearDown() {
