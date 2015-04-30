@@ -24,11 +24,10 @@
 #include "chrome/installer/util/google_chrome_distribution.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/non_updating_app_registration_data.h"
-
-#include "installer_util_strings.h"  // NOLINT
 
 using installer::MasterPreferences;
 

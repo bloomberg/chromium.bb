@@ -25,14 +25,13 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/uninstall_metrics.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
 #include "content/public/common/result_codes.h"
-
-#include "installer_util_strings.h"  // NOLINT
 
 namespace {
 

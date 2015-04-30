@@ -15,8 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/win/i18n.h"
 #include "chrome/installer/util/google_update_settings.h"
-
-#include "installer_util_strings.h"
+#include "chrome/installer/util/installer_util_strings.h"
 
 namespace {
 

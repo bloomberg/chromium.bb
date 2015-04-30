@@ -9,10 +9,9 @@
 #include "chrome/installer/util/advanced_firewall_manager_win.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/legacy_firewall_manager_win.h"
-
-#include "installer_util_strings.h"  // NOLINT
 
 namespace installer {
 

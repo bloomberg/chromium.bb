@@ -13,13 +13,12 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installer_state.h"
+#include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
-
-#include "installer_util_strings.h"  // NOLINT
 
 namespace installer {
 

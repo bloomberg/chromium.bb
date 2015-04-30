@@ -43,7 +43,8 @@ bool ResourceUpdater::Update(const std::wstring& name,
 
   if (input.Initialize(input_file)) {
     if (UpdateResource(handle_, type.c_str(), name.c_str(), language_id,
-                       const_cast<uint8*>(input.data()), input.length())
+                       const_cast<uint8*>(input.data()),
+                       static_cast<DWORD>(input.length()))
         != FALSE) {
       return true;
     }

@@ -53,7 +53,8 @@ class DeleteAfterRebootHelperTest : public testing::Test {
       std::vector<char> buffer;
       StringArrayToMultiSZBytes(original_pending_moves_, &buffer);
       session_manager_key.WriteValue(kPendingFileRenameOps, &buffer[0],
-                                     buffer.size(), REG_MULTI_SZ);
+                                     static_cast<int>(buffer.size()),
+                                     REG_MULTI_SZ);
     }
   }
 

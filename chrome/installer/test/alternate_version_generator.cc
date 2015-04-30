@@ -226,7 +226,7 @@ bool RunProcessAndWait(const wchar_t* exe_path, const std::wstring& cmdline,
                      << cmdline << "\".";
         result = false;
       } else {
-        DCHECK_NE(*exit_code, STILL_ACTIVE);
+        DCHECK_NE(*exit_code, static_cast<int>(STILL_ACTIVE));
       }
     }
   } else {
@@ -547,7 +547,7 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
         base::WriteFile(setup_ex_,
                         reinterpret_cast<const char*>(resource_data.first),
                         static_cast<int>(resource_data.second));
-    if (written != resource_data.second) {
+    if (written != static_cast<int>(resource_data.second)) {
       LOG(DFATAL) << "Failed writing \"" << setup_ex_.value() << "\"";
       return false;
     }
@@ -559,7 +559,7 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
         base::WriteFile(chrome_packed_7z,
                         reinterpret_cast<const char*>(resource_data.first),
                         static_cast<int>(resource_data.second));
-    if (written != resource_data.second) {
+    if (written != static_cast<int>(resource_data.second)) {
       LOG(DFATAL) << "Failed writing \"" << chrome_packed_7z.value() << "\"";
       return false;
     }

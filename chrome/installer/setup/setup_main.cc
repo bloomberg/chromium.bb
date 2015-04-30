@@ -56,6 +56,7 @@
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installation_validator.h"
 #include "chrome/installer/util/installer_state.h"
+#include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/logging_installer.h"
 #include "chrome/installer/util/lzma_util.h"
@@ -64,8 +65,6 @@
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/user_experiment.h"
-
-#include "installer_util_strings.h"  // NOLINT
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/installer/util/updating_app_registration_data.h"

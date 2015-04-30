@@ -28,13 +28,12 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
+#include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/product_unittest.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include "installer_util_strings.h"  // NOLINT
 
 using base::win::RegKey;
 using installer::InstallationState;
