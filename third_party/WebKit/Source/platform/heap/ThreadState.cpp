@@ -894,6 +894,16 @@ void ThreadState::preSweep()
             ScriptForbiddenScope::exit();
     }
 
+#if defined(ADDRESS_SANITIZER)
+// TODO(haraken): Currently we cannot enable the poisoning because we have
+// real bugs where destructors touch other on-heap objects. Remove all the bugs
+// and enable the poisoning.
+#if 0
+    for (int i = 0; i < NumberOfHeaps; i++)
+        m_heaps[i]->poisonUnmarkedObjects();
+#endif
+#endif
+
 #if ENABLE(OILPAN)
     if (gcState() == EagerSweepScheduled) {
         // Eager sweeping should happen only in testing.

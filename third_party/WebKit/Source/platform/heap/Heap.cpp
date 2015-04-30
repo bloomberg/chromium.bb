@@ -583,6 +583,17 @@ void BaseHeap::prepareForSweep()
     m_firstPage = nullptr;
 }
 
+#if defined(ADDRESS_SANITIZER)
+void BaseHeap::poisonUnmarkedObjects()
+{
+    // This method is called just before starting sweeping.
+    // Thus all dead objects are in the list of m_firstUnsweptPage.
+    for (BasePage* page = m_firstUnsweptPage; page; page = page->next()) {
+        page->poisonUnmarkedObjects();
+    }
+}
+#endif
+
 Address BaseHeap::lazySweep(size_t allocationSize, size_t gcInfoIndex)
 {
     // If there are no pages to be swept, return immediately.
@@ -1506,8 +1517,9 @@ void NormalPage::sweep()
             Address payload = header->payload();
             // For ASan we unpoison the specific object when calling the
             // finalizer and poison it again when done to allow the object's own
-            // finalizer to operate on the object, but not have other finalizers
-            // be allowed to access it.
+            // finalizer to operate on the object. Given all other unmarked
+            // objects are poisoned, ASan will detect an error if the finalizer
+            // touches any other on-heap object that die at the same GC cycle.
             ASAN_UNPOISON_MEMORY_REGION(payload, payloadSize);
             header->finalize(payload, payloadSize);
             // This memory will be added to the freelist. Maintain the invariant
@@ -1556,6 +1568,27 @@ void NormalPage::markUnmarkedObjectsDead()
     if (markedObjectSize)
         Heap::increaseMarkedObjectSize(markedObjectSize);
 }
+
+#if defined(ADDRESS_SANITIZER)
+void NormalPage::poisonUnmarkedObjects()
+{
+    for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
+        HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
+        ASSERT(header->size() < blinkPagePayloadSize());
+        // Check if a free list entry first since we cannot call
+        // isMarked on a free list entry.
+        if (header->isFree()) {
+            headerAddress += header->size();
+            continue;
+        }
+        header->checkHeader();
+        if (!header->isMarked()) {
+            ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
+        }
+        headerAddress += header->size();
+    }
+}
+#endif
 
 void NormalPage::populateObjectStartBitMap()
 {
@@ -1822,6 +1855,15 @@ void LargeObjectPage::markUnmarkedObjectsDead()
         header->markDead();
     }
 }
+
+#if defined(ADDRESS_SANITIZER)
+void LargeObjectPage::poisonUnmarkedObjects()
+{
+    HeapObjectHeader* header = heapObjectHeader();
+    if (!header->isMarked())
+        ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
+}
+#endif
 
 void LargeObjectPage::checkAndMarkPointer(Visitor* visitor, Address address)
 {

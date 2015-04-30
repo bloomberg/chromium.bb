@@ -384,6 +384,9 @@ public:
     virtual void removeFromHeap() = 0;
     virtual void sweep() = 0;
     virtual void markUnmarkedObjectsDead() = 0;
+#if defined(ADDRESS_SANITIZER)
+    virtual void poisonUnmarkedObjects() = 0;
+#endif
     // Check if the given address points to an object in this
     // heap page. If so, find the start of that object and mark it
     // using the given Visitor. Otherwise do nothing. The pointer must
@@ -468,6 +471,9 @@ public:
     virtual void removeFromHeap() override;
     virtual void sweep() override;
     virtual void markUnmarkedObjectsDead() override;
+#if defined(ADDRESS_SANITIZER)
+    virtual void poisonUnmarkedObjects() override;
+#endif
     virtual void checkAndMarkPointer(Visitor*, Address) override;
     virtual void markOrphaned() override;
 #if ENABLE(GC_PROFILING)
@@ -495,10 +501,6 @@ public:
 
     NormalPageHeap* heapForNormalPage();
     void clearObjectStartBitMap();
-
-#if defined(ADDRESS_SANITIZER)
-    void poisonUnmarkedObjects();
-#endif
 
 private:
     HeapObjectHeader* findHeaderFromAddress(Address);
@@ -531,6 +533,9 @@ public:
     virtual void removeFromHeap() override;
     virtual void sweep() override;
     virtual void markUnmarkedObjectsDead() override;
+#if defined(ADDRESS_SANITIZER)
+    virtual void poisonUnmarkedObjects() override;
+#endif
     virtual void checkAndMarkPointer(Visitor*, Address) override;
     virtual void markOrphaned() override;
 
@@ -741,6 +746,9 @@ public:
     size_t objectPayloadSizeForTesting();
     void prepareHeapForTermination();
     void prepareForSweep();
+#if defined(ADDRESS_SANITIZER)
+    void poisonUnmarkedObjects();
+#endif
     Address lazySweep(size_t, size_t gcInfoIndex);
     void sweepUnsweptPage();
     // Returns true if we have swept all pages within the deadline.
