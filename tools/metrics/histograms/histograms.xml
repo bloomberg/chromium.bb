@@ -51458,7 +51458,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1008" label="DEVELOPERPRIVATE_SHOWPATH"/>
   <int value="1009" label="FILEMANAGERPRIVATE_ADDPROVIDEDFILESYSTEM"/>
   <int value="1010" label="FILEMANAGERPRIVATE_CONFIGUREPROVIDEDFILESYSTEM"/>
-  <int value="1011" label="SEARCHENGINESPRIVATE_GETDEFAULTSEARCHENGINES"/>
+  <int value="1011" label="SEARCHENGINESPRIVATE_GETSEARCHENGINES"/>
   <int value="1012" label="SEARCHENGINESPRIVATE_SETSELECTEDSEARCHENGINE"/>
   <int value="1013" label="AUTOFILLPRIVATE_SAVEADDRESS"/>
   <int value="1014" label="AUTOFILLPRIVATE_GETADDRESSCOMPONENTS"/>
@@ -51472,6 +51472,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1022" label="INSTANCEID_DELETETOKEN"/>
   <int value="1023" label="INSTANCEID_DELETEID"/>
   <int value="1024" label="GCDPRIVATE_GETDEVICEINFO"/>
+  <int value="1025" label="SEARCHENGINESPRIVATE_GETHOTWORDSTATE"/>
+  <int value="1026" label="SEARCHENGINESPRIVATE_ADDOTHERSEARCHENGINE"/>
+  <int value="1027" label="SEARCHENGINESPRIVATE_REMOVESEARCHENGINE"/>
+  <int value="1028" label="SEARCHENGINESPRIVATE_UPDATESEARCHENGINE"/>
+  <int value="1029" label="SEARCHENGINESPRIVATE_OPTINTOHOTWORDING"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

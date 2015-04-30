@@ -41,15 +41,25 @@ class SearchEnginesPrivateApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SearchEnginesPrivateApiTest,
-                       DISABLED_SetSelectedSearchEngine) {
+IN_PROC_BROWSER_TEST_F(SearchEnginesPrivateApiTest, SetSelectedSearchEngine) {
   EXPECT_TRUE(RunSearchEnginesSubtest("setSelectedSearchEngine")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(SearchEnginesPrivateApiTest,
-                       DISABLED_OnDefaultSearchEnginesChanged) {
+IN_PROC_BROWSER_TEST_F(SearchEnginesPrivateApiTest, OnSearchEnginesChanged) {
   EXPECT_TRUE(RunSearchEnginesSubtest("onDefaultSearchEnginesChanged"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SearchEnginesPrivateApiTest, AddNewSearchEngine) {
+  EXPECT_TRUE(RunSearchEnginesSubtest("addNewSearchEngine")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SearchEnginesPrivateApiTest, UpdateSearchEngine) {
+  EXPECT_TRUE(RunSearchEnginesSubtest("updateSearchEngine")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SearchEnginesPrivateApiTest, RemoveSearchEngine) {
+  EXPECT_TRUE(RunSearchEnginesSubtest("removeSearchEngine")) << message_;
 }
 
 }  // namespace extensions

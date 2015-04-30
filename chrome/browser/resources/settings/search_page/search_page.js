@@ -88,9 +88,9 @@ Polymer('cr-settings-search-page', {
 
   /** @override */
   domReady: function() {
-    chrome.searchEnginesPrivate.onDefaultSearchEnginesChanged.addListener(
+    chrome.searchEnginesPrivate.onSearchEnginesChanged.addListener(
         this.updateSearchEngines_.bind(this));
-    chrome.searchEnginesPrivate.getDefaultSearchEngines(
+    chrome.searchEnginesPrivate.getSearchEngines(
         this.updateSearchEngines_.bind(this));
   },
 
@@ -104,16 +104,23 @@ Polymer('cr-settings-search-page', {
 
 
   /**
-   * Updates the list of search engines with the given |engines|.
-   * @param {!Array<!SearchEngine>} engines
+   * Updates the list of default search engines based on the given |engines|.
+   * @param {!Array<!SearchEngine>} engines All the search engines.
    * @private
    */
   updateSearchEngines_: function(engines) {
-    this.searchEngines = engines;
-    for (var i = 0; i < engines.length; i++) {
-      if (engines[i].isSelected) {
-        this.defaultEngineGuid = engines[i].guid;
+    var defaultEngines = [];
+
+    engines.forEach(function(engine) {
+      if (engine.type ==
+          chrome.searchEnginesPrivate.SearchEngineType.DEFAULT) {
+        defaultEngines.push(engine);
+        if (engine.isSelected) {
+          this.defaultEngineGuid = engine.guid;
+        }
       }
-    }
+    }, this);
+
+    this.searchEngines = defaultEngines;
   }
 });

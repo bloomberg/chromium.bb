@@ -17,6 +17,8 @@
 
 namespace extensions {
 
+namespace search_engines_private = api::search_engines_private;
+
 SearchEnginesPrivateEventRouter::SearchEnginesPrivateEventRouter(
     content::BrowserContext* context)
     : template_url_service_(nullptr),
@@ -31,8 +33,7 @@ SearchEnginesPrivateEventRouter::SearchEnginesPrivateEventRouter(
     return;
 
   event_router->RegisterObserver(
-      this,
-      api::search_engines_private::OnDefaultSearchEnginesChanged::kEventName);
+      this, search_engines_private::OnSearchEnginesChanged::kEventName);
   template_url_service_ = TemplateURLServiceFactory::GetForProfile(
       Profile::FromBrowserContext(context_));
   StartOrStopListeningForSearchEnginesChanges();
@@ -76,26 +77,30 @@ void SearchEnginesPrivateEventRouter::OnTemplateURLServiceChanged() {
       template_url_service_->GetDefaultSearchProvider();
   std::vector<TemplateURL*> urls = template_url_service_->GetTemplateURLs();
 
-  std::vector<linked_ptr<api::search_engines_private::SearchEngine>> engines;
+  std::vector<linked_ptr<search_engines_private::SearchEngine>> engines;
+
   for (TemplateURL* url : urls) {
-    api::search_engines_private::SearchEngine* engine =
-        new api::search_engines_private::SearchEngine();
+    search_engines_private::SearchEngine* engine =
+        new search_engines_private::SearchEngine();
     engine->guid = url->sync_guid();
     engine->name = base::UTF16ToASCII(url->short_name());
+    engine->keyword = base::UTF16ToASCII(url->keyword());
+    engine->url = url->url();
+    engine->type = url->show_in_default_list()
+        ? search_engines_private::SearchEngineType::SEARCH_ENGINE_TYPE_DEFAULT
+        : search_engines_private::SearchEngineType::SEARCH_ENGINE_TYPE_OTHER;
+
     if (url == default_url)
       engine->is_selected = scoped_ptr<bool>(new bool(true));
 
     engines.push_back(
-        linked_ptr<api::search_engines_private::SearchEngine>(engine));
+        linked_ptr<search_engines_private::SearchEngine>(engine));
   }
 
   scoped_ptr<base::ListValue> args(
-      api::search_engines_private::OnDefaultSearchEnginesChanged::Create(
-          engines));
-
+      search_engines_private::OnSearchEnginesChanged::Create(engines));
   scoped_ptr<Event> extension_event(new Event(
-      api::search_engines_private::OnDefaultSearchEnginesChanged::kEventName,
-      args.Pass()));
+      search_engines_private::OnSearchEnginesChanged::kEventName, args.Pass()));
   EventRouter::Get(context_)->BroadcastEvent(extension_event.Pass());
 }
 
@@ -103,7 +108,7 @@ void SearchEnginesPrivateEventRouter::
     StartOrStopListeningForSearchEnginesChanges() {
   EventRouter* event_router = EventRouter::Get(context_);
   bool should_listen = event_router->HasEventListener(
-      api::search_engines_private::OnDefaultSearchEnginesChanged::kEventName);
+      search_engines_private::OnSearchEnginesChanged::kEventName);
 
   if (should_listen && !listening_) {
     template_url_service_->Load();
@@ -111,6 +116,7 @@ void SearchEnginesPrivateEventRouter::
   } else if (!should_listen && listening_) {
     template_url_service_->RemoveObserver(this);
   }
+
   listening_ = should_listen;
 }
 

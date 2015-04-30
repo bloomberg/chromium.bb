@@ -16,8 +16,6 @@ class BrowserContext;
 
 namespace extensions {
 
-class SearchEnginesPrivateDelegate;
-
 // This is an event router that will observe changes to the available and
 // selected search engines via the TemplateURLService, and notify listeners to
 // events on the searchEnginesPrivate API of changes.
