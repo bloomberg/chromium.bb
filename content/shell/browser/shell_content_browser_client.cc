@@ -54,6 +54,7 @@
 #if defined(OS_WIN)
 #include "content/common/sandbox_win.h"
 #include "sandbox/win/src/sandbox.h"
+#include "ui/gfx/win/direct_write.h"
 #endif
 
 namespace content {
@@ -406,7 +407,34 @@ void ShellContentBrowserClient::PreSpawnRenderer(sandbox::TargetPolicy* policy,
         sandbox::TargetPolicy::FILES_ALLOW_READONLY,
         base::UTF8ToWide(*i).c_str());
   }
+  AddFontSpecificFSPolicies(policy);
 }
+
+void ShellContentBrowserClient::AddFontSpecificFSPolicies(
+    sandbox::TargetPolicy* policy) {
+  // If DirectWrite is enabled then we need to grant access to the
+  // Windows National Language support directory :-
+  // c:\windows\globalization\sorting. Not having access to this folder
+  // causes DirectWrite font cache setup to fail.
+  if (gfx::win::ShouldUseDirectWrite()) {
+    base::FilePath windows_root;
+    PathService::Get(base::DIR_WINDOWS, &windows_root);
+    base::string16 globalization_path = windows_root.value();
+    globalization_path += L"\\Globalization\\Sorting";
+
+    policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+        sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+        globalization_path.c_str());
+
+    // We need to grant access to subdirectories and files within the
+    // globalization directory.
+    globalization_path += L"\\*";
+    policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
+        sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+        globalization_path.c_str());
+  }
+}
+
 #endif  // OS_WIN
 
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {

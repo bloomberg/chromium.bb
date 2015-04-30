@@ -101,6 +101,13 @@ class TestContentBrowserClient : public ContentBrowserClient {
         command_line, child_process_id, mappings);
   }
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+  void PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                        bool* success) override {
+    ShellContentBrowserClient::AddFontSpecificFSPolicies(policy);
+  }
+#endif
 };
 
 class BatteryMonitorIntegrationTest : public ContentBrowserTest {

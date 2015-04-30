@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDER_FONT_WARMUP_WIN_H_
 #define CONTENT_PUBLIC_RENDERER_RENDER_FONT_WARMUP_WIN_H_
 
+#include <windows.h>
+
 #include "content/common/content_export.h"
 
 class SkFontMgr;
@@ -18,7 +20,15 @@ CONTENT_EXPORT void DoPreSandboxWarmupForTypeface(SkTypeface* typeface);
 
 // Get the shared font manager used during pre-sandbox warmup for DirectWrite
 // fonts.
-CONTENT_EXPORT SkFontMgr* GetPreSandboxWarmupFontMgr();
+CONTENT_EXPORT SkFontMgr* GetDirectWriteFontManager();
+
+// Pre-sandbox font warmup for the DirectWrite font loader.
+CONTENT_EXPORT void DoPreSandboxWarmupForFontLoader();
+
+// Sets the DirectWrite font cache mapped section handle in the renderer
+// process.
+CONTENT_EXPORT void SetDirectWriteFontCacheSectionHandle(
+    HANDLE font_cache_section);
 
 }  // namespace content
 

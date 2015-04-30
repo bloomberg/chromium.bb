@@ -175,11 +175,17 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/memory/shared_memory.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "content/common/font_cache_dispatcher_win.h"
 #include "content/common/sandbox_win.h"
+#include "content/public/common/dwrite_font_platform_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
+#include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/dpi.h"
 #endif
 
@@ -1194,9 +1200,6 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 #if defined(OS_WIN)
   command_line->AppendSwitchASCII(switches::kDeviceScaleFactor,
                                   base::DoubleToString(gfx::GetDPIScale()));
-  command_line->AppendSwitchASCII(
-      switches::kFontCacheSharedMemSuffix,
-      base::UintToString(base::GetCurrentProcId()));
 #endif
 
   AppendCompositorCommandLineFlags(command_line);
@@ -2334,6 +2337,9 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "465841 "
           "RenderProcessHostImpl::OnProcessLaunched::SendQueuedMessages"));
+
+  PlatformProcessLaunched();
+
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());
     queued_messages_.pop();
@@ -2490,5 +2496,29 @@ void RenderProcessHostImpl::GetAudioOutputControllers(
     const GetAudioOutputControllersCallback& callback) const {
   audio_renderer_host()->GetOutputControllers(callback);
 }
+
+#if !defined(OS_WIN)
+void RenderProcessHostImpl::PlatformProcessLaunched() {}
+#else
+void RenderProcessHostImpl::PlatformProcessLaunched() {
+  // If DirectWrite is enabled for font rendering then this function sends the
+  // font cache section handle to the renderer process. If the handle is not
+  // available (which could happen if we are launched as part of content, or
+  // because the cache is not available yet), then we send a NULL section handle
+  // to the renderer which ensures that the DirectWrite factory is initialized
+  // correctly.
+  if (!run_renderer_in_process() && gfx::win::ShouldUseDirectWrite()) {
+    std::string name(content::kFontCacheSharedSectionName);
+    name.append(base::UintToString(base::GetCurrentProcId()));
+    base::SharedMemory font_cache_section;
+    base::SharedMemoryHandle mapped_handle = NULL;
+    if (font_cache_section.Open(name, true)) {
+      font_cache_section.ShareReadOnlyToProcess(GetHandle(), &mapped_handle);
+      DCHECK(mapped_handle);
+    }
+    Send(new ViewMsg_DirectWriteFontCacheSectionHandle(mapped_handle));
+  }
+}
+#endif
 
 }  // namespace content

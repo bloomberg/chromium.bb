@@ -36,6 +36,12 @@ CONTENT_EXPORT bool LoadFontCache(const base::FilePath& path);
 // Added in header mainly for unittest
 CONTENT_EXPORT bool ValidateFontCacheFile(base::File* file);
 
+// DirectWrite Font loader initialization.
+CONTENT_EXPORT void InitializeFontLoader();
+
+// Sets the DirectWrite font cache section handle.
+CONTENT_EXPORT void SetDirectWriteFontCache(HANDLE font_cache_section);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_DWRITE_FONT_PLATFORM_WIN_H_

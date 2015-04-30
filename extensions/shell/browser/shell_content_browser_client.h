@@ -67,6 +67,11 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
 
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
+#if defined(OS_WIN)
+  void PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                        bool* success) override;
+#endif
+
  protected:
   // Subclasses may wish to provide their own ShellBrowserMainParts.
   virtual ShellBrowserMainParts* CreateShellBrowserMainParts(

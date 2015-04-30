@@ -78,7 +78,11 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       FileDescriptorInfo* mappings) override;
 #endif
 #if defined(OS_WIN)
-  void PreSpawnRenderer(sandbox::TargetPolicy* policy, bool* success) override;
+  void PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                        bool* success) override;
+  // Helper function to add font specific file system policies for renderer
+  // processes. Currently only adds policies if DirectWrite is enabled.
+  static void AddFontSpecificFSPolicies(sandbox::TargetPolicy* policy);
 #endif
 
   ShellBrowserContext* browser_context();

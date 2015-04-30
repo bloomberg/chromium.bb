@@ -142,6 +142,10 @@ bool ValidateFontCacheHeader(CacheFileHeader* header) {
 
 class FontCacheWriter;
 
+// Handle to the global font cache section. Owned by the shared section
+// instance which maps it.
+HANDLE g_font_cache_section = NULL;
+
 // This class implements main interface required for loading custom font
 // collection as specified by DirectWrite. We also use this class for storing
 // some state information as this is one of the centralized entity.
@@ -712,16 +716,8 @@ HRESULT STDMETHODCALLTYPE FontCollectionLoader::CreateEnumeratorFromKey(
 
 // static
 HRESULT FontCollectionLoader::Initialize(IDWriteFactory* factory) {
-  DCHECK(g_font_loader == NULL);
-
-  HRESULT result;
-  result = mswr::MakeAndInitialize<FontCollectionLoader>(&g_font_loader);
-  if (FAILED(result) || !g_font_loader) {
-    DCHECK(false);
-    return E_FAIL;
-  }
-
-  CHECK(g_font_loader->LoadFontListFromRegistry());
+  content::InitializeFontLoader();
+  CHECK(g_font_loader);
 
   g_font_loader->file_loader_ = mswr::Make<FontFileLoader>().Detach();
 
@@ -921,16 +917,11 @@ bool FontCollectionLoader::IsFileCached(UINT32 font_key) {
 }
 
 bool FontCollectionLoader::LoadCacheFile() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kFontCacheSharedMemSuffix)) {
+  if (!g_font_cache_section)
     return false;
-  }
-  base::SharedMemory* shared_mem = new base::SharedMemory();
-  std::string name(content::kFontCacheSharedSectionName);
-  name.append(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                  switches::kFontCacheSharedMemSuffix));
-  if (!shared_mem->Open(name.c_str(), true))
-    return false;
+
+  base::SharedMemory* shared_mem = new base::SharedMemory(
+      g_font_cache_section, true);
 
   // Map while file
   shared_mem->Map(0);
@@ -1109,7 +1100,7 @@ IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
 
 bool BuildFontCacheInternal(const WCHAR* file_name) {
   typedef decltype(DWriteCreateFactory)* DWriteCreateFactoryProc;
-  HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
+  HMODULE dwrite_dll = ::LoadLibrary(L"dwrite.dll");
   if (!dwrite_dll) {
     DWORD load_library_get_last_error = GetLastError();
     base::debug::Alias(&dwrite_dll);
@@ -1222,6 +1213,23 @@ bool LoadFontCache(const base::FilePath& path) {
 
 bool BuildFontCache(const base::FilePath& file) {
   return BuildFontCacheInternal(file.value().c_str());
+}
+
+void SetDirectWriteFontCache(HANDLE font_cache_section) {
+  g_font_cache_section = font_cache_section;
+}
+
+void InitializeFontLoader() {
+  if (g_font_loader)
+    return;
+
+  HRESULT result = E_FAIL;
+  result = mswr::MakeAndInitialize<FontCollectionLoader>(&g_font_loader);
+  if (FAILED(result) || !g_font_loader) {
+    DCHECK(false);
+    return;
+  }
+  CHECK(g_font_loader->LoadFontListFromRegistry());
 }
 
 }  // namespace content

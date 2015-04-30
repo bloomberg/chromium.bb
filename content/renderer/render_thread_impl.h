@@ -344,6 +344,7 @@ class CONTENT_EXPORT RenderThreadImpl
 #if defined(OS_WIN)
   void PreCacheFontCharacters(const LOGFONT& log_font,
                               const base::string16& str);
+  void OnSetDirectWriteFontCacheHandle(HANDLE font_cache_handle);
 #endif
 
 #if defined(ENABLE_WEBRTC)

@@ -61,7 +61,6 @@ void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
        i != files.end();
        ++i) {
     SkTypeface* typeface = fontmgr->createFromFile(i->c_str());
-    DoPreSandboxWarmupForTypeface(typeface);
     blink::WebFontRendering::addSideloadedFontForTesting(typeface);
   }
 }
@@ -76,7 +75,7 @@ LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
 
 #if defined(OS_WIN)
   if (gfx::win::ShouldUseDirectWrite())
-    RegisterSideloadedTypefaces(GetPreSandboxWarmupFontMgr());
+    RegisterSideloadedTypefaces(GetDirectWriteFontManager());
 #endif
 }
 
