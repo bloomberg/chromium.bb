@@ -10,4 +10,8 @@ namespace switches {
 // "https://clients3.google.com/generate_204".
 const char kConnectivityCheckUrl[] = "connectivity-check-url";
 
+// List of network interfaces to ignore. Ignored interfaces will not be used
+// for network connectivity.
+const char kNetifsToIgnore[] = "netifs-to-ignore";
+
 }  // namespace switches

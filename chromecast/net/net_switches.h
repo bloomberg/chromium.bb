@@ -8,6 +8,7 @@
 namespace switches {
 
 extern const char kConnectivityCheckUrl[];
+extern const char kNetifsToIgnore[];
 
 }  // namespace switches
 
