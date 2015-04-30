@@ -34,7 +34,7 @@ using StringStream = ReadableStreamImpl<ReadableStreamChunkTypeTraits<String>>;
 
 class StringCapturingFunction : public ScriptFunction {
 public:
-    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, String* value)
+    static v8::Local<v8::Function> createFunction(ScriptState* scriptState, String* value)
     {
         StringCapturingFunction* self = new StringCapturingFunction(scriptState, value);
         return self->bindToV8Function();
@@ -118,7 +118,7 @@ public:
     ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
     v8::Isolate* isolate() { return scriptState()->isolate(); }
 
-    v8::Handle<v8::Function> createCaptor(String* value)
+    v8::Local<v8::Function> createCaptor(String* value)
     {
         return StringCapturingFunction::createFunction(scriptState(), value);
     }

@@ -54,8 +54,8 @@ public:
     virtual Frame* frame() const = 0;
 
     // ScriptWrappable overrides:
-    v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override final;
-    v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override final;
+    v8::Local<v8::Object> wrap(v8::Local<v8::Object> creationContext, v8::Isolate*) override final;
+    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override final;
 
     // EventTarget overrides:
     const AtomicString& interfaceName() const override;

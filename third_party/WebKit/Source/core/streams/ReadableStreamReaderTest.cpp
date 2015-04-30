@@ -34,7 +34,7 @@ struct ReadResult {
 
 class StringCapturingFunction final : public ScriptFunction {
 public:
-    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, String* value)
+    static v8::Local<v8::Function> createFunction(ScriptState* scriptState, String* value)
     {
         StringCapturingFunction* self = new StringCapturingFunction(scriptState, value);
         return self->bindToV8Function();
@@ -59,7 +59,7 @@ private:
 
 class ReadResultCapturingFunction final : public ScriptFunction {
 public:
-    static v8::Handle<v8::Function> createFunction(ScriptState* scriptState, ReadResult* value)
+    static v8::Local<v8::Function> createFunction(ScriptState* scriptState, ReadResult* value)
     {
         ReadResultCapturingFunction* self = new ReadResultCapturingFunction(scriptState, value);
         return self->bindToV8Function();
@@ -145,12 +145,12 @@ public:
     v8::Isolate* isolate() { return scriptState()->isolate(); }
     ExecutionContext* executionContext() { return scriptState()->executionContext(); }
 
-    v8::Handle<v8::Function> createCaptor(String* value)
+    v8::Local<v8::Function> createCaptor(String* value)
     {
         return StringCapturingFunction::createFunction(scriptState(), value);
     }
 
-    v8::Handle<v8::Function> createResultCaptor(ReadResult* value)
+    v8::Local<v8::Function> createResultCaptor(ReadResult* value)
     {
         return ReadResultCapturingFunction::createFunction(scriptState(), value);
     }

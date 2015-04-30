@@ -22,20 +22,20 @@ InjectedScriptNative::InjectedScriptNative(v8::Isolate* isolate)
 
 InjectedScriptNative::~InjectedScriptNative() { }
 
-void InjectedScriptNative::setOnInjectedScriptHost(v8::Handle<v8::Object> injectedScriptHost)
+void InjectedScriptNative::setOnInjectedScriptHost(v8::Local<v8::Object> injectedScriptHost)
 {
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::External> external = v8::External::New(m_isolate, this);
+    v8::Local<v8::External> external = v8::External::New(m_isolate, this);
     V8HiddenValue::setHiddenValue(m_isolate, injectedScriptHost, V8HiddenValue::injectedScriptNative(m_isolate), external);
 }
 
-InjectedScriptNative* InjectedScriptNative::fromInjectedScriptHost(v8::Handle<v8::Object> injectedScriptObject)
+InjectedScriptNative* InjectedScriptNative::fromInjectedScriptHost(v8::Local<v8::Object> injectedScriptObject)
 {
     v8::Isolate* isolate = injectedScriptObject->GetIsolate();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Value> value = V8HiddenValue::getHiddenValue(isolate, injectedScriptObject, V8HiddenValue::injectedScriptNative(isolate));
+    v8::Local<v8::Value> value = V8HiddenValue::getHiddenValue(isolate, injectedScriptObject, V8HiddenValue::injectedScriptNative(isolate));
     ASSERT(!value.IsEmpty());
-    v8::Handle<v8::External> external = value.As<v8::External>();
+    v8::Local<v8::External> external = value.As<v8::External>();
     void* ptr = external->Value();
     ASSERT(ptr);
     return static_cast<InjectedScriptNative*>(ptr);

@@ -18,8 +18,8 @@ public:
     explicit InjectedScriptNative(v8::Isolate*);
     ~InjectedScriptNative();
 
-    void setOnInjectedScriptHost(v8::Handle<v8::Object>);
-    static InjectedScriptNative* fromInjectedScriptHost(v8::Handle<v8::Object>);
+    void setOnInjectedScriptHost(v8::Local<v8::Object>);
+    static InjectedScriptNative* fromInjectedScriptHost(v8::Local<v8::Object>);
 
     int bind(v8::Local<v8::Value>, const String& groupName);
     void unbind(int id);
