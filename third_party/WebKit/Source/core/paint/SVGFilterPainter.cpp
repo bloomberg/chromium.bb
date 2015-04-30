@@ -71,7 +71,7 @@ static void paintFilteredContent(GraphicsContext* context, FilterData* filterDat
 
     filterData->m_state = FilterData::PaintingFilter;
 
-    SkiaImageFilterBuilder builder(context);
+    SkiaImageFilterBuilder builder;
     RefPtr<SkImageFilter> imageFilter = builder.build(filterData->builder->lastEffect(), ColorSpaceDeviceRGB);
     FloatRect boundaries = filterData->filter->filterRegion();
     context->save();
@@ -184,6 +184,9 @@ void SVGFilterPainter::finishEffect(LayoutObject& object, GraphicsContext* conte
         // without re-recording the contents to be filtered.
         if (filterData->m_state == FilterData::RecordingContent)
             endRecordingContent(context, filterData);
+
+        if (filterData->m_state == FilterData::RecordingContentCycleDetected)
+            filterData->m_state = FilterData::RecordingContent;
     }
 
     LayoutObjectDrawingRecorder recorder(*context, object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());

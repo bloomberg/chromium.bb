@@ -32,7 +32,7 @@ FilterPainter::FilterPainter(DeprecatedPaintLayer& layer, GraphicsContext* conte
 
     ASSERT(layer.filterInfo());
 
-    SkiaImageFilterBuilder builder(context);
+    SkiaImageFilterBuilder builder;
     RefPtrWillBeRawPtr<FilterEffect> lastEffect = layer.filterEffectBuilder()->lastEffect();
     lastEffect->determineFilterPrimitiveSubregion(MapRectForward);
     RefPtr<SkImageFilter> imageFilter = builder.build(lastEffect.get(), ColorSpaceDeviceRGB);

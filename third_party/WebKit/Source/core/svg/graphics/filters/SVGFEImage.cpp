@@ -34,7 +34,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -173,19 +173,13 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForLayoutObject(LayoutObject
         transform.translate(dstRect.x(), dstRect.y());
     }
 
-    GraphicsContext* context = builder->context();
-    if (!context)
-        return adoptRef(SkBitmapSource::Create(SkBitmap()));
-
-    context->beginRecording(FloatRect(FloatPoint(), dstRect.size()));
+    SkPictureBuilder filterPicture(FloatRect(FloatPoint(), dstRect.size()));
     {
-        DisplayItemListContextRecorder contextRecorder(*context);
-
-        TransformRecorder transformRecorder(contextRecorder.context(), layoutObject, transform);
-        SVGPaintContext::paintSubtree(&contextRecorder.context(), &layoutObject);
+        TransformRecorder transformRecorder(filterPicture.context(), layoutObject, transform);
+        SVGPaintContext::paintSubtree(&filterPicture.context(), &layoutObject);
     }
+    RefPtr<const SkPicture> recording = filterPicture.endRecording();
 
-    RefPtr<const SkPicture> recording = context->endRecording();
     RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(recording.get(), dstRect));
     return result.release();
 }
