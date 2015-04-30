@@ -77,7 +77,9 @@ class WebViewPlugin : public blink::WebPlugin,
 
   virtual bool getFormValue(blink::WebString& value);
 
-  virtual void paint(blink::WebCanvas* canvas, const blink::WebRect& rect);
+  virtual void layoutIfNeeded() override;
+  virtual void paint(blink::WebCanvas* canvas,
+                     const blink::WebRect& rect) override;
 
   // Coordinates are relative to the containing window.
   virtual void updateGeometry(

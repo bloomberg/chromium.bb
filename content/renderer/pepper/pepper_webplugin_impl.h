@@ -46,6 +46,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   virtual v8::Local<v8::Object> v8ScriptableObject(
       v8::Isolate* isolate) override;
   virtual bool getFormValue(blink::WebString& value);
+  virtual void layoutIfNeeded() override { }
   virtual void paint(blink::WebCanvas* canvas, const blink::WebRect& rect);
   virtual void updateGeometry(
       const blink::WebRect& window_rect,

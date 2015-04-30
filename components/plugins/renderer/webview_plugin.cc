@@ -134,6 +134,10 @@ struct _NPP* WebViewPlugin::pluginNPP() { return NULL; }
 
 bool WebViewPlugin::getFormValue(WebString& value) { return false; }
 
+void WebViewPlugin::layoutIfNeeded() {
+  web_view_->layout();
+}
+
 void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   gfx::Rect paint_rect = gfx::IntersectRects(rect_, rect);
   if (paint_rect.IsEmpty())
@@ -150,7 +154,6 @@ void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
       SkFloatToScalar(1.0 / container_->deviceScaleFactor());
   canvas->scale(inverse_scale, inverse_scale);
 
-  web_view_->layout();
   web_view_->paint(canvas, paint_rect);
 
   canvas->restore();

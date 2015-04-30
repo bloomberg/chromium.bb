@@ -298,15 +298,22 @@ bool WebPluginImpl::getFormValue(blink::WebString& value) {
   return true;
 }
 
-void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& paint_rect) {
-  if (!delegate_ || !container_)
+void WebPluginImpl::layoutIfNeeded() {
+  if (!container_)
     return;
 
 #if defined(OS_WIN)
   // Force a geometry update if needed to allow plugins like media player
-  // which defer the initial geometry update to work.
+  // which defer the initial geometry update to work. Do it now, rather
+  // than in paint, so that the paint rect invalidation is registered.
+  // Otherwise we may never get the paint call.
   container_->reportGeometry();
 #endif  // OS_WIN
+}
+
+void WebPluginImpl::paint(WebCanvas* canvas, const WebRect& paint_rect) {
+  if (!delegate_ || !container_)
+    return;
 
   // Note that |canvas| is only used when in windowless mode.
   delegate_->Paint(canvas, paint_rect);

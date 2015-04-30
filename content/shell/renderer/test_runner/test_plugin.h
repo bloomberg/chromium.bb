@@ -64,6 +64,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   virtual NPObject* scriptableObject();
   virtual bool canProcessDrag() const;
   virtual bool supportsKeyboardFocus() const;
+  virtual void layoutIfNeeded() override { }
   virtual void paint(blink::WebCanvas* canvas, const blink::WebRect& rect) {}
   virtual void updateGeometry(
       const blink::WebRect& window_rect,

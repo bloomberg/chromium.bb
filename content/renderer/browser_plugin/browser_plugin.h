@@ -82,6 +82,7 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual bool supportsEditCommands() const override;
   virtual bool supportsInputMethod() const override;
   virtual bool canProcessDrag() const override;
+  virtual void layoutIfNeeded() override { }
   virtual void paint(
       blink::WebCanvas* canvas,
       const blink::WebRect& rect) override;

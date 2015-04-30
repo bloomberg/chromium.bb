@@ -73,6 +73,7 @@ class WebPluginImpl : public WebPlugin,
   virtual NPObject* scriptableObject();
   virtual struct _NPP* pluginNPP();
   virtual bool getFormValue(blink::WebString& value);
+  virtual void layoutIfNeeded() override;
   virtual void paint(
       blink::WebCanvas* canvas, const blink::WebRect& paint_rect);
   virtual void updateGeometry(
