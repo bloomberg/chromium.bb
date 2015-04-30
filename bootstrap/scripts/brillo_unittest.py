@@ -9,6 +9,7 @@ from __future__ import print_function
 import mock
 import os
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 
@@ -26,18 +27,24 @@ class TestBootstrapBrilloCmd(cros_test_lib.WorkspaceTestCase):
         git, 'FindRepoCheckoutRoot', autospec=True)
 
   def _verifyLocateBrilloCommand(self, expected):
-    # We should always use the bootstrap brillo command for 'sdk'.
     self.assertEqual(expected,
                      brillo.LocateBrilloCommand(['flash']))
     self.assertEqual(expected,
                      brillo.LocateBrilloCommand(['flash', '--help']))
 
-  def _verifyLocateBrilloCommandSpecialSdkHandling(self, expected):
-    # We should always use the bootstrap brillo command for 'sdk'.
+  def _verifyLocateBrilloCommandSdkHandling(self, expected):
     self.assertEqual(expected,
                      brillo.LocateBrilloCommand(['sdk']))
     self.assertEqual(expected,
                      brillo.LocateBrilloCommand(['sdk', '--help']))
+
+  def _verifyLocateBrilloCommandFail(self):
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      brillo.LocateBrilloCommand(['flash'])
+
+  def _verifyLocateBrilloCommandSdkFail(self):
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      brillo.LocateBrilloCommand(['sdk'])
 
   def testCommandLookupActiveWorkspace(self):
     """Test that sdk commands are run in the Git Repository."""
@@ -52,13 +59,13 @@ class TestBootstrapBrilloCmd(cros_test_lib.WorkspaceTestCase):
     self.mock_repo_root.return_value = None
 
     self._verifyLocateBrilloCommand(sdk_wrapper)
-    self._verifyLocateBrilloCommandSpecialSdkHandling(bootstrap_wrapper)
+    self._verifyLocateBrilloCommandSdkHandling(bootstrap_wrapper)
 
     # We are inside a repo, shouldn't affect the result.
     self.mock_repo_root.return_value = '/repo'
 
     self._verifyLocateBrilloCommand(sdk_wrapper)
-    self._verifyLocateBrilloCommandSpecialSdkHandling(bootstrap_wrapper)
+    self._verifyLocateBrilloCommandSdkHandling(bootstrap_wrapper)
 
   def testCommandLookupInactiveWorkspace(self):
     """Test that sdk commands are run in the Git Repository."""
@@ -68,14 +75,14 @@ class TestBootstrapBrilloCmd(cros_test_lib.WorkspaceTestCase):
 
     bootstrap_wrapper = os.path.join(self.bootstrap_path, 'bin/brillo')
 
-    self._verifyLocateBrilloCommand(None)
-    self._verifyLocateBrilloCommandSpecialSdkHandling(bootstrap_wrapper)
+    self._verifyLocateBrilloCommandFail()
+    self._verifyLocateBrilloCommandSdkHandling(bootstrap_wrapper)
 
     # Having a repo root shouldn't affect the result.
     self.mock_repo_root.return_value = '/repo'
 
-    self._verifyLocateBrilloCommand(None)
-    self._verifyLocateBrilloCommandSpecialSdkHandling(bootstrap_wrapper)
+    self._verifyLocateBrilloCommandFail()
+    self._verifyLocateBrilloCommandSdkHandling(bootstrap_wrapper)
 
   def testCommandLookupRepoFromBootstrap(self):
     """Test that sdk commands are run in the Git Repository."""
@@ -88,7 +95,7 @@ class TestBootstrapBrilloCmd(cros_test_lib.WorkspaceTestCase):
     repo_wrapper = '/repo/chromite/bin/brillo'
 
     self._verifyLocateBrilloCommand(repo_wrapper)
-    self._verifyLocateBrilloCommandSpecialSdkHandling(bootstrap_wrapper)
+    self._verifyLocateBrilloCommandSdkHandling(bootstrap_wrapper)
 
   def testCommandLookupBootstrapOnly(self):
     """Test that sdk commands are run in the Git Repository."""
@@ -99,8 +106,8 @@ class TestBootstrapBrilloCmd(cros_test_lib.WorkspaceTestCase):
 
     bootstrap_wrapper = os.path.join(self.bootstrap_path, 'bin/brillo')
 
-    self._verifyLocateBrilloCommand(None)
-    self._verifyLocateBrilloCommandSpecialSdkHandling(bootstrap_wrapper)
+    self._verifyLocateBrilloCommandFail()
+    self._verifyLocateBrilloCommandSdkHandling(bootstrap_wrapper)
 
   def testCommandLookupRepoOnly(self):
     """Test that sdk commands are run in the Git Repository."""
@@ -113,7 +120,7 @@ class TestBootstrapBrilloCmd(cros_test_lib.WorkspaceTestCase):
     repo_wrapper = '/repo/chromite/bin/brillo'
 
     self._verifyLocateBrilloCommand(repo_wrapper)
-    self._verifyLocateBrilloCommandSpecialSdkHandling(None)
+    self._verifyLocateBrilloCommandSdkFail()
 
   def testMainInActiveWorkspace(self):
     self.CreateBootstrap('1.2.3')
@@ -149,7 +156,9 @@ class TestBootstrapBrilloCmd(cros_test_lib.WorkspaceTestCase):
     self.mock_workspace_path.return_value = None
     self.mock_repo_root.return_value = None
 
-    self.assertEqual(1, brillo.main(['flash', '--help']))
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      brillo.main(['flash', '--help'])
+
     self.assertEqual([], self.mock_exec.call_args_list)
 
   def testMainSdkCmd(self):

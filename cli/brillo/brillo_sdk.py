@@ -117,7 +117,8 @@ def _UpdateWorkspaceSdk(bootstrap_path, workspace_path, version):
     version: Project SDK version to sync. Can be a version number, 'tot', or
       'latest'.
   """
-  if project_sdk.FindRepoRoot(bootstrap_path):
+  # This is only possible if this script was reached without the brillo wrapper.
+  if not bootstrap_path:
     cros_build_lib.Die('You are bootstrapping chromite from a repo checkout.\n'
                        'You must use a git clone. (brbug.com/580: link docs)')
 
