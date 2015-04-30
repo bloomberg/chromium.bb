@@ -224,7 +224,6 @@ public:
     virtual void setShowContextMenuOnMouseUp(bool) = 0;
     virtual void setShowFPSCounter(bool) = 0;
     virtual void setShowPaintRects(bool) = 0;
-    virtual void setShrinksStandaloneImagesToFit(bool) = 0;
     virtual void setShrinksViewportContentToFit(bool) = 0;
     virtual void setSmartInsertDeleteEnabled(bool) = 0;
     // Spatial navigation feature, when enabled, improves the experience

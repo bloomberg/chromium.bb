@@ -310,11 +310,6 @@ void WebSettingsImpl::setDOMPasteAllowed(bool enabled)
     m_settings->setDOMPasteAllowed(enabled);
 }
 
-void WebSettingsImpl::setShrinksStandaloneImagesToFit(bool shrinkImages)
-{
-    m_settings->setShrinksStandaloneImagesToFit(shrinkImages);
-}
-
 void WebSettingsImpl::setShrinksViewportContentToFit(bool shrinkViewportContent)
 {
     m_shrinksViewportContentToFit = shrinkViewportContent;

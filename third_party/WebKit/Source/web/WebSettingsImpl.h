@@ -146,7 +146,6 @@ public:
     virtual void setShowContextMenuOnMouseUp(bool) override;
     virtual void setShowFPSCounter(bool) override;
     virtual void setShowPaintRects(bool) override;
-    virtual void setShrinksStandaloneImagesToFit(bool) override;
     virtual void setShrinksViewportContentToFit(bool) override;
     virtual void setSmartInsertDeleteEnabled(bool) override;
     virtual void setSpatialNavigationEnabled(bool) override;
