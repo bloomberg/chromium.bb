@@ -27,13 +27,13 @@ class GIN_EXPORT Timer : public Wrappable<Timer> {
 
   static WrapperInfo kWrapperInfo;
   static Handle<Timer> Create(TimerType type, v8::Isolate* isolate,
-                              int delay_ms, v8::Handle<v8::Function> function);
+                              int delay_ms, v8::Local<v8::Function> function);
 
   ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate) override;
 
  private:
   Timer(v8::Isolate* isolate, bool repeating, int delay_ms,
-        v8::Handle<v8::Function> function);
+        v8::Local<v8::Function> function);
   ~Timer() override;
   void OnTimerFired();
 

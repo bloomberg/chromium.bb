@@ -55,22 +55,22 @@ class ModuleRegistryObserverImpl : public ModuleRegistryObserver {
   DISALLOW_COPY_AND_ASSIGN(ModuleRegistryObserverImpl);
 };
 
-void NestedCallback(v8::Handle<v8::Value> value) {
+void NestedCallback(v8::Local<v8::Value> value) {
   FAIL() << "Should not be called";
 }
 
 void OnModuleLoaded(TestHelper* helper,
                     v8::Isolate* isolate,
                     int64_t* counter,
-                    v8::Handle<v8::Value> value) {
+                    v8::Local<v8::Value> value) {
   ASSERT_TRUE(value->IsNumber());
-  v8::Handle<v8::Integer> int_value = v8::Handle<v8::Integer>::Cast(value);
+  v8::Local<v8::Integer> int_value = v8::Local<v8::Integer>::Cast(value);
   *counter += int_value->Value();
   ModuleRegistry::From(helper->runner->GetContextHolder()->context())
       ->LoadModule(isolate, "two", base::Bind(NestedCallback));
 }
 
-void OnModuleLoadedNoOp(v8::Handle<v8::Value> value) {
+void OnModuleLoadedNoOp(v8::Local<v8::Value> value) {
   ASSERT_TRUE(value->IsNumber());
 }
 
@@ -83,8 +83,8 @@ typedef V8Test ModuleRegistryTest;
 TEST_F(ModuleRegistryTest, DestroyedWithContext) {
   v8::Isolate::Scope isolate_scope(instance_->isolate());
   v8::HandleScope handle_scope(instance_->isolate());
-  v8::Handle<v8::Context> context = v8::Context::New(
-      instance_->isolate(), NULL, v8::Handle<v8::ObjectTemplate>());
+  v8::Local<v8::Context> context = v8::Context::New(
+      instance_->isolate(), NULL, v8::Local<v8::ObjectTemplate>());
   {
     ContextHolder context_holder(instance_->isolate());
     context_holder.SetContext(context);

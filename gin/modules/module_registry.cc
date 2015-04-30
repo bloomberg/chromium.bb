@@ -64,7 +64,7 @@ void Define(const v8::FunctionCallbackInfo<Value>& info) {
 
   std::string id;
   std::vector<std::string> dependencies;
-  v8::Handle<Value> factory;
+  v8::Local<Value> factory;
 
   if (args.PeekNext()->IsString())
     args.GetNext(&id);
@@ -108,19 +108,19 @@ ModuleRegistry::~ModuleRegistry() {
 
 // static
 void ModuleRegistry::RegisterGlobals(Isolate* isolate,
-                                     v8::Handle<ObjectTemplate> templ) {
+                                     v8::Local<ObjectTemplate> templ) {
   templ->Set(StringToSymbol(isolate, "define"), GetDefineTemplate(isolate));
 }
 
 // static
 void ModuleRegistry::InstallGlobals(v8::Isolate* isolate,
-                                    v8::Handle<v8::Object> obj) {
+                                    v8::Local<v8::Object> obj) {
   obj->Set(StringToSymbol(isolate, "define"),
            GetDefineTemplate(isolate)->GetFunction());
 }
 
 // static
-ModuleRegistry* ModuleRegistry::From(v8::Handle<Context> context) {
+ModuleRegistry* ModuleRegistry::From(v8::Local<Context> context) {
   PerContextData* data = PerContextData::From(context);
   if (!data)
     return NULL;
@@ -145,7 +145,7 @@ void ModuleRegistry::RemoveObserver(ModuleRegistryObserver* observer) {
 }
 
 void ModuleRegistry::AddBuiltinModule(Isolate* isolate, const std::string& id,
-                                      v8::Handle<Value> module) {
+                                      v8::Local<Value> module) {
   DCHECK(!id.empty());
   RegisterModule(isolate, id, module);
 }
@@ -179,13 +179,13 @@ void ModuleRegistry::LoadModule(Isolate* isolate,
 
 void ModuleRegistry::RegisterModule(Isolate* isolate,
                                     const std::string& id,
-                                    v8::Handle<Value> module) {
+                                    v8::Local<Value> module) {
   if (id.empty() || module.IsEmpty())
     return;
 
   unsatisfied_dependencies_.erase(id);
   available_modules_.insert(id);
-  v8::Handle<Object> modules = Local<Object>::New(isolate, modules_);
+  v8::Local<Object> modules = Local<Object>::New(isolate, modules_);
   modules->Set(StringToSymbol(isolate, id), module);
 
   std::pair<LoadModuleCallbackMap::iterator, LoadModuleCallbackMap::iterator>
@@ -223,13 +223,13 @@ void ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
     return;  // We've already loaded this module.
 
   uint32_t argc = static_cast<uint32_t>(pending->dependencies.size());
-  std::vector<v8::Handle<Value> > argv(argc);
+  std::vector<v8::Local<Value> > argv(argc);
   for (uint32_t i = 0; i < argc; ++i)
     argv[i] = GetModule(isolate, pending->dependencies[i]);
 
-  v8::Handle<Value> module = Local<Value>::New(isolate, pending->factory);
+  v8::Local<Value> module = Local<Value>::New(isolate, pending->factory);
 
-  v8::Handle<Function> factory;
+  v8::Local<Function> factory;
   if (ConvertFromV8(isolate, module, &factory)) {
     PerContextData* data = PerContextData::From(isolate->GetCurrentContext());
     Runner* runner = data->runner();
@@ -253,10 +253,10 @@ bool ModuleRegistry::AttemptToLoad(Isolate* isolate,
   return true;
 }
 
-v8::Handle<v8::Value> ModuleRegistry::GetModule(v8::Isolate* isolate,
+v8::Local<v8::Value> ModuleRegistry::GetModule(v8::Isolate* isolate,
                                                 const std::string& id) {
-  v8::Handle<Object> modules = Local<Object>::New(isolate, modules_);
-  v8::Handle<String> key = StringToSymbol(isolate, id);
+  v8::Local<Object> modules = Local<Object>::New(isolate, modules_);
+  v8::Local<String> key = StringToSymbol(isolate, id);
   DCHECK(modules->HasOwnProperty(key));
   return modules->Get(key);
 }

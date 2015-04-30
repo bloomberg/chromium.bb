@@ -36,25 +36,25 @@ struct PendingModule;
 //
 class GIN_EXPORT ModuleRegistry {
  public:
-  typedef base::Callback<void (v8::Handle<v8::Value>)> LoadModuleCallback;
+  typedef base::Callback<void (v8::Local<v8::Value>)> LoadModuleCallback;
 
   virtual ~ModuleRegistry();
 
-  static ModuleRegistry* From(v8::Handle<v8::Context> context);
+  static ModuleRegistry* From(v8::Local<v8::Context> context);
 
   static void RegisterGlobals(v8::Isolate* isolate,
-                              v8::Handle<v8::ObjectTemplate> templ);
+                              v8::Local<v8::ObjectTemplate> templ);
 
   // Installs the necessary functions needed for modules.
   // WARNING: this may execute script in the page.
-  static void InstallGlobals(v8::Isolate* isolate, v8::Handle<v8::Object> obj);
+  static void InstallGlobals(v8::Isolate* isolate, v8::Local<v8::Object> obj);
 
   void AddObserver(ModuleRegistryObserver* observer);
   void RemoveObserver(ModuleRegistryObserver* observer);
 
   // The caller must have already entered our context.
   void AddBuiltinModule(v8::Isolate* isolate, const std::string& id,
-                        v8::Handle<v8::Value> module);
+                        v8::Local<v8::Value> module);
 
   // The caller must have already entered our context.
   void AddPendingModule(v8::Isolate* isolate,
@@ -84,12 +84,12 @@ class GIN_EXPORT ModuleRegistry {
   void Load(v8::Isolate* isolate, scoped_ptr<PendingModule> pending);
   void RegisterModule(v8::Isolate* isolate,
                       const std::string& id,
-                      v8::Handle<v8::Value> module);
+                      v8::Local<v8::Value> module);
 
   bool CheckDependencies(PendingModule* pending);
   bool AttemptToLoad(v8::Isolate* isolate, scoped_ptr<PendingModule> pending);
 
-  v8::Handle<v8::Value> GetModule(v8::Isolate* isolate, const std::string& id);
+  v8::Local<v8::Value> GetModule(v8::Isolate* isolate, const std::string& id);
 
   std::set<std::string> available_modules_;
   std::set<std::string> unsatisfied_dependencies_;

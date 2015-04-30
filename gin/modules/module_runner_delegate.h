@@ -39,7 +39,7 @@ class GIN_EXPORT ModuleRunnerDelegate : public ShellRunnerDelegate {
   typedef std::map<std::string, ModuleGetterCallback> BuiltinModuleMap;
 
   // From ShellRunnerDelegate:
-  v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(
+  v8::Local<v8::ObjectTemplate> GetGlobalTemplate(
       ShellRunner* runner,
       v8::Isolate* isolate) override;
   void DidCreateContext(ShellRunner* runner) override;

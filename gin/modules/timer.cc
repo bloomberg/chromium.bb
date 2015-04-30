@@ -12,7 +12,7 @@ namespace gin {
 
 namespace {
 
-v8::Handle<v8::String> GetHiddenPropertyName(v8::Isolate* isolate) {
+v8::Local<v8::String> GetHiddenPropertyName(v8::Isolate* isolate) {
   return gin::StringToSymbol(isolate, "::gin::Timer");
 }
 
@@ -24,7 +24,7 @@ gin::WrapperInfo Timer::kWrapperInfo = { gin::kEmbedderNativeGin };
 
 // static
 Handle<Timer> Timer::Create(TimerType type, v8::Isolate* isolate, int delay_ms,
-                            v8::Handle<v8::Function> function) {
+                            v8::Local<v8::Function> function) {
   return CreateHandle(isolate, new Timer(isolate, type == TYPE_REPEATING,
                                          delay_ms, function));
 }
@@ -40,7 +40,7 @@ ObjectTemplateBuilder Timer::GetObjectTemplateBuilder(v8::Isolate* isolate) {
 }
 
 Timer::Timer(v8::Isolate* isolate, bool repeating, int delay_ms,
-             v8::Handle<v8::Function> function)
+             v8::Local<v8::Function> function)
     : timer_(false, repeating),
       runner_(PerContextData::From(
           isolate->GetCurrentContext())->runner()->GetWeakPtr()),
@@ -64,7 +64,7 @@ void Timer::OnTimerFired() {
 
   Runner::Scope scope(runner_.get());
   v8::Isolate* isolate = runner_->GetContextHolder()->isolate();
-  v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(
+  v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(
       GetWrapper(isolate)->GetHiddenValue(GetHiddenPropertyName(isolate)));
   runner_->Call(function, v8::Undefined(isolate), 0, NULL);
 }

@@ -38,10 +38,10 @@ void ModuleRunnerDelegate::AttemptToLoadMoreModules(Runner* runner) {
       runner, registry->unsatisfied_dependencies());
 }
 
-v8::Handle<v8::ObjectTemplate> ModuleRunnerDelegate::GetGlobalTemplate(
+v8::Local<v8::ObjectTemplate> ModuleRunnerDelegate::GetGlobalTemplate(
     ShellRunner* runner,
     v8::Isolate* isolate) {
-  v8::Handle<v8::ObjectTemplate> templ = ObjectTemplateBuilder(isolate).Build();
+  v8::Local<v8::ObjectTemplate> templ = ObjectTemplateBuilder(isolate).Build();
   ModuleRegistry::RegisterGlobals(isolate, templ);
   return templ;
 }
@@ -49,7 +49,7 @@ v8::Handle<v8::ObjectTemplate> ModuleRunnerDelegate::GetGlobalTemplate(
 void ModuleRunnerDelegate::DidCreateContext(ShellRunner* runner) {
   ShellRunnerDelegate::DidCreateContext(runner);
 
-  v8::Handle<v8::Context> context = runner->GetContextHolder()->context();
+  v8::Local<v8::Context> context = runner->GetContextHolder()->context();
   ModuleRegistry* registry = ModuleRegistry::From(context);
 
   v8::Isolate* isolate = runner->GetContextHolder()->isolate();
