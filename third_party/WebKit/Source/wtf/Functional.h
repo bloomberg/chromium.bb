@@ -83,6 +83,11 @@ public:
         return (c->*m_function)(params...);
     }
 
+    R operator()(PassOwnPtr<C> c, Params... params)
+    {
+        return (c.get()->*m_function)(params...);
+    }
+
     R operator()(const WeakPtr<C>& c, Params... params)
     {
         C* obj = c.get();

@@ -34,6 +34,7 @@
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 #include "platform/Logging.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/heap/glue/MessageLoopInterruptor.h"
 #include "platform/heap/glue/PendingGCRunner.h"
 #include "public/platform/Platform.h"
@@ -65,7 +66,7 @@ void DatabaseThread::start()
     if (m_thread)
         return;
     m_thread = WebThreadSupportingGC::create("WebCore: Database");
-    m_thread->postTask(FROM_HERE, new Task(WTF::bind(&DatabaseThread::setupDatabaseThread, this)));
+    m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&DatabaseThread::setupDatabaseThread, this)));
 }
 
 void DatabaseThread::setupDatabaseThread()
@@ -82,7 +83,7 @@ void DatabaseThread::terminate()
         m_terminationRequested = true;
         m_cleanupSync = &sync;
         WTF_LOG(StorageAPI, "DatabaseThread %p was asked to terminate\n", this);
-        m_thread->postTask(FROM_HERE, new Task(WTF::bind(&DatabaseThread::cleanupDatabaseThread, this)));
+        m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&DatabaseThread::cleanupDatabaseThread, this)));
     }
     sync.waitForTaskCompletion();
     // The WebThread destructor blocks until all the tasks of the database
@@ -157,7 +158,7 @@ void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
     ASSERT(m_thread);
     ASSERT(!terminationRequested());
     // WebThread takes ownership of the task.
-    m_thread->postTask(FROM_HERE, task.leakPtr());
+    m_thread->postTask(FROM_HERE, new Task(threadSafeBind(&DatabaseTask::run, task)));
 }
 
 } // namespace blink

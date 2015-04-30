@@ -26,6 +26,7 @@
 #include "config.h"
 #include "modules/webdatabase/Database.h"
 
+#include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
@@ -846,32 +847,11 @@ void Database::runTransaction(
     }
 }
 
-// This object is constructed in a database thread, and destructed in the
-// context thread.
-class DeliverPendingCallbackTask final : public ExecutionContextTask {
-public:
-    static PassOwnPtr<DeliverPendingCallbackTask> create(SQLTransaction* transaction)
-    {
-        return adoptPtr(new DeliverPendingCallbackTask(transaction));
-    }
-
-    virtual void performTask(ExecutionContext*) override
-    {
-        m_transaction->performPendingCallback();
-    }
-
-private:
-    DeliverPendingCallbackTask(SQLTransaction* transaction)
-        : m_transaction(transaction)
-    {
-    }
-
-    CrossThreadPersistent<SQLTransaction> m_transaction;
-};
-
 void Database::scheduleTransactionCallback(SQLTransaction* transaction)
 {
-    executionContext()->postTask(FROM_HERE, DeliverPendingCallbackTask::create(transaction));
+    // The task is constructed in a database thread, and destructed in the
+    // context thread.
+    executionContext()->postTask(FROM_HERE, createCrossThreadTask(&SQLTransaction::performPendingCallback, transaction));
 }
 
 Vector<String> Database::performGetTableNames()

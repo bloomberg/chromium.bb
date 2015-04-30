@@ -44,12 +44,12 @@
 
 namespace blink {
 
-class DatabaseTask : public WebThread::Task {
+class DatabaseTask {
     WTF_MAKE_NONCOPYABLE(DatabaseTask); WTF_MAKE_FAST_ALLOCATED(DatabaseTask);
 public:
     virtual ~DatabaseTask();
 
-    virtual void run() override final;
+    void run();
 
     Database* database() const { return m_database.get(); }
 #if ENABLE(ASSERT)
