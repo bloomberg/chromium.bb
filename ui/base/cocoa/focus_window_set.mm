@@ -40,7 +40,7 @@ void FocusWindowSetHelper(const std::set<NSWindow*>& windows,
   }
   if (all_miniaturized && frontmost_miniaturized_window) {
     DCHECK(!frontmost_window);
-    [frontmost_miniaturized_window deminiaturize:nil];
+    // Note the call to makeKeyAndOrderFront: will deminiaturize the window.
     frontmost_window = frontmost_miniaturized_window;
   }
   // If we couldn't find one on the active space, consider all spaces.
