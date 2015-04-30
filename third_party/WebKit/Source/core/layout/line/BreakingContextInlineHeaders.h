@@ -194,7 +194,7 @@ inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo =
         return true;
 
     UChar current = it.current();
-    bool notJustWhitespace = current != ' ' && current != '\t' && current != softHyphen && (current != '\n' || it.object()->preservesNewline());
+    bool notJustWhitespace = current != space && current != characterTabulation && current != softHyphen && (current != newlineCharacter || it.object()->preservesNewline());
     return notJustWhitespace || isEmptyInline(it.object());
 }
 
@@ -588,7 +588,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         bool previousCharacterIsSpace = m_currentCharacterIsSpace;
         bool previousCharacterShouldCollapseIfPreWap = m_currentCharacterShouldCollapseIfPreWap;
         UChar c = m_current.current();
-        m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = c == ' ' || c == '\t' || (!m_preservesNewline && (c == '\n'));
+        m_currentCharacterShouldCollapseIfPreWap = m_currentCharacterIsSpace = c == space || c == characterTabulation || (!m_preservesNewline && (c == newlineCharacter));
 
         if (!m_collapseWhiteSpace || !m_currentCharacterIsSpace)
             m_lineInfo.setEmpty(false, m_block, &m_width);
@@ -608,7 +608,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         }
 
         int nextBreakablePosition = m_current.nextBreakablePosition();
-        bool betweenWords = c == '\n' || (m_currWS != PRE && !m_atStart && m_layoutTextInfo.m_lineBreakIterator.isBreakable(m_current.offset(), nextBreakablePosition, breakAll ? LineBreakType::BreakAll : keepAll ? LineBreakType::KeepAll : LineBreakType::Normal));
+        bool betweenWords = c == newlineCharacter || (m_currWS != PRE && !m_atStart && m_layoutTextInfo.m_lineBreakIterator.isBreakable(m_current.offset(), nextBreakablePosition, breakAll ? LineBreakType::BreakAll : keepAll ? LineBreakType::KeepAll : LineBreakType::Normal));
         m_current.setNextBreakablePosition(nextBreakablePosition);
 
         if (betweenWords || midWordBreak) {
@@ -638,7 +638,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             wordMeasurement.startOffset = lastSpace;
 
             float additionalTempWidth;
-            if (wordTrailingSpaceWidth && c == ' ')
+            if (wordTrailingSpaceWidth && c == space)
                 additionalTempWidth = textWidth(layoutText, lastSpace, m_current.offset() + 1 - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts) - wordTrailingSpaceWidth;
             else
                 additionalTempWidth = textWidth(layoutText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts);
@@ -709,7 +709,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                 }
             }
 
-            if (c == '\n' && m_preservesNewline) {
+            if (c == newlineCharacter && m_preservesNewline) {
                 if (!stoppedIgnoringSpaces && m_current.offset())
                     m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
                 m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
@@ -839,7 +839,7 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded()
                 // If the next item on the line is text, and if we did not end with
                 // a space, then the next text run continues our word (and so it needs to
                 // keep adding to the uncommitted width. Just update and continue.
-                checkForBreak = !m_currentCharacterIsSpace && (c == ' ' || c == '\t' || (c == '\n' && !m_nextObject->preservesNewline()));
+                checkForBreak = !m_currentCharacterIsSpace && (c == space || c == characterTabulation || (c == newlineCharacter && !m_nextObject->preservesNewline()));
             } else if (nextText->isWordBreak()) {
                 checkForBreak = true;
             }
