@@ -271,13 +271,6 @@
             },
             "optional": true,
             "description": "A list of names of content scripts that will be removed. If the list is empty, all the content scripts added to the <webview> page will be removed."
-          },
-          {
-            "type": "function",
-            "name": "callback",
-            "optional": true,
-            "description": "Called when all the content scripts has been removed.",
-            "parameters": []
           }
         ]
       },
