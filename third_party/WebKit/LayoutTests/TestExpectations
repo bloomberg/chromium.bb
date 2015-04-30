@@ -41,13 +41,6 @@ crbug.com/461283 [ Mac ] fast/workers/worker-multi-startup.html [ Pass Crash ]
 
 crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout ]
 
-crbug.com/109224 css3/filters/effect-reference-colorspace.html [ NeedsRebaseline ]
-crbug.com/109224 css3/filters/effect-reference-colorspace-hw.html [ NeedsRebaseline ]
-crbug.com/109224 css3/filters/effect-reference-external.html [ NeedsRebaseline ]
-crbug.com/109224 virtual/slimmingpaint/css3/filters/effect-reference-colorspace.html [ NeedsRebaseline ]
-crbug.com/109224 virtual/slimmingpaint/css3/filters/effect-reference-colorspace-hw.html [ NeedsRebaseline ]
-crbug.com/109224 virtual/slimmingpaint/css3/filters/effect-reference-external.html [ NeedsRebaseline ]
-
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
 crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.html [ ImageOnlyFailure NeedsManualRebaseline ]
