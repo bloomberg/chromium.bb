@@ -1478,6 +1478,7 @@ public class ContentViewCore
         restoreSelectionPopupsIfNecessary();
         ScreenOrientationListener.getInstance().addObserver(this, mContext);
         GamepadList.onAttachedToWindow(mContext);
+        mAccessibilityManager.addAccessibilityStateChangeListener(this);
         mSystemCaptioningBridge.registerBridge();
     }
 
@@ -1492,6 +1493,7 @@ public class ContentViewCore
 
         ScreenOrientationListener.getInstance().removeObserver(this);
         GamepadList.onDetachedFromWindow();
+        mAccessibilityManager.removeAccessibilityStateChangeListener(this);
 
         // WebView uses PopupWindows for handle rendering, which may remain
         // unintentionally visible even after the WebView has been detached.
