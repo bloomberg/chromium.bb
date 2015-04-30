@@ -230,6 +230,20 @@ void GLES2TraceImplementation::CompressedTexSubImage2D(GLenum target,
                                format, imageSize, data);
 }
 
+void GLES2TraceImplementation::CompressedTexImage3D(GLenum target,
+                                                    GLint level,
+                                                    GLenum internalformat,
+                                                    GLsizei width,
+                                                    GLsizei height,
+                                                    GLsizei depth,
+                                                    GLint border,
+                                                    GLsizei imageSize,
+                                                    const void* data) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::CompressedTexImage3D");
+  gl_->CompressedTexImage3D(target, level, internalformat, width, height, depth,
+                            border, imageSize, data);
+}
+
 void GLES2TraceImplementation::CopyBufferSubData(GLenum readtarget,
                                                  GLenum writetarget,
                                                  GLintptr readoffset,

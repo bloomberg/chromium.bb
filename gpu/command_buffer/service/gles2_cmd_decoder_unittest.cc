@@ -90,6 +90,18 @@ void GLES2DecoderManualInitTest::EnableDisableTest(GLenum cap,
   }
 }
 
+void GLES3DecoderTest::SetUp() {
+  // Test codepath with workaround clear_alpha_in_readpixels because
+  // ReadPixelsEmulator emulates the incorrect driver behavior.
+  base::CommandLine command_line(0, NULL);
+  command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
+  InitState init;
+  init.gl_version = "4.4";
+  init.bind_generates_resource = true;
+  InitDecoderWithCommandLine(init, &command_line);
+}
+
+
 TEST_P(GLES2DecoderTest, GetIntegervCached) {
   struct TestInfo {
     GLenum pname;

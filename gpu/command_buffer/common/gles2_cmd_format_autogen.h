@@ -1633,6 +1633,164 @@ static_assert(offsetof(CompressedTexSubImage2D, data_shm_id) == 36,
 static_assert(offsetof(CompressedTexSubImage2D, data_shm_offset) == 40,
               "offset of CompressedTexSubImage2D data_shm_offset should be 40");
 
+struct CompressedTexImage3DBucket {
+  typedef CompressedTexImage3DBucket ValueType;
+  static const CommandId kCmdId = kCompressedTexImage3DBucket;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLsizei _depth,
+            GLuint _bucket_id) {
+    SetHeader();
+    target = _target;
+    level = _level;
+    internalformat = _internalformat;
+    width = _width;
+    height = _height;
+    depth = _depth;
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLsizei _depth,
+            GLuint _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_target, _level, _internalformat, _width,
+                                       _height, _depth, _bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t level;
+  uint32_t internalformat;
+  int32_t width;
+  int32_t height;
+  int32_t depth;
+  uint32_t bucket_id;
+  static const int32_t border = 0;
+};
+
+static_assert(sizeof(CompressedTexImage3DBucket) == 32,
+              "size of CompressedTexImage3DBucket should be 32");
+static_assert(offsetof(CompressedTexImage3DBucket, header) == 0,
+              "offset of CompressedTexImage3DBucket header should be 0");
+static_assert(offsetof(CompressedTexImage3DBucket, target) == 4,
+              "offset of CompressedTexImage3DBucket target should be 4");
+static_assert(offsetof(CompressedTexImage3DBucket, level) == 8,
+              "offset of CompressedTexImage3DBucket level should be 8");
+static_assert(
+    offsetof(CompressedTexImage3DBucket, internalformat) == 12,
+    "offset of CompressedTexImage3DBucket internalformat should be 12");
+static_assert(offsetof(CompressedTexImage3DBucket, width) == 16,
+              "offset of CompressedTexImage3DBucket width should be 16");
+static_assert(offsetof(CompressedTexImage3DBucket, height) == 20,
+              "offset of CompressedTexImage3DBucket height should be 20");
+static_assert(offsetof(CompressedTexImage3DBucket, depth) == 24,
+              "offset of CompressedTexImage3DBucket depth should be 24");
+static_assert(offsetof(CompressedTexImage3DBucket, bucket_id) == 28,
+              "offset of CompressedTexImage3DBucket bucket_id should be 28");
+
+struct CompressedTexImage3D {
+  typedef CompressedTexImage3D ValueType;
+  static const CommandId kCmdId = kCompressedTexImage3D;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLsizei _depth,
+            GLsizei _imageSize,
+            uint32_t _data_shm_id,
+            uint32_t _data_shm_offset) {
+    SetHeader();
+    target = _target;
+    level = _level;
+    internalformat = _internalformat;
+    width = _width;
+    height = _height;
+    depth = _depth;
+    imageSize = _imageSize;
+    data_shm_id = _data_shm_id;
+    data_shm_offset = _data_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLint _level,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height,
+            GLsizei _depth,
+            GLsizei _imageSize,
+            uint32_t _data_shm_id,
+            uint32_t _data_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_target, _level, _internalformat, _width,
+                                       _height, _depth, _imageSize,
+                                       _data_shm_id, _data_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t level;
+  uint32_t internalformat;
+  int32_t width;
+  int32_t height;
+  int32_t depth;
+  int32_t imageSize;
+  uint32_t data_shm_id;
+  uint32_t data_shm_offset;
+  static const int32_t border = 0;
+};
+
+static_assert(sizeof(CompressedTexImage3D) == 40,
+              "size of CompressedTexImage3D should be 40");
+static_assert(offsetof(CompressedTexImage3D, header) == 0,
+              "offset of CompressedTexImage3D header should be 0");
+static_assert(offsetof(CompressedTexImage3D, target) == 4,
+              "offset of CompressedTexImage3D target should be 4");
+static_assert(offsetof(CompressedTexImage3D, level) == 8,
+              "offset of CompressedTexImage3D level should be 8");
+static_assert(offsetof(CompressedTexImage3D, internalformat) == 12,
+              "offset of CompressedTexImage3D internalformat should be 12");
+static_assert(offsetof(CompressedTexImage3D, width) == 16,
+              "offset of CompressedTexImage3D width should be 16");
+static_assert(offsetof(CompressedTexImage3D, height) == 20,
+              "offset of CompressedTexImage3D height should be 20");
+static_assert(offsetof(CompressedTexImage3D, depth) == 24,
+              "offset of CompressedTexImage3D depth should be 24");
+static_assert(offsetof(CompressedTexImage3D, imageSize) == 28,
+              "offset of CompressedTexImage3D imageSize should be 28");
+static_assert(offsetof(CompressedTexImage3D, data_shm_id) == 32,
+              "offset of CompressedTexImage3D data_shm_id should be 32");
+static_assert(offsetof(CompressedTexImage3D, data_shm_offset) == 36,
+              "offset of CompressedTexImage3D data_shm_offset should be 36");
+
 struct CopyBufferSubData {
   typedef CopyBufferSubData ValueType;
   static const CommandId kCmdId = kCopyBufferSubData;

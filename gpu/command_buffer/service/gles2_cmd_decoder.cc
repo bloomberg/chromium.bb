@@ -863,6 +863,18 @@ class GLES2DecoderImpl : public GLES2Decoder,
       GLsizei image_size,
       const void* data);
 
+  // Wrapper for CompressedTexImage3D commands.
+  error::Error DoCompressedTexImage3D(
+      GLenum target,
+      GLint level,
+      GLenum internal_format,
+      GLsizei width,
+      GLsizei height,
+      GLsizei depth,
+      GLint border,
+      GLsizei image_size,
+      const void* data);
+
   // Wrapper for CompressedTexSubImage2D.
   void DoCompressedTexSubImage2D(
       GLenum target,
@@ -1670,11 +1682,11 @@ class GLES2DecoderImpl : public GLES2Decoder,
 #endif
 
   bool ValidateCompressedTexDimensions(
-      const char* function_name,
-      GLint level, GLsizei width, GLsizei height, GLenum format);
+      const char* function_name, GLenum target, GLint level,
+      GLsizei width, GLsizei height, GLsizei depth, GLenum format);
   bool ValidateCompressedTexFuncData(
-      const char* function_name,
-      GLsizei width, GLsizei height, GLenum format, size_t size);
+      const char* function_name, GLsizei width, GLsizei height, GLsizei depth,
+      GLenum format, GLsizei size);
   bool ValidateCompressedTexSubDimensions(
     const char* function_name,
     GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -4569,6 +4581,12 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
       break;
     case GL_TEXTURE_RECTANGLE_ARB:
       unit.bound_texture_rectangle_arb = texture_ref;
+      break;
+    case GL_TEXTURE_3D:
+      unit.bound_texture_3d = texture_ref;
+      break;
+    case GL_TEXTURE_2D_ARRAY:
+      unit.bound_texture_2d_array = texture_ref;
       break;
     default:
       NOTREACHED();  // Validation should prevent us getting here.
@@ -8811,6 +8829,7 @@ const int kS3TCBlockWidth = 4;
 const int kS3TCBlockHeight = 4;
 const int kS3TCDXT1BlockSize = 8;
 const int kS3TCDXT3AndDXT5BlockSize = 16;
+const int kEACAndETC2BlockSize = 4;
 
 bool IsValidDXTSize(GLint level, GLsizei size) {
   return (size == 1) ||
@@ -8824,51 +8843,79 @@ bool IsValidPVRTCSize(GLint level, GLsizei size) {
 }  // anonymous namespace.
 
 bool GLES2DecoderImpl::ValidateCompressedTexFuncData(
-    const char* function_name,
-    GLsizei width, GLsizei height, GLenum format, size_t size) {
-  unsigned int bytes_required = 0;
+    const char* function_name, GLsizei width, GLsizei height, GLsizei depth,
+    GLenum format, GLsizei size) {
+  base::CheckedNumeric<GLsizei> bytes_required(0);
 
   switch (format) {
     case GL_ATC_RGB_AMD:
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
     case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-    case GL_ETC1_RGB8_OES: {
-        int num_blocks_across =
-            (width + kS3TCBlockWidth - 1) / kS3TCBlockWidth;
-        int num_blocks_down =
-            (height + kS3TCBlockHeight - 1) / kS3TCBlockHeight;
-        int num_blocks = num_blocks_across * num_blocks_down;
-        bytes_required = num_blocks * kS3TCDXT1BlockSize;
-        break;
-      }
+    case GL_ETC1_RGB8_OES:
+      bytes_required =
+          (width + kS3TCBlockWidth - 1) / kS3TCBlockWidth;
+      bytes_required *=
+          (height + kS3TCBlockHeight - 1) / kS3TCBlockHeight;
+      bytes_required *= kS3TCDXT1BlockSize;
+      break;
     case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
     case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
     case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT: {
-        int num_blocks_across =
-            (width + kS3TCBlockWidth - 1) / kS3TCBlockWidth;
-        int num_blocks_down =
-            (height + kS3TCBlockHeight - 1) / kS3TCBlockHeight;
-        int num_blocks = num_blocks_across * num_blocks_down;
-        bytes_required = num_blocks * kS3TCDXT3AndDXT5BlockSize;
-        break;
-      }
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+      bytes_required =
+          (width + kS3TCBlockWidth - 1) / kS3TCBlockWidth;
+      bytes_required *=
+          (height + kS3TCBlockHeight - 1) / kS3TCBlockHeight;
+      bytes_required *= kS3TCDXT3AndDXT5BlockSize;
+      break;
     case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG: {
-        bytes_required = (std::max(width, 8) * std::max(height, 8) * 4 + 7)/8;
-        break;
-      }
+    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+      bytes_required = std::max(width, 8);
+      bytes_required *= std::max(height, 8);
+      bytes_required *= 4;
+      bytes_required += 7;
+      bytes_required /= 8;
+      break;
     case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: {
-        bytes_required = (std::max(width, 16) * std::max(height, 8) * 2 + 7)/8;
-        break;
-      }
+    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+      bytes_required = std::max(width, 16);
+      bytes_required *= std::max(height, 8);
+      bytes_required *= 2;
+      bytes_required += 7;
+      bytes_required /= 8;
+      break;
+
+    // ES3 formats.
+    case GL_COMPRESSED_R11_EAC:
+    case GL_COMPRESSED_SIGNED_R11_EAC:
+    case GL_COMPRESSED_RGB8_ETC2:
+    case GL_COMPRESSED_SRGB8_ETC2:
+    case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+      bytes_required =
+          (width + kEACAndETC2BlockSize - 1) / kEACAndETC2BlockSize;
+      bytes_required *=
+          (height + kEACAndETC2BlockSize - 1) / kEACAndETC2BlockSize;
+      bytes_required *= 8;
+      bytes_required *= depth;
+      break;
+    case GL_COMPRESSED_RG11_EAC:
+    case GL_COMPRESSED_SIGNED_RG11_EAC:
+    case GL_COMPRESSED_RGBA8_ETC2_EAC:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+      bytes_required =
+          (width + kEACAndETC2BlockSize - 1) / kEACAndETC2BlockSize;
+      bytes_required *=
+          (height + kEACAndETC2BlockSize - 1) / kEACAndETC2BlockSize;
+      bytes_required *= 16;
+      bytes_required *= depth;
+      break;
     default:
       LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, format, "format");
       return false;
   }
 
-  if (size != bytes_required) {
+  if (!bytes_required.IsValid() || size != bytes_required.ValueOrDefault(0)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, function_name, "size is not correct for dimensions");
     return false;
@@ -8878,13 +8925,14 @@ bool GLES2DecoderImpl::ValidateCompressedTexFuncData(
 }
 
 bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
-    const char* function_name,
-    GLint level, GLsizei width, GLsizei height, GLenum format) {
+    const char* function_name, GLenum target, GLint level,
+    GLsizei width, GLsizei height, GLsizei depth, GLenum format) {
   switch (format) {
     case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
     case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
     case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT: {
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+      DCHECK_EQ(1, depth);  // 2D formats.
       if (!IsValidDXTSize(level, width) || !IsValidDXTSize(level, height)) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, function_name,
@@ -8892,11 +8940,11 @@ bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
         return false;
       }
       return true;
-    }
     case GL_ATC_RGB_AMD:
     case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
     case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
-    case GL_ETC1_RGB8_OES: {
+    case GL_ETC1_RGB8_OES:
+      DCHECK_EQ(1, depth);  // 2D formats.
       if (width <= 0 || height <= 0) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, function_name,
@@ -8904,11 +8952,11 @@ bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
         return false;
       }
       return true;
-    }
     case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
     case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
     case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: {
+    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+      DCHECK_EQ(1, depth);  // 2D formats.
       if (!IsValidPVRTCSize(level, width) ||
           !IsValidPVRTCSize(level, height)) {
         LOCAL_SET_GL_ERROR(
@@ -8917,7 +8965,31 @@ bool GLES2DecoderImpl::ValidateCompressedTexDimensions(
         return false;
       }
       return true;
-    }
+
+    // ES3 formats.
+    case GL_COMPRESSED_R11_EAC:
+    case GL_COMPRESSED_SIGNED_R11_EAC:
+    case GL_COMPRESSED_RG11_EAC:
+    case GL_COMPRESSED_SIGNED_RG11_EAC:
+    case GL_COMPRESSED_RGB8_ETC2:
+    case GL_COMPRESSED_SRGB8_ETC2:
+    case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+    case GL_COMPRESSED_RGBA8_ETC2_EAC:
+    case GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+      if (width <= 0 || height <= 0 || depth <= 0) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION, function_name,
+            "width, height, or depth invalid");
+        return false;
+      }
+      if (target != GL_TEXTURE_2D_ARRAY) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION, function_name,
+            "target invalid for format");
+        return false;
+      }
+      return true;
     default:
       return false;
   }
@@ -8957,7 +9029,7 @@ bool GLES2DecoderImpl::ValidateCompressedTexSubDimensions(
         return false;
       }
       return ValidateCompressedTexDimensions(
-          function_name, level, width, height, format);
+          function_name, target, level, width, height, 1, format);
     }
     case GL_ATC_RGB_AMD:
     case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
@@ -8994,7 +9066,7 @@ bool GLES2DecoderImpl::ValidateCompressedTexSubDimensions(
         return false;
       }
       return ValidateCompressedTexDimensions(
-          function_name, level, width, height, format);
+          function_name, target, level, width, height, 1, format);
     }
     default:
       return false;
@@ -9010,7 +9082,6 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
   GLint border,
   GLsizei image_size,
   const void* data) {
-  // TODO(gman): Validate image_size is correct for width, height and format.
   if (!validators_->texture_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(
         "glCompressedTexImage2D", target, "target");
@@ -9045,10 +9116,10 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
     return error::kNoError;
   }
 
-  if (!ValidateCompressedTexDimensions(
-      "glCompressedTexImage2D", level, width, height, internal_format) ||
-      !ValidateCompressedTexFuncData(
-      "glCompressedTexImage2D", width, height, internal_format, image_size)) {
+  if (!ValidateCompressedTexDimensions("glCompressedTexImage2D", target, level,
+                                       width, height, 1, internal_format) ||
+      !ValidateCompressedTexFuncData("glCompressedTexImage2D", width, height,
+                                     1, internal_format, image_size)) {
     return error::kNoError;
   }
 
@@ -9186,6 +9257,146 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
   DoCompressedTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, imageSize, data);
   return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::DoCompressedTexImage3D(
+  GLenum target,
+  GLint level,
+  GLenum internal_format,
+  GLsizei width,
+  GLsizei height,
+  GLsizei depth,
+  GLint border,
+  GLsizei image_size,
+  const void* data) {
+  if (!validators_->texture_3_d_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        "glCompressedTexImage3D", target, "target");
+    return error::kNoError;
+  }
+  if (!validators_->compressed_texture_format.IsValid(
+      internal_format)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        "glCompressedTexImage3D", internal_format, "internal_format");
+    return error::kNoError;
+  }
+  if (!texture_manager()->ValidForTarget(target, level, width, height, depth) ||
+      border != 0) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE,
+        "glCompressedTexImage3D", "dimensions out of range");
+    return error::kNoError;
+  }
+  TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
+      &state_, target);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE,
+        "glCompressedTexImage3D", "unknown texture target");
+    return error::kNoError;
+  }
+  Texture* texture = texture_ref->texture();
+  if (texture->IsImmutable()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glCompressedTexImage3D", "texture is immutable");
+    return error::kNoError;
+  }
+
+  if (!ValidateCompressedTexDimensions("glCompressedTexImage3D", target, level,
+                                       width, height, depth, internal_format) ||
+      !ValidateCompressedTexFuncData("glCompressedTexImage3D", width, height,
+                                     depth, internal_format, image_size)) {
+    return error::kNoError;
+  }
+
+  if (!EnsureGPUMemoryAvailable(image_size)) {
+    LOCAL_SET_GL_ERROR(
+        GL_OUT_OF_MEMORY, "glCompressedTexImage3D", "out of memory");
+    return error::kNoError;
+  }
+
+  if (texture->IsAttachedToFramebuffer()) {
+    framebuffer_state_.clear_state_dirty = true;
+  }
+
+  scoped_ptr<int8[]> zero;
+  if (!data) {
+    zero.reset(new int8[image_size]);
+    memset(zero.get(), 0, image_size);
+    data = zero.get();
+  }
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCompressedTexImage3D");
+  glCompressedTexImage3D(target, level, internal_format, width, height, depth,
+                         border, image_size, data);
+  GLenum error = LOCAL_PEEK_GL_ERROR("glCompressedTexImage3D");
+  if (error == GL_NO_ERROR) {
+    texture_manager()->SetLevelInfo(
+        texture_ref, target, level, internal_format,
+        width, height, depth, border, 0, 0, true);
+  }
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleCompressedTexImage3D(
+    uint32 immediate_data_size, const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+
+  const gles2::cmds::CompressedTexImage3D& c =
+      *static_cast<const gles2::cmds::CompressedTexImage3D*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLint border = static_cast<GLint>(c.border);
+  GLsizei image_size = static_cast<GLsizei>(c.imageSize);
+  uint32 data_shm_id = static_cast<uint32>(c.data_shm_id);
+  uint32 data_shm_offset = static_cast<uint32>(c.data_shm_offset);
+  const void* data = NULL;
+  if (data_shm_id != 0 || data_shm_offset != 0) {
+    data = GetSharedMemoryAs<const void*>(
+        data_shm_id, data_shm_offset, image_size);
+    if (!data) {
+      return error::kOutOfBounds;
+    }
+  }
+  return DoCompressedTexImage3D(target, level, internal_format, width, height,
+                                depth, border, image_size, data);
+}
+
+error::Error GLES2DecoderImpl::HandleCompressedTexImage3DBucket(
+    uint32 immediate_data_size, const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+
+  const gles2::cmds::CompressedTexImage3DBucket& c =
+      *static_cast<const gles2::cmds::CompressedTexImage3DBucket*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  GLint border = static_cast<GLint>(c.border);
+  Bucket* bucket = GetBucket(c.bucket_id);
+  if (!bucket) {
+    return error::kInvalidArguments;
+  }
+  uint32 data_size = bucket->size();
+  GLsizei imageSize = data_size;
+  const void* data = bucket->GetData(0, data_size);
+  if (!data) {
+    return error::kInvalidArguments;
+  }
+  return DoCompressedTexImage3D(target, level, internal_format, width, height,
+                                depth, border, imageSize, data);
 }
 
 error::Error GLES2DecoderImpl::HandleTexImage2D(uint32 immediate_data_size,
@@ -9329,8 +9540,8 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
     return;
   }
 
-  if (!ValidateCompressedTexFuncData(
-      "glCompressedTexSubImage2D", width, height, format, image_size) ||
+  if (!ValidateCompressedTexFuncData("glCompressedTexSubImage2D",
+                                     width, height, 1, format, image_size) ||
       !ValidateCompressedTexSubDimensions(
       "glCompressedTexSubImage2D",
       target, level, xoffset, yoffset, width, height, format, texture)) {

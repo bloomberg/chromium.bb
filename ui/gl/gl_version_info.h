@@ -38,6 +38,18 @@ struct GL_EXPORT GLVersionInfo {
     return is_es || is_desktop_core_profile;
   }
 
+  bool IsES3Capable() const {
+    if (IsAtLeastGLES(3, 0) || IsAtLeastGL(4, 2))
+      return true;
+#if defined(OS_MACOSX)
+    // TODO(zmo): For experimentation purpose on MacOSX with core profile,
+    // allow 3.2 or plus for now.
+    if (IsAtLeastGL(3, 2))
+      return true;
+#endif
+    return false;
+  }
+
   static void ParseVersionString(const char* version_str,
                                  unsigned* major_version,
                                  unsigned* minor_version,

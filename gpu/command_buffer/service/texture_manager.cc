@@ -1029,6 +1029,7 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
                                GLint max_texture_size,
                                GLint max_cube_map_texture_size,
                                GLint max_rectangle_texture_size,
+                               GLint max_3d_texture_size,
                                bool use_default_textures)
     : memory_tracker_managed_(
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
@@ -1039,6 +1040,7 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
       max_texture_size_(max_texture_size),
       max_cube_map_texture_size_(max_cube_map_texture_size),
       max_rectangle_texture_size_(max_rectangle_texture_size),
+      max_3d_texture_size_(max_3d_texture_size),
       max_levels_(ComputeMipMapCount(GL_TEXTURE_2D,
                                      max_texture_size,
                                      max_texture_size,
@@ -1047,6 +1049,11 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
                                               max_cube_map_texture_size,
                                               max_cube_map_texture_size,
                                               max_cube_map_texture_size)),
+      max_3d_levels_(ComputeMipMapCount(GL_TEXTURE_3D,
+                                        // Same as GL_TEXTURE_2D_ARRAY
+                                        max_3d_texture_size,
+                                        max_3d_texture_size,
+                                        max_3d_texture_size)),
       use_default_textures_(use_default_textures),
       num_unrenderable_textures_(0),
       num_unsafe_textures_(0),
@@ -1548,6 +1555,12 @@ TextureRef* TextureManager::GetTextureInfoForTarget(
       break;
     case GL_TEXTURE_RECTANGLE_ARB:
       texture = unit.bound_texture_rectangle_arb.get();
+      break;
+    case GL_TEXTURE_3D:
+      texture = unit.bound_texture_3d.get();
+      break;
+    case GL_TEXTURE_2D_ARRAY:
+      texture = unit.bound_texture_2d_array.get();
       break;
     default:
       NOTREACHED();

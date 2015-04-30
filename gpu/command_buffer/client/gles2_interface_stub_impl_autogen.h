@@ -136,6 +136,16 @@ void GLES2InterfaceStub::CompressedTexSubImage2D(GLenum /* target */,
                                                  GLsizei /* imageSize */,
                                                  const void* /* data */) {
 }
+void GLES2InterfaceStub::CompressedTexImage3D(GLenum /* target */,
+                                              GLint /* level */,
+                                              GLenum /* internalformat */,
+                                              GLsizei /* width */,
+                                              GLsizei /* height */,
+                                              GLsizei /* depth */,
+                                              GLint /* border */,
+                                              GLsizei /* imageSize */,
+                                              const void* /* data */) {
+}
 void GLES2InterfaceStub::CopyBufferSubData(GLenum /* readtarget */,
                                            GLenum /* writetarget */,
                                            GLintptr /* readoffset */,

@@ -523,6 +523,49 @@ TEST_F(GLES2FormatTest, CompressedTexSubImage2D) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, CompressedTexImage3DBucket) {
+  cmds::CompressedTexImage3DBucket& cmd =
+      *GetBufferAs<cmds::CompressedTexImage3DBucket>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<GLint>(12), static_cast<GLenum>(13),
+                           static_cast<GLsizei>(14), static_cast<GLsizei>(15),
+                           static_cast<GLsizei>(16), static_cast<GLuint>(17));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::CompressedTexImage3DBucket::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.internalformat);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.depth);
+  EXPECT_EQ(static_cast<GLuint>(17), cmd.bucket_id);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, CompressedTexImage3D) {
+  cmds::CompressedTexImage3D& cmd = *GetBufferAs<cmds::CompressedTexImage3D>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLint>(12),
+              static_cast<GLenum>(13), static_cast<GLsizei>(14),
+              static_cast<GLsizei>(15), static_cast<GLsizei>(16),
+              static_cast<GLsizei>(17), static_cast<uint32_t>(18),
+              static_cast<uint32_t>(19));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::CompressedTexImage3D::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.level);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.internalformat);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.depth);
+  EXPECT_EQ(static_cast<GLsizei>(17), cmd.imageSize);
+  EXPECT_EQ(static_cast<uint32_t>(18), cmd.data_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(19), cmd.data_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, CopyBufferSubData) {
   cmds::CopyBufferSubData& cmd = *GetBufferAs<cmds::CopyBufferSubData>();
   void* next_cmd =

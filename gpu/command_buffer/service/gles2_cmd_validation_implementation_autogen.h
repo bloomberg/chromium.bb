@@ -104,6 +104,19 @@ static const GLenum valid_cmp_function_table[] = {
     GL_ALWAYS,
 };
 
+static const GLenum valid_compressed_texture_format_table_es3[] = {
+    GL_COMPRESSED_R11_EAC,
+    GL_COMPRESSED_SIGNED_R11_EAC,
+    GL_COMPRESSED_RG11_EAC,
+    GL_COMPRESSED_SIGNED_RG11_EAC,
+    GL_COMPRESSED_RGB8_ETC2,
+    GL_COMPRESSED_SRGB8_ETC2,
+    GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2,
+    GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2,
+    GL_COMPRESSED_RGBA8_ETC2_EAC,
+    GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
+};
+
 static const GLenum valid_draw_mode_table[] = {
     GL_POINTS,
     GL_LINE_STRIP,
@@ -1048,6 +1061,9 @@ void Validators::UpdateValuesES3() {
                           arraysize(valid_buffer_target_table_es3));
   capability.AddValues(valid_capability_table_es3,
                        arraysize(valid_capability_table_es3));
+  compressed_texture_format.AddValues(
+      valid_compressed_texture_format_table_es3,
+      arraysize(valid_compressed_texture_format_table_es3));
   g_l_state.AddValues(valid_g_l_state_table_es3,
                       arraysize(valid_g_l_state_table_es3));
   pixel_type.AddValues(valid_pixel_type_table_es3,

@@ -104,6 +104,15 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                                GLenum format,
                                GLsizei imageSize,
                                const void* data) override;
+  void CompressedTexImage3D(GLenum target,
+                            GLint level,
+                            GLenum internalformat,
+                            GLsizei width,
+                            GLsizei height,
+                            GLsizei depth,
+                            GLint border,
+                            GLsizei imageSize,
+                            const void* data) override;
   void CopyBufferSubData(GLenum readtarget,
                          GLenum writetarget,
                          GLintptr readoffset,

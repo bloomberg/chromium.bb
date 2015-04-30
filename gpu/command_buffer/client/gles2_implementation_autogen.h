@@ -125,6 +125,16 @@ void CompressedTexSubImage2D(GLenum target,
                              GLsizei imageSize,
                              const void* data) override;
 
+void CompressedTexImage3D(GLenum target,
+                          GLint level,
+                          GLenum internalformat,
+                          GLsizei width,
+                          GLsizei height,
+                          GLsizei depth,
+                          GLint border,
+                          GLsizei imageSize,
+                          const void* data) override;
+
 void CopyBufferSubData(GLenum readtarget,
                        GLenum writetarget,
                        GLintptr readoffset,

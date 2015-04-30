@@ -1114,18 +1114,8 @@ void FeatureInfo::InitializeFeatures() {
 }
 
 bool FeatureInfo::IsES3Capable() const {
-  if (gl_version_info_->IsAtLeastGLES(3, 0))
-    return true;
-  // TODO(zmo): For Desktop GL, with anything lower than 4.2, we need to check
-  // the existence of a few extensions to have full WebGL 2 capabilities.
-  if (gl_version_info_->IsAtLeastGL(4, 2))
-    return true;
-#if defined(OS_MACOSX)
-  // TODO(zmo): For experimentation purpose  on MacOSX with core profile,
-  // allow 3.2 or plus for now.
-  if (gl_version_info_->IsAtLeastGL(3, 2))
-    return true;
-#endif
+  if (gl_version_info_)
+    return gl_version_info_->IsES3Capable();
   return false;
 }
 

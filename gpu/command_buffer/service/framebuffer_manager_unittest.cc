@@ -22,6 +22,7 @@ namespace {
 const GLint kMaxTextureSize = 64;
 const GLint kMaxCubemapSize = 64;
 const GLint kMaxRectangleTextureSize = 64;
+const GLint kMax3DTextureSize = 256;
 const GLint kMaxRenderbufferSize = 64;
 const GLint kMaxSamples = 4;
 const uint32 kMaxDrawBuffers = 16;
@@ -40,6 +41,7 @@ class FramebufferManagerTest : public GpuServiceTest {
                                               kMaxTextureSize,
                                               kMaxCubemapSize,
                                               kMaxRectangleTextureSize,
+                                              kMax3DTextureSize,
                                               kUseDefaultTextures));
     renderbuffer_manager_.reset(new RenderbufferManager(NULL,
                                                         kMaxRenderbufferSize,
@@ -117,6 +119,7 @@ class FramebufferInfoTest : public GpuServiceTest {
                                               kMaxTextureSize,
                                               kMaxCubemapSize,
                                               kMaxRectangleTextureSize,
+                                              kMax3DTextureSize,
                                               kUseDefaultTextures));
     renderbuffer_manager_.reset(new RenderbufferManager(NULL,
                                                         kMaxRenderbufferSize,

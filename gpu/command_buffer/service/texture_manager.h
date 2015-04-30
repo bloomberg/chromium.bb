@@ -531,6 +531,7 @@ class GPU_EXPORT TextureManager {
                  GLsizei max_texture_size,
                  GLsizei max_cube_map_texture_size,
                  GLsizei max_rectangle_texture_size,
+                 GLsizei max_3d_texture_size,
                  bool use_default_textures);
   ~TextureManager();
 
@@ -551,6 +552,9 @@ class GPU_EXPORT TextureManager {
         return  max_levels_;
       case GL_TEXTURE_EXTERNAL_OES:
         return 1;
+      case GL_TEXTURE_3D:
+      case GL_TEXTURE_2D_ARRAY:
+        return max_3d_levels_;
       default:
         return max_cube_map_levels_;
     }
@@ -564,6 +568,9 @@ class GPU_EXPORT TextureManager {
         return max_texture_size_;
       case GL_TEXTURE_RECTANGLE:
         return max_rectangle_texture_size_;
+      case GL_TEXTURE_3D:
+      case GL_TEXTURE_2D_ARRAY:
+        return max_3d_texture_size_;
       default:
         return max_cube_map_texture_size_;
     }
@@ -835,8 +842,10 @@ class GPU_EXPORT TextureManager {
   GLsizei max_texture_size_;
   GLsizei max_cube_map_texture_size_;
   GLsizei max_rectangle_texture_size_;
+  GLsizei max_3d_texture_size_;
   GLint max_levels_;
   GLint max_cube_map_levels_;
+  GLint max_3d_levels_;
 
   const bool use_default_textures_;
 

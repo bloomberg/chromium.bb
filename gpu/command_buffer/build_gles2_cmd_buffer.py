@@ -679,6 +679,18 @@ _NAMED_TYPE_INFO = {
     'type': 'GLenum',
     'valid': [
     ],
+    'valid_es3': [
+      'GL_COMPRESSED_R11_EAC',
+      'GL_COMPRESSED_SIGNED_R11_EAC',
+      'GL_COMPRESSED_RG11_EAC',
+      'GL_COMPRESSED_SIGNED_RG11_EAC',
+      'GL_COMPRESSED_RGB8_ETC2',
+      'GL_COMPRESSED_SRGB8_ETC2',
+      'GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2',
+      'GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2',
+      'GL_COMPRESSED_RGBA8_ETC2_EAC',
+      'GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC',
+    ],
   },
   'GLState': {
     'type': 'GLenum',
@@ -2085,6 +2097,11 @@ _FUNCTION_INFO = {
   'CopyTexSubImage2D': {
     'decoder_func': 'DoCopyTexSubImage2D',
     'defer_reads': True,
+  },
+  'CompressedTexImage3D': {
+    'type': 'Manual',
+    'data_transfer_methods': ['bucket', 'shm'],
+    'unsafe': True,
   },
   'CopyTexSubImage3D': {
     'defer_reads': True,
@@ -4928,7 +4945,8 @@ class ManualHandler(CustomHandler):
 
   def InitFunction(self, func):
     """Overrriden from TypeHandler."""
-    if (func.name == 'CompressedTexImage2DBucket'):
+    if (func.name == 'CompressedTexImage2DBucket' or
+        func.name == 'CompressedTexImage3DBucket'):
       func.cmd_args = func.cmd_args[:-1]
       func.AddCmdArg(Argument('bucket_id', 'GLuint'))
     else:

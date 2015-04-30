@@ -636,6 +636,103 @@ TEST_P(GLES2DecoderTest, CopyTexImage2DGLError) {
   EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
 }
 
+TEST_P(GLES3DecoderTest, CompressedTexImage3DBucket) {
+  const uint32 kBucketId = 123;
+  const uint32 kBadBucketId = 99;
+  const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
+  const GLint kLevel = 0;
+  const GLenum kInternalFormat = GL_COMPRESSED_R11_EAC;
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  const GLsizei kDepth = 4;
+  const GLint kBorder = 0;
+  CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  const GLsizei kImageSize = 32;
+  bucket->SetSize(kImageSize);
+
+  DoBindTexture(kTarget, client_texture_id_, kServiceTextureId);
+
+  CompressedTexImage3DBucket cmd;
+  cmd.Init(kTarget,
+           kLevel,
+           kInternalFormat,
+           kWidth,
+           kHeight,
+           kDepth,
+           kBadBucketId);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+
+  cmd.Init(kTarget,
+           kLevel,
+           kInternalFormat,
+           kWidth,
+           kHeight,
+           kDepth,
+           kBucketId);
+  EXPECT_CALL(*gl_,
+              CompressedTexImage3D(kTarget, kLevel, kInternalFormat, kWidth,
+                                   kHeight, kDepth, kBorder, kImageSize, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsOnES2) {
+  const uint32 kBucketId = 123;
+  const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
+  const GLint kLevel = 0;
+  const GLenum kInternalFormat = GL_COMPRESSED_R11_EAC;
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 4;
+  const GLsizei kDepth = 4;
+  CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  const GLsizei kImageSize = 32;
+  bucket->SetSize(kImageSize);
+
+  CompressedTexImage3DBucket cmd;
+  cmd.Init(kTarget,
+           kLevel,
+           kInternalFormat,
+           kWidth,
+           kHeight,
+           kDepth,
+           kBucketId);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES3DecoderTest, CompressedTexImage3DFailsWithBadImageSize) {
+  const uint32 kBucketId = 123;
+  const GLenum kTarget = GL_TEXTURE_2D_ARRAY;
+  const GLint kLevel = 0;
+  const GLenum kInternalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
+  const GLsizei kWidth = 4;
+  const GLsizei kHeight = 8;
+  const GLsizei kDepth = 4;
+  CommonDecoder::Bucket* bucket = decoder_->CreateBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  const GLsizei kBadImageSize = 64;  // Correct size should be 128.
+  bucket->SetSize(kBadImageSize);
+
+  DoBindTexture(kTarget, client_texture_id_, kServiceTextureId);
+
+  CompressedTexImage3DBucket cmd;
+  cmd.Init(kTarget,
+           kLevel,
+           kInternalFormat,
+           kWidth,
+           kHeight,
+           kDepth,
+           kBucketId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DBucketBadBucket) {
   InitState init;
   init.extensions = "GL_EXT_texture_compression_s3tc";
@@ -906,6 +1003,8 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(copy_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
+
+
 
 TEST_P(GLES2DecoderManualInitTest, EGLImageExternalBindTexture) {
   InitState init;

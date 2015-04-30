@@ -52,6 +52,13 @@ struct GPU_EXPORT TextureUnit {
   // glBindTexture
   scoped_refptr<TextureRef> bound_texture_rectangle_arb;
 
+  // texture currently bound to this unit's GL_TEXTURE_3D with glBindTexture
+  scoped_refptr<TextureRef> bound_texture_3d;
+
+  // texture currently bound to this unit's GL_TEXTURE_2D_ARRAY with
+  // glBindTexture
+  scoped_refptr<TextureRef> bound_texture_2d_array;
+
   scoped_refptr<TextureRef> GetInfoForSamplerType(
       GLenum type) {
     DCHECK(type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
@@ -65,6 +72,10 @@ struct GPU_EXPORT TextureUnit {
         return bound_texture_external_oes;
       case GL_SAMPLER_2D_RECT_ARB:
         return bound_texture_rectangle_arb;
+      case GL_SAMPLER_3D:
+        return bound_texture_3d;
+      case GL_SAMPLER_2D_ARRAY:
+        return bound_texture_2d_array;
     }
 
     NOTREACHED();
@@ -80,6 +91,12 @@ struct GPU_EXPORT TextureUnit {
     }
     if (bound_texture_external_oes.get() == texture) {
       bound_texture_external_oes = NULL;
+    }
+    if (bound_texture_3d.get() == texture) {
+      bound_texture_3d = NULL;
+    }
+    if (bound_texture_2d_array.get() == texture) {
+      bound_texture_2d_array = NULL;
     }
   }
 };

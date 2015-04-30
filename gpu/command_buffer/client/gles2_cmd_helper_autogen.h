@@ -332,6 +332,37 @@ void CompressedTexSubImage2D(GLenum target,
   }
 }
 
+void CompressedTexImage3DBucket(GLenum target,
+                                GLint level,
+                                GLenum internalformat,
+                                GLsizei width,
+                                GLsizei height,
+                                GLsizei depth,
+                                GLuint bucket_id) {
+  gles2::cmds::CompressedTexImage3DBucket* c =
+      GetCmdSpace<gles2::cmds::CompressedTexImage3DBucket>();
+  if (c) {
+    c->Init(target, level, internalformat, width, height, depth, bucket_id);
+  }
+}
+
+void CompressedTexImage3D(GLenum target,
+                          GLint level,
+                          GLenum internalformat,
+                          GLsizei width,
+                          GLsizei height,
+                          GLsizei depth,
+                          GLsizei imageSize,
+                          uint32_t data_shm_id,
+                          uint32_t data_shm_offset) {
+  gles2::cmds::CompressedTexImage3D* c =
+      GetCmdSpace<gles2::cmds::CompressedTexImage3D>();
+  if (c) {
+    c->Init(target, level, internalformat, width, height, depth, imageSize,
+            data_shm_id, data_shm_offset);
+  }
+}
+
 void CopyBufferSubData(GLenum readtarget,
                        GLenum writetarget,
                        GLintptr readoffset,

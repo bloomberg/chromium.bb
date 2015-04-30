@@ -312,6 +312,7 @@ TEST_F(GLES2ImplementationTest, CompileShader) {
 }
 // TODO(zmo): Implement unit test for CompressedTexImage2D
 // TODO(zmo): Implement unit test for CompressedTexSubImage2D
+// TODO(zmo): Implement unit test for CompressedTexImage3D
 
 TEST_F(GLES2ImplementationTest, CopyBufferSubData) {
   struct Cmds {

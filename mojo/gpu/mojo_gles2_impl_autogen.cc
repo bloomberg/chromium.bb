@@ -193,6 +193,17 @@ void MojoGLES2Impl::CompressedTexSubImage2D(GLenum target,
   glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height,
                             format, imageSize, data);
 }
+void MojoGLES2Impl::CompressedTexImage3D(GLenum target,
+                                         GLint level,
+                                         GLenum internalformat,
+                                         GLsizei width,
+                                         GLsizei height,
+                                         GLsizei depth,
+                                         GLint border,
+                                         GLsizei imageSize,
+                                         const void* data) {
+  NOTREACHED() << "Unimplemented CompressedTexImage3D.";
+}
 void MojoGLES2Impl::CopyBufferSubData(GLenum readtarget,
                                       GLenum writetarget,
                                       GLintptr readoffset,

@@ -38,6 +38,7 @@ class TestHelper {
   static const GLint kMaxRenderbufferSize = 1024;
   static const GLint kMaxTextureSize = 2048;
   static const GLint kMaxCubeMapTextureSize = 256;
+  static const GLint kMax3DTextureSize = 256;
   static const GLint kMaxRectangleTextureSize = 64;
   static const GLint kNumVertexAttribs = 16;
   static const GLint kNumTextureUnits = 8;

@@ -74,6 +74,14 @@ class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
   void EnableDisableTest(GLenum cap, bool enable, bool expect_set);
 };
 
+class GLES3DecoderTest : public GLES2DecoderTest {
+ public:
+  GLES3DecoderTest() {}
+
+  // Override default setup so ES3 capabilities are enabled by default.
+  void SetUp() override;
+};
+
 }  // namespace gles2
 }  // namespace gpu
 
