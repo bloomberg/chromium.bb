@@ -50,6 +50,7 @@ WebGLTexture::WebGLTexture(WebGLRenderingContextBase* ctx)
     , m_needToUseBlackTexture(false)
     , m_isFloatType(false)
     , m_isHalfFloatType(false)
+    , m_isWebGL2OrHigher(ctx->isWebGL2OrHigher())
 {
     setObject(ctx->webContext()->createTexture());
 }
@@ -311,7 +312,7 @@ int WebGLTexture::mapTargetToIndex(GLenum target) const
 
 bool WebGLTexture::canGenerateMipmaps()
 {
-    if (isNPOT())
+    if (!m_isWebGL2OrHigher && isNPOT())
         return false;
     const LevelInfo& first = m_info[0][0];
     for (size_t ii = 0; ii < m_info.size(); ++ii) {
@@ -395,7 +396,7 @@ void WebGLTexture::update()
 
     m_needToUseBlackTexture = false;
     // NPOT
-    if (m_isNPOT && ((m_minFilter != GL_NEAREST && m_minFilter != GL_LINEAR)
+    if (!m_isWebGL2OrHigher && m_isNPOT && ((m_minFilter != GL_NEAREST && m_minFilter != GL_LINEAR)
         || m_wrapS != GL_CLAMP_TO_EDGE || m_wrapT != GL_CLAMP_TO_EDGE || (m_target == GL_TEXTURE_3D && m_wrapR != GL_CLAMP_TO_EDGE)))
         m_needToUseBlackTexture = true;
     // If it is a Cube texture, check Cube Completeness first

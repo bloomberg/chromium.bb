@@ -762,7 +762,6 @@ void WebGLRenderingContextBase::setupFlags()
         }
     }
 
-    m_isGLES2NPOTStrict = !extensionsUtil()->isExtensionEnabled("GL_OES_texture_npot");
     m_isDepthStencilSupported = extensionsUtil()->isExtensionEnabled("GL_OES_packed_depth_stencil");
 }
 
@@ -1493,11 +1492,9 @@ void WebGLRenderingContextBase::compressedTexImage2D(GLenum target, GLint level,
     WebGLTexture* tex = validateTextureBinding("compressedTexImage2D", target, true);
     if (!tex)
         return;
-    if (!isGLES2NPOTStrict()) {
-        if (level && WebGLTexture::isNPOT(width, height)) {
-            synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D", "level > 0 not power of 2");
-            return;
-        }
+    if (isNPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
+        synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D", "level > 0 not power of 2");
+        return;
     }
     webContext()->compressedTexImage2D(target, level, internalformat, width, height,
         border, data->byteLength(), data->baseAddress());
@@ -1557,7 +1554,7 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
         synthesizeGLError(GL_INVALID_OPERATION, "copyTexImage2D", "framebuffer is incompatible format");
         return;
     }
-    if (!isGLES2NPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
+    if (isNPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
         synthesizeGLError(GL_INVALID_VALUE, "copyTexImage2D", "level > 0 not power of 2");
         return;
     }
@@ -3619,7 +3616,7 @@ void WebGLRenderingContextBase::texImage2DBase(GLenum target, GLint level, GLenu
     WebGLTexture* tex = validateTextureBinding("texImage2D", target, true);
     ASSERT(validateTexFuncParameters("texImage2D", NotTexSubImage2D, target, level, internalformat, width, height, border, format, type));
     ASSERT(tex);
-    ASSERT(!level || !WebGLTexture::isNPOT(width, height));
+    ASSERT(!isNPOTStrict() || !level || !WebGLTexture::isNPOT(width, height));
     ASSERT(!pixels || validateSettableTexFormat("texImage2D", internalformat));
     webContext()->texImage2D(target, level, convertTexInternalFormat(internalformat, type), width, height, border, format, type, pixels);
     tex->setLevelInfo(target, level, internalformat, width, height, 1, type);
@@ -3665,7 +3662,7 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexIma
         return false;
 
     if (functionType == NotTexSubImage2D) {
-        if (level && WebGLTexture::isNPOT(width, height)) {
+        if (isNPOTStrict() && level && WebGLTexture::isNPOT(width, height)) {
             synthesizeGLError(GL_INVALID_VALUE, functionName, "level > 0 not power of 2");
             return false;
         }

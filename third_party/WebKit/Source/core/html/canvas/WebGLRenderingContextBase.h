@@ -391,6 +391,7 @@ public:
     };
 
     void setFilterQuality(SkFilterQuality);
+    bool isWebGL2OrHigher() { return version() >= 2; }
 
 protected:
     friend class WebGLDrawBuffers;
@@ -424,8 +425,6 @@ protected:
     virtual WebLayer* platformLayer() const override;
     void stop() override;
 
-    bool isWebGL2OrHigher() { return version() >= 2; }
-
     void addSharedObject(WebGLSharedObject*);
     void addContextObject(WebGLContextObject*);
     void detachAndRemoveAllObjects();
@@ -433,8 +432,8 @@ protected:
     void destroyContext();
     void markContextChanged(ContentChangeType);
 
-    // Query if the GL implementation is NPOT strict.
-    bool isGLES2NPOTStrict() { return m_isGLES2NPOTStrict; }
+    // Query if the context is NPOT strict.
+    bool isNPOTStrict() { return !isWebGL2OrHigher(); }
     // Query if depth_stencil buffer is supported.
     bool isDepthStencilSupported() { return m_isDepthStencilSupported; }
 
@@ -593,7 +592,6 @@ protected:
     GLint m_stencilFuncRef, m_stencilFuncRefBack; // Note that these are the user specified values, not the internal clamped value.
     GLuint m_stencilFuncMask, m_stencilFuncMaskBack;
 
-    bool m_isGLES2NPOTStrict;
     bool m_isDepthStencilSupported;
 
     bool m_synthesizedErrorsToConsole;

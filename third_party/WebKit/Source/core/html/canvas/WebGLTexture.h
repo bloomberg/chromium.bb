@@ -135,6 +135,8 @@ private:
     bool m_needToUseBlackTexture;
     bool m_isFloatType;
     bool m_isHalfFloatType;
+    bool m_isWebGL2OrHigher;
+
 };
 
 } // namespace blink
