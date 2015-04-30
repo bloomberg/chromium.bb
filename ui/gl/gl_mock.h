@@ -33,6 +33,23 @@ class MockGLInterface {
   // Member functions
   #include "gl_mock_autogen_gl.h"
 
+  // TODO(zmo): crbug.com/456340
+  // Functions that cannot be mocked because they have more than 10 args.
+  void CompressedTexSubImage3D(
+      GLenum /*target*/, GLint /*level*/, GLint /*xoffset*/, GLint /*yoffset*/,
+      GLint /*zoffset*/, GLsizei /*width*/, GLsizei /*height*/,
+      GLsizei /*depth*/, GLenum /*format*/, GLsizei /*imageSize*/,
+      const void* /*data*/) {
+    NOTREACHED();
+  }
+  void TexSubImage3D(
+      GLenum /*target*/, GLint /*level*/, GLint /*xoffset*/, GLint /*yoffset*/,
+      GLint /*zoffset*/, GLsizei /*width*/, GLsizei /*height*/,
+      GLsizei /*depth*/, GLenum /*format*/, GLenum /*type*/,
+      const void* /*pixels*/) {
+    NOTREACHED();
+  }
+
  private:
   static MockGLInterface* interface_;
 

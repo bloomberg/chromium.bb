@@ -208,13 +208,12 @@ GL_FUNCTIONS = [
       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
       'GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, '
       'const void* data', },
-# TODO(zmo): wait for MOCK_METHOD11.
-# { 'return_type': 'void',
-#   'versions': [{ 'name': 'glCompressedTexSubImage3D' }],
-#   'arguments':
-#       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
-#       'GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, '
-#       'GLenum format, GLsizei imageSize, const void* data', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glCompressedTexSubImage3D' }],
+  'arguments':
+      'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
+      'GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, '
+      'GLenum format, GLsizei imageSize, const void* data', },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glCopyBufferSubData' }],
   'arguments':
@@ -953,13 +952,12 @@ GL_FUNCTIONS = [
      'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
      'GLsizei width, GLsizei height, GLenum format, GLenum type, '
      'const void* pixels', },
-# TODO(zmo): wait for MOCK_METHOD11.
-# { 'return_type': 'void',
-#   'versions': [{ 'name': 'glTexSubImage3D' }],
-#   'arguments':
-#       'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
-#       'GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, '
-#       'GLenum format, GLenum type, const void* pixels', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glTexSubImage3D' }],
+  'arguments':
+      'GLenum target, GLint level, GLint xoffset, GLint yoffset, '
+      'GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, '
+      'GLenum format, GLenum type, const void* pixels', },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glTransformFeedbackVaryings' }],
   'arguments': 'GLuint program, GLsizei count, const char* const* varyings, '
@@ -1776,8 +1774,15 @@ def GenerateMockHeader(file, functions, set_name):
     arg_count = 0
     if len(args):
       arg_count = func['arguments'].count(',') + 1
-    file.write('  MOCK_METHOD%d(%s, %s(%s));\n' %
-      (arg_count, func['known_as'][2:], func['return_type'], args))
+    # TODO(zmo): crbug.com/456340
+    # For now gmock supports at most 10 args.
+    if arg_count <= 10:
+      file.write('  MOCK_METHOD%d(%s, %s(%s));\n' %
+          (arg_count, func['known_as'][2:], func['return_type'], args))
+    else:
+      file.write('  // TODO(zmo): crbug.com/456340\n')
+      file.write('  // %s cannot be mocked because it has %d args.\n' %
+          (func['known_as'], arg_count))
 
   file.write('\n')
 

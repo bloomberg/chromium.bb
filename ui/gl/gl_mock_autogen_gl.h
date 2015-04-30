@@ -132,6 +132,8 @@ MOCK_METHOD9(CompressedTexSubImage2D,
                   GLenum format,
                   GLsizei imageSize,
                   const void* data));
+// TODO(zmo): crbug.com/456340
+// glCompressedTexSubImage3D cannot be mocked because it has 11 args
 MOCK_METHOD5(CopyBufferSubData,
              void(GLenum readTarget,
                   GLenum writeTarget,
@@ -586,6 +588,8 @@ MOCK_METHOD9(TexSubImage2D,
                   GLenum format,
                   GLenum type,
                   const void* pixels));
+// TODO(zmo): crbug.com/456340
+// glTexSubImage3D cannot be mocked because it has 11 args
 MOCK_METHOD4(TransformFeedbackVaryings,
              void(GLuint program,
                   GLsizei count,

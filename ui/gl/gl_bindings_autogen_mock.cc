@@ -406,6 +406,24 @@ MockGLInterface::Mock_glCompressedTexSubImage2D(GLenum target,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glCompressedTexSubImage3D(GLenum target,
+                                                GLint level,
+                                                GLint xoffset,
+                                                GLint yoffset,
+                                                GLint zoffset,
+                                                GLsizei width,
+                                                GLsizei height,
+                                                GLsizei depth,
+                                                GLenum format,
+                                                GLsizei imageSize,
+                                                const void* data) {
+  MakeFunctionUnique("glCompressedTexSubImage3D");
+  interface_->CompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset,
+                                      width, height, depth, format, imageSize,
+                                      data);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glCopyBufferSubData(GLenum readTarget,
                                           GLenum writeTarget,
                                           GLintptr readOffset,
@@ -2113,6 +2131,22 @@ void GL_BINDING_CALL MockGLInterface::Mock_glTexSubImage2D(GLenum target,
                             format, type, pixels);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glTexSubImage3D(GLenum target,
+                                                           GLint level,
+                                                           GLint xoffset,
+                                                           GLint yoffset,
+                                                           GLint zoffset,
+                                                           GLsizei width,
+                                                           GLsizei height,
+                                                           GLsizei depth,
+                                                           GLenum format,
+                                                           GLenum type,
+                                                           const void* pixels) {
+  MakeFunctionUnique("glTexSubImage3D");
+  interface_->TexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
+                            height, depth, format, type, pixels);
+}
+
 void GL_BINDING_CALL
 MockGLInterface::Mock_glTransformFeedbackVaryings(GLuint program,
                                                   GLsizei count,
@@ -2646,6 +2680,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glCompressedTexImage3D);
   if (strcmp(name, "glCompressedTexSubImage2D") == 0)
     return reinterpret_cast<void*>(Mock_glCompressedTexSubImage2D);
+  if (strcmp(name, "glCompressedTexSubImage3D") == 0)
+    return reinterpret_cast<void*>(Mock_glCompressedTexSubImage3D);
   if (strcmp(name, "glCopyBufferSubData") == 0)
     return reinterpret_cast<void*>(Mock_glCopyBufferSubData);
   if (strcmp(name, "glCopyTexImage2D") == 0)
@@ -3117,6 +3153,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glTexStorage3D);
   if (strcmp(name, "glTexSubImage2D") == 0)
     return reinterpret_cast<void*>(Mock_glTexSubImage2D);
+  if (strcmp(name, "glTexSubImage3D") == 0)
+    return reinterpret_cast<void*>(Mock_glTexSubImage3D);
   if (strcmp(name, "glTransformFeedbackVaryings") == 0)
     return reinterpret_cast<void*>(Mock_glTransformFeedbackVaryings);
   if (strcmp(name, "glUniform1f") == 0)

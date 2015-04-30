@@ -10009,15 +10009,6 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(uint32 immediate_data_size,
       target, level, xoffset, yoffset, width, height, format, type, pixels);
 }
 
-// TODO(zmo): Remove the below stub once we add the real function binding.
-// Currently it's missing due to a gmock limitation.
-static void glTexSubImage3D(
-    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
-    GLsizei height, GLsizei width, GLsizei depth, GLenum format, GLenum type,
-    const void* pixels) {
-  NOTIMPLEMENTED();
-}
-
 error::Error GLES2DecoderImpl::HandleTexSubImage3D(uint32 immediate_data_size,
                                                    const void* cmd_data) {
   // TODO(zmo): Unsafe ES3 API.
