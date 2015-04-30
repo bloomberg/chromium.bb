@@ -6024,8 +6024,7 @@ TEST_F(WebFrameTest, CreateChildFrameFailure)
     EXPECT_EQ(1, client.callCount());
 }
 
-// FIXME: Breaks with --enable-pinch-virtual-viewport on. crbug.com/461899
-TEST_F(WebFrameTest, DISABLED_fixedPositionInFixedViewport)
+TEST_F(WebFrameTest, fixedPositionInFixedViewport)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed-position-in-fixed-viewport.html");
@@ -6034,7 +6033,6 @@ TEST_F(WebFrameTest, DISABLED_fixedPositionInFixedViewport)
 
     WebView* webView = webViewHelper.webView();
     webView->resize(WebSize(100, 100));
-    webView->layout();
 
     Document* document = toWebLocalFrameImpl(webView->mainFrame())->frame()->document();
     Element* bottomFixed = document->getElementById("bottom-fixed");
@@ -6042,25 +6040,15 @@ TEST_F(WebFrameTest, DISABLED_fixedPositionInFixedViewport)
     Element* rightFixed = document->getElementById("right-fixed");
     Element* leftRightFixed = document->getElementById("left-right-fixed");
 
+    // The layout viewport will hit the min-scale limit of 0.25, so it'll be 400x800.
     webView->resize(WebSize(100, 200));
-    webView->layout();
-    EXPECT_EQ(200, bottomFixed->offsetTop() + bottomFixed->offsetHeight());
-    EXPECT_EQ(200, topBottomFixed->offsetHeight());
+    EXPECT_EQ(800, bottomFixed->offsetTop() + bottomFixed->offsetHeight());
+    EXPECT_EQ(800, topBottomFixed->offsetHeight());
 
-    webView->settings()->setMainFrameResizesAreOrientationChanges(false);
+    // Now the layout viewport hits the content width limit of 500px so it'll be 500x500.
     webView->resize(WebSize(200, 200));
-    webView->layout();
-    EXPECT_EQ(200, rightFixed->offsetLeft() + rightFixed->offsetWidth());
-    EXPECT_EQ(200, leftRightFixed->offsetWidth());
-
-    webView->settings()->setMainFrameResizesAreOrientationChanges(true);
-    // Will scale the page by 1.5.
-    webView->resize(WebSize(300, 330));
-    webView->layout();
-    EXPECT_EQ(220, bottomFixed->offsetTop() + bottomFixed->offsetHeight());
-    EXPECT_EQ(220, topBottomFixed->offsetHeight());
-    EXPECT_EQ(200, rightFixed->offsetLeft() + rightFixed->offsetWidth());
-    EXPECT_EQ(200, leftRightFixed->offsetWidth());
+    EXPECT_EQ(500, rightFixed->offsetLeft() + rightFixed->offsetWidth());
+    EXPECT_EQ(500, leftRightFixed->offsetWidth());
 }
 
 TEST_F(WebFrameTest, FrameViewMoveWithSetFrameRect)
