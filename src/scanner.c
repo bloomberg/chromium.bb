@@ -1302,7 +1302,7 @@ int main(int argc, char *argv[])
 	void *buf;
 	bool help = false, core_headers = false;
 	bool fail = false;
-	int opt, option_index = 0;
+	int opt;
 	enum {
 		CLIENT_HEADER,
 		SERVER_HEADER,
@@ -1310,43 +1310,27 @@ int main(int argc, char *argv[])
 	} mode;
 
 	static const struct option options[] = {
-		{"help",              no_argument, 0, 0 },
-		{"include-core-only", no_argument, 0, 0 },
-		{0,                   0,           0, 0 }
+		{ "help",              no_argument, NULL, 'h' },
+		{ "include-core-only", no_argument, NULL, 'c' },
+		{ 0,                   0,           NULL, 0 }
 	};
 
 	while (1) {
-		opt = getopt_long(argc, argv, "hc",
-				options, &option_index);
+		opt = getopt_long(argc, argv, "hc", options, NULL);
 
 		if (opt == -1)
 			break;
 
-		if (opt == 0) {
-			switch (option_index) {
-				case 0:
-					help = true;
-					break;
-				case 1:
-					core_headers = true;
-					break;
-				default:
-					fail = true;
-					break;
-			}
-			continue;
-		}
-
 		switch (opt) {
-			case 'h':
-				help = true;
-				break;
-			case 'c':
-				core_headers = true;
-				break;
-			default:
-				fail = true;
-				break;
+		case 'h':
+			help = true;
+			break;
+		case 'c':
+			core_headers = true;
+			break;
+		default:
+			fail = true;
+			break;
 		}
 	}
 
