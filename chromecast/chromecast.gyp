@@ -590,7 +590,7 @@
             'media/media.gyp:cast_media',
           ],
           'conditions': [
-            ['chromecast_branding!="Chrome"', {
+            ['ozone_platform=="egltest"', {
               'dependencies': [
                 '../ui/ozone/ozone.gyp:eglplatform_shim_x11',
               ],
