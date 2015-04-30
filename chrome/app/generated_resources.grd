@@ -5525,6 +5525,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PLUGINS_BROWSER_PLUGIN" desc="Text that indicates the plugin is a browser plugin.">
           BROWSER PLUGIN
         </message>
+        <message name="IDS_PLUGINS_NPAPI_BEING_REMOVED_SOON" desc="The text shown when an NPAPI plugin loads to warn the user that NPAPI plugin support is being removed soon.">
+          This site uses a plugin (<ph name="PLUGIN_NAME">$1<ex>Silverlight</ex></ph>) that will soon be unsupported.
+        </message>
+        <message name="IDS_PLUGINS_NPAPI_REMOVED" desc="The text shown when an NPAPI plugin attempts to load to tell the user that NPAPI plugin support has been removed.">
+          This site uses a plugin (<ph name="PLUGIN_NAME">$1<ex>Silverlight</ex></ph>) that is unsupported.
+        </message>
       </if>
 
       <!-- about:flags -->
