@@ -56,6 +56,7 @@
 #include "platform/FontFamilyNames.h"
 #include "platform/PlatformThreadData.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/Partitions.h"
 #include "wtf/text/StringStatics.h"
 
@@ -105,6 +106,7 @@ void CoreInitializer::init()
     QualifiedName::init();
     EventTracer::initialize();
     KURL::initialize();
+    SecurityPolicy::init();
 
     registerEventFactory();
 

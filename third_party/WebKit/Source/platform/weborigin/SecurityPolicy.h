@@ -41,6 +41,10 @@ class SecurityOrigin;
 
 class PLATFORM_EXPORT SecurityPolicy {
 public:
+    // This must be called during initialization (before we create
+    // other threads).
+    static void init();
+
     // True if the referrer should be omitted according to the
     // ReferrerPolicyNoReferrerWhenDowngrade. If you intend to send a
     // referrer header, you should use generateReferrer instead.

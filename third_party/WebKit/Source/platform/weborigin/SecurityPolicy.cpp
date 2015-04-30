@@ -49,14 +49,20 @@ using OriginSet = HashSet<String>;
 
 static OriginAccessMap& originAccessMap()
 {
-    AtomicallyInitializedStaticReference(OriginAccessMap, originAccessMap, new OriginAccessMap);
+    DEFINE_STATIC_LOCAL(OriginAccessMap, originAccessMap, ());
     return originAccessMap;
 }
 
 static OriginSet& trustworthyOriginSet()
 {
-    AtomicallyInitializedStaticReference(OriginSet, trustworthyOriginSet, new OriginSet);
+    DEFINE_STATIC_LOCAL(OriginSet, trustworthyOriginSet, ());
     return trustworthyOriginSet;
+}
+
+void SecurityPolicy::init()
+{
+    originAccessMap();
+    trustworthyOriginSet();
 }
 
 bool SecurityPolicy::shouldHideReferrer(const KURL& url, const String& referrer)
