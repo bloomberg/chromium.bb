@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
-
 static_library("util") {
   deps = [
     "//base",
@@ -65,6 +63,7 @@ static_library("util") {
       "//third_party/icu",
       "//third_party/lzma_sdk",
     ]
+    include_dirs = [ "$root_gen_dir/installer_util_strings" ]
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -169,8 +168,7 @@ static_library("util") {
   }
 }
 
-action("generate_strings") {
-  visibility = [ ":strings" ]
+action("strings") {
   script = "prebuild/create_string_rc.py"
 
   if (is_chrome_branded) {
@@ -183,9 +181,11 @@ action("generate_strings") {
     grdfile,
   ]
 
+  # TODO(brettw) move to target_gen_dir
+  outdir = "$root_gen_dir/installer_util_strings"
   outputs = [
-    "$target_gen_dir/installer_util_strings.h",
-    "$target_gen_dir/installer_util_strings.rc",
+    "$outdir/installer_util_strings.h",
+    "$outdir/installer_util_strings.rc",
   ]
 
   args = [
@@ -194,80 +194,6 @@ action("generate_strings") {
     "-n",
     "installer_util_strings",
     "-o",
-    rebase_path(target_gen_dir, root_build_dir),
+    rebase_path(outdir, root_build_dir),
   ]
 }
-
-# Compile the generated .rc file.
-source_set("strings") {
-  sources = get_target_outputs(":generate_strings")
-  deps = [
-    ":generate_strings",
-  ]
-}
-
-if (is_win) {
-  test("installer_util_unittests") {
-    sources = [
-      "../setup/compat_checks_unittest.cc",
-      "../setup/setup_constants.cc",
-      "advanced_firewall_manager_win_unittest.cc",
-      "callback_work_item_unittest.cc",
-      "channel_info_unittest.cc",
-      "copy_tree_work_item_unittest.cc",
-      "create_dir_work_item_unittest.cc",
-      "create_reg_key_work_item_unittest.cc",
-      "delete_after_reboot_helper_unittest.cc",
-      "delete_reg_key_work_item_unittest.cc",
-      "delete_reg_value_work_item_unittest.cc",
-      "delete_tree_work_item_unittest.cc",
-      "duplicate_tree_detector_unittest.cc",
-      "fake_installation_state.h",
-      "fake_product_state.h",
-      "google_update_settings_unittest.cc",
-      "install_util_unittest.cc",
-      "installation_validation_helper.cc",
-      "installation_validation_helper.h",
-      "installation_validator_unittest.cc",
-      "installer_state_unittest.cc",
-      "installer_util_test_common.cc",
-      "installer_util_test_common.h",
-      "installer_util_unittests.rc",
-      "installer_util_unittests_resource.h",
-      "language_selector_unittest.cc",
-      "legacy_firewall_manager_win_unittest.cc",
-      "logging_installer_unittest.cc",
-      "lzma_util_unittest.cc",
-      "master_preferences_unittest.cc",
-      "move_tree_work_item_unittest.cc",
-      "product_state_unittest.cc",
-      "product_unittest.cc",
-      "product_unittest.h",
-      "registry_key_backup_unittest.cc",
-      "registry_test_data.cc",
-      "registry_test_data.h",
-      "run_all_unittests.cc",
-      "self_cleaning_temp_dir_unittest.cc",
-      "set_reg_value_work_item_unittest.cc",
-      "shell_util_unittest.cc",
-      "uninstall_metrics_unittest.cc",
-      "wmi_unittest.cc",
-      "work_item_list_unittest.cc",
-    ]
-
-    deps = [
-      ":strings",
-      ":util",
-      "//base",
-      "//base:i18n",
-      "//base/test:test_support",
-      "//chrome:chrome_version_resources",
-      "//chrome/installer/test:alternate_version_generator_lib",
-      "//content/public/common",
-      "//testing/gmock",
-      "//testing/gtest",
-    ]
-
-    # TODO(GYP) manifest: $(ProjectDir)\\installer\\mini_installer\\mini_installer.exe.manifest
-  }
-}  # is_win

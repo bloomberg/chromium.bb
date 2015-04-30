@@ -19,7 +19,6 @@
     ['OS=="win"', {
       'targets': [
         {
-          # GN version: //chrome/installer/test:alternate_version_generator_lib
           'target_name': 'alternate_version_generator_lib',
           'type': 'static_library',
           'dependencies': [
@@ -44,7 +43,6 @@
           'msvs_disabled_warnings': [4267, ],
         },
         {
-          # GN version: //chrome/installer/test:upgrade_test
           'target_name': 'upgrade_test',
           'type': 'executable',
           'dependencies': [
@@ -70,7 +68,6 @@
           ],
         },
         {
-          # GN version: //chrome/installer/test:alternate_version_generator
           'target_name': 'alternate_version_generator',
           'type': 'executable',
           'dependencies': [

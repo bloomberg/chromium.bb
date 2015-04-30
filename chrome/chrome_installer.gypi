@@ -76,7 +76,6 @@
           ],
         },
         {
-          # GN version: //chrome/installer/util:installer_util_unittests
           'target_name': 'installer_util_unittests',
           'type': 'executable',
           'dependencies': [
@@ -95,7 +94,6 @@
             '..',
           ],
           'sources': [
-            # List duplicated in GN build.
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
             'installer/setup/compat_checks_unittest.cc',
             'installer/setup/setup_constants.cc',
@@ -162,7 +160,6 @@
               'variables': {
                 'create_string_rc_py': 'installer/util/prebuild/create_string_rc.py',
                 'brand_strings': '<(branding_path_component)_strings',
-                'gen_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome/installer/util',
               },
 
               'inputs': [
@@ -170,20 +167,20 @@
                 'app/<(brand_strings).grd',
               ],
               'outputs': [
-                '<(gen_dir)/installer_util_strings.h',
-                '<(gen_dir)/installer_util_strings.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.h',
+                '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
               ],
               'action': ['python',
                          '<(create_string_rc_py)',
                          '-i', 'app/<(brand_strings).grd:resources',
                          '-n', 'installer_util_strings',
-                         '-o', '<(gen_dir)',],
+                         '-o', '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings',],
               'message': 'Generating installer_util_strings',
             },
           ],
           'direct_dependent_settings': {
             'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)',
+              '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings',
             ],
           },
         },
@@ -231,7 +228,7 @@
             ],
           },
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/installer/util/installer_util_strings.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
             'installer/mini_installer/chrome.release',
             'installer/setup/app_launcher_installer.cc',
             'installer/setup/app_launcher_installer.h',

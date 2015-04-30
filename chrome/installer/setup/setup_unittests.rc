@@ -55,7 +55,7 @@ END
 //
 // String Table
 //
-#include "chrome/installer/util/installer_util_strings.rc"
+#include "installer_util_strings.rc"
 
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

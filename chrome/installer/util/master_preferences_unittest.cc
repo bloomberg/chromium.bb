@@ -76,8 +76,7 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     "  }\n"
     "} \n";
 
-  EXPECT_TRUE(base::WriteFile(prefs_file(), text,
-                              static_cast<int>(strlen(text))));
+  EXPECT_TRUE(base::WriteFile(prefs_file(), text, strlen(text)));
   installer::MasterPreferences prefs(prefs_file());
   EXPECT_TRUE(prefs.read_from_file());
 
@@ -136,8 +135,7 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
     "  }\n"
     "} \n";
 
-  EXPECT_TRUE(base::WriteFile(prefs_file(), text,
-                              static_cast<int>(strlen(text))));
+  EXPECT_TRUE(base::WriteFile(prefs_file(), text, strlen(text)));
   installer::MasterPreferences prefs(prefs_file());
   EXPECT_TRUE(prefs.read_from_file());
 
@@ -196,8 +194,7 @@ TEST_F(MasterPreferencesTest, FirstRunTabs) {
     "  ]\n"
     "} \n";
 
-  EXPECT_TRUE(base::WriteFile(prefs_file(), text,
-                              static_cast<int>(strlen(text))));
+  EXPECT_TRUE(base::WriteFile(prefs_file(), text, strlen(text)));
   installer::MasterPreferences prefs(prefs_file());
   typedef std::vector<std::string> TabsVector;
   TabsVector tabs = prefs.GetFirstRunTabs();
@@ -255,8 +252,7 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
     "     \"verbose_logging\": false\n"
     "  }\n"
     "} \n";
-  EXPECT_TRUE(base::WriteFile(prefs_file, text,
-                              static_cast<int>(strlen(text))));
+  EXPECT_TRUE(base::WriteFile(prefs_file, text, strlen(text)));
 
   // Make sure command line values override the values in master preferences.
   std::wstring cmd_str(
