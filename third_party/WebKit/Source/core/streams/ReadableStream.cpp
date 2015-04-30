@@ -20,7 +20,7 @@ namespace {
 
 class ConstUndefined : public ScriptFunction {
 public:
-    static v8::Handle<v8::Function> create(ScriptState* scriptState)
+    static v8::Local<v8::Function> create(ScriptState* scriptState)
     {
         return (new ConstUndefined(scriptState))->bindToV8Function();
     }

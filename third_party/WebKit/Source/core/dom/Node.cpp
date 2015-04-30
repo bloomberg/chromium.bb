@@ -2461,7 +2461,7 @@ unsigned Node::lengthOfContents() const
     return 0;
 }
 
-v8::Handle<v8::Object> Node::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Object> Node::wrap(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // It's possible that no one except for the new wrapper owns this object at
     // this moment, so we have to prevent GC to collect this object until the
@@ -2472,7 +2472,7 @@ v8::Handle<v8::Object> Node::wrap(v8::Handle<v8::Object> creationContext, v8::Is
 
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType, this);
+    v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType, this);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
@@ -2480,7 +2480,7 @@ v8::Handle<v8::Object> Node::wrap(v8::Handle<v8::Object> creationContext, v8::Is
     return associateWithWrapper(isolate, wrapperType, wrapper);
 }
 
-v8::Handle<v8::Object> Node::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper)
+v8::Local<v8::Object> Node::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Local<v8::Object> wrapper)
 {
     return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType, wrapper);
 }

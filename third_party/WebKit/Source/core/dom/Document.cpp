@@ -5624,7 +5624,7 @@ void Document::clearWeakMembers(Visitor* visitor)
         m_axObjectCache->clearWeakMembers(visitor);
 }
 
-v8::Handle<v8::Object> Document::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Object> Document::wrap(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // It's possible that no one except for the new wrapper owns this object at
     // this moment, so we have to prevent GC to collect this object until the
@@ -5637,12 +5637,12 @@ v8::Handle<v8::Object> Document::wrap(v8::Handle<v8::Object> creationContext, v8
 
     if (frame() && frame()->script().initializeMainWorld()) {
         // initializeMainWorld may have created a wrapper for the object, retry from the start.
-        v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper(this, isolate);
+        v8::Local<v8::Object> wrapper = DOMDataStore::getWrapper(this, isolate);
         if (!wrapper.IsEmpty())
             return wrapper;
     }
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType, this);
+    v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType, this);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
@@ -5650,7 +5650,7 @@ v8::Handle<v8::Object> Document::wrap(v8::Handle<v8::Object> creationContext, v8
     return associateWithWrapper(isolate, wrapperType, wrapper);
 }
 
-v8::Handle<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper)
+v8::Local<v8::Object> Document::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Local<v8::Object> wrapper)
 {
     V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType, wrapper);
     DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
