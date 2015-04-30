@@ -32,6 +32,7 @@
 #include <sys/mman.h>
 #include <assert.h>
 #include <unistd.h>
+#include <values.h>
 #include <fcntl.h>
 #include <limits.h>
 
@@ -44,6 +45,27 @@
 enum pointer_constraint_type {
 	POINTER_CONSTRAINT_TYPE_LOCK,
 	POINTER_CONSTRAINT_TYPE_CONFINE,
+};
+
+enum motion_direction {
+	MOTION_DIRECTION_POSITIVE_X = 1 << 0,
+	MOTION_DIRECTION_NEGATIVE_X = 1 << 1,
+	MOTION_DIRECTION_POSITIVE_Y = 1 << 2,
+	MOTION_DIRECTION_NEGATIVE_Y = 1 << 3,
+};
+
+struct vec2d {
+	double x, y;
+};
+
+struct line {
+	struct vec2d a;
+	struct vec2d b;
+};
+
+struct border {
+	struct line line;
+	enum motion_direction blocking_dir;
 };
 
 static void
@@ -3519,6 +3541,464 @@ confined_pointer_grab_pointer_focus(struct weston_pointer_grab *grab)
 {
 }
 
+static double
+vec2d_cross_product(struct vec2d a, struct vec2d b)
+{
+	return a.x * b.y - a.y * b.x;
+}
+
+static struct vec2d
+vec2d_add(struct vec2d a, struct vec2d b)
+{
+	return (struct vec2d) {
+		.x = a.x + b.x,
+		.y = a.y + b.y,
+	};
+}
+
+static struct vec2d
+vec2d_subtract(struct vec2d a, struct vec2d b)
+{
+	return (struct vec2d) {
+		.x = a.x - b.x,
+		.y = a.y - b.y,
+	};
+}
+
+static struct vec2d
+vec2d_multiply_constant(double c, struct vec2d a)
+{
+	return (struct vec2d) {
+		.x = c * a.x,
+		.y = c * a.y,
+	};
+}
+
+static bool
+lines_intersect(struct line *line1, struct line *line2,
+		struct vec2d *intersection)
+{
+	struct vec2d p = line1->a;
+	struct vec2d r = vec2d_subtract(line1->b, line1->a);
+	struct vec2d q = line2->a;
+	struct vec2d s = vec2d_subtract(line2->b, line2->a);
+	double rxs;
+	double sxr;
+	double t;
+	double u;
+
+	/*
+	 * The line (p, r) and (q, s) intersects where
+	 *
+	 *   p + t r = q + u s
+	 *
+	 * Calculate t:
+	 *
+	 *   (p + t r) × s = (q + u s) × s
+	 *   p × s + t (r × s) = q × s + u (s × s)
+	 *   p × s + t (r × s) = q × s
+	 *   t (r × s) = q × s - p × s
+	 *   t (r × s) = (q - p) × s
+	 *   t = ((q - p) × s) / (r × s)
+	 *
+	 * Using the same method, for u we get:
+	 *
+	 *   u = ((p - q) × r) / (s × r)
+	 */
+
+	rxs = vec2d_cross_product(r, s);
+	sxr = vec2d_cross_product(s, r);
+
+	/* If r × s = 0 then the lines are either parallel or collinear. */
+	if (fabs(rxs) < DBL_MIN)
+		return false;
+
+	t = vec2d_cross_product(vec2d_subtract(q, p), s) / rxs;
+	u = vec2d_cross_product(vec2d_subtract(p, q), r) / sxr;
+
+	/* The lines only intersect if 0 ≤ t ≤ 1 and 0 ≤ u ≤ 1. */
+	if (t < 0.0 || t > 1.0 || u < 0.0 || u > 1.0)
+		return false;
+
+	*intersection = vec2d_add(p, vec2d_multiply_constant(t, r));
+	return true;
+}
+
+static struct border *
+add_border(struct wl_array *array,
+	   double x1, double y1,
+	   double x2, double y2,
+	   enum motion_direction blocking_dir)
+{
+	struct border *border = wl_array_add(array, sizeof *border);
+
+	*border = (struct border) {
+		.line = (struct line) {
+			.a = (struct vec2d) {
+				.x = x1,
+				.y = y1,
+			},
+			.b = (struct vec2d) {
+				.x = x2,
+				.y = y2,
+			},
+		},
+		.blocking_dir = blocking_dir,
+	};
+
+	return border;
+}
+
+static int
+compare_lines_x(const void *a, const void *b)
+{
+	const struct border *border_a = a;
+	const struct border *border_b = b;
+
+
+	if (border_a->line.a.x == border_b->line.a.x)
+		return border_a->line.b.x < border_b->line.b.x;
+	else
+		return border_a->line.a.x > border_b->line.a.x;
+}
+
+static void
+add_non_overlapping_edges(pixman_box32_t *boxes,
+			  int band_above_start,
+			  int band_below_start,
+			  int band_below_end,
+			  struct wl_array *borders)
+{
+	int i;
+	struct wl_array band_merge;
+	struct border *border;
+	struct border *prev_border;
+	struct border *new_border;
+
+	wl_array_init(&band_merge);
+
+	/* Add bottom band of previous row, and top band of current row, and
+	 * sort them so lower left x coordinate comes first. If there are two
+	 * borders with the same left x coordinate, the wider one comes first.
+	 */
+	for (i = band_above_start; i < band_below_start; i++) {
+		pixman_box32_t *box = &boxes[i];
+		add_border(&band_merge, box->x1, box->y2, box->x2, box->y2,
+			   MOTION_DIRECTION_POSITIVE_Y);
+	}
+	for (i = band_below_start; i < band_below_end; i++) {
+		pixman_box32_t *box= &boxes[i];
+		add_border(&band_merge, box->x1, box->y1, box->x2, box->y1,
+			   MOTION_DIRECTION_NEGATIVE_Y);
+	}
+	qsort(band_merge.data,
+	      band_merge.size / sizeof *border,
+	      sizeof *border,
+	      compare_lines_x);
+
+	/* Combine the two combined bands so that any overlapping border is
+	 * eliminated. */
+	prev_border = NULL;
+	wl_array_for_each(border, &band_merge) {
+		assert(border->line.a.y == border->line.b.y);
+		assert(!prev_border ||
+		       prev_border->line.a.y == border->line.a.y);
+		assert(!prev_border ||
+		       (prev_border->line.a.x != border->line.a.x ||
+			prev_border->line.b.x != border->line.b.x));
+		assert(!prev_border ||
+		       prev_border->line.a.x <= border->line.a.x);
+
+		if (prev_border &&
+		    prev_border->line.a.x == border->line.a.x) {
+			/*
+			 * ------------ +
+			 * -------      =
+			 * [     ]-----
+			 */
+			prev_border->line.a.x = border->line.b.x;
+		} else if (prev_border &&
+			   prev_border->line.b.x == border->line.b.x) {
+			/*
+			 * ------------ +
+			 *       ------ =
+			 * ------[    ]
+			 */
+			prev_border->line.b.x = border->line.a.x;
+		} else if (prev_border &&
+			   prev_border->line.b.x == border->line.a.x) {
+			/*
+			 * --------        +
+			 *         ------  =
+			 * --------------
+			 */
+			prev_border->line.b.x = border->line.b.x;
+		} else if (prev_border &&
+			   prev_border->line.b.x >= border->line.a.x) {
+			/*
+			 * --------------- +
+			 *      ------     =
+			 * -----[    ]----
+			 */
+			new_border = add_border(borders,
+						border->line.b.x,
+						border->line.b.y,
+						prev_border->line.b.x,
+						prev_border->line.b.y,
+						prev_border->blocking_dir);
+			prev_border->line.b.x = border->line.a.x;
+			prev_border = new_border;
+		} else {
+			assert(!prev_border ||
+			       prev_border->line.b.x < border->line.a.x);
+			/*
+			 * First border or non-overlapping.
+			 *
+			 * -----           +
+			 *        -----    =
+			 * -----  -----
+			 */
+			new_border = wl_array_add(borders, sizeof *border);
+			*new_border = *border;
+			prev_border = new_border;
+		}
+	}
+
+	wl_array_release(&band_merge);
+}
+
+static void
+add_band_bottom_edges(pixman_box32_t *boxes,
+		      int band_start,
+		      int band_end,
+		      struct wl_array *borders)
+{
+	int i;
+
+	for (i = band_start; i < band_end; i++) {
+		add_border(borders,
+			   boxes[i].x1, boxes[i].y2,
+			   boxes[i].x2, boxes[i].y2,
+			   MOTION_DIRECTION_POSITIVE_Y);
+	}
+}
+
+static void
+region_to_outline(pixman_region32_t *region, struct wl_array *borders)
+{
+	pixman_box32_t *boxes;
+	int num_boxes;
+	int i;
+	int top_most, bottom_most;
+	int current_roof;
+	int prev_top;
+	int band_start, prev_band_start;
+
+	/*
+	 * Remove any overlapping lines from the set of rectangles. Note that
+	 * pixman regions are grouped as rows of rectangles, where rectangles
+	 * in one row never touch or overlap and are all of the same height.
+	 *
+	 *             -------- ---                   -------- ---
+	 *             |      | | |                   |      | | |
+	 *   ----------====---- ---         -----------  ----- ---
+	 *   |            |            =>   |            |
+	 *   ----==========---------        -----        ----------
+	 *       |                 |	        |                 |
+	 *       -------------------            -------------------
+	 *
+	 */
+
+	boxes = pixman_region32_rectangles(region, &num_boxes);
+	prev_top = 0;
+	top_most = boxes[0].y1;
+	current_roof = top_most;
+	bottom_most = boxes[num_boxes - 1].y2;
+	band_start = 0;
+	prev_band_start = 0;
+	for (i = 0; i < num_boxes; i++) {
+		/* Detect if there is a vertical empty space, and add the lower
+		 * level of the previous band if so was the case. */
+		if (i > 0 &&
+		    boxes[i].y1 != prev_top &&
+		    boxes[i].y1 != boxes[i - 1].y2) {
+			current_roof = boxes[i].y1;
+			add_band_bottom_edges(boxes,
+					      band_start,
+					      i,
+					      borders);
+		}
+
+		/* Special case adding the last band, since it won't be handled
+		 * by the band change detection below. */
+		if (boxes[i].y1 != current_roof && i == num_boxes - 1) {
+			if (boxes[i].y1 != prev_top) {
+				/* The last band is a single box, so we don't
+				 * have a prev_band_start to tell us when the
+				 * previous band started. */
+				add_non_overlapping_edges(boxes,
+							  band_start,
+							  i,
+							  i + 1,
+							  borders);
+			} else {
+				add_non_overlapping_edges(boxes,
+							  prev_band_start,
+							  band_start,
+							  i + 1,
+							  borders);
+			}
+		}
+
+		/* Detect when passing a band and combine the top border of the
+		 * just passed band with the bottom band of the previous band.
+		 */
+		if (boxes[i].y1 != top_most && boxes[i].y1 != prev_top) {
+			/* Combine the two passed bands. */
+			if (prev_top != current_roof) {
+				add_non_overlapping_edges(boxes,
+							  prev_band_start,
+							  band_start,
+							  i,
+							  borders);
+			}
+
+			prev_band_start = band_start;
+			band_start = i;
+		}
+
+		/* Add the top border if the box is part of the current roof. */
+		if (boxes[i].y1 == current_roof) {
+			add_border(borders,
+				   boxes[i].x1, boxes[i].y1,
+				   boxes[i].x2, boxes[i].y1,
+				   MOTION_DIRECTION_NEGATIVE_Y);
+		}
+
+		/* Add the bottom border of the last band. */
+		if (boxes[i].y2 == bottom_most) {
+			add_border(borders,
+				   boxes[i].x1, boxes[i].y2,
+				   boxes[i].x2, boxes[i].y2,
+				   MOTION_DIRECTION_POSITIVE_Y);
+		}
+
+		/* Always add the left border. */
+		add_border(borders,
+			   boxes[i].x1, boxes[i].y1,
+			   boxes[i].x1, boxes[i].y2,
+			   MOTION_DIRECTION_NEGATIVE_X);
+
+		/* Always add the right border. */
+		add_border(borders,
+			   boxes[i].x2, boxes[i].y1,
+			   boxes[i].x2, boxes[i].y2,
+			   MOTION_DIRECTION_POSITIVE_X);
+
+		prev_top = boxes[i].y1;
+	}
+}
+
+static bool
+is_border_horizontal (struct border *border)
+{
+	return border->line.a.y == border->line.b.y;
+}
+
+static bool
+is_border_blocking_directions(struct border *border,
+			      uint32_t directions)
+{
+	/* Don't block parallel motions. */
+	if (is_border_horizontal(border)) {
+		if ((directions & (MOTION_DIRECTION_POSITIVE_Y |
+				   MOTION_DIRECTION_NEGATIVE_Y)) == 0)
+			return false;
+	} else {
+		if ((directions & (MOTION_DIRECTION_POSITIVE_X |
+				   MOTION_DIRECTION_NEGATIVE_X)) == 0)
+			return false;
+	}
+
+	return (~border->blocking_dir & directions) != directions;
+}
+
+static struct border *
+get_closest_border(struct wl_array *borders,
+		   struct line *motion,
+		   uint32_t directions)
+{
+	struct border *border;
+	struct vec2d intersection;
+	struct vec2d delta;
+	double distance_2;
+	struct border *closest_border = NULL;
+	double closest_distance_2 = DBL_MAX;
+
+	wl_array_for_each(border, borders) {
+		if (!is_border_blocking_directions(border, directions))
+			continue;
+
+		if (!lines_intersect(&border->line, motion, &intersection))
+			continue;
+
+		delta = vec2d_subtract(intersection, motion->a);
+		distance_2 = delta.x*delta.x + delta.y*delta.y;
+		if (distance_2 < closest_distance_2) {
+			closest_border = border;
+			closest_distance_2 = distance_2;
+		}
+	}
+
+	return closest_border;
+}
+
+static void
+clamp_to_border(struct border *border,
+		struct line *motion,
+		uint32_t *motion_dir)
+{
+	/*
+	 * When clamping either rightward or downward motions, the motion needs
+	 * to be clamped so that the destination coordinate does not end up on
+	 * the border (see weston_pointer_clamp_event_to_region). Do this by
+	 * clamping such motions to the border minus the smallest possible
+	 * wl_fixed_t value.
+	 */
+	if (is_border_horizontal(border)) {
+		if (*motion_dir & MOTION_DIRECTION_POSITIVE_Y)
+			motion->b.y = border->line.a.y - wl_fixed_to_double(1);
+		else
+			motion->b.y = border->line.a.y;
+		*motion_dir &= ~(MOTION_DIRECTION_POSITIVE_Y |
+				 MOTION_DIRECTION_NEGATIVE_Y);
+	} else {
+		if (*motion_dir & MOTION_DIRECTION_POSITIVE_X)
+			motion->b.x = border->line.a.x - wl_fixed_to_double(1);
+		else
+			motion->b.x = border->line.a.x;
+		*motion_dir &= ~(MOTION_DIRECTION_POSITIVE_X |
+				 MOTION_DIRECTION_NEGATIVE_X);
+	}
+}
+
+static uint32_t
+get_motion_directions(struct line *motion)
+{
+	uint32_t directions = 0;
+
+	if (motion->a.x < motion->b.x)
+		directions |= MOTION_DIRECTION_POSITIVE_X;
+	else if (motion->a.x > motion->b.x)
+		directions |= MOTION_DIRECTION_NEGATIVE_X;
+	if (motion->a.y < motion->b.y)
+		directions |= MOTION_DIRECTION_POSITIVE_Y;
+	else if (motion->a.y > motion->b.y)
+		directions |= MOTION_DIRECTION_NEGATIVE_Y;
+
+	return directions;
+}
+
 static void
 weston_pointer_clamp_event_to_region(struct weston_pointer *pointer,
 				     struct weston_pointer_motion_event *event,
@@ -3528,26 +4008,116 @@ weston_pointer_clamp_event_to_region(struct weston_pointer *pointer,
 {
 	wl_fixed_t x, y;
 	wl_fixed_t sx, sy;
-	wl_fixed_t min_sx = wl_fixed_from_int(region->extents.x1);
-	wl_fixed_t max_sx = wl_fixed_from_int(region->extents.x2 - 1);
-	wl_fixed_t max_sy = wl_fixed_from_int(region->extents.y2 - 1);
-	wl_fixed_t min_sy = wl_fixed_from_int(region->extents.y1);
+	wl_fixed_t old_sx = pointer->sx;
+	wl_fixed_t old_sy = pointer->sy;
+	struct wl_array borders;
+	struct line motion;
+	struct border *closest_border;
+	float new_x_f, new_y_f;
+	uint32_t directions;
 
 	weston_pointer_motion_to_abs(pointer, event, &x, &y);
 	weston_view_from_global_fixed(pointer->focus, x, y, &sx, &sy);
 
-	if (sx < min_sx)
-		sx = min_sx;
-	else if (sx > max_sx)
-		sx = max_sx;
+	wl_array_init(&borders);
 
-	if (sy < min_sy)
-		sy = min_sy;
-	else if (sy > max_sy)
-		sy = max_sy;
+	/*
+	 * Generate borders given the confine region we are to use. The borders
+	 * are defined to be the outer region of the allowed area. This means
+	 * top/left borders are "within" the allowed area, while bottom/right
+	 * borders are outside. This needs to be considered when clamping
+	 * confined motion vectors.
+	 */
+	region_to_outline(region, &borders);
 
-	weston_view_to_global_fixed(pointer->focus, sx, sy,
-				    clamped_x, clamped_y);
+	motion = (struct line) {
+		.a = (struct vec2d) {
+			.x = wl_fixed_to_double(old_sx),
+			.y = wl_fixed_to_double(old_sy),
+		},
+		.b = (struct vec2d) {
+			.x = wl_fixed_to_double(sx),
+			.y = wl_fixed_to_double(sy),
+		},
+	};
+	directions = get_motion_directions(&motion);
+
+	while (directions) {
+		closest_border = get_closest_border(&borders,
+						    &motion,
+						    directions);
+		if (closest_border)
+			clamp_to_border(closest_border, &motion, &directions);
+		else
+			break;
+	}
+
+	weston_view_to_global_float(pointer->focus,
+				    (float) motion.b.x, (float) motion.b.y,
+				    &new_x_f, &new_y_f);
+	*clamped_x = wl_fixed_from_double(new_x_f);
+	*clamped_y = wl_fixed_from_double(new_y_f);
+
+	wl_array_release(&borders);
+}
+
+static double
+point_to_border_distance_2(struct border *border, double x, double y)
+{
+	double orig_x, orig_y;
+	double dx, dy;
+
+	if (is_border_horizontal(border)) {
+		if (x < border->line.a.x)
+			orig_x = border->line.a.x;
+		else if (x > border->line.b.x)
+			orig_x = border->line.b.x;
+		else
+			orig_x = x;
+		orig_y = border->line.a.y;
+	} else {
+		if (y < border->line.a.y)
+			orig_y = border->line.a.y;
+		else if (y > border->line.b.y)
+			orig_y = border->line.b.y;
+		else
+			orig_y = y;
+		orig_x = border->line.a.x;
+	}
+
+
+	dx = fabs(orig_x - x);
+	dy = fabs(orig_y - y);
+	return dx*dx + dy*dy;
+}
+
+static void
+warp_to_behind_border(struct border *border, wl_fixed_t *sx, wl_fixed_t *sy)
+{
+	switch (border->blocking_dir) {
+	case MOTION_DIRECTION_POSITIVE_X:
+	case MOTION_DIRECTION_NEGATIVE_X:
+		if (border->blocking_dir == MOTION_DIRECTION_POSITIVE_X)
+			*sx = wl_fixed_from_double(border->line.a.x) - 1;
+		else
+			*sx = wl_fixed_from_double(border->line.a.x) + 1;
+		if (*sy < wl_fixed_from_double(border->line.a.y))
+			*sy = wl_fixed_from_double(border->line.a.y) + 1;
+		else if (*sy > wl_fixed_from_double(border->line.b.y))
+			*sy = wl_fixed_from_double(border->line.b.y) - 1;
+		break;
+	case MOTION_DIRECTION_POSITIVE_Y:
+	case MOTION_DIRECTION_NEGATIVE_Y:
+		if (border->blocking_dir == MOTION_DIRECTION_POSITIVE_Y)
+			*sy = wl_fixed_from_double(border->line.a.y) - 1;
+		else
+			*sy = wl_fixed_from_double(border->line.a.y) + 1;
+		if (*sx < wl_fixed_from_double(border->line.a.x))
+			*sx = wl_fixed_from_double(border->line.a.x) + 1;
+		else if (*sx > wl_fixed_from_double(border->line.b.x))
+			*sx = wl_fixed_from_double(border->line.b.x) - 1;
+		break;
+	}
 }
 
 static void
@@ -3565,21 +4135,37 @@ maybe_warp_confined_pointer(struct weston_pointer_constraint *constraint)
 				      &sy);
 
 	if (!is_within_constraint_region(constraint, sx, sy)) {
-		pixman_region32_t *region = &constraint->region;
-		wl_fixed_t min_sx = wl_fixed_from_int(region->extents.x1);
-		wl_fixed_t max_sx = wl_fixed_from_int(region->extents.x2 - 1);
-		wl_fixed_t max_sy = wl_fixed_from_int(region->extents.y2 - 1);
-		wl_fixed_t min_sy = wl_fixed_from_int(region->extents.y1);
+		double xf = wl_fixed_to_double(sx);
+		double yf = wl_fixed_to_double(sy);
+		pixman_region32_t confine_region;
+		struct wl_array borders;
+		struct border *border;
+		double closest_distance_2 = DBL_MAX;
+		struct border *closest_border = NULL;
 
-		if (sx < min_sx)
-			sx = min_sx;
-		else if (sx > max_sx)
-			sx = max_sx;
+		wl_array_init(&borders);
 
-		if (sy < min_sy)
-			sy = min_sy;
-		else if (sy > max_sy)
-			sy = max_sy;
+		pixman_region32_init(&confine_region);
+		pixman_region32_intersect(&confine_region,
+					  &constraint->view->surface->input,
+					  &constraint->region);
+		region_to_outline(&confine_region, &borders);
+		pixman_region32_fini(&confine_region);
+
+		wl_array_for_each(border, &borders) {
+			double distance_2;
+
+			distance_2 = point_to_border_distance_2(border, xf, yf);
+			if (distance_2 < closest_distance_2) {
+				closest_border = border;
+				closest_distance_2 = distance_2;
+			}
+		}
+		assert(closest_border);
+
+		warp_to_behind_border(closest_border, &sx, &sy);
+
+		wl_array_release(&borders);
 
 		weston_view_to_global_fixed(constraint->view, sx, sy, &x, &y);
 		weston_pointer_move_to(constraint->pointer, x, y);
