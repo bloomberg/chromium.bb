@@ -310,16 +310,20 @@ void TestDoubleUnlockReturnValue(void) {
   int rv;
   TEST_FUNCTION_START;
 
-  CHECK_OK(pthread_mutex_init(&mutex, NULL));
+  /*
+   * Calling pthread_mutex_unlock on an unlocked mutex is actually
+   * undefined behavior under POSIX unless it's an ERRORCHECK mutex.
+   */
+  pthread_mutexattr_t attr;
+  CHECK_OK(pthread_mutexattr_init(&attr));
+  CHECK_OK(pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK));
+  CHECK_OK(pthread_mutex_init(&mutex, &attr));
+
   CHECK_OK(pthread_mutex_lock(&mutex));
   CHECK_OK(pthread_mutex_unlock(&mutex));
   rv = pthread_mutex_unlock(&mutex);
 
-  /* glibc does not return an error in this case.  TODO(mseaborn): We
-     could fix this, but this happens with Linux glibc too. */
-#ifndef __GLIBC__
   EXPECT_EQ(EPERM, rv);
-#endif
 
   TEST_FUNCTION_END;
 }
