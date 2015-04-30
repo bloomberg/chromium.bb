@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
 #include "url/gurl.h"
@@ -32,7 +33,7 @@ void DefaultCdmFactory::Create(
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
   if (!security_origin.is_valid() || !CanUseAesDecryptor(key_system)) {
-    base::MessageLoopProxy::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(cdm_created_cb, nullptr));
     return;
   }
@@ -40,7 +41,7 @@ void DefaultCdmFactory::Create(
   scoped_ptr<MediaKeys> cdm(
       new AesDecryptor(security_origin, session_message_cb, session_closed_cb,
                        session_keys_change_cb));
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(cdm_created_cb, base::Passed(&cdm)));
 }
 

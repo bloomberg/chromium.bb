@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
 
 namespace media {
@@ -79,7 +80,7 @@ void WebContentDecryptionModuleAccessImpl::createContentDecryptionModule(
   // As this object's lifetime is controlled by MediaKeySystemAccess on the
   // blink side, copy all values needed by CreateCdm() in case the blink object
   // gets garbage-collected.
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&CreateCdm, client_, key_system_, allow_distinctive_identifier,
                  allow_persistent_state, security_origin_, result));

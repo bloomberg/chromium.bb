@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/screen.h"
@@ -24,7 +25,7 @@ class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
       : capture_device_(capture_device),
         ui_task_runner_(ui_task_runner),
-        capture_task_runner_(base::MessageLoopProxy::current()) {
+        capture_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&ScreenObserverDelegate::AddObserverOnUIThread, this));

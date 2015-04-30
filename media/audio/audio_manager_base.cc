@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
 #include "media/audio/audio_output_proxy.h"
@@ -90,7 +92,7 @@ AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)
   // thread leads to crashes and odd behavior.  See http://crbug.com/158170.
   // TODO(dalecurtis): We should require the message loop to be passed in.
   if (base::MessageLoopForUI::IsCurrent()) {
-    task_runner_ = base::MessageLoopProxy::current();
+    task_runner_ = base::ThreadTaskRunnerHandle::Get();
     return;
   }
 #endif

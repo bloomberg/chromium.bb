@@ -14,11 +14,12 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
+#include "base/thread_task_runner_handle.h"
 #include "jni/MediaDrmBridge_jni.h"
 #include "media/base/android/media_client_android.h"
 #include "media/base/android/media_drm_bridge_delegate.h"
@@ -414,7 +415,7 @@ void MediaDrmBridge::SetMediaCryptoReadyCB(const base::Closure& closure) {
   DCHECK(media_crypto_ready_cb_.is_null());
 
   if (!GetMediaCrypto().is_null()) {
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE, closure);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
     return;
   }
 

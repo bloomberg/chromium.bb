@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_drm_bridge.h"
@@ -25,7 +26,7 @@ MediaDecoderJob::MediaDecoderJob(
     const base::Closure& request_data_cb,
     const base::Closure& config_changed_cb)
     : need_to_reconfig_decoder_job_(false),
-      ui_task_runner_(base::MessageLoopProxy::current()),
+      ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_task_runner_(decoder_task_runner),
       needs_flush_(false),
       input_eos_encountered_(false),

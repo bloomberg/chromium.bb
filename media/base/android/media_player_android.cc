@@ -6,7 +6,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 
@@ -23,7 +24,7 @@ MediaPlayerAndroid::MediaPlayerAndroid(
       frame_url_(frame_url),
       is_audible_(false),
       weak_factory_(this) {
-  listener_.reset(new MediaPlayerListener(base::MessageLoopProxy::current(),
+  listener_.reset(new MediaPlayerListener(base::ThreadTaskRunnerHandle::Get(),
                                           weak_factory_.GetWeakPtr()));
 }
 

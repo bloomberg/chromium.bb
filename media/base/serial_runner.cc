@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace media {
 
@@ -68,7 +68,7 @@ bool SerialRunner::Queue::empty() {
 
 SerialRunner::SerialRunner(const Queue& bound_fns,
                            const PipelineStatusCB& done_cb)
-    : task_runner_(base::MessageLoopProxy::current()),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       bound_fns_(bound_fns),
       done_cb_(done_cb),
       weak_factory_(this) {
