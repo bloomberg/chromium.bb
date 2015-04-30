@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser;
 
+import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.shell.ChromeShellTestBase;
@@ -49,6 +51,8 @@ public class PopupTest extends ChromeShellTestBase {
         });
     }
 
+    @MediumTest
+    @Feature({"Popup"})
     public void testPopupInfobarAppears() throws Exception {
         loadPageCompletely(getActivity().getActiveTab(), POPUP_HTML_FILENAME);
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
@@ -59,6 +63,8 @@ public class PopupTest extends ChromeShellTestBase {
         }));
     }
 
+    @MediumTest
+    @Feature({"Popup"})
     public void testPopupWindowsAppearWhenAllowed() throws Exception {
         loadPageCompletely(getActivity().getActiveTab(), POPUP_HTML_FILENAME);
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
