@@ -231,6 +231,11 @@ address_set_test = gtest_env.Command(target='address_set_test.out',
 if not env.Bit('linux'):
   Return()
 
+# If we are skipping trusted tests, there is no need to build the
+# cross-targeted ARM validator and tests on x86.
+if env.Bit('skip_trusted_tests') and not env.Bit('build_arm'):
+  Return()
+
 ncval = env.ComponentProgram(
     'arm-ncval-core',
     ['ncval.cc'],
