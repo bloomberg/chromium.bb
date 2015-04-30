@@ -1,8 +1,5 @@
 # List of suppressions.
 
-# Bug: 171812
-MultiThreadedCertVerifierTest.CancelRequest
-
 # Bug: 380340
 SSLServerSocketTest.Handshake
 
