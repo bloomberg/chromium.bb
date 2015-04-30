@@ -310,18 +310,7 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
 
     NaClLog(4, "secure service = %"NACL_PRIxPTR"\n",
             (uintptr_t) nap->secure_service);
-    NACL_FI_FATAL("BeforeWaitForStartModule");
 
-    if (NULL != nap->secure_service) {
-      NaClErrorCode start_result;
-      /*
-       * wait for start_module RPC call on secure channel thread.
-       */
-      start_result = NaClWaitForStartModuleCommand(nap);
-      if (LOAD_OK == errcode) {
-        errcode = start_result;
-      }
-    }
   }
 
   NACL_FI_FATAL("BeforeLoadIrt");
@@ -329,6 +318,9 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   /*
    * error reporting done; can quit now if there was an error earlier.
    */
+  if (LOAD_OK == errcode) {
+    errcode = NaClGetLoadStatus(nap);
+  }
   if (LOAD_OK != errcode) {
     goto done;
   }
