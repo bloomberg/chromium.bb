@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
 (function() {
 /** @const */ var BookmarkList = bmm.BookmarkList;
 /** @const */ var BookmarkTree = bmm.BookmarkTree;
