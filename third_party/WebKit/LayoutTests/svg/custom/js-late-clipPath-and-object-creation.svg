@@ -4,12 +4,12 @@
 <script xlink:href="../../fast/repaint/resources/text-based-repaint.js"/>
 <g id="content" transform="scale(1, 1.5)"/>
 <script>
-    var content = document.getElementById("content");
+    window.testIsAsync = true;
     function repaintTest() {
-        if (window.testRunner)
-            testRunner.waitUntilDone();
-        setTimeout(createObject, 0);
+        runAfterDisplay(createObject);
     }
+
+    var content = document.getElementById("content");
 
     function createObject()
     {
@@ -23,7 +23,7 @@
         text.appendChild(document.createTextNode("Clipped. INVISIBLE."));        
         content.appendChild(text);
 
-        setTimeout(createClipPath, 0);
+        runAfterDisplay(createClipPath);
     }
 
     function createClipPath()
@@ -38,8 +38,7 @@
         clipPath.appendChild(path);
         content.appendChild(clipPath);
 
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     }
 </script>
 

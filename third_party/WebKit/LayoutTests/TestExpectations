@@ -763,9 +763,14 @@ crbug.com/327698 [ Debug Linux Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 crbug.com/320139 virtual/slimmingpaint/fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 
+crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ NeedsRebaseline ]
+crbug.com/353301 svg/custom/js-late-gradient-and-object-creation.svg [ NeedsRebaseline ]
+
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
-crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ Failure Pass ]
+# Re-evaluate/re-enable after rebaselining.
+#crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ Failure Pass ]
+#crbug.com/353301 svg/custom/js-late-gradient-and-object-creation.svg [ Pass Failure ]
 
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
 crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
@@ -1059,7 +1064,6 @@ crbug.com/419696 [ Mac Debug ] virtual/antialiasedtext/fast/text/font-linux-norm
 
 crbug.com/353186 [ Win Debug ] http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Pass Timeout ]
 crbug.com/353208 fast/files/workers/worker-read-blob-async-crash.html [ Pass Crash Timeout ]
-crbug.com/353301 svg/custom/js-late-gradient-and-object-creation.svg [ Pass Failure ]
 
 crbug.com/356991 [ Linux Debug ] fast/canvas/canvas-createImageBitmap-drawImage-video.html [ Crash Pass ]
 crbug.com/356997 http/tests/security/isolatedWorld/events.html [ Failure Pass ]

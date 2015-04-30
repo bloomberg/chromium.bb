@@ -5,13 +5,13 @@
 <g id="content"/>
 
 <script>
-    var content = document.getElementById("content");
+    window.testIsAsync = true;
 
     function repaintTest() {
-        if (window.testRunner)
-            testRunner.waitUntilDone();
-        setTimeout(createGradients, 0);
+        runAfterDisplay(createGradients);
     }
+
+    var content = document.getElementById("content");
 
     function createGradients()
     {
@@ -52,7 +52,8 @@
         gradient2.appendChild(stop22);
 
         content.appendChild(gradient2);
-        setTimeout(setupGradientUsers, 0);
+
+        runAfterDisplay(setupGradientUsers);
     }
 
     function setupGradientUsers()
@@ -87,8 +88,7 @@
 
         content.appendChild(text3);
 
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     }
 </script>
 
