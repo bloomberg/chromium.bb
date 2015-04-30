@@ -152,10 +152,10 @@ void Geolocation::recordOriginTypeAccess() const
     // actually used. This could be used later if a warning is shown in the
     // developer console.
     String insecureOriginMsg;
-    UseCounter::Feature counter = document->isPrivilegedContext(insecureOriginMsg)
-        ? UseCounter::GeolocationSecureOrigin
-        : UseCounter::GeolocationInsecureOrigin;
-    UseCounter::count(document, counter);
+    if (document->isPrivilegedContext(insecureOriginMsg))
+        UseCounter::count(document, UseCounter::GeolocationSecureOrigin);
+    else
+        UseCounter::countDeprecation(document, UseCounter::GeolocationInsecureOrigin);
 }
 
 void Geolocation::getCurrentPosition(PositionCallback* successCallback, PositionErrorCallback* errorCallback, const PositionOptions& options)

@@ -65,7 +65,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictio
     if (navigator.frame()->document()->isPrivilegedContext(errorMessage)) {
         UseCounter::count(navigator.frame(), UseCounter::GetUserMediaSecureOrigin);
     } else {
-        UseCounter::count(navigator.frame(), UseCounter::GetUserMediaInsecureOrigin);
+        UseCounter::countDeprecation(navigator.frame(), UseCounter::GetUserMediaInsecureOrigin);
         if (navigator.frame()->settings()->strictPowerfulFeatureRestrictions()) {
             exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("webkitGetUserMedia", "Navigator", errorMessage));
             return;

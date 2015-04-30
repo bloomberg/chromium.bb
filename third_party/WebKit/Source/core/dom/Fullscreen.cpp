@@ -204,6 +204,15 @@ void Fullscreen::documentWasDisposed()
 
 void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
 {
+    // It is required by isPrivilegedContext() but isn't
+    // actually used. This could be used later if a warning is shown in the
+    // developer console.
+    String errorMessage;
+    if (document()->isPrivilegedContext(errorMessage))
+        UseCounter::count(document(), UseCounter::FullscreenSecureOrigin);
+    else
+        UseCounter::countDeprecation(document(), UseCounter::FullscreenInsecureOrigin);
+
     // Ignore this request if the document is not in a live frame.
     if (!document()->isActive())
         return;

@@ -54,7 +54,7 @@ void DeviceMotionController::didAddEventListener(LocalDOMWindow* window, const A
         if (document().isPrivilegedContext(errorMessage)) {
             UseCounter::count(document().frame(), UseCounter::DeviceMotionSecureOrigin);
         } else {
-            UseCounter::count(document().frame(), UseCounter::DeviceMotionInsecureOrigin);
+            UseCounter::countDeprecation(document().frame(), UseCounter::DeviceMotionInsecureOrigin);
             if (document().frame()->settings()->strictPowerfulFeatureRestrictions())
                 return;
         }

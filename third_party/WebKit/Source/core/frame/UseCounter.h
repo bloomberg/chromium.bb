@@ -698,6 +698,8 @@ public:
         V8StyleSheetList_Item_Method = 762,
         StyleSheetListAnonymousNamedGetter = 763,
         AutocapitalizeAttribute = 764,
+        FullscreenSecureOrigin = 765,
+        FullscreenInsecureOrigin = 766,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

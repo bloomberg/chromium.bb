@@ -896,6 +896,22 @@ String UseCounter::deprecationMessage(Feature feature)
     case CSSKeyframesRuleInsertRule:
         return "'CSSKeyframesRule.insertRule()' is deprecated and will be removed in M45, around August 2015. Please use 'CSSKeyframesRule.appendRule()' instead.";
 
+    // Powerful features on insecure origins (https://goo.gl/rStTGz)
+    case GeolocationInsecureOrigin:
+        return "Geolocation via getCurrentPosition() and watchPosition() will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+
+    case GetUserMediaInsecureOrigin:
+        return "getUserMedia() will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+
+    case DeviceMotionInsecureOrigin:
+        return "The 'devicemotion' event will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+
+    case DeviceOrientationInsecureOrigin:
+        return "The 'deviceorientation' event will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+
+    case FullscreenInsecureOrigin:
+        return "requestFullscreen() will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

@@ -1,0 +1,14 @@
+CONSOLE WARNING: Geolocation via getCurrentPosition() and watchPosition() will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.
+CONSOLE WARNING: requestFullscreen() will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.
+CONSOLE WARNING: getUserMedia() will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.
+CONSOLE WARNING: The 'devicemotion' event will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.
+CONSOLE WARNING: The 'deviceorientation' event will be deprecated over insecure origins in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.
+This is a testharness.js-based test.
+PASS getCurrentPosition 
+PASS watchPosition 
+PASS fullscreen 
+PASS getUserMedia 
+PASS device motion 
+PASS device orientation 
+Harness: the test ran to completion.
+
