@@ -1760,6 +1760,8 @@ FOOTER_TAGS_BY_APPROVAL_TYPE = {
     'CRVW': 'Reviewed-by',
     'VRIF': 'Tested-by',
     'COMR': 'Commit-Ready',
+    'TRY': None,
+    'SUBM': 'Submitted-by',
 }
 
 
@@ -1790,7 +1792,17 @@ def FooterForApproval(approval, footers):
   if ('Signed-off-by', ident) in footers:
     return
 
-  return FOOTER_TAGS_BY_APPROVAL_TYPE.get(approval['type']), ident
+  # If the tag is unknown, don't return anything at all.
+  if approval['type'] not in FOOTER_TAGS_BY_APPROVAL_TYPE:
+    logging.warn('unknown gerrit type %s (%r)', approval['type'], approval)
+    return
+
+  # We don't care about certain gerrit flags as they aren't approval related.
+  tag = FOOTER_TAGS_BY_APPROVAL_TYPE[approval['type']]
+  if not tag:
+    return
+
+  return tag, ident
 
 
 def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch, remote,
