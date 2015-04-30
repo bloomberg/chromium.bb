@@ -190,7 +190,7 @@ void
 weston_launcher_close(struct weston_launcher *launcher, int fd)
 {
 	if (launcher->logind)
-		return weston_logind_close(launcher->logind, fd);
+		weston_logind_close(launcher->logind, fd);
 
 	close(fd);
 }
