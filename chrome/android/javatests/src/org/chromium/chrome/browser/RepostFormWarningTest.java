@@ -30,11 +30,11 @@ public class RepostFormWarningTest extends ChromeShellTestBase {
     public void setUp() throws Exception {
         super.setUp();
 
-        mTab = launchChromeShellWithBlankPage().getActiveTab();
-        mCallbackHelper = new TestCallbackHelperContainer(mTab.getContentViewCore());
+        launchChromeShellWithBlankPage();
+        assertTrue(waitForActiveShellToBeDoneLoading());
 
-        // Wait for the initial load of about://blank to finish.
-        mCallbackHelper.getOnPageFinishedHelper().waitForCallback(0);
+        mTab = getActivity().getActiveTab();
+        mCallbackHelper = new TestCallbackHelperContainer(mTab.getContentViewCore());
     }
 
     /** Verifies that the form resubmission warning is not displayed upon first POST navigation. */
@@ -47,7 +47,7 @@ public class RepostFormWarningTest extends ChromeShellTestBase {
     public void testFormFirstNavigation() throws Throwable {
         // Load the url posting data for the first time.
         postNavigation();
-        mCallbackHelper.getOnPageFinishedHelper().waitForCallback(1);
+        mCallbackHelper.getOnPageFinishedHelper().waitForCallback(0);
         getInstrumentation().waitForIdleSync();
 
         // Verify that the form resubmission warning was not shown.
@@ -65,7 +65,7 @@ public class RepostFormWarningTest extends ChromeShellTestBase {
     public void testFormResubmissionContinue() throws Throwable {
         // Load the url posting data for the first time.
         postNavigation();
-        mCallbackHelper.getOnPageFinishedHelper().waitForCallback(1);
+        mCallbackHelper.getOnPageFinishedHelper().waitForCallback(0);
 
         // Trigger a reload and wait for the warning to be displayed.
         reload();
@@ -75,7 +75,7 @@ public class RepostFormWarningTest extends ChromeShellTestBase {
 
         // Click "Continue" and verify that the page is reloaded.
         clickButton(dialog, AlertDialog.BUTTON_POSITIVE);
-        mCallbackHelper.getOnPageFinishedHelper().waitForCallback(2);
+        mCallbackHelper.getOnPageFinishedHelper().waitForCallback(1);
 
         // Verify that the reference to the dialog in RepostFormWarningDialog was cleared.
         assertNull("Form resubmission warning dialog was not dismissed correctly.",
@@ -96,7 +96,7 @@ public class RepostFormWarningTest extends ChromeShellTestBase {
     public void testFormResubmissionCancel() throws Throwable {
         // Load the url posting data for the first time.
         postNavigation();
-        mCallbackHelper.getOnPageFinishedHelper().waitForCallback(1);
+        mCallbackHelper.getOnPageFinishedHelper().waitForCallback(0);
 
         // Trigger a reload and wait for the warning to be displayed.
         reload();
@@ -108,7 +108,7 @@ public class RepostFormWarningTest extends ChromeShellTestBase {
         clickButton(dialog, AlertDialog.BUTTON_NEGATIVE);
         boolean timedOut = false;
         try {
-            mCallbackHelper.getOnPageFinishedHelper().waitForCallback(2);
+            mCallbackHelper.getOnPageFinishedHelper().waitForCallback(1);
         } catch (TimeoutException ex) {
             timedOut = true;
         }
