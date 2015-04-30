@@ -309,7 +309,7 @@
         }
       },
       {
-        "id": "WebRequestEventInterface",
+        "id": "WebRequestEventInteface",
         "type": "object",
         "description": "Interface which provides access to webRequest events on the guest page. See the <a href=\"http://developer.chrome.com/extensions/webRequest\">chrome.webRequest</a> extensions API for details on webRequest life cycle and related concepts.<p>To illustrate how usage differs from the extensions webRequest API, consider the following example code which blocks any guest requests for URLs which match <code>*://www.evil.com/*</code>:</p><pre>webview.request.onBeforeRequest.addListener(\r  function(details) { return {cancel: true}; },\r  {urls: [\"*://www.evil.com/*\"]},\r  [\"blocking\"]);</pre><p>Additionally, this interface supports declarative webRequest rules through <code>onRequest</code> and <code>onMessage</code> events. See <a href=\"http://developer.chrome.com/extensions/declarativeWebRequest.html\">declarativeWebRequest</a> for API details.</p>Note that conditions and actions for declarative webview webRequests should be instantiated from their <code>chrome.webViewRequest.*</code> counterparts. The following example code declaratively blocks all requests to <code>\"example.com\"</code> on the webview <code>myWebview</code>:</p><pre>var rule = {\r  conditions: [\r    new chrome.webViewRequest.RequestMatcher({ url: { hostSuffix: 'example.com' } })\r  ],\r  actions: [ new chrome.webViewRequest.CancelRequest() ]\r};\rmyWebview.request.onRequest.addRules([rule]);</pre>",
         "properties": {}
@@ -317,7 +317,7 @@
       {
         "id": "ZoomMode",
         "type": "string",
-        "description": "Defines the how zooming is handled in the <code>webview</code>.",
+        "description": "Defines the how zooming is handled in the webview.",
         "enum": [
           {
             "name": "per-origin",
@@ -481,7 +481,7 @@
         "name": "getUserAgent",
         "type": "function",
         "returns": { "type": "string" },
-        "description": "Returns the user agent string used by the <code>webview</code> for guest page requests.",
+        "description": "Returns the user agent string used by the webview for guest page requests.",
         "parameters": []
       },
       {
@@ -511,12 +511,12 @@
           {
             "type": "function",
             "name": "callback",
-            "description": "Called with the <code>webview</code>'s current zoom mode.",
+            "description": "Called with the webview's current zoom mode.",
             "parameters": [
               {
                 "$ref": "ZoomMode",
                 "name": "ZoomMode",
-                "description": "The <code>webview</code>'s current zoom mode."
+                "description": "The webview's current zoom mode."
               }
             ]
           }
@@ -530,7 +530,7 @@
           {
             "type": "integer",
             "name": "relativeIndex",
-            "description": "Relative history index to which the <code>webview</code> should be navigated. For example, a value of <code>2</code> will navigate forward 2 history entries if possible; a value of <code>-3</code> will navigate backward 3 entries."
+            "description": "Relative history index to which the webview should be navigated. For example, a value of <code>2</code> will navigate forward 2 history entries if possible; a value of <code>-3</code> will navigate backward 3 entries."
           },
           {
             "type": "function",
@@ -569,12 +569,12 @@
       {
         "name": "isUserAgentOverridden",
         "type": "function",
-        "description": "Indicates whether or not the <code>webview</code>'s user agent string has been overridden by $(ref:webviewTag.setUserAgentOverride)."
+        "description": "Indicates whether or not the webview's user agent string has been overridden by $(ref:webviewTag.setUserAgentOverride)"
       },
       {
         "name": "print",
         "type": "function",
-        "description": "Prints the contents of the <code>webview</code>. This is equivalent to calling scripted print function from the <code>webview</code> itself."
+        "description": "Prints the contents of the webview. This is equivalent to calling scripted print function from the webview itself."
       },
       {
         "name": "reload",
@@ -585,7 +585,7 @@
       {
         "name": "setUserAgentOverride",
         "type": "function",
-        "description": "Override the user agent string used by the <code>webview</code> for guest page requests.",
+        "description": "Override the user agent string used by the webview for guest page requests.",
         "parameters": [
           {
             "name": "userAgent",
@@ -597,7 +597,7 @@
       {
         "name": "setZoom",
         "type": "function",
-        "description": "Changes the zoom factor of the page. The scope and persistence of this change are determined by the webview's current zoom mode (see $(ref:webviewTag.ZoomMode)).",
+        "description": "Changes the zoom factor of the page. This zoom will persist for the page's origin, even after navigation.",
         "parameters": [
           {
             "type": "number",
@@ -616,12 +616,12 @@
       {
         "name": "setZoomMode",
         "type": "function",
-        "description": "Sets the zoom mode of the <code>webview</code>.",
+        "description": "Sets the zoom mode of the webview.",
         "parameters": [
           {
             "$ref": "ZoomMode",
             "name": "ZoomMode",
-            "description": "Defines how zooming is handled in the <code>webview</code>."
+            "description": "Defines how zooming is handled in the webview."
           },
           {
             "type": "function",
@@ -635,7 +635,7 @@
       {
         "name": "stop",
         "type": "function",
-        "description": "Stops loading the current <code>webview</code> navigation if in progress.",
+        "description": "Stops loading the current &lt;webview> navigation if in progress.",
         "parameters": []
       },
       {
@@ -670,7 +670,7 @@
 	  {
             "type": "string",
             "name": "virtualUrl",
-            "description": "The URL that will be displayed to the user (in the address bar).",
+            "description": "The URL that will be displayed to the user.",
 	    "optional": true
           }
         ]
@@ -686,7 +686,7 @@
       {
         "name": "close",
         "options": { "supportsDom": true },
-        "description": "Fired when the guest window attempts to close itself.<p>The following example code navigates the <code>webview</code> to <code>about:blank</code> when the guest attempts to close itself.</p><pre>webview.addEventListener('close', function() {\r  webview.src = 'about:blank';\r});</pre>",
+        "description": "Fired when the guest window attempts to close itself.<p>The following example code navigates the webview to <code>about:blank</code> when the guest attempts to close itself.</p><pre>webview.addEventListener('close', function() {\r  webview.src = 'about:blank';\r});</pre>",
         "parameters": []
       },
       {
@@ -803,7 +803,7 @@
       {
         "name": "loadabort",
         "options": { "supportsDom": true },
-        "description": "Fired when a top-level load has aborted without committing. An error message will be printed to the console unless the event is default-prevented. <p class=\"note\"><strong>Note:</strong> When a resource load is aborted, a <code>loadabort</code> event will eventually be followed by a <code>loadstop</code> event, even if all committed loads since the last <code>loadstop</code> event (if any) were aborted.</p><p class=\"note\"><strong>Note:</strong> When the load of either an about URL or a JavaScript URL is aborted, <code>loadabort</code> will be fired and then the <code>webview</code> will be navigated to 'about:blank'.</p>",
+        "description": "Fired when a top-level load has aborted without committing. An error message will be printed to the console unless the event is default-prevented. <p class=\"note\"><strong>Note:</strong> When a resource load is aborted, a <code>loadabort</code> event will eventually be followed by a <code>loadstop</code> event, even if all committed loads since the last <code>loadstop</code> event (if any) were aborted.</p><p class=\"note\"><strong>Note:</strong> When the load of either an about URL or a JavaScript URL is aborted, <code>loadabort</code> will be fired and then the webview will be navigated to 'about:blank'.</p>",
         "parameters": [
           {
             "name": "url",
@@ -967,7 +967,7 @@
       {
         "name": "sizechanged",
         "options": { "supportsDom": true },
-        "description": "Fired when the embedded web content has been resized via <code>autosize</code>. Only fires if <code>autosize</code> is enabled.",
+        "description": "Fired when the embedded web content has been resized. Only fires if <code>autosize</code> is enabled.",
         "parameters": [
           {
             "name": "oldWidth",
@@ -1027,7 +1027,7 @@
         "description": "Object reference which can be used to post messages into the guest page."
       },
       "request": {
-        "$ref": "WebRequestEventInterface",
+        "$ref": "WebRequestEventInteface",
         "description": "Interface which provides access to webRequest events on the guest page."
       }
     }
