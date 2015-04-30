@@ -6,6 +6,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/test/mock_entropy_provider.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
@@ -23,9 +24,11 @@ class IOThreadPeer {
       const base::CommandLine& command_line,
       base::StringPiece quic_trial_group,
       const std::map<std::string, std::string>& quic_trial_params,
+      bool is_quic_allowed_by_policy,
       IOThread::Globals* globals) {
     IOThread::ConfigureQuicGlobals(command_line, quic_trial_group,
-                                   quic_trial_params, globals);
+                                   quic_trial_params, is_quic_allowed_by_policy,
+                                   globals);
   }
 
   static void ConfigureSpdyGlobals(
@@ -46,13 +49,18 @@ class IOThreadPeer {
 
 class IOThreadTest : public testing::Test {
  public:
-  IOThreadTest() : command_line_(base::CommandLine::NO_PROGRAM) {
+  IOThreadTest()
+      : command_line_(base::CommandLine::NO_PROGRAM),
+        is_quic_allowed_by_policy_(true) {
     globals_.http_server_properties.reset(new net::HttpServerPropertiesImpl());
   }
 
   void ConfigureQuicGlobals() {
-    IOThreadPeer::ConfigureQuicGlobals(command_line_, field_trial_group_,
-                                       field_trial_params_, &globals_);
+    IOThreadPeer::ConfigureQuicGlobals(command_line_,
+                                       field_trial_group_,
+                                       field_trial_params_,
+                                       is_quic_allowed_by_policy_,
+                                       &globals_);
   }
 
   void ConfigureSpdyGlobals() {
@@ -67,6 +75,7 @@ class IOThreadTest : public testing::Test {
   base::CommandLine command_line_;
   IOThread::Globals globals_;
   std::string field_trial_group_;
+  bool is_quic_allowed_by_policy_;
   std::map<std::string, std::string> field_trial_params_;
 };
 
@@ -460,6 +469,16 @@ TEST_F(IOThreadTest, AlternativeServiceProbabilityThresholdFromParams) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_EQ(.5, params.alternative_service_probability_threshold);
+}
+
+TEST_F(IOThreadTest, QuicDisallowedByPolicy) {
+  command_line_.AppendSwitch(switches::kEnableQuic);
+  is_quic_allowed_by_policy_ = false;
+  ConfigureQuicGlobals();
+
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_FALSE(params.enable_quic);
 }
 
 }  // namespace test

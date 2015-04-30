@@ -143,6 +143,11 @@
       { "pref": "spdy.disabled" }
     ]
   },
+  
+  "QuicAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "QuicAllowed": true }
+  },
 
   "DisabledSchemes": {
     "os": ["win", "linux", "mac", "chromeos"],

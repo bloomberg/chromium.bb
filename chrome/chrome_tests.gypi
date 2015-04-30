@@ -774,6 +774,7 @@
       'browser/policy/cloud/test_request_interceptor.cc',
       'browser/policy/cloud/test_request_interceptor.h',
       'browser/policy/policy_browsertest.cc',
+      'browser/policy/policy_network_browsertest.cc',
       'browser/policy/policy_prefs_browsertest.cc',
       'browser/policy/policy_startup_browsertest.cc',
       'browser/ui/webui/options/certificate_manager_browsertest.cc',

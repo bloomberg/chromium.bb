@@ -519,6 +519,7 @@ IOThread::IOThread(
 #endif
       globals_(NULL),
       is_spdy_disabled_by_policy_(false),
+      is_quic_allowed_by_policy_(true),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
   auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
@@ -565,6 +566,12 @@ IOThread::IOThread(
   is_spdy_disabled_by_policy_ = policy_service->GetPolicies(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())).Get(
           policy::key::kDisableSpdy) != NULL;
+
+  const base::Value* value = policy_service->GetPolicies(
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+      std::string())).GetValue(policy::key::kQuicAllowed);
+  if (value)
+    value->GetAsBoolean(&is_quic_allowed_by_policy_);
 #endif  // ENABLE_CONFIGURATION_POLICY
 
   BrowserThread::SetDelegate(BrowserThread::IO, this);
@@ -1304,7 +1311,8 @@ void IOThread::ConfigureQuic(const base::CommandLine& command_line) {
     params.clear();
   }
 
-  ConfigureQuicGlobals(command_line, group, params, globals_);
+  ConfigureQuicGlobals(command_line, group, params, is_quic_allowed_by_policy_,
+                       globals_);
 }
 
 // static
@@ -1312,11 +1320,13 @@ void IOThread::ConfigureQuicGlobals(
     const base::CommandLine& command_line,
     base::StringPiece quic_trial_group,
     const VariationParameters& quic_trial_params,
+    bool quic_allowed_by_policy,
     IOThread::Globals* globals) {
-  bool enable_quic = ShouldEnableQuic(command_line, quic_trial_group);
+  bool enable_quic = ShouldEnableQuic(command_line, quic_trial_group,
+                                      quic_allowed_by_policy);
   globals->enable_quic.set(enable_quic);
-  bool enable_quic_for_proxies = ShouldEnableQuicForProxies(command_line,
-                                                            quic_trial_group);
+  bool enable_quic_for_proxies = ShouldEnableQuicForProxies(
+      command_line, quic_trial_group, quic_allowed_by_policy);
   globals->enable_quic_for_proxies.set(enable_quic_for_proxies);
   if (enable_quic) {
     globals->quic_always_require_handshake_confirmation.set(
@@ -1397,8 +1407,9 @@ void IOThread::ConfigureQuicGlobals(
 }
 
 bool IOThread::ShouldEnableQuic(const base::CommandLine& command_line,
-                                base::StringPiece quic_trial_group) {
-  if (command_line.HasSwitch(switches::kDisableQuic))
+                                base::StringPiece quic_trial_group,
+                                bool quic_allowed_by_policy) {
+  if (command_line.HasSwitch(switches::kDisableQuic) || !quic_allowed_by_policy)
     return false;
 
   if (command_line.HasSwitch(switches::kEnableQuic))
@@ -1410,8 +1421,10 @@ bool IOThread::ShouldEnableQuic(const base::CommandLine& command_line,
 
 // static
 bool IOThread::ShouldEnableQuicForProxies(const base::CommandLine& command_line,
-                                          base::StringPiece quic_trial_group) {
-  return ShouldEnableQuic(command_line, quic_trial_group) ||
+                                          base::StringPiece quic_trial_group,
+                                          bool quic_allowed_by_policy) {
+  return ShouldEnableQuic(
+      command_line, quic_trial_group, quic_allowed_by_policy) ||
       ShouldEnableQuicForDataReductionProxy();
 }
 

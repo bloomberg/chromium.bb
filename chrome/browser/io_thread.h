@@ -316,19 +316,22 @@ class IOThread : public content::BrowserThreadDelegate {
       const base::CommandLine& command_line,
       base::StringPiece quic_trial_group,
       const VariationParameters& quic_trial_params,
+      bool quic_allowed_by_policy,
       Globals* globals);
 
   // Returns true if QUIC should be enabled, either as a result
   // of a field trial or a command line flag.
   static bool ShouldEnableQuic(
       const base::CommandLine& command_line,
-      base::StringPiece quic_trial_group);
+      base::StringPiece quic_trial_group,
+      bool quic_allowed_by_policy);
 
   // Returns true if QUIC should be enabled for proxies, either as a result
   // of a field trial or a command line flag.
   static bool ShouldEnableQuicForProxies(
       const base::CommandLine& command_line,
-      base::StringPiece quic_trial_group);
+      base::StringPiece quic_trial_group,
+      bool quic_allowed_by_policy);
 
   // Returns true if the selection of the ephemeral port in bind() should be
   // performed by Chromium, and false if the OS should select the port.  The OS
@@ -470,6 +473,9 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // True if SPDY is disabled by policy.
   bool is_spdy_disabled_by_policy_;
+
+  // True if QUIC is allowed by policy.
+  bool is_quic_allowed_by_policy_;
 
   const base::TimeTicks creation_time_;
 
