@@ -48080,6 +48080,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="417" label="417: Expectation Failed"/>
   <int value="500" label="500: Internal Server Error"/>
   <int value="501" label="501: Not Implemented"/>
+  <int value="502" label="502: Bad Gateway"/>
   <int value="503" label="503: Service Unavailable"/>
   <int value="504" label="504: Gateway Timeout"/>
   <int value="505" label="505: HTTP Version Not Supported"/>
@@ -53730,6 +53731,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="417" label="417: Expectation Failed"/>
   <int value="500" label="500: Internal Server Error"/>
   <int value="501" label="501: Not Implemented"/>
+  <int value="502" label="502: Bad Gateway"/>
   <int value="503" label="503: Service Unavailable"/>
   <int value="504" label="504: Gateway Timeout"/>
   <int value="505" label="505: HTTP Version Not Supported"/>
