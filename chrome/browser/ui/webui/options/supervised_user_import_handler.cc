@@ -40,13 +40,25 @@ scoped_ptr<base::ListValue> GetAvatarIcons() {
   return avatar_icons.Pass();
 }
 
+bool ProfileIsLegacySupervised(const base::FilePath& profile_path) {
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(profile_path);
+  if (index == std::string::npos)
+    return false;
+  return cache.ProfileIsLegacySupervisedAtIndex(index);
+}
+
 }  // namespace
 
 namespace options {
 
 SupervisedUserImportHandler::SupervisedUserImportHandler()
-    : observer_(this),
-      weak_ptr_factory_(this) {}
+    : profile_observer_(this),
+      signin_error_observer_(this),
+      removed_profile_is_supervised_(false),
+      weak_ptr_factory_(this) {
+}
 
 SupervisedUserImportHandler::~SupervisedUserImportHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -88,11 +100,14 @@ void SupervisedUserImportHandler::GetLocalizedValues(
 void SupervisedUserImportHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile->IsSupervised()) {
+    profile_observer_.Add(
+        &g_browser_process->profile_manager()->GetProfileInfoCache());
     SupervisedUserSyncService* sync_service =
         SupervisedUserSyncServiceFactory::GetForProfile(profile);
     if (sync_service) {
       sync_service->AddObserver(this);
-      observer_.Add(SigninErrorControllerFactory::GetForProfile(profile));
+      signin_error_observer_.Add(
+          SigninErrorControllerFactory::GetForProfile(profile));
       SupervisedUserSharedSettingsService* settings_service =
           SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
               profile);
@@ -112,6 +127,33 @@ void SupervisedUserImportHandler::RegisterMessages() {
       base::Bind(&SupervisedUserImportHandler::
                       RequestSupervisedUserImportUpdate,
                  base::Unretained(this)));
+}
+
+void SupervisedUserImportHandler::OnProfileAdded(
+    const base::FilePath& profile_path) {
+  // When a supervised profile is added, re-send the list to update the
+  // the "already on this device" status.
+  if (ProfileIsLegacySupervised(profile_path))
+    FetchSupervisedUsers();
+}
+
+void SupervisedUserImportHandler::OnProfileWillBeRemoved(
+    const base::FilePath& profile_path) {
+  DCHECK(!removed_profile_is_supervised_);
+  // When a supervised profile is removed, re-send the list to update the
+  // "already on this device" status. We can't do that right now because the
+  // profile still exists, so defer to OnProfileWasRemoved.
+  if (ProfileIsLegacySupervised(profile_path))
+    removed_profile_is_supervised_ = true;
+}
+
+void SupervisedUserImportHandler::OnProfileWasRemoved(
+    const base::FilePath& profile_path,
+    const base::string16& profile_name) {
+  if (removed_profile_is_supervised_) {
+    removed_profile_is_supervised_ = false;
+    FetchSupervisedUsers();
+  }
 }
 
 void SupervisedUserImportHandler::OnSupervisedUsersChanged() {
@@ -152,7 +194,7 @@ void SupervisedUserImportHandler::SendExistingSupervisedUsers(
   // Collect the ids of local supervised user profiles.
   std::set<std::string> supervised_user_ids;
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-    if (cache.ProfileIsSupervisedAtIndex(i))
+    if (cache.ProfileIsLegacySupervisedAtIndex(i))
       supervised_user_ids.insert(cache.GetSupervisedUserIdOfProfileAtIndex(i));
   }
 

@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_SUPERVISED_USER_IMPORT_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_SUPERVISED_USER_IMPORT_HANDLER_H_
 
+#include <string>
+
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -17,10 +21,13 @@ class DictionaryValue;
 class ListValue;
 }
 
+class ProfileInfoCache;
+
 namespace options {
 
 // Handler for the 'import existing supervised user' dialog.
 class SupervisedUserImportHandler : public OptionsPageUIHandler,
+                                    public ProfileInfoCacheObserver,
                                     public SupervisedUserSyncServiceObserver,
                                     public SigninErrorController::Observer {
  public:
@@ -30,12 +37,19 @@ class SupervisedUserImportHandler : public OptionsPageUIHandler,
   SupervisedUserImportHandler();
   ~SupervisedUserImportHandler() override;
 
+ private:
   // OptionsPageUIHandler implementation.
   void GetLocalizedValues(base::DictionaryValue* localized_strings) override;
   void InitializeHandler() override;
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
+
+  // ProfileInfoCacheObserver implementation.
+  void OnProfileAdded(const base::FilePath& profile_path) override;
+  void OnProfileWillBeRemoved(const base::FilePath& profile_path) override;
+  void OnProfileWasRemoved(const base::FilePath& profile_path,
+                           const base::string16& profile_name) override;
 
   // SupervisedUserSyncServiceObserver implementation.
   void OnSupervisedUserAcknowledged(
@@ -46,7 +60,6 @@ class SupervisedUserImportHandler : public OptionsPageUIHandler,
   // SigninErrorController::Observer implementation.
   void OnErrorChanged() override;
 
- private:
   // Clears the cached list of supervised users and fetches the new list of
   // supervised users.
   void FetchSupervisedUsers();
@@ -83,7 +96,12 @@ class SupervisedUserImportHandler : public OptionsPageUIHandler,
 
   scoped_ptr<CallbackList::Subscription> subscription_;
 
-  ScopedObserver<SigninErrorController, SupervisedUserImportHandler> observer_;
+  ScopedObserver<ProfileInfoCache, SupervisedUserImportHandler>
+      profile_observer_;
+  ScopedObserver<SigninErrorController, SupervisedUserImportHandler>
+      signin_error_observer_;
+
+  bool removed_profile_is_supervised_;
 
   base::WeakPtrFactory<SupervisedUserImportHandler> weak_ptr_factory_;
 
