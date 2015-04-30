@@ -83,8 +83,9 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
       const IDType& node_id,
       syncer::BaseNode* sync_node) = 0;
 
-  // Associates the given chrome node with the given sync id.
-  virtual void Associate(const Node* node, int64 sync_id) = 0;
+  // Associates the given chrome node with the given sync node.
+  virtual void Associate(const Node* node,
+                         const syncer::BaseNode& sync_node) = 0;
 
   // Remove the association that corresponds to the given sync id.
   virtual void Disassociate(int64 sync_id) = 0;

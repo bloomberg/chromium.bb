@@ -300,7 +300,7 @@ int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
 
   // Associate the ID from the sync domain with the bookmark node, so that we
   // can refer back to this item later.
-  associator->Associate(child, sync_child.GetId());
+  associator->Associate(child, sync_child);
 
   return sync_child.GetId();
 }
@@ -639,7 +639,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     if (synced_bookmarks_id != syncer::kInvalidId &&
         it->id == synced_bookmarks_id) {
       // This is a newly created Synced Bookmarks node. Associate it.
-      model_associator_->Associate(model->mobile_node(), it->id);
+      model_associator_->Associate(model->mobile_node(), synced_bookmarks);
       continue;
     }
 
@@ -689,7 +689,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
                    << src.GetBookmarkSpecifics().url();
         continue;
       }
-      model_associator_->Associate(dst, src.GetId());
+      model_associator_->Associate(dst, src);
     }
 
     to_reposition.insert(std::make_pair(src.GetPositionIndex(), dst));

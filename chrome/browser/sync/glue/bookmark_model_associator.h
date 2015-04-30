@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <stack>
 #include <string>
 
 #include "base/basictypes.h"
@@ -28,6 +29,7 @@ namespace syncer {
 class BaseNode;
 class BaseTransaction;
 struct UserShare;
+class WriteTransaction;
 }
 
 namespace browser_sync {
@@ -90,8 +92,9 @@ class BookmarkModelAssociator
   bool InitSyncNodeFromChromeId(const int64& node_id,
                                 syncer::BaseNode* sync_node) override;
 
-  // Associates the given bookmark node with the given sync id.
-  void Associate(const bookmarks::BookmarkNode* node, int64 sync_id) override;
+  // Associates the given bookmark node with the given sync node.
+  void Associate(const bookmarks::BookmarkNode* node,
+                 const syncer::BaseNode& sync_node) override;
   // Remove the association that corresponds to the given sync id.
   void Disassociate(int64 sync_id) override;
 
@@ -103,32 +106,69 @@ class BookmarkModelAssociator
   // See ModelAssociator interface.
   bool CryptoReadyIfNecessary() override;
 
- protected:
-  // Stores the id of the node with the given tag in |sync_id|.
-  // Returns of that node was found successfully.
-  // Tests override this.
-  virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
-
  private:
   typedef std::map<int64, int64> BookmarkIdToSyncIdMap;
   typedef std::map<int64, const bookmarks::BookmarkNode*>
       SyncIdToBookmarkNodeMap;
   typedef std::set<int64> DirtyAssociationsSyncIds;
 
+  // Add association between native node and sync node to the maps.
+  void AddAssociation(const bookmarks::BookmarkNode* node, int64 sync_id);
+
   // Posts a task to persist dirty associations.
   void PostPersistAssociationsTask();
   // Persists all dirty associations.
   void PersistAssociations();
 
+  // Helper class used within AssociateModels to simplify the logic and
+  // minimize the number of arguments passed between private functions.
+  class Context {
+   public:
+    Context(syncer::SyncMergeResult* local_merge_result,
+            syncer::SyncMergeResult* syncer_merge_result);
+    ~Context();
+
+    // Push a sync node to the DFS stack.
+    void PushNode(int64 sync_id);
+    // Pops a sync node from the DFS stack. Returns false if the stack
+    // is empty.
+    bool PopNode(int64* sync_id);
+
+    // The following methods are used to update |local_merge_result_| and
+    // |syncer_merge_result_|.
+    void SetPreAssociationVersions(int64 native_version, int64 sync_version);
+    void SetNumItemsBeforeAssociation(int local_num, int sync_num);
+    void SetNumItemsAfterAssociation(int local_num, int sync_num);
+    void IncrementLocalItemsDeleted();
+    void IncrementLocalItemsAdded();
+    void IncrementLocalItemsModified();
+    void IncrementSyncItemsAdded();
+
+   private:
+    // DFS stack of sync nodes traversed during association.
+    std::stack<int64> dfs_stack_;
+    // Local and merge results are not owned.
+    syncer::SyncMergeResult* local_merge_result_;
+    syncer::SyncMergeResult* syncer_merge_result_;
+
+    DISALLOW_COPY_AND_ASSIGN(Context);
+  };
+
   // Matches up the bookmark model and the sync model to build model
   // associations.
-  syncer::SyncError BuildAssociations(
-      syncer::SyncMergeResult* local_merge_result,
-      syncer::SyncMergeResult* syncer_merge_result);
+  syncer::SyncError BuildAssociations(Context* context);
 
-  // Removes bookmark nodes whose corresponding sync nodes have been deleted
-  // according to sync delete journals. Return number of deleted bookmarks.
-  int64 ApplyDeletesFromSyncJournal(syncer::BaseTransaction* trans);
+  // Two helper functions that populate SyncMergeResult with numbers of
+  // items before/after the association.
+  void SetNumItemsBeforeAssociation(syncer::BaseTransaction* trans,
+                                    Context* context);
+  void SetNumItemsAfterAssociation(syncer::BaseTransaction* trans,
+                                   Context* context);
+
+  // Helper function that associates all tagged permanent folders and primes
+  // the provided context with sync IDs of those folders.
+  syncer::SyncError AssociatePermanentFolders(syncer::BaseTransaction* trans,
+                                              Context* context);
 
   // Associate a top-level node of the bookmark model with a permanent node in
   // the sync domain.  Such permanent nodes are identified by a tag that is
@@ -137,16 +177,29 @@ class BookmarkModelAssociator
   // Bookmarks folder.  The sync nodes are server-created.
   // Returns true on success, false if association failed.
   bool AssociateTaggedPermanentNode(
+      syncer::BaseTransaction* trans,
       const bookmarks::BookmarkNode* permanent_node,
       const std::string& tag) WARN_UNUSED_RESULT;
+
+  // Removes bookmark nodes whose corresponding sync nodes have been deleted
+  // according to sync delete journals.
+  void ApplyDeletesFromSyncJournal(syncer::BaseTransaction* trans,
+                                   Context* context);
+
+  // The main part of the association process that associatiates
+  // native nodes that are children of |parent_node| with sync nodes with IDs
+  // from |sync_ids|.
+  syncer::SyncError BuildAssociations(
+      syncer::WriteTransaction* trans,
+      const bookmarks::BookmarkNode* parent_node,
+      const std::vector<int64>& sync_ids,
+      Context* context);
 
   // Check whether bookmark model and sync model are synced by comparing
   // their transaction versions.
   // Returns a PERSISTENCE_ERROR if a transaction mismatch was detected where
   // the native model has a newer transaction verison.
-  syncer::SyncError CheckModelSyncState(
-      syncer::SyncMergeResult* local_merge_result,
-      syncer::SyncMergeResult* syncer_merge_result) const;
+  syncer::SyncError CheckModelSyncState(Context* context) const;
 
   bookmarks::BookmarkModel* bookmark_model_;
   Profile* profile_;
