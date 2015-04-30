@@ -138,7 +138,7 @@ deps = {
    Var('chromium_git') + '/chromium/blink.git' + '@' +  Var('webkit_revision'),
 
   'src/third_party/icu':
-   Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '10834e84d250eb31a73496bfdb7923eaa43ead51',
+   Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'f8c0e585b0a046d83d72b5d37356cb50d5b2031a',
 
   'src/third_party/libexif/sources':
    Var('chromium_git') + '/chromium/deps/libexif/sources.git' + '@' + 'ed98343daabd7b4497f97fda972e132e6877c48a',
@@ -243,7 +243,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git' + '@' + 'f572e8e42e22cfcf5ab0aea26574f408943edfa4', # from svn 248
 
   'src/third_party/libyuv':
-    Var('chromium_git') + '/external/libyuv.git' + '@' + '01db3d1d1ddd3f2907a46a41f24add5143b518d5', # from svn revision 1374
+    Var('chromium_git') + '/external/libyuv.git' + '@' + '35aa92a1ea1bbcca6bf97e69e7a65f1caa987675', # from svn revision 1385
 
   'src/third_party/smhasher/src':
     Var('chromium_git') + '/external/smhasher.git' + '@' + 'e87738e57558e0ec472b2fc3a643b838e5b6e88f',
