@@ -88,6 +88,8 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   virtual bool getBlobItems(const blink::WebString& uuid,
                             blink::WebVector<blink::WebBlobData::Item*>* items);
   virtual blink::WebThread* currentThread();
+  virtual void enterRunLoop();
+  virtual void exitRunLoop();
 
  private:
   MockWebBlobRegistryImpl blob_registry_;

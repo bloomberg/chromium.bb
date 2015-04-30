@@ -319,4 +319,14 @@ blink::WebThread* TestBlinkWebUnitTestSupport::currentThread() {
   return BlinkPlatformImpl::currentThread();
 }
 
+void TestBlinkWebUnitTestSupport::enterRunLoop() {
+  DCHECK(base::MessageLoop::current());
+  DCHECK(!base::MessageLoop::current()->is_running());
+  base::MessageLoop::current()->Run();
+}
+
+void TestBlinkWebUnitTestSupport::exitRunLoop() {
+  base::MessageLoop::current()->Quit();
+}
+
 }  // namespace content
