@@ -138,7 +138,9 @@ class InstallationNotifierTest : public PlatformTest {
         [installationNotifier_ backOffPolicy]->multiply_factor;
     double expectedDelayInMSec =
         initialDelayInMSec * pow(multiplyFactor, pollingIteration);
-    EXPECT_NEAR(delayInMSec, expectedDelayInMSec, 50);
+    double jitter = [installationNotifier_ backOffPolicy]->jitter_factor;
+    EXPECT_NEAR(delayInMSec, expectedDelayInMSec,
+                50 + jitter * expectedDelayInMSec);
   }
 
   base::MessageLoopForUI message_loop_;

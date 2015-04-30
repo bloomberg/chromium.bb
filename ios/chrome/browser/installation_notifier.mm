@@ -20,7 +20,7 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
     0,          // Number of errors to ignore.
     1 * 1000,   // Initial delay in milliseconds.
     1.5,        // Multiply factor.
-    0.0,        // Jitter factor.
+    0.1,        // Jitter factor.
     60 * 1000,  // Maximum backoff in milliseconds.
     -1,         // Entry lifetime.
     false       // Always use initial delay.
