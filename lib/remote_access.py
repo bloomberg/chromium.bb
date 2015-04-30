@@ -321,7 +321,6 @@ class RemoteAccess(object):
       RunCommandError when error is not ignored through the error_code_ok flag.
       SSHConnectionError when ssh command error is not ignored through
       the ssh_error_ok flag.
-
     """
     kwargs.setdefault('capture_output', True)
     kwargs.setdefault('debug_level', self.debug_level)

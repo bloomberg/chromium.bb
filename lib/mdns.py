@@ -86,7 +86,6 @@ def FindServices(source_ip, service_name, should_add_func=None,
 
   Returns:
     List of |Service| found.
-
   """
   # Default callback functions that add all services to the results list and
   # continue service discovery until the timeout expires.

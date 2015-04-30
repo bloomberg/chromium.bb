@@ -674,7 +674,6 @@ class BuildSpecsManager(object):
 
     Returns:
       A build_config name-> status dictionary of build statuses.
-
     """
     builders_completed = set()
 

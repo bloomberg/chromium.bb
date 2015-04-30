@@ -108,7 +108,7 @@ class DocStringCheckerTest(CheckerTestCase):
       Returns:
         a value
 
-      """
+      """,
       """ok line
 
       cuddled end""",
@@ -148,7 +148,7 @@ class DocStringCheckerTest(CheckerTestCase):
       """wrongly uses javadoc
 
       @returns None
-      """
+      """,
   )
 
   # The current linter isn't good enough yet to detect these.

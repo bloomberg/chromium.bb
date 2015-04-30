@@ -135,7 +135,6 @@ def CreateAndArchiveImageFromInstance(instance, project, zone, image_name):
     project: GCloud Project that the |instance| belongs to.
     zone: Zone of the GCE instance.
     image_name: Name of the image.
-
   """
   image_name_with_suffix = '%s%s' % (image_name, compute_configs.IMAGE_SUFFIX)
   archive_path = os.path.join(

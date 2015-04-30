@@ -163,7 +163,6 @@ class _PaygenPayload(object):
 
     Raises:
       cros_build_lib.RunCommandError if the command exited with a nonzero code.
-
     """
     # Adjust the command name to match the directory it's in.
     cmd[0] = os.path.join(self.generator_dir, cmd[0])
@@ -209,7 +208,6 @@ class _PaygenPayload(object):
       'bar']), unless flag is empty/None, in which case returns a list
       containing only the value argument (e.g.  ['bar']). Otherwise, returns an
       empty list.
-
     """
     arg_list = []
     val = dict_obj.get(key) or default

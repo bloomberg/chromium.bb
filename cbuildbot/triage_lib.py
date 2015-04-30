@@ -65,7 +65,6 @@ def _GetCommonAffectedSubdir(change, git_repo):
 
   Returns:
     An absolute path in |git_repo|.
-
   """
   affected_paths = [os.path.join(git_repo, path)
                     for path in change.GetDiffStatus(git_repo)]

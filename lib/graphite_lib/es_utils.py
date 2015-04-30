@@ -312,7 +312,6 @@ class ESMetadataRO(object):
             } ]
         }
     }
-
     """
     if not self.es.indices.exists(index=self.index):
       logging.error('Index (%s) does not exist on %s:%s',

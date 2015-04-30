@@ -192,8 +192,15 @@ class DocStringChecker(BaseChecker):
   def _check_last_line_function(self, node, lines):
     """Make sure last line is indented"""
     if len(lines) > 1:
+      # The -1 line holds the """ itself and that should be indented.
       if lines[-1] == '':
-        self.add_message('C9005', node=node, line=node.fromlineno)
+        margs = {'offset': len(lines) - 1, 'line': lines[-1]}
+        self.add_message('C9005', node=node, line=node.fromlineno, args=margs)
+
+      # The last line should not be blank.
+      if lines[-2] == '':
+        margs = {'offset': len(lines) - 2, 'line': lines[-2]}
+        self.add_message('C9003', node=node, line=node.fromlineno, args=margs)
 
   def _check_section_lines(self, node, lines):
     """Verify each section (Args/Returns/Yields/Raises) is sane"""

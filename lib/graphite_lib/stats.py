@@ -71,7 +71,6 @@ def _prepend_init(_es, _conn, _prefix):
 
         Returns:
           A string to use as the stat name.
-
         """
         if not bare and not name.startswith(prefix):
           name = '%s.%s' % (prefix, name)
