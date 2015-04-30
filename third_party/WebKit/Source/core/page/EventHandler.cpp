@@ -3004,7 +3004,6 @@ void EventHandler::applyTouchAdjustment(PlatformGestureEvent* gestureEvent, HitT
 
 bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
 {
-    Document* doc = m_frame->document();
     FrameView* v = m_frame->view();
     if (!v)
         return false;
@@ -3013,7 +3012,7 @@ bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
     m_mousePressed = false;
     LayoutPoint positionInContents = v->rootFrameToContents(event.position());
     HitTestRequest request(HitTestRequest::Active);
-    MouseEventWithHitTestResults mev = doc->prepareMouseEvent(request, positionInContents, event);
+    MouseEventWithHitTestResults mev = m_frame->document()->prepareMouseEvent(request, positionInContents, event);
 
     if (!m_frame->selection().contains(positionInContents)
         && !mev.scrollbar()
