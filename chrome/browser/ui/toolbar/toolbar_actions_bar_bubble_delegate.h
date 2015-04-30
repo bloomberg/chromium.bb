@@ -24,6 +24,10 @@ class ToolbarActionsBarBubbleDelegate {
   // Gets the text for the bubble's body.
   virtual base::string16 GetBodyText() = 0;
 
+  // Gets the text for an optional item list to display. If this returns an
+  // empty string, no list will be added.
+  virtual base::string16 GetItemListText() = 0;
+
   // Gets the text for the main button on the bubble; this button will
   // correspond with ACTION_EXECUTE.
   virtual base::string16 GetActionButtonText() = 0;

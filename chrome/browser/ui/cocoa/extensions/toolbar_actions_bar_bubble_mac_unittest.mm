@@ -74,6 +74,7 @@ class ToolbarActionsBarBubbleMacTest : public CocoaTest {
   base::string16 ActionString() { return base::ASCIIToUTF16("Action"); }
   base::string16 DismissString() { return base::ASCIIToUTF16("Dismiss"); }
   base::string16 LearnMoreString() { return base::ASCIIToUTF16("LearnMore"); }
+  base::string16 ItemListString() { return base::ASCIIToUTF16("ItemList"); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarBubbleMacTest);
@@ -167,26 +168,78 @@ TEST_F(ToolbarActionsBarBubbleMacTest, CloseActionAndDismiss) {
 
 // Test the basic layout of the bubble.
 TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
+  // Test with no optional fields.
   {
     TestToolbarActionsBarBubbleDelegate delegate(
         HeadingString(), BodyString(), ActionString());
     ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
-    // There should be no "learn more" or "dismiss" buttons.
+    EXPECT_TRUE([bubble actionButton]);
     EXPECT_FALSE([bubble learnMoreButton]);
     EXPECT_FALSE([bubble dismissButton]);
+    EXPECT_FALSE([bubble itemList]);
 
     [bubble close];
     chrome::testing::NSRunLoopRunAllPending();
   }
 
+  // Test with all possible buttons (action, learn more, dismiss).
   {
     TestToolbarActionsBarBubbleDelegate delegate(
         HeadingString(), BodyString(), ActionString());
     delegate.set_dismiss_button_text(DismissString());
     delegate.set_learn_more_button_text(LearnMoreString());
     ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
+    EXPECT_TRUE([bubble actionButton]);
     EXPECT_TRUE([bubble learnMoreButton]);
     EXPECT_TRUE([bubble dismissButton]);
+    EXPECT_FALSE([bubble itemList]);
+
+    [bubble close];
+    chrome::testing::NSRunLoopRunAllPending();
+  }
+
+  // Test with only a dismiss button (no action button).
+  {
+    TestToolbarActionsBarBubbleDelegate delegate(
+        HeadingString(), BodyString(), base::string16());
+    delegate.set_dismiss_button_text(DismissString());
+    ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
+    EXPECT_FALSE([bubble actionButton]);
+    EXPECT_FALSE([bubble learnMoreButton]);
+    EXPECT_TRUE([bubble dismissButton]);
+    EXPECT_FALSE([bubble itemList]);
+
+    [bubble close];
+    chrome::testing::NSRunLoopRunAllPending();
+  }
+
+  // Test with an action button and an item list.
+  {
+    TestToolbarActionsBarBubbleDelegate delegate(
+        HeadingString(), BodyString(), ActionString());
+    delegate.set_item_list_text(ItemListString());
+    ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
+    EXPECT_TRUE([bubble actionButton]);
+    EXPECT_FALSE([bubble learnMoreButton]);
+    EXPECT_FALSE([bubble dismissButton]);
+    EXPECT_TRUE([bubble itemList]);
+
+    [bubble close];
+    chrome::testing::NSRunLoopRunAllPending();
+  }
+
+  // Test with all possible fields.
+  {
+    TestToolbarActionsBarBubbleDelegate delegate(
+        HeadingString(), BodyString(), ActionString());
+    delegate.set_dismiss_button_text(DismissString());
+    delegate.set_learn_more_button_text(LearnMoreString());
+    delegate.set_item_list_text(ItemListString());
+    ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
+    EXPECT_TRUE([bubble actionButton]);
+    EXPECT_TRUE([bubble learnMoreButton]);
+    EXPECT_TRUE([bubble dismissButton]);
+    EXPECT_TRUE([bubble itemList]);
 
     [bubble close];
     chrome::testing::NSRunLoopRunAllPending();

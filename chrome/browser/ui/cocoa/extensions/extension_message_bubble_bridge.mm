@@ -35,6 +35,10 @@ base::string16 ExtensionMessageBubbleBridge::GetBodyText() {
   return controller_->delegate()->GetMessageBody(true);
 }
 
+base::string16 ExtensionMessageBubbleBridge::GetItemListText() {
+  return controller_->GetExtensionListForDisplay();
+}
+
 base::string16 ExtensionMessageBubbleBridge::GetActionButtonText() {
   return controller_->delegate()->GetActionButtonLabel();
 }

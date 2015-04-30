@@ -99,6 +99,11 @@ class ExtensionMessageBubbleController {
   // Obtains a list of all extensions (by name) the controller knows about.
   std::vector<base::string16> GetExtensionList();
 
+  // Returns the list of all extensions to display in the bubble, including
+  // bullets and newlines. If the extension list should not be displayed,
+  // returns an empty string.
+  base::string16 GetExtensionListForDisplay();
+
   // Obtains a list of all extensions (by id) the controller knows about.
   const ExtensionIdList& GetExtensionIdList();
 

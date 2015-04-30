@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -29,9 +27,6 @@ const int kInsetTop = 9;
 const int kHeadlineMessagePadding = 4;
 const int kHeadlineRowPadding = 10;
 const int kMessageBubblePadding = 11;
-
-// How many extensions to show in the bubble (max).
-const size_t kMaxExtensionsToShow = 7;
 
 // How long to wait until showing the bubble (in seconds).
 const int kBubbleAppearanceWaitTime = 5;
@@ -148,24 +143,7 @@ void ExtensionMessageBubbleView::Init() {
     extensions->SetMultiLine(true);
     extensions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    std::vector<base::string16> extension_list;
-    base::char16 bullet_point = 0x2022;
-
-    std::vector<base::string16> suspicious = controller_->GetExtensionList();
-    size_t i = 0;
-    for (; i < suspicious.size() && i < kMaxExtensionsToShow; ++i) {
-      // Add each extension with bullet point.
-      extension_list.push_back(
-          bullet_point + base::ASCIIToUTF16(" ") + suspicious[i]);
-    }
-
-    if (i > kMaxExtensionsToShow) {
-      base::string16 difference = base::IntToString16(i - kMaxExtensionsToShow);
-      extension_list.push_back(bullet_point + base::ASCIIToUTF16(" ") +
-          delegate->GetOverflowText(difference));
-    }
-
-    extensions->SetText(JoinString(extension_list, base::ASCIIToUTF16("\n")));
+    extensions->SetText(controller_->GetExtensionListForDisplay());
     extensions->SizeToFit(views::Widget::GetLocalizedContentsWidth(
         IDS_EXTENSION_WIPEOUT_BUBBLE_WIDTH_CHARS));
     layout->AddView(extensions);

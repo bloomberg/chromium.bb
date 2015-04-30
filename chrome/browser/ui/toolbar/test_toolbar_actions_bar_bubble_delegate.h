@@ -29,6 +29,9 @@ class TestToolbarActionsBarBubbleDelegate {
   void set_learn_more_button_text(const base::string16& learn_more) {
     learn_more_ = learn_more;
   }
+  void set_item_list_text(const base::string16& item_list) {
+    item_list_ = item_list;
+  }
 
   const ToolbarActionsBarBubbleDelegate::CloseAction* close_action() const {
     return close_action_.get();
@@ -50,6 +53,7 @@ class TestToolbarActionsBarBubbleDelegate {
   base::string16 action_;
   base::string16 dismiss_;
   base::string16 learn_more_;
+  base::string16 item_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestToolbarActionsBarBubbleDelegate);
 };

@@ -68,6 +68,7 @@ BOOL g_animations_enabled = false;
 @implementation ToolbarActionsBarBubbleMac
 
 @synthesize actionButton = actionButton_;
+@synthesize itemList = itemList_;
 @synthesize dismissButton = dismissButton_;
 @synthesize learnMoreButton = learnMoreButton_;
 
@@ -199,6 +200,21 @@ BOOL g_animations_enabled = false;
                                   [GTMUILocalizerAndLayoutTweaker
                                        sizeToFitFixedWidthTextField:content]);
 
+  const CGFloat kItemListIndentation = 10.0;
+  base::string16 itemListStr = delegate_->GetItemListText();
+  NSSize itemListSize;
+  if (!itemListStr.empty()) {
+    itemList_ =
+        [self addTextFieldWithString:itemListStr
+                            fontSize:12.0
+                           alignment:NSLeftTextAlignment];
+    CGFloat listWidth = newWidth - kItemListIndentation;
+    [itemList_ setFrame:NSMakeRect(0, 0, listWidth, 0)];
+    itemListSize = NSMakeSize(listWidth,
+                              [GTMUILocalizerAndLayoutTweaker
+                                   sizeToFitFixedWidthTextField:itemList_]);
+  }
+
   base::string16 learnMore = delegate_->GetLearnMoreButtonText();
   NSSize learnMoreSize = NSZeroSize;
   if (!learnMore.empty()) {  // The "learn more" link is optional.
@@ -221,21 +237,27 @@ BOOL g_animations_enabled = false;
   const CGFloat kButtonHorizontalPadding = 40.0;
   const CGFloat kButtonVerticalPadding = 20.0;
 
+  base::string16 actionStr = delegate_->GetActionButtonText();
+  bool hasAction = !actionStr.empty();
+
   base::string16 cancelStr = delegate_->GetDismissButtonText();
   NSSize dismissButtonSize = NSZeroSize;
   if (!cancelStr.empty()) {  // A cancel/dismiss button is optional.
     dismissButton_ = [self addButtonWithString:cancelStr
-                                     isPrimary:NO];
+                                     isPrimary:!hasAction];
     dismissButtonSize =
         NSMakeSize(NSWidth([dismissButton_ frame]) + kButtonHorizontalPadding,
                    NSHeight([dismissButton_ frame]) + kButtonVerticalPadding);
   }
 
-  actionButton_ = [self addButtonWithString:delegate_->GetActionButtonText()
-                                  isPrimary:YES];
-  NSSize actionButtonSize =
+  NSSize actionButtonSize = NSZeroSize;
+  if (hasAction) {  // A cancel/dismiss button is optional.
+    actionButton_ = [self addButtonWithString:actionStr
+                                     isPrimary:YES];
+    actionButtonSize =
         NSMakeSize(NSWidth([actionButton_ frame]) + kButtonHorizontalPadding,
                    NSHeight([actionButton_ frame]) + kButtonVerticalPadding);
+  }
 
   const CGFloat kHorizontalPadding = 15.0;
   const CGFloat kVerticalPadding = 10.0;
@@ -245,16 +267,21 @@ BOOL g_animations_enabled = false;
   CGFloat windowWidth = newWidth + kHorizontalPadding * 2;
 
   CGFloat currentHeight = 0;
-  [actionButton_ setFrame:NSMakeRect(windowWidth - actionButtonSize.width,
-                                     currentHeight,
-                                     actionButtonSize.width,
-                                     actionButtonSize.height)];
+  CGFloat currentMaxWidth = windowWidth;
+  if (actionButton_) {
+    [actionButton_ setFrame:NSMakeRect(currentMaxWidth - actionButtonSize.width,
+                                       currentHeight,
+                                       actionButtonSize.width,
+                                       actionButtonSize.height)];
+    currentMaxWidth -= actionButtonSize.width;
+  }
   if (dismissButton_) {
     [dismissButton_ setFrame:NSMakeRect(
-        windowWidth - actionButtonSize.width - dismissButtonSize.width,
+        currentMaxWidth - dismissButtonSize.width,
         currentHeight,
         dismissButtonSize.width,
         dismissButtonSize.height)];
+    currentMaxWidth -= dismissButtonSize.width;
   }
   currentHeight += actionButtonSize.height + kVerticalPadding;
 
@@ -264,6 +291,14 @@ BOOL g_animations_enabled = false;
                                           learnMoreSize.width,
                                           learnMoreSize.height)];
     currentHeight += learnMoreSize.height + kVerticalPadding;
+  }
+
+  if (itemList_) {
+    [itemList_ setFrame:NSMakeRect(kHorizontalPadding + kItemListIndentation,
+                                   currentHeight,
+                                   itemListSize.width,
+                                   itemListSize.height)];
+    currentHeight += itemListSize.height + kVerticalPadding;
   }
 
   [content setFrame:NSMakeRect(kHorizontalPadding,

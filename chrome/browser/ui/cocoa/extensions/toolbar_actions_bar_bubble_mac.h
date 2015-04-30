@@ -23,6 +23,9 @@ class ToolbarActionsBarBubbleDelegate;
   // Required.
   NSButton* actionButton_;
 
+  // The list of items to display. Optional.
+  NSTextField* itemList_;
+
   // The dismiss button. Optional.
   NSButton* dismissButton_;
 
@@ -43,6 +46,7 @@ class ToolbarActionsBarBubbleDelegate;
 + (void)setAnimationEnabledForTesting:(BOOL)enabled;
 
 @property(readonly, nonatomic) NSButton* actionButton;
+@property(readonly, nonatomic) NSTextField* itemList;
 @property(readonly, nonatomic) NSButton* dismissButton;
 @property(readonly, nonatomic) NSButton* learnMoreButton;
 

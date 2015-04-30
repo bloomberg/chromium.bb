@@ -16,6 +16,7 @@ class TestToolbarActionsBarBubbleDelegate::DelegateImpl
  private:
   base::string16 GetHeadingText() override { return parent_->heading_; }
   base::string16 GetBodyText() override { return parent_->body_; }
+  base::string16 GetItemListText() override { return parent_->item_list_; }
   base::string16 GetActionButtonText() override { return parent_->action_; }
   base::string16 GetDismissButtonText() override { return parent_->dismiss_; }
   base::string16 GetLearnMoreButtonText() override {

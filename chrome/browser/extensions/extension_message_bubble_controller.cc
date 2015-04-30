@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_message_bubble.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -20,6 +22,11 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
+
+namespace {
+// How many extensions to show in the bubble (max).
+const int kMaxExtensionsToShow = 7;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExtensionMessageBubbleController::Delegate
@@ -115,6 +122,25 @@ ExtensionMessageBubbleController::GetExtensionList() {
     }
   }
   return return_value;
+}
+
+base::string16 ExtensionMessageBubbleController::GetExtensionListForDisplay() {
+  if (!delegate_->ShouldShowExtensionList())
+    return base::string16();
+
+  std::vector<base::string16> extension_list = GetExtensionList();
+  if (extension_list.size() > kMaxExtensionsToShow) {
+    int old_size = extension_list.size();
+    extension_list.erase(extension_list.begin() + kMaxExtensionsToShow,
+                         extension_list.end());
+    extension_list.push_back(delegate_->GetOverflowText(base::IntToString16(
+        old_size - kMaxExtensionsToShow)));
+  }
+  const base::char16 bullet_point = 0x2022;
+  base::string16 prefix = bullet_point + base::ASCIIToUTF16(" ");
+  for (base::string16& str : extension_list)
+    str.insert(0, prefix);
+  return JoinString(extension_list, base::ASCIIToUTF16("\n"));
 }
 
 const ExtensionIdList& ExtensionMessageBubbleController::GetExtensionIdList() {

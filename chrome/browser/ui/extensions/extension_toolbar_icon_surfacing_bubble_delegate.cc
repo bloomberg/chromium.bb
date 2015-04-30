@@ -73,6 +73,10 @@ base::string16 ExtensionToolbarIconSurfacingBubbleDelegate::GetBodyText() {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_TOOLBAR_BUBBLE_CONTENT);
 }
 
+base::string16 ExtensionToolbarIconSurfacingBubbleDelegate::GetItemListText() {
+  return base::string16();
+}
+
 base::string16
 ExtensionToolbarIconSurfacingBubbleDelegate::GetActionButtonText() {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_TOOLBAR_BUBBLE_OK);

@@ -38,6 +38,7 @@ class ExtensionMessageBubbleBridge : public extensions::ExtensionMessageBubble,
   // ToolbarActionsBarBubbleDelegate:
   base::string16 GetHeadingText() override;
   base::string16 GetBodyText() override;
+  base::string16 GetItemListText() override;
   base::string16 GetActionButtonText() override;
   base::string16 GetDismissButtonText() override;
   base::string16 GetLearnMoreButtonText() override;
