@@ -248,13 +248,6 @@
               "minimum": 1
             },
             "description": "Details of the content scripts to add."
-          },
-          {
-            "type": "function",
-            "name": "callback",
-            "optional": true,
-            "description": "Called when all the content scripts has been added.",
-            "parameters": []
           }
         ]
       },
