@@ -544,98 +544,38 @@ void RuleFeatureSet::clear()
     m_classInvalidationSets.clear();
     m_attributeInvalidationSets.clear();
     m_idInvalidationSets.clear();
-    // We cannot clear m_styleInvalidator here, because the style invalidator might not
-    // have been evaluated yet. If not yet, in StyleInvalidator, there exists some element
-    // who has needsStyleInvlidation but does not have any invalidation list.
-    // This makes Blink not to recalc style correctly. crbug.com/344729.
 }
 
-void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element& element)
-{
-    unsigned changedSize = changedClasses.size();
-    for (unsigned i = 0; i < changedSize; ++i) {
-        addClassToInvalidationSet(changedClasses[i], element);
-    }
-}
-
-void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element& element)
-{
-    if (!oldClasses.size()) {
-        scheduleStyleInvalidationForClassChange(newClasses, element);
-        return;
-    }
-
-    // Class vectors tend to be very short. This is faster than using a hash table.
-    BitVector remainingClassBits;
-    remainingClassBits.ensureSize(oldClasses.size());
-
-    for (unsigned i = 0; i < newClasses.size(); ++i) {
-        bool found = false;
-        for (unsigned j = 0; j < oldClasses.size(); ++j) {
-            if (newClasses[i] == oldClasses[j]) {
-                // Mark each class that is still in the newClasses so we can skip doing
-                // an n^2 search below when looking for removals. We can't break from
-                // this loop early since a class can appear more than once.
-                remainingClassBits.quickSet(j);
-                found = true;
-            }
-        }
-        // Class was added.
-        if (!found)
-            addClassToInvalidationSet(newClasses[i], element);
-    }
-
-    for (unsigned i = 0; i < oldClasses.size(); ++i) {
-        if (remainingClassBits.quickGet(i))
-            continue;
-        // Class was removed.
-        addClassToInvalidationSet(oldClasses[i], element);
-    }
-}
-
-void RuleFeatureSet::scheduleStyleInvalidationForAttributeChange(const QualifiedName& attributeName, Element& element)
-{
-    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_attributeInvalidationSets.get(attributeName.localName())) {
-        TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, attributeChange, attributeName);
-        m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
-    }
-}
-
-void RuleFeatureSet::scheduleStyleInvalidationForIdChange(const AtomicString& oldId, const AtomicString& newId, Element& element)
-{
-    if (!oldId.isEmpty()) {
-        if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(oldId)) {
-            TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, idChange, oldId);
-            m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
-        }
-    }
-    if (!newId.isEmpty()) {
-        if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(newId)) {
-            TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, idChange, newId);
-            m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
-        }
-    }
-}
-
-void RuleFeatureSet::scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoType pseudo, Element& element)
-{
-    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_pseudoInvalidationSets.get(pseudo)) {
-        TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, pseudoChange, pseudo);
-        m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
-    }
-}
-
-inline void RuleFeatureSet::addClassToInvalidationSet(const AtomicString& className, Element& element)
+void RuleFeatureSet::collectInvalidationSetsForClass(InvalidationSetVector& invalidationSets, Element& element, const AtomicString& className) const
 {
     if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_classInvalidationSets.get(className)) {
         TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, classChange, className);
-        m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
+        invalidationSets.append(invalidationSet);
     }
 }
 
-StyleInvalidator& RuleFeatureSet::styleInvalidator()
+void RuleFeatureSet::collectInvalidationSetsForId(InvalidationSetVector& invalidationSets, Element& element, const AtomicString& id) const
 {
-    return m_styleInvalidator;
+    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_idInvalidationSets.get(id)) {
+        TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, idChange, id);
+        invalidationSets.append(invalidationSet);
+    }
+}
+
+void RuleFeatureSet::collectInvalidationSetsForAttribute(InvalidationSetVector& invalidationSets, Element& element, const QualifiedName& attributeName) const
+{
+    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_attributeInvalidationSets.get(attributeName.localName())) {
+        TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, attributeChange, attributeName);
+        invalidationSets.append(invalidationSet);
+    }
+}
+
+void RuleFeatureSet::collectInvalidationSetsForPseudoClass(InvalidationSetVector& invalidationSets, Element& element, CSSSelector::PseudoType pseudo) const
+{
+    if (RefPtrWillBeRawPtr<DescendantInvalidationSet> invalidationSet = m_pseudoInvalidationSets.get(pseudo)) {
+        TRACE_SCHEDULE_STYLE_INVALIDATION(element, *invalidationSet, pseudoChange, pseudo);
+        invalidationSets.append(invalidationSet);
+    }
 }
 
 DEFINE_TRACE(RuleFeatureSet)
@@ -647,7 +587,6 @@ DEFINE_TRACE(RuleFeatureSet)
     visitor->trace(m_attributeInvalidationSets);
     visitor->trace(m_idInvalidationSets);
     visitor->trace(m_pseudoInvalidationSets);
-    visitor->trace(m_styleInvalidator);
 #endif
 }
 

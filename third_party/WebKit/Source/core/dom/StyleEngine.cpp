@@ -694,6 +694,92 @@ void StyleEngine::platformColorsChanged()
     document().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PlatformColorChange));
 }
 
+void StyleEngine::classChangedForElement(const SpaceSplitString& changedClasses, Element& element)
+{
+    ASSERT(isMaster());
+    InvalidationSetVector invalidationSets;
+    unsigned changedSize = changedClasses.size();
+    RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
+    for (unsigned i = 0; i < changedSize; ++i)
+        ruleFeatureSet.collectInvalidationSetsForClass(invalidationSets, element, changedClasses[i]);
+    scheduleInvalidationSetsForElement(invalidationSets, element);
+}
+
+void StyleEngine::classChangedForElement(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element& element)
+{
+    ASSERT(isMaster());
+    InvalidationSetVector invalidationSets;
+    if (!oldClasses.size()) {
+        classChangedForElement(newClasses, element);
+        return;
+    }
+
+    // Class vectors tend to be very short. This is faster than using a hash table.
+    BitVector remainingClassBits;
+    remainingClassBits.ensureSize(oldClasses.size());
+
+    RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
+
+    for (unsigned i = 0; i < newClasses.size(); ++i) {
+        bool found = false;
+        for (unsigned j = 0; j < oldClasses.size(); ++j) {
+            if (newClasses[i] == oldClasses[j]) {
+                // Mark each class that is still in the newClasses so we can skip doing
+                // an n^2 search below when looking for removals. We can't break from
+                // this loop early since a class can appear more than once.
+                remainingClassBits.quickSet(j);
+                found = true;
+            }
+        }
+        // Class was added.
+        if (!found)
+            ruleFeatureSet.collectInvalidationSetsForClass(invalidationSets, element, newClasses[i]);
+    }
+
+    for (unsigned i = 0; i < oldClasses.size(); ++i) {
+        if (remainingClassBits.quickGet(i))
+            continue;
+        // Class was removed.
+        ruleFeatureSet.collectInvalidationSetsForClass(invalidationSets, element, oldClasses[i]);
+    }
+
+    scheduleInvalidationSetsForElement(invalidationSets, element);
+}
+
+void StyleEngine::attributeChangedForElement(const QualifiedName& attributeName, Element& element)
+{
+    ASSERT(isMaster());
+    InvalidationSetVector invalidationSets;
+    ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForAttribute(invalidationSets, element, attributeName);
+    scheduleInvalidationSetsForElement(invalidationSets, element);
+}
+
+void StyleEngine::idChangedForElement(const AtomicString& oldId, const AtomicString& newId, Element& element)
+{
+    ASSERT(isMaster());
+    InvalidationSetVector invalidationSets;
+    RuleFeatureSet& ruleFeatureSet = ensureResolver().ensureUpdatedRuleFeatureSet();
+    if (!oldId.isEmpty())
+        ruleFeatureSet.collectInvalidationSetsForId(invalidationSets, element, oldId);
+    if (!newId.isEmpty())
+        ruleFeatureSet.collectInvalidationSetsForId(invalidationSets, element, newId);
+    scheduleInvalidationSetsForElement(invalidationSets, element);
+}
+
+void StyleEngine::pseudoStateChangedForElement(CSSSelector::PseudoType pseudoType, Element& element)
+{
+    ASSERT(isMaster());
+    InvalidationSetVector invalidationSets;
+    ensureResolver().ensureUpdatedRuleFeatureSet().collectInvalidationSetsForPseudoClass(invalidationSets, element, pseudoType);
+    scheduleInvalidationSetsForElement(invalidationSets, element);
+}
+
+void StyleEngine::scheduleInvalidationSetsForElement(const InvalidationSetVector& invalidationSets, Element& element)
+{
+    for (auto invalidationSet : invalidationSets)
+        m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
+}
+
 DEFINE_TRACE(StyleEngine)
 {
 #if ENABLE(OILPAN)
@@ -702,6 +788,7 @@ DEFINE_TRACE(StyleEngine)
     visitor->trace(m_documentStyleSheetCollection);
     visitor->trace(m_styleSheetCollectionMap);
     visitor->trace(m_resolver);
+    visitor->trace(m_styleInvalidator);
     visitor->trace(m_dirtyTreeScopes);
     visitor->trace(m_activeTreeScopes);
     visitor->trace(m_fontSelector);

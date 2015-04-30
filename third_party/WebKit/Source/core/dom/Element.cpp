@@ -1159,7 +1159,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         if (newId != oldId) {
             elementData()->setIdForStyleResolution(newId);
             if (testShouldInvalidateStyle)
-                styleResolver->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForIdChange(oldId, newId, *this);
+                document().styleEngine().idChangedForElement(oldId, newId, *this);
         }
     } else if (name == classAttr) {
         classAttributeChanged(newValue);
@@ -1233,11 +1233,11 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
         elementData()->setClass(newClassString, shouldFoldCase);
         const SpaceSplitString& newClasses = elementData()->classNames();
         if (testShouldInvalidateStyle)
-            styleResolver->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForClassChange(oldClasses, newClasses, *this);
+            document().styleEngine().classChangedForElement(oldClasses, newClasses, *this);
     } else {
         const SpaceSplitString& oldClasses = elementData()->classNames();
         if (testShouldInvalidateStyle)
-            styleResolver->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForClassChange(oldClasses, *this);
+            document().styleEngine().classChangedForElement(oldClasses, *this);
         elementData()->clearClass();
     }
 
@@ -1796,7 +1796,7 @@ void Element::pseudoStateChanged(CSSSelector::PseudoType pseudo)
     StyleResolver* styleResolver = document().styleResolver();
 
     if (inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange)
-        styleResolver->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(pseudo, *this);
+        document().styleEngine().pseudoStateChangedForElement(pseudo, *this);
 
     if (ElementShadow* elementShadow = shadowWhereNodeCanBeDistributed(*this))
         elementShadow->distributedNodePseudoStateChanged(pseudo);
@@ -1939,7 +1939,7 @@ void Element::checkForEmptyStyleChange()
         return;
 
     if (!style || (styleAffectedByEmpty() && (!style->emptyState() || hasChildren())))
-        document().styleResolver()->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoEmpty, *this);
+        document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoEmpty, *this);
 }
 
 void Element::childrenChanged(const ChildrenChange& change)
@@ -3052,7 +3052,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
 
     if (oldValue != newValue) {
         if (inActiveDocument() && document().styleResolver() && styleChangeType() < SubtreeStyleChange)
-            document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForAttributeChange(name, *this);
+            document().styleEngine().attributeChangedForElement(name, *this);
 
         if (isUpgradedCustomElement())
             CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);

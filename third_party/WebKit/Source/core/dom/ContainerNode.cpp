@@ -1055,7 +1055,7 @@ void ContainerNode::handleStyleChangeOnFocusStateChange()
         if (computedStyle()->affectedByFocus() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
         else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
-            document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
+            document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoFocus, *toElement(this));
         else if (computedStyle()->affectedByFocus())
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
     }
@@ -1088,7 +1088,7 @@ void ContainerNode::setFocus(bool received)
 
     // If :focus sets display: none, we lose focus but still need to recalc our style.
     if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus() && styleChangeType() < SubtreeStyleChange)
-        document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoFocus, *toElement(this));
+        document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoFocus, *toElement(this));
     else
         setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
 }
@@ -1106,7 +1106,7 @@ void ContainerNode::setActive(bool down)
             if (computedStyle()->affectedByActive() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
                 setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
             else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
-                document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoActive, *toElement(this));
+                document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoActive, *toElement(this));
             else if (computedStyle()->affectedByActive())
                 setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
         }
@@ -1128,7 +1128,7 @@ void ContainerNode::setHovered(bool over)
         if (over)
             return;
         if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover() && styleChangeType() < SubtreeStyleChange)
-            document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
+            document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoHover, *toElement(this));
         else
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
         return;
@@ -1138,7 +1138,7 @@ void ContainerNode::setHovered(bool over)
         if (computedStyle()->affectedByHover() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
         else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
-            document().ensureStyleResolver().ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForPseudoChange(CSSSelector::PseudoHover, *toElement(this));
+            document().styleEngine().pseudoStateChangedForElement(CSSSelector::PseudoHover, *toElement(this));
         else if (computedStyle()->affectedByHover())
             setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
     }

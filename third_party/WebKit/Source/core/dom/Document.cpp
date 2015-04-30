@@ -1603,7 +1603,7 @@ void Document::updateStyleInvalidationIfNeeded()
     TRACE_EVENT0("blink", "Document::updateStyleInvalidationIfNeeded");
     ASSERT(styleResolver());
 
-    styleResolver()->ruleFeatureSet().styleInvalidator().invalidate(*this);
+    styleEngine().styleInvalidator().invalidate(*this);
 }
 
 void Document::setupFontBuilder(ComputedStyle& documentStyle)

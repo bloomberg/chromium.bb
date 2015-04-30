@@ -30,6 +30,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSFontSelectorClient.h"
+#include "core/css/invalidation/StyleInvalidator.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
@@ -149,6 +150,8 @@ public:
     void clearResolver();
     void clearMasterResolver();
 
+    StyleInvalidator& styleInvalidator() { return m_styleInvalidator; }
+
     CSSFontSelector* fontSelector() { return m_fontSelector.get(); }
     void setFontSelector(PassRefPtrWillBeRawPtr<CSSFontSelector>);
 
@@ -171,6 +174,12 @@ public:
 
     void platformColorsChanged();
 
+    void classChangedForElement(const SpaceSplitString& changedClasses, Element&);
+    void classChangedForElement(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element&);
+    void attributeChangedForElement(const QualifiedName& attributeName, Element&);
+    void idChangedForElement(const AtomicString& oldId, const AtomicString& newId, Element&);
+    void pseudoStateChangedForElement(CSSSelector::PseudoType, Element&);
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -190,6 +199,8 @@ private:
     bool isMaster() const { return m_isMaster; }
     Document* master();
     Document& document() const { return *m_document; }
+
+    void scheduleInvalidationSetsForElement(const InvalidationSetVector&, Element&);
 
     typedef WillBeHeapHashSet<RawPtrWillBeMember<TreeScope>> UnorderedTreeScopeSet;
 
@@ -286,6 +297,7 @@ private:
     bool m_ignorePendingStylesheets;
     bool m_didCalculateResolver;
     OwnPtrWillBeMember<StyleResolver> m_resolver;
+    StyleInvalidator m_styleInvalidator;
 
     RefPtrWillBeMember<CSSFontSelector> m_fontSelector;
 

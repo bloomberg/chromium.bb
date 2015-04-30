@@ -53,6 +53,7 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Range.h"
 #include "core/dom/StaticNodeList.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/dom/Text.h"
 #include "core/dom/TreeScopeAdopter.h"
@@ -981,8 +982,7 @@ void Node::detach(const AttachContext& context)
     setStyleChange(NeedsReattachStyleChange);
     setChildNeedsStyleRecalc();
 
-    if (StyleResolver* resolver = document().styleResolver())
-        resolver->ruleFeatureSet().styleInvalidator().clearInvalidation(*this);
+    document().styleEngine().styleInvalidator().clearInvalidation(*this);
     clearChildNeedsStyleInvalidation();
     clearNeedsStyleInvalidation();
 
