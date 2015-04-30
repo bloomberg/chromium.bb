@@ -104,7 +104,6 @@ public:
     template<typename SiblingTraversalStrategy>
     bool checkOne(const SelectorCheckingContext&, const SiblingTraversalStrategy&, unsigned* specificity = 0) const;
 
-    static bool tagMatches(const Element&, const QualifiedName&);
     static bool matchesFocusPseudoClass(const Element&);
 
 private:
@@ -127,17 +126,6 @@ private:
 
     Mode m_mode;
 };
-
-inline bool SelectorChecker::tagMatches(const Element& element, const QualifiedName& tagQName)
-{
-    if (tagQName == anyQName())
-        return true;
-    const AtomicString& localName = tagQName.localName();
-    if (localName != starAtom && localName != element.localName())
-        return false;
-    const AtomicString& namespaceURI = tagQName.namespaceURI();
-    return namespaceURI == starAtom || namespaceURI == element.namespaceURI();
-}
 
 }
 

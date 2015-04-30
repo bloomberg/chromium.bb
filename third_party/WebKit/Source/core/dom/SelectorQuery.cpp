@@ -179,7 +179,10 @@ template <typename SelectorQueryTrait>
 void SelectorDataList::collectElementsByTagName(ContainerNode& rootNode, const QualifiedName& tagName,  typename SelectorQueryTrait::OutputType& output) const
 {
     for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
-        if (SelectorChecker::tagMatches(element, tagName)) {
+        // querySelector*() doesn't allow namespaces and throws before it gets
+        // here so we can ignore them.
+        ASSERT(tagName.namespaceURI() == starAtom);
+        if (tagName == anyQName() || element.hasLocalName(tagName.localName())) {
             SelectorQueryTrait::appendElement(output, element);
             if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
                 return;

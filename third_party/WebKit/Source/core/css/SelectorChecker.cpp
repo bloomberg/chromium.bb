@@ -94,6 +94,17 @@ static bool matchesListBoxPseudoClass(const Element& element)
     return isHTMLSelectElement(element) && !toHTMLSelectElement(element).usesMenuList();
 }
 
+static bool matchesTagName(const Element& element, const QualifiedName& tagQName)
+{
+    if (tagQName == anyQName())
+        return true;
+    const AtomicString& localName = tagQName.localName();
+    if (localName != starAtom && localName != element.localName())
+        return false;
+    const AtomicString& namespaceURI = tagQName.namespaceURI();
+    return namespaceURI == starAtom || namespaceURI == element.namespaceURI();
+}
+
 static Element* parentElement(const SelectorChecker::SelectorCheckingContext& context)
 {
     // - If context.scope is a shadow root, we should walk up to its shadow host.
@@ -563,7 +574,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
 
     switch (selector.match()) {
     case CSSSelector::Tag:
-        return SelectorChecker::tagMatches(element, selector.tagQName());
+        return matchesTagName(element, selector.tagQName());
     case CSSSelector::Class:
         return element.hasClass() && element.classNames().contains(selector.value());
     case CSSSelector::Id:
