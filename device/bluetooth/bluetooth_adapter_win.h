@@ -5,7 +5,6 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_WIN_H_
 
-#include <hash_set>
 #include <set>
 #include <string>
 #include <utility>

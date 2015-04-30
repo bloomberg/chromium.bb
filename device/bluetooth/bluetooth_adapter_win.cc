@@ -4,7 +4,6 @@
 
 #include "device/bluetooth/bluetooth_adapter_win.h"
 
-#include <hash_set>
 #include <string>
 #include <utility>
 
