@@ -6142,8 +6142,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>asanka@chromium.org</owner>
   <summary>
     Content-Disposition header features. The presence of a Content-Disposition
-    header, use of 'name', 'filename' and 'filename*' parameters, and string
-    encoding schemes are counted for each unthrottled download. The total number
+    header, use of 'filename' and 'filename*' parameters, and string encoding
+    schemes are counted for each unthrottled download. The total number
     downloads is Download.Counts[5] (Initiated and Unthrottled).
   </summary>
 </histogram>
@@ -48954,13 +48954,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Valid"/>
   <int value="2" label="Has disposition-type"/>
   <int value="3" label="Has unknown disposition-type"/>
-  <int value="4" label="Has 'name' attribute"/>
+  <int value="4" label="Has 'name' attribute (Obsolete 04/2015)"/>
   <int value="5" label="Has 'filename' attribute"/>
   <int value="6" label="Has 'filename*' attribute"/>
   <int value="7" label="Has non-ASCII strings"/>
   <int value="8" label="Has percent encoded strings"/>
   <int value="9" label="Has RFC 2047 encoded strings"/>
-  <int value="10" label="Has 'name' attribute only"/>
+  <int value="10" label="Has 'name' attribute only (Obsolete 04/2015)"/>
 </enum>
 
 <enum name="DownloadContentType" type="int">

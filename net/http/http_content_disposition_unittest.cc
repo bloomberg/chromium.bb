@@ -23,9 +23,7 @@ TEST(HttpContentDispositionTest, Filename) {
   const FileNameCDCase tests[] = {
     // Test various forms of C-D header fields emitted by web servers.
     {"inline; filename=\"abcde.pdf\"", "", L"abcde.pdf"},
-    {"inline; name=\"abcde.pdf\"", "", L"abcde.pdf"},
     {"attachment; filename=abcde.pdf", "", L"abcde.pdf"},
-    {"attachment; name=abcde.pdf", "", L"abcde.pdf"},
     {"attachment; filename=abc,de.pdf", "", L"abc,de.pdf"},
     {"filename=abcde.pdf", "", L"abcde.pdf"},
     {"filename= abcde.pdf", "", L"abcde.pdf"},
@@ -33,9 +31,12 @@ TEST(HttpContentDispositionTest, Filename) {
     {"filename = abcde.pdf", "", L"abcde.pdf"},
     {"filename\t=abcde.pdf", "", L"abcde.pdf"},
     {"filename \t\t  =abcde.pdf", "", L"abcde.pdf"},
-    {"name=abcde.pdf", "", L"abcde.pdf"},
     {"inline; filename=\"abc%20de.pdf\"", "",
      L"abc de.pdf"},
+    // Name values are no longer synonyms for filename.
+    {"inline; name=\"abcde.pdf\"", "", L""},
+    {"attachment; name=abcde.pdf", "", L""},
+    {"name=abcde.pdf", "", L""},
     // Unbalanced quotation mark
     {"filename=\"abcdef.pdf", "", L"abcdef.pdf"},
     // Whitespaces are converted to a space.
@@ -315,10 +316,11 @@ TEST(HttpContentDispositionTest, tc2231) {
        L"foo-A.html"  // Should be L"foo-%41.html"
       },
       // http://greenbytes.de/tech/tc2231/#attwithnamepct
+      // Value is skipped like other UAs.
       {
        "attachment; name=\"foo-%41.html\"",
        HttpContentDisposition::ATTACHMENT,
-       L"foo-A.html"  // Should be L"foo-%41.html"
+       L""
       },
 #ifdef ICU_SHOULD_FAIL_CONVERSION_ON_INVALID_CHARACTER
       // http://greenbytes.de/tech/tc2231/#attwithfilenamepctandiso
@@ -479,12 +481,10 @@ TEST(HttpContentDispositionTest, ParseResult) {
       HttpContentDisposition::HAS_FILENAME },
     { "attachment; filename=x; name=y",
       HttpContentDisposition::HAS_DISPOSITION_TYPE |
-      HttpContentDisposition::HAS_FILENAME |
-      HttpContentDisposition::HAS_NAME },
+      HttpContentDisposition::HAS_FILENAME },
     { "attachment; name=y; filename*=utf-8''foo; name=x",
       HttpContentDisposition::HAS_DISPOSITION_TYPE |
-      HttpContentDisposition::HAS_EXT_FILENAME |
-      HttpContentDisposition::HAS_NAME },
+      HttpContentDisposition::HAS_EXT_FILENAME },
 
     // Feature tests for 'filename' attribute.
     { "filename=foo\xcc\x88",
@@ -500,13 +500,13 @@ TEST(HttpContentDispositionTest, ParseResult) {
       HttpContentDisposition::HAS_FILENAME |
       HttpContentDisposition::HAS_RFC2047_ENCODED_STRINGS },
     { "filename==?utf-8?Q?foo?", HttpContentDisposition::INVALID },
-    { "name=foo\xcc\x88",
-      HttpContentDisposition::HAS_NAME },
+
+    // Test 'name' isn't a synonym for 'filename'.
+    { "name=foo\xcc\x88", HttpContentDisposition::INVALID },
 
     // Shouldn't set |has_non_ascii_strings| based on 'name' attribute.
     { "filename=x; name=foo\xcc\x88",
-      HttpContentDisposition::HAS_FILENAME |
-      HttpContentDisposition::HAS_NAME },
+      HttpContentDisposition::HAS_FILENAME },
     { "filename=foo\xcc\x88 foo%cc%88 =?utf-8?Q?foo?=",
       HttpContentDisposition::HAS_FILENAME |
       HttpContentDisposition::HAS_NON_ASCII_STRINGS |
@@ -517,7 +517,7 @@ TEST(HttpContentDispositionTest, ParseResult) {
     { "filename=foo\xcc\x88 foo%cc%88 =?utf-8?Q?foo?",
       HttpContentDisposition::INVALID },
     { "filename=foo\xcc\x88 foo%cc%88 =?utf-8?Q?foo?; name=x",
-      HttpContentDisposition::HAS_NAME },
+      HttpContentDisposition::INVALID },
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {

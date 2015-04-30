@@ -397,7 +397,6 @@ void HttpContentDisposition::Parse(const std::string& header,
   std::string::const_iterator end = header.end();
   pos = ConsumeDispositionType(pos, end);
 
-  std::string name;
   std::string filename;
   std::string ext_filename;
 
@@ -410,12 +409,6 @@ void HttpContentDisposition::Parse(const std::string& header,
                           &parse_result_flags_);
       if (!filename.empty())
         parse_result_flags_ |= HAS_FILENAME;
-    } else if (name.empty() && LowerCaseEqualsASCII(iter.name_begin(),
-                                                    iter.name_end(),
-                                                    "name")) {
-      DecodeFilenameValue(iter.value(), referrer_charset, &name, NULL);
-      if (!name.empty())
-        parse_result_flags_ |= HAS_NAME;
     } else if (ext_filename.empty() && LowerCaseEqualsASCII(iter.name_begin(),
                                                             iter.name_end(),
                                                             "filename*")) {
@@ -427,10 +420,8 @@ void HttpContentDisposition::Parse(const std::string& header,
 
   if (!ext_filename.empty())
     filename_ = ext_filename;
-  else if (!filename.empty())
-    filename_ = filename;
   else
-    filename_ = name;
+    filename_ = filename;
 }
 
 }  // namespace net

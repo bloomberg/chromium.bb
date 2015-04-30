@@ -594,14 +594,15 @@ TEST(FilenameUtilTest, GenerateFileName) {
      "",
      L"",
      L"caf\u03b5.png"},
-    {__LINE__,
+    {// Invalid C-D header. Name value is skipped now.
+     __LINE__,
      "http://www.example.com/file?id=3",
      "attachment; name=\xcf\xc2\xd4\xd8.zip",
      "GBK",
      "",
      "",
      L"",
-     L"\u4e0b\u8f7d.zip"},
+     L"file"},
     {// Invalid C-D header. Extracts filename from url.
      __LINE__,
      "http://www.google.com/test.html",
@@ -732,7 +733,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
      "image/jpeg",
      L"download",
      L"\uc608\uc220 \uc608\uc220.jpg"},
-    {// name= parameter
+    {// Invalid C-D header. Name value is skipped now.
      __LINE__,
      "http://www.examples.com/q.cgi?id=abc",
      "attachment; name=abc de.pdf",
@@ -740,7 +741,7 @@ TEST(FilenameUtilTest, GenerateFileName) {
      "",
      "application/octet-stream",
      L"download",
-     L"abc de.pdf"},
+     L"q.cgi"},
     {__LINE__,
      "http://www.example.com/path",
      "filename=\"=?EUC-JP?Q?=B7=DD=BD=D13=2Epng?=\"",
