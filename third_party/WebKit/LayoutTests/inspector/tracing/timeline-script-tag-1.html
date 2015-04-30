@@ -27,29 +27,17 @@ function test()
 
     function step3()
     {
-        function format1(record)
+        function format(record)
         {
-            if (record.type() === WebInspector.TimelineModel.RecordType.ParseHTML) {
+            if (record.type() === WebInspector.TimelineModel.RecordType.EvaluateScript) {
                 InspectorTest.dumpTimelineRecord(record, undefined, undefined, [
-                    "ParseHTML",
-                    "EvaluateScript",
-                    "EventDispatch",
-                    "FunctionCall",
                     "TimeStamp",
-                    "MarkLoad",
-                    "MarkDOMContent"
                 ]);
+                InspectorTest.printTimelineRecordProperties(record);
             }
         }
 
-        function format2(record)
-        {
-            if (record.type() === WebInspector.TimelineModel.RecordType.EvaluateScript)
-                InspectorTest.printTimelineRecordProperties(record);
-        }
-
-        InspectorTest.printTimelineRecords(null, InspectorTest.safeWrap(format1));
-        InspectorTest.printTimelineRecords(null, InspectorTest.safeWrap(format2));
+        InspectorTest.printTimelineRecords(null, InspectorTest.safeWrap(format));
         InspectorTest.completeTest();
     }
 }

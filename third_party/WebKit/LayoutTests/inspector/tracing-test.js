@@ -21,15 +21,13 @@ InspectorTest.tracingTimelineModel = function()
 
 InspectorTest.invokeWithTracing = function(functionName, callback, additionalCategories, enableJSSampling)
 {
-    InspectorTest.tracingTimelineModel().addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onTracingStarted, this);
     var categories = "-*,disabled-by-default-devtools.timeline*";
     if (additionalCategories)
         categories += "," + additionalCategories;
-    InspectorTest.tracingTimelineModel()._startRecordingWithCategories(categories, enableJSSampling);
+    InspectorTest.tracingTimelineModel()._startRecordingWithCategories(categories, enableJSSampling, tracingStarted);
 
-    function onTracingStarted(event)
+    function tracingStarted()
     {
-        InspectorTest.tracingTimelineModel().removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onTracingStarted, this);
         InspectorTest.invokePageFunctionAsync(functionName, onPageActionsDone);
     }
 

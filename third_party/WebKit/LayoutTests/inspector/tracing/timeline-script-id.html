@@ -23,9 +23,12 @@ function test()
 
     var source = performActions.toString();
     source += "\n//@ sourceURL=performActions.js";
-    InspectorTest.evaluateInPage(source);
+    InspectorTest.evaluateInPage(source, startTimeline);
 
-    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    function startTimeline()
+    {
+        InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+    }
 
     var linkifier = new WebInspector.Linkifier();
 
@@ -36,12 +39,10 @@ function test()
             return;
 
         var detailsText = WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent(), InspectorTest.timelineModel().target());
-        if (detailsText)
-            InspectorTest.addResult("detailsTextContent for " + record.type() + " event: '" + detailsText + "'");
+        InspectorTest.addResult("detailsTextContent for " + record.type() + " event: '" + detailsText.replace(/VM[\d]+/, "VM") + "'");
 
         var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), InspectorTest.timelineModel().target(), linkifier);
-        if (details)
-            InspectorTest.addResult("details.textContent for " + record.type() + " event: '" + details.textContent + "'");
+        InspectorTest.addResult("details.textContent for " + record.type() + " event: '" + details.textContent.replace(/VM[\d]+/, "VM") + "'");
     }
 
     function finish()

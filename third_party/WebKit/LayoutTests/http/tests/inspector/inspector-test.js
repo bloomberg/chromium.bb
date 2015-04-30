@@ -954,6 +954,7 @@ function runTest(enableWatchDogWhileDebugging)
             "elements": "elements",
             "editor": "sources",
             "layers": "layers",
+            "network": "network",
             "profiler": "profiles",
             "resource-tree": "resources",
             "search": "sources",

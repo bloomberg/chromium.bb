@@ -60,6 +60,7 @@ public:
     ScriptFunctionCall(const ScriptValue& thisObject, const String& name);
     ScriptValue call(bool& hadException, bool reportExceptions = true);
     ScriptValue call();
+    v8::Handle<v8::Function> function();
     ScriptValue callWithoutExceptionHandling();
 
 protected:

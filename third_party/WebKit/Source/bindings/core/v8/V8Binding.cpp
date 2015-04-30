@@ -940,6 +940,7 @@ void DevToolsFunctionInfo::ensureInitialized() const
     if (m_function.IsEmpty())
         return;
 
+    v8::HandleScope scope(m_function->GetIsolate());
     v8::Local<v8::Function> originalFunction = getBoundFunction(m_function);
     m_scriptId = originalFunction->ScriptId();
     v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
@@ -950,7 +951,7 @@ void DevToolsFunctionInfo::ensureInitialized() const
         m_lineNumber = originalFunction->GetScriptLineNumber() + 1;
     }
     if (m_resourceName.isEmpty()) {
-        m_resourceName = "undefined";
+        m_resourceName = "";
         m_lineNumber = 1;
     }
 

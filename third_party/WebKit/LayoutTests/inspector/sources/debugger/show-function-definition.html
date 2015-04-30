@@ -39,23 +39,23 @@ function test()
 
         function testDumpFunctionDefinition(next)
         {
-            InspectorTest.waitUntilNthMessageReceived(2, onConsoleMessagesReceived);
+            InspectorTest.addSniffer(WebInspector.ObjectPropertiesSection, "formatObjectAsFunction", onConsoleMessagesReceived);
             WebInspector.ConsoleModel.evaluateCommandInConsole(WebInspector.context.flavor(WebInspector.ExecutionContext), "jumpToMe");
 
             function onConsoleMessagesReceived()
             {
-                var messages = [];
-                InspectorTest.disableConsoleViewport();
-                var viewMessages = WebInspector.ConsolePanel._view()._visibleViewMessages;
-                for (var i = 0; i < viewMessages.length; ++i) {
-                    var uiMessage = viewMessages[i];
-                    var element = uiMessage.contentElement();
-                    messages.push(element.textContent);
-                }
-
-                InspectorTest.addResult(messages.join("\n"));
-
-                next();
+                InspectorTest.runAfterPendingDispatches(function() {
+                    var messages = [];
+                    InspectorTest.disableConsoleViewport();
+                    var viewMessages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+                    for (var i = 0; i < viewMessages.length; ++i) {
+                        var uiMessage = viewMessages[i];
+                        var element = uiMessage.contentElement();
+                        messages.push(element.deepTextContent());
+                    }
+                    InspectorTest.addResult(messages.join("\n"));
+                    next();
+                });
             }
         }
     ]);

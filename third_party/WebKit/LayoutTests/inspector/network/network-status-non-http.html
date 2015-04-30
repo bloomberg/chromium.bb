@@ -1,8 +1,10 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/network-test.js"></script>
 <script>
-function test() {
+function test()
+{
     var requestsToWatch = /\/network-test\.js$|\/non-existent-file.js$|^data:application\/javascript,|/;
     var seenRequests = 0;
 
@@ -14,20 +16,14 @@ function test() {
         var urls = document.evaluate("//tbody/tr/td[position()=1]/@title", dataGrid, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         var outputStrings = [];
 
-        for (var i = 0; i < urls.snapshotLength; ++i) {
-            var url = urls.snapshotItem(i).value;
-            if (requestsToWatch.test(url)) {
-                var urlFragment = /^data:/.test(url) ? url.replace(/,.*$/, "") : url.replace(/.*\//, "");
-                var status = document.evaluate("ancestor::tr/td[position()=3]", urls.snapshotItem(i), null, XPathResult.STRING_TYPE, null);
-                var outputStatus = status.stringValue;
-                // Truncate the status string on failure, since the description following "(failed)" is platform-dependent.
-                if (outputStatus.startsWith("(failed)"))
-                    outputStatus = "(failed)";
-                outputStrings.push(urlFragment + ": " + outputStatus);
-            }
+        for (var request of WebInspector.targetManager.mainTarget().networkLog._requests) {
+            var line = request.displayName + ":" + request.statusCode + " " + request.statusText
+            if (request.failed)
+                line += "(failed)";
+            else if (request.finished)
+                line += "Finished";
+            InspectorTest.addResult(line);
         }
-        outputStrings.sort();
-        InspectorTest.addObject(outputStrings);
         InspectorTest.completeTest();
     }
 
@@ -36,7 +32,7 @@ function test() {
         if (!requestsToWatch.test(request.url))
             return;
         if (++seenRequests === 3)
-            dumpRequests();
+            setTimeout(dumpRequests);
     }
 
     InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, onRequestFinished);

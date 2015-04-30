@@ -992,8 +992,6 @@ crbug.com/474121 [ Debug Win7 ] editing/deleting/password-delete-performance.htm
 
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
-crbug.com/464729 inspector/sources/debugger/show-function-definition.html [ Pass Failure ]
-
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/008.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/009.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ SnowLeopard ] fast/text/whitespace/012.html [ NeedsManualRebaseline ]
@@ -1454,9 +1452,6 @@ crbug.com/368946 virtual/stable/web-animations-api/eased-keyframes.html [ Pass ]
 crbug.com/441559 virtual/stable/web-animations-api/partial-keyframes-unsupported.html [ Pass ]
 crbug.com/437696 virtual/stable/web-animations-api/additive-animations-unsupported.html [ Pass ]
 
-# Temporarily skipped until Chromium side change lands.
-crbug.com/308768 inspector/network/network-status-non-http.html [ Skip ]
-
 crbug.com/390358 http/tests/security/mixedContent/insecure-eventsource-in-main-frame.html [ Failure Pass ]
 crbug.com/384950 fast/forms/submit-change-fragment.html [ Pass Timeout ]
 crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pass ]
@@ -1582,9 +1577,6 @@ crbug.com/420749 compositing/visibility/visibility-image-layers.html [ NeedsManu
 crbug.com/420749 compositing/geometry/vertical-scroll-composited.html [ NeedsManualRebaseline ]
 crbug.com/420749 compositing/color-matching/image-color-matching.html [ NeedsManualRebaseline ]
 crbug.com/420749 virtual/threaded/compositing/visibility/visibility-image-layers.html [ NeedsManualRebaseline ]
-
-crbug.com/475638 inspector/tracing/timeline-script-id.html [ Pass Failure Slow ]
-crbug.com/475638 virtual/deferred/inspector/tracing/timeline-script-id.html [ Pass Failure Slow ]
 
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Pass Slow ]
 
@@ -1858,8 +1850,6 @@ crbug.com/446420 [ Linux Win ] virtual/gpu/fast/canvas/canvas-transform-multiply
 crbug.com/446420 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-transform-multiply.html [ Pass Crash ImageOnlyFailure ]
 
 crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
-
-crbug.com/441738 inspector/extensions/extensions-network.html [ Pass Failure ]
 
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Pass Failure ]
 

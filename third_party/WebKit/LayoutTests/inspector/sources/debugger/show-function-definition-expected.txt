@@ -6,9 +6,5 @@ Function location revealed: [7:18]
 
 Running: testDumpFunctionDefinition
 jumpToMe
-show-function-definition.html:7 function jumpToMe()
-{
-    var result = 12345;
-    return window.foo || result;
-}
+jumpToMe()
 
