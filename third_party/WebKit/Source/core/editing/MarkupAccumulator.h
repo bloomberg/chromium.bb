@@ -80,12 +80,11 @@ public:
     void appendEndMarkup(StringBuilder&, const Element&);
 
     size_t length() const { return m_markup.length(); }
-    void concatenateMarkup(StringBuilder&);
+    void concatenateMarkup(StringBuilder&) const;
 
     bool serializeAsHTMLDocument(const Node&) const;
     String toString() { return m_markup.toString(); }
 
-protected:
     void appendAttributeValue(StringBuilder&, const String&, bool);
     virtual void appendCustomAttributes(StringBuilder&, const Element&, Namespaces*);
 

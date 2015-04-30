@@ -201,7 +201,7 @@ void MarkupAccumulator::appendEndMarkup(StringBuilder& result, const Element& el
     result.append('>');
 }
 
-void MarkupAccumulator::concatenateMarkup(StringBuilder& result)
+void MarkupAccumulator::concatenateMarkup(StringBuilder& result) const
 {
     result.append(m_markup);
 }

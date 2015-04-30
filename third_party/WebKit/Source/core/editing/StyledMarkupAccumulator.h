@@ -57,14 +57,21 @@ private:
     int m_offset;
 };
 
-class StyledMarkupAccumulator final : public MarkupAccumulator {
+class StyledMarkupAccumulator final {
+    WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);
     STACK_ALLOCATED();
 public:
     enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
 
     StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*);
-    virtual void appendText(StringBuilder&, Text&) override;
-    virtual void appendElement(StringBuilder&, Element&, Namespaces*) override;
+
+    void appendString(const String&);
+    void appendStartTag(Node&, Namespaces* = nullptr);
+    void appendEndTag(const Element&);
+    void appendStartMarkup(StringBuilder&, Node&, Namespaces*);
+    void appendEndMarkup(StringBuilder&, const Element&);
+
+    void appendElement(StringBuilder&, Element&, Namespaces*);
     void appendElement(StringBuilder&, Element&, bool, RangeFullySelectsNode);
     void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, bool isBlock = false);
 
@@ -77,12 +84,18 @@ public:
     bool shouldAnnotateForNavigationTransition() const { return m_shouldAnnotate == AnnotateForNavigationTransition; }
     bool shouldAnnotateForInterchange() const { return m_shouldAnnotate == AnnotateForInterchange; }
 
+    size_t length() const { return m_accumulator.length(); }
+    void concatenateMarkup(StringBuilder&) const;
+
 private:
+    void appendText(StringBuilder&, Text&);
+
     String renderedText(Text&);
     String stringValueForRange(const Text&);
 
     bool shouldApplyWrappingStyle(const Node&) const;
 
+    MarkupAccumulator m_accumulator;
     const TextOffset m_start;
     const TextOffset m_end;
     const RefPtrWillBeMember<Document> m_document;

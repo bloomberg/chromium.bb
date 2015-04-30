@@ -78,13 +78,52 @@ bool TextOffset::isNotNull() const
 }
 
 StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
-    : MarkupAccumulator(shouldResolveURLs)
+    : m_accumulator(shouldResolveURLs)
     , m_start(start)
     , m_end(end)
     , m_document(document)
     , m_shouldAnnotate(shouldAnnotate)
     , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
 {
+}
+
+void StyledMarkupAccumulator::appendString(const String& str)
+{
+    m_accumulator.appendString(str);
+}
+
+void StyledMarkupAccumulator::appendStartTag(Node& node, Namespaces* namespaces)
+{
+    StringBuilder out;
+    appendStartMarkup(out, node, namespaces);
+    appendString(out.toString());
+}
+
+void StyledMarkupAccumulator::appendEndTag(const Element& element)
+{
+    StringBuilder out;
+    appendEndMarkup(out, element);
+    appendString(out.toString());
+}
+
+void StyledMarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node, Namespaces* namespaces)
+{
+    switch (node.nodeType()) {
+    case Node::TEXT_NODE:
+        appendText(result, toText(node));
+        break;
+    case Node::ELEMENT_NODE:
+        appendElement(result, toElement(node), namespaces);
+        break;
+    default:
+        m_accumulator.appendStartMarkup(result, node, namespaces);
+        break;
+    }
+}
+
+void StyledMarkupAccumulator::appendEndMarkup(StringBuilder& result, const Element& element)
+{
+    m_accumulator.appendEndMarkup(result, element);
 }
 
 void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
@@ -116,7 +155,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
                 length -= start;
             }
         }
-        appendCharactersReplacingEntities(out, str, start, length, entityMaskForText(text));
+        m_accumulator.appendCharactersReplacingEntities(out, str, start, length, m_accumulator.entityMaskForText(text));
     } else {
         const bool useRenderedText = !enclosingElementWithTag(firstPositionInNode(&text), selectTag);
         String content = useRenderedText ? renderedText(text) : stringValueForRange(text);
@@ -137,7 +176,7 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
 void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, bool addDisplayInline, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
 {
     const bool documentIsHTML = element.document().isHTMLDocument();
-    appendOpenTag(out, element, 0);
+    m_accumulator.appendOpenTag(out, element, 0);
 
     const bool shouldAnnotateOrForceInline = element.isHTMLElement() && (shouldAnnotate() || addDisplayInline);
     const bool shouldOverrideStyleAttr = shouldAnnotateOrForceInline || shouldApplyWrappingStyle(element);
@@ -147,7 +186,7 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
         // We'll handle the style attribute separately, below.
         if (attribute.name() == styleAttr && shouldOverrideStyleAttr)
             continue;
-        appendAttribute(out, element, attribute, 0);
+        m_accumulator.appendAttribute(out, element, attribute, 0);
     }
 
     if (shouldOverrideStyleAttr) {
@@ -182,12 +221,12 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
 
         if (!newInlineStyle->isEmpty()) {
             out.appendLiteral(" style=\"");
-            appendAttributeValue(out, newInlineStyle->style()->asText(), documentIsHTML);
+            m_accumulator.appendAttributeValue(out, newInlineStyle->style()->asText(), documentIsHTML);
             out.append('\"');
         }
     }
 
-    appendCloseTag(out, element);
+    m_accumulator.appendCloseTag(out, element);
 }
 
 void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePropertySet* style, bool isBlock)
@@ -199,8 +238,13 @@ void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePr
     else
         out.appendLiteral("<span style=\"");
     ASSERT(m_document);
-    appendAttributeValue(out, style->asText(), m_document->isHTMLDocument());
+    m_accumulator.appendAttributeValue(out, style->asText(), m_document->isHTMLDocument());
     out.appendLiteral("\">");
+}
+
+void StyledMarkupAccumulator::concatenateMarkup(StringBuilder& result) const
+{
+    m_accumulator.concatenateMarkup(result);
 }
 
 String StyledMarkupAccumulator::renderedText(Text& textNode)
