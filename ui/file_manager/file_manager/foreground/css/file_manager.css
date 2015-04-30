@@ -285,7 +285,7 @@ body.check-select button:hover {
   background-repeat: no-repeat;
   background-size: 16px 16px;
   border: 0;
-  border-radius: 16px;
+  border-radius: 2px;
   flex: none;
   height: 32px;
   line-height: 16px;
