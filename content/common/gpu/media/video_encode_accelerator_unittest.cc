@@ -25,10 +25,6 @@
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL) || (defined(USE_OZONE) && defined(USE_V4L2_CODEC))
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
@@ -1384,11 +1380,6 @@ int main(int argc, char** argv) {
 
   base::ShadowingAtExitManager at_exit_manager;
   base::MessageLoop main_loop;
-
-#if defined(USE_OZONE)
-  ui::OzonePlatform::InitializeForUI();
-  ui::OzonePlatform::InitializeForGPU();
-#endif
 
   scoped_ptr<base::FilePath::StringType> test_stream_data(
       new base::FilePath::StringType(
