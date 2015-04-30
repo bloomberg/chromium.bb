@@ -1217,6 +1217,8 @@ crbug.com/382491 virtual/slimmingpaint/fast/box-shadow/inset.html [ Skip ]
 
 crbug.com/382491 virtual/slimmingpaint/fast/gradients/background-clipped.html [ ImageOnlyFailure ]
 
+crbug.com/445598 svg/custom/svg-fonts-in-html.html [ NeedsRebaseline ]
+
 crbug.com/467477 virtual/regionbasedmulticol/fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
 
 crbug.com/386567 virtual/slimmingpaint/fast/multicol/border-padding-pagination.html [ Skip ]
