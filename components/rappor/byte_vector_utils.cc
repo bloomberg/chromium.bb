@@ -78,6 +78,17 @@ bool HMAC_DRBG_Update(const std::string& provided_data,
 
 }  // namespace
 
+void Uint64ToByteVector(uint64_t value, size_t size, ByteVector* output) {
+  DCHECK_LE(size, 8u);
+  DCHECK_EQ(size, output->size());
+  for (size_t i = 0; i < size; i++) {
+    // Get the value of the i-th smallest byte and copy it to the byte vector.
+    uint64_t shift = i * 8;
+    uint64_t byte_mask = static_cast<uint64_t>(0xff) << shift;
+    (*output)[i] = (value & byte_mask) >> shift;
+  }
+}
+
 ByteVector* ByteVectorAnd(const ByteVector& lhs, ByteVector* rhs) {
   DCHECK_EQ(lhs.size(), rhs->size());
   for (size_t i = 0; i < lhs.size(); ++i) {

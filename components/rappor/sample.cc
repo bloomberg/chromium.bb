@@ -56,14 +56,9 @@ void Sample::ExportMetrics(const std::string& secret,
     uint64_t value = kv.second;
     const auto it = sizes_.find(kv.first);
     DCHECK(it != sizes_.end());
-    uint64_t size = it->second;
+    size_t size = it->second;
     ByteVector value_bytes(size);
-    for (size_t i = 0; i < size; i++) {
-      // Get the value of the i-th smallest byte and copy it to the byte vector.
-      uint64_t shift = i * 8;
-      uint64_t byte_mask = 0xff << shift;
-      value_bytes[i] = (value & byte_mask) >> shift;
-    }
+    Uint64ToByteVector(value, size, &value_bytes);
     ByteVector report_bytes = internal::GenerateReport(
         secret, parameters_, value_bytes);
 
