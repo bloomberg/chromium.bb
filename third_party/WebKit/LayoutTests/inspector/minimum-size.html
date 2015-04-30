@@ -5,133 +5,133 @@
 
 function test()
 {
-    function showRootSplitView(splitView)
+    function showRootSplitWidget(splitWidget)
     {
-        splitView.element.style.position = "absolute";
-        splitView.element.style.top = "0";
-        splitView.element.style.left = "0";
-        splitView.element.style.height = "500px";
-        splitView.element.style.width = "500px";
-        splitView.markAsRoot();
-        splitView.show(document.body);
-        return splitView;
+        splitWidget.element.style.position = "absolute";
+        splitWidget.element.style.top = "0";
+        splitWidget.element.style.left = "0";
+        splitWidget.element.style.height = "500px";
+        splitWidget.element.style.width = "500px";
+        splitWidget.markAsRoot();
+        splitWidget.show(document.body);
+        return splitWidget;
     }
 
-    function dumpBoundingBoxes(views)
+    function dumpBoundingBoxes(widgets)
     {
-        for (var name in views) {
-            var box = views[name].element.getBoundingClientRect();
+        for (var name in widgets) {
+            var box = widgets[name].element.getBoundingClientRect();
             InspectorTest.addResult("[" + name + "] left = " + box.left + "; right = " + box.right + "; top = " + box.top + "; bottom = " + box.bottom);
         }
     }
 
     InspectorTest.addResult("Creating simple hierarchy");
-    var splitView = new WebInspector.SplitView(true, true, "splitViewStateSettingName.splitView", 250, 250);
-    showRootSplitView(splitView);
+    var splitWidget = new WebInspector.SplitWidget(true, true, "splitWidgetStateSettingName.splitWidget", 250, 250);
+    showRootSplitWidget(splitWidget);
 
-    var mainView = new WebInspector.View();
-    mainView.setMinimumSize(100, 80);
-    splitView.setMainView(mainView);
+    var mainWidget = new WebInspector.Widget();
+    mainWidget.setMinimumSize(100, 80);
+    splitWidget.setMainWidget(mainWidget);
 
-    var firstSidebarView = new WebInspector.View();
-    firstSidebarView.setMinimumSize(40, 70);
-    splitView.setSidebarView(firstSidebarView);
+    var firstSidebarWidget = new WebInspector.Widget();
+    firstSidebarWidget.setMinimumSize(40, 70);
+    splitWidget.setSidebarWidget(firstSidebarWidget);
 
-    var views = {"splitView": splitView, "mainView": mainView, "sidebarView": firstSidebarView};
-    dumpBoundingBoxes(views);
+    var widgets = {"splitWidget": splitWidget, "mainWidget": mainWidget, "sidebarWidget": firstSidebarWidget};
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Changing sidebar size");
-    splitView.setSidebarSize(30);
-    dumpBoundingBoxes(views);
+    splitWidget.setSidebarSize(30);
+    dumpBoundingBoxes(widgets);
 
-    InspectorTest.addResult("Changing sidebar view minimum size");
-    firstSidebarView.setMinimumSize(90, 70);
-    dumpBoundingBoxes(views);
+    InspectorTest.addResult("Changing sidebar widget minimum size");
+    firstSidebarWidget.setMinimumSize(90, 70);
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Changing orientation");
-    splitView.setVertical(false);
-    dumpBoundingBoxes(views);
+    splitWidget.setVertical(false);
+    dumpBoundingBoxes(widgets);
 
-    InspectorTest.addResult("Changing main view minimum size");
-    mainView.setMinimumSize(450, 450);
-    dumpBoundingBoxes(views);
+    InspectorTest.addResult("Changing main widget minimum size");
+    mainWidget.setMinimumSize(450, 450);
+    dumpBoundingBoxes(widgets);
 
-    InspectorTest.addResult("Changing main view minimum size back and resizing");
-    mainView.setMinimumSize(100, 80);
-    splitView.setSidebarSize(450);
-    dumpBoundingBoxes(views);
+    InspectorTest.addResult("Changing main widget minimum size back and resizing");
+    mainWidget.setMinimumSize(100, 80);
+    splitWidget.setSidebarSize(450);
+    dumpBoundingBoxes(widgets);
 
-    InspectorTest.addResult("Wrapping main view to a split view");
-    var childSplitView = new WebInspector.SplitView(false, true, "splitViewStateSettingName.childSplitView", 100, 100);
-    childSplitView.hideSidebar();
-    childSplitView.setMainView(mainView);
-    splitView.setMainView(childSplitView);
-    views["childSplitView"] = childSplitView;
-    dumpBoundingBoxes(views);
+    InspectorTest.addResult("Wrapping main widget to a split widget");
+    var childsplitWidget = new WebInspector.SplitWidget(false, true, "splitWidgetStateSettingName.childsplitWidget", 100, 100);
+    childsplitWidget.hideSidebar();
+    childsplitWidget.setMainWidget(mainWidget);
+    splitWidget.setMainWidget(childsplitWidget);
+    widgets["childSplitWidget"] = childsplitWidget;
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Adding invisble sidebar");
-    var secondSidebarView = new WebInspector.View();
-    secondSidebarView.setMinimumSize(60, 60);
-    childSplitView.setSidebarView(secondSidebarView);
-    views["secondSidebarView"] = secondSidebarView;
-    dumpBoundingBoxes(views);
+    var secondSidebarWidget = new WebInspector.Widget();
+    secondSidebarWidget.setMinimumSize(60, 60);
+    childsplitWidget.setSidebarWidget(secondSidebarWidget);
+    widgets["secondSidebarWidget"] = secondSidebarWidget;
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Showing sidebar");
-    childSplitView.showBoth();
-    dumpBoundingBoxes(views);
+    childsplitWidget.showBoth();
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Detaching sidebar");
-    secondSidebarView.detach();
-    delete views["secondSidebarView"];
-    dumpBoundingBoxes(views);
+    secondSidebarWidget.detach();
+    delete widgets["secondSidebarWidget"];
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Attaching another sidebar");
-    var thirdSidebarView = new WebInspector.View();
-    thirdSidebarView.setMinimumSize(80, 80);
-    childSplitView.setSidebarView(thirdSidebarView);
-    views["thirdSidebarView"] = thirdSidebarView;
-    dumpBoundingBoxes(views);
+    var thirdSidebarWidget = new WebInspector.Widget();
+    thirdSidebarWidget.setMinimumSize(80, 80);
+    childsplitWidget.setSidebarWidget(thirdSidebarWidget);
+    widgets["thirdSidebarWidget"] = thirdSidebarWidget;
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Swapping main and sidebar");
-    splitView.setSecondIsSidebar(false);
-    dumpBoundingBoxes(views);
+    splitWidget.setSecondIsSidebar(false);
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Arranging preferred sizes");
-    firstSidebarView.setMinimumAndPreferredSizes(50, 50, 100, 100);
-    mainView.setMinimumAndPreferredSizes(50, 50, 200, 200);
-    thirdSidebarView.setMinimumAndPreferredSizes(49, 49, 99, 99);
-    splitView.setSidebarSize(260);
-    dumpBoundingBoxes(views);
+    firstSidebarWidget.setMinimumAndPreferredSizes(50, 50, 100, 100);
+    mainWidget.setMinimumAndPreferredSizes(50, 50, 200, 200);
+    thirdSidebarWidget.setMinimumAndPreferredSizes(49, 49, 99, 99);
+    splitWidget.setSidebarSize(260);
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Less than sidebar preferred size");
-    splitView.setSidebarSize(80);
-    dumpBoundingBoxes(views);
+    splitWidget.setSidebarSize(80);
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Size changes proportionally");
-    splitView.setSidebarSize(320);
-    dumpBoundingBoxes(views);
+    splitWidget.setSidebarSize(320);
+    dumpBoundingBoxes(widgets);
 
-    InspectorTest.addResult("Manual resize inside child split view");
-    childSplitView.setSidebarSize(50);
-    dumpBoundingBoxes(views);
+    InspectorTest.addResult("Manual resize inside child split widget");
+    childsplitWidget.setSidebarSize(50);
+    dumpBoundingBoxes(widgets);
 
-    InspectorTest.addResult("Manual resize inside child split view");
-    childSplitView.setSidebarSize(120);
-    dumpBoundingBoxes(views);
+    InspectorTest.addResult("Manual resize inside child split widget");
+    childsplitWidget.setSidebarSize(120);
+    dumpBoundingBoxes(widgets);
 
-    InspectorTest.addResult("Child split view gets more space");
-    splitView.setSidebarSize(170);
-    dumpBoundingBoxes(views);
+    InspectorTest.addResult("Child split widget gets more space");
+    splitWidget.setSidebarSize(170);
+    dumpBoundingBoxes(widgets);
 
-    InspectorTest.addResult("Child split view gets less space");
-    splitView.setSidebarSize(360);
-    dumpBoundingBoxes(views);
+    InspectorTest.addResult("Child split widget gets less space");
+    splitWidget.setSidebarSize(360);
+    dumpBoundingBoxes(widgets);
 
     InspectorTest.completeTest();
 }
 </script>
 </head>
 <body onload="runTest()">
-<p>Tests how view minimum size works.</p>
+<p>Tests how widget minimum size works.</p>
 </body>
 </html>

@@ -1,8 +1,8 @@
-Tests how split view saving to settings works.
+Tests how split widget saving to settings works.
 
-Create default split view
-Running split view test with the following parameters: useFraction = false, shouldSaveShowMode = false
-Creating split view
+Create default split widget
+Running split widget test with the following parameters: useFraction = false, shouldSaveShowMode = false
+Creating split widget
     Sidebar size = 100, showMode = Both, vertical
     Setting value: {}
 Hiding sidebar
@@ -29,7 +29,7 @@ Resizing
 Hiding sidebar
     Sidebar size = 0, showMode = OnlyMain, horizontal
     Setting value: {"vertical":{"size":201},"horizontal":{"size":202}}
-Recreating split view
+Recreating split widget
     Sidebar size = 200, showMode = Both, vertical
     Setting value: {"vertical":{"size":201},"horizontal":{"size":202}}
 Hiding sidebar
@@ -41,16 +41,16 @@ Making horizontal
 Showing sidebar
     Sidebar size = 201, showMode = Both, horizontal
     Setting value: {"vertical":{"size":201},"horizontal":{"size":202}}
-Recreating split view
+Recreating split widget
     Sidebar size = 200, showMode = Both, vertical
     Setting value: {"vertical":{"size":201},"horizontal":{"size":202}}
 Making horizontal
     Sidebar size = 201, showMode = Both, horizontal
     Setting value: {"vertical":{"size":201},"horizontal":{"size":202}}
 
-Create default split view
-Running split view test with the following parameters: useFraction = false, shouldSaveShowMode = true
-Creating split view
+Create default split widget
+Running split widget test with the following parameters: useFraction = false, shouldSaveShowMode = true
+Creating split widget
     Sidebar size = 100, showMode = Both, vertical
     Setting value: {"vertical":{"size":0,"showMode":"Both"}}
 Hiding sidebar
@@ -77,7 +77,7 @@ Resizing
 Hiding sidebar
     Sidebar size = 0, showMode = OnlyMain, horizontal
     Setting value: {"vertical":{"size":201,"showMode":"Both"},"horizontal":{"size":202,"showMode":"OnlyMain"}}
-Recreating split view
+Recreating split widget
     Sidebar size = 200, showMode = Both, vertical
     Setting value: {"vertical":{"size":201,"showMode":"Both"},"horizontal":{"size":202,"showMode":"OnlyMain"}}
 Hiding sidebar
@@ -89,16 +89,16 @@ Making horizontal
 Showing sidebar
     Sidebar size = 201, showMode = Both, horizontal
     Setting value: {"vertical":{"size":201,"showMode":"OnlyMain"},"horizontal":{"size":202,"showMode":"Both"}}
-Recreating split view
+Recreating split widget
     Sidebar size = 0, showMode = OnlyMain, vertical
     Setting value: {"vertical":{"size":201,"showMode":"OnlyMain"},"horizontal":{"size":202,"showMode":"Both"}}
 Making horizontal
     Sidebar size = 201, showMode = Both, horizontal
     Setting value: {"vertical":{"size":201,"showMode":"OnlyMain"},"horizontal":{"size":202,"showMode":"Both"}}
 
-Create default split view
-Running split view test with the following parameters: useFraction = true, shouldSaveShowMode = false
-Creating split view
+Create default split widget
+Running split widget test with the following parameters: useFraction = true, shouldSaveShowMode = false
+Creating split widget
     Sidebar size = 114, showMode = Both, vertical
     Setting value: {}
 Hiding sidebar
@@ -125,7 +125,7 @@ Resizing
 Hiding sidebar
     Sidebar size = 0, showMode = OnlyMain, horizontal
     Setting value: {"vertical":{"size":125},"horizontal":{"size":130}}
-Recreating split view
+Recreating split widget
     Sidebar size = 124, showMode = Both, vertical
     Setting value: {"vertical":{"size":125},"horizontal":{"size":130}}
 Hiding sidebar
@@ -137,16 +137,16 @@ Making horizontal
 Showing sidebar
     Sidebar size = 129, showMode = Both, horizontal
     Setting value: {"vertical":{"size":125},"horizontal":{"size":130}}
-Recreating split view
+Recreating split widget
     Sidebar size = 124, showMode = Both, vertical
     Setting value: {"vertical":{"size":125},"horizontal":{"size":130}}
 Making horizontal
     Sidebar size = 129, showMode = Both, horizontal
     Setting value: {"vertical":{"size":125},"horizontal":{"size":130}}
 
-Create default split view
-Running split view test with the following parameters: useFraction = true, shouldSaveShowMode = true
-Creating split view
+Create default split widget
+Running split widget test with the following parameters: useFraction = true, shouldSaveShowMode = true
+Creating split widget
     Sidebar size = 114, showMode = Both, vertical
     Setting value: {"vertical":{"size":0,"showMode":"Both"}}
 Hiding sidebar
@@ -173,7 +173,7 @@ Resizing
 Hiding sidebar
     Sidebar size = 0, showMode = OnlyMain, horizontal
     Setting value: {"vertical":{"size":125,"showMode":"Both"},"horizontal":{"size":130,"showMode":"OnlyMain"}}
-Recreating split view
+Recreating split widget
     Sidebar size = 124, showMode = Both, vertical
     Setting value: {"vertical":{"size":125,"showMode":"Both"},"horizontal":{"size":130,"showMode":"OnlyMain"}}
 Hiding sidebar
@@ -185,7 +185,7 @@ Making horizontal
 Showing sidebar
     Sidebar size = 129, showMode = Both, horizontal
     Setting value: {"vertical":{"size":125,"showMode":"OnlyMain"},"horizontal":{"size":130,"showMode":"Both"}}
-Recreating split view
+Recreating split widget
     Sidebar size = 0, showMode = OnlyMain, vertical
     Setting value: {"vertical":{"size":125,"showMode":"OnlyMain"},"horizontal":{"size":130,"showMode":"Both"}}
 Making horizontal

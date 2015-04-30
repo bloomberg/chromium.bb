@@ -1,26 +1,26 @@
-This tests that events are properly propagated through View hierarchy.
+This tests that events are properly propagated through Widget hierarchy.
 
 
-Running: testShowView
-View()
-View.show()
-  View.wasShown()
-  View.onResize()
-View.detach()
-  View.willHide()
+Running: testShowWidget
+Widget()
+Widget.show()
+  Widget.wasShown()
+  Widget.onResize()
+Widget.detach()
+  Widget.willHide()
 
 Running: testAppendViaDOM
-View()
-Error: Attempt to add view via regular DOM operation.
+Widget()
+Error: Attempt to add widget via regular DOM operation.
 
 Running: testInsertViaDOM
-View()
-Error: Attempt to add view via regular DOM operation.
+Widget()
+Error: Attempt to add widget via regular DOM operation.
 
 Running: testAttachToOrphanNode
-View()
-View.show()
-Error: Attempt to attach view to orphan node
+Widget()
+Widget.show()
+Error: Attempt to attach widget to orphan node
 
 Running: testImmediateParent
 Parent()
@@ -84,7 +84,7 @@ Child.detach()
 Parent.detach()
   Parent.willHide()
 
-Running: testViewCounter
+Running: testWidgetCounter
 Parent()
 Parent.show()
   Parent.wasShown()
@@ -93,18 +93,18 @@ Child()
 Child.show()
   Child.wasShown()
   Child.onResize()
-  view counter: 1
+  widget counter: 1
 Child 2()
 Child 2.show()
   Child 2.wasShown()
   Child 2.onResize()
-  view counter: 2
+  widget counter: 2
 Child.detach()
   Child.willHide()
-  view counter: 1
+  widget counter: 1
 Child 2.detach()
   Child 2.willHide()
-  view counter: 0
+  widget counter: 0
 
 Running: testRemoveChild
 Parent()
@@ -115,25 +115,25 @@ Child()
 Child.show()
   Child.wasShown()
   Child.onResize()
-Error: Attempt to remove element containing view via regular DOM operation
+Error: Attempt to remove element containing widget via regular DOM operation
 
 Running: testImplicitRemoveChild
 Parent()
 Child()
 Child.show()
-Error: Attempt to remove element containing view via regular DOM operation
+Error: Attempt to remove element containing widget via regular DOM operation
 
 Running: testRemoveChildren
 Parent()
 Child()
 Child.show()
-Error: Attempt to remove element containing view via regular DOM operation
+Error: Attempt to remove element containing widget via regular DOM operation
 
 Running: testImplicitRemoveChildren
 Parent()
 Child()
 Child.show()
-Error: Attempt to remove element containing view via regular DOM operation
+Error: Attempt to remove element containing widget via regular DOM operation
 
 Running: testShowOnWasShown
 Parent()
