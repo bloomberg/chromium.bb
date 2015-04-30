@@ -1823,16 +1823,6 @@
    fun:ChromeMain
 }
 {
-   bug_164178
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net25MultiThreadedCertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_6CRLSetEPNS_16CertVerifyResultERKN4base8CallbackIFviEEEPPvRKNS_11BoundNetLogE
-   fun:_ZN3net25SingleRequestCertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_6CRLSetEPNS_16CertVerifyResultERKN4base8CallbackIFviEEERKNS_11BoundNetLogE
-   fun:_ZN3net18SSLClientSocketNSS12DoVerifyCertEi
-   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
-   fun:_ZN3net18SSLClientSocketNSS21OnHandshakeIOCompleteEi
-}
-{
    bug_164179
    Memcheck:Leak
    fun:_Znw*
