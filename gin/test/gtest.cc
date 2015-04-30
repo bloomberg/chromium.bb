@@ -31,8 +31,8 @@ void ExpectFalse(bool condition, const std::string& description) {
   EXPECT_FALSE(condition) << description;
 }
 
-void ExpectEqual(const v8::Handle<v8::Value> expected,
-                 const v8::Handle<v8::Value> actual,
+void ExpectEqual(const v8::Local<v8::Value> expected,
+                 const v8::Local<v8::Value> actual,
                  const std::string& description) {
   EXPECT_TRUE(expected->StrictEquals(actual)) << description;
 }

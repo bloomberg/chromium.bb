@@ -33,11 +33,11 @@ class GIN_EXPORT ContextHolder {
 
   v8::Isolate* isolate() const { return isolate_; }
 
-  v8::Handle<v8::Context> context() const {
+  v8::Local<v8::Context> context() const {
     return v8::Local<v8::Context>::New(isolate_, context_);
   }
 
-  void SetContext(v8::Handle<v8::Context> context);
+  void SetContext(v8::Local<v8::Context> context);
 
  private:
   v8::Isolate* isolate_;

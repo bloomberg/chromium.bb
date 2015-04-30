@@ -25,10 +25,10 @@ ShellRunnerDelegate::ShellRunnerDelegate() {
 ShellRunnerDelegate::~ShellRunnerDelegate() {
 }
 
-v8::Handle<ObjectTemplate> ShellRunnerDelegate::GetGlobalTemplate(
+v8::Local<ObjectTemplate> ShellRunnerDelegate::GetGlobalTemplate(
     ShellRunner* runner,
     v8::Isolate* isolate) {
-  return v8::Handle<ObjectTemplate>();
+  return v8::Local<ObjectTemplate>();
 }
 
 void ShellRunnerDelegate::DidCreateContext(ShellRunner* runner) {
@@ -49,7 +49,7 @@ ShellRunner::ShellRunner(ShellRunnerDelegate* delegate, Isolate* isolate)
     : delegate_(delegate) {
   v8::Isolate::Scope isolate_scope(isolate);
   HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context =
+  v8::Local<v8::Context> context =
       Context::New(isolate, NULL, delegate_->GetGlobalTemplate(this, isolate));
 
   context_holder_.reset(new ContextHolder(isolate));
@@ -67,7 +67,7 @@ void ShellRunner::Run(const std::string& source,
                       const std::string& resource_name) {
   TryCatch try_catch;
   v8::Isolate* isolate = GetContextHolder()->isolate();
-  v8::Handle<Script> script = Script::Compile(
+  v8::Local<Script> script = Script::Compile(
       StringToV8(isolate, source), StringToV8(isolate, resource_name));
   if (try_catch.HasCaught()) {
     delegate_->UnhandledException(this, try_catch);
@@ -77,14 +77,14 @@ void ShellRunner::Run(const std::string& source,
   Run(script);
 }
 
-v8::Handle<v8::Value> ShellRunner::Call(v8::Handle<v8::Function> function,
-                                        v8::Handle<v8::Value> receiver,
+v8::Local<v8::Value> ShellRunner::Call(v8::Local<v8::Function> function,
+                                        v8::Local<v8::Value> receiver,
                                         int argc,
-                                        v8::Handle<v8::Value> argv[]) {
+                                        v8::Local<v8::Value> argv[]) {
   TryCatch try_catch;
   delegate_->WillRunScript(this);
 
-  v8::Handle<v8::Value> result = function->Call(receiver, argc, argv);
+  v8::Local<v8::Value> result = function->Call(receiver, argc, argv);
 
   delegate_->DidRunScript(this);
   if (try_catch.HasCaught())
@@ -97,7 +97,7 @@ ContextHolder* ShellRunner::GetContextHolder() {
   return context_holder_.get();
 }
 
-void ShellRunner::Run(v8::Handle<Script> script) {
+void ShellRunner::Run(v8::Local<Script> script) {
   TryCatch try_catch;
   delegate_->WillRunScript(this);
 

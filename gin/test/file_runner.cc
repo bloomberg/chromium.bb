@@ -79,7 +79,7 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
       message_loop.Run();
     }
 
-    v8::Handle<v8::Value> result = runner.global()->Get(
+    v8::Local<v8::Value> result = runner.global()->Get(
         StringToSymbol(runner.GetContextHolder()->isolate(), "result"));
     EXPECT_EQ("PASS", V8ToString(result));
   }

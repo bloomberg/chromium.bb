@@ -23,7 +23,7 @@ enum InternalFields {
 };
 
 struct GIN_EXPORT WrapperInfo {
-  static WrapperInfo* From(v8::Handle<v8::Object> object);
+  static WrapperInfo* From(v8::Local<v8::Object> object);
   const GinEmbedder embedder;
 };
 

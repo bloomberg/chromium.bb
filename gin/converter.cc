@@ -166,7 +166,7 @@ Handle<Value> Converter<Handle<External> >::ToV8(Isolate* isolate,
 }
 
 bool Converter<Handle<External> >::FromV8(Isolate* isolate,
-                                          v8::Handle<Value> val,
+                                          v8::Local<Value> val,
                                           Handle<External>* out) {
   if (!val->IsExternal())
     return false;
@@ -185,7 +185,7 @@ bool Converter<Handle<Value> >::FromV8(Isolate* isolate, Handle<Value> val,
   return true;
 }
 
-v8::Handle<v8::String> StringToSymbol(v8::Isolate* isolate,
+v8::Local<v8::String> StringToSymbol(v8::Isolate* isolate,
                                       const base::StringPiece& val) {
   return String::NewFromUtf8(isolate,
                              val.data(),
@@ -193,7 +193,7 @@ v8::Handle<v8::String> StringToSymbol(v8::Isolate* isolate,
                              static_cast<uint32_t>(val.length()));
 }
 
-std::string V8ToString(v8::Handle<v8::Value> value) {
+std::string V8ToString(v8::Local<v8::Value> value) {
   if (value.IsEmpty())
     return std::string();
   std::string result;

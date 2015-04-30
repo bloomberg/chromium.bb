@@ -18,8 +18,8 @@ typedef V8Test PerContextDataTest;
 TEST_F(PerContextDataTest, LookupAndDestruction) {
   v8::Isolate::Scope isolate_scope(instance_->isolate());
   v8::HandleScope handle_scope(instance_->isolate());
-  v8::Handle<v8::Context> context = v8::Context::New(
-      instance_->isolate(), NULL, v8::Handle<v8::ObjectTemplate>());
+  v8::Local<v8::Context> context = v8::Context::New(
+      instance_->isolate(), NULL, v8::Local<v8::ObjectTemplate>());
   {
     ContextHolder context_holder(instance_->isolate());
     context_holder.SetContext(context);

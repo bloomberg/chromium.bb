@@ -136,17 +136,17 @@ class InterceptorTest : public V8Test {
     obj->set_value(42);
     EXPECT_EQ(42, obj->value());
 
-    v8::Handle<v8::String> source = StringToV8(isolate, script_source);
+    v8::Local<v8::String> source = StringToV8(isolate, script_source);
     EXPECT_FALSE(source.IsEmpty());
 
     gin::TryCatch try_catch;
-    v8::Handle<v8::Script> script = v8::Script::Compile(source);
+    v8::Local<v8::Script> script = v8::Script::Compile(source);
     EXPECT_FALSE(script.IsEmpty());
-    v8::Handle<v8::Value> val = script->Run();
+    v8::Local<v8::Value> val = script->Run();
     EXPECT_FALSE(val.IsEmpty());
-    v8::Handle<v8::Function> func;
+    v8::Local<v8::Function> func;
     EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
-    v8::Handle<v8::Value> argv[] = {ConvertToV8(isolate, obj.get()), };
+    v8::Local<v8::Value> argv[] = {ConvertToV8(isolate, obj.get()), };
     func->Call(v8::Undefined(isolate), 1, argv);
     EXPECT_FALSE(try_catch.HasCaught());
     EXPECT_EQ("", try_catch.GetStackTrace());

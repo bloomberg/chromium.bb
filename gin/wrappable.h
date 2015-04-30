@@ -15,7 +15,7 @@ namespace gin {
 namespace internal {
 
 GIN_EXPORT void* FromV8Impl(v8::Isolate* isolate,
-                            v8::Handle<v8::Value> val,
+                            v8::Local<v8::Value> val,
                             WrapperInfo* info);
 
 }  // namespace internal
@@ -64,7 +64,7 @@ class GIN_EXPORT WrappableBase {
 
   virtual ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate);
 
-  v8::Handle<v8::Object> GetWrapperImpl(v8::Isolate* isolate,
+  v8::Local<v8::Object> GetWrapperImpl(v8::Isolate* isolate,
                                         WrapperInfo* wrapper_info);
 
  private:
@@ -85,7 +85,7 @@ class Wrappable : public WrappableBase {
   // Retrieve (or create) the v8 wrapper object cooresponding to this object.
   // To customize the wrapper created for a subclass, override GetWrapperInfo()
   // instead of overriding this function.
-  v8::Handle<v8::Object> GetWrapper(v8::Isolate* isolate) {
+  v8::Local<v8::Object> GetWrapper(v8::Isolate* isolate) {
     return GetWrapperImpl(isolate, &T::kWrapperInfo);
   }
 
@@ -102,11 +102,11 @@ class Wrappable : public WrappableBase {
 template<typename T>
 struct Converter<T*, typename base::enable_if<
                        base::is_convertible<T*, WrappableBase*>::value>::type> {
-  static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate, T* val) {
+  static v8::Local<v8::Value> ToV8(v8::Isolate* isolate, T* val) {
     return val->GetWrapper(isolate);
   }
 
-  static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val, T** out) {
+  static bool FromV8(v8::Isolate* isolate, v8::Local<v8::Value> val, T** out) {
     *out = static_cast<T*>(static_cast<WrappableBase*>(
         internal::FromV8Impl(isolate, val, &T::kWrapperInfo)));
     return *out != NULL;

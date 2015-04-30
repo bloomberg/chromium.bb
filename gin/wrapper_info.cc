@@ -6,7 +6,7 @@
 
 namespace gin {
 
-WrapperInfo* WrapperInfo::From(v8::Handle<v8::Object> object) {
+WrapperInfo* WrapperInfo::From(v8::Local<v8::Object> object) {
   if (object->InternalFieldCount() != kNumberOfInternalFields)
     return NULL;
   WrapperInfo* info = static_cast<WrapperInfo*>(

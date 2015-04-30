@@ -26,13 +26,13 @@ Arguments::Arguments(const v8::FunctionCallbackInfo<v8::Value>& info)
 Arguments::~Arguments() {
 }
 
-v8::Handle<v8::Value> Arguments::PeekNext() const {
+v8::Local<v8::Value> Arguments::PeekNext() const {
   if (next_ >= info_->Length())
-    return v8::Handle<v8::Value>();
+    return v8::Local<v8::Value>();
   return (*info_)[next_];
 }
 
-std::string V8TypeAsString(v8::Handle<v8::Value> value) {
+std::string V8TypeAsString(v8::Local<v8::Value> value) {
   if (value.IsEmpty())
     return "<empty handle>";
   if (value->IsUndefined())

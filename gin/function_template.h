@@ -44,7 +44,7 @@ struct CallbackParamTraits<const T*> {
 // among every CallbackHolder instance.
 class GIN_EXPORT CallbackHolderBase {
  public:
-  v8::Handle<v8::External> GetHandle(v8::Isolate* isolate);
+  v8::Local<v8::External> GetHandle(v8::Isolate* isolate);
 
  protected:
   explicit CallbackHolderBase(v8::Isolate* isolate);
@@ -200,7 +200,7 @@ struct Dispatcher<ReturnType(ArgTypes...)> {
   static void DispatchToCallback(
       const v8::FunctionCallbackInfo<v8::Value>& info) {
     Arguments args(info);
-    v8::Handle<v8::External> v8_holder;
+    v8::Local<v8::External> v8_holder;
     CHECK(args.GetData(&v8_holder));
     CallbackHolderBase* holder_base = reinterpret_cast<CallbackHolderBase*>(
         v8_holder->Value());
@@ -237,7 +237,7 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
   return v8::FunctionTemplate::New(
       isolate,
       &internal::Dispatcher<Sig>::DispatchToCallback,
-      ConvertToV8<v8::Handle<v8::External> >(isolate,
+      ConvertToV8<v8::Local<v8::External> >(isolate,
                                              holder->GetHandle(isolate)));
 }
 
@@ -251,7 +251,7 @@ void CreateFunctionHandler(v8::Isolate* isolate,
   typedef internal::CallbackHolder<Sig> HolderT;
   HolderT* holder = new HolderT(isolate, callback, callback_flags);
   tmpl->SetCallAsFunctionHandler(&internal::Dispatcher<Sig>::DispatchToCallback,
-                                 ConvertToV8<v8::Handle<v8::External> >(
+                                 ConvertToV8<v8::Local<v8::External> >(
                                      isolate, holder->GetHandle(isolate)));
 }
 

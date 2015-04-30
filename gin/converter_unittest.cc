@@ -79,7 +79,7 @@ TEST_F(ConverterTest, Int32) {
   }
 
   struct {
-    v8::Handle<v8::Value> input;
+    v8::Local<v8::Value> input;
     bool expect_sucess;
     int expected_result;
   } test_data_from[] = {

@@ -23,11 +23,11 @@ class Runner;
 class GIN_EXPORT PerContextData : public base::SupportsUserData {
  public:
   PerContextData(ContextHolder* context_holder,
-                 v8::Handle<v8::Context> context);
+                 v8::Local<v8::Context> context);
   ~PerContextData() override;
 
   // Can return NULL after the ContextHolder has detached from context.
-  static PerContextData* From(v8::Handle<v8::Context> context);
+  static PerContextData* From(v8::Local<v8::Context> context);
 
   // The Runner associated with this context. To execute script in this context,
   // please use the appropriate API on Runner.

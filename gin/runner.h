@@ -24,13 +24,13 @@ class GIN_EXPORT Runner {
   // context by creating an instance of Runner::Scope on the stack.
   virtual void Run(const std::string& source,
                    const std::string& resource_name) = 0;
-  virtual v8::Handle<v8::Value> Call(v8::Handle<v8::Function> function,
-                                     v8::Handle<v8::Value> receiver,
+  virtual v8::Local<v8::Value> Call(v8::Local<v8::Function> function,
+                                     v8::Local<v8::Value> receiver,
                                      int argc,
-                                     v8::Handle<v8::Value> argv[]) = 0;
+                                     v8::Local<v8::Value> argv[]) = 0;
   virtual ContextHolder* GetContextHolder() = 0;
 
-  v8::Handle<v8::Object> global() {
+  v8::Local<v8::Object> global() {
     return GetContextHolder()->context()->Global();
   }
 

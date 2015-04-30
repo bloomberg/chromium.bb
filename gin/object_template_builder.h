@@ -23,7 +23,7 @@ namespace {
 // because of base::Bind().
 template<typename T, typename Enable = void>
 struct CallbackTraits {
-  static v8::Handle<v8::FunctionTemplate> CreateTemplate(v8::Isolate* isolate,
+  static v8::Local<v8::FunctionTemplate> CreateTemplate(v8::Isolate* isolate,
                                                          T callback) {
     return CreateFunctionTemplate(isolate, base::Bind(callback));
   }
@@ -37,7 +37,7 @@ struct CallbackTraits {
 // Specialization for base::Callback.
 template<typename T>
 struct CallbackTraits<base::Callback<T> > {
-  static v8::Handle<v8::FunctionTemplate> CreateTemplate(
+  static v8::Local<v8::FunctionTemplate> CreateTemplate(
       v8::Isolate* isolate, const base::Callback<T>& callback) {
     return CreateFunctionTemplate(isolate, callback);
   }
@@ -55,7 +55,7 @@ struct CallbackTraits<base::Callback<T> > {
 template<typename T>
 struct CallbackTraits<T, typename base::enable_if<
                            base::is_member_function_pointer<T>::value>::type> {
-  static v8::Handle<v8::FunctionTemplate> CreateTemplate(v8::Isolate* isolate,
+  static v8::Local<v8::FunctionTemplate> CreateTemplate(v8::Isolate* isolate,
                                                          T callback) {
     return CreateFunctionTemplate(isolate, base::Bind(callback),
                                   HolderIsFirstArgument);
@@ -71,9 +71,9 @@ struct CallbackTraits<T, typename base::enable_if<
 // This specialization allows people to construct function templates directly if
 // they need to do fancier stuff.
 template<>
-struct CallbackTraits<v8::Handle<v8::FunctionTemplate> > {
-  static v8::Handle<v8::FunctionTemplate> CreateTemplate(
-      v8::Handle<v8::FunctionTemplate> templ) {
+struct CallbackTraits<v8::Local<v8::FunctionTemplate> > {
+  static v8::Local<v8::FunctionTemplate> CreateTemplate(
+      v8::Local<v8::FunctionTemplate> templ) {
     return templ;
   }
 };
@@ -131,10 +131,10 @@ class GIN_EXPORT ObjectTemplateBuilder {
 
  private:
   ObjectTemplateBuilder& SetImpl(const base::StringPiece& name,
-                                 v8::Handle<v8::Data> val);
+                                 v8::Local<v8::Data> val);
   ObjectTemplateBuilder& SetPropertyImpl(
-      const base::StringPiece& name, v8::Handle<v8::FunctionTemplate> getter,
-      v8::Handle<v8::FunctionTemplate> setter);
+      const base::StringPiece& name, v8::Local<v8::FunctionTemplate> getter,
+      v8::Local<v8::FunctionTemplate> setter);
 
   v8::Isolate* isolate_;
 

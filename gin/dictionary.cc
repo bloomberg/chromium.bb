@@ -11,7 +11,7 @@ Dictionary::Dictionary(v8::Isolate* isolate)
 }
 
 Dictionary::Dictionary(v8::Isolate* isolate,
-                       v8::Handle<v8::Object> object)
+                       v8::Local<v8::Object> object)
     : isolate_(isolate),
       object_(object) {
 }
@@ -25,17 +25,17 @@ Dictionary Dictionary::CreateEmpty(v8::Isolate* isolate) {
   return dictionary;
 }
 
-v8::Handle<v8::Value> Converter<Dictionary>::ToV8(v8::Isolate* isolate,
+v8::Local<v8::Value> Converter<Dictionary>::ToV8(v8::Isolate* isolate,
                                                   Dictionary val) {
   return val.object_;
 }
 
 bool Converter<Dictionary>::FromV8(v8::Isolate* isolate,
-                                   v8::Handle<v8::Value> val,
+                                   v8::Local<v8::Value> val,
                                    Dictionary* out) {
   if (!val->IsObject())
     return false;
-  *out = Dictionary(isolate, v8::Handle<v8::Object>::Cast(val));
+  *out = Dictionary(isolate, v8::Local<v8::Object>::Cast(val));
   return true;
 }
 

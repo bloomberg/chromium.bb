@@ -13,10 +13,10 @@ namespace gin {
 namespace {
 
 WrappableBase* WrappableFromV8(v8::Isolate* isolate,
-                               v8::Handle<v8::Value> val) {
+                               v8::Local<v8::Value> val) {
   if (!val->IsObject())
     return NULL;
-  v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(val);
+  v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(val);
   WrapperInfo* info = WrapperInfo::From(obj);
 
   // If this fails, the object is not managed by Gin.
@@ -31,7 +31,7 @@ WrappableBase* WrappableFromV8(v8::Isolate* isolate,
 }
 
 NamedPropertyInterceptor* NamedInterceptorFromV8(v8::Isolate* isolate,
-                                                 v8::Handle<v8::Value> val) {
+                                                 v8::Local<v8::Value> val) {
   WrappableBase* base = WrappableFromV8(isolate, val);
   if (!base)
     return NULL;
@@ -40,7 +40,7 @@ NamedPropertyInterceptor* NamedInterceptorFromV8(v8::Isolate* isolate,
 
 IndexedPropertyInterceptor* IndexedInterceptorFromV8(
     v8::Isolate* isolate,
-    v8::Handle<v8::Value> val) {
+    v8::Local<v8::Value> val) {
   WrappableBase* base = WrappableFromV8(isolate, val);
   if (!base)
     return NULL;
@@ -93,7 +93,7 @@ void NamedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
       NamedInterceptorFromV8(isolate, info.Holder());
   if (!interceptor)
     return;
-  info.GetReturnValue().Set(v8::Handle<v8::Array>::Cast(
+  info.GetReturnValue().Set(v8::Local<v8::Array>::Cast(
       ConvertToV8(isolate, interceptor->EnumerateNamedProperties(isolate))));
 }
 
@@ -126,7 +126,7 @@ void IndexedPropertyEnumerator(
       IndexedInterceptorFromV8(isolate, info.Holder());
   if (!interceptor)
     return;
-  info.GetReturnValue().Set(v8::Handle<v8::Array>::Cast(
+  info.GetReturnValue().Set(v8::Local<v8::Array>::Cast(
       ConvertToV8(isolate, interceptor->EnumerateIndexedProperties(isolate))));
 }
 
@@ -159,14 +159,14 @@ ObjectTemplateBuilder& ObjectTemplateBuilder::AddIndexedPropertyInterceptor() {
 }
 
 ObjectTemplateBuilder& ObjectTemplateBuilder::SetImpl(
-    const base::StringPiece& name, v8::Handle<v8::Data> val) {
+    const base::StringPiece& name, v8::Local<v8::Data> val) {
   template_->Set(StringToSymbol(isolate_, name), val);
   return *this;
 }
 
 ObjectTemplateBuilder& ObjectTemplateBuilder::SetPropertyImpl(
-    const base::StringPiece& name, v8::Handle<v8::FunctionTemplate> getter,
-    v8::Handle<v8::FunctionTemplate> setter) {
+    const base::StringPiece& name, v8::Local<v8::FunctionTemplate> getter,
+    v8::Local<v8::FunctionTemplate> setter) {
   template_->SetAccessorProperty(StringToSymbol(isolate_, name), getter,
                                  setter);
   return *this;

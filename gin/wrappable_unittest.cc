@@ -132,7 +132,7 @@ TEST_F(WrappableTest, WrapAndUnwrap) {
 
   Handle<MyObject> obj = MyObject::Create(isolate);
 
-  v8::Handle<v8::Value> wrapper = ConvertToV8(isolate, obj.get());
+  v8::Local<v8::Value> wrapper = ConvertToV8(isolate, obj.get());
   EXPECT_FALSE(wrapper.IsEmpty());
 
   MyObject* unwrapped = NULL;
@@ -145,7 +145,7 @@ TEST_F(WrappableTest, UnwrapFailures) {
   v8::HandleScope handle_scope(isolate);
 
   // Something that isn't an object.
-  v8::Handle<v8::Value> thing = v8::Number::New(isolate, 42);
+  v8::Local<v8::Value> thing = v8::Number::New(isolate, 42);
   MyObject* unwrapped = NULL;
   EXPECT_FALSE(ConvertFromV8(isolate, thing, &unwrapped));
   EXPECT_FALSE(unwrapped);
@@ -177,20 +177,20 @@ TEST_F(WrappableTest, GetAndSetProperty) {
   obj->set_value(42);
   EXPECT_EQ(42, obj->value());
 
-  v8::Handle<v8::String> source = StringToV8(isolate,
+  v8::Local<v8::String> source = StringToV8(isolate,
       "(function (obj) {"
       "   if (obj.value !== 42) throw 'FAIL';"
       "   else obj.value = 191; })");
   EXPECT_FALSE(source.IsEmpty());
 
   gin::TryCatch try_catch;
-  v8::Handle<v8::Script> script = v8::Script::Compile(source);
+  v8::Local<v8::Script> script = v8::Script::Compile(source);
   EXPECT_FALSE(script.IsEmpty());
-  v8::Handle<v8::Value> val = script->Run();
+  v8::Local<v8::Value> val = script->Run();
   EXPECT_FALSE(val.IsEmpty());
-  v8::Handle<v8::Function> func;
+  v8::Local<v8::Function> func;
   EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
-  v8::Handle<v8::Value> argv[] = {
+  v8::Local<v8::Value> argv[] = {
     ConvertToV8(isolate, obj.get()),
   };
   func->Call(v8::Undefined(isolate), 1, argv);
@@ -205,16 +205,16 @@ TEST_F(WrappableTest, WrappableSubclass) {
   v8::HandleScope handle_scope(isolate);
 
   gin::Handle<MyObjectSubclass> object(MyObjectSubclass::Create(isolate));
-  v8::Handle<v8::String> source = StringToV8(isolate,
+  v8::Local<v8::String> source = StringToV8(isolate,
                                              "(function(obj) {"
                                              "obj.sayHello('Lily');"
                                              "})");
   gin::TryCatch try_catch;
-  v8::Handle<v8::Script> script = v8::Script::Compile(source);
-  v8::Handle<v8::Value> val = script->Run();
-  v8::Handle<v8::Function> func;
+  v8::Local<v8::Script> script = v8::Script::Compile(source);
+  v8::Local<v8::Value> val = script->Run();
+  v8::Local<v8::Function> func;
   EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
-  v8::Handle<v8::Value> argv[] = {
+  v8::Local<v8::Value> argv[] = {
     ConvertToV8(isolate, object.get())
   };
   func->Call(v8::Undefined(isolate), 1, argv);
@@ -228,16 +228,16 @@ TEST_F(WrappableTest, CallAsFunction) {
 
   gin::Handle<MyCallableObject> object(MyCallableObject::Create(isolate));
   EXPECT_EQ(0, object->result());
-  v8::Handle<v8::String> source = StringToV8(isolate,
+  v8::Local<v8::String> source = StringToV8(isolate,
                                              "(function(obj) {"
                                              "obj(42, 2, 5);"
                                              "})");
   gin::TryCatch try_catch;
-  v8::Handle<v8::Script> script = v8::Script::Compile(source);
-  v8::Handle<v8::Value> val = script->Run();
-  v8::Handle<v8::Function> func;
+  v8::Local<v8::Script> script = v8::Script::Compile(source);
+  v8::Local<v8::Value> val = script->Run();
+  v8::Local<v8::Function> func;
   EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
-  v8::Handle<v8::Value> argv[] = {
+  v8::Local<v8::Value> argv[] = {
     ConvertToV8(isolate, object.get())
   };
   func->Call(v8::Undefined(isolate), 1, argv);
@@ -251,16 +251,16 @@ TEST_F(WrappableTest, CallAsConstructor) {
 
   gin::Handle<MyCallableObject> object(MyCallableObject::Create(isolate));
   EXPECT_EQ(0, object->result());
-  v8::Handle<v8::String> source = StringToV8(isolate,
+  v8::Local<v8::String> source = StringToV8(isolate,
                                              "(function(obj) {"
                                              "new obj(42, 2, 5);"
                                              "})");
   gin::TryCatch try_catch;
-  v8::Handle<v8::Script> script = v8::Script::Compile(source);
-  v8::Handle<v8::Value> val = script->Run();
-  v8::Handle<v8::Function> func;
+  v8::Local<v8::Script> script = v8::Script::Compile(source);
+  v8::Local<v8::Value> val = script->Run();
+  v8::Local<v8::Function> func;
   EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
-  v8::Handle<v8::Value> argv[] = {
+  v8::Local<v8::Value> argv[] = {
     ConvertToV8(isolate, object.get())
   };
   func->Call(v8::Undefined(isolate), 1, argv);

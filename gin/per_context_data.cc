@@ -11,7 +11,7 @@
 namespace gin {
 
 PerContextData::PerContextData(ContextHolder* context_holder,
-                               v8::Handle<v8::Context> context)
+                               v8::Local<v8::Context> context)
     : context_holder_(context_holder),
       runner_(NULL) {
   context->SetAlignedPointerInEmbedderData(
@@ -25,7 +25,7 @@ PerContextData::~PerContextData() {
 }
 
 // static
-PerContextData* PerContextData::From(v8::Handle<v8::Context> context) {
+PerContextData* PerContextData::From(v8::Local<v8::Context> context) {
   return static_cast<PerContextData*>(
       context->GetAlignedPointerFromEmbedderData(kEncodedValueIndex));
 }

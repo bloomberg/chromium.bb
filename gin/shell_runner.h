@@ -22,7 +22,7 @@ class GIN_EXPORT ShellRunnerDelegate {
   virtual ~ShellRunnerDelegate();
 
   // Returns the template for the global object.
-  virtual v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(
+  virtual v8::Local<v8::ObjectTemplate> GetGlobalTemplate(
       ShellRunner* runner,
       v8::Isolate* isolate);
   virtual void DidCreateContext(ShellRunner* runner);
@@ -45,16 +45,16 @@ class GIN_EXPORT ShellRunner : public Runner {
   // Runner overrides:
   void Run(const std::string& source,
            const std::string& resource_name) override;
-  v8::Handle<v8::Value> Call(v8::Handle<v8::Function> function,
-                             v8::Handle<v8::Value> receiver,
+  v8::Local<v8::Value> Call(v8::Local<v8::Function> function,
+                             v8::Local<v8::Value> receiver,
                              int argc,
-                             v8::Handle<v8::Value> argv[]) override;
+                             v8::Local<v8::Value> argv[]) override;
   ContextHolder* GetContextHolder() override;
 
  private:
   friend class Scope;
 
-  void Run(v8::Handle<v8::Script> script);
+  void Run(v8::Local<v8::Script> script);
 
   ShellRunnerDelegate* delegate_;
 

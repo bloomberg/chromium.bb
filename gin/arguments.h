@@ -36,7 +36,7 @@ class GIN_EXPORT Arguments {
       insufficient_arguments_ = true;
       return false;
     }
-    v8::Handle<v8::Value> val = (*info_)[next_++];
+    v8::Local<v8::Value> val = (*info_)[next_++];
     return ConvertFromV8(isolate_, val, out);
   }
 
@@ -49,7 +49,7 @@ class GIN_EXPORT Arguments {
     int remaining = info_->Length() - next_;
     out->resize(remaining);
     for (int i = 0; i < remaining; ++i) {
-      v8::Handle<v8::Value> val = (*info_)[next_++];
+      v8::Local<v8::Value> val = (*info_)[next_++];
       if (!ConvertFromV8(isolate_, val, &out->at(i)))
         return false;
     }
@@ -72,7 +72,7 @@ class GIN_EXPORT Arguments {
     info_->GetReturnValue().Set(ConvertToV8(isolate_, val));
   }
 
-  v8::Handle<v8::Value> PeekNext() const;
+  v8::Local<v8::Value> PeekNext() const;
 
   void ThrowError() const;
   void ThrowTypeError(const std::string& message) const;

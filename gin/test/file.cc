@@ -23,7 +23,7 @@ namespace gin {
 
 namespace {
 
-v8::Handle<v8::Value> ReadFileToString(gin::Arguments* args) {
+v8::Local<v8::Value> ReadFileToString(gin::Arguments* args) {
   std::string filename;
   if (!args->GetNext(&filename))
     return v8::Null(args->isolate());
@@ -36,7 +36,7 @@ v8::Handle<v8::Value> ReadFileToString(gin::Arguments* args) {
   return gin::Converter<std::string>::ToV8(args->isolate(), contents);
 }
 
-v8::Handle<v8::Value> GetSourceRootDirectory(gin::Arguments* args) {
+v8::Local<v8::Value> GetSourceRootDirectory(gin::Arguments* args) {
   base::FilePath path;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &path))
     return v8::Null(args->isolate());
@@ -44,7 +44,7 @@ v8::Handle<v8::Value> GetSourceRootDirectory(gin::Arguments* args) {
                                            path.AsUTF8Unsafe());
 }
 
-v8::Handle<v8::Value> GetFilesInDirectory(gin::Arguments* args) {
+v8::Local<v8::Value> GetFilesInDirectory(gin::Arguments* args) {
   std::string filename;
   if (!args->GetNext(&filename))
     return v8::Null(args->isolate());

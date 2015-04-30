@@ -62,7 +62,7 @@ ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
 class ArrayBuffer::Private : public base::RefCounted<ArrayBuffer::Private> {
  public:
   static scoped_refptr<Private> From(v8::Isolate* isolate,
-                                     v8::Handle<v8::ArrayBuffer> array);
+                                     v8::Local<v8::ArrayBuffer> array);
 
   void* buffer() const { return buffer_; }
   size_t length() const { return length_; }
@@ -70,7 +70,7 @@ class ArrayBuffer::Private : public base::RefCounted<ArrayBuffer::Private> {
  private:
   friend class base::RefCounted<Private>;
 
-  Private(v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> array);
+  Private(v8::Isolate* isolate, v8::Local<v8::ArrayBuffer> array);
   ~Private();
 
   static void FirstWeakCallback(const v8::WeakCallbackInfo<Private>& data);
@@ -84,9 +84,9 @@ class ArrayBuffer::Private : public base::RefCounted<ArrayBuffer::Private> {
 };
 
 scoped_refptr<ArrayBuffer::Private> ArrayBuffer::Private::From(
-    v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> array) {
+    v8::Isolate* isolate, v8::Local<v8::ArrayBuffer> array) {
   if (array->IsExternal()) {
-    CHECK_EQ(WrapperInfo::From(v8::Handle<v8::Object>::Cast(array)),
+    CHECK_EQ(WrapperInfo::From(v8::Local<v8::Object>::Cast(array)),
              &g_array_buffer_wrapper_info)
         << "Cannot mix blink and gin ArrayBuffers";
     return make_scoped_refptr(static_cast<Private*>(
@@ -96,7 +96,7 @@ scoped_refptr<ArrayBuffer::Private> ArrayBuffer::Private::From(
 }
 
 ArrayBuffer::Private::Private(v8::Isolate* isolate,
-                              v8::Handle<v8::ArrayBuffer> array)
+                              v8::Local<v8::ArrayBuffer> array)
     : array_buffer_(isolate, array), isolate_(isolate) {
   // Take ownership of the array buffer.
   CHECK(!array->IsExternal());
@@ -138,7 +138,7 @@ ArrayBuffer::ArrayBuffer()
 }
 
 ArrayBuffer::ArrayBuffer(v8::Isolate* isolate,
-                         v8::Handle<v8::ArrayBuffer> array) {
+                         v8::Local<v8::ArrayBuffer> array) {
   private_ = ArrayBuffer::Private::From(isolate, array);
   bytes_ = private_->buffer();
   num_bytes_ = private_->length();
@@ -157,11 +157,11 @@ ArrayBuffer& ArrayBuffer::operator=(const ArrayBuffer& other) {
 // Converter<ArrayBuffer> -----------------------------------------------------
 
 bool Converter<ArrayBuffer>::FromV8(v8::Isolate* isolate,
-                                    v8::Handle<v8::Value> val,
+                                    v8::Local<v8::Value> val,
                                     ArrayBuffer* out) {
   if (!val->IsArrayBuffer())
     return false;
-  *out = ArrayBuffer(isolate, v8::Handle<v8::ArrayBuffer>::Cast(val));
+  *out = ArrayBuffer(isolate, v8::Local<v8::ArrayBuffer>::Cast(val));
   return true;
 }
 
@@ -173,7 +173,7 @@ ArrayBufferView::ArrayBufferView()
 }
 
 ArrayBufferView::ArrayBufferView(v8::Isolate* isolate,
-                                 v8::Handle<v8::ArrayBufferView> view)
+                                 v8::Local<v8::ArrayBufferView> view)
     : array_buffer_(isolate, view->Buffer()),
       offset_(view->ByteOffset()),
       num_bytes_(view->ByteLength()) {
@@ -193,11 +193,11 @@ ArrayBufferView& ArrayBufferView::operator=(const ArrayBufferView& other) {
 // Converter<ArrayBufferView> -------------------------------------------------
 
 bool Converter<ArrayBufferView>::FromV8(v8::Isolate* isolate,
-                                        v8::Handle<v8::Value> val,
+                                        v8::Local<v8::Value> val,
                                         ArrayBufferView* out) {
   if (!val->IsArrayBufferView())
     return false;
-  *out = ArrayBufferView(isolate, v8::Handle<v8::ArrayBufferView>::Cast(val));
+  *out = ArrayBufferView(isolate, v8::Local<v8::ArrayBufferView>::Cast(val));
   return true;
 }
 
