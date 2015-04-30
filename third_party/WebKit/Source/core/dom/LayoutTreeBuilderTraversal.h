@@ -64,8 +64,8 @@ Node* previousSibling(const Node&);
 Node* previous(const Node&, const Node* stayWithin);
 Node* next(const Node&, const Node* stayWithin);
 Node* nextSkippingChildren(const Node&, const Node* stayWithin);
-LayoutObject* nextSiblingRenderer(const Node&);
-LayoutObject* previousSiblingRenderer(const Node&);
+LayoutObject* nextSiblingLayoutObject(const Node&);
+LayoutObject* previousSiblingLayoutObject(const Node&);
 LayoutObject* nextInTopLayer(const Element&);
 
 inline Element* parentElement(const Node& node)

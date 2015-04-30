@@ -505,7 +505,7 @@ public:
 
     // Used to determine whether range offsets use characters or node indices.
     bool offsetInCharacters() const;
-    // Number of DOM 16-bit units contained in node. Note that rendered text length can be different - e.g. because of
+    // Number of DOM 16-bit units contained in node. Note that laid out text length can be different - e.g. because of
     // css-transform:capitalize breaking up precomposed characters and ligatures.
     virtual int maxCharacterOffset() const;
 
@@ -513,10 +513,10 @@ public:
     virtual bool canStartSelection() const;
 
     // -----------------------------------------------------------------------------
-    // Integration with rendering tree
+    // Integration with layout tree
 
     // As layoutObject() includes a branch you should avoid calling it repeatedly in hot code paths.
-    // Note that if a Node has a renderer, it's parentNode is guaranteed to have one as well.
+    // Note that if a Node has a layoutObject, it's parentNode is guaranteed to have one as well.
     LayoutObject* layoutObject() const { return hasRareData() ? m_data.m_rareData->layoutObject() : m_data.m_layoutObject; };
     void setLayoutObject(LayoutObject* layoutObject)
     {
@@ -537,13 +537,13 @@ public:
         AttachContext() : resolvedStyle(nullptr), performingReattach(false) { }
     };
 
-    // Attaches this node to the rendering tree. This calculates the style to be applied to the node and creates an
+    // Attaches this node to the layout tree. This calculates the style to be applied to the node and creates an
     // appropriate LayoutObject which will be inserted into the tree (except when the style has display: none). This
     // makes the node visible in the FrameView.
     virtual void attach(const AttachContext& = AttachContext());
 
-    // Detaches the node from the rendering tree, making it invisible in the rendered view. This method will remove
-    // the node's rendering object from the rendering tree and delete it.
+    // Detaches the node from the layout tree, making it invisible in the rendered view. This method will remove
+    // the node's layout object from the layout tree and delete it.
     virtual void detach(const AttachContext& = AttachContext());
 
 #if ENABLE(ASSERT)
@@ -556,7 +556,7 @@ public:
     // Returns true if recalcStyle should be called on the object, if there is such a method (on Document and Element).
     bool shouldCallRecalcStyle(StyleRecalcChange);
 
-    // Wrapper for nodes that don't have a renderer, but still cache the style (like HTMLOptionElement).
+    // Wrapper for nodes that don't have a layoutObject, but still cache the style (like HTMLOptionElement).
     ComputedStyle* mutableComputedStyle() const;
     const ComputedStyle* computedStyle() const;
     const ComputedStyle* parentComputedStyle() const;
@@ -832,7 +832,7 @@ private:
     RawPtrWillBeMember<TreeScope> m_treeScope;
     RawPtrWillBeMember<Node> m_previous;
     RawPtrWillBeMember<Node> m_next;
-    // When a node has rare data we move the renderer into the rare data.
+    // When a node has rare data we move the layoutObject into the rare data.
     union DataUnion {
         DataUnion() : m_layoutObject(nullptr) { }
         LayoutObject* m_layoutObject;

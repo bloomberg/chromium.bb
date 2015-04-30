@@ -166,7 +166,7 @@ void InspectorOverlayImpl::paintPageOverlay(WebGraphicsContext* context, const W
 void InspectorOverlayImpl::invalidate()
 {
     // Don't invalidate during an update, because that will lead to Document::scheduleRenderTreeUpdate
-    // being called within Document::updateRenderTree which violates document lifecycle expectations.
+    // being called within Document::updateLayoutTree which violates document lifecycle expectations.
     if (m_updating)
         return;
 

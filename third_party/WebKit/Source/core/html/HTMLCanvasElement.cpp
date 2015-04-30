@@ -647,7 +647,7 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
         return;
     m_imageBuffer->setClient(this);
 
-    document().updateRenderTreeIfNeeded();
+    document().updateLayoutTreeIfNeeded();
     const ComputedStyle* style = ensureComputedStyle();
     m_imageBuffer->setFilterQuality((style && (style->imageRendering() == ImageRenderingPixelated)) ? kNone_SkFilterQuality : kLow_SkFilterQuality);
 

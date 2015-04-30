@@ -531,7 +531,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     // A timing update may be required if a compositor animation is running.
     DocumentAnimations::updateAnimationTimingForGetComputedStyle(*styledNode, propertyID);
 
-    document.updateRenderTreeForNodeIfNeeded(styledNode);
+    document.updateLayoutTreeForNodeIfNeeded(styledNode);
 
     // The style recalc could have caused the styled node to be discarded or replaced
     // if it was a PseudoElement so we need to update it.

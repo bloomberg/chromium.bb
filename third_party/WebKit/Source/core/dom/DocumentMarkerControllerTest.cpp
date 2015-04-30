@@ -77,7 +77,7 @@ PassRefPtrWillBeRawPtr<Text> DocumentMarkerControllerTest::createTextNode(const 
 
 void DocumentMarkerControllerTest::markNodeContents(PassRefPtrWillBeRawPtr<Node> node)
 {
-    // Force renderers to be created; TextIterator, which is used in
+    // Force layoutObjects to be created; TextIterator, which is used in
     // DocumentMarkerControllerTest::addMarker(), needs them.
     document().updateLayout();
     RefPtrWillBeRawPtr<Range> range = rangeOfContents(node.get());

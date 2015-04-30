@@ -316,7 +316,7 @@ void PopupMenuImpl::update()
 {
     if (!m_popup || !m_client)
         return;
-    ownerElement().document().updateRenderTreeIfNeeded();
+    ownerElement().document().updateLayoutTreeIfNeeded();
     if (!m_client)
         return;
     m_needsUpdate = false;

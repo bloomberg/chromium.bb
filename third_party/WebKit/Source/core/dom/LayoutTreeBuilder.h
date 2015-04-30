@@ -68,7 +68,7 @@ protected:
         if (m_layoutObjectParent->node() && m_layoutObjectParent->node()->needsAttach())
             return 0;
 
-        return LayoutTreeBuilderTraversal::nextSiblingRenderer(*m_node);
+        return LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*m_node);
     }
 
     RawPtrWillBeMember<NodeType> m_node;
@@ -97,8 +97,8 @@ private:
 
 class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
 public:
-    LayoutTreeBuilderForText(Text& text, LayoutObject* renderingParent)
-        : LayoutTreeBuilder(text, renderingParent) { }
+    LayoutTreeBuilderForText(Text& text, LayoutObject* layoutParent)
+        : LayoutTreeBuilder(text, layoutParent) { }
 
     void createLayoutObject();
 };

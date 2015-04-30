@@ -1470,7 +1470,7 @@ void FrameSelection::focusedOrActiveStateChanged()
     bool activeAndFocused = isFocusedAndActive();
 
     RefPtrWillBeRawPtr<Document> document = m_frame->document();
-    document->updateRenderTreeIfNeeded();
+    document->updateLayoutTreeIfNeeded();
 
     // Because LayoutObject::selectionBackgroundColor() and
     // LayoutObject::selectionForegroundColor() check if the frame is active,
@@ -1697,7 +1697,7 @@ LayoutRect FrameSelection::bounds() const
 
 LayoutRect FrameSelection::unclippedBounds() const
 {
-    m_frame->document()->updateRenderTreeIfNeeded();
+    m_frame->document()->updateLayoutTreeIfNeeded();
 
     FrameView* view = m_frame->view();
     LayoutView* layoutView = m_frame->contentRenderer();

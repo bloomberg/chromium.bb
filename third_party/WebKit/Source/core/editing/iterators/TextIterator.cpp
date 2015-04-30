@@ -206,7 +206,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
     if (m_shouldStop)
         return;
 
-    ASSERT(!m_node || !m_node->document().needsRenderTreeUpdate());
+    ASSERT(!m_node || !m_node->document().needsLayoutTreeUpdate());
 
     m_textState.resetRunInformation();
 
@@ -407,8 +407,8 @@ static bool hasVisibleTextNode(LayoutText* renderer)
         return false;
 
     ASSERT(fragment->firstLetterPseudoElement());
-    LayoutObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->layoutObject();
-    return pseudoElementRenderer && pseudoElementRenderer->style()->visibility() == VISIBLE;
+    LayoutObject* pseudoElementLayoutObject = fragment->firstLetterPseudoElement()->layoutObject();
+    return pseudoElementLayoutObject && pseudoElementLayoutObject->style()->visibility() == VISIBLE;
 }
 
 template<typename Strategy>

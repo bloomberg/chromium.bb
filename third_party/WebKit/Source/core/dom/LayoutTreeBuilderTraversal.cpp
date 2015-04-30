@@ -36,11 +36,11 @@ namespace blink {
 
 namespace LayoutTreeBuilderTraversal {
 
-static bool isRendererReparented(const LayoutObject* renderer)
+static bool isLayoutObjectReparented(const LayoutObject* layoutObject)
 {
-    if (!renderer->node()->isElementNode())
+    if (!layoutObject->node()->isElementNode())
         return false;
-    if (toElement(renderer->node())->isInTopLayer())
+    if (toElement(layoutObject->node())->isInTopLayer())
         return true;
     return false;
 }
@@ -214,22 +214,22 @@ Node* next(const Node& node, const Node* stayWithin)
     return nextSkippingChildren(node, stayWithin);
 }
 
-LayoutObject* nextSiblingRenderer(const Node& node)
+LayoutObject* nextSiblingLayoutObject(const Node& node)
 {
     for (Node* sibling = LayoutTreeBuilderTraversal::nextSibling(node); sibling; sibling = LayoutTreeBuilderTraversal::nextSibling(*sibling)) {
-        LayoutObject* renderer = sibling->layoutObject();
-        if (renderer && !isRendererReparented(renderer))
-            return renderer;
+        LayoutObject* layoutObject = sibling->layoutObject();
+        if (layoutObject && !isLayoutObjectReparented(layoutObject))
+            return layoutObject;
     }
     return 0;
 }
 
-LayoutObject* previousSiblingRenderer(const Node& node)
+LayoutObject* previousSiblingLayoutObject(const Node& node)
 {
     for (Node* sibling = LayoutTreeBuilderTraversal::previousSibling(node); sibling; sibling = LayoutTreeBuilderTraversal::previousSibling(*sibling)) {
-        LayoutObject* renderer = sibling->layoutObject();
-        if (renderer && !isRendererReparented(renderer))
-            return renderer;
+        LayoutObject* layoutObject = sibling->layoutObject();
+        if (layoutObject && !isLayoutObjectReparented(layoutObject))
+            return layoutObject;
     }
     return 0;
 }
@@ -242,8 +242,8 @@ LayoutObject* nextInTopLayer(const Element& element)
     size_t position = topLayerElements.find(&element);
     ASSERT(position != kNotFound);
     for (size_t i = position + 1; i < topLayerElements.size(); ++i) {
-        if (LayoutObject* renderer = topLayerElements[i]->layoutObject())
-            return renderer;
+        if (LayoutObject* layoutObject = topLayerElements[i]->layoutObject())
+            return layoutObject;
     }
     return 0;
 }

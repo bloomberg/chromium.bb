@@ -372,7 +372,7 @@ public:
     // Whether this element can receive focus at all. Most elements are not
     // focusable but some elements, such as form controls and links, are. Unlike
     // layoutObjectIsFocusable(), this method may be called when layout is not up to
-    // date, so it must not use the renderer to determine focusability.
+    // date, so it must not use the layoutObject to determine focusability.
     virtual bool supportsFocus() const;
     // Whether the node can actually be focused.
     bool isFocusable() const;
@@ -537,8 +537,8 @@ protected:
     void setTabIndexExplicitly(short);
     // Subclasses may override this method to affect focusability. Unlike
     // supportsFocus, this method must be called on an up-to-date layout, so it
-    // may use the renderer to reason about focusability. This method cannot be
-    // moved to LayoutObject because some focusable nodes don't have renderers,
+    // may use the layoutObject to reason about focusability. This method cannot be
+    // moved to LayoutObject because some focusable nodes don't have layoutObjects,
     // e.g., HTMLOptionElement.
     virtual bool layoutObjectIsFocusable() const;
 

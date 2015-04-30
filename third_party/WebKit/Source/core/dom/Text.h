@@ -52,9 +52,9 @@ public:
     PassRefPtrWillBeRawPtr<Text> replaceWholeText(const String&);
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
-    bool textRendererIsNeeded(const ComputedStyle&, const LayoutObject& parent);
-    LayoutText* createTextRenderer(const ComputedStyle&);
-    void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
+    bool textLayoutObjectIsNeeded(const ComputedStyle&, const LayoutObject& parent);
+    LayoutText* createTextLayoutObject(const ComputedStyle&);
+    void updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
 
     virtual void attach(const AttachContext& = AttachContext()) override final;
     void reattachIfNeeded(const AttachContext& = AttachContext());
@@ -74,7 +74,7 @@ private:
 
     bool isTextNode() const = delete; // This will catch anyone doing an unnecessary check.
 
-    bool needsWhitespaceRenderer();
+    bool needsWhitespaceLayoutObject();
 
     virtual PassRefPtrWillBeRawPtr<Text> cloneWithData(const String&);
 

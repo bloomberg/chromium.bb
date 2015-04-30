@@ -560,16 +560,16 @@ void Element::applyScroll(ScrollState& scrollState)
         document().frame()->view()->setWasScrolledByUser(true);
 };
 
-static float localZoomForRenderer(LayoutObject& renderer)
+static float localZoomForLayoutObject(LayoutObject& layoutObject)
 {
     // FIXME: This does the wrong thing if two opposing zooms are in effect and canceled each
-    // other out, but the alternative is that we'd have to crawl up the whole render tree every
+    // other out, but the alternative is that we'd have to crawl up the whole layout tree every
     // time (or store an additional bit in the ComputedStyle to indicate that a zoom was specified).
     float zoomFactor = 1;
-    if (renderer.style()->effectiveZoom() != 1) {
+    if (layoutObject.style()->effectiveZoom() != 1) {
         // Need to find the nearest enclosing LayoutObject that set up
         // a differing zoom, and then we divide our result by it to eliminate the zoom.
-        LayoutObject* prev = &renderer;
+        LayoutObject* prev = &layoutObject;
         for (LayoutObject* curr = prev->parent(); curr; curr = curr->parent()) {
             if (curr->style()->effectiveZoom() != prev->style()->effectiveZoom()) {
                 zoomFactor = prev->style()->zoom();
@@ -583,9 +583,9 @@ static float localZoomForRenderer(LayoutObject& renderer)
     return zoomFactor;
 }
 
-static double adjustForLocalZoom(LayoutUnit value, LayoutObject& renderer)
+static double adjustForLocalZoom(LayoutUnit value, LayoutObject& layoutObject)
 {
-    float zoomFactor = localZoomForRenderer(renderer);
+    float zoomFactor = localZoomForLayoutObject(layoutObject);
     if (zoomFactor == 1)
         return value.toDouble();
     return value.toDouble() / zoomFactor;
@@ -594,32 +594,32 @@ static double adjustForLocalZoom(LayoutUnit value, LayoutObject& renderer)
 int Element::offsetLeft()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (LayoutBoxModelObject* renderer = layoutBoxModelObject())
-        return lroundf(adjustForLocalZoom(renderer->offsetLeft(), *renderer));
+    if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
+        return lroundf(adjustForLocalZoom(layoutObject->offsetLeft(), *layoutObject));
     return 0;
 }
 
 int Element::offsetTop()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (LayoutBoxModelObject* renderer = layoutBoxModelObject())
-        return lroundf(adjustForLocalZoom(renderer->pixelSnappedOffsetTop(), *renderer));
+    if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
+        return lroundf(adjustForLocalZoom(layoutObject->pixelSnappedOffsetTop(), *layoutObject));
     return 0;
 }
 
 int Element::offsetWidth()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (LayoutBoxModelObject* renderer = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetWidth(), *renderer).round();
+    if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
+        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedOffsetWidth(), *layoutObject).round();
     return 0;
 }
 
 int Element::offsetHeight()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (LayoutBoxModelObject* renderer = layoutBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetHeight(), *renderer).round();
+    if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
+        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedOffsetHeight(), *layoutObject).round();
     return 0;
 }
 
@@ -627,11 +627,11 @@ Element* Element::offsetParent()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    LayoutObject* renderer = layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = this->layoutObject();
+    if (!layoutObject)
         return nullptr;
 
-    Element* element = renderer->offsetParent();
+    Element* element = layoutObject->offsetParent();
     if (!element)
         return nullptr;
 
@@ -645,8 +645,8 @@ int Element::clientLeft()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (LayoutBox* renderer = layoutBox())
-        return adjustLayoutUnitForAbsoluteZoom(roundToInt(renderer->clientLeft()), *renderer);
+    if (LayoutBox* layoutObject = layoutBox())
+        return adjustLayoutUnitForAbsoluteZoom(roundToInt(layoutObject->clientLeft()), *layoutObject);
     return 0;
 }
 
@@ -654,8 +654,8 @@ int Element::clientTop()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    if (LayoutBox* renderer = layoutBox())
-        return adjustLayoutUnitForAbsoluteZoom(roundToInt(renderer->clientTop()), *renderer);
+    if (LayoutBox* layoutObject = layoutBox())
+        return adjustLayoutUnitForAbsoluteZoom(roundToInt(layoutObject->clientTop()), *layoutObject);
     return 0;
 }
 
@@ -677,8 +677,8 @@ int Element::clientWidth()
         }
     }
 
-    if (LayoutBox* renderer = layoutBox())
-        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientWidth(), *renderer).round();
+    if (LayoutBox* layoutObject = layoutBox())
+        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedClientWidth(), *layoutObject).round();
     return 0;
 }
 
@@ -701,8 +701,8 @@ int Element::clientHeight()
         }
     }
 
-    if (LayoutBox* renderer = layoutBox())
-        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientHeight(), *renderer).round();
+    if (LayoutBox* layoutObject = layoutBox())
+        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedClientHeight(), *layoutObject).round();
     return 0;
 }
 
@@ -977,16 +977,16 @@ ClientRectList* Element::getClientRects()
 {
     document().updateLayoutIgnorePendingStylesheets();
 
-    LayoutObject* elementRenderer = layoutObject();
-    if (!elementRenderer || (!elementRenderer->isBoxModelObject() && !elementRenderer->isBR()))
+    LayoutObject* elementLayoutObject = layoutObject();
+    if (!elementLayoutObject || (!elementLayoutObject->isBoxModelObject() && !elementLayoutObject->isBR()))
         return ClientRectList::create();
 
     // FIXME: Handle SVG elements.
     // FIXME: Handle table/inline-table with a caption.
 
     Vector<FloatQuad> quads;
-    elementRenderer->absoluteQuads(quads);
-    document().adjustFloatQuadsForScrollAndAbsoluteZoom(quads, *elementRenderer);
+    elementLayoutObject->absoluteQuads(quads);
+    document().adjustFloatQuadsForScrollAndAbsoluteZoom(quads, *elementLayoutObject);
     return ClientRectList::create(quads);
 }
 
@@ -995,16 +995,16 @@ ClientRect* Element::getBoundingClientRect()
     document().updateLayoutIgnorePendingStylesheets();
 
     Vector<FloatQuad> quads;
-    LayoutObject* elementRenderer = layoutObject();
-    if (elementRenderer) {
-        if (isSVGElement() && !elementRenderer->isSVGRoot()) {
+    LayoutObject* elementLayoutObject = layoutObject();
+    if (elementLayoutObject) {
+        if (isSVGElement() && !elementLayoutObject->isSVGRoot()) {
             // Get the bounding rectangle from the SVG model.
             SVGElement* svgElement = toSVGElement(this);
             FloatRect localRect;
             if (svgElement->getBoundingBox(localRect))
-                quads.append(elementRenderer->localToAbsoluteQuad(localRect));
-        } else if (elementRenderer->isBoxModelObject() || elementRenderer->isBR()) {
-            elementRenderer->absoluteQuads(quads);
+                quads.append(elementLayoutObject->localToAbsoluteQuad(localRect));
+        } else if (elementLayoutObject->isBoxModelObject() || elementLayoutObject->isBR()) {
+            elementLayoutObject->absoluteQuads(quads);
         }
     }
 
@@ -1015,8 +1015,8 @@ ClientRect* Element::getBoundingClientRect()
     for (size_t i = 1; i < quads.size(); ++i)
         result.unite(quads[i].boundingBox());
 
-    ASSERT(elementRenderer);
-    document().adjustFloatRectForScrollAndAbsoluteZoom(result, *elementRenderer);
+    ASSERT(elementLayoutObject);
+    document().adjustFloatRectForScrollAndAbsoluteZoom(result, *elementLayoutObject);
     return ClientRect::create(result);
 }
 
@@ -1724,9 +1724,9 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     if (localChange == Reattach) {
         AttachContext reattachContext;
         reattachContext.resolvedStyle = newStyle.get();
-        bool rendererWillChange = needsAttach() || layoutObject();
+        bool layoutObjectWillChange = needsAttach() || layoutObject();
         reattach(reattachContext);
-        if (rendererWillChange || layoutObject())
+        if (layoutObjectWillChange || layoutObject())
             return Reattach;
         return ReattachNoLayoutObject;
     }
@@ -1736,15 +1736,15 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     if (localChange != NoChange)
         updateCallbackSelectors(oldStyle.get(), newStyle.get());
 
-    if (LayoutObject* renderer = this->layoutObject()) {
+    if (LayoutObject* layoutObject = this->layoutObject()) {
         if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || svgFilterNeedsLayerUpdate()) {
-            renderer->setStyle(newStyle.get());
+            layoutObject->setStyle(newStyle.get());
         } else {
             // Although no change occurred, we use the new style so that the cousin style sharing code won't get
             // fooled into believing this style is the same.
             // FIXME: We may be able to remove this hack, see discussion in
             // https://codereview.chromium.org/30453002/
-            renderer->setStyleInternal(newStyle.get());
+            layoutObject->setStyleInternal(newStyle.get());
         }
     }
 
@@ -1833,12 +1833,12 @@ void Element::setNeedsCompositingUpdate()
 {
     if (!document().isActive())
         return;
-    LayoutBoxModelObject* renderer = layoutBoxModelObject();
-    if (!renderer)
+    LayoutBoxModelObject* layoutObject = layoutBoxModelObject();
+    if (!layoutObject)
         return;
-    if (!renderer->hasLayer())
+    if (!layoutObject->hasLayer())
         return;
-    renderer->layer()->setNeedsCompositingInputsUpdate();
+    layoutObject->layer()->setNeedsCompositingInputsUpdate();
 }
 
 void Element::setCustomElementDefinition(PassRefPtrWillBeRawPtr<CustomElementDefinition> definition)
@@ -1867,7 +1867,7 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exc
     if (alwaysCreateUserAgentShadowRoot())
         ensureUserAgentShadowRoot();
 
-    // Some elements make assumptions about what kind of renderers they allow
+    // Some elements make assumptions about what kind of layoutObjects they allow
     // as children so we can't allow author shadows on them for now. An override
     // flag is provided for testing how author shadows interact on these elements.
     if (!areAuthorShadowsAllowed() && !RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled()) {
@@ -2325,7 +2325,7 @@ void Element::blur()
 bool Element::supportsFocus() const
 {
     // FIXME: supportsFocus() can be called when layout is not up to date.
-    // Logic that deals with the renderer should be moved to layoutObjectIsFocusable().
+    // Logic that deals with the layoutObject should be moved to layoutObjectIsFocusable().
     // But supportsFocus must return true when the element is editable, or else
     // it won't be focusable. Furthermore, supportsFocus cannot just return true
     // always or else tabIndex() will change for all HTML elements.
@@ -2549,7 +2549,7 @@ void Element::insertAdjacentHTML(const String& where, const String& markup, Exce
 
 String Element::innerText()
 {
-    // We need to update layout, since plainText uses line boxes in the render tree.
+    // We need to update layout, since plainText uses line boxes in the layout tree.
     document().updateLayoutIgnorePendingStylesheets();
 
     if (!layoutObject())
@@ -2661,8 +2661,8 @@ const ComputedStyle* Element::ensureComputedStyle(PseudoId pseudoElementSpecifie
         return nullptr;
     }
 
-    // FIXME: Find and use the renderer from the pseudo element instead of the actual element so that the 'length'
-    // properties, which are only known by the renderer because it did the layout, will be correct and so that the
+    // FIXME: Find and use the layoutObject from the pseudo element instead of the actual element so that the 'length'
+    // properties, which are only known by the layoutObject because it did the layout, will be correct and so that the
     // values returned for the ":selection" pseudo-element will be correct.
     ComputedStyle* elementStyle = mutableComputedStyle();
     if (!elementStyle) {
@@ -2754,16 +2754,16 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         // FIXME: We should figure out the right text sibling to pass.
         element->recalcStyle(change == UpdatePseudoElements ? Force : change);
 
-        // Wait until our parent is not displayed or pseudoElementRendererIsNeeded
+        // Wait until our parent is not displayed or pseudoElementLayoutObjectIsNeeded
         // is false, otherwise we could continuously create and destroy PseudoElements
         // when LayoutObject::isChildAllowed on our parent returns false for the
-        // PseudoElement's renderer for each style recalc.
-        if (!layoutObject() || !pseudoElementRendererIsNeeded(layoutObject()->getCachedPseudoStyle(pseudoId)))
+        // PseudoElement's layoutObject for each style recalc.
+        if (!layoutObject() || !pseudoElementLayoutObjectIsNeeded(layoutObject()->getCachedPseudoStyle(pseudoId)))
             elementRareData()->setPseudoElement(pseudoId, nullptr);
     } else if (pseudoId == FIRST_LETTER && element && change >= UpdatePseudoElements && !FirstLetterPseudoElement::firstLetterTextLayoutObject(*element)) {
         // This can happen if we change to a float, for example. We need to cleanup the
         // first-letter pseudoElement and then fix the text of the original remaining
-        // text renderer.
+        // text layoutObject.
         // This can be seen in Test 7 of fast/css/first-letter-removed-added.html
         elementRareData()->setPseudoElement(pseudoId, nullptr);
     } else if (change >= UpdatePseudoElements) {
@@ -2771,16 +2771,16 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
     }
 }
 
-// If we're updating first letter, and the current first letter renderer
+// If we're updating first letter, and the current first letter layoutObject
 // is not the same as the one we're currently using we need to re-create
-// the first letter renderer.
+// the first letter layoutObject.
 bool Element::updateFirstLetter(Element* element)
 {
     LayoutObject* remainingTextLayoutObject = FirstLetterPseudoElement::firstLetterTextLayoutObject(*element);
     if (!remainingTextLayoutObject || remainingTextLayoutObject != toFirstLetterPseudoElement(element)->remainingTextLayoutObject()) {
         // We have to clear out the old first letter here because when it is
         // disposed it will set the original text back on the remaining text
-        // renderer. If we dispose after creating the new one we will get
+        // layoutObject. If we dispose after creating the new one we will get
         // incorrect results due to setting the first letter back.
         if (remainingTextLayoutObject)
             element->reattach();
@@ -2945,7 +2945,7 @@ void Element::setIsInTopLayer(bool inTopLayer)
         return;
     setElementFlag(IsInTopLayer, inTopLayer);
 
-    // We must ensure a reattach occurs so the renderer is inserted in the correct sibling order under LayoutView according to its
+    // We must ensure a reattach occurs so the layoutObject is inserted in the correct sibling order under LayoutView according to its
     // top layer position, or in its usual place if not in the top layer.
     lazyReattachIfAttached();
 }

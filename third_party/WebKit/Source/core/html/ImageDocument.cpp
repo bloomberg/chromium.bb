@@ -138,7 +138,7 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length)
     }
     // Make sure the image renderer gets created because we need the renderer
     // to read the aspect ratio. See crbug.com/320244
-    document()->updateRenderTreeIfNeeded();
+    document()->updateLayoutTreeIfNeeded();
     document()->imageUpdated();
 }
 

@@ -372,12 +372,12 @@ void Node::clearRareData()
     ASSERT(hasRareData());
     ASSERT(!transientMutationObserverRegistry() || transientMutationObserverRegistry()->isEmpty());
 
-    LayoutObject* renderer = m_data.m_rareData->layoutObject();
+    LayoutObject* layoutObject = m_data.m_rareData->layoutObject();
     if (isElementNode())
         delete static_cast<ElementRareData*>(m_data.m_rareData);
     else
         delete static_cast<NodeRareData*>(m_data.m_rareData);
-    m_data.m_layoutObject = renderer;
+    m_data.m_layoutObject = layoutObject;
     clearFlag(HasRareDataFlag);
 }
 #endif
@@ -543,13 +543,13 @@ const AtomicString& Node::namespaceURI() const
 
 bool Node::isContentEditable(UserSelectAllTreatment treatment)
 {
-    document().updateRenderTreeIfNeeded();
+    document().updateLayoutTreeIfNeeded();
     return hasEditableStyle(Editable, treatment);
 }
 
 bool Node::isContentRichlyEditable()
 {
-    document().updateRenderTreeIfNeeded();
+    document().updateLayoutTreeIfNeeded();
     return hasEditableStyle(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
 }
 
@@ -604,14 +604,14 @@ bool Node::isEditableToAccessibility(EditableLevel editableLevel) const
 
 LayoutBox* Node::layoutBox() const
 {
-    LayoutObject* renderer = this->layoutObject();
-    return renderer && renderer->isBox() ? toLayoutBox(renderer) : nullptr;
+    LayoutObject* layoutObject = this->layoutObject();
+    return layoutObject && layoutObject->isBox() ? toLayoutBox(layoutObject) : nullptr;
 }
 
 LayoutBoxModelObject* Node::layoutBoxModelObject() const
 {
-    LayoutObject* renderer = this->layoutObject();
-    return renderer && renderer->isBoxModelObject() ? toLayoutBoxModelObject(renderer) : nullptr;
+    LayoutObject* layoutObject = this->layoutObject();
+    return layoutObject && layoutObject->isBoxModelObject() ? toLayoutBoxModelObject(layoutObject) : nullptr;
 }
 
 LayoutRect Node::boundingBox() const
@@ -623,7 +623,7 @@ LayoutRect Node::boundingBox() const
 
 bool Node::hasNonEmptyBoundingBox() const
 {
-    // Before calling absoluteRects, check for the common case where the renderer
+    // Before calling absoluteRects, check for the common case where the layoutObject
     // is non-empty, since this is a faster check and almost always returns true.
     LayoutBoxModelObject* box = layoutBoxModelObject();
     if (!box)
@@ -715,14 +715,14 @@ void Node::markAncestorsWithChildNeedsStyleInvalidation()
 {
     for (Node* node = parentOrShadowHostNode(); node && !node->childNeedsStyleInvalidation(); node = node->parentOrShadowHostNode())
         node->setChildNeedsStyleInvalidation();
-    document().scheduleRenderTreeUpdateIfNeeded();
+    document().scheduleLayoutTreeUpdateIfNeeded();
 }
 
 void Node::markAncestorsWithChildNeedsDistributionRecalc()
 {
     for (Node* node = this; node && !node->childNeedsDistributionRecalc(); node = node->parentOrShadowHostNode())
         node->setChildNeedsDistributionRecalc();
-    document().scheduleRenderTreeUpdateIfNeeded();
+    document().scheduleLayoutTreeUpdateIfNeeded();
 }
 
 inline void Node::setStyleChange(StyleChangeType changeType)
@@ -734,7 +734,7 @@ void Node::markAncestorsWithChildNeedsStyleRecalc()
 {
     for (ContainerNode* p = parentOrShadowHostNode(); p && !p->childNeedsStyleRecalc(); p = p->parentOrShadowHostNode())
         p->setChildNeedsStyleRecalc();
-    document().scheduleRenderTreeUpdateIfNeeded();
+    document().scheduleLayoutTreeUpdateIfNeeded();
     document().incStyleVersion();
 }
 
@@ -2210,26 +2210,26 @@ void Node::defaultEventHandler(Event* event)
             if (enclosingLinkEventParentOrSelf())
                 return;
 
-            // Avoid that canBeScrolledAndHasScrollableArea changes render tree
+            // Avoid that canBeScrolledAndHasScrollableArea changes layout tree
             // structure.
             // FIXME: We should avoid synchronous layout if possible. We can
             // remove this synchronous layout if we avoid synchronous layout in
             // LayoutTextControlSingleLine::scrollHeight
             document().updateLayoutIgnorePendingStylesheets();
-            LayoutObject* renderer = this->layoutObject();
-            while (renderer && (!renderer->isBox() || !toLayoutBox(renderer)->canBeScrolledAndHasScrollableArea()))
-                renderer = renderer->parent();
+            LayoutObject* layoutObject = this->layoutObject();
+            while (layoutObject && (!layoutObject->isBox() || !toLayoutBox(layoutObject)->canBeScrolledAndHasScrollableArea()))
+                layoutObject = layoutObject->parent();
 
-            if (renderer) {
+            if (layoutObject) {
                 if (LocalFrame* frame = document().frame())
-                    frame->eventHandler().startPanScrolling(renderer);
+                    frame->eventHandler().startPanScrolling(layoutObject);
             }
         }
 #endif
     } else if ((eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel) && event->hasInterface(EventNames::WheelEvent)) {
         WheelEvent* wheelEvent = toWheelEvent(event);
 
-        // If we don't have a renderer, send the wheel event to the first node we find with a renderer.
+        // If we don't have a layoutObject, send the wheel event to the first node we find with a layoutObject.
         // This is needed for <option> and <optgroup> elements so that <select>s get a wheel scroll.
         Node* startNode = this;
         while (startNode && !startNode->layoutObject())

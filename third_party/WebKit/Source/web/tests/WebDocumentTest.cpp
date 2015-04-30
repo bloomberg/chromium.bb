@@ -49,7 +49,7 @@ TEST(WebDocumentTest, InsertStyleSheet)
     ASSERT_EQ(Color(0, 0, 0), styleBeforeInsertion.visitedDependentColor(CSSPropertyColor));
 
     // Apply inserted stylesheet.
-    coreDoc->updateRenderTreeIfNeeded();
+    coreDoc->updateLayoutTreeIfNeeded();
 
     const ComputedStyle& styleAfterInsertion = bodyElement->computedStyleRef();
 
@@ -88,7 +88,7 @@ TEST(WebDocumentTest, BeginExitTransition)
 
     // Make sure the stylesheet load request gets processed.
     FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
-    coreDoc->updateRenderTreeIfNeeded();
+    coreDoc->updateLayoutTreeIfNeeded();
 
     // The element should now be hidden.
     transitionStyle = transitionElement->computedStyle();
@@ -133,7 +133,7 @@ TEST(WebDocumentTest, BeginExitTransitionToNativeApp)
 
     // Make sure the stylesheet load request gets processed.
     FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
-    coreDoc->updateRenderTreeIfNeeded();
+    coreDoc->updateLayoutTreeIfNeeded();
 
     // The element should not be hidden.
     transitionStyle = transitionElement->computedStyle();
@@ -168,7 +168,7 @@ TEST(WebDocumentTest, HideAndShowTransitionElements)
     // Hide transition elements
     frame->document().hideTransitionElements("#foo");
     FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
-    coreDoc->updateRenderTreeIfNeeded();
+    coreDoc->updateLayoutTreeIfNeeded();
     transitionStyle = transitionElement->computedStyle();
     ASSERT_TRUE(transitionStyle);
     EXPECT_EQ(transitionStyle->opacity(), 0);
@@ -176,7 +176,7 @@ TEST(WebDocumentTest, HideAndShowTransitionElements)
     // Show transition elements
     frame->document().showTransitionElements("#foo");
     FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
-    coreDoc->updateRenderTreeIfNeeded();
+    coreDoc->updateLayoutTreeIfNeeded();
     transitionStyle = transitionElement->computedStyle();
     ASSERT_TRUE(transitionStyle);
     EXPECT_EQ(transitionStyle->opacity(), 1);

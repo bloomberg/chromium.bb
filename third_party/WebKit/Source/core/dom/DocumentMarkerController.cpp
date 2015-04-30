@@ -606,8 +606,8 @@ void DocumentMarkerController::removeMarkersFromList(MarkerMap::iterator iterato
 
     if (needsRepainting) {
         const Node& node = *iterator->key;
-        if (LayoutObject* renderer = node.layoutObject())
-            renderer->setShouldDoFullPaintInvalidation();
+        if (LayoutObject* layoutObject = node.layoutObject())
+            layoutObject->setShouldDoFullPaintInvalidation();
         invalidatePaintForTickmarks(node);
     }
 
@@ -637,8 +637,8 @@ void DocumentMarkerController::repaintMarkers(DocumentMarker::MarkerTypes marker
                 continue;
 
             // cause the node to be redrawn
-            if (LayoutObject* renderer = node->layoutObject()) {
-                renderer->setShouldDoFullPaintInvalidation();
+            if (LayoutObject* layoutObject = node->layoutObject()) {
+                layoutObject->setShouldDoFullPaintInvalidation();
                 break;
             }
         }

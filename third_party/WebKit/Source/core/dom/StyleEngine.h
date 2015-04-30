@@ -267,7 +267,7 @@ private:
     RawPtrWillBeMember<Document> m_document;
     bool m_isMaster;
 
-    // Track the number of currently loading top-level stylesheets needed for rendering.
+    // Track the number of currently loading top-level stylesheets needed for layout.
     // Sheets loaded using the @import directive are not included in this count.
     // We use this count of pending sheets to detect when we can begin attaching
     // elements and when it is safe to execute scripts.

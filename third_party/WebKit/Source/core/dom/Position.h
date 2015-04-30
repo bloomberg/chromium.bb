@@ -177,7 +177,7 @@ public:
     PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> ensureComputedStyle() const;
 
     // Move up or down the DOM by one position.
-    // Offsets are computed using render text for nodes that have renderers - but note that even when
+    // Offsets are computed using layout text for nodes that have layoutObjects - but note that even when
     // using composed characters, the result may be inside a single user-visible character if a ligature is formed.
     PositionType previous(PositionMoveType = CodePoint) const;
     PositionType next(PositionMoveType = CodePoint) const;

@@ -473,9 +473,9 @@ public:
 
     void setupFontBuilder(ComputedStyle& documentStyle);
 
-    bool needsRenderTreeUpdate() const;
-    void updateRenderTreeIfNeeded() { updateRenderTree(NoChange); }
-    void updateRenderTreeForNodeIfNeeded(Node*);
+    bool needsLayoutTreeUpdate() const;
+    void updateLayoutTreeIfNeeded() { updateLayoutTree(NoChange); }
+    void updateLayoutTreeForNodeIfNeeded(Node*);
     void updateLayout();
     enum RunPostLayoutTasks {
         RunPostLayoutTasksAsyhnchronously,
@@ -644,7 +644,7 @@ public:
     void setCSSTarget(Element*);
     Element* cssTarget() const { return m_cssTarget; }
 
-    void scheduleRenderTreeUpdateIfNeeded();
+    void scheduleLayoutTreeUpdateIfNeeded();
     bool hasPendingForcedStyleRecalc() const;
 
     void registerNodeList(const LiveNodeListBase*);
@@ -1100,13 +1100,13 @@ private:
     virtual SecurityContext& securityContext() override final { return *this; }
     virtual EventQueue* eventQueue() const override final;
 
-    // FIXME: Rename the StyleRecalc state to RenderTreeUpdate.
+    // FIXME: Rename the StyleRecalc state to LayoutTreeUpdate.
     bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending; }
 
-    bool shouldScheduleRenderTreeUpdate() const;
-    void scheduleRenderTreeUpdate();
+    bool shouldScheduleLayoutTreeUpdate() const;
+    void scheduleLayoutTreeUpdate();
 
-    bool needsFullRenderTreeUpdate() const;
+    bool needsFullLayoutTreeUpdate() const;
 
     void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
 
@@ -1115,7 +1115,7 @@ private:
     void updateUseShadowTreesIfNeeded();
     void evaluateMediaQueryListIfNeeded();
 
-    void updateRenderTree(StyleRecalcChange);
+    void updateLayoutTree(StyleRecalcChange);
     void updateStyle(StyleRecalcChange);
 
     void detachParser();
@@ -1431,13 +1431,13 @@ inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type 
     return origin >= m_legacyViewportDescription.type;
 }
 
-inline void Document::scheduleRenderTreeUpdateIfNeeded()
+inline void Document::scheduleLayoutTreeUpdateIfNeeded()
 {
     // Inline early out to avoid the function calls below.
     if (hasPendingStyleRecalc())
         return;
-    if (shouldScheduleRenderTreeUpdate() && needsRenderTreeUpdate())
-        scheduleRenderTreeUpdate();
+    if (shouldScheduleLayoutTreeUpdate() && needsLayoutTreeUpdate())
+        scheduleLayoutTreeUpdate();
 }
 
 DEFINE_TYPE_CASTS(Document, ExecutionContext, context, context->isDocument(), context.isDocument());

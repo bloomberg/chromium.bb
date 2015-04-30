@@ -165,14 +165,14 @@ bool PositionIteratorAlgorithm<Strategy>::isCandidate() const
     if (!m_anchorNode)
         return false;
 
-    LayoutObject* renderer = m_anchorNode->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = m_anchorNode->layoutObject();
+    if (!layoutObject)
         return false;
 
-    if (renderer->style()->visibility() != VISIBLE)
+    if (layoutObject->style()->visibility() != VISIBLE)
         return false;
 
-    if (renderer->isBR()) {
+    if (layoutObject->isBR()) {
         // For br element, the condition
         // |(!Strategy::hasChildren(*m_anchorNode) || m_nodeAfterPositionInAnchor)|
         // corresponds to the condition
@@ -185,21 +185,21 @@ bool PositionIteratorAlgorithm<Strategy>::isCandidate() const
         // assumes the Position is "Candidate".
         return !m_offsetInAnchor && (!Strategy::hasChildren(*m_anchorNode) || m_nodeAfterPositionInAnchor) && !PositionType::nodeIsUserSelectNone(Strategy::parent(*m_anchorNode));
     }
-    if (renderer->isText())
+    if (layoutObject->isText())
         return !PositionType::nodeIsUserSelectNone(m_anchorNode) && PositionType(*this).inRenderedText();
 
-    if (renderer->isSVG()) {
+    if (layoutObject->isSVG()) {
         // We don't consider SVG elements are contenteditable except for
-        // associated renderer returns isText() true, e.g. LayoutSVGInlineText.
+        // associated layoutObject returns isText() true, e.g. LayoutSVGInlineText.
         return false;
     }
 
     if (isRenderedHTMLTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
         return (atStartOfNode() || atEndOfNode()) && !PositionType::nodeIsUserSelectNone(Strategy::parent(*m_anchorNode));
 
-    if (!isHTMLHtmlElement(*m_anchorNode) && renderer->isLayoutBlockFlow()) {
-        if (toLayoutBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
-            if (!PositionType::hasRenderedNonAnonymousDescendantsWithHeight(renderer))
+    if (!isHTMLHtmlElement(*m_anchorNode) && layoutObject->isLayoutBlockFlow()) {
+        if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
+            if (!PositionType::hasRenderedNonAnonymousDescendantsWithHeight(layoutObject))
                 return atStartOfNode() && !PositionType::nodeIsUserSelectNone(m_anchorNode);
             return m_anchorNode->hasEditableStyle() && !PositionType::nodeIsUserSelectNone(m_anchorNode) && PositionType(*this).atEditingBoundary();
         }

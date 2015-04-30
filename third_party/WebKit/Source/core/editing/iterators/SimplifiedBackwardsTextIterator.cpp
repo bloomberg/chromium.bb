@@ -309,10 +309,10 @@ LayoutText* SimplifiedBackwardsTextIterator::handleFirstLetter(int& startOffset,
     ASSERT(fragment->isRemainingTextLayoutObject());
     ASSERT(fragment->firstLetterPseudoElement());
 
-    LayoutObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->layoutObject();
-    ASSERT(pseudoElementRenderer);
-    ASSERT(pseudoElementRenderer->slowFirstChild());
-    LayoutText* firstLetterRenderer = toLayoutText(pseudoElementRenderer->slowFirstChild());
+    LayoutObject* pseudoElementLayoutObject = fragment->firstLetterPseudoElement()->layoutObject();
+    ASSERT(pseudoElementLayoutObject);
+    ASSERT(pseudoElementLayoutObject->slowFirstChild());
+    LayoutText* firstLetterRenderer = toLayoutText(pseudoElementLayoutObject->slowFirstChild());
 
     m_offset = firstLetterRenderer->caretMaxOffset();
     m_offset += collapsedSpaceLength(firstLetterRenderer, m_offset);

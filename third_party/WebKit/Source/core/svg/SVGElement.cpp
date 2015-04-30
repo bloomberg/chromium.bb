@@ -986,7 +986,7 @@ void SVGElement::invalidateInstances()
     svgRareData()->elementInstances().clear();
 
     if (inDocument())
-        document().updateRenderTreeIfNeeded();
+        document().updateLayoutTreeIfNeeded();
 }
 
 SVGElement::InstanceUpdateBlocker::InstanceUpdateBlocker(SVGElement* targetElement)

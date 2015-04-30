@@ -320,10 +320,10 @@ static bool shouldInheritSecurityOriginFromOwner(const KURL& url)
 
 static Widget* widgetForElement(const Element& focusedElement)
 {
-    LayoutObject* renderer = focusedElement.layoutObject();
-    if (!renderer || !renderer->isLayoutPart())
+    LayoutObject* layoutObject = focusedElement.layoutObject();
+    if (!layoutObject || !layoutObject->isLayoutPart())
         return 0;
-    return toLayoutPart(renderer)->widget();
+    return toLayoutPart(layoutObject)->widget();
 }
 
 static bool acceptsEditingFocus(const Element& element)
@@ -1525,11 +1525,11 @@ PassRefPtrWillBeRawPtr<TreeWalker> Document::createTreeWalker(Node* root, unsign
     return TreeWalker::create(root, whatToShow, filter);
 }
 
-bool Document::needsRenderTreeUpdate() const
+bool Document::needsLayoutTreeUpdate() const
 {
     if (!isActive() || !view())
         return false;
-    if (needsFullRenderTreeUpdate())
+    if (needsFullLayoutTreeUpdate())
         return true;
     if (childNeedsStyleRecalc())
         return true;
@@ -1538,7 +1538,7 @@ bool Document::needsRenderTreeUpdate() const
     return false;
 }
 
-bool Document::needsFullRenderTreeUpdate() const
+bool Document::needsFullLayoutTreeUpdate() const
 {
     if (!isActive() || !view())
         return false;
@@ -1558,7 +1558,7 @@ bool Document::needsFullRenderTreeUpdate() const
     return false;
 }
 
-bool Document::shouldScheduleRenderTreeUpdate() const
+bool Document::shouldScheduleLayoutTreeUpdate() const
 {
     if (!isActive())
         return false;
@@ -1572,11 +1572,11 @@ bool Document::shouldScheduleRenderTreeUpdate() const
     return true;
 }
 
-void Document::scheduleRenderTreeUpdate()
+void Document::scheduleLayoutTreeUpdate()
 {
     ASSERT(!hasPendingStyleRecalc());
-    ASSERT(shouldScheduleRenderTreeUpdate());
-    ASSERT(needsRenderTreeUpdate());
+    ASSERT(shouldScheduleLayoutTreeUpdate());
+    ASSERT(needsLayoutTreeUpdate());
 
     page()->animator().scheduleVisualUpdate();
     m_lifecycle.ensureStateAtMost(DocumentLifecycle::VisualUpdatePending);
@@ -1712,7 +1712,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 }
 
-void Document::updateRenderTree(StyleRecalcChange change)
+void Document::updateLayoutTree(StyleRecalcChange change)
 {
     ASSERT(isMainThread());
 
@@ -1721,14 +1721,14 @@ void Document::updateRenderTree(StyleRecalcChange change)
     if (!view() || !isActive())
         return;
 
-    if (change != Force && !needsRenderTreeUpdate())
+    if (change != Force && !needsLayoutTreeUpdate())
         return;
 
     if (inStyleRecalc())
         return;
 
     // Entering here from inside layout or paint would be catastrophic since recalcStyle can
-    // tear down the render tree or (unfortunately) run script. Kill the whole renderer if
+    // tear down the layout tree or (unfortunately) run script. Kill the whole layoutObject if
     // someone managed to get into here from inside layout or paint.
     RELEASE_ASSERT(!view()->isInPerformLayout());
     RELEASE_ASSERT(!view()->isPainting());
@@ -1738,8 +1738,8 @@ void Document::updateRenderTree(StyleRecalcChange change)
     // UpdateSuspendScope::performDeferredWidgetTreeOperations() ?
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
-    TRACE_EVENT_BEGIN0("blink", "Document::updateRenderTree");
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "UpdateRenderTree");
+    TRACE_EVENT_BEGIN0("blink", "Document::updateLayoutTree");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "UpdateLayoutTree");
 
     // FIXME: Remove m_styleRecalcElementCounter, we should just use the accessCount() on the resolver.
     m_styleRecalcElementCounter = 0;
@@ -1776,7 +1776,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     ASSERT(!m_timeline->hasOutdatedAnimationPlayer());
 
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "elementCount", m_styleRecalcElementCounter);
-    TRACE_EVENT_END1("blink", "Document::updateRenderTree", "elementCount", m_styleRecalcElementCounter);
+    TRACE_EVENT_END1("blink", "Document::updateLayoutTree", "elementCount", m_styleRecalcElementCounter);
     InspectorInstrumentation::didRecalculateStyle(cookie, m_styleRecalcElementCounter);
 }
 
@@ -1846,15 +1846,15 @@ void Document::updateStyle(StyleRecalcChange change)
     TRACE_EVENT_END1("blink,blink_style", "Document::updateStyle", "resolverAccessCount", styleEngine().resolverAccessCount() - initialResolverAccessCount);
 }
 
-void Document::updateRenderTreeForNodeIfNeeded(Node* node)
+void Document::updateLayoutTreeForNodeIfNeeded(Node* node)
 {
     ASSERT(node);
     if (!node->canParticipateInComposedTree())
         return;
-    if (!needsRenderTreeUpdate())
+    if (!needsLayoutTreeUpdate())
         return;
 
-    bool needsRecalc = needsFullRenderTreeUpdate() || node->needsStyleRecalc() || node->needsStyleInvalidation();
+    bool needsRecalc = needsFullLayoutTreeUpdate() || node->needsStyleRecalc() || node->needsStyleInvalidation();
 
     if (!needsRecalc) {
         for (const ContainerNode* ancestor = LayoutTreeBuilderTraversal::parent(*node); ancestor && !needsRecalc; ancestor = LayoutTreeBuilderTraversal::parent(*ancestor))
@@ -1862,7 +1862,7 @@ void Document::updateRenderTreeForNodeIfNeeded(Node* node)
     }
 
     if (needsRecalc)
-        updateRenderTreeIfNeeded();
+        updateLayoutTreeIfNeeded();
 }
 
 void Document::updateLayout()
@@ -1881,7 +1881,7 @@ void Document::updateLayout()
     if (HTMLFrameOwnerElement* owner = ownerElement())
         owner->document().updateLayout();
 
-    updateRenderTreeIfNeeded();
+    updateLayoutTreeIfNeeded();
 
     if (!isActive())
         return;
@@ -1906,7 +1906,7 @@ void Document::clearFocusedElementSoon()
 
 void Document::clearFocusedElementTimerFired(Timer<Document>*)
 {
-    updateRenderTreeIfNeeded();
+    updateLayoutTreeIfNeeded();
     m_clearFocusedElementTimer.stop();
 
     if (m_focusedElement && !m_focusedElement->isFocusable())
@@ -1939,7 +1939,7 @@ void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks
             // If new nodes have been added or style recalc has been done with style sheets still
             // pending, some nodes may not have had their real style calculated yet. Normally this
             // gets cleaned when style sheets arrive but here we need up-to-date style immediately.
-            updateRenderTree(Force);
+            updateLayoutTree(Force);
         }
     }
 
@@ -2030,7 +2030,7 @@ void Document::scheduleSVGFilterLayerUpdateHack(Element& element)
         return;
     element.setSVGFilterNeedsLayerUpdate();
     m_layerUpdateSVGFilterElements.add(&element);
-    scheduleRenderTreeUpdateIfNeeded();
+    scheduleLayoutTreeUpdateIfNeeded();
 }
 
 void Document::unscheduleSVGFilterLayerUpdateHack(Element& element)
@@ -2042,7 +2042,7 @@ void Document::unscheduleSVGFilterLayerUpdateHack(Element& element)
 void Document::scheduleUseShadowTreeUpdate(SVGUseElement& element)
 {
     m_useElementsNeedingUpdate.add(&element);
-    scheduleRenderTreeUpdateIfNeeded();
+    scheduleLayoutTreeUpdateIfNeeded();
 }
 
 void Document::unscheduleUseShadowTreeUpdate(SVGUseElement& element)
@@ -2089,7 +2089,7 @@ void Document::attach(const AttachContext& context)
 
     ContainerNode::attach(context);
 
-    // The TextAutosizer can't update render view info while the Document is detached, so update now in case anything changed.
+    // The TextAutosizer can't update layout view info while the Document is detached, so update now in case anything changed.
     if (TextAutosizer* autosizer = textAutosizer())
         autosizer->updatePageInfo();
 
@@ -2209,7 +2209,7 @@ void Document::clearAXObjectCache()
 
 AXObjectCache* Document::existingAXObjectCache() const
 {
-    // If the renderer is gone then we are in the process of destruction.
+    // If the layoutObject is gone then we are in the process of destruction.
     // This method will be called before m_frame = nullptr.
     if (!axObjectCacheOwner().layoutView())
         return 0;
@@ -2510,7 +2510,7 @@ void Document::implicitClose()
     // necessary and can in fact be actively harmful if pages are loading at a rate of > 60fps
     // (if your platform is syncing flushes and limiting them to 60fps).
     if (!ownerElement() || (ownerElement()->layoutObject() && !ownerElement()->layoutObject()->needsLayout())) {
-        updateRenderTreeIfNeeded();
+        updateLayoutTreeIfNeeded();
 
         // Always do a layout after loading if needed.
         if (view() && layoutView() && (!layoutView()->firstChild() || layoutView()->needsLayout()))
@@ -3535,7 +3535,7 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         frameHost()->chrome().focusedNodeChanged(oldFocusedElement.get(), m_focusedElement.get());
 
 SetFocusedElementDone:
-    updateRenderTreeIfNeeded();
+    updateLayoutTreeIfNeeded();
     if (LocalFrame* frame = this->frame())
         frame->selection().didChangeFocus();
     return !focusChangeBlocked;
@@ -4201,7 +4201,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
     bool shouldUseVisualOrdering = m_encodingData.encoding().usesVisualOrdering();
     if (shouldUseVisualOrdering != m_visuallyOrdered) {
         m_visuallyOrdered = shouldUseVisualOrdering;
-        // FIXME: How is possible to not have a renderer here?
+        // FIXME: How is possible to not have a layoutObject here?
         if (layoutView())
             layoutView()->mutableStyleRef().setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::VisuallyOrdered));
@@ -4247,7 +4247,7 @@ static Editor::Command command(Document* document, const String& commandName)
     if (!frame || frame->document() != document)
         return Editor::Command();
 
-    document->updateRenderTreeIfNeeded();
+    document->updateLayoutTreeIfNeeded();
     return frame->editor().command(commandName, CommandFromDOM);
 }
 
@@ -4517,8 +4517,8 @@ void Document::finishedParsing()
     Microtask::performCheckpoint();
 
     if (RefPtrWillBeRawPtr<LocalFrame> frame = this->frame()) {
-        // Don't update the render tree if we haven't requested the main resource yet to avoid
-        // adding extra latency. Note that the first render tree update can be expensive since it
+        // Don't update the layout tree if we haven't requested the main resource yet to avoid
+        // adding extra latency. Note that the first layout tree update can be expensive since it
         // triggers the parsing of the default stylesheets which are compiled-in.
         const bool mainResourceWasAlreadyRequested = frame->loader().stateMachine()->committedFirstRealDocumentLoad();
 
@@ -4530,7 +4530,7 @@ void Document::finishedParsing()
         // we force the styles to be up to date before calling FrameLoader::finishedParsing().
         // See https://bugs.webkit.org/show_bug.cgi?id=36864 starting around comment 35.
         if (mainResourceWasAlreadyRequested)
-            updateRenderTreeIfNeeded();
+            updateLayoutTreeIfNeeded();
 
         frame->loader().finishedParsing();
 
@@ -5186,7 +5186,7 @@ Node* eventTargetNodeForDocument(Document* doc)
     return node;
 }
 
-void Document::adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads, LayoutObject& renderer)
+void Document::adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads, LayoutObject& layoutObject)
 {
     if (!view())
         return;
@@ -5194,18 +5194,18 @@ void Document::adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads
     LayoutRect visibleContentRect(view()->visibleContentRect());
     for (size_t i = 0; i < quads.size(); ++i) {
         quads[i].move(-FloatSize(visibleContentRect.x().toFloat(), visibleContentRect.y().toFloat()));
-        adjustFloatQuadForAbsoluteZoom(quads[i], renderer);
+        adjustFloatQuadForAbsoluteZoom(quads[i], layoutObject);
     }
 }
 
-void Document::adjustFloatRectForScrollAndAbsoluteZoom(FloatRect& rect, LayoutObject& renderer)
+void Document::adjustFloatRectForScrollAndAbsoluteZoom(FloatRect& rect, LayoutObject& layoutObject)
 {
     if (!view())
         return;
 
     LayoutRect visibleContentRect(view()->visibleContentRect());
     rect.move(-FloatSize(visibleContentRect.x().toFloat(), visibleContentRect.y().toFloat()));
-    adjustFloatRectForAbsoluteZoom(rect, renderer);
+    adjustFloatRectForAbsoluteZoom(rect, layoutObject);
 }
 
 bool Document::hasActiveParser()
@@ -5248,7 +5248,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
     Element* oldActiveElement = activeHoverElement();
     if (oldActiveElement && !request.active()) {
-        // The oldActiveElement renderer is null, dropped on :active by setting display: none,
+        // The oldActiveElement layoutObject is null, dropped on :active by setting display: none,
         // for instance. We still need to clear the ActiveChain as the mouse is released.
         for (Node* node = oldActiveElement; node; node = ComposedTreeTraversal::parent(*node)) {
             ASSERT(!node->isTextNode());
@@ -5288,11 +5288,11 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     // Update our current hover node.
     setHoverNode(newHoverNode);
 
-    // We have two different objects. Fetch their renderers.
+    // We have two different objects. Fetch their layoutObjects.
     LayoutObject* oldHoverObj = oldHoverNode ? oldHoverNode->layoutObject() : 0;
     LayoutObject* newHoverObj = newHoverNode ? newHoverNode->layoutObject() : 0;
 
-    // Locate the common ancestor render object for the two renderers.
+    // Locate the common ancestor layout object for the two layoutObjects.
     LayoutObject* ancestor = nearestCommonHoverAncestor(oldHoverObj, newHoverObj);
     RefPtrWillBeRawPtr<Node> ancestorNode(ancestor ? ancestor->node() : 0);
 
@@ -5300,7 +5300,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> nodesToAddToChain;
 
     if (oldHoverObj != newHoverObj) {
-        // If the old hovered node is not nil but it's renderer is, it was probably detached as part of the :hover style
+        // If the old hovered node is not nil but it's layoutObject is, it was probably detached as part of the :hover style
         // (for instance by setting display:none in the :hover pseudo-class). In this case, the old hovered element (and its ancestors)
         // must be updated, to ensure it's normal style is re-applied.
         if (oldHoverNode && !oldHoverObj) {

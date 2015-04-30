@@ -42,9 +42,9 @@ class HTMLElement;
 
 class ElementRareData : public NodeRareData {
 public:
-    static ElementRareData* create(LayoutObject* renderer)
+    static ElementRareData* create(LayoutObject* layoutObject)
     {
-        return new ElementRareData(renderer);
+        return new ElementRareData(layoutObject);
     }
 
     ~ElementRareData();
@@ -173,8 +173,8 @@ inline LayoutSize defaultMinimumSizeForResizing()
     return LayoutSize(LayoutUnit::max(), LayoutUnit::max());
 }
 
-inline ElementRareData::ElementRareData(LayoutObject* renderer)
-    : NodeRareData(renderer)
+inline ElementRareData::ElementRareData(LayoutObject* layoutObject)
+    : NodeRareData(layoutObject)
     , m_tabindex(0)
     , m_tabStop(true)
     , m_proxyCount(0)

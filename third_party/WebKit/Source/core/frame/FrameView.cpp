@@ -802,7 +802,7 @@ void FrameView::performPreLayoutTasks()
         document->evaluateMediaQueryList();
     }
 
-    document->updateRenderTreeIfNeeded();
+    document->updateLayoutTreeIfNeeded();
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 }
 
@@ -1476,7 +1476,7 @@ void FrameView::maintainScrollPositionAtAnchor(Node* anchorNode)
 
     // We need to update the layout before scrolling, otherwise we could
     // really mess things up if an anchor scroll comes at a bad moment.
-    m_frame->document()->updateRenderTreeIfNeeded();
+    m_frame->document()->updateLayoutTreeIfNeeded();
     // Only do a layout if changes have occurred that make it necessary.
     LayoutView* layoutView = this->layoutView();
     if (layoutView && layoutView->needsLayout())
@@ -2570,7 +2570,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     // region but then become included later by the second frame adding rects to the dirty region
     // when it lays out.
 
-    m_frame->document()->updateRenderTreeIfNeeded();
+    m_frame->document()->updateLayoutTreeIfNeeded();
 
     if (needsLayout())
         layout();
@@ -2593,7 +2593,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     // style recalc. The extra style recalc needs to happen after our child <iframes> were updated.
     // FIXME: We shouldn't be triggering an extra style recalc in the first place.
     if (m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate()) {
-        m_frame->document()->updateRenderTreeIfNeeded();
+        m_frame->document()->updateLayoutTreeIfNeeded();
 
         if (needsLayout())
             layout();

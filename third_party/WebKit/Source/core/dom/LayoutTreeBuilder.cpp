@@ -153,9 +153,9 @@ void LayoutTreeBuilderForText::createLayoutObject()
     LayoutObject* parentLayoutObject = this->parentLayoutObject();
     ComputedStyle& style = parentLayoutObject->mutableStyleRef();
 
-    ASSERT(m_node->textRendererIsNeeded(style, *parentLayoutObject));
+    ASSERT(m_node->textLayoutObjectIsNeeded(style, *parentLayoutObject));
 
-    LayoutText* newLayoutObject = m_node->createTextRenderer(style);
+    LayoutText* newLayoutObject = m_node->createTextLayoutObject(style);
     if (!parentLayoutObject->isChildAllowed(newLayoutObject, style)) {
         newLayoutObject->destroy();
         return;

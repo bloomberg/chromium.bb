@@ -63,7 +63,7 @@ public:
         PaintInvalidationClean,
 
         // Once the document starts shuting down, we cannot return
-        // to the style/layout/rendering states.
+        // to the style/layout/compositing states.
         Stopping,
         Stopped,
         Disposed,

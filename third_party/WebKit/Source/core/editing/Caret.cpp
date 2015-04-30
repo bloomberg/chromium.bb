@@ -76,7 +76,7 @@ void DragCaretController::setCaretPosition(const VisiblePosition& position)
     if (m_position.isNull() || m_position.isOrphan()) {
         clearCaretRect();
     } else {
-        document->updateRenderTreeIfNeeded();
+        document->updateLayoutTreeIfNeeded();
         updateCaretRect(document, m_position);
     }
 }

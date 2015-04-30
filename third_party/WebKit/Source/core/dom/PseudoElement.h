@@ -61,7 +61,7 @@ private:
 
 const QualifiedName& pseudoElementTagName();
 
-inline bool pseudoElementRendererIsNeeded(const ComputedStyle* style)
+inline bool pseudoElementLayoutObjectIsNeeded(const ComputedStyle* style)
 {
     if (!style)
         return false;

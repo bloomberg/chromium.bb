@@ -924,10 +924,10 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
     return false;
 }
 
-static inline LayoutObject* endOfContinuations(LayoutObject* renderer)
+static inline LayoutObject* endOfContinuations(LayoutObject* layoutObject)
 {
     LayoutObject* prev = nullptr;
-    LayoutObject* cur = renderer;
+    LayoutObject* cur = layoutObject;
 
     if (!cur->isLayoutInline() && !cur->isLayoutBlock())
         return nullptr;
@@ -965,8 +965,8 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
         } else {
             LayoutObject* prev = nullptr;
             while (!prev) {
-                // Check if the current renderer has contiunation and move the location for finding the renderer
-                // to the end of continuations if there is the continuation.
+                // Check if the current layoutObject has contiunation and move the location for
+                // finding the layoutObject to the end of continuations if there is the continuation.
                 // Skip to check the contiunation on contiunations section
                 if (startContinuation == o) {
                     startContinuation = nullptr;
@@ -977,7 +977,7 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
                         break;
                     }
                 }
-                // Prevent to overrun out of own render tree
+                // Prevent to overrun out of own layout tree
                 if (o == layoutObject()) {
                     return false;
                 }
@@ -1010,7 +1010,7 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const
 
 // FIXME: This override is only needed for inline anchors without an
 // InlineBox and it does not belong in ContainerNode as it reaches into
-// the render and line box trees.
+// the layout and line box trees.
 // https://code.google.com/p/chromium/issues/detail?id=248354
 LayoutRect ContainerNode::boundingBox() const
 {
@@ -1035,7 +1035,7 @@ LayoutRect ContainerNode::boundingBox() const
 void ContainerNode::focusStateChanged()
 {
     // If we're just changing the window's active state and the focused node has no
-    // renderer we can just ignore the state change.
+    // layoutObject we can just ignore the state change.
     if (!layoutObject())
         return;
 
@@ -1278,7 +1278,7 @@ void ContainerNode::recalcChildStyle(StyleRecalcChange change)
     if (change < Force && hasRareData() && childNeedsStyleRecalc())
         checkForChildrenAdjacentRuleChanges();
 
-    // This loop is deliberately backwards because we use insertBefore in the rendering tree, and want to avoid
+    // This loop is deliberately backwards because we use insertBefore in the layout tree, and want to avoid
     // a potentially n^2 loop to find the insertion point while resolving style. Having us start from the last
     // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
     // See crbug.com/288225

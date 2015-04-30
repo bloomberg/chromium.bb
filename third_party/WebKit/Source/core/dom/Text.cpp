@@ -82,17 +82,17 @@ PassRefPtrWillBeRawPtr<Node> Text::mergeNextSiblingNodesIfPossible()
         String nextTextData = nextText->data();
         String oldTextData = data();
         setDataWithoutUpdate(data() + nextTextData);
-        updateTextRenderer(oldTextData.length(), 0);
+        updateTextLayoutObject(oldTextData.length(), 0);
 
         // Empty nextText for layout update.
         nextText->setDataWithoutUpdate(emptyString());
-        nextText->updateTextRenderer(0, nextTextData.length());
+        nextText->updateTextLayoutObject(0, nextTextData.length());
 
         document().didMergeTextNodes(*nextText, offset);
 
         // Restore nextText for mutation event.
         nextText->setDataWithoutUpdate(nextTextData);
-        nextText->updateTextRenderer(0, 0);
+        nextText->updateTextLayoutObject(0, 0);
 
         document().incDOMTreeVersion();
         didModifyData(oldTextData, CharacterData::UpdateFromNonParser);
@@ -254,7 +254,7 @@ static inline bool canHaveWhitespaceChildren(const LayoutObject& parent)
     return true;
 }
 
-bool Text::textRendererIsNeeded(const ComputedStyle& style, const LayoutObject& parent)
+bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style, const LayoutObject& parent)
 {
     if (!parent.canHaveChildren())
         return false;
@@ -274,14 +274,14 @@ bool Text::textRendererIsNeeded(const ComputedStyle& style, const LayoutObject& 
     if (!canHaveWhitespaceChildren(parent))
         return false;
 
-    if (style.preserveNewline()) // pre/pre-wrap/pre-line always make renderers.
+    if (style.preserveNewline()) // pre/pre-wrap/pre-line always make layoutObjects.
         return true;
 
     // childNeedsDistributionRecalc() here is rare, only happens JS calling surroundContents() etc. from DOMNodeInsertedIntoDocument etc.
     if (document().childNeedsDistributionRecalc())
         return true;
 
-    const LayoutObject* prev = LayoutTreeBuilderTraversal::previousSiblingRenderer(*this);
+    const LayoutObject* prev = LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*this);
     if (prev && prev->isBR()) // <span><br/> <br/></span>
         return false;
 
@@ -293,16 +293,16 @@ bool Text::textRendererIsNeeded(const ComputedStyle& style, const LayoutObject& 
         if (parent.isLayoutBlock() && !parent.childrenInline() && (!prev || !prev->isInline()))
             return false;
 
-        // Avoiding creation of a Renderer for the text node is a non-essential memory optimization.
+        // Avoiding creation of a layoutObject for the text node is a non-essential memory optimization.
         // So to avoid blowing up on very wide DOMs, we limit the number of siblings to visit.
         unsigned maxSiblingsToVisit = 50;
 
         LayoutObject* first = parent.slowFirstChild();
         while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
-        if (!first || first == layoutObject() || LayoutTreeBuilderTraversal::nextSiblingRenderer(*this) == first)
+        if (!first || first == layoutObject() || LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*this) == first)
             // Whitespace at the start of a block just goes away.  Don't even
-            // make a render object for this text.
+            // make a layout object for this text.
             return false;
     }
     return true;
@@ -315,7 +315,7 @@ static bool isSVGText(Text* text)
     return parentOrShadowHostNode->isSVGElement() && !isSVGForeignObjectElement(*parentOrShadowHostNode);
 }
 
-LayoutText* Text::createTextRenderer(const ComputedStyle& style)
+LayoutText* Text::createTextLayoutObject(const ComputedStyle& style)
 {
     if (isSVGText(this))
         return new LayoutSVGInlineText(this, dataImpl());
@@ -328,10 +328,10 @@ LayoutText* Text::createTextRenderer(const ComputedStyle& style)
 
 void Text::attach(const AttachContext& context)
 {
-    if (ContainerNode* renderingParent = LayoutTreeBuilderTraversal::parent(*this)) {
-        if (LayoutObject* parentRenderer = renderingParent->layoutObject()) {
-            if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
-                LayoutTreeBuilderForText(*this, parentRenderer).createLayoutObject();
+    if (ContainerNode* layoutParent = LayoutTreeBuilderTraversal::parent(*this)) {
+        if (LayoutObject* parentLayoutObject = layoutParent->layoutObject()) {
+            if (textLayoutObjectIsNeeded(*parentLayoutObject->style(), *parentLayoutObject))
+                LayoutTreeBuilderForText(*this, parentLayoutObject).createLayoutObject();
         }
     }
     CharacterData::attach(context);
@@ -340,10 +340,10 @@ void Text::attach(const AttachContext& context)
 void Text::reattachIfNeeded(const AttachContext& context)
 {
     bool layoutObjectIsNeeded = false;
-    ContainerNode* renderingParent = LayoutTreeBuilderTraversal::parent(*this);
-    if (renderingParent) {
-        if (LayoutObject* parentRenderer = renderingParent->layoutObject()) {
-            if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
+    ContainerNode* layoutParent = LayoutTreeBuilderTraversal::parent(*this);
+    if (layoutParent) {
+        if (LayoutObject* parentLayoutObject = layoutParent->layoutObject()) {
+            if (textLayoutObjectIsNeeded(*parentLayoutObject->style(), *parentLayoutObject))
                 layoutObjectIsNeeded = true;
         }
     }
@@ -351,36 +351,36 @@ void Text::reattachIfNeeded(const AttachContext& context)
     if (layoutObjectIsNeeded == !!layoutObject())
         return;
 
-    // The following is almost the same as Node::reattach() except that we create renderer only if needed.
-    // Not calling reattach() to avoid repeated calls to Text::textRendererIsNeeded().
+    // The following is almost the same as Node::reattach() except that we create a layoutObject only if needed.
+    // Not calling reattach() to avoid repeated calls to Text::textLayoutObjectIsNeeded().
     AttachContext reattachContext(context);
     reattachContext.performingReattach = true;
 
     if (styleChangeType() < NeedsReattachStyleChange)
         detach(reattachContext);
     if (layoutObjectIsNeeded)
-        LayoutTreeBuilderForText(*this, renderingParent->layoutObject()).createLayoutObject();
+        LayoutTreeBuilderForText(*this, layoutParent->layoutObject()).createLayoutObject();
     CharacterData::attach(reattachContext);
 }
 
 void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 {
-    if (LayoutText* renderer = this->layoutObject()) {
+    if (LayoutText* layoutObject = this->layoutObject()) {
         if (change != NoChange || needsStyleRecalc())
-            renderer->setStyle(document().ensureStyleResolver().styleForText(this));
+            layoutObject->setStyle(document().ensureStyleResolver().styleForText(this));
         if (needsStyleRecalc())
-            renderer->setText(dataImpl());
+            layoutObject->setText(dataImpl());
         clearNeedsStyleRecalc();
-    } else if (needsStyleRecalc() || needsWhitespaceRenderer()) {
+    } else if (needsStyleRecalc() || needsWhitespaceLayoutObject()) {
         reattach();
         if (this->layoutObject())
             reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
     }
 }
 
-// If a whitespace node had no renderer and goes through a recalcStyle it may
+// If a whitespace node had no layoutObject and goes through a recalcStyle it may
 // need to create one if the parent style now has white-space: pre.
-bool Text::needsWhitespaceRenderer()
+bool Text::needsWhitespaceLayoutObject()
 {
     ASSERT(!layoutObject());
     if (const ComputedStyle* style = parentComputedStyle())
@@ -388,19 +388,19 @@ bool Text::needsWhitespaceRenderer()
     return false;
 }
 
-void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior recalcStyleBehavior)
+void Text::updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior recalcStyleBehavior)
 {
     if (!inActiveDocument())
         return;
-    LayoutText* textRenderer = layoutObject();
-    if (!textRenderer || !textRendererIsNeeded(*textRenderer->style(), *textRenderer->parent())) {
+    LayoutText* textLayoutObject = layoutObject();
+    if (!textLayoutObject || !textLayoutObjectIsNeeded(*textLayoutObject->style(), *textLayoutObject->parent())) {
         lazyReattachIfAttached();
         // FIXME: Editing should be updated so this is not neccesary.
         if (recalcStyleBehavior == DeprecatedRecalcStyleImmediatlelyForEditing)
-            document().updateRenderTreeIfNeeded();
+            document().updateLayoutTreeIfNeeded();
         return;
     }
-    textRenderer->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);
+    textLayoutObject->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);
 }
 
 PassRefPtrWillBeRawPtr<Text> Text::cloneWithData(const String& data)

@@ -117,7 +117,7 @@ public:
 
     virtual void clearWeakMembers(Visitor*) = 0;
 
-    virtual void inlineTextBoxesUpdated(LayoutObject* renderer) = 0;
+    virtual void inlineTextBoxesUpdated(LayoutObject*) = 0;
 
     // Called when the scroll offset changes.
     virtual void handleScrollPositionChanged(FrameView*) = 0;

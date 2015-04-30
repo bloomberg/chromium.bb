@@ -55,12 +55,12 @@ using namespace HTMLNames;
 static Node* nextRenderedEditable(Node* node)
 {
     for (node = node->nextLeafNode(); node; node = node->nextLeafNode()) {
-        LayoutObject* renderer = node->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = node->layoutObject();
+        if (!layoutObject)
             continue;
         if (!node->hasEditableStyle())
             continue;
-        if ((renderer->isBox() && toLayoutBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toLayoutText(renderer)->firstTextBox()))
+        if ((layoutObject->isBox() && toLayoutBox(layoutObject)->inlineBoxWrapper()) || (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()))
             return node;
     }
     return 0;
@@ -69,12 +69,12 @@ static Node* nextRenderedEditable(Node* node)
 static Node* previousRenderedEditable(Node* node)
 {
     for (node = node->previousLeafNode(); node; node = node->previousLeafNode()) {
-        LayoutObject* renderer = node->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = node->layoutObject();
+        if (!layoutObject)
             continue;
         if (!node->hasEditableStyle())
             continue;
-        if ((renderer->isBox() && toLayoutBox(renderer)->inlineBoxWrapper()) || (renderer->isText() && toLayoutText(renderer)->firstTextBox()))
+        if ((layoutObject->isBox() && toLayoutBox(layoutObject)->inlineBoxWrapper()) || (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()))
             return node;
     }
     return 0;
@@ -577,8 +577,8 @@ int PositionAlgorithm<Strategy>::renderedOffset() const
         return m_offset;
 
     int result = 0;
-    LayoutText* textRenderer = toLayoutText(deprecatedNode()->layoutObject());
-    for (InlineTextBox *box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
+    LayoutText* textLayoutObject = toLayoutText(deprecatedNode()->layoutObject());
+    for (InlineTextBox *box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
         int start = box->start();
         int end = box->start() + box->len();
         if (m_offset < start)
@@ -594,7 +594,7 @@ int PositionAlgorithm<Strategy>::renderedOffset() const
 
 // Whether or not [node, 0] and [node, lastOffsetForEditing(node)] are their own VisiblePositions.
 // If true, adjacent candidates are visually distinct.
-// FIXME: Disregard nodes with renderers that have no height, as we do in isCandidate.
+// FIXME: Disregard nodes with layoutObjects that have no height, as we do in isCandidate.
 // FIXME: Share code with isCandidate, if possible.
 static bool endsOfNodeAreVisuallyDistinctPositions(Node* node)
 {
@@ -681,9 +681,9 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::upstream(EditingBou
         if (endsOfNodeAreVisuallyDistinctPositions(currentNode) && currentNode != boundary)
             return lastVisible;
 
-        // skip position in unrendered or invisible node
-        LayoutObject* renderer = currentNode->layoutObject();
-        if (!renderer || renderer->style()->visibility() != VISIBLE)
+        // skip position in non-laid out or invisible node
+        LayoutObject* layoutObject = currentNode->layoutObject();
+        if (!layoutObject || layoutObject->style()->visibility() != VISIBLE)
             continue;
 
         if (rule == CanCrossEditingBoundary && boundaryCrossed) {
@@ -707,21 +707,21 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::upstream(EditingBou
             continue;
         }
 
-        // return current position if it is in rendered text
-        if (renderer->isText() && toLayoutText(renderer)->firstTextBox()) {
+        // return current position if it is in laid out text
+        if (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()) {
             if (currentNode != startNode) {
                 // This assertion fires in layout tests in the case-transform.html test because
                 // of a mix-up between offsets in the text in the DOM tree with text in the
-                // render tree which can have a different length due to case transformation.
+                // layout tree which can have a different length due to case transformation.
                 // Until we resolve that, disable this so we can run the layout tests!
-                // ASSERT(currentOffset >= renderer->caretMaxOffset());
-                return createLegacyEditingPosition(currentNode, renderer->caretMaxOffset());
+                // ASSERT(currentOffset >= layoutObject->caretMaxOffset());
+                return createLegacyEditingPosition(currentNode, layoutObject->caretMaxOffset());
             }
 
             unsigned textOffset = currentPos.offsetInLeafNode();
-            LayoutText* textRenderer = toLayoutText(renderer);
-            InlineTextBox* lastTextBox = textRenderer->lastTextBox();
-            for (InlineTextBox* box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
+            LayoutText* textLayoutObject = toLayoutText(layoutObject);
+            InlineTextBox* lastTextBox = textLayoutObject->lastTextBox();
+            for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
                 if (textOffset <= box->start() + box->len()) {
                     if (textOffset > box->start())
                         return currentPos;
@@ -740,7 +740,7 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::upstream(EditingBou
                     otherBox = otherBox->nextLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textRenderer && toInlineTextBox(otherBox)->start() > textOffset))
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textLayoutObject && toInlineTextBox(otherBox)->start() > textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -749,7 +749,7 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::upstream(EditingBou
                     otherBox = otherBox->prevLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textRenderer && toInlineTextBox(otherBox)->start() > textOffset))
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textLayoutObject && toInlineTextBox(otherBox)->start() > textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -813,9 +813,9 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::downstream(EditingB
         if (boundary && Strategy::parent(*boundary) == currentNode)
             return lastVisible;
 
-        // skip position in unrendered or invisible node
-        LayoutObject* renderer = currentNode->layoutObject();
-        if (!renderer || renderer->style()->visibility() != VISIBLE)
+        // skip position in non-laid out or invisible node
+        LayoutObject* layoutObject = currentNode->layoutObject();
+        if (!layoutObject || layoutObject->style()->visibility() != VISIBLE)
             continue;
 
         if (rule == CanCrossEditingBoundary && boundaryCrossed) {
@@ -829,22 +829,22 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::downstream(EditingB
 
         // Return position before tables and nodes which have content that can be ignored.
         if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
-            if (currentPos.offsetInLeafNode() <= renderer->caretMinOffset())
-                return createLegacyEditingPosition(currentNode, renderer->caretMinOffset());
+            if (currentPos.offsetInLeafNode() <= layoutObject->caretMinOffset())
+                return createLegacyEditingPosition(currentNode, layoutObject->caretMinOffset());
             continue;
         }
 
-        // return current position if it is in rendered text
-        if (renderer->isText() && toLayoutText(renderer)->firstTextBox()) {
+        // return current position if it is in laid out text
+        if (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()) {
             if (currentNode != startNode) {
                 ASSERT(currentPos.atStartOfNode());
-                return createLegacyEditingPosition(currentNode, renderer->caretMinOffset());
+                return createLegacyEditingPosition(currentNode, layoutObject->caretMinOffset());
             }
 
             unsigned textOffset = currentPos.offsetInLeafNode();
-            LayoutText* textRenderer = toLayoutText(renderer);
-            InlineTextBox* lastTextBox = textRenderer->lastTextBox();
-            for (InlineTextBox* box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
+            LayoutText* textLayoutObject = toLayoutText(layoutObject);
+            InlineTextBox* lastTextBox = textLayoutObject->lastTextBox();
+            for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
                 if (textOffset <= box->end()) {
                     if (textOffset >= box->start())
                         return currentPos;
@@ -863,7 +863,7 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::downstream(EditingB
                     otherBox = otherBox->nextLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textRenderer && toInlineTextBox(otherBox)->start() >= textOffset))
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textLayoutObject && toInlineTextBox(otherBox)->start() >= textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -872,7 +872,7 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::downstream(EditingB
                     otherBox = otherBox->prevLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textRenderer && toInlineTextBox(otherBox)->start() >= textOffset))
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textLayoutObject && toInlineTextBox(otherBox)->start() >= textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -891,10 +891,10 @@ static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)
 }
 
 template <typename Strategy>
-bool PositionAlgorithm<Strategy>::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* renderer)
+bool PositionAlgorithm<Strategy>::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* layoutObject)
 {
-    LayoutObject* stop = renderer->nextInPreOrderAfterChildren();
-    for (LayoutObject *o = renderer->slowFirstChild(); o && o != stop; o = o->nextInPreOrder())
+    LayoutObject* stop = layoutObject->nextInPreOrderAfterChildren();
+    for (LayoutObject *o = layoutObject->slowFirstChild(); o && o != stop; o = o->nextInPreOrder())
         if (o->nonPseudoNode()) {
             if ((o->isText() && boundingBoxLogicalHeight(o, toLayoutText(o)->linesBoundingBox()))
                 || (o->isBox() && toLayoutBox(o)->pixelSnappedLogicalHeight())
@@ -945,24 +945,24 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
     if (isNull())
         return false;
 
-    LayoutObject* renderer = deprecatedNode()->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = deprecatedNode()->layoutObject();
+    if (!layoutObject)
         return false;
 
-    if (renderer->style()->visibility() != VISIBLE)
+    if (layoutObject->style()->visibility() != VISIBLE)
         return false;
 
-    if (renderer->isBR()) {
+    if (layoutObject->isBR()) {
         // FIXME: The condition should be m_anchorType == PositionIsBeforeAnchor, but for now we still need to support legacy positions.
         return !m_offset && m_anchorType != PositionIsAfterAnchor && !nodeIsUserSelectNone(Strategy::parent(*deprecatedNode()));
     }
 
-    if (renderer->isText())
+    if (layoutObject->isText())
         return !nodeIsUserSelectNone(deprecatedNode()) && inRenderedText();
 
-    if (renderer->isSVG()) {
+    if (layoutObject->isSVG()) {
         // We don't consider SVG elements are contenteditable except for
-        // associated renderer returns isText() true, e.g. LayoutSVGInlineText.
+        // associated layoutObject returns isText() true, e.g. LayoutSVGInlineText.
         return false;
     }
 
@@ -972,9 +972,9 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
     if (isHTMLHtmlElement(*m_anchorNode))
         return false;
 
-    if (renderer->isLayoutBlockFlow() || renderer->isFlexibleBox() || renderer->isLayoutGrid()) {
-        if (toLayoutBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
-            if (!hasRenderedNonAnonymousDescendantsWithHeight(renderer))
+    if (layoutObject->isLayoutBlockFlow() || layoutObject->isFlexibleBox() || layoutObject->isLayoutGrid()) {
+        if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
+            if (!hasRenderedNonAnonymousDescendantsWithHeight(layoutObject))
                 return atFirstEditingPositionForNode() && !nodeIsUserSelectNone(deprecatedNode());
             return m_anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(deprecatedNode()) && atEditingBoundary();
         }
@@ -993,21 +993,22 @@ bool PositionAlgorithm<Strategy>::inRenderedText() const
     if (isNull() || !deprecatedNode()->isTextNode())
         return false;
 
-    LayoutObject* renderer = deprecatedNode()->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = deprecatedNode()->layoutObject();
+    if (!layoutObject)
         return false;
 
-    LayoutText* textRenderer = toLayoutText(renderer);
-    for (InlineTextBox *box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
-        if (m_offset < static_cast<int>(box->start()) && !textRenderer->containsReversedText()) {
+    LayoutText* textLayoutObject = toLayoutText(layoutObject);
+    for (InlineTextBox *box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
+        if (m_offset < static_cast<int>(box->start()) && !textLayoutObject->containsReversedText()) {
             // The offset we're looking for is before this node
             // this means the offset must be in content that is
-            // not rendered. Return false.
+            // not laid out. Return false.
             return false;
         }
-        if (box->containsCaretOffset(m_offset))
+        if (box->containsCaretOffset(m_offset)) {
             // Return false for offsets inside composed characters.
-            return m_offset == 0 || m_offset == textRenderer->nextOffset(textRenderer->previousOffset(m_offset));
+            return m_offset == 0 || m_offset == textLayoutObject->nextOffset(textLayoutObject->previousOffset(m_offset));
+        }
     }
 
     return false;
@@ -1019,16 +1020,16 @@ bool PositionAlgorithm<Strategy>::isRenderedCharacter() const
     if (isNull() || !deprecatedNode()->isTextNode())
         return false;
 
-    LayoutObject* renderer = deprecatedNode()->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = deprecatedNode()->layoutObject();
+    if (!layoutObject)
         return false;
 
-    LayoutText* textRenderer = toLayoutText(renderer);
-    for (InlineTextBox* box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
-        if (m_offset < static_cast<int>(box->start()) && !textRenderer->containsReversedText()) {
+    LayoutText* textLayoutObject = toLayoutText(layoutObject);
+    for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
+        if (m_offset < static_cast<int>(box->start()) && !textLayoutObject->containsReversedText()) {
             // The offset we're looking for is before this node
             // this means the offset must be in content that is
-            // not rendered. Return false.
+            // not laid out. Return false.
             return false;
         }
         if (m_offset >= static_cast<int>(box->start()) && m_offset < static_cast<int>(box->start() + box->len()))
@@ -1044,16 +1045,16 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionType 
     if (isNull() || pos.isNull())
         return false;
 
-    LayoutObject* renderer = deprecatedNode()->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = deprecatedNode()->layoutObject();
+    if (!layoutObject)
         return false;
 
-    LayoutObject* posRenderer = pos.deprecatedNode()->layoutObject();
-    if (!posRenderer)
+    LayoutObject* posLayoutObject = pos.deprecatedNode()->layoutObject();
+    if (!posLayoutObject)
         return false;
 
-    if (renderer->style()->visibility() != VISIBLE ||
-        posRenderer->style()->visibility() != VISIBLE)
+    if (layoutObject->style()->visibility() != VISIBLE
+        || posLayoutObject->style()->visibility() != VISIBLE)
         return false;
 
     if (deprecatedNode() == pos.deprecatedNode()) {
@@ -1087,7 +1088,7 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionType 
     int thisRenderedOffset = renderedOffset();
     int posRenderedOffset = pos.renderedOffset();
 
-    if (renderer == posRenderer && thisRenderedOffset == posRenderedOffset)
+    if (layoutObject == posLayoutObject && thisRenderedOffset == posRenderedOffset)
         return false;
 
     int ignoredCaretOffset;
@@ -1096,9 +1097,9 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionType 
     InlineBox* b2;
     pos.getInlineBoxAndOffset(DOWNSTREAM, b2, ignoredCaretOffset);
 
-    WTF_LOG(Editing, "renderer:               %p [%p]\n", renderer, b1);
-    WTF_LOG(Editing, "thisRenderedOffset:         %d\n", thisRenderedOffset);
-    WTF_LOG(Editing, "posRenderer:            %p [%p]\n", posRenderer, b2);
+    WTF_LOG(Editing, "layoutObject:           %p [%p]\n", layoutObject, b1);
+    WTF_LOG(Editing, "thisRenderedOffset:     %d\n", thisRenderedOffset);
+    WTF_LOG(Editing, "posLayoutObject:        %p [%p]\n", posLayoutObject, b2);
     WTF_LOG(Editing, "posRenderedOffset:      %d\n", posRenderedOffset);
     WTF_LOG(Editing, "node min/max:           %d:%d\n", caretMinOffset(deprecatedNode()), caretMaxOffset(deprecatedNode()));
     WTF_LOG(Editing, "pos node min/max:       %d:%d\n", caretMinOffset(pos.deprecatedNode()), caretMaxOffset(pos.deprecatedNode()));
@@ -1140,10 +1141,10 @@ static bool isNonTextLeafChild(LayoutObject* object)
     return true;
 }
 
-static InlineTextBox* searchAheadForBetterMatch(LayoutObject* renderer)
+static InlineTextBox* searchAheadForBetterMatch(LayoutObject* layoutObject)
 {
-    LayoutBlock* container = renderer->containingBlock();
-    for (LayoutObject* next = renderer->nextInPreOrder(container); next; next = next->nextInPreOrder(container)) {
+    LayoutBlock* container = layoutObject->containingBlock();
+    for (LayoutObject* next = layoutObject->nextInPreOrder(container); next; next = next->nextInPreOrder(container)) {
         if (next->isLayoutBlock())
             return 0;
         if (next->isBR())
@@ -1193,11 +1194,11 @@ template <typename Strategy>
 void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDirection, InlineBox*& inlineBox, int& caretOffset) const
 {
     caretOffset = deprecatedEditingOffset();
-    LayoutObject* renderer = deprecatedNode()->layoutObject();
+    LayoutObject* layoutObject = deprecatedNode()->layoutObject();
 
-    if (!renderer->isText()) {
+    if (!layoutObject->isText()) {
         inlineBox = 0;
-        if (canHaveChildrenForEditing(deprecatedNode()) && renderer->isLayoutBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(renderer)) {
+        if (canHaveChildrenForEditing(deprecatedNode()) && layoutObject->isLayoutBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(layoutObject)) {
             // Try a visually equivalent position with possibly opposite editability. This helps in case |this| is in
             // an editable block but surrounded by non-editable positions. It acts to negate the logic at the beginning
             // of LayoutObject::createVisiblePosition().
@@ -1212,18 +1213,18 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
             equivalent.getInlineBoxAndOffset(UPSTREAM, primaryDirection, inlineBox, caretOffset);
             return;
         }
-        if (renderer->isBox()) {
-            inlineBox = toLayoutBox(renderer)->inlineBoxWrapper();
+        if (layoutObject->isBox()) {
+            inlineBox = toLayoutBox(layoutObject)->inlineBoxWrapper();
             if (!inlineBox || (caretOffset > inlineBox->caretMinOffset() && caretOffset < inlineBox->caretMaxOffset()))
                 return;
         }
     } else {
-        LayoutText* textRenderer = toLayoutText(renderer);
+        LayoutText* textLayoutObject = toLayoutText(layoutObject);
 
         InlineTextBox* box;
         InlineTextBox* candidate = 0;
 
-        for (box = textRenderer->firstTextBox(); box; box = box->nextTextBox()) {
+        for (box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
             int caretMinOffset = box->caretMinOffset();
             int caretMaxOffset = box->caretMaxOffset();
 
@@ -1242,8 +1243,8 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
 
             candidate = box;
         }
-        if (candidate && candidate == textRenderer->lastTextBox() && affinity == DOWNSTREAM) {
-            box = searchAheadForBetterMatch(textRenderer);
+        if (candidate && candidate == textLayoutObject->lastTextBox() && affinity == DOWNSTREAM) {
+            box = searchAheadForBetterMatch(textLayoutObject);
             if (box)
                 caretOffset = box->caretMinOffset();
         }
@@ -1320,7 +1321,7 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
             }
             caretOffset = inlineBox->caretLeftmostOffset();
         }
-    } else if (renderer && renderer->style()->unicodeBidi() == Plaintext) {
+    } else if (layoutObject && layoutObject->style()->unicodeBidi() == Plaintext) {
         if (inlineBox->bidiLevel() < level)
             caretOffset = inlineBox->caretLeftmostOffset();
         else

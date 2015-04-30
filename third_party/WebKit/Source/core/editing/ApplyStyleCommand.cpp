@@ -1022,7 +1022,7 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
 {
     ASSERT(node);
 
-    node->document().updateRenderTreeIfNeeded();
+    node->document().updateLayoutTreeIfNeeded();
 
     if (!style || style->isEmpty() || !node->layoutObject() || isHTMLIFrameElement(*node))
         return;

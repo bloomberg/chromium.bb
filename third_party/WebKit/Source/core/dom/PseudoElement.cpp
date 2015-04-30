@@ -118,19 +118,19 @@ void PseudoElement::attach(const AttachContext& context)
 
     Element::attach(context);
 
-    LayoutObject* renderer = this->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = this->layoutObject();
+    if (!layoutObject)
         return;
 
-    ComputedStyle& style = renderer->mutableStyleRef();
+    ComputedStyle& style = layoutObject->mutableStyleRef();
     if (style.styleType() != BEFORE && style.styleType() != AFTER)
         return;
     ASSERT(style.contentData());
 
     for (const ContentData* content = style.contentData(); content; content = content->next()) {
         LayoutObject* child = content->createLayoutObject(document(), style);
-        if (renderer->isChildAllowed(child, style)) {
-            renderer->addChild(child);
+        if (layoutObject->isChildAllowed(child, style)) {
+            layoutObject->addChild(child);
             if (child->isQuote())
                 toLayoutQuote(child)->attachQuote();
         } else
@@ -140,7 +140,7 @@ void PseudoElement::attach(const AttachContext& context)
 
 bool PseudoElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
-    return pseudoElementRendererIsNeeded(&style);
+    return pseudoElementLayoutObjectIsNeeded(&style);
 }
 
 void PseudoElement::didRecalcStyle(StyleRecalcChange)
@@ -148,15 +148,15 @@ void PseudoElement::didRecalcStyle(StyleRecalcChange)
     if (!layoutObject())
         return;
 
-    // The renderers inside pseudo elements are anonymous so they don't get notified of recalcStyle and must have
+    // The layoutObjects inside pseudo elements are anonymous so they don't get notified of recalcStyle and must have
     // the style propagated downward manually similar to LayoutObject::propagateStyleToAnonymousChildren.
-    LayoutObject* renderer = this->layoutObject();
-    for (LayoutObject* child = renderer->nextInPreOrder(renderer); child; child = child->nextInPreOrder(renderer)) {
+    LayoutObject* layoutObject = this->layoutObject();
+    for (LayoutObject* child = layoutObject->nextInPreOrder(layoutObject); child; child = child->nextInPreOrder(layoutObject)) {
         // We only manage the style for the generated content items.
         if (!child->isText() && !child->isQuote() && !child->isImage())
             continue;
 
-        child->setPseudoStyle(renderer->mutableStyle());
+        child->setPseudoStyle(layoutObject->mutableStyle());
     }
 }
 

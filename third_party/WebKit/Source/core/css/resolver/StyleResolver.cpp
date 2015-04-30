@@ -740,7 +740,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
 
     ComputedStyle* parentStyle = parentLayoutObject->mutableStyle();
     if (ComputedStyle* cachedStyle = parentStyle->getCachedPseudoStyle(pseudoId)) {
-        if (!pseudoElementRendererIsNeeded(cachedStyle))
+        if (!pseudoElementLayoutObjectIsNeeded(cachedStyle))
             return nullptr;
         return createPseudoElement(&parent, pseudoId);
     }
@@ -752,7 +752,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     ASSERT(style);
     parentStyle->addCachedPseudoStyle(style);
 
-    if (!pseudoElementRendererIsNeeded(style.get()))
+    if (!pseudoElementLayoutObjectIsNeeded(style.get()))
         return nullptr;
 
     RefPtrWillBeRawPtr<PseudoElement> pseudo = createPseudoElement(&parent, pseudoId);
