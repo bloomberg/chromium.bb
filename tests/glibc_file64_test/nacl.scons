@@ -10,7 +10,10 @@
 Import('env')
 
 # We test existence of functions that are not present in newlib.
-if not env.Bit('nacl_glibc'):
+# This test is not useful for the new glibc port (currently ARM)
+# because it does have the foo64 names (as aliases for foo), as
+# is the norm for glibc platforms where off64_t==off_t.
+if not env.Bit('nacl_glibc') or not env.Bit('build_x86'):
   Return()
 
 env.ComponentProgram('test_file', 'test_file.c')

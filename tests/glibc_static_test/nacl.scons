@@ -31,15 +31,13 @@ def GetLinkerScriptBaseName(env):
 # If we are already using static linking, adding these options again
 # does not work.
 if not env.Bit('nacl_static_link'):
-  if env.Bit('bitcode'):
-    env.Append(LINKFLAGS=['-static'])
-  else:
+  env.Append(LINKFLAGS=['-static'])
+  if not env.Bit('bitcode') and env.Bit('build_x86'):
     # Currently nacl-gcc with -static passes [crt* object files]
     # [user object file] [some libs] -lgcc -lgcc_eh [crt* object files] to
     # the linker but the last -lgcc_eh requires -lc.
     env.Append(
         LINKFLAGS=[
-            '-static',
             '-T', 'ldscripts/%s.x.static' % GetLinkerScriptBaseName(env),
             '-lc']
         )
@@ -47,7 +45,7 @@ nexe = env.ComponentProgram('glibc_static_hello', 'glibc_static_hello.c')
 
 # nacl-glibc's static linker scripts are not IRT-compatible yet.
 # See http://code.google.com/p/nativeclient/issues/detail?id=2573
-is_broken = env.Bit('tests_use_irt')
+is_broken = env.Bit('tests_use_irt') and env.Bit('build_x86')
 
 node = env.CommandSelLdrTestNacl(
     'glibc_static_hello.out',

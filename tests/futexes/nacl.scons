@@ -13,10 +13,12 @@ valgrind = env.ComponentObject(
 # See https://code.google.com/p/nativeclient/issues/detail?id=3906
 is_broken = env.Bit('asan') and env.Bit('host_mac')
 
-# TEST_IRT_FUTEX=0 works with nacl-glibc (since it has its own futex
+# TEST_IRT_FUTEX=0 works with x86 nacl-glibc (since it has its own futex
 # implementation) and with libpthread_private, but not with
-# nacl-newlib's IRT-using libpthread.
-if env.Bit('nacl_glibc') or not env.Bit('tests_use_irt'):
+# nacl-newlib's IRT-using libpthread, nor with new (currently ARM only)
+# nacl-glibc, which always uses the IRT interfaces.
+if ((env.Bit('nacl_glibc') and env.Bit('build_x86')) or
+    (not env.Bit('nacl_glibc') and not env.Bit('tests_use_irt'))):
   test_env = env.Clone()
   test_env.Append(CPPDEFINES=[['TEST_IRT_FUTEX', '0'],
                               ['TEST_FUTEX_SYSCALLS', '0']])
