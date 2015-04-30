@@ -6,7 +6,7 @@
  * Sets 'hidden' property of a cr.ui.Command instance and dispatches
  * 'hiddenChange' event manually so that associated cr.ui.MenuItem can handle
  * the event.
- * @TODO(fukino): Remove this workaround when crbug.com/481941 is fixed.
+ * TODO(fukino): Remove this workaround when crbug.com/481941 is fixed.
  *
  * @param {boolean} value New value of hidden property.
  */
