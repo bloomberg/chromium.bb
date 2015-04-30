@@ -317,8 +317,12 @@ function getAllUrls(nodes) {
   var urls = [];
 
   // Adds the node and all its direct children.
+  // TODO(deepak.m1): Here node should exist. When we delete the nodes then
+  // datamodel gets updated but still it shows deleted items as selected items
+  // and accessing those nodes throws chrome.runtime.lastError. This cause
+  // undefined value for node. Please refer https://crbug.com/480935.
   function addNodes(node) {
-    if (node.id == 'new')
+    if (!node || node.id == 'new')
       return;
 
     if (node.children) {
