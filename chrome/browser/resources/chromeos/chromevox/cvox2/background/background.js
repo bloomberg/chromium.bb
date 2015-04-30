@@ -240,8 +240,10 @@ Background.prototype = {
     this.currentRange_ = cursors.Range.fromNode(node);
 
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
-    if (node.root.role != chrome.automation.RoleType.desktop && !this.active_)
+    if (node.root.role != chrome.automation.RoleType.desktop && !this.active_) {
+      chrome.accessibilityPrivate.setFocusRing([]);
       return;
+    }
 
     new Output().withSpeechAndBraille(
             this.currentRange_, prevRange, evt.type)
