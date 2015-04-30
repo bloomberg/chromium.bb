@@ -130,7 +130,7 @@ class FrameTarget : public DevToolsTargetImpl {
 
 FrameTarget::FrameTarget(scoped_refptr<DevToolsAgentHost> agent_host)
     : DevToolsTargetImpl(agent_host) {
-  set_type(kTargetTypePage);
+  set_type(kTargetTypeIFrame);
   WebContents* wc = agent_host->GetWebContents();
   DCHECK(DevToolsAgentHost::GetOrCreateFor(wc).get() != agent_host.get());
   set_parent_id(DevToolsAgentHost::GetOrCreateFor(wc)->GetId());
