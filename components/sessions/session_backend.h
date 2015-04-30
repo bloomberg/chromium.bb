@@ -12,6 +12,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/sessions/base_session_service.h"
 #include "components/sessions/session_command.h"
+#include "components/sessions/sessions_export.h"
 
 namespace base {
 class File;
@@ -31,7 +32,8 @@ namespace sessions {
 // BaseSessionService. A command consists of a unique id and a stream of bytes.
 // SessionBackend does not use the id in anyway, that is used by
 // BaseSessionService.
-class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
+class SESSIONS_EXPORT SessionBackend
+    : public base::RefCountedThreadSafe<SessionBackend> {
  public:
   typedef sessions::SessionCommand::id_type id_type;
   typedef sessions::SessionCommand::size_type size_type;

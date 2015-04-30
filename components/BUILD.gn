@@ -87,7 +87,7 @@ group("all_components") {
     "//components/search",
     "//components/search_engines",
     "//components/search_provider_logos",
-    "//components/sessions:sessions_content",
+    "//components/sessions",
     "//components/signin/core/browser",
     "//components/startup_metric_utils",
     "//components/strings",
@@ -200,7 +200,7 @@ group("all_components") {
       "//components/renderer_context_menu",  # Blocked on content.
       "//components/search_engines",  # Should work, needs checking.
       "//components/search_provider_logos",  # Should work, needs checking.
-      "//components/sessions:sessions_content",  # Blocked on content.
+      "//components/sessions",  # Blocked on content.
       "//components/signin/core/browser",  # Should work, needs checking.
       "//components/translate/content/browser",  # Blocked on content.
       "//components/translate/content/common",  # Blocked on content.

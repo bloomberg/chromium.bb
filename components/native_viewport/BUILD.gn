@@ -105,6 +105,6 @@ source_set("lib") {
   }
 
   if (is_win) {
-    deps += [ "//ui/platform_window/win:win_window" ]
+    deps += [ "//ui/platform_window/win" ]
   }
 }

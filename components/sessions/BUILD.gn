@@ -6,11 +6,53 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
-# TODO(rohitrao): sessions_core is defined as a source_set because it declares a
-# static function that it does not define.  This prevents it from linking as a
-# shared_library.  It also cannot be a static_library because it will be linked
-# into multiple shared libraries.  Revisit this setup if necessary.
-source_set("sessions_core") {
+config("implementation") {
+  defines = [ "SESSIONS_IMPLEMENTATION" ]
+}
+
+if (!is_ios) {
+  # GYP version: components/sessions.gypi:sessions_content
+  component("sessions") {
+    sources = [
+      "content/content_serialized_navigation_builder.cc",
+      "content/content_serialized_navigation_builder.h",
+      "content/content_serialized_navigation_driver.cc",
+      "content/content_serialized_navigation_driver.h",
+    ]
+
+    configs += [ ":implementation" ]
+
+    deps = [
+      ":shared",
+      "//base",
+      "//base/third_party/dynamic_annotations",
+      "//content/public/browser",
+      "//ui/base",
+      "//url",
+    ]
+  }
+} else {
+  source_set("sessions") {
+    sources = [
+      "ios/ios_serialized_navigation_builder.cc",
+      "ios/ios_serialized_navigation_builder.h",
+      "ios/ios_serialized_navigation_driver.cc",
+      "ios/ios_serialized_navigation_driver.h",
+    ]
+
+    deps = [
+      ":shared",
+      "//base",
+
+      # '../ios/web/ios_web.gyp:ios_web',  TODO(GYP) iOS.
+    ]
+  }
+}
+
+# Sources shared between the content and iOS implementations.
+source_set("shared") {
+  visibility = [ ":*" ]
+
   sources = [
     "base_session_service.cc",
     "base_session_service.h",
@@ -32,7 +74,7 @@ source_set("sessions_core") {
     "session_types.h",
   ]
 
-  defines = [ "SESSIONS_IMPLEMENTATION" ]
+  configs += [ ":implementation" ]
 
   deps = [
     "//base",
@@ -53,8 +95,10 @@ source_set("test_support") {
     "serialized_navigation_entry_test_helper.h",
   ]
 
+  public_deps = [
+    ":sessions",
+  ]
   deps = [
-    ":sessions_core",
     "//skia",
     "//sync",
     "//testing/gtest",
@@ -68,28 +112,6 @@ source_set("test_support") {
   }
 }
 
-if (!is_ios) {
-  component("sessions_content") {
-    sources = [
-      "content/content_serialized_navigation_builder.cc",
-      "content/content_serialized_navigation_builder.h",
-      "content/content_serialized_navigation_driver.cc",
-      "content/content_serialized_navigation_driver.h",
-    ]
-
-    defines = [ "SESSIONS_IMPLEMENTATION" ]
-
-    deps = [
-      ":sessions_core",
-      "//base",
-      "//base/third_party/dynamic_annotations",
-      "//content/public/browser",
-      "//ui/base",
-      "//url",
-    ]
-  }
-}
-
 if (!is_ios && !is_android) {
   source_set("unit_tests") {
     testonly = true
@@ -98,7 +120,7 @@ if (!is_ios && !is_android) {
       "session_types_unittest.cc",
     ]
     deps = [
-      ":sessions_content",
+      ":sessions",
       "//base/test:test_support",
       "//testing/gtest",
       "//third_party/protobuf:protobuf_lite",

@@ -133,7 +133,7 @@ component("aura") {
     deps += [
       "//ipc",
       "//ui/metro_viewer",
-      "//ui/platform_window/win:win_window",
+      "//ui/platform_window/win",
     ]
   }
 

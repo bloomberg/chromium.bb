@@ -4,15 +4,9 @@
 
 {
   'variables': {
-    # Core sources shared by sessions_content and sessions_ios.
-    #
-    # TODO(rohitrao): We are including these sources directly into each
-    # individual target in order to avoid the complications associated with
-    # making a separate sessions_core target.  The files in sessions/core
-    # declare a static function that they do not define, which means that a
-    # sessions_core target would not link as a shared_library.  It would also be
-    # unsuitable as a static_library because it would be linked into multiple
-    # shared libraries.  Revisit this setup if necessary.
+    # Core sources shared by sessions_content and sessions_ios. These can't
+    # be a separate shared library since one symbol is implemented higher up in
+    # the sessions_content/ios layer.
     'sessions_core_sources': [
       'sessions/base_session_service.cc',
       'sessions/base_session_service.h',
@@ -39,7 +33,6 @@
       # GN version: //components/sessions:test_support
       'target_name': 'sessions_test_support',
       'type': 'static_library',
-      'defines!': ['SESSIONS_IMPLEMENTATION'],
       'dependencies': [
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
@@ -55,12 +48,10 @@
       ],
       'conditions': [
         ['OS!="ios" and OS!="android"', {
-         'sources': [
-           'sessions/base_session_service_test_helper.cc',
-           'sessions/base_session_service_test_helper.h',
-           'sessions/session_backend.cc',
-           'sessions/session_backend.h',
-          ]
+          'sources': [
+            'sessions/base_session_service_test_helper.cc',
+            'sessions/base_session_service_test_helper.h',
+           ],
         }],
       ],
     },
@@ -71,7 +62,7 @@
     ['OS!="ios"', {
       'targets': [
         {
-          # GN version: //components/sessions:sessions_content
+          # GN version: //components/sessions
           'target_name': 'sessions_content',
           'type': '<(component)',
           'dependencies': [
