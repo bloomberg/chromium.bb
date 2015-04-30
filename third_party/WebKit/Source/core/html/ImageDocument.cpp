@@ -136,7 +136,7 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length)
         RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
         document()->cachedImage()->appendData(data, length);
     }
-    // Make sure the image renderer gets created because we need the renderer
+    // Make sure the image layoutObject gets created because we need the layoutObject
     // to read the aspect ratio. See crbug.com/320244
     document()->updateLayoutTreeIfNeeded();
     document()->imageUpdated();

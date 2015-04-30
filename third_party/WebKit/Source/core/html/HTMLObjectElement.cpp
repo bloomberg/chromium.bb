@@ -77,7 +77,7 @@ DEFINE_TRACE(HTMLObjectElement)
 
 LayoutPart* HTMLObjectElement::existingLayoutPart() const
 {
-    return layoutPart(); // This will return 0 if the renderer is not a LayoutPart.
+    return layoutPart(); // This will return 0 if the layoutObject is not a LayoutPart.
 }
 
 bool HTMLObjectElement::isPresentationAttribute(const QualifiedName& name) const
@@ -108,7 +108,7 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         // reload stuff when a persistable widget-type is specified?
         reloadPluginOnAttributeChange(name);
         if (!layoutObject())
-            requestPluginCreationWithoutRendererIfPossible();
+            requestPluginCreationWithoutLayoutObjectIfPossible();
     } else if (name == dataAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
         if (layoutObject() && isImageType()) {
@@ -293,7 +293,7 @@ void HTMLObjectElement::updateWidgetInternal()
         return;
     }
 
-    // FIXME: Is it possible to get here without a renderer now that we don't have beforeload events?
+    // FIXME: Is it possible to get here without a layoutObject now that we don't have beforeload events?
     if (!layoutObject())
         return;
 

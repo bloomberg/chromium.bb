@@ -101,7 +101,7 @@ public:
     // 'indeterminate' is a state independent of the checked state that causes the control to draw in a way that hides the actual state.
     bool indeterminate() const { return m_isIndeterminate; }
     void setIndeterminate(bool);
-    // shouldAppearChecked is used by the rendering tree/CSS while checked() is used by JS to determine checked state
+    // shouldAppearChecked is used by the layout tree/CSS while checked() is used by JS to determine checked state
     bool shouldAppearChecked() const;
     virtual bool shouldAppearIndeterminate() const override;
 
@@ -188,7 +188,7 @@ public:
 
     String droppedFileSystemId();
 
-    // These functions are used for rendering the input active during a
+    // These functions are used for laying out the input active during a
     // drag-and-drop operation.
     bool canReceiveDroppedFiles() const;
     void setCanReceiveDroppedFiles(bool);

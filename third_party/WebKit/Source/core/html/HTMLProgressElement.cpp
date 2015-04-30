@@ -88,8 +88,8 @@ void HTMLProgressElement::parseAttribute(const QualifiedName& name, const Atomic
 void HTMLProgressElement::attach(const AttachContext& context)
 {
     LabelableElement::attach(context);
-    if (LayoutProgress* render = layoutProgress())
-        render->updateFromElement();
+    if (LayoutProgress* layoutObject = layoutProgress())
+        layoutObject->updateFromElement();
 }
 
 double HTMLProgressElement::value() const
@@ -138,9 +138,9 @@ bool HTMLProgressElement::isDeterminate() const
 void HTMLProgressElement::didElementStateChange()
 {
     m_value->setWidthPercentage(position() * 100);
-    if (LayoutProgress* render = layoutProgress()) {
-        bool wasDeterminate = render->isDeterminate();
-        render->updateFromElement();
+    if (LayoutProgress* layoutObject = layoutProgress()) {
+        bool wasDeterminate = layoutObject->isDeterminate();
+        layoutObject->updateFromElement();
         if (wasDeterminate != isDeterminate())
             pseudoStateChanged(CSSSelector::PseudoIndeterminate);
     }

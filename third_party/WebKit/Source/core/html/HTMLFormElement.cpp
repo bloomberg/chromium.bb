@@ -128,14 +128,14 @@ bool HTMLFormElement::layoutObjectIsNeeded(const ComputedStyle& style)
     ContainerNode* node = parentNode();
     if (!node || !node->layoutObject())
         return HTMLElement::layoutObjectIsNeeded(style);
-    LayoutObject* parentRenderer = node->layoutObject();
+    LayoutObject* parentLayoutObject = node->layoutObject();
     // FIXME: Shouldn't we also check for table caption (see |formIsTablePart| below).
     // FIXME: This check is not correct for Shadow DOM.
-    bool parentIsTableElementPart = (parentRenderer->isTable() && isHTMLTableElement(*node))
-        || (parentRenderer->isTableRow() && isHTMLTableRowElement(*node))
-        || (parentRenderer->isTableSection() && node->hasTagName(tbodyTag))
-        || (parentRenderer->isLayoutTableCol() && node->hasTagName(colTag))
-        || (parentRenderer->isTableCell() && isHTMLTableRowElement(*node));
+    bool parentIsTableElementPart = (parentLayoutObject->isTable() && isHTMLTableElement(*node))
+        || (parentLayoutObject->isTableRow() && isHTMLTableRowElement(*node))
+        || (parentLayoutObject->isTableSection() && node->hasTagName(tbodyTag))
+        || (parentLayoutObject->isLayoutTableCol() && node->hasTagName(colTag))
+        || (parentLayoutObject->isTableCell() && isHTMLTableRowElement(*node));
 
     if (!parentIsTableElementPart)
         return true;

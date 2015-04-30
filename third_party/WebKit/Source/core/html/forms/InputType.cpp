@@ -836,7 +836,7 @@ void InputType::stepUp(int n, ExceptionState& exceptionState)
     applyStep(current, n, RejectAny, DispatchNoEvent, exceptionState);
 }
 
-void InputType::stepUpFromRenderer(int n)
+void InputType::stepUpFromLayoutObject(int n)
 {
     // The only difference from stepUp()/stepDown() is the extra treatment
     // of the current value before applying the step:

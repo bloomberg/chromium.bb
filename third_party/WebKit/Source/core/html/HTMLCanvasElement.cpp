@@ -390,15 +390,15 @@ void HTMLCanvasElement::reset()
     if (m_context && m_context->is3d() && oldSize != size())
         toWebGLRenderingContextBase(m_context.get())->reshape(width(), height());
 
-    if (LayoutObject* renderer = this->layoutObject()) {
-        if (renderer->isCanvas()) {
+    if (LayoutObject* layoutObject = this->layoutObject()) {
+        if (layoutObject->isCanvas()) {
             if (oldSize != size()) {
-                toLayoutHTMLCanvas(renderer)->canvasSizeChanged();
+                toLayoutHTMLCanvas(layoutObject)->canvasSizeChanged();
                 if (layoutBox() && layoutBox()->hasAcceleratedCompositing())
                     layoutBox()->contentChanged(CanvasChanged);
             }
             if (hadImageBuffer)
-                renderer->setShouldDoFullPaintInvalidation();
+                layoutObject->setShouldDoFullPaintInvalidation();
         }
     }
 

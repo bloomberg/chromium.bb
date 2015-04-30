@@ -237,7 +237,7 @@ void HTMLFormControlElement::attach(const AttachContext& context)
 
     // The call to updateFromElement() needs to go after the call through
     // to the base class's attach() because that can sometimes do a close
-    // on the renderer.
+    // on the layoutObject.
     layoutObject()->updateFromElement();
 
     // FIXME: Autofocus handling should be moved to insertedInto according to
@@ -360,8 +360,8 @@ String HTMLFormControlElement::resultForDialogSubmit()
 
 void HTMLFormControlElement::didRecalcStyle(StyleRecalcChange)
 {
-    if (LayoutObject* renderer = this->layoutObject())
-        renderer->updateFromElement();
+    if (LayoutObject* layoutObject = this->layoutObject())
+        layoutObject->updateFromElement();
 }
 
 bool HTMLFormControlElement::supportsFocus() const

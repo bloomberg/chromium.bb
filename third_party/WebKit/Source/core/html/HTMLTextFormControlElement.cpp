@@ -235,7 +235,7 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigne
 
     setInnerEditorValue(text);
 
-    // FIXME: What should happen to the value (as in value()) if there's no renderer?
+    // FIXME: What should happen to the value (as in value()) if there's no layoutObject?
     if (!layoutObject())
         return;
 
@@ -641,7 +641,7 @@ void HTMLTextFormControlElement::setInnerEditorValue(const String& value)
 
 static String finishText(StringBuilder& result)
 {
-    // Remove one trailing newline; there's always one that's collapsed out by rendering.
+    // Remove one trailing newline; there's always one that's collapsed out by layoutObject.
     size_t size = result.length();
     if (size && result[size - 1] == '\n')
         result.resize(--size);
@@ -684,19 +684,19 @@ static void getNextSoftBreak(RootInlineBox*& line, Node*& breakNode, unsigned& b
 
 String HTMLTextFormControlElement::valueWithHardLineBreaks() const
 {
-    // FIXME: It's not acceptable to ignore the HardWrap setting when there is no renderer.
+    // FIXME: It's not acceptable to ignore the HardWrap setting when there is no layoutObject.
     // While we have no evidence this has ever been a practical problem, it would be best to fix it some day.
     HTMLElement* innerText = innerEditorElement();
     if (!innerText || !isTextFormControl())
         return value();
 
-    LayoutBlockFlow* renderer = toLayoutBlockFlow(innerText->layoutObject());
-    if (!renderer)
+    LayoutBlockFlow* layoutObject = toLayoutBlockFlow(innerText->layoutObject());
+    if (!layoutObject)
         return value();
 
     Node* breakNode;
     unsigned breakOffset;
-    RootInlineBox* line = renderer->firstRootBox();
+    RootInlineBox* line = layoutObject->firstRootBox();
     if (!line)
         return value();
 

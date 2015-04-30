@@ -55,7 +55,7 @@ private:
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual void detach(const AttachContext& = AttachContext()) override;
 
-    // <optgroup> might not have a renderer so we manually manage a cached style.
+    // <optgroup> might not have a layoutObject so we manually manage a cached style.
     void updateNonComputedStyle();
     virtual ComputedStyle* nonLayoutObjectComputedStyle() const override;
     virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;

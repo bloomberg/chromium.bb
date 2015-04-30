@@ -88,7 +88,7 @@ private:
     virtual void accessKeyAction(bool) override;
     virtual void childrenChanged(const ChildrenChange&) override;
 
-    // <option> never has a renderer so we manually manage a cached style.
+    // <option> never has a layoutObject so we manually manage a cached style.
     void updateNonComputedStyle();
     virtual ComputedStyle* nonLayoutObjectComputedStyle() const override;
     virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;

@@ -347,7 +347,7 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
 {
     ASSERT(element().shadow());
 
-    // Element must not have a renderer here, because if it did
+    // Element must not have a layoutObject here, because if it did
     // DateTimeEditElement::customStyleForLayoutObject() is called in appendChild()
     // before the field wrapper element is created.
     // FIXME: This code should not depend on such craziness.

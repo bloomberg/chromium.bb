@@ -149,8 +149,8 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
 
 bool HTMLFrameSetElement::layoutObjectIsNeeded(const ComputedStyle& style)
 {
-    // For compatibility, frames render even when display: none is set.
-    // However, we delay creating a renderer until stylesheets have loaded.
+    // For compatibility, frames layoutObject even when display: none is set.
+    // However, we delay creating a layoutObject until stylesheets have loaded.
     return style.isStyleAvailable();
 }
 

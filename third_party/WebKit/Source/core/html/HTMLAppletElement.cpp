@@ -120,7 +120,7 @@ void HTMLAppletElement::updateWidgetInternal()
     if (!isFinishedParsingChildren())
         return;
 
-    LayoutEmbeddedObject* renderer = layoutEmbeddedObject();
+    LayoutEmbeddedObject* layoutObject = layoutEmbeddedObject();
 
     LocalFrame* frame = document().frame();
     ASSERT(frame);
@@ -197,8 +197,8 @@ void HTMLAppletElement::updateWidgetInternal()
     }
 
     if (!placeholder && !widget) {
-        if (!renderer->showsUnavailablePluginIndicator())
-            renderer->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
+        if (!layoutObject->showsUnavailablePluginIndicator())
+            layoutObject->setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);
         setPlaceholder(nullptr);
     } else if (placeholder) {
         setPlaceholder(placeholder.release());

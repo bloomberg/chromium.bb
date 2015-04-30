@@ -52,7 +52,7 @@ PassRefPtrWillBeRawPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& docu
     return element.release();
 }
 
-static inline LayoutPart* findPartRenderer(const Node* n)
+static inline LayoutPart* findPartLayoutObject(const Node* n)
 {
     if (!n->layoutObject())
         n = Traversal<HTMLObjectElement>::firstAncestor(*n);
@@ -65,7 +65,7 @@ static inline LayoutPart* findPartRenderer(const Node* n)
 
 LayoutPart* HTMLEmbedElement::existingLayoutPart() const
 {
-    return findPartRenderer(this);
+    return findPartLayoutObject(this);
 }
 
 bool HTMLEmbedElement::isPresentationAttribute(const QualifiedName& name) const
@@ -95,7 +95,7 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (pos != kNotFound)
             m_serviceType = m_serviceType.left(pos);
         if (!layoutObject())
-            requestPluginCreationWithoutRendererIfPossible();
+            requestPluginCreationWithoutLayoutObjectIfPossible();
     } else if (name == codeAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
     } else if (name == srcAttr) {
@@ -142,7 +142,7 @@ void HTMLEmbedElement::updateWidgetInternal()
 
     RefPtrWillBeRawPtr<HTMLEmbedElement> protect(this); // Loading the plugin might remove us from the document.
 
-    // FIXME: Can we not have renderer here now that beforeload events are gone?
+    // FIXME: Can we not have layoutObject here now that beforeload events are gone?
     if (!layoutObject())
         return;
 
@@ -155,7 +155,7 @@ bool HTMLEmbedElement::layoutObjectIsNeeded(const ComputedStyle& style)
         return HTMLPlugInElement::layoutObjectIsNeeded(style);
 
     // If my parent is an <object> and is not set to use fallback content, I
-    // should be ignored and not get a renderer.
+    // should be ignored and not get a layoutObject.
     ContainerNode* p = parentNode();
     if (isHTMLObjectElement(p)) {
         ASSERT(p->layoutObject());

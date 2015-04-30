@@ -68,7 +68,7 @@ enum MediaControlElementType {
 };
 
 CORE_EXPORT HTMLMediaElement* toParentMediaElement(Node*);
-inline HTMLMediaElement* toParentMediaElement(LayoutObject* renderer) { return toParentMediaElement(renderer->node()); }
+inline HTMLMediaElement* toParentMediaElement(LayoutObject* layoutObject) { return toParentMediaElement(layoutObject->node()); }
 
 CORE_EXPORT MediaControlElementType mediaControlElementType(Node*);
 

@@ -76,7 +76,7 @@ void SliderThumbElement::setPositionFromValue()
 {
     // Since the code to calculate position is in the LayoutSliderThumb layout
     // path, we don't actually update the value here. Instead, we poke at the
-    // renderer directly to trigger layout.
+    // layoutObject directly to trigger layout.
     if (layoutObject())
         layoutObject()->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SliderValueChanged);
 }
@@ -128,7 +128,7 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
     LayoutUnit position;
     LayoutUnit currentPosition;
     // We need to calculate currentPosition from absolute points becaue the
-    // renderer for this node is usually on a layer and layoutBox()->x() and
+    // layoutObject for this node is usually on a layer and layoutBox()->x() and
     // y() are unusable.
     // FIXME: This should probably respect transforms.
     LayoutPoint absoluteThumbOrigin = layoutBox()->absoluteBoundingBoxRectIgnoringTransforms().location();

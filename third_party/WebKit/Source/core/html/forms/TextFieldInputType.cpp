@@ -228,21 +228,21 @@ void TextFieldInputType::forwardEvent(Event* event)
     }
 
     if (element().layoutObject() && (event->isMouseEvent() || event->isDragEvent() || event->hasInterface(EventNames::WheelEvent) || event->type() == EventTypeNames::blur || event->type() == EventTypeNames::focus)) {
-        LayoutTextControlSingleLine* renderTextControl = toLayoutTextControlSingleLine(element().layoutObject());
+        LayoutTextControlSingleLine* layoutTextControl = toLayoutTextControlSingleLine(element().layoutObject());
         if (event->type() == EventTypeNames::blur) {
-            if (LayoutBox* innerEditorRenderer = element().innerEditorElement()->layoutBox()) {
+            if (LayoutBox* innerEditorLayoutObject = element().innerEditorElement()->layoutBox()) {
                 // FIXME: This class has no need to know about DeprecatedPaintLayer!
-                if (DeprecatedPaintLayer* innerLayer = innerEditorRenderer->layer()) {
+                if (DeprecatedPaintLayer* innerLayer = innerEditorLayoutObject->layer()) {
                     if (DeprecatedPaintLayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {
-                        IntSize scrollOffset(!renderTextControl->style()->isLeftToRightDirection() ? innerScrollableArea->scrollWidth().toInt() : 0, 0);
+                        IntSize scrollOffset(!layoutTextControl->style()->isLeftToRightDirection() ? innerScrollableArea->scrollWidth().toInt() : 0, 0);
                         innerScrollableArea->scrollToOffset(scrollOffset, ScrollOffsetClamped);
                     }
                 }
             }
 
-            renderTextControl->capsLockStateMayHaveChanged();
+            layoutTextControl->capsLockStateMayHaveChanged();
         } else if (event->type() == EventTypeNames::focus) {
-            renderTextControl->capsLockStateMayHaveChanged();
+            layoutTextControl->capsLockStateMayHaveChanged();
         }
 
         element().forwardEvent(event);
@@ -511,12 +511,12 @@ void TextFieldInputType::didSetValueByUserEdit(ValueChangeState state)
 
 void TextFieldInputType::spinButtonStepDown()
 {
-    stepUpFromRenderer(-1);
+    stepUpFromLayoutObject(-1);
 }
 
 void TextFieldInputType::spinButtonStepUp()
 {
-    stepUpFromRenderer(1);
+    stepUpFromLayoutObject(1);
 }
 
 void TextFieldInputType::updateView()

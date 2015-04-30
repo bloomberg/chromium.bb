@@ -121,7 +121,7 @@ public:
     void optionRemoved(const HTMLOptionElement&);
     bool anonymousIndexedSetter(unsigned, PassRefPtrWillBeRawPtr<HTMLOptionElement>, ExceptionState&);
 
-    void updateListOnRenderer();
+    void updateListOnLayoutObject();
 
     HTMLOptionElement* spatialNavigationFocusedOption();
     void handleMouseRelease();
@@ -190,7 +190,7 @@ private:
     bool shouldOpenPopupForKeyDownEvent(KeyboardEvent*);
     bool shouldOpenPopupForKeyPressEvent(KeyboardEvent*);
     void listBoxDefaultEventHandler(Event*);
-    void setOptionsChangedOnRenderer();
+    void setOptionsChangedOnLayoutObject();
     size_t searchOptionsForValue(const String&, size_t listIndexStart, size_t listIndexEnd) const;
     void updateListBoxSelection(bool deselectOtherOptions, bool scroll = true);
 

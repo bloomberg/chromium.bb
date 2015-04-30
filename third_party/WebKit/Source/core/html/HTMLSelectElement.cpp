@@ -580,7 +580,7 @@ int HTMLSelectElement::lastSelectableListIndex() const
 int HTMLSelectElement::nextSelectableListIndexPageAway(int startIndex, SkipDirection direction) const
 {
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = listItems();
-    // Can't use m_size because renderer forces a minimum size.
+    // Can't use m_size because layoutObject forces a minimum size.
     int pageSize = 0;
     if (layoutObject()->isListBox())
         pageSize = toLayoutListBox(layoutObject())->size() - 1; // -1 so we still show context.
@@ -733,11 +733,11 @@ void HTMLSelectElement::scrollToSelection()
         cache->listboxActiveIndexChanged(this);
 }
 
-void HTMLSelectElement::setOptionsChangedOnRenderer()
+void HTMLSelectElement::setOptionsChangedOnLayoutObject()
 {
-    if (LayoutObject* renderer = this->layoutObject()) {
+    if (LayoutObject* layoutObject = this->layoutObject()) {
         if (usesMenuList())
-            toLayoutMenuList(renderer)->setOptionsChanged(true);
+            toLayoutMenuList(layoutObject)->setOptionsChanged(true);
     }
 }
 
@@ -770,7 +770,7 @@ void HTMLSelectElement::setRecalcListItems()
     m_shouldRecalcListItems = true;
     // Manual selection anchor is reset when manipulating the select programmatically.
     m_activeSelectionAnchorIndex = -1;
-    setOptionsChangedOnRenderer();
+    setOptionsChangedOnLayoutObject();
     setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
     if (!inDocument()) {
         if (HTMLOptionsCollection* collection = cachedCollection<HTMLOptionsCollection>(SelectOptions))
@@ -877,8 +877,8 @@ void HTMLSelectElement::setSuggestedIndex(int suggestedIndex)
 {
     m_suggestedIndex = suggestedIndex;
 
-    if (LayoutObject* renderer = this->layoutObject())  {
-        renderer->updateFromElement();
+    if (LayoutObject* layoutObject = this->layoutObject())  {
+        layoutObject->updateFromElement();
         scrollToIndex(suggestedIndex);
     }
 }
@@ -957,8 +957,8 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
         deselectItemsWithoutValidation(element);
 
     // For the menu list case, this is what makes the selected element appear.
-    if (LayoutObject* renderer = this->layoutObject())
-        renderer->updateFromElement();
+    if (LayoutObject* layoutObject = this->layoutObject())
+        layoutObject->updateFromElement();
 
     scrollToSelection();
     setNeedsValidityCheck();
@@ -967,9 +967,9 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
         m_isProcessingUserDrivenChange = flags & UserDriven;
         if (flags & DispatchInputAndChangeEvent)
             dispatchInputAndChangeEventForMenuList();
-        if (LayoutObject* renderer = this->layoutObject()) {
+        if (LayoutObject* layoutObject = this->layoutObject()) {
             if (usesMenuList()) {
-                toLayoutMenuList(renderer)->didSetSelectedIndex(listIndex);
+                toLayoutMenuList(layoutObject)->didSetSelectedIndex(listIndex);
             }
         }
     }
@@ -1119,7 +1119,7 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
         }
     }
 
-    setOptionsChangedOnRenderer();
+    setOptionsChangedOnLayoutObject();
     setNeedsValidityCheck();
 }
 
@@ -1180,7 +1180,7 @@ void HTMLSelectElement::resetImpl()
     if (!selectedOption && firstOption && !m_multiple && m_size <= 1)
         firstOption->setSelectedState(true);
 
-    setOptionsChangedOnRenderer();
+    setOptionsChangedOnLayoutObject();
     setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
     setNeedsValidityCheck();
 }
@@ -1188,7 +1188,7 @@ void HTMLSelectElement::resetImpl()
 void HTMLSelectElement::handlePopupOpenKeyboardEvent(Event* event)
 {
     focus();
-    // Calling focus() may cause us to lose our renderer. Return true so
+    // Calling focus() may cause us to lose our layoutObject. Return true so
     // that our caller doesn't process the event further, but don't set
     // the event as handled.
     if (!layoutObject() || !layoutObject()->isMenuList() || isDisabledFormControl())
@@ -1423,7 +1423,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = this->listItems();
     if (event->type() == EventTypeNames::gesturetap && event->isGestureEvent()) {
         focus();
-        // Calling focus() may cause us to lose our renderer or change the render type, in which case do not want to handle the event.
+        // Calling focus() may cause us to lose our layoutObject or change the layoutObject type, in which case do not want to handle the event.
         if (!layoutObject() || !layoutObject()->isListBox())
             return;
 
@@ -1439,7 +1439,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
         }
     } else if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         focus();
-        // Calling focus() may cause us to lose our renderer, in which case do not want to handle the event.
+        // Calling focus() may cause us to lose our layoutObject, in which case do not want to handle the event.
         if (!layoutObject() || !layoutObject()->isListBox() || isDisabledFormControl())
             return;
 
@@ -1738,9 +1738,9 @@ bool HTMLSelectElement::supportsAutofocus() const
     return true;
 }
 
-void HTMLSelectElement::updateListOnRenderer()
+void HTMLSelectElement::updateListOnLayoutObject()
 {
-    setOptionsChangedOnRenderer();
+    setOptionsChangedOnLayoutObject();
 }
 
 DEFINE_TRACE(HTMLSelectElement)

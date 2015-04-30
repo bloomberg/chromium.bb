@@ -111,7 +111,7 @@ void HTMLOptGroupElement::updateNonComputedStyle()
     m_style = originalStyleForLayoutObject();
     if (layoutObject()) {
         if (HTMLSelectElement* select = ownerSelectElement())
-            select->updateListOnRenderer();
+            select->updateListOnLayoutObject();
     }
 }
 

@@ -75,8 +75,8 @@ public:
 
     bool shouldAccelerate() const;
 
-    void requestPluginCreationWithoutRendererIfPossible();
-    void createPluginWithoutRenderer();
+    void requestPluginCreationWithoutLayoutObjectIfPossible();
+    void createPluginWithoutLayoutObject();
 
     // Public for Internals::forcePluginPlaceholder.
     bool usePlaceholderContent() const { return m_placeholder; }
@@ -143,7 +143,7 @@ private:
     virtual LayoutPart* existingLayoutPart() const = 0;
     virtual void updateWidgetInternal() = 0;
 
-    bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireRenderer);
+    bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireLayoutObject);
     bool pluginIsLoadable(const KURL&, const String& mimeType);
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 

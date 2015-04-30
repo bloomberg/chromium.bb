@@ -178,18 +178,18 @@ const AtomicString& HTMLTableCellElement::scope() const
 
 HTMLTableCellElement* HTMLTableCellElement::cellAbove() const
 {
-    LayoutObject* cellRenderer = layoutObject();
-    if (!cellRenderer)
+    LayoutObject* cellLayoutObject = layoutObject();
+    if (!cellLayoutObject)
         return nullptr;
-    if (!cellRenderer->isTableCell())
-        return nullptr;
-
-    LayoutTableCell* tableCellRenderer = toLayoutTableCell(cellRenderer);
-    LayoutTableCell* cellAboveRenderer = tableCellRenderer->table()->cellAbove(tableCellRenderer);
-    if (!cellAboveRenderer)
+    if (!cellLayoutObject->isTableCell())
         return nullptr;
 
-    return toHTMLTableCellElement(cellAboveRenderer->node());
+    LayoutTableCell* tableCellLayoutObject = toLayoutTableCell(cellLayoutObject);
+    LayoutTableCell* cellAboveLayoutObject = tableCellLayoutObject->table()->cellAbove(tableCellLayoutObject);
+    if (!cellAboveLayoutObject)
+        return nullptr;
+
+    return toHTMLTableCellElement(cellAboveLayoutObject->node());
 }
 
 } // namespace blink

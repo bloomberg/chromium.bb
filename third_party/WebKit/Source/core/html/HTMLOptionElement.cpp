@@ -317,7 +317,7 @@ void HTMLOptionElement::updateNonComputedStyle()
 {
     m_style = originalStyleForLayoutObject();
     if (HTMLSelectElement* select = ownerSelectElement())
-        select->updateListOnRenderer();
+        select->updateListOnLayoutObject();
 }
 
 ComputedStyle* HTMLOptionElement::nonLayoutObjectComputedStyle() const
@@ -338,8 +338,8 @@ void HTMLOptionElement::didRecalcStyle(StyleRecalcChange change)
 
     // FIXME: We ask our owner select to repaint regardless of which property changed.
     if (HTMLSelectElement* select = ownerSelectElement()) {
-        if (LayoutObject* renderer = select->layoutObject())
-            renderer->setShouldDoFullPaintInvalidation();
+        if (LayoutObject* layoutObject = select->layoutObject())
+            layoutObject->setShouldDoFullPaintInvalidation();
     }
 }
 

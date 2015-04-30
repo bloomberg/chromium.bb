@@ -503,7 +503,7 @@ PassRefPtrWillBeRawPtr<DateTimeEditElement> DateTimeEditElement::create(Document
 
 PassRefPtr<ComputedStyle> DateTimeEditElement::customStyleForLayoutObject()
 {
-    // FIXME: This is a kind of layout. We might want to introduce new renderer.
+    // FIXME: This is a kind of layout. We might want to introduce new layoutObject.
     RefPtr<ComputedStyle> originalStyle = originalStyleForLayoutObject();
     RefPtr<ComputedStyle> style = ComputedStyle::clone(*originalStyle);
     float width = 0;

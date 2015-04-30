@@ -182,8 +182,8 @@ void HTMLMeterElement::didElementStateChange()
 {
     m_value->setWidthPercentage(valueRatio()*100);
     m_value->updatePseudo();
-    if (LayoutMeter* render = layoutMeter())
-        render->updateFromElement();
+    if (LayoutMeter* layoutMeter = this->layoutMeter())
+        layoutMeter->updateFromElement();
 }
 
 LayoutMeter* HTMLMeterElement::layoutMeter() const

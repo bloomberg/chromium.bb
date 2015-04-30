@@ -138,11 +138,11 @@ LayoutObject* TextControlInnerEditorElement::createLayoutObject(const ComputedSt
 
 PassRefPtr<ComputedStyle> TextControlInnerEditorElement::customStyleForLayoutObject()
 {
-    LayoutObject* parentRenderer = shadowHost()->layoutObject();
-    if (!parentRenderer || !parentRenderer->isTextControl())
+    LayoutObject* parentLayoutObject = shadowHost()->layoutObject();
+    if (!parentLayoutObject || !parentLayoutObject->isTextControl())
         return originalStyleForLayoutObject();
-    LayoutTextControl* textControlRenderer = toLayoutTextControl(parentRenderer);
-    return textControlRenderer->createInnerEditorStyle(textControlRenderer->styleRef());
+    LayoutTextControl* textControlLayoutObject = toLayoutTextControl(parentLayoutObject);
+    return textControlLayoutObject->createInnerEditorStyle(textControlLayoutObject->styleRef());
 }
 
 // ----------------------------

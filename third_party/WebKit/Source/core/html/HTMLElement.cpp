@@ -425,8 +425,8 @@ void HTMLElement::setInnerText(const String& text, ExceptionState& exceptionStat
         return;
     }
 
-    // FIXME: Do we need to be able to detect preserveNewline style even when there's no renderer?
-    // FIXME: Can the renderer be out of date here? Do we need to call updateStyleIfNeeded?
+    // FIXME: Do we need to be able to detect preserveNewline style even when there's no layoutObject?
+    // FIXME: Can the layoutObject be out of date here? Do we need to call updateStyleIfNeeded?
     // For example, for the contents of textarea elements that are display:none?
     LayoutObject* r = layoutObject();
     if (r && r->style()->preserveNewline()) {

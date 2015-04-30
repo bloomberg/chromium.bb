@@ -123,7 +123,7 @@ public:
     virtual bool getAllowedValueStep(Decimal*) const;
     virtual StepRange createStepRange(AnyStepHandling) const;
     virtual void stepUp(int, ExceptionState&);
-    virtual void stepUpFromRenderer(int);
+    virtual void stepUpFromLayoutObject(int);
     virtual String badInputText() const;
     virtual String rangeOverflowText(const Decimal& maximum) const;
     virtual String rangeUnderflowText(const Decimal& minimum) const;
@@ -156,7 +156,7 @@ public:
     // Should return true if the given DragData has more than one dropped files.
     virtual bool receiveDroppedFiles(const DragData*);
     virtual String droppedFileSystemId();
-    // Should return true if the corresponding renderer for a type can display a suggested value.
+    // Should return true if the corresponding layoutObject for a type can display a suggested value.
     virtual bool canSetSuggestedValue();
     virtual bool shouldSendChangeEventAfterCheckedChanged();
     virtual bool canSetValue(const String&);

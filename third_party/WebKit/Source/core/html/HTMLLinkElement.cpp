@@ -732,12 +732,12 @@ void LinkStyle::process()
             mediaQueryMatches = evaluator.eval(media.get());
         }
 
-        // Don't hold up render tree construction and script execution on stylesheets
-        // that are not needed for the rendering at the moment.
+        // Don't hold up layout tree construction and script execution on stylesheets
+        // that are not needed for the layout at the moment.
         bool blocking = mediaQueryMatches && !m_owner->isAlternate();
         addPendingSheet(blocking ? Blocking : NonBlocking);
 
-        // Load stylesheets that are not needed for the rendering immediately with low priority.
+        // Load stylesheets that are not needed for the layout immediately with low priority.
         FetchRequest request = builder.build(blocking);
         AtomicString crossOriginMode = m_owner->fastGetAttribute(HTMLNames::crossoriginAttr);
         if (!crossOriginMode.isNull()) {

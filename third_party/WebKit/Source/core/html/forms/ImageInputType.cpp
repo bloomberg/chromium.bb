@@ -161,11 +161,11 @@ void ImageInputType::startResourceLoading()
     HTMLImageLoader& imageLoader = element().ensureImageLoader();
     imageLoader.updateFromElement();
 
-    LayoutObject* renderer = element().layoutObject();
-    if (!renderer || !renderer->isLayoutImage())
+    LayoutObject* layoutObject = element().layoutObject();
+    if (!layoutObject || !layoutObject->isLayoutImage())
         return;
 
-    LayoutImageResource* imageResource = toLayoutImage(renderer)->imageResource();
+    LayoutImageResource* imageResource = toLayoutImage(layoutObject)->imageResource();
     imageResource->setImageResource(imageLoader.image());
 }
 

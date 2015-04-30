@@ -112,7 +112,7 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tagName, Docum
 
 LayoutPart* HTMLFrameOwnerElement::layoutPart() const
 {
-    // HTMLObjectElement and HTMLEmbedElement may return arbitrary renderers
+    // HTMLObjectElement and HTMLEmbedElement may return arbitrary layoutObjects
     // when using fallback content.
     if (!layoutObject() || !layoutObject()->isLayoutPart())
         return nullptr;

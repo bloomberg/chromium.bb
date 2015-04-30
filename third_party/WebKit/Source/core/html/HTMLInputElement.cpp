@@ -920,8 +920,8 @@ void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventB
 
     setNeedsValidityCheck();
 
-    // Ideally we'd do this from the render tree (matching
-    // RenderTextView), but it's not possible to do it at the moment
+    // Ideally we'd do this from the layout tree (matching
+    // LayoutTextView), but it's not possible to do it at the moment
     // because of the way the code is structured.
     if (layoutObject()) {
         if (AXObjectCache* cache = layoutObject()->document().existingAXObjectCache())

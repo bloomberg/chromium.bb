@@ -380,7 +380,7 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
         }
     }
 
-    // If we have been inserted from a renderer-less document,
+    // If we have been inserted from a layoutObject-less document,
     // our loader may have not fetched the image, so do it now.
     if ((insertionPoint->inDocument() && !imageLoader().image()) || imageWasModified)
         imageLoader().updateFromElement(ImageLoader::UpdateNormal);
@@ -593,7 +593,7 @@ PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageMode, Sou
 
     RefPtr<Image> sourceImage = cachedImage()->imageForLayoutObject(layoutObject());
 
-    // We need to synthesize a container size if a renderer is not available to provide one.
+    // We need to synthesize a container size if a layoutObject is not available to provide one.
     if (!layoutObject() && sourceImage->usesContainerSize())
         sourceImage->setContainerSize(sourceImage->size());
 

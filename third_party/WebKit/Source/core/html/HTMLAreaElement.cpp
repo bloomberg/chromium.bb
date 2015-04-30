@@ -214,11 +214,11 @@ void HTMLAreaElement::setFocus(bool shouldBeFocused)
     if (!imageElement)
         return;
 
-    LayoutObject* renderer = imageElement->layoutObject();
-    if (!renderer || !renderer->isImage())
+    LayoutObject* layoutObject = imageElement->layoutObject();
+    if (!layoutObject || !layoutObject->isImage())
         return;
 
-    toLayoutImage(renderer)->areaElementFocusChanged(this);
+    toLayoutImage(layoutObject)->areaElementFocusChanged(this);
 }
 
 void HTMLAreaElement::updateFocusAppearance(bool restorePreviousSelection)
