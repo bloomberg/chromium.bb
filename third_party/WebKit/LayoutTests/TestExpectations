@@ -738,9 +738,6 @@ crbug.com/327698 [ Debug Linux Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 crbug.com/320139 virtual/slimmingpaint/fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
 
-crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ NeedsRebaseline ]
-crbug.com/353301 svg/custom/js-late-gradient-and-object-creation.svg [ NeedsRebaseline ]
-
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
 # Re-evaluate/re-enable after rebaselining.
