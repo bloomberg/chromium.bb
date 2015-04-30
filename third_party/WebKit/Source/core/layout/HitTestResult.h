@@ -148,8 +148,8 @@ private:
     RefPtrWillBeMember<Node> m_innerPossiblyPseudoNode;
     // FIXME: Nothing changes this to a value different from m_hitTestLocation!
     LayoutPoint m_pointInInnerNodeFrame; // The hit-tested point in innerNode frame coordinates.
-    LayoutPoint m_localPoint; // A point in the local coordinate space of m_innerNode's renderer. Allows us to efficiently
-        // determine where inside the renderer we hit on subsequent operations.
+    LayoutPoint m_localPoint; // A point in the local coordinate space of m_innerNode's layoutObject. Allows us to efficiently
+        // determine where inside the layoutObject we hit on subsequent operations.
     RefPtrWillBeMember<Element> m_innerURLElement;
     RefPtrWillBeMember<Scrollbar> m_scrollbar;
     bool m_isOverWidget; // Returns true if we are over a widget (and not in the border/padding area of a LayoutPart for example).

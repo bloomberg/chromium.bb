@@ -50,7 +50,7 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element, Compu
 {
     ASSERT(!isActiveInsertionPoint(element));
     if (element.isFirstLetterPseudoElement()) {
-        if (LayoutObject* nextLayoutObject = FirstLetterPseudoElement::firstLetterTextRenderer(element))
+        if (LayoutObject* nextLayoutObject = FirstLetterPseudoElement::firstLetterTextLayoutObject(element))
             m_layoutObjectParent = nextLayoutObject->parent();
     } else if (ContainerNode* containerNode = LayoutTreeBuilderTraversal::parent(element)) {
         m_layoutObjectParent = containerNode->layoutObject();
@@ -65,7 +65,7 @@ LayoutObject* LayoutTreeBuilderForElement::nextLayoutObject() const
         return LayoutTreeBuilderTraversal::nextInTopLayer(*m_node);
 
     if (m_node->isFirstLetterPseudoElement())
-        return FirstLetterPseudoElement::firstLetterTextRenderer(*m_node);
+        return FirstLetterPseudoElement::firstLetterTextLayoutObject(*m_node);
 
     return LayoutTreeBuilder::nextLayoutObject();
 }

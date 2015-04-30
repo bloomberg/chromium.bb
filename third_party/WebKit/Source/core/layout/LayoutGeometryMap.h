@@ -42,7 +42,7 @@ class LayoutBoxModelObject;
 class TransformationMatrix;
 class TransformState;
 
-// Can be used while walking the Renderer tree to cache data about offsets and transforms.
+// Can be used while walking the layout tree to cache data about offsets and transforms.
 class CORE_EXPORT LayoutGeometryMap {
     WTF_MAKE_NONCOPYABLE(LayoutGeometryMap);
 public:
@@ -62,16 +62,16 @@ public:
     FloatPoint mapToContainer(const FloatPoint&, const LayoutBoxModelObject*) const;
     FloatQuad mapToContainer(const FloatRect&, const LayoutBoxModelObject*) const;
 
-    // Called by code walking the renderer or layer trees.
+    // Called by code walking the layout or layer trees.
     void pushMappingsToAncestor(const DeprecatedPaintLayer*, const DeprecatedPaintLayer* ancestorLayer);
     void popMappingsToAncestor(const DeprecatedPaintLayer*);
-    void pushMappingsToAncestor(const LayoutObject*, const LayoutBoxModelObject* ancestorRenderer);
+    void pushMappingsToAncestor(const LayoutObject*, const LayoutBoxModelObject* ancestorLayoutObject);
     void popMappingsToAncestor(const LayoutBoxModelObject*);
 
-    // The following methods should only be called by renderers inside a call to pushMappingsToAncestor().
+    // The following methods should only be called by layoutObjects inside a call to pushMappingsToAncestor().
 
-    // Push geometry info between this renderer and some ancestor. The ancestor must be its container() or some
-    // stacking context between the renderer and its container.
+    // Push geometry info between this layoutObject and some ancestor. The ancestor must be its container() or some
+    // stacking context between the layoutObject and its container.
     void push(const LayoutObject*, const LayoutSize&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
     void push(const LayoutObject*, const TransformationMatrix&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
 
@@ -90,7 +90,7 @@ private:
 #endif
 
 #if ENABLE(ASSERT)
-    bool isTopmostLayoutView(const LayoutObject* renderer) const;
+    bool isTopmostLayoutView(const LayoutObject*) const;
 #endif
 
     typedef Vector<LayoutGeometryMapStep, 32> LayoutGeometryMapSteps;

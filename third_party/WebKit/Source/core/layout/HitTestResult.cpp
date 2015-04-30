@@ -130,12 +130,12 @@ PositionWithAffinity HitTestResult::position() const
 {
     if (!m_innerPossiblyPseudoNode)
         return PositionWithAffinity();
-    LayoutObject* renderer = this->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = this->layoutObject();
+    if (!layoutObject)
         return PositionWithAffinity();
     if (m_innerPossiblyPseudoNode->isPseudoElement() && m_innerPossiblyPseudoNode->pseudoId() == BEFORE)
         return Position(m_innerNode, Position::PositionIsBeforeChildren).downstream();
-    return renderer->positionForPoint(localPoint());
+    return layoutObject->positionForPoint(localPoint());
 }
 
 LayoutObject* HitTestResult::layoutObject() const
@@ -231,8 +231,8 @@ String HitTestResult::spellingToolTip(TextDirection& dir) const
     if (!marker)
         return String();
 
-    if (LayoutObject* renderer = m_innerNode->layoutObject())
-        dir = renderer->style()->direction();
+    if (LayoutObject* layoutObject = m_innerNode->layoutObject())
+        dir = layoutObject->style()->direction();
     return marker->description();
 }
 
@@ -245,8 +245,8 @@ String HitTestResult::title(TextDirection& dir) const
         if (titleNode->isElementNode()) {
             String title = toElement(titleNode)->title();
             if (!title.isNull()) {
-                if (LayoutObject* renderer = titleNode->layoutObject())
-                    dir = renderer->style()->direction();
+                if (LayoutObject* layoutObject = titleNode->layoutObject())
+                    dir = layoutObject->style()->direction();
                 return title;
             }
         }
@@ -279,9 +279,9 @@ Image* HitTestResult::image() const
     if (!innerNodeOrImageMapImage)
         return nullptr;
 
-    LayoutObject* renderer = innerNodeOrImageMapImage->layoutObject();
-    if (renderer && renderer->isImage()) {
-        LayoutImage* image = toLayoutImage(renderer);
+    LayoutObject* layoutObject = innerNodeOrImageMapImage->layoutObject();
+    if (layoutObject && layoutObject->isImage()) {
+        LayoutImage* image = toLayoutImage(layoutObject);
         if (image->cachedImage() && !image->cachedImage()->errorOccurred())
             return image->cachedImage()->imageForLayoutObject(image);
     }
@@ -302,8 +302,8 @@ KURL HitTestResult::absoluteImageURL() const
     if (!innerNodeOrImageMapImage)
         return KURL();
 
-    LayoutObject* renderer = innerNodeOrImageMapImage->layoutObject();
-    if (!(renderer && renderer->isImage()))
+    LayoutObject* layoutObject = innerNodeOrImageMapImage->layoutObject();
+    if (!(layoutObject && layoutObject->isImage()))
         return KURL();
 
     AtomicString urlString;

@@ -422,7 +422,7 @@ public:
     void beginParsingChildren() { setIsFinishedParsingChildren(false); }
 
     PseudoElement* pseudoElement(PseudoId) const;
-    LayoutObject* pseudoElementRenderer(PseudoId) const;
+    LayoutObject* pseudoElementLayoutObject(PseudoId) const;
 
     virtual bool matchesReadOnlyPseudoClass() const { return false; }
     virtual bool matchesReadWritePseudoClass() const { return false; }

@@ -102,7 +102,7 @@ LayoutSize LayoutVideo::calculateIntrinsicSize()
     // <video> in standalone media documents should not use the default 300x150
     // size since they also have audio-only files. By setting the intrinsic
     // size to 300x1 the video will resize itself in these cases, and audio will
-    // have the correct height (it needs to be > 0 for controls to render properly).
+    // have the correct height (it needs to be > 0 for controls to layout properly).
     if (video->ownerDocument() && video->ownerDocument()->isMediaDocument())
         return LayoutSize(defaultSize().width(), 1);
 
@@ -200,9 +200,9 @@ bool LayoutVideo::supportsAcceleratedRendering() const
     return !!mediaElement()->platformLayer();
 }
 
-static const LayoutBlock* rendererPlaceholder(const LayoutObject* renderer)
+static const LayoutBlock* layoutObjectPlaceholder(const LayoutObject* layoutObject)
 {
-    LayoutObject* parent = renderer->parent();
+    LayoutObject* parent = layoutObject->parent();
     if (!parent)
         return 0;
 
@@ -215,28 +215,28 @@ static const LayoutBlock* rendererPlaceholder(const LayoutObject* renderer)
 
 LayoutUnit LayoutVideo::offsetLeft() const
 {
-    if (const LayoutBlock* block = rendererPlaceholder(this))
+    if (const LayoutBlock* block = layoutObjectPlaceholder(this))
         return block->offsetLeft();
     return LayoutMedia::offsetLeft();
 }
 
 LayoutUnit LayoutVideo::offsetTop() const
 {
-    if (const LayoutBlock* block = rendererPlaceholder(this))
+    if (const LayoutBlock* block = layoutObjectPlaceholder(this))
         return block->offsetTop();
     return LayoutMedia::offsetTop();
 }
 
 LayoutUnit LayoutVideo::offsetWidth() const
 {
-    if (const LayoutBlock* block = rendererPlaceholder(this))
+    if (const LayoutBlock* block = layoutObjectPlaceholder(this))
         return block->offsetWidth();
     return LayoutMedia::offsetWidth();
 }
 
 LayoutUnit LayoutVideo::offsetHeight() const
 {
-    if (const LayoutBlock* block = rendererPlaceholder(this))
+    if (const LayoutBlock* block = layoutObjectPlaceholder(this))
         return block->offsetHeight();
     return LayoutMedia::offsetHeight();
 }

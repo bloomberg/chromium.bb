@@ -44,20 +44,20 @@ LayoutImageResourceStyleImage::~LayoutImageResourceStyleImage()
 {
 }
 
-void LayoutImageResourceStyleImage::initialize(LayoutObject* renderer)
+void LayoutImageResourceStyleImage::initialize(LayoutObject* layoutObject)
 {
-    LayoutImageResource::initialize(renderer);
+    LayoutImageResource::initialize(layoutObject);
 
     if (m_styleImage->isImageResource())
         m_cachedImage = toStyleFetchedImage(m_styleImage)->cachedImage();
 
-    m_styleImage->addClient(m_renderer);
+    m_styleImage->addClient(m_layoutObject);
 }
 
 void LayoutImageResourceStyleImage::shutdown()
 {
-    ASSERT(m_renderer);
-    m_styleImage->removeClient(m_renderer);
+    ASSERT(m_layoutObject);
+    m_styleImage->removeClient(m_layoutObject);
     m_cachedImage = 0;
 }
 
@@ -66,13 +66,13 @@ PassRefPtr<Image> LayoutImageResourceStyleImage::image(int width, int height) co
     // Generated content may trigger calls to image() while we're still pending, don't assert but gracefully exit.
     if (m_styleImage->isPendingImage())
         return nullptr;
-    return m_styleImage->image(m_renderer, IntSize(width, height));
+    return m_styleImage->image(m_layoutObject, IntSize(width, height));
 }
 
 void LayoutImageResourceStyleImage::setContainerSizeForLayoutObject(const IntSize& size)
 {
-    ASSERT(m_renderer);
-    m_styleImage->setContainerSizeForLayoutObject(m_renderer, size, m_renderer->style()->effectiveZoom());
+    ASSERT(m_layoutObject);
+    m_styleImage->setContainerSizeForLayoutObject(m_layoutObject, size, m_layoutObject->style()->effectiveZoom());
 }
 
 } // namespace blink

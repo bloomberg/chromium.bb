@@ -9,7 +9,7 @@
 
 namespace blink {
 
-// Placeholder renderer for column-span:all elements. The column-span:all renderer itself is a
+// Placeholder layoutObject for column-span:all elements. The column-span:all layoutObject itself is a
 // descendant of the flow thread, but due to its out-of-flow nature, we need something on the
 // outside to take care of its positioning and sizing. LayoutMultiColumnSpannerPlaceholder objects
 // are siblings of LayoutMultiColumnSet objects, i.e. direct children of the multicol container.
@@ -21,7 +21,7 @@ public:
 
     LayoutFlowThread* flowThread() const { return toLayoutBlockFlow(parent())->multiColumnFlowThread(); }
 
-    LayoutBox* rendererInFlowThread() const { return m_rendererInFlowThread; }
+    LayoutBox* layoutObjectInFlowThread() const { return m_layoutObjectInFlowThread; }
     void updateMarginProperties();
 
     virtual const char* name() const override { return "LayoutMultiColumnSpannerPlaceholder"; }
@@ -40,7 +40,7 @@ protected:
 private:
     LayoutMultiColumnSpannerPlaceholder(LayoutBox*);
 
-    LayoutBox* m_rendererInFlowThread; // The actual column-span:all renderer inside the flow thread.
+    LayoutBox* m_layoutObjectInFlowThread; // The actual column-span:all layoutObject inside the flow thread.
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMultiColumnSpannerPlaceholder, isLayoutMultiColumnSpannerPlaceholder());

@@ -42,21 +42,21 @@ public:
     VerticalPositionCache()
     { }
 
-    int get(LayoutObject* renderer, FontBaseline baselineType) const
+    int get(LayoutObject* layoutObject, FontBaseline baselineType) const
     {
         const HashMap<LayoutObject*, int>& mapToCheck = baselineType == AlphabeticBaseline ? m_alphabeticPositions : m_ideographicPositions;
-        const HashMap<LayoutObject*, int>::const_iterator it = mapToCheck.find(renderer);
+        const HashMap<LayoutObject*, int>::const_iterator it = mapToCheck.find(layoutObject);
         if (it == mapToCheck.end())
             return PositionUndefined;
         return it->value;
     }
 
-    void set(LayoutObject* renderer, FontBaseline baselineType, int position)
+    void set(LayoutObject* layoutObject, FontBaseline baselineType, int position)
     {
         if (baselineType == AlphabeticBaseline)
-            m_alphabeticPositions.set(renderer, position);
+            m_alphabeticPositions.set(layoutObject, position);
         else
-            m_ideographicPositions.set(renderer, position);
+            m_ideographicPositions.set(layoutObject, position);
     }
 
 private:

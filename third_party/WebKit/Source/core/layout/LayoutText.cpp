@@ -151,7 +151,7 @@ LayoutText::LayoutText(Node* node, PassRefPtr<StringImpl> str)
     , m_lastTextBox(0)
 {
     ASSERT(m_text);
-    // FIXME: Some clients of LayoutText (and subclasses) pass Document as node to create anonymous renderer.
+    // FIXME: Some clients of LayoutText (and subclasses) pass Document as node to create anonymous layoutObject.
     // They should be switched to passing null and using setDocumentForAnonymous.
     if (node && node->isDocumentNode())
         setDocumentForAnonymous(toDocument(node));
@@ -850,10 +850,10 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth)
     m_knownToHaveNoOverflowAndNoFallbackFonts = fallbackFonts.isEmpty() && glyphOverflow.isZero();
 }
 
-static inline float hyphenWidth(LayoutText* renderer, const Font& font, TextDirection direction)
+static inline float hyphenWidth(LayoutText* layoutObject, const Font& font, TextDirection direction)
 {
-    const ComputedStyle& style = renderer->styleRef();
-    return font.width(constructTextRun(renderer, font, style.hyphenString().string(), style, direction));
+    const ComputedStyle& style = layoutObject->styleRef();
+    return font.width(constructTextRun(layoutObject, font, style.hyphenString().string(), style, direction));
 }
 
 void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow& glyphOverflow)
@@ -1290,7 +1290,7 @@ static inline bool isInlineFlowOrEmptyText(const LayoutObject* o)
 
 UChar LayoutText::previousCharacter() const
 {
-    // find previous text renderer if one exists
+    // find previous text layoutObject if one exists
     const LayoutObject* previousText = previousInPreOrder();
     for (; previousText; previousText = previousText->previousInPreOrder()) {
         if (!isInlineFlowOrEmptyText(previousText))
@@ -1634,7 +1634,7 @@ int LayoutText::caretMaxOffset() const
     return maxOffset;
 }
 
-unsigned LayoutText::renderedTextLength() const
+unsigned LayoutText::resolvedTextLength() const
 {
     int len = 0;
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())

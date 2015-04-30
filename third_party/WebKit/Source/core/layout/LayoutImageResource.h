@@ -55,7 +55,7 @@ public:
 
     virtual PassRefPtr<Image> image(int /* width */ = 0, int /* height */ = 0) const
     {
-        return m_cachedImage ? m_cachedImage->imageForLayoutObject(m_renderer) : Image::nullImage();
+        return m_cachedImage ? m_cachedImage->imageForLayoutObject(m_layoutObject) : Image::nullImage();
     }
     virtual bool errorOccurred() const { return m_cachedImage && m_cachedImage->errorOccurred(); }
 
@@ -70,7 +70,7 @@ public:
 
 protected:
     LayoutImageResource();
-    LayoutObject* m_renderer;
+    LayoutObject* m_layoutObject;
     ResourcePtr<ImageResource> m_cachedImage;
 
 private:

@@ -1,5 +1,5 @@
 /*
- * This file is part of the render object implementation for KHTML.
+ * This file is part of the layout object implementation for KHTML.
  *
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)

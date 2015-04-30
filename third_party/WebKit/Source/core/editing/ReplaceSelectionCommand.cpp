@@ -684,7 +684,7 @@ void ReplaceSelectionCommand::moveElementOutOfAncestor(PassRefPtrWillBeRawPtr<El
 
 static inline bool nodeHasVisibleRenderText(Text& text)
 {
-    return text.layoutObject() && text.layoutObject()->renderedTextLength() > 0;
+    return text.layoutObject() && text.layoutObject()->resolvedTextLength() > 0;
 }
 
 void ReplaceSelectionCommand::removeUnrenderedTextNodesAtEnds(InsertedNodes& insertedNodes)

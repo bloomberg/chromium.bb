@@ -732,7 +732,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     if (pseudoId == BACKDROP && !parent.isInTopLayer())
         return nullptr;
 
-    if (pseudoId == FIRST_LETTER && (parent.isSVGElement() || !FirstLetterPseudoElement::firstLetterTextRenderer(parent)))
+    if (pseudoId == FIRST_LETTER && (parent.isSVGElement() || !FirstLetterPseudoElement::firstLetterTextLayoutObject(parent)))
         return nullptr;
 
     if (!canHaveGeneratedChildren(*parentLayoutObject))

@@ -1,5 +1,5 @@
 /*
- * This file is part of the select element renderer in WebCore.
+ * This file is part of the select element layoutObject in WebCore.
  *
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
  * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.

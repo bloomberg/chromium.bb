@@ -196,7 +196,7 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
     bool isHorizontalWritingMode = m_columnSet.isHorizontalWritingMode();
 
     // Put the layer bounds into flow thread-local coordinates by flipping it first. Since we're in
-    // a renderer, most rectangles are represented this way.
+    // a layoutObject, most rectangles are represented this way.
     LayoutRect layerBoundsInFlowThread(layerBoundingBox);
     flowThread->flipForWritingMode(layerBoundsInFlowThread);
 
@@ -278,7 +278,7 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFr
         fragment.paginationOffset = translationOffset;
 
         LayoutRect flippedFlowThreadOverflowPortion(flowThreadOverflowPortion);
-        // Flip it into more a physical (RenderLayer-style) rectangle.
+        // Flip it into more a physical (DeprecatedPaintLayer-style) rectangle.
         flowThread->flipForWritingMode(flippedFlowThreadOverflowPortion);
         fragment.paginationClip = flippedFlowThreadOverflowPortion;
         fragments.append(fragment);

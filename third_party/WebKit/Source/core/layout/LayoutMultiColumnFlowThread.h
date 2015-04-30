@@ -41,7 +41,7 @@ enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpac
 // the actual multicol container (i.e. the LayoutBlockFlow whose style computes to non-auto
 // column-count and/or column-width). LayoutMultiColumnFlowThread is the heart of the multicol
 // implementation, and there is only one instance per multicol container. Child content of the
-// multicol container is parented into the flow thread at the time of renderer insertion.
+// multicol container is parented into the flow thread at the time of layoutObject insertion.
 //
 // Apart from this flow thread child, the multicol container will also have LayoutMultiColumnSet
 // "region" children, which are used to position the columns visually. The flow thread is in charge
@@ -63,7 +63,7 @@ enum BalancedColumnHeightCalculation { GuessFromFlowThreadPortion, StretchBySpac
 // positioned and sized correctly. The column-span:all element is inside the flow thread, but its
 // containing block is the multicol container.
 //
-// Some invariants for the render tree structure for multicol:
+// Some invariants for the layout tree structure for multicol:
 // - A multicol container is always a LayoutBlockFlow
 // - Every multicol container has one and only one LayoutMultiColumnFlowThread
 // - All multicol DOM children and pseudo-elements associated with the multicol container are
@@ -142,11 +142,11 @@ public:
         return lastSiblingBox != this ? lastSiblingBox : 0;
     }
 
-    // Find the first set inside which the specified renderer would be rendered.
-    LayoutMultiColumnSet* findSetRendering(LayoutObject*) const;
+    // Find the first set inside which the specified layoutObject would be rendered.
+    LayoutMultiColumnSet* findSetLayoutObjects(LayoutObject*) const;
 
     // Return the spanner placeholder that belongs to the spanner in the containing block chain, if
-    // any. This includes the renderer for the element that actually establishes the spanner too.
+    // any. This includes the layoutObject for the element that actually establishes the spanner too.
     LayoutMultiColumnSpannerPlaceholder* containingColumnSpannerPlaceholder(const LayoutObject* descendant) const;
 
     // Populate the flow thread with what's currently its siblings. Called when a regular block
@@ -154,7 +154,7 @@ public:
     void populate();
 
     // Empty the flow thread by moving everything to the parent. Remove all multicol specific
-    // renderers. Then destroy the flow thread. Called when a multicol container becomes a regular
+    // layoutObjects. Then destroy the flow thread. Called when a multicol container becomes a regular
     // block.
     void evacuateAndDestroy();
 

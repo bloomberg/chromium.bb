@@ -73,7 +73,7 @@ void MultiColumnRenderingTest::setMulticolHTML(const String& html)
 
 TEST_F(MultiColumnRenderingTest, OneBlockWithInDepthTreeStructureCheck)
 {
-    // Examine the render tree established by a simple multicol container with a block with some text inside.
+    // Examine the layout tree established by a simple multicol container with a block with some text inside.
     setMulticolHTML("<div id='mc'><div>xxx</div></div>");
     Node* multicol = document().getElementById("mc");
     ASSERT_TRUE(multicol);
@@ -110,7 +110,7 @@ TEST_F(MultiColumnRenderingTest, OneBlock)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     ASSERT_EQ(columnSetSignature(flowThread), "c");
     LayoutMultiColumnSet* columnSet = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("block")->layoutObject()), columnSet);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("block")->layoutObject()), columnSet);
 }
 
 TEST_F(MultiColumnRenderingTest, TwoBlocks)
@@ -120,8 +120,8 @@ TEST_F(MultiColumnRenderingTest, TwoBlocks)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     ASSERT_EQ(columnSetSignature(flowThread), "c");
     LayoutMultiColumnSet* columnSet = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("block1")->layoutObject()), columnSet);
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("block2")->layoutObject()), columnSet);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("block1")->layoutObject()), columnSet);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("block2")->layoutObject()), columnSet);
 }
 
 TEST_F(MultiColumnRenderingTest, Spanner)
@@ -143,7 +143,7 @@ TEST_F(MultiColumnRenderingTest, ContentThenSpanner)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     ASSERT_EQ(columnSetSignature(flowThread), "cs");
     LayoutBox* columnBox = flowThread->firstMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("columnContent")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("columnContent")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->layoutObject()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContent")->layoutObject()), nullptr);
@@ -158,7 +158,7 @@ TEST_F(MultiColumnRenderingTest, SpannerThenContent)
     LayoutBox* columnBox = flowThread->firstMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("columnContent")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("columnContent")->layoutObject()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContent")->layoutObject()), nullptr);
 }
 
@@ -170,12 +170,12 @@ TEST_F(MultiColumnRenderingTest, ContentThenSpannerThenContent)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     ASSERT_EQ(columnSetSignature(flowThread), "csc");
     LayoutBox* columnBox = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("columnContentBefore")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("columnContentBefore")->layoutObject()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContentBefore")->layoutObject()), nullptr);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("columnContentAfter")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("columnContentAfter")->layoutObject()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContentAfter")->layoutObject()), nullptr);
 }
 
@@ -206,7 +206,7 @@ TEST_F(MultiColumnRenderingTest, SpannerThenContentThenSpanner)
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner1")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(columnBox, columnSet);
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("columnContent")->layoutObject()), columnSet);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("columnContent")->layoutObject()), columnSet);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("columnContent")->layoutObject()), nullptr);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner2")->layoutObject()), columnBox);
@@ -221,7 +221,7 @@ TEST_F(MultiColumnRenderingTest, SpannerWithSpanner)
     LayoutBox* columnBox = flowThread->firstMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->layoutObject()), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("invalidSpanner")->layoutObject()), columnBox);
-    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->rendererInFlowThread(), document().getElementById("spanner")->layoutObject());
+    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->layoutObjectInFlowThread(), document().getElementById("spanner")->layoutObject());
     EXPECT_EQ(document().getElementById("spanner")->layoutObject()->spannerPlaceholder(), columnBox);
     EXPECT_EQ(document().getElementById("invalidSpanner")->layoutObject()->spannerPlaceholder(), nullptr);
 }
@@ -232,17 +232,17 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpanner)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     EXPECT_EQ(columnSetSignature(flowThread), "csc");
     LayoutBox* columnBox = flowThread->firstMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("outer")->layoutObject()), columnBox);
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("block1")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("outer")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("block1")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner")->layoutObject()), columnBox);
     EXPECT_EQ(document().getElementById("spanner")->layoutObject()->spannerPlaceholder(), columnBox);
-    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->rendererInFlowThread(), document().getElementById("spanner")->layoutObject());
+    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->layoutObjectInFlowThread(), document().getElementById("spanner")->layoutObject());
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("outer")->layoutObject()), nullptr);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("block1")->layoutObject()), nullptr);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("block2")->layoutObject()), nullptr);
     columnBox = columnBox->nextSiblingMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("block2")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("block2")->layoutObject()), columnBox);
 }
 
 TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerAfterSpanner)
@@ -252,18 +252,18 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerAfterSpanner)
     EXPECT_EQ(columnSetSignature(flowThread), "scsc");
     LayoutBox* columnBox = flowThread->firstMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner1")->layoutObject()), columnBox);
-    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->rendererInFlowThread(), document().getElementById("spanner1")->layoutObject());
+    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->layoutObjectInFlowThread(), document().getElementById("spanner1")->layoutObject());
     EXPECT_EQ(document().getElementById("spanner1")->layoutObject()->spannerPlaceholder(), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("outer")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("outer")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner2")->layoutObject()), columnBox);
-    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->rendererInFlowThread(), document().getElementById("spanner2")->layoutObject());
+    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->layoutObjectInFlowThread(), document().getElementById("spanner2")->layoutObject());
     EXPECT_EQ(document().getElementById("spanner2")->layoutObject()->spannerPlaceholder(), columnBox);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("outer")->layoutObject()), nullptr);
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("after")->layoutObject()), nullptr);
     columnBox = columnBox->nextSiblingMultiColumnBox();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("after")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("after")->layoutObject()), columnBox);
 }
 
 TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerBeforeSpanner)
@@ -272,15 +272,15 @@ TEST_F(MultiColumnRenderingTest, SubtreeWithSpannerBeforeSpanner)
     LayoutMultiColumnFlowThread* flowThread = findFlowThread("mc");
     EXPECT_EQ(columnSetSignature(flowThread), "cscs");
     LayoutBox* columnBox = flowThread->firstMultiColumnSet();
-    EXPECT_EQ(flowThread->findSetRendering(document().getElementById("outer")->layoutObject()), columnBox);
+    EXPECT_EQ(flowThread->findSetLayoutObjects(document().getElementById("outer")->layoutObject()), columnBox);
     columnBox = columnBox->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner1")->layoutObject()), columnBox);
     EXPECT_EQ(document().getElementById("spanner1")->layoutObject()->spannerPlaceholder(), columnBox);
-    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->rendererInFlowThread(), document().getElementById("spanner1")->layoutObject());
+    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->layoutObjectInFlowThread(), document().getElementById("spanner1")->layoutObject());
     columnBox = columnBox->nextSiblingMultiColumnBox()->nextSiblingMultiColumnBox();
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("spanner2")->layoutObject()), columnBox);
     EXPECT_EQ(document().getElementById("spanner2")->layoutObject()->spannerPlaceholder(), columnBox);
-    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->rendererInFlowThread(), document().getElementById("spanner2")->layoutObject());
+    EXPECT_EQ(toLayoutMultiColumnSpannerPlaceholder(columnBox)->layoutObjectInFlowThread(), document().getElementById("spanner2")->layoutObject());
     EXPECT_EQ(flowThread->containingColumnSpannerPlaceholder(document().getElementById("outer")->layoutObject()), nullptr);
 }
 
@@ -344,19 +344,19 @@ TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalLr)
 class MultiColumnTreeModifyingTest : public MultiColumnRenderingTest {
 public:
     void setMulticolHTML(const char*);
-    void reparentRenderer(const char* newParentId, const char* childId, const char* insertBeforeId = 0);
-    void destroyRenderer(LayoutObject* child);
-    void destroyRenderer(const char* childId);
+    void reparentLayoutObject(const char* newParentId, const char* childId, const char* insertBeforeId = 0);
+    void destroyLayoutObject(LayoutObject* child);
+    void destroyLayoutObject(const char* childId);
 };
 
 void MultiColumnTreeModifyingTest::setMulticolHTML(const char* html)
 {
     MultiColumnRenderingTest::setMulticolHTML(html);
-    // Allow modifications to the render tree structure, because that's what we want to test.
+    // Allow modifications to the layout tree structure, because that's what we want to test.
     document().lifecycle().advanceTo(DocumentLifecycle::InStyleRecalc);
 }
 
-void MultiColumnTreeModifyingTest::reparentRenderer(const char* newParentId, const char* childId, const char* insertBeforeId)
+void MultiColumnTreeModifyingTest::reparentLayoutObject(const char* newParentId, const char* childId, const char* insertBeforeId)
 {
     LayoutObject* newParent = document().getElementById(newParentId)->layoutObject();
     LayoutObject* child = document().getElementById(childId)->layoutObject();
@@ -365,16 +365,16 @@ void MultiColumnTreeModifyingTest::reparentRenderer(const char* newParentId, con
     newParent->addChild(child, insertBefore);
 }
 
-void MultiColumnTreeModifyingTest::destroyRenderer(LayoutObject* child)
+void MultiColumnTreeModifyingTest::destroyLayoutObject(LayoutObject* child)
 {
     // Remove and destroy in separate steps, so that we get to test removal of subtrees.
     child->remove();
     child->node()->detach();
 }
 
-void MultiColumnTreeModifyingTest::destroyRenderer(const char* childId)
+void MultiColumnTreeModifyingTest::destroyLayoutObject(const char* childId)
 {
-    destroyRenderer(document().getElementById(childId)->layoutObject());
+    destroyLayoutObject(document().getElementById(childId)->layoutObject());
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertFirstContentAndRemove)
@@ -389,7 +389,7 @@ TEST_F(MultiColumnTreeModifyingTest, InsertFirstContentAndRemove)
     // A set should have appeared, now that the multicol container has content.
     EXPECT_EQ(columnSetSignature(flowThread), "c");
 
-    destroyRenderer(block);
+    destroyLayoutObject(block);
     // The set should be gone again now, since there's nothing inside the multicol container anymore.
     EXPECT_EQ(columnSetSignature("mc"), "");
 }
@@ -398,10 +398,10 @@ TEST_F(MultiColumnTreeModifyingTest, InsertContentBeforeContentAndRemove)
 {
     setMulticolHTML("<div id='block'></div><div id='mc'><div id='insertBefore'></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "c");
-    reparentRenderer("mc", "block", "insertBefore");
+    reparentLayoutObject("mc", "block", "insertBefore");
     // There was already some content prior to our insertion, so no new set should be inserted.
     EXPECT_EQ(columnSetSignature("mc"), "c");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     // There's still some content after the removal, so the set should remain.
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
@@ -410,10 +410,10 @@ TEST_F(MultiColumnTreeModifyingTest, InsertContentAfterContentAndRemove)
 {
     setMulticolHTML("<div id='block'></div><div id='mc'><div></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "c");
-    reparentRenderer("mc", "block");
+    reparentLayoutObject("mc", "block");
     // There was already some content prior to our insertion, so no new set should be inserted.
     EXPECT_EQ(columnSetSignature("mc"), "c");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     // There's still some content after the removal, so the set should remain.
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
@@ -429,47 +429,47 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSpannerAndRemove)
     EXPECT_EQ(spanner->parent(), flowThread);
     // We should now have a spanner placeholder, since we just moved a spanner into the multicol container.
     EXPECT_EQ(columnSetSignature(flowThread), "s");
-    destroyRenderer(spanner);
+    destroyLayoutObject(spanner);
     EXPECT_EQ(columnSetSignature(flowThread), "");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertTwoSpannersAndRemove)
 {
     setMulticolHTML("<div id='block'>ee<div class='s'></div><div class='s'></div></div><div id='mc'></div>");
-    reparentRenderer("mc", "block");
+    reparentLayoutObject("mc", "block");
     EXPECT_EQ(columnSetSignature("mc"), "css");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertSpannerAfterContentAndRemove)
 {
     setMulticolHTML("<div id='spanner'></div><div id='mc'><div></div></div>");
-    reparentRenderer("mc", "spanner");
+    reparentLayoutObject("mc", "spanner");
     // We should now have a spanner placeholder, since we just moved a spanner into the multicol container.
     EXPECT_EQ(columnSetSignature("mc"), "cs");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertSpannerBeforeContentAndRemove)
 {
     setMulticolHTML("<div id='spanner'></div><div id='mc'><div id='columnContent'></div></div>");
-    reparentRenderer("mc", "spanner", "columnContent");
+    reparentLayoutObject("mc", "spanner", "columnContent");
     // We should now have a spanner placeholder, since we just moved a spanner into the multicol container.
     EXPECT_EQ(columnSetSignature("mc"), "sc");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertSpannerBetweenContentAndRemove)
 {
     setMulticolHTML("<div id='spanner'></div><div id='mc'><div></div><div id='insertBefore'></div></div>");
-    reparentRenderer("mc", "spanner", "insertBefore");
+    reparentLayoutObject("mc", "spanner", "insertBefore");
     // Since the spanner was inserted in the middle of column content, what used to be one column
     // set had to be split in two, in order to get a spot to insert the spanner placeholder.
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     // The spanner placeholder should be gone again now, and the two sets be merged into one.
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
@@ -477,18 +477,18 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSpannerBetweenContentAndRemove)
 TEST_F(MultiColumnTreeModifyingTest, InsertSubtreeWithContentAndSpannerAndRemove)
 {
     setMulticolHTML("<div id='block'>text<div id='spanner'></div>text</div><div id='mc'></div>");
-    reparentRenderer("mc", "block");
+    reparentLayoutObject("mc", "block");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertInsideSpannerAndRemove)
 {
     setMulticolHTML("<div id='block'>text</div><div id='mc'><div id='spanner'></div></div>");
-    reparentRenderer("spanner", "block");
+    reparentLayoutObject("spanner", "block");
     EXPECT_EQ(columnSetSignature("mc"), "s");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "s");
 }
 
@@ -496,9 +496,9 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSpannerInContentBeforeSpannerAndRemov
 {
     setMulticolHTML("<div id='spanner'></div><div id='mc'><div></div><div id='insertBefore'></div><div class='s'></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "cs");
-    reparentRenderer("mc", "spanner", "insertBefore");
+    reparentLayoutObject("mc", "spanner", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "cscs");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "cs");
 }
 
@@ -506,36 +506,36 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSpannerInContentAfterSpannerAndRemove
 {
     setMulticolHTML("<div id='spanner'></div><div id='mc'><div class='s'></div><div></div><div id='insertBefore'></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "sc");
-    reparentRenderer("mc", "spanner", "insertBefore");
+    reparentLayoutObject("mc", "spanner", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "scsc");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "sc");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertSpannerAfterSpannerAndRemove)
 {
     setMulticolHTML("<div id='spanner'></div><div id='mc'><div class='s'></div></div>");
-    reparentRenderer("mc", "spanner");
+    reparentLayoutObject("mc", "spanner");
     EXPECT_EQ(columnSetSignature("mc"), "ss");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "s");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertSpannerBeforeSpannerAndRemove)
 {
     setMulticolHTML("<div id='spanner'></div><div id='mc'><div id='insertBefore' class='s'></div></div>");
-    reparentRenderer("mc", "spanner", "insertBefore");
+    reparentLayoutObject("mc", "spanner", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "ss");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "s");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertContentBeforeSpannerAndRemove)
 {
     setMulticolHTML("<div id='block'></div><div id='mc'><div id='insertBefore' class='s'></div></div>");
-    reparentRenderer("mc", "block", "insertBefore");
+    reparentLayoutObject("mc", "block", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "cs");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "s");
 }
 
@@ -543,11 +543,11 @@ TEST_F(MultiColumnTreeModifyingTest, InsertContentAfterContentBeforeSpannerAndRe
 {
     setMulticolHTML("<div id='block'></div><div id='mc'>text<div id='insertBefore' class='s'></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "cs");
-    reparentRenderer("mc", "block", "insertBefore");
+    reparentLayoutObject("mc", "block", "insertBefore");
     // There was already some content before the spanner prior to our insertion, so no new set
     // should be inserted.
     EXPECT_EQ(columnSetSignature("mc"), "cs");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "cs");
 }
 
@@ -555,9 +555,9 @@ TEST_F(MultiColumnTreeModifyingTest, InsertContentAfterContentAndSpannerAndRemov
 {
     setMulticolHTML("<div id='block'></div><div id='mc'>content<div class='s'></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "cs");
-    reparentRenderer("mc", "block");
+    reparentLayoutObject("mc", "block");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "cs");
 }
 
@@ -565,9 +565,9 @@ TEST_F(MultiColumnTreeModifyingTest, InsertContentBeforeSpannerAndContentAndRemo
 {
     setMulticolHTML("<div id='block'></div><div id='mc'><div id='insertBefore' class='s'></div>content</div>");
     EXPECT_EQ(columnSetSignature("mc"), "sc");
-    reparentRenderer("mc", "block", "insertBefore");
+    reparentLayoutObject("mc", "block", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "sc");
 }
 
@@ -575,9 +575,9 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSpannerIntoContentBeforeSpannerAndRem
 {
     setMulticolHTML("<div id='spanner'></div><div id='mc'><div></div><div id='insertBefore'></div><div class='s'></div><div class='s'></div><div></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "cssc");
-    reparentRenderer("mc", "spanner", "insertBefore");
+    reparentLayoutObject("mc", "spanner", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "cscssc");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "cssc");
 }
 
@@ -585,9 +585,9 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSpannerIntoContentAfterSpannerAndRemo
 {
     setMulticolHTML("<div id='spanner'></div><div id='mc'><div></div><div class='s'></div><div class='s'></div><div></div><div id='insertBefore'></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "cssc");
-    reparentRenderer("mc", "spanner", "insertBefore");
+    reparentLayoutObject("mc", "spanner", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "csscsc");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "cssc");
 }
 
@@ -595,20 +595,20 @@ TEST_F(MultiColumnTreeModifyingTest, InsertInvalidSpannerAndRemove)
 {
     setMulticolHTML("<div class='s' id='invalidSpanner'></div><div id='mc'><div id='spanner'></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "s");
-    reparentRenderer("spanner", "invalidSpanner");
+    reparentLayoutObject("spanner", "invalidSpanner");
     // It's not allowed to nest spanners.
     EXPECT_EQ(columnSetSignature("mc"), "s");
-    destroyRenderer("invalidSpanner");
+    destroyLayoutObject("invalidSpanner");
     EXPECT_EQ(columnSetSignature("mc"), "s");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertSpannerWithInvalidSpannerAndRemove)
 {
     setMulticolHTML("<div id='spanner'><div class='s' id='invalidSpanner'></div></div><div id='mc'></div>");
-    reparentRenderer("mc", "spanner");
+    reparentLayoutObject("mc", "spanner");
     // It's not allowed to nest spanners.
     EXPECT_EQ(columnSetSignature("mc"), "s");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "");
 }
 
@@ -616,54 +616,54 @@ TEST_F(MultiColumnTreeModifyingTest, InsertInvalidSpannerInSpannerBetweenContent
 {
     setMulticolHTML("<div class='s' id='invalidSpanner'></div><div id='mc'>text<div id='spanner'></div>text</div>");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    reparentRenderer("spanner", "invalidSpanner");
+    reparentLayoutObject("spanner", "invalidSpanner");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("invalidSpanner");
+    destroyLayoutObject("invalidSpanner");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertContentAndSpannerAndRemove)
 {
     setMulticolHTML("<div id='block'>text<div id='spanner'></div></div><div id='mc'>text</div>");
-    reparentRenderer("mc", "block");
+    reparentLayoutObject("mc", "block");
     EXPECT_EQ(columnSetSignature("mc"), "cs");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertContentAndSpannerAndContentAndRemove)
 {
     setMulticolHTML("<div id='block'><div id='spanner'></div>text</div><div id='mc'></div>");
-    reparentRenderer("mc", "block");
+    reparentLayoutObject("mc", "block");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertSubtreeWithSpannerAndRemove)
 {
     setMulticolHTML("<div id='block'>text<div class='s'></div>text</div><div id='mc'></div>");
-    reparentRenderer("mc", "block");
+    reparentLayoutObject("mc", "block");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertSubtreeWithSpannerAfterContentAndRemove)
 {
     setMulticolHTML("<div id='block'>text<div class='s'></div>text</div><div id='mc'>column content</div>");
-    reparentRenderer("mc", "block");
+    reparentLayoutObject("mc", "block");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
 TEST_F(MultiColumnTreeModifyingTest, InsertSubtreeWithSpannerBeforeContentAndRemove)
 {
     setMulticolHTML("<div id='block'>text<div class='s'></div>text</div><div id='mc'><div id='insertBefore'>column content</div></div>");
-    reparentRenderer("mc", "block", "insertBefore");
+    reparentLayoutObject("mc", "block", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
@@ -671,9 +671,9 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSubtreeWithSpannerInsideContentAndRem
 {
     setMulticolHTML("<div id='block'>text<div class='s'></div>text</div><div id='mc'><div>outside<div id='insertBefore'>outside</div></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "c");
-    reparentRenderer("mc", "block", "insertBefore");
+    reparentLayoutObject("mc", "block", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
@@ -681,9 +681,9 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSubtreeWithSpannerAfterSpannerAndRemo
 {
     setMulticolHTML("<div id='block'>text<div class='s'></div>text</div><div id='mc'><div class='s'></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "s");
-    reparentRenderer("mc", "block");
+    reparentLayoutObject("mc", "block");
     EXPECT_EQ(columnSetSignature("mc"), "scsc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "s");
 }
 
@@ -691,9 +691,9 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSubtreeWithSpannerBeforeSpannerAndRem
 {
     setMulticolHTML("<div id='block'>text<div class='s'></div>text</div><div id='mc'><div id='insertBefore' class='s'></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "s");
-    reparentRenderer("mc", "block", "insertBefore");
+    reparentLayoutObject("mc", "block", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "cscs");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "s");
 }
 
@@ -701,7 +701,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerAndContent)
 {
     setMulticolHTML("<div id='mc'><div id='block'>text<div class='s'></div>text</div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "");
 }
 
@@ -709,7 +709,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerAndSomeContentBefore)
 {
     setMulticolHTML("<div id='mc'>text<div id='block'>text<div class='s'></div></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "cs");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
@@ -717,7 +717,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerAndAllContentBefore)
 {
     setMulticolHTML("<div id='mc'><div id='block'>text<div class='s'></div></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "cs");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "");
 }
 
@@ -725,7 +725,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerAndAllContentBeforeWithContent
 {
     setMulticolHTML("<div id='mc'><div id='block'>text<div class='s'></div></div>text</div>");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
@@ -733,7 +733,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerAndSomeContentAfter)
 {
     setMulticolHTML("<div id='mc'><div id='block'><div class='s'></div>text</div>text</div>");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
@@ -741,7 +741,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerAndAllContentAfter)
 {
     setMulticolHTML("<div id='mc'><div id='block'><div class='s'></div>text</div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "");
 }
 
@@ -749,7 +749,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerAndAllContentAfterWithContentB
 {
     setMulticolHTML("<div id='mc'>text<div id='block'><div class='s'></div>text</div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
@@ -757,7 +757,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveTwoSpannersBeforeContent)
 {
     setMulticolHTML("<div id='mc'><div id='block'><div class='s'></div><div class='s'></div></div>text</div>");
     EXPECT_EQ(columnSetSignature("mc"), "cssc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
@@ -765,7 +765,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerAndContentAndSpanner)
 {
     setMulticolHTML("<div id='mc'><div id='block'><div class='s'></div>text<div class='s'></div>text</div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "cscsc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "");
 }
 
@@ -773,7 +773,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerAndContentAndSpannerBeforeCont
 {
     setMulticolHTML("<div id='mc'><div id='block'><div class='s'></div>text<div class='s'></div></div>text</div>");
     EXPECT_EQ(columnSetSignature("mc"), "cscsc");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
@@ -781,7 +781,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerAndContentAndSpannerAfterConte
 {
     setMulticolHTML("<div id='mc'>text<div id='block'><div class='s'></div>text<div class='s'></div></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "cscs");
-    destroyRenderer("block");
+    destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 
@@ -789,7 +789,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveInvalidSpannerInSpannerBetweenContent
 {
     setMulticolHTML("<div id='mc'>text<div class='s'><div id='spanner'></div></div>text</div>");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
 }
 
@@ -797,7 +797,7 @@ TEST_F(MultiColumnTreeModifyingTest, RemoveSpannerWithInvalidSpannerBetweenConte
 {
     setMulticolHTML("<div id='mc'>text<div id='spanner'><div class='s'></div></div>text</div>");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
-    destroyRenderer("spanner");
+    destroyLayoutObject("spanner");
     EXPECT_EQ(columnSetSignature("mc"), "c");
 }
 

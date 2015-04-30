@@ -30,7 +30,7 @@ namespace blink {
 class FirstLetterPseudoElement;
 
 // Used to represent a text substring of an element, e.g., for text runs that are split because of
-// first letter and that must therefore have different styles (and positions in the render tree).
+// first letter and that must therefore have different styles (and positions in the layout tree).
 // We cache offsets so that text transformations can be applied in such a way that we can recover
 // the original unaltered string from our corresponding DOM node.
 class LayoutTextFragment final : public LayoutText {
@@ -70,8 +70,8 @@ public:
     void setFirstLetterPseudoElement(FirstLetterPseudoElement* element) { m_firstLetterPseudoElement = element; }
     FirstLetterPseudoElement* firstLetterPseudoElement() const { return m_firstLetterPseudoElement; }
 
-    void setIsRemainingTextRenderer(bool isRemainingText) { m_isRemainingTextRenderer = isRemainingText; }
-    bool isRemainingTextRenderer() const { return m_isRemainingTextRenderer; }
+    void setIsRemainingTextLayoutObject(bool isRemainingText) { m_isRemainingTextLayoutObject = isRemainingText; }
+    bool isRemainingTextLayoutObject() const { return m_isRemainingTextLayoutObject; }
 
 private:
     LayoutBlock* blockForAccompanyingFirstLetter() const;
@@ -82,7 +82,7 @@ private:
 
     unsigned m_start;
     unsigned m_end;
-    bool m_isRemainingTextRenderer;
+    bool m_isRemainingTextLayoutObject;
     RefPtr<StringImpl> m_contentString;
     // Reference back to FirstLetterPseudoElement; cleared by FirstLetterPseudoElement::detach() if
     // it goes away first.

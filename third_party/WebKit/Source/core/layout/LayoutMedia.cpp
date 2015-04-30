@@ -97,7 +97,7 @@ bool LayoutMedia::isChildAllowed(LayoutObject* child, const ComputedStyle&) cons
 
     // The user agent stylesheet (mediaControls.css) has
     // ::-webkit-media-controls { display: flex; }. If author style
-    // sets display: inline we would get an inline renderer as a child
+    // sets display: inline we would get an inline layoutObject as a child
     // of replaced content, which is not supposed to be possible. This
     // check can be removed if ::-webkit-media-controls is made
     // internal.

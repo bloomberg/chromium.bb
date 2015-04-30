@@ -19,8 +19,8 @@ class LayoutView;
 class PaintInvalidationState {
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
 public:
-    PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& renderer, const LayoutBoxModelObject& paintInvalidationContainer);
-    PaintInvalidationState(PaintInvalidationState& next, const LayoutSVGModelObject& renderer);
+    PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& layoutObject, const LayoutBoxModelObject& paintInvalidationContainer);
+    PaintInvalidationState(PaintInvalidationState& next, const LayoutSVGModelObject& layoutObject);
 
     explicit PaintInvalidationState(const LayoutView&, Vector<LayoutObject*>& pendingDelayedPaintInvalidations);
 

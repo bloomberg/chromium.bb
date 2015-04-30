@@ -37,7 +37,7 @@ LayoutReplica::LayoutReplica()
     : LayoutBox(0)
 {
     // This is a hack. Replicas are synthetic, and don't pick up the attributes of the
-    // renderers being replicated, so they always report that they are inline, non-replaced.
+    // layoutObjects being replicated, so they always report that they are inline, non-replaced.
     // However, we need transforms to be applied to replicas for reflections, so have to pass
     // the if (!isInline() || isReplaced()) check before setHasTransform().
     setReplaced(true);
@@ -45,9 +45,9 @@ LayoutReplica::LayoutReplica()
 
 LayoutReplica* LayoutReplica::createAnonymous(Document* document)
 {
-    LayoutReplica* renderer = new LayoutReplica();
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
+    LayoutReplica* layoutObject = new LayoutReplica();
+    layoutObject->setDocumentForAnonymous(document);
+    return layoutObject;
 }
 
 LayoutReplica::~LayoutReplica()

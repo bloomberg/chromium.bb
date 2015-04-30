@@ -416,7 +416,7 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
         return 0;
 
     // Match LayoutBox::availableLogicalHeightUsing by special casing
-    // the render view. The available height is taken from the frame.
+    // the layout view. The available height is taken from the frame.
     if (cb->isLayoutView())
         return 0;
 
@@ -884,7 +884,7 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(const LayoutBox
 void LayoutBoxModelObject::moveChildTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* child, LayoutObject* beforeChild, bool fullRemoveInsert)
 {
     // We assume that callers have cleared their positioned objects list for child moves (!fullRemoveInsert) so the
-    // positioned renderer maps don't become stale. It would be too slow to do the map lookup on each call.
+    // positioned layoutObject maps don't become stale. It would be too slow to do the map lookup on each call.
     ASSERT(!fullRemoveInsert || !isLayoutBlock() || !toLayoutBlock(this)->hasPositionedObjects());
 
     ASSERT(this == child->parent());

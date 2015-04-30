@@ -42,8 +42,8 @@ class LayoutRegion;
 
 typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 
-// LayoutFlowThread is used to collect all the render objects that participate in a
-// flow thread. It will also help in doing the layout. However, it will not render
+// LayoutFlowThread is used to collect all the layout objects that participate in a
+// flow thread. It will also help in doing the layout. However, it will not layout
 // directly to screen. Instead, LayoutRegion objects will redirect their paint
 // and nodeAtPoint methods to this object. Each LayoutRegion will actually be a viewPort
 // of the LayoutFlowThread.

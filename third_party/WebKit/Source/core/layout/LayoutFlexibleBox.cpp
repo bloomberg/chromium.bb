@@ -84,9 +84,9 @@ LayoutFlexibleBox::~LayoutFlexibleBox()
 
 LayoutFlexibleBox* LayoutFlexibleBox::createAnonymous(Document* document)
 {
-    LayoutFlexibleBox* renderer = new LayoutFlexibleBox(0);
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
+    LayoutFlexibleBox* layoutObject = new LayoutFlexibleBox(0);
+    layoutObject->setDocumentForAnonymous(document);
+    return layoutObject;
 }
 
 void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const

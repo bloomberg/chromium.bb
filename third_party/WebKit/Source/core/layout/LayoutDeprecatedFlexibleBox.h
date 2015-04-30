@@ -1,5 +1,5 @@
 /*
- * This file is part of the render object implementation for KHTML.
+ * This file is part of the layout object implementation for KHTML.
  *
  * Copyright (C) 2003 Apple Computer, Inc.
  *

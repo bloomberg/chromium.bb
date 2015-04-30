@@ -277,7 +277,7 @@ void LayoutQuote::updateText()
 LayoutTextFragment* LayoutQuote::findFragmentChild() const
 {
     // We walk from the end of the child list because, if we've had a first-letter
-    // renderer inserted then the remaining text will be at the end.
+    // LayoutObject inserted then the remaining text will be at the end.
     while (LayoutObject* child = lastChild()) {
         if (child->isText() && toLayoutText(child)->isTextFragment())
             return toLayoutTextFragment(child);
@@ -363,7 +363,7 @@ void LayoutQuote::detachQuote()
         return;
 
     // Reset our attached status at this point because it's possible for
-    // updateDepth() to call into attachQuote(). Attach quote walks the render
+    // updateDepth() to call into attachQuote(). Attach quote walks the layout
     // tree looking for quotes that are attached and does work on them.
     m_attached = false;
 

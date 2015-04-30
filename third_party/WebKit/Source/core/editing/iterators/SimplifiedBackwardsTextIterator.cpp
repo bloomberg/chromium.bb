@@ -306,7 +306,7 @@ LayoutText* SimplifiedBackwardsTextIterator::handleFirstLetter(int& startOffset,
     m_shouldHandleFirstLetter = false;
     offsetInNode = 0;
 
-    ASSERT(fragment->isRemainingTextRenderer());
+    ASSERT(fragment->isRemainingTextLayoutObject());
     ASSERT(fragment->firstLetterPseudoElement());
 
     LayoutObject* pseudoElementRenderer = fragment->firstLetterPseudoElement()->layoutObject();

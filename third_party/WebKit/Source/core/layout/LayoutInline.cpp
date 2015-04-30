@@ -61,9 +61,9 @@ LayoutInline::LayoutInline(Element* element)
 
 LayoutInline* LayoutInline::createAnonymous(Document* document)
 {
-    LayoutInline* renderer = new LayoutInline(0);
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
+    LayoutInline* layoutObject = new LayoutInline(0);
+    layoutObject->setDocumentForAnonymous(document);
+    return layoutObject;
 }
 
 void LayoutInline::willBeDestroyed()
@@ -288,11 +288,11 @@ void LayoutInline::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
     return addChildIgnoringContinuation(newChild, beforeChild);
 }
 
-static LayoutBoxModelObject* nextContinuation(LayoutObject* renderer)
+static LayoutBoxModelObject* nextContinuation(LayoutObject* layoutObject)
 {
-    if (renderer->isInline() && !renderer->isReplaced())
-        return toLayoutInline(renderer)->continuation();
-    return toLayoutBlock(renderer)->inlineElementContinuation();
+    if (layoutObject->isInline() && !layoutObject->isReplaced())
+        return toLayoutInline(layoutObject)->continuation();
+    return toLayoutBlock(layoutObject)->inlineElementContinuation();
 }
 
 LayoutBoxModelObject* LayoutInline::continuationBefore(LayoutObject* beforeChild)
@@ -380,8 +380,8 @@ void LayoutInline::splitInlines(LayoutBlock* fromBlock, LayoutBlock* toBlock,
     ASSERT(isDescendantOf(fromBlock));
 
     // If we're splitting the inline containing the fullscreened element,
-    // |beforeChild| may be the renderer for the fullscreened element. However,
-    // that renderer is wrapped in a LayoutFullScreen, so |this| is not its
+    // |beforeChild| may be the layoutObject for the fullscreened element. However,
+    // that layoutObject is wrapped in a LayoutFullScreen, so |this| is not its
     // parent. Since the splitting logic expects |this| to be the parent, set
     // |beforeChild| to be the LayoutFullScreen.
     if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document())) {
@@ -673,11 +673,11 @@ namespace {
 
 class AbsoluteQuadsGeneratorContext {
 public:
-    AbsoluteQuadsGeneratorContext(const LayoutInline* renderer, Vector<FloatQuad>& quads)
+    AbsoluteQuadsGeneratorContext(const LayoutInline* layoutObject, Vector<FloatQuad>& quads)
         : m_quads(quads)
         , m_geometryMap()
     {
-        m_geometryMap.pushMappingsToAncestor(renderer, 0);
+        m_geometryMap.pushMappingsToAncestor(layoutObject, 0);
     }
 
     void operator()(const FloatRect& rect)
@@ -722,12 +722,12 @@ LayoutUnit LayoutInline::offsetTop() const
     return adjustedPositionRelativeToOffsetParent(topLeft).y();
 }
 
-static LayoutUnit computeMargin(const LayoutInline* renderer, const Length& margin)
+static LayoutUnit computeMargin(const LayoutInline* layoutObject, const Length& margin)
 {
     if (margin.isFixed())
         return margin.value();
     if (margin.isPercent())
-        return minimumValueForLength(margin, std::max(LayoutUnit(), renderer->containingBlock()->availableLogicalWidth()));
+        return minimumValueForLength(margin, std::max(LayoutUnit(), layoutObject->containingBlock()->availableLogicalWidth()));
     return LayoutUnit();
 }
 
@@ -1118,7 +1118,7 @@ void LayoutInline::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject*
 
     if (style()->hasInFlowPosition() && layer()) {
         // Apply the in-flow position offset when invalidating a rectangle. The layer
-        // is translated, but the render box isn't, so we need to do this to get the
+        // is translated, but the layout box isn't, so we need to do this to get the
         // right dirty rect. Since this is called from LayoutObject::setStyle, the relative position
         // flag on the LayoutObject has been cleared, so use the one on the style().
         topLeft += layer()->offsetForInFlowPosition();
@@ -1242,7 +1242,7 @@ void LayoutInline::updateHitTestResult(HitTestResult& result, const LayoutPoint&
     if (n) {
         if (isInlineElementContinuation()) {
             // We're in the continuation of a split inline.  Adjust our local point to be in the coordinate space
-            // of the principal renderer's containing block.  This will end up being the innerNode.
+            // of the principal layoutObject's containing block.  This will end up being the innerNode.
             LayoutBlock* firstBlock = n->layoutObject()->containingBlock();
 
             // Get our containing block.

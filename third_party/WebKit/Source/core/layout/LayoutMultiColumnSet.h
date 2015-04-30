@@ -36,13 +36,13 @@
 namespace blink {
 
 // A set of columns in a multicol container. A column set is inserted as an anonymous child of the
-// actual multicol container (i.e. the renderer whose style computes to non-auto column-count and/or
+// actual multicol container (i.e. the layoutObject whose style computes to non-auto column-count and/or
 // column-width), next to the flow thread. There'll be one column set for each contiguous run of
 // column content. The only thing that can interrupt a contiguous run of column content is a column
 // spanner, which means that if there are no spanners, there'll only be one column set.
 //
 // Since a spanner interrupts an otherwise contiguous run of column content, inserting one may
-// result in the creation of additional new column sets. A placeholder for the spanning renderer has
+// result in the creation of additional new column sets. A placeholder for the spanning layoutObject has
 // to be placed in between the column sets that come before and after the spanner, if there's
 // actually column content both before and after the spanner.
 //

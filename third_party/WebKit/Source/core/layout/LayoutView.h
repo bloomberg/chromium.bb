@@ -40,7 +40,7 @@ namespace blink {
 class DeprecatedPaintLayerCompositor;
 class LayoutQuote;
 
-// The root of the render tree, corresponding to the CSS initial containing block.
+// The root of the layout tree, corresponding to the CSS initial containing block.
 // It's dimensions match that of the logical viewport (which may be different from
 // the visible viewport in fixed-layout mode), and it is always at position (0,0)
 // relative to the document (and so isn't necessarily in view).
@@ -142,11 +142,11 @@ public:
     bool usesCompositing() const;
 
     IntRect unscaledDocumentRect() const;
-    LayoutRect backgroundRect(LayoutBox* backgroundRenderer) const;
+    LayoutRect backgroundRect(LayoutBox* backgroundLayoutObject) const;
 
     IntRect documentRect() const;
 
-    // Renderer that paints the root background has background-images which all have background-attachment: fixed.
+    // LayoutObject that paints the root background has background-images which all have background-attachment: fixed.
     bool rootBackgroundIsEntirelyFixed() const;
 
     IntervalArena* intervalArena();
@@ -186,7 +186,7 @@ private:
 
     bool shouldUsePrintingLayout() const;
 
-    LayoutObject* backgroundRenderer() const;
+    LayoutObject* backgroundLayoutObject() const;
 
     FrameView* m_frameView;
 
@@ -213,7 +213,7 @@ private:
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, isLayoutView());
 
 // Suspends the LayoutState cached offset and clipRect optimization. Used under transforms
-// that cannot be represented by LayoutState (common in SVG) and when manipulating the render
+// that cannot be represented by LayoutState (common in SVG) and when manipulating the layout
 // tree during layout in ways that can trigger paint invalidation of a non-child (e.g. when a list item
 // moves its list marker around). Note that even when disabled, LayoutState is still used to
 // store layoutDelta.

@@ -49,10 +49,10 @@ LayoutMultiColumnFlowThread::~LayoutMultiColumnFlowThread()
 
 LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::createAnonymous(Document& document, const ComputedStyle& parentStyle)
 {
-    LayoutMultiColumnFlowThread* renderer = new LayoutMultiColumnFlowThread();
-    renderer->setDocumentForAnonymous(&document);
-    renderer->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
-    return renderer;
+    LayoutMultiColumnFlowThread* layoutObject = new LayoutMultiColumnFlowThread();
+    layoutObject->setDocumentForAnonymous(&document);
+    layoutObject->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
+    return layoutObject;
 }
 
 LayoutMultiColumnSet* LayoutMultiColumnFlowThread::firstMultiColumnSet() const
@@ -73,7 +73,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::lastMultiColumnSet() const
     return 0;
 }
 
-static LayoutObject* firstRendererInSet(LayoutMultiColumnSet* multicolSet)
+static LayoutObject* firstLayoutObjectInSet(LayoutMultiColumnSet* multicolSet)
 {
     LayoutBox* sibling = multicolSet->previousSiblingMultiColumnBox();
     if (!sibling)
@@ -81,10 +81,10 @@ static LayoutObject* firstRendererInSet(LayoutMultiColumnSet* multicolSet)
     // Adjacent column content sets should not occur. We would have no way of figuring out what each
     // of them contains then.
     ASSERT(sibling->isLayoutMultiColumnSpannerPlaceholder());
-    return toLayoutMultiColumnSpannerPlaceholder(sibling)->rendererInFlowThread()->nextInPreOrderAfterChildren(multicolSet->flowThread());
+    return toLayoutMultiColumnSpannerPlaceholder(sibling)->layoutObjectInFlowThread()->nextInPreOrderAfterChildren(multicolSet->flowThread());
 }
 
-static LayoutObject* lastRendererInSet(LayoutMultiColumnSet* multicolSet)
+static LayoutObject* lastLayoutObjectInSet(LayoutMultiColumnSet* multicolSet)
 {
     LayoutBox* sibling = multicolSet->nextSiblingMultiColumnBox();
     if (!sibling)
@@ -92,14 +92,14 @@ static LayoutObject* lastRendererInSet(LayoutMultiColumnSet* multicolSet)
     // Adjacent column content sets should not occur. We would have no way of figuring out what each
     // of them contains then.
     ASSERT(sibling->isLayoutMultiColumnSpannerPlaceholder());
-    return toLayoutMultiColumnSpannerPlaceholder(sibling)->rendererInFlowThread()->previousInPreOrder(multicolSet->flowThread());
+    return toLayoutMultiColumnSpannerPlaceholder(sibling)->layoutObjectInFlowThread()->previousInPreOrder(multicolSet->flowThread());
 }
 
-LayoutMultiColumnSet* LayoutMultiColumnFlowThread::findSetRendering(LayoutObject* renderer) const
+LayoutMultiColumnSet* LayoutMultiColumnFlowThread::findSetLayoutObjects(LayoutObject* layoutObject) const
 {
-    ASSERT(!containingColumnSpannerPlaceholder(renderer)); // should not be used for spanners or content inside them.
-    ASSERT(renderer != this);
-    ASSERT(renderer->isDescendantOf(this));
+    ASSERT(!containingColumnSpannerPlaceholder(layoutObject)); // should not be used for spanners or content inside them.
+    ASSERT(layoutObject != this);
+    ASSERT(layoutObject->isDescendantOf(this));
     LayoutMultiColumnSet* multicolSet = firstMultiColumnSet();
     if (!multicolSet)
         return 0;
@@ -109,14 +109,14 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::findSetRendering(LayoutObject
     // This is potentially SLOW! But luckily very uncommon. You would have to dynamically insert a
     // spanner into the middle of column contents to need this.
     for (; multicolSet; multicolSet = multicolSet->nextSiblingMultiColumnSet()) {
-        LayoutObject* firstRenderer = firstRendererInSet(multicolSet);
-        LayoutObject* lastRenderer = lastRendererInSet(multicolSet);
-        ASSERT(firstRenderer);
+        LayoutObject* firstLayoutObject = firstLayoutObjectInSet(multicolSet);
+        LayoutObject* lastLayoutObject = lastLayoutObjectInSet(multicolSet);
+        ASSERT(firstLayoutObject);
 
-        for (LayoutObject* walker = firstRenderer; walker; walker = walker->nextInPreOrder(this)) {
-            if (walker == renderer)
+        for (LayoutObject* walker = firstLayoutObject; walker; walker = walker->nextInPreOrder(this)) {
+            if (walker == layoutObject)
                 return multicolSet;
-            if (walker == lastRenderer)
+            if (walker == lastLayoutObject)
                 break;
         }
     }
@@ -134,7 +134,7 @@ LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnFlowThread::containingColu
     if (!firstBox || (firstBox == lastMultiColumnBox() && firstBox->isLayoutMultiColumnSet()))
         return 0;
 
-    // We have spanners. See if the renderer in question is one or inside of one then.
+    // We have spanners. See if the layoutObject in question is one or inside of one then.
     for (const LayoutObject* ancestor = descendant; ancestor && ancestor != this; ancestor = ancestor->parent()) {
         if (LayoutMultiColumnSpannerPlaceholder* placeholder = ancestor->spannerPlaceholder())
             return placeholder;
@@ -147,7 +147,7 @@ void LayoutMultiColumnFlowThread::populate()
     LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
     ASSERT(!nextSibling());
     // Reparent children preceding the flow thread into the flow thread. It's multicol content
-    // now. At this point there's obviously nothing after the flow thread, but renderers (column
+    // now. At this point there's obviously nothing after the flow thread, but layoutObjects (column
     // sets and spanners) will be inserted there as we insert elements into the flow thread.
     multicolContainer->moveChildrenTo(this, multicolContainer->firstChild(), this, true);
 }
@@ -174,7 +174,7 @@ void LayoutMultiColumnFlowThread::evacuateAndDestroy()
 
     // FIXME: it's scary that neither destroy() nor the move*Children* methods take care of this,
     // and instead leave you with dangling root line box pointers. But since this is how it is done
-    // in other parts of the code that deal with reparenting renderers, let's do the cleanup on our
+    // in other parts of the code that deal with reparenting layoutObjects, let's do the cleanup on our
     // own here as well.
     deleteLineBoxTree();
 
@@ -424,10 +424,10 @@ void LayoutMultiColumnFlowThread::willBeRemovedFromTree()
     LayoutFlowThread::willBeRemovedFromTree();
 }
 
-LayoutUnit LayoutMultiColumnFlowThread::skipColumnSpanner(LayoutBox* renderer, LayoutUnit logicalTopInFlowThread)
+LayoutUnit LayoutMultiColumnFlowThread::skipColumnSpanner(LayoutBox* layoutObject, LayoutUnit logicalTopInFlowThread)
 {
-    ASSERT(renderer->isColumnSpanAll());
-    LayoutMultiColumnSpannerPlaceholder* placeholder = renderer->spannerPlaceholder();
+    ASSERT(layoutObject->isColumnSpanAll());
+    LayoutMultiColumnSpannerPlaceholder* placeholder = layoutObject->spannerPlaceholder();
     LayoutUnit adjustment;
     LayoutBox* previousColumnBox = placeholder->previousSiblingMultiColumnBox();
     if (previousColumnBox && previousColumnBox->isLayoutMultiColumnSet()) {
@@ -516,8 +516,8 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(LayoutObject* 
                         // We're inside regular column content with both feet. Find out which column
                         // set this is. It needs to be split it into two sets, so that we can insert
                         // a new spanner placeholder between them.
-                        setToSplit = findSetRendering(previousLayoutObject);
-                        ASSERT(setToSplit == findSetRendering(objectAfterSubtree));
+                        setToSplit = findSetLayoutObjects(previousLayoutObject);
+                        ASSERT(setToSplit == findSetLayoutObjects(objectAfterSubtree));
                         setToSplit->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
                         insertBefore = setToSplit->nextSiblingMultiColumnBox();
                         // We've found out which set that needs to be split. Now proceed to
@@ -556,8 +556,8 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(LayoutObject* 
             } else {
                 // Otherwise, since |objectAfterSubtree| isn't a spanner, it has to mean that there's
                 // already a set for that content. We can use it for this layoutObject too.
-                ASSERT(findSetRendering(objectAfterSubtree));
-                ASSERT(findSetRendering(layoutObject) == findSetRendering(objectAfterSubtree));
+                ASSERT(findSetLayoutObjects(objectAfterSubtree));
+                ASSERT(findSetLayoutObjects(layoutObject) == findSetLayoutObjects(objectAfterSubtree));
             }
         } else {
             // Inserting at the end. Then we just need to make sure that there's a column set at the end.
@@ -623,7 +623,7 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
             return; // Followed by column content. Set still needed.
     }
     // We have now determined that, with the removal of |descendant|, we should remove a column
-    // set. Locate it and remove it. Do it without involving findSetRendering(), as that might be
+    // set. Locate it and remove it. Do it without involving findSetLayoutObjects(), as that might be
     // very slow. Deduce the right set from the spanner placeholders that we've already found.
     LayoutMultiColumnSet* columnSetToRemove;
     if (adjacentNextSpannerPlaceholder) {

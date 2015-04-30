@@ -129,11 +129,11 @@ static LayoutListItem* nextListItem(const Node* listNode, const LayoutListItem* 
             continue;
         }
 
-        LayoutObject* renderer = current->layoutObject();
-        if (renderer && renderer->isListItem())
-            return toLayoutListItem(renderer);
+        LayoutObject* layoutObject = current->layoutObject();
+        if (layoutObject && layoutObject->isListItem())
+            return toLayoutListItem(layoutObject);
 
-        // FIXME: Can this be optimized to skip the children of the elements without a renderer?
+        // FIXME: Can this be optimized to skip the children of the elements without a layoutObject?
         current = LayoutTreeBuilderTraversal::next(*current, listNode);
     }
 
@@ -147,13 +147,13 @@ static LayoutListItem* previousListItem(const Node* listNode, const LayoutListIt
     ASSERT(current);
     ASSERT(!current->document().childNeedsDistributionRecalc());
     for (current = LayoutTreeBuilderTraversal::previous(*current, listNode); current && current != listNode; current = LayoutTreeBuilderTraversal::previous(*current, listNode)) {
-        LayoutObject* renderer = current->layoutObject();
-        if (!renderer || (renderer && !renderer->isListItem()))
+        LayoutObject* layoutObject = current->layoutObject();
+        if (!layoutObject || (layoutObject && !layoutObject->isListItem()))
             continue;
-        Node* otherList = enclosingList(toLayoutListItem(renderer));
+        Node* otherList = enclosingList(toLayoutListItem(layoutObject));
         // This item is part of our current list, so it's what we're looking for.
         if (listNode == otherList)
-            return toLayoutListItem(renderer);
+            return toLayoutListItem(layoutObject);
         // We found ourself inside another list; lets skip the rest of it.
         // Use nextIncludingPseudo() here because the other list itself may actually
         // be a list item itself. We need to examine it, so we do this to counteract
@@ -269,7 +269,7 @@ void LayoutListItem::updateMarkerLocationAndInvalidateWidth()
 {
     ASSERT(m_marker);
 
-    // FIXME: We should not modify the structure of the render tree
+    // FIXME: We should not modify the structure of the layout tree
     // during layout. crbug.com/370461
     DeprecatedDisableModifyLayoutTreeStructureAsserts disabler;
     LayoutState* layoutState = view()->layoutState();
@@ -329,7 +329,7 @@ void LayoutListItem::layout()
     if (m_marker) {
         // The marker must be autosized before calling
         // updateMarkerLocationAndInvalidateWidth. It cannot be done in the
-        // parent's beginLayout because it is not yet in the render tree.
+        // parent's beginLayout because it is not yet in the layout tree.
         if (TextAutosizer* textAutosizer = document().textAutosizer())
             textAutosizer->inflateListItem(this, m_marker);
 

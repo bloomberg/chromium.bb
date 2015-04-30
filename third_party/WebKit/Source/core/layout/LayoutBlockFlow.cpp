@@ -1995,7 +1995,7 @@ void LayoutBlockFlow::styleDidChange(StyleDifference diff, const ComputedStyle* 
 
 void LayoutBlockFlow::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, LayoutBox& child)
 {
-    if (child.isLayoutMultiColumnSpannerPlaceholder() && toLayoutMultiColumnSpannerPlaceholder(child).rendererInFlowThread()->needsLayout()) {
+    if (child.isLayoutMultiColumnSpannerPlaceholder() && toLayoutMultiColumnSpannerPlaceholder(child).layoutObjectInFlowThread()->needsLayout()) {
         // The containing block of a spanner is the multicol container (|this| block), but the spanner
         // is laid out via its spanner set (|child|), so we need to make sure that we enter it.
         child.setChildNeedsLayout(MarkOnlyThis);
@@ -2988,7 +2988,7 @@ void LayoutBlockFlow::setPaginationStrut(LayoutUnit strut)
 
 void LayoutBlockFlow::positionSpannerDescendant(LayoutMultiColumnSpannerPlaceholder& child)
 {
-    LayoutBox& spanner = *child.rendererInFlowThread();
+    LayoutBox& spanner = *child.layoutObjectInFlowThread();
     // FIXME: |spanner| is a descendant, but never a direct child, so the names here are bad, if
     // nothing else.
     setLogicalTopForChild(spanner, child.logicalTop());

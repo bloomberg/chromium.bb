@@ -1071,9 +1071,9 @@ void LayoutListMarker::destroy()
 LayoutListMarker* LayoutListMarker::createAnonymous(LayoutListItem* item)
 {
     Document& document = item->document();
-    LayoutListMarker* renderer = new LayoutListMarker(item);
-    renderer->setDocumentForAnonymous(&document);
-    return renderer;
+    LayoutListMarker* layoutObject = new LayoutListMarker(item);
+    layoutObject->setDocumentForAnonymous(&document);
+    return layoutObject;
 }
 
 void LayoutListMarker::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)

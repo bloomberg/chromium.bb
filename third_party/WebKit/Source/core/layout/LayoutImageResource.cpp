@@ -33,7 +33,7 @@
 namespace blink {
 
 LayoutImageResource::LayoutImageResource()
-    : m_renderer(0)
+    : m_layoutObject(0)
     , m_cachedImage(0)
 {
 }
@@ -42,66 +42,66 @@ LayoutImageResource::~LayoutImageResource()
 {
 }
 
-void LayoutImageResource::initialize(LayoutObject* renderer)
+void LayoutImageResource::initialize(LayoutObject* layoutObject)
 {
-    ASSERT(!m_renderer);
-    ASSERT(renderer);
-    m_renderer = renderer;
+    ASSERT(!m_layoutObject);
+    ASSERT(layoutObject);
+    m_layoutObject = layoutObject;
 }
 
 void LayoutImageResource::shutdown()
 {
-    ASSERT(m_renderer);
+    ASSERT(m_layoutObject);
 
     if (m_cachedImage)
-        m_cachedImage->removeClient(m_renderer);
+        m_cachedImage->removeClient(m_layoutObject);
 }
 
 void LayoutImageResource::setImageResource(ImageResource* newImage)
 {
-    ASSERT(m_renderer);
+    ASSERT(m_layoutObject);
 
     if (m_cachedImage == newImage)
         return;
 
     if (m_cachedImage)
-        m_cachedImage->removeClient(m_renderer);
+        m_cachedImage->removeClient(m_layoutObject);
     m_cachedImage = newImage;
     if (m_cachedImage) {
-        m_cachedImage->addClient(m_renderer);
+        m_cachedImage->addClient(m_layoutObject);
         if (m_cachedImage->errorOccurred())
-            m_renderer->imageChanged(m_cachedImage.get());
+            m_layoutObject->imageChanged(m_cachedImage.get());
     } else {
-        m_renderer->imageChanged(m_cachedImage.get());
+        m_layoutObject->imageChanged(m_cachedImage.get());
     }
 }
 
 void LayoutImageResource::resetAnimation()
 {
-    ASSERT(m_renderer);
+    ASSERT(m_layoutObject);
 
     if (!m_cachedImage)
         return;
 
     image()->resetAnimation();
 
-    m_renderer->setShouldDoFullPaintInvalidation();
+    m_layoutObject->setShouldDoFullPaintInvalidation();
 }
 
 void LayoutImageResource::setContainerSizeForLayoutObject(const IntSize& imageContainerSize)
 {
-    ASSERT(m_renderer);
+    ASSERT(m_layoutObject);
     if (m_cachedImage)
-        m_cachedImage->setContainerSizeForLayoutObject(m_renderer, imageContainerSize, m_renderer->style()->effectiveZoom());
+        m_cachedImage->setContainerSizeForLayoutObject(m_layoutObject, imageContainerSize, m_layoutObject->style()->effectiveZoom());
 }
 
 LayoutSize LayoutImageResource::getImageSize(float multiplier, ImageResource::SizeType type) const
 {
     if (!m_cachedImage)
         return LayoutSize();
-    LayoutSize size = m_cachedImage->imageSizeForLayoutObject(m_renderer, multiplier, type);
-    if (m_renderer && m_renderer->isLayoutImage())
-        size.scale(toLayoutImage(m_renderer)->imageDevicePixelRatio());
+    LayoutSize size = m_cachedImage->imageSizeForLayoutObject(m_layoutObject, multiplier, type);
+    if (m_layoutObject && m_layoutObject->isLayoutImage())
+        size.scale(toLayoutImage(m_layoutObject)->imageDevicePixelRatio());
     return size;
 }
 

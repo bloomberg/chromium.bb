@@ -36,7 +36,7 @@ LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str, int startOff
     : LayoutText(node, str ? str->substring(startOffset, length) : PassRefPtr<StringImpl>(nullptr))
     , m_start(startOffset)
     , m_end(length)
-    , m_isRemainingTextRenderer(false)
+    , m_isRemainingTextLayoutObject(false)
     , m_contentString(str)
     , m_firstLetterPseudoElement(nullptr)
 {
@@ -46,7 +46,7 @@ LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str)
     : LayoutText(node, str)
     , m_start(0)
     , m_end(str ? str->length() : 0)
-    , m_isRemainingTextRenderer(false)
+    , m_isRemainingTextLayoutObject(false)
     , m_contentString(str)
     , m_firstLetterPseudoElement(nullptr)
 {
@@ -59,8 +59,8 @@ LayoutTextFragment::~LayoutTextFragment()
 
 void LayoutTextFragment::destroy()
 {
-    if (m_isRemainingTextRenderer && m_firstLetterPseudoElement)
-        m_firstLetterPseudoElement->setRemainingTextRenderer(nullptr);
+    if (m_isRemainingTextLayoutObject && m_firstLetterPseudoElement)
+        m_firstLetterPseudoElement->setRemainingTextLayoutObject(nullptr);
     m_firstLetterPseudoElement = nullptr;
     LayoutText::destroy();
 }
@@ -95,7 +95,7 @@ void LayoutTextFragment::setText(PassRefPtr<StringImpl> text, bool force)
     // If we're the remaining text from a first letter then we have to tell the
     // first letter pseudo element to reattach itself so it can re-calculate the
     // correct first-letter settings.
-    if (isRemainingTextRenderer()) {
+    if (isRemainingTextLayoutObject()) {
         ASSERT(firstLetterPseudoElement());
         firstLetterPseudoElement()->updateTextFragments();
     }
@@ -129,15 +129,15 @@ UChar LayoutTextFragment::previousCharacter() const
     return LayoutText::previousCharacter();
 }
 
-// If this is the renderer for a first-letter pseudoNode then we have to look
+// If this is the layoutObject for a first-letter pseudoNode then we have to look
 // at the node for the remaining text to find our content.
 Text* LayoutTextFragment::associatedTextNode() const
 {
     Node* node = this->firstLetterPseudoElement();
-    if (m_isRemainingTextRenderer || !node) {
+    if (m_isRemainingTextLayoutObject || !node) {
         // If we don't have a node, then we aren't part of a first-letter pseudo
         // element, so use the actual node. Likewise, if we have a node, but
-        // we're the remainingTextRenderer for a pseudo element use the real
+        // we're the remainingTextLayoutObject for a pseudo element use the real
         // text node.
         node = this->node();
     }
@@ -147,10 +147,10 @@ Text* LayoutTextFragment::associatedTextNode() const
 
     if (node->isFirstLetterPseudoElement()) {
         FirstLetterPseudoElement* pseudo = toFirstLetterPseudoElement(node);
-        LayoutObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*pseudo);
-        if (!nextRenderer)
+        LayoutObject* nextLayoutObject = FirstLetterPseudoElement::firstLetterTextLayoutObject(*pseudo);
+        if (!nextLayoutObject)
             return nullptr;
-        node = nextRenderer->node();
+        node = nextLayoutObject->node();
     }
     return (node && node->isTextNode()) ? toText(node) : nullptr;
 }
@@ -164,7 +164,7 @@ void LayoutTextFragment::updateHitTestResult(HitTestResult& result, const Layout
 
     // If we aren't part of a first-letter element, or if we
     // are part of first-letter but we're the remaining text then return.
-    if (m_isRemainingTextRenderer || !firstLetterPseudoElement())
+    if (m_isRemainingTextLayoutObject || !firstLetterPseudoElement())
         return;
     result.setInnerNode(firstLetterPseudoElement());
 }

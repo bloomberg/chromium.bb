@@ -555,7 +555,7 @@ int CharacterNumberAtPositionData::characterNumberWithin(const LayoutObject* que
         layoutObject; layoutObject = layoutObject->previousInPreOrder(queryRoot)) {
         if (!layoutObject->isSVGInlineText())
             continue;
-        characterNumber += toLayoutSVGInlineText(layoutObject)->renderedTextLength();
+        characterNumber += toLayoutSVGInlineText(layoutObject)->resolvedTextLength();
     }
     return characterNumber;
 }

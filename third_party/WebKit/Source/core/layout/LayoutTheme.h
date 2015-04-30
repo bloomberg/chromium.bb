@@ -66,7 +66,7 @@ public:
     void adjustStyle(ComputedStyle&, Element*, const AuthorStyleInfo&);
 
     // This method is called to paint the widget as a background of the LayoutObject.  A widget's foreground, e.g., the
-    // text of a button, is always rendered by the engine itself.  The boolean return value indicates
+    // text of a button, is always laid out by the engine itself.  The boolean return value indicates
     // whether the CSS border/background should also be painted.
     bool paint(LayoutObject*, const PaintInfo&, const IntRect&);
     bool paintBorderOnly(LayoutObject*, const PaintInfo&, const IntRect&);
@@ -285,7 +285,7 @@ protected:
 
 public:
     // Methods for state querying
-    ControlStates controlStatesForRenderer(const LayoutObject*) const;
+    ControlStates controlStatesForLayoutObject(const LayoutObject*) const;
     bool isActive(const LayoutObject*) const;
     bool isChecked(const LayoutObject*) const;
     bool isIndeterminate(const LayoutObject*) const;

@@ -35,10 +35,10 @@ namespace blink {
 
 class LayoutObject;
 
-// Stores data about how to map from one renderer to its container.
+// Stores data about how to map from one layoutObject to its container.
 struct LayoutGeometryMapStep {
     LayoutGeometryMapStep(const LayoutGeometryMapStep& o)
-        : m_renderer(o.m_renderer)
+        : m_layoutObject(o.m_layoutObject)
         , m_offset(o.m_offset)
         , m_offsetForFixedPosition(o.m_offsetForFixedPosition)
         , m_accumulatingTransform(o.m_accumulatingTransform)
@@ -48,15 +48,15 @@ struct LayoutGeometryMapStep {
     {
         ASSERT(!o.m_transform);
     }
-    LayoutGeometryMapStep(const LayoutObject* renderer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform)
-        : m_renderer(renderer)
+    LayoutGeometryMapStep(const LayoutObject* layoutObject, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform)
+        : m_layoutObject(layoutObject)
         , m_accumulatingTransform(accumulatingTransform)
         , m_isNonUniform(isNonUniform)
         , m_isFixedPosition(isFixedPosition)
         , m_hasTransform(hasTransform)
     {
     }
-    const LayoutObject* m_renderer;
+    const LayoutObject* m_layoutObject;
     LayoutSize m_offset;
     OwnPtr<TransformationMatrix> m_transform; // Includes offset if non-null.
     LayoutSize m_offsetForFixedPosition;

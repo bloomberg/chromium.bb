@@ -247,7 +247,7 @@ bool LayoutTheme::paint(LayoutObject* o, const PaintInfo& paintInfo, const IntRe
     case SquareButtonPart:
     case ButtonPart:
     case InnerSpinButtonPart:
-        m_platformTheme->paint(part, controlStatesForRenderer(o), const_cast<GraphicsContext*>(paintInfo.context), r, o->styleRef().effectiveZoom(), o->view()->frameView());
+        m_platformTheme->paint(part, controlStatesForLayoutObject(o), const_cast<GraphicsContext*>(paintInfo.context), r, o->styleRef().effectiveZoom(), o->view()->frameView());
         return false;
     default:
         break;
@@ -580,18 +580,18 @@ bool LayoutTheme::isControlStyled(const ComputedStyle& style, const AuthorStyleI
 void LayoutTheme::adjustPaintInvalidationRect(const LayoutObject* o, IntRect& r)
 {
 #if USE(NEW_THEME)
-    m_platformTheme->inflateControlPaintRect(o->style()->appearance(), controlStatesForRenderer(o), r, o->style()->effectiveZoom());
+    m_platformTheme->inflateControlPaintRect(o->style()->appearance(), controlStatesForLayoutObject(o), r, o->style()->effectiveZoom());
 #endif
 }
 
-bool LayoutTheme::shouldDrawDefaultFocusRing(LayoutObject* renderer) const
+bool LayoutTheme::shouldDrawDefaultFocusRing(LayoutObject* layoutObject) const
 {
-    if (supportsFocusRing(renderer->styleRef()))
+    if (supportsFocusRing(layoutObject->styleRef()))
         return false;
-    Node* node = renderer->node();
+    Node* node = layoutObject->node();
     if (!node)
         return true;
-    if (!renderer->styleRef().hasAppearance() && !node->isLink())
+    if (!layoutObject->styleRef().hasAppearance() && !node->isLink())
         return true;
     // We can't use LayoutTheme::isFocused because outline:auto might be
     // specified to non-:focus rulesets.
@@ -619,7 +619,7 @@ bool LayoutTheme::stateChanged(LayoutObject* o, ControlState state) const
     return true;
 }
 
-ControlStates LayoutTheme::controlStatesForRenderer(const LayoutObject* o) const
+ControlStates LayoutTheme::controlStatesForLayoutObject(const LayoutObject* o) const
 {
     ControlStates result = 0;
     if (isHovered(o)) {
@@ -823,9 +823,9 @@ void LayoutTheme::paintSliderTicks(LayoutObject* o, const PaintInfo& paintInfo, 
     bool isHorizontal = part ==  SliderHorizontalPart;
 
     IntSize thumbSize;
-    LayoutObject* thumbRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->layoutObject();
-    if (thumbRenderer) {
-        const ComputedStyle& thumbStyle = thumbRenderer->styleRef();
+    LayoutObject* thumbLayoutObject = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->layoutObject();
+    if (thumbLayoutObject) {
+        const ComputedStyle& thumbStyle = thumbLayoutObject->styleRef();
         int thumbWidth = thumbStyle.width().intValue();
         int thumbHeight = thumbStyle.height().intValue();
         thumbSize.setWidth(isHorizontal ? thumbWidth : thumbHeight);
@@ -838,10 +838,10 @@ void LayoutTheme::paintSliderTicks(LayoutObject* o, const PaintInfo& paintInfo, 
     int tickRegionSideMargin = 0;
     int tickRegionWidth = 0;
     IntRect trackBounds;
-    LayoutObject* trackRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack())->layoutObject();
+    LayoutObject* trackLayoutObject = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack())->layoutObject();
     // We can ignoring transforms because transform is handled by the graphics context.
-    if (trackRenderer)
-        trackBounds = trackRenderer->absoluteBoundingBoxRectIgnoringTransforms();
+    if (trackLayoutObject)
+        trackBounds = trackLayoutObject->absoluteBoundingBoxRectIgnoringTransforms();
     IntRect sliderBounds = o->absoluteBoundingBoxRectIgnoringTransforms();
 
     // Make position relative to the transformed ancestor element.

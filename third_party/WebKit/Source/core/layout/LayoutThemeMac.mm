@@ -522,22 +522,22 @@ void LayoutThemeMac::adjustPaintInvalidationRect(const LayoutObject* o, IntRect&
     }
 }
 
-FloatRect LayoutThemeMac::convertToPaintingRect(const LayoutObject* inputRenderer, const LayoutObject* partRenderer, const FloatRect& inputRect, const IntRect& r) const
+FloatRect LayoutThemeMac::convertToPaintingRect(const LayoutObject* inputLayoutObject, const LayoutObject* partLayoutObject, const FloatRect& inputRect, const IntRect& r) const
 {
     FloatRect partRect(inputRect);
 
-    // Compute an offset between the part renderer and the input renderer.
-    FloatSize offsetFromInputRenderer;
-    const LayoutObject* renderer = partRenderer;
-    while (renderer && renderer != inputRenderer) {
-        LayoutObject* containingRenderer = renderer->container();
-        offsetFromInputRenderer -= roundedIntSize(renderer->offsetFromContainer(containingRenderer, LayoutPoint()));
-        renderer = containingRenderer;
+    // Compute an offset between the part layoutObject and the input layoutObject.
+    FloatSize offsetFromInputLayoutObject;
+    const LayoutObject* layoutObject = partLayoutObject;
+    while (layoutObject && layoutObject != inputLayoutObject) {
+        LayoutObject* containingLayoutObject = layoutObject->container();
+        offsetFromInputLayoutObject -= roundedIntSize(layoutObject->offsetFromContainer(containingLayoutObject, LayoutPoint()));
+        layoutObject = containingLayoutObject;
     }
-    // If the input renderer was not a container, something went wrong.
-    ASSERT(renderer == inputRenderer);
-    // Move the rect into partRenderer's coords.
-    partRect.move(offsetFromInputRenderer);
+    // If the input layoutObject was not a container, something went wrong.
+    ASSERT(layoutObject == inputLayoutObject);
+    // Move the rect into partLayoutObject's coords.
+    partRect.move(offsetFromInputLayoutObject);
     // Account for the local drawing offset (tx, ty).
     partRect.move(r.x(), r.y());
 
@@ -1002,19 +1002,19 @@ bool LayoutThemeMac::paintProgressBar(LayoutObject* layoutObject, const PaintInf
     if (rect.height() <= minimumProgressBarHeight(layoutObject->styleRef()))
         inflatedRect = ThemeMac::inflateRect(inflatedRect, size, progressBarMargins(controlSize), zoomLevel);
 
-    LayoutProgress* renderProgress = toLayoutProgress(layoutObject);
+    LayoutProgress* layoutProgress = toLayoutProgress(layoutObject);
     HIThemeTrackDrawInfo trackInfo;
     trackInfo.version = 0;
     if (controlSize == NSRegularControlSize)
-        trackInfo.kind = renderProgress->position() < 0 ? kThemeLargeIndeterminateBar : kThemeLargeProgressBar;
+        trackInfo.kind = layoutProgress->position() < 0 ? kThemeLargeIndeterminateBar : kThemeLargeProgressBar;
     else
-        trackInfo.kind = renderProgress->position() < 0 ? kThemeMediumIndeterminateBar : kThemeMediumProgressBar;
+        trackInfo.kind = layoutProgress->position() < 0 ? kThemeMediumIndeterminateBar : kThemeMediumProgressBar;
 
     trackInfo.bounds = IntRect(IntPoint(), inflatedRect.size());
     trackInfo.min = 0;
     trackInfo.max = std::numeric_limits<SInt32>::max();
-    trackInfo.value = lround(renderProgress->position() * nextafter(trackInfo.max, 0));
-    trackInfo.trackInfo.progress.phase = lround(renderProgress->animationProgress() * nextafter(progressAnimationNumFrames, 0));
+    trackInfo.value = lround(layoutProgress->position() * nextafter(trackInfo.max, 0));
+    trackInfo.trackInfo.progress.phase = lround(layoutProgress->animationProgress() * nextafter(progressAnimationNumFrames, 0));
     trackInfo.attributes = kThemeTrackHorizontal;
     trackInfo.enableState = isActive(layoutObject) ? kThemeTrackActive : kThemeTrackInactive;
     trackInfo.reserved = 0;
@@ -1030,7 +1030,7 @@ bool LayoutThemeMac::paintProgressBar(LayoutObject* layoutObject, const PaintInf
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
-    if (!renderProgress->style()->isLeftToRightDirection()) {
+    if (!layoutProgress->style()->isLeftToRightDirection()) {
         paintInfo.context->translate(2 * inflatedRect.x() + inflatedRect.width(), 0);
         paintInfo.context->scale(-1, 1);
     }
@@ -1739,7 +1739,7 @@ NSView* LayoutThemeMac::documentViewFor(LayoutObject*) const
 }
 
 // Updates the control tint (a.k.a. active state) of |cell| (from |o|).  In the
-// Chromium port, the renderer runs as a background process and controls'
+// Chromium port, the layoutObject runs as a background process and controls'
 // NSCell(s) lack a parent NSView. Therefore controls don't have their tint
 // color updated correctly when the application is activated/deactivated.
 // FocusController's setActive() is called when the application is

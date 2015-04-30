@@ -1,5 +1,5 @@
 /*
- * This file is part of the select element renderer in WebCore.
+ * This file is part of the select element layoutObject in WebCore.
  *
  * Copyright (C) 2006, 2007, 2009 Apple Inc. All rights reserved.
  *

@@ -40,47 +40,47 @@ LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightCha
     , m_columnInfo(0)
     , m_next(0)
     , m_pageLogicalHeight(pageLogicalHeight)
-    , m_renderer(view)
+    , m_layoutObject(view)
 {
     ASSERT(!view.layoutState());
     view.pushLayoutState(*this);
 }
 
-LayoutState::LayoutState(LayoutBox& renderer, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, ColumnInfo* columnInfo, bool containingBlockLogicalWidthChanged)
+LayoutState::LayoutState(LayoutBox& layoutObject, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, ColumnInfo* columnInfo, bool containingBlockLogicalWidthChanged)
     : m_containingBlockLogicalWidthChanged(containingBlockLogicalWidthChanged)
     , m_columnInfo(columnInfo)
-    , m_next(renderer.view()->layoutState())
-    , m_renderer(renderer)
+    , m_next(layoutObject.view()->layoutState())
+    , m_layoutObject(layoutObject)
 {
-    if (renderer.isLayoutFlowThread())
-        m_flowThread = toLayoutFlowThread(&renderer);
-    else if (!renderer.isOutOfFlowPositioned() && !renderer.isColumnSpanAll())
+    if (layoutObject.isLayoutFlowThread())
+        m_flowThread = toLayoutFlowThread(&layoutObject);
+    else if (!layoutObject.isOutOfFlowPositioned() && !layoutObject.isColumnSpanAll())
         m_flowThread = m_next->flowThread();
     else
         m_flowThread = nullptr;
-    renderer.view()->pushLayoutState(*this);
-    bool fixed = renderer.isOutOfFlowPositioned() && renderer.style()->position() == FixedPosition;
+    layoutObject.view()->pushLayoutState(*this);
+    bool fixed = layoutObject.isOutOfFlowPositioned() && layoutObject.style()->position() == FixedPosition;
     if (fixed) {
         // FIXME: This doesn't work correctly with transforms.
-        FloatPoint fixedOffset = renderer.view()->localToAbsolute(FloatPoint(), IsFixed);
+        FloatPoint fixedOffset = layoutObject.view()->localToAbsolute(FloatPoint(), IsFixed);
         m_layoutOffset = LayoutSize(fixedOffset.x(), fixedOffset.y()) + offset;
     } else {
         m_layoutOffset = m_next->m_layoutOffset + offset;
     }
 
-    if (renderer.isOutOfFlowPositioned() && !fixed) {
-        if (LayoutObject* container = renderer.container()) {
+    if (layoutObject.isOutOfFlowPositioned() && !fixed) {
+        if (LayoutObject* container = layoutObject.container()) {
             if (container->style()->hasInFlowPosition() && container->isLayoutInline())
-                m_layoutOffset += toLayoutInline(container)->offsetForInFlowPositionedInline(renderer);
+                m_layoutOffset += toLayoutInline(container)->offsetForInFlowPositionedInline(layoutObject);
         }
     }
     // If we establish a new page height, then cache the offset to the top of the first page.
     // We can compare this later on to figure out what part of the page we're actually on,
-    if (pageLogicalHeight || m_columnInfo || renderer.isLayoutFlowThread()) {
+    if (pageLogicalHeight || m_columnInfo || layoutObject.isLayoutFlowThread()) {
         m_pageLogicalHeight = pageLogicalHeight;
-        bool isFlipped = renderer.style()->isFlippedBlocksWritingMode();
-        m_pageOffset = LayoutSize(m_layoutOffset.width() + (!isFlipped ? renderer.borderLeft() + renderer.paddingLeft() : renderer.borderRight() + renderer.paddingRight()),
-            m_layoutOffset.height() + (!isFlipped ? renderer.borderTop() + renderer.paddingTop() : renderer.borderBottom() + renderer.paddingBottom()));
+        bool isFlipped = layoutObject.style()->isFlippedBlocksWritingMode();
+        m_pageOffset = LayoutSize(m_layoutOffset.width() + (!isFlipped ? layoutObject.borderLeft() + layoutObject.paddingLeft() : layoutObject.borderRight() + layoutObject.paddingRight()),
+            m_layoutOffset.height() + (!isFlipped ? layoutObject.borderTop() + layoutObject.paddingTop() : layoutObject.borderBottom() + layoutObject.paddingBottom()));
         m_pageLogicalHeightChanged = pageLogicalHeightChanged;
         m_isPaginated = true;
     } else {
@@ -91,11 +91,11 @@ LayoutState::LayoutState(LayoutBox& renderer, const LayoutSize& offset, LayoutUn
 
         // Disable pagination for objects we don't support. For now this includes overflow:scroll/auto, inline blocks and
         // writing mode roots.
-        if (renderer.isUnsplittableForPagination()) {
+        if (layoutObject.isUnsplittableForPagination()) {
             m_pageLogicalHeight = 0;
             m_isPaginated = false;
         } else {
-            m_isPaginated = m_pageLogicalHeight || m_next->m_columnInfo || renderer.flowThreadContainingBlock();
+            m_isPaginated = m_pageLogicalHeight || m_next->m_columnInfo || layoutObject.flowThreadContainingBlock();
         }
     }
 
@@ -113,7 +113,7 @@ LayoutState::LayoutState(LayoutObject& root)
     , m_columnInfo(0)
     , m_next(root.view()->layoutState())
     , m_pageLogicalHeight(0)
-    , m_renderer(root)
+    , m_layoutObject(root)
 {
     ASSERT(!m_next);
     // We'll end up pushing in LayoutView itself, so don't bother adding it.
@@ -129,9 +129,9 @@ LayoutState::LayoutState(LayoutObject& root)
 
 LayoutState::~LayoutState()
 {
-    if (m_renderer.view()->layoutState()) {
-        ASSERT(m_renderer.view()->layoutState() == this);
-        m_renderer.view()->popLayoutState();
+    if (m_layoutObject.view()->layoutState()) {
+        ASSERT(m_layoutObject.view()->layoutState() == this);
+        m_layoutObject.view()->popLayoutState();
     }
 }
 

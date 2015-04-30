@@ -44,10 +44,10 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason)
         return "selection";
     case PaintInvalidationLayer:
         return "layer";
-    case PaintInvalidationRendererInsertion:
-        return "renderer insertion";
-    case PaintInvalidationRendererRemoval:
-        return "renderer removal";
+    case PaintInvalidationLayoutObjectInsertion:
+        return "layoutObject insertion";
+    case PaintInvalidationLayoutObjectRemoval:
+        return "layoutObject removal";
     case PaintInvalidationDelayedFull:
         return "delayed full";
     }

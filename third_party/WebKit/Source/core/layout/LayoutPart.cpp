@@ -107,8 +107,8 @@ DeprecatedPaintLayerType LayoutPart::layerTypeRequired() const
 bool LayoutPart::requiresAcceleratedCompositing() const
 {
     // There are two general cases in which we can return true. First, if this is a plugin
-    // renderer and the plugin has a layer, then we need a layer. Second, if this is
-    // a renderer with a contentDocument and that document needs a layer, then we need
+    // LayoutObject and the plugin has a layer, then we need a layer. Second, if this is
+    // a LayoutObject with a contentDocument and that document needs a layer, then we need
     // a layer.
     if (widget() && widget()->isPluginView() && toPluginView(widget())->platformLayer())
         return true;

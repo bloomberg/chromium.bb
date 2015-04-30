@@ -42,10 +42,10 @@ LayoutMultiColumnSet::LayoutMultiColumnSet(LayoutFlowThread* flowThread)
 LayoutMultiColumnSet* LayoutMultiColumnSet::createAnonymous(LayoutFlowThread& flowThread, const ComputedStyle& parentStyle)
 {
     Document& document = flowThread.document();
-    LayoutMultiColumnSet* renderer = new LayoutMultiColumnSet(&flowThread);
-    renderer->setDocumentForAnonymous(&document);
-    renderer->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
-    return renderer;
+    LayoutMultiColumnSet* layoutObject = new LayoutMultiColumnSet(&flowThread);
+    layoutObject->setDocumentForAnonymous(&document);
+    layoutObject->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
+    return layoutObject;
 }
 
 MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtFlowThreadOffset(LayoutUnit)

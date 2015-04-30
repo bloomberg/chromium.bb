@@ -169,24 +169,24 @@ bool LayoutReplaced::needsPreferredWidthsRecalculation() const
     return hasRelativeLogicalHeight() && style()->logicalWidth().isAuto() && !hasAutoHeightOrContainingBlockWithAutoHeight();
 }
 
-static inline bool rendererHasAspectRatio(const LayoutObject* renderer)
+static inline bool layoutObjectHasAspectRatio(const LayoutObject* layoutObject)
 {
-    ASSERT(renderer);
-    return renderer->isImage() || renderer->isCanvas() || renderer->isVideo();
+    ASSERT(layoutObject);
+    return layoutObject->isImage() || layoutObject->isCanvas() || layoutObject->isVideo();
 }
 
-void LayoutReplaced::computeAspectRatioInformationForLayoutBox(LayoutBox* contentRenderer, FloatSize& constrainedSize, double& intrinsicRatio) const
+void LayoutReplaced::computeAspectRatioInformationForLayoutBox(LayoutBox* contentLayoutObject, FloatSize& constrainedSize, double& intrinsicRatio) const
 {
     FloatSize intrinsicSize;
-    if (contentRenderer) {
-        contentRenderer->computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
+    if (contentLayoutObject) {
+        contentLayoutObject->computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
 
         // Handle zoom & vertical writing modes here, as the embedded document doesn't know about them.
         intrinsicSize.scale(style()->effectiveZoom());
         if (isLayoutImage())
             intrinsicSize.scale(toLayoutImage(this)->imageDevicePixelRatio());
 
-        // Update our intrinsic size to match what the content renderer has computed, so that when we
+        // Update our intrinsic size to match what the content layoutObject has computed, so that when we
         // constrain the size below, the correct intrinsic size will be obtained for comparison against
         // min and max widths.
         if (intrinsicRatio && !intrinsicSize.isEmpty())
@@ -267,7 +267,7 @@ void LayoutReplaced::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, 
     intrinsicSize = FloatSize(intrinsicLogicalWidth().toFloat(), intrinsicLogicalHeight().toFloat());
 
     // Figure out if we need to compute an intrinsic ratio.
-    if (intrinsicSize.isEmpty() || !rendererHasAspectRatio(this))
+    if (intrinsicSize.isEmpty() || !layoutObjectHasAspectRatio(this))
         return;
 
     intrinsicRatio = intrinsicSize.width() / intrinsicSize.height();
@@ -278,12 +278,12 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
     if (style()->logicalWidth().isSpecified() || style()->logicalWidth().isIntrinsic())
         return computeReplacedLogicalWidthRespectingMinMaxWidth(computeReplacedLogicalWidthUsing(MainOrPreferredSize, style()->logicalWidth()), shouldComputePreferred);
 
-    LayoutBox* contentRenderer = embeddedContentBox();
+    LayoutBox* contentLayoutObject = embeddedContentBox();
 
     // 10.3.2 Inline, replaced elements: http://www.w3.org/TR/CSS21/visudet.html#inline-replaced-width
     double intrinsicRatio = 0;
     FloatSize constrainedSize;
-    computeAspectRatioInformationForLayoutBox(contentRenderer, constrainedSize, intrinsicRatio);
+    computeAspectRatioInformationForLayoutBox(contentLayoutObject, constrainedSize, intrinsicRatio);
 
     if (style()->logicalWidth().isAuto()) {
         bool computedHeightIsAuto = hasAutoHeightOrContainingBlockWithAutoHeight();
@@ -341,12 +341,12 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
     if (hasReplacedLogicalHeight())
         return computeReplacedLogicalHeightRespectingMinMaxHeight(computeReplacedLogicalHeightUsing(MainOrPreferredSize, style()->logicalHeight()));
 
-    LayoutBox* contentRenderer = embeddedContentBox();
+    LayoutBox* contentLayoutObject = embeddedContentBox();
 
     // 10.6.2 Inline, replaced elements: http://www.w3.org/TR/CSS21/visudet.html#inline-replaced-height
     double intrinsicRatio = 0;
     FloatSize constrainedSize;
-    computeAspectRatioInformationForLayoutBox(contentRenderer, constrainedSize, intrinsicRatio);
+    computeAspectRatioInformationForLayoutBox(contentLayoutObject, constrainedSize, intrinsicRatio);
 
     bool widthIsAuto = style()->logicalWidth().isAuto();
     bool hasIntrinsicHeight = constrainedSize.height() > 0;

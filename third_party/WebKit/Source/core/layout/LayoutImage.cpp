@@ -137,7 +137,7 @@ void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded()
     updateIntrinsicSizeIfNeeded(newIntrinsicSize);
 
     // In the case of generated image content using :before/:after/content, we might not be
-    // in the render tree yet. In that case, we just need to update our intrinsic size.
+    // in the layout tree yet. In that case, we just need to update our intrinsic size.
     // layout() will be called after we are inserted in the tree which will take care of
     // what we are doing here.
     if (!containingBlock())
@@ -342,7 +342,7 @@ void LayoutImage::computeIntrinsicRatioInformation(FloatSize& intrinsicSize, dou
 {
     LayoutReplaced::computeIntrinsicRatioInformation(intrinsicSize, intrinsicRatio);
 
-    // Our intrinsicSize is empty if we're rendering generated images with relative width/height. Figure out the right intrinsic size to use.
+    // Our intrinsicSize is empty if we're laying out generated images with relative width/height. Figure out the right intrinsic size to use.
     if (intrinsicSize.isEmpty() && (m_imageResource->imageHasRelativeWidth() || m_imageResource->imageHasRelativeHeight())) {
         LayoutObject* containingBlock = isOutOfFlowPositioned() ? container() : this->containingBlock();
         if (containingBlock->isBox()) {

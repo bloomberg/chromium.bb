@@ -259,7 +259,7 @@ void LayoutRubyRun::layout()
     computeOverflow(clientLogicalBottom());
 }
 
-void LayoutRubyRun::getOverhang(bool firstLine, LayoutObject* startRenderer, LayoutObject* endRenderer, int& startOverhang, int& endOverhang) const
+void LayoutRubyRun::getOverhang(bool firstLine, LayoutObject* startLayoutObject, LayoutObject* endLayoutObject, int& startOverhang, int& endOverhang) const
 {
     ASSERT(!needsLayout());
 
@@ -286,20 +286,20 @@ void LayoutRubyRun::getOverhang(bool firstLine, LayoutObject* startRenderer, Lay
     startOverhang = style()->isLeftToRightDirection() ? logicalLeftOverhang : logicalRightOverhang;
     endOverhang = style()->isLeftToRightDirection() ? logicalRightOverhang : logicalLeftOverhang;
 
-    if (!startRenderer || !startRenderer->isText() || startRenderer->style(firstLine)->fontSize() > rubyBase->style(firstLine)->fontSize())
+    if (!startLayoutObject || !startLayoutObject->isText() || startLayoutObject->style(firstLine)->fontSize() > rubyBase->style(firstLine)->fontSize())
         startOverhang = 0;
 
-    if (!endRenderer || !endRenderer->isText() || endRenderer->style(firstLine)->fontSize() > rubyBase->style(firstLine)->fontSize())
+    if (!endLayoutObject || !endLayoutObject->isText() || endLayoutObject->style(firstLine)->fontSize() > rubyBase->style(firstLine)->fontSize())
         endOverhang = 0;
 
-    // We overhang a ruby only if the neighboring render object is a text.
+    // We overhang a ruby only if the neighboring layout object is a text.
     // We can overhang the ruby by no more than half the width of the neighboring text
     // and no more than half the font size.
     int halfWidthOfFontSize = rubyText->style(firstLine)->fontSize() / 2;
     if (startOverhang)
-        startOverhang = std::min<int>(startOverhang, std::min<int>(toLayoutText(startRenderer)->minLogicalWidth(), halfWidthOfFontSize));
+        startOverhang = std::min<int>(startOverhang, std::min<int>(toLayoutText(startLayoutObject)->minLogicalWidth(), halfWidthOfFontSize));
     if (endOverhang)
-        endOverhang = std::min<int>(endOverhang, std::min<int>(toLayoutText(endRenderer)->minLogicalWidth(), halfWidthOfFontSize));
+        endOverhang = std::min<int>(endOverhang, std::min<int>(toLayoutText(endLayoutObject)->minLogicalWidth(), halfWidthOfFontSize));
 }
 
 } // namespace blink

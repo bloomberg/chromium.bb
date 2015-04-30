@@ -71,9 +71,9 @@ private:
     AtomicString m_value;
 };
 
-static void writeDebugInfo(LayoutObject* renderer, const AtomicString& output)
+static void writeDebugInfo(LayoutObject* layoutObject, const AtomicString& output)
 {
-    Node* node = renderer->node();
+    Node* node = layoutObject->node();
     if (!node)
         return;
     if (node->isDocumentNode())
@@ -115,11 +115,11 @@ void TextAutosizer::writeClusterDebugInfo(Cluster* cluster)
 }
 #endif
 
-static const LayoutObject* parentElementRenderer(const LayoutObject* renderer)
+static const LayoutObject* parentElementLayoutObject(const LayoutObject* layoutObject)
 {
-    // At style recalc, the renderer's parent may not be attached,
+    // At style recalc, the layoutObject's parent may not be attached,
     // so we need to obtain this from the DOM tree.
-    const Node* node = renderer->node();
+    const Node* node = layoutObject->node();
     if (!node)
         return 0;
 
@@ -129,9 +129,9 @@ static const LayoutObject* parentElementRenderer(const LayoutObject* renderer)
     return 0;
 }
 
-static bool isNonTextAreaFormControl(const LayoutObject* renderer)
+static bool isNonTextAreaFormControl(const LayoutObject* layoutObject)
 {
-    const Node* node = renderer ? renderer->node() : 0;
+    const Node* node = layoutObject ? layoutObject->node() : 0;
     if (!node || !node->isElementNode())
         return false;
     const Element* element = toElement(node);
@@ -139,7 +139,7 @@ static bool isNonTextAreaFormControl(const LayoutObject* renderer)
     return (element->isFormControlElement() && !isHTMLTextAreaElement(element));
 }
 
-static bool isPotentialClusterRoot(const LayoutObject* renderer)
+static bool isPotentialClusterRoot(const LayoutObject* layoutObject)
 {
     // "Potential cluster roots" are the smallest unit for which we can
     // enable/disable text autosizing.
@@ -148,35 +148,35 @@ static bool isPotentialClusterRoot(const LayoutObject* renderer)
     //   as they often contain entire multi-line columns of text.
     // - Must not be normal list items, as items in the same list should look
     //   consistent, unless they are floating or position:absolute/fixed.
-    Node* node = renderer->generatingNode();
+    Node* node = layoutObject->generatingNode();
     if (node && !node->hasChildren())
         return false;
-    if (!renderer->isLayoutBlock())
+    if (!layoutObject->isLayoutBlock())
         return false;
-    if (renderer->isInline() && !renderer->style()->isDisplayReplacedType())
+    if (layoutObject->isInline() && !layoutObject->style()->isDisplayReplacedType())
         return false;
-    if (renderer->isListItem())
-        return (renderer->isFloating() || renderer->isOutOfFlowPositioned());
+    if (layoutObject->isListItem())
+        return (layoutObject->isFloating() || layoutObject->isOutOfFlowPositioned());
 
     return true;
 }
 
-static bool isIndependentDescendant(const LayoutBlock* renderer)
+static bool isIndependentDescendant(const LayoutBlock* layoutObject)
 {
-    ASSERT(isPotentialClusterRoot(renderer));
+    ASSERT(isPotentialClusterRoot(layoutObject));
 
-    LayoutBlock* containingBlock = renderer->containingBlock();
-    return renderer->isLayoutView()
-        || renderer->isFloating()
-        || renderer->isOutOfFlowPositioned()
-        || renderer->isTableCell()
-        || renderer->isTableCaption()
-        || renderer->isFlexibleBoxIncludingDeprecated()
-        || renderer->hasColumns()
-        || (containingBlock && containingBlock->isHorizontalWritingMode() != renderer->isHorizontalWritingMode())
-        || renderer->style()->isDisplayReplacedType()
-        || renderer->isTextArea()
-        || renderer->style()->userModify() != READ_ONLY;
+    LayoutBlock* containingBlock = layoutObject->containingBlock();
+    return layoutObject->isLayoutView()
+        || layoutObject->isFloating()
+        || layoutObject->isOutOfFlowPositioned()
+        || layoutObject->isTableCell()
+        || layoutObject->isTableCaption()
+        || layoutObject->isFlexibleBoxIncludingDeprecated()
+        || layoutObject->hasColumns()
+        || (containingBlock && containingBlock->isHorizontalWritingMode() != layoutObject->isHorizontalWritingMode())
+        || layoutObject->style()->isDisplayReplacedType()
+        || layoutObject->isTextArea()
+        || layoutObject->style()->userModify() != READ_ONLY;
 }
 
 static bool blockIsRowOfLinks(const LayoutBlock* block)
@@ -189,28 +189,28 @@ static bool blockIsRowOfLinks(const LayoutBlock* block)
     //  4. It should contain only inline elements unless they are containers,
     //     children of link elements or children of sub-containers.
     int linkCount = 0;
-    LayoutObject* renderer = block->firstChild();
+    LayoutObject* layoutObject = block->firstChild();
     float matchingFontSize = -1;
 
-    while (renderer) {
-        if (!isPotentialClusterRoot(renderer)) {
-            if (renderer->isText() && toLayoutText(renderer)->text().stripWhiteSpace().length() > 3)
+    while (layoutObject) {
+        if (!isPotentialClusterRoot(layoutObject)) {
+            if (layoutObject->isText() && toLayoutText(layoutObject)->text().stripWhiteSpace().length() > 3)
                 return false;
-            if (!renderer->isInline() || renderer->isBR())
+            if (!layoutObject->isInline() || layoutObject->isBR())
                 return false;
         }
-        if (renderer->style()->isLink()) {
+        if (layoutObject->style()->isLink()) {
             linkCount++;
             if (matchingFontSize < 0)
-                matchingFontSize = renderer->style()->specifiedFontSize();
-            else if (matchingFontSize != renderer->style()->specifiedFontSize())
+                matchingFontSize = layoutObject->style()->specifiedFontSize();
+            else if (matchingFontSize != layoutObject->style()->specifiedFontSize())
                 return false;
 
             // Skip traversing descendants of the link.
-            renderer = renderer->nextInPreOrderAfterChildren(block);
+            layoutObject = layoutObject->nextInPreOrderAfterChildren(block);
             continue;
         }
-        renderer = renderer->nextInPreOrder(block);
+        layoutObject = layoutObject->nextInPreOrder(block);
     }
 
     return (linkCount >= 3);
@@ -240,11 +240,11 @@ static bool blockOrImmediateChildrenAreFormControls(const LayoutBlock* block)
 {
     if (isNonTextAreaFormControl(block))
         return true;
-    const LayoutObject* renderer = block->firstChild();
-    while (renderer) {
-        if (isNonTextAreaFormControl(renderer))
+    const LayoutObject* layoutObject = block->firstChild();
+    while (layoutObject) {
+        if (isNonTextAreaFormControl(layoutObject))
             return true;
-        renderer = renderer->nextSibling();
+        layoutObject = layoutObject->nextSibling();
     }
 
     return false;
@@ -340,14 +340,14 @@ TextAutosizer::BeginLayoutBehavior TextAutosizer::prepareForLayout(const LayoutB
     return ContinueLayout;
 }
 
-void TextAutosizer::prepareClusterStack(const LayoutObject* renderer)
+void TextAutosizer::prepareClusterStack(const LayoutObject* layoutObject)
 {
-    if (!renderer)
+    if (!layoutObject)
         return;
-    prepareClusterStack(renderer->parent());
+    prepareClusterStack(layoutObject->parent());
 
-    if (renderer->isLayoutBlock()) {
-        const LayoutBlock* block = toLayoutBlock(renderer);
+    if (layoutObject->isLayoutBlock()) {
+        const LayoutBlock* block = toLayoutBlock(layoutObject);
 #if ENABLE(ASSERT)
         m_blocksThatHaveBegunLayout.add(block);
 #endif
@@ -567,32 +567,32 @@ IntSize TextAutosizer::windowSize() const
 
 void TextAutosizer::resetMultipliers()
 {
-    LayoutObject* renderer = m_document->layoutView();
-    while (renderer) {
-        if (const ComputedStyle* style = renderer->style()) {
+    LayoutObject* layoutObject = m_document->layoutView();
+    while (layoutObject) {
+        if (const ComputedStyle* style = layoutObject->style()) {
             if (style->textAutosizingMultiplier() != 1)
-                applyMultiplier(renderer, 1, LayoutNeeded);
+                applyMultiplier(layoutObject, 1, LayoutNeeded);
         }
-        renderer = renderer->nextInPreOrder();
+        layoutObject = layoutObject->nextInPreOrder();
     }
 }
 
 void TextAutosizer::setAllTextNeedsLayout()
 {
-    LayoutObject* renderer = m_document->layoutView();
-    while (renderer) {
-        if (renderer->isText())
-            renderer->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing);
-        renderer = renderer->nextInPreOrder();
+    LayoutObject* layoutObject = m_document->layoutView();
+    while (layoutObject) {
+        if (layoutObject->isText())
+            layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing);
+        layoutObject = layoutObject->nextInPreOrder();
     }
 }
 
-TextAutosizer::BlockFlags TextAutosizer::classifyBlock(const LayoutObject* renderer, BlockFlags mask) const
+TextAutosizer::BlockFlags TextAutosizer::classifyBlock(const LayoutObject* layoutObject, BlockFlags mask) const
 {
-    if (!renderer->isLayoutBlock())
+    if (!layoutObject->isLayoutBlock())
         return 0;
 
-    const LayoutBlock* block = toLayoutBlock(renderer);
+    const LayoutBlock* block = toLayoutBlock(layoutObject);
     BlockFlags flags = 0;
 
     if (isPotentialClusterRoot(block)) {
@@ -649,7 +649,7 @@ bool TextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const Layou
                 continue;
             }
         } else if (descendant->isText()) {
-            // Note: Using text().stripWhiteSpace().length() instead of renderedTextLength() because
+            // Note: Using text().stripWhiteSpace().length() instead of resolvedTextLength() because
             // the lineboxes will not be built until layout. These values can be different.
             // Note: This is an approximation assuming each character is 1em wide.
             length += toLayoutText(descendant)->text().stripWhiteSpace().length() * descendant->style()->specifiedFontSize();
@@ -666,29 +666,29 @@ bool TextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const Layou
     return false;
 }
 
-TextAutosizer::Fingerprint TextAutosizer::getFingerprint(const LayoutObject* renderer)
+TextAutosizer::Fingerprint TextAutosizer::getFingerprint(const LayoutObject* layoutObject)
 {
-    Fingerprint result = m_fingerprintMapper.get(renderer);
+    Fingerprint result = m_fingerprintMapper.get(layoutObject);
     if (!result) {
-        result = computeFingerprint(renderer);
-        m_fingerprintMapper.add(renderer, result);
+        result = computeFingerprint(layoutObject);
+        m_fingerprintMapper.add(layoutObject, result);
     }
     return result;
 }
 
-TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(const LayoutObject* renderer)
+TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(const LayoutObject* layoutObject)
 {
-    Node* node = renderer->generatingNode();
+    Node* node = layoutObject->generatingNode();
     if (!node || !node->isElementNode())
         return 0;
 
     FingerprintSourceData data;
-    if (const LayoutObject* parent = parentElementRenderer(renderer))
+    if (const LayoutObject* parent = parentElementLayoutObject(layoutObject))
         data.m_parentHash = getFingerprint(parent);
 
     data.m_qualifiedNameHash = QualifiedNameHash::hash(toElement(node)->tagQName());
 
-    if (const ComputedStyle* style = renderer->style()) {
+    if (const ComputedStyle* style = layoutObject->style()) {
         data.m_packedStyleProperties = style->direction();
         data.m_packedStyleProperties |= (style->position() << 1);
         data.m_packedStyleProperties |= (style->floating() << 4);
@@ -704,8 +704,8 @@ TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(const LayoutObject*
     // Use nodeIndex as a rough approximation of column number
     // (it's too early to call LayoutTableCell::col).
     // FIXME: account for colspan
-    if (renderer->isTableCell())
-        data.m_column = renderer->node()->nodeIndex();
+    if (layoutObject->isTableCell())
+        data.m_column = layoutObject->node()->nodeIndex();
 
     return StringHasher::computeHash<UChar>(
         static_cast<const UChar*>(static_cast<const void*>(&data)),
@@ -940,7 +940,7 @@ const LayoutBlock* TextAutosizer::deepestBlockContainingAllText(const LayoutBloc
 const LayoutObject* TextAutosizer::findTextLeaf(const LayoutObject* parent, size_t& depth, TextLeafSearch firstOrLast) const
 {
     // List items are treated as text due to the marker.
-    // The actual renderer for the marker (LayoutListMarker) may not be in the tree yet since it is added during layout.
+    // The actual layoutObject for the marker (LayoutListMarker) may not be in the tree yet since it is added during layout.
     if (parent->isListItem())
         return parent;
 
@@ -963,14 +963,14 @@ const LayoutObject* TextAutosizer::findTextLeaf(const LayoutObject* parent, size
     return 0;
 }
 
-void TextAutosizer::applyMultiplier(LayoutObject* renderer, float multiplier, RelayoutBehavior relayoutBehavior)
+void TextAutosizer::applyMultiplier(LayoutObject* layoutObject, float multiplier, RelayoutBehavior relayoutBehavior)
 {
-    ASSERT(renderer);
-    ComputedStyle& currentStyle = renderer->mutableStyleRef();
+    ASSERT(layoutObject);
+    ComputedStyle& currentStyle = layoutObject->mutableStyleRef();
     if (currentStyle.textAutosizingMultiplier() == multiplier)
         return;
 
-    // We need to clone the render style to avoid breaking style sharing.
+    // We need to clone the layoutObject style to avoid breaking style sharing.
     RefPtr<ComputedStyle> style = ComputedStyle::clone(currentStyle);
     style->setTextAutosizingMultiplier(multiplier);
     style->setUnique();
@@ -981,12 +981,12 @@ void TextAutosizer::applyMultiplier(LayoutObject* renderer, float multiplier, Re
         // to safely hold raw ComputedStyle* pointers during layout, e.g. BreakingContext::m_currentStyle.
         m_stylesRetainedDuringLayout.append(&currentStyle);
 
-        renderer->setStyleInternal(style.release());
-        renderer->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing);
+        layoutObject->setStyleInternal(style.release());
+        layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::TextAutosizing);
         break;
 
     case LayoutNeeded:
-        renderer->setStyle(style.release());
+        layoutObject->setStyle(style.release());
         break;
     }
 
@@ -1044,11 +1044,11 @@ void TextAutosizer::FingerprintMapper::assertMapsAreConsistent()
 }
 #endif
 
-void TextAutosizer::FingerprintMapper::add(const LayoutObject* renderer, Fingerprint fingerprint)
+void TextAutosizer::FingerprintMapper::add(const LayoutObject* layoutObject, Fingerprint fingerprint)
 {
-    remove(renderer);
+    remove(layoutObject);
 
-    m_fingerprints.set(renderer, fingerprint);
+    m_fingerprints.set(layoutObject, fingerprint);
 #if ENABLE(ASSERT)
     assertMapsAreConsistent();
 #endif
@@ -1067,10 +1067,10 @@ void TextAutosizer::FingerprintMapper::addTentativeClusterRoot(const LayoutBlock
 #endif
 }
 
-bool TextAutosizer::FingerprintMapper::remove(const LayoutObject* renderer)
+bool TextAutosizer::FingerprintMapper::remove(const LayoutObject* layoutObject)
 {
-    Fingerprint fingerprint = m_fingerprints.take(renderer);
-    if (!fingerprint || !renderer->isLayoutBlock())
+    Fingerprint fingerprint = m_fingerprints.take(layoutObject);
+    if (!fingerprint || !layoutObject->isLayoutBlock())
         return false;
 
     ReverseFingerprintMap::iterator blocksIter = m_blocksForFingerprint.find(fingerprint);
@@ -1078,7 +1078,7 @@ bool TextAutosizer::FingerprintMapper::remove(const LayoutObject* renderer)
         return false;
 
     BlockSet& blocks = *blocksIter->value;
-    blocks.remove(toLayoutBlock(renderer));
+    blocks.remove(toLayoutBlock(layoutObject));
     if (blocks.isEmpty())
         m_blocksForFingerprint.remove(blocksIter);
 #if ENABLE(ASSERT)
@@ -1087,9 +1087,9 @@ bool TextAutosizer::FingerprintMapper::remove(const LayoutObject* renderer)
     return true;
 }
 
-TextAutosizer::Fingerprint TextAutosizer::FingerprintMapper::get(const LayoutObject* renderer)
+TextAutosizer::Fingerprint TextAutosizer::FingerprintMapper::get(const LayoutObject* layoutObject)
 {
-    return m_fingerprints.get(renderer);
+    return m_fingerprints.get(layoutObject);
 }
 
 TextAutosizer::BlockSet* TextAutosizer::FingerprintMapper::getTentativeClusterRoots(Fingerprint fingerprint)

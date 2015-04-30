@@ -34,7 +34,7 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
     m_clipped = true;
 }
 
-PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& renderer, const LayoutBoxModelObject& paintInvalidationContainer)
+PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, LayoutBoxModelObject& layoutObject, const LayoutBoxModelObject& paintInvalidationContainer)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
     , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)
@@ -42,10 +42,10 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, Lay
     , m_pendingDelayedPaintInvalidations(next.pendingDelayedPaintInvalidationTargets())
 {
     // FIXME: SVG could probably benefit from a stack-based optimization like html does. crbug.com/391054
-    bool establishesPaintInvalidationContainer = renderer == m_paintInvalidationContainer;
-    bool fixed = renderer.style()->position() == FixedPosition;
+    bool establishesPaintInvalidationContainer = layoutObject == m_paintInvalidationContainer;
+    bool fixed = layoutObject.style()->position() == FixedPosition;
 
-    if (!renderer.supportsPaintInvalidationStateCachedOffsets() || !next.m_cachedOffsetsEnabled)
+    if (!layoutObject.supportsPaintInvalidationStateCachedOffsets() || !next.m_cachedOffsetsEnabled)
         m_cachedOffsetsEnabled = false;
     if (establishesPaintInvalidationContainer) {
         // When we hit a new paint invalidation container, we don't need to
@@ -55,22 +55,22 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, Lay
     } else {
         if (m_cachedOffsetsEnabled) {
             if (fixed) {
-                FloatPoint fixedOffset = renderer.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
+                FloatPoint fixedOffset = layoutObject.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
                 m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y());
             } else {
-                LayoutSize offset = renderer.isBox() && !renderer.isTableRow() ? toLayoutBox(renderer).locationOffset() : LayoutSize();
+                LayoutSize offset = layoutObject.isBox() && !layoutObject.isTableRow() ? toLayoutBox(layoutObject).locationOffset() : LayoutSize();
                 m_paintOffset = next.m_paintOffset + offset;
             }
 
-            if (renderer.isOutOfFlowPositioned() && !fixed) {
-                if (LayoutObject* container = renderer.container()) {
+            if (layoutObject.isOutOfFlowPositioned() && !fixed) {
+                if (LayoutObject* container = layoutObject.container()) {
                     if (container->style()->hasInFlowPosition() && container->isLayoutInline())
-                        m_paintOffset += toLayoutInline(container)->offsetForInFlowPositionedInline(toLayoutBox(renderer));
+                        m_paintOffset += toLayoutInline(container)->offsetForInFlowPositionedInline(toLayoutBox(layoutObject));
                 }
             }
 
-            if (renderer.style()->hasInFlowPosition() && renderer.hasLayer())
-                m_paintOffset += renderer.layer()->offsetForInFlowPosition();
+            if (layoutObject.style()->hasInFlowPosition() && layoutObject.hasLayer())
+                m_paintOffset += layoutObject.layer()->offsetForInFlowPosition();
         }
 
         m_clipped = !fixed && next.m_clipped;
@@ -78,19 +78,19 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, Lay
             m_clipRect = next.m_clipRect;
     }
 
-    if (m_cachedOffsetsEnabled && renderer.isSVGRoot()) {
-        const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(renderer);
+    if (m_cachedOffsetsEnabled && layoutObject.isSVGRoot()) {
+        const LayoutSVGRoot& svgRoot = toLayoutSVGRoot(layoutObject);
         m_svgTransform = adoptPtr(new AffineTransform(svgRoot.localToBorderBoxTransform()));
         if (svgRoot.shouldApplyViewportClip())
             addClipRectRelativeToPaintOffset(LayoutSize(svgRoot.pixelSnappedSize()));
     }
 
-    applyClipIfNeeded(renderer);
+    applyClipIfNeeded(layoutObject);
 
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
-PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, const LayoutSVGModelObject& renderer)
+PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, const LayoutSVGModelObject& layoutObject)
     : m_clipped(next.m_clipped)
     , m_cachedOffsetsEnabled(next.m_cachedOffsetsEnabled)
     , m_forceCheckForPaintInvalidation(next.m_forceCheckForPaintInvalidation)
@@ -99,10 +99,10 @@ PaintInvalidationState::PaintInvalidationState(PaintInvalidationState& next, con
     , m_paintInvalidationContainer(next.m_paintInvalidationContainer)
     , m_pendingDelayedPaintInvalidations(next.pendingDelayedPaintInvalidationTargets())
 {
-    ASSERT(renderer != m_paintInvalidationContainer);
+    ASSERT(layoutObject != m_paintInvalidationContainer);
 
     if (m_cachedOffsetsEnabled)
-        m_svgTransform = adoptPtr(new AffineTransform(next.svgTransform() * renderer.localToParentTransform()));
+        m_svgTransform = adoptPtr(new AffineTransform(next.svgTransform() * layoutObject.localToParentTransform()));
 }
 
 void PaintInvalidationState::addClipRectRelativeToPaintOffset(const LayoutSize& clipSize)
@@ -116,12 +116,12 @@ void PaintInvalidationState::addClipRectRelativeToPaintOffset(const LayoutSize& 
     }
 }
 
-void PaintInvalidationState::applyClipIfNeeded(const LayoutObject& renderer)
+void PaintInvalidationState::applyClipIfNeeded(const LayoutObject& layoutObject)
 {
-    if (!renderer.hasOverflowClip())
+    if (!layoutObject.hasOverflowClip())
         return;
 
-    const LayoutBox& box = toLayoutBox(renderer);
+    const LayoutBox& box = toLayoutBox(layoutObject);
 
     // Do not clip scroll layer contents because the compositor expects the whole layer
     // to be always invalidated in-time.

@@ -68,13 +68,13 @@ void LayoutTextControl::styleDidChange(StyleDifference diff, const ComputedStyle
     Element* innerEditor = innerEditorElement();
     if (!innerEditor)
         return;
-    LayoutBlock* innerEditorRenderer = toLayoutBlock(innerEditor->layoutObject());
-    if (innerEditorRenderer) {
+    LayoutBlock* innerEditorLayoutObject = toLayoutBlock(innerEditor->layoutObject());
+    if (innerEditorLayoutObject) {
         // We may have set the width and the height in the old style in layout().
         // Reset them now to avoid getting a spurious layout hint.
-        innerEditorRenderer->mutableStyleRef().setHeight(Length());
-        innerEditorRenderer->mutableStyleRef().setWidth(Length());
-        innerEditorRenderer->setStyle(createInnerEditorStyle(styleRef()));
+        innerEditorLayoutObject->mutableStyleRef().setHeight(Length());
+        innerEditorLayoutObject->mutableStyleRef().setWidth(Length());
+        innerEditorLayoutObject->setStyle(createInnerEditorStyle(styleRef()));
         innerEditor->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Control));
     }
     textFormControlElement()->updatePlaceholderVisibility(false);
@@ -290,12 +290,12 @@ void LayoutTextControl::addFocusRingRects(Vector<LayoutRect>& rects, const Layou
 LayoutObject* LayoutTextControl::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     HTMLElement* placeholder = toHTMLTextFormControlElement(node())->placeholderElement();
-    LayoutObject* placeholderRenderer = placeholder ? placeholder->layoutObject() : 0;
-    if (!placeholderRenderer)
+    LayoutObject* placeholderLayoutObject = placeholder ? placeholder->layoutObject() : 0;
+    if (!placeholderLayoutObject)
         return 0;
     if (relayoutChildren)
-        layoutScope.setChildNeedsLayout(placeholderRenderer);
-    return placeholderRenderer;
+        layoutScope.setChildNeedsLayout(placeholderLayoutObject);
+    return placeholderLayoutObject;
 }
 
 } // namespace blink

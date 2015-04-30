@@ -56,7 +56,7 @@ public:
     PassOwnPtr<FloatingObject> unsafeClone() const;
 
     Type type() const { return static_cast<Type>(m_type); }
-    LayoutBox* layoutObject() const { return m_renderer; }
+    LayoutBox* layoutObject() const { return m_layoutObject; }
 
     bool isPlaced() const { return m_isPlaced; }
     void setIsPlaced(bool placed = true) { m_isPlaced = placed; }
@@ -96,7 +96,7 @@ private:
     explicit FloatingObject(LayoutBox*);
     FloatingObject(LayoutBox*, Type, const LayoutRect&, bool shouldPaint, bool isDescendant);
 
-    LayoutBox* m_renderer;
+    LayoutBox* m_layoutObject;
     RootInlineBox* m_originatingLine;
     LayoutRect m_frameRect;
     int m_paginationStrut; // FIXME: Is this class size-sensitive? Does this need 32-bits?
@@ -181,7 +181,7 @@ private:
     unsigned m_leftObjectsCount;
     unsigned m_rightObjectsCount;
     bool m_horizontalWritingMode;
-    const LayoutBlockFlow* m_renderer;
+    const LayoutBlockFlow* m_layoutObject;
 
     struct FloatBottomCachedValue {
         FloatBottomCachedValue();

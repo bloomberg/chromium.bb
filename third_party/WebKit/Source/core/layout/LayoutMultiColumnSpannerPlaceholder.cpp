@@ -17,50 +17,50 @@ static void copyMarginProperties(ComputedStyle& placeholderStyle, const Computed
     placeholderStyle.setMarginBottom(spannerStyle.marginBottom());
 }
 
-LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnSpannerPlaceholder::createAnonymous(const ComputedStyle& parentStyle, LayoutBox& rendererInFlowThread)
+LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnSpannerPlaceholder::createAnonymous(const ComputedStyle& parentStyle, LayoutBox& layoutObjectInFlowThread)
 {
-    LayoutMultiColumnSpannerPlaceholder* newSpanner = new LayoutMultiColumnSpannerPlaceholder(&rendererInFlowThread);
-    Document& document = rendererInFlowThread.document();
+    LayoutMultiColumnSpannerPlaceholder* newSpanner = new LayoutMultiColumnSpannerPlaceholder(&layoutObjectInFlowThread);
+    Document& document = layoutObjectInFlowThread.document();
     newSpanner->setDocumentForAnonymous(&document);
     RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK);
-    copyMarginProperties(*newStyle, rendererInFlowThread.styleRef());
+    copyMarginProperties(*newStyle, layoutObjectInFlowThread.styleRef());
     newSpanner->setStyle(newStyle);
     return newSpanner;
 }
 
-LayoutMultiColumnSpannerPlaceholder::LayoutMultiColumnSpannerPlaceholder(LayoutBox* rendererInFlowThread)
+LayoutMultiColumnSpannerPlaceholder::LayoutMultiColumnSpannerPlaceholder(LayoutBox* layoutObjectInFlowThread)
     : LayoutBox(0)
-    , m_rendererInFlowThread(rendererInFlowThread)
+    , m_layoutObjectInFlowThread(layoutObjectInFlowThread)
 {
 }
 
 void LayoutMultiColumnSpannerPlaceholder::updateMarginProperties()
 {
     RefPtr<ComputedStyle> newStyle = ComputedStyle::clone(styleRef());
-    copyMarginProperties(*newStyle, m_rendererInFlowThread->styleRef());
+    copyMarginProperties(*newStyle, m_layoutObjectInFlowThread->styleRef());
     setStyle(newStyle);
 }
 
 void LayoutMultiColumnSpannerPlaceholder::willBeRemovedFromTree()
 {
-    if (m_rendererInFlowThread)
-        m_rendererInFlowThread->clearSpannerPlaceholder();
+    if (m_layoutObjectInFlowThread)
+        m_layoutObjectInFlowThread->clearSpannerPlaceholder();
     LayoutBox::willBeRemovedFromTree();
 }
 
 bool LayoutMultiColumnSpannerPlaceholder::needsPreferredWidthsRecalculation() const
 {
-    return m_rendererInFlowThread->needsPreferredWidthsRecalculation();
+    return m_layoutObjectInFlowThread->needsPreferredWidthsRecalculation();
 }
 
 LayoutUnit LayoutMultiColumnSpannerPlaceholder::minPreferredLogicalWidth() const
 {
-    return m_rendererInFlowThread->minPreferredLogicalWidth();
+    return m_layoutObjectInFlowThread->minPreferredLogicalWidth();
 }
 
 LayoutUnit LayoutMultiColumnSpannerPlaceholder::maxPreferredLogicalWidth() const
 {
-    return m_rendererInFlowThread->maxPreferredLogicalWidth();
+    return m_layoutObjectInFlowThread->maxPreferredLogicalWidth();
 }
 
 void LayoutMultiColumnSpannerPlaceholder::layout()
@@ -68,7 +68,7 @@ void LayoutMultiColumnSpannerPlaceholder::layout()
     ASSERT(needsLayout());
 
     // Lay out the actual column-span:all element.
-    m_rendererInFlowThread->layoutIfNeeded();
+    m_layoutObjectInFlowThread->layoutIfNeeded();
 
     // The spanner has now been laid out, so its height is known. Time to update the placeholder's
     // height as well, so that we take up the correct amount of space in the multicol container.
@@ -77,15 +77,15 @@ void LayoutMultiColumnSpannerPlaceholder::layout()
     // Take the overflow from the spanner, so that it gets
     // propagated to the multicol container and beyond.
     m_overflow.clear();
-    addVisualOverflow(m_rendererInFlowThread->visualOverflowRect());
-    addLayoutOverflow(m_rendererInFlowThread->layoutOverflowRect());
+    addVisualOverflow(m_layoutObjectInFlowThread->visualOverflowRect());
+    addLayoutOverflow(m_layoutObjectInFlowThread->layoutOverflowRect());
 
     clearNeedsLayout();
 }
 
 void LayoutMultiColumnSpannerPlaceholder::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
-    computedValues.m_extent = m_rendererInFlowThread->logicalHeight();
+    computedValues.m_extent = m_layoutObjectInFlowThread->logicalHeight();
     computedValues.m_position = logicalTop;
     computedValues.m_margins.m_before = marginBefore();
     computedValues.m_margins.m_after = marginAfter();
@@ -94,19 +94,19 @@ void LayoutMultiColumnSpannerPlaceholder::computeLogicalHeight(LayoutUnit, Layou
 void LayoutMultiColumnSpannerPlaceholder::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
 {
     PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this, paintInvalidationState.paintInvalidationContainer());
-    m_rendererInFlowThread->invalidateTreeIfNeeded(newPaintInvalidationState);
+    m_layoutObjectInFlowThread->invalidateTreeIfNeeded(newPaintInvalidationState);
     LayoutBox::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
 void LayoutMultiColumnSpannerPlaceholder::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!m_rendererInFlowThread->hasSelfPaintingLayer())
-        m_rendererInFlowThread->paint(paintInfo, paintOffset);
+    if (!m_layoutObjectInFlowThread->hasSelfPaintingLayer())
+        m_layoutObjectInFlowThread->paint(paintInfo, paintOffset);
 }
 
 bool LayoutMultiColumnSpannerPlaceholder::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
-    return !m_rendererInFlowThread->hasSelfPaintingLayer() && m_rendererInFlowThread->nodeAtPoint(result, locationInContainer, accumulatedOffset, action);
+    return !m_layoutObjectInFlowThread->hasSelfPaintingLayer() && m_layoutObjectInFlowThread->nodeAtPoint(result, locationInContainer, accumulatedOffset, action);
 }
 
 }

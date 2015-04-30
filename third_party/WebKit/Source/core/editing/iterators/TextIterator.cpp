@@ -403,7 +403,7 @@ static bool hasVisibleTextNode(LayoutText* renderer)
         return false;
 
     LayoutTextFragment* fragment = toLayoutTextFragment(renderer);
-    if (!fragment->isRemainingTextRenderer())
+    if (!fragment->isRemainingTextLayoutObject())
         return false;
 
     ASSERT(fragment->firstLetterPseudoElement());
@@ -587,7 +587,7 @@ void TextIteratorAlgorithm<Strategy>::handleTextNodeFirstLetter(LayoutTextFragme
 {
     m_handledFirstLetter = true;
 
-    if (!renderer->isRemainingTextRenderer())
+    if (!renderer->isRemainingTextLayoutObject())
         return;
 
     FirstLetterPseudoElement* firstLetterElement = renderer->firstLetterPseudoElement();

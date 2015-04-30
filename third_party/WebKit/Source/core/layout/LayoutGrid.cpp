@@ -320,7 +320,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
     if (!relayoutChildren && simplifiedLayout())
         return;
 
-    // FIXME: Much of this method is boiler plate that matches LayoutBox::layoutBlock and Render*FlexibleBox::layoutBlock.
+    // FIXME: Much of this method is boiler plate that matches LayoutBox::layoutBlock and Layout*FlexibleBox::layoutBlock.
     // It would be nice to refactor some of the duplicate code.
     {
         // LayoutState needs this deliberate scope to pop before updating scroll information (which
@@ -1125,7 +1125,7 @@ void LayoutGrid::dirtyGrid()
     // Even if this could be redundant, it could be seen as a defensive strategy against
     // style changes events happening during the layout phase or even while the painting process
     // is still ongoing.
-    // Forcing a new layout for the Grid render would cancel any ongoing painting and ensure
+    // Forcing a new layout for the Grid layout would cancel any ongoing painting and ensure
     // the grid and its children are correctly laid out according to the new style rules.
     setNeedsLayout(LayoutInvalidationReason::GridChanged);
 

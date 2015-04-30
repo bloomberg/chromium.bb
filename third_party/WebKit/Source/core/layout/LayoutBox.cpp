@@ -87,15 +87,15 @@ static OverrideSizeMap* gExtraBlockOffsetMap = 0;
 static const int autoscrollBeltSize = 20;
 static const unsigned backgroundObscurationTestMaxDepth = 4;
 
-static bool skipBodyBackground(const LayoutBox* bodyElementRenderer)
+static bool skipBodyBackground(const LayoutBox* bodyElementLayoutObject)
 {
-    ASSERT(bodyElementRenderer->isBody());
+    ASSERT(bodyElementLayoutObject->isBody());
     // The <body> only paints its background if the root element has defined a background independent of the body,
-    // or if the <body>'s parent is not the document element's renderer (e.g. inside SVG foreignObject).
-    LayoutObject* documentElementRenderer = bodyElementRenderer->document().documentElement()->layoutObject();
-    return documentElementRenderer
-        && !documentElementRenderer->hasBackground()
-        && (documentElementRenderer == bodyElementRenderer->parent());
+    // or if the <body>'s parent is not the document element's layoutObject (e.g. inside SVG foreignObject).
+    LayoutObject* documentElementLayoutObject = bodyElementLayoutObject->document().documentElement()->layoutObject();
+    return documentElementLayoutObject
+        && !documentElementLayoutObject->hasBackground()
+        && (documentElementLayoutObject == bodyElementLayoutObject->parent());
 }
 
 LayoutBox::LayoutBox(ContainerNode* node)
@@ -186,7 +186,7 @@ void LayoutBox::styleWillChange(StyleDifference diff, const ComputedStyle& newSt
         }
 
         // When a layout hint happens and an object's position style changes, we have to do a layout
-        // to dirty the render tree using the old position value now.
+        // to dirty the layout tree using the old position value now.
         if (diff.needsFullLayout() && parent() && oldStyle->position() != newStyle.position()) {
             markContainerChainForLayout();
             if (oldStyle->position() == StaticPosition)
@@ -789,7 +789,7 @@ void LayoutBox::autoscroll(const IntPoint& positionInRootFrame)
     scrollRectToVisible(LayoutRect(positionInContent, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
-// There are two kinds of renderer that can autoscroll.
+// There are two kinds of layoutObject that can autoscroll.
 bool LayoutBox::canAutoscroll() const
 {
     if (node() && node()->isDocumentNode())
@@ -829,16 +829,16 @@ IntSize LayoutBox::calculateAutoscrollDirection(const IntPoint& pointInRootFrame
     return windowAutoscrollPoint - pointInRootFrame;
 }
 
-LayoutBox* LayoutBox::findAutoscrollable(LayoutObject* renderer)
+LayoutBox* LayoutBox::findAutoscrollable(LayoutObject* layoutObject)
 {
-    while (renderer && !(renderer->isBox() && toLayoutBox(renderer)->canAutoscroll())) {
-        if (!renderer->parent() && renderer->node() == renderer->document() && renderer->document().ownerElement())
-            renderer = renderer->document().ownerElement()->layoutObject();
+    while (layoutObject && !(layoutObject->isBox() && toLayoutBox(layoutObject)->canAutoscroll())) {
+        if (!layoutObject->parent() && layoutObject->node() == layoutObject->document() && layoutObject->document().ownerElement())
+            layoutObject = layoutObject->document().ownerElement()->layoutObject();
         else
-            renderer = renderer->parent();
+            layoutObject = layoutObject->parent();
     }
 
-    return renderer && renderer->isBox() ? toLayoutBox(renderer) : 0;
+    return layoutObject && layoutObject->isBox() ? toLayoutBox(layoutObject) : 0;
 }
 
 static inline int adjustedScrollDelta(int beginningDelta)
@@ -909,7 +909,7 @@ void LayoutBox::scrollByRecursively(const DoubleSize& delta, ScrollOffsetClampin
                 frame->page()->autoscrollController().updateAutoscrollLayoutObject();
         }
     } else if (view()->frameView()) {
-        // If we are here, we were called on a renderer that can be programmatically scrolled, but doesn't
+        // If we are here, we were called on a layoutObject that can be programmatically scrolled, but doesn't
         // have an overflow clip. Which means that it is a document node that can be scrolled.
         // FIXME: Pass in DoubleSize. crbug.com/414283.
         view()->frameView()->scrollBy(flooredIntSize(delta));
@@ -1377,23 +1377,23 @@ void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*)
 
 bool LayoutBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
 {
-    Vector<LayoutObject*> layerRenderers;
+    Vector<LayoutObject*> layerLayoutObjects;
 
     // A background of the body or document must extend to the total visible size of the document. This means the union of the
     // view and document bounds, since it can be the case that the view is larger than the document and vice-versa.
     // http://dev.w3.org/csswg/css-backgrounds/#the-background
     if (drawingBackground && (isDocumentElement() || (isBody() && !document().documentElement()->layoutObject()->hasBackground()))) {
-        layerRenderers.append(document().documentElement()->layoutObject());
-        layerRenderers.append(view());
+        layerLayoutObjects.append(document().documentElement()->layoutObject());
+        layerLayoutObjects.append(view());
         if (view()->frameView())
             view()->frameView()->setNeedsFullPaintInvalidation();
     } else {
-        layerRenderers.append(this);
+        layerLayoutObjects.append(this);
     }
     for (const FillLayer* curLayer = &layers; curLayer; curLayer = curLayer->next()) {
         if (curLayer->image() && image == curLayer->image()->data() && curLayer->image()->canRender(*this, style()->effectiveZoom())) {
-            for (LayoutObject* layerRenderer : layerRenderers)
-                layerRenderer->setShouldDoFullPaintInvalidation();
+            for (LayoutObject* layerLayoutObject : layerLayoutObjects)
+                layerLayoutObject->setShouldDoFullPaintInvalidation();
             return true;
         }
     }
@@ -1406,11 +1406,11 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
 
     // If we are set to do a full paint invalidation that means the LayoutView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
-    // renderers as they'll be covered by the LayoutView.
+    // layoutObjects as they'll be covered by the LayoutView.
     if (!view()->doingFullPaintInvalidation() && !isFullPaintInvalidationReason(reason)) {
         invalidatePaintForOverflowIfNeeded();
 
-        // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
+        // Issue paint invalidations for any scrollbars if there is a scrollable area for this layoutObject.
         if (ScrollableArea* area = scrollableArea()) {
             // In slimming paint mode, we already invalidated the display item clients of the scrollbars
             // during DeprecatedPaintLayerScrollableArea::invalidateScrollbarRect(). However, for now we still need to
@@ -1828,7 +1828,7 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
     EPosition position = styleToUse.position();
 
     // We need to inflate the paint invalidation rect before we use paintInvalidationState,
-    // else we would forget to inflate it for the current renderer. FIXME: If these were
+    // else we would forget to inflate it for the current layoutObject. FIXME: If these were
     // included into the visual overflow for repaint, we wouldn't have this issue.
     inflatePaintInvalidationRectForReflectionAndFilter(rect);
 
@@ -1876,7 +1876,7 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
         topLeft += toLayoutInline(o)->offsetForInFlowPositionedInline(*this);
     } else if (styleToUse.hasInFlowPosition() && layer()) {
         // Apply the relative position offset when invalidating a rectangle.  The layer
-        // is translated, but the render box isn't, so we need to do this to get the
+        // is translated, but the layout box isn't, so we need to do this to get the
         // right dirty rect.  Since this is called from LayoutObject::setStyle, the relative position
         // flag on the LayoutObject has been cleared, so use the one on the style().
         topLeft += layer()->offsetForInFlowPosition();
@@ -1939,17 +1939,17 @@ void LayoutBox::updateLogicalWidth()
     setMarginEnd(computedValues.m_margins.m_end);
 }
 
-static float getMaxWidthListMarker(const LayoutBox* renderer)
+static float getMaxWidthListMarker(const LayoutBox* layoutObject)
 {
 #if ENABLE(ASSERT)
-    ASSERT(renderer);
-    Node* parentNode = renderer->generatingNode();
+    ASSERT(layoutObject);
+    Node* parentNode = layoutObject->generatingNode();
     ASSERT(parentNode);
     ASSERT(isHTMLOListElement(parentNode) || isHTMLUListElement(parentNode));
-    ASSERT(renderer->style()->textAutosizingMultiplier() != 1);
+    ASSERT(layoutObject->style()->textAutosizingMultiplier() != 1);
 #endif
     float maxWidth = 0;
-    for (LayoutObject* child = renderer->slowFirstChild(); child; child = child->nextSibling()) {
+    for (LayoutObject* child = layoutObject->slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isListItem())
             continue;
 
@@ -3857,7 +3857,7 @@ LayoutRect LayoutBox::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit
 
 PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point)
 {
-    // no children...return this render object's element, if there is one, and offset 0
+    // no children...return this layout object's element, if there is one, and offset 0
     LayoutObject* firstChild = slowFirstChild();
     if (!firstChild)
         return createPositionWithAffinity(nonPseudoNode() ? firstPositionInOrBeforeNode(nonPseudoNode()) : Position());
@@ -3875,7 +3875,7 @@ PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point)
 
     // Pass off to the closest child.
     LayoutUnit minDist = LayoutUnit::max();
-    LayoutBox* closestRenderer = 0;
+    LayoutBox* closestLayoutObject = 0;
     LayoutPoint adjustedPoint = point;
     if (isTableRow())
         adjustedPoint.moveBy(location());
@@ -3888,17 +3888,17 @@ PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point)
         if (!layoutObject->isBox())
             continue;
 
-        LayoutBox* renderer = toLayoutBox(layoutObject);
+        LayoutBox* layoutBox = toLayoutBox(layoutObject);
 
-        LayoutUnit top = renderer->borderTop() + renderer->paddingTop() + (isTableRow() ? LayoutUnit() : renderer->location().y());
-        LayoutUnit bottom = top + renderer->contentHeight();
-        LayoutUnit left = renderer->borderLeft() + renderer->paddingLeft() + (isTableRow() ? LayoutUnit() : renderer->location().x());
-        LayoutUnit right = left + renderer->contentWidth();
+        LayoutUnit top = layoutBox->borderTop() + layoutBox->paddingTop() + (isTableRow() ? LayoutUnit() : layoutBox->location().y());
+        LayoutUnit bottom = top + layoutBox->contentHeight();
+        LayoutUnit left = layoutBox->borderLeft() + layoutBox->paddingLeft() + (isTableRow() ? LayoutUnit() : layoutBox->location().x());
+        LayoutUnit right = left + layoutBox->contentWidth();
 
         if (point.x() <= right && point.x() >= left && point.y() <= top && point.y() >= bottom) {
-            if (renderer->isTableRow())
-                return renderer->positionForPoint(point + adjustedPoint - renderer->locationOffset());
-            return renderer->positionForPoint(point - renderer->locationOffset());
+            if (layoutBox->isTableRow())
+                return layoutBox->positionForPoint(point + adjustedPoint - layoutBox->locationOffset());
+            return layoutBox->positionForPoint(point - layoutBox->locationOffset());
         }
 
         // Find the distance from (x, y) to the box.  Split the space around the box into 8 pieces
@@ -3929,13 +3929,13 @@ PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point)
 
         LayoutUnit dist = difference.width() * difference.width() + difference.height() * difference.height();
         if (dist < minDist) {
-            closestRenderer = renderer;
+            closestLayoutObject = layoutBox;
             minDist = dist;
         }
     }
 
-    if (closestRenderer)
-        return closestRenderer->positionForPoint(adjustedPoint - closestRenderer->locationOffset());
+    if (closestLayoutObject)
+        return closestLayoutObject->positionForPoint(adjustedPoint - closestLayoutObject->locationOffset());
     return createPositionWithAffinity(firstPositionInOrBeforeNode(nonPseudoNode()));
 }
 
@@ -3951,7 +3951,7 @@ bool LayoutBox::shrinkToAvoidFloats() const
 
 static bool isReplacedElement(Node* node)
 {
-    // Checkboxes and radioboxes are not isReplaced() nor do they have their own renderer in which to override avoidFloats().
+    // Checkboxes and radioboxes are not isReplaced() nor do they have their own layoutObject in which to override avoidFloats().
     return node && node->isElementNode() && (toElement(node)->isFormControlElement() || isHTMLImageElement(toElement(node)));
 }
 
@@ -4037,7 +4037,7 @@ void LayoutBox::incrementallyInvalidatePaint(const LayoutBoxModelObject& paintIn
     LayoutSize oldBorderBoxSize = computePreviousBorderBoxSize(oldBounds.size());
     LayoutSize newBorderBoxSize = size();
 
-    // If border box size didn't change, RenderObject's incrementallyInvalidatePaint() is good.
+    // If border box size didn't change, LayoutObject's incrementallyInvalidatePaint() is good.
     if (oldBorderBoxSize == newBorderBoxSize)
         return;
 
@@ -4100,7 +4100,7 @@ void LayoutBox::invalidatePaintRectClippedByOldAndNewBounds(const LayoutBoxModel
 void LayoutBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)
 {
     ASSERT(!needsLayout());
-    // If fragmentation height has changed, we need to lay out. No need to enter the renderer if it
+    // If fragmentation height has changed, we need to lay out. No need to enter the layoutObject if it
     // is childless, though.
     if (view()->layoutState()->pageLogicalHeightChanged() && slowFirstChild())
         layoutScope.setChildNeedsLayout(this);

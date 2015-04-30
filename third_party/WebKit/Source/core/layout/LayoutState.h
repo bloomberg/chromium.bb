@@ -80,7 +80,7 @@ public:
 
     ColumnInfo* columnInfo() const { return m_columnInfo; }
 
-    LayoutObject& layoutObject() const { return m_renderer; }
+    LayoutObject& layoutObject() const { return m_layoutObject; }
 
 private:
     friend class ForceHorriblySlowRectMapping;
@@ -105,7 +105,7 @@ private:
     // The offset of the start of the first page in the nearest enclosing pagination model.
     LayoutSize m_pageOffset;
 
-    LayoutObject& m_renderer;
+    LayoutObject& m_layoutObject;
 };
 
 } // namespace blink

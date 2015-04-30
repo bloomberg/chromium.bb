@@ -44,11 +44,11 @@ public:
 
     virtual ~FirstLetterPseudoElement();
 
-    static LayoutObject* firstLetterTextRenderer(const Element&);
+    static LayoutObject* firstLetterTextLayoutObject(const Element&);
     static unsigned firstLetterLength(const String&);
 
-    void setRemainingTextRenderer(LayoutTextFragment*);
-    LayoutTextFragment* remainingTextRenderer() const { return m_remainingTextRenderer; }
+    void setRemainingTextLayoutObject(LayoutTextFragment*);
+    LayoutTextFragment* remainingTextLayoutObject() const { return m_remainingTextLayoutObject; }
 
     void updateTextFragments();
 
@@ -60,10 +60,10 @@ private:
 
     virtual void didRecalcStyle(StyleRecalcChange) override;
 
-    void attachFirstLetterTextRenderers();
+    void attachFirstLetterTextLayoutObjects();
     ComputedStyle* styleForFirstLetter(LayoutObject*);
 
-    LayoutTextFragment* m_remainingTextRenderer;
+    LayoutTextFragment* m_remainingTextLayoutObject;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(FirstLetterPseudoElement, isFirstLetterPseudoElement());

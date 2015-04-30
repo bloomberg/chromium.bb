@@ -31,7 +31,7 @@ class LayoutListItem;
 
 String listMarkerText(EListStyleType, int value);
 
-// Used to render the list item's marker.
+// Used to layout the list item's marker.
 // The LayoutListMarker always has to be a child of a LayoutListItem.
 class LayoutListMarker final : public LayoutBox {
 public:

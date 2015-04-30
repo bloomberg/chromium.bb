@@ -485,7 +485,7 @@ bool LayoutThemeDefault::paintInnerSpinButton(LayoutObject* o, const PaintInfo& 
 {
     WebThemeEngine::ExtraParams extraParams;
     WebCanvas* canvas = i.context->canvas();
-    extraParams.innerSpin.spinUp = (controlStatesForRenderer(o) & SpinUpControlState);
+    extraParams.innerSpin.spinUp = (controlStatesForLayoutObject(o) & SpinUpControlState);
     extraParams.innerSpin.readOnly = isReadOnlyControl(o);
 
     Platform::current()->themeEngine()->paint(canvas, WebThemeEngine::PartInnerSpinButton, getWebThemeState(this, o), WebRect(rect), &extraParams);
@@ -497,11 +497,11 @@ bool LayoutThemeDefault::paintProgressBar(LayoutObject* o, const PaintInfo& i, c
     if (!o->isProgress())
         return true;
 
-    LayoutProgress* renderProgress = toLayoutProgress(o);
-    IntRect valueRect = progressValueRectFor(renderProgress, rect);
+    LayoutProgress* layoutProgress = toLayoutProgress(o);
+    IntRect valueRect = progressValueRectFor(layoutProgress, rect);
 
     WebThemeEngine::ExtraParams extraParams;
-    extraParams.progressBar.determinate = renderProgress->isDeterminate();
+    extraParams.progressBar.determinate = layoutProgress->isDeterminate();
     extraParams.progressBar.valueRectX = valueRect.x();
     extraParams.progressBar.valueRectY = valueRect.y();
     extraParams.progressBar.valueRectWidth = valueRect.width();
@@ -605,12 +605,12 @@ void LayoutThemeDefault::adjustSearchFieldCancelButtonStyle(ComputedStyle& style
     style.setHeight(Length(cancelButtonSize, Fixed));
 }
 
-IntRect LayoutThemeDefault::convertToPaintingRect(LayoutObject* inputRenderer, const LayoutObject* partRenderer, LayoutRect partRect, const IntRect& localOffset) const
+IntRect LayoutThemeDefault::convertToPaintingRect(LayoutObject* inputLayoutObject, const LayoutObject* partLayoutObject, LayoutRect partRect, const IntRect& localOffset) const
 {
-    // Compute an offset between the part renderer and the input renderer.
-    LayoutSize offsetFromInputRenderer = -partRenderer->offsetFromAncestorContainer(inputRenderer);
-    // Move the rect into partRenderer's coords.
-    partRect.move(offsetFromInputRenderer);
+    // Compute an offset between the part layoutObject and the input layoutObject.
+    LayoutSize offsetFromInputLayoutObject = -partLayoutObject->offsetFromAncestorContainer(inputLayoutObject);
+    // Move the rect into partLayoutObject's coords.
+    partRect.move(offsetFromInputLayoutObject);
     // Account for the local drawing offset.
     partRect.move(localOffset.x(), localOffset.y());
 
@@ -619,14 +619,14 @@ IntRect LayoutThemeDefault::convertToPaintingRect(LayoutObject* inputRenderer, c
 
 bool LayoutThemeDefault::paintSearchFieldCancelButton(LayoutObject* cancelButtonObject, const PaintInfo& paintInfo, const IntRect& r)
 {
-    // Get the renderer of <input> element.
+    // Get the layoutObject of <input> element.
     if (!cancelButtonObject->node())
         return false;
     Node* input = cancelButtonObject->node()->shadowHost();
-    LayoutObject* baseRenderer = input ? input->layoutObject() : cancelButtonObject;
-    if (!baseRenderer->isBox())
+    LayoutObject* baseLayoutObject = input ? input->layoutObject() : cancelButtonObject;
+    if (!baseLayoutObject->isBox())
         return false;
-    LayoutBox* inputLayoutBox = toLayoutBox(baseRenderer);
+    LayoutBox* inputLayoutBox = toLayoutBox(baseLayoutObject);
     LayoutRect inputContentBox = inputLayoutBox->contentBoxRect();
 
     // Make sure the scaled button stays square and will fit in its parent's box.
@@ -664,14 +664,14 @@ void LayoutThemeDefault::adjustSearchFieldResultsDecorationStyle(ComputedStyle& 
 
 bool LayoutThemeDefault::paintSearchFieldResultsDecoration(LayoutObject* magnifierObject, const PaintInfo& paintInfo, const IntRect& r)
 {
-    // Get the renderer of <input> element.
+    // Get the layoutObject of <input> element.
     if (!magnifierObject->node())
         return false;
     Node* input = magnifierObject->node()->shadowHost();
-    LayoutObject* baseRenderer = input ? input->layoutObject() : magnifierObject;
-    if (!baseRenderer->isBox())
+    LayoutObject* baseLayoutObject = input ? input->layoutObject() : magnifierObject;
+    if (!baseLayoutObject->isBox())
         return false;
-    LayoutBox* inputLayoutBox = toLayoutBox(baseRenderer);
+    LayoutBox* inputLayoutBox = toLayoutBox(baseLayoutObject);
     LayoutRect inputContentBox = inputLayoutBox->contentBoxRect();
 
     // Make sure the scaled decoration stays square and will fit in its parent's box.
@@ -821,13 +821,13 @@ static const int progressActivityBlocks = 5;
 static const int progressAnimationFrames = 10;
 static const double progressAnimationInterval = 0.125;
 
-IntRect LayoutThemeDefault::determinateProgressValueRectFor(LayoutProgress* renderProgress, const IntRect& rect) const
+IntRect LayoutThemeDefault::determinateProgressValueRectFor(LayoutProgress* layoutProgress, const IntRect& rect) const
 {
-    int dx = rect.width() * renderProgress->position();
+    int dx = rect.width() * layoutProgress->position();
     return IntRect(rect.x(), rect.y(), dx, rect.height());
 }
 
-IntRect LayoutThemeDefault::indeterminateProgressValueRectFor(LayoutProgress* renderProgress, const IntRect& rect) const
+IntRect LayoutThemeDefault::indeterminateProgressValueRectFor(LayoutProgress* layoutProgress, const IntRect& rect) const
 {
 
     int valueWidth = rect.width() / progressActivityBlocks;
@@ -835,7 +835,7 @@ IntRect LayoutThemeDefault::indeterminateProgressValueRectFor(LayoutProgress* re
     if (movableWidth <= 0)
         return IntRect();
 
-    double progress = renderProgress->animationProgress();
+    double progress = layoutProgress->animationProgress();
     if (progress < 0.5)
         return IntRect(rect.x() + progress * 2 * movableWidth, rect.y(), valueWidth, rect.height());
     return IntRect(rect.x() + (1.0 - progress) * 2 * movableWidth, rect.y(), valueWidth, rect.height());
@@ -851,13 +851,13 @@ double LayoutThemeDefault::animationDurationForProgressBar() const
     return progressAnimationInterval * progressAnimationFrames * 2; // "2" for back and forth
 }
 
-IntRect LayoutThemeDefault::progressValueRectFor(LayoutProgress* renderProgress, const IntRect& rect) const
+IntRect LayoutThemeDefault::progressValueRectFor(LayoutProgress* layoutProgress, const IntRect& rect) const
 {
-    return renderProgress->isDeterminate() ? determinateProgressValueRectFor(renderProgress, rect) : indeterminateProgressValueRectFor(renderProgress, rect);
+    return layoutProgress->isDeterminate() ? determinateProgressValueRectFor(layoutProgress, rect) : indeterminateProgressValueRectFor(layoutProgress, rect);
 }
 
-LayoutThemeDefault::DirectionFlippingScope::DirectionFlippingScope(LayoutObject* renderer, const PaintInfo& paintInfo, const IntRect& rect)
-    : m_needsFlipping(!renderer->style()->isLeftToRightDirection())
+LayoutThemeDefault::DirectionFlippingScope::DirectionFlippingScope(LayoutObject* layoutObject, const PaintInfo& paintInfo, const IntRect& rect)
+    : m_needsFlipping(!layoutObject->style()->isLeftToRightDirection())
     , m_paintInfo(paintInfo)
 {
     if (!m_needsFlipping)

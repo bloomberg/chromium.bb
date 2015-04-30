@@ -46,7 +46,7 @@ namespace blink {
 //          0 or 1 LayoutRubyBase - contains the inline objects that make up the ruby base
 //              1-n inline object(s)
 //
-// Note: <rp> elements are defined as having 'display:none' and thus normally are not assigned a renderer.
+// Note: <rp> elements are defined as having 'display:none' and thus normally are not assigned a layoutObject.
 //
 // Generated :before/:after content is shunted into anonymous inline blocks
 

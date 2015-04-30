@@ -80,7 +80,7 @@ public:
 
     LayoutSize offsetForInFlowPosition() const;
 
-    // IE extensions. Used to calculate offsetWidth/Height.  Overridden by inlines (RenderFlow)
+    // IE extensions. Used to calculate offsetWidth/Height.  Overridden by inlines (LayoutFlow)
     // to return the remaining width on a given line (and the height of a single line).
     virtual LayoutUnit offsetLeft() const;
     virtual LayoutUnit offsetTop() const;
@@ -199,8 +199,8 @@ public:
 
     virtual void invalidateTreeIfNeeded(PaintInvalidationState&) override;
 
-    // Indicate that the contents of this renderer need to be repainted. Only has an effect if compositing is being used,
-    void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason) const; // r is in the coordinate space of this render object
+    // Indicate that the contents of this layoutObject need to be repainted. Only has an effect if compositing is being used,
+    void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason) const; // r is in the coordinate space of this layout object
 
     void invalidateDisplayItemClientOnBacking(const DisplayItemClientWrapper&) const;
 
@@ -227,7 +227,7 @@ protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
 public:
-    // These functions are only used internally to manipulate the render tree structure via remove/insert/appendChildNode.
+    // These functions are only used internally to manipulate the layout tree structure via remove/insert/appendChildNode.
     // Since they are typically called only to move objects around within anonymous blocks (which only have layers in
     // the case of column spans), the default for fullRemoveInsert is false rather than true.
     void moveChildTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* child, LayoutObject* beforeChild, bool fullRemoveInsert = false);

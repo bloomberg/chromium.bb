@@ -49,10 +49,10 @@ ImageQualityController* ImageQualityController::imageQualityController()
     return gImageQualityController;
 }
 
-void ImageQualityController::remove(LayoutObject* renderer)
+void ImageQualityController::remove(LayoutObject* layoutObject)
 {
     if (gImageQualityController) {
-        gImageQualityController->objectDestroyed(renderer);
+        gImageQualityController->objectDestroyed(layoutObject);
         if (gImageQualityController->isEmpty()) {
             delete gImageQualityController;
             gImageQualityController = 0;
@@ -60,9 +60,9 @@ void ImageQualityController::remove(LayoutObject* renderer)
     }
 }
 
-bool ImageQualityController::has(LayoutObject* renderer)
+bool ImageQualityController::has(LayoutObject* layoutObject)
 {
-    return gImageQualityController && gImageQualityController->m_objectLayerSizeMap.contains(renderer);
+    return gImageQualityController && gImageQualityController->m_objectLayerSizeMap.contains(layoutObject);
 }
 
 InterpolationQuality ImageQualityController::chooseInterpolationQuality(GraphicsContext* context, LayoutObject* object, Image* image, const void* layer, const LayoutSize& layoutSize)
@@ -138,7 +138,7 @@ void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityCont
 
     for (auto* layoutObject : m_objectLayerSizeMap.keys()) {
         if (LocalFrame* frame = layoutObject->document().frame()) {
-            // If this renderer's containing FrameView is in live resize, punt the timer and hold back for now.
+            // If this layoutObject's containing FrameView is in live resize, punt the timer and hold back for now.
             if (frame->view() && frame->view()->inLiveResize()) {
                 restartTimer();
                 return;

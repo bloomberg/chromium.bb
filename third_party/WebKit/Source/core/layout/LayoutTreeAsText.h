@@ -46,11 +46,11 @@ enum LayoutAsTextBehaviorFlags {
     LayoutAsTextShowAllLayers = 1 << 0, // Dump all layers, not just those that would paint.
     LayoutAsTextShowLayerNesting = 1 << 1, // Annotate the layer lists.
     LayoutAsTextShowCompositedLayers = 1 << 2, // Show which layers are composited.
-    LayoutAsTextShowAddresses = 1 << 3, // Show layer and renderer addresses.
+    LayoutAsTextShowAddresses = 1 << 3, // Show layer and layoutObject addresses.
     LayoutAsTextShowIDAndClass = 1 << 4, // Show id and class attributes
     LayoutAsTextPrintingMode = 1 << 5, // Dump the tree in printing mode.
     LayoutAsTextDontUpdateLayout = 1 << 6, // Don't update layout, to make it safe to call showLayerTree() from the debugger inside layout or painting code.
-    LayoutAsTextShowLayoutState = 1 << 7 // Print the various 'needs layout' bits on renderers.
+    LayoutAsTextShowLayoutState = 1 << 7 // Print the various 'needs layout' bits on layoutObjects.
 };
 typedef unsigned LayoutAsTextBehavior;
 

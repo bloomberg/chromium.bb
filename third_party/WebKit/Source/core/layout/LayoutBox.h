@@ -190,8 +190,8 @@ public:
 
     // FIXME: Currently scrollbars are using int geometry and positioned based on
     // pixelSnappedBorderBoxRect whose size may change when location changes because of
-    // pixel snapping. This function is used to change location of the RenderBox outside
-    // of RenderBox::layout(). Will remove when we use LayoutUnits for scrollbars.
+    // pixel snapping. This function is used to change location of the LayoutBox outside
+    // of LayoutBox::layout(). Will remove when we use LayoutUnits for scrollbars.
     void setLocationAndUpdateOverflowControlsIfNeeded(const LayoutPoint&);
 
     void setSize(const LayoutSize& size)
@@ -291,7 +291,7 @@ public:
     LayoutUnit contentLogicalWidth() const { return style()->isHorizontalWritingMode() ? contentWidth() : contentHeight(); }
     LayoutUnit contentLogicalHeight() const { return style()->isHorizontalWritingMode() ? contentHeight() : contentWidth(); }
 
-    // IE extensions. Used to calculate offsetWidth/Height.  Overridden by inlines (RenderFlow)
+    // IE extensions. Used to calculate offsetWidth/Height.  Overridden by inlines (LayoutFlow)
     // to return the remaining width on a given line (and the height of a single line).
     virtual LayoutUnit offsetWidth() const override { return m_frameRect.width(); }
     virtual LayoutUnit offsetHeight() const override { return m_frameRect.height(); }
@@ -913,8 +913,8 @@ inline void LayoutBox::setInlineBoxWrapper(InlineBox* boxWrapper)
     if (boxWrapper) {
         ASSERT(!inlineBoxWrapper());
         // m_inlineBoxWrapper should already be 0. Deleting it is a safeguard against security issues.
-        // Otherwise, there will two line box wrappers keeping the reference to this renderer, and
-        // only one will be notified when the renderer is getting destroyed. The second line box wrapper
+        // Otherwise, there will two line box wrappers keeping the reference to this layoutObject, and
+        // only one will be notified when the layoutObject is getting destroyed. The second line box wrapper
         // will keep a stale reference.
         if (UNLIKELY(inlineBoxWrapper() != 0))
             deleteLineBoxWrapper();

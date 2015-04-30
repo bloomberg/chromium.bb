@@ -123,7 +123,7 @@ public:
 
     virtual int caretMinOffset() const override;
     virtual int caretMaxOffset() const override;
-    unsigned renderedTextLength() const;
+    unsigned resolvedTextLength() const;
 
     virtual int previousOffset(int current) const override final;
     virtual int previousOffsetForBackwardDeletion(int current) const override final;

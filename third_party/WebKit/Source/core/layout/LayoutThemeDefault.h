@@ -139,7 +139,7 @@ public:
     // possibly can, which is something we don't want to replicate.
     //
     // In short, we either go down the MenuList code path or the MenuListButton
-    // codepath. We never go down both. And in both cases, they render the
+    // codepath. We never go down both. And in both cases, they layout the
     // entire menulist.
     virtual void adjustMenuListStyle(ComputedStyle&, Element*) const override;
     virtual void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
@@ -154,7 +154,7 @@ public:
     virtual int popupInternalPaddingBottom(const ComputedStyle&) const override;
 
     // Provide a way to pass the default font size from the Settings object
-    // to the render theme. FIXME: http://b/1129186 A cleaner way would be
+    // to the layout theme. FIXME: http://b/1129186 A cleaner way would be
     // to remove the default font size from this object and have callers
     // that need the value to get it directly from the appropriate Settings
     // object.
@@ -187,7 +187,7 @@ private:
 
     int menuListInternalPadding(const ComputedStyle&, int paddingType) const;
     bool paintMediaButtonInternal(GraphicsContext*, const IntRect&, Image*);
-    IntRect convertToPaintingRect(LayoutObject* inputRenderer, const LayoutObject* partRenderer, LayoutRect partRect, const IntRect& localOffset) const;
+    IntRect convertToPaintingRect(LayoutObject* inputLayoutObject, const LayoutObject* partLayoutObject, LayoutRect partRect, const IntRect& localOffset) const;
 
     static const RGBA32 defaultTapHighlightColor = 0x2e000000; // 18% black.
     static double m_caretBlinkInterval;

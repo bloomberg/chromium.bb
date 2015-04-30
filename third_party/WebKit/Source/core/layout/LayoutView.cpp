@@ -165,14 +165,14 @@ bool LayoutView::shouldDoFullPaintInvalidationForNextLayout() const
         return true;
 
     if (size().height() != viewHeight()) {
-        if (LayoutObject* backgroundRenderer = this->backgroundRenderer()) {
+        if (LayoutObject* backgroundLayoutObject = this->backgroundLayoutObject()) {
             // When background-attachment is 'fixed', we treat the viewport (instead of the 'root'
             // i.e. html or body) as the background positioning area, and we should full paint invalidation
             // viewport resize if the background image is not composited and needs full paint invalidation on
             // background positioning area resize.
             if (!m_compositor || !m_compositor->needsFixedRootBackgroundLayer(layer())) {
-                if (backgroundRenderer->style()->hasFixedBackgroundImage()
-                    && mustInvalidateFillLayersPaintOnHeightChange(backgroundRenderer->style()->backgroundLayers()))
+                if (backgroundLayoutObject->style()->hasFixedBackgroundImage()
+                    && mustInvalidateFillLayersPaintOnHeightChange(backgroundLayoutObject->style()->backgroundLayers()))
                     return true;
             }
         }
@@ -339,7 +339,7 @@ void LayoutView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidatio
 {
     ASSERT(!needsLayout());
 
-    // We specifically need to issue paint invalidations for the viewRect since other renderers
+    // We specifically need to issue paint invalidations for the viewRect since other layoutObjects
     // short-circuit on full-paint invalidation.
     LayoutRect dirtyRect = viewRect();
     if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
@@ -457,7 +457,7 @@ void LayoutView::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
     quads.append(FloatRect(FloatPoint(), layer()->size()));
 }
 
-static LayoutObject* rendererAfterPosition(LayoutObject* object, unsigned offset)
+static LayoutObject* layoutObjectAfterPosition(LayoutObject* object, unsigned offset)
 {
     if (!object)
         return 0;
@@ -466,7 +466,7 @@ static LayoutObject* rendererAfterPosition(LayoutObject* object, unsigned offset
     return child ? child : object->nextInPreOrderAfterChildren();
 }
 
-static LayoutRect selectionRectForRenderer(const LayoutObject* object)
+static LayoutRect selectionRectForLayoutObject(const LayoutObject* object)
 {
     if (!object->isRooted())
         return LayoutRect();
@@ -487,14 +487,14 @@ IntRect LayoutView::selectionBounds()
 
     commitPendingSelection();
     LayoutObject* os = m_selectionStart;
-    LayoutObject* stop = rendererAfterPosition(m_selectionEnd, m_selectionEndPos);
+    LayoutObject* stop = layoutObjectAfterPosition(m_selectionEnd, m_selectionEndPos);
     while (os && os != stop) {
         if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->selectionState() != SelectionNone) {
             // Blocks are responsible for painting line gaps and margin gaps. They must be examined as well.
-            selRect.unite(selectionRectForRenderer(os));
+            selRect.unite(selectionRectForLayoutObject(os));
             const LayoutBlock* cb = os->containingBlock();
             while (cb && !cb->isLayoutView()) {
-                selRect.unite(selectionRectForRenderer(cb));
+                selRect.unite(selectionRectForLayoutObject(cb));
                 VisitedContainingBlockSet::AddResult addResult = visitedContainingBlocks.add(cb);
                 if (!addResult.isNewEntry)
                     break;
@@ -512,7 +512,7 @@ void LayoutView::invalidatePaintForSelection()
 {
     HashSet<LayoutBlock*> processedBlocks;
 
-    LayoutObject* end = rendererAfterPosition(m_selectionEnd, m_selectionEndPos);
+    LayoutObject* end = layoutObjectAfterPosition(m_selectionEnd, m_selectionEndPos);
     for (LayoutObject* o = m_selectionStart; o && o != end; o = o->nextInPreOrder()) {
         if (!o->canBeSelectionLeaf() && o != m_selectionStart && o != m_selectionEnd)
             continue;
@@ -530,7 +530,7 @@ void LayoutView::invalidatePaintForSelection()
     }
 }
 
-// When exploring the RenderTree looking for the nodes involved in the Selection, sometimes it's
+// When exploring the LayoutTree looking for the nodes involved in the Selection, sometimes it's
 // required to change the traversing direction because the "start" position is below the "end" one.
 static inline LayoutObject* getNextOrPrevLayoutObjectBasedOnDirection(const LayoutObject* o, const LayoutObject* stop, bool& continueExploring, bool& exploringBackwards)
 {
@@ -553,9 +553,9 @@ static inline LayoutObject* getNextOrPrevLayoutObjectBasedOnDirection(const Layo
 
 void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* end, int endPos, SelectionPaintInvalidationMode blockPaintInvalidationMode)
 {
-    // This code makes no assumptions as to if the rendering tree is up to date or not
+    // This code makes no assumptions as to if the layout tree is up to date or not
     // and will not try to update it. Currently clearSelection calls this
-    // (intentionally) without updating the rendering tree as it doesn't care.
+    // (intentionally) without updating the layout tree as it doesn't care.
     // Other callers may want to force recalc style before calling this.
 
     // Make sure both our start and end objects are defined.
@@ -590,7 +590,7 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
     SelectedBlockMap newSelectedBlocks;
 
     LayoutObject* os = m_selectionStart;
-    LayoutObject* stop = rendererAfterPosition(m_selectionEnd, m_selectionEndPos);
+    LayoutObject* stop = layoutObjectAfterPosition(m_selectionEnd, m_selectionEndPos);
     bool exploringBackwards = false;
     bool continueExploring = os && (os != stop);
     while (continueExploring) {
@@ -633,7 +633,7 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
     }
 
     LayoutObject* o = start;
-    stop = rendererAfterPosition(end, endPos);
+    stop = layoutObjectAfterPosition(end, endPos);
 
     while (o && o != stop) {
         if (o != start && o != end && o->canBeSelectionLeaf())
@@ -705,7 +705,7 @@ void LayoutView::setSelection(LayoutObject* start, int startPos, LayoutObject* e
 void LayoutView::clearSelection()
 {
     // For querying Layer::compositingState()
-    // This is correct, since destroying render objects needs to cause eager paint invalidations.
+    // This is correct, since destroying layout objects needs to cause eager paint invalidations.
     DisableCompositingQueryAsserts disabler;
 
     layer()->invalidatePaintForBlockSelectionGaps();
@@ -760,12 +760,12 @@ void LayoutView::commitPendingSelection()
     // because we don't yet notify the FrameSelection of text removal.
     if (startPos.isNull() || endPos.isNull() || selection.visibleStart() == selection.visibleEnd())
         return;
-    LayoutObject* startRenderer = startPos.anchorNode()->layoutObject();
-    LayoutObject* endRenderer = endPos.anchorNode()->layoutObject();
-    if (!startRenderer || !endRenderer)
+    LayoutObject* startLayoutObject = startPos.anchorNode()->layoutObject();
+    LayoutObject* endLayoutObject = endPos.anchorNode()->layoutObject();
+    if (!startLayoutObject || !endLayoutObject)
         return;
-    ASSERT(startRenderer->view() == this && endRenderer->view() == this);
-    setSelection(startRenderer, startPos.deprecatedEditingOffset(), endRenderer, endPos.deprecatedEditingOffset());
+    ASSERT(startLayoutObject->view() == this && endLayoutObject->view() == this);
+    setSelection(startLayoutObject, startPos.deprecatedEditingOffset(), endLayoutObject, endPos.deprecatedEditingOffset());
 }
 
 LayoutObject* LayoutView::selectionStart()
@@ -812,12 +812,12 @@ IntRect LayoutView::unscaledDocumentRect() const
 
 bool LayoutView::rootBackgroundIsEntirelyFixed() const
 {
-    if (LayoutObject* backgroundRenderer = this->backgroundRenderer())
-        return backgroundRenderer->hasEntirelyFixedBackground();
+    if (LayoutObject* backgroundLayoutObject = this->backgroundLayoutObject())
+        return backgroundLayoutObject->hasEntirelyFixedBackground();
     return false;
 }
 
-LayoutObject* LayoutView::backgroundRenderer() const
+LayoutObject* LayoutView::backgroundLayoutObject() const
 {
     if (Element* documentElement = document().documentElement()) {
         if (LayoutObject* rootObject = documentElement->layoutObject())
@@ -826,7 +826,7 @@ LayoutObject* LayoutView::backgroundRenderer() const
     return 0;
 }
 
-LayoutRect LayoutView::backgroundRect(LayoutBox* backgroundRenderer) const
+LayoutRect LayoutView::backgroundRect(LayoutBox* backgroundLayoutObject) const
 {
     if (!hasColumns())
         return LayoutRect(unscaledDocumentRect());
@@ -835,7 +835,7 @@ LayoutRect LayoutView::backgroundRect(LayoutBox* backgroundRenderer) const
     LayoutRect backgroundRect(0, 0, columnInfo->desiredColumnWidth(), columnInfo->columnHeight() * columnInfo->columnCount());
     if (!isHorizontalWritingMode())
         backgroundRect = backgroundRect.transposedRect();
-    backgroundRenderer->flipForWritingMode(backgroundRect);
+    backgroundLayoutObject->flipForWritingMode(backgroundRect);
 
     return backgroundRect;
 }

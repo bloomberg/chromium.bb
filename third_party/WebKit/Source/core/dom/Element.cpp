@@ -2760,7 +2760,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         // PseudoElement's renderer for each style recalc.
         if (!layoutObject() || !pseudoElementRendererIsNeeded(layoutObject()->getCachedPseudoStyle(pseudoId)))
             elementRareData()->setPseudoElement(pseudoId, nullptr);
-    } else if (pseudoId == FIRST_LETTER && element && change >= UpdatePseudoElements && !FirstLetterPseudoElement::firstLetterTextRenderer(*element)) {
+    } else if (pseudoId == FIRST_LETTER && element && change >= UpdatePseudoElements && !FirstLetterPseudoElement::firstLetterTextLayoutObject(*element)) {
         // This can happen if we change to a float, for example. We need to cleanup the
         // first-letter pseudoElement and then fix the text of the original remaining
         // text renderer.
@@ -2776,13 +2776,13 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 // the first letter renderer.
 bool Element::updateFirstLetter(Element* element)
 {
-    LayoutObject* remainingTextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*element);
-    if (!remainingTextRenderer || remainingTextRenderer != toFirstLetterPseudoElement(element)->remainingTextRenderer()) {
+    LayoutObject* remainingTextLayoutObject = FirstLetterPseudoElement::firstLetterTextLayoutObject(*element);
+    if (!remainingTextLayoutObject || remainingTextLayoutObject != toFirstLetterPseudoElement(element)->remainingTextLayoutObject()) {
         // We have to clear out the old first letter here because when it is
         // disposed it will set the original text back on the remaining text
         // renderer. If we dispose after creating the new one we will get
         // incorrect results due to setting the first letter back.
-        if (remainingTextRenderer)
+        if (remainingTextLayoutObject)
             element->reattach();
         else
             elementRareData()->setPseudoElement(FIRST_LETTER, nullptr);
@@ -2816,7 +2816,7 @@ PseudoElement* Element::pseudoElement(PseudoId pseudoId) const
     return hasRareData() ? elementRareData()->pseudoElement(pseudoId) : nullptr;
 }
 
-LayoutObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
+LayoutObject* Element::pseudoElementLayoutObject(PseudoId pseudoId) const
 {
     if (PseudoElement* element = pseudoElement(pseudoId))
         return element->layoutObject();
