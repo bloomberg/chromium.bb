@@ -24,6 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 
@@ -217,6 +218,11 @@ bool SetActiveProfileToGuestIfLocked() {
 }
 
 void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
+  // The BrowsingDataRemover relies on the ResourceDispatcherHost, which is
+  // null in unit tests.
+  if (!content::ResourceDispatcherHost::Get())
+    return;
+
   Profile* profile = g_browser_process->profile_manager()->GetProfileByPath(
       profile_path);
   if (!profile)

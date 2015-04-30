@@ -1396,11 +1396,6 @@ void BrowserOptionsHandler::DeleteProfile(const base::ListValue* args) {
     return;
   }
 
-  // The Profile Data doesn't get wiped until Chrome closes. Since we promised
-  // that the user's data would be removed, do so immediately. The helper is
-  // invoked from other calls but we only promised we'd do the removal here.
-  profiles::RemoveBrowsingDataForProfile(file_path);
-
   helper::DeleteProfileAtPath(file_path, web_ui());
 }
 

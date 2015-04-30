@@ -1215,6 +1215,10 @@ void ProfileManager::FinishDeletingProfile(
       password_store->RemoveLoginsCreatedBetween(base::Time(),
                                                  base::Time::Max());
     }
+
+    // The Profile Data doesn't get wiped until Chrome closes. Since we promised
+    // that the user's data would be removed, do so immediately.
+    profiles::RemoveBrowsingDataForProfile(profile_dir);
   } else {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
