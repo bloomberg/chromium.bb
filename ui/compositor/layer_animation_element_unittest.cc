@@ -20,6 +20,37 @@ namespace ui {
 
 namespace {
 
+// Verify that the TargetValue(TestLayerAnimationDelegate*) constructor
+// correctly assigns values. See www.crbug.com/483134.
+TEST(TargetValueTest, VerifyLayerAnimationDelegateConstructor) {
+  const gfx::Rect kBounds(1, 2, 3, 5);
+  const gfx::Transform kTransform(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f);
+  const float kOpacity = 1.235f;
+  const bool kVisibility = false;
+  const float kBrightness = 2.358f;
+  const float kGrayscale = 2.5813f;
+  const SkColor kColor = SK_ColorCYAN;
+
+  TestLayerAnimationDelegate delegate;
+  delegate.SetBoundsFromAnimation(kBounds);
+  delegate.SetTransformFromAnimation(kTransform);
+  delegate.SetOpacityFromAnimation(kOpacity);
+  delegate.SetVisibilityFromAnimation(kVisibility);
+  delegate.SetBrightnessFromAnimation(kBrightness);
+  delegate.SetGrayscaleFromAnimation(kGrayscale);
+  delegate.SetColorFromAnimation(kColor);
+
+  LayerAnimationElement::TargetValue target_value(&delegate);
+
+  EXPECT_EQ(kBounds, target_value.bounds);
+  EXPECT_EQ(kTransform, target_value.transform);
+  EXPECT_FLOAT_EQ(kOpacity, target_value.opacity);
+  EXPECT_EQ(kVisibility, target_value.visibility);
+  EXPECT_FLOAT_EQ(kBrightness, target_value.brightness);
+  EXPECT_FLOAT_EQ(kGrayscale, target_value.grayscale);
+  EXPECT_EQ(SK_ColorCYAN, target_value.color);
+}
+
 // Check that the transformation element progresses the delegate as expected and
 // that the element can be reused after it completes.
 TEST(LayerAnimationElementTest, TransformElement) {

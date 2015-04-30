@@ -599,13 +599,13 @@ LayerAnimationElement::TargetValue::TargetValue()
 LayerAnimationElement::TargetValue::TargetValue(
     const LayerAnimationDelegate* delegate)
     : bounds(delegate ? delegate->GetBoundsForAnimation() : gfx::Rect()),
-      transform(delegate ?
-                delegate->GetTransformForAnimation() : gfx::Transform()),
+      transform(delegate ? delegate->GetTransformForAnimation()
+                         : gfx::Transform()),
       opacity(delegate ? delegate->GetOpacityForAnimation() : 0.0f),
       visibility(delegate ? delegate->GetVisibilityForAnimation() : false),
       brightness(delegate ? delegate->GetBrightnessForAnimation() : 0.0f),
       grayscale(delegate ? delegate->GetGrayscaleForAnimation() : 0.0f),
-      color(delegate ? delegate->GetColorForAnimation() : 0.0f) {
+      color(delegate ? delegate->GetColorForAnimation() : SK_ColorTRANSPARENT) {
 }
 
 // LayerAnimationElement -------------------------------------------------------
