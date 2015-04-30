@@ -704,7 +704,7 @@ class ManifestVersionedSyncStage(SyncStage):
       try:
         next_manifest = self.GetNextManifest()
       except validation_pool.TreeIsClosedException as e:
-        cros_build_lib.Warning(str(e))
+        logging.warning(str(e))
 
     if not next_manifest:
       logging.info('Found no work to do.')

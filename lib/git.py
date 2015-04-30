@@ -1342,7 +1342,8 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
       break
     except cros_build_lib.RunCommandError:
       if retry < retries:
-        Warning('Error pushing changes trying again (%s/%s)', retry, retries)
+        logging.warning('Error pushing changes trying again (%s/%s)',
+                        retry, retries)
         time.sleep(5 * retry)
         continue
       raise
@@ -1403,7 +1404,7 @@ def GetChromiteTrackingBranch():
       raise
 
   # Not a manifest checkout.
-  Warning(
+  logging.warning(
       "Chromite checkout at %s isn't controlled by repo, nor is it on a "
       'branch (or if it is, the tracking configuration is missing or broken).  '
       'Falling back to assuming the chromite checkout is derived from '

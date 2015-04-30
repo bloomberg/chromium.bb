@@ -10,6 +10,7 @@ import glob
 import re
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 
@@ -48,7 +49,8 @@ class LoopbackPartitions(object):
       self.parts = {}
       part_devs = glob.glob(self.dev + 'p*')
       if not part_devs:
-        Warning('Didn\'t find partition devices nodes for %s.' % self.path)
+        logging.Warning('Didn\'t find partition devices nodes for %s.',
+                        self.path)
         return
 
       for part in part_devs:

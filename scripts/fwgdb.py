@@ -20,9 +20,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 
-# pylint: disable=W0622
-from chromite.lib.cros_build_lib import Error, Warning, Info, Debug
-
 # Need to do this before Servo import
 cros_build_lib.AssertInsideChroot()
 
@@ -61,7 +58,7 @@ class TerminalFreezer(object):
     # SIGSTOP parents before children
     try:
       for p in reversed(self._processes):
-        Info('Sending SIGSTOP to process %s!', p)
+        logging.info('Sending SIGSTOP to process %s!', p)
         time.sleep(0.02)
         os.kill(int(p), signal.SIGSTOP)
     except OSError:
@@ -71,11 +68,11 @@ class TerminalFreezer(object):
   def __exit__(self, _t, _v, _b):
     # ...and wake 'em up again in reverse order
     for p in self._processes:
-      Info('Sending SIGCONT to process %s!', p)
+      logging.info('Sending SIGCONT to process %s!', p)
       try:
         os.kill(int(p), signal.SIGCONT)
       except OSError as e:
-        Error('Error when trying to unfreeze process %s: %s' % (p, str(e)))
+        logging.error('Error when trying to unfreeze process %s: %s', p, e)
 
 
 def ParsePortage(board):
@@ -127,8 +124,8 @@ def ParseArgs(argv):
       opts.port = rc[opts.name].get('port', client.DEFAULT_PORT)
     if not opts.board and 'board' in rc[opts.name]:
       opts.board = rc[opts.name]['board']
-      Warning('Inferring board %s from %s... make sure this is correct!',
-              opts.board, opts.servod_rcfile)
+      logging.warn('Inferring board %s from %s; make sure this is correct!',
+                   opts.board, opts.servod_rcfile)
 
   if not opts.servod_server:
     opts.servod_server = client.DEFAULT_HOST
@@ -156,8 +153,8 @@ def FindSymbols(firmware_dir, board, use):
     path = os.path.join(firmware_dir, basename)
 
   if os.path.exists(path):
-    Warning('Auto-detected symbol file at %s... make sure that this matches '
-            'the image on your DUT!', path)
+    logging.warn('Auto-detected symbol file at %s... make sure that this '
+                 'matches the image on your DUT!', path)
     return path
 
   raise ValueError('Could not find %s symbol file!' % basename)
@@ -176,7 +173,7 @@ def ReadAll(fd, wait=0.03):
       data += os.read(fd, 4096)
   except OSError as e:
     if e.errno == errno.EAGAIN:
-      Debug(data)
+      logging.debug(data)
       return data
     raise
 
@@ -195,9 +192,9 @@ def TestConnection(fd):
     reply = ReadAll(fd)
     if '+$#00' in reply:
       os.write(fd, '+')
-      Info('TestConnection: Could successfully connect to remote end.')
+      logging.info('TestConnection: Could successfully connect to remote end.')
       return True
-  Info('TestConnection: Remote end does not respond.')
+  logging.info('TestConnection: Remote end does not respond.')
   return False
 
 
@@ -209,7 +206,8 @@ def main(argv):
     try:
       opts.tty = servo.get('cpu_uart_pty')
     except (client.ServoClientError, socket.error):
-      Error('Cannot auto-detect TTY file without servod. Use the --tty option.')
+      logging.error('Cannot auto-detect TTY file without servod. Use the --tty '
+                    'option.')
       raise
   with TerminalFreezer(opts.tty):
     fd = os.open(opts.tty, os.O_RDWR | os.O_NONBLOCK)
@@ -222,14 +220,15 @@ def main(argv):
         opts.reboot = 'yes'
 
     if opts.reboot == 'yes':
-      Info('Rebooting DUT...')
+      logging.info('Rebooting DUT...')
       try:
         servo.set('warm_reset', 'on')
         time.sleep(0.1)
         servo.set('warm_reset', 'off')
       except (client.ServoClientError, socket.error):
-        Error('Cannot reboot without a Servo board. You have to boot into '
-              'developer mode and press CTRL+G manually before running fwgdb.')
+        logging.error('Cannot reboot without a Servo board. You have to boot '
+                      'into developer mode and press CTRL+G manually before '
+                      'running fwgdb.')
         raise
 
       # Throw away old data to avoid confusion from messages before the reboot
@@ -241,7 +240,7 @@ def main(argv):
           data += ReadAll(fd)
 
       # Send a CTRL+G
-      Info('Developer mode detected, pressing CTRL+G...')
+      logging.info('Developer mode detected, pressing CTRL+G...')
       os.write(fd, chr(ord('G') & 0x1f))
 
       msg = ('Could not enter GDB mode with CTRL+G! '
@@ -255,7 +254,8 @@ def main(argv):
       if not matches:
         raise ValueError('Could not auto-detect board! Please use -b option.')
       opts.board = matches[-1]
-      Info('Auto-detected board as %s from DUT console output.', opts.board)
+      logging.info('Auto-detected board as %s from DUT console output.',
+                   opts.board)
 
     if not TestConnection(fd):
       raise IOError('Could not connect to remote end! Confirm that your DUT is '
@@ -269,7 +269,7 @@ def main(argv):
     ex_args = sum([['--ex', cmd] for cmd in opts.execute], [])
 
     chost, use = ParsePortage(opts.board)
-    Info('Launching GDB...')
+    logging.info('Launching GDB...')
     cros_build_lib.RunCommand(
         [chost + '-gdb',
          '--symbols', FindSymbols(opts.symbols, opts.board, use),
