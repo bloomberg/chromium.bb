@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,6 +34,8 @@
 # define DEBUG_PRINTF(fmt, ...) ((void) 0)
 #endif
 
+
+static const char kInterpPrefixFlag[] = "--interp-prefix";
 
 static struct nacl_irt_resource_open resource_open;
 static struct nacl_irt_code_data_alloc code_data_alloc;
@@ -433,7 +436,7 @@ enum AuxvIndex {
 };
 
 __attribute__((noreturn))
-static void chainload(const char *program,
+static void chainload(const char *program, const char *interp_prefix,
                       int argc, char **argv, int envc, char **envp) {
   if (nacl_interface_query(NACL_IRT_RESOURCE_OPEN_v0_1, &resource_open,
                            sizeof(resource_open)) != sizeof(resource_open))
@@ -497,6 +500,16 @@ static void chainload(const char *program,
     /*
      * There was a PT_INTERP, so we have a dynamic linker to load.
      */
+
+    char interp_buf[PATH_MAX];
+    if (interp_prefix != NULL) {
+      /*
+       * Apply the command-line-specified prefix to the embedded file name.
+       */
+      snprintf(interp_buf, sizeof(interp_buf), "%s%s", interp_prefix, interp);
+      interp = interp_buf;
+    }
+
     entry = load_elf_file(interp, pagesize, NULL, NULL, NULL, NULL);
 
     DEBUG_PRINTF("XXX loaded PT_INTERP %s, entry %#x\n", interp, entry);
@@ -516,7 +529,15 @@ static void chainload(const char *program,
 }
 
 int main(int argc, char **argv, char **envp) {
+  const char *interp_prefix = NULL;
   const char *program = "main.nexe";
+
+  if (argc > 2 && !strcmp(argv[1], kInterpPrefixFlag)) {
+    interp_prefix = argv[2];
+    argc -= 2;
+    argv += 2;
+  }
+
   if (argc > 1) {
     program = argv[1];
     --argc;
@@ -527,6 +548,6 @@ int main(int argc, char **argv, char **envp) {
   for (char **ep = envp; *ep != NULL; ++ep)
     ++envc;
 
-  chainload(program, argc, argv, envc, envp);
+  chainload(program, interp_prefix, argc, argv, envc, envp);
   /*NOTREACHED*/
 }

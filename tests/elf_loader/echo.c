@@ -17,3 +17,16 @@ int main(int argc, char **argv) {
   }
   return 0;
 }
+
+/*
+ * The linker's -dynamic-linker command-line flag doesn't cause a PT_INTERP
+ * to be generated unless there are some dynamic objects in the link.  But
+ * the magic ".interp" section name does cause a PT_INTERP, so we use that
+ * for these tests.
+ */
+#if defined(INTERPRETER)
+# define STRINGIFY(x) STRINGIFY_1(x)
+# define STRINGIFY_1(x) #x
+static const char pt_interp[] __attribute__((used, section(".interp"))) =
+    STRINGIFY(INTERPRETER);
+#endif

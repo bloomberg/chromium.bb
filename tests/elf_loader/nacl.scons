@@ -3,6 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+import os.path
+
 Import('env')
 
 if env.Bit('bitcode'):
@@ -27,10 +30,11 @@ loader_nexe = nacl_env.File('${STAGING_DIR}/elf_loader.nexe')
 golden_file = env.File('echo.stdout')
 echo_args = open(str(golden_file)).read().splitlines()
 
-def BuildWithFlags(name, source, link_flags, c_flags=[]):
+def BuildWithFlags(name, source, link_flags, c_flags=[], cppdefines=[]):
   prog_env = env.Clone()
   prog_env.Append(LINKFLAGS=link_flags)
   prog_env.Append(CCFLAGS=c_flags)
+  prog_env.Append(CPPDEFINES=cppdefines)
   obj = prog_env.ComponentObject(name + '.o', source)
   prog = prog_env.ComponentProgram(name, obj)
   return prog
@@ -43,8 +47,8 @@ pie_exit_status = 23
 # a dynamic linker.  Test loading that as the main program.
 interp_nexe = BuildWithFlags('interp', 'interp.c',
                              ['-nostdlib', '-shared'],
-                              ['-fPIC', '-fno-asynchronous-unwind-tables',
-                               '-DTEST_EXIT=%d' % dyn_exit_status])
+                             ['-fPIC', '-fno-asynchronous-unwind-tables'],
+                             [['TEST_EXIT', str(dyn_exit_status)]])
 node = env.CommandSelLdrTestNacl('elf_loader_dyn_test.out',
                                  loader_nexe,
                                  sel_ldr_flags=['-a'],
@@ -63,8 +67,8 @@ if not env.Bit('nacl_clang'):
   pie_nexe = BuildWithFlags('pie', 'interp.c',
                             ['-nostdlib', '-pie',
                              '-Wl,-dynamic-linker=%s' % interp_nexe.abspath],
-                            ['-fPIE', '-fno-asynchronous-unwind-tables',
-                             '-DTEST_EXIT=%d' % pie_exit_status])
+                            ['-fPIE', '-fno-asynchronous-unwind-tables'],
+                            [['TEST_EXIT', str(pie_exit_status)]])
   node = env.CommandSelLdrTestNacl('elf_loader_pie_test.out',
                                    loader_nexe,
                                    sel_ldr_flags=['-a'],
@@ -80,22 +84,36 @@ if not env.Bit('nacl_clang'):
 text_start = '-Ttext-segment=0x100000'
 
 # Build a normal executable both with and without a PT_INTERP.
-def EchoTest(name, link_flags=[]):
+def EchoTest(name, interpreter=None, loader_args=[]):
   nexe_name = 'echo_' + name
   test_name = 'elf_loader_' + nexe_name + '_test'
+  cppdefines = []
+  if interpreter is not None:
+    cppdefines.append(['INTERPRETER', interpreter])
   nexe = BuildWithFlags(nexe_name, 'echo.c',
-                        ['-Wl,' + ','.join([text_start] + link_flags)])
+                        ['-Wl,' + text_start],
+                        cppdefines=cppdefines)
   node = env.CommandSelLdrTestNacl(test_name + '.out',
                                    loader_nexe,
                                    sel_ldr_flags=['-a'],
-                                   args=[nexe] + echo_args,
+                                   args=loader_args + [nexe] + echo_args,
                                    stdout_golden=golden_file)
+  if interpreter is not None:
+    env.Depends(node, interp_nexe)
   env.AddNodeToTestSuite(node,
                          ['small_tests', 'sel_ldr_tests'],
                          'run_' + test_name)
 
 EchoTest('plain')
-EchoTest('interp', ['-dynamic-linker=%s' % interp_nexe.abspath])
+
+# Turn a native pathname on Windows into a '/'-separated one.
+interp_abspath = os.path.splitdrive(interp_nexe.abspath)[1].split(os.sep)
+EchoTest('interp', '/'.join(interp_abspath))
+
+interp_name = '/' + interp_abspath[-1]
+interp_prefix = '/'.join(interp_abspath[:-1])
+EchoTest('interp_prefix', interp_name,
+         ['--interp-prefix', interp_prefix])
 
 onlycode_obj = env.ComponentObject('onlycode.o', 'onlycode.S')
 # Newer toolchains include an allocated SHT_NOTE section (.note.NaCl.ABI.*)
