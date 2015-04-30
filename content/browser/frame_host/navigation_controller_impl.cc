@@ -1316,6 +1316,13 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
 
   // Update the current navigation entry in case we're going back/forward.
   if (entry_index != last_committed_entry_index_) {
+    // Make sure that a subframe commit isn't changing the main frame URL.
+    // Otherwise the renderer process may be confused, leading to a URL spoof.
+    if (GetLastCommittedEntry()->GetURL() !=
+        GetEntryAtIndex(entry_index)->GetURL()) {
+      bad_message::ReceivedBadMessage(rfh->GetProcess(),
+                                      bad_message::NC_AUTO_SUBFRAME);
+    }
     last_committed_entry_index_ = entry_index;
     DiscardNonCommittedEntriesInternal();
     return true;

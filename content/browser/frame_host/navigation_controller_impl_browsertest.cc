@@ -1070,4 +1070,104 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
+// Ensure the renderer process does not get confused about the current entry
+// due to subframes and replaced entries.  See https://crbug.com/480201.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       PreventSpoofFromSubframeAndReplace) {
+  // Start at an initial URL.
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  NavigateToURL(shell(), url1);
+
+  // Now go to a page with a real iframe.
+  GURL url2(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_data_iframe.html"));
+  NavigateToURL(shell(), url2);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_NE(nullptr, root->child_at(0));
+
+  {
+    // Navigate in the iframe.
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    GURL frame_url(embedded_test_server()->GetURL(
+        "/navigation_controller/simple_page_2.html"));
+    NavigateFrameToURL(root->child_at(0), frame_url);
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.details().type);
+  }
+
+  {
+    // Go back in the iframe.
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoBack();
+    back_load_observer.Wait();
+  }
+
+  {
+    // Go forward in the iframe.
+    TestNavigationObserver forward_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoForward();
+    forward_load_observer.Wait();
+  }
+
+  GURL url3(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+  {
+    // location.replace() to cause an inert commit.
+    TestNavigationObserver replace_load_observer(shell()->web_contents());
+    std::string script = "location.replace('" + url3.spec() + "')";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    replace_load_observer.Wait();
+  }
+
+  {
+    // Go back to url2.
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoBack();
+    back_load_observer.Wait();
+
+    // Make sure the URL is correct for both the entry and the main frame, and
+    // that the process hasn't been killed for showing a spoof.
+    EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+    EXPECT_EQ(url2, shell()->web_contents()->GetLastCommittedURL());
+    EXPECT_EQ(url2, root->current_url());
+  }
+
+  {
+    // Go back to reset main frame entirely.
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoBack();
+    back_load_observer.Wait();
+    EXPECT_EQ(url1, shell()->web_contents()->GetLastCommittedURL());
+    EXPECT_EQ(url1, root->current_url());
+  }
+
+  {
+    // Go forward.
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoForward();
+    back_load_observer.Wait();
+    EXPECT_EQ(url2, shell()->web_contents()->GetLastCommittedURL());
+    EXPECT_EQ(url2, root->current_url());
+  }
+
+  {
+    // Go forward to the replaced URL.
+    TestNavigationObserver forward_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoForward();
+    forward_load_observer.Wait();
+
+    // Make sure the URL is correct for both the entry and the main frame, and
+    // that the process hasn't been killed for showing a spoof.
+    EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+    EXPECT_EQ(url3, shell()->web_contents()->GetLastCommittedURL());
+    EXPECT_EQ(url3, root->current_url());
+  }
+}
+
 }  // namespace content

@@ -161,14 +161,30 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
                                         const WebHistoryItem& item,
                                         WebHistoryCommitType commit_type,
                                         bool navigation_within_page) {
-  if (commit_type == blink::WebBackForwardCommit) {
-    if (!provisional_entry_)
-      return;
-    current_entry_.reset(provisional_entry_.release());
-  } else if (commit_type == blink::WebStandardCommit) {
-    CreateNewBackForwardItem(frame, item, navigation_within_page);
-  } else if (commit_type == blink::WebInitialCommitInChildFrame) {
-    UpdateForInitialLoadInChildFrame(frame, item);
+  switch (commit_type) {
+    case blink::WebBackForwardCommit:
+      if (!provisional_entry_)
+        return;
+      current_entry_.reset(provisional_entry_.release());
+      break;
+    case blink::WebStandardCommit:
+      CreateNewBackForwardItem(frame, item, navigation_within_page);
+      break;
+    case blink::WebInitialCommitInChildFrame:
+      UpdateForInitialLoadInChildFrame(frame, item);
+      break;
+    case blink::WebHistoryInertCommit:
+      // Even for inert commits (e.g., location.replace, client redirects), make
+      // sure the current entry gets updated, if there is one.
+      if (current_entry_) {
+        if (HistoryEntry::HistoryNode* node =
+                current_entry_->GetHistoryNodeForFrame(frame)) {
+          node->set_item(item);
+        }
+      }
+      break;
+    default:
+      NOTREACHED() << "Invalid commit type: " << commit_type;
   }
 }
 
