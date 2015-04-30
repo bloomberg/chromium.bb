@@ -365,7 +365,8 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
 
   pthread_mutex_unlock(&g_handler_stack_mutex_);
 
-  if (info->si_pid || sig == SIGABRT) {
+  // info->si_code <= 0 iff SI_FROMUSER (SI_FROMKERNEL otherwise).
+  if (info->si_code <= 0 || sig == SIGABRT) {
     // This signal was triggered by somebody sending us the signal with kill().
     // In order to retrigger it, we have to queue a new signal by calling
     // kill() ourselves.  The special case (si_pid == 0 && sig == SIGABRT) is
