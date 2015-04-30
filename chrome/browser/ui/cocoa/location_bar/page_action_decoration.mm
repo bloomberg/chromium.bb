@@ -145,14 +145,18 @@ void PageActionDecoration::SetToolTip(const base::string16& tooltip) {
 }
 
 content::WebContents* PageActionDecoration::GetCurrentWebContents() const {
+  // If we have no owner, that means this class is still being constructed.
   return owner_ ? owner_->GetWebContents() : nullptr;
 }
 
 void PageActionDecoration::UpdateState() {
-  // If we have no owner, that means this class is still being constructed.
-  WebContents* web_contents = owner_ ? owner_->GetWebContents() : NULL;
+  WebContents* web_contents = GetCurrentWebContents();
   if (web_contents) {
     UpdateVisibility(web_contents);
     owner_->RedrawDecoration(this);
   }
+}
+
+bool PageActionDecoration::IsMenuRunning() const {
+  return contextMenuController_.get() && [contextMenuController_ isMenuOpen];
 }

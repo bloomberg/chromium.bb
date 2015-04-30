@@ -42,6 +42,8 @@ static const CGFloat kMinimumDragDistance = 5;
 @interface BrowserActionButton ()
 - (void)endDrag;
 - (void)updateHighlightedState;
+- (MenuController*)contextMenuController;
+- (void)menuDidClose:(NSNotification*)notification;
 @end
 
 // A class to bridge the ToolbarActionViewController and the
@@ -62,6 +64,7 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegate {
   // ToolbarActionViewDelegate:
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
+  bool IsMenuRunning() const override;
   void OnPopupShown(bool by_user) override;
   void OnPopupClosed() override;
 
@@ -80,6 +83,9 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegate {
   // Whether or not a popup is visible from a user action.
   bool user_shown_popup_visible_;
 
+  // Whether or not a context menu is running (or is in the process of opening).
+  bool contextMenuRunning_;
+
   base::WeakPtrFactory<ToolbarActionViewDelegateBridge> weakFactory_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewDelegateBridge);
@@ -93,6 +99,7 @@ ToolbarActionViewDelegateBridge::ToolbarActionViewDelegateBridge(
       controller_(controller),
       viewController_(viewController),
       user_shown_popup_visible_(false),
+      contextMenuRunning_(false),
       weakFactory_(this) {
   viewController_->SetDelegate(this);
 }
@@ -106,6 +113,7 @@ void ToolbarActionViewDelegateBridge::ShowContextMenu() {
   // for an overflowed action.
   DCHECK(![owner_ superview]);
 
+  contextMenuRunning_ = true;
   WrenchMenuController* wrenchMenuController =
       [[[BrowserWindowController browserWindowControllerForWindow:
           [controller_ browser]->window()->GetNativeWindow()]
@@ -114,6 +122,7 @@ void ToolbarActionViewDelegateBridge::ShowContextMenu() {
   // asynchronously, so we have to use a posted task to open the next menu.
   if ([wrenchMenuController isMenuOpen])
     [wrenchMenuController cancel];
+
   [controller_ toolbarActionsBar]->PopOutAction(
       viewController_,
       base::Bind(&ToolbarActionViewDelegateBridge::DoShowContextMenu,
@@ -127,6 +136,11 @@ content::WebContents* ToolbarActionViewDelegateBridge::GetCurrentWebContents()
 
 void ToolbarActionViewDelegateBridge::UpdateState() {
   [owner_ updateState];
+}
+
+bool ToolbarActionViewDelegateBridge::IsMenuRunning() const {
+  MenuController* menuController = [owner_ contextMenuController];
+  return contextMenuRunning_ || (menuController && [menuController isMenuOpen]);
 }
 
 void ToolbarActionViewDelegateBridge::OnPopupShown(bool by_user) {
@@ -152,7 +166,9 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
                                atLocation:menuPoint
                                    inView:owner_];
   [[owner_ cell] setHighlighted:NO];
-  [controller_ toolbarActionsBar]->UndoPopOut();
+  contextMenuRunning_ = false;
+  // When the menu closed, the ViewController should have popped itself back in.
+  DCHECK(![controller_ toolbarActionsBar]->popped_out_action());
 }
 
 @interface BrowserActionCell (Internals)
@@ -349,6 +365,14 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   }
 }
 
+- (MenuController*)contextMenuController {
+  return contextMenuController_.get();
+}
+
+- (void)menuDidClose:(NSNotification*)notification {
+  viewController_->OnContextMenuClosed();
+}
+
 - (void)setFrame:(NSRect)frameRect animate:(BOOL)animate {
   if (!animate) {
     [self setFrame:frameRect];
@@ -466,19 +490,30 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
     return nil;
   }
 
-  if (testContextMenu_)
-    return testContextMenu_;
+  NSMenu* menu = nil;
+  if (testContextMenu_) {
+    menu = testContextMenu_;
+  } else {
+    // Make sure we delete any references to an old menu.
+    contextMenuController_.reset();
 
-  // Make sure we delete any references to an old menu.
-  contextMenuController_.reset();
+    ui::MenuModel* contextMenu = viewController_->GetContextMenu();
+    if (contextMenu) {
+      contextMenuController_.reset(
+          [[MenuController alloc] initWithModel:contextMenu
+                         useWithPopUpButtonCell:NO]);
+      menu = [contextMenuController_ menu];
+    }
+  }
 
-  ui::MenuModel* contextMenu = viewController_->GetContextMenu();
-  if (!contextMenu)
-    return nil;
-  contextMenuController_.reset(
-      [[MenuController alloc] initWithModel:contextMenu
-                     useWithPopUpButtonCell:NO]);
-  return [contextMenuController_ menu];
+  if (menu) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(menuDidClose:)
+               name:NSMenuDidEndTrackingNotification
+             object:menu];
+  }
+  return menu;
 }
 
 #pragma mark -

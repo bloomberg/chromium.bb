@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/drag_controller.h"
@@ -24,6 +25,10 @@ namespace gfx {
 class Image;
 }
 
+namespace views {
+class MenuRunner;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarActionView
 // A wrapper around a ToolbarActionViewController to display a toolbar action
@@ -31,6 +36,7 @@ class Image;
 class ToolbarActionView : public views::MenuButton,
                           public ToolbarActionViewDelegateViews,
                           public views::ButtonListener,
+                          public views::ContextMenuController,
                           public content::NotificationObserver {
  public:
   // Need DragController here because ToolbarActionView could be
@@ -117,13 +123,25 @@ class ToolbarActionView : public views::MenuButton,
 
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
-  bool IsShownInMenu() override;
   views::FocusManager* GetFocusManagerForAccelerator() override;
-  views::Widget* GetParentForContextMenu() override;
   views::View* GetReferenceViewForPopup() override;
-  views::MenuButton* GetContextMenuButton() override;
+  bool IsMenuRunning() const override;
   void OnPopupShown(bool by_user) override;
   void OnPopupClosed() override;
+
+  // views::ContextMenuController:
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
+
+  // Shows the context menu (if one exists) for the toolbar action.
+  void DoShowContextMenu(ui::MenuSourceType source_type);
+
+  // Closes the currently-active menu, if needed. This is the case when there
+  // is an active menu that wouldn't close automatically when a new one is
+  // opened.
+  // Returns true if a menu was closed, false otherwise.
+  bool CloseActiveMenuIfNeeded();
 
   // A lock to keep the MenuButton pressed when a menu or popup is visible.
   scoped_ptr<views::MenuButton::PressedLock> pressed_lock_;
@@ -147,7 +165,16 @@ class ToolbarActionView : public views::MenuButton,
   // A special border to draw when the action wants to run.
   scoped_ptr<views::LabelButtonBorder> wants_to_run_border_;
 
+  // Responsible for running the menu.
+  scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // If non-null, this is the next toolbar action context menu that wants to run
+  // once the current owner (this one) is done.
+  base::Closure followup_context_menu_task_;
+
   content::NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<ToolbarActionView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionView);
 };

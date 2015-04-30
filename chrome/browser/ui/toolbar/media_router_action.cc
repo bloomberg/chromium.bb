@@ -87,11 +87,6 @@ ui::MenuModel* MediaRouterAction::GetContextMenu() {
   return nullptr;
 }
 
-bool MediaRouterAction::IsMenuRunning() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool MediaRouterAction::CanDrag() const {
   NOTIMPLEMENTED();
   return false;

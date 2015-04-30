@@ -74,8 +74,9 @@ class ToolbarActionViewController {
   // Returns the context menu model, or null if no context menu should be shown.
   virtual ui::MenuModel* GetContextMenu() = 0;
 
-  // Returns true if a menu is currently running for the action.
-  virtual bool IsMenuRunning() const = 0;
+  // Called when a context menu has closed so the controller can perform any
+  // necessary cleanup.
+  virtual void OnContextMenuClosed() {}
 
   // Returns true if this view can be dragged. This should only be true for
   // extensions right now, since they are the only ones the model currently

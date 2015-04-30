@@ -61,7 +61,7 @@ class ExtensionActionViewController
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
   ui::MenuModel* GetContextMenu() override;
-  bool IsMenuRunning() const override;
+  void OnContextMenuClosed() override;
   bool CanDrag() const override;
   bool ExecuteAction(bool by_user) override;
   void UpdateState() override;
@@ -76,8 +76,6 @@ class ExtensionActionViewController
   // Closes the active popup (whether it was this action's popup or not).
   void HideActivePopup();
 
-  // Handles cleanup after a menu closes.
-  void OnMenuClosed();
 
   // Populates |command| with the command associated with |extension|, if one
   // exists. Returns true if |command| was populated.

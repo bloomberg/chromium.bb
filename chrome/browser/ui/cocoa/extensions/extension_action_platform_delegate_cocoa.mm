@@ -55,11 +55,6 @@ ExtensionActionPlatformDelegateCocoa::ExtensionActionPlatformDelegateCocoa(
 ExtensionActionPlatformDelegateCocoa::~ExtensionActionPlatformDelegateCocoa() {
 }
 
-bool ExtensionActionPlatformDelegateCocoa::IsMenuRunning() const {
-  // TODO(devlin): Also account for context menus.
-  return controller_->is_showing_popup();
-}
-
 void ExtensionActionPlatformDelegateCocoa::RegisterCommand() {
   // Commands are handled elsewhere for Cocoa.
 }

@@ -21,22 +21,9 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
-#include "ui/views/controls/menu/menu_controller.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 using extensions::ActionInfo;
-
-namespace {
-
-// The ExtensionActionPlatformDelegateViews which is currently showing its
-// context menu, if any.
-// Since only one context menu can be shown (even across browser windows), it's
-// safe to have this be a global singleton.
-ExtensionActionPlatformDelegateViews* context_menu_owner = NULL;
-
-}  // namespace
 
 // static
 scoped_ptr<ExtensionActionPlatformDelegate>
@@ -47,8 +34,7 @@ ExtensionActionPlatformDelegate::Create(
 
 ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
     ExtensionActionViewController* controller)
-    : controller_(controller),
-      weak_factory_(this) {
+    : controller_(controller) {
   content::NotificationSource notification_source = content::Source<Profile>(
       controller_->browser()->profile()->GetOriginalProfile());
   registrar_.Add(this,
@@ -60,13 +46,7 @@ ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
 }
 
 ExtensionActionPlatformDelegateViews::~ExtensionActionPlatformDelegateViews() {
-  if (context_menu_owner == this)
-    context_menu_owner = nullptr;
   UnregisterCommand(false);
-}
-
-bool ExtensionActionPlatformDelegateViews::IsMenuRunning() const {
-  return menu_runner_.get() != NULL;
 }
 
 void ExtensionActionPlatformDelegateViews::RegisterCommand() {
@@ -86,10 +66,6 @@ void ExtensionActionPlatformDelegateViews::RegisterCommand() {
                                controller_->extension()),
         this);
   }
-}
-
-void ExtensionActionPlatformDelegateViews::OnDelegateSet() {
-  GetDelegateViews()->GetAsView()->set_context_menu_controller(this);
 }
 
 void ExtensionActionPlatformDelegateViews::ShowPopup(
@@ -166,79 +142,6 @@ bool ExtensionActionPlatformDelegateViews::CanHandleAccelerators() const {
           true;
 }
 
-void ExtensionActionPlatformDelegateViews::ShowContextMenuForView(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
-  // If there's another active menu that won't be dismissed by opening this one,
-  // then we can't show this one right away, since we can only show one nested
-  // menu at a time.
-  // If the other menu is an extension action's context menu, then we'll run
-  // this one after that one closes. If it's a different type of menu, then we
-  // close it and give up, for want of a better solution. (Luckily, this is
-  // rare).
-  // TODO(devlin): Update this when views code no longer runs menus in a nested
-  // loop.
-  if (context_menu_owner) {
-    context_menu_owner->followup_context_menu_task_ =
-        base::Bind(&ExtensionActionPlatformDelegateViews::DoShowContextMenu,
-                   weak_factory_.GetWeakPtr(),
-                   source_type);
-  }
-  if (CloseActiveMenuIfNeeded())
-    return;
-
-  // Otherwise, no other menu is showing, and we can proceed normally.
-  DoShowContextMenu(source_type);
-}
-
-void ExtensionActionPlatformDelegateViews::DoShowContextMenu(
-    ui::MenuSourceType source_type) {
-  ui::MenuModel* context_menu_model = controller_->GetContextMenu();
-  // It's possible the extension doesn't have a context menu.
-  if (!context_menu_model)
-    return;
-
-  DCHECK(!context_menu_owner);
-  context_menu_owner = this;
-
-  gfx::Point screen_loc;
-  views::View::ConvertPointToScreen(GetDelegateViews()->GetAsView(),
-                                    &screen_loc);
-
-  int run_types =
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU;
-  if (GetDelegateViews()->IsShownInMenu())
-    run_types |= views::MenuRunner::IS_NESTED;
-
-  views::Widget* parent = GetDelegateViews()->GetParentForContextMenu();
-
-  menu_runner_.reset(new views::MenuRunner(context_menu_model, run_types));
-
-  // We shouldn't have both a popup and a context menu showing.
-  controller_->HideActivePopup();
-
-  if (menu_runner_->RunMenuAt(
-          parent,
-          GetDelegateViews()->GetContextMenuButton(),
-          gfx::Rect(screen_loc, GetDelegateViews()->GetAsView()->size()),
-          views::MENU_ANCHOR_TOPLEFT,
-          source_type) == views::MenuRunner::MENU_DELETED) {
-    return;
-  }
-
-  context_menu_owner = NULL;
-  menu_runner_.reset();
-  controller_->OnMenuClosed();
-
-  // If another extension action wants to show its context menu, allow it to.
-  if (!followup_context_menu_task_.is_null()) {
-    base::Closure task = followup_context_menu_task_;
-    followup_context_menu_task_ = base::Closure();
-    task.Run();
-  }
-}
-
 void ExtensionActionPlatformDelegateViews::UnregisterCommand(
     bool only_if_removed) {
   views::FocusManager* focus_manager =
@@ -256,27 +159,6 @@ void ExtensionActionPlatformDelegateViews::UnregisterCommand(
     focus_manager->UnregisterAccelerator(*action_keybinding_, this);
     action_keybinding_.reset();
   }
-}
-
-bool ExtensionActionPlatformDelegateViews::CloseActiveMenuIfNeeded() {
-  // If this view is shown inside another menu, there's a possibility that there
-  // is another context menu showing that we have to close before we can
-  // activate a different menu.
-  if (GetDelegateViews()->IsShownInMenu()) {
-    views::MenuController* menu_controller =
-        views::MenuController::GetActiveInstance();
-    // If this is shown inside a menu, then there should always be an active
-    // menu controller.
-    DCHECK(menu_controller);
-    if (menu_controller->in_nested_run()) {
-      // There is another menu showing. Close the outermost menu (since we are
-      // shown in the same menu, we don't want to close the whole thing).
-      menu_controller->Cancel(views::MenuController::EXIT_OUTERMOST);
-      return true;
-    }
-  }
-
-  return false;
 }
 
 ToolbarActionViewDelegateViews*

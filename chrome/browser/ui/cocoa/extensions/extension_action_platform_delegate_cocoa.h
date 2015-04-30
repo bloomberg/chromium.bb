@@ -23,7 +23,6 @@ class ExtensionActionPlatformDelegateCocoa
 
  private:
   // ExtensionActionPlatformDelegate:
-  bool IsMenuRunning() const override;
   void RegisterCommand() override;
   void OnDelegateSet() override;
   void ShowPopup(

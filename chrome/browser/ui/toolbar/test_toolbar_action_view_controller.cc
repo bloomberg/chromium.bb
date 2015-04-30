@@ -80,10 +80,6 @@ ui::MenuModel* TestToolbarActionViewController::GetContextMenu() {
   return nullptr;
 }
 
-bool TestToolbarActionViewController::IsMenuRunning() const {
-  return false;
-}
-
 bool TestToolbarActionViewController::CanDrag() const {
   return false;
 }

@@ -9,9 +9,7 @@
 
 namespace views {
 class FocusManager;
-class MenuButton;
 class View;
-class Widget;
 }
 
 // The views-specific methods necessary for a ToolbarActionViewDelegate.
@@ -21,21 +19,11 @@ class ToolbarActionViewDelegateViews : public ToolbarActionViewDelegate {
   // different kinds of views, and inheriting View here is a really bad idea.
   virtual views::View* GetAsView() = 0;
 
-  // Returns true if this view is being shown inside a menu.
-  virtual bool IsShownInMenu() = 0;
-
   // Returns the FocusManager to use when registering accelerators.
   virtual views::FocusManager* GetFocusManagerForAccelerator() = 0;
 
-  // Returns the parent for the associated context menu.
-  virtual views::Widget* GetParentForContextMenu() = 0;
-
   // Returns the reference view for the extension action's popup.
   virtual views::View* GetReferenceViewForPopup() = 0;
-
-  // Returns the MenuButton (if any) to use in showing the context menu (this
-  // allows views code to update the pressed state of the button).
-  virtual views::MenuButton* GetContextMenuButton() = 0;
 
  protected:
   ~ToolbarActionViewDelegateViews() override {}

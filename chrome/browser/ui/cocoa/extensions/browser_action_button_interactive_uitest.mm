@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
+#import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
@@ -55,12 +56,16 @@ void MoveMouseToCenter(NSView* view) {
   // Whether or not a menu has been opened. This can be reset so the helper can
   // be used multiple times.
   BOOL menuOpened_;
+
+  // A function to be called to verify state while the menu is open.
+  base::Closure verify_;
 }
 
 // Bare-bones init.
 - (id)init;
 
 @property(nonatomic, assign) BOOL menuOpened;
+@property(nonatomic, assign) base::Closure verify;
 
 @end
 
@@ -68,6 +73,8 @@ void MoveMouseToCenter(NSView* view) {
 
 - (void)menuWillOpen:(NSMenu*)menu {
   menuOpened_ = YES;
+  if (!verify_.is_null())
+    verify_.Run();
   [menu cancelTracking];
 }
 
@@ -77,6 +84,7 @@ void MoveMouseToCenter(NSView* view) {
 }
 
 @synthesize menuOpened = menuOpened_;
+@synthesize verify = verify_;
 
 @end
 
@@ -131,6 +139,16 @@ void ClickOnOverflowedAction(ToolbarController* toolbarController,
   // This should close the wrench menu.
   EXPECT_FALSE([wrenchMenuController isMenuOpen]);
   base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+}
+
+// Verifies that the action is "popped out" of overflow; that is, it is visible
+// on the main bar, and is set as the popped out action on the controlling
+// ToolbarActionsBar.
+void CheckActionIsPoppedOut(BrowserActionsController* actionsController,
+                            BrowserActionButton* actionButton) {
+  EXPECT_EQ([actionsController containerView], [actionButton superview]);
+  EXPECT_EQ([actionButton viewController],
+            [actionsController toolbarActionsBar]->popped_out_action());
 }
 
 // Test that opening a context menu works for both actions on the main bar and
@@ -188,6 +206,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
 
   // Reset the menu helper so we can use it again.
   [menuHelper setMenuOpened:NO];
+  [menuHelper setVerify:base::Bind(
+      CheckActionIsPoppedOut, actionsController, actionButton)];
 
   // Shrink the visible count to be 0. This should hide the action button.
   model->SetVisibleIconCount(0);

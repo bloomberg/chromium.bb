@@ -30,7 +30,6 @@ class MediaRouterAction : public ToolbarActionViewController {
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
   ui::MenuModel* GetContextMenu() override;
-  bool IsMenuRunning() const override;
   bool CanDrag() const override;
   bool ExecuteAction(bool by_user) override;
   void UpdateState() override;

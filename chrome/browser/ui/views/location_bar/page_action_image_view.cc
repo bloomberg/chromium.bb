@@ -17,6 +17,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 // static
 const char PageActionImageView::kViewClassName[] = "PageActionImageView";
@@ -127,26 +128,45 @@ views::View* PageActionImageView::GetAsView() {
   return this;
 }
 
-bool PageActionImageView::IsShownInMenu() {
-  return false;
+bool PageActionImageView::IsMenuRunning() const {
+  return menu_runner_.get() != nullptr;
 }
 
 views::FocusManager* PageActionImageView::GetFocusManagerForAccelerator() {
   return owner_->GetFocusManager();
 }
 
-views::Widget* PageActionImageView::GetParentForContextMenu() {
-  return GetWidget();
-}
-
 views::View* PageActionImageView::GetReferenceViewForPopup() {
   return this;
 }
 
-views::MenuButton* PageActionImageView::GetContextMenuButton() {
-  return NULL;  // No menu button for page action views.
-}
-
 content::WebContents* PageActionImageView::GetCurrentWebContents() const {
   return owner_->GetWebContents();
+}
+
+void PageActionImageView::ShowContextMenuForView(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  ui::MenuModel* context_menu_model = view_controller_->GetContextMenu();
+  // It's possible the action doesn't have a context menu.
+  if (!context_menu_model)
+    return;
+
+  gfx::Point screen_loc;
+  ConvertPointToScreen(this, &screen_loc);
+  int run_types =
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU;
+  menu_runner_.reset(new views::MenuRunner(context_menu_model, run_types));
+
+  if (menu_runner_->RunMenuAt(GetWidget(),
+                              nullptr,  // No menu button for page action views.
+                              gfx::Rect(screen_loc, size()),
+                              views::MENU_ANCHOR_TOPLEFT,
+                              source_type) == views::MenuRunner::MENU_DELETED) {
+    return;
+  }
+
+  menu_runner_.reset();
+  view_controller_->OnContextMenuClosed();
 }

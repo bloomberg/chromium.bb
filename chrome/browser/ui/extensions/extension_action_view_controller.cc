@@ -172,8 +172,10 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
   return context_menu_model_.get();
 }
 
-bool ExtensionActionViewController::IsMenuRunning() const {
-  return platform_delegate_->IsMenuRunning();
+void ExtensionActionViewController::OnContextMenuClosed() {
+  if (toolbar_actions_bar_->popped_out_action() == this &&
+      !is_showing_popup())
+    toolbar_actions_bar_->UndoPopOut();
 }
 
 bool ExtensionActionViewController::CanDrag() const {
@@ -256,12 +258,6 @@ void ExtensionActionViewController::HideActivePopup() {
     // popups.
     HidePopup();
   }
-}
-
-void ExtensionActionViewController::OnMenuClosed() {
-  if (toolbar_actions_bar_->popped_out_action() == this &&
-      !is_showing_popup())
-    toolbar_actions_bar_->UndoPopOut();
 }
 
 bool ExtensionActionViewController::GetExtensionCommand(
@@ -356,7 +352,7 @@ void ExtensionActionViewController::OnPopupClosed() {
   if (toolbar_actions_bar_) {
     toolbar_actions_bar_->SetPopupOwner(nullptr);
     if (toolbar_actions_bar_->popped_out_action() == this &&
-        !platform_delegate_->IsMenuRunning())
+        !view_delegate_->IsMenuRunning())
       toolbar_actions_bar_->UndoPopOut();
   }
   view_delegate_->OnPopupClosed();

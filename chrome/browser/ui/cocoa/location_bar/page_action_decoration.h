@@ -68,6 +68,7 @@ class PageActionDecoration : public ImageDecoration,
 
   // Overridden from ToolbarActionViewDelegate:
   content::WebContents* GetCurrentWebContents() const override;
+  bool IsMenuRunning() const override;
   void UpdateState() override;
 
   // The location bar view that owns us.
