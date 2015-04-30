@@ -1622,7 +1622,9 @@ bool paintBorderFastPath(GraphicsContext* context, const BoxBorderInfo& info,
         return true;
     }
 
-    if (firstEdge.borderStyle() == SOLID && !outer.isRounded()) {
+    // This is faster than the normal complex border path only if it avoids creating transparency
+    // layers (when the border is translucent).
+    if (firstEdge.borderStyle() == SOLID && !outer.isRounded() && info.hasAlpha) {
         ASSERT(info.visibleEdgeSet != AllBorderEdges);
         // solid, rectangular border => one drawPath()
         Path path;
