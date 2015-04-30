@@ -54,6 +54,11 @@ void EmbeddedObjectPainter::paintReplaced(const PaintInfo& paintInfo, const Layo
     context->clip(contentRect);
 
     Font font = replacementTextFont();
+    // TODO(trchen): Speculative fix for crbug.com/481880
+    // With last resort font, how could this ever be null?
+    ASSERT(font.primaryFont());
+    if (!font.primaryFont())
+        return;
     TextRun textRun(m_layoutEmbeddedObject.unavailablePluginReplacementText());
     FloatSize textGeometry(font.width(textRun), font.fontMetrics().height());
 
