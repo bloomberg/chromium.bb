@@ -48,11 +48,6 @@ enum {
 };
 typedef NSUInteger NSEventPhase;
 
-@interface NSEvent (LionSDKDeclarations)
-- (NSEventPhase)phase;
-- (NSEventPhase)momentumPhase;
-@end
-
 #endif  // __MAC_OS_X_VERSION_MAX_ALLOWED == 1060
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED < 1080
@@ -67,6 +62,17 @@ enum {
 };
 
 #endif  // __MAC_OS_X_VERSION_MAX_ALLOWED < 1080
+
+// Redeclare methods only available on OSX 10.7+ to suppress -Wpartial-availability warnings.
+
+#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
+
+@interface NSEvent (LionSDKDeclarations)
+- (NSEventPhase)phase;
+- (NSEventPhase)momentumPhase;
+@end
+
+#endif  // !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
 
 namespace blink {
 
