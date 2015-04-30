@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_database_data.h"
 
 class GURL;
@@ -18,7 +20,9 @@ namespace content {
 // Represents the storage context for persistent Web Notifications, specific to
 // the storage partition owning the instance. All methods defined in this
 // interface may only be used on the IO thread.
-class PlatformNotificationContext {
+class PlatformNotificationContext
+    : public base::RefCountedThreadSafe<PlatformNotificationContext,
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   using ReadResultCallback =
       base::Callback<void(bool /* success */,
@@ -65,6 +69,9 @@ class PlatformNotificationContext {
                                       const DeleteResultCallback& callback) = 0;
 
  protected:
+  friend class base::DeleteHelper<PlatformNotificationContext>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+
   virtual ~PlatformNotificationContext() {}
 };
 

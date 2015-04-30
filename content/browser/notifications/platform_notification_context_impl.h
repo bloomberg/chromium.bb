@@ -34,9 +34,7 @@ class ServiceWorkerContextWrapper;
 // otherwise specified.
 class CONTENT_EXPORT PlatformNotificationContextImpl
     : NON_EXPORTED_BASE(public PlatformNotificationContext),
-      NON_EXPORTED_BASE(public ServiceWorkerContextObserver),
-      public base::RefCountedThreadSafe<PlatformNotificationContextImpl,
-                                        BrowserThread::DeleteOnUIThread> {
+      NON_EXPORTED_BASE(public ServiceWorkerContextObserver) {
  public:
   // Constructs a new platform notification context. If |path| is non-empty, the
   // database will be initialized in the "Platform Notifications" subdirectory
@@ -73,10 +71,6 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void OnStorageWiped() override;
 
  private:
-  friend class base::DeleteHelper<PlatformNotificationContextImpl>;
-  friend class base::RefCountedThreadSafe<PlatformNotificationContextImpl,
-                                        BrowserThread::DeleteOnUIThread>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class PlatformNotificationContextTest;
 
   ~PlatformNotificationContextImpl() override;

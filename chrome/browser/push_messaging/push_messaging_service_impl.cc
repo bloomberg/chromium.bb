@@ -37,6 +37,8 @@
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_database_data.h"
+#include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -56,6 +58,8 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
+
+using content::BrowserThread;
 
 namespace {
 const int kMaxRegistrations = 1000000;
@@ -278,22 +282,59 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
 }
 
 void PushMessagingServiceImpl::RequireUserVisibleUX(
-    const GURL& requesting_origin, int64 service_worker_registration_id,
+    const GURL& requesting_origin, int64_t service_worker_registration_id,
     const base::Closure& message_handled_closure) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(ENABLE_NOTIFICATIONS)
   // TODO(johnme): Relax this heuristic slightly.
-  PlatformNotificationServiceImpl* notification_service =
-      PlatformNotificationServiceImpl::GetInstance();
-  // Can't use g_browser_process->notification_ui_manager(), since the test uses
-  // PlatformNotificationServiceImpl::SetNotificationUIManagerForTesting.
-  // TODO(peter): Remove the need to use both APIs here once Notification.get()
-  // is supported.
-  int notification_count = notification_service->GetNotificationUIManager()->
-      GetAllIdsByProfileAndSourceOrigin(profile_, requesting_origin).size();
+  scoped_refptr<content::PlatformNotificationContext> notification_context =
+      content::BrowserContext::GetStoragePartitionForSite(
+          profile_, requesting_origin)->GetPlatformNotificationContext();
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &content::PlatformNotificationContext
+                  ::ReadAllNotificationDataForServiceWorkerRegistration,
+          notification_context,
+          requesting_origin, service_worker_registration_id,
+          base::Bind(
+              &PushMessagingServiceImpl::DidGetNotificationsFromDatabaseIOProxy,
+              weak_factory_.GetWeakPtr(),
+              requesting_origin, service_worker_registration_id,
+              message_handled_closure)));
+#else
+  message_handled_closure.Run();
+#endif  // defined(ENABLE_NOTIFICATIONS)
+}
+
+// static
+void PushMessagingServiceImpl::DidGetNotificationsFromDatabaseIOProxy(
+    const base::WeakPtr<PushMessagingServiceImpl>& ui_weak_ptr,
+    const GURL& requesting_origin,
+    int64_t service_worker_registration_id,
+    const base::Closure& message_handled_closure,
+    bool success,
+    const std::vector<content::NotificationDatabaseData>& data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PushMessagingServiceImpl::DidGetNotificationsFromDatabase,
+                 ui_weak_ptr,
+                 requesting_origin, service_worker_registration_id,
+                 message_handled_closure,
+                 success, data));
+}
+
+void PushMessagingServiceImpl::DidGetNotificationsFromDatabase(
+    const GURL& requesting_origin, int64_t service_worker_registration_id,
+    const base::Closure& message_handled_closure,
+    bool success, const std::vector<content::NotificationDatabaseData>& data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(johnme): Hiding an existing notification should also count as a useful
   // user-visible action done in response to a push message - but make sure that
   // sending two messages in rapid succession which show then hide a
   // notification doesn't count.
+  int notification_count = success ? data.size() : 0;
   bool notification_shown = notification_count > 0;
 
   bool notification_needed = true;
@@ -347,7 +388,7 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
 
     GetNotificationsShownByLastFewPushes(
         service_worker_context, service_worker_registration_id,
-        base::Bind(&PushMessagingServiceImpl::DidGetNotificationsShown,
+        base::Bind(&PushMessagingServiceImpl::DidGetNotificationsShownAndNeeded,
                    weak_factory_.GetWeakPtr(),
                    requesting_origin, service_worker_registration_id,
                    notification_shown, notification_needed,
@@ -357,19 +398,17 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
         content::PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_AND_NOT_SHOWN);
     message_handled_closure.Run();
   }
-#else
-  message_handled_closure.Run();
-#endif  // defined(ENABLE_NOTIFICATIONS)
 }
 
 static void IgnoreResult(bool unused) {
 }
 
-void PushMessagingServiceImpl::DidGetNotificationsShown(
-    const GURL& requesting_origin, int64 service_worker_registration_id,
+void PushMessagingServiceImpl::DidGetNotificationsShownAndNeeded(
+    const GURL& requesting_origin, int64_t service_worker_registration_id,
     bool notification_shown, bool notification_needed,
     const base::Closure& message_handled_closure,
     const std::string& data, bool success, bool not_found) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::ServiceWorkerContext* service_worker_context =
       content::BrowserContext::GetStoragePartitionForSite(
           profile_, requesting_origin)->GetServiceWorkerContext();
@@ -429,13 +468,62 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
   notification_data.body =
       l10n_util::GetStringUTF16(IDS_PUSH_MESSAGING_GENERIC_NOTIFICATION_BODY);
   notification_data.tag = kPushMessagingForcedNotificationTag;
-  notification_data.icon = GURL();  // TODO(johnme): Better icon?
+  notification_data.icon = GURL();
   notification_data.silent = true;
-  PlatformNotificationServiceImpl* notification_service =
-      PlatformNotificationServiceImpl::GetInstance();
-  notification_service->DisplayPersistentNotification(
+
+  content::NotificationDatabaseData database_data;
+  database_data.origin = requesting_origin;
+  database_data.service_worker_registration_id =
+      service_worker_registration_id;
+  database_data.notification_data = notification_data;
+
+  scoped_refptr<content::PlatformNotificationContext> notification_context =
+    content::BrowserContext::GetStoragePartitionForSite(
+        profile_, requesting_origin)->GetPlatformNotificationContext();
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &content::PlatformNotificationContext::WriteNotificationData,
+          notification_context,
+          requesting_origin, database_data,
+          base::Bind(&PushMessagingServiceImpl::DidWriteNotificationDataIOProxy,
+                     weak_factory_.GetWeakPtr(),
+                     requesting_origin, notification_data,
+                     message_handled_closure)));
+}
+
+// static
+void PushMessagingServiceImpl::DidWriteNotificationDataIOProxy(
+    const base::WeakPtr<PushMessagingServiceImpl>& ui_weak_ptr,
+    const GURL& requesting_origin,
+    const content::PlatformNotificationData& notification_data,
+    const base::Closure& message_handled_closure,
+    bool success,
+    int64_t persistent_notification_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PushMessagingServiceImpl::DidWriteNotificationData,
+                 ui_weak_ptr,
+                 requesting_origin, notification_data, message_handled_closure,
+                 success, persistent_notification_id));
+}
+
+void PushMessagingServiceImpl::DidWriteNotificationData(
+    const GURL& requesting_origin,
+    const content::PlatformNotificationData& notification_data,
+    const base::Closure& message_handled_closure,
+    bool success,
+    int64_t persistent_notification_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!success) {
+    DLOG(ERROR) << "Writing forced notification to database should not fail";
+    message_handled_closure.Run();
+    return;
+  }
+  PlatformNotificationServiceImpl::GetInstance()->DisplayPersistentNotification(
       profile_,
-      service_worker_registration_id,
+      persistent_notification_id,
       requesting_origin,
       SkBitmap() /* icon */,
       notification_data);

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_IMPL_H_
 #define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_IMPL_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -20,13 +22,18 @@
 class Profile;
 class PushMessagingApplicationId;
 
-namespace user_prefs {
-class PrefRegistrySyncable;
+namespace content {
+struct NotificationDatabaseData;
+struct PlatformNotificationData;
 }
 
 namespace gcm {
 class GCMDriver;
 class GCMProfileService;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 class PushMessagingServiceImpl : public content::PushMessagingService,
@@ -113,17 +120,48 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // happened in the background. When they forget to do so, display a default
   // notification on their behalf.
   void RequireUserVisibleUX(const GURL& requesting_origin,
-                            int64 service_worker_registration_id,
+                            int64_t service_worker_registration_id,
                             const base::Closure& message_handled_closure);
-  void DidGetNotificationsShown(
+
+  static void DidGetNotificationsFromDatabaseIOProxy(
+      const base::WeakPtr<PushMessagingServiceImpl>& ui_weak_ptr,
       const GURL& requesting_origin,
-      int64 service_worker_registration_id,
+      int64_t service_worker_registration_id,
+      const base::Closure& message_handled_closure,
+      bool success,
+      const std::vector<content::NotificationDatabaseData>& data);
+
+  void DidGetNotificationsFromDatabase(
+      const GURL& requesting_origin,
+      int64_t service_worker_registration_id,
+      const base::Closure& message_handled_closure,
+      bool success,
+      const std::vector<content::NotificationDatabaseData>& data);
+
+  void DidGetNotificationsShownAndNeeded(
+      const GURL& requesting_origin,
+      int64_t service_worker_registration_id,
       bool notification_shown,
       bool notification_needed,
       const base::Closure& message_handled_closure,
       const std::string& data,
       bool success,
       bool not_found);
+
+  static void DidWriteNotificationDataIOProxy(
+      const base::WeakPtr<PushMessagingServiceImpl>& ui_weak_ptr,
+      const GURL& requesting_origin,
+      const content::PlatformNotificationData& notification_data,
+      const base::Closure& message_handled_closure,
+      bool success,
+      int64_t persistent_notification_id);
+
+  void DidWriteNotificationData(
+      const GURL& requesting_origin,
+      const content::PlatformNotificationData& notification_data,
+      const base::Closure& message_handled_closure,
+      bool success,
+      int64_t persistent_notification_id);
 
   // Register methods ----------------------------------------------------------
 
