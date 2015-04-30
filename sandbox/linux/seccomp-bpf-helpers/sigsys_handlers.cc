@@ -188,12 +188,9 @@ intptr_t SIGSYSKillFailure(const struct arch_seccomp_data& args,
    static const char kSeccompKillError[] =
       __FILE__":**CRASHING**:" SECCOMP_MESSAGE_KILL_CONTENT "\n";
   WriteToStdErr(kSeccompKillError, sizeof(kSeccompKillError) - 1);
-  // Make "request" volatile so that we can see it on the stack in a minidump.
-  volatile uint64_t pid = args.args[0];
-  volatile char* addr = reinterpret_cast<volatile char*>(pid & 0xFFF);
-  *addr = '\0';
-  // Hit the NULL page if this fails.
-  addr = reinterpret_cast<volatile char*>(pid & 0xFFF);
+  // Make "pid" volatile so that we can see it on the stack in a minidump.
+  volatile uint64_t my_pid = sys_getpid();
+  volatile char* addr = reinterpret_cast<volatile char*>(my_pid & 0xFFF);
   *addr = '\0';
   for (;;)
     _exit(1);
