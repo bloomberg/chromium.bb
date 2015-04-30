@@ -81,7 +81,6 @@ const char* kPrefsToObserve[] = {
   prefs::kWebKitMinimumFontSize,
   prefs::kWebKitMinimumLogicalFontSize,
   prefs::kWebKitPluginsEnabled,
-  prefs::kWebKitShrinksStandaloneImagesToFit,
   prefs::kWebkitTabsToLinks,
   prefs::kWebKitTextAreasAreResizable,
   prefs::kWebKitUsesUniversalDetector,
@@ -531,8 +530,6 @@ void PrefsTabHelper::RegisterProfilePrefs(
                                 pref_defaults.plugins_enabled);
   registry->RegisterBooleanPref(prefs::kWebKitDomPasteEnabled,
                                 pref_defaults.dom_paste_enabled);
-  registry->RegisterBooleanPref(prefs::kWebKitShrinksStandaloneImagesToFit,
-                                pref_defaults.shrinks_standalone_images_to_fit);
   registry->RegisterBooleanPref(prefs::kWebKitTextAreasAreResizable,
                                 pref_defaults.text_areas_are_resizable);
   registry->RegisterBooleanPref(prefs::kWebKitJavaEnabled,

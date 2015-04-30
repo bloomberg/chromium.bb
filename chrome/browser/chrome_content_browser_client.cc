@@ -1999,8 +1999,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       prefs->GetBoolean(prefs::kWebKitJavascriptCanOpenWindowsAutomatically);
   web_prefs->dom_paste_enabled =
       prefs->GetBoolean(prefs::kWebKitDomPasteEnabled);
-  web_prefs->shrinks_standalone_images_to_fit =
-      prefs->GetBoolean(prefs::kWebKitShrinksStandaloneImagesToFit);
   web_prefs->tabs_to_links = prefs->GetBoolean(prefs::kWebkitTabsToLinks);
 
   if (!prefs->GetBoolean(prefs::kWebKitJavascriptEnabled))

@@ -932,8 +932,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setImagesEnabled(prefs.images_enabled);
   settings->setPluginsEnabled(prefs.plugins_enabled);
   settings->setDOMPasteAllowed(prefs.dom_paste_enabled);
-  settings->setShrinksStandaloneImagesToFit(
-      prefs.shrinks_standalone_images_to_fit);
   settings->setUsesEncodingDetector(prefs.uses_universal_detector);
   settings->setTextAreasAreResizable(prefs.text_areas_are_resizable);
   settings->setAllowScriptsToCloseWindows(prefs.allow_scripts_to_close_windows);
@@ -1117,7 +1115,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
           : false;
   settings->setMainFrameClipsContent(!record_full_layer);
 
-  settings->setShrinksStandaloneImagesToFit(false);
   settings->setShrinksViewportContentToFit(true);
   settings->setUseMobileViewportStyle(true);
 #endif
