@@ -158,9 +158,8 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     static const UChar* yiFonts[] = {L"Microsoft Yi Balti", L"Nuosu SIL", L"Code2000", 0};
     // http://www.bethmardutho.org/support/meltho/download/index.php
     static const UChar* syriacFonts[] = {L"Estrangelo Edessa", L"Estrangelo Nisibin", L"Code2000", 0};
-    // No Myanmar/Burmese font is shipped with Windows, yet. Try a few
-    // widely available/used ones that supports Unicode 5.1 or later.
-    static const UChar* myanmarFonts[] = {L"Padauk", L"Parabaik", L"Myanmar3", L"Code2000", 0};
+    static const UChar* myanmarFonts[] = {L"Myanmar Text", L"Padauk", L"Parabaik", L"Myanmar3", L"Code2000", 0};
+    static const UChar* gothicFonts[] = {L"Segoe UI Symbol", 0};
 
     static const ScriptToFontFamilies scriptToFontFamilies[] = {
         {USCRIPT_MALAYALAM, malayalamFonts},
@@ -173,6 +172,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
         {USCRIPT_YI, yiFonts},
         {USCRIPT_SYRIAC, syriacFonts},
         {USCRIPT_MYANMAR, myanmarFonts},
+        {USCRIPT_GOTHIC, gothicFonts},
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(fontMap); ++i)
