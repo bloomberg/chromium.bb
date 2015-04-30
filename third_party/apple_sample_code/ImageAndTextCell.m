@@ -45,9 +45,13 @@
 
  */
 
-
 #import "ImageAndTextCell.h"
 #import <AppKit/NSCell.h>
+
+#if !defined(MAC_OS_X_VERSION_10_10) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_10
+typedef NSUInteger NSCellHitResult;
+#endif
 
 @implementation ImageAndTextCell
 
@@ -144,7 +148,7 @@
   return cellSize;
 }
 
-- (NSUInteger)hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView {
+- (NSCellHitResult)hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView {
   NSPoint point = [controlView convertPoint:[event locationInWindow] fromView:nil];
   // If we have an image, we need to see if the user clicked on the image portion.
   if (image != nil) {
