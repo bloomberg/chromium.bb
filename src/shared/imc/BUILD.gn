@@ -23,6 +23,8 @@ static_library("imc") {
       "linux/nacl_imc.cc",
       "posix/nacl_imc_posix.cc",
     ]
+
+    libs = [ "rt" ]
   }
 
   if (current_os == "win") {
