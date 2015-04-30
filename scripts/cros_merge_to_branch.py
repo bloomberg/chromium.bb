@@ -102,16 +102,17 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
   new_sha1 = git.GetGitRepoRevision(work_dir)
   reviewers = set()
 
+  # Filter out tags that are added by gerrit and chromite.
+  filter_re = re.compile(
+      r'((Commit|Trybot)-Ready|Commit-Queue|(Reviewed|Submitted|Tested)-by): ')
+
   # Rewrite the commit message all the time.  Latest gerrit doesn't seem
   # to like it when you use the same ChangeId on different branches.
   msg = []
   for line in patch.commit_message.splitlines():
     if line.startswith('Reviewed-on: '):
       line = 'Previous-' + line
-    elif line.startswith('Commit-Ready: ') or \
-         line.startswith('Commit-Queue: ') or \
-         line.startswith('Reviewed-by: ') or \
-         line.startswith('Tested-by: '):
+    elif filter_re.match(line):
       # If the tag is malformed, or the person lacks a name,
       # then that's just too bad -- throw it away.
       ele = re.split(r'[<>@]+', line)
