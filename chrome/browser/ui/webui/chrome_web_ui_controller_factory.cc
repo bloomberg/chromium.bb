@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/about_ui.h"
-#include "chrome/browser/ui/webui/app_launcher_page_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
@@ -132,6 +131,10 @@
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_ui.h"
+#endif
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/app_launcher_page_ui.h"
 #endif
 
 #if defined(USE_AURA)
@@ -354,12 +357,15 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
    * OS Specific #defines
    ***************************************************************************/
 #if !defined(OS_ANDROID)
-  // AppLauncherPage is not needed on Android.
+#if !defined(OS_CHROMEOS)
+  // AppLauncherPage is not needed on Android or ChromeOS.
   if (url.host() == chrome::kChromeUIAppLauncherPageHost &&
       profile && extensions::ExtensionSystem::Get(profile)->
           extension_service()) {
     return &NewWebUI<AppLauncherPageUI>;
   }
+#endif
+
   // Bookmarks are part of NTP on Android.
   if (url.host() == chrome::kChromeUIBookmarksHost)
     return &NewWebUI<BookmarksUI>;
@@ -715,9 +721,11 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return HistoryUI::GetFaviconResourceBytes(scale_factor);
 
 #if !defined(OS_ANDROID)
-  // The Apps launcher page is not available on android.
+#if !defined(OS_CHROMEOS)
+  // The Apps launcher page is not available on android or ChromeOS.
   if (page_url.host() == chrome::kChromeUIAppLauncherPageHost)
     return AppLauncherPageUI::GetFaviconResourceBytes(scale_factor);
+#endif
 
   // Flash is not available on android.
   if (page_url.host() == chrome::kChromeUIFlashHost)

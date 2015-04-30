@@ -1302,7 +1302,7 @@
       'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.h',
       'browser/ui/cocoa/wrench_menu/wrench_menu_button_cell.mm',
       'browser/ui/cocoa/wrench_menu/wrench_menu_controller.h',
-      'browser/ui/cocoa/wrench_menu/wrench_menu_controller.mm',      
+      'browser/ui/cocoa/wrench_menu/wrench_menu_controller.mm',
     ],
     # Files used only on desktop systems (not iOS, Android, ChromeOS).
     'chrome_browser_ui_desktop_sources': [
@@ -1313,6 +1313,8 @@
       'browser/ui/sync/one_click_signin_sync_observer.h',
       'browser/ui/sync/one_click_signin_sync_starter.cc',
       'browser/ui/sync/one_click_signin_sync_starter.h',
+      'browser/ui/webui/app_launcher_page_ui.cc',
+      'browser/ui/webui/app_launcher_page_ui.h',
       'browser/ui/webui/signin/inline_login_handler_impl.cc',
       'browser/ui/webui/signin/inline_login_handler_impl.h',
       'browser/ui/webui/signin/user_manager_screen_handler.cc',
@@ -1714,8 +1716,6 @@
       'browser/ui/website_settings/permission_menu_model.h',
       'browser/ui/website_settings/website_settings_utils.cc',
       'browser/ui/website_settings/website_settings_utils.h',
-      'browser/ui/webui/app_launcher_page_ui.cc',
-      'browser/ui/webui/app_launcher_page_ui.h',
       'browser/ui/webui/bookmarks_ui.cc',
       'browser/ui/webui/bookmarks_ui.h',
       'browser/ui/webui/chrome_web_contents_handler.cc',
