@@ -67,55 +67,31 @@ void ReferenceFilterBuilder::clearDocumentResourceReference(const FilterOperatio
     documentResourceReferences->remove(filterOperation);
 }
 
-// Returns whether or not the SVGElement object contains a valid color-interpolation-filters attribute
-static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
+// Returns the color-interpolation-filters property of the element.
+static EColorInterpolation colorInterpolationForElement(SVGElement& element, EColorInterpolation parentColorInterpolation)
 {
-    if (!svgElement)
-        return false;
+    if (const LayoutObject* layoutObject = element.layoutObject())
+        return layoutObject->styleRef().svgStyle().colorInterpolationFilters();
 
-    const LayoutObject* layoutObject = svgElement->layoutObject();
-    const ComputedStyle* style = layoutObject ? layoutObject->style() : 0;
-    const SVGComputedStyle* svgStyle = style ? &style->svgStyle() : 0;
-    EColorInterpolation eColorInterpolation = CI_AUTO;
-    if (svgStyle) {
-        // If a layout has been performed, then we can use the fast path to get this attribute
-        eColorInterpolation = svgStyle->colorInterpolationFilters();
-    } else if (!svgElement->presentationAttributeStyle()) {
-        return false;
-    } else {
-        // Otherwise, use the slow path by using string comparison (used by external svg files)
-        RefPtrWillBeRawPtr<CSSValue> cssValue = svgElement->presentationAttributeStyle()->getPropertyCSSValue(CSSPropertyColorInterpolationFilters);
-        if (cssValue.get() && cssValue->isPrimitiveValue()) {
+    // No layout has been performed, try to determine the property value
+    // "manually" (used by external SVG files.)
+    if (const StylePropertySet* propertySet = element.presentationAttributeStyle()) {
+        RefPtrWillBeRawPtr<CSSValue> cssValue = propertySet->getPropertyCSSValue(CSSPropertyColorInterpolationFilters);
+        if (cssValue && cssValue->isPrimitiveValue()) {
             const CSSPrimitiveValue& primitiveValue = *((CSSPrimitiveValue*)cssValue.get());
-            eColorInterpolation = (EColorInterpolation)primitiveValue;
-        } else {
-            return false;
+            return static_cast<EColorInterpolation>(primitiveValue);
         }
     }
-
-    switch (eColorInterpolation) {
-    case CI_AUTO:
-    case CI_SRGB:
-        cs = ColorSpaceDeviceRGB;
-        break;
-    case CI_LINEARRGB:
-        cs = ColorSpaceLinearRGB;
-        break;
-    default:
-        return false;
-    }
-
-    return true;
+    // 'auto' is the default (per Filter Effects), but since the property is
+    // inherited, propagate the parent's value.
+    return parentColorInterpolation;
 }
 
-PassRefPtrWillBeRawPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, LayoutObject* layoutObject, FilterEffect* previousEffect, const ReferenceFilterOperation* filterOperation)
+PassRefPtrWillBeRawPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, LayoutObject& layoutObject, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation)
 {
-    if (!layoutObject)
-        return nullptr;
+    TreeScope* treeScope = &layoutObject.node()->treeScope();
 
-    TreeScope* treeScope = &layoutObject->node()->treeScope();
-
-    if (DocumentResourceReference* documentResourceRef = documentResourceReference(filterOperation)) {
+    if (DocumentResourceReference* documentResourceRef = documentResourceReference(&filterOperation)) {
         DocumentResource* cachedSVGDocument = documentResourceRef->document();
 
         // If we have an SVG document, this is an external reference. Otherwise
@@ -127,12 +103,12 @@ PassRefPtrWillBeRawPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* paren
     if (!treeScope)
         return nullptr;
 
-    Element* filter = treeScope->getElementById(filterOperation->fragment());
+    Element* filter = treeScope->getElementById(filterOperation.fragment());
 
     if (!filter) {
         // Although we did not find the referenced filter, it might exist later
         // in the document.
-        treeScope->document().accessSVGExtensions().addPendingResource(filterOperation->fragment(), toElement(layoutObject->node()));
+        treeScope->document().accessSVGExtensions().addPendingResource(filterOperation.fragment(), toElement(layoutObject.node()));
         return nullptr;
     }
 
@@ -143,24 +119,21 @@ PassRefPtrWillBeRawPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* paren
 
     RefPtrWillBeRawPtr<SVGFilterBuilder> builder = SVGFilterBuilder::create(previousEffect);
 
-    ColorSpace filterColorSpace = ColorSpaceDeviceRGB;
-    bool useFilterColorSpace = getSVGElementColorSpace(&filterElement, filterColorSpace);
+    EColorInterpolation filterColorInterpolation = colorInterpolationForElement(filterElement, CI_AUTO);
 
     for (SVGElement* element = Traversal<SVGElement>::firstChild(filterElement); element; element = Traversal<SVGElement>::nextSibling(*element)) {
         if (!element->isFilterEffect())
             continue;
 
         SVGFilterPrimitiveStandardAttributes* effectElement = static_cast<SVGFilterPrimitiveStandardAttributes*>(element);
-
         RefPtrWillBeRawPtr<FilterEffect> effect = effectElement->build(builder.get(), parentFilter);
         if (!effect)
             continue;
 
         effectElement->setStandardAttributes(effect.get());
         effect->setEffectBoundaries(SVGLengthContext::resolveRectangle<SVGFilterPrimitiveStandardAttributes>(effectElement, filterElement.primitiveUnits()->currentValue()->enumValue(), parentFilter->sourceImageRect()));
-        ColorSpace colorSpace = filterColorSpace;
-        if (useFilterColorSpace || getSVGElementColorSpace(effectElement, colorSpace))
-            effect->setOperatingColorSpace(colorSpace);
+        EColorInterpolation colorInterpolation = colorInterpolationForElement(*effectElement, filterColorInterpolation);
+        effect->setOperatingColorSpace(colorInterpolation == CI_LINEARRGB ? ColorSpaceLinearRGB : ColorSpaceDeviceRGB);
         builder->add(AtomicString(effectElement->result()->currentValue()->value()), effect);
     }
     return builder->lastEffect();

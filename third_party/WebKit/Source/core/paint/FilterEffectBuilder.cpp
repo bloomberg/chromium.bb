@@ -85,7 +85,7 @@ bool FilterEffectBuilder::build(LayoutObject* renderer, const FilterOperations& 
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
             RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(zoom);
-            effect = ReferenceFilterBuilder::build(referenceFilter.get(), renderer, previousEffect.get(), toReferenceFilterOperation(filterOperation));
+            effect = ReferenceFilterBuilder::build(referenceFilter.get(), *renderer, previousEffect.get(), toReferenceFilterOperation(*filterOperation));
             referenceFilter->setLastEffect(effect);
             m_referenceFilters.append(referenceFilter);
             break;
