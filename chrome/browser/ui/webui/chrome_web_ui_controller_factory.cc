@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
@@ -567,7 +567,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 void RunFaviconCallbackAsync(
     const favicon_base::FaviconResultsCallback& callback,
     const std::vector<favicon_base::FaviconRawBitmapResult>* results) {
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&favicon::FaviconService::FaviconResultsCallbackRunner,
                  callback, base::Owned(results)));

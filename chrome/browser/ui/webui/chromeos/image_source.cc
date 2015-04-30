@@ -9,6 +9,8 @@
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
 #include "chrome/common/url_constants.h"
 #include "components/user_manager/user_image/user_image.h"
@@ -41,7 +43,7 @@ void StartOnBlockingPool(
     const std::string& path,
     scoped_refptr<UserImageLoader> image_loader,
     const content::URLDataSource::GotDataCallback& got_data_callback,
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy) {
+    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   const base::FilePath asset_dir(FILE_PATH_LITERAL(chrome::kChromeOSAssetPath));
@@ -50,7 +52,7 @@ void StartOnBlockingPool(
     image_loader->Start(image_path.value(), 0,
                         base::Bind(&ImageLoaded, got_data_callback));
   } else {
-    message_loop_proxy->PostTask(FROM_HERE,
+    thread_task_runner->PostTask(FROM_HERE,
                                  base::Bind(got_data_callback, nullptr));
   }
 }
@@ -93,7 +95,7 @@ void ImageSource::StartDataRequest(
                  path,
                  image_loader_,
                  got_data_callback,
-                 base::MessageLoopProxy::current()));
+                 base::ThreadTaskRunnerHandle::Get()));
 }
 
 std::string ImageSource::GetMimeType(const std::string& path) const {
