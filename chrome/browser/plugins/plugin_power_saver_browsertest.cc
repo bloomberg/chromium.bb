@@ -127,8 +127,9 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargeCrossOrigin) {
   EXPECT_FALSE(IsPluginPeripheral("plugin"));
 }
 
+// TODO(tommycli): Flaky on all platforms. https://crbug.com/481687
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
-                       LargePluginsPeripheralWhenPosterSpecified) {
+                       DISABLED_LargePluginsPeripheralWhenPosterSpecified) {
   LoadHTML(
       "<object id='plugin_src' type='application/x-ppapi-tests' "
       "    width='400' height='500'"
