@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "10.5",
+  "version": "10.6",
   "entries": [
     {
       "id": 1,
@@ -1140,6 +1140,23 @@ LONG_STRING_CONST(
         "type": "android"
       },
       "gl_renderer": "PowerVR SGX.*",
+      "features": [
+        "accelerated_2d_canvas",
+        "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 106,
+      "description": "GPU raster broken on ES2-only Adreno 3xx drivers",
+      "cr_bugs": [480149],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno \\(TM\\) 3.*",
+      "gl_version": {
+         "op": "<=",
+         "value": "2.0"
+      },
       "features": [
         "accelerated_2d_canvas",
         "gpu_rasterization"
