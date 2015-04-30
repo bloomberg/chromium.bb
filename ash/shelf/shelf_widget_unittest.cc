@@ -186,13 +186,16 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   ASSERT_TRUE(shelf_layout_manager);
   EXPECT_EQ(SHELF_VISIBLE, shelf_layout_manager->visibility_state());
 
-  // Create a Widget which overlaps with the shelf in the top edge.
+  // Create a Widget which overlaps the shelf in both left and bottom
+  // alignments.
   const int kOverlapSize = 15;
   const int kWindowHeight = 200;
+  const int kWindowWidth = 200;
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.bounds = gfx::Rect(0, shelf_bounds.y() - kWindowHeight + kOverlapSize,
-                            200, kWindowHeight);
+  params.bounds = gfx::Rect(shelf_bounds.height() - kOverlapSize,
+                            shelf_bounds.y() - kWindowHeight + kOverlapSize,
+                            kWindowWidth, kWindowHeight);
   params.context = CurrentContext();
   // Widget is now owned by the parent window.
   widget->Init(params);
@@ -200,21 +203,36 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   EXPECT_TRUE(widget_bounds.Intersects(shelf_bounds));
 
-
   ui::EventTarget* root = widget->GetNativeWindow()->GetRootWindow();
   ui::EventTargeter* targeter = root->GetEventTargeter();
   {
-    // Create a mouse-event targetting the top of the shelf widget. The
+    // Create a mouse-event targeting the top of the shelf widget. The
     // window-targeter should find |widget| as the target (instead of the
     // shelf).
-    gfx::Point event_location(20, shelf_bounds.y() + 1);
+    gfx::Point event_location(widget_bounds.x() + 5, shelf_bounds.y() + 1);
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
                          ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
     EXPECT_EQ(widget->GetNativeWindow(), target);
   }
 
-  // Now auto-hide (hidden) the shelf.
+  // Change shelf alignment to verify that the targeter insets are updated.
+  shelf_layout_manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf_layout_manager->LayoutShelf();
+  shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
+  {
+    // Create a mouse-event targeting the right edge of the shelf widget. The
+    // window-targeter should find |widget| as the target (instead of the
+    // shelf).
+    gfx::Point event_location(shelf_bounds.right() - 1, widget_bounds.y() + 5);
+    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
+                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+    ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
+    EXPECT_EQ(widget->GetNativeWindow(), target);
+  }
+
+  // Now restore shelf alignment (bottom) and auto-hide (hidden) the shelf.
+  shelf_layout_manager->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf_layout_manager->LayoutShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_layout_manager->visibility_state());
@@ -223,14 +241,15 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   EXPECT_TRUE(!shelf_bounds.IsEmpty());
 
   // Move |widget| so it still overlaps the shelf.
-  widget->SetBounds(gfx::Rect(0, shelf_bounds.y() - kWindowHeight +
-                              kOverlapSize, 200, kWindowHeight));
+  widget->SetBounds(gfx::Rect(0,
+                              shelf_bounds.y() - kWindowHeight + kOverlapSize,
+                              kWindowWidth, kWindowHeight));
   widget_bounds = widget->GetWindowBoundsInScreen();
   EXPECT_TRUE(widget_bounds.Intersects(shelf_bounds));
   {
-    // Create a mouse-event targetting the top of the shelf widget. This time,
+    // Create a mouse-event targeting the top of the shelf widget. This time,
     // window-target should find the shelf as the target.
-    gfx::Point event_location(20, shelf_bounds.y() + 1);
+    gfx::Point event_location(widget_bounds.x() + 5, shelf_bounds.y() + 1);
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
                          ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
     ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);

@@ -294,6 +294,9 @@ void ShelfLayoutManager::LayoutShelf() {
     // dimension in the other direction.
     shelf_->shelf()->SetShelfViewBounds(
         target_bounds.shelf_bounds_in_shelf);
+    // Update insets in ShelfWindowTargeter when shelf bounds change.
+    FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
+                      WillChangeVisibilityState(visibility_state()));
   }
 }
 
