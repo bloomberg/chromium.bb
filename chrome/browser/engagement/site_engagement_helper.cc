@@ -38,7 +38,9 @@ void SiteEngagementHelper::DidStartNavigationToPendingEntry(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(profile);
-  DCHECK(service);
+  // Service is null in incognito.
+  if (!service)
+    return;
 
   service->HandleNavigation(url);
 }
