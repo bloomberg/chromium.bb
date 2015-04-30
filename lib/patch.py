@@ -1335,19 +1335,23 @@ class LocalPatch(GitRepoPatch):
     if dryrun:
       cmd.append('--dry-run')
 
-    lines = git.RunGit(self.project_url, cmd).error.splitlines()
+    # Depending on git/gerrit/weather, the URL might be written to stdout or
+    # stderr.  Just combine them so we don't have to worry about it.
+    result = git.RunGit(self.project_url, cmd, capture_output=True,
+                        combine_stdout_stderr=True)
+    lines = result.output.splitlines()
     urls = []
     for num, line in enumerate(lines):
       # Look for output like:
       # remote: New Changes:
-      # remote:   https://chromium-review.googlesource.com/36756
+      # remote:   https://chromium-review.googlesource.com/36756 Enforce a ...
       if 'New Changes:' in line:
         urls = []
         for line in lines[num + 1:]:
           line = line.split()
-          if len(line) != 2 or not line[1].startswith('http'):
+          if len(line) < 2 or not line[1].startswith('http'):
             break
-          urls.append(line[-1])
+          urls.append(line[1])
         break
     return urls
 
