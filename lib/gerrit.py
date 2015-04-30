@@ -410,6 +410,8 @@ class GerritHelper(object):
         git.GitPush(git_repo, local_sha1, push_to, dryrun=dryrun)
         return True
       except cros_build_lib.RunCommandError:
+        # TODO(phobbs) this creates a lot of noise when we push individual
+        # changes from one branch to another.  Maybe remove this warningo?
         logging.warn('git push failed for %s; was a change chumped in the '
                      'middle of the CQ run?',
                      change, exc_info=True)

@@ -1223,8 +1223,8 @@ class GitRepoPatch(PatchQuery):
       The local SHA1 for this patch, if it is present in the given |manifest|.
       If this patch is not present, returns None.
     """
-    match = '\n'.join(x for x in self.commit_message.split('\n') if x)
-    cmd = ['log', '-F', '--all-match', '--grep', match,
+    query = 'Change-Id: %s' % self.change_id
+    cmd = ['log', '-F', '--all-match', '--grep', query,
            '--format=%H', '%s..HEAD' % revision]
     output = git.RunGit(git_repo, cmd).output.split()
     if len(output) == 1:

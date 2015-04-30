@@ -83,7 +83,7 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
 
 
 def RetryException(exc_retry, max_retry, functor, *args, **kwargs):
-  """Convience wrapper for RetryInvocation based on exceptions.
+  """Convenience wrapper for GenericRetry based on exceptions.
 
   Args:
     exc_retry: A class (or tuple of classes).  If the raised exception
@@ -198,4 +198,3 @@ def RunCurl(args, **kwargs):
                                      **kwargs)
       except cros_build_lib.RunCommandError as e:
         cros_build_lib.Die("Curl failed w/ exit code %i", code)
-

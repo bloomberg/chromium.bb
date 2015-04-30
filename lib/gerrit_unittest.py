@@ -16,6 +16,8 @@ from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util
+from chromite.lib import retry_util
+from chromite.lib import timeout_util
 
 
 # NOTE: The following test cases are designed to run as part of the release
@@ -45,8 +47,17 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     """
     (revision, changeid) = self.createCommit(clone_path, **kwargs)
     self.uploadChange(clone_path)
-    gpatch = self._GetHelper().QuerySingleRecord(
-        change=changeid, project=project, branch='master')
+    # TODO(phobbs): there is a race condition here.  We need to retry this.
+    def PatchQuery():
+      return self._GetHelper().QuerySingleRecord(
+          change=changeid, project=project, branch='master')
+    # 'RetryException' is needed because there is a race condition between
+    # uploading the change and querying for the change.
+    gpatch = retry_util.RetryException(
+        gerrit.QueryHasNoResults,
+        5,
+        PatchQuery,
+        sleep=1)
     self.assertEqual(gpatch.change_id, changeid)
     self.assertEqual(gpatch.revision, revision)
     return gpatch
@@ -259,7 +270,7 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
 
     # Try submitting the up-to-date change.
     helper.SubmitChange(gpatch2)
-    self.assertTrue(helper.IsChangeCommitted(gpatch2.gerrit_number))
+    helper.IsChangeCommitted(gpatch2.gerrit_number)
 
   def test010SubmitUsingGit(self, projectName='test010', submitC=True):
     """Tests that we can rebase & submit a change."""
@@ -271,7 +282,11 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     gpatch1 = self.createPatch(clone_path1, project, msg='Init')
     helper.SetReview(gpatch1.gerrit_number, labels={'Code-Review':'+2'})
     helper.SubmitChange(gpatch1)
-    self.assertTrue(helper.IsChangeCommitted(gpatch1.gerrit_number))
+    # GoB does not guarantee that the change will be in "merged" state
+    # atomically after the /Submit endpoint is called.
+    timeout_util.WaitForReturnTrue(
+        lambda: helper.IsChangeCommitted(gpatch1.gerrit_number),
+        timeout=30)
 
     # Create a change.
     clone_path2 = self.cloneProject(project, 'p2')
