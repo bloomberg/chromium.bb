@@ -326,9 +326,11 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
                                      &optional_parameters_from_delegate)) {
         promise->reject(INVALID_ACCESS_ERROR, 0, "Invalid init data.");
       }
-      j_init_data = base::android::ToJavaByteArray(
-          env, vector_as_array(&init_data_from_delegate),
-          init_data_from_delegate.size());
+      if (!init_data_from_delegate.empty()) {
+        j_init_data = base::android::ToJavaByteArray(
+            env, vector_as_array(&init_data_from_delegate),
+            init_data_from_delegate.size());
+      }
       if (!optional_parameters_from_delegate.empty()) {
         j_optional_parameters = base::android::ToJavaArrayOfStrings(
             env, optional_parameters_from_delegate);
