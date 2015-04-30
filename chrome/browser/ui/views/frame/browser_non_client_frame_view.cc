@@ -276,8 +276,10 @@ void BrowserNonClientFrameView::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
   UpdateTaskbarDecoration();
   // Profile avatars are only displayed in the old UI or incognito.
-  if (browser_view()->IsOffTheRecord() || !switches::IsNewAvatarMenu())
+  if ((!browser_view()->IsGuestSession() && browser_view()->IsOffTheRecord()) ||
+      !switches::IsNewAvatarMenu()) {
     UpdateOldAvatarButton();
+  }
 }
 
 void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
