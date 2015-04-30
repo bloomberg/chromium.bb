@@ -11,7 +11,7 @@
 
 namespace blink {
 
-v8::Handle<v8::Object> DOMArrayBuffer::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Object> DOMArrayBuffer::wrap(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // It's possible that no one except for the new wrapper owns this object at
     // this moment, so we have to prevent GC to collect this object until the
@@ -21,7 +21,7 @@ v8::Handle<v8::Object> DOMArrayBuffer::wrap(v8::Handle<v8::Object> creationConte
     ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
-    v8::Handle<v8::Object> wrapper = v8::ArrayBuffer::New(isolate, data(), byteLength());
+    v8::Local<v8::Object> wrapper = v8::ArrayBuffer::New(isolate, data(), byteLength());
 
     // Only when we create a new wrapper, let V8 know that we allocated and
     // associated a new memory block with the wrapper. Note that
@@ -32,7 +32,7 @@ v8::Handle<v8::Object> DOMArrayBuffer::wrap(v8::Handle<v8::Object> creationConte
     return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }
 
-v8::Handle<v8::Object> DOMArrayBuffer::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper)
+v8::Local<v8::Object> DOMArrayBuffer::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object> wrapper)
 {
     // This function does not set a deallocation observer to the underlying
     // array buffer.  It's a caller's duty.

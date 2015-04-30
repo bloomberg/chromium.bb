@@ -18,7 +18,7 @@ PassRefPtr<DOMDataView> DOMDataView::create(PassRefPtr<DOMArrayBuffer> prpBuffer
     return adoptRef(new DOMDataView(dataView.release(), buffer.release()));
 }
 
-v8::Handle<v8::Object> DOMDataView::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Object> DOMDataView::wrap(v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // It's possible that no one except for the new wrapper owns this object at
     // this moment, so we have to prevent GC to collect this object until the
@@ -31,12 +31,12 @@ v8::Handle<v8::Object> DOMDataView::wrap(v8::Handle<v8::Object> creationContext,
     v8::Local<v8::Value> v8Buffer = toV8(buffer(), creationContext, isolate);
     ASSERT(v8Buffer->IsArrayBuffer());
 
-    v8::Handle<v8::Object> wrapper = v8::DataView::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), byteLength());
+    v8::Local<v8::Object> wrapper = v8::DataView::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), byteLength());
 
     return associateWithWrapper(isolate, wrapperTypeInfo, wrapper);
 }
 
-v8::Handle<v8::Object> DOMDataView::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper)
+v8::Local<v8::Object> DOMDataView::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Object> wrapper)
 {
     return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }
