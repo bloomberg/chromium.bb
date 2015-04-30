@@ -83,7 +83,7 @@ class NavigationItem {
 
   // Returns the title to be displayed on the tab. This could be the title of
   // the page if it is available or the URL. |languages| is the list of
-  // accpeted languages (e.g., prefs::kAcceptLanguages) or empty if proper
+  // accepted languages (e.g., prefs::kAcceptLanguages) or empty if proper
   // URL formatting isn't needed (e.g., unit tests).
   virtual const base::string16& GetTitleForDisplay(
       const std::string& languages) const = 0;
