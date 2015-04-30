@@ -55,7 +55,7 @@ void AwMessagePortClient::OnWebToAppMessage(
   v8::Context::Scope context_scope(context);
   DCHECK(!context.IsEmpty());
   WebSerializedScriptValue v = WebSerializedScriptValue::fromString(message);
-  v8::Handle<v8::Value> v8value = v.deserialize();
+  v8::Local<v8::Value> v8value = v.deserialize();
 
   scoped_ptr<V8ValueConverter> converter;
   converter.reset(V8ValueConverter::create());
@@ -90,8 +90,8 @@ void AwMessagePortClient::OnAppToWebMessage(
   converter->SetDateAllowed(true);
   converter->SetRegExpAllowed(true);
   scoped_ptr<base::Value> value(new base::StringValue(message));
-  v8::Handle<v8::Value> result_value = converter->ToV8Value(value.get(),
-                                                           context);
+  v8::Local<v8::Value> result_value =
+      converter->ToV8Value(value.get(), context);
   WebSerializedScriptValue serialized_script_value =
       WebSerializedScriptValue::serialize(result_value);
   base::string16 result = serialized_script_value.toString();
