@@ -33,9 +33,19 @@ class MetricsProvider {
   virtual void ProvideSystemProfileMetrics(
       SystemProfileProto* system_profile_proto);
 
-  // Called once at startup to see whether this provider has stability events
-  // to share. Default implementation always returns false.
-  virtual bool HasStabilityMetrics();
+  // Called once at startup to see whether this provider has critical stability
+  // events to share in an initial stability log.
+  // Returning true can trigger ProvideInitialStabilityMetrics and
+  // ProvideStabilityMetrics on all other registered metrics providers.
+  // Default implementation always returns false.
+  virtual bool HasInitialStabilityMetrics();
+
+  // Called at most once at startup when an initial stability log is created.
+  // It provides critical statiblity metrics that need to be reported in an
+  // initial stability log.
+  // Default implementation is a no-op.
+  virtual void ProvideInitialStabilityMetrics(
+      SystemProfileProto* system_profile_proto);
 
   // Provides additional stability metrics. Stability metrics can be provided
   // directly into |stability_proto| fields or by logging stability histograms

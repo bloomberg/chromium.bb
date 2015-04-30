@@ -138,6 +138,8 @@ source_set("profiler") {
 # GYP version: components/metrics.gypi:metrics_test_support
 source_set("test_support") {
   sources = [
+    "test_metrics_provider.cc",
+    "test_metrics_provider.h",
     "test_metrics_service_client.cc",
     "test_metrics_service_client.h",
   ]

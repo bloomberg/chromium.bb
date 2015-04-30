@@ -25,8 +25,12 @@ void MetricsProvider::ProvideSystemProfileMetrics(
     SystemProfileProto* system_profile_proto) {
 }
 
-bool MetricsProvider::HasStabilityMetrics() {
+bool MetricsProvider::HasInitialStabilityMetrics() {
   return false;
+}
+
+void MetricsProvider::ProvideInitialStabilityMetrics(
+    SystemProfileProto* system_profile_proto) {
 }
 
 void MetricsProvider::ProvideStabilityMetrics(

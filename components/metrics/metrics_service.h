@@ -344,9 +344,9 @@ class MetricsService : public base::HistogramFlattener {
   // the log manager, staging it if necessary.
   void SendNextLog();
 
-  // Returns true if any of the registered metrics providers have stability
-  // metrics to report.
-  bool ProvidersHaveStabilityMetrics();
+  // Returns true if any of the registered metrics providers have critical
+  // stability metrics to report in an initial stability log.
+  bool ProvidersHaveInitialStabilityMetrics();
 
   // Prepares the initial stability log, which is only logged when the previous
   // run of Chrome crashed.  This log contains any stability metrics left over

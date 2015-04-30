@@ -18,6 +18,7 @@
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/variations/metrics_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,31 +33,6 @@ void StoreNoClientInfoBackup(const ClientInfo& /* client_info */) {
 scoped_ptr<ClientInfo> ReturnNoBackup() {
   return scoped_ptr<ClientInfo>();
 }
-
-class TestMetricsProvider : public MetricsProvider {
- public:
-  explicit TestMetricsProvider(bool has_stability_metrics) :
-      has_stability_metrics_(has_stability_metrics),
-      provide_stability_metrics_called_(false) {
-  }
-
-  bool HasStabilityMetrics() override { return has_stability_metrics_; }
-  void ProvideStabilityMetrics(
-      SystemProfileProto* system_profile_proto) override {
-    UMA_STABILITY_HISTOGRAM_ENUMERATION("TestMetricsProvider.Metric", 1, 2);
-    provide_stability_metrics_called_ = true;
-  }
-
-  bool provide_stability_metrics_called() const {
-    return provide_stability_metrics_called_;
-  }
-
- private:
-  bool has_stability_metrics_;
-  bool provide_stability_metrics_called_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMetricsProvider);
-};
 
 class TestMetricsService : public MetricsService {
  public:
@@ -193,7 +169,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   TestMetricsService service(
       GetMetricsStateManager(), &client, GetLocalState());
 
-  TestMetricsProvider* test_provider = new TestMetricsProvider(false);
+  TestMetricsProvider* test_provider = new TestMetricsProvider();
   service.RegisterMetricsProvider(scoped_ptr<MetricsProvider>(test_provider));
 
   service.InitializeMetricsRecordingState();
@@ -201,8 +177,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   EXPECT_FALSE(service.log_manager()->has_unsent_logs());
   EXPECT_FALSE(service.log_manager()->has_staged_log());
 
-  // The test provider should not have been called upon to provide stability
-  // metrics.
+  // The test provider should not have been called upon to provide initial
+  // stability nor regular stability metrics.
+  EXPECT_FALSE(test_provider->provide_initial_stability_metrics_called());
   EXPECT_FALSE(test_provider->provide_stability_metrics_called());
 }
 
@@ -230,7 +207,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   TestMetricsService service(
       GetMetricsStateManager(), &client, GetLocalState());
   // Add a metrics provider that requests a stability log.
-  TestMetricsProvider* test_provider = new TestMetricsProvider(true);
+  TestMetricsProvider* test_provider = new TestMetricsProvider();
+  test_provider->set_has_initial_stability_metrics(true);
   service.RegisterMetricsProvider(
       scoped_ptr<MetricsProvider>(test_provider));
 
@@ -241,8 +219,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   EXPECT_TRUE(log_manager->has_unsent_logs());
   EXPECT_FALSE(log_manager->has_staged_log());
 
-  // The test provider should have been called upon to provide stability
-  // metrics.
+  // The test provider should have been called upon to provide initial
+  // stability and regular stability metrics.
+  EXPECT_TRUE(test_provider->provide_initial_stability_metrics_called());
   EXPECT_TRUE(test_provider->provide_stability_metrics_called());
 
   // Stage the log and retrieve it.
@@ -292,12 +271,20 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
 
   TestMetricsService service(
       GetMetricsStateManager(), &client, GetLocalState());
+  // Add a provider.
+  TestMetricsProvider* test_provider = new TestMetricsProvider();
+  service.RegisterMetricsProvider(scoped_ptr<MetricsProvider>(test_provider));
   service.InitializeMetricsRecordingState();
 
   // The initial stability log should be generated and persisted in unsent logs.
   MetricsLogManager* log_manager = service.log_manager();
   EXPECT_TRUE(log_manager->has_unsent_logs());
   EXPECT_FALSE(log_manager->has_staged_log());
+
+  // The test provider should have been called upon to provide initial
+  // stability and regular stability metrics.
+  EXPECT_TRUE(test_provider->provide_initial_stability_metrics_called());
+  EXPECT_TRUE(test_provider->provide_stability_metrics_called());
 
   // Stage the log and retrieve it.
   log_manager->StageNextLogForUpload();

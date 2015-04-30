@@ -194,6 +194,8 @@
         'component_metrics_proto',
       ],
       'sources': [
+        'metrics/test_metrics_provider.cc',
+        'metrics/test_metrics_provider.h',
         'metrics/test_metrics_service_client.cc',
         'metrics/test_metrics_service_client.h',
       ],

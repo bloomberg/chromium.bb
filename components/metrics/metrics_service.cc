@@ -561,7 +561,8 @@ void MetricsService::InitializeMetricsState() {
   }
 
   bool has_initial_stability_log = false;
-  if (!clean_exit_beacon_.exited_cleanly() || ProvidersHaveStabilityMetrics()) {
+  if (!clean_exit_beacon_.exited_cleanly() ||
+      ProvidersHaveInitialStabilityMetrics()) {
     // TODO(rtenneti): On windows, consider saving/getting execution_phase from
     // the registry.
     int execution_phase =
@@ -847,10 +848,10 @@ void MetricsService::SendNextLog() {
   SendStagedLog();
 }
 
-bool MetricsService::ProvidersHaveStabilityMetrics() {
-  // Check whether any metrics provider has stability metrics.
+bool MetricsService::ProvidersHaveInitialStabilityMetrics() {
+  // Check whether any metrics provider has initial stability metrics.
   for (size_t i = 0; i < metrics_providers_.size(); ++i) {
-    if (metrics_providers_[i]->HasStabilityMetrics())
+    if (metrics_providers_[i]->HasInitialStabilityMetrics())
       return true;
   }
 

@@ -198,8 +198,11 @@ void MetricsLog::RecordStabilityMetrics(
   WriteRealtimeStabilityAttributes(pref, incremental_uptime, uptime);
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
-  for (size_t i = 0; i < metrics_providers.size(); ++i)
+  for (size_t i = 0; i < metrics_providers.size(); ++i) {
+    if (log_type() == INITIAL_STABILITY_LOG)
+      metrics_providers[i]->ProvideInitialStabilityMetrics(system_profile);
     metrics_providers[i]->ProvideStabilityMetrics(system_profile);
+  }
 
   // Omit some stats unless this is the initial stability log.
   if (log_type() != INITIAL_STABILITY_LOG)
