@@ -1697,7 +1697,8 @@ LRESULT HWNDMessageHandler::OnKeyEvent(UINT message,
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "440919 HWNDMessageHandler::OnKeyEvent"));
 
-  MSG msg = { hwnd(), message, w_param, l_param, GetMessageTime() };
+  MSG msg = {
+      hwnd(), message, w_param, l_param, static_cast<DWORD>(GetMessageTime())};
   ui::KeyEvent key(msg);
   if (!delegate_->HandleUntranslatedKeyEvent(key))
     DispatchKeyEventPostIME(key);
@@ -2199,7 +2200,8 @@ LRESULT HWNDMessageHandler::OnScrollMessage(UINT message,
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "440919 HWNDMessageHandler::OnScrollMessage"));
 
-  MSG msg = { hwnd(), message, w_param, l_param, GetMessageTime() };
+  MSG msg = {
+      hwnd(), message, w_param, l_param, static_cast<DWORD>(GetMessageTime())};
   ui::ScrollEvent event(msg);
   delegate_->HandleScrollEvent(event);
   return 0;
@@ -2745,7 +2747,8 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
           "440919 HWNDMessageHandler::HandleMouseEventInternal4"));
 
   long message_time = GetMessageTime();
-  MSG msg = { hwnd(), message, w_param, l_param, message_time,
+  MSG msg = { hwnd(), message, w_param, l_param,
+              static_cast<DWORD>(message_time),
               { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
   ui::MouseEvent event(msg);
   if (IsSynthesizedMouseMessage(message, message_time, l_param))
