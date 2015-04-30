@@ -115,11 +115,11 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
   // returns false if anything went wrong.
   bool FrameReceiverConfigFromArg(
       v8::Isolate* isolate,
-      const v8::Handle<v8::Value>& arg,
+      const v8::Local<v8::Value>& arg,
       media::cast::FrameReceiverConfig* config);
 
   bool IPEndPointFromArg(v8::Isolate* isolate,
-                         const v8::Handle<v8::Value>& arg,
+                         const v8::Local<v8::Value>& arg,
                          net::IPEndPoint* ip_endpoint);
 
   int last_transport_id_;

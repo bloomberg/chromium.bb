@@ -52,15 +52,15 @@ class LoadTimesExtensionWrapper : public v8::Extension {
       "  return GetCSI();"
       "}") {}
 
-  v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+  v8::Local<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
-      v8::Handle<v8::String> name) override {
+      v8::Local<v8::String> name) override {
     if (name->Equals(v8::String::NewFromUtf8(isolate, "GetLoadTimes"))) {
       return v8::FunctionTemplate::New(isolate, GetLoadTimes);
     } else if (name->Equals(v8::String::NewFromUtf8(isolate, "GetCSI"))) {
       return v8::FunctionTemplate::New(isolate, GetCSI);
     }
-    return v8::Handle<v8::FunctionTemplate>();
+    return v8::Local<v8::FunctionTemplate>();
   }
 
   static const char* GetNavigationType(WebNavigationType nav_type) {

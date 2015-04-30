@@ -277,7 +277,7 @@ void CastStreamingNativeHandler::CallCreateCallback(
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
 
-  v8::Handle<v8::Value> callback_args[3];
+  v8::Local<v8::Value> callback_args[3];
   callback_args[0] = v8::Null(isolate);
   callback_args[1] = v8::Null(isolate);
 
@@ -307,7 +307,7 @@ void CastStreamingNativeHandler::CallStartCallback(int stream_id) {
   v8::Isolate* isolate = context()->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
-  v8::Handle<v8::Array> event_args = v8::Array::New(isolate, 1);
+  v8::Local<v8::Array> event_args = v8::Array::New(isolate, 1);
   event_args->Set(0, v8::Integer::New(isolate, stream_id));
   context()->DispatchEvent("cast.streaming.rtpStream.onStarted", event_args);
 }
@@ -316,7 +316,7 @@ void CastStreamingNativeHandler::CallStopCallback(int stream_id) {
   v8::Isolate* isolate = context()->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
-  v8::Handle<v8::Array> event_args = v8::Array::New(isolate, 1);
+  v8::Local<v8::Array> event_args = v8::Array::New(isolate, 1);
   event_args->Set(0, v8::Integer::New(isolate, stream_id));
   context()->DispatchEvent("cast.streaming.rtpStream.onStopped", event_args);
 }
@@ -326,7 +326,7 @@ void CastStreamingNativeHandler::CallErrorCallback(int stream_id,
   v8::Isolate* isolate = context()->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
-  v8::Handle<v8::Array> event_args = v8::Array::New(isolate, 2);
+  v8::Local<v8::Array> event_args = v8::Array::New(isolate, 2);
   event_args->Set(0, v8::Integer::New(isolate, stream_id));
   event_args->Set(
       1,
@@ -358,7 +358,7 @@ void CastStreamingNativeHandler::GetSupportedParamsCastRtpStream(
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   std::vector<CastRtpParams> cast_params = transport->GetSupportedParams();
-  v8::Handle<v8::Array> result =
+  v8::Local<v8::Array> result =
       v8::Array::New(args.GetIsolate(),
                      static_cast<int>(cast_params.size()));
   for (size_t i = 0; i < cast_params.size(); ++i) {
@@ -568,7 +568,7 @@ void CastStreamingNativeHandler::CallGetRawEventsCallback(
   if (it == get_raw_events_callbacks_.end())
     return;
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  v8::Handle<v8::Value> callback_args[] = {
+  v8::Local<v8::Value> callback_args[] = {
       converter->ToV8Value(raw_events.get(), context()->v8_context())};
   context()->CallFunction(v8::Local<v8::Function>::New(isolate, *it->second),
                           arraysize(callback_args), callback_args);
@@ -587,7 +587,7 @@ void CastStreamingNativeHandler::CallGetStatsCallback(
     return;
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  v8::Handle<v8::Value> callback_args[] = {
+  v8::Local<v8::Value> callback_args[] = {
       converter->ToV8Value(stats.get(), context()->v8_context())};
   context()->CallFunction(v8::Local<v8::Function>::New(isolate, *it->second),
                           arraysize(callback_args), callback_args);
@@ -620,7 +620,7 @@ CastUdpTransport* CastStreamingNativeHandler::GetUdpTransportOrThrow(
 
 bool CastStreamingNativeHandler::FrameReceiverConfigFromArg(
     v8::Isolate* isolate,
-    const v8::Handle<v8::Value>& arg,
+    const v8::Local<v8::Value>& arg,
     media::cast::FrameReceiverConfig* config) {
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
@@ -694,7 +694,7 @@ bool CastStreamingNativeHandler::FrameReceiverConfigFromArg(
 
 bool CastStreamingNativeHandler::IPEndPointFromArg(
     v8::Isolate* isolate,
-    const v8::Handle<v8::Value>& arg,
+    const v8::Local<v8::Value>& arg,
     net::IPEndPoint* ip_endpoint) {
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   scoped_ptr<base::Value> destination_value(
@@ -813,7 +813,7 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
 
   v8::CopyablePersistentTraits<v8::Function>::CopyablePersistent error_callback;
   error_callback.Reset(args.GetIsolate(),
-                       v8::Handle<v8::Function>(args[7].As<v8::Function>()));
+                       v8::Local<v8::Function>(args[7].As<v8::Function>()));
 
   session->Start(
       audio_config,
@@ -835,7 +835,7 @@ void CastStreamingNativeHandler::CallReceiverErrorCallback(
     v8::CopyablePersistentTraits<v8::Function>::CopyablePersistent function,
     const std::string& error_message) {
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
-  v8::Handle<v8::Value> arg = v8::String::NewFromUtf8(isolate,
+  v8::Local<v8::Value> arg = v8::String::NewFromUtf8(isolate,
                                                       error_message.data(),
                                                       v8::String::kNormalString,
                                                       error_message.size());

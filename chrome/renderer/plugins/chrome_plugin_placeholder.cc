@@ -371,11 +371,11 @@ void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
 void ChromePluginPlaceholder::BindWebFrame(blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   DCHECK(!context.IsEmpty());
 
   v8::Context::Scope context_scope(context);
-  v8::Handle<v8::Object> global = context->Global();
+  v8::Local<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "plugin"),
               gin::CreateHandle(isolate, this).ToV8());
 }

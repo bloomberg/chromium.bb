@@ -97,7 +97,7 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& testFixture,
       v8::Local<v8::Context>::New(isolate, context_);
   v8::Context::Scope context_scope(context);
 
-  v8::Handle<v8::Value> functionProperty =
+  v8::Local<v8::Value> functionProperty =
       context->Global()->Get(v8::String::NewFromUtf8(isolate, "runTest"));
   EXPECT_FALSE(functionProperty.IsEmpty());
   if (::testing::Test::HasNonfatalFailure())
@@ -105,8 +105,8 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& testFixture,
   EXPECT_TRUE(functionProperty->IsFunction());
   if (::testing::Test::HasNonfatalFailure())
     return false;
-  v8::Handle<v8::Function> function =
-      v8::Handle<v8::Function>::Cast(functionProperty);
+  v8::Local<v8::Function> function =
+      v8::Local<v8::Function>::Cast(functionProperty);
 
   v8::Local<v8::Array> params = v8::Array::New(isolate);
   params->Set(0,
@@ -119,12 +119,12 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& testFixture,
                                       testName.data(),
                                       v8::String::kNormalString,
                                       testName.size()));
-  v8::Handle<v8::Value> args[] = {
+  v8::Local<v8::Value> args[] = {
       v8::Boolean::New(isolate, false),
       v8::String::NewFromUtf8(isolate, "RUN_TEST_F"), params};
 
   v8::TryCatch try_catch;
-  v8::Handle<v8::Value> result = function->Call(context->Global(), 3, args);
+  v8::Local<v8::Value> result = function->Call(context->Global(), 3, args);
   // The test fails if an exception was thrown.
   EXPECT_FALSE(result.IsEmpty());
   if (::testing::Test::HasNonfatalFailure())
@@ -165,20 +165,20 @@ void V8UnitTest::InitPathsAndLibraries() {
 
 void V8UnitTest::SetUp() {
   v8::Isolate* isolate = blink::mainThreadIsolate();
-  v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
-  v8::Handle<v8::String> logString = v8::String::NewFromUtf8(isolate, "log");
-  v8::Handle<v8::FunctionTemplate> logFunction =
+  v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate);
+  v8::Local<v8::String> logString = v8::String::NewFromUtf8(isolate, "log");
+  v8::Local<v8::FunctionTemplate> logFunction =
       v8::FunctionTemplate::New(isolate, &V8UnitTest::Log);
   global->Set(logString, logFunction);
 
   // Set up chrome object for chrome.send().
-  v8::Handle<v8::ObjectTemplate> chrome = v8::ObjectTemplate::New(isolate);
+  v8::Local<v8::ObjectTemplate> chrome = v8::ObjectTemplate::New(isolate);
   global->Set(v8::String::NewFromUtf8(isolate, "chrome"), chrome);
   chrome->Set(v8::String::NewFromUtf8(isolate, "send"),
               v8::FunctionTemplate::New(isolate, &V8UnitTest::ChromeSend));
 
   // Set up console object for console.log(), etc.
-  v8::Handle<v8::ObjectTemplate> console = v8::ObjectTemplate::New(isolate);
+  v8::Local<v8::ObjectTemplate> console = v8::ObjectTemplate::New(isolate);
   global->Set(v8::String::NewFromUtf8(isolate, "console"), console);
   console->Set(logString, logFunction);
   console->Set(v8::String::NewFromUtf8(isolate, "info"), logFunction);
@@ -211,24 +211,24 @@ void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate, context_);
   v8::Context::Scope context_scope(context);
-  v8::Handle<v8::String> source =
+  v8::Local<v8::String> source =
       v8::String::NewFromUtf8(isolate,
                               script_source.data(),
                               v8::String::kNormalString,
                               script_source.size());
-  v8::Handle<v8::String> name =
+  v8::Local<v8::String> name =
       v8::String::NewFromUtf8(isolate,
                               script_name.data(),
                               v8::String::kNormalString,
                               script_name.size());
 
   v8::TryCatch try_catch;
-  v8::Handle<v8::Script> script = v8::Script::Compile(source, name);
+  v8::Local<v8::Script> script = v8::Script::Compile(source, name);
   // Ensure the script compiled without errors.
   if (script.IsEmpty())
     FAIL() << ExceptionToString(try_catch);
 
-  v8::Handle<v8::Value> result = script->Run();
+  v8::Local<v8::Value> result = script->Run();
   // Ensure the script ran without errors.
   if (result.IsEmpty())
     FAIL() << ExceptionToString(try_catch);
@@ -260,15 +260,15 @@ void V8UnitTest::TestFunction(const std::string& function_name) {
       v8::Local<v8::Context>::New(isolate, context_);
   v8::Context::Scope context_scope(context);
 
-  v8::Handle<v8::Value> functionProperty = context->Global()->Get(
+  v8::Local<v8::Value> functionProperty = context->Global()->Get(
       v8::String::NewFromUtf8(isolate, function_name.c_str()));
   ASSERT_FALSE(functionProperty.IsEmpty());
   ASSERT_TRUE(functionProperty->IsFunction());
-  v8::Handle<v8::Function> function =
-      v8::Handle<v8::Function>::Cast(functionProperty);
+  v8::Local<v8::Function> function =
+      v8::Local<v8::Function>::Cast(functionProperty);
 
   v8::TryCatch try_catch;
-  v8::Handle<v8::Value> result = function->Call(context->Global(), 0, NULL);
+  v8::Local<v8::Value> result = function->Call(context->Global(), 0, NULL);
   // The test fails if an exception was thrown.
   if (result.IsEmpty())
     FAIL() << ExceptionToString(try_catch);
@@ -299,7 +299,7 @@ void V8UnitTest::ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args) {
   EXPECT_EQ(2, args.Length());
   if (::testing::Test::HasNonfatalFailure())
     return;
-  v8::Handle<v8::Array> testResult(args[1].As<v8::Array>());
+  v8::Local<v8::Array> testResult(args[1].As<v8::Array>());
   EXPECT_EQ(2U, testResult->Length());
   if (::testing::Test::HasNonfatalFailure())
     return;

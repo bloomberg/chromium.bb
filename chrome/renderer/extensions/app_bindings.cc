@@ -120,7 +120,7 @@ void AppBindings::GetDetailsForFrame(
   args.GetReturnValue().Set(GetDetailsForFrameImpl(target_frame));
 }
 
-v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
+v8::Local<v8::Value> AppBindings::GetDetailsForFrameImpl(
     WebFrame* frame) {
   v8::Isolate* isolate = frame->mainWorldScriptContext()->GetIsolate();
   if (frame->document().securityOrigin().isUnique())
@@ -216,7 +216,7 @@ void AppBindings::OnAppInstallStateResponse(
   v8::Isolate* isolate = context()->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
-  v8::Handle<v8::Value> argv[] = {
+  v8::Local<v8::Value> argv[] = {
     v8::String::NewFromUtf8(isolate, state.c_str()),
     v8::Integer::New(isolate, callback_id)
   };

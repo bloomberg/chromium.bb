@@ -50,16 +50,16 @@ class BenchmarkingWrapper : public v8::Extension {
         "}"
         ) {}
 
-  v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+  v8::Local<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
-      v8::Handle<v8::String> name) override {
+      v8::Local<v8::String> name) override {
     if (name->Equals(v8::String::NewFromUtf8(isolate, "IsSingleProcess"))) {
       return v8::FunctionTemplate::New(isolate, IsSingleProcess);
     } else if (name->Equals(v8::String::NewFromUtf8(isolate, "HiResTime"))) {
       return v8::FunctionTemplate::New(isolate, HiResTime);
     }
 
-    return v8::Handle<v8::FunctionTemplate>();
+    return v8::Local<v8::FunctionTemplate>();
   }
 
   static void IsSingleProcess(const v8::FunctionCallbackInfo<v8::Value>& args) {

@@ -19,7 +19,7 @@ gin::WrapperInfo NetErrorPageController::kWrapperInfo = {
 void NetErrorPageController::Install(content::RenderFrame* render_frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context =
+  v8::Local<v8::Context> context =
       render_frame->GetWebFrame()->mainWorldScriptContext();
   if (context.IsEmpty())
     return;
@@ -31,7 +31,7 @@ void NetErrorPageController::Install(content::RenderFrame* render_frame) {
   if (controller.IsEmpty())
     return;
 
-  v8::Handle<v8::Object> global = context->Global();
+  v8::Local<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "errorPageController"),
               controller.ToV8());
 }

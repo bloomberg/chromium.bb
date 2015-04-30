@@ -59,7 +59,7 @@ const char kLTRHtmlTextDirection[] = "ltr";
 const char kRTLHtmlTextDirection[] = "rtl";
 
 // Converts a V8 value to a string16.
-base::string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
+base::string16 V8ValueToUTF16(v8::Local<v8::Value> v) {
   v8::String::Value s(v);
   return base::string16(reinterpret_cast<const base::char16*>(*s), s.length());
 }
@@ -80,7 +80,7 @@ bool IsIconNTPEnabled() {
 }
 
 // Converts string16 to V8 String.
-v8::Handle<v8::String> UTF16ToV8String(v8::Isolate* isolate,
+v8::Local<v8::String> UTF16ToV8String(v8::Isolate* isolate,
                                        const base::string16& s) {
   return v8::String::NewFromTwoByte(isolate,
                                     reinterpret_cast<const uint16_t*>(s.data()),
@@ -89,7 +89,7 @@ v8::Handle<v8::String> UTF16ToV8String(v8::Isolate* isolate,
 }
 
 // Converts std::string to V8 String.
-v8::Handle<v8::String> UTF8ToV8String(v8::Isolate* isolate,
+v8::Local<v8::String> UTF8ToV8String(v8::Isolate* isolate,
                                       const std::string& s) {
   return v8::String::NewFromUtf8(
       isolate, s.data(), v8::String::kNormalString, s.size());
@@ -107,7 +107,7 @@ void Dispatch(blink::WebFrame* frame, const blink::WebString& script) {
   frame->executeScript(blink::WebScriptSource(script));
 }
 
-v8::Handle<v8::String> GenerateThumbnailURL(
+v8::Local<v8::String> GenerateThumbnailURL(
     v8::Isolate* isolate,
     int render_view_id,
     InstantRestrictedID most_visited_item_id) {
@@ -121,7 +121,7 @@ v8::Handle<v8::String> GenerateThumbnailURL(
 // NOTE: Includes "url", "title" and "domain" which are private data, so should
 // not be returned to the Instant page. These should be erased before returning
 // the object. See GetMostVisitedItemsWrapper() in searchbox_api.js.
-v8::Handle<v8::Object> GenerateMostVisitedItem(
+v8::Local<v8::Object> GenerateMostVisitedItem(
     v8::Isolate* isolate,
     int render_view_id,
     InstantRestrictedID restricted_id,
@@ -147,7 +147,7 @@ v8::Handle<v8::Object> GenerateMostVisitedItem(
   if (title.empty())
     title = base::UTF8ToUTF16(mv_item.url.spec());
 
-  v8::Handle<v8::Object> obj = v8::Object::New(isolate);
+  v8::Local<v8::Object> obj = v8::Object::New(isolate);
   obj->Set(v8::String::NewFromUtf8(isolate, "renderViewId"),
            v8::Int32::New(isolate, render_view_id));
   obj->Set(v8::String::NewFromUtf8(isolate, "rid"),
@@ -210,9 +210,9 @@ GURL GetCurrentURL(content::RenderView* render_view) {
 namespace internal {  // for testing.
 
 // Returns an array with the RGBA color components.
-v8::Handle<v8::Value> RGBAColorToArray(v8::Isolate* isolate,
+v8::Local<v8::Value> RGBAColorToArray(v8::Isolate* isolate,
                                        const RGBAColor& color) {
-  v8::Handle<v8::Array> color_array = v8::Array::New(isolate, 4);
+  v8::Local<v8::Array> color_array = v8::Array::New(isolate, 4);
   color_array->Set(0, v8::Int32::New(isolate, color.r));
   color_array->Set(1, v8::Int32::New(isolate, color.g));
   color_array->Set(2, v8::Int32::New(isolate, color.b));
@@ -387,9 +387,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 
   // Allows v8's javascript code to call the native functions defined
   // in this class for window.chrome.
-  v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+  v8::Local<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate*,
-      v8::Handle<v8::String> name) override;
+      v8::Local<v8::String> name) override;
 
   // Helper function to find the RenderView. May return NULL.
   static content::RenderView* GetRenderView();
@@ -517,7 +517,7 @@ v8::Extension* SearchBoxExtension::Get() {
 bool SearchBoxExtension::PageSupportsInstant(blink::WebFrame* frame) {
   if (!frame) return false;
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Handle<v8::Value> v = frame->executeScriptAndReturnValue(
+  v8::Local<v8::Value> v = frame->executeScriptAndReturnValue(
       blink::WebScriptSource(kSupportsInstantScript));
   return !v.IsEmpty() && v->BooleanValue();
 }
@@ -602,10 +602,10 @@ SearchBoxExtensionWrapper::SearchBoxExtensionWrapper(
     : v8::Extension(kSearchBoxExtensionName, code.data(), 0, 0, code.size()) {
 }
 
-v8::Handle<v8::FunctionTemplate>
+v8::Local<v8::FunctionTemplate>
 SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     v8::Isolate* isolate,
-    v8::Handle<v8::String> name) {
+    v8::Local<v8::String> name) {
   if (name->Equals(
           v8::String::NewFromUtf8(isolate, "CheckIsUserSignedInToChromeAs")))
     return v8::FunctionTemplate::New(isolate, CheckIsUserSignedInToChromeAs);
@@ -671,7 +671,7 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
   if (name->Equals(
           v8::String::NewFromUtf8(isolate, "GetDisplayInstantResults")))
     return v8::FunctionTemplate::New(isolate, GetDisplayInstantResults);
-  return v8::Handle<v8::FunctionTemplate>();
+  return v8::Local<v8::FunctionTemplate>();
 }
 
 // static
@@ -789,7 +789,7 @@ void SearchBoxExtensionWrapper::GetMostVisitedItems(
   std::vector<InstantMostVisitedItemIDPair> instant_mv_items;
   search_box->GetMostVisitedItems(&instant_mv_items);
   v8::Isolate* isolate = args.GetIsolate();
-  v8::Handle<v8::Array> v8_mv_items =
+  v8::Local<v8::Array> v8_mv_items =
       v8::Array::New(isolate, instant_mv_items.size());
   for (size_t i = 0; i < instant_mv_items.size(); ++i) {
     v8_mv_items->Set(i,
@@ -852,7 +852,7 @@ void SearchBoxExtensionWrapper::GetSearchRequestParams(
   const EmbeddedSearchRequestParams& params =
       SearchBox::Get(render_view)->GetEmbeddedSearchRequestParams();
   v8::Isolate* isolate = args.GetIsolate();
-  v8::Handle<v8::Object> data = v8::Object::New(isolate);
+  v8::Local<v8::Object> data = v8::Object::New(isolate);
   if (!params.search_query.empty()) {
     data->Set(v8::String::NewFromUtf8(isolate, kSearchQueryKey),
               UTF16ToV8String(isolate, params.search_query));
@@ -894,7 +894,7 @@ void SearchBoxExtensionWrapper::GetSuggestionToPrefetch(
   const InstantSuggestion& suggestion =
       SearchBox::Get(render_view)->suggestion();
   v8::Isolate* isolate = args.GetIsolate();
-  v8::Handle<v8::Object> data = v8::Object::New(isolate);
+  v8::Local<v8::Object> data = v8::Object::New(isolate);
   data->Set(v8::String::NewFromUtf8(isolate, "text"),
             UTF16ToV8String(isolate, suggestion.text));
   data->Set(v8::String::NewFromUtf8(isolate, "metadata"),
@@ -912,7 +912,7 @@ void SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
   const ThemeBackgroundInfo& theme_info =
       SearchBox::Get(render_view)->GetThemeBackgroundInfo();
   v8::Isolate* isolate = args.GetIsolate();
-  v8::Handle<v8::Object> info = v8::Object::New(isolate);
+  v8::Local<v8::Object> info = v8::Object::New(isolate);
 
   info->Set(v8::String::NewFromUtf8(isolate, "usingDefaultTheme"),
             v8::Boolean::New(isolate, theme_info.using_default_theme));

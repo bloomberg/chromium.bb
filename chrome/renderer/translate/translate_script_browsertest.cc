@@ -109,7 +109,7 @@ class TranslateScriptBrowserTest : public ChromeRenderViewTest {
   double ExecuteScriptAndGetNumberResult(const std::string& script) {
     WebScriptSource source = WebScriptSource(base::ASCIIToUTF16(script));
     v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-    v8::Handle<v8::Value> result =
+    v8::Local<v8::Value> result =
         GetMainFrame()->executeScriptAndReturnValue(source);
     if (result.IsEmpty() || !result->IsNumber()) {
       NOTREACHED();
@@ -123,7 +123,7 @@ class TranslateScriptBrowserTest : public ChromeRenderViewTest {
   bool ExecuteScriptAndGetBoolResult(const std::string& script) {
     WebScriptSource source = WebScriptSource(base::ASCIIToUTF16(script));
     v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-    v8::Handle<v8::Value> result =
+    v8::Local<v8::Value> result =
         GetMainFrame()->executeScriptAndReturnValue(source);
     if (result.IsEmpty() || !result->IsBoolean()) {
       NOTREACHED();

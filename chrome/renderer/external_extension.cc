@@ -43,9 +43,9 @@ class ExternalExtensionWrapper : public v8::Extension {
 
   // Allows v8's javascript code to call the native functions defined
   // in this class for window.external.
-  v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+  v8::Local<v8::FunctionTemplate> GetNativeFunctionTemplate(
       v8::Isolate* isolate,
-      v8::Handle<v8::String> name) override;
+      v8::Local<v8::String> name) override;
 
   // Helper function to find the RenderView. May return NULL.
   static RenderView* GetRenderView();
@@ -66,10 +66,10 @@ ExternalExtensionWrapper::ExternalExtensionWrapper()
     : v8::Extension(kExternalExtensionName, kSearchProviderApi) {
 }
 
-v8::Handle<v8::FunctionTemplate>
+v8::Local<v8::FunctionTemplate>
 ExternalExtensionWrapper::GetNativeFunctionTemplate(
     v8::Isolate* isolate,
-    v8::Handle<v8::String> name) {
+    v8::Local<v8::String> name) {
   if (name->Equals(v8::String::NewFromUtf8(isolate, "NativeAddSearchProvider")))
     return v8::FunctionTemplate::New(isolate, AddSearchProvider);
 
@@ -78,7 +78,7 @@ ExternalExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, IsSearchProviderInstalled);
   }
 
-  return v8::Handle<v8::FunctionTemplate>();
+  return v8::Local<v8::FunctionTemplate>();
 }
 
 // static
