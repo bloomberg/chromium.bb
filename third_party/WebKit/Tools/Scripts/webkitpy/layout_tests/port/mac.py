@@ -46,7 +46,7 @@ class MacPort(base.Port):
     # Note that the retina versions fallback to the non-retina versions and so no
     # baselines are shared between retina versions; this keeps the fallback graph as a tree
     # and maximizes the number of baselines we can share that way.
-    # We also currently only support Retina on 10.8; we need to either upgrade to 10.9 or support both.
+    # We also currently only support Retina on 10.9.
 
     FALLBACK_PATHS = {}
     FALLBACK_PATHS['mavericks'] = ['mac']

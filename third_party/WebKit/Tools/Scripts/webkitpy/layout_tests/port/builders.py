@@ -52,7 +52,7 @@ _exact_matches = {
     "WebKit Mac10.7": {"port_name": "mac-lion", "specifiers": ['Lion', 'Release']},
     "WebKit Mac10.7 (dbg)": {"port_name": "mac-lion", "specifiers": ['Lion', 'Debug']},
     "WebKit Mac10.8": {"port_name": "mac-mountainlion", "specifiers": ['MountainLion', 'Release']},
-    "WebKit Mac10.8 (retina)": {"port_name": "mac-retina", "specifiers": ['Retina', 'Release']},
+    "WebKit Mac10.9 (retina)": {"port_name": "mac-retina", "specifiers": ['Retina', 'Release']},
     "WebKit Mac10.9": {"port_name": "mac-mavericks", "specifiers": ['Mavericks', 'Release']},
     "WebKit Android (Nexus4)": {"port_name": "android", "specifiers": ['Android', 'Release']},
 }
