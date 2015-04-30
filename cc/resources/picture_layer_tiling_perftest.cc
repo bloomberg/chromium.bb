@@ -99,23 +99,22 @@ class PictureLayerTilingPerfTest : public testing::Test {
     gfx::Rect viewport_rect(viewport_size);
     int xoffsets[] = {10, 0, -10, 0};
     int yoffsets[] = {0, 10, 0, -10};
-    int offsetIndex = 0;
-    int offsetCount = 0;
-    const int maxOffsetCount = 1000;
+    int offset_index = 0;
+    int offset_count = 0;
+    const int max_offset_count = 1000;
 
     timer_.Reset();
     do {
       picture_layer_tiling_->ComputeTilePriorityRects(
           viewport_rect, 1.f, timer_.NumLaps() + 1, Occlusion());
 
-      viewport_rect = gfx::Rect(viewport_rect.x() + xoffsets[offsetIndex],
-                                viewport_rect.y() + yoffsets[offsetIndex],
-                                viewport_rect.width(),
-                                viewport_rect.height());
+      viewport_rect = gfx::Rect(viewport_rect.x() + xoffsets[offset_index],
+                                viewport_rect.y() + yoffsets[offset_index],
+                                viewport_rect.width(), viewport_rect.height());
 
-      if (++offsetCount > maxOffsetCount) {
-        offsetCount = 0;
-        offsetIndex = (offsetIndex + 1) % 4;
+      if (++offset_count > max_offset_count) {
+        offset_count = 0;
+        offset_index = (offset_index + 1) % 4;
       }
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
