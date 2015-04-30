@@ -10,8 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/async_file_util_adapter.h"
 #include "storage/browser/fileapi/copy_or_move_file_validator.h"
 #include "storage/browser/fileapi/dragged_file_util.h"
@@ -65,7 +65,7 @@ void IsolatedFileSystemBackend::ResolveURL(
     OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
   // We never allow opening a new isolated FileSystem via usual ResolveURL.
-  base::MessageLoopProxy::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback,
                  GURL(),

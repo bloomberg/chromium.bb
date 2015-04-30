@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/fileapi/copy_or_move_file_validator.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -66,13 +67,13 @@ void DidGetMetadataForResolveURL(
 }
 
 void RelayResolveURLCallback(
-    scoped_refptr<base::MessageLoopProxy> message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const FileSystemContext::ResolveURLCallback& callback,
     base::File::Error result,
     const FileSystemInfo& info,
     const base::FilePath& file_path,
     FileSystemContext::ResolvedEntryType type) {
-  message_loop->PostTask(
+  task_runner->PostTask(
       FROM_HERE, base::Bind(callback, result, info, file_path, type));
 }
 
@@ -365,7 +366,7 @@ void FileSystemContext::ResolveURL(
   if (!io_task_runner_->RunsTasksOnCurrentThread()) {
     ResolveURLCallback relay_callback =
         base::Bind(&RelayResolveURLCallback,
-                   base::MessageLoopProxy::current(), callback);
+                   base::ThreadTaskRunnerHandle::Get(), callback);
     io_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&FileSystemContext::ResolveURL, this, url, relay_callback));

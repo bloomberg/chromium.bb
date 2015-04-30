@@ -5,6 +5,8 @@
 #include "storage/browser/fileapi/recursive_operation_delegate.h"
 
 #include "base/bind.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 
@@ -150,12 +152,12 @@ void RecursiveOperationDelegate::ProcessPendingFiles() {
     return;
 
   // Run ProcessFile in parallel (upto kMaxInflightOperations).
-  scoped_refptr<base::MessageLoopProxy> current_message_loop =
-      base::MessageLoopProxy::current();
+  scoped_refptr<base::SingleThreadTaskRunner> current_task_runner =
+      base::ThreadTaskRunnerHandle::Get();
   while (!pending_files_.empty() &&
          inflight_operations_ < kMaxInflightOperations) {
     ++inflight_operations_;
-    current_message_loop->PostTask(
+    current_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&RecursiveOperationDelegate::ProcessFile,
                    AsWeakPtr(), pending_files_.front(),
