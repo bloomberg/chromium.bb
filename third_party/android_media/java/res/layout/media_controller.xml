@@ -29,22 +29,29 @@
         android:paddingTop="4dip"
         android:orientation="horizontal">
 
+        <!-- Android Lint is giving a false warning that layout_width and layout_height are not
+             set for buttons below, however MediaButton style sets the width and the height. -->
+        <!--suppress RequiredSize -->
         <ImageButton
             android:id="@+id/prev"
             android:contentDescription="@null"
             style="@android:style/MediaButton.Previous" />
+        <!--suppress RequiredSize -->
         <ImageButton
             android:id="@+id/rew"
             android:contentDescription="@null"
             style="@android:style/MediaButton.Rew" />
+        <!--suppress RequiredSize -->
         <ImageButton
             android:id="@+id/pause"
             android:contentDescription="@null"
             style="@android:style/MediaButton.Play" />
+        <!--suppress RequiredSize -->
         <ImageButton
             android:id="@+id/ffwd"
             android:contentDescription="@null"
             style="@android:style/MediaButton.Ffwd" />
+        <!--suppress RequiredSize -->
         <ImageButton
             android:id="@+id/next"
             android:contentDescription="@null"
