@@ -74,8 +74,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
       const GURL& manifest_url,
       base::File nexe_file,
       const NaClFileToken& nexe_token,
-      const std::vector<
-        nacl::NaClResourceFileInfo>& prefetched_resource_files_info,
+      const std::vector<NaClResourcePrefetchResult>& prefetched_resource_files,
       ppapi::PpapiPermissions permissions,
       int render_view_id,
       uint32 permission_bits,
@@ -198,7 +197,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   GURL manifest_url_;
   base::File nexe_file_;
   NaClFileToken nexe_token_;
-  std::vector<nacl::NaClResourceFileInfo> prefetched_resource_files_info_;
+  std::vector<NaClResourcePrefetchResult> prefetched_resource_files_;
 
   ppapi::PpapiPermissions permissions_;
 

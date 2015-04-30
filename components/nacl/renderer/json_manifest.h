@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/strings/string_split.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "ppapi/c/pp_array_output.h"
 #include "third_party/jsoncpp/source/include/json/value.h"
@@ -17,6 +16,7 @@
 namespace nacl {
 class JsonManifest;
 class NexeLoadManager;
+struct NaClResourcePrefetchRequest;
 
 class JsonManifest {
  public:
@@ -43,7 +43,8 @@ class JsonManifest {
 
   // Gets all the keys and their URLs in the "files" section that are
   // prefetchable.
-  void GetPrefetchableFiles(base::StringPairs* out_files) const;
+  void GetPrefetchableFiles(
+      std::vector<NaClResourcePrefetchRequest>* out_files) const;
 
   // Resolves a key from the "files" section to a fully resolved URL,
   // i.e., relative URL values are fully expanded relative to the

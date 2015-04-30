@@ -194,37 +194,6 @@ void SetCloseOnExec(NaClHandle fd) {
 #endif
 }
 
-bool ShareHandleToSelLdr(
-    base::ProcessHandle processh,
-    NaClHandle sourceh,
-    bool close_source,
-    std::vector<nacl::FileDescriptor> *handles_for_sel_ldr) {
-#if defined(OS_WIN)
-  HANDLE channel;
-  int flags = DUPLICATE_SAME_ACCESS;
-  if (close_source)
-    flags |= DUPLICATE_CLOSE_SOURCE;
-  if (!DuplicateHandle(GetCurrentProcess(),
-                       reinterpret_cast<HANDLE>(sourceh),
-                       processh,
-                       &channel,
-                       0,  // Unused given DUPLICATE_SAME_ACCESS.
-                       FALSE,
-                       flags)) {
-    LOG(ERROR) << "DuplicateHandle() failed";
-    return false;
-  }
-  handles_for_sel_ldr->push_back(
-      reinterpret_cast<nacl::FileDescriptor>(channel));
-#else
-  nacl::FileDescriptor channel;
-  channel.fd = sourceh;
-  channel.auto_close = close_source;
-  handles_for_sel_ldr->push_back(channel);
-#endif
-  return true;
-}
-
 void CloseFile(base::File file) {
   // The base::File destructor will close the file for us.
 }
@@ -238,8 +207,7 @@ NaClProcessHost::NaClProcessHost(
     const GURL& manifest_url,
     base::File nexe_file,
     const NaClFileToken& nexe_token,
-    const std::vector<
-      nacl::NaClResourceFileInfo>& prefetched_resource_files_info,
+    const std::vector<NaClResourcePrefetchResult>& prefetched_resource_files,
     ppapi::PpapiPermissions permissions,
     int render_view_id,
     uint32 permission_bits,
@@ -250,7 +218,7 @@ NaClProcessHost::NaClProcessHost(
     : manifest_url_(manifest_url),
       nexe_file_(nexe_file.Pass()),
       nexe_token_(nexe_token),
-      prefetched_resource_files_info_(prefetched_resource_files_info),
+      prefetched_resource_files_(prefetched_resource_files),
       permissions_(permissions),
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
@@ -298,15 +266,22 @@ NaClProcessHost::~NaClProcessHost() {
     NaClBrowser::GetInstance()->OnProcessEnd(process_->GetData().id);
   }
 
-  for (size_t i = 0; i < prefetched_resource_files_info_.size(); ++i) {
+  // Note: this does not work on Windows, though we currently support this
+  // prefetching feature only on Non-SFI mode, which is supported only on
+  // Linux/ChromeOS, so it should be ok.
+#if defined(OS_WIN)
+  DCHECK(prefetched_resource_files_.empty());
+#else
+  for (size_t i = 0; i < prefetched_resource_files_.size(); ++i) {
     // The process failed to launch for some reason. Close resource file
     // handles.
     base::File file(IPC::PlatformFileForTransitToFile(
-        prefetched_resource_files_info_[i].file));
+        prefetched_resource_files_[i].file));
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE,
         base::Bind(&CloseFile, base::Passed(file.Pass())));
   }
+#endif
 
   if (reply_msg_) {
     // The process failed to launch for some reason.
@@ -842,18 +817,18 @@ bool NaClProcessHost::StartNaClExecution() {
     params.enable_debug_stub = enable_nacl_debug;
 
     const ChildProcessData& data = process_->GetData();
-    if (!ShareHandleToSelLdr(data.handle,
-                             socket_for_sel_ldr_.TakePlatformFile(),
-                             true,
-                             &params.handles)) {
+    params.imc_bootstrap_handle =
+        IPC::TakeFileHandleForProcess(socket_for_sel_ldr_.Pass(), data.handle);
+    if (params.imc_bootstrap_handle == IPC::InvalidPlatformFileForTransit()) {
       return false;
     }
 
     const base::File& irt_file = nacl_browser->IrtFile();
     CHECK(irt_file.IsValid());
     // Send over the IRT file handle.  We don't close our own copy!
-    if (!ShareHandleToSelLdr(data.handle, irt_file.GetPlatformFile(), false,
-                             &params.handles)) {
+    params.irt_handle = IPC::GetFileHandleForProcess(
+        irt_file.GetPlatformFile(), data.handle, false);
+    if (params.irt_handle == IPC::InvalidPlatformFileForTransit()) {
       return false;
     }
 
@@ -870,22 +845,21 @@ bool NaClProcessHost::StartNaClExecution() {
       DLOG(ERROR) << "Failed to allocate memory buffer";
       return false;
     }
-    FileDescriptor memory_fd;
-    memory_fd.fd = dup(memory_buffer.handle().fd);
-    if (memory_fd.fd < 0) {
+    base::ScopedFD memory_fd(dup(memory_buffer.handle().fd));
+    if (!memory_fd.is_valid()) {
       DLOG(ERROR) << "Failed to dup() a file descriptor";
       return false;
     }
-    memory_fd.auto_close = true;
-    params.handles.push_back(memory_fd);
+    params.mac_shm_fd = IPC::GetFileHandleForProcess(
+        memory_fd.release(), data.handle, true);
 #endif
 
 #if defined(OS_POSIX)
     if (params.enable_debug_stub) {
       net::SocketDescriptor server_bound_socket = GetDebugStubSocketHandle();
       if (server_bound_socket != net::kInvalidSocket) {
-        params.debug_stub_server_bound_socket =
-            FileDescriptor(server_bound_socket, true);
+        params.debug_stub_server_bound_socket = IPC::GetFileHandleForProcess(
+            server_bound_socket, data.handle, true);
       }
     }
 #endif
@@ -905,13 +879,13 @@ bool NaClProcessHost::StartNaClExecution() {
 
     // Pass the pre-opened resource files to the loader. For the same reason
     // as above, use an empty base::FilePath.
-    for (size_t i = 0; i < prefetched_resource_files_info_.size(); ++i) {
-      params.prefetched_resource_files.push_back(
-          NaClResourceFileInfo(prefetched_resource_files_info_[i].file,
-                               base::FilePath(),
-                               prefetched_resource_files_info_[i].file_key));
+    for (size_t i = 0; i < prefetched_resource_files_.size(); ++i) {
+      params.prefetched_resource_files.push_back(NaClResourcePrefetchResult(
+          prefetched_resource_files_[i].file,
+          base::FilePath(),
+          prefetched_resource_files_[i].file_key));
     }
-    prefetched_resource_files_info_.clear();
+    prefetched_resource_files_.clear();
   } else {
     if (NaClBrowser::GetInstance()->GetFilePath(nexe_token_.lo,
                                                 nexe_token_.hi,
@@ -932,8 +906,8 @@ bool NaClProcessHost::StartNaClExecution() {
         return true;
       }
     }
-    // TODO(yusukes): Handle |prefetched_resource_files_info_| for SFI-NaCl.
-    DCHECK(prefetched_resource_files_info_.empty());
+    // TODO(yusukes): Handle |prefetched_resource_files_| for SFI-NaCl.
+    DCHECK(prefetched_resource_files_.empty());
   }
 
   params.nexe_file = IPC::TakeFileHandleForProcess(nexe_file_.Pass(),

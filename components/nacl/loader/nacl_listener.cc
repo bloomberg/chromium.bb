@@ -291,8 +291,9 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   struct NaClApp* nap = NULL;
   NaClChromeMainInit();
 
-  crash_info_shmem_.reset(new base::SharedMemory(params.crash_info_shmem_handle,
-                                                 false));
+  CHECK(base::SharedMemory::IsHandleValid(params.crash_info_shmem_handle));
+  crash_info_shmem_.reset(new base::SharedMemory(
+      params.crash_info_shmem_handle, false /* not readonly */));
   CHECK(crash_info_shmem_->Map(nacl::kNaClCrashInfoShmemSize));
   NaClSetFatalErrorCallback(&FatalLogHandler);
 
@@ -339,7 +340,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
           manifest_service_handle)))
     LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
 
-  std::vector<nacl::FileDescriptor> handles = params.handles;
   struct NaClChromeMainArgs* args = NaClChromeMainArgsCreate();
   if (args == NULL) {
     LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
@@ -350,16 +350,15 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   args->number_of_cores = number_of_cores_;
   args->create_memory_object_func = CreateMemoryObject;
 # if defined(OS_MACOSX)
-  CHECK(handles.size() >= 1);
-  g_shm_fd = nacl::ToNativeHandle(handles[handles.size() - 1]);
-  handles.pop_back();
+  CHECK(params.mac_shm_fd != IPC::InvalidPlatformFileForTransit());
+  g_shm_fd = IPC::PlatformFileForTransitToPlatformFile(params.mac_shm_fd);
 # endif
 #endif
 
   DCHECK(params.process_type != nacl::kUnknownNaClProcessType);
-  CHECK(handles.size() >= 1);
-  NaClHandle irt_handle = nacl::ToNativeHandle(handles[handles.size() - 1]);
-  handles.pop_back();
+  CHECK(params.irt_handle != IPC::InvalidPlatformFileForTransit());
+  NaClHandle irt_handle =
+      IPC::PlatformFileForTransitToPlatformFile(params.irt_handle);
 
 #if defined(OS_WIN)
   args->irt_fd = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
@@ -381,8 +380,9 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
         params.version);
   }
 
-  CHECK(handles.size() == 1);
-  args->imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
+  CHECK(params.imc_bootstrap_handle != IPC::InvalidPlatformFileForTransit());
+  args->imc_bootstrap_handle =
+      IPC::PlatformFileForTransitToPlatformFile(params.imc_bootstrap_handle);
   args->enable_debug_stub = params.enable_debug_stub;
 
   // Now configure parts that depend on process type.
@@ -412,9 +412,10 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     args->pnacl_mode = 0;
   }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  args->debug_stub_server_bound_socket_fd = nacl::ToNativeHandle(
-      params.debug_stub_server_bound_socket);
+#if defined(OS_POSIX)
+  args->debug_stub_server_bound_socket_fd =
+      IPC::PlatformFileForTransitToPlatformFile(
+          params.debug_stub_server_bound_socket);
 #endif
 #if defined(OS_WIN)
   args->broker_duplicate_handle_func = BrokerDuplicateHandle;

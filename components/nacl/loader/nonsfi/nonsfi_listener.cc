@@ -149,7 +149,11 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   CHECK(!params.enable_debug_stub);
   CHECK(params.debug_stub_server_bound_socket.fd == -1);
 
-  CHECK(params.handles.empty());
+  CHECK(params.imc_bootstrap_handle == IPC::InvalidPlatformFileForTransit());
+  CHECK(params.irt_handle == IPC::InvalidPlatformFileForTransit());
+  CHECK(params.debug_stub_server_bound_socket ==
+        IPC::InvalidPlatformFileForTransit());
+
   // We are only expecting non-SFI mode to be used with NaCl for now,
   // not PNaCl processes.
   CHECK(params.process_type == kNativeNaClProcessType);

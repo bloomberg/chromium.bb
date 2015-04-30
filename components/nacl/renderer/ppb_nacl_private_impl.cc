@@ -421,17 +421,19 @@ void LaunchSelLdr(PP_Instance instance,
   IPC::PlatformFileForTransit nexe_for_transit =
       IPC::InvalidPlatformFileForTransit();
 
-  base::StringPairs resource_files_to_prefetch;
+  std::vector<NaClResourcePrefetchRequest> resource_prefetch_request_list;
   if (process_type == kNativeNaClProcessType && uses_nonsfi_mode) {
     JsonManifest* manifest = GetJsonManifest(instance);
-    if (manifest)
-      manifest->GetPrefetchableFiles(&resource_files_to_prefetch);
-    for (size_t i = 0; i < resource_files_to_prefetch.size(); ++i) {
-      const GURL gurl(resource_files_to_prefetch[i].second);
-      // Important security check. Do not remove.
-      if (!CanOpenViaFastPath(plugin_instance, gurl)) {
-        resource_files_to_prefetch.clear();
-        break;
+    if (manifest) {
+      manifest->GetPrefetchableFiles(&resource_prefetch_request_list);
+
+      for (size_t i = 0; i < resource_prefetch_request_list.size(); ++i) {
+        const GURL gurl(resource_prefetch_request_list[i].resource_url);
+        // Important security check. Do not remove.
+        if (!CanOpenViaFastPath(plugin_instance, gurl)) {
+          resource_prefetch_request_list.clear();
+          break;
+        }
       }
     }
   }
@@ -453,7 +455,7 @@ void LaunchSelLdr(PP_Instance instance,
               nexe_for_transit,
               nexe_file_info->token_lo,
               nexe_file_info->token_hi,
-              resource_files_to_prefetch,
+              resource_prefetch_request_list,
               routing_id,
               perm_bits,
               PP_ToBool(uses_nonsfi_mode),

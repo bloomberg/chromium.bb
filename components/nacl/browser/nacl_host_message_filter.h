@@ -17,7 +17,7 @@ class GURL;
 
 namespace nacl {
 struct NaClLaunchParams;
-struct NaClResourceFileInfo;
+struct NaClResourcePrefetchResult;
 struct PnaclCacheInfo;
 }
 
@@ -63,8 +63,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   void LaunchNaClContinuationOnIOThread(
       const nacl::NaClLaunchParams& launch_params,
       IPC::Message* reply_msg,
-      const std::vector<
-        nacl::NaClResourceFileInfo>& prefetched_resource_files_info,
+      const std::vector<NaClResourcePrefetchResult>& prefetched_resource_files,
       ppapi::PpapiPermissions permissions);
   void OnGetReadonlyPnaclFd(const std::string& filename,
                             bool is_executable,
