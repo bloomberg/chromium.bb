@@ -15,7 +15,8 @@ namespace gfx {
 
 GLContextOSMesa::GLContextOSMesa(GLShareGroup* share_group)
     : GLContextReal(share_group),
-      context_(NULL) {
+      context_(NULL),
+      is_released_(false) {
 }
 
 bool GLContextOSMesa::Initialize(GLSurface* compatible_surface,
@@ -62,6 +63,8 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
     Destroy();
     return false;
   }
+  // Track that we're no longer in a released state to workaround a mesa issue.
+  is_released_ = false;
 
   // Set this as soon as the context is current, since we might call into GL.
   SetRealGLApi();
@@ -88,14 +91,20 @@ void GLContextOSMesa::ReleaseCurrent(GLSurface* surface) {
     return;
 
   SetCurrent(NULL);
-  // TODO: Calling with NULL here does not work to release the context.
+
+  // Calling |OSMesaMakeCurrent| with NULL here does not work to release the
+  // context. As a workaround, keep track of the release state, so that we can
+  // correctly determine the state of |IsCurrent|.
+  is_released_ = true;
   OSMesaMakeCurrent(NULL, NULL, GL_UNSIGNED_BYTE, 0, 0);
 }
 
 bool GLContextOSMesa::IsCurrent(GLSurface* surface) {
   DCHECK(context_);
 
-  bool native_context_is_current =
+  // |OSMesaGetCurrentContext| doesn't correctly return nullptr when we release,
+  // check the tracked |is_released_|. See |ReleaseCurrent|.
+  bool native_context_is_current = !is_released_ &&
       context_ == OSMesaGetCurrentContext();
 
   // If our context is current then our notion of which GLContext is

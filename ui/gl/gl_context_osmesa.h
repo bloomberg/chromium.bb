@@ -36,6 +36,7 @@ class GLContextOSMesa : public GLContextReal {
 
  private:
   OSMesaContext context_;
+  bool is_released_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextOSMesa);
 };
