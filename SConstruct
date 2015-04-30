@@ -1733,12 +1733,25 @@ def CommandSelLdrTestNacl(env, name, nexe,
   # line for those cases.
   if env.Bit('nacl_glibc') and env['NACL_BUILD_FAMILY'] != 'TRUSTED':
     if not glibc_static and not env.Bit('nacl_static_link'):
-      command = ['${NACL_SDK_LIB}/runnable-ld.so',
-                 # Locally-built shared libraries come from ${LIB_DIR}
-                 # while toolchain-provided ones come from ${NACL_SDK_LIB}.
-                 '--library-path', '${LIB_DIR}:${NACL_SDK_LIB}'] + command
-    # Enable file access.
-    sel_ldr_flags += ['-a']
+      # Enable file access so shared libraries can be loaded.
+      sel_ldr_flags.append('-a')
+      # Locally-built shared libraries come from ${LIB_DIR} while
+      # toolchain-provided ones come from ${NACL_SDK_LIB}.
+      library_path = '${LIB_DIR}:${NACL_SDK_LIB}'
+      if env.Bit('build_x86'):
+        # In the old glibc, we run via runnable-ld.so (the dynamic linker).
+        command = ['${NACL_SDK_LIB}/runnable-ld.so',
+                   '--library-path', library_path] + command
+      else:
+        # In the new glibc, we run via elf_loader and direct it where to
+        # find the dynamic linker in the toolchain.  Note that we build
+        # elf_loader in the nacl_irt_env, not because it is actually built
+        # like the IRT per se, but just because we need it always to be
+        # built against newlib.
+        command = [nacl_irt_env.File('${STAGING_DIR}/elf_loader.nexe'),
+                   '--interp-prefix',
+                   os.path.dirname(env.subst('${NACL_SDK_LIB}'))] + command
+        sel_ldr_flags.extend(['-E', 'LD_LIBRARY_PATH=' + library_path])
 
   # Turn off sandbox for mac so coverage files can be written out.
   if ('TRUSTED_ENV' in env and
@@ -3671,6 +3684,7 @@ nacl_irt_env.Append(
         'src/shared/platform/nacl.scons',
         'src/shared/srpc/nacl.scons',
         'src/tools/tls_edit/build.scons',
+        'src/untrusted/elf_loader/nacl.scons',
         'src/untrusted/irt/nacl.scons',
         'src/untrusted/nacl/nacl.scons',
         'src/untrusted/stubs/nacl.scons',

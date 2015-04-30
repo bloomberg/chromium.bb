@@ -51,6 +51,8 @@
   # For each package target, there should exists a list of packages.
   "packages": {
     "win_x86": [
+      "nacl_arm_glibc",
+      "nacl_arm_glibc_raw",
       "nacl_arm_newlib",
       "nacl_arm_newlib_raw",
       "nacl_x86_glibc",
@@ -63,6 +65,8 @@
     ],
 
     "mac_x86": [
+      "nacl_arm_glibc",
+      "nacl_arm_glibc_raw",
       "nacl_arm_newlib",
       "nacl_arm_newlib_raw",
       "nacl_x86_glibc",
@@ -76,6 +80,8 @@
 
     "linux_x86": [
       "arm_trusted",
+      "nacl_arm_glibc",
+      "nacl_arm_glibc_raw",
       "nacl_arm_newlib",
       "nacl_arm_newlib_raw",
       "nacl_x86_glibc",
@@ -98,8 +104,12 @@
   # need to remember an extra revision set name.
   "revision_sets": {
     # Revision Set Name
-    "nacl_arm_newlib": [
+    "nacl_arm_glibc": [
       # Packages contained within this revision set.
+      "nacl_arm_glibc",
+      "nacl_arm_glibc_raw"
+    ],
+    "nacl_arm_newlib": [
       "nacl_arm_newlib",
       "nacl_arm_newlib_raw"
     ],
@@ -132,6 +142,7 @@
     "nacl_core_sdk": [
       "arm_trusted",
       "nacl_arm_newlib",
+      "nacl_arm_glibc",
       "nacl_x86_glibc",
       "nacl_x86_newlib",
       "pnacl_newlib",
