@@ -6,8 +6,8 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -155,7 +155,7 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
       store.Pass(),
       component_policy_cache_dir,
       scoped_ptr<CloudExternalDataManager>(),
-      base::MessageLoopProxy::current(),
+      base::ThreadTaskRunnerHandle::Get(),
       file_task_runner,
       io_task_runner));
   manager->Init(

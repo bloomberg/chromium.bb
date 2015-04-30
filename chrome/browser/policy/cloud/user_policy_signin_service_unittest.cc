@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -110,9 +109,9 @@ UserCloudPolicyManager* BuildCloudPolicyManager(
       scoped_ptr<UserCloudPolicyStore>(store),
       base::FilePath(),
       scoped_ptr<CloudExternalDataManager>(),
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current());
+      base::ThreadTaskRunnerHandle::Get(),
+      base::ThreadTaskRunnerHandle::Get(),
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 class UserPolicySigninServiceTest : public testing::Test {
@@ -158,7 +157,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     local_state_.reset(new TestingPrefServiceSimple);
     chrome::RegisterLocalState(local_state_->registry());
     system_request_context_getter_ = new net::TestURLRequestContextGetter(
-        base::MessageLoopProxy::current());
+        base::ThreadTaskRunnerHandle::Get());
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         system_request_context_getter_.get());
     TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());

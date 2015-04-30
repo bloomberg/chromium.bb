@@ -9,9 +9,9 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/policy/policy_helpers.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/url_fixer/url_fixer.h"
@@ -44,8 +44,8 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
  public:
   explicit TestingURLBlacklistManager(PrefService* pref_service)
       : URLBlacklistManager(pref_service,
-                            base::MessageLoopProxy::current(),
-                            base::MessageLoopProxy::current(),
+                            base::ThreadTaskRunnerHandle::Get(),
+                            base::ThreadTaskRunnerHandle::Get(),
                             GetSegmentURLCallback(),
                             base::Bind(OverrideBlacklistForURL)),
         update_called_(0),

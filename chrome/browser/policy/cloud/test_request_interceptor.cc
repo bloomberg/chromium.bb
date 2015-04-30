@@ -11,9 +11,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -286,8 +286,8 @@ size_t TestRequestInterceptor::GetPendingSize() {
 void TestRequestInterceptor::AddRequestServicedCallback(
     const base::Closure& callback) {
   base::Closure post_callback =
-      base::Bind(base::IgnoreResult(&base::MessageLoopProxy::PostTask),
-                 base::MessageLoopProxy::current(),
+      base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
+                 base::ThreadTaskRunnerHandle::Get(),
                  FROM_HERE,
                  callback);
   PostToIOAndWait(base::Bind(&Delegate::AddRequestServicedCallback,
@@ -331,8 +331,8 @@ void TestRequestInterceptor::PostToIOAndWait(const base::Closure& task) {
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(
-          base::IgnoreResult(&base::MessageLoopProxy::PostTask),
-          base::MessageLoopProxy::current(),
+          base::IgnoreResult(&base::TaskRunner::PostTask),
+          base::ThreadTaskRunnerHandle::Get(),
           FROM_HERE,
           run_loop.QuitClosure()));
   run_loop.Run();

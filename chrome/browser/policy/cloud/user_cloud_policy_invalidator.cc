@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
@@ -21,7 +21,7 @@ UserCloudPolicyInvalidator::UserCloudPolicyInvalidator(
     CloudPolicyManager* policy_manager)
     : CloudPolicyInvalidator(GetPolicyType(),
                              policy_manager->core(),
-                             base::MessageLoopProxy::current(),
+                             base::ThreadTaskRunnerHandle::Get(),
                              scoped_ptr<base::Clock>(new base::DefaultClock()),
                              0 /* highest_handled_invalidation_version */),
       profile_(profile) {
