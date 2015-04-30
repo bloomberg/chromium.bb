@@ -48,7 +48,7 @@ class VelocityTrackerTest : public testing::Test {
 
  protected:
   static MockMotionEvent Sample(MotionEvent::Action action,
-                                gfx::PointF p0,
+                                const gfx::PointF& p0,
                                 TimeTicks t0,
                                 gfx::Vector2dF v,
                                 TimeDelta dt) {
@@ -57,7 +57,7 @@ class VelocityTrackerTest : public testing::Test {
   }
 
   static void ApplyMovementSequence(VelocityTrackerState* state,
-                                    gfx::PointF p0,
+                                    const gfx::PointF& p0,
                                     gfx::Vector2dF v,
                                     TimeTicks t0,
                                     TimeDelta t,
@@ -72,7 +72,7 @@ class VelocityTrackerTest : public testing::Test {
   }
 
   static void ApplyMovement(VelocityTrackerState* state,
-                            gfx::PointF p0,
+                            const gfx::PointF& p0,
                             gfx::Vector2dF v,
                             TimeTicks t0,
                             TimeDelta t,

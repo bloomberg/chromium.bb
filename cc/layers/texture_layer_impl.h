@@ -41,8 +41,8 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   void SetBlendBackgroundColor(bool blend);
   void SetFlipped(bool flipped);
   void SetNearestNeighbor(bool nearest_neighbor);
-  void SetUVTopLeft(const gfx::PointF top_left);
-  void SetUVBottomRight(const gfx::PointF bottom_right);
+  void SetUVTopLeft(const gfx::PointF& top_left);
+  void SetUVBottomRight(const gfx::PointF& bottom_right);
 
   // 1--2
   // |  |
