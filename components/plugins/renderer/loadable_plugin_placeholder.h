@@ -70,6 +70,9 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   // Load the blocked plugin.
   void LoadPlugin();
 
+  // WebViewPlugin::Delegate (via PluginPlaceholder) method
+  void BindWebFrame(blink::WebFrame* frame) override;
+
   // gin::Wrappable method:
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
@@ -82,13 +85,8 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   void WasShown() override;
 
   // Javascript callbacks:
-
-  // Load the blocked plugin by calling LoadPlugin().
   void LoadCallback();
-
-  // Hide the blocked plugin by calling HidePlugin().
   void HideCallback();
-
   void DidFinishLoadingCallback();
 
   void UpdateMessage();

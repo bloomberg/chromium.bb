@@ -12,9 +12,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -102,6 +104,18 @@ void LoadablePluginPlaceholder::MarkPluginEssential(
 }
 #endif
 
+void LoadablePluginPlaceholder::BindWebFrame(blink::WebFrame* frame) {
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  DCHECK(!context.IsEmpty());
+
+  v8::Context::Scope context_scope(context);
+  v8::Local<v8::Object> global = context->Global();
+  global->Set(gin::StringToV8(isolate, "plugin"),
+              gin::CreateHandle(isolate, this).ToV8());
+}
+
 gin::ObjectTemplateBuilder LoadablePluginPlaceholder::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<PluginPlaceholder>::GetObjectTemplateBuilder(isolate)
@@ -159,7 +173,7 @@ void LoadablePluginPlaceholder::HidePlugin() {
   // same dimensions. If we find such a parent, hide that as well.
   // This makes much more uncovered page content usable (including clickable)
   // as opposed to merely visible.
-  // TODO(cevans) -- it's a foul heurisitc but we're going to tolerate it for
+  // TODO(cevans) -- it's a foul heuristic but we're going to tolerate it for
   // now for these reasons:
   // 1) Makes the user experience better.
   // 2) Foulness is encapsulated within this single function.

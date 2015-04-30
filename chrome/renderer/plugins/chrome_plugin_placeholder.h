@@ -69,9 +69,6 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
                           const base::string16& title);
   ~ChromePluginPlaceholder() override;
 
-  // WebViewPlugin::Delegate (via PluginPlaceholder) method
-  void BindWebFrame(blink::WebFrame* frame) override;
-
   // gin::Wrappable (via PluginPlaceholder) method
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
@@ -89,9 +86,11 @@ class ChromePluginPlaceholder : public plugins::LoadablePluginPlaceholder,
   void OnMenuAction(int request_id, unsigned action) override;
   void OnMenuClosed(int request_id) override;
 
-  // Javascript callback opens chrome://plugins in a new tab.
+  // Javascript callbacks:
+  // Open chrome://plugins in a new tab.
   void OpenAboutPluginsCallback();
 
+  // IPC message handlers:
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   void OnDidNotFindMissingPlugin();
   void OnFoundMissingPlugin(const base::string16& plugin_name);

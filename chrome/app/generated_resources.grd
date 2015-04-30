@@ -7111,6 +7111,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Right-click to play <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
         </message>
       </if>
+      <message name="IDS_PLUGIN_BLOCKED_BY_POLICY" desc="The placeholder text for a plugin blocked by enterprise policy.">
+        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is not allowed.
+      </message>
       <if expr="chromeos">
         <message name="IDS_NACL_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plugin.">
           This app is not currently supported on this device but the Chrome gnomes are hard at work to make it work soon.
