@@ -93,6 +93,13 @@ public class RoundedIconGenerator {
     }
 
     /**
+     * Sets the background color to use when generating icons.
+     */
+    public void setBackgroundColor(int color) {
+        mBackgroundPaint.setColor(color);
+    }
+
+    /**
      * Generates an icon based on |text|.
      *
      * @param text The text to render the first character of on the icon.
