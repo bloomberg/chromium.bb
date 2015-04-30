@@ -379,20 +379,22 @@ void DOMWebSocket::releaseChannel()
 
 void DOMWebSocket::send(const String& message, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "WebSocket %p send() Sending String '%s'", this, message.utf8().data());
+    CString encodedMessage = message.utf8();
+
+    WTF_LOG(Network, "WebSocket %p send() Sending String '%s'", this, encodedMessage.data());
     if (m_state == CONNECTING) {
         setInvalidStateErrorForSendMethod(exceptionState);
         return;
     }
     // No exception is raised if the connection was once established but has subsequently been closed.
     if (m_state == CLOSING || m_state == CLOSED) {
-        updateBufferedAmountAfterClose(message.utf8().length());
+        updateBufferedAmountAfterClose(encodedMessage.length());
         return;
     }
     Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", WebSocketSendTypeString, WebSocketSendTypeMax);
     ASSERT(m_channel);
-    m_bufferedAmount += message.utf8().length();
-    m_channel->send(message);
+    m_bufferedAmount += encodedMessage.length();
+    m_channel->send(encodedMessage);
 }
 
 void DOMWebSocket::send(DOMArrayBuffer* binaryData, ExceptionState& exceptionState)

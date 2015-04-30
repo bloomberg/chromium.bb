@@ -77,10 +77,11 @@ public:
 
     // WebSocketChannel functions.
     virtual bool connect(const KURL&, const String& protocol) override;
-    virtual void send(const String& message) override;
+    virtual void send(const CString& message) override;
     virtual void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
     virtual void send(PassRefPtr<BlobDataHandle>) override;
-    virtual void send(PassOwnPtr<Vector<char>> data) override;
+    virtual void sendTextAsCharVector(PassOwnPtr<Vector<char>> data) override;
+    virtual void sendBinaryAsCharVector(PassOwnPtr<Vector<char>> data) override;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
     virtual void close(int code, const String& reason) override;
@@ -94,15 +95,18 @@ private:
         MessageTypeText,
         MessageTypeBlob,
         MessageTypeArrayBuffer,
-        MessageTypeVector,
+        MessageTypeTextAsCharVector,
+        MessageTypeBinaryAsCharVector,
         MessageTypeClose,
     };
 
     struct Message {
-        explicit Message(const String&);
+        explicit Message(const CString&);
         explicit Message(PassRefPtr<BlobDataHandle>);
         explicit Message(PassRefPtr<DOMArrayBuffer>);
-        explicit Message(PassOwnPtr<Vector<char>>);
+        // For WorkerWebSocketChannel
+        explicit Message(PassOwnPtr<Vector<char>>, MessageType);
+        // Close message
         Message(unsigned short code, const String& reason);
 
         MessageType type;
@@ -123,7 +127,8 @@ private:
     class BlobLoader;
 
     DocumentWebSocketChannel(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned, WebSocketHandle*);
-    void sendInternal();
+    void sendInternal(WebSocketHandle::MessageType, const char* data, size_t totalSize, uint64_t* consumedBufferedAmount);
+    void processSendQueue();
     void flowControlIfNecessary();
     void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConstruction, m_lineNumberAtConstruction); }
     void abortAsyncOperations();

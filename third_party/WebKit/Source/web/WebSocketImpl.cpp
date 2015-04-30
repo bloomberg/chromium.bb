@@ -93,7 +93,9 @@ WebString WebSocketImpl::extensions()
 
 bool WebSocketImpl::sendText(const WebString& message)
 {
-    size_t size = message.utf8().length();
+    String coreMessage = message;
+    CString encodedMessage = coreMessage.utf8();
+    size_t size = encodedMessage.length();
     m_bufferedAmount += size;
     if (m_isClosingOrClosed)
         m_bufferedAmountAfterClose += size;
@@ -104,7 +106,7 @@ bool WebSocketImpl::sendText(const WebString& message)
     if (m_isClosingOrClosed)
         return true;
 
-    m_private->send(message);
+    m_private->send(encodedMessage);
     return true;
 }
 

@@ -50,6 +50,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
+#include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -126,7 +127,7 @@ bool WorkerWebSocketChannel::connect(const KURL& url, const String& protocol)
     return m_bridge->connect(url, protocol);
 }
 
-void WorkerWebSocketChannel::send(const String& message)
+void WorkerWebSocketChannel::send(const CString& message)
 {
     ASSERT(m_bridge);
     m_bridge->send(message);
@@ -218,18 +219,18 @@ void Peer::connect(const KURL& url, const String& protocol)
     m_syncHelper->signalWorkerThread();
 }
 
-void Peer::send(const String& message)
+void Peer::sendTextAsCharVector(PassOwnPtr<Vector<char>> data)
 {
     ASSERT(isMainThread());
     if (m_mainWebSocketChannel)
-        m_mainWebSocketChannel->send(message);
+        m_mainWebSocketChannel->sendTextAsCharVector(data);
 }
 
-void Peer::sendArrayBuffer(PassOwnPtr<Vector<char>> data)
+void Peer::sendBinaryAsCharVector(PassOwnPtr<Vector<char>> data)
 {
     ASSERT(isMainThread());
     if (m_mainWebSocketChannel)
-        m_mainWebSocketChannel->send(data);
+        m_mainWebSocketChannel->sendBinaryAsCharVector(data);
 }
 
 void Peer::sendBlob(PassRefPtr<BlobDataHandle> blobData)
@@ -404,10 +405,14 @@ bool Bridge::connect(const KURL& url, const String& protocol)
     return m_syncHelper->connectRequestResult();
 }
 
-void Bridge::send(const String& message)
+void Bridge::send(const CString& message)
 {
     ASSERT(m_peer);
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::send, m_peer.get(), message));
+    OwnPtr<Vector<char>> data = adoptPtr(new Vector<char>(message.length()));
+    if (message.length())
+        memcpy(data->data(), static_cast<const char*>(message.data()), message.length());
+
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendTextAsCharVector, m_peer.get(), data.release()));
 }
 
 void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
@@ -418,7 +423,7 @@ void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigne
     if (binaryData.byteLength())
         memcpy(data->data(), static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
 
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendArrayBuffer, m_peer.get(), data.release()));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendBinaryAsCharVector, m_peer.get(), data.release()));
 }
 
 void Bridge::send(PassRefPtr<BlobDataHandle> data)

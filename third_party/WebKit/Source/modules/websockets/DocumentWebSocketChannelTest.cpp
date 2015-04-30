@@ -229,57 +229,6 @@ TEST_F(DocumentWebSocketChannelTest, sendTextContinuation)
     EXPECT_EQ(62ul, m_sumOfConsumedBufferedAmount);
 }
 
-TEST_F(DocumentWebSocketChannelTest, sendTextNonLatin1)
-{
-    connect();
-    {
-        InSequence s;
-        EXPECT_CALL(*handle(), send(true, WebSocketHandle::MessageTypeText, MemEq("\xe7\x8b\x90\xe0\xa4\x94", 6), 6));
-    }
-
-    handleClient()->didReceiveFlowControl(handle(), 16);
-    EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
-
-    UChar nonLatin1String[] = {
-        0x72d0,
-        0x0914,
-        0x0000
-    };
-    channel()->send(nonLatin1String);
-
-    EXPECT_EQ(6ul, m_sumOfConsumedBufferedAmount);
-}
-
-TEST_F(DocumentWebSocketChannelTest, sendTextNonLatin1Continuation)
-{
-    connect();
-    Checkpoint checkpoint;
-    {
-        InSequence s;
-        EXPECT_CALL(*handle(), send(false, WebSocketHandle::MessageTypeText, MemEq("\xe7\x8b\x90\xe0\xa4\x94\xe7\x8b\x90\xe0\xa4\x94\xe7\x8b\x90\xe0", 16), 16));
-        EXPECT_CALL(checkpoint, Call(1));
-        EXPECT_CALL(*handle(), send(true, WebSocketHandle::MessageTypeContinuation, MemEq("\xa4\x94", 2), 2));
-    }
-
-    handleClient()->didReceiveFlowControl(handle(), 16);
-    EXPECT_CALL(*channelClient(), didConsumeBufferedAmount(_)).Times(AnyNumber());
-
-    UChar nonLatin1String[] = {
-        0x72d0,
-        0x0914,
-        0x72d0,
-        0x0914,
-        0x72d0,
-        0x0914,
-        0x0000
-    };
-    channel()->send(nonLatin1String);
-    checkpoint.Call(1);
-    handleClient()->didReceiveFlowControl(handle(), 16);
-
-    EXPECT_EQ(18ul, m_sumOfConsumedBufferedAmount);
-}
-
 TEST_F(DocumentWebSocketChannelTest, sendBinaryInVector)
 {
     connect();
@@ -293,7 +242,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVector)
 
     Vector<char> fooVector;
     fooVector.append("foo", 3);
-    channel()->send(adoptPtr(new Vector<char>(fooVector)));
+    channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(fooVector)));
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -315,22 +264,22 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorWithNullBytes)
     {
         Vector<char> v;
         v.append("\0ar", 3);
-        channel()->send(adoptPtr(new Vector<char>(v)));
+        channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
     }
     {
         Vector<char> v;
         v.append("b\0z", 3);
-        channel()->send(adoptPtr(new Vector<char>(v)));
+        channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
     }
     {
         Vector<char> v;
         v.append("qu\0", 3);
-        channel()->send(adoptPtr(new Vector<char>(v)));
+        channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
     }
     {
         Vector<char> v;
         v.append("\0\0\0", 3);
-        channel()->send(adoptPtr(new Vector<char>(v)));
+        channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
     }
 
     EXPECT_EQ(12ul, m_sumOfConsumedBufferedAmount);
@@ -346,7 +295,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonLatin1UTF8)
 
     Vector<char> v;
     v.append("\xe7\x8b\x90", 3);
-    channel()->send(adoptPtr(new Vector<char>(v)));
+    channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -361,7 +310,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonUTF8)
 
     Vector<char> v;
     v.append("\x80\xff\xe7", 3);
-    channel()->send(adoptPtr(new Vector<char>(v)));
+    channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
 
     EXPECT_EQ(3ul, m_sumOfConsumedBufferedAmount);
 }
@@ -382,7 +331,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonLatin1UTF8Continuation
 
     Vector<char> v;
     v.append("\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90", 18);
-    channel()->send(adoptPtr(new Vector<char>(v)));
+    channel()->sendBinaryAsCharVector(adoptPtr(new Vector<char>(v)));
     checkpoint.Call(1);
 
     handleClient()->didReceiveFlowControl(handle(), 16);

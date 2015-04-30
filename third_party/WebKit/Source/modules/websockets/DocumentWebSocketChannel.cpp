@@ -171,17 +171,16 @@ bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
     return true;
 }
 
-void DocumentWebSocketChannel::send(const String& message)
+void DocumentWebSocketChannel::send(const CString& message)
 {
-    WTF_LOG(Network, "DocumentWebSocketChannel %p sendText(%s)", this, message.utf8().data());
+    WTF_LOG(Network, "DocumentWebSocketChannel %p sendText(%s)", this, message.data());
     if (m_identifier) {
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
-        CString data = message.utf8();
-        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeText, true, data.data(), data.length());
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeText, true, message.data(), message.length());
     }
     m_messages.append(adoptPtr(new Message(message)));
-    sendInternal();
+    processSendQueue();
 }
 
 void DocumentWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobDataHandle)
@@ -196,7 +195,7 @@ void DocumentWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobDataHandle)
         InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeBinary, true, "", 0);
     }
     m_messages.append(adoptPtr(new Message(blobDataHandle)));
-    sendInternal();
+    processSendQueue();
 }
 
 void DocumentWebSocketChannel::send(const DOMArrayBuffer& buffer, unsigned byteOffset, unsigned byteLength)
@@ -211,19 +210,31 @@ void DocumentWebSocketChannel::send(const DOMArrayBuffer& buffer, unsigned byteO
     // FIXME: Reduce copy by sending the data immediately when we don't need to
     // queue the data.
     m_messages.append(adoptPtr(new Message(buffer.slice(byteOffset, byteOffset + byteLength))));
-    sendInternal();
+    processSendQueue();
 }
 
-void DocumentWebSocketChannel::send(PassOwnPtr<Vector<char>> data)
+void DocumentWebSocketChannel::sendTextAsCharVector(PassOwnPtr<Vector<char>> data)
 {
-    WTF_LOG(Network, "DocumentWebSocketChannel %p sendVector(%p, %llu)", this, data.get(), static_cast<unsigned long long>(data->size()));
+    WTF_LOG(Network, "DocumentWebSocketChannel %p sendTextAsCharVector(%p, %llu)", this, data.get(), static_cast<unsigned long long>(data->size()));
+    if (m_identifier) {
+        // FIXME: Change the inspector API to show the entire message instead
+        // of individual frames.
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeText, true, data->data(), data->size());
+    }
+    m_messages.append(adoptPtr(new Message(data, MessageTypeTextAsCharVector)));
+    processSendQueue();
+}
+
+void DocumentWebSocketChannel::sendBinaryAsCharVector(PassOwnPtr<Vector<char>> data)
+{
+    WTF_LOG(Network, "DocumentWebSocketChannel %p sendBinaryAsCharVector(%p, %llu)", this, data.get(), static_cast<unsigned long long>(data->size()));
     if (m_identifier) {
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
         InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeBinary, true, data->data(), data->size());
     }
-    m_messages.append(adoptPtr(new Message(data)));
-    sendInternal();
+    m_messages.append(adoptPtr(new Message(data, MessageTypeBinaryAsCharVector)));
+    processSendQueue();
 }
 
 void DocumentWebSocketChannel::close(int code, const String& reason)
@@ -232,7 +243,7 @@ void DocumentWebSocketChannel::close(int code, const String& reason)
     ASSERT(m_handle);
     unsigned short codeToSend = static_cast<unsigned short>(code == CloseEventCodeNotSpecified ? CloseEventCodeNoStatusRcvd : code);
     m_messages.append(adoptPtr(new Message(codeToSend, reason)));
-    sendInternal();
+    processSendQueue();
 }
 
 void DocumentWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
@@ -266,9 +277,9 @@ void DocumentWebSocketChannel::disconnect()
     m_identifier = 0;
 }
 
-DocumentWebSocketChannel::Message::Message(const String& text)
+DocumentWebSocketChannel::Message::Message(const CString& text)
     : type(MessageTypeText)
-    , text(text.utf8()) { }
+    , text(text) { }
 
 DocumentWebSocketChannel::Message::Message(PassRefPtr<BlobDataHandle> blobDataHandle)
     : type(MessageTypeBlob)
@@ -278,88 +289,74 @@ DocumentWebSocketChannel::Message::Message(PassRefPtr<DOMArrayBuffer> arrayBuffe
     : type(MessageTypeArrayBuffer)
     , arrayBuffer(arrayBuffer) { }
 
-DocumentWebSocketChannel::Message::Message(PassOwnPtr<Vector<char>> vectorData)
-    : type(MessageTypeVector)
-    , vectorData(vectorData) { }
+DocumentWebSocketChannel::Message::Message(PassOwnPtr<Vector<char>> vectorData, MessageType type)
+    : type(type)
+    , vectorData(vectorData)
+{
+    ASSERT(type == MessageTypeTextAsCharVector || type == MessageTypeBinaryAsCharVector);
+}
 
 DocumentWebSocketChannel::Message::Message(unsigned short code, const String& reason)
     : type(MessageTypeClose)
     , code(code)
     , reason(reason) { }
 
-void DocumentWebSocketChannel::sendInternal()
+void DocumentWebSocketChannel::sendInternal(WebSocketHandle::MessageType messageType, const char* data, size_t totalSize, uint64_t* consumedBufferedAmount)
+{
+    WebSocketHandle::MessageType frameType =
+        m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : messageType;
+    ASSERT(totalSize >= m_sentSizeOfTopMessage);
+    // The first cast is safe since the result of min() never exceeds
+    // the range of size_t. The second cast is necessary to compile
+    // min() on ILP32.
+    size_t size = static_cast<size_t>(std::min(m_sendingQuota, static_cast<uint64_t>(totalSize - m_sentSizeOfTopMessage)));
+    bool final = (m_sentSizeOfTopMessage + size == totalSize);
+
+    m_handle->send(final, frameType, data + m_sentSizeOfTopMessage, size);
+
+    m_sentSizeOfTopMessage += size;
+    m_sendingQuota -= size;
+    *consumedBufferedAmount += size;
+
+    if (final) {
+        m_messages.removeFirst();
+        m_sentSizeOfTopMessage = 0;
+    }
+}
+
+void DocumentWebSocketChannel::processSendQueue()
 {
     ASSERT(m_handle);
     uint64_t consumedBufferedAmount = 0;
     while (!m_messages.isEmpty() && !m_blobLoader) {
-        bool final = false;
         Message* message = m_messages.first().get();
         if (m_sendingQuota == 0 && message->type != MessageTypeClose)
             break;
         switch (message->type) {
-        case MessageTypeText: {
-            WebSocketHandle::MessageType type =
-                m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeText;
-            size_t totalSize = message->text.length();
-            ASSERT(totalSize >= m_sentSizeOfTopMessage);
-            // The first cast is safe since the result of min() never exceeds
-            // the range of size_t. The second cast is necessary to compile
-            // min() on ILP32.
-            size_t size = static_cast<size_t>(std::min(m_sendingQuota, static_cast<uint64_t>(totalSize - m_sentSizeOfTopMessage)));
-            final = (m_sentSizeOfTopMessage + size == totalSize);
-
-            m_handle->send(final, type, message->text.data() + m_sentSizeOfTopMessage, size);
-
-            m_sentSizeOfTopMessage += size;
-            m_sendingQuota -= size;
-            consumedBufferedAmount += size;
+        case MessageTypeText:
+            sendInternal(WebSocketHandle::MessageTypeText, message->text.data(), message->text.length(), &consumedBufferedAmount);
             break;
-        }
         case MessageTypeBlob:
             ASSERT(!m_blobLoader);
             m_blobLoader = new BlobLoader(message->blobDataHandle, this);
             break;
-        case MessageTypeArrayBuffer: {
-            WebSocketHandle::MessageType type =
-                m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeBinary;
-            unsigned totalSize = message->arrayBuffer->byteLength();
-            ASSERT(totalSize >= m_sentSizeOfTopMessage);
-            size_t size = static_cast<size_t>(std::min(m_sendingQuota, static_cast<uint64_t>(totalSize - m_sentSizeOfTopMessage)));
-            final = (m_sentSizeOfTopMessage + size == totalSize);
-
-            m_handle->send(final, type, static_cast<const char*>(message->arrayBuffer->data()) + m_sentSizeOfTopMessage, size);
-
-            m_sentSizeOfTopMessage += size;
-            m_sendingQuota -= size;
-            consumedBufferedAmount += size;
+        case MessageTypeArrayBuffer:
+            sendInternal(WebSocketHandle::MessageTypeBinary, static_cast<const char*>(message->arrayBuffer->data()), message->arrayBuffer->byteLength(), &consumedBufferedAmount);
             break;
-        }
-        case MessageTypeVector: {
-            WebSocketHandle::MessageType type =
-                m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeBinary;
-            size_t totalSize = message->vectorData->size();
-            ASSERT(totalSize >= m_sentSizeOfTopMessage);
-            size_t size = static_cast<size_t>(std::min(m_sendingQuota, static_cast<uint64_t>(totalSize - m_sentSizeOfTopMessage)));
-            final = (m_sentSizeOfTopMessage + size == totalSize);
-
-            m_handle->send(final, type, message->vectorData->data() + m_sentSizeOfTopMessage, size);
-
-            m_sentSizeOfTopMessage += size;
-            m_sendingQuota -= size;
-            consumedBufferedAmount += size;
+        case MessageTypeTextAsCharVector:
+            sendInternal(WebSocketHandle::MessageTypeText, message->vectorData->data(), message->vectorData->size(), &consumedBufferedAmount);
             break;
-        }
+        case MessageTypeBinaryAsCharVector:
+            sendInternal(WebSocketHandle::MessageTypeBinary, message->vectorData->data(), message->vectorData->size(), &consumedBufferedAmount);
+            break;
         case MessageTypeClose: {
             // No message should be sent from now on.
             ASSERT(m_messages.size() == 1);
+            ASSERT(m_sentSizeOfTopMessage == 0);
             m_handle->close(message->code, message->reason);
-            final = true;
+            m_messages.removeFirst();
             break;
         }
-        }
-        if (final) {
-            m_messages.removeFirst();
-            m_sentSizeOfTopMessage = 0;
         }
     }
     if (m_client && consumedBufferedAmount > 0)
@@ -540,7 +537,7 @@ void DocumentWebSocketChannel::didReceiveFlowControl(WebSocketHandle* handle, in
     ASSERT(quota >= 0);
 
     m_sendingQuota += quota;
-    sendInternal();
+    processSendQueue();
 }
 
 void DocumentWebSocketChannel::didStartClosingHandshake(WebSocketHandle* handle)
@@ -562,7 +559,7 @@ void DocumentWebSocketChannel::didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer> b
     ASSERT(m_messages.size() > 0 && m_messages.first()->type == MessageTypeBlob);
     // We replace it with the loaded blob.
     m_messages.first() = adoptPtr(new Message(buffer));
-    sendInternal();
+    processSendQueue();
 }
 
 void DocumentWebSocketChannel::didFailLoadingBlob(FileError::ErrorCode errorCode)
