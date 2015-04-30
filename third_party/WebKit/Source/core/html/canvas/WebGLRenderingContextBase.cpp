@@ -1367,15 +1367,27 @@ void WebGLRenderingContextBase::bufferSubData(GLenum target, long long offset, D
     bufferSubDataImpl(target, offset, data->byteLength(), data->baseAddress());
 }
 
+bool WebGLRenderingContextBase::validateFramebufferTarget(GLenum target)
+{
+    if (target == GL_FRAMEBUFFER)
+        return true;
+    return false;
+}
+
+WebGLFramebuffer* WebGLRenderingContextBase::getFramebufferBinding(GLenum target)
+{
+    return m_framebufferBinding.get();
+}
+
 GLenum WebGLRenderingContextBase::checkFramebufferStatus(GLenum target)
 {
     if (isContextLost())
         return GL_FRAMEBUFFER_UNSUPPORTED;
-    if (target != GL_FRAMEBUFFER) {
+    if (!validateFramebufferTarget(target)) {
         synthesizeGLError(GL_INVALID_ENUM, "checkFramebufferStatus", "invalid target");
         return 0;
     }
-    if (!m_framebufferBinding || !m_framebufferBinding->object())
+    if (!getFramebufferBinding(target) || !getFramebufferBinding(target)->object())
         return GL_FRAMEBUFFER_COMPLETE;
     const char* reason = "framebuffer incomplete";
     GLenum result = m_framebufferBinding->checkStatus(&reason);
@@ -5464,7 +5476,7 @@ void WebGLRenderingContextBase::printWarningToConsole(const String& message)
 
 bool WebGLRenderingContextBase::validateFramebufferFuncParameters(const char* functionName, GLenum target, GLenum attachment)
 {
-    if (target != GL_FRAMEBUFFER) {
+    if (!validateFramebufferTarget(target)) {
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid target");
         return false;
     }

@@ -1526,6 +1526,25 @@ bool WebGL2RenderingContextBase::validateAndUpdateBufferBindTarget(const char* f
     return true;
 }
 
+bool WebGL2RenderingContextBase::validateFramebufferTarget(GLenum target)
+{
+    switch (target) {
+    case GL_FRAMEBUFFER:
+    case GL_READ_FRAMEBUFFER:
+    case GL_DRAW_FRAMEBUFFER:
+        return true;
+    default:
+        return false;
+    }
+}
+
+WebGLFramebuffer* WebGL2RenderingContextBase::getFramebufferBinding(GLenum target)
+{
+    if (target == GL_READ_FRAMEBUFFER)
+        return m_readFramebufferBinding.get();
+    return m_framebufferBinding.get();
+}
+
 DEFINE_TRACE(WebGL2RenderingContextBase)
 {
     visitor->trace(m_readFramebufferBinding);

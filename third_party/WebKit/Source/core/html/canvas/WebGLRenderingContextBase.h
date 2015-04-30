@@ -883,6 +883,12 @@ protected:
     // used only to warn about use of obsolete functions.
     void printWarningToConsole(const String&);
 
+    // Helper function to validate the target for checkFramebufferStatus and validateFramebufferFuncParameters.
+    virtual bool validateFramebufferTarget(GLenum target);
+
+    // Get the framebuffer bound to given target
+    virtual WebGLFramebuffer* getFramebufferBinding(GLenum target);
+
     // Helper function to validate input parameters for framebuffer functions.
     // Generate GL error if parameters are illegal.
     bool validateFramebufferFuncParameters(const char* functionName, GLenum target, GLenum attachment);

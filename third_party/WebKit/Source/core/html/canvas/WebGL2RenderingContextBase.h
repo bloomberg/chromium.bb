@@ -181,6 +181,8 @@ protected:
     bool validateBufferTarget(const char* functionName, GLenum target) override;
     bool validateAndUpdateBufferBindTarget(const char* functionName, GLenum, WebGLBuffer*) override;
     WebGLTexture* validateTextureBinding(const char* functionName, GLenum target, bool useSixEnumsForCubeMap) override;
+    bool validateFramebufferTarget(GLenum target) override;
+    WebGLFramebuffer* getFramebufferBinding(GLenum target) override;
 
     RefPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
 };
