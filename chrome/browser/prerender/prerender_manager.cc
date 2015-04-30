@@ -194,7 +194,7 @@ PrerenderManager::PrerenderManager(Profile* profile)
   // There are some assumptions that the PrerenderManager is on the UI thread.
   // Any other checks simply make sure that the PrerenderManager is accessed on
   // the same thread that it was created on.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Certain experiments override our default config_ values.
   switch (PrerenderManager::GetMode()) {
@@ -555,7 +555,7 @@ void PrerenderManager::RecordPageLoadTimeNotSwappedIn(
     Origin origin,
     base::TimeDelta page_load_time,
     const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   histograms_->RecordPageLoadTimeNotSwappedIn(origin, page_load_time, url);
 }
 
@@ -565,7 +565,7 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
     base::TimeDelta perceived_page_load_time,
     double fraction_plt_elapsed_at_swap_in,
     const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsEnabled())
     return;
 
@@ -1265,7 +1265,7 @@ void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64 bytes) {
 
 void PrerenderManager::AddPrerenderProcessHost(
     content::RenderProcessHost* process_host) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(prerender_process_hosts_.find(process_host) ==
          prerender_process_hosts_.end());
   prerender_process_hosts_.insert(process_host);
@@ -1274,7 +1274,7 @@ void PrerenderManager::AddPrerenderProcessHost(
 
 bool PrerenderManager::MayReuseProcessHost(
     content::RenderProcessHost* process_host) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Isolate prerender processes to make the resource monitoring check more
   // accurate.
   return (prerender_process_hosts_.find(process_host) ==
@@ -1283,7 +1283,7 @@ bool PrerenderManager::MayReuseProcessHost(
 
 void PrerenderManager::RenderProcessHostDestroyed(
     content::RenderProcessHost* host) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   size_t erased = prerender_process_hosts_.erase(host);
   DCHECK_EQ(1u, erased);
 }

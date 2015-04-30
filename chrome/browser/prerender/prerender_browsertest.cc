@@ -292,7 +292,7 @@ class ChannelDestructionWatcher {
   };
 
   void OnChannelDestroyed() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     EXPECT_FALSE(channel_destroyed_);
     channel_destroyed_ = true;

@@ -96,7 +96,7 @@ void PrerenderMessageFilter::OnAddPrerender(
     const content::Referrer& referrer,
     const gfx::Size& size,
     int render_view_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!prerender_link_manager_)
     return;
   prerender_link_manager_->OnAddPrerender(
@@ -107,7 +107,7 @@ void PrerenderMessageFilter::OnAddPrerender(
 
 void PrerenderMessageFilter::OnCancelPrerender(
     int prerender_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!prerender_link_manager_)
     return;
   prerender_link_manager_->OnCancelPrerender(render_process_id_, prerender_id);
@@ -115,7 +115,7 @@ void PrerenderMessageFilter::OnCancelPrerender(
 
 void PrerenderMessageFilter::OnAbandonPrerender(
     int prerender_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!prerender_link_manager_)
     return;
   prerender_link_manager_->OnAbandonPrerender(render_process_id_, prerender_id);
@@ -127,7 +127,7 @@ void PrerenderMessageFilter::ShutdownOnUIThread() {
 }
 
 void PrerenderMessageFilter::OnChannelClosingInUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!prerender_link_manager_)
     return;
   prerender_link_manager_->OnChannelClosing(render_process_id_);
