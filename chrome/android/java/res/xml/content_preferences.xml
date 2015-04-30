@@ -48,7 +48,7 @@
         android:key="fullscreen" />
     <!-- Protected content -->
     <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.ProtectedContentPreferences"
+        android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
         android:key="protected_content" />
     <!-- Google Translate -->
     <Preference

@@ -20,6 +20,7 @@ public class WebsiteSettingsCategoryFilter {
     private static final String FILTER_FULLSCREEN = "fullscreen";
     private static final String FILTER_MICROPHONE = "microphone";
     private static final String FILTER_POPUPS = "popups";
+    private static final String FILTER_PROTECTED_MEDIA = "protected_content";
     public static final String FILTER_PUSH_NOTIFICATIONS = "push_notifications";
     private static final String FILTER_USE_STORAGE = "use_storage";
 
@@ -46,6 +47,8 @@ public class WebsiteSettingsCategoryFilter {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC;
         } else if (showPopupSites(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS;
+        } else if (showProtectedMediaSites(key)) {
+            return ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER;
         } else if (showPushNotificationsSites(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
         }
@@ -66,14 +69,6 @@ public class WebsiteSettingsCategoryFilter {
      */
     public boolean showCameraSites(String filterValue) {
         return filterValue.equals(FILTER_CAMERA);
-    }
-
-    /**
-     * @param filterValue A category value.
-     * @return Whether the category passed is the images category.
-     */
-    public boolean showImagesSites(String filterValue) {
-        return filterValue.equals(FILTER_IMAGES);
     }
 
     /**
@@ -102,6 +97,14 @@ public class WebsiteSettingsCategoryFilter {
 
     /**
      * @param filterValue A category value.
+     * @return Whether the category passed is the images category.
+     */
+    public boolean showImagesSites(String filterValue) {
+        return filterValue.equals(FILTER_IMAGES);
+    }
+
+    /**
+     * @param filterValue A category value.
      * @return Whether the category passed is the javascript category.
      */
     public boolean showJavaScriptSites(String filterValue) {
@@ -122,6 +125,14 @@ public class WebsiteSettingsCategoryFilter {
      */
     public boolean showPopupSites(String filterValue) {
         return filterValue.equals(FILTER_POPUPS);
+    }
+
+    /**
+     * @param filterValue A category value.
+     * @return Whether the category passed is the protected media category.
+     */
+    public boolean showProtectedMediaSites(String filterValue) {
+        return filterValue.equals(FILTER_PROTECTED_MEDIA);
     }
 
     /**

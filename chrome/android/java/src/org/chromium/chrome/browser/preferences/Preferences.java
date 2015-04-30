@@ -236,7 +236,7 @@ public abstract class Preferences extends AppCompatActivity implements
         super.onCreateOptionsMenu(menu);
         // By default, every screen in Settings shows a "Help & feedback" menu item.
         MenuItem help = menu.add(
-                Menu.NONE, R.id.menu_id_help_general, Menu.NONE, R.string.menu_help);
+                Menu.NONE, R.id.menu_id_help_general, Menu.CATEGORY_SECONDARY, R.string.menu_help);
         help.setIcon(R.drawable.ic_help_and_feedback);
         return true;
     }

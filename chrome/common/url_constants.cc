@@ -504,9 +504,16 @@ const char kDoNotTrackLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
 const char kAttestationForContentProtectionLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=verified_access";
+#endif
 
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 const char kEnhancedPlaybackNotificationLearnMoreURL[] =
+#endif
+#if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=enhanced_playback";
+#elif defined(OS_ANDROID)
+// Keep in sync with chrome/android/java/strings/android_chrome_strings.grd
+    "https://support.google.com/chrome/?p=mobile_protected_content";
 #endif
 
 const char kChromiumProjectURL[] = "http://www.chromium.org/";

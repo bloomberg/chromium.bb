@@ -110,12 +110,6 @@ bool ChromiumApplication::RegisterBindings(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ChromiumApplication::OpenProtectedContentSettings() {
-  Java_ChromiumApplication_openProtectedContentSettings(
-      base::android::AttachCurrentThread(),
-      base::android::GetApplicationContext());
-}
-
 void ChromiumApplication::ShowAutofillSettings() {
   Java_ChromiumApplication_showAutofillSettings(
       base::android::AttachCurrentThread(),

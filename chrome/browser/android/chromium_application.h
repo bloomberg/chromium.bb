@@ -23,9 +23,6 @@ class ChromiumApplication {
  public:
   static bool RegisterBindings(JNIEnv* env);
 
-  // Opens a protected content settings page, if available.
-  static void OpenProtectedContentSettings();
-
   // Opens the autofill settings page.
   static void ShowAutofillSettings();
 

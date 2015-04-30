@@ -13555,7 +13555,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         This page may need to be reloaded before the new settings take effect.
       </message>
 
-      <!-- Proteced media identifier permission infobar -->
+      <!-- Protected media identifier permission infobar -->
       <if expr="is_android or chromeos">
         <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's protected media identifier.">
           Know your unique device identifier
@@ -13568,9 +13568,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_DENY_BUTTON" desc="A button in the protected media identifier infobar for denying access to a protected media identifier for a given origin.">
           Deny
-        </message>
-        <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_SETTINGS_LINK" desc="Link on in the protected media identifier infobar to open up its settings page.">
-          Settings
         </message>
       </if>
 

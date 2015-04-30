@@ -130,6 +130,9 @@ public class WebsitePermissionsFetcher {
         } else if (filterHelper.showPushNotificationsSites(filter)) {
             // Push notification permission is per-origin and per-embedder.
             queue.add(new PushNotificationInfoFetcher());
+        } else if (filterHelper.showProtectedMediaSites(filter)) {
+            // Protected media identifier permission is per-origin and per-embedder.
+            queue.add(new ProtectedMediaIdentifierInfoFetcher());
         } else if (filterHelper.showImagesSites(filter)) {
             // Images exceptions are host-based patterns.
             queue.add(new ImagesExceptionInfoFetcher());

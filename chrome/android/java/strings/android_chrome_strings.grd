@@ -612,6 +612,7 @@ If OFF, you may not be able to play premium videos on this device.
 
 To obtain new licenses, connect to the internet and play your downloaded content.
       </message>
+      <!-- Keep in sync with chrome/common/url_constants.cc -->
       <message name="IDS_PROTECTED_CONTENT_LEARN_MORE_URL" desc="URL for learning more about device credential reset menu preference" translateable="false">
         https://support.google.com/chrome/?p=mobile_protected_content
       </message>

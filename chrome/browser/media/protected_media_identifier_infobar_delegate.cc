@@ -6,6 +6,7 @@
 
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_entry.h"
@@ -13,14 +14,6 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/chromium_application.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/common/url_constants.h"
-#endif
 
 // static
 infobars::InfoBar* ProtectedMediaIdentifierInfoBarDelegate::Create(
@@ -114,27 +107,16 @@ bool ProtectedMediaIdentifierInfoBarDelegate::Cancel() {
 }
 
 base::string16 ProtectedMediaIdentifierInfoBarDelegate::GetLinkText() const {
-#if defined(OS_ANDROID)
-  return l10n_util::GetStringUTF16(
-      IDS_PROTECTED_MEDIA_IDENTIFIER_SETTINGS_LINK);
-#else
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-#endif
 }
 
 bool ProtectedMediaIdentifierInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-#if defined(OS_ANDROID)
-  chrome::android::ChromiumApplication::OpenProtectedContentSettings();
-#elif defined(OS_CHROMEOS)
   const GURL learn_more_url(chrome::kEnhancedPlaybackNotificationLearnMoreURL);
   InfoBarService::WebContentsFromInfoBar(infobar())
       ->OpenURL(content::OpenURLParams(
           learn_more_url, content::Referrer(),
           (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
           ui::PAGE_TRANSITION_LINK, false));
-#else
-  NOTIMPLEMENTED();
-#endif
   return false; // Do not dismiss the info bar.
 }
