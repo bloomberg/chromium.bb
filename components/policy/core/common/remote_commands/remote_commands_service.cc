@@ -30,6 +30,9 @@ RemoteCommandsService::~RemoteCommandsService() {
 }
 
 bool RemoteCommandsService::FetchRemoteCommands() {
+  if (!client_->is_registered())
+    return false;
+
   if (command_fetch_in_progress_) {
     has_enqueued_fetch_request_ = true;
     return false;

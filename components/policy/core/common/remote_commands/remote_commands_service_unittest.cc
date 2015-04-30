@@ -32,6 +32,7 @@ namespace {
 
 namespace em = enterprise_management;
 
+const char kDMToken[] = "dmtoken";
 const char kTestPayload[] = "_testing_payload_";
 const int kTestCommandExecutionTimeInSeconds = 1;
 const int kTestClientServerCommunicationDelayInSeconds = 3;
@@ -82,7 +83,9 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
                           USER_AFFILIATION_NONE,
                           nullptr,
                           nullptr),
-        server_(server) {}
+        server_(server) {
+    dm_token_ = kDMToken;
+  }
 
   ~TestingCloudPolicyClientForRemoteCommands() override {
     EXPECT_TRUE(expected_fetch_commands_calls_.empty());

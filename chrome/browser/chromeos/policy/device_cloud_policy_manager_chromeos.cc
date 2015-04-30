@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/heartbeat_scheduler.h"
+#include "chrome/browser/chromeos/policy/remote_commands/device_commands_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/common/pref_names.h"
@@ -31,6 +32,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -238,6 +240,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
 
   core()->Connect(client_to_connect.Pass());
   core()->StartRefreshScheduler();
+  core()->StartRemoteCommandsService(
+      scoped_ptr<RemoteCommandsFactory>(new DeviceCommandsFactoryChromeOS()));
   core()->TrackRefreshDelayPref(local_state_,
                                 prefs::kDevicePolicyRefreshRate);
   attestation_policy_observer_.reset(
