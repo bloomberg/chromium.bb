@@ -57,19 +57,7 @@ bool SVGTests::hasExtension(const String&)
 
 bool SVGTests::isValid(Document& document) const
 {
-    if (m_requiredFeatures->isSpecified()) {
-        const Vector<String>& requiredFeatures = m_requiredFeatures->value()->values();
-        Vector<String>::const_iterator it = requiredFeatures.begin();
-        Vector<String>::const_iterator itEnd = requiredFeatures.end();
-        for (; it != itEnd; ++it) {
-            if (it->isEmpty())
-                return false;
-            if (!DOMImplementation::hasFeature(*it, String())) {
-                UseCounter::count(document, UseCounter::DOMImplementationHasFeatureReturnFalseInternal);
-                return false;
-            }
-        }
-    }
+    // No need to check requiredFeatures since hasFeature always returns true.
 
     if (m_systemLanguage->isSpecified()) {
         bool matchFound = false;

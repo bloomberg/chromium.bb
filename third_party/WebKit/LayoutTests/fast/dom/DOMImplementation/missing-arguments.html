@@ -10,9 +10,7 @@
     "createDocument('http://example.com/')",
     "createDocumentType()",
     "createDocumentType('svg:svg')",
-    "createDocumentType('svg:svg', '-//W3C//DTD SVG 1.1//EN')",
-    "hasFeature()",
-    "hasFeature('')"
+    "createDocumentType('svg:svg', '-//W3C//DTD SVG 1.1//EN')"
 ].forEach(function(expr)
 {
     shouldThrow("document.implementation." + expr);

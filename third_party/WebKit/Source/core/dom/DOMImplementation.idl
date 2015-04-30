@@ -31,7 +31,6 @@
     // FIXME: The title argument should not have a default value. crbug.com/335871
     [NewObject] HTMLDocument createHTMLDocument(optional DOMString title = null);
 
-    // FIXME: hasFeature should take no arguments and always return true. crbug.com/429536
-    [ImplementedAs=hasFeatureForBindings, MeasureAs=DOMImplementationHasFeature]
-    boolean hasFeature(DOMString feature, DOMString? version);
+    // useless; always returns true
+    boolean hasFeature();
 };
