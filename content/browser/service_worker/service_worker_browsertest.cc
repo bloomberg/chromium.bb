@@ -1387,7 +1387,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossSiteTransfer) {
+#if defined(ANDROID)
+#define MAYBE_CrossSiteTransfer DISABLED_CrossSiteTransfer
+#else
+#define MAYBE_CrossSiteTransfer CrossSiteTransfer
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, MAYBE_CrossSiteTransfer) {
   // The first page registers a service worker.
   const char kRegisterPageUrl[] = "/service_worker/cross_site_xfer.html";
   const base::string16 kOKTitle1(base::ASCIIToUTF16("OK_1"));
