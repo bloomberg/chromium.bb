@@ -7,6 +7,20 @@ import("resources/policy_templates.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 
+# About the policy component:
+#
+# There should really be two components. One called "policy" that includes all
+# generated code, and one "policy/proto" liek we have now. The proto needs to
+# be separate for cases like SesssionManagerClient which uses the protos to
+# communicate with the Chrome OS system layer, but doesn't need the rest of the
+# policy stuff).
+#
+# The reason the rest of the targets exist are artifacts of the way the GYP
+# build works. The current "policy" target which is really just some generated
+# code (which should be folded into the new "policy" component described above)
+# exists so code outside which depends on the generated headers can depend on
+# the hard policy target without having to make all policy targets hard
+# dependencies (GN will do the right thing without this extra target).
 if (is_component_build) {
   component("policy_component") {
     deps = [
@@ -137,7 +151,14 @@ if (enable_configuration_policy) {
     }
   }
 
-  proto_library("cloud_policy_proto_generated_compile") {
+  # Run the proto compiler over the generated file and make it a component.
+  component("cloud_policy_proto_generated_compile") {
+    public_deps = [
+      ":cloud_policy_proto_generated_compile_proto",
+    ]
+  }
+  proto_library("cloud_policy_proto_generated_compile_proto") {
+    visibility = [ ":cloud_policy_proto_generated_compile" ]
     sources = [
       cloud_policy_proto_path,
     ]
@@ -198,8 +219,7 @@ if (enable_configuration_policy) {
   group("test_support") {
     deps = [
       ":chrome_settings_proto_generated_compile",
-      ":policy",
-      "//components/policy/core/common",
+      ":policy_component",
     ]
   }
 

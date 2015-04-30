@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 
 # GYP version: components/policy.gypi:policy_component_core_browser
 source_set("browser") {
+  visibility = [ "//components/policy/*" ]
   sources = [
     # Note that these sources are always included, even for builds that disable
     # policy. Most source files should go in the conditional sources list

@@ -5,6 +5,8 @@
 import("//build/config/features.gni")
 
 source_set("common") {
+  visibility = [ "//components/policy/*" ]
+
   defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
 
   if (enable_configuration_policy) {
